@@ -16,29 +16,40 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from .types import Action, RobotState
+from .types import RobotState
 
 
 class BaseController(ABC):
-    """Interface class for controllers."""
+    """Interface class for controllers.
+
+    Controllers implement reset and forward to produce desired robot states based on
+    estimates and optional setpoints.
+    """
 
     @abstractmethod
     def forward(
         self, estimated_state: RobotState, setpoint_state: Optional[RobotState], t: float, **kwargs
-    ) -> tuple[bool, Action]:
-        """Define the desired joint action of the robot at the next time-step.
-
-        This can be a desired joint position, velocity, or a feed-forward effort.
+    ) -> Optional[RobotState]:
+        """Define the desired state of the robot at the next time-step.
 
         Args:
             estimated_state: Current estimated state of the robot.
-            setpoint_state: An optional setpoint of the robot.
+            setpoint_state: Optional setpoint state of the robot.
             t: Current clock time (simulation or real).
-            **kwargs: Custom arguments for the controller.
+            **kwargs: Additional keyword arguments for the controller.
 
         Returns:
-            A tuple containing a boolean indicating if there is an error (True if error),
-            and an Action object to be forwarded to the robot.
+            Desired robot state for the robot to track, or None if the controller cannot
+            produce a valid output.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> controller = SomeController()
+            >>> desired = controller.forward(estimated_state, setpoint_state, t)
+            >>> if desired is None:
+            ...     print("Controller failed")
         """
         pass
 
@@ -47,14 +58,23 @@ class BaseController(ABC):
         """Reset the internal state of the controller to safe values.
 
         This should be called immediately before running the controller for the first time.
+        This function is intended to bring the controller to a safe initial state.
 
         Args:
             estimated_state: Current estimated state of the robot.
-            setpoint_state: An optional setpoint of the robot.
+            setpoint_state: Optional setpoint state of the robot.
             t: Current clock time (simulation or real).
-            **kwargs: Additional arguments for the controller.
+            **kwargs: Additional keyword arguments for the controller.
 
         Returns:
-            True if there is an error, False otherwise.
+            True if reset succeeded, False otherwise.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> controller = SomeController()
+            >>> if not controller.reset(estimated_state, setpoint_state, t):
+            ...     raise RuntimeError("Controller reset failed")
         """
         pass

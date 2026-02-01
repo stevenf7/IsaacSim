@@ -39,7 +39,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         # we can create a trajectory using numpy arrays:
         path = mg.Path(waypoints=np.array([[0.0], [1.0], [2.0]]))
 
-        trajectory = path.to_minimal_time_trajectory(
+        trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=np.array([max_velocity]),
             max_accelerations=np.array([max_acceleration]),
             active_joints=["joint_0"],
@@ -48,7 +48,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         # we can create a trajectory using warp arrays:
         path = mg.Path(waypoints=wp.array([[0.0], [1.0], [2.0]]))
 
-        trajectory = path.to_minimal_time_trajectory(
+        trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=wp.array([max_velocity]),
             max_accelerations=wp.array([max_acceleration]),
             active_joints=["joint_0"],
@@ -57,7 +57,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         # we can create a trajectory using lists:
         path = mg.Path(waypoints=[[0.0], [1.0], [2.0]])
 
-        trajectory = path.to_minimal_time_trajectory(
+        trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=[max_velocity],
             max_accelerations=[max_acceleration],
             active_joints=["joint_0"],
@@ -66,7 +66,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         # I cannot create a trajectory using a different number of joints than the number of waypoints:
         self.assertRaises(
             ValueError,
-            path.to_minimal_time_trajectory,
+            path.to_minimal_time_joint_trajectory,
             max_velocities=[max_velocity],
             max_accelerations=[max_acceleration],
             active_joints=["joint_0", "joint_1"],
@@ -79,7 +79,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
 
         path = mg.Path(waypoints=np.array([[0.0], [1.0], [2.0]]))
 
-        trajectory = path.to_minimal_time_trajectory(
+        trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=np.array([max_velocity]),
             max_accelerations=np.array([max_acceleration]),
             active_joints=["joint_0"],
@@ -99,9 +99,9 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         test_times = np.linspace(start=0.0, stop=trajectory.duration, num=500)
         last_position = 0.0
         for i, test_time in enumerate(test_times):
-            joint_poses = trajectory.get_joint_targets(test_time)
-            position = joint_poses.positions.numpy()[0]
-            velocity = joint_poses.velocities.numpy()[0]
+            desired_state = trajectory.get_target_state(test_time)
+            position = desired_state.joints.positions.numpy()[0]
+            velocity = desired_state.joints.velocities.numpy()[0]
 
             # print(f"t: {test_time}, p: {position}, v: {velocity}")
 
@@ -115,25 +115,25 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         # verify that we get the correct positions and velocities at the start-time, end-time,
         # and switching time:
         # print(f"trajectory start time: {0.0}")
-        joint_poses_start = trajectory.get_joint_targets(0.0)
-        start_position = joint_poses_start.positions.numpy()[0]
-        start_velocity = joint_poses_start.velocities.numpy()[0]
+        desired_state_start = trajectory.get_target_state(0.0)
+        start_position = desired_state_start.joints.positions.numpy()[0]
+        start_velocity = desired_state_start.joints.velocities.numpy()[0]
         print(f"start_position is: {start_position}")
         print(f"start velocity is: {start_velocity}")
         self.assertTrue(abs(start_position) < 1e-8)
         self.assertTrue(abs(start_velocity) < 1e-8)
 
-        joint_poses_end = trajectory.get_joint_targets(trajectory.duration)
-        end_position = joint_poses_end.positions.numpy()[0]
-        end_velocity = joint_poses_end.velocities.numpy()[0]
+        desired_state_end = trajectory.get_target_state(trajectory.duration)
+        end_position = desired_state_end.joints.positions.numpy()[0]
+        end_velocity = desired_state_end.joints.velocities.numpy()[0]
         print(f"end_position is: {end_position}")
         print(f"end_velocity is: {end_velocity}")
         self.assertTrue(abs(end_position - 2.0) < 1e-8)
         self.assertTrue(abs(end_velocity) < 1e-8)
 
-        joint_poses_middle = trajectory.get_joint_targets(trajectory.duration / 2)
-        middle_position = joint_poses_middle.positions.numpy()[0]
-        middle_velocity = joint_poses_middle.velocities.numpy()[0]
+        desired_state_middle = trajectory.get_target_state(trajectory.duration / 2)
+        middle_position = desired_state_middle.joints.positions.numpy()[0]
+        middle_velocity = desired_state_middle.joints.velocities.numpy()[0]
 
         print(f"middle_position is: {middle_position}")
         print(f"middle_velocity is: {middle_velocity}")
@@ -147,7 +147,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
 
         path = mg.Path(waypoints=np.array([[2.0], [1.0], [0.0]]))
 
-        trajectory = path.to_minimal_time_trajectory(
+        trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=np.array([max_velocity]),
             max_accelerations=np.array([max_acceleration]),
             active_joints=["joint_0"],
@@ -167,9 +167,9 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         test_times = np.linspace(start=0.0, stop=trajectory.duration, num=500)
         last_position = 2.0
         for i, test_time in enumerate(test_times):
-            joint_poses = trajectory.get_joint_targets(test_time)
-            position = joint_poses.positions.numpy()[0]
-            velocity = joint_poses.velocities.numpy()[0]
+            desired_state = trajectory.get_target_state(test_time)
+            position = desired_state.joints.positions.numpy()[0]
+            velocity = desired_state.joints.velocities.numpy()[0]
 
             # print(f"t: {test_time}, p: {position}, v: {velocity}")
 
@@ -183,25 +183,25 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         # verify that we get the correct positions and velocities at the start-time, end-time,
         # and switching time:
         # print(f"trajectory start time: {0.0}")
-        joint_poses_start = trajectory.get_joint_targets(0.0)
-        start_position = joint_poses_start.positions.numpy()[0]
-        start_velocity = joint_poses_start.velocities.numpy()[0]
+        desired_state_start = trajectory.get_target_state(0.0)
+        start_position = desired_state_start.joints.positions.numpy()[0]
+        start_velocity = desired_state_start.joints.velocities.numpy()[0]
         print(f"start_position is: {start_position}")
         print(f"start velocity is: {start_velocity}")
         self.assertTrue(abs(start_position - 2.0) < 1e-8)
         self.assertTrue(abs(start_velocity) < 1e-8)
 
-        joint_poses_end = trajectory.get_joint_targets(trajectory.duration)
-        end_position = joint_poses_end.positions.numpy()[0]
-        end_velocity = joint_poses_end.velocities.numpy()[0]
+        desired_state_end = trajectory.get_target_state(trajectory.duration)
+        end_position = desired_state_end.joints.positions.numpy()[0]
+        end_velocity = desired_state_end.joints.velocities.numpy()[0]
         print(f"end_position is: {end_position}")
         print(f"end_velocity is: {end_velocity}")
         self.assertTrue(abs(end_position) < 1e-8)
         self.assertTrue(abs(end_velocity) < 1e-8)
 
-        joint_poses_middle = trajectory.get_joint_targets(trajectory.duration / 2)
-        middle_position = joint_poses_middle.positions.numpy()[0]
-        middle_velocity = joint_poses_middle.velocities.numpy()[0]
+        desired_state_middle = trajectory.get_target_state(trajectory.duration / 2)
+        middle_position = desired_state_middle.joints.positions.numpy()[0]
+        middle_velocity = desired_state_middle.joints.velocities.numpy()[0]
 
         print(f"middle_position is: {middle_position}")
         print(f"middle_velocity is: {middle_velocity}")
@@ -216,7 +216,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
 
         path = mg.Path(waypoints=np.array([[0.0], [1.0], [2.0]]))
 
-        trajectory = path.to_minimal_time_trajectory(
+        trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=np.array([max_velocity]),
             max_accelerations=np.array([max_acceleration]),
             active_joints=["joint_0"],
@@ -250,9 +250,9 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         test_times = np.linspace(start=0.0, stop=trajectory.duration, num=500)
         last_position = 0.0
         for i, test_time in enumerate(test_times):
-            joint_poses = trajectory.get_joint_targets(test_time)
-            position = joint_poses.positions.numpy()[0]
-            velocity = joint_poses.velocities.numpy()[0]
+            desired_state = trajectory.get_target_state(test_time)
+            position = desired_state.joints.positions.numpy()[0]
+            velocity = desired_state.joints.velocities.numpy()[0]
 
             # print(f"t: {test_time}, p: {position}, v: {velocity}")
 
@@ -265,26 +265,26 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
 
         # verify that we get the correct positions and velocities at the start-time, end-time,
         # and switching time:
-        joint_poses_start = trajectory.get_joint_targets(0.0)
-        start_position = joint_poses_start.positions.numpy()[0]
-        start_velocity = joint_poses_start.velocities.numpy()[0]
+        desired_state_start = trajectory.get_target_state(0.0)
+        start_position = desired_state_start.joints.positions.numpy()[0]
+        start_velocity = desired_state_start.joints.velocities.numpy()[0]
         self.assertTrue(abs(start_position) < 1e-8)
         self.assertTrue(abs(start_velocity) < 1e-8)
 
-        joint_poses_end = trajectory.get_joint_targets(trajectory.duration)
-        end_position = joint_poses_end.positions.numpy()[0]
-        end_velocity = joint_poses_end.velocities.numpy()[0]
+        desired_state_end = trajectory.get_target_state(trajectory.duration)
+        end_position = desired_state_end.joints.positions.numpy()[0]
+        end_velocity = desired_state_end.joints.velocities.numpy()[0]
         self.assertTrue(abs(end_position - 2.0) < 1e-8)
         self.assertTrue(abs(end_velocity) < 1e-8)
 
-        joint_poses_middle = trajectory.get_joint_targets(trajectory.duration / 2)
-        middle_position = joint_poses_middle.positions.numpy()[0]
-        middle_velocity = joint_poses_middle.velocities.numpy()[0]
+        desired_state_middle = trajectory.get_target_state(trajectory.duration / 2)
+        middle_position = desired_state_middle.joints.positions.numpy()[0]
+        middle_velocity = desired_state_middle.joints.velocities.numpy()[0]
         self.assertTrue(abs(middle_position - 1.0) < 1e-8)
         self.assertTrue(abs(middle_velocity) < 1e-8)
 
-        joint_poses_switch_time = trajectory.get_joint_targets(t_switch)
-        switch_time_velocity = joint_poses_switch_time.velocities.numpy()[0]
+        desired_state_switch_time = trajectory.get_target_state(t_switch)
+        switch_time_velocity = desired_state_switch_time.joints.velocities.numpy()[0]
         self.assertTrue(abs(switch_time_velocity - max_velocity) < 1e-8)
 
     async def test_two_joints(self):
@@ -297,7 +297,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         max_velocities = np.array([1.0, 1.0])
         max_accelerations = np.array([0.5, 0.5])
 
-        trajectory = path.to_minimal_time_trajectory(
+        trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=max_velocities,
             max_accelerations=max_accelerations,
             active_joints=["joint_0", "joint_1"],
@@ -339,9 +339,9 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         # parameter "t" throughout the entire trajectory:
         test_times = np.linspace(0.0, trajectory.duration, 100)
         for test_time in test_times:
-            joint_poses = trajectory.get_joint_targets(test_time)
-            position: np.array = joint_poses.positions.numpy()
-            velocity: np.array = joint_poses.velocities.numpy()
+            desired_state = trajectory.get_target_state(test_time)
+            position: np.array = desired_state.joints.positions.numpy()
+            velocity: np.array = desired_state.joints.velocities.numpy()
             t_values = np.zeros_like(position)
             for i, q in enumerate(position):
                 if test_time <= t_first_motion:
@@ -365,7 +365,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         max_velocities = np.array([1.0, 1.0])
         max_accelerations = np.array([0.5, 0.5])
 
-        trajectory = path.to_minimal_time_trajectory(
+        trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=max_velocities,
             max_accelerations=max_accelerations,
             active_joints=["joint_0", "joint_1"],
@@ -374,9 +374,9 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         # Check here, the second joint should be stationary for the entire trajectory.
         test_times = np.linspace(0.0, trajectory.duration, 100)
         for test_time in test_times:
-            joint_poses = trajectory.get_joint_targets(test_time)
-            joint_positionts = joint_poses.positions.numpy()
-            joint_velocities = joint_poses.velocities.numpy()
+            desired_state = trajectory.get_target_state(test_time)
+            joint_positionts = desired_state.joints.positions.numpy()
+            joint_velocities = desired_state.joints.velocities.numpy()
             self.assertTrue(np.isclose(joint_positionts[1], 0.1))
             self.assertTrue(np.isclose(joint_velocities[1], 0.0))
 
@@ -393,7 +393,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         max_velocities = [1.0, 1.0]
         max_accelerations = [0.5, 0.5]
 
-        trajectory = path.to_minimal_time_trajectory(
+        trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=max_velocities,
             max_accelerations=max_accelerations,
             active_joints=["joint_0", "joint_1"],
@@ -435,9 +435,9 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         # parameter "t" throughout the entire trajectory:
         test_times = np.linspace(0.0, trajectory.duration, 100)
         for test_time in test_times:
-            joint_poses = trajectory.get_joint_targets(test_time)
-            position: np.array = joint_poses.positions.numpy()
-            velocity: np.array = joint_poses.velocities.numpy()
+            desired_state = trajectory.get_target_state(test_time)
+            position: np.array = desired_state.joints.positions.numpy()
+            velocity: np.array = desired_state.joints.velocities.numpy()
             t_values = np.zeros_like(position)
             for i, q in enumerate(position):
                 if test_time <= t_first_motion:
@@ -469,7 +469,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         max_velocities = wp.array([1.0, 1.0])
         max_accelerations = [0.5, 0.5]
 
-        trajectory = path.to_minimal_time_trajectory(
+        trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=max_velocities,
             max_accelerations=max_accelerations,
             active_joints=["joint_0", "joint_1"],
@@ -511,9 +511,9 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         # parameter "t" throughout the entire trajectory:
         test_times = np.linspace(0.0, trajectory.duration, 100)
         for test_time in test_times:
-            joint_poses = trajectory.get_joint_targets(test_time)
-            position: np.array = joint_poses.positions.numpy()
-            velocity: np.array = joint_poses.velocities.numpy()
+            desired_state = trajectory.get_target_state(test_time)
+            position: np.array = desired_state.joints.positions.numpy()
+            velocity: np.array = desired_state.joints.velocities.numpy()
             t_values = np.zeros_like(position)
             for i, q in enumerate(position):
                 if test_time <= t_first_motion:
@@ -536,23 +536,23 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = [1.0, 1.0, 1.0]
         joints = [f"joint{i}" for i in range(3)]
-        self.assertRaises(ValueError, path.to_minimal_time_trajectory, max_velocities, max_accelerations, joints)
+        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
 
         path = mg.Path(waypoints=np.array([[0.0, 0.0, 0.2], [0.0, 0.1, 0.2], [0.0, 0.0, 0.0]]))
 
         # any maximum velocity or acceleration which is non-positive will raise.
         max_velocities = [0.0, 1.0, 1.0]
         max_accelerations = [1.0, 1.0, 1.0]
-        self.assertRaises(ValueError, path.to_minimal_time_trajectory, max_velocities, max_accelerations, joints)
+        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
         max_velocities = [1.0, -1.0, 1.0]
         max_accelerations = [1.0, 1.0, 1.0]
-        self.assertRaises(ValueError, path.to_minimal_time_trajectory, max_velocities, max_accelerations, joints)
+        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = [1.0, 0.0, 1.0]
-        self.assertRaises(ValueError, path.to_minimal_time_trajectory, max_velocities, max_accelerations, joints)
+        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = [1.0, -1e-5, 1.0]
-        self.assertRaises(ValueError, path.to_minimal_time_trajectory, max_velocities, max_accelerations, joints)
+        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
 
         # waypoints which are not 2-dimensional raise an error:
         self.assertRaises(ValueError, mg.Path, np.array([[[0.0, 0.0, 0.2], [0.0, 0.1, 0.2], [0.0, 0.0, 0.0]]]))
@@ -562,26 +562,26 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         path = mg.Path(waypoints=np.array([[0.0, 0.0, 0.2], [0.0, 0.1, 0.2], [0.0, 0.0, 0.0]]))
         max_velocities = [[1.0, 1.0, 1.0]]
         max_accelerations = [1.0, 1.0, 1.0]
-        self.assertRaises(ValueError, path.to_minimal_time_trajectory, max_velocities, max_accelerations, joints)
+        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = [[1.0, 1.0, 1.0]]
-        self.assertRaises(ValueError, path.to_minimal_time_trajectory, max_velocities, max_accelerations, joints)
+        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
         max_velocities = np.array([[1.0, 1.0, 1.0]])
         max_accelerations = [1.0, 1.0, 1.0]
-        self.assertRaises(ValueError, path.to_minimal_time_trajectory, max_velocities, max_accelerations, joints)
+        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = np.array([[1.0, 1.0, 1.0]])
-        self.assertRaises(ValueError, path.to_minimal_time_trajectory, max_velocities, max_accelerations, joints)
+        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
 
         # trying to add the wrong number of joint names raises an error:
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = np.array([1.0, 1.0, 1.0])
         joints = [f"joint{i}" for i in range(4)]
-        self.assertRaises(ValueError, path.to_minimal_time_trajectory, max_velocities, max_accelerations, joints)
+        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
 
         # Trying to create a trajectory with only a single waypoint raises an error:
         path = mg.Path(waypoints=np.array([[0.0, 0.0, 0.0]]))
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = np.array([1.0, 1.0, 1.0])
         joints = [f"joint{i}" for i in range(3)]
-        self.assertRaises(ValueError, path.to_minimal_time_trajectory, max_velocities, max_accelerations, joints)
+        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)

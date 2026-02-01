@@ -14,8 +14,9 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
+from typing import Optional
 
-from .types import Action
+from .types import RobotState
 
 
 class Trajectory(ABC):
@@ -35,31 +36,27 @@ class Trajectory(ABC):
         pass
 
     @abstractmethod
-    def get_active_joints(self) -> list[str]:
-        """Get the active joints directly controlled by this Trajectory.
-
-        A Trajectory may be specified for only a subset of the joints in a robot Articulation.
-        For example, it may include the DOFs in a robot arm, but not in the gripper.
-
-        Returns:
-            Names of active joints. The order of joints in this list determines the order
-            in which a Trajectory will return joint targets for the robot.
-        """
-        pass
-
-    @abstractmethod
-    def get_joint_targets(self, time: float) -> Action:
-        """Return joint targets for the robot at the given time.
+    def get_target_state(self, time: float) -> Optional[RobotState]:
+        """Return the target robot state at the given time.
 
         The Trajectory interface assumes trajectories to be represented continuously between
         a start time and end time. An instance of this class that internally generates
-        discrete time trajectories will need to implement some form of interpolation for
+        discrete time trajectories will need to implement interpolation for
         times that have not been computed.
 
         Args:
-            time: Time in trajectory at which to return joint targets.
+            time: Time along the trajectory at which to return the target state.
 
         Returns:
-            Action object containing the joint targets for the robot at the given time.
+            Desired robot state at the given time, or None if the trajectory cannot provide
+            a target.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> target = trajectory.get_target_state(0.5)
+            >>> if target is None:
+            ...     raise RuntimeError("No target available")
         """
         pass

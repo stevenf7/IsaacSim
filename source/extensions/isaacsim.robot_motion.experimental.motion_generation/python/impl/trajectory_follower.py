@@ -17,7 +17,7 @@ from typing import Optional
 
 from .base_controller import BaseController
 from .trajectory import Trajectory
-from .types import Action, RobotState
+from .types import RobotState
 
 
 class TrajectoryFollower(BaseController):
@@ -40,7 +40,7 @@ class TrajectoryFollower(BaseController):
 
         Args:
             estimated_state: RobotState object to be reset.
-            setpoint_state: An optional desired state of the robot.
+            setpoint_state: Optional setpoint state of the robot.
             t: Current clock time (simulation or real).
             **kwargs: Custom arguments.
 
@@ -56,22 +56,30 @@ class TrajectoryFollower(BaseController):
 
     def forward(
         self, estimated_state: RobotState, setpoint_state: Optional[RobotState], t: float, **kwargs
-    ) -> tuple[bool, Action]:
+    ) -> Optional[RobotState]:
         """Forward the trajectory follower.
 
         Args:
             estimated_state: The current estimated state of the robot.
-            setpoint_state: An optional desired state of the robot.
-            t: The current time.
-            **kwargs: Custom arguments.
+            setpoint_state: Optional setpoint state of the robot.
+            t: Current clock time (simulation or real).
+            **kwargs: Additional keyword arguments.
 
         Returns:
-            A tuple containing a boolean indicating if there was an error (True if error),
-            and the desired joint Action.
+            Desired robot state for the current time, or None if no trajectory is set
+            or the trajectory has completed.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> target = follower.forward(estimated_state, setpoint_state, t)
+            >>> if target is None:
+            ...     print("Controller could not produce a valid result.")
         """
         if self._trajectory is None:
             # No issues, just don't do anything.
-            return False, Action(names=[])
+            return None
 
         # get the time since the trajectory started:
         trajectory_time = t - self._start_time
@@ -79,10 +87,10 @@ class TrajectoryFollower(BaseController):
         if (trajectory_time < 0.0) or (trajectory_time > self._trajectory.duration):
             # Clear the trajectory.
             self.reset(estimated_state, setpoint_state, t)
-            return True, Action(names=[])
+            return None
 
         # read the trajectory, and return the desired joint states.
-        return False, self._trajectory.get_joint_targets(trajectory_time)
+        return self._trajectory.get_target_state(trajectory_time)
 
     def set_trajectory(self, trajectory: Trajectory, start_time: float) -> None:
         """Set the trajectory to follow.

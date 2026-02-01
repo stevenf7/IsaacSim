@@ -13,14 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
 import warp as wp
 from isaacsim.core.experimental.utils.ops import place
 
 from .trajectory import Trajectory
-from .types import Action
+from .types import JointState, RobotState
 
 
 class Path:
@@ -89,7 +89,7 @@ class Path:
 
         return self._waypoints_np[index]
 
-    def to_minimal_time_trajectory(
+    def to_minimal_time_joint_trajectory(
         self,
         max_velocities: Union[list, np.ndarray, wp.array],
         max_accelerations: Union[list, np.ndarray, wp.array],
@@ -122,7 +122,7 @@ class Path:
             ValueError: If there are not at least two waypoints.
         """
 
-        return MinimalTimeTrajectory(
+        return MinimalTimeJointTrajectory(
             path=self,
             max_velocities=place(max_velocities, dtype=self._waypoints.dtype, device=self._waypoints.device),
             max_accelerations=place(max_accelerations, dtype=self._waypoints.dtype, device=self._waypoints.device),
@@ -132,7 +132,7 @@ class Path:
         )
 
 
-class MinimalTimeTrajectory(Trajectory):
+class MinimalTimeJointTrajectory(Trajectory):
     """Converts a Path-object into a minimal-time trajectory.
 
     This class converts a discrete set of joint-space waypoints into a trajectory, given
@@ -369,14 +369,22 @@ class MinimalTimeTrajectory(Trajectory):
         """
         return self._active_joints
 
-    def get_joint_targets(self, trajectory_time: float) -> Action:
-        """Get the joint targets of the trajectory at the given time.
+    def get_target_state(self, trajectory_time: float) -> Optional[RobotState]:
+        """Get the target robot state at the given time.
 
         Args:
-            trajectory_time: The time at which to get the joint targets.
+            trajectory_time: Time along the trajectory at which to sample the target state.
 
         Returns:
-            The joint targets of the trajectory at the given time as an Action object.
+            Desired robot state at the given time, or None if a target cannot be computed.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> target = trajectory.get_target_state(trajectory_time)
+            >>> if target is None:
+            ...     raise RuntimeError("No target available")
         """
         # bound the trajectory input time.
         trajectory_time = np.clip(trajectory_time, 0.0, self.duration)
@@ -388,6 +396,7 @@ class MinimalTimeTrajectory(Trajectory):
 
         positions_out = wp.zeros([self._n_joints], dtype=self._waypoints.dtype, device=self._waypoints.device)
         velocities_out = wp.zeros([self._n_joints], dtype=self._waypoints.dtype, device=self._waypoints.device)
+        efforts_out = wp.zeros([self._n_joints], dtype=self._waypoints.dtype, device=self._waypoints.device)
 
         warp_time = self._waypoints.dtype(float(trajectory_time))
         warp_i_segment = int(i_segment)
@@ -411,7 +420,14 @@ class MinimalTimeTrajectory(Trajectory):
             device=self._waypoints.device,
         )
 
-        return Action(names=self._active_joints, positions=positions_out, velocities=velocities_out, efforts=None)
+        return RobotState(
+            joints=JointState(
+                names=self._active_joints,
+                positions=positions_out,
+                velocities=velocities_out,
+                efforts=efforts_out,
+            )
+        )
 
 
 @wp.func
