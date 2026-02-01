@@ -15,6 +15,7 @@
 
 from typing import Optional
 
+import numpy as np
 import warp as wp
 
 
@@ -174,53 +175,137 @@ class RobotState:
         self.tool_frames = tool_frames
 
 
-class Action:
-    """Action is a struct that contains the real-time joint-space action to be sent to a controlled robot."""
+def _combine_joint_states(
+    joint_state_1: Optional[JointState], joint_state_2: Optional[JointState]
+) -> tuple[bool, JointState]:
+    if joint_state_1 is None:
+        return True, joint_state_2
 
-    def __init__(
-        self,
-        names: list[str],
-        positions: Optional[wp.array(dtype=wp.Float)] = None,
-        velocities: Optional[wp.array(dtype=wp.Float)] = None,
-        efforts: Optional[wp.array(dtype=wp.Float)] = None,
-    ):
-        """Initialize an Action.
+    if joint_state_2 is None:
+        return True, joint_state_1
 
-        Args:
-            names: The names of the joints.
-            positions: The desired positions of the joints as a warp array.
-            velocities: The desired velocities of the joints as a warp array.
-            efforts: The feed-forward efforts of the joints as a warp array.
+    common_names = set(joint_state_1.names) & set(joint_state_2.names)
+    device = joint_state_1.positions.device
 
-        Raises:
-            ValueError: If all of positions, velocities, and efforts are None.
-            ValueError: If names and positions have different lengths when positions is provided.
-            ValueError: If names and velocities have different lengths when velocities is provided.
-            ValueError: If names and efforts have different lengths when efforts is provided.
-            ValueError: If positions is provided but is not a warp array.
-            ValueError: If velocities is provided but is not a warp array.
-            ValueError: If efforts is provided but is not a warp array.
-        """
-        if (positions is None) and (velocities is None) and (efforts is None) and not (len(names) == 0):
-            raise ValueError("If not position, velocity, or efforts are defined, then names cannot have any elements.")
+    # Here, there are names in common. These joint states are not parallel, so we cannot combine them.
+    if not len(common_names) == 0:
+        return False, JointState(
+            names=[],
+            positions=wp.array(),
+            velocities=wp.array(),
+            efforts=wp.array(),
+        )
 
-        if (positions is not None) and (len(names) != len(positions)):
-            raise ValueError("Names and positions must have the same length.")
-        if (velocities is not None) and (len(names) != len(velocities)):
-            raise ValueError("Names and velocities must have the same length.")
-        if (efforts is not None) and (len(names) != len(efforts)):
-            raise ValueError("Names and efforts must have the same length.")
+    # Combine the joint states:
+    return True, JointState(
+        names=[*joint_state_1.names, *joint_state_2.names],
+        positions=wp.array(
+            [*joint_state_1.positions.numpy().tolist(), *joint_state_2.positions.numpy().tolist()],
+            dtype=joint_state_1.positions.dtype,
+            device=device,
+        ),
+        velocities=wp.array(
+            [*joint_state_1.velocities.numpy().tolist(), *joint_state_2.velocities.numpy().tolist()],
+            dtype=joint_state_1.velocities.dtype,
+            device=device,
+        ),
+        efforts=wp.array(
+            [*joint_state_1.efforts.numpy().tolist(), *joint_state_2.efforts.numpy().tolist()],
+            dtype=joint_state_1.efforts.dtype,
+            device=device,
+        ),
+    )
 
-        # Since it is rare that a user will be constructing Action objects manually,
-        # we will enforce stricter type checking here.
-        if (positions is not None) and (not isinstance(positions, wp.array)):
-            raise ValueError("Positions must be a warp array.")
-        if (velocities is not None) and (not isinstance(velocities, wp.array)):
-            raise ValueError("Velocities must be a warp array.")
-        if (efforts is not None) and (not isinstance(efforts, wp.array)):
-            raise ValueError("Efforts must be a warp array.")
 
-        self.names = names
-        self.positions = positions
-        self.velocities = velocities
-        self.efforts = efforts
+def _combine_body_states(
+    body_state_1: Optional[BodyState], body_state_2: Optional[BodyState]
+) -> tuple[bool, BodyState]:
+    if body_state_1 is None:
+        return True, body_state_2
+
+    if body_state_2 is None:
+        return True, body_state_1
+
+    common_names = set(body_state_1.names) & set(body_state_2.names)
+    device = body_state_1.positions.device
+
+    # Here, there are names in common. These joint states are not parallel, so we cannot combine them.
+    if not len(common_names) == 0:
+        return False, BodyState(
+            names=[],
+            positions=wp.array([], dtype=wp.vec3f),
+            orientations=wp.array([], dtype=wp.quatf),
+            linear_velocities=wp.array([], dtype=wp.vec3f),
+            angular_velocities=wp.array([], dtype=wp.vec3f),
+        )
+
+    combined_positions = wp.from_numpy(
+        np.concat([body_state_1.positions.numpy(), body_state_2.positions.numpy()], axis=0),
+        dtype=wp.vec3f,
+        device=device,
+    )
+    combined_linear_velocities = wp.from_numpy(
+        np.concat([body_state_1.linear_velocities.numpy(), body_state_2.linear_velocities.numpy()], axis=0),
+        dtype=wp.vec3f,
+        device=device,
+    )
+    combined_orientations = wp.from_numpy(
+        np.concat([body_state_1.orientations.numpy(), body_state_2.orientations.numpy()], axis=0),
+        dtype=wp.quatf,
+        device=device,
+    )
+    combined_angular_velocities = wp.from_numpy(
+        np.concat([body_state_1.angular_velocities.numpy(), body_state_2.angular_velocities.numpy()], axis=0),
+        dtype=wp.vec3f,
+        device=device,
+    )
+
+    return True, BodyState(
+        names=[*body_state_1.names, *body_state_2.names],
+        positions=combined_positions,
+        orientations=combined_orientations,
+        linear_velocities=combined_linear_velocities,
+        angular_velocities=combined_angular_velocities,
+    )
+
+
+def _combine_root_states(
+    root_state_1: Optional[RootState], root_state_2: Optional[RootState]
+) -> tuple[bool, RootState]:
+    if root_state_1 is None:
+        return True, root_state_2
+    if root_state_2 is None:
+        return True, root_state_1
+
+    # They cannot both define a root state.
+    return False, RootState(
+        position=wp.vec3f(), orientation=wp.quatf(), linear_velocity=wp.vec3f(), angular_velocity=wp.vec3f()
+    )
+
+
+def combine_robot_states(
+    robot_state_1: Optional[RobotState], robot_state_2: Optional[RobotState]
+) -> Optional[RobotState]:
+
+    # If either robot state is undefined, the entire robot state should be undefined.
+    if (robot_state_1 is None) or (robot_state_2 is None):
+        return None
+
+    success, joints = _combine_joint_states(robot_state_1.joints, robot_state_2.joints)
+    if not success:
+        return None
+
+    success, root = _combine_root_states(robot_state_1.root, robot_state_2.root)
+    if not success:
+        return None
+
+    success, tool_frames = _combine_body_states(robot_state_1.tool_frames, robot_state_2.tool_frames)
+
+    if not success:
+        return None
+
+    success, bodies = _combine_body_states(robot_state_1.bodies, robot_state_2.bodies)
+    if not success:
+        return None
+
+    return RobotState(joints=joints, root=root, tool_frames=tool_frames, bodies=bodies)

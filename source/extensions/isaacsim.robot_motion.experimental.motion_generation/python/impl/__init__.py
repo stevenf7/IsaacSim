@@ -14,9 +14,9 @@
 # limitations under the License.
 
 from .base_controller import BaseController
-from .controller_container import ControllerContainer
+from .controller_structures import ControllerContainer, ParallelController, SequentialController
 from .obstacle_strategy import ObstacleConfiguration, ObstacleRepresentation, ObstacleStrategy
 from .path import Path
 from .trajectory import Trajectory
 from .trajectory_follower import TrajectoryFollower
-from .types import Action, BodyState, JointState, RobotState, RootState
+from .types import BodyState, JointState, RobotState, RootState
