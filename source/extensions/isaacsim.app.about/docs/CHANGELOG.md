@@ -1,4 +1,9 @@
 # Changelog
+## [2.1.0] - 2026-01-26
+### Changed
+- Update deprecated onclick_fn to on_click_action
+- Added missing docstring and cleanup code
+
 ## [2.0.13] - 2025-12-07
 ### Changed
 - Update description

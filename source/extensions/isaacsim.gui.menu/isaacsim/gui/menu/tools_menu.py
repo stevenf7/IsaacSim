@@ -12,12 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Tools menu layout for Isaac Sim."""
 import omni.kit.menu.utils
 from omni.kit.menu.utils import LayoutSourceSearch, MenuItemDescription, MenuLayout, add_menu_items
 
 
 class ToolsMenuExtension:
-    def __init__(self, ext_id):
+    """Build and manage the Tools menu.
+
+    Args:
+        ext_id: Extension identifier provided by the extension manager.
+    """
+
+    def __init__(self, ext_id: str) -> None:
         self.__menu_layout = [
             MenuLayout.Menu(
                 "Tools",
@@ -143,5 +150,13 @@ class ToolsMenuExtension:
 
         add_menu_items([physics_inspector], "Tools")
 
-    def shutdown(self):
+    def shutdown(self) -> None:
+        """Remove menu layouts.
+
+        Example:
+            .. code-block:: python
+
+                menu = ToolsMenuExtension("ext.id")
+                menu.shutdown()
+        """
         omni.kit.menu.utils.remove_layout(self.__menu_layout)

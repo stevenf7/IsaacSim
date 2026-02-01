@@ -22,7 +22,8 @@ including viewport initialization, ROS bridge enabling, and benchmark recording.
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING
 
 import carb
 import omni.kit.app
@@ -34,11 +35,20 @@ if TYPE_CHECKING:
     from omni.kit.app import IApp, IExtensionManager
 
 
-async def create_new_stage(update_callback: Callable[[], None]) -> None:
+async def create_new_stage(update_callback: Callable[[], Awaitable[None]]) -> None:
     """Create a new empty stage on startup.
 
     Args:
         update_callback: Async callback to update the app without signaling ready.
+
+    Example:
+
+        .. code-block:: python
+
+            async def update_callback() -> None:
+                await omni.kit.app.get_app().next_update_async()
+
+            await create_new_stage(update_callback)
     """
     await update_callback()
     if omni.usd.get_context().can_open_stage():
@@ -50,7 +60,7 @@ async def await_viewport(
     app: IApp,
     ext_manager: IExtensionManager,
     app_title: str,
-    update_callback: Callable[[], None],
+    update_callback: Callable[[], Awaitable[None]],
 ) -> None:
     """Wait for viewport to be ready and log application startup completion.
 
@@ -62,6 +72,19 @@ async def await_viewport(
         ext_manager: Extension manager for checking enabled extensions.
         app_title: Application title for logging.
         update_callback: Async callback to update the app without signaling ready.
+
+    Example:
+
+        .. code-block:: python
+
+            app = omni.kit.app.get_app()
+            ext_manager = app.get_extension_manager()
+            app_title = app.get_app_name()
+
+            async def update_callback() -> None:
+                await app.next_update_async()
+
+            await await_viewport(app, ext_manager, app_title, update_callback)
     """
     import carb.eventdispatcher
     from omni.kit.viewport.utility import get_active_viewport
@@ -99,6 +122,13 @@ def record_startup_benchmark(ext_manager: IExtensionManager) -> None:
 
     Args:
         ext_manager: Extension manager for checking if benchmarking extension is enabled.
+
+    Example:
+
+        .. code-block:: python
+
+            app = omni.kit.app.get_app()
+            record_startup_benchmark(app.get_extension_manager())
     """
     if ext_manager.is_extension_enabled("isaacsim.benchmark.services"):
         from isaacsim.benchmark.services import BaseIsaacBenchmark
@@ -119,7 +149,7 @@ def record_startup_benchmark(ext_manager: IExtensionManager) -> None:
 async def enable_ros_extensions(
     settings: ISettings,
     ext_manager: IExtensionManager,
-    update_callback: Callable[[], None],
+    update_callback: Callable[[], Awaitable[None]],
 ) -> None:
     """Enable ROS2 bridge and sim control extensions if configured in settings.
 
@@ -130,6 +160,18 @@ async def enable_ros_extensions(
         settings: Carb settings interface for reading configuration.
         ext_manager: Extension manager for enabling extensions.
         update_callback: Async callback to update the app without signaling ready.
+
+    Example:
+
+        .. code-block:: python
+
+            settings = carb.settings.get_settings()
+            app = omni.kit.app.get_app()
+
+            async def update_callback() -> None:
+                await app.next_update_async()
+
+            await enable_ros_extensions(settings, app.get_extension_manager(), update_callback)
     """
     import os
 

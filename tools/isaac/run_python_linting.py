@@ -61,6 +61,9 @@ Usage (via repo.sh):
 
     # Run all tools and report issues without failing (exit code 0)
     ./repo.sh run_python_linting --keep-going
+
+    # Run tools only on files with a diff
+    ./repo.sh run_python_linting --diff-only
 """
 
 import argparse
@@ -388,6 +391,51 @@ def count_python_files(directory: Path, exclude_patterns: list[str] | None = Non
     return count
 
 
+def get_changed_python_files(repo_root: Path) -> set[Path]:
+    """Get all changed Python files (staged, unstaged, and untracked)."""
+    changed_files: set[Path] = set()
+
+    diff_cmds = [
+        ["git", "diff", "--name-only", "--diff-filter=ACMR"],
+        ["git", "diff", "--name-only", "--staged", "--diff-filter=ACMR"],
+        ["git", "ls-files", "--others", "--exclude-standard"],
+    ]
+
+    for cmd in diff_cmds:
+        try:
+            proc = subprocess.run(cmd, capture_output=True, text=True, cwd=repo_root)
+        except Exception:
+            continue
+
+        if proc.returncode != 0 or not proc.stdout:
+            continue
+
+        for line in proc.stdout.strip().split("\n"):
+            path_str = line.strip()
+            if path_str.endswith(".py"):
+                changed_files.add((repo_root / path_str).resolve())
+
+    return changed_files
+
+
+def filter_extensions_by_diff(extensions: list[Path], diff_files: set[Path]) -> list[Path]:
+    """Filter extensions to those with changed Python files."""
+    filtered: list[Path] = []
+    for extension in extensions:
+        python_dir = find_python_dir(extension)
+        if python_dir is None:
+            continue
+        python_dir_resolved = python_dir.resolve()
+        for file_path in diff_files:
+            try:
+                if file_path.resolve().is_relative_to(python_dir_resolved):
+                    filtered.append(extension)
+                    break
+            except ValueError:
+                continue
+    return filtered
+
+
 # =============================================================================
 # Tool Runners
 # =============================================================================
@@ -395,6 +443,7 @@ def count_python_files(directory: Path, exclude_patterns: list[str] | None = Non
 
 def run_mypy(
     python_dir: Path,
+    python_files: list[Path] | None,
     config_file: Path | None,
     exclude_patterns: list[str],
     tool_info: ToolInfo,
@@ -416,7 +465,10 @@ def run_mypy(
     for pattern in exclude_patterns:
         cmd.extend(["--exclude", pattern])
 
-    cmd.append(str(python_dir))
+    if python_files:
+        cmd.extend([str(p) for p in python_files])
+    else:
+        cmd.append(str(python_dir))
 
     env = os.environ.copy()
     if vendor_dir:
@@ -450,6 +502,7 @@ def run_mypy(
 
 def run_pydocstyle(
     python_dir: Path,
+    python_files: list[Path] | None,
     tool_info: ToolInfo,
     cwd: Path,
 ) -> ToolResult:
@@ -465,8 +518,11 @@ def run_pydocstyle(
         tool_info.binary_path,
         "--convention={}".format(PYDOCSTYLE_CONFIG["convention"]),
         "--add-ignore={}".format(",".join(PYDOCSTYLE_CONFIG["add_ignore"])),
-        str(python_dir),
     ]
+    if python_files:
+        cmd.extend([str(p) for p in python_files])
+    else:
+        cmd.append(str(python_dir))
 
     start_time = time.time()
     try:
@@ -498,6 +554,7 @@ def run_pydocstyle(
 
 def run_darglint(
     python_dir: Path,
+    python_files: list[Path] | None,
     tool_info: ToolInfo,
     cwd: Path,
 ) -> ToolResult:
@@ -510,7 +567,7 @@ def run_darglint(
         return result
 
     # Find all Python files (darglint doesn't support directories directly)
-    py_files = list(python_dir.rglob("*.py"))
+    py_files = python_files if python_files is not None else list(python_dir.rglob("*.py"))
     # Exclude vendor files
     py_files = [f for f in py_files if "/_vendor/" not in str(f)]
 
@@ -554,6 +611,7 @@ def run_darglint(
 
 def run_interrogate(
     python_dir: Path,
+    python_files: list[Path] | None,
     tool_info: ToolInfo,
     cwd: Path,
 ) -> ToolResult:
@@ -583,7 +641,10 @@ def run_interrogate(
     for exclude in INTERROGATE_CONFIG["exclude"]:
         cmd.extend(["--exclude", exclude])
 
-    cmd.append(str(python_dir))
+    if python_files:
+        cmd.extend([str(p) for p in python_files])
+    else:
+        cmd.append(str(python_dir))
 
     start_time = time.time()
     try:
@@ -627,6 +688,7 @@ def run_interrogate(
 
 def run_pydoclint(
     python_dir: Path,
+    python_files: list[Path] | None,
     tool_info: ToolInfo,
     cwd: Path,
 ) -> ToolResult:
@@ -660,7 +722,10 @@ def run_pydoclint(
     for exclude in PYDOCLINT_CONFIG["exclude"]:
         cmd.extend(["--exclude", exclude])
 
-    cmd.append(str(python_dir))
+    if python_files:
+        cmd.extend([str(p) for p in python_files])
+    else:
+        cmd.append(str(python_dir))
 
     start_time = time.time()
     try:
@@ -692,6 +757,7 @@ def run_pydoclint(
 
 def run_ruff(
     python_dir: Path,
+    python_files: list[Path] | None,
     tool_info: ToolInfo,
     cwd: Path,
     fix: bool = False,
@@ -747,7 +813,10 @@ def run_ruff(
     for exclude in RUFF_CONFIG["exclude"]:
         cmd.extend(["--exclude", exclude])
 
-    cmd.append(str(python_dir))
+    if python_files:
+        cmd.extend([str(p) for p in python_files])
+    else:
+        cmd.append(str(python_dir))
 
     start_time = time.time()
     try:
@@ -791,6 +860,7 @@ def run_tools_on_extension(
     vendor_dir: str | None,
     fix: bool = False,
     cleanup: bool = False,
+    diff_files: set[Path] | None = None,
 ) -> ExtensionResult:
     """Run all enabled tools on a single extension.
 
@@ -816,7 +886,28 @@ def run_tools_on_extension(
         result.skip_reason = "No Python source directory found"
         return result
 
-    result.files_checked = count_python_files(python_dir)
+    python_dir_resolved = python_dir.resolve()
+    python_files: list[Path] | None = None
+    if diff_files is not None:
+        python_files = []
+        for file_path in diff_files:
+            try:
+                if file_path.resolve().is_relative_to(python_dir_resolved):
+                    python_files.append(file_path)
+            except ValueError:
+                continue
+        if not python_files:
+            result.skipped = True
+            result.skip_reason = "No changed Python files to check"
+            return result
+        result.files_checked = len(python_files)
+    else:
+        result.files_checked = count_python_files(python_dir)
+        if result.files_checked == 0:
+            result.skipped = True
+            result.skip_reason = "No Python files to check"
+            return result
+
     if result.files_checked == 0:
         result.skipped = True
         result.skip_reason = "No Python files to check"
@@ -828,23 +919,23 @@ def run_tools_on_extension(
     # Run each enabled tool
     if "mypy" in enabled_tools:
         result.tool_results["mypy"] = run_mypy(
-            python_dir, mypy_config, exclude_patterns, tools["mypy"], vendor_dir, cwd
+            python_dir, python_files, mypy_config, exclude_patterns, tools["mypy"], vendor_dir, cwd
         )
 
     if "pydocstyle" in enabled_tools:
-        result.tool_results["pydocstyle"] = run_pydocstyle(python_dir, tools["pydocstyle"], cwd)
+        result.tool_results["pydocstyle"] = run_pydocstyle(python_dir, python_files, tools["pydocstyle"], cwd)
 
     if "darglint" in enabled_tools:
-        result.tool_results["darglint"] = run_darglint(python_dir, tools["darglint"], cwd)
+        result.tool_results["darglint"] = run_darglint(python_dir, python_files, tools["darglint"], cwd)
 
     if "interrogate" in enabled_tools:
-        result.tool_results["interrogate"] = run_interrogate(python_dir, tools["interrogate"], cwd)
+        result.tool_results["interrogate"] = run_interrogate(python_dir, python_files, tools["interrogate"], cwd)
 
     if "pydoclint" in enabled_tools:
-        result.tool_results["pydoclint"] = run_pydoclint(python_dir, tools["pydoclint"], cwd)
+        result.tool_results["pydoclint"] = run_pydoclint(python_dir, python_files, tools["pydoclint"], cwd)
 
     if "ruff" in enabled_tools:
-        result.tool_results["ruff"] = run_ruff(python_dir, tools["ruff"], cwd, fix=fix, cleanup=cleanup)
+        result.tool_results["ruff"] = run_ruff(python_dir, python_files, tools["ruff"], cwd, fix=fix, cleanup=cleanup)
 
     result.duration_seconds = time.time() - start_time
     return result
@@ -1054,6 +1145,11 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
         "-p",
         help="Glob pattern to filter extensions (e.g., 'isaacsim.core.*')",
     )
+    parser.add_argument(
+        "--diff-only",
+        action="store_true",
+        help="Only run tools on Python files with a diff (staged, unstaged, or untracked)",
+    )
 
     # Tool selection (if none specified, all are enabled)
     parser.add_argument(
@@ -1206,6 +1302,17 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
                 print("Error: No extensions matching pattern: {}".format(args.pattern))
                 return 1
 
+        diff_files: set[Path] | None = None
+        if args.diff_only:
+            diff_files = get_changed_python_files(repo_root)
+            if not diff_files:
+                print(colorize("\nNo changed Python files found.", Colors.YELLOW, use_color))
+                return 0
+            extensions_to_check = filter_extensions_by_diff(extensions_to_check, diff_files)
+            if not extensions_to_check:
+                print(colorize("\nNo extensions contain changed Python files.", Colors.YELLOW, use_color))
+                return 0
+
         # Determine mypy config file
         mypy_config = None
         if args.mypy_config:
@@ -1227,6 +1334,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
                 use_color,
             )
         )
+        if args.diff_only:
+            print(colorize("Diff-only mode enabled: checking changed Python files only", Colors.DIM, use_color))
         if args.fix:
             print(colorize("Fix mode enabled: ruff will auto-fix issues", Colors.YELLOW, use_color))
             if args.ruff_clean:
@@ -1248,6 +1357,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
                 vendor_dir=vendor_dir,
                 fix=args.fix,
                 cleanup=args.ruff_clean,
+                diff_files=diff_files,
             )
             results.append(result)
 

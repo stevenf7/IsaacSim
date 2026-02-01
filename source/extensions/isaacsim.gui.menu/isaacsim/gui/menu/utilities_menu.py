@@ -12,12 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Utilities menu layout for Isaac Sim."""
 import omni.kit.menu.utils
 from omni.kit.menu.utils import LayoutSourceSearch, MenuItemDescription, MenuLayout
 
 
 class UtilitiesMenuExtension:
-    def __init__(self, ext_id):
+    """Build and manage the Utilities menu.
+
+    Args:
+        ext_id: Extension identifier provided by the extension manager.
+    """
+
+    def __init__(self, ext_id: str) -> None:
         self._menu_placeholder = [MenuItemDescription(name="placeholder", show_fn=lambda: False)]
         omni.kit.menu.utils.add_menu_items(self._menu_placeholder, "Utilities")
 
@@ -38,6 +45,14 @@ class UtilitiesMenuExtension:
         ]
         omni.kit.menu.utils.add_layout(self.__menu_layout)
 
-    def shutdown(self):
+    def shutdown(self) -> None:
+        """Remove menu layouts and placeholders.
+
+        Example:
+            .. code-block:: python
+
+                menu = UtilitiesMenuExtension("ext.id")
+                menu.shutdown()
+        """
         omni.kit.menu.utils.remove_layout(self.__menu_layout)
         omni.kit.menu.utils.remove_menu_items(self._menu_placeholder, "Utilities")

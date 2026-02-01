@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Isaac Sim GUI menu extension entry point."""
 
 import gc
 
@@ -34,8 +35,14 @@ from .window_menu import WindowMenuExtension
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self, ext_id: str):
+    """Register and manage Isaac Sim GUI menus."""
 
+    def on_startup(self, ext_id: str) -> None:
+        """Initialize menu extensions and menu ordering.
+
+        Args:
+            ext_id: Extension identifier provided by the extension manager.
+        """
         # kit menus
         self.__hook_menu = HookMenuHandler()
         self.__file_menu = FileMenuExtension(ext_id)
@@ -60,7 +67,8 @@ class Extension(omni.ext.IExt):
         menu_order["Layouts"] = 6
         menu_order["Help"] = 99
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
+        """Tear down menu extensions and release resources."""
         # remove_menu_items(self._menu_items, "Create")
         self.__hook_menu.shutdown()
         self.__file_menu.shutdown()

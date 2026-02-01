@@ -21,8 +21,9 @@ docking order, and setting up the property window.
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import omni.kit.app
 import omni.ui as ui
@@ -44,6 +45,13 @@ async def load_layout(layout_file: str, keep_windows_open: bool = False) -> None
     Args:
         layout_file: Path to the layout JSON file to load.
         keep_windows_open: If True, keeps existing windows open when loading layout.
+
+    Example:
+
+        .. code-block:: python
+
+            layout_file = str(LAYOUTS_PATH / "default.json")
+            await load_layout(layout_file, keep_windows_open=False)
     """
     from omni.kit.quicklayout import QuickLayout
 
@@ -54,7 +62,7 @@ async def load_layout(layout_file: str, keep_windows_open: bool = False) -> None
     QuickLayout.load_file(layout_file, keep_windows_open)
 
 
-async def dock_windows(update_callback: Callable[[], None]) -> None:
+async def dock_windows(update_callback: Callable[[], Awaitable[None]]) -> None:
     """Configure default window docking order and focus.
 
     Sets up the standard Isaac Sim window arrangement with proper dock order
@@ -62,6 +70,15 @@ async def dock_windows(update_callback: Callable[[], None]) -> None:
 
     Args:
         update_callback: Async callback to update the app without signaling ready.
+
+    Example:
+
+        .. code-block:: python
+
+            async def update_callback() -> None:
+                await omni.kit.app.get_app().next_update_async()
+
+            await dock_windows(update_callback)
     """
     await update_callback()
 
@@ -92,7 +109,7 @@ async def dock_windows(update_callback: Callable[[], None]) -> None:
         assets.focus()
 
 
-async def setup_property_window(update_callback: Callable[[], None]) -> None:
+async def setup_property_window(update_callback: Callable[[], Awaitable[None]]) -> None:
     """Configure the property window layout scheme.
 
     Sets up the property window with the appropriate delegate layout for
@@ -100,6 +117,15 @@ async def setup_property_window(update_callback: Callable[[], None]) -> None:
 
     Args:
         update_callback: Async callback to update the app without signaling ready.
+
+    Example:
+
+        .. code-block:: python
+
+            async def update_callback() -> None:
+                await omni.kit.app.get_app().next_update_async()
+
+            await setup_property_window(update_callback)
     """
     await update_callback()
     import omni.kit.window.property as property_window_ext

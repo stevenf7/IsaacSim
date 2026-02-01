@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Preferences page for screenshot capture settings."""
 import os
 
 import carb.settings
@@ -22,11 +23,13 @@ __all__ = ["ScreenshotPreferences"]
 
 
 class ScreenshotPreferences(PreferenceBuilder):
-    def __init__(self):
+    """Preferences page for configuring screenshot capture."""
+
+    def __init__(self) -> None:
         super().__init__("Capture Screenshot")
 
         self._settings = carb.settings.get_settings()
-        self._settings_widget = None
+        self._settings_widget: ui.Widget | None = None
 
         # setup captureFrame paths
         template_path = self._settings.get(PERSISTENT_SETTINGS_PREFIX + "/app/captureFrame/path")
@@ -55,8 +58,15 @@ class ScreenshotPreferences(PreferenceBuilder):
                 carb.log_error(f"Failed to create directory {template_path}")
         os.umask(original_umask)
 
-    def build(self):
-        """Capture Screenshot"""
+    def build(self) -> None:
+        """Build the screenshot preferences UI.
+
+        Example:
+            .. code-block:: python
+
+                prefs = ScreenshotPreferences()
+                prefs.build()
+        """
         # The path widget. It's not standard because it has the button browse. Since the main layout has two columns,
         # we need to create another layout and put it to the main one.
         with ui.VStack(height=0):
@@ -78,7 +88,12 @@ class ScreenshotPreferences(PreferenceBuilder):
                     # Show Ansel super resolution configuration, only when Ansel enabled
                     self._create_ansel_super_resolution_settings()
 
-    def _add_ansel_settings(self):  # pragma: no cover
+    def _add_ansel_settings(self) -> None:  # pragma: no cover
+        """Add Ansel quality settings when Ansel is enabled.
+
+        Returns:
+            None.
+        """
         # check if Ansel enabled. If not, do not show Ansel settings
         if not self._is_ansel_enabled():
             return
@@ -87,7 +102,12 @@ class ScreenshotPreferences(PreferenceBuilder):
             "Quality", PERSISTENT_SETTINGS_PREFIX + "/exts/omni.ansel/quality", ["Low", "Medium", "High"]
         )
 
-    def _create_ansel_super_resolution_settings(self):  # pragma: no cover
+    def _create_ansel_super_resolution_settings(self) -> None:  # pragma: no cover
+        """Add Ansel super resolution settings when available.
+
+        Returns:
+            None.
+        """
         # check if Ansel enabled. If not, do not show Ansel settings
         if not self._is_ansel_enabled():
             return
@@ -103,11 +123,20 @@ class ScreenshotPreferences(PreferenceBuilder):
                 )
                 self._add_ansel_settings()
 
-    def _is_ansel_enabled(self):
+    def _is_ansel_enabled(self) -> bool:
+        """Check whether Ansel support is enabled.
+
+        Returns:
+            True when Ansel settings are available.
+        """
         return self._settings.get("/exts/omni.ansel/enable")
 
-    def _on_browse_button_fn(self, owner):
-        """Called when the user picks the Browse button."""
+    def _on_browse_button_fn(self, owner: ui.Widget) -> None:
+        """Handle Browse button clicks for selecting a directory.
+
+        Args:
+            owner: The widget that triggered the action.
+        """
         navigate_to = self._settings.get(PERSISTENT_SETTINGS_PREFIX + "/app/captureFrame/path")
         show_file_importer(
             "Select Screenshot Directory",
@@ -116,8 +145,14 @@ class ScreenshotPreferences(PreferenceBuilder):
             show_only_folders=True,
         )
 
-    def _on_dir_pick(self, real_path):
-        """Called when the user accepts directory in the Select Directory dialog."""
+    def _on_dir_pick(self, real_path: str) -> None:
+        """Handle directory selection from the file importer.
+
+        Args:
+            real_path: Selected directory path.
+        """
+        if self._settings_widget is None:
+            return
         directory = self.cleanup_slashes(real_path, is_directory=True)
         self._settings.set(PERSISTENT_SETTINGS_PREFIX + "/app/captureFrame/path", directory)
         self._settings_widget.model.set_value(directory)

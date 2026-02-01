@@ -25,7 +25,7 @@ import os
 import platform
 import subprocess
 import sys
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 import carb.tokens
 
@@ -49,7 +49,7 @@ def start_kit_app(
     settings: ISettings,
     app_id: str,
     console: bool = True,
-    custom_args: Optional[List[str]] = None,
+    custom_args: list[str] | None = None,
 ) -> None:
     """Start another Kit application with inherited settings.
 
@@ -61,6 +61,18 @@ def start_kit_app(
         app_id: Identifier for the Kit application to launch (e.g., "isaacsim.exp.uidoc.kit").
         console: If True, creates a new console window on Windows.
         custom_args: Additional command line arguments to pass to the application.
+
+    Example:
+
+        .. code-block:: python
+
+            settings = carb.settings.get_settings()
+            start_kit_app(
+                settings,
+                "isaacsim.exp.uidoc.kit",
+                console=False,
+                custom_args=["--no-window"],
+            )
     """
     kit_exe_path = os.path.join(os.path.abspath(carb.tokens.get_tokens_interface().resolve("${kit}")), "kit")
     if sys.platform == "win32":
@@ -79,14 +91,13 @@ def start_kit_app(
         for folder in exts_folders:
             run_args.extend(["--ext-folder", folder])
 
-    kwargs = {"close_fds": False}
     if platform.system().lower() == "windows":
-        creation_flags = subprocess.CREATE_NEW_PROCESS_GROUP
+        creation_flags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
         if console:
-            creation_flags |= subprocess.CREATE_NEW_CONSOLE
-        kwargs["creationflags"] = creation_flags
-
-    subprocess.Popen(run_args, **kwargs)
+            creation_flags |= getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
+        subprocess.Popen(run_args, close_fds=False, creationflags=creation_flags)
+    else:
+        subprocess.Popen(run_args, close_fds=False)
 
 
 def create_desktop_icon(app: IApp, ext_manager: IExtensionManager, ext_id: str) -> None:
@@ -100,6 +111,14 @@ def create_desktop_icon(app: IApp, ext_manager: IExtensionManager, ext_id: str) 
         app: The Kit application instance for logging.
         ext_manager: Extension manager for getting extension paths.
         ext_id: Extension identifier used to locate icon resources.
+
+    Example:
+
+        .. code-block:: python
+
+            app = omni.kit.app.get_app()
+            ext_manager = app.get_extension_manager()
+            create_desktop_icon(app, ext_manager, "isaacsim.app.setup")
     """
     if sys.platform == "win32":
         return
