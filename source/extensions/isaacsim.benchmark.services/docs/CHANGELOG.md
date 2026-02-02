@@ -1,4 +1,8 @@
 # Changelog
+## [4.1.0] - 2026-02-02
+### Added
+- Public API properties for frametime recorders: `sample_count` and `samples` for direct recorder access
+
 ## [4.0.0] - 2026-01-28
 ### Added
 - Decorator-based plug-in system for recorders using `@MeasurementDataRecorderRegistry.register()`

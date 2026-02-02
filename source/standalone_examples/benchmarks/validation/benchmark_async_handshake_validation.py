@@ -119,11 +119,21 @@ def validate_async_handshake_behavior(num_frames: int = 100) -> bool:
     print(f"Will simulate {num_frames} frames")
     print()
 
-    # Import the frametime collector to measure stats
-    from isaacsim.benchmark.services.collectors import IsaacUpdateFrametimeCollector
+    # Start recording app, render, GPU, and physics frametimes
+    from isaacsim.benchmark.services.datarecorders.app_frametime import AppFrametimeRecorder
+    from isaacsim.benchmark.services.datarecorders.gpu_frametime import GPUFrametimeRecorder
+    from isaacsim.benchmark.services.datarecorders.physics_frametime import PhysicsFrametimeRecorder
+    from isaacsim.benchmark.services.datarecorders.render_frametime import RenderFrametimeRecorder
 
-    collector = IsaacUpdateFrametimeCollector(gpu_frametime=True)
-    collector.start_collecting()
+    app_recorder = AppFrametimeRecorder()
+    render_recorder = RenderFrametimeRecorder()
+    gpu_recorder = GPUFrametimeRecorder()
+    physics_recorder = PhysicsFrametimeRecorder()
+
+    app_recorder.start_collecting()
+    render_recorder.start_collecting()
+    gpu_recorder.start_collecting()
+    physics_recorder.start_collecting()
 
     # Start simulation
     simulation_context.play()
@@ -133,7 +143,7 @@ def validate_async_handshake_behavior(num_frames: int = 100) -> bool:
         simulation_context.step()
 
     carb.log_info(
-        f"After warmup - Render samples: {len(collector.render_frametimes_ms)}, App samples: {len(collector.app_frametimes_ms)}"
+        f"After warmup - Render samples: {render_recorder.sample_count}, App samples: {app_recorder.sample_count}"
     )
 
     # Run simulation for N frames
@@ -141,14 +151,17 @@ def validate_async_handshake_behavior(num_frames: int = 100) -> bool:
         simulation_context.step()
         if frame % 10 == 0:
             carb.log_info(
-                f"Frame {frame}/{num_frames} - Render: {len(collector.render_frametimes_ms)}, App: {len(collector.app_frametimes_ms)}"
+                f"Frame {frame}/{num_frames} - Render: {render_recorder.sample_count}, App: {app_recorder.sample_count}"
             )
 
     # Stop collecting
-    collector.stop_collecting()
+    app_recorder.stop_collecting()
+    render_recorder.stop_collecting()
+    gpu_recorder.stop_collecting()
+    physics_recorder.stop_collecting()
 
     carb.log_info(
-        f"Collection stopped - Final counts: Render={len(collector.render_frametimes_ms)}, App={len(collector.app_frametimes_ms)}"
+        f"Collection stopped - Final counts: Render={render_recorder.sample_count}, App={app_recorder.sample_count}"
     )
 
     # Analyze results
@@ -160,9 +173,9 @@ def validate_async_handshake_behavior(num_frames: int = 100) -> bool:
     validation_passed = True
 
     # Check App_Update stats
-    app_frames = len(collector.app_frametimes_ms)
+    app_frames = app_recorder.sample_count
     if app_frames > 0:
-        app_mean = sum(collector.app_frametimes_ms) / len(collector.app_frametimes_ms)
+        app_mean = sum(app_recorder.samples) / len(app_recorder.samples)
         print(f"✓ App_Update frames collected: {app_frames}")
         print(f"  Mean App_Update frametime: {app_mean:.2f} ms")
     else:
@@ -170,9 +183,9 @@ def validate_async_handshake_behavior(num_frames: int = 100) -> bool:
         validation_passed = False
 
     # Check Render stats (key validation for async + handshake)
-    render_frames = len(collector.render_frametimes_ms)
+    render_frames = render_recorder.sample_count
     if render_frames > 0:
-        render_mean = sum(collector.render_frametimes_ms) / len(collector.render_frametimes_ms)
+        render_mean = sum(render_recorder.samples) / len(render_recorder.samples)
         print(f"✓ Render frames collected: {render_frames}")
         print(f"  Mean Render frametime: {render_mean:.2f} ms")
 
@@ -208,13 +221,13 @@ def validate_async_handshake_behavior(num_frames: int = 100) -> bool:
             validation_passed = False
 
     # Check GPU stats if available
-    if len(collector.gpu_frametimes_ms) > 0:
-        gpu_mean = sum(collector.gpu_frametimes_ms) / len(collector.gpu_frametimes_ms)
+    if gpu_recorder.sample_count > 0:
+        gpu_mean = sum(gpu_recorder.samples) / len(gpu_recorder.samples)
         print(f"  Mean GPU frametime: {gpu_mean:.2f} ms")
 
     # Check Physics stats if available
-    if len(collector.physics_frametimes_ms) > 0:
-        physics_mean = sum(collector.physics_frametimes_ms) / len(collector.physics_frametimes_ms)
+    if physics_recorder.sample_count > 0:
+        physics_mean = sum(physics_recorder.samples) / len(physics_recorder.samples)
         print(f"  Mean Physics frametime: {physics_mean:.2f} ms")
 
     print("=" * 60)

@@ -97,6 +97,37 @@ class GPUFrametimeRecorder(MeasurementDataRecorder):
 
         logger.info("GPUFrametimeRecorder: Stopped collecting. Collected %d samples", len(self._samples))
 
+    @property
+    def sample_count(self) -> int:
+        """Get the number of collected samples.
+
+        Returns:
+            Number of frametime samples collected.
+
+        Example:
+
+        .. code-block:: python
+
+            count = recorder.sample_count
+        """
+        return len(self._samples)
+
+    @property
+    def samples(self) -> list[float]:
+        """Get the raw frametime samples in milliseconds.
+
+        Returns:
+            List of frametime samples (read-only access).
+
+        Example:
+
+        .. code-block:: python
+
+            frametimes = recorder.samples
+            mean_frametime = sum(frametimes) / len(frametimes)
+        """
+        return self._samples
+
     def _on_app_update(self, _event: Any) -> None:
         """Sample GPU frametime on each app update.
 
