@@ -13,16 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Debug draw extension entry point."""
+
 import omni.ext
 
 from .. import _debug_draw
 
 
 class Extension(omni.ext.IExt):
+    """Extension that manages the debug draw interface lifecycle."""
+
     def on_startup(self):
-        """Initialize the debug draw extension and acquire the debug draw interface."""
+        """Initialize the extension and acquire the debug draw interface."""
         self._draw = _debug_draw.acquire_debug_draw_interface()
 
     def on_shutdown(self):
-        """Shutdown the debug draw extension and release the debug draw interface."""
+        """Release the debug draw interface during shutdown."""
         _debug_draw.release_debug_draw_interface(self._draw)

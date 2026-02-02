@@ -15,7 +15,10 @@
 """Run Python linting tools on Isaac Sim extensions, one extension at a time.
 
 This script runs multiple linting tools on each extension separately, providing
-comprehensive code quality checks.
+comprehensive code quality checks. Extensions are discovered under:
+    - source/extensions
+    - source/internal_extensions
+    - source/deprecated
 
 Tools:
     - mypy: Static type checking
@@ -348,6 +351,24 @@ def find_extensions(extensions_dir: Path) -> list[Path]:
         if item.is_dir() and item.name.startswith("isaacsim."):
             extensions.append(item)
 
+    return extensions
+
+
+def get_extension_roots(repo_root: Path) -> list[Path]:
+    """Get existing extension root directories under source."""
+    candidates = [
+        repo_root / "source" / "extensions",
+        repo_root / "source" / "internal_extensions",
+        repo_root / "source" / "deprecated",
+    ]
+    return [path for path in candidates if path.exists()]
+
+
+def find_extensions_in_roots(roots: list[Path]) -> list[Path]:
+    """Find all extensions across multiple roots."""
+    extensions: list[Path] = []
+    for root in roots:
+        extensions.extend(find_extensions(root))
     return extensions
 
 
@@ -1130,7 +1151,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
         The run_tool function to execute the tool.
     """
     parser.description = (
-        "Run Python linting tools on extensions (mypy, pydocstyle, darglint, interrogate, pydoclint, ruff)."
+        "Run Python linting tools on extensions under source/extensions, source/internal_extensions, "
+        "and source/deprecated (mypy, pydocstyle, darglint, interrogate, pydoclint, ruff)."
     )
 
     # Extension selection
@@ -1260,10 +1282,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
         else:
             enabled_tools = {name for name, enabled in tool_flags.items() if enabled}
 
-        # Find extensions directory
-        extensions_dir = repo_root / "source" / "extensions"
-        if not extensions_dir.exists():
-            print("Error: Extensions directory not found: {}".format(extensions_dir))
+        # Find extension root directories
+        extension_roots = get_extension_roots(repo_root)
+        if not extension_roots:
+            print("Error: No extension roots found under source (extensions, internal_extensions, deprecated).")
             return 1
 
         # Discover available tools
@@ -1284,9 +1306,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
             print("These tools will be skipped.\n")
 
         # Find all extensions
-        all_extensions = find_extensions(extensions_dir)
+        all_extensions = find_extensions_in_roots(extension_roots)
         if not all_extensions:
-            print("Error: No extensions found in {}".format(extensions_dir))
+            root_list = ", ".join(str(p) for p in extension_roots)
+            print("Error: No extensions found in {}".format(root_list))
             return 1
 
         # Filter extensions
