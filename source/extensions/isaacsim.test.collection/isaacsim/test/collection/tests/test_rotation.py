@@ -473,9 +473,9 @@ class TestRotations(omni.kit.test.AsyncTestCase):
         scipy, and USD rotation utilities contain no NaN values for a variety
         of input Euler angles and rotation conventions.
         """
-        device_values = [None]
+        device_values = [None, "cpu"]
         extrinsic_values = [True, False]
-        euler_angles = [(10.0, 20.0, 30.0), (-15.0, 25.0, -35.0)]
+        euler_angles = [(10.0, 20.0, 30.0), (-15.0, 25.0, -35.0), (-90.0, 60.0, 90.0)]
 
         comparisons = await test_rotation_utils_async(
             device_values, extrinsic_values, euler_angles, print_comparison_stats=False
@@ -488,6 +488,10 @@ class TestRotations(omni.kit.test.AsyncTestCase):
             )
             self.assertFalse(comparison["nan_scipy"], f"NaN found for scipy with {entry}")
             self.assertFalse(comparison["nan_usd"], f"NaN found for USD with {entry}")
+            self.assertFalse(
+                comparison["nan_exp"],
+                f"NaN found for experimental rotation outputs with {entry}",
+            )
 
     async def test_rotation_quaternion_matches(self):
         """Verify quaternion consistency across rotation implementations.
@@ -496,9 +500,9 @@ class TestRotations(omni.kit.test.AsyncTestCase):
         numpy, experimental, scipy, and USD implementations. Accounts for the
         quaternion double-cover property (q and -q represent the same rotation).
         """
-        device_values = [None]
+        device_values = [None, "cpu"]
         extrinsic_values = [True, False]
-        euler_angles = [(10.0, 20.0, 30.0), (-15.0, 25.0, -35.0)]
+        euler_angles = [(10.0, 20.0, 30.0), (-15.0, 25.0, -35.0), (-90.0, 60.0, 90.0)]
 
         comparisons = await test_rotation_utils_async(
             device_values, extrinsic_values, euler_angles, print_comparison_stats=False
@@ -516,9 +520,9 @@ class TestRotations(omni.kit.test.AsyncTestCase):
         numpy, experimental, scipy, and USD implementations. This provides
         an unambiguous comparison that avoids quaternion sign differences.
         """
-        device_values = [None]
+        device_values = [None, "cpu"]
         extrinsic_values = [True, False]
-        euler_angles = [(10.0, 20.0, 30.0), (-15.0, 25.0, -35.0)]
+        euler_angles = [(10.0, 20.0, 30.0), (-15.0, 25.0, -35.0), (-90.0, 60.0, 90.0)]
 
         comparisons = await test_rotation_utils_async(
             device_values, extrinsic_values, euler_angles, print_comparison_stats=False

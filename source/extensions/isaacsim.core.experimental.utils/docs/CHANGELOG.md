@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.11.3] - 2026-02-02
+### Fixed
+- Fix NaN issue in euler to quaternion conversion utils
+
 ## [0.11.2] - 2026-01-27
 ### Fixed
 - Fix inconsistency in euler to quaternion conversion utils
