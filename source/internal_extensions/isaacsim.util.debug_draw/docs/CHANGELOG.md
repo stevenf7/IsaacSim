@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.2.1] - 2026-02-02
+### Changed
+- Update to Kit 110.0
+
 ## [3.2.0] - 2025-11-19
 ### Changed
 - Refactor PrimitiveDrawingHelper to use size_t for loops

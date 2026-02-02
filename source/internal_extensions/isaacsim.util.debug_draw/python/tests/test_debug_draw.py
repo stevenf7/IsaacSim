@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the debug draw extension."""
+
 import io
 import os
 import random
@@ -30,6 +32,7 @@ from isaacsim.util.debug_draw import _debug_draw
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestDebugDraw(omni.kit.test.AsyncTestCase):
+    """Async tests for debug draw API behavior and rendering."""
 
     # Before running each test
     async def setUp(self):
