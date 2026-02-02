@@ -244,7 +244,7 @@ local function get_sensor_tests()
         {
             "tests-nativepython-isaacsim.sensors.camera.camera",
             "standalone_examples/api/isaacsim.sensors.camera/camera.py",
-            "--test --disable_output",
+            "--test --disable-output",
         },
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_stereoscopic_depth",

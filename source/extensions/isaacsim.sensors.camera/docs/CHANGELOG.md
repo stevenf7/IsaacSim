@@ -1,4 +1,7 @@
 # Changelog
+## [1.6.2] - 2026-01-15
+### Changed
+- Moved to experimental APIs in tests for visual objects and rotation utils
 
 ## [1.6.2] - 2026-01-20
 ### Fixed

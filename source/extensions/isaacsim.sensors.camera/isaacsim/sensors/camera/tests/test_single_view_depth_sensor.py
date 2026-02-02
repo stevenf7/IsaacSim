@@ -13,19 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 import os
 
 import carb
 import cv2
-import isaacsim.core.utils.numpy.rotations as rot_utils
 import numpy as np
 import omni.kit.app
 import omni.kit.test
 import omni.replicator.core as rep
 import omni.timeline
-from isaacsim.core.api.objects import VisualCone, VisualCuboid
-from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
+from isaacsim.core.experimental.materials import OmniPbrMaterial
+from isaacsim.core.experimental.objects import Cone, Cube, DomeLight, GroundPlane
+from isaacsim.core.experimental.utils.stage import create_new_stage_async
+from isaacsim.core.experimental.utils.transform import euler_angles_to_quaternion
 from isaacsim.sensors.camera import SingleViewDepthSensor
 from isaacsim.storage.native import get_assets_root_path_async
 from isaacsim.test.utils.image_comparison import compare_images_within_tolerances
@@ -47,9 +47,9 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
     GOLDEN_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "golden", "single_view_depth_sensor")
 
     async def setUp(self):
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         await create_new_stage_async()
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
 
         self.test_dir = carb.tokens.get_tokens_interface().resolve("${temp}/test_camera_view_sensor")
 
@@ -57,47 +57,55 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
         omni.usd.get_context().close_stage()
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            await update_stage_async()
+            await omni.kit.app.get_app().next_update_async()
 
     async def _create_test_environment(self):
         """Create test environment with ground plane, cubes, cone, and depth camera."""
         await create_new_stage_async()
 
         # Create a plane and dome light
-        rep.functional.create.plane(position=(0, 0, 0), rotation=(0, 0, 0), scale=(10, 10, 10))
-        rep.functional.create.dome_light(intensity=500)
+        dome_light = DomeLight("/World/DomeLight")
+        dome_light.set_intensities(500)
+        GroundPlane("/World/defaultGroundPlane", sizes=100.0)
 
-        cube_1 = VisualCuboid(
-            prim_path="/cube_1",
-            name="cube_1",
-            position=np.array([0.25, 0.25, 0.25]),
-            scale=np.array([0.5, 0.5, 0.5]),
-            size=1.0,
-            color=np.array([255, 0, 0]),
+        cube_1 = Cube(
+            "/cube_1",
+            sizes=1.0,
+            positions=np.array([0.25, 0.25, 0.25]),
+            scales=np.array([0.5, 0.5, 0.5]),
         )
-        cube_2 = VisualCuboid(
-            prim_path="/cube_2",
-            name="cube_2",
-            position=np.array([-1.0, -1.0, 0.25]),
-            scale=np.array([1.0, 1.0, 1.0]),
-            size=1.0,
-            color=np.array([0, 0, 255]),
+        cube_1_material = OmniPbrMaterial("/World/Materials/cube_1")
+        cube_1_material.set_input_values("diffuse_color_constant", [1.0, 0.0, 0.0])
+        cube_1.apply_visual_materials(cube_1_material)
+
+        cube_2 = Cube(
+            "/cube_2",
+            sizes=1.0,
+            positions=np.array([-1.0, -1.0, 0.25]),
+            scales=np.array([1.0, 1.0, 1.0]),
         )
-        cone = VisualCone(
-            prim_path="/cone",
-            name="cone",
-            position=np.array([-0.1, -0.3, 0.2]),
-            scale=np.array([1.0, 1.0, 1.0]),
-            color=np.array([0, 255, 0]),
+        cube_2_material = OmniPbrMaterial("/World/Materials/cube_2")
+        cube_2_material.set_input_values("diffuse_color_constant", [0.0, 0.0, 1.0])
+        cube_2.apply_visual_materials(cube_2_material)
+
+        cone = Cone(
+            "/cone",
+            radii=0.5,
+            heights=1.0,
+            positions=np.array([-0.1, -0.3, 0.2]),
+            scales=np.array([1.0, 1.0, 1.0]),
         )
+        cone_material = OmniPbrMaterial("/World/Materials/cone")
+        cone_material.set_input_values("diffuse_color_constant", [0.0, 1.0, 0.0])
+        cone.apply_visual_materials(cone_material)
 
         camera = SingleViewDepthSensor(
             prim_path="/World/camera",
             name="depth_camera",
             position=np.array([3.0, 0.0, 0.6]),
-            orientation=rot_utils.euler_angles_to_quats(np.array([0, 0, 180]), degrees=True),
+            orientation=euler_angles_to_quaternion(np.array([0, 0, 180]), degrees=True, extrinsic=False).numpy(),
             frequency=self.CAMERA_FREQUENCY,
             resolution=self.CAMERA_RESOLUTION,
         )

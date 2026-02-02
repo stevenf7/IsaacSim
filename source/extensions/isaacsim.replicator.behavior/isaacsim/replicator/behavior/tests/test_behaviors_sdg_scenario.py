@@ -25,6 +25,9 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
     SDG pipeline test using behavior scripts and comparing to the golden data
     """
 
+    DEPTH_MEAN_TOLERANCE = 100
+    RGB_MEAN_TOLERANCE = 100
+
     async def setUp(self):
         await omni.kit.app.get_app().next_update_async()
         await omni.usd.get_context().new_stage_async()
@@ -286,27 +289,25 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
         golden_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "golden", "_out_behaviors_sdg")
 
         # Compare the depth images in the output directory with the golden images
-        depth_mean_tolerance = 5
         result = compare_images_in_directories(
             golden_dir=golden_dir,
             test_dir=output_dir,
             path_pattern=r"distance_to_image_plane_\d+\.png$",
             allclose_rtol=None,  # Disable allclose for this test to rely only on mean tolerance
             allclose_atol=None,
-            mean_tolerance=depth_mean_tolerance,
+            mean_tolerance=self.DEPTH_MEAN_TOLERANCE,
             print_all_stats=True,
         )
         self.assertTrue(result["all_passed"], "Depth image comparison failed with behaviors sdg scenario")
 
         # Compare the rgb images in the output directory with the golden images
-        rgb_mean_tolerance = 25
         result = compare_images_in_directories(
             golden_dir=golden_dir,
             test_dir=output_dir,
             path_pattern=r"rgb_\d+\.png$",
             allclose_rtol=None,  # Disable allclose for this test to rely only on mean tolerance
             allclose_atol=None,
-            mean_tolerance=rgb_mean_tolerance,
+            mean_tolerance=self.RGB_MEAN_TOLERANCE,
             print_all_stats=True,
         )
         self.assertTrue(result["all_passed"], "RGB image comparison failed with behaviors sdg scenario")

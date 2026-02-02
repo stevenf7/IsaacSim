@@ -19,8 +19,9 @@ import omni.kit.test
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
+from isaacsim.core.experimental.objects import DomeLight, GroundPlane
+from isaacsim.core.experimental.utils.stage import create_new_stage_async
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.camera import CameraView
 from pxr import UsdGeom
 
@@ -29,9 +30,9 @@ class TestCameraViewSensorBackend(omni.kit.test.AsyncTestCase):
     """Tests CameraView sensor with different SimulationManager backend configurations."""
 
     async def setUp(self):
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         await create_new_stage_async()
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
         timeline = omni.timeline.get_timeline_interface()
@@ -39,9 +40,9 @@ class TestCameraViewSensorBackend(omni.kit.test.AsyncTestCase):
         SimulationManager.set_backend("numpy")
         SimulationManager.set_device("cpu")
         omni.usd.get_context().close_stage()
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            await update_stage_async()
+            await omni.kit.app.get_app().next_update_async()
 
     async def run_test_async(self, backend="numpy", device=None, gpu_dynamics=False, app_warmup=False):
         """Run the camera capture test with specified backend configuration."""
@@ -59,8 +60,9 @@ class TestCameraViewSensorBackend(omni.kit.test.AsyncTestCase):
             SimulationManager.set_broadphase_type("GPU")
 
         # Create a plane and dome light
-        rep.functional.create.plane(position=(0, 0, 0), rotation=(0, 0, 0), scale=(10, 10, 10))
-        rep.functional.create.dome_light(intensity=500)
+        dome_light = DomeLight("/World/DomeLight")
+        dome_light.set_intensities(500)
+        GroundPlane("/World/defaultGroundPlane", sizes=100.0)
 
         num_cameras = 4
         for i in range(num_cameras):
@@ -81,7 +83,7 @@ class TestCameraViewSensorBackend(omni.kit.test.AsyncTestCase):
 
         # Start simulation
         timeline.play()
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         SimulationManager.initialize_physics()
 
         if app_warmup:
