@@ -1,5 +1,5 @@
 [package]
-version = "5.0.3"
+version = "5.0.4"
 category = "Simulation"
 title = "Wheeled Robots"
 description = "This extension provides wheeled robot utilities"
@@ -52,6 +52,7 @@ stdoutFailPatterns.exclude = [
 timeout = 900
 dependencies = [
     "omni.isaac.ml_archive",
+    "isaacsim.test.utils",
 ]
 args = [
     "--enable",

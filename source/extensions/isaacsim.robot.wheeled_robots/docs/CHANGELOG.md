@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.0.4] - 2026-02-02
+### Changed
+- Move pycoverage related test workarounds to isaacsim.test.utils extension
+
 ## [5.0.3] - 2026-01-26
 ### Changed
 - Update to new osqp version and fix OSQP.setup() positional argument issue
