@@ -13,16 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import isaacsim.core.utils.numpy.rotations as rot_utils
 import numpy as np
 import omni.kit.app
 import omni.kit.test
-import omni.replicator.core as rep
 import omni.timeline
-from isaacsim.core.api.objects import VisualCuboid
+from isaacsim.core.experimental.materials import OmniPbrMaterial
+from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
 from isaacsim.core.experimental.utils.semantics import add_labels
+from isaacsim.core.experimental.utils.stage import create_new_stage_async
+from isaacsim.core.experimental.utils.transform import euler_angles_to_quaternion
 from isaacsim.core.prims import SingleXFormPrim
-from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.camera import Camera
 from isaacsim.sensors.camera.camera import R_U_TRANSFORM
 from omni.kit.viewport.utility import get_active_viewport
@@ -36,50 +36,53 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
     NUM_WARMUP_FRAMES = 10  # Frame dict data availability warmup frames, depends on the camera frequency
 
     async def setUp(self):
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         await create_new_stage_async()
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
         omni.usd.get_context().close_stage()
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            await update_stage_async()
+            await omni.kit.app.get_app().next_update_async()
 
     async def _create_test_environment(self):
         """Create the test environment with ground plane, cubes, and camera."""
         await create_new_stage_async()
 
         # Create ground plane and dome light
-        rep.functional.create.plane(position=(0, 0, 0), rotation=(0, 0, 0), scale=(100, 100, 1))
-        rep.functional.create.dome_light(intensity=500)
+        dome_light = DomeLight("/World/DomeLight")
+        dome_light.set_intensities(500)
+        GroundPlane("/World/defaultGroundPlane", sizes=100.0)
 
-        # Add cubes for testing (VisualCuboid for static positions)
-        cube_2 = VisualCuboid(
-            prim_path="/new_cube_2",
-            name="cube_1",
-            position=np.array([5.0, 3, 1.0]),
-            scale=np.array([0.6, 0.5, 0.2]),
-            size=1.0,
-            color=np.array([255, 0, 0]),
+        # Add cubes for testing (static positions)
+        cube_2 = Cube(
+            "/new_cube_2",
+            sizes=1.0,
+            positions=np.array([5.0, 3, 1.0]),
+            scales=np.array([0.6, 0.5, 0.2]),
         )
+        cube_2_material = OmniPbrMaterial("/World/Materials/cube_2")
+        cube_2_material.set_input_values("diffuse_color_constant", [1.0, 0.0, 0.0])
+        cube_2.apply_visual_materials(cube_2_material)
 
-        cube_3 = VisualCuboid(
-            prim_path="/new_cube_3",
-            name="cube_2",
-            position=np.array([-5, 1, 3.0]),
-            scale=np.array([0.1, 0.1, 0.1]),
-            size=1.0,
-            color=np.array([0, 0, 255]),
+        cube_3 = Cube(
+            "/new_cube_3",
+            sizes=1.0,
+            positions=np.array([-5, 1, 3.0]),
+            scales=np.array([0.1, 0.1, 0.1]),
         )
+        cube_3_material = OmniPbrMaterial("/World/Materials/cube_3")
+        cube_3_material.set_input_values("diffuse_color_constant", [0.0, 0.0, 1.0])
+        cube_3.apply_visual_materials(cube_3_material)
 
         xform = SingleXFormPrim(
             prim_path="/World/rig",
             name="rig",
             position=np.array([5.0, 0.0, 5.0]),
-            orientation=rot_utils.euler_angles_to_quats(np.array([0, -90, 0]), degrees=True),
+            orientation=euler_angles_to_quaternion(np.array([0, -90, 0]), degrees=True, extrinsic=False).numpy(),
         )
 
         camera = Camera(
@@ -88,13 +91,13 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             position=np.array([0.0, 0.0, 25.0]),
             frequency=self.CAMERA_FREQUENCY,
             resolution=self.CAMERA_RESOLUTION,
-            orientation=rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True),
+            orientation=euler_angles_to_quaternion(np.array([0, 90, 0]), degrees=True, extrinsic=False).numpy(),
         )
 
-        add_labels(cube_2.prim, labels=["cube"], taxonomy="class")
-        add_labels(cube_3.prim, labels=["cube"], taxonomy="class")
+        add_labels(cube_2.prims[0], labels=["cube"], taxonomy="class")
+        add_labels(cube_3.prims[0], labels=["cube"], taxonomy="class")
 
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         return camera, cube_2, cube_3, xform
 
     async def test_world_poses(self):
@@ -103,15 +106,24 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         position, orientation = camera.get_world_pose()
         self.assertTrue(np.allclose(position, [0, 0, 25], atol=1e-05))
         self.assertTrue(
-            np.allclose(orientation, rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True), atol=1e-05)
+            np.allclose(
+                orientation,
+                euler_angles_to_quaternion(np.array([0, 90, 0]), degrees=True, extrinsic=False).numpy(),
+                atol=1e-05,
+            )
         )
         translation, orientation = camera.get_local_pose()
         self.assertTrue(np.allclose(translation, [20, 0, 5], atol=1e-05))
         self.assertTrue(
-            np.allclose(orientation, rot_utils.euler_angles_to_quats(np.array([0, 180, 0]), degrees=True), atol=1e-05)
+            np.allclose(
+                orientation,
+                euler_angles_to_quaternion(np.array([0, 180, 0]), degrees=True, extrinsic=False).numpy(),
+                atol=1e-05,
+            )
         )
         camera.set_local_pose(
-            translation=[0, 0, 25], orientation=rot_utils.euler_angles_to_quats(np.array([0, 180, 0]), degrees=True)
+            translation=[0, 0, 25],
+            orientation=euler_angles_to_quaternion(np.array([0, 180, 0]), degrees=True, extrinsic=False).numpy(),
         )
 
     async def test_projection(self):
@@ -124,9 +136,11 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         camera.initialize()
 
         # Test projection from world points to image coordinates and back
-        cube_3_pos = cube_3.get_world_pose()[0]
-        cube_2_pos = cube_2.get_world_pose()[0]
-        points_2d = camera.get_image_coords_from_world_points(np.array([cube_3_pos, cube_2_pos]))
+        cube_3_positions, _ = cube_3.get_world_poses()
+        cube_2_positions, _ = cube_2.get_world_poses()
+        points_2d = camera.get_image_coords_from_world_points(
+            np.array([cube_3_positions.numpy()[0], cube_2_positions.numpy()[0]])
+        )
         points_3d = camera.get_world_points_from_image_coords(points_2d, np.array([24.94, 24.9]))
 
         # Expected golden values
@@ -241,7 +255,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             name="viewport_camera",
             position=np.array([0.0, 0.0, 25.0]),
             resolution=self.CAMERA_RESOLUTION,
-            orientation=rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True),
+            orientation=euler_angles_to_quaternion(np.array([0, 90, 0]), degrees=True, extrinsic=False).numpy(),
             render_product_path=render_product_path,
         )
 
@@ -978,13 +992,13 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
 
         # Identity pose -> view matrix = R_U_TRANSFORM
         camera.set_world_pose(position=[0.0, 0.0, 0.0], orientation=[1.0, 0.0, 0.0, 0.0], camera_axes="usd")
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         view_matrix_identity = camera.get_view_matrix_ros(device="cpu")
         self.assertTrue(np.allclose(view_matrix_identity, R_U_TRANSFORM.astype(np.float32), atol=1e-5))
 
         # Translation only -> view matrix = R_U_TRANSFORM @ T(-t). T(-t): inverse(world_from_cam)
         camera.set_world_pose(position=[2.0, -1.0, 5.0], orientation=[1.0, 0.0, 0.0, 0.0], camera_axes="usd")
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         view_matrix_translation_only = camera.get_view_matrix_ros(device="cpu")
         T_minus = np.array([[1, 0, 0, -2.0], [0, 1, 0, 1.0], [0, 0, 1, -5.0], [0, 0, 0, 1.0]], dtype=np.float32)
         self.assertTrue(
@@ -996,20 +1010,20 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         R = np.array([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=np.float32)
         camera.set_world_pose(
             position=[0.0, 0.0, 0.0],
-            orientation=rot_utils.euler_angles_to_quats(np.array([0, 0, 90]), degrees=True),
+            orientation=euler_angles_to_quaternion(np.array([0, 0, 90]), degrees=True, extrinsic=False).numpy(),
             camera_axes="usd",
         )
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         view_matrix_rotation_only = camera.get_view_matrix_ros(device="cpu")
         self.assertTrue(np.allclose(view_matrix_rotation_only, R_U_TRANSFORM.astype(np.float32) @ R.T, atol=1e-5))
 
         # Rotation and translation -> view matrix = R_U_TRANSFORM @ R.T @ T(-t)
         camera.set_world_pose(
             position=[2.0, -1.0, 5.0],
-            orientation=rot_utils.euler_angles_to_quats(np.array([0, 0, 90]), degrees=True),
+            orientation=euler_angles_to_quaternion(np.array([0, 0, 90]), degrees=True, extrinsic=False).numpy(),
             camera_axes="usd",
         )
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         view_matrix_rotation_and_translation = camera.get_view_matrix_ros(device="cpu")
         self.assertTrue(
             np.allclose(
@@ -1104,7 +1118,8 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
 
         # Set a predictable camera pose
         camera.set_world_pose(
-            position=[0.0, 0.0, 0.0], orientation=rot_utils.euler_angles_to_quats(np.array([0, 0, 0]), degrees=True)
+            position=[0.0, 0.0, 0.0],
+            orientation=euler_angles_to_quaternion(np.array([0, 0, 0]), degrees=True, extrinsic=False).numpy(),
         )
 
         # Set up a simple test case

@@ -18,10 +18,11 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import carb
-import isaacsim.core.utils.numpy.rotations as rot_utils
 import numpy as np
+import omni.timeline
 import warp as wp
-from isaacsim.core.api import World
+from isaacsim.core.experimental.objects import DomeLight, GroundPlane
+from isaacsim.core.experimental.utils.transform import euler_angles_to_quaternion
 from isaacsim.sensors.camera import Camera
 
 
@@ -794,8 +795,7 @@ def test_current_frame_output(camera_default: Camera, camera_cpu: Camera, camera
 ###
 # Setup world and the cameras
 ###
-my_world = World(stage_units_in_meters=1.0)
-camera_orientation = rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True)
+camera_orientation = euler_angles_to_quaternion(np.array([0, 90, 0]), degrees=True, extrinsic=False).numpy()
 camera_resolution = (256, 256)
 camera_position = np.array([0.0, 0.0, 5.0])
 
@@ -820,8 +820,15 @@ camera_cuda = Camera(
     annotator_device="cuda",
 )
 
-my_world.scene.add_default_ground_plane()
-my_world.reset()
+# Create ground plane and dome light
+dome_light = DomeLight("/World/DomeLight")
+dome_light.set_intensities(500)
+GroundPlane("/World/defaultGroundPlane", sizes=100.0)
+
+# Start the timeline and initialize the cameras
+timeline = omni.timeline.get_timeline_interface()
+timeline.play()
+timeline.commit()
 
 for camera in [camera_default, camera_cpu, camera_cuda]:
     camera.initialize()
@@ -842,7 +849,7 @@ for camera in [camera_default, camera_cpu, camera_cuda]:
 
 # Render a few frames to get the annotator data
 for i in range(10):
-    my_world.step(render=True)
+    simulation_app.update()
 
 # Define expected shapes
 rgba_shape = (camera_resolution[1], camera_resolution[0], 4)
@@ -867,9 +874,9 @@ result_test_pointcloud_output = test_pointcloud_output(camera_default, camera_cp
 # Remove the pointcloud annotator to use the depth annotator for computing the pointcloud
 for camera in [camera_default, camera_cpu, camera_cuda]:
     camera.remove_pointcloud_from_frame()
-simulation_app.update()
+
 for i in range(10):
-    my_world.step(render=True)
+    simulation_app.update()
 result_test_pointcloud_from_depth_output = test_pointcloud_from_depth_output(
     camera_default, camera_cpu, camera_cuda, pointcloud_shape
 )

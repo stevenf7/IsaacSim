@@ -22,9 +22,10 @@ import omni.kit.test
 import omni.replicator.core as rep
 import omni.timeline
 import warp as wp
-from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.deprecation_manager import import_module
-from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
+from isaacsim.core.experimental.materials import OmniPbrMaterial
+from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
+from isaacsim.core.experimental.utils.stage import create_new_stage_async
 from isaacsim.sensors.camera.camera_view import ANNOTATOR_SPEC, CameraView
 from isaacsim.test.utils.image_comparison import compare_images_in_directories
 
@@ -34,9 +35,14 @@ torch = import_module("torch")
 class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
 
     GOLDEN_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "golden", "camera_view")
+    USE_LOCAL_TEST_OUTPUT_DIR = False
+    LOCAL_OUTPUT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "_out_test_camera_view_sensor")
+    TEMP_OUTPUT_DIR = carb.tokens.get_tokens_interface().resolve("${temp}/test_camera_view_sensor")
+    TEST_OUTPUT_DIR = LOCAL_OUTPUT_DIR if USE_LOCAL_TEST_OUTPUT_DIR else TEMP_OUTPUT_DIR
     RGB_MEAN_DIFF_TOLERANCE = 5
     DEPTH_MEAN_DIFF_TOLERANCE = 2
     NUM_CAMERAS = 4  # Number of cameras to create for the tiled sensor
+    CAMERA_VIEW_RESOLUTION = (256, 256)
     EXPECTED_ANNOTATOR_SPEC = {
         "rgb": {"name": "rgba", "channels": 3, "dtype": wp.uint8},
         "rgba": {"name": "rgba", "channels": 4, "dtype": wp.uint8},
@@ -51,18 +57,17 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
     }
 
     async def setUp(self):
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         await create_new_stage_async()
-        await update_stage_async()
-        self.test_dir = carb.tokens.get_tokens_interface().resolve("${temp}/test_camera_view_sensor")
+        await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
         omni.usd.get_context().close_stage()
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            await update_stage_async()
+            await omni.kit.app.get_app().next_update_async()
 
     async def test_annotator_spec_keys(self):
         """Verify that EXPECTED_ANNOTATOR_SPEC matches the actual ANNOTATOR_SPEC keys."""
@@ -76,48 +81,54 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         await create_new_stage_async()
 
         # Create a plane and dome light
-        rep.functional.create.plane(position=(0, 0, 0), rotation=(0, 0, 0), scale=(10, 10, 10))
-        rep.functional.create.dome_light(intensity=500)
+        dome_light = DomeLight("/World/DomeLight")
+        dome_light.set_intensities(500)
+        GroundPlane("/World/defaultGroundPlane", sizes=10.0)
 
         # Add a red and blue cube
-        red_cube_1 = VisualCuboid(
-            prim_path="/World/cube_1",
-            name="cube_1",
-            position=np.array([0.25, 0.25, 0.25]),
-            scale=np.array([0.5, 0.5, 0.5]),
-            size=1.0,
-            color=np.array([255, 0, 0]),
+        red_cube_1 = Cube(
+            "/World/cube_1",
+            sizes=1.0,
+            positions=np.array([0.25, 0.25, 0.25]),
+            scales=np.array([0.5, 0.5, 0.5]),
         )
-        blue_cube_2 = VisualCuboid(
-            prim_path="/World/cube_2",
-            name="cube_2",
-            position=np.array([-0.25, -0.25, 0.0]),
-            scale=np.array([0.5, 0.5, 0.5]),
-            size=1.0,
-            color=np.array([0, 0, 255]),
+        red_material = OmniPbrMaterial("/World/Materials/cube_red")
+        red_material.set_input_values("diffuse_color_constant", [1.0, 0.0, 0.0])
+        red_cube_1.apply_visual_materials(red_material)
+
+        blue_cube_2 = Cube(
+            "/World/cube_2",
+            sizes=1.0,
+            positions=np.array([-0.25, -0.25, 0.0]),
+            scales=np.array([0.5, 0.5, 0.5]),
         )
+        blue_material = OmniPbrMaterial("/World/Materials/cube_blue")
+        blue_material.set_input_values("diffuse_color_constant", [0.0, 0.0, 1.0])
+        blue_cube_2.apply_visual_materials(blue_material)
 
         # All cameras will be looking down the -z axis
         camera_positions = [(0.5, 0, 2), (0, 0.5, 2), (-0.5, 0, 2), (0, -0.5, 2)]
         for pos in camera_positions:
-            rep.create.camera(position=pos, look_at=(pos[0], pos[1], 0))
-        await update_stage_async()
+            rep.functional.create.camera(position=pos, look_at=(pos[0], pos[1], 0), parent="/World")
+        await omni.kit.app.get_app().next_update_async()
 
     async def _start_data_capture(self, num_warm_up_frames: int = 0):
         """Start the timeline and optionally wait for valid data to be available."""
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
         for _ in range(num_warm_up_frames):
-            await update_stage_async()
+            await omni.kit.app.get_app().next_update_async()
 
     async def _setup_default_camera_view(self):
         """Set up the default square resolution camera view used by most tests."""
         await self._create_test_environment()
-        self.resolution = (256, 256)
+        # Warmup frames
+        for _ in range(5):
+            await omni.kit.app.get_app().next_update_async()
         camera_view = CameraView(
-            prim_paths_expr="/Replicator/Camera_Xform*/Camera",
+            prim_paths_expr="/World/Camera*",
             name="camera_prim_view",
-            camera_resolution=self.resolution,
+            camera_resolution=self.CAMERA_VIEW_RESOLUTION,
             output_annotators=sorted(list(self.EXPECTED_ANNOTATOR_SPEC.keys())),
         )
         await self._start_data_capture(num_warm_up_frames=5)
@@ -185,7 +196,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         """Compare tiled RGB image output against golden reference."""
         camera_view = await self._setup_default_camera_view()
         golden_dir = os.path.join(self.GOLDEN_DIR, "tiled_rgb")
-        out_dir = os.path.join(self.test_dir, "tiled_rgb")
+        out_dir = os.path.join(self.TEST_OUTPUT_DIR, "tiled_rgb")
         os.makedirs(out_dir, exist_ok=True)
 
         image = camera_view.get_rgb_tiled(device="cpu").astype(np.uint8)
@@ -207,7 +218,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         """Compare tiled depth image output against golden reference."""
         camera_view = await self._setup_default_camera_view()
         golden_dir = os.path.join(self.GOLDEN_DIR, "tiled_depth")
-        out_dir = os.path.join(self.test_dir, "tiled_depth")
+        out_dir = os.path.join(self.TEST_OUTPUT_DIR, "tiled_depth")
         os.makedirs(out_dir, exist_ok=True)
 
         image = (camera_view.get_depth_tiled(device="cpu") * 255).astype(np.uint8)
@@ -227,7 +238,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
     async def test_batched_rgb_data(self):
         """Verify batched RGB data shape, dtype, and pre-allocated output consistency."""
         camera_view = await self._setup_default_camera_view()
-        rgb_batched_shape = (len(camera_view.prims), *self.resolution, 3)
+        rgb_batched_shape = (len(camera_view.prims), *self.CAMERA_VIEW_RESOLUTION, 3)
         # Make sure the pre-allocated output tensor is on the appropriate cuda device
         cuda_device = str(wp.get_cuda_device())
         print(f"Pre-allocating output tensor of shape {rgb_batched_shape} on cuda device {cuda_device}")
@@ -243,7 +254,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
     async def test_batched_depth_data(self):
         """Verify batched depth data shape, dtype, and pre-allocated output consistency."""
         camera_view = await self._setup_default_camera_view()
-        depth_batched_shape = (len(camera_view.prims), *self.resolution, 1)
+        depth_batched_shape = (len(camera_view.prims), *self.CAMERA_VIEW_RESOLUTION, 1)
         # Make sure the pre-allocated output tensor is on the appropriate cuda device
         cuda_device = str(wp.get_cuda_device())
         print(f"Pre-allocating output tensor of shape {depth_batched_shape} on cuda device {cuda_device}")
@@ -260,7 +271,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         """Compare batched RGB images from each camera against golden references."""
         camera_view = await self._setup_default_camera_view()
         golden_dir = os.path.join(self.GOLDEN_DIR, "batched_rgb")
-        out_dir = os.path.join(self.test_dir, "batched_rgb")
+        out_dir = os.path.join(self.TEST_OUTPUT_DIR, "batched_rgb")
         os.makedirs(out_dir, exist_ok=True)
 
         batch = camera_view.get_rgb()
@@ -284,7 +295,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         """Compare batched depth images from each camera against golden references."""
         camera_view = await self._setup_default_camera_view()
         golden_dir = os.path.join(self.GOLDEN_DIR, "batched_depth")
-        out_dir = os.path.join(self.test_dir, "batched_depth")
+        out_dir = os.path.join(self.TEST_OUTPUT_DIR, "batched_depth")
         os.makedirs(out_dir, exist_ok=True)
 
         depth_batched = camera_view.get_depth()
@@ -311,7 +322,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
             spec = self.EXPECTED_ANNOTATOR_SPEC[annotator_type]
             data, info = camera_view.get_data(annotator_type)
             # check shape
-            shape = (len(camera_view.prims), *self.resolution, spec["channels"])
+            shape = (len(camera_view.prims), *self.CAMERA_VIEW_RESOLUTION, spec["channels"])
             self.assertEqual(data.shape, shape, f"{annotator_type} shape {data.shape} != {shape}")
             # check dtype
             dtype = spec["dtype"]
@@ -376,7 +387,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         width, height = non_square_resolution
 
         camera_view = CameraView(
-            prim_paths_expr="/Replicator/Camera_Xform*/Camera",
+            prim_paths_expr="/World/Camera*",
             name="camera_view_non_square",
             camera_resolution=non_square_resolution,
             output_annotators=["rgb", "depth"],

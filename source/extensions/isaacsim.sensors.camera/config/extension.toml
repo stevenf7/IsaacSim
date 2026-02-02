@@ -46,6 +46,8 @@ args = [
 [[test]]
 timeout = 900
 dependencies = [
+    "isaacsim.core.experimental.materials",
+    "isaacsim.core.experimental.objects",
     "isaacsim.test.utils",
     "isaacsim.util.debug_draw",
     "omni.isaac.ml_archive",
