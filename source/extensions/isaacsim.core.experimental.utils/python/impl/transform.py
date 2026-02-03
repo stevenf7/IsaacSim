@@ -581,25 +581,20 @@ def _wk_euler_angles_to_rotation_matrix(
     i = wp.tid()
 
     # Extract angles and ensure they are floating point for trigonometric functions
-    # Use type-safe constants derived from array elements (same pattern as rotation_matrix_to_quaternion)
+    # Use type-safe constants derived from input array elements (not output, which may be uninitialized)
     angle1 = euler_angles[i, 0]
     angle2 = euler_angles[i, 1]
     angle3 = euler_angles[i, 2]
 
-    # Create type-safe constants from the output array's dtype
-    zero = output[i, 0, 0] - output[i, 0, 0]  # Type-safe zero
-    one = zero + output.dtype(1.0)  # Type-safe one using output dtype
-
-    # Ensure angles are floating point by adding zero (which forces type conversion)
-    angle1 = angle1 + zero
-    angle2 = angle2 + zero
-    angle3 = angle3 + zero
+    # Create type-safe constants from the input array (NOT output array which may contain NaN)
+    zero = angle1 - angle1  # Type-safe zero derived from input
+    one = zero + euler_angles.dtype(1.0)  # Type-safe one using input dtype
 
     # Convert to radians if needed
     if degrees:
         # Type-safe constants using the same pattern
-        pi = zero + output.dtype(3.141592653589793)  # Type-safe pi using output dtype
-        one_eighty = zero + output.dtype(180.0)  # Type-safe 180
+        pi = zero + euler_angles.dtype(3.141592653589793)  # Type-safe pi
+        one_eighty = zero + euler_angles.dtype(180.0)  # Type-safe 180
         deg_to_rad = pi / one_eighty  # Type-safe conversion factor
         angle1 = angle1 * deg_to_rad
         angle2 = angle2 * deg_to_rad

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.1] - 2026-02-02
+### Fixed
+- Add test for NaN issue in euler to quaternion conversion utils
+
 ## [2.3.0] - 2026-01-27
 ### Changed
 - Add test for euler to quaternion conversion utils
