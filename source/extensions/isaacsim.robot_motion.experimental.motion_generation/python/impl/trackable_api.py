@@ -13,12 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .base_controller import BaseController
-from .controller_structures import ControllerContainer, ParallelController, SequentialController
-from .obstacle_strategy import ObstacleConfiguration, ObstacleRepresentation, ObstacleStrategy
-from .path import Path
-from .scene_query import SceneQuery
-from .trackable_api import TrackableApi
-from .trajectory import Trajectory
-from .trajectory_follower import TrajectoryFollower
-from .types import BodyState, JointState, RobotState, RootState
+from enum import StrEnum
+
+
+class TrackableApi(StrEnum):
+    """Enumerate USD APIs supported by SceneQuery and WorldBinding.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from isaacsim.robot_motion.experimental.motion_generation import TrackableApi
+        >>>
+        >>> TrackableApi.PHYSICS_COLLISION.value
+        'PhysicsCollisionAPI'
+    """
+
+    PHYSICS_COLLISION = "PhysicsCollisionAPI"
+    PHYSICS_RIGID_BODY = "PhysicsRigidBodyAPI"
+
+    # TODO: add motion generation collision API when it is implemented.
+    # MOTION_GENERATION_COLLISION = "MotionGenerationCollisionAPI"
