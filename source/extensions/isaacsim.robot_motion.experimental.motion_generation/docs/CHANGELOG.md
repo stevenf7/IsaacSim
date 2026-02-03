@@ -1,4 +1,10 @@
 # Changelog
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.1.0] - 2026-02-02
+### Added
+- `SceneQuery` and `TrackableApi`, for querying objects within an AABB for those with a certain API.
 
 ## [1.0.0] - 2026-01-31
 ### Added
@@ -21,9 +27,6 @@
 ## [0.1.1] - 2026-01-25
 ### Changed
 - Update license headers
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.0] - 2026-01-12
 ### Added
