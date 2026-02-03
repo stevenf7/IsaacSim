@@ -56,6 +56,7 @@ args = [
 timeout = 900
 dependencies = [
     "omni.isaac.ml_archive",
+    "isaacsim.test.utils",
 ]
 stdoutFailPatterns.exclude = [
     # This is excluded in at least 3 kit tests.
@@ -68,7 +69,8 @@ stdoutFailPatterns.exclude = [
     '*[Error] [isaacsim.sensors.physics.plugin] Imu Sensor does not exist*',
     '*[Error] [isaacsim.sensors.physics.plugin] Contact Sensor does not exist*',
     '*parent prim is missing contact report API*',
-    '*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*'
+    '*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*',
+    '*The NumPy module was reloaded*',
 ]
 
 args = [
