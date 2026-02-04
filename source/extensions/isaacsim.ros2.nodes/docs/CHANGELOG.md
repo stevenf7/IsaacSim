@@ -1,4 +1,9 @@
 # Changelog
+## [1.5.9] - 2026-01-30
+### Changed
+- Update waypoint follower action graph to use ReadPrimLocalTransform node
+- Fix quaternion normalization in ROS2 waypoint follower tests
+
 ## [1.5.8] - 2026-01-26
 ### Added
 - Also run ros2 image buffer tests with async rendering handshake enabled
