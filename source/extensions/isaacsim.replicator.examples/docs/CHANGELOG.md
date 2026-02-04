@@ -1,4 +1,8 @@
 # Changelog
+## [1.6.9] - 2026-02-04
+### Changed
+- Synched snippets with docs, typos and print statements fixes
+
 ## [1.6.8] - 2026-01-05
 ### Changed
 - Augmentation examples use basic empty stage (dome light + ground plane) by default, with optional env_url for custom stages

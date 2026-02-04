@@ -13,14 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from isaacsim import SimulationApp
-
-simulation_app = SimulationApp({"headless": False})
-
-import argparse
+import asyncio
 import os
 
 import carb.settings
+import omni.kit.app
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
@@ -41,41 +38,10 @@ ANIMATION_DURATION = 10
 # Number of frames to capture for each scenario
 NUM_FRAMES = 3
 
-
-def parse_delta_time(value):
-    """Convert string to float or None. Accepts 'None', -1, 0, or numeric values."""
-    if value.lower() == "none":
-        return None
-    float_value = float(value)
-    return None if float_value in (-1, 0) else float_value
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--delta_times",
-    nargs="*",
-    type=parse_delta_time,
-    default=[None, 1 / 30, 1 / 240],
-    help="List of delta times (seconds per frame) to use for motion blur captures. Use 'None' for default stage time.",
-)
-parser.add_argument(
-    "--samples_per_pixel",
-    nargs="*",
-    type=int,
-    default=[32, 128],
-    help="List of samples per pixel (spp) values for path tracing",
-)
-parser.add_argument(
-    "--motion_blur_subsamples",
-    nargs="*",
-    type=int,
-    default=[4, 16],
-    help="List of motion blur subsample values for path tracing",
-)
-args, _ = parser.parse_known_args()
-delta_times = args.delta_times
-samples_per_pixel = args.samples_per_pixel
-motion_blur_subsamples = args.motion_blur_subsamples
+# Configuration for motion blur examples
+DELTA_TIMES = [None, 1 / 30, 1 / 60, 1 / 240]
+SAMPLES_PER_PIXEL = [32, 128]
+MOTION_BLUR_SUBSAMPLES = [4, 16]
 
 
 def setup_stage():
@@ -102,7 +68,10 @@ def setup_stage():
     physics_asset_url = assets_root_path + PHYSICS_ASSET_URL
     for location, velocity in zip(ASSET_X_MIRRORED_LOCATIONS, ASSET_VELOCITIES):
         prim = rep.functional.create.reference(
-            usd_path=physics_asset_url, parent="/World", name=f"physics_asset_{int(abs(velocity))}", position=location
+            usd_path=physics_asset_url,
+            parent="/World",
+            name=f"physics_asset_{int(abs(velocity))}",
+            position=location,
         )
         physics_rigid_body_api = UsdPhysics.RigidBodyAPI(prim)
         physics_rigid_body_api.GetVelocityAttr().Set((0, 0, -velocity))
@@ -116,7 +85,10 @@ def setup_stage():
     for location, velocity in zip(ASSET_X_MIRRORED_LOCATIONS, ASSET_VELOCITIES):
         start_location = (-location[0], location[1], location[2])
         prim = rep.functional.create.reference(
-            usd_path=anim_asset_url, parent="/World", name=f"anim_asset_{int(abs(velocity))}", position=start_location
+            usd_path=anim_asset_url,
+            parent="/World",
+            name=f"anim_asset_{int(abs(velocity))}",
+            position=start_location,
         )
         animation_distance = velocity * ANIMATION_DURATION
         end_location = (start_location[0], start_location[1], start_location[2] - animation_distance)
@@ -126,8 +98,8 @@ def setup_stage():
         prim.GetAttribute("xformOp:translate").Set(end_location, time=end_keyframe_time)
 
 
-def run_motion_blur_example(
-    num_frames, delta_time=None, use_path_tracing=True, motion_blur_subsamples=8, samples_per_pixel=64
+async def run_motion_blur_example_async(
+    num_frames=NUM_FRAMES, delta_time=None, use_path_tracing=True, motion_blur_subsamples=8, samples_per_pixel=64
 ):
     """Capture motion blur frames with the given delta time step and render mode."""
     setup_stage()
@@ -179,7 +151,7 @@ def run_motion_blur_example(
 
     # Run a few updates to make sure all materials are fully loaded for capture
     for _ in range(5):
-        simulation_app.update()
+        await omni.kit.app.get_app().next_update_async()
 
     # Create or get the physics scene
     rep.functional.physics.create_physics_scene(path="/PhysicsScene")
@@ -203,7 +175,7 @@ def run_motion_blur_example(
     # Capture frames
     for i in range(num_frames):
         print(f"[MotionBlur] \tCapturing frame {i}")
-        rep.orchestrator.step(delta_time=delta_time)
+        await rep.orchestrator.step_async(delta_time=delta_time)
 
     # Restore the original physics FPS
     if target_physics_fps > original_physics_fps:
@@ -216,24 +188,25 @@ def run_motion_blur_example(
         settings.set("/rtx/rendermode", "RealTimePathTracing")
 
     # Wait until the data is fully written
-    rep.orchestrator.wait_until_complete()
+    await rep.orchestrator.wait_until_complete_async()
 
     # Cleanup
     writer.detach()
     render_product.destroy()
 
 
-def run_motion_blur_examples(num_frames, delta_times, samples_per_pixel, motion_blur_subsamples):
+async def run_motion_blur_examples_async(num_frames, delta_times, samples_per_pixel, motion_blur_subsamples):
     print(
         f"[MotionBlur] Running with delta_times={delta_times}, samples_per_pixel={samples_per_pixel}, motion_blur_subsamples={motion_blur_subsamples}"
     )
+
     for delta_time in delta_times:
         # RayTracing examples
-        run_motion_blur_example(num_frames=num_frames, delta_time=delta_time, use_path_tracing=False)
+        await run_motion_blur_example_async(num_frames=num_frames, delta_time=delta_time, use_path_tracing=False)
         # PathTracing examples
         for motion_blur_subsample in motion_blur_subsamples:
             for samples_per_pixel_value in samples_per_pixel:
-                run_motion_blur_example(
+                await run_motion_blur_example_async(
                     num_frames=num_frames,
                     delta_time=delta_time,
                     use_path_tracing=True,
@@ -242,11 +215,32 @@ def run_motion_blur_examples(num_frames, delta_times, samples_per_pixel, motion_
                 )
 
 
-run_motion_blur_examples(
-    num_frames=NUM_FRAMES,
-    delta_times=delta_times,
-    samples_per_pixel=samples_per_pixel,
-    motion_blur_subsamples=motion_blur_subsamples,
+asyncio.ensure_future(
+    run_motion_blur_examples_async(
+        num_frames=NUM_FRAMES,
+        delta_times=DELTA_TIMES,
+        samples_per_pixel=SAMPLES_PER_PIXEL,
+        motion_blur_subsamples=MOTION_BLUR_SUBSAMPLES,
+    )
 )
 
-simulation_app.close()
+
+async def run_motion_blur_examples_async():
+    motion_blur_step_duration = [None, 1 / 30, 1 / 60, 1 / 240]
+    for custom_delta_time in motion_blur_step_duration:
+        # RayTracing examples
+        await run_motion_blur_example_async(delta_time=custom_delta_time, use_path_tracing=False)
+        # PathTracing examples
+        spps = [32, 128]
+        motion_blur_sub_samples = [4, 16]
+        for motion_blur_sub_sample in motion_blur_sub_samples:
+            for spp in spps:
+                await run_motion_blur_example_async(
+                    delta_time=custom_delta_time,
+                    use_path_tracing=True,
+                    motion_blur_subsamples=motion_blur_sub_sample,
+                    samples_per_pixel=spp,
+                )
+
+
+asyncio.ensure_future(run_motion_blur_examples_async())
