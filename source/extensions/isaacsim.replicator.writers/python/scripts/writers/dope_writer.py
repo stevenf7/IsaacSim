@@ -22,9 +22,17 @@ import numpy as np
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
 from omni.syntheticdata import SyntheticData
 
-from ..utils import NumpyEncoder
-
 NodeTemplate, NodeConnectionTemplate = SyntheticData.NodeTemplate, SyntheticData.NodeConnectionTemplate
+
+
+class _NumpyEncoder(json.JSONEncoder):
+    """JSON encoder that handles numpy arrays by converting them to lists."""
+
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
 
 __version__ = "0.0.1"
 
@@ -248,7 +256,7 @@ class DOPEWriter(Writer):
 
         file_path = f"{render_product_path}{image_id}.json"
         buf = io.BytesIO()
-        buf.write(json.dumps(output, indent=2, cls=NumpyEncoder).encode())
+        buf.write(json.dumps(output, indent=2, cls=_NumpyEncoder).encode())
         self._backend.write_blob(file_path, buf.getvalue())
 
     def _check_frame_validity(self, data: dict) -> bool:

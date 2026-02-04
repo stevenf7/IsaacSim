@@ -16,7 +16,10 @@
 from functools import partial
 
 import numpy as np
-from isaacsim.replicator.writers.scripts.utils import calculate_truncation_ratio_simple
+from isaacsim.replicator.writers.scripts.utils import (
+    calculate_truncation_ratio_simple,
+    project_point_to_screen,
+)
 from omni.replicator.core import AnnotatorRegistry, Writer
 from omni.replicator.core import functional as F
 from omni.replicator.core.scripts.backends import BackendDispatch, BackendGroup, BaseBackend
@@ -315,12 +318,10 @@ class PoseWriter(Writer):
                 obj["cuboid_keypoints_camera_frame"] = [point[:3].tolist() for point in keypoints_camera_ordered]
             elif self._format == "centerpose":
                 obj["keypoints_3d"] = [point[:3].tolist() for point in keypoints_camera_ordered]
-            # Get the camera projection matrix and screen size to project the cuboid keypoints to screen space
-            cam_projection_tf = camera_params["cameraProjection"].reshape((4, 4))
+            # Project the cuboid keypoints to screen space using the appropriate camera model
             screen_size = camera_params["renderProductResolution"]
             keypoints_projected_ordered = [
-                self._project_camera_point_to_screen(point, cam_projection_tf, screen_size)
-                for point in keypoints_camera_ordered
+                project_point_to_screen(point, camera_params) for point in keypoints_camera_ordered
             ]
             if self._format is None:
                 obj["cuboid_keypoints_projected"] = keypoints_projected_ordered
@@ -364,10 +365,8 @@ class PoseWriter(Writer):
             camera_data["height"] = camera_params["renderProductResolution"].tolist()[1]
 
         # Debug data needed for the overlay projections
-        if self._write_debug_data:
-            self._debug_frame_data["camera_projection_matrix"] = camera_params["cameraProjection"].reshape(4, 4)
-            self._debug_frame_data["camera_view_matrix"] = camera_params["cameraViewTransform"].reshape(4, 4)
-            self._debug_frame_data["resolution"] = camera_params["renderProductResolution"]
+        if self._write_debug_images:
+            self._debug_frame_data["camera_params"] = camera_params
 
         return camera_data
 
@@ -392,9 +391,7 @@ class PoseWriter(Writer):
             self._draw_projected_keypoints(draw, keypoints)
 
         # Get the stored camera parameters for debug purposes
-        camera_projection_matrix = self._debug_frame_data["camera_projection_matrix"]
-        camera_view_matrix = self._debug_frame_data["camera_view_matrix"]
-        screen_size = self._debug_frame_data["resolution"]
+        camera_params = self._debug_frame_data["camera_params"]
 
         # Draw objects local frame axes
         for i, tf in enumerate(self._debug_frame_data["world_frame_transforms"]):
@@ -403,15 +400,13 @@ class PoseWriter(Writer):
             self._draw_local_frame_axes(
                 draw,
                 tf,
-                camera_view_matrix,
-                camera_projection_matrix,
-                screen_size,
+                camera_params,
                 size_local=size,
                 origin_local=center,
             )
 
         # Overlay the world frame axes on the bottom left part of the RGB image
-        self._draw_world_frame_axes_bottom_left(draw, camera_view_matrix, camera_projection_matrix, screen_size)
+        self._draw_world_frame_axes_bottom_left(draw, camera_params)
 
         file_path = (
             f"{render_product_subfolder}{self._frame_id:0{self._frame_padding}}_overlay.{self._image_output_format}"
@@ -429,33 +424,18 @@ class PoseWriter(Writer):
 
         return point_camera
 
-    # Project a 3D point from camera coordinates to 2D screen coordinates
-    def _project_camera_point_to_screen(self, camera_point, projection_matrix, screen_size):
-        # Apply the projection matrix to project to screen coordinates
-        point_screen = camera_point @ projection_matrix
-
-        # Normalize to NDC (Normalized Device Coordinates) by dividing x, y, z, by w: (x, y, z, w) -> (x/w, y/w, z/w, 1)
-        point_screen_normalized = point_screen / point_screen[3]
-
-        # Map NDC to screen coordinates. Adjust x and y for screen dimensions, flipping y to match screen's coordinate system.
-        x = (point_screen_normalized[0] + 1) * screen_size[0] / 2
-        y = (1 - point_screen_normalized[1]) * screen_size[1] / 2
-
-        return round(x), round(y)
-
-    # Project a 3D point from world coordinates to 2D screen coordinates
-    def _project_world_point_to_screen(self, world_point, view_matrix, projection_matrix, screen_size):
+    def _project_world_point_to_screen(self, world_point, camera_params):
+        """Project a 3D world point to 2D screen coordinates."""
+        view_matrix = camera_params["cameraViewTransform"].reshape(4, 4)
         point_camera = self._world_point_to_camera_point(world_point, view_matrix)
-        return self._project_camera_point_to_screen(point_camera, projection_matrix, screen_size)
+        return project_point_to_screen(point_camera, camera_params)
 
     # Projects the local frame axes of the object to the screen
     def _draw_local_frame_axes(
         self,
         draw,
         local_to_world_transform,
-        camera_view_matrix,
-        camera_projection_matrix,
-        screen_size,
+        camera_params,
         size_local=[1, 1, 1],
         origin_local=[0, 0, 0],
         axes_length_perc=0.25,
@@ -476,12 +456,7 @@ class PoseWriter(Writer):
         z_axis_end_point_world = z_axis_end_point_local @ local_to_world_transform
 
         # Define a partial helper function to project 3D world points to 2D screen points
-        project_to_screen = partial(
-            self._project_world_point_to_screen,
-            view_matrix=camera_view_matrix,
-            projection_matrix=camera_projection_matrix,
-            screen_size=screen_size,
-        )
+        project_to_screen = partial(self._project_world_point_to_screen, camera_params=camera_params)
 
         # Project the origin and axes end points from 3D world coordinates to 2D screen coordinates
         origin_2d = project_to_screen(origin_world)
@@ -495,9 +470,10 @@ class PoseWriter(Writer):
         draw.line([origin_2d, z_axis_end_2d], fill="blue", width=2)  # Z-axis in blue
 
     # Draws the world frame axes at the bottom left corner of the image.
-    def _draw_world_frame_axes_bottom_left(
-        self, draw, camera_view_matrix, camera_projection_matrix, screen_size, axes_scale=0.03, margin_percentage=0.03
-    ):
+    def _draw_world_frame_axes_bottom_left(self, draw, camera_params, axes_scale=0.03, margin_percentage=0.03):
+        camera_view_matrix = camera_params["cameraViewTransform"].reshape(4, 4)
+        screen_size = camera_params["renderProductResolution"]
+
         # Set a world location for the axes origin (1 unit in front of the camera) where -Z is the camera's forward direction
         camera_to_world_matrix = np.linalg.inv(camera_view_matrix)
         point_in_camera_space = np.array([0, 0, -1, 1])
@@ -509,12 +485,7 @@ class PoseWriter(Writer):
         z_axis_end_point_world = np.array([origin_world[0], origin_world[1], axes_scale + origin_world[2], 1])
 
         # Create a partial function with fixed camera parameters
-        project_to_screen = partial(
-            self._project_world_point_to_screen,
-            view_matrix=camera_view_matrix,
-            projection_matrix=camera_projection_matrix,
-            screen_size=screen_size,
-        )
+        project_to_screen = partial(self._project_world_point_to_screen, camera_params=camera_params)
 
         # Project the origin and axes end points into 2D screen coordinates
         origin_2d = project_to_screen(origin_world)
