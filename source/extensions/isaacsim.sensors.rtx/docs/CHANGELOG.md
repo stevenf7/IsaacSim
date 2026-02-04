@@ -1,6 +1,11 @@
 # Changelog
+## [15.12.1] - 2026-02-03
+### Removed
+- Tools for manipulating deprecated JSONs
+### Fixed
+- IsaacCreateRTXLidarScanBuffer.transform output no longer resets frame-to-frame
 
-## [15.12.0] - 2025-01-30
+## [15.12.0] - 2026-01-30
 ### Added
 - Use Hydra time (omni.timeline) in RTX Sensor models
 ### Changed
