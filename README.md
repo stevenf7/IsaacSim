@@ -43,7 +43,7 @@ Ensure your system is set up with the following before building Isaac Sim:
 - **Operating System**: Windows 10/11 or Linux (Ubuntu 22.04)
 
   > **(Linux) Ubuntu 24.04**
-  > Ubuntu 24.04 is not fully supported at this time. Building with Ubuntu 24.04 requires GCC/G++ 11 to be installed, GCC/G++ 12+ is not supported.
+  > Building with Ubuntu 24.04 requires GCC/G++ 11 to be installed, GCC/G++ 12+ is not supported.
 
 - **GPU**: For additional information on GPU features and requirements, see [NVIDIA GPU Requirements](https://docs.omniverse.nvidia.com/dev-guide/latest/common/technical-requirements.html)
 
