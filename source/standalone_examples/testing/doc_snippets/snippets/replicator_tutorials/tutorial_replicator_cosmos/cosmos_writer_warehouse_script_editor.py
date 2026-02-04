@@ -13,10 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from isaacsim import SimulationApp
-
-simulation_app = SimulationApp(launch_config={"headless": False})
-
+import asyncio
 import os
 
 import carb
@@ -24,13 +21,13 @@ import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
 from isaacsim.core.utils.stage import add_reference_to_stage
-from isaacsim.storage.native import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import UsdGeom
 
 # Capture parameters
 START_DELAY = 0.1  # Timeline duration delay before capturing the first clip
-NUM_CLIPS = 2  # Number of video clips to capture with the CosmosWriter
-NUM_FRAMES_PER_CLIP = 10  # Number of frames for each clip
+NUM_CLIPS = 3  # Number of video clips to capture with the CosmosWriter
+NUM_FRAMES_PER_CLIP = 120  # Number of frames for each clip
 CAPTURE_INTERVAL = 2  # Capture interval between frames (capture every N simulation steps)
 
 # Stage and asset paths
@@ -43,7 +40,7 @@ CARTER_NAV_POSITION = (-6, 4, 0)
 CARTER_NAV_TARGET_POSITION = (3, 3, 0)
 
 
-def advance_timeline_by_duration(duration: float, max_updates: int = 1000):
+async def advance_timeline_by_duration_async(duration: float, max_updates: int = 1000):
     timeline = omni.timeline.get_timeline_interface()
     current_time = timeline.get_current_time()
     target_time = current_time + duration
@@ -62,7 +59,7 @@ def advance_timeline_by_duration(duration: float, max_updates: int = 1000):
             break
 
         prev_time = current_time
-        simulation_app.update()
+        await omni.kit.app.get_app().next_update_async()
         current_time = timeline.get_current_time()
         step_count += 1
 
@@ -74,8 +71,13 @@ def advance_timeline_by_duration(duration: float, max_updates: int = 1000):
     print(f"Finished advancing timeline to {current_time:.4f}s (target {target_time:.4f}s) in {step_count} steps")
 
 
-def run_sdg_pipeline(
-    camera_path, num_clips, num_frames_per_clip, capture_interval, use_instance_id=True, segmentation_mapping=None
+async def run_sdg_pipeline_async(
+    camera_path,
+    num_clips,
+    num_frames_per_clip,
+    capture_interval,
+    use_instance_id=True,
+    segmentation_mapping=None,
 ):
     rp = rep.create.render_product(camera_path, (1280, 720))
     cosmos_writer = rep.WriterRegistry.get("CosmosWriter")
@@ -106,10 +108,10 @@ def run_sdg_pipeline(
             print(f"Simulation step {simulation_step_index}")
             if simulation_step_index % capture_interval == 0:
                 print(f"\t Capturing frame {frames_captured_count + 1}/{num_frames_per_clip} for clip {clip_index + 1}")
-                rep.orchestrator.step(pause_timeline=False)
+                await rep.orchestrator.step_async(pause_timeline=False)
                 frames_captured_count += 1
             else:
-                simulation_app.update()
+                await omni.kit.app.get_app().next_update_async()
             simulation_step_index += 1
 
         print(f"Finished clip {clip_index + 1}/{num_clips}. Captured {frames_captured_count} frames")
@@ -120,14 +122,14 @@ def run_sdg_pipeline(
             cosmos_writer.next_clip()
 
     print("Waiting to finish processing and writing the data")
-    rep.orchestrator.wait_until_complete()
+    await rep.orchestrator.wait_until_complete_async()
     print(f"Finished SDG pipeline. Captured {num_clips} clips with {num_frames_per_clip} frames each")
     cosmos_writer.detach()
     rp.destroy()
     timeline.pause()
 
 
-def run_example(
+async def run_example_async(
     num_clips,
     num_frames_per_clip,
     capture_interval,
@@ -135,7 +137,7 @@ def run_example(
     use_instance_id=True,
     segmentation_mapping=None,
 ):
-    assets_root_path = get_assets_root_path()
+    assets_root_path = await get_assets_root_path_async()
     stage_path = assets_root_path + STAGE_URL
     print(f"Opening stage: '{stage_path}'")
     omni.usd.get_context().open_stage(stage_path)
@@ -147,7 +149,7 @@ def run_example(
     # Disable capture on play on the new stage, data is captured manually using the step function
     rep.orchestrator.set_capture_on_play(False)
 
-    # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
+    # Set DLSS to Quality mode (2) for best SDG results (Options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
     carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
 
     # Load carter nova asset with its navigation graph
@@ -176,21 +178,26 @@ def run_example(
 
     # Advance the timeline with the start delay if provided
     if start_delay is not None and start_delay > 0:
-        advance_timeline_by_duration(start_delay)
+        await advance_timeline_by_duration_async(start_delay)
 
     # Run the SDG pipeline
-    run_sdg_pipeline(
-        camera_prim.GetPath(), num_clips, num_frames_per_clip, capture_interval, use_instance_id, segmentation_mapping
+    await run_sdg_pipeline_async(
+        camera_prim.GetPath(),
+        num_clips,
+        num_frames_per_clip,
+        capture_interval,
+        use_instance_id,
+        segmentation_mapping,
     )
 
 
 # Setup the environment and run the example
-run_example(
-    num_clips=NUM_CLIPS,
-    num_frames_per_clip=NUM_FRAMES_PER_CLIP,
-    capture_interval=CAPTURE_INTERVAL,
-    start_delay=START_DELAY,
-    use_instance_id=True,
+asyncio.ensure_future(
+    run_example_async(
+        num_clips=NUM_CLIPS,
+        num_frames_per_clip=NUM_FRAMES_PER_CLIP,
+        capture_interval=CAPTURE_INTERVAL,
+        start_delay=START_DELAY,
+        use_instance_id=True,
+    )
 )
-
-simulation_app.close()

@@ -13,39 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generate augmented synthetic from a writer"""
-
-from isaacsim import SimulationApp
-
-simulation_app = SimulationApp(launch_config={"headless": False})
-
-import argparse
+import asyncio
 import os
 import time
 
 import carb.settings
 import numpy as np
 import omni.replicator.core as rep
-import omni.usd
 import warp as wp
 from isaacsim.core.utils.stage import open_stage
-from isaacsim.storage.native import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path_async
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--num_frames", type=int, default=5, help="The number of frames to capture")
-parser.add_argument(
-    "--use_warp",
-    action="store_true",
-    help="Use warp augmentations instead of numpy",
-)
-parser.add_argument("--resolution", nargs=2, type=int, default=[512, 512], help="Camera resolution")
-parser.add_argument("--env_url", type=str, default="", help="USD environment URL (empty for basic scene)")
-args, unknown = parser.parse_known_args()
-
-num_frames = args.num_frames
-use_warp = args.use_warp
-resolution = args.resolution
-env_url = args.env_url or None
+NUM_FRAMES = 5
+RESOLUTION = (512, 512)
+USE_WARP = False
+ENV_URL = "/Isaac/Environments/Grid/default_environment.usd"
 SEED = 42
 
 # Enable warp scripts
@@ -101,8 +83,8 @@ def gaussian_noise_depth_np(data_in, sigma: float, seed: int):
     return np.clip(result, 0, None).astype(data_in.dtype)
 
 
-rep.AnnotatorRegistry.register_augmentation(
-    "gn_depth_np", rep.annotators.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.1, seed=None)
+rep.annotators.register_augmentation(
+    "gn_depth_np", rep.annotators.Augmentation.from_function(gaussian_noise_depth_np, sigma=0.1, seed=SEED)
 )
 
 
@@ -118,25 +100,20 @@ def gaussian_noise_depth_wp(
     data_out[i, j] = data_in[i, j] + sigma * wp.randn(state)
 
 
-rep.AnnotatorRegistry.register_augmentation(
-    "gn_depth_wp", rep.annotators.Augmentation.from_function(gaussian_noise_depth_wp, sigma=0.1, seed=None)
+rep.annotators.register_augmentation(
+    "gn_depth_wp", rep.annotators.Augmentation.from_function(gaussian_noise_depth_wp, sigma=0.1, seed=SEED)
 )
 
 
-def run_example(num_frames: int, resolution: tuple[int, int], use_warp: bool, env_url: str | None = None) -> float:
-    """Run the capture pipeline using step() to trigger a randomization and data capture."""
+# Run the capture pipeline using step() to trigger a randomization and data capture
+async def run_example_async(num_frames: int, resolution: tuple[int, int], use_warp: bool) -> float:
     print(f"Running example with num_frames: {num_frames}, resolution: {resolution}, use_warp: {use_warp}")
 
-    if env_url is not None and env_url != "":
-        assets_root_path = get_assets_root_path()
-        stage_path = assets_root_path + env_url
-        print(f"Opening stage: {stage_path}")
-        open_stage(stage_path)
-    else:
-        omni.usd.get_context().new_stage()
-        rep.functional.create.dome_light(intensity=1000, rotation=(270, 0, 0))
-        ground_plane = rep.functional.create.plane(scale=(10, 10, 1), position=(0, 0, 0))
-        rep.functional.physics.apply_collider(ground_plane)
+    # Open a new stage
+    assets_root_path = await get_assets_root_path_async()
+    stage_path = assets_root_path + ENV_URL
+    print(f"Opening stage: {stage_path}")
+    open_stage(stage_path)
 
     # Use a fixed global seed for reproducibility
     rep.set_global_seed(SEED)
@@ -158,7 +135,7 @@ def run_example(num_frames: int, resolution: tuple[int, int], use_warp: bool, en
     gn_depth_augm = rep.annotators.get_augmentation("gn_depth_wp" if use_warp else "gn_depth_np")
 
     # Create a writer and apply the augmentations to its corresponding annotators
-    out_dir = os.path.join(os.getcwd(), f"_out_augm_writer_{'warp' if use_warp else 'numpy'}")
+    out_dir = os.path.join(os.getcwd(), "_out_augm_writer")
     backend = rep.backends.get("DiskBackend")
     backend.initialize(output_dir=out_dir)
     print(f"Writing data to: {out_dir}")
@@ -188,22 +165,26 @@ def run_example(num_frames: int, resolution: tuple[int, int], use_warp: bool, en
     capture_start = time.time()
     for frame_idx in range(num_frames):
         print(f"  Capturing frame {frame_idx + 1}/{num_frames}")
-        rep.orchestrator.step(rt_subframes=32)
+        await rep.orchestrator.step_async(rt_subframes=32)
 
     # Wait for the data to be written to disk and release resources
-    rep.orchestrator.wait_until_complete()
+    await rep.orchestrator.wait_until_complete_async()
     writer.detach()
     rp.destroy()
 
     return time.time() - capture_start
 
 
-duration = run_example(num_frames, resolution, use_warp, env_url)
-average = duration / num_frames if num_frames else 0.0
-mode_label = "warp" if use_warp else "numpy"
-print(
-    f"The duration for capturing {num_frames} frames using '{mode_label}' was: {duration:.4f} seconds, "
-    f"with an average of {average:.4f} seconds per frame."
-)
+def on_task_done(task: asyncio.Task):
+    """Report timing information when capture completes."""
+    duration = task.result()
+    average = duration / NUM_FRAMES if NUM_FRAMES else 0.0
+    mode_label = "warp" if USE_WARP else "numpy"
+    print(
+        f"The duration for capturing {NUM_FRAMES} frames using '{mode_label}' was: {duration:.4f} seconds, "
+        f"with an average of {average:.4f} seconds per frame."
+    )
 
-simulation_app.close()
+
+task = asyncio.ensure_future(run_example_async(NUM_FRAMES, RESOLUTION, USE_WARP))
+task.add_done_callback(on_task_done)

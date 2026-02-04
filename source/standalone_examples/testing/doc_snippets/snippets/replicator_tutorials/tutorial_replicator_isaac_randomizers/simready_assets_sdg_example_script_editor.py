@@ -13,11 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from isaacsim import SimulationApp
-
-simulation_app = SimulationApp(launch_config={"headless": False})
-
-import argparse
 import asyncio
 import os
 import time
@@ -29,12 +24,7 @@ import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
 from isaacsim.core.utils.semantics import upgrade_prim_semantics_to_labels
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--num_scenarios", type=int, default=5, help="Number of randomization scenarios to create")
-args, _ = parser.parse_known_args()
-num_scenarios = args.num_scenarios
+from pxr import Sdf, Usd, UsdGeom, UsdPhysics
 
 # Make sure the simready explorer extension is enabled
 ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -83,7 +73,7 @@ async def search_assets_async() -> tuple[list, list, list]:
     return tables, dishes, items
 
 
-def run_simready_randomization(
+async def run_simready_randomization_async(
     stage: Usd.Stage,
     camera_prim: Usd.Prim,
     render_product,
@@ -114,7 +104,7 @@ def run_simready_randomization(
     set_prim_variants(table_prim, variants)
     upgrade_prim_semantics_to_labels(table_prim)
     print(f"[SDG]     - Table: '{table_asset.name}' ({time.time() - start_time:.2f}s)")
-    simulation_app.update()
+    await omni.kit.app.get_app().next_update_async()
 
     # Keep only colliders on the table (disable rigid body dynamics)
     UsdPhysics.RigidBodyAPI(table_prim).GetRigidBodyEnabledAttr().Set(False)
@@ -131,7 +121,7 @@ def run_simready_randomization(
     set_prim_variants(dish_prim, variants)
     upgrade_prim_semantics_to_labels(dish_prim)
     print(f"[SDG]     - Dish: '{dish_asset.name}' ({time.time() - start_time:.2f}s)")
-    simulation_app.update()
+    await omni.kit.app.get_app().next_update_async()
 
     # Compute dish dimensions from its bounding box
     dish_bbox = bbox_cache.ComputeWorldBound(dish_prim)
@@ -161,7 +151,7 @@ def run_simready_randomization(
         upgrade_prim_semantics_to_labels(item_prim)
         print(f"[SDG]     - Item: '{item_asset.name}' ({time.time() - start_time:.2f}s)")
         item_prims.append(item_prim)
-        simulation_app.update()
+        await omni.kit.app.get_app().next_update_async()
 
     # Position items stacked above the dish
     print(f"[SDG]   Positioning assets on table...")
@@ -186,7 +176,7 @@ def run_simready_randomization(
     timeline = omni.timeline.get_timeline_interface()
     timeline.play()
     for _ in range(num_sim_steps):
-        simulation_app.update()
+        await omni.kit.app.get_app().next_update_async()
     timeline.pause()
 
     print(f"[SDG]   Setting edit target to root layer...")
@@ -202,7 +192,7 @@ def run_simready_randomization(
         camera_prim, position_value=camera_position, look_at_value=dish_prim, look_at_up_axis=(0, 0, 1)
     )
     render_product.hydra_texture.set_updates_enabled(True)
-    rep.orchestrator.step(delta_time=0.0, rt_subframes=16)
+    await rep.orchestrator.step_async(delta_time=0.0, rt_subframes=16)
     render_product.hydra_texture.set_updates_enabled(False)
 
     print(f"[SDG]   Removing temp variation layer...")
@@ -210,10 +200,10 @@ def run_simready_randomization(
     root_layer.subLayerPaths.remove(variation_layer.identifier)
 
 
-def run_simready_randomizations(num_scenarios: int) -> None:
+async def run_simready_randomizations_async(num_scenarios: int) -> None:
     """Run multiple SimReady randomization scenarios and capture the results."""
     print(f"[SDG] Initializing scene...")
-    omni.usd.get_context().new_stage()
+    await omni.usd.get_context().new_stage_async()
     stage = omni.usd.get_context().get_stage()
 
     # Initialize randomization
@@ -235,11 +225,8 @@ def run_simready_randomizations(num_scenarios: int) -> None:
     # Simready explorer window needs to be created for the search to work
     enable_simready_explorer()
 
-    # Search for the simready assets and wait until the task is complete
-    search_task = asyncio.ensure_future(search_assets_async())
-    while not search_task.done():
-        simulation_app.update()
-    tables, dishes, items = search_task.result()
+    # Search for the simready assets
+    tables, dishes, items = await search_assets_async()
 
     # Create the writer and the render product for capturing the scene
     output_dir = os.path.join(os.getcwd(), "_out_simready_assets")
@@ -259,18 +246,17 @@ def run_simready_randomizations(num_scenarios: int) -> None:
     # Generate randomized scenarios
     for i in range(num_scenarios):
         print(f"[SDG] Scenario {i + 1}/{num_scenarios}")
-        run_simready_randomization(
+        await run_simready_randomization_async(
             stage=stage, camera_prim=camera_prim, render_product=rp, tables=tables, dishes=dishes, items=items, rng=rng
         )
 
     # Finalize and cleanup
     print("[SDG] Wait for the data to be written and cleanup render products...")
-    rep.orchestrator.wait_until_complete()
+    await rep.orchestrator.wait_until_complete_async()
     writer.detach()
     rp.destroy()
 
 
+num_scenarios = 5
 print(f"[SDG] Starting SDG pipeline with {num_scenarios} scenarios...")
-run_simready_randomizations(num_scenarios)
-
-simulation_app.close()
+asyncio.ensure_future(run_simready_randomizations_async(num_scenarios))
