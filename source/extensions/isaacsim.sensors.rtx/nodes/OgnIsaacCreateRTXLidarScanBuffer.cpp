@@ -859,7 +859,6 @@ public:
 
         // Set default output values
         auto& matrixOutput = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.transform());
-        matrixOutput.SetIdentity();
         if (state.m_firstFrame || db.inputs.enablePerFrameOutput())
         {
             resetOutputs(db);

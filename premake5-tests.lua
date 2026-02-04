@@ -256,29 +256,45 @@ local function get_sensor_tests()
             "tests-nativepython-isaacsim.sensors.camera.camera_annotator_device",
             "standalone_examples/api/isaacsim.sensors.camera/camera_annotator_device.py",
         },
-        -- RTX
+        -- RTX Sensors
         {
-            "tests-nativepython-isaacsim.sensors.rtx.inspect_lidar_metadata",
-            "standalone_examples/api/isaacsim.sensors.rtx/inspect_lidar_metadata.py",
+            "tests-nativepython-isaacsim.sensors.rtx.create_lidar_basic",
+            "standalone_examples/api/isaacsim.sensors.rtx/create_lidar_basic.py",
             "--test",
         },
         {
-            "tests-nativepython-isaacsim.sensors.rtx.inspect_radar_metadata",
-            "standalone_examples/api/isaacsim.sensors.rtx/inspect_radar_metadata.py",
+            "tests-nativepython-isaacsim.sensors.rtx.create_radar_basic",
+            "standalone_examples/api/isaacsim.sensors.rtx/create_radar_basic.py",
             "--test",
         },
         {
-            "tests-nativepython-isaacsim.sensors.rtx.resolve_object_ids_from_gmo",
-            "standalone_examples/api/isaacsim.sensors.rtx/resolve_object_ids_from_gmo.py",
-        },
-        {
-            "tests-nativepython-isaacsim.sensors.rtx.rotating_lidar_rtx",
-            "standalone_examples/api/isaacsim.sensors.rtx/rotating_lidar_rtx.py",
+            "tests-nativepython-isaacsim.sensors.rtx.create_lidar_with_config_and_variants",
+            "standalone_examples/api/isaacsim.sensors.rtx/create_lidar_with_config_and_variants.py",
             "--test",
         },
         {
-            "tests-nativepython-isaacsim.sensors.rtx.specify_non_visual_materials",
-            "standalone_examples/api/isaacsim.sensors.rtx/specify_non_visual_materials.py",
+            "tests-nativepython-isaacsim.sensors.rtx.inspect_lidar_gmo",
+            "standalone_examples/api/isaacsim.sensors.rtx/inspect_lidar_gmo.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.rtx.inspect_radar_gmo",
+            "standalone_examples/api/isaacsim.sensors.rtx/inspect_radar_gmo.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.rtx.resolve_lidar_object_ids",
+            "standalone_examples/api/isaacsim.sensors.rtx/resolve_lidar_object_ids.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.rtx.lidar_robot_integration",
+            "standalone_examples/api/isaacsim.sensors.rtx/lidar_robot_integration.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.rtx.apply_nonvisual_materials",
+            "standalone_examples/api/isaacsim.sensors.rtx/apply_nonvisual_materials.py",
             "--test",
         },
         -- Physics
@@ -291,17 +307,6 @@ local function get_sensor_tests()
         {
             "tests-nativepython-testing-isaacsim.sensors.physics.contact_sensor",
             "standalone_examples/testing/isaacsim.sensors.physics/contact_sensor_test.py",
-        },
-        -- Debug Draw
-        {
-            "tests-nativepython-isaacsim.util.debug_draw.rtx_lidar",
-            "standalone_examples/api/isaacsim.util.debug_draw/rtx_lidar.py",
-            "--test",
-        },
-        {
-            "tests-nativepython-isaacsim.util.debug_draw.rtx_radar",
-            "standalone_examples/api/isaacsim.util.debug_draw/rtx_radar.py",
-            "--test",
         },
     }
 end
@@ -861,7 +866,7 @@ local function get_benchmark_tests()
             "tests-standalone_benchmarks-benchmark_robots_nova_carter_ros2_async",
             "standalone_examples/benchmarks/benchmark_robots_nova_carter_ros2.py",
             "--num-frames 10 --num-robots 2 --enable-3d-lidar 1 --enable-2d-lidar 2 --enable-hawks 1 --non-headless --async-render-handshake",
-        },        
+        },
         {
             "tests-standalone_benchmarks-benchmark_robots_nova_carter",
             "standalone_examples/benchmarks/benchmark_robots_nova_carter.py",
