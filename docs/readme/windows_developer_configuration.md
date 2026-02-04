@@ -28,6 +28,48 @@ To enable the Windows C++ build process:
 
 **Note:** If you already have Visual Studio and the Windows SDK installed, this might be the only change needed. The tooling will auto-detect installed components.
 
+## Windows Long Paths Support
+
+Isaac Sim builds may generate file paths exceeding the traditional Windows 260-character limit. To avoid build errors related to missing files or path length restrictions, Windows Long Paths support must be enabled.
+
+### Automatic Check
+
+The build script (`build.bat`) automatically checks the `LongPathsEnabled` registry setting and displays warnings if long paths support is not properly configured.
+
+### Checking Long Paths Status
+
+To manually verify if long paths are enabled on your system, run the following command in PowerShell:
+
+```powershell
+Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled"
+```
+
+The value should be `1` for enabled, or `0` for disabled.
+
+### Enabling Long Paths Support
+
+If long paths are not enabled, follow these steps:
+
+1. **Open PowerShell as Administrator**
+   - Right-click on PowerShell and select "Run as Administrator"
+
+2. **Create or Set the Registry Value**
+
+   If the registry value doesn't exist, create it:
+   ```powershell
+   New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+   ```
+
+   If it already exists but is set to `0`, update it:
+   ```powershell
+   Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1
+   ```
+
+3. **Restart Your System**
+   - A system restart is required for the changes to take effect.
+
+**Note:** Long paths support requires Windows 10 version 1607 or later, or Windows 11.
+
 ## Compiler Version Checking
 
 The Windows build process will check a handful of versions before starting.  It expects to find the following versions (defined in `repo.toml`):
