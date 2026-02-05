@@ -1,8 +1,12 @@
 # Changelog
 
+## [1.0.1] - 2026-02-05
+### Fixed
+- Only return values for DOFs that have applied the `PhysxDrivePerformanceEnvelopeAPI` when querying drive model properties
+
 ## [1.0.0] - 2026-01-20
 ### Removed
-- Remove deprecated PhysX residual reporting APIs (`enable_residual_reports`, `get_solver_residual_reports`) from `Articulation`.
+- Remove deprecated PhysX residual reporting APIs (`enable_residual_reports`, `get_solver_residual_reports`) from `Articulation`
 
 ## [0.10.1] - 2026-01-23
 ### Changed
