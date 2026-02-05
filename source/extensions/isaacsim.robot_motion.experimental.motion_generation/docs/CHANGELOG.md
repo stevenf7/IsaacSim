@@ -2,6 +2,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-02-04
+### Changed
+- All `wp.vec3` and `wp.quat` types were changed to `wp.array`.
+- `JointState`, `BodyState` and `RootState` can all now have entries which are `None`, meaning they are not defined (for example, `JointState.velocity=None` indicating velocity is not known).
+- The `combine_robot_states` function is more flexible.
+
 ## [1.1.0] - 2026-02-02
 ### Added
 - `SceneQuery` and `TrackableApi`, for querying objects within an AABB for those with a certain API.
@@ -15,7 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Trajectory` no longer has a (redundant) function for `get_joint_names`
 - `Trajectory` returns an `Optional[RobotState]`. `None` indicates no valid output.
 - `MinimalTimeTrajectory` is now named `MinimalTimeJointTrajectory`
-
 ### Removed
 - `Action` type is no longer used, as `RobotState` is more general.
 
