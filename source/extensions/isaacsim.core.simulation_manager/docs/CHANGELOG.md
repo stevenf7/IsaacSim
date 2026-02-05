@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.10.0] - 2026-02-03
+### Added
+- When `/rtx/hydra/supportMultiTickRate` is enabled, simulation time is propagated to the run loop
+
 ## [1.9.2] - 2026-01-22
 ### Changed
 - Replaced omni.physx start_simulation with omni.physics start_simulation
