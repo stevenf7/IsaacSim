@@ -31,6 +31,8 @@
 #include <omni/physics/simulation/IPhysicsStageUpdate.h>
 #include <omni/usd/UsdContext.h>
 
+#include <RunLoopRunner.h>
+
 #if defined(_WIN32)
 #    include <usdrt/scenegraph/usd/usd/stage.h>
 #else
@@ -59,6 +61,7 @@ omni::physics::IPhysicsSimulation* g_physicsSimulationInterface = nullptr;
 omni::physics::SubscriptionId g_physicsOnStepSubscription;
 carb::events::ISubscriptionPtr g_physicsEventSubscription;
 omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
+omni::kit::IRunLoopRunnerImpl* g_runLoopRunnerInterface = nullptr;
 
 omni::fabric::UsdStageId g_stageId;
 double g_simulationTime = 0.0;
@@ -67,6 +70,16 @@ double g_systemTime = 0.0;
 size_t g_numPhysicsSteps = 0;
 bool g_simulating = false;
 bool g_paused = false;
+
+void updateMultiTickExternalSimulationTime()
+{
+    auto settings = carb::getCachedInterface<carb::settings::ISettings>();
+    if (g_runLoopRunnerInterface && settings && settings->getAsBool("/rtx/hydra/supportMultiTickRate"))
+    {
+        std::string runloopName;
+        g_runLoopRunnerInterface->setNextSimulationTime(g_simulationTime, runloopName);
+    }
+}
 
 /** @brief Global time storage instance for simulation time data */
 std::unique_ptr<isaacsim::core::simulation_manager::TimeSampleStorage> g_timeStorage = nullptr;
@@ -617,6 +630,7 @@ void onPhysicsStep(float timeElapsed, const omni::physics::PhysicsStepContext& c
     g_numPhysicsSteps += 1;
     g_systemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
     g_simulating = true;
+    updateMultiTickExternalSimulationTime();
 
     if (!g_timeStorage)
     {
@@ -652,6 +666,7 @@ void onStop(void* userData)
     // Reset simulation state
     g_simulationTime = 0;
     g_numPhysicsSteps = 0;
+    updateMultiTickExternalSimulationTime();
 }
 
 /**
@@ -677,6 +692,8 @@ void onAttach(long int stageId, double metersPerUnit, void* userData)
         return;
     }
     g_stageId.id = stageId;
+
+    updateMultiTickExternalSimulationTime();
 
     // Initialize time storage for this stage
     g_timeStorage = std::make_unique<isaacsim::core::simulation_manager::TimeSampleStorage>(g_stageId);
@@ -725,11 +742,16 @@ public:
         // TODO: in case there is more than one physics scene which one is returned?
         g_physicsStageUpdateInterface = carb::getCachedInterface<omni::physics::IPhysicsStageUpdate>();
         g_physicsSimulationInterface = carb::getCachedInterface<omni::physics::IPhysicsSimulation>();
+        g_runLoopRunnerInterface = carb::getCachedInterface<omni::kit::IRunLoopRunnerImpl>();
+
         g_physicsOnStepSubscription = g_physicsSimulationInterface->subscribePhysicsOnStepEvents(false, 0, onPhysicsStep);
         g_systemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
         g_simulationTime = 0;
         g_simulationTimeMonotonic = 0;
         g_numPhysicsSteps = 0;
+
+        // Set the initial simulation time to zero
+        updateMultiTickExternalSimulationTime();
 
         g_physicsEventSubscription = carb::events::createSubscriptionToPop(
             g_physicsStageUpdateInterface->getSimulationEventStream().get(),

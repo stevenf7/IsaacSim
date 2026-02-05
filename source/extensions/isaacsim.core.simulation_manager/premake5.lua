@@ -29,6 +29,7 @@ includedirs {
     "include",
     "plugins/isaacsim.core.simulation_manager",
     "%{root}/source/extensions/isaacsim.core.includes/include",
+    "%{root}/source/extensions/omni.kit.loop-isaac/include",
     "%{target_deps}/usd/%{cfg.buildcfg}/include",
     "%{target_deps}/usd/%{cfg.buildcfg}/include/boost",
     "%{target_deps}/python/include/python3.12",

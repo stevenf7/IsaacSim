@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.app
 import omni.kit.test
@@ -975,3 +976,90 @@ class TestSimulationManagerStageTransitions(omni.kit.test.AsyncTestCase):
             # Stop simulation
             timeline.stop()
             await omni.kit.app.get_app().next_update_async()
+
+
+class TestSimulationManagerMultiTickRendering(omni.kit.test.AsyncTestCase):
+    """Tests for SimulationManager multi-tick rendering mode support."""
+
+    async def setUp(self):
+        """Method called to prepare the test fixture."""
+        super().setUp()
+        # Enable multi-tick rate support
+        carb.settings.get_settings().set_bool("/rtx/hydra/supportMultiTickRate", True)
+        await stage_utils.create_new_stage_async()
+        self._physics_scene_path = "/World/PhysicsScene"
+        stage_utils.define_prim(self._physics_scene_path, type_name="PhysicsScene")
+        await omni.kit.app.get_app().next_update_async()
+
+    async def tearDown(self):
+        """Method called immediately after the test method has been called."""
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        super().tearDown()
+        carb.settings.get_settings().set_bool("/rtx/hydra/supportMultiTickRate", False)
+
+    async def test_multi_tick_simulation_time_update(self):
+        """Test that simulation time is updated correctly with multi-tick rendering mode.
+
+        This test verifies that when /rtx/hydra/supportMultiTickRate is enabled,
+        the simulation time is properly propagated to the run loop for SWH synchronization.
+        The SWHExternalSimulationTime should start at zero and increase with each physics step.
+        """
+
+        # Track the SWHExternalSimulationTime values received in update events
+        received_sim_times = []
+
+        def _update_callback(event):
+            if "SWHExternalSimulationTime" in event.payload:
+                received_sim_times.append(event.payload["SWHExternalSimulationTime"])
+
+        subscription = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+            on_event=_update_callback,
+            observer_name="test_multi_tick_simulation_time",
+        )
+
+        # Start simulation
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.play()
+
+        # First update after play - simulation time should be zero initially
+        await omni.kit.app.get_app().next_update_async()
+
+        self.assertTrue(SimulationManager.is_simulating())
+        self.assertGreater(len(received_sim_times), 0, "SWHExternalSimulationTime was not received")
+
+        # The first received time should be zero (or very close to zero)
+        first_time = received_sim_times[0]
+        self.assertAlmostEqual(first_time, 0.0, places=5, msg="Initial SWHExternalSimulationTime should be zero")
+
+        # Run several more updates and verify time increases
+        for i in range(5):
+            prev_time = received_sim_times[-1]
+            previous_sim_time = SimulationManager.get_simulation_time()
+            await omni.kit.app.get_app().next_update_async()
+
+            # Should have received new time values
+            self.assertGreater(len(received_sim_times), i + 1)
+
+            # Each new time should be greater than the previous
+            current_time = received_sim_times[-1]
+            self.assertGreater(current_time, prev_time, f"SWHExternalSimulationTime should increase on step {i + 1}")
+
+        # Verify the times match - SWH time is updated after sim time advances,
+        # so the final SWH time should match the second-to-last simulation time
+        final_swh_time = received_sim_times[-1]
+        self.assertAlmostEqual(
+            final_swh_time,
+            previous_sim_time,
+            places=5,
+            msg="SWHExternalSimulationTime should advance by physics dt each step",
+        )
+
+        # Stop simulation
+        timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Cleanup
+        subscription = None
