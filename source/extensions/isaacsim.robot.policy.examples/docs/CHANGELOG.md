@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.0.4] - 2026-02-04
+### Changed
+- Update physics rate for drawer opening test for CPU test
+
 ## [5.0.3] - 2025-12-08
 ### Changed
 - Removed rendering manager test time dependency (moved to base sample)

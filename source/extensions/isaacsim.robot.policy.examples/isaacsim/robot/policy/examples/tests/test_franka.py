@@ -39,10 +39,14 @@ class TestFrankaExampleExtension(omni.kit.test.AsyncTestCase):
         """Return the device to use for tensors. Override in subclasses."""
         return torch.device("cpu")
 
+    def get_physics_rate(self):
+        """Return the physics rate for the drawer opening test."""
+        return 200  # CPU needs a lower rate
+
     async def setUp(self):
         await stage_utils.create_new_stage_async()
         # This needs to be set so that kit updates match physics updates
-        self._physics_rate = 400
+        self._physics_rate = self.get_physics_rate()
 
         device_str = str(self.get_device())
         backend = "torch" if device_str != "cpu" else "numpy"
@@ -149,3 +153,7 @@ class TestFrankaGPU(TestFrankaExampleExtension):
     def get_device(self):
         """Return the device to use for tensors"""
         return torch.device("cuda")
+
+    def get_physics_rate(self):
+        """Return the physics rate for the drawer opening test."""
+        return 400  # GPU converges faster
