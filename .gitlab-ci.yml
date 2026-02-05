@@ -210,9 +210,11 @@ post_to_slack:
     - ./tools/packman/python.sh -m pip install slack_sdk requests
     - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --pipeline-report --channel $SLACK_CHANNEL
   rules:
-    - if: $CI_COMMIT_REF_NAME == "develop-kit-tot"
-    - !reference [.rules-nightly-tests, rules]
+    - if: $CI_COMMIT_REF_NAME == "develop-kit-tot" && $CI_PIPELINE_SOURCE != "push"
+      when: always
+    - !reference [.rules-nightly-tests-always, rules]
     - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[x\] Post pipeline reports to slack/"
+      when: always
       variables:
         SLACK_CHANNEL: "#isaac-sim-ci-mr"
 
@@ -293,6 +295,19 @@ osec:sonarqube:
       # allow schedule pipeline if RUN_NIGHTLY_TESTS is set to "true" and on protected and release/* branches
       - if: $CI_PIPELINE_SOURCE == "push" && $RUN_NIGHTLY_TESTS == "true" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
       - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+        # allow on bump version
+        changes:
+          - VERSION.md
+          - VERSION
+
+# Copy paste of the previous but this one always runs, used for the slack post currently
+.rules-nightly-tests-always:
+    rules:
+      # allow schedule pipeline if RUN_NIGHTLY_TESTS is set to "true" and on protected and release/* branches
+      - if: $CI_PIPELINE_SOURCE == "push" && $RUN_NIGHTLY_TESTS == "true" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+        when: always
+      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^release\/.*/)
+        when: always
         # allow on bump version
         changes:
           - VERSION.md
