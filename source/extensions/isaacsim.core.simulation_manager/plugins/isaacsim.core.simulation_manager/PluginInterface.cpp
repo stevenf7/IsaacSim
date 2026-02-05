@@ -27,6 +27,7 @@
 #include <omni/graph/core/Type.h>
 #include <omni/kit/IMinimal.h>
 #include <omni/kit/IStageUpdate.h>
+#include <omni/physics/simulation/IPhysics.h>
 #include <omni/physics/simulation/IPhysicsSimulation.h>
 #include <omni/physics/simulation/IPhysicsStageUpdate.h>
 #include <omni/usd/UsdContext.h>
@@ -56,9 +57,11 @@ const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.core.simulation_ma
 
 namespace
 {
+omni::physics::IPhysics* g_physicsInterface = nullptr;
 omni::physics::IPhysicsStageUpdate* g_physicsStageUpdateInterface = nullptr;
 omni::physics::IPhysicsSimulation* g_physicsSimulationInterface = nullptr;
-omni::physics::SubscriptionId g_physicsOnStepSubscription;
+omni::physics::SubscriptionId g_physicsOnStepSubscription = omni::physics::kInvalidSubscriptionId;
+omni::physics::SubscriptionId g_simulationRegistrySubscription = omni::physics::kInvalidSubscriptionId;
 carb::events::ISubscriptionPtr g_physicsEventSubscription;
 omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
 omni::kit::IRunLoopRunnerImpl* g_runLoopRunnerInterface = nullptr;
@@ -621,7 +624,7 @@ void onResume(float currentTime, void* userData)
  * Updates simulation time values and writes them to time storage on each physics step.
  *
  * @param[in] timeElapsed The elapsed time since the last physics step
- * @param[in] userData User data pointer
+ * @param[in] context Physics step context information
  */
 void onPhysicsStep(float timeElapsed, const omni::physics::PhysicsStepContext& context)
 {
@@ -634,7 +637,7 @@ void onPhysicsStep(float timeElapsed, const omni::physics::PhysicsStepContext& c
 
     if (!g_timeStorage)
     {
-        CARB_LOG_INFO("onPhysicsStep: time storage not initialized, initializing");
+        CARB_LOG_WARN("onPhysicsStep: time storage not initialized, initializing");
         g_timeStorage = std::make_unique<isaacsim::core::simulation_manager::TimeSampleStorage>(g_stageId);
         return;
     }
@@ -644,6 +647,33 @@ void onPhysicsStep(float timeElapsed, const omni::physics::PhysicsStepContext& c
     if (!success)
     {
         CARB_LOG_ERROR("Failed to write time data to storage");
+    }
+}
+
+/**
+ * @brief Callback function for simulation registry events
+ * @details
+ * Re-subscribes to physics step events when a simulation is registered.
+ * This ensures newly registered simulations (like Newton) receive the step callback.
+ *
+ * @param[in] eventType The type of simulation registry event
+ * @param[in] simulationId The ID of the simulation
+ * @param[in] simulationName The name of the simulation
+ * @param[in] userData User data pointer
+ */
+void onSimulationRegistryEvent(omni::physics::SimulationRegistryEventType::Enum eventType,
+                               omni::physics::SimulationId simulationId,
+                               const char* simulationName,
+                               void* userData)
+{
+    if (eventType == omni::physics::SimulationRegistryEventType::eSIMULATION_REGISTERED)
+    {
+        // Re-subscribe to step events so the newly registered simulation receives the callback
+        if (g_physicsOnStepSubscription != omni::physics::kInvalidSubscriptionId)
+        {
+            g_physicsSimulationInterface->unsubscribePhysicsOnStepEvents(g_physicsOnStepSubscription);
+        }
+        g_physicsOnStepSubscription = g_physicsSimulationInterface->subscribePhysicsOnStepEvents(false, 0, onPhysicsStep);
     }
 }
 
@@ -739,12 +769,17 @@ public:
      */
     void onStartup(const char* extId) override
     {
-        // TODO: in case there is more than one physics scene which one is returned?
+        g_physicsInterface = carb::getCachedInterface<omni::physics::IPhysics>();
         g_physicsStageUpdateInterface = carb::getCachedInterface<omni::physics::IPhysicsStageUpdate>();
         g_physicsSimulationInterface = carb::getCachedInterface<omni::physics::IPhysicsSimulation>();
         g_runLoopRunnerInterface = carb::getCachedInterface<omni::kit::IRunLoopRunnerImpl>();
 
         g_physicsOnStepSubscription = g_physicsSimulationInterface->subscribePhysicsOnStepEvents(false, 0, onPhysicsStep);
+
+        // Subscribe to simulation registry events to re-subscribe when new simulations are registered
+        g_simulationRegistrySubscription =
+            g_physicsInterface->subscribeSimulationRegistryEvents(onSimulationRegistryEvent, nullptr);
+
         g_systemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
         g_simulationTime = 0;
         g_simulationTimeMonotonic = 0;
@@ -794,6 +829,19 @@ public:
      */
     void onShutdown() override
     {
+        // Unsubscribe from simulation registry events
+        if (g_simulationRegistrySubscription != omni::physics::kInvalidSubscriptionId)
+        {
+            g_physicsInterface->unsubscribeSimulationRegistryEvents(g_simulationRegistrySubscription);
+            g_simulationRegistrySubscription = omni::physics::kInvalidSubscriptionId;
+        }
+
+        // Unsubscribe from physics step events
+        if (g_physicsOnStepSubscription != omni::physics::kInvalidSubscriptionId)
+        {
+            g_physicsSimulationInterface->unsubscribePhysicsOnStepEvents(g_physicsOnStepSubscription);
+            g_physicsOnStepSubscription = omni::physics::kInvalidSubscriptionId;
+        }
     }
 };
 

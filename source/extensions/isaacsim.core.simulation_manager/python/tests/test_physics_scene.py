@@ -18,6 +18,67 @@ import dataclasses
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
 from isaacsim.core.simulation_manager import PhysicsScene, PhysxGpuCfg, PhysxScene
+from isaacsim.core.simulation_manager.impl.mjc_scene import NewtonMjcScene
+from pxr import Gf
+
+
+class TestPhysicsScene(omni.kit.test.AsyncTestCase):
+    """Test the base PhysicsScene class with NewtonSceneAPI attributes."""
+
+    async def setUp(self):
+        """Method called to prepare the test fixture"""
+        super().setUp()
+        await stage_utils.create_new_stage_async()
+
+    async def tearDown(self):
+        """Method called immediately after the test method has been called"""
+        super().tearDown()
+
+    async def test_physics_scene_constructor(self):
+        # no PhysicsScene in stage (create new)
+        self.assertListEqual(PhysicsScene.get_physics_scene_paths(), [])
+        path = "/physicsScene_0"
+        # Use PhysxScene to create a physics scene (PhysicsScene applies NewtonSceneAPI)
+        physics_scene = PhysxScene(path)
+        self.assertEqual(physics_scene.path, path)
+        self.assertEqual(physics_scene.prim.GetPath().pathString, path)
+        self.assertTrue(physics_scene.prim.HasAPI("NewtonSceneAPI"))
+
+    async def test_dt(self):
+        # Test Newton dt on base PhysicsScene
+        physics_scene = PhysicsScene("/World/physicsScene")
+        # default: 1000 steps/sec = 0.001 dt (from NewtonSceneAPI)
+        self.assertAlmostEqual(physics_scene.get_dt(), 0.001, places=5)
+        # set dt
+        for dt in [0.01, 0.005, 0.002]:
+            physics_scene.set_dt(dt)
+            self.assertAlmostEqual(physics_scene.get_dt(), dt, places=5)
+        # exceptions
+        self.assertRaises(ValueError, physics_scene.set_dt, -1.0)
+        self.assertRaises(ValueError, physics_scene.set_dt, 1.1)
+
+    async def test_gravity_enabled(self):
+        physics_scene = PhysicsScene("/World/physicsScene")
+        # default: True
+        self.assertTrue(physics_scene.get_enabled_gravity())
+        # toggle
+        for enabled in [False, True]:
+            physics_scene.set_enabled_gravity(enabled)
+            self.assertEqual(physics_scene.get_enabled_gravity(), enabled)
+
+    async def test_max_solver_iterations(self):
+        physics_scene = PhysicsScene("/World/physicsScene")
+        # default: -1 (solver chooses)
+        self.assertEqual(physics_scene.get_max_solver_iterations(), -1)
+        # set values
+        for iterations in [10, 50, 100]:
+            physics_scene.set_max_solver_iterations(iterations)
+            self.assertEqual(physics_scene.get_max_solver_iterations(), iterations)
+        # reset to default
+        physics_scene.set_max_solver_iterations(-1)
+        self.assertEqual(physics_scene.get_max_solver_iterations(), -1)
+        # exceptions
+        self.assertRaises(ValueError, physics_scene.set_max_solver_iterations, -2)
 
 
 class TestPhysxScene(omni.kit.test.AsyncTestCase):
@@ -170,3 +231,135 @@ class TestPhysxScene(omni.kit.test.AsyncTestCase):
                 i,
                 msg=f"Invalid '{name}' expected value",
             )
+
+
+class TestNewtonMjcScene(omni.kit.test.AsyncTestCase):
+    async def setUp(self):
+        """Method called to prepare the test fixture"""
+        super().setUp()
+        await stage_utils.create_new_stage_async()
+
+    async def tearDown(self):
+        """Method called immediately after the test method has been called"""
+        super().tearDown()
+
+    async def test_mjc_scene_constructor(self):
+        path = "/physicsScene"
+        mjc_scene = NewtonMjcScene(path)
+        self.assertEqual(mjc_scene.path, path)
+        self.assertTrue(mjc_scene.prim.HasAPI("NewtonSceneAPI"))
+        self.assertTrue(mjc_scene.prim.HasAPI("MjcSceneAPI"))
+
+    async def test_dt(self):
+        mjc_scene = NewtonMjcScene("/World/physicsScene")
+        # default: 0.002
+        self.assertAlmostEqual(mjc_scene.get_dt(), 0.002, places=5)
+        # set values
+        for dt in [0.001, 0.005, 0.01]:
+            mjc_scene.set_dt(dt)
+            self.assertAlmostEqual(mjc_scene.get_dt(), dt, places=5)
+        # exceptions
+        self.assertRaises(ValueError, mjc_scene.set_dt, 0.0)
+        self.assertRaises(ValueError, mjc_scene.set_dt, -1.0)
+
+    async def test_integrator(self):
+        mjc_scene = NewtonMjcScene("/World/physicsScene")
+        # default: "euler"
+        self.assertEqual(mjc_scene.get_integrator(), "euler")
+        # set values
+        for integrator in ["rk4", "implicit", "implicitfast", "euler"]:
+            mjc_scene.set_integrator(integrator)
+            self.assertEqual(mjc_scene.get_integrator(), integrator)
+
+    async def test_solver(self):
+        mjc_scene = NewtonMjcScene("/World/physicsScene")
+        # default: "newton"
+        self.assertEqual(mjc_scene.get_solver(), "newton")
+        # set values
+        for solver in ["pgs", "cg", "newton"]:
+            mjc_scene.set_solver(solver)
+            self.assertEqual(mjc_scene.get_solver(), solver)
+
+    async def test_iterations(self):
+        mjc_scene = NewtonMjcScene("/World/physicsScene")
+        # default: 100
+        self.assertEqual(mjc_scene.get_iterations(), 100)
+        # set values
+        for iterations in [50, 200, 500]:
+            mjc_scene.set_iterations(iterations)
+            self.assertEqual(mjc_scene.get_iterations(), iterations)
+
+    async def test_tolerance(self):
+        mjc_scene = NewtonMjcScene("/World/physicsScene")
+        # default: 1e-08
+        self.assertAlmostEqual(mjc_scene.get_tolerance(), 1e-08, places=10)
+        # set values
+        for tolerance in [1e-06, 1e-10, 1e-12]:
+            mjc_scene.set_tolerance(tolerance)
+            self.assertAlmostEqual(mjc_scene.get_tolerance(), tolerance, places=14)
+
+    async def test_cone(self):
+        mjc_scene = NewtonMjcScene("/World/physicsScene")
+        # default: "pyramidal"
+        self.assertEqual(mjc_scene.get_cone(), "pyramidal")
+        # set values
+        for cone in ["elliptic", "pyramidal"]:
+            mjc_scene.set_cone(cone)
+            self.assertEqual(mjc_scene.get_cone(), cone)
+
+    async def test_jacobian(self):
+        mjc_scene = NewtonMjcScene("/World/physicsScene")
+        # default: "auto"
+        self.assertEqual(mjc_scene.get_jacobian(), "auto")
+        # set values
+        for jacobian in ["dense", "sparse", "auto"]:
+            mjc_scene.set_jacobian(jacobian)
+            self.assertEqual(mjc_scene.get_jacobian(), jacobian)
+
+    async def test_impratio(self):
+        mjc_scene = NewtonMjcScene("/World/physicsScene")
+        # default: 1.0
+        self.assertAlmostEqual(mjc_scene.get_impratio(), 1.0, places=5)
+        # set values
+        for impratio in [0.5, 2.0, 10.0]:
+            mjc_scene.set_impratio(impratio)
+            self.assertAlmostEqual(mjc_scene.get_impratio(), impratio, places=5)
+
+    async def test_wind(self):
+        mjc_scene = NewtonMjcScene("/World/physicsScene")
+        # default: (0, 0, 0)
+        wind = mjc_scene.get_wind()
+        self.assertAlmostEqual(wind[0], 0.0, places=5)
+        self.assertAlmostEqual(wind[1], 0.0, places=5)
+        self.assertAlmostEqual(wind[2], 0.0, places=5)
+        # set values
+        test_winds = [
+            Gf.Vec3d(1.0, 0.0, 0.0),
+            (0.0, 5.0, 0.0),
+            [0.0, 0.0, -2.0],
+        ]
+        for wind_val in test_winds:
+            mjc_scene.set_wind(wind_val)
+            wind = mjc_scene.get_wind()
+            expected = Gf.Vec3d(*wind_val) if not isinstance(wind_val, Gf.Vec3d) else wind_val
+            self.assertAlmostEqual(wind[0], expected[0], places=5)
+            self.assertAlmostEqual(wind[1], expected[1], places=5)
+            self.assertAlmostEqual(wind[2], expected[2], places=5)
+
+    async def test_density(self):
+        mjc_scene = NewtonMjcScene("/World/physicsScene")
+        # default: 0.0
+        self.assertAlmostEqual(mjc_scene.get_density(), 0.0, places=5)
+        # set values
+        for density in [1.225, 1000.0, 0.5]:
+            mjc_scene.set_density(density)
+            self.assertAlmostEqual(mjc_scene.get_density(), density, places=5)
+
+    async def test_viscosity(self):
+        mjc_scene = NewtonMjcScene("/World/physicsScene")
+        # default: 0.0
+        self.assertAlmostEqual(mjc_scene.get_viscosity(), 0.0, places=5)
+        # set values
+        for viscosity in [0.001, 1.0, 0.0001]:
+            mjc_scene.set_viscosity(viscosity)
+            self.assertAlmostEqual(mjc_scene.get_viscosity(), viscosity, places=5)

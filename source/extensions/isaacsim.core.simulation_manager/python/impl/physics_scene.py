@@ -15,21 +15,20 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from typing import Any
 
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-from pxr import Gf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
 
 from .. import _simulation_manager
 
 
-class PhysicsScene(ABC):
+class PhysicsScene:
     """Base class for manipulating a USD Physics Scene prim and its attributes.
 
-    This abstract class provides engine-agnostic functionality for working with USD Physics Scene
-    prims. Engine-specific implementations should inherit from this class and implement the
-    abstract methods.
+    This class provides common functionality for working with USD Physics Scene prims,
+    including Newton-common attributes that are applied by default to all physics scenes.
 
     Args:
         prim: USD Physics Scene prim path or prim instance.
@@ -43,6 +42,9 @@ class PhysicsScene(ABC):
         physics_scene = _simulation_manager.PhysicsScene(prim_utils.get_prim_path(prim))
         self._path = physics_scene.path
         self._prim = prim_utils.get_prim_at_path(prim)
+        # Apply NewtonSceneAPI by default to all physics scenes
+        if not self._prim.HasAPI("NewtonSceneAPI"):
+            self._prim.ApplyAPI("NewtonSceneAPI")
 
     @property
     def path(self) -> str:
@@ -155,20 +157,110 @@ class PhysicsScene(ABC):
         self.physics_scene.GetGravityMagnitudeAttr().Set(magnitude)
         self.physics_scene.GetGravityDirectionAttr().Set(direction)
 
-    @abstractmethod
     def get_dt(self) -> float:
         """Get the Physics Scene's delta time (DT).
 
         Returns:
             Physics Scene's delta time (DT).
-        """
-        pass
 
-    @abstractmethod
+        Example:
+
+        .. code-block:: python
+
+            >>> physics_scene.get_dt()
+            0.001
+        """
+        attr = self._prim.GetAttribute("newton:timeStepsPerSecond")
+        steps_per_second = attr.Get() if attr else 1000
+        return 1.0 / steps_per_second if steps_per_second else 0.0
+
     def set_dt(self, dt: float) -> None:
         """Set the Physics Scene's delta time (DT).
 
         Args:
             dt: Physics Scene's delta time (DT).
+
+        Raises:
+            ValueError: If the delta time (DT) is less than 0 or greater than 1.0.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> physics_scene.set_dt(0.001)
         """
-        pass
+        if dt < 0.0 or dt > 1.0:
+            raise ValueError(f"The delta time (DT) must be in the range [0.0, 1.0], got {dt}")
+        steps_per_second = int(1.0 / dt) if dt else 0
+        attr = self._prim.GetAttribute("newton:timeStepsPerSecond")
+        if attr:
+            attr.Set(steps_per_second)
+
+    def get_enabled_gravity(self) -> bool:
+        """Get whether gravity is enabled for the Physics Scene.
+
+        Returns:
+            True if gravity is enabled, False otherwise.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> physics_scene.get_enabled_gravity()
+            True
+        """
+        attr = self._prim.GetAttribute("newton:gravityEnabled")
+        return attr.Get() if attr else True
+
+    def set_enabled_gravity(self, enabled: bool) -> None:
+        """Enable or disable gravity for the Physics Scene.
+
+        Args:
+            enabled: True to enable gravity, False to disable.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> physics_scene.set_enabled_gravity(False)
+        """
+        attr = self._prim.GetAttribute("newton:gravityEnabled")
+        if attr:
+            attr.Set(bool(enabled))
+
+    def get_max_solver_iterations(self) -> int:
+        """Get the maximum number of solver iterations for the Physics Scene.
+
+        Returns:
+            Maximum number of solver iterations. -1 means the solver chooses the default.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> physics_scene.get_max_solver_iterations()
+            -1
+        """
+        attr = self._prim.GetAttribute("newton:maxSolverIterations")
+        return attr.Get() if attr else -1
+
+    def set_max_solver_iterations(self, iterations: int) -> None:
+        """Set the maximum number of solver iterations for the Physics Scene.
+
+        Args:
+            iterations: Maximum number of solver iterations. Set to -1 to use solver default.
+
+        Raises:
+            ValueError: If the iterations is less than -1.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> physics_scene.set_max_solver_iterations(100)
+        """
+        if iterations < -1:
+            raise ValueError(f"The iterations must be greater than or equal to -1, got {iterations}")
+        attr = self._prim.GetAttribute("newton:maxSolverIterations")
+        if attr:
+            attr.Set(int(iterations))

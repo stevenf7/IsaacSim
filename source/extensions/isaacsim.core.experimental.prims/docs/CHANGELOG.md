@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0] - 2026-02-04
+### Added
+- Add Newton physics engine support for articulation and rigid body tests
+
 ## [1.0.1] - 2026-02-05
 ### Fixed
 - Only return values for DOFs that have applied the `PhysxDrivePerformanceEnvelopeAPI` when querying drive model properties

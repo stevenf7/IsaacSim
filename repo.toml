@@ -78,6 +78,7 @@ fetch.pip.files_to_pull = [
   "${root}/deps/pip_usd_to_urdf.toml",
   "${root}/deps/pip_cloud.toml",
   "${root}/deps/pip_ucx.toml",
+  "${root}/deps/pip_newton.toml",
 ]
 
 enable_compiler_version_check = true

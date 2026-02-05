@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.11.0] - 2026-02-04
+### Added
+- Add Newton physics engine support with `switch_physics_engine()` method
+- Add `NewtonMjcScene` and `NewtonXpbdScene` classes for Newton solver-specific scene configuration
+- Add `PhysicsScene` base class for common physics scene operations
+
 ## [1.10.0] - 2026-02-03
 ### Added
 - When `/rtx/hydra/supportMultiTickRate` is enabled, simulation time is propagated to the run loop

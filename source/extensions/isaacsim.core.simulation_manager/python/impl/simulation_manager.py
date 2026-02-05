@@ -68,6 +68,7 @@ class SimulationManager:
     # physics engine
     _engine = "physx"
     _simulation_registry_sub = None
+    _device: wp.context.Device | None = None  # Explicitly requested device (for Newton)
 
     # default callbacks
     _default_callback_on_stop = None
@@ -126,7 +127,6 @@ class SimulationManager:
         for sim_id in simulation_ids:
             sim_name = cls._physics_interface.get_simulation_name(sim_id)
             is_active = cls._physics_interface.is_simulation_active(sim_id)
-            # Normalize engine name to lowercase for consistency
             engines.append((sim_name.lower(), is_active))
 
         if verbose:
@@ -137,12 +137,12 @@ class SimulationManager:
         return engines
 
     @classmethod
-    def switch_physics_engine(cls, engine_name: Literal["physx"], verbose: bool = False) -> bool:
+    def switch_physics_engine(cls, engine_name: Literal["physx", "newton"], verbose: bool = False) -> bool:
         """Switch to a specific physics engine.
 
         Args:
             engine_name: Name of the engine to switch to.
-            verbose: If True, log switch details. Defaults to False.
+            verbose: If True, log switch details to console. Defaults to False.
 
         Returns:
             True if switch was successful, False otherwise.
@@ -151,9 +151,7 @@ class SimulationManager:
             carb.log_error(f"Cannot switch to {engine_name}: physics interface not available")
             return False
 
-        # Store old engine name for logging
         old_engine = cls._engine
-        # cls.get_available_physics_engines()
         simulation_ids = cls._physics_interface.get_simulation_ids()
         target_id = None
 
@@ -174,7 +172,6 @@ class SimulationManager:
         for sim_id in simulation_ids:
             if sim_id != target_id:
                 if cls._physics_interface.is_simulation_active(sim_id):
-                    # Call on_detach before deactivating
                     simulation = cls._physics_interface.get_simulation(sim_id)
                     if simulation and simulation.stage_update_fns and simulation.stage_update_fns.on_detach:
                         try:
@@ -195,7 +192,6 @@ class SimulationManager:
         if not was_already_active:
             cls._physics_interface.activate_simulation(target_id)
 
-            # Call on_attach after activating
             simulation = cls._physics_interface.get_simulation(target_id)
             if simulation and simulation.stage_update_fns and simulation.stage_update_fns.on_attach:
                 try:
@@ -230,8 +226,8 @@ class SimulationManager:
             cls._physics_sim_view__warp.invalidate()
             cls._physics_sim_view__warp = None
         cls._simulation_view_created = False
-        if cls._engine == "physx":
-            cls._physics_stage_update_interface.force_load_physics_from_usd()
+
+        cls._physics_stage_update_interface.force_load_physics_from_usd()
         cls._warmup_needed = True
 
     @classmethod
@@ -256,7 +252,6 @@ class SimulationManager:
         # Check if a specific engine is requested via settings
         default_engine = cls.get_default_engine()
         if default_engine:
-            # Verify the requested engine is available
             available_engines = {cls._physics_interface.get_simulation_name(sid).lower() for sid in simulation_ids}
             default_engine_lower = default_engine.lower()
             if default_engine_lower in available_engines:
@@ -351,6 +346,7 @@ class SimulationManager:
                 cls._track_physics_scenes()
         # physics
         if reset_physics:
+            cls._device = None
             cls.invalidate_physics()
 
     @classmethod
@@ -409,6 +405,11 @@ class SimulationManager:
         try:
             if cls._engine == "physx":
                 return PhysxScene(path)
+            elif cls._engine == "newton":
+                # Lazy import to avoid loading heavy Newton dependencies at module load time
+                from .mjc_scene import NewtonMjcScene
+
+                return NewtonMjcScene(path)
             else:
                 carb.log_warn(f"Unknown engine '{cls._engine}', defaulting to PhysX")
                 return PhysxScene(path)
@@ -569,6 +570,48 @@ class SimulationManager:
                     cls.get_backend(), stage_id=stage_id
                 )
                 cls._physics_sim_view.set_subspace_roots("/")
+
+        elif cls._engine == "newton":
+            # Use newton tensors extension
+            try:
+                import isaacsim.physics.newton
+                import isaacsim.physics.newton.tensors
+
+                newton_stage = isaacsim.physics.newton.acquire_stage()
+                if newton_stage is None:
+                    raise Exception("newton stage not available - isaacsim.physics.newton extension may not be loaded")
+
+                # Update newton device to match requested device
+                requested_device = cls.get_physics_sim_device()
+                requested_device_str = requested_device if isinstance(requested_device, str) else str(requested_device)
+
+                # Check if newton needs to be reinitialized on a different device
+                if newton_stage.initialized and newton_stage.device_str != requested_device_str:
+                    carb.log_warn(
+                        f"newton device mismatch: initialized on {newton_stage.device_str}, requested {requested_device_str}. Reinitializing..."
+                    )
+                    newton_stage.initialize_newton(requested_device_str)
+
+                # Ensure device is synced
+                newton_stage.device_str = requested_device_str
+                newton_stage.device = wp.get_device(newton_stage.device_str)
+
+                # Create newton simulation views
+                if create_simulation_view:
+                    cls._physics_sim_view = isaacsim.physics.newton.tensors.create_simulation_view(
+                        cls.get_backend(), newton_stage, stage_id=stage_id
+                    )
+                    cls._physics_sim_view.set_subspace_roots("/")
+
+                cls._physics_sim_view__warp = isaacsim.physics.newton.tensors.create_simulation_view(
+                    "warp", newton_stage, stage_id=stage_id
+                )
+                cls._physics_sim_view__warp.set_subspace_roots("/")
+                carb.log_info(f"Created newton tensor simulation views (backend: {cls.get_backend()})")
+            except Exception as e:
+                carb.log_error(f"Failed to create newton simulation view: {e}")
+                raise Exception(f"Failed to create newton simulation view backend: {e}")
+
         cls._physics_sim_interface.simulate(cls.get_physics_dt(), 0.0)
         cls._physics_sim_interface.fetch_results()
         # set internal states
@@ -787,8 +830,8 @@ class SimulationManager:
             # step physics simulation
             cls._physics_sim_interface.simulate(dt, simulation_time)
             cls._physics_sim_interface.fetch_results()
-            # update fabric
-            if update_fabric:
+            # update fabric (PhysX only - Newton handles fabric updates differently)
+            if update_fabric and cls._engine == "physx":
                 if not cls.is_fabric_enabled():
                     raise ValueError("PhysX support for fabric is not enabled. Call '.enable_fabric()' first")
                 if cls._physx_fabric_interface is None:
@@ -818,6 +861,8 @@ class SimulationManager:
             >>> SimulationManager.set_device("cuda:0")
         """
         device = ops_utils.parse_device(device, raise_on_invalid=True)
+        # Store the requested device as wp.context.Device (used by Newton)
+        cls._device = device
         # GPU device
         if device.is_cuda:
             cls._carb_settings.set_int(_SETTING_PHYSICS_CUDA_DEVICE, device.ordinal)
@@ -857,6 +902,16 @@ class SimulationManager:
             <class 'warp._src.context.Device'> cpu
         """
         supress_readback = cls._carb_settings.get_as_bool(_SETTING_PHYSICS_SUPPRESS_READBACK)
+
+        # For Newton, check explicitly set device first, then fall back to warp default (CUDA)
+        if cls._engine == "newton":
+            # If device was explicitly set via set_device(), use it
+            if cls._device is not None:
+                return cls._device
+
+            # Fall back to warp's default device (usually CUDA)
+            return wp.get_device()
+
         if supress_readback:
             is_gpu_scene = False
             if cls._physics_scenes:
@@ -875,6 +930,11 @@ class SimulationManager:
     def enable_fabric(cls, enable: bool) -> None:
         """Enable or disable physics fabric integration and associated settings.
 
+        .. note::
+
+            This only applies to PhysX. For other physics engines (like Newton), this is a no-op
+            since they handle fabric/USD updates differently.
+
         Args:
             enable: Whether to enable or disable fabric.
 
@@ -886,6 +946,10 @@ class SimulationManager:
             >>>
             >>> SimulationManager.enable_fabric(True)
         """
+        # Only enable/disable PhysX fabric for PhysX engine
+        # Newton and other engines handle fabric differently
+        if cls._engine != "physx":
+            return
         # enable/disable the omni.physx.fabric extension
         app_utils.enable_extension("omni.physx.fabric", enabled=enable)
         cls._physx_fabric_interface = omni.physxfabric.get_physx_fabric_interface() if enable else None
@@ -1504,7 +1568,7 @@ class SimulationManager:
             _physics_scene.set_dt(dt)
 
     @classmethod
-    def get_physics_dt(cls, physics_scene: str = None) -> str:
+    def get_physics_dt(cls, physics_scene: str = None) -> float:
         """
          Returns the current physics dt.
 
@@ -1525,14 +1589,14 @@ class SimulationManager:
         """
         if not cls._physics_scenes:
             cls._create_physics_scene()
-        physics_scene_api = cls._get_physics_scene_api(physics_scene=physics_scene)
-        if physics_scene_api is None:
+        # Get the specific physics scene or the first one available
+        _physics_scene = cls._physics_scenes.get(physics_scene) if physics_scene else None
+        if _physics_scene is None and cls._physics_scenes:
+            _physics_scene = next(iter(cls._physics_scenes.values()))
+        if _physics_scene is None:
             return 1.0 / 60.0
-        physics_hz = physics_scene_api.GetTimeStepsPerSecondAttr().Get()
-        if physics_hz == 0:
-            return 0.0
-        else:
-            return 1.0 / physics_hz
+        # Use the physics scene's get_dt() method which handles engine-specific attributes
+        return _physics_scene.get_dt()
 
     @classmethod
     def get_broadphase_type(cls, physics_scene: str = None) -> str:
