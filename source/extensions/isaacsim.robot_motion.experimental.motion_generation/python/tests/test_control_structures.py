@@ -91,9 +91,9 @@ class AddOneController(mg.BaseController):
         return mg.RobotState(
             joints=mg.JointState(
                 names=setpoint_state.joints.names,
-                positions=wp.array([setpoint_state.joints.positions.numpy() + 1.0]),
-                velocities=wp.array([setpoint_state.joints.velocities.numpy() + 1.0]),
-                efforts=wp.array([setpoint_state.joints.efforts.numpy() + 1.0]),
+                positions=wp.array(setpoint_state.joints.positions.numpy() + 1.0),
+                velocities=wp.array(setpoint_state.joints.velocities.numpy() + 1.0),
+                efforts=wp.array(setpoint_state.joints.efforts.numpy() + 1.0),
             )
         )
 
@@ -122,10 +122,10 @@ class RootController(mg.BaseController):
     ) -> Optional[mg.RobotState]:
         return mg.RobotState(
             root=mg.RootState(
-                position=wp.vec3(1.0, 2.0, 3.0),
-                orientation=wp.quat(0.0, 0.0, 0.0, 1.0),
-                linear_velocity=wp.vec3(0.1, 0.2, 0.3),
-                angular_velocity=wp.vec3(0.4, 0.5, 0.6),
+                position=wp.array([1.0, 2.0, 3.0]),
+                orientation=wp.array([0.0, 0.0, 0.0, 1.0]),
+                linear_velocity=wp.array([0.1, 0.2, 0.3]),
+                angular_velocity=wp.array([0.4, 0.5, 0.6]),
             )
         )
 
@@ -142,10 +142,10 @@ class BodyController(mg.BaseController):
         return mg.RobotState(
             bodies=mg.BodyState(
                 names=["body_a"],
-                positions=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-                orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-                linear_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-                angular_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
+                positions=wp.array([[0.0, 0.0, 0.0]]),
+                orientations=wp.array([[0.0, 0.0, 0.0, 1.0]]),
+                linear_velocities=wp.array([[0.0, 0.0, 0.0]]),
+                angular_velocities=wp.array([[0.0, 0.0, 0.0]]),
             )
         )
 
@@ -162,10 +162,10 @@ class ToolFrameController(mg.BaseController):
         return mg.RobotState(
             tool_frames=mg.BodyState(
                 names=["tool_a"],
-                positions=wp.array([wp.vec3(1.0, 0.0, 0.0)]),
-                orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-                linear_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-                angular_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
+                positions=wp.array([[1.0, 0.0, 0.0]]),
+                orientations=wp.array([[0.0, 0.0, 0.0, 1.0]]),
+                linear_velocities=wp.array([[0.0, 0.0, 0.0]]),
+                angular_velocities=wp.array([[0.0, 0.0, 0.0]]),
             )
         )
 
@@ -346,7 +346,7 @@ class TestControlStructures(omni.kit.test.AsyncTestCase):
         )
         desired_state = parallel_controller.forward(empty_robot_state, None, 0.0)
         self.assertIsNotNone(desired_state)
-        self.assertEqual(desired_state.root.position, wp.vec3(1.0, 2.0, 3.0))
+        self.assertTrue(np.allclose(desired_state.root.position.numpy(), np.array([1.0, 2.0, 3.0])))
         self.assertEqual(desired_state.bodies.names, ["body_a"])
         self.assertEqual(desired_state.tool_frames.names, ["tool_a"])
 

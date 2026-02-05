@@ -104,39 +104,63 @@ class TestTypes(omni.kit.test.AsyncTestCase):
             efforts=np.array([0.0]),
         )
 
+        # we can build partial joint-states:
+        only_positions = JointState(
+            names=["joint_0"],
+            positions=wp.array([0.0]),
+        )
+        only_velocities = JointState(
+            names=["joint_0"],
+            velocities=wp.array([0.0]),
+        )
+        only_efforts = JointState(
+            names=["joint_0"],
+            efforts=wp.array([0.0]),
+        )
+
+        # cannot build a joint state with no entries:
+        self.assertRaises(
+            ValueError,
+            JointState,
+            names=[],
+            positions=wp.array([]),
+            velocities=wp.array([]),
+            efforts=wp.array([]),
+        )
+
     async def test_body_state(self):
         # can create a BodyState:
         body_state = BodyState(
             names=["body_0"],
-            positions=wp.array([wp.vec3(0.1, 0.0, 0.0)]),
-            orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-            linear_velocities=wp.array([wp.vec3(0.2, 0.0, 0.0)]),
-            angular_velocities=wp.array([wp.vec3(0.3, 0.0, 0.0)]),
+            positions=wp.array([[0.1, 0.0, 0.0]]),
+            orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+            linear_velocities=wp.array([[0.2, 0.0, 0.0]]),
+            angular_velocities=wp.array([[0.3, 0.0, 0.0]]),
         )
         self.assertEqual(body_state.names, ["body_0"])
-        self.assertTrue(np.allclose(body_state.positions.numpy(), np.array([wp.vec3(0.1, 0.0, 0.0)])))
-        self.assertTrue(np.allclose(body_state.orientations.numpy(), np.array([wp.quat(0.0, 0.0, 0.0, 1.0)])))
-        self.assertTrue(np.allclose(body_state.linear_velocities.numpy(), np.array([wp.vec3(0.2, 0.0, 0.0)])))
-        self.assertTrue(np.allclose(body_state.angular_velocities.numpy(), np.array([wp.vec3(0.3, 0.0, 0.0)])))
+        self.assertTrue(np.allclose(body_state.positions.numpy(), np.array([[0.1, 0.0, 0.0]])))
+        self.assertTrue(np.allclose(body_state.orientations.numpy(), np.array([[1.0, 0.0, 0.0, 0.0]])))
+        self.assertTrue(np.allclose(body_state.linear_velocities.numpy(), np.array([[0.2, 0.0, 0.0]])))
+        self.assertTrue(np.allclose(body_state.angular_velocities.numpy(), np.array([[0.3, 0.0, 0.0]])))
 
         # cannot make a body state with different lengths of names, positions, orientations, linear velocities, and angular velocities
         self.assertRaises(
             ValueError,
             BodyState,
             names=["body_0", "body_1"],
-            positions=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-            orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-            linear_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-            angular_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
+            positions=wp.array([[0.0, 0.0, 0.0]]),
+            orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+            linear_velocities=wp.array([[0.0, 0.0, 0.0]]),
+            angular_velocities=wp.array([[0.0, 0.0, 0.0]]),
         )
         self.assertRaises(
             ValueError,
             BodyState,
             names=["body_0", "body_1"],
-            positions=wp.array([wp.vec3(0.0, 0.0, 0.0), wp.vec3(0.0, 0.0, 0.0)]),
-            orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-            linear_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-            angular_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0), wp.vec3(0.0, 0.0, 0.0)]),
+            positions=wp.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]),
+            orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+            linear_velocities=wp.array([[0.0, 0.0, 0.0]]),
+            angular_velocities=wp.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]),
         )
 
         # cannot create a body state with incorrect (non-warp) types:
@@ -144,101 +168,164 @@ class TestTypes(omni.kit.test.AsyncTestCase):
             ValueError,
             BodyState,
             names=["body_0"],
-            positions=np.array([wp.vec3(0.0, 0.0, 0.0)]),
-            orientations=np.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-            linear_velocities=np.array([wp.vec3(0.0, 0.0, 0.0)]),
-            angular_velocities=np.array([wp.vec3(0.0, 0.0, 0.0)]),
+            positions=np.array([[0.0, 0.0, 0.0]]),
+            orientations=np.array([[1.0, 0.0, 0.0, 0.0]]),
+            linear_velocities=np.array([[0.0, 0.0, 0.0]]),
+            angular_velocities=np.array([[0.0, 0.0, 0.0]]),
         )
         self.assertRaises(
             ValueError,
             BodyState,
             names=["body_0"],
-            positions=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-            orientations=np.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-            linear_velocities=np.array([wp.vec3(0.0, 0.0, 0.0)]),
-            angular_velocities=np.array([wp.vec3(0.0, 0.0, 0.0)]),
+            positions=wp.array([[0.0, 0.0, 0.0]]),
+            orientations=np.array([[1.0, 0.0, 0.0, 0.0]]),
+            linear_velocities=np.array([[0.0, 0.0, 0.0]]),
+            angular_velocities=np.array([[0.0, 0.0, 0.0]]),
         )
         self.assertRaises(
             ValueError,
             BodyState,
             names=["body_0"],
-            positions=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-            orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-            linear_velocities=np.array([wp.vec3(0.0, 0.0, 0.0)]),
-            angular_velocities=np.array([wp.vec3(0.0, 0.0, 0.0)]),
+            positions=wp.array([[0.0, 0.0, 0.0]]),
+            orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+            linear_velocities=np.array([[0.0, 0.0, 0.0]]),
+            angular_velocities=np.array([[0.0, 0.0, 0.0]]),
         )
         self.assertRaises(
             ValueError,
             BodyState,
             names=["body_0"],
-            positions=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-            orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-            linear_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-            angular_velocities=np.array([wp.vec3(0.0, 0.0, 0.0)]),
+            positions=wp.array([[0.0, 0.0, 0.0]]),
+            orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+            linear_velocities=wp.array([[0.0, 0.0, 0.0]]),
+            angular_velocities=np.array([[0.0, 0.0, 0.0]]),
         )
         self.assertRaises(
             ValueError,
             BodyState,
             names=["body_0"],
-            positions=[wp.vec3(0.0, 0.0, 0.0)],
-            orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-            linear_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-            angular_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
+            positions=[[0.0, 0.0, 0.0]],
+            orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+            linear_velocities=wp.array([[0.0, 0.0, 0.0]]),
+            angular_velocities=wp.array([[0.0, 0.0, 0.0]]),
+        )
+
+        # we can build partial body-states:
+        only_positions = BodyState(
+            names=["body_0"],
+            positions=wp.array([[0.0, 0.0, 0.0]]),
+        )
+        only_orientations = BodyState(
+            names=["body_0"],
+            orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+        )
+        only_linear_velocities = BodyState(
+            names=["body_0"],
+            linear_velocities=wp.array([[0.0, 0.0, 0.0]]),
+        )
+        only_angular_velocities = BodyState(
+            names=["body_0"],
+            angular_velocities=wp.array([[0.0, 0.0, 0.0]]),
+        )
+
+        # cannot build a body state with no entries:
+        self.assertRaises(
+            ValueError,
+            BodyState,
+            names=[],
+            positions=wp.array([[]]),
+            orientations=wp.array([[]]),
+            linear_velocities=wp.array([[]]),
+            angular_velocities=wp.array([[]]),
         )
 
     async def test_root_state(self):
         # can create a RootState:
         root_state = RootState(
-            position=wp.vec3(0.1, 0.0, 0.0),
-            orientation=wp.quat(0.0, 0.0, 0.0, 1.0),
-            linear_velocity=wp.vec3(0.2, 0.0, 0.0),
-            angular_velocity=wp.vec3(0.3, 0.0, 0.0),
+            position=wp.array([0.1, 0.0, 0.0]),
+            orientation=wp.array([1.0, 0.0, 0.0, 0.0]),
+            linear_velocity=wp.array([0.2, 0.0, 0.0]),
+            angular_velocity=wp.array([0.3, 0.0, 0.0]),
         )
-        self.assertEqual(root_state.position, wp.vec3(0.1, 0.0, 0.0))
-        self.assertEqual(root_state.orientation, wp.quat(0.0, 0.0, 0.0, 1.0))
-        self.assertEqual(root_state.linear_velocity, wp.vec3(0.2, 0.0, 0.0))
-        self.assertEqual(root_state.angular_velocity, wp.vec3(0.3, 0.0, 0.0))
+        self.assertTrue(np.allclose(root_state.position.numpy(), np.array([0.1, 0.0, 0.0])))
+        self.assertTrue(np.allclose(root_state.orientation.numpy(), np.array([1.0, 0.0, 0.0, 0.0])))
+        self.assertTrue(np.allclose(root_state.linear_velocity.numpy(), np.array([0.2, 0.0, 0.0])))
+        self.assertTrue(np.allclose(root_state.angular_velocity.numpy(), np.array([0.3, 0.0, 0.0])))
 
         # cannot create a root state with incorrect (non-warp) types:
         self.assertRaises(
             ValueError,
             RootState,
             position=[0.0, 0.0, 0.0],
-            orientation=wp.quat(0.0, 0.0, 0.0, 1.0),
-            linear_velocity=wp.vec3(0.0, 0.0, 0.0),
-            angular_velocity=wp.vec3(0.0, 0.0, 0.0),
+            orientation=wp.array([1.0, 0.0, 0.0, 0.0]),
+            linear_velocity=wp.array([0.0, 0.0, 0.0]),
+            angular_velocity=wp.array([0.0, 0.0, 0.0]),
         )
         self.assertRaises(
             ValueError,
             RootState,
-            position=wp.vec3(0.0, 0.0, 0.0),
-            orientation=[0.0, 0.0, 0.0, 1.0],
-            linear_velocity=wp.vec3(0.0, 0.0, 0.0),
-            angular_velocity=wp.vec3(0.0, 0.0, 0.0),
+            position=wp.array([0.0, 0.0, 0.0]),
+            orientation=[1.0, 0.0, 0.0, 0.0],
+            linear_velocity=wp.array([0.0, 0.0, 0.0]),
+            angular_velocity=wp.array([0.0, 0.0, 0.0]),
         )
         self.assertRaises(
             ValueError,
             RootState,
-            position=wp.vec3(0.0, 0.0, 0.0),
-            orientation=wp.quat(0.0, 0.0, 0.0, 1.0),
+            position=wp.array([0.0, 0.0, 0.0]),
+            orientation=wp.array([1.0, 0.0, 0.0, 0.0]),
             linear_velocity=[0.0, 0.0, 0.0],
-            angular_velocity=wp.vec3(0.0, 0.0, 0.0),
+            angular_velocity=wp.array([0.0, 0.0, 0.0]),
         )
         self.assertRaises(
             ValueError,
             RootState,
-            position=wp.vec3(0.0, 0.0, 0.0),
-            orientation=wp.quat(0.0, 0.0, 0.0, 1.0),
-            linear_velocity=wp.vec3(0.0, 0.0, 0.0),
+            position=wp.array([0.0, 0.0, 0.0]),
+            orientation=wp.array([1.0, 0.0, 0.0, 0.0]),
+            linear_velocity=wp.array([0.0, 0.0, 0.0]),
             angular_velocity=[0.0, 0.0, 0.0],
         )
         self.assertRaises(
             ValueError,
             RootState,
             position=np.array([0.0, 0.0, 0.0]),
-            orientation=wp.quat(0.0, 0.0, 0.0, 1.0),
-            linear_velocity=wp.vec3(0.0, 0.0, 0.0),
-            angular_velocity=wp.vec3(0.0, 0.0, 0.0),
+            orientation=wp.array([1.0, 0.0, 0.0, 0.0]),
+            linear_velocity=wp.array([0.0, 0.0, 0.0]),
+            angular_velocity=wp.array([0.0, 0.0, 0.0]),
+        )
+
+        # we can build partial root-states:
+        only_position = RootState(
+            position=wp.array([0.0, 0.0, 0.0]),
+        )
+        only_orientation = RootState(
+            orientation=wp.array([1.0, 0.0, 0.0, 0.0]),
+        )
+        only_linear_velocity = RootState(
+            linear_velocity=wp.array([0.0, 0.0, 0.0]),
+        )
+        only_angular_velocity = RootState(
+            angular_velocity=wp.array([0.0, 0.0, 0.0]),
+        )
+
+        # cannot build a root state with all None entries:
+        self.assertRaises(
+            ValueError,
+            RootState,
+            position=None,
+            orientation=None,
+            linear_velocity=None,
+            angular_velocity=None,
+        )
+
+        # cannot build a root state with the wrong types:
+        self.assertRaises(
+            ValueError,
+            RootState,
+            position=wp.array([[]]),
+            orientation=wp.array([[]]),
+            linear_velocity=wp.array([[]]),
+            angular_velocity=wp.array([[]]),
         )
 
     async def test_robot_state(self):
@@ -250,24 +337,24 @@ class TestTypes(omni.kit.test.AsyncTestCase):
             efforts=wp.array([0.0, 0.0]),
         )
         root_state = RootState(
-            position=wp.vec3(0.0, 0.0, 0.0),
-            orientation=wp.quat(0.0, 0.0, 0.0, 1.0),
-            linear_velocity=wp.vec3(0.0, 0.0, 0.0),
-            angular_velocity=wp.vec3(0.0, 0.0, 0.0),
+            position=wp.array([0.0, 0.0, 0.0]),
+            orientation=wp.array([1.0, 0.0, 0.0, 0.0]),
+            linear_velocity=wp.array([0.0, 0.0, 0.0]),
+            angular_velocity=wp.array([0.0, 0.0, 0.0]),
         )
         body_state = BodyState(
             names=["body_0"],
-            positions=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-            orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-            linear_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-            angular_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
+            positions=wp.array([[0.0, 0.0, 0.0]]),
+            orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+            linear_velocities=wp.array([[0.0, 0.0, 0.0]]),
+            angular_velocities=wp.array([[0.0, 0.0, 0.0]]),
         )
         tool_frame_state = BodyState(
             names=["tool_0"],
-            positions=wp.array([wp.vec3(1.0, 0.0, 0.0)]),
-            orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-            linear_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-            angular_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
+            positions=wp.array([[1.0, 0.0, 0.0]]),
+            orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+            linear_velocities=wp.array([[0.0, 0.0, 0.0]]),
+            angular_velocities=wp.array([[0.0, 0.0, 0.0]]),
         )
 
         # can create a RobotState with all components:
@@ -329,7 +416,7 @@ class TestTypes(omni.kit.test.AsyncTestCase):
         out = combine_robot_states(empty_state, empty_state)
         self.assertIsNotNone(out)
 
-        # Combining states with parallel joint states is valid:
+        # Combining states with non-overlapping joint states is valid:
         state_with_joints_1 = mg.RobotState(
             joints=mg.JointState(
                 names=["joint_0"], positions=wp.array([0.0]), velocities=wp.array([0.0]), efforts=wp.array([0.0])
@@ -373,21 +460,21 @@ class TestTypes(omni.kit.test.AsyncTestCase):
         out = combine_robot_states(state_with_joints_1, state_with_joint_overlap)
         self.assertIsNone(out)
 
-        # combining states which attempt to write to the same joint is invalid:
+        # combining states which both fully define the root-state is invalid.
         state_with_root_1 = mg.RobotState(
             root=mg.RootState(
-                position=wp.vec3(1.0, 2.0, 3.0),
-                orientation=wp.quat(0.0, 0.0, 0.0, 1.0),
-                linear_velocity=wp.vec3(3.0, 4.0, 5.0),
-                angular_velocity=wp.vec3(6.0, 7.0, 8.0),
+                position=wp.array([1.0, 2.0, 3.0]),
+                orientation=wp.array([1.0, 0.0, 0.0, 0.0]),
+                linear_velocity=wp.array([3.0, 4.0, 5.0]),
+                angular_velocity=wp.array([6.0, 7.0, 8.0]),
             )
         )
         state_with_root_2 = mg.RobotState(
             root=mg.RootState(
-                position=wp.vec3(2.0, 0.0, 0.0),
-                orientation=wp.quat(0.0, 0.0, 0.0, 1.0),
-                linear_velocity=wp.vec3(9.0, 10.0, 11.0),
-                angular_velocity=wp.vec3(12.0, 13.0, 14.0),
+                position=wp.array([2.0, 0.0, 0.0]),
+                orientation=wp.array([1.0, 0.0, 0.0, 0.0]),
+                linear_velocity=wp.array([9.0, 10.0, 11.0]),
+                angular_velocity=wp.array([12.0, 13.0, 14.0]),
             )
         )
         out = combine_robot_states(state_with_root_1, state_with_root_2)
@@ -396,10 +483,10 @@ class TestTypes(omni.kit.test.AsyncTestCase):
         # combining when only one defines a root state is valid:
         out = combine_robot_states(state_with_root_1, state_with_joints_1)
         self.assertIsNotNone(out)
-        self.assertEqual(out.root.position, wp.vec3(1.0, 2.0, 3.0))
-        self.assertEqual(out.root.orientation, wp.quat(0.0, 0.0, 0.0, 1.0))
-        self.assertEqual(out.root.linear_velocity, wp.vec3(3.0, 4.0, 5.0))
-        self.assertEqual(out.root.angular_velocity, wp.vec3(6.0, 7.0, 8.0))
+        self.assertTrue(np.allclose(out.root.position.numpy(), np.array([1.0, 2.0, 3.0])))
+        self.assertTrue(np.allclose(out.root.orientation.numpy(), np.array([1.0, 0.0, 0.0, 0.0])))
+        self.assertTrue(np.allclose(out.root.linear_velocity.numpy(), np.array([3.0, 4.0, 5.0])))
+        self.assertTrue(np.allclose(out.root.angular_velocity.numpy(), np.array([6.0, 7.0, 8.0])))
         self.assertEqual(out.joints.names, ["joint_0"])
         self.assertTrue(np.allclose(out.joints.positions.numpy(), np.array([0.0])))
         self.assertTrue(np.allclose(out.joints.velocities.numpy(), np.array([0.0])))
@@ -409,19 +496,19 @@ class TestTypes(omni.kit.test.AsyncTestCase):
         state_with_body_1 = mg.RobotState(
             bodies=mg.BodyState(
                 names=["body_0"],
-                positions=wp.array([wp.vec3(1.0, 2.0, 3.0)]),
-                orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-                linear_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-                angular_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
+                positions=wp.array([[1.0, 2.0, 3.0]]),
+                orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+                linear_velocities=wp.array([[0.0, 0.0, 0.0]]),
+                angular_velocities=wp.array([[0.0, 0.0, 0.0]]),
             )
         )
         state_with_body_2 = mg.RobotState(
             bodies=mg.BodyState(
                 names=["body_1"],
-                positions=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-                orientations=wp.array([wp.quat(0.0, 0.0, 1.0, 0.0)]),
-                linear_velocities=wp.array([wp.vec3(0.0, 1.0, 0.0)]),
-                angular_velocities=wp.array([wp.vec3(0.0, 0.0, 1.0)]),
+                positions=wp.array([[0.0, 0.0, 0.0]]),
+                orientations=wp.array([[0.0, 0.0, 1.0, 0.0]]),
+                linear_velocities=wp.array([[0.0, 1.0, 0.0]]),
+                angular_velocities=wp.array([[0.0, 0.0, 1.0]]),
             )
         )
         out = combine_robot_states(state_with_body_1, state_with_body_2)
@@ -434,7 +521,7 @@ class TestTypes(omni.kit.test.AsyncTestCase):
 
         self.assertEqual(out.bodies.names, ["body_0", "body_1"])
         self.assertTrue(np.allclose(output_positions, np.array([[1.0, 2.0, 3.0], [0.0, 0.0, 0.0]])))
-        self.assertTrue(np.allclose(output_orientations, np.array([[0.0, 0.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]])))
+        self.assertTrue(np.allclose(output_orientations, np.array([[1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0]])))
         self.assertTrue(np.allclose(output_linear_velocities, np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0]])))
         self.assertTrue(np.allclose(output_angular_velocities, np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0]])))
 
@@ -442,10 +529,10 @@ class TestTypes(omni.kit.test.AsyncTestCase):
         state_with_body_3 = mg.RobotState(
             bodies=mg.BodyState(
                 names=["body_0"],
-                positions=wp.array([wp.vec3(1.0, 2.0, 3.0)]),
-                orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-                linear_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-                angular_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
+                positions=wp.array([[1.0, 2.0, 3.0]]),
+                orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+                linear_velocities=wp.array([[0.0, 0.0, 0.0]]),
+                angular_velocities=wp.array([[0.0, 0.0, 0.0]]),
             )
         )
         out = combine_robot_states(state_with_body_1, state_with_body_3)
@@ -455,19 +542,19 @@ class TestTypes(omni.kit.test.AsyncTestCase):
         state_with_tool_frame_1 = mg.RobotState(
             tool_frames=mg.BodyState(
                 names=["tool_frame_0"],
-                positions=wp.array([wp.vec3(1.0, 2.0, 3.0)]),
-                orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-                linear_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-                angular_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
+                positions=wp.array([[1.0, 2.0, 3.0]]),
+                orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+                linear_velocities=wp.array([[0.0, 0.0, 0.0]]),
+                angular_velocities=wp.array([[0.0, 0.0, 0.0]]),
             )
         )
         state_with_tool_frame_2 = mg.RobotState(
             tool_frames=mg.BodyState(
                 names=["tool_frame_1"],
-                positions=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-                orientations=wp.array([wp.quat(0.0, 0.0, 1.0, 0.0)]),
-                linear_velocities=wp.array([wp.vec3(0.0, 1.0, 0.0)]),
-                angular_velocities=wp.array([wp.vec3(0.0, 0.0, 1.0)]),
+                positions=wp.array([[0.0, 0.0, 0.0]]),
+                orientations=wp.array([[0.0, 0.0, 1.0, 0.0]]),
+                linear_velocities=wp.array([[0.0, 1.0, 0.0]]),
+                angular_velocities=wp.array([[0.0, 0.0, 1.0]]),
             )
         )
         out = combine_robot_states(state_with_tool_frame_1, state_with_tool_frame_2)
@@ -480,7 +567,7 @@ class TestTypes(omni.kit.test.AsyncTestCase):
 
         self.assertEqual(out.tool_frames.names, ["tool_frame_0", "tool_frame_1"])
         self.assertTrue(np.allclose(output_positions, np.array([[1.0, 2.0, 3.0], [0.0, 0.0, 0.0]])))
-        self.assertTrue(np.allclose(output_orientations, np.array([[0.0, 0.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]])))
+        self.assertTrue(np.allclose(output_orientations, np.array([[1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0]])))
         self.assertTrue(np.allclose(output_linear_velocities, np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0]])))
         self.assertTrue(np.allclose(output_angular_velocities, np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0]])))
 
@@ -488,10 +575,10 @@ class TestTypes(omni.kit.test.AsyncTestCase):
         state_with_tool_frame_3 = mg.RobotState(
             tool_frames=mg.BodyState(
                 names=["tool_frame_0"],
-                positions=wp.array([wp.vec3(2.0, 0.0, 0.0)]),
-                orientations=wp.array([wp.quat(0.0, 0.0, 0.0, 1.0)]),
-                linear_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
-                angular_velocities=wp.array([wp.vec3(0.0, 0.0, 0.0)]),
+                positions=wp.array([[2.0, 0.0, 0.0]]),
+                orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+                linear_velocities=wp.array([[0.0, 0.0, 0.0]]),
+                angular_velocities=wp.array([[0.0, 0.0, 0.0]]),
             )
         )
         out = combine_robot_states(state_with_tool_frame_1, state_with_tool_frame_3)
@@ -504,12 +591,246 @@ class TestTypes(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(out)
         self.assertEqual(out.bodies.names, ["body_0"])
         self.assertEqual(out.joints.names, ["joint_0"])
-        self.assertEqual(out.root.position, wp.vec3(1.0, 2.0, 3.0))
-        self.assertEqual(out.root.orientation, wp.quat(0.0, 0.0, 0.0, 1.0))
-        self.assertEqual(out.root.linear_velocity, wp.vec3(3.0, 4.0, 5.0))
-        self.assertEqual(out.root.angular_velocity, wp.vec3(6.0, 7.0, 8.0))
+        self.assertTrue(np.allclose(out.root.position.numpy(), np.array([1.0, 2.0, 3.0])))
+        self.assertTrue(np.allclose(out.root.orientation.numpy(), np.array([1.0, 0.0, 0.0, 0.0])))
+        self.assertTrue(np.allclose(out.root.linear_velocity.numpy(), np.array([3.0, 4.0, 5.0])))
+        self.assertTrue(np.allclose(out.root.angular_velocity.numpy(), np.array([6.0, 7.0, 8.0])))
         self.assertEqual(out.tool_frames.names, ["tool_frame_0"])
         self.assertTrue(np.allclose(out.bodies.positions.numpy(), np.array([1.0, 2.0, 3.0])))
-        self.assertTrue(np.allclose(out.bodies.orientations.numpy(), np.array([0.0, 0.0, 0.0, 1.0])))
+        self.assertTrue(np.allclose(out.bodies.orientations.numpy(), np.array([1.0, 0.0, 0.0, 0.0])))
         self.assertTrue(np.allclose(out.bodies.linear_velocities.numpy(), np.array([0.0, 0.0, 0.0])))
         self.assertTrue(np.allclose(out.bodies.angular_velocities.numpy(), np.array([0.0, 0.0, 0.0])))
+
+    async def test_combine_robot_state_with_nonoverlapping_fields(self):
+        # I can combine two robot states if they define exactly
+        # the same joints, as long as no fields are overlapping:
+        robot_state_1 = mg.RobotState(
+            joints=mg.JointState(
+                names=["joint_0"],
+                velocities=wp.array([0.0]),
+                efforts=wp.array([0.0]),
+            )
+        )
+        robot_state_2 = mg.RobotState(
+            joints=mg.JointState(
+                names=["joint_0"],
+                positions=wp.array([1.0]),
+            )
+        )
+
+        out = combine_robot_states(robot_state_1, robot_state_2)
+        self.assertIsNotNone(out)
+        self.assertEqual(out.joints.names, ["joint_0"])
+        self.assertTrue(np.allclose(out.joints.positions.numpy(), np.array([1.0])))
+        self.assertTrue(np.allclose(out.joints.velocities.numpy(), np.array([0.0])))
+        self.assertTrue(np.allclose(out.joints.efforts.numpy(), np.array([0.0])))
+
+        # I cannot do the same with partial overlap in joints:
+        robot_state_3 = mg.RobotState(
+            joints=mg.JointState(
+                names=["joint_0", "joint_1"],
+                positions=wp.array([0.0, 1.0]),
+            )
+        )
+        out = combine_robot_states(robot_state_1, robot_state_3)
+        self.assertIsNone(out)
+
+    async def test_joint_state_rejects_2d_arrays(self):
+        # JointState should reject 2D warp arrays (must be 1D)
+        self.assertRaises(
+            ValueError,
+            JointState,
+            names=["joint_0"],
+            positions=wp.array([[0.0]]),  # 2D array, should fail
+        )
+        self.assertRaises(
+            ValueError,
+            JointState,
+            names=["joint_0"],
+            velocities=wp.array([[0.0]]),  # 2D array, should fail
+        )
+        self.assertRaises(
+            ValueError,
+            JointState,
+            names=["joint_0"],
+            efforts=wp.array([[0.0]]),  # 2D array, should fail
+        )
+
+    async def test_body_state_shape_validation(self):
+        # BodyState positions must have shape[1] == 3
+        self.assertRaises(
+            ValueError,
+            BodyState,
+            names=["body_0"],
+            positions=wp.array([[0.0, 0.0]]),  # shape is (1, 2), not (1, 3)
+        )
+        self.assertRaises(
+            ValueError,
+            BodyState,
+            names=["body_0"],
+            positions=wp.array([[0.0, 0.0, 0.0, 0.0]]),  # shape is (1, 4), not (1, 3)
+        )
+
+        # BodyState orientations must have shape[1] == 4
+        self.assertRaises(
+            ValueError,
+            BodyState,
+            names=["body_0"],
+            orientations=wp.array([[0.0, 0.0, 0.0]]),  # shape is (1, 3), not (1, 4)
+        )
+        self.assertRaises(
+            ValueError,
+            BodyState,
+            names=["body_0"],
+            orientations=wp.array([[0.0, 0.0, 0.0, 0.0, 0.0]]),  # shape is (1, 5), not (1, 4)
+        )
+
+        # BodyState linear_velocities must have shape[1] == 3
+        self.assertRaises(
+            ValueError,
+            BodyState,
+            names=["body_0"],
+            linear_velocities=wp.array([[0.0, 0.0]]),  # shape is (1, 2), not (1, 3)
+        )
+
+        # BodyState angular_velocities must have shape[1] == 3
+        self.assertRaises(
+            ValueError,
+            BodyState,
+            names=["body_0"],
+            angular_velocities=wp.array([[0.0, 0.0, 0.0, 0.0]]),  # shape is (1, 4), not (1, 3)
+        )
+
+    async def test_combine_root_states_with_nonoverlapping_fields(self):
+        # We can combine two root states if they define non-overlapping fields
+        state_with_position = mg.RobotState(root=mg.RootState(position=wp.array([1.0, 2.0, 3.0])))
+        state_with_orientation = mg.RobotState(root=mg.RootState(orientation=wp.array([1.0, 0.0, 0.0, 0.0])))
+
+        out = combine_robot_states(state_with_position, state_with_orientation)
+        self.assertIsNotNone(out)
+        self.assertTrue(np.allclose(out.root.position.numpy(), np.array([1.0, 2.0, 3.0])))
+        self.assertTrue(np.allclose(out.root.orientation.numpy(), np.array([1.0, 0.0, 0.0, 0.0])))
+        self.assertIsNone(out.root.linear_velocity)
+        self.assertIsNone(out.root.angular_velocity)
+
+        # We can combine all four root fields from different states:
+        state_with_linear_velocity = mg.RobotState(root=mg.RootState(linear_velocity=wp.array([4.0, 5.0, 6.0])))
+        state_with_angular_velocity = mg.RobotState(root=mg.RootState(angular_velocity=wp.array([7.0, 8.0, 9.0])))
+
+        out = combine_robot_states(state_with_position, state_with_orientation)
+        out = combine_robot_states(out, state_with_linear_velocity)
+        out = combine_robot_states(out, state_with_angular_velocity)
+        self.assertIsNotNone(out)
+        self.assertTrue(np.allclose(out.root.position.numpy(), np.array([1.0, 2.0, 3.0])))
+        self.assertTrue(np.allclose(out.root.orientation.numpy(), np.array([1.0, 0.0, 0.0, 0.0])))
+        self.assertTrue(np.allclose(out.root.linear_velocity.numpy(), np.array([4.0, 5.0, 6.0])))
+        self.assertTrue(np.allclose(out.root.angular_velocity.numpy(), np.array([7.0, 8.0, 9.0])))
+
+    async def test_combine_body_states_with_nonoverlapping_fields(self):
+        # We can combine two body states on the same bodies if they define non-overlapping fields
+        body_state_with_positions = mg.RobotState(
+            bodies=mg.BodyState(
+                names=["body_0"],
+                positions=wp.array([[1.0, 2.0, 3.0]]),
+            )
+        )
+        body_state_with_orientations = mg.RobotState(
+            bodies=mg.BodyState(
+                names=["body_0"],
+                orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+            )
+        )
+
+        out = combine_robot_states(body_state_with_positions, body_state_with_orientations)
+        self.assertIsNotNone(out)
+        self.assertEqual(out.bodies.names, ["body_0"])
+        self.assertTrue(np.allclose(out.bodies.positions.numpy(), np.array([[1.0, 2.0, 3.0]])))
+        self.assertTrue(np.allclose(out.bodies.orientations.numpy(), np.array([[1.0, 0.0, 0.0, 0.0]])))
+        self.assertIsNone(out.bodies.linear_velocities)
+        self.assertIsNone(out.bodies.angular_velocities)
+
+        # Same test for tool_frames:
+        tool_frame_with_positions = mg.RobotState(
+            tool_frames=mg.BodyState(
+                names=["tool_0"],
+                positions=wp.array([[1.0, 2.0, 3.0]]),
+            )
+        )
+        tool_frame_with_orientations = mg.RobotState(
+            tool_frames=mg.BodyState(
+                names=["tool_0"],
+                orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+            )
+        )
+
+        out = combine_robot_states(tool_frame_with_positions, tool_frame_with_orientations)
+        self.assertIsNotNone(out)
+        self.assertEqual(out.tool_frames.names, ["tool_0"])
+        self.assertTrue(np.allclose(out.tool_frames.positions.numpy(), np.array([[1.0, 2.0, 3.0]])))
+        self.assertTrue(np.allclose(out.tool_frames.orientations.numpy(), np.array([[1.0, 0.0, 0.0, 0.0]])))
+
+    async def test_combine_body_states_fails_with_mismatched_fields(self):
+        # When combining body states with different names, they must define the same fields.
+        # This should fail because body_0 defines positions but body_1 defines orientations.
+        body_state_with_positions = mg.RobotState(
+            bodies=mg.BodyState(
+                names=["body_0"],
+                positions=wp.array([[1.0, 2.0, 3.0]]),
+            )
+        )
+        body_state_with_orientations = mg.RobotState(
+            bodies=mg.BodyState(
+                names=["body_1"],
+                orientations=wp.array([[1.0, 0.0, 0.0, 0.0]]),
+            )
+        )
+
+        out = combine_robot_states(body_state_with_positions, body_state_with_orientations)
+        self.assertIsNone(out)
+
+        # Same test for tool_frames:
+        tool_frame_with_linear_velocities = mg.RobotState(
+            tool_frames=mg.BodyState(
+                names=["tool_0"],
+                linear_velocities=wp.array([[1.0, 2.0, 3.0]]),
+            )
+        )
+        tool_frame_with_angular_velocities = mg.RobotState(
+            tool_frames=mg.BodyState(
+                names=["tool_1"],
+                angular_velocities=wp.array([[4.0, 5.0, 6.0]]),
+            )
+        )
+
+        out = combine_robot_states(tool_frame_with_linear_velocities, tool_frame_with_angular_velocities)
+        self.assertIsNone(out)
+
+    async def test_combine_joint_states_fails_with_mismatched_fields(self):
+        # When combining joint states with different names, they must define the same fields.
+        # This should fail because joint_0 defines positions but joint_1 defines velocities.
+        joint_state_with_positions = mg.RobotState(
+            joints=mg.JointState(
+                names=["joint_0"],
+                positions=wp.array([0.0]),
+            )
+        )
+        joint_state_with_velocities = mg.RobotState(
+            joints=mg.JointState(
+                names=["joint_1"],
+                velocities=wp.array([1.0]),
+            )
+        )
+
+        out = combine_robot_states(joint_state_with_positions, joint_state_with_velocities)
+        self.assertIsNone(out)
+
+        # Also test positions vs efforts mismatch:
+        joint_state_with_efforts = mg.RobotState(
+            joints=mg.JointState(
+                names=["joint_2"],
+                efforts=wp.array([2.0]),
+            )
+        )
+
+        out = combine_robot_states(joint_state_with_positions, joint_state_with_efforts)
+        self.assertIsNone(out)

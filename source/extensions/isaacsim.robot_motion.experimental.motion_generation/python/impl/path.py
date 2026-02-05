@@ -396,7 +396,6 @@ class MinimalTimeJointTrajectory(Trajectory):
 
         positions_out = wp.zeros([self._n_joints], dtype=self._waypoints.dtype, device=self._waypoints.device)
         velocities_out = wp.zeros([self._n_joints], dtype=self._waypoints.dtype, device=self._waypoints.device)
-        efforts_out = wp.zeros([self._n_joints], dtype=self._waypoints.dtype, device=self._waypoints.device)
 
         warp_time = self._waypoints.dtype(float(trajectory_time))
         warp_i_segment = int(i_segment)
@@ -425,7 +424,7 @@ class MinimalTimeJointTrajectory(Trajectory):
                 names=self._active_joints,
                 positions=positions_out,
                 velocities=velocities_out,
-                efforts=efforts_out,
+                efforts=None,
             )
         )
 
