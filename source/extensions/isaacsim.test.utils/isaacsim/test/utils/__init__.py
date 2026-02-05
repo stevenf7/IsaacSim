@@ -41,12 +41,18 @@ def _apply_numpy_coverage_patch() -> None:
 
     original_amax = npm._amax
     original_amin = npm._amin
+    original_sum = npm._sum
+    original_prod = npm._prod
+
+    def _is_no_value_type(obj) -> bool:
+        """Check if an object is coverage.py's _NoValueType sentinel."""
+        return hasattr(obj, "__class__") and obj.__class__.__name__ == "_NoValueType"
 
     def _coverage_amax(a, axis=None, out=None, keepdims=False, initial=None, where=True):
         """Handle coverage.py _NoValueType sentinels in max operations."""
         try:
             result = original_amax(a, axis, out, keepdims, initial, where)
-            if hasattr(result, "__class__") and result.__class__.__name__ == "_NoValueType":
+            if _is_no_value_type(result):
                 if axis is None:
                     return max(a.flat) if a.size > 0 else 0
                 return np.array([max(row) for row in np.atleast_2d(a)])
@@ -62,7 +68,7 @@ def _apply_numpy_coverage_patch() -> None:
         """Handle coverage.py _NoValueType sentinels in min operations."""
         try:
             result = original_amin(a, axis, out, keepdims, initial, where)
-            if hasattr(result, "__class__") and result.__class__.__name__ == "_NoValueType":
+            if _is_no_value_type(result):
                 if axis is None:
                     return min(a.flat) if a.size > 0 else 0
                 return np.array([min(row) for row in np.atleast_2d(a)])
@@ -74,8 +80,48 @@ def _apply_numpy_coverage_patch() -> None:
                 return np.array([min(row) for row in np.atleast_2d(a)])
             raise
 
+    def _coverage_sum(a, axis=None, dtype=None, out=None, keepdims=False, initial=0, where=True):
+        """Handle coverage.py _NoValueType sentinels in sum operations."""
+        try:
+            result = original_sum(a, axis, dtype, out, keepdims, initial, where)
+            if _is_no_value_type(result):
+                if axis is None:
+                    return sum(a.flat)
+                return np.array([sum(row) for row in np.atleast_2d(a)])
+            return result
+        except TypeError as exc:
+            if "_NoValueType" in str(exc):
+                if axis is None:
+                    return sum(a.flat)
+                return np.array([sum(row) for row in np.atleast_2d(a)])
+            raise
+
+    def _coverage_prod(a, axis=None, dtype=None, out=None, keepdims=False, initial=1, where=True):
+        """Handle coverage.py _NoValueType sentinels in prod operations."""
+        try:
+            result = original_prod(a, axis, dtype, out, keepdims, initial, where)
+            if _is_no_value_type(result):
+                if axis is None:
+                    result = 1
+                    for val in a.flat:
+                        result *= val
+                    return result
+                return np.array([np.prod(row) for row in np.atleast_2d(a)])
+            return result
+        except TypeError as exc:
+            if "_NoValueType" in str(exc):
+                if axis is None:
+                    result = 1
+                    for val in a.flat:
+                        result *= val
+                    return result
+                return np.array([np.prod(row) for row in np.atleast_2d(a)])
+            raise
+
     npm._amax = _coverage_amax
     npm._amin = _coverage_amin
+    npm._sum = _coverage_sum
+    npm._prod = _coverage_prod
     setattr(npm, "_isaacsim_cov_patch_applied", True)
     _COVERAGE_PATCH_APPLIED = True
 

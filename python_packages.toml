@@ -357,8 +357,11 @@ inventory.includes.all = [
     "exts/isaacsim.core.throttling",
     "exts/isaacsim.core.utils",
     "exts/isaacsim.core.version",
+    "exts/isaacsim.physics.newton",
     "exts/isaacsim.simulation_app",
     "exts/omni.kit.loop-isaac",
+    "exts/omni.usd.schema.mujoco",
+    "exts/omni.usd.schema.newton",
     # others
     "VERSION",
 ]

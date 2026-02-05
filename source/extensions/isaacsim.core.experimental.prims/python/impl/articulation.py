@@ -4565,6 +4565,22 @@ class Articulation(XformPrim):
                     prim_id=PhysicsSchemaTools.sdfPathToInt(path),
                     articulation_fn=query_report,
                 )
+        elif active_engine == "newton":
+            # Use Newton's property query interface
+            try:
+                from isaacsim.physics.newton.impl import get_newton_property_query_interface
+
+                query_interface = get_newton_property_query_interface()
+                for path in self.paths:
+                    query_interface.query_prim(
+                        stage_id=stage_id,
+                        query_mode=1,  # QUERY_ARTICULATION
+                        prim_id=PhysicsSchemaTools.sdfPathToInt(path),
+                        articulation_fn=query_report,
+                    )
+            except ImportError:
+                carb.log_warn("Newton property query interface not available")
+                return
         else:
             carb.log_warn(
                 f"Skipping articulation properties query for '{active_engine}' engine as it is not implemented"

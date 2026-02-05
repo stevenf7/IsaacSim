@@ -276,27 +276,34 @@ class TestSimulationManagerPhysicsSceneSettings(omni.kit.test.AsyncTestCase):
             with self.assertRaises(ValueError):
                 SimulationManager.set_physics_dt(1.5)
 
-        # Test broadphase type
-        for btype in ["MBP", "GPU"]:
-            try:
-                SimulationManager.set_broadphase_type(btype)
-                result = SimulationManager.get_broadphase_type()
-                self.assertEqual(result, btype)
-            except Exception as e:
-                print(f"test_physics_scene_settings_no_scene broadphase failed for {btype}: {e}")
+        # PhysX-specific settings - only test assertions when PhysX is active
+        is_physx = SimulationManager._engine == "physx"
 
-        # Test solver type
-        for solver in ["TGS", "PGS"]:
-            try:
-                SimulationManager.set_solver_type(solver)
-                result = SimulationManager.get_solver_type()
-                self.assertEqual(result, solver)
-            except Exception as e:
-                print(f"test_physics_scene_settings_no_scene solver failed for {solver}: {e}")
+        if is_physx:
+            # Test broadphase type (PhysX-specific)
+            for btype in ["MBP", "GPU"]:
+                try:
+                    SimulationManager.set_broadphase_type(btype)
+                    result = SimulationManager.get_broadphase_type()
+                    self.assertEqual(result, btype)
+                    # For Newton, set_broadphase_type is a no-op, get returns default
+                except Exception as e:
+                    print(f"test_physics_scene_settings_no_scene broadphase failed for {btype}: {e}")
 
-        # Test invalid solver type raises exception
-        with self.assertRaises(ValueError):
-            SimulationManager.set_solver_type("INVALID")
+        # Test solver type (PhysX-specific)
+        if is_physx:
+            for solver in ["TGS", "PGS"]:
+                try:
+                    SimulationManager.set_solver_type(solver)
+                    result = SimulationManager.get_solver_type()
+                    self.assertEqual(result, solver)
+                except Exception as e:
+                    print(f"test_physics_scene_settings_no_scene solver failed for {solver}: {e}")
+
+        # Test invalid solver type raises exception (PhysX-specific)
+        if is_physx:
+            with self.assertRaises(ValueError):
+                SimulationManager.set_solver_type("INVALID")
 
         # Test CCD
         try:
@@ -304,31 +311,34 @@ class TestSimulationManagerPhysicsSceneSettings(omni.kit.test.AsyncTestCase):
         except Exception as e:
             print(f"test_physics_scene_settings_no_scene failed to set device to cpu: {e}")
 
-        try:
-            SimulationManager.enable_ccd(True)
-            self.assertTrue(SimulationManager.is_ccd_enabled())
-            SimulationManager.enable_ccd(False)
-            self.assertFalse(SimulationManager.is_ccd_enabled())
-        except Exception as e:
-            print(f"test_physics_scene_settings_no_scene ccd failed: {e}")
+        if is_physx:
+            try:
+                SimulationManager.enable_ccd(True)
+                self.assertTrue(SimulationManager.is_ccd_enabled())
+                SimulationManager.enable_ccd(False)
+                self.assertFalse(SimulationManager.is_ccd_enabled())
+            except Exception as e:
+                print(f"test_physics_scene_settings_no_scene ccd failed: {e}")
 
-        # Test GPU dynamics
-        try:
-            SimulationManager.enable_gpu_dynamics(True)
-            self.assertTrue(SimulationManager.is_gpu_dynamics_enabled())
-            SimulationManager.enable_gpu_dynamics(False)
-            self.assertFalse(SimulationManager.is_gpu_dynamics_enabled())
-        except Exception as e:
-            print(f"test_physics_scene_settings_no_scene gpu_dynamics failed: {e}")
+        # Test GPU dynamics (PhysX-specific)
+        if is_physx:
+            try:
+                SimulationManager.enable_gpu_dynamics(True)
+                self.assertTrue(SimulationManager.is_gpu_dynamics_enabled())
+                SimulationManager.enable_gpu_dynamics(False)
+                self.assertFalse(SimulationManager.is_gpu_dynamics_enabled())
+            except Exception as e:
+                print(f"test_physics_scene_settings_no_scene gpu_dynamics failed: {e}")
 
-        # Test stabilization
-        try:
-            SimulationManager.enable_stablization(True)
-            self.assertTrue(SimulationManager.is_stablization_enabled())
-            SimulationManager.enable_stablization(False)
-            self.assertFalse(SimulationManager.is_stablization_enabled())
-        except Exception as e:
-            print(f"test_physics_scene_settings_no_scene stabilization failed: {e}")
+        # Test stabilization (PhysX-specific)
+        if is_physx:
+            try:
+                SimulationManager.enable_stablization(True)
+                self.assertTrue(SimulationManager.is_stablization_enabled())
+                SimulationManager.enable_stablization(False)
+                self.assertFalse(SimulationManager.is_stablization_enabled())
+            except Exception as e:
+                print(f"test_physics_scene_settings_no_scene stabilization failed: {e}")
 
         # Test get default physics scene
         scene = SimulationManager.get_default_physics_scene()
@@ -664,6 +674,9 @@ class TestSimulationManagerPhysicsEngines(omni.kit.test.AsyncTestCase):
 
     async def test_engine_query_and_switching(self):
         """Test engine query methods and switching to PhysX."""
+        # This test is specific to PhysX - skip if another engine is active
+        if SimulationManager._engine != "physx":
+            self.skipTest(f"Skipping PhysX-specific test (active engine: {SimulationManager._engine})")
         # Test get_active_physics_engine returns PhysX by default
         engine = SimulationManager.get_active_physics_engine()
         self.assertEqual(engine, "physx")
@@ -681,6 +694,9 @@ class TestSimulationManagerPhysicsEngines(omni.kit.test.AsyncTestCase):
 
     async def test_invalid_switch_preserves_state(self):
         """Test that invalid engine switches preserve all state and PhysX continues working."""
+        # This test is specific to PhysX - skip if another engine is active
+        if SimulationManager._engine != "physx":
+            self.skipTest(f"Skipping PhysX-specific test (active engine: {SimulationManager._engine})")
         # Capture state before invalid switches
         engine_before = SimulationManager.get_active_physics_engine()
         dt_before = SimulationManager.get_physics_dt()

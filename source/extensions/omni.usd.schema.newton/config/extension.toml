@@ -1,0 +1,29 @@
+[core]
+reloadable = false
+# Load at the start, load all schemas with order -100 (with order -1000 the USD libs are loaded)
+order = -100
+
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Omni USD Newton Schema"
+description="Extension used to host all Newton USD schemas."
+authors = ["aborovicka@nvidia.com", "mrakhsha@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.usd.schema.newton"
+keywords = ["simulation", "usd", "schema"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[package.writeTarget]
+kit = true
+python = true
+usd = true
+
+[dependencies]
+"omni.usd.libs" = { }
+
+[[python.module]]
+name = "usd.schema.newton"
+

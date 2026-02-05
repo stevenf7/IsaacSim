@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.3] - 2026-02-02
+### Changed
+- Fix pycoverage compatibility issue with numpy sum and prod functions
+
 ## [0.7.2] - 2026-02-02
 ### Changed
 - Add a pycoverage compatible amin and amax implementation that is monkeypatched into numpy on extension startup. Removed from image_comparison.py as it is no longer needed.

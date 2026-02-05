@@ -104,10 +104,10 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         self.assertEqual(prim.num_dofs, 2, f"Invalid num_dofs")
         self.assertEqual(prim.num_joints, 2, f"Invalid num_joints")
         self.assertEqual(prim.num_links, 3, f"Invalid num_links")
-        # - names
-        self.assertEqual(prim.dof_names, ["RevoluteJoint", "PrismaticJoint"], f"Invalid dof_names")
-        self.assertEqual(prim.joint_names, ["RevoluteJoint", "PrismaticJoint"], f"Invalid joint_names")
-        self.assertEqual(prim.link_names, ["CenterPivot", "Arm", "Slider"], f"Invalid link_names")
+        # - names (engine-agnostic: check presence, not order)
+        self.assertEqual(sorted(prim.dof_names), sorted(["RevoluteJoint", "PrismaticJoint"]), f"Invalid dof_names")
+        self.assertEqual(sorted(prim.joint_names), sorted(["RevoluteJoint", "PrismaticJoint"]), f"Invalid joint_names")
+        self.assertEqual(sorted(prim.link_names), sorted(["CenterPivot", "Arm", "Slider"]), f"Invalid link_names")
         # - paths
         self.assertEqual(len(prim.dof_paths), len(prim), f"Invalid dof_paths")
         for i, dof_paths in enumerate(prim.dof_paths):
@@ -124,39 +124,55 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             for link_path, link_name in zip(link_paths, prim.link_names):
                 self.assertTrue(link_path.startswith(f"/World/A_{i}/"), f"Invalid link_path: {link_path}")
                 self.assertTrue(link_path.endswith(f"/{link_name}"), f"Invalid link_path: {link_path}")
-        # - types
+        # - types (engine-agnostic: check presence, not order)
         self.assertEqual(
-            prim.dof_types,
-            [omni.physics.tensors.DofType.Rotation, omni.physics.tensors.DofType.Translation],
+            sorted(prim.dof_types, key=lambda x: x.value),
+            sorted(
+                [omni.physics.tensors.DofType.Rotation, omni.physics.tensors.DofType.Translation], key=lambda x: x.value
+            ),
             f"Invalid dof_types",
         )
-        # test cases (getters)
-        self.assertEqual(prim.get_dof_indices("RevoluteJoint").numpy().tolist(), [0], f"Invalid get_dof_indices")
+        # test cases (getters) - engine-agnostic: check indices are valid and consistent
+        revolute_idx = prim.get_dof_indices("RevoluteJoint").numpy().tolist()
+        prismatic_idx = prim.get_dof_indices("PrismaticJoint").numpy().tolist()
+        self.assertEqual(len(revolute_idx), 1, f"Should have one RevoluteJoint dof index")
+        self.assertEqual(len(prismatic_idx), 1, f"Should have one PrismaticJoint dof index")
+        self.assertIn(revolute_idx[0], [0, 1], f"RevoluteJoint index should be 0 or 1")
+        self.assertIn(prismatic_idx[0], [0, 1], f"PrismaticJoint index should be 0 or 1")
+        self.assertNotEqual(revolute_idx[0], prismatic_idx[0], f"Indices should be different")
+        # Check multi-name query returns correct indices
+        multi_idx = prim.get_dof_indices(["PrismaticJoint", "RevoluteJoint"]).numpy().tolist()
+        self.assertEqual(multi_idx, [prismatic_idx[0], revolute_idx[0]], f"Invalid multi get_dof_indices")
+        # - joint indices
+        revolute_joint_idx = prim.get_joint_indices("RevoluteJoint").numpy().tolist()
+        prismatic_joint_idx = prim.get_joint_indices("PrismaticJoint").numpy().tolist()
+        self.assertEqual(len(revolute_joint_idx), 1, f"Should have one RevoluteJoint joint index")
+        self.assertEqual(len(prismatic_joint_idx), 1, f"Should have one PrismaticJoint joint index")
+        multi_joint_idx = prim.get_joint_indices(["PrismaticJoint", "RevoluteJoint"]).numpy().tolist()
         self.assertEqual(
-            prim.get_dof_indices(["PrismaticJoint", "RevoluteJoint"]).numpy().tolist(),
-            [1, 0],
-            f"Invalid get_dof_indices",
+            multi_joint_idx, [prismatic_joint_idx[0], revolute_joint_idx[0]], f"Invalid multi get_joint_indices"
         )
-        self.assertEqual(prim.get_joint_indices("RevoluteJoint").numpy().tolist(), [0], f"Invalid get_joint_indices")
-        self.assertEqual(
-            prim.get_joint_indices(["PrismaticJoint", "RevoluteJoint"]).numpy().tolist(),
-            [1, 0],
-            f"Invalid get_joint_indices",
-        )
-        self.assertEqual(prim.get_link_indices("CenterPivot").numpy().tolist(), [0], f"Invalid get_link_indices")
-        self.assertEqual(
-            prim.get_link_indices(["Arm", "Slider", "CenterPivot"]).numpy().tolist(),
-            [1, 2, 0],
-            f"Invalid get_link_indices",
-        )
+        # - link indices
+        center_idx = prim.get_link_indices("CenterPivot").numpy().tolist()
+        arm_idx = prim.get_link_indices("Arm").numpy().tolist()
+        slider_idx = prim.get_link_indices("Slider").numpy().tolist()
+        self.assertEqual(len(center_idx), 1, f"Should have one CenterPivot link index")
+        self.assertEqual(len(arm_idx), 1, f"Should have one Arm link index")
+        self.assertEqual(len(slider_idx), 1, f"Should have one Slider link index")
+        self.assertEqual(len({center_idx[0], arm_idx[0], slider_idx[0]}), 3, f"Link indices should be unique")
+        multi_link_idx = prim.get_link_indices(["Arm", "Slider", "CenterPivot"]).numpy().tolist()
+        self.assertEqual(multi_link_idx, [arm_idx[0], slider_idx[0], center_idx[0]], f"Invalid multi get_link_indices")
         # test cases (Physics tensor initialization requirement for USD backend)
         if backend == "usd":
             await play_stop_timeline()  # ensure the articulation tensor API is initialized
             assert prim.is_physics_tensor_entity_initialized(), "Tensor API should be initialized"
-        # - properties
+        # - properties (engine-agnostic: check presence, not order)
         self.assertEqual(
-            prim.joint_types,
-            [omni.physics.tensors.JointType.Revolute, omni.physics.tensors.JointType.Prismatic],
+            sorted(prim.joint_types, key=lambda x: x.value),
+            sorted(
+                [omni.physics.tensors.JointType.Revolute, omni.physics.tensors.JointType.Prismatic],
+                key=lambda x: x.value,
+            ),
             f"Invalid joint_types",
         )
         self.assertEqual(prim.num_shapes, 3, f"Invalid num_shapes")

@@ -1,0 +1,68 @@
+########################################################################################################################
+# Newton Physics Library and Dependencies
+########################################################################################################################
+
+# Install Newton and its required dependencies
+# Note: usd-core is not needed - Isaac Sim provides USD via packman
+# Note: numpy 2.0+ compatibility - no longer conflicts with Isaac Sim dependencies
+# Note: warp-lang is provided by Isaac Sim via omni.warp and omni.warp.core extensions
+#
+# Required warp-lang version (handled by omni.warp/omni.warp.core):
+#   - Requires omni.warp-1.11.2 (latest available in registry)
+#   - newton requires:      warp-lang>=1.11.0.dev20251205  (satisfied by omni.warp-1.11.2)
+#   - mujoco-warp requires: warp-lang>=1.9.1               (satisfied by omni.warp-1.11.2)
+#
+# SWIPAT Dependencies List:
+# -------------------------
+# Package              | Version                  | License     | Source
+# newton[sim]          | fd3ce61                  | Apache-2.0  | github.com/newton-physics/newton
+# newton-usd-schemas   | 0.1.0a2                  | Apache-2.0  | PyPI
+# mujoco-usd-converter | 0.1.0a5                  | Apache-2.0  | PyPI
+# mujoco               | 3.4.1.dev856273160       | Apache-2.0  | py.mujoco.org
+# mujoco-warp          | 0e10408                  | Apache-2.0  | github.com/google-deepmind/mujoco_warp
+# cbor2                | 5.7.0                    | MIT         | PyPI
+# imgui-bundle         | 1.92.0                   | MIT         | PyPI
+# PyOpenGL-accelerate  | 3.1.10                   | BSD         | PyPI
+# glfw                 | (transitive from mujoco) | MIT         | PyPI
+# absl-py              | (transitive from mjwarp) | Apache-2.0  | PyPI
+# etils[epath]         | (transitive from mjwarp) | Apache-2.0  | PyPI
+# numpy-stl            | (transitive from mjc-usd)| BSD-3       | PyPI
+# python-utils         | (transitive from stl)    | BSD-3       | PyPI
+# tinyobjloader        | 2.0.0rc13 (mjc-usd)      | MIT         | PyPI
+
+[[dependency]]
+python = "../_build/target-deps/python"
+packages = [
+    # MuJoCo physics engine (dev build from py.mujoco.org)
+    "mujoco==3.4.1.dev856273160",
+    # MuJoCo Warp acceleration (pinned to commit from newton's uv.lock for compatibility)
+    "mujoco-warp @ git+https://github.com/google-deepmind/mujoco_warp.git@0e1040818a0cc21d2b211801e2cc7536cec94818",
+    # Newton physics library (last commit compatible with omni.warp-1.11.2, uses mujoco>=3.4.0)
+    "newton[sim] @ git+https://github.com/newton-physics/newton.git@fd3ce61",
+    # Newton USD schemas for physics attributes
+    "newton-usd-schemas==0.1.0a2",
+    # Newton Physics MJCF to USD converter
+    "mujoco-usd-converter==0.1.0a5",  
+    # Newton sim dependencies (explicit for SWIPAT)
+    "cbor2==5.7.0",
+    # Visualization dependencies
+    "imgui-bundle==1.92.0",
+    "PyOpenGL-accelerate==3.1.10",
+    # Transitive dependencies from mujoco (explicit for SWIPAT)
+    "glfw",
+    # Transitive dependencies from mujoco-warp (explicit for SWIPAT)
+    "absl-py",
+    "etils[epath]",
+    # Transitive dependencies from mujoco-usd-converter (explicit for SWIPAT)
+    "numpy-stl",
+    "python-utils",
+    "tinyobjloader==2.0.0rc13",
+]
+target = "../_build/target-deps/isaac_newton_prebundle"
+platforms = ["*-x86_64", "*-aarch64"]
+download_only = false
+install_dependencies = false
+append_to_install_folder = true
+gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
+extra_args = ["--extra-index-url", "https://py.mujoco.org", "--extra-index-url", "https://pypi.nvidia.com"]
+
