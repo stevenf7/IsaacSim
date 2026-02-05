@@ -21,6 +21,14 @@ import requests
 
 KIT_PROJECT_ID = 6510
 
+private_token = os.getenv("CI_GITLAB_API_TOKEN")
+if private_token is None:
+    raise ValueError("CI_GITLAB_API_TOKEN environment variable is not set")
+
+headers = {
+    "PRIVATE-TOKEN": private_token
+}
+
 def emoji_for_job_status(status, allow_fail=False):
     if status == 'success':
         return ":gitlab_ci_status_success: "
@@ -42,11 +50,11 @@ def source_for_pipeline(source_str):
 
             # Fetch the branch for the upstream pipeline
             branch_url = f"https://gitlab-master.nvidia.com/api/v4/projects/{KIT_PROJECT_ID}/pipelines/{upstream_pipeline_id}"
-            response = requests.get(branch_url)
+            response = requests.get(branch_url, headers=headers)
             # Fetch the branch for the upstream pipeline
             branch_url = f"https://gitlab-master.nvidia.com/api/v4/projects/{KIT_PROJECT_ID}/pipelines/{upstream_pipeline_id}"
             try:
-                response = requests.get(branch_url)
+                response = requests.get(branch_url, headers=headers)
                 response.raise_for_status()
             except requests.RequestException:
                 # Fall back to basic message if API call fails
@@ -61,10 +69,10 @@ def source_for_pipeline(source_str):
                 if 'refs/merge-requests' in branch_name:
                     mr_number = branch_name.split('/')[2]
                     mr_url = f"https://gitlab-master.nvidia.com/api/v4/projects/{KIT_PROJECT_ID}/merge_requests/{mr_number}"
-                    response = requests.get(mr_url)
+                    response = requests.get(mr_url, headers=headers)
                     mr_url = f"https://gitlab-master.nvidia.com/api/v4/projects/{KIT_PROJECT_ID}/merge_requests/{mr_number}"
                     try:
-                        response = requests.get(mr_url)
+                        response = requests.get(mr_url, headers=headers)
                         response.raise_for_status()
                     except requests.RequestException:
                         # Fall back to pipeline reference without MR details
@@ -128,9 +136,7 @@ def create_pipeline_report_message(channel="#isaac-sim-ci"):
     if private_token is None:
         raise ValueError("CI_GITLAB_API_TOKEN environment variable is not set")
 
-    headers = {
-        "PRIVATE-TOKEN": private_token
-    }
+
     
     pipeline_url = f"https://gitlab-master.nvidia.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}"
     response = requests.get(pipeline_url, headers=headers)
