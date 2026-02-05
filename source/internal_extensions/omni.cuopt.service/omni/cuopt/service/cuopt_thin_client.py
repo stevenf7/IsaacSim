@@ -29,7 +29,6 @@ import io
 import json
 import logging
 import os
-import pickle
 import time
 import zipfile
 import zlib
@@ -558,35 +557,20 @@ class CuOptServiceClient:
             sz = os.path.getsize(cuopt_problem_json_data)
             compressed = check_compressed(cuopt_problem_json_data)
         else:
-            # We're going to guess here a little bit.
-            # There is no builtin method in Python to find the size
-            # of a dictionary, and if the dictionary is large then
-            # writing it to a string with json.dumps can take a long time
-            # so it's not worth the risk.
+            # Serialize dictionary to JSON and check size
+            # For large data, compress with zlib before uploading
+            json_str = json.dumps(cuopt_problem_json_data)
+            json_bytes = json_str.encode("utf-8")
+            json_sz = len(json_bytes)
 
-            # But pickle is fast, so ...
-            # We are going to pickle the data. If the pickled size is <= 120k,
-            # we are going to assume that the json.dumps will still be
-            # quick and the unpickled object MIGHT be less than 250k
-            # (informal testing shows that pickle compression of cuopt data
-            # may be anywhere from 52% to 77%)
-            # We use json.dumps to get the REAL uncompressed size, and if it's
-            # less than 250k we'll just send it uncompressed. Otherwise we'll
-            # pass the pickled data we already generated to _upload_asset
-            data_bytes = pickle.dumps(cuopt_problem_json_data)
-            pickled_sz = len(data_bytes)
-            real_sz = None
-            if pickled_sz <= 120000:
-                log.debug("Pickled data looks small, checking unpickled size...")
-                real_sz = len(json.dumps(cuopt_problem_json_data))
-            if real_sz is None or real_sz > 250000:
-                log.debug("Sending immediate data pickled")
-                cuopt_problem_json_data = data_bytes
-                sz = pickled_sz
+            if json_sz > 250000:
+                log.debug("Sending immediate data compressed with zlib")
+                cuopt_problem_json_data = zlib.compress(json_bytes, zlib.Z_BEST_SPEED)
+                sz = len(cuopt_problem_json_data)
                 compressed = True
             else:
-                log.debug("Sending immediate data unpickled")
-                sz = real_sz
+                log.debug("Sending immediate data uncompressed")
+                sz = json_sz
                 compressed = False
 
         if sz > 250000 or compressed:
@@ -736,10 +720,9 @@ class CuOptServiceClient:
         cuopt_problem_json_data : dict or str
             This is either the problem data as a dictionary or the
             path of a file containing the problem data. The file may be
-            a pickle file containing a dictionary, or a text file containing
-            a dictionary as JSON, or a zlib-compressed file containing a
-            dictionary as JSON. Please refer to the server doc for the
-            structure of this dictionary.
+            a text file containing a dictionary as JSON, or a zlib-compressed
+            file containing a dictionary as JSON. Please refer to the server
+            doc for the structure of this dictionary.
         """
         action = "cuOpt_OptimizedRouting" if not self.only_validate else "cuOpt_RoutingValidator"
         cuopt_response_dict = self._send_request(cuopt_problem_json_data, action=action)
