@@ -15,6 +15,7 @@
 
 from typing import Literal
 
+import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.kit.test
@@ -638,6 +639,23 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                     draw_sample(shape=(expected_count, expected_dof_count), dtype=wp.float32),
                     draw_sample(shape=(expected_count, expected_dof_count), dtype=wp.float32),
                 ):
+                    # apply mask to DOFs that do not have the PhysxDrivePerformanceEnvelopeAPI applied (tensor API only)
+                    _dof_indices = dof_indices.numpy() if isinstance(dof_indices, wp.array) else dof_indices
+                    mask = [
+                        i
+                        for i, index in enumerate(range(prim.num_dofs) if _dof_indices is None else _dof_indices)
+                        if not prim_utils.get_prim_at_path(prim.dof_paths[0][index]).HasAPI(
+                            "PhysxDrivePerformanceEnvelopeAPI"
+                        )
+                    ]
+                    if backend == "tensor":
+                        expected_v0 = np.copy(expected_v0)
+                        expected_v1 = np.copy(expected_v1)
+                        expected_v2 = np.copy(expected_v2)
+                        expected_v0[:, mask] = 0
+                        expected_v1[:, mask] = 0
+                        expected_v2[:, mask] = 0
+                    # test
                     with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
                         prim.set_dof_drive_model_properties(v0, v1, v2, indices=indices, dof_indices=dof_indices)
                         output = prim.get_dof_drive_model_properties(indices=indices, dof_indices=dof_indices)

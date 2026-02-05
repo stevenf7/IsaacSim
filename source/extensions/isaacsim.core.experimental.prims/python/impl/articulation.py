@@ -1169,7 +1169,9 @@ class Articulation(XformPrim):
                 for j, dof_index in enumerate(dof_indices.numpy()):
                     dof_prim = stage.GetPrimAtPath(self.dof_paths[index][dof_index])
                     _, drive_type = self._get_drive_api_and_type(index, dof_index)
-                    dof_prim.ApplyAPI("PhysxDrivePerformanceEnvelopeAPI", drive_type)
+                    # ignore those DOFs that do not have the PhysxDrivePerformanceEnvelopeAPI applied
+                    if not dof_prim.HasAPI("PhysxDrivePerformanceEnvelopeAPI"):
+                        continue
                     speed_effort_gradient = dof_prim.GetAttribute(
                         f"physxDrivePerformanceEnvelope:{drive_type}:speedEffortGradient"
                     ).Get()
@@ -4554,27 +4556,20 @@ class Articulation(XformPrim):
         self._link_paths, self._joint_paths, self._dof_paths = [], [], []
         # query articulation metadata for each prim
         stage = stage_utils.get_current_stage(backend="usd")
-        stage_id = stage_utils.get_stage_id(stage)
-
-        # Get the appropriate property query interface based on active backend
         active_engine = SimulationManager.get_active_physics_engine()
-
         if active_engine == "physx":
-            # Use PhysX's property query interface
             for path in self.paths:
                 omni.physx.get_physx_property_query_interface().query_prim(
-                    stage_id=stage_id,
+                    stage_id=stage_utils.get_stage_id(stage),
                     query_mode=omni.physx.bindings._physx.PhysxPropertyQueryMode.QUERY_ARTICULATION,
                     prim_id=PhysicsSchemaTools.sdfPathToInt(path),
                     articulation_fn=query_report,
                 )
         else:
-            # For other backends, skip property query (let backend handle initialization)
             carb.log_warn(
-                f"Property query not implemented for engine '{active_engine}', skipping articulation metadata query"
+                f"Skipping articulation properties query for '{active_engine}' engine as it is not implemented"
             )
             return
-
         # update amounts and indices
         self._num_links = len(self._link_names)
         self._link_index_dict = {name: i for i, name in enumerate(self._link_names)}
