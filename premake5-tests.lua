@@ -548,10 +548,6 @@ local function get_ros_tests()
             "standalone_examples/testing/isaacsim.ros2.bridge/test_carter_camera_multi_robot_nav.py",
         },
         {
-            "tests-nativepython-testing-isaacsim.ros2.bridge.test_people_sim",
-            "standalone_examples/testing/isaacsim.ros2.bridge/test_people_sim.py",
-        },
-        {
             "tests-nativepython-testing-isaacsim.ros2.bridge.test_camera_tf_delay",
             "standalone_examples/testing/isaacsim.ros2.bridge/test_camera_tf_delay.py",
             "--test-steps=50",

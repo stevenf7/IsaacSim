@@ -2,6 +2,7 @@ import numpy as np
 import omni.kit.test
 import omni.replicator.core as rep
 import omni.usd
+import warp as wp
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.utils.transform import (
     euler_angles_to_quaternion,
@@ -15,7 +16,7 @@ from pxr import Gf
 from scipy.spatial.transform import Rotation
 
 
-def create_usd_quat_cube(base_name, index, quat_wxyz):
+def create_usd_quat_cube(base_name: str, index: int, quat_wxyz: np.ndarray | wp.array) -> Cube:
     """Create a USD cube with the specified quaternion orientation.
 
     Creates a cube primitive in the USD stage at /World/{base_name} with a
@@ -37,7 +38,7 @@ def create_usd_quat_cube(base_name, index, quat_wxyz):
     return Cube(cube_path, positions=[[0.0, 0.0, float(index)]], orientations=[quat_wxyz])
 
 
-def compute_numpy_rotation(euler_angle, extrinsic):
+def compute_numpy_rotation(euler_angle: tuple[float, float, float], extrinsic: bool) -> tuple[np.ndarray, np.ndarray]:
     """Compute quaternion and round-trip Euler angles using numpy-based rotation utilities.
 
     Converts Euler angles to quaternion using isaacsim.core.utils.numpy.rotations,
@@ -61,7 +62,9 @@ def compute_numpy_rotation(euler_angle, extrinsic):
     return numpy_quat, numpy_euler
 
 
-def compute_experimental_rotation(euler_angle, extrinsic, device_value):
+def compute_experimental_rotation(
+    euler_angle: tuple[float, float, float], extrinsic: bool, device_value: str | None
+) -> tuple[wp.array, wp.array]:
     """Compute quaternion and round-trip Euler angles using experimental transform utilities.
 
     Converts Euler angles to quaternion using isaacsim.core.experimental.utils.transform,
@@ -91,7 +94,7 @@ def compute_experimental_rotation(euler_angle, extrinsic, device_value):
     return exp_quat, exp_euler
 
 
-def compute_scipy_rotation(euler_angle, extrinsic):
+def compute_scipy_rotation(euler_angle: tuple[float, float, float], extrinsic: bool) -> tuple[np.ndarray, np.ndarray]:
     """Compute quaternion and round-trip Euler angles using scipy's Rotation class.
 
     Converts Euler angles to quaternion using scipy.spatial.transform.Rotation,
@@ -119,7 +122,7 @@ def compute_scipy_rotation(euler_angle, extrinsic):
     return scipy_quat, scipy_euler
 
 
-def compute_usd_rotation(euler_angle, extrinsic):
+def compute_usd_rotation(euler_angle: tuple[float, float, float], extrinsic: bool) -> tuple[np.ndarray, np.ndarray]:
     """Compute quaternion and round-trip Euler angles using USD's Gf.Rotation.
 
     Converts Euler angles to quaternion using pxr.Gf.Rotation by composing
@@ -163,7 +166,7 @@ def compute_usd_rotation(euler_angle, extrinsic):
     return usd_quat, usd_euler
 
 
-def compute_usd_ui_rotation(euler_angle, extrinsic):
+def compute_usd_ui_rotation(euler_angle: tuple[float, float, float], extrinsic: bool) -> np.ndarray:
     """Compute Euler angles using USD UI rotation convention.
 
     Computes rotation using the convention typically used in USD UI interfaces,
@@ -195,7 +198,7 @@ def compute_usd_ui_rotation(euler_angle, extrinsic):
     return usd_ui_euler
 
 
-def quat_wxyz_to_matrix(quat_wxyz):
+def quat_wxyz_to_matrix(quat_wxyz: np.ndarray | wp.array) -> np.ndarray:
     """Convert a quaternion in WXYZ format to a 3x3 rotation matrix.
 
     Uses the standard quaternion-to-rotation-matrix formula to convert
@@ -224,8 +227,16 @@ def quat_wxyz_to_matrix(quat_wxyz):
 
 
 def compare_rotations(
-    euler_angle, numpy_quat, numpy_euler, exp_quat, exp_euler, scipy_quat, scipy_euler, usd_quat, usd_euler
-):
+    euler_angle: tuple[float, float, float],
+    numpy_quat: np.ndarray,
+    numpy_euler: np.ndarray,
+    exp_quat: wp.array,
+    exp_euler: wp.array,
+    scipy_quat: np.ndarray,
+    scipy_euler: np.ndarray,
+    usd_quat: np.ndarray,
+    usd_euler: np.ndarray,
+) -> dict:
     """Compare rotation outputs from multiple implementations.
 
     Performs comprehensive comparison of quaternions and Euler angles computed
@@ -358,12 +369,12 @@ def compare_rotations(
 
 
 async def test_rotation_utils_async(
-    device_values,
-    extrinsic_values,
-    euler_angles,
-    print_comparison_stats,
-    create_cubes=False,
-):
+    device_values: list[str | None],
+    extrinsic_values: list[bool],
+    euler_angles: list[tuple[float, float, float]],
+    print_comparison_stats: bool,
+    create_cubes: bool = False,
+) -> list[dict]:
     """Run comprehensive rotation utility comparison tests asynchronously.
 
     Tests rotation conversions across multiple implementations (numpy, experimental,
