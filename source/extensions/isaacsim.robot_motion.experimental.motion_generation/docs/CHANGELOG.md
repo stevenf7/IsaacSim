@@ -2,6 +2,10 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-02-05
+### Added
+- `WorldBinding`, `WorldInterface` and basic utility function for scaling validation of ancestor prims.
+
 ## [2.0.0] - 2026-02-04
 ### Changed
 - All `wp.vec3` and `wp.quat` types were changed to `wp.array`.
