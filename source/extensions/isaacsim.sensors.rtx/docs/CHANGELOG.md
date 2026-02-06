@@ -1,4 +1,8 @@
 # Changelog
+## [15.12.2] - 2026-02-04
+### Added
+- Test for scan tearing when --/app/player/useFixedTimeStepping=True
+
 ## [15.12.1] - 2026-02-03
 ### Removed
 - Tools for manipulating deprecated JSONs

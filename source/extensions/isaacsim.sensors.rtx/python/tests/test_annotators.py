@@ -450,7 +450,6 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
                 self.assertAlmostEqual(np.min(sorted_azimuth), -180.0, delta=5e-3)
                 self.assertAlmostEqual(np.max(sorted_azimuth), 180.0, delta=5e-3)
                 self.assertAlmostEqual(np.min(azimuth_diffs), 0.0)
-                # TODO: Re-enable this test after fixing RTX Lidar azimuth drop issue
                 # self.assertLessEqual(np.max(azimuth_diffs), 0.05)
                 # Reset the scan azimuth buffer
                 scan_azimuth = np.array([], dtype=np.float32)
@@ -731,6 +730,7 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
         self._annotator = rep.AnnotatorRegistry.get_annotator("IsaacCreateRTXLidarScanBuffer")
         self._annotator_data = None
         self._annotator_generic_model_output_data = None
+        self._default_use_fixed_time_stepping = carb.settings.get_settings().get("/app/player/useFixedTimeStepping")
 
     async def tearDown(self):
         self._timeline.stop()
@@ -742,6 +742,7 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await update_stage_async()
+        carb.settings.get_settings().set_bool("/app/player/useFixedTimeStepping", self._default_use_fixed_time_stepping)
 
     async def _test_annotator_outputs(
         self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT, enable_per_frame_output: bool = False
@@ -971,7 +972,11 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
                     )
 
     async def _soak_annotator(
-        self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT, enable_full_scan: bool = False
+        self,
+        config: str = DEFAULT_CONFIG,
+        variant: str = DEFAULT_VARIANT,
+        enable_full_scan: bool = False,
+        enable_fixed_time_stepping: bool = False,
     ):
         # Create sensor prim
         kwargs = {
@@ -985,7 +990,10 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
             "omni:sensor:Core:auxOutputType": "FULL",
         }
 
-        _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtxLidar", **kwargs)
+        if enable_fixed_time_stepping:
+            carb.settings.get_settings().set_bool("/app/player/useFixedTimeStepping", enable_fixed_time_stepping)
+
+        _, self.sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", **kwargs)
         sensor_type = self.sensor.GetTypeName()
         self.assertEqual(
             sensor_type, "OmniLidar", f"Expected OmniLidar prim, got {sensor_type}. Was sensor prim created?"
@@ -1011,7 +1019,6 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
         # For full scan mode: track frames between data updates
         frames_per_scan = int(60.0 / scan_rate_base_hz)  # Expected frames between full scans
         last_nonzero_data = None  # Track last nonzero data to detect updates
-        first_valid_frame = None  # Frame index when first valid data was received
         frames_since_last_update = 0  # Counter for frames since last data change
 
         for frame_idx in range(NUM_FRAMES):
@@ -1037,7 +1044,6 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
                 data_frame_count += 1
                 if last_nonzero_data is None:
                     # First nonzero data received - verify warmup requirement
-                    first_valid_frame = frame_idx
                     self.assertGreaterEqual(
                         frame_idx,
                         WARMUP_FRAMES,
@@ -1057,8 +1063,8 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
                     self.assertAlmostEqual(np.min(azimuth), -180.0, delta=5e-3)
                     self.assertAlmostEqual(np.max(azimuth), 180.0, delta=5e-3)
                     self.assertAlmostEqual(np.min(azimuth_diff), 0.0)
-                    # TODO: Re-enable this test after fixing RTX Lidar azimuth drop issue
-                    # self.assertLessEqual(np.max(azimuth_diff), 0.05)
+                    if enable_fixed_time_stepping:
+                        self.assertLessEqual(np.max(azimuth_diff), 0.05)
 
                 last_nonzero_data = current_data.copy()
                 frames_since_last_update = 0
@@ -1085,6 +1091,11 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
 
     async def test_3d_lidar_soak_full_scan(self):
         await self._soak_annotator(config="Example_Rotary", variant=None, enable_full_scan=True)
+
+    async def test_3d_lidar_soak_full_scan_fixed_time_stepping(self):
+        await self._soak_annotator(
+            config="Example_Rotary", variant=None, enable_full_scan=True, enable_fixed_time_stepping=True
+        )
 
 
 class TestIsaacComputeRTXLidarFlatScan(omni.kit.test.AsyncTestCase):
