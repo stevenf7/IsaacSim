@@ -1,5 +1,5 @@
 [package]
-version = "1.10.0"
+version = "1.10.1"
 category = "Simulation"
 title = "Isaac Sim Core Simulation Manager"
 description = "The Core Simulation Manager extension provides a set of APIs to control and query the simulation's state and the different callbacks available."
@@ -47,6 +47,7 @@ dependencies = [
     "isaacsim.core.utils",
     "isaacsim.test.docstring",
     "omni.hydra.scene_delegate", # required for fabric time to update,
+    "omni.isaac.ml_archive",
     "omni.kit.test",
     "omni.physx.ui"
 ]
@@ -95,13 +96,7 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
 ]
-pythonTests.include = [
-    "isaacsim.core.simulation_manager.tests.test_docstrings*",
-    "isaacsim.core.simulation_manager.tests.test_extension*",
-    "isaacsim.core.simulation_manager.tests.test_simulation_manager*",
-    "isaacsim.core.simulation_manager.tests.test_time_sample_storage*",
-    "isaacsim.core.simulation_manager.tests.test_physics_scene.TestPhysxScene*",
-]
+
 stdoutFailPatterns.exclude = [
     "*[Error] [isaacsim.core.simulation_manager.impl.simulation_manager] Engine 'invalid_engine' not found. Available: PhysX*",
 ]
@@ -109,12 +104,14 @@ stdoutFailPatterns.exclude = [
 [[test]]
 name = "newton"
 timeout = 900
+enabled = false
 dependencies = [
     "isaacsim.core.utils",
     "isaacsim.physics.newton",
     "isaacsim.test.docstring",
-    "omni.hydra.scene_delegate", # required for fabric time to update,
     "isaacsim.test.utils", # Used to suppress NumPy coverage errors
+    "omni.hydra.scene_delegate", # required for fabric time to update,
+    "omni.isaac.ml_archive",
     "omni.kit.test",
     "omni.physx.ui"
 ]

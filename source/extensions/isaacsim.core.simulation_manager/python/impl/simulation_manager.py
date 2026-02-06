@@ -423,6 +423,7 @@ class SimulationManager:
 
         This handles cases where physics scene prims become invalid without triggering
         the deletion callback (e.g., layer clear/reload operations, certain USD changes).
+        Also removes PhysxScene objects whose prims no longer have PhysxSceneAPI applied.
 
         Returns:
             True if any stale entries were removed, False otherwise.
@@ -435,6 +436,8 @@ class SimulationManager:
         for path, scene in cls._physics_scenes.items():
             try:
                 if not scene.prim or not scene.prim.IsValid():
+                    stale_paths.append(path)
+                elif isinstance(scene, PhysxScene) and not scene.prim.HasAPI(PhysxSchema.PhysxSceneAPI):
                     stale_paths.append(path)
             except Exception:
                 stale_paths.append(path)
