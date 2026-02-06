@@ -4573,7 +4573,7 @@ class Articulation(XformPrim):
                 query_interface = get_newton_property_query_interface()
                 for path in self.paths:
                     query_interface.query_prim(
-                        stage_id=stage_id,
+                        stage_id=stage_utils.get_stage_id(stage),
                         query_mode=1,  # QUERY_ARTICULATION
                         prim_id=PhysicsSchemaTools.sdfPathToInt(path),
                         articulation_fn=query_report,

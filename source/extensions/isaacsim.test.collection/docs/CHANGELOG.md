@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.1] - 2026-02-05
+### Changed
+- Exclude NumPy module reload errors
+
 ## [2.4.0] - 2026-02-04
 ### Changed
 - Update dependencies to use new experimental extensions

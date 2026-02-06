@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.1] - 2026-02-05
+### Changed
+- Disable newton physics engine tests
+
+
 ## [1.1.0] - 2026-02-04
 ### Added
 - Add Newton physics engine support for articulation and rigid body tests

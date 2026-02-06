@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.10.1] - 2026-02-05
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
+
 ## [1.11.0] - 2026-02-04
 ### Added
 - Add Newton physics engine support with `switch_physics_engine()` method
