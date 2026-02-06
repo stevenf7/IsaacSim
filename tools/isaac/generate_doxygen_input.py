@@ -43,9 +43,21 @@ def get_header_files(repo_root: Path, ignore_folders: list[str], ignore_files: l
     return sorted(header_files)
 
 
-def update_repo_toml(repo_root: Path, header_files: list[str]):
-    """Update doxygen_input section in repo.toml"""
-    toml_path = repo_root / "repo.toml"
+def resolve_target_toml(repo_root: Path, explicit_target: str | None = None) -> Path:
+    """Resolve which TOML file should be updated."""
+    if explicit_target:
+        return (repo_root / explicit_target).resolve()
+
+    internal_path = repo_root / "repo_internal.toml"
+    if internal_path.exists():
+        return internal_path
+
+    return repo_root / "repo.toml"
+
+
+def update_repo_toml(repo_root: Path, header_files: list[str], target_toml: str | None = None):
+    """Update doxygen_input section in the target TOML."""
+    toml_path = resolve_target_toml(repo_root, target_toml)
 
     # Generate new doxygen input section
     new_content = "doxygen_input = [\n" + "\n".join(header_files) + "\n]"
@@ -89,11 +101,13 @@ def setup_repo_tool(parser, config):
         # Get ignore patterns from config or use defaults
         ignore_folders = tool_config.get("ignore_folders", ["isaac_ros2_messages"])
         ignore_files = tool_config.get("ignore_files", ["UsdPCH.h"])
+        target_toml = tool_config.get("target_toml")
 
         # Get headers and update TOML
         headers = get_header_files_with_dirs(root_path, scan_dirs, ignore_folders, ignore_files)
-        update_repo_toml(root_path, headers)
-        print(f"Updated {root_path/'repo.toml'} with {len(headers)} header files")
+        update_repo_toml(root_path, headers, target_toml=target_toml)
+        updated_path = resolve_target_toml(root_path, target_toml)
+        print(f"Updated {updated_path} with {len(headers)} header files")
         print(f"Scanned directories: {[str(d) for d in scan_dirs]}")
         print(f"Ignored folders: {ignore_folders}")
         print(f"Ignored files: {ignore_files}")
@@ -146,4 +160,5 @@ if __name__ == "__main__":
     # Get headers and update TOML
     headers = get_header_files(root_path, ignore_folders, ignore_files)
     update_repo_toml(root_path, headers)
-    print(f"Updated {root_path/'repo.toml'} with {len(headers)} header files (excluded {len(ignore_files)} files)")
+    updated_path = resolve_target_toml(root_path)
+    print(f"Updated {updated_path} with {len(headers)} header files (excluded {len(ignore_files)} files)")
