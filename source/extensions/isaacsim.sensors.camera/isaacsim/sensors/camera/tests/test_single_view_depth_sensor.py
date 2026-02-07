@@ -149,7 +149,7 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(camera.get_noise_downscale_factor_pixel(), 1.0)
         self.assertAlmostEqual(camera.get_noise_mean(), 0.25)
         self.assertAlmostEqual(camera.get_noise_sigma(), 0.25)
-        self.assertEqual(camera.get_outlier_removal_enabled(), 3)
+        self.assertTrue(camera.get_outlier_removal_enabled())
         self.assertEqual(camera.get_rgb_depth_output_mode(), 0)
         self.assertEqual(camera.get_sensor_size_pixel(), 1280)
         self.assertFalse(camera.get_show_distance())
@@ -185,8 +185,8 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
         camera.set_noise_sigma(0.5)
         self.assertAlmostEqual(camera.get_noise_sigma(), 0.5)
 
-        camera.set_outlier_removal_enabled(1)
-        self.assertEqual(camera.get_outlier_removal_enabled(), 1)
+        camera.set_outlier_removal_enabled(False)
+        self.assertFalse(camera.get_outlier_removal_enabled())
 
         camera.set_rgb_depth_output_mode(1)
         self.assertEqual(camera.get_rgb_depth_output_mode(), 1)
