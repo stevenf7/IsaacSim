@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.2] - 2026-02-06
+### Changed
+- Update deprecated Warp API calls to their updated names
+
 ## [1.1.1] - 2026-02-05
 ### Changed
 - Disable newton physics engine tests

@@ -1030,7 +1030,7 @@ class Camera(BaseSensor):
         """Detach the pointcloud annotator from the camera."""
         self.detach_annotator(annotator_name="pointcloud")
 
-    def get_rgba(self, device: str = None) -> np.ndarray | wp.types.array:
+    def get_rgba(self, device: str = None) -> np.ndarray | wp.array:
         """
         Args:
             device (str, optional): Device to hold data in. Select from `['cpu', 'cuda', 'cuda:<device_index>']`.
@@ -1038,7 +1038,7 @@ class Camera(BaseSensor):
 
         Returns:
             rgba (np.ndarray): (height, width, 4) RGBA color data.
-            wp.types.array: (height, width, 4) RGBA color data.
+            wp.array: (height, width, 4) RGBA color data.
             Returns None if annotator is not attached or data is invalid.
 
         Note:
@@ -1059,7 +1059,7 @@ class Camera(BaseSensor):
             carb.log_warn(f"Annotator 'rgb' not attached to {self._render_product_path}")
             return None
 
-    def get_rgb(self, device: str = None) -> np.ndarray | wp.types.array:
+    def get_rgb(self, device: str = None) -> np.ndarray | wp.array:
         """
         Args:
             device (str, optional): Device to hold data in. Select from `['cpu', 'cuda', 'cuda:<device_index>']`.
@@ -1067,7 +1067,7 @@ class Camera(BaseSensor):
 
         Returns:
             rgb (np.ndarray): (height, width, 3) RGB color data.
-            wp.types.array: (height, width, 3) RGB color data.
+            wp.array: (height, width, 3) RGB color data.
             Returns None if annotator is not attached or data is invalid.
 
         Note:
@@ -1088,7 +1088,7 @@ class Camera(BaseSensor):
             carb.log_warn(f"Annotator 'rgb' not attached to {self._render_product_path}")
             return None
 
-    def get_depth(self, device: str = None) -> np.ndarray | wp.types.array:
+    def get_depth(self, device: str = None) -> np.ndarray | wp.array:
         """Gets the depth data from the camera sensor as distance to image plane.
 
         Args:
@@ -1096,7 +1096,7 @@ class Camera(BaseSensor):
                 Defaults to None, which uses the device specified on annotator initialization (annotator_device)
         Returns:
             depth (np.ndarray): (height, width) depth data.
-            wp.types.array: (height, width) depth data.
+            wp.array: (height, width) depth data.
             Returns None if annotator is not attached or data is invalid.
 
         Note:
@@ -1156,7 +1156,7 @@ class Camera(BaseSensor):
                 return pointcloud_data
             else:
                 # For warp arrays, we use torch_utils until warp has feature parity
-                is_warp_array = isinstance(pointcloud_data, wp.types.array)
+                is_warp_array = isinstance(pointcloud_data, wp.array)
                 backend_utils = torch_utils if is_warp_array else np_utils
 
                 # If using warp array, convert to torch tensor for processing (zero-copy operation)
@@ -1194,7 +1194,7 @@ class Camera(BaseSensor):
             return np.array([])
 
         # Determine backend based on device and depth type
-        is_warp_array = isinstance(depth, wp.types.array)
+        is_warp_array = isinstance(depth, wp.array)
         backend_utils = torch_utils if is_warp_array else np_utils
 
         # Convert warp array to torch tensor for calculation
@@ -1229,7 +1229,7 @@ class Camera(BaseSensor):
             )
 
         # Convert back to warp array if input was warp array
-        if is_warp_array and not isinstance(points_3d, wp.types.array):
+        if is_warp_array and not isinstance(points_3d, wp.array):
             points_3d = wp.from_torch(points_3d)
 
         return points_3d

@@ -68,7 +68,7 @@ class SimulationManager:
     # physics engine
     _engine = "physx"
     _simulation_registry_sub = None
-    _device: wp.context.Device | None = None  # Explicitly requested device (for Newton)
+    _device: wp.Device | None = None  # Explicitly requested device (for Newton)
 
     # default callbacks
     _default_callback_on_stop = None
@@ -650,7 +650,7 @@ class SimulationManager:
             cls._simulation_view_created = False
 
     @classmethod
-    def setup_simulation(cls, dt: float | None = None, device: str | wp.context.Device | None = None) -> None:
+    def setup_simulation(cls, dt: float | None = None, device: str | wp.Device | None = None) -> None:
         """Setup the (physics) simulation.
 
         .. hint::
@@ -846,7 +846,7 @@ class SimulationManager:
                     break
 
     @classmethod
-    def set_device(cls, device: str | wp.context.Device) -> None:
+    def set_device(cls, device: str | wp.Device) -> None:
         """Set the simulation device.
 
         Args:
@@ -864,7 +864,7 @@ class SimulationManager:
             >>> SimulationManager.set_device("cuda:0")
         """
         device = ops_utils.parse_device(device, raise_on_invalid=True)
-        # Store the requested device as wp.context.Device (used by Newton)
+        # Store the requested device as wp.Device (used by Newton)
         cls._device = device
         # GPU device
         if device.is_cuda:
@@ -888,7 +888,7 @@ class SimulationManager:
             raise Exception(f"Unknown device: {device}")
 
     @classmethod
-    def get_device(cls) -> wp.context.Device:
+    def get_device(cls) -> wp.Device:
         """Get the simulation device.
 
         Returns:

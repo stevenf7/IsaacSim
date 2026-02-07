@@ -117,7 +117,7 @@ def check_array(
     a: wp.array | list[wp.array],
     shape: list[int] | None = None,
     dtype: type | None = None,
-    device: str | wp.context.Device | None = None,
+    device: str | wp.Device | None = None,
 ):
     for i, x in enumerate(a if isinstance(a, (list, tuple)) else [a]):
         assert isinstance(x, wp.array), f"[{i}]: {repr(x)} ({type(x)}) is not a Warp array"

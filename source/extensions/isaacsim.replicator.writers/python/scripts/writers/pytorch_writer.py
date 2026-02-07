@@ -87,7 +87,7 @@ class PytorchWriter(Writer):
                 render_product_name = annotator.split("-")[-1]
                 file_path = f"rgb_{self._frame_id}_{render_product_name}.png"
                 img_data = data[annotator]
-                if isinstance(img_data, wp.types.array):
+                if isinstance(img_data, wp.array):
                     img_data = img_data.numpy()
                 self._backend.write_image(file_path, img_data)
             elif annotator.startswith("RtxSensor"):

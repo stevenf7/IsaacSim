@@ -77,7 +77,7 @@ def test_rgba_output(camera_default: Camera, camera_cpu: Camera, camera_cuda: Ca
         test_name="cuda",
         data=default_rgba_cuda,
         expected_class=wp.array,
-        expected_dtype=wp.types.uint8,
+        expected_dtype=wp.uint8,
         expected_shape=rgba_shape,
     )
     test_1_passed = test_1_passed and success
@@ -116,7 +116,7 @@ def test_rgba_output(camera_default: Camera, camera_cpu: Camera, camera_cuda: Ca
         test_name="get_rgba_device_cuda",
         data=cpu_rgba_cuda,
         expected_class=wp.array,
-        expected_dtype=wp.types.uint8,
+        expected_dtype=wp.uint8,
         expected_shape=rgba_shape,
     )
     test_2_passed = test_2_passed and success
@@ -138,7 +138,7 @@ def test_rgba_output(camera_default: Camera, camera_cpu: Camera, camera_cuda: Ca
         test_name="get_rgba_device_None",
         data=cuda_rgba,
         expected_class=wp.array,
-        expected_dtype=wp.types.uint8,
+        expected_dtype=wp.uint8,
         expected_shape=rgba_shape,
     )
     test_3_passed = test_3_passed and success
@@ -154,7 +154,7 @@ def test_rgba_output(camera_default: Camera, camera_cpu: Camera, camera_cuda: Ca
         test_name="get_rgba_device_cuda",
         data=cuda_rgba_cuda,
         expected_class=wp.array,
-        expected_dtype=wp.types.uint8,
+        expected_dtype=wp.uint8,
         expected_shape=rgba_shape,
     )
     test_3_passed = test_3_passed and success
@@ -202,7 +202,7 @@ def test_rgb_output(camera_default: Camera, camera_cpu: Camera, camera_cuda: Cam
         test_name="get_rgb_device_cuda",
         data=default_rgb_cuda,
         expected_class=wp.array,
-        expected_dtype=wp.types.uint8,
+        expected_dtype=wp.uint8,
         expected_shape=rgb_shape,
     )
     test_1_passed = test_1_passed and success
@@ -241,7 +241,7 @@ def test_rgb_output(camera_default: Camera, camera_cpu: Camera, camera_cuda: Cam
         test_name="get_rgb_device_cuda",
         data=cpu_rgb_cuda,
         expected_class=wp.array,
-        expected_dtype=wp.types.uint8,
+        expected_dtype=wp.uint8,
         expected_shape=rgb_shape,
     )
     test_2_passed = test_2_passed and success
@@ -264,7 +264,7 @@ def test_rgb_output(camera_default: Camera, camera_cpu: Camera, camera_cuda: Cam
         test_name="get_rgb_device_None",
         data=cuda_rgb,
         expected_class=wp.array,
-        expected_dtype=wp.types.uint8,
+        expected_dtype=wp.uint8,
         expected_shape=rgb_shape,
     )
     test_3_passed = test_3_passed and success
@@ -280,7 +280,7 @@ def test_rgb_output(camera_default: Camera, camera_cpu: Camera, camera_cuda: Cam
         test_name="get_rgb_device_cuda",
         data=cuda_rgb_cuda,
         expected_class=wp.array,
-        expected_dtype=wp.types.uint8,
+        expected_dtype=wp.uint8,
         expected_shape=rgb_shape,
     )
     test_3_passed = test_3_passed and success
@@ -327,7 +327,7 @@ def test_depth_output(camera_default: Camera, camera_cpu: Camera, camera_cuda: C
         test_name="get_depth_device_cuda",
         data=default_depth_cuda,
         expected_class=wp.array,
-        expected_dtype=wp.types.float32,
+        expected_dtype=wp.float32,
         expected_shape=depth_shape,
     )
     test_1_passed = test_1_passed and success
@@ -365,7 +365,7 @@ def test_depth_output(camera_default: Camera, camera_cpu: Camera, camera_cuda: C
         test_name="get_depth_device_cuda",
         data=cpu_depth_cuda,
         expected_class=wp.array,
-        expected_dtype=wp.types.float32,
+        expected_dtype=wp.float32,
         expected_shape=depth_shape,
     )
     test_2_passed = test_2_passed and success
@@ -387,7 +387,7 @@ def test_depth_output(camera_default: Camera, camera_cpu: Camera, camera_cuda: C
         test_name="get_depth_device_None",
         data=cuda_depth,
         expected_class=wp.array,
-        expected_dtype=wp.types.float32,
+        expected_dtype=wp.float32,
         expected_shape=depth_shape,
     )
     test_3_passed = test_3_passed and success
@@ -403,7 +403,7 @@ def test_depth_output(camera_default: Camera, camera_cpu: Camera, camera_cuda: C
         test_name="get_depth_device_cuda",
         data=cuda_depth_cuda,
         expected_class=wp.array,
-        expected_dtype=wp.types.float32,
+        expected_dtype=wp.float32,
         expected_shape=depth_shape,
     )
     test_3_passed = test_3_passed and success
@@ -457,7 +457,7 @@ def test_pointcloud_output(
             test_name=f"get_pointcloud_device_cuda_world_frame_{world_frame}",
             data=default_pointcloud_cuda,
             expected_class=wp.array,
-            expected_dtype=wp.types.float32,
+            expected_dtype=wp.float32,
             expected_shape=pointcloud_shape,
         )
         test_1_passed = test_1_passed and success
@@ -498,7 +498,7 @@ def test_pointcloud_output(
             test_name=f"get_pointcloud_device_cuda_world_frame_{world_frame}",
             data=cpu_pointcloud_cuda,
             expected_class=wp.array,
-            expected_dtype=wp.types.float32,
+            expected_dtype=wp.float32,
             expected_shape=pointcloud_shape,
         )
         test_2_passed = test_2_passed and success
@@ -523,7 +523,7 @@ def test_pointcloud_output(
             test_name=f"get_pointcloud_device_None_world_frame_{world_frame}",
             data=cuda_pointcloud,
             expected_class=wp.array,
-            expected_dtype=wp.types.float32,
+            expected_dtype=wp.float32,
             expected_shape=pointcloud_shape,
         )
         test_3_passed = test_3_passed and success
@@ -539,7 +539,7 @@ def test_pointcloud_output(
             test_name=f"get_pointcloud_device_cuda_world_frame_{world_frame}",
             data=cuda_pointcloud_cuda,
             expected_class=wp.array,
-            expected_dtype=wp.types.float32,
+            expected_dtype=wp.float32,
             expected_shape=pointcloud_shape,
         )
         test_3_passed = test_3_passed and success
@@ -594,7 +594,7 @@ def test_pointcloud_from_depth_output(
             test_name=f"get_pointcloud_device_cuda_world_frame_{world_frame}",
             data=default_pointcloud_cuda,
             expected_class=wp.array,
-            expected_dtype=wp.types.float32,
+            expected_dtype=wp.float32,
             expected_shape=pointcloud_shape,
         )
         test_1_passed = test_1_passed and success
@@ -635,7 +635,7 @@ def test_pointcloud_from_depth_output(
             test_name=f"get_pointcloud_device_cuda_world_frame_{world_frame}",
             data=cpu_pointcloud_cuda,
             expected_class=wp.array,
-            expected_dtype=wp.types.float32,
+            expected_dtype=wp.float32,
             expected_shape=pointcloud_shape,
         )
         test_2_passed = test_2_passed and success
@@ -660,7 +660,7 @@ def test_pointcloud_from_depth_output(
             test_name=f"get_pointcloud_device_None_world_frame_{world_frame}",
             data=cuda_pointcloud,
             expected_class=wp.array,
-            expected_dtype=wp.types.float32,
+            expected_dtype=wp.float32,
             expected_shape=pointcloud_shape,
         )
         test_3_passed = test_3_passed and success
@@ -676,7 +676,7 @@ def test_pointcloud_from_depth_output(
             test_name=f"get_pointcloud_device_cuda_world_frame_{world_frame}",
             data=cuda_pointcloud_cuda,
             expected_class=wp.array,
-            expected_dtype=wp.types.float32,
+            expected_dtype=wp.float32,
             expected_shape=pointcloud_shape,
         )
         test_3_passed = test_3_passed and success

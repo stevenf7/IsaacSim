@@ -29,7 +29,7 @@ def rotation_matrix_to_quaternion(
     rotation_matrix: list | np.ndarray | wp.array,
     *,
     dtype: type | None = None,
-    device: str | wp.context.Device | None = None,
+    device: str | wp.Device | None = None,
 ) -> wp.array:
     """Convert rotation matrix to quaternion.
 
@@ -97,7 +97,7 @@ def euler_angles_to_rotation_matrix(
     degrees: bool = False,
     extrinsic: bool = True,
     dtype: type | None = None,
-    device: str | wp.context.Device | None = None,
+    device: str | wp.Device | None = None,
 ) -> wp.array:
     """Convert Euler XYZ or ZYX angles to rotation matrix.
 
@@ -175,7 +175,7 @@ def euler_angles_to_quaternion(
     degrees: bool = False,
     extrinsic: bool = True,
     dtype: type | None = None,
-    device: str | wp.context.Device | None = None,
+    device: str | wp.Device | None = None,
 ) -> wp.array:
     """Convert Euler angles to quaternion.
 
@@ -217,7 +217,7 @@ def quaternion_multiplication(
     second_quaternion: list | np.ndarray | wp.array,
     *,
     dtype: type | None = None,
-    device: str | wp.context.Device | None = None,
+    device: str | wp.Device | None = None,
 ) -> wp.array:
     """Multiply two quaternions using Hamilton product.
 
@@ -300,7 +300,7 @@ def quaternion_conjugate(
     quaternion: list | np.ndarray | wp.array,
     *,
     dtype: type | None = None,
-    device: str | wp.context.Device | None = None,
+    device: str | wp.Device | None = None,
 ) -> wp.array:
     """Compute quaternion conjugate by negating the vector part.
 
@@ -369,7 +369,7 @@ def quaternion_to_rotation_matrix(
     quaternion: list | np.ndarray | wp.array,
     *,
     dtype: type | None = None,
-    device: str | wp.context.Device | None = None,
+    device: str | wp.Device | None = None,
 ) -> wp.array:
     """Convert quaternion to rotation matrix.
 
@@ -437,7 +437,7 @@ def quaternion_to_euler_angles(
     degrees: bool = False,
     extrinsic: bool = True,
     dtype: type | None = None,
-    device: str | wp.context.Device | None = None,
+    device: str | wp.Device | None = None,
 ) -> wp.array:
     """Convert quaternion to Euler angles.
 

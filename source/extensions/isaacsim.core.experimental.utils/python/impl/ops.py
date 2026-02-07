@@ -22,7 +22,7 @@ from __future__ import annotations
 import carb
 import numpy as np
 import warp as wp
-from warp.types import np_dtype_to_warp_type
+from warp._src.types import np_dtype_to_warp_type
 
 
 def _broadcastable_shape(src: tuple[int], dst: tuple[int]) -> tuple[tuple[int] | None, tuple[bool] | None]:
@@ -52,8 +52,8 @@ def _astype(src: wp.array, dtype: type) -> wp.array:
     return dst
 
 
-def parse_device(device: str | wp.context.Device | None, *, raise_on_invalid: bool = False) -> wp.context.Device:
-    """Parse the input device and return a Warp :py:class:`~warp.context.Device` instance.
+def parse_device(device: str | wp.Device | None, *, raise_on_invalid: bool = False) -> wp.Device:
+    """Parse the input device and return a Warp :py:class:`~warp.Device` instance.
 
     Args:
         device: Device specification. If the specified device is ``None`` or it cannot be resolved,
@@ -83,7 +83,7 @@ def parse_device(device: str | wp.context.Device | None, *, raise_on_invalid: bo
         >>> print(type(device), device)
         <class 'warp._src.context.Device'> cuda:0
     """
-    if isinstance(device, wp.context.Device):
+    if isinstance(device, wp.Device):
         return device
     elif isinstance(device, str):
         try:
@@ -101,7 +101,7 @@ def place(
     x: bool | int | float | list | np.ndarray | wp.array,
     *,
     dtype: type | None = None,
-    device: str | wp.context.Device | None = None,
+    device: str | wp.Device | None = None,
 ) -> wp.array:
     """Create a Warp array from a Python primitive or list, a NumPy array, or a Warp array.
 
@@ -179,7 +179,7 @@ def resolve_indices(
     *,
     count: int | None = None,
     dtype: type | None = wp.int32,
-    device: str | wp.context.Device | None = None,
+    device: str | wp.Device | None = None,
 ) -> wp.array:
     """Create a flattened (1D) Warp array to be used as indices from a Python primitive or list, a NumPy array, or a Warp array.
 
@@ -264,7 +264,7 @@ def broadcast_to(
     *,
     shape: list[int],
     dtype: type | None = None,
-    device: str | wp.context.Device | None = None,
+    device: str | wp.Device | None = None,
 ) -> wp.array:
     """Broadcast a Python primitive or list, a NumPy array, or a Warp array to a Warp array with a new shape.
 
