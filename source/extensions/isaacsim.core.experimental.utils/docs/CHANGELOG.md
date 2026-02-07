@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.11.4] - 2026-02-06
+### Changed
+- Update deprecated Warp API calls to their updated names
+
 ## [0.11.3] - 2026-02-02
 ### Fixed
 - Fix NaN issue in euler to quaternion conversion utils

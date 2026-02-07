@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.0] - 2026-02-06
+### Changed
+- Update deprecated Warp API calls to their updated names
+
 ## [1.10.1] - 2026-02-05
 ### Changed
 - Make omni.isaac.ml_archive an explicit test dependency

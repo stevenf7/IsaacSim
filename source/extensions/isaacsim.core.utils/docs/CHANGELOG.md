@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.0.3] - 2026-02-06
+### Changed
+- Update deprecated Warp API calls to their updated names
+
 ## [4.0.2] - 2026-02-02
 ### Changed
 - Fix quaternion order issue in torch transformation utils

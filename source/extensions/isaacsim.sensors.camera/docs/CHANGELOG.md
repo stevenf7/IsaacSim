@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.6.5] - 2026-02-06
+### Changed
+- Update deprecated Warp API calls to their updated names
+
 ## [1.6.4] - 2026-02-06
 ### Changed
 - omni:rtx:post:depthSensor:outlierRemovalEnabled is now a bool
