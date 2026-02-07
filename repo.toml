@@ -58,6 +58,11 @@ allowed_paths=[
 # List of packman projects to pull (in order)
 
 fetch.packman_target_files_to_pull = [
+  "${root}/deps/msvc.packman.xml",
+  "${root}/deps/msvc.packman.xml",
+  "${root}/deps/msvc.packman.xml",
+  "${root}/deps/msvc.packman.xml",
+  "${root}/deps/msvc.packman.xml",
   "${root}/deps/kit-sdk.packman.xml",
   "${root}/deps/omni-physics.packman.xml",
   "${root}/deps/kit-sdk-deps.packman.xml",
@@ -223,6 +228,12 @@ link_host_toolchain = true   # This requires Microsoft Visual Studio BuildTools 
 
 # Filter on Visual Studio version e.g.: Visual Studio 2022. Empty string will match all years and prioritize the newest.
 vs_version = "18"
+
+"env:USE_VS_2026==true".vs_version = "18"
+"env:USE_VS_2026==true".msvc_version = "v145"
+"env:USE_VS_2026==true".link_host_toolchain = false
+"env:USE_VS_2026==true".winsdk_version = "10.0.17763.0"
+
 
 # AUTOREMOVE: BEGIN
 "token:in_ci==true".vs_version = "vs2019"
