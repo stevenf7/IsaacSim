@@ -1,4 +1,8 @@
 # Changelog
+## [1.6.4] - 2026-02-06
+### Changed
+- omni:rtx:post:depthSensor:outlierRemovalEnabled is now a bool
+
 ## [1.6.3] - 2026-02-03
 ### Changed
 - Camera sensor: updated test camera orientation to use experimental rotation utils for euler angles to quaternion

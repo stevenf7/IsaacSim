@@ -180,14 +180,14 @@ class SingleViewDepthSensor(Camera):
             return self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:noiseSigma").Get()
         return None
 
-    def set_outlier_removal_enabled(self, outlier_removal_enabled: int = 3) -> None:
+    def set_outlier_removal_enabled(self, outlier_removal_enabled: bool = True) -> None:
         """Set the outlier removal enabled attribute. Samples separated by this range (in pixels) will be removed."""
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:outlierRemovalEnabled").Set(
                 outlier_removal_enabled
             )
 
-    def get_outlier_removal_enabled(self) -> int:
+    def get_outlier_removal_enabled(self) -> bool:
         """Get the outlier removal enabled attribute. Samples separated by this range (in pixels) will be removed."""
         if self._render_product_prim and self._render_product_prim.HasAttribute(
             "omni:rtx:post:depthSensor:outlierRemovalEnabled"
