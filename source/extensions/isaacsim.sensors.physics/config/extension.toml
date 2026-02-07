@@ -15,11 +15,11 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
-"isaacsim.core.nodes" = {}
-"isaacsim.robot.schema" = {}
 "isaacsim.core.experimental.objects" = {}
 "isaacsim.core.experimental.prims" = {}
+"isaacsim.core.nodes" = {}
 "isaacsim.core.simulation_manager" = {}
+"isaacsim.robot.schema" = {}
 "isaacsim.storage.native" = {}
 "omni.graph" = {}
 "omni.kit.numpy.common" = {}
@@ -55,8 +55,8 @@ args = [
 [[test]]
 timeout = 900
 dependencies = [
-    "omni.isaac.ml_archive",
     "isaacsim.test.utils",
+    "omni.isaac.ml_archive"
 ]
 stdoutFailPatterns.exclude = [
     # This is excluded in at least 3 kit tests.

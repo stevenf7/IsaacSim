@@ -177,6 +177,7 @@ args = [
     "omni.kit.loop-isaac",
     "--reset-user",
     "--vulkan",
+    "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",
     "--/app/file/ignoreUnsavedOnExit=1",
@@ -194,6 +195,7 @@ args = [
     "--/crashreporter/skipOldDumpUpload=1",
     "--/exts/omni.usd/locking/onClose=0",
     "--/omni/kit/plugin/syncUsdLoads=1",
+    "--/omni/replicator/asyncRendering=0",
     "--/omnihydra/parallelHydraSprimSync=1",
     '--/persistent/app/stage/upAxis="Z"',
     "--/persistent/app/viewport/defaults/tickRate=120",
@@ -226,4 +228,3 @@ args = [
     "--/app/asyncRendering=1",
     "--/app/omni.usd/asyncHandshake=1",
 ]
-
