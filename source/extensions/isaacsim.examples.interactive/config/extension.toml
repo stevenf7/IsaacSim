@@ -94,8 +94,8 @@ stdoutFailPatterns.exclude = [
 [[test]]
 timeout = 900
 dependencies = [
-    "omni.isaac.ml_archive",
     "isaacsim.test.utils",
+    "omni.isaac.ml_archive"
 ]
 stdoutFailPatterns.exclude = [
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows

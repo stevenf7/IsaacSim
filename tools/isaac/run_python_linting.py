@@ -377,12 +377,18 @@ def find_python_dir(extension_path: Path) -> Path | None:
 
     Extensions can have different structures:
     - python/impl/  (common pattern)
+    - python/       (simple python directory)
     - isaacsim/.../ (namespace package pattern)
     """
     # Check for python/impl structure
     python_impl = extension_path / "python" / "impl"
     if python_impl.exists():
         return python_impl
+
+    # Check for python directory with Python files
+    python_dir = extension_path / "python"
+    if python_dir.exists() and list(python_dir.rglob("*.py")):
+        return python_dir
 
     # Check for isaacsim namespace package structure
     isaacsim_dir = extension_path / "isaacsim"
