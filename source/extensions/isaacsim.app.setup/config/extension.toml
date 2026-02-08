@@ -46,7 +46,6 @@ isaac.startup.ros_sim_control_extension = false
 
 [[test]]
 dependencies = [
-    "isaacsim.asset.browser",            # isaac sim asset browser,
     "isaacsim.asset.gen.omap.ui",            # extension with occupancy map,
     "isaacsim.examples.browser",         # robotics examples,
     "isaacsim.replicator.synthetic_recorder",    # extension with synthetic_recorder,

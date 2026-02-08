@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.7.0] - 2026-02-07
+### Changed
+- Remove Asset Browser from menu and context menu
+- Use menu.open_content_browser_to_path to open the Content Browser to a specific path as a replacement
+- Add Utility menu item to check Isaac Sim assets root path
+
 ## [2.6.0] - 2026-01-26
 ### Changed
 - Fix broken Isaac Sim documentation links

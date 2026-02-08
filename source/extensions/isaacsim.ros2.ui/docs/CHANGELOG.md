@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.0] - 2026-02-07
+### Changed
+- Remove Asset Browser from menu
+- Use menu.open_content_browser_to_path to open the Content Browser to a specific path as a replacement
+
 ## [1.2.0] - 2025-11-25
 ### Changed
 - Set ResetOnStop to True for all Simulation Time OG nodes referenced by ROS Bridge

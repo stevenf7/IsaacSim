@@ -44,7 +44,6 @@ Extensions
    :maxdepth: 1
    :caption: Extensions (Asset)
 
-   isaacsim.asset.browser <source/extensions/isaacsim.asset.browser/docs/index>
    isaacsim.asset.exporter.urdf <source/extensions/isaacsim.asset.exporter.urdf/docs/index>
    isaacsim.asset.gen.conveyor <source/extensions/isaacsim.asset.gen.conveyor/docs/index>
    isaacsim.asset.gen.conveyor.ui <source/extensions/isaacsim.asset.gen.conveyor.ui/docs/index>

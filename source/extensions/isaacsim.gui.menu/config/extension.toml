@@ -1,5 +1,5 @@
 [package]
-version = "2.6.0"
+version = "2.7.0"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Provides Isaac Sim-specific menu bar functionality including File, Edit, Create, Window, Tools, Utilities, Layouts, and Help menus with robotics-focused operations."
@@ -17,6 +17,7 @@ writeTarget.kit = true
 "isaacsim.core.utils" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.robot.schema" = {}
+"isaacsim.storage.native" = {}
 "omni.kit.context_menu" = {}
 "omni.kit.menu.utils" = {}
 "omni.kit.selection" = {}
