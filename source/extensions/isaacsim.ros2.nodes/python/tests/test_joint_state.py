@@ -35,17 +35,11 @@ from .common import ROS2TestCase, get_qos_profile, set_joint_drive_parameters
 
 
 class TestRos2JointStatePublisher(ROS2TestCase):
-    # Before running each test
     async def setUp(self):
         await super().setUp()
 
-        await omni.usd.get_context().new_stage_async()
-
-        await omni.kit.app.get_app().next_update_async()
-
         ## load asset and setup ROS bridge
         # open simple_articulation asset (with one drivable revolute and one drivable prismatic joint)
-        await omni.kit.app.get_app().next_update_async()
         self.usd_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/articulation_3_joints.usd"
         (result, error) = await open_stage_async(self.usd_path)
         await omni.kit.app.get_app().next_update_async()
@@ -77,10 +71,6 @@ class TestRos2JointStatePublisher(ROS2TestCase):
             print(e)
 
         pass
-
-    # After running each test
-    async def tearDown(self):
-        await super().tearDown()
 
     async def test_joint_state_position_publisher(self):
         import rclpy
@@ -177,16 +167,11 @@ class TestRos2JointStatePublisher(ROS2TestCase):
 
 
 class TestRos2JointStateSubscriber(ROS2TestCase):
-    # Before running each test
     async def setUp(self):
         await super().setUp()
-        await omni.usd.get_context().new_stage_async()
-
-        await omni.kit.app.get_app().next_update_async()
 
         ## load asset and setup ROS bridge
         # open simple_articulation asset (with one drivable revolute and one drivable prismatic joint)
-        await omni.kit.app.get_app().next_update_async()
         self.usd_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/articulation_3_joints.usd"
         (result, error) = await open_stage_async(self.usd_path)
         await omni.kit.app.get_app().next_update_async()
@@ -228,10 +213,6 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
             print(e)
 
         pass
-
-    # After running each test
-    async def tearDown(self):
-        await super().tearDown()
 
     async def test_joint_state_subscriber_node(self):
         """

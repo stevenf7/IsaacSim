@@ -32,7 +32,6 @@ from .common import ROS2TestCase
 
 
 class TestRos2Subscribers(ROS2TestCase):
-    # Before running each test
     async def setUp(self):
         await super().setUp()
 
@@ -48,7 +47,6 @@ class TestRos2Subscribers(ROS2TestCase):
         self.sub_node_time_attribute_path = None
         pass
 
-    # After running each test
     async def tearDown(self):
 
         await super().tearDown()

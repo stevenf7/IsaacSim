@@ -27,25 +27,19 @@ import omni.kit.commands
 import omni.kit.test
 import omni.replicator.core as rep
 import rclpy
-from isaacsim.core.utils.physics import simulate_async
 from sensor_msgs.msg import LaserScan, PointCloud2
 from std_msgs.msg import String
 
 from .common import ROS2TestCase, create_sarcophagus, get_qos_profile
 
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestROS2SensorMsgRTX(ROS2TestCase):
 
     _ros_msg_type = None
     _helper_type = None
 
-    # Before running each test
     async def setUp(self):
         await super().setUp()
-
-        await omni.usd.get_context().new_stage_async()
-        await omni.kit.app.get_app().next_update_async()
 
         self._sensor = None
         self._sensor_prim_path = None

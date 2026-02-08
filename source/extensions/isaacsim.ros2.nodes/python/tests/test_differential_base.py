@@ -38,9 +38,7 @@ from .common import (
 )
 
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRos2DifferentialBase(ROS2TestCase):
-    # Before running each test
     async def setUp(self):
         await super().setUp()
         SimulationContext.clear_instance()
@@ -58,7 +56,6 @@ class TestRos2DifferentialBase(ROS2TestCase):
 
         self.node = self.create_node("isaac_sim_test_diff_drive")
 
-    # After running each test
     async def tearDown(self):
         self.node = None
 

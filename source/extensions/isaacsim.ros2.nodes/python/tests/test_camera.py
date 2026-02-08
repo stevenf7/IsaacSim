@@ -45,27 +45,15 @@ from sensor_msgs.msg import Image
 from .common import ROS2TestCase, get_qos_profile, ros2_image_to_buffer
 
 
-# Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRos2Camera(ROS2TestCase):
-    # Before running each test
     async def setUp(self):
         await super().setUp()
-
-        omni.usd.get_context().new_stage()
-
-        await omni.kit.app.get_app().next_update_async()
 
         # acquire the viewport window
         viewport_api = omni.kit.viewport.utility.get_active_viewport()
         # Set viewport resolution, changes will occur on next frame
         viewport_api.set_texture_resolution((1280, 720))
         await omni.kit.app.get_app().next_update_async()
-
-        pass
-
-    # After running each test
-    async def tearDown(self):
-        await super().tearDown()
 
     async def test_camera(self):
         scene_path = "/Isaac/Environments/Grid/default_environment.usd"
