@@ -13,11 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
+
 from isaacsim import SimulationApp
 
 # MJCF import, configuration and simulation sample
-kit = SimulationApp({"renderer": "RealTimePathTracing", "headless": False})
+kit = SimulationApp({"headless": False})
 import omni.kit.commands
+from isaacsim.core.experimental.utils.stage import is_stage_loading
 from isaacsim.core.utils.extensions import get_extension_path_from_name
 from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, UsdLux, UsdPhysics
 
@@ -39,6 +42,8 @@ status, prim_path = omni.kit.commands.execute(
     import_config=import_config,
     prim_path="/ant",
 )
+kit.update()
+
 # Get stage handle
 stage = omni.usd.get_context().get_stage()
 
@@ -68,7 +73,12 @@ omni.timeline.get_timeline_interface().play()
 # perform simulation
 for frame in range(10):
     kit.update()
+omni.timeline.get_timeline_interface().stop()
 
 # Shutdown and exit
-omni.timeline.get_timeline_interface().stop()
+while is_stage_loading():
+    print("assets still loading, waiting to finish...")
+    kit.update()
+    time.sleep(0.1)
+
 kit.close()
