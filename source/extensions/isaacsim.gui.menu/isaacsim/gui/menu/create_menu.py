@@ -14,7 +14,7 @@
 # limitations under the License.
 """Create menu helpers for Isaac Sim assets and tools."""
 import asyncio
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from functools import partial
 from pathlib import Path
 
@@ -23,7 +23,7 @@ import omni.ext
 import omni.kit.actions.core
 import omni.kit.menu.utils
 from isaacsim.core.utils.viewports import set_camera_view
-from isaacsim.gui.components.menu import create_submenu
+from isaacsim.gui.components.menu import create_submenu, open_content_browser_to_path
 from isaacsim.storage.native.nucleus import get_assets_root_path
 from omni.kit.menu.utils import MenuItemDescription, MenuLayout, add_menu_items, remove_menu_items
 
@@ -238,38 +238,30 @@ class CreateMenuExtension:
             )
             self._registered_actions.append(action_id)
 
+        action_registry.register_action(
+            self._ext_name,
+            "open_content_browser_robots",
+            partial(open_content_browser_to_path, "/Isaac/Robots"),
+            display_name="Open Content Browser (Robots)",
+            description="Open the Content Browser to the Robots folder",
+        )
+        self._registered_actions.append("open_content_browser_robots")
+
+        # Robot asset items shared between Create menu and right-click context menu
+        robot_items = [
+            {"name": "Ant", "onclick_action": (self._ext_name, "create_robot_ant")},
+            {"name": "Boston Dynamics Spot (Quadruped)", "onclick_action": (self._ext_name, "create_robot_spot")},
+            {"name": "Franka Emika Panda Arm", "onclick_action": (self._ext_name, "create_robot_franka")},
+            {"name": "Humanoid", "onclick_action": (self._ext_name, "create_robot_humanoid")},
+            {"name": "Nova Carter with Sensors", "onclick_action": (self._ext_name, "create_robot_nova_carter")},
+            {"name": "Quadcopter", "onclick_action": (self._ext_name, "create_robot_quadcopter")},
+        ]
+
+        # Create menu includes an Asset Browser link; context menu does not
         robot_menu_dict = {
             "name": {
-                "Robots": [
-                    {
-                        "name": "Ant",
-                        "onclick_action": (self._ext_name, "create_robot_ant"),
-                    },
-                    {
-                        "name": "Boston Dynamics Spot (Quadruped)",
-                        "onclick_action": (self._ext_name, "create_robot_spot"),
-                    },
-                    {
-                        "name": "Franka Emika Panda Arm",
-                        "onclick_action": (self._ext_name, "create_robot_franka"),
-                    },
-                    {
-                        "name": "Humanoid",
-                        "onclick_action": (self._ext_name, "create_robot_humanoid"),
-                    },
-                    {
-                        "name": "Nova Carter with Sensors",
-                        "onclick_action": (self._ext_name, "create_robot_nova_carter"),
-                    },
-                    {
-                        "name": "Quadcopter",
-                        "onclick_action": (self._ext_name, "create_robot_quadcopter"),
-                    },
-                    {
-                        "name": "Asset Browser",
-                        "onclick_action": ("isaacsim.asset.browser", "open_isaac_sim_asset_browser"),
-                    },
-                ]
+                "Robots": robot_items
+                + [{"name": "Asset Browser", "onclick_action": (self._ext_name, "open_content_browser_robots")}]
             },
             "glyph": robot_icon_path,
         }
@@ -315,26 +307,26 @@ class CreateMenuExtension:
             self._registered_actions.append(action_id)
 
         ## Environments
+        action_registry.register_action(
+            self._ext_name,
+            "open_content_browser_environments",
+            partial(open_content_browser_to_path, "/Isaac/Environments"),
+            display_name="Open Content Browser (Environments)",
+            description="Open the Content Browser to the Environments folder",
+        )
+        self._registered_actions.append("open_content_browser_environments")
+
+        # Environment asset items shared between Create menu and right-click context menu
+        env_items = [
+            {"name": "Black Grid", "onclick_action": (self._ext_name, "create_env_black_grid")},
+            {"name": "Flat Grid", "onclick_action": (self._ext_name, "create_env_flat_grid")},
+            {"name": "Simple Room", "onclick_action": (self._ext_name, "create_env_simple_room")},
+        ]
+
         environment_menu_dict = {
             "name": {
-                "Environments": [
-                    {
-                        "name": "Black Grid",
-                        "onclick_action": (self._ext_name, "create_env_black_grid"),
-                    },
-                    {
-                        "name": "Flat Grid",
-                        "onclick_action": (self._ext_name, "create_env_flat_grid"),
-                    },
-                    {
-                        "name": "Simple Room",
-                        "onclick_action": (self._ext_name, "create_env_simple_room"),
-                    },
-                    {
-                        "name": "Asset Browser",
-                        "onclick_action": ("isaacsim.asset.browser", "open_isaac_sim_asset_browser"),
-                    },
-                ]
+                "Environments": env_items
+                + [{"name": "Asset Browser", "onclick_action": (self._ext_name, "open_content_browser_environments")}]
             },
             "glyph": str(Path(icon_dir).joinpath("data/environment.svg")),
         }
@@ -342,10 +334,17 @@ class CreateMenuExtension:
         self._menu_categories.append(add_menu_items(create_submenu(environment_menu_dict), "Create"))
 
         ## Sensor
+        action_registry.register_action(
+            self._ext_name,
+            "open_content_browser_sensors",
+            partial(open_content_browser_to_path, "/Isaac/Sensors"),
+            display_name="Open Content Browser (Sensors)",
+            description="Open the Content Browser to the Sensors folder",
+        )
+        self._registered_actions.append("open_content_browser_sensors")
+
         sensor_sub_menu = [
-            MenuItemDescription(
-                name="Asset Browser", onclick_action=("isaacsim.asset.browser", "open_isaac_sim_asset_browser")
-            ),
+            MenuItemDescription(name="Asset Browser", onclick_action=(self._ext_name, "open_content_browser_sensors")),
         ]
         sensor_icon_path = str(Path(icon_dir).joinpath("data/sensor.svg"))
         sensor_menu = [MenuItemDescription(name="Sensors", glyph=sensor_icon_path, sub_menu=sensor_sub_menu)]
@@ -375,35 +374,16 @@ class CreateMenuExtension:
             tag="Create AprilTag",
         )
 
-        # Matching the Create in Context Menus (Viewport and Stage)
-        def remove_asset_browser(menu_dict: Mapping[str, object]) -> dict[str, object]:
-            """Remove Asset Browser items from a menu definition.
-
-            Args:
-                menu_dict: Menu definition dictionary to filter.
-
-            Returns:
-                Filtered menu definition without Asset Browser entries.
-            """
-            new_dict: dict[str, object] = {}
-            for key, value in menu_dict.items():
-                if isinstance(value, dict):
-                    new_dict[key] = remove_asset_browser(value)
-                elif isinstance(value, list):
-                    new_dict[key] = [x for x in value if x.get("name") != "Asset Browser"]
-                elif value != "Asset Browser":
-                    new_dict[key] = value
-            return new_dict
-
-        # Remove the Asset Browser from robot, environment
-        robot_context_menu_dict = remove_asset_browser(robot_menu_dict)
-        environment_context_menu_dict = remove_asset_browser(environment_menu_dict)
-
+        # Right-click context menu (Viewport and Stage) uses the shared item lists
+        # without the Asset Browser link
         isaac_create_menu_dict = {
             "name": {
                 "Isaac": [
-                    robot_context_menu_dict,
-                    environment_context_menu_dict,
+                    {"name": {"Robots": robot_items}, "glyph": robot_icon_path},
+                    {
+                        "name": {"Environments": env_items},
+                        "glyph": str(Path(icon_dir).joinpath("data/environment.svg")),
+                    },
                     apriltag_menu_dict,
                 ]
             },

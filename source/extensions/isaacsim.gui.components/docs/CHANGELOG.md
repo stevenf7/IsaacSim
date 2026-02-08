@@ -1,4 +1,8 @@
 # Changelog
+## [1.6.0] - 2026-02-07
+### Changed
+- Add menu.open_content_browser_to_path to open the Content Browser to a specific path
+
 ## [1.5.0] - 2025-12-22
 ### Added
 - Add menu.create_submenu to recursively build MenuItemDescription lists from dicts describing submenus

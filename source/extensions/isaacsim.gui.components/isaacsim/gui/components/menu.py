@@ -93,3 +93,49 @@ def create_submenu(menu_dict: dict) -> list:
             )
 
     return [MenuItemDescription(name=submenu_name, sub_menu=sub_menu_items, glyph=menu_dict.get("glyph"))]
+
+
+def open_content_browser_to_path(relative_path: str) -> None:
+    """Open the Content Browser window, navigate to a specific asset path, and focus the tab.
+
+    Shows the Content Browser window if it is not already visible, brings its
+    tab to the foreground, and navigates to ``<assets_root>/<relative_path>``.
+
+    Args:
+        relative_path: Relative path under the Isaac Sim assets root to navigate to,
+            e.g. ``"/Isaac/Sensors"`` or ``"/Isaac/Robots"``.
+
+    Example:
+        .. code-block:: python
+
+            from isaacsim.gui.components.menu import open_content_browser_to_path
+
+            open_content_browser_to_path("/Isaac/Sensors")
+
+    Returns:
+        None.
+    """
+    import carb
+    import omni.ui as ui
+    from isaacsim.storage.native.nucleus import get_assets_root_path
+    from omni.kit.window.content_browser import get_content_window
+
+    # Ensure the Content Browser window exists and is visible
+    ui.Workspace.show_window("Content", True)
+
+    # Bring the tab to the foreground if it's behind other tabs in the same dock
+    content_window = ui.Workspace.get_window("Content")
+    if content_window:
+        content_window.focus()
+
+    content_browser = get_content_window()
+    if content_browser is None:
+        carb.log_error("Content Browser is not available")
+        return
+
+    assets_root = get_assets_root_path()
+    if assets_root is None:
+        carb.log_error("Could not find Isaac Sim assets folder")
+        return
+
+    content_browser.navigate_to(assets_root + relative_path)

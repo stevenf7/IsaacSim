@@ -1,5 +1,5 @@
 [package]
-version = "1.2.0"
+version = "1.3.0"
 category = "Simulation"
 title = "ROS 2 UI Components"
 description = "This extension provides UI components for ROS 2 integration with Isaac Sim."
@@ -13,7 +13,6 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"isaacsim.asset.browser" = {}
 "isaacsim.core.utils" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.ros2.nodes" = {}

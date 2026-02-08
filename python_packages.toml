@@ -208,7 +208,6 @@ inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/isaacsim.asset.browser",
     "exts/isaacsim.asset.gen.conveyor",
     "exts/isaacsim.asset.gen.conveyor.ui",
     "exts/isaacsim.asset.exporter.urdf",
