@@ -1,4 +1,11 @@
 # Changelog
+## [1.5.10] - 2026-02-05
+### Removed
+- Moved test_menu_graphs to isaacsim.ros2.ui
+- Simplified test dependencies
+- Replaced fields_to_dtype with sensors_msgs_py.point_cloud2.read_points where applicable
+- Cleaned up setUp and tearDown methods in tests
+
 ## [1.5.9] - 2026-01-30
 ### Changed
 - Update waypoint follower action graph to use ReadPrimLocalTransform node

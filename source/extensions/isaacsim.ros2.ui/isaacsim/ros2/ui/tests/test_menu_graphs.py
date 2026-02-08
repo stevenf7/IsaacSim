@@ -14,14 +14,12 @@
 # limitations under the License.
 
 import copy
-import time
 
 import numpy as np
 import omni.graph.core as og
 import omni.kit.app
 import omni.kit.test
 import omni.kit.ui_test as ui_test
-import omni.timeline
 import omni.usd
 import rclpy
 import usdrt.Sdf
@@ -33,9 +31,8 @@ from isaacsim.core.utils.prims import define_prim
 from isaacsim.core.utils.stage import add_reference_to_stage, update_stage_async
 from isaacsim.test.utils import menu_click_with_retry
 from nav_msgs.msg import Odometry
-from rclpy.node import Node
 from rosgraph_msgs.msg import Clock
-from sensor_msgs.msg import Image, JointState, LaserScan, PointCloud2
+from sensor_msgs.msg import Image, JointState, PointCloud2
 from std_msgs.msg import Float32, Header
 from tf2_msgs.msg import TFMessage
 
@@ -43,38 +40,12 @@ from .common import ROS2TestCase
 
 
 class ROS2MenuTestBase(ROS2TestCase):
-    """Base class for ROS2 OmniGraph Menu tests"""
+    """Base class for ROS2 OmniGraph Menu tests."""
 
     async def setUp(self):
         await super().setUp()
-        await omni.usd.get_context().new_stage_async()
-        await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
-        self._timeline = omni.timeline.get_timeline_interface()
-
-        self.node = Node("test_omnigraph_node")
-
-        # Set up message tracking
-        self.received_messages = {}
-        self.subscribers = []
-
-    async def tearDown(self):
-        # Clean up ROS2 subscribers
-        for sub in self.subscribers:
-            self.node.destroy_subscription(sub)
-        self.node.destroy_node()
-        await super().tearDown()
-
-    def create_subscriber(self, topic, msg_type, callback=None):
-        """Create a subscriber"""
-
-        def message_callback(msg):
-            if callback:
-                callback(msg)
-
-        sub = self.node.create_subscription(msg_type, topic, message_callback, 10)
-        self.subscribers.append(sub)
-        return sub
+        self.node = self.create_node("test_omnigraph_node")
 
     async def setup_test_environment(self, robot_path="/World/test_robot", add_test_cubes=False):
         """Helper function to set up a standard test environment with a Nova Carter robot.
@@ -258,9 +229,9 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
             self.point_cloud_data = msg
 
         # Create subscribers
-        self.create_subscriber(rgb_topic, Image, rgb_callback)
-        self.create_subscriber(depth_topic, Image, depth_callback)
-        self.create_subscriber(point_cloud_topic, PointCloud2, point_cloud_callback)
+        self.create_subscription(self.node, Image, rgb_topic, rgb_callback)
+        self.create_subscription(self.node, Image, depth_topic, depth_callback)
+        self.create_subscription(self.node, PointCloud2, point_cloud_topic, point_cloud_callback)
 
         # Click through the menu to create the graph
         window_name = "ROS2 Camera Graph"
@@ -324,10 +295,9 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
         # Point Cloud validation
         self.assertIsNotNone(self.point_cloud_data, "No point cloud received")
         if self.point_cloud_data:
-            from .common import fields_to_dtype
+            from sensor_msgs_py.point_cloud2 import read_points
 
-            fields_dtype = fields_to_dtype(self.point_cloud_data.fields, self.point_cloud_data.point_step)
-            points_array = np.frombuffer(self.point_cloud_data.data, fields_dtype)
+            points_array = read_points(self.point_cloud_data)
             self.assertGreater(len(points_array), 10, "Point cloud should have at least 10 points")
 
             # Validate point cloud fields
@@ -363,8 +333,8 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
 
         await omni.kit.app.get_app().next_update_async()
 
-        # Click OK button
-        ok_button = ui_test.find(root_widget_path + "/HStack[7]/Button[0]")
+        # Click OK button (index updated due to metadata UI additions)
+        ok_button = ui_test.find(root_widget_path + "/HStack[8]/Button[0]")
         self.assertIsNotNone(ok_button, "OK button not found")
         await ok_button.click()
 
@@ -409,8 +379,8 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
 
         await omni.kit.app.get_app().next_update_async()
 
-        # Click OK button
-        ok_button = ui_test.find(root_widget_path + "/HStack[7]/Button[0]")
+        # Click OK button (index updated due to metadata UI additions)
+        ok_button = ui_test.find(root_widget_path + "/HStack[8]/Button[0]")
         self.assertIsNotNone(ok_button, "OK button not found")
         await ok_button.click()
 
@@ -455,8 +425,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
             self.point_cloud_data = msg
 
         # Create subscribers with validation callbacks
-        # self.create_subscriber(laser_scan_topic, LaserScan, laser_scan_callback)
-        self.create_subscriber(point_cloud_topic, PointCloud2, point_cloud_callback)
+        self.create_subscription(self.node, PointCloud2, point_cloud_topic, point_cloud_callback)
 
         # Click through the menu to create the graph
         window_name = "ROS2 RTX Lidar Graph"
@@ -480,8 +449,8 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
 
         await omni.kit.app.get_app().next_update_async()
 
-        # Click OK button
-        ok_button = ui_test.find(root_widget_path + "/HStack[7]/Button[0]")
+        # Click OK button (index updated due to metadata UI additions)
+        ok_button = ui_test.find(root_widget_path + "/HStack[8]/Button[0]")
         self.assertIsNotNone(ok_button, "OK button not found")
         await ok_button.click()
 
@@ -526,11 +495,10 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
 
             if self.point_cloud_data:
                 # Check point cloud data content
-                from .common import fields_to_dtype  # Import utility from test_rtx_sensor
+                from sensor_msgs_py.point_cloud2 import read_points
 
                 # Convert ROS PointCloud2 message to numpy array
-                fields_dtype = fields_to_dtype(self.point_cloud_data.fields, self.point_cloud_data.point_step)
-                points_array = np.frombuffer(self.point_cloud_data.data, fields_dtype)
+                points_array = read_points(self.point_cloud_data)
 
                 # Validate point cloud structure and content
                 self.assertGreater(len(points_array), 10, "PointCloud should have at least 10 points")
@@ -543,6 +511,165 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
                     self.assertIn("x", field_names, "PointCloud missing 'x' field")
                     self.assertIn("y", field_names, "PointCloud missing 'y' field")
                     self.assertIn("z", field_names, "PointCloud missing 'z' field")
+
+    async def test_lidar_point_cloud_with_metadata(self):
+        """Test creation of RTX Lidar graph with point cloud metadata config node"""
+
+        robot, base_link_path, art_root_path = await self.setup_test_environment()
+
+        # Click through the menu to create the graph
+        window_name = "ROS2 RTX Lidar Graph"
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/RTX Lidar", window_name=window_name)
+        self.assertIsNotNone(param_window, "Parameter window not found")
+
+        # Find and set the graph root prim
+        root_widget_path = f"{window_name}//Frame/VStack[0]"
+
+        # Find and set RTX Lidar prim
+        lidar_prim = ui_test.find(root_widget_path + "/HStack[2]/StringField[0]")
+        lidar_prim.model.set_value("/World/test_robot/chassis_link/sensors/XT_32/PandarXT_32_10hz")
+
+        # Disable Laser Scan
+        laser_scan_checkbox = ui_test.find(root_widget_path + "/HStack[5]/HStack[0]/VStack[0]/ToolButton[0]")
+        laser_scan_checkbox.model.set_value(False)
+
+        # Enable Point Cloud
+        point_cloud_checkbox = ui_test.find(root_widget_path + "/HStack[6]/HStack[0]/VStack[0]/ToolButton[0]")
+        point_cloud_checkbox.model.set_value(True)
+
+        # Enable some metadata options in the left VStack (HStack[7]/VStack[0])
+        # Intensity checkbox is the first one in left VStack
+        intensity_checkbox = ui_test.find(
+            root_widget_path + "/HStack[7]/VStack[0]/HStack[0]/HStack[0]/VStack[0]/ToolButton[0]"
+        )
+        if intensity_checkbox:
+            intensity_checkbox.model.set_value(True)
+
+        # Timestamp checkbox is the second one in left VStack
+        timestamp_checkbox = ui_test.find(
+            root_widget_path + "/HStack[7]/VStack[0]/HStack[1]/HStack[0]/VStack[0]/ToolButton[0]"
+        )
+        if timestamp_checkbox:
+            timestamp_checkbox.model.set_value(True)
+
+        # Enable some metadata options in the right VStack (HStack[7]/VStack[1])
+        # Velocity checkbox is the second one in right VStack
+        velocity_checkbox = ui_test.find(
+            root_widget_path + "/HStack[7]/VStack[1]/HStack[1]/HStack[0]/VStack[0]/ToolButton[0]"
+        )
+        if velocity_checkbox:
+            velocity_checkbox.model.set_value(True)
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Click OK button
+        ok_button = ui_test.find(root_widget_path + "/HStack[8]/Button[0]")
+        self.assertIsNotNone(ok_button, "OK button not found")
+        await ok_button.click()
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Get the created graph at default path
+        graph = og.get_graph_by_path("/Graph/ROS_LidarRTX")
+        self.assertIsNotNone(graph, "Graph was not created")
+
+        # Verify essential nodes exist including the config node
+        nodes = graph.get_nodes()
+        node_types = {node.get_type_name() for node in nodes}
+
+        expected_nodes = {
+            "omni.graph.action.OnPlaybackTick",
+            "isaacsim.ros2.bridge.ROS2Context",
+            "isaacsim.core.nodes.OgnIsaacRunOneSimulationFrame",
+            "isaacsim.core.nodes.IsaacCreateRenderProduct",
+            "isaacsim.ros2.bridge.ROS2RtxLidarHelper",
+            "isaacsim.ros2.bridge.ROS2RtxLidarPointCloudConfig",  # Config node should be created
+        }
+
+        for expected in expected_nodes:
+            self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
+
+        # Verify that the config node is connected to the lidar helper
+        config_node = None
+        lidar_helper_node = None
+        for node in nodes:
+            if node.get_type_name() == "isaacsim.ros2.bridge.ROS2RtxLidarPointCloudConfig":
+                config_node = node
+            elif node.get_type_name() == "isaacsim.ros2.bridge.ROS2RtxLidarHelper":
+                lidar_helper_node = node
+
+        self.assertIsNotNone(config_node, "Config node not found")
+        self.assertIsNotNone(lidar_helper_node, "Lidar helper node not found")
+
+        # Verify the connection exists between config output and helper input
+        helper_metadata_attr = lidar_helper_node.get_attribute("inputs:selectedMetadata")
+        self.assertIsNotNone(helper_metadata_attr, "selectedMetadata input attribute not found")
+
+    async def test_lidar_metadata_without_point_cloud(self):
+        """Test that metadata options are ignored when point cloud is disabled"""
+
+        robot, base_link_path, art_root_path = await self.setup_test_environment()
+
+        # Click through the menu to create the graph
+        window_name = "ROS2 RTX Lidar Graph"
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/RTX Lidar", window_name=window_name)
+        self.assertIsNotNone(param_window, "Parameter window not found")
+
+        # Find and set the graph root prim
+        root_widget_path = f"{window_name}//Frame/VStack[0]"
+
+        # Find and set RTX Lidar prim
+        lidar_prim = ui_test.find(root_widget_path + "/HStack[2]/StringField[0]")
+        lidar_prim.model.set_value("/World/test_robot/chassis_link/sensors/XT_32/PandarXT_32_10hz")
+
+        # Leave Laser Scan enabled (default)
+        # Keep Point Cloud disabled (default)
+
+        # Try to enable some metadata options (should show warning and be ignored)
+        intensity_checkbox = ui_test.find(
+            root_widget_path + "/HStack[7]/VStack[0]/HStack[0]/HStack[0]/VStack[0]/ToolButton[0]"
+        )
+        if intensity_checkbox:
+            intensity_checkbox.model.set_value(True)
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Click OK button
+        ok_button = ui_test.find(root_widget_path + "/HStack[8]/Button[0]")
+        self.assertIsNotNone(ok_button, "OK button not found")
+        await ok_button.click()
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Get the created graph at default path
+        graph = og.get_graph_by_path("/Graph/ROS_LidarRTX")
+        self.assertIsNotNone(graph, "Graph was not created")
+
+        # Verify that the config node is NOT created (since point cloud is disabled)
+        nodes = graph.get_nodes()
+        node_types = {node.get_type_name() for node in nodes}
+
+        # Config node should NOT be present
+        self.assertNotIn(
+            "isaacsim.ros2.bridge.ROS2RtxLidarPointCloudConfig",
+            node_types,
+            "Config node should not be created when point cloud is disabled",
+        )
+
+        # ROS2RtxLidarHelper for point cloud should also NOT be present
+        # (only laser scan helper should be present)
+        lidar_helper_count = sum(
+            1 for node in nodes if node.get_type_name() == "isaacsim.ros2.bridge.ROS2RtxLidarHelper"
+        )
+        self.assertEqual(lidar_helper_count, 1, "Only one lidar helper (for laser scan) should be created")
+
+        # Verify the laser scan helper is configured for laser_scan type
+        for node in nodes:
+            if node.get_type_name() == "isaacsim.ros2.bridge.ROS2RtxLidarHelper":
+                type_attr = node.get_attribute("inputs:type")
+                if type_attr:
+                    type_value = og.Controller.get(type_attr)
+                    self.assertEqual(type_value, "laser_scan", "Helper should be configured for laser_scan")
 
 
 class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
@@ -670,7 +797,7 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
             self.joint_state_data = msg
 
         # Create subscriber
-        self.create_subscriber(joint_states_topic, JointState, joint_states_callback)
+        self.create_subscription(self.node, JointState, joint_states_topic, joint_states_callback)
 
         # Create graph through menu
         window_name = "ROS2 Joint States Graph"
@@ -920,7 +1047,7 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
             self.tf_data = msg
 
         # Create subscriber
-        self.create_subscriber(tf_topic, TFMessage, tf_callback)
+        self.create_subscription(self.node, TFMessage, tf_topic, tf_callback)
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -1120,8 +1247,8 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
             self.odom_data = copy.deepcopy(msg)
 
         # Create subscribers
-        self.create_subscriber(tf_topic, TFMessage, tf_callback)
-        self.create_subscriber(odom_topic, Odometry, odom_callback)
+        self.create_subscription(self.node, TFMessage, tf_topic, tf_callback)
+        self.create_subscription(self.node, Odometry, odom_topic, odom_callback)
 
         # Create Odometry graph through menu
         window_name = "ROS2 Odometry Graph"
@@ -1329,7 +1456,7 @@ class TestMenuROS2ClockGraph(ROS2MenuTestBase):
             self.clock_history.append(time_value)
 
         # Create subscriber
-        self.create_subscriber(clock_topic, Clock, clock_callback)
+        self.create_subscription(self.node, Clock, clock_topic, clock_callback)
 
         # Create graph through menu as required
         window_name = "ROS2 Clock Graph"
@@ -1497,7 +1624,7 @@ class TestMenuROS2GenericPublisherGraph(ROS2MenuTestBase):
             print(f"Received Float32 value: {msg.data}")
 
         # Create subscriber for Float32
-        self.create_subscriber(test_topic, Float32, float_callback)
+        self.create_subscription(self.node, Float32, test_topic, float_callback)
 
         # Create graph through menu
         window_name = "ROS2 Generic Publisher Graph"

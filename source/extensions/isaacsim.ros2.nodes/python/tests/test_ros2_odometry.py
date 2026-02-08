@@ -38,16 +38,10 @@ torch = import_module("torch")
 
 
 class TestRos2Odometry(ROS2TestCase):
-    # Before running each test
     async def setUp(self):
         await super().setUp()
-
-        await omni.usd.get_context().new_stage_async()
-
         self.CUBE_SCALE = 0.5
-        await omni.kit.app.get_app().next_update_async()
 
-    # After running each test
     async def tearDown(self):
 
         await omni.kit.app.get_app().next_update_async()

@@ -28,22 +28,7 @@ from pxr import Gf, Sdf
 from .common import get_qos_profile
 
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRos2LaserScan(ROS2TestCase):
-    # Before running each test
-    async def setUp(self):
-        await super().setUp()
-
-        await omni.usd.get_context().new_stage_async()
-
-        await omni.kit.app.get_app().next_update_async()
-
-        pass
-
-    # After running each test
-    async def tearDown(self):
-        await super().tearDown()
-
     async def test_physx_lidar(self):
         # Test Lidar buffer with replicator activated
         import omni.graph.core as og

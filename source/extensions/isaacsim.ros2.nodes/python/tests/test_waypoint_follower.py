@@ -477,7 +477,6 @@ def compute(db: og.Database):
 
 class TestRos2Nav2WaypointFollower(ROS2TestCase):
 
-    # Before running each test
     async def setUp(self):
         await super().setUp()
 
@@ -495,7 +494,6 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
 
         await create_new_stage_async()
 
-    # After running each test
     async def tearDown(self):
         await super().tearDown()
 

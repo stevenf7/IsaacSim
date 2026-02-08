@@ -879,6 +879,11 @@ local function get_benchmark_tests()
             "--num-frames 10 --num-sensors 8 --lidar-type Solid_State",
         },
         {
+            "tests-standalone_benchmarks-benchmark_rtx_lidar_ros2_pcl_metadata",
+            "standalone_examples/benchmarks/benchmark_rtx_lidar_ros2_pcl_metadata.py",
+            "--num-frames 10 --num-sensors 2 --metadata Intensity ObjectId Timestamp --non-headless",
+        },
+        {
             "tests-standalone_benchmarks-benchmark_sdg_simple",
             "standalone_examples/benchmarks/benchmark_sdg.py",
             "--num-frames 10 --num-cameras 2 --resolution 1280 720 --asset-count 10 --annotators rgb distance_to_camera --disable-viewport-rendering --delete-data-when-done --headless --print-results",

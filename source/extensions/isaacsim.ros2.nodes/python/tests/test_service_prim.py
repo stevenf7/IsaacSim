@@ -28,12 +28,10 @@ from .common import ROS2TestCase
 
 
 class TestRos2ServicePrim(ROS2TestCase):
-    # Before running each test
     async def setUp(self):
         await super().setUp()
         await create_new_stage_async()
 
-    # After running each test
     async def tearDown(self):
         await super().tearDown()
 

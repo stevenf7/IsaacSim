@@ -28,7 +28,6 @@ class TestRos2ImageToBuffer(ROS2TestCase):
         "test_yuv422_shape": (8, 8, "uyvy", 2, np.uint8, {}),
     }
 
-    # Before running each test
     async def setUp(self):
         await super().setUp()
 
@@ -46,7 +45,6 @@ class TestRos2ImageToBuffer(ROS2TestCase):
         # Initialize received image storage
         self._received_image = None
 
-    # After running each test
     async def tearDown(self):
         # Delete all golden images created during this test
         for filepath in self._golden_files:

@@ -32,9 +32,7 @@ from usd.schema.isaac import robot_schema
 from .common import ROS2TestCase, add_cube, add_franka, get_qos_profile
 
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRos2PoseTree(ROS2TestCase):
-    # Before running each test
     async def setUp(self):
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
@@ -42,7 +40,6 @@ class TestRos2PoseTree(ROS2TestCase):
 
         pass
 
-    # After running each test
     async def tearDown(self):
         await super().tearDown()
 

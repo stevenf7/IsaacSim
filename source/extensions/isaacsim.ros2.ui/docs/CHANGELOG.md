@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.0] - 2026-02-08
+### Added
+- Added PointCloud2 metadata options to RTX Lidar OG tool
+- Added test_menu_graphs
+
 ## [1.3.0] - 2026-02-07
 ### Changed
 - Remove Asset Browser from menu

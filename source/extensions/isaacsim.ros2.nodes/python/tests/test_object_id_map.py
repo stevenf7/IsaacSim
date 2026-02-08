@@ -30,7 +30,6 @@ from .common import ROS2TestCase, create_sarcophagus, get_qos_profile
 
 class TestROS2ObjectIdMap(ROS2TestCase):
 
-    # Before running each test
     async def setUp(self):
         await super().setUp()
 
