@@ -45,14 +45,14 @@ class TrajectoryFollower(BaseController):
             **kwargs: Custom arguments.
 
         Returns:
-            True if there is an error, False otherwise.
+            True if reset successfully, False otherwise.
         """
 
         # No trajectory, which is safest. Any trajectories we run
         # are set explicitly immediately before they run.
         self._trajectory = None
         self._start_time = None
-        return False
+        return True
 
     def forward(
         self, estimated_state: RobotState, setpoint_state: Optional[RobotState], t: float, **kwargs
