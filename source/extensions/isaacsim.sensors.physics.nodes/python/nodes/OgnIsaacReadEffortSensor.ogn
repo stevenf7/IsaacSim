@@ -1,5 +1,5 @@
 {
-    "IsaacReadEffortSensor": {
+    "isaacsim.sensors.physics.IsaacReadEffortSensor": {
         "version": 1,
         "icon": "icons/isaac-sim.svg",        
         "description": "Node that reads out joint effort values",
@@ -24,7 +24,8 @@
             "useLatestData": {
                 "type": "bool",
                 "description": "True to use the latest data from the physics step, False to use the data measured by the sensor",
-                "default": false
+                "default": false,
+                "deprecated": "Sensor always outputs latest physics-step data. This input is ignored."
             },
             "enabled": {
                 "type": "bool",
@@ -34,7 +35,8 @@
             "sensorPeriod":{
                 "type": "float",
                 "description": "Downtime between sensor readings",
-                "default": 0
+                "default": 0,
+                "deprecated": "Sensor period and frequency features were removed. The node always outputs the latest physics-step data. This input is ignored."
             }
         },
         "outputs": {

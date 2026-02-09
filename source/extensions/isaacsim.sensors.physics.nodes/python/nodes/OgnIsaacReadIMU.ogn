@@ -1,8 +1,9 @@
 {
-    "IsaacReadIMU": {
+    "isaacsim.sensors.physics.IsaacReadIMU": {
         "version": 1,
-        "icon": "icons/isaac-sim.svg",        
+        "icon": "icons/isaac-sim.svg",
         "description": "Node that reads out IMU linear acceleration, angular velocity and orientation data",
+        "language": "python",
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacPhysicsSensor",
         "metadata": {
@@ -12,7 +13,7 @@
             "execIn": {
                 "type": "execution",
                 "description": "The input execution port"
-            },            
+            },
             "imuPrim": {
                 "type": "target",
                 "description": "Usd prim reference to the IMU prim",
@@ -23,7 +24,8 @@
             "useLatestData": {
                 "type": "bool",
                 "description": "True to use the latest data from the physics step, False to use the data measured by the sensor",
-                "default": false
+                "default": false,
+                "deprecated": "Sensor always outputs latest physics-step data. This input is ignored."
             },
             "readGravity": {
                 "type": "bool",
@@ -36,7 +38,7 @@
                 "type": "execution",
                 "description": "Output execution triggers when sensor has data"
             },
-            "sensorTime":{
+            "sensorTime": {
                 "type": "float",
                 "description": "Timestamp of the sensor reading",
                 "default": 0
@@ -64,7 +66,7 @@
                     0.0,
                     0.0
                 ]
-            }, 
+            },
             "orientation": {
                 "type": "quatd[4]",
                 "description": "Sensor orientation as quaternion",
@@ -72,9 +74,9 @@
                     "uiName": "Sensor Orientation Quaternion"
                 },
                 "default": [
-                    0.0, 
-                    0.0, 
-                    0.0, 
+                    0.0,
+                    0.0,
+                    0.0,
                     1.0
                 ]
             }

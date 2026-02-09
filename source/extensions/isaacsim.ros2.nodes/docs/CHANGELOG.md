@@ -1,4 +1,8 @@
 # Changelog
+## [1.6.0] - 2026-02-01
+### Changed
+- Update isaacsim.sensors.physics dependency to isaacsim.sensors.experimental.physics
+
 ## [1.5.10] - 2026-02-05
 ### Removed
 - Moved test_menu_graphs to isaacsim.ros2.ui

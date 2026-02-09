@@ -1,4 +1,10 @@
 # Changelog
+## [1.0.0] - 2026-02-01
+### Added
+- Updated to use interfaces from isaacsim.sensors.experimental.physics extension
+- Updated contact and IMU examples to use the new sensor command APIs and legacy Python interfaces
+- Improved example UI lifecycle handling with typed callbacks, stage-close cleanup, and richer docstrings
+
 ## [0.2.2] - 2025-12-05
 ### Changed
 - Migrate to Events 2.0.

@@ -1,5 +1,5 @@
 [package]
-version = "0.7.0"
+version = "1.0.0"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation"
 description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor."
@@ -31,6 +31,10 @@ writeTarget.kit = true
 "omni.timeline" = {} # Needed for simulation to occur
 "omni.usd" = {} # needed for call to add aov
 "usdrt.scenegraph" = {}
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 6.0.0. Replaced with isaacsim.sensors.experimental.physics"
+
 
 [[python.module]]
 name = "isaacsim.sensors.physics"

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2026-02-01
+### Changed
+- Removed isaacsim.sensors.experimental.physics dependency
+
 ## [1.2.7] - 2026-01-23
 ### Changed
 - Set publish_with_queue_thread extension setting to true

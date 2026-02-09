@@ -19,8 +19,6 @@ import carb.tokens
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni
-import omni.graph.action
-import omni.graph.core as og
 import omni.isaac.IsaacSensorSchema as sensorSchema
 import omni.kit.commands
 
@@ -29,7 +27,6 @@ import omni.kit.commands
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.timeline
-import usdrt.Sdf
 from isaacsim.core.experimental.objects import Cube, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim, XformPrim
 from isaacsim.core.experimental.utils.stage import add_reference_to_stage
@@ -125,26 +122,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             self.sensorGeoms.append(sensor)
             self.assertTrue(result)
             self.assertIsNotNone(sensor)
-
-    def _setup_contact_sensor_ogn_graph(self, sensor_path: str, graph_path: str = "/controller_graph"):
-        """Create the OGN graph that reads contact sensor outputs."""
-        if self._stage.GetPrimAtPath(graph_path).IsValid():
-            stage_utils.delete_prim(graph_path)
-
-        (_, (_, test_node), _, _) = og.Controller.edit(
-            {"graph_path": graph_path, "evaluator_name": "execution"},
-            {
-                og.Controller.Keys.CREATE_NODES: [
-                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                    ("IsaacReadContactSensor", "isaacsim.sensors.physics.IsaacReadContactSensor"),
-                ],
-                og.Controller.Keys.SET_VALUES: [
-                    ("IsaacReadContactSensor.inputs:csPrim", [usdrt.Sdf.Path(sensor_path)]),
-                ],
-                og.Controller.Keys.CONNECT: [("OnPlaybackTick.outputs:tick", "IsaacReadContactSensor.inputs:execIn")],
-            },
-        )
-        return test_node
 
     async def test_add_sensor_prim(self):
         """Ensure contact sensors can be created on ant legs."""
@@ -399,93 +376,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         self.assertEqual(init_reading.in_contact, sensor_reading.in_contact)
         self.assertEqual(init_reading.value, sensor_reading.value)
         self.assertEqual(init_reading.time, sensor_reading.time)
-
-    # number of readings aggregated from node is same as number output from sensor
-
-    # if time permits, add currently in contact with functionality to contact sensor node
-
-    async def test_node_outputs_reset(self):
-        """Ensure OGN node outputs reset after playback stops."""
-        await self._setup_ant()
-        # add a single contact sensor
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateContactSensor",
-            path="/sensor",
-            parent=self.leg_paths[0],
-            min_threshold=0,
-            max_threshold=10000000,
-            color=self.color[0],
-            radius=0.12,
-            sensor_period=-1,
-            translation=self.sensor_offsets[0],
-        )
-        self.assertTrue(result)
-        self.assertIsNotNone(sensor)
-
-        await omni.kit.app.get_app().next_update_async()
-
-        test_node = self._setup_contact_sensor_ogn_graph(self.leg_paths[0] + "/sensor")
-
-        await omni.kit.app.get_app().next_update_async()
-
-        out_in_contact = og.Controller.attribute("outputs:inContact", test_node)
-        out_value = og.Controller.attribute("outputs:value", test_node)
-
-        first = True
-        for i in range(5):
-            self._timeline.play()
-
-            await omni.kit.app.get_app().next_update_async()
-
-            curr_in_contact = og.DataView.get(out_in_contact)
-            curr_value = og.DataView.get(out_value)
-
-            await omni.kit.app.get_app().next_update_async()
-
-            # print(curr_in_contact)
-            # print(curr_value)
-
-            if first:
-                init_in_contact = curr_in_contact
-                init_value = curr_value
-
-            await step_simulation(1.0)
-
-            self._timeline.stop()
-            await omni.kit.app.get_app().next_update_async()
-
-            if not first:
-                self.assertEqual(init_in_contact, curr_in_contact)
-                self.assertEqual(init_value, curr_value)
-            first = False
-
-        self._timeline.stop()
-
-    async def test_node_nonzero_outputs(self):
-        """Ensure OGN node reports non-zero outputs during contact."""
-        await self._setup_ant()
-        await self._add_sensor_prims()
-        await omni.kit.app.get_app().next_update_async()
-
-        test_node = self._setup_contact_sensor_ogn_graph(self.leg_paths[0] + "/sensor")
-
-        await omni.kit.app.get_app().next_update_async()
-
-        out_in_contact = og.Controller.attribute("outputs:inContact", test_node)
-        out_value = og.Controller.attribute("outputs:value", test_node)
-
-        self._timeline.play()
-
-        await step_simulation(1.0)
-
-        for i in range(10):
-            await omni.kit.app.get_app().next_update_async()
-            # # print(og.DataView.get(out_in_contact))
-            # # print(og.DataView.get(out_value))
-            self.assertNotEqual(og.DataView.get(out_in_contact), 0)
-            self.assertNotEqual(og.DataView.get(out_value), 0)
-
-        self._timeline.stop()
 
     async def test_sensor_latest_data(self):
         """Ensure latest-data reads return monotonically increasing times."""

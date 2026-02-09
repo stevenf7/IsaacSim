@@ -1,4 +1,4 @@
-from isaacsim.sensors.physics import _sensor
+from isaacsim.sensors.experimental.physics import ContactSensorBackend
 
-_contact_sensor_interface = _sensor.acquire_contact_sensor_interface()
-_contact_sensor_interface.get_sensor_reading("/World/Cube/Contact_Sensor", use_latest_data=True)
+_contact_sensor_backend = ContactSensorBackend("/World/Cube/Contact_Sensor")
+_contact_sensor_backend.get_sensor_reading()
