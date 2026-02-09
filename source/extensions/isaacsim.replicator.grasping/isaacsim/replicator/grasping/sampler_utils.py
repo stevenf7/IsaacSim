@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import numpy as np
-import scipy.stats as stats
 import trimesh
 import trimesh.transformations as tra
 from pxr import Gf, UsdGeom
@@ -277,6 +276,8 @@ def sample_antipodal(object_mesh: trimesh.Trimesh, **kwargs) -> list[np.ndarray]
 
                 # Apply lateral perturbation if requested
                 if lateral_sigma > 0:
+                    import scipy.stats as stats
+
                     # Center is perturbed along the grasp axis using a truncated normal distribution
                     # Boundaries ensure the perturbed center stays between the two contact points
                     center_ratio_lower = 0.0  # Ratio along axis for surface_points[point_idx]
