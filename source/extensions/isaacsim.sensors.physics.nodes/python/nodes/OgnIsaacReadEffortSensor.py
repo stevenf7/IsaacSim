@@ -12,30 +12,49 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""OmniGraph node for reading effort sensor data.
+
+This module provides the OgnIsaacReadEffortSensor node which reads joint
+effort (torque/force) from an articulated body.
+"""
 import omni.graph.core as og
 from isaacsim.core.nodes import BaseResetNode
-from isaacsim.sensors.physics.impl.effort_sensor import EffortSensor
-from isaacsim.sensors.physics.ogn.OgnIsaacReadEffortSensorDatabase import OgnIsaacReadEffortSensorDatabase
+from isaacsim.sensors.experimental.physics.impl.effort_sensor import EffortSensor
+from isaacsim.sensors.physics.nodes.ogn.OgnIsaacReadEffortSensorDatabase import OgnIsaacReadEffortSensorDatabase
 
 
 class OgnIsaacReadEffortSensorInternalState(BaseResetNode):
+    """Internal state for the OgnIsaacReadEffortSensor node.
+
+    Maintains the effort sensor instance and configuration between
+    compute calls. Inherits from BaseResetNode for automatic reset handling.
+    """
+
     def __init__(self):
         super().__init__(initialize=False)
         self.effort_sensor = None
 
     def custom_reset(self):
+        """Reset the node state, clearing the sensor instance.
+
+        Triggers the stage open callback to clean up sensor callbacks
+        before releasing the sensor.
+        """
         if self.effort_sensor is not None:
-            # reset the effort sensor callbacks
+            # Reset the effort sensor callbacks
             self.effort_sensor._stage_open_callback_fn()
             self.effort_sensor = None
         self.initialized = False
         pass
 
     def init_compute(self):
+        """Initialize the effort sensor.
+
+        Returns:
+            True if initialization succeeded, False otherwise.
+        """
         self.effort_sensor = EffortSensor(
             prim_path=self.prim_path,
-            sensor_period=self.sensor_period,
-            use_latest_data=self.use_latest_data,
             enabled=self.enabled,
         )
 
@@ -47,20 +66,37 @@ class OgnIsaacReadEffortSensorInternalState(BaseResetNode):
 
 
 class OgnIsaacReadEffortSensor:
+    """OmniGraph node that reads effort sensor data.
+
+    Outputs joint effort (torque/force) from an articulated body
+    at each compute step.
+    """
+
     @staticmethod
     def internal_state():
-        return OgnIsaacReadEffortSensorInternalState()
+        """Create the node's internal state object.
 
-    """
-    Node that returns Effort Sensor data
-    """
+        Returns:
+            New OgnIsaacReadEffortSensorInternalState instance.
+        """
+        return OgnIsaacReadEffortSensorInternalState()
 
     @staticmethod
     def compute(db) -> bool:
+        """Execute the node computation.
+
+        Reads effort sensor data and populates output attributes.
+
+        Args:
+            db: OmniGraph database containing inputs/outputs.
+
+        Returns:
+            True if computation succeeded, False otherwise.
+        """
         state = db.per_instance_state
-        state.sensor_period = db.inputs.sensorPeriod
-        state.use_latest_data = db.inputs.useLatestData
         state.enabled = db.inputs.enabled
+
+        # Initialize sensor on first run
         if not state.initialized:
             if len(db.inputs.prim) > 0:
                 state.prim_path = db.inputs.prim[0].GetString()
@@ -77,6 +113,7 @@ class OgnIsaacReadEffortSensor:
                 db.log_error(f"Failed to create sensor at {state.prim_path} for joint {state.dof_name}")
                 return False
 
+        # Validate input prim
         if not len(db.inputs.prim) > 0:
             db.log_error(f"Failed to create effort sensor, unable to find prim path")
             return False
@@ -85,14 +122,15 @@ class OgnIsaacReadEffortSensor:
         parent_path = "/".join(state.prim_path.split("/")[:-1])
         dof_name = state.prim_path.split("/")[-1]
 
+        # Handle articulation path changes (requires full sensor recreation)
         if state.parent_path != parent_path:
             state.parent_path = parent_path
             state.dof_name = dof_name
-            # if change prim path, need to delete, and recreate the effort sensor
             state.custom_reset()
             state.initialized = False
             return True
 
+        # Handle DOF name changes (can update in place)
         elif state.dof_name != dof_name:
             state.dof_name = dof_name
             try:
@@ -103,13 +141,13 @@ class OgnIsaacReadEffortSensor:
                 db.log_warn(f"Effort sensor error, invalid dof name: {state.dof_name}")
                 return False
 
-        state.effort_sensor.sensor_period = state.sensor_period
-        state.effort_sensor.use_latest_data = state.use_latest_data
+        # Update sensor configuration from inputs
         state.effort_sensor.enabled = state.enabled
 
+        # Read sensor data
         sensor_reading = state.effort_sensor.get_sensor_reading()
 
-        # valid, or the sensor is warming up
+        # Output reading if valid, or if still warming up (first 2 steps)
         if sensor_reading.is_valid or state.effort_sensor.physics_num_steps <= 2:
             db.outputs.sensorTime = sensor_reading.time
             db.outputs.value = sensor_reading.value
@@ -120,12 +158,18 @@ class OgnIsaacReadEffortSensor:
                 "Effort Sensor error, no valid sensor reading, is the prim_path valid or is the sensor enabled?"
             )
             return False
-        db.outputs.execOut = og.ExecutionAttributeState.ENABLED
 
+        db.outputs.execOut = og.ExecutionAttributeState.ENABLED
         return True
 
     @staticmethod
     def release_instance(node, graph_instance_id):
+        """Release resources when node instance is destroyed.
+
+        Args:
+            node: The OmniGraph node being released.
+            graph_instance_id: ID of the graph instance.
+        """
         try:
             state = OgnIsaacReadEffortSensorDatabase.per_instance_internal_state(node)
         except Exception:

@@ -970,7 +970,7 @@ ogn_exts_includes = [
   "isaacsim.replicator.writers",
   "isaacsim.asset.gen.conveyor",
   "isaacsim.ros2.bridge",
-  "isaacsim.sensors.physics",
+  "isaacsim.sensors.physics.nodes",
   "isaacsim.sensors.physx",
   "isaacsim.sensors.rtx",
   "isaacsim.core.nodes",

@@ -24,9 +24,10 @@ import numpy as np
 from isaacsim.core.api import World as Simulator
 from isaacsim.core.prims import RigidPrim
 from isaacsim.core.utils.prims import add_reference_to_stage, delete_prim
-from isaacsim.sensors.physics import _sensor
+from isaacsim.sensors.experimental.physics import ContactSensorBackend
+from isaacsim.sensors.experimental.physics.impl.common import _ContactReportManager
 from isaacsim.storage.native import get_assets_root_path
-from pxr import PhysxSchema
+from pxr import PhysicsSchemaTools, PhysxSchema
 
 #################################################
 # Set this!
@@ -61,16 +62,20 @@ block_1 = RigidPrim(
 )
 PhysxSchema.PhysxContactReportAPI.Apply(block_1.prims[0])
 
-cs = _sensor.acquire_contact_sensor_interface()
+contact_manager = _ContactReportManager.instance()
 
 
 def block_1_is_contacting_block_0():
-    raw_data = cs.get_rigid_body_raw_data(block_1.prim_paths[0])
+    body_token = PhysicsSchemaTools.sdfPathToInt(block_1.prim_paths[0])
+    raw_data = contact_manager.get_raw_contacts_for_body(body_token)
     in_contact = False
     for c in raw_data:
         c = [*c]
         print(c)
-        if block_0.prim_paths[0] in {cs.decode_body_name(c[2]), cs.decode_body_name(c[3])}:
+        if block_0.prim_paths[0] in {
+            str(PhysicsSchemaTools.intToSdfPath(c[2])),
+            str(PhysicsSchemaTools.intToSdfPath(c[3])),
+        }:
             in_contact = True
             break
 

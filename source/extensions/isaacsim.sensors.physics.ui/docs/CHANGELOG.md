@@ -1,4 +1,10 @@
 # Changelog
+## [1.0.0] - 2026-02-01
+### Added
+- Updated to use interfaces from isaacsim.sensors.experimental.physics extension
+- Updated menu actions to use new sensor creation commands and experimental prim helpers
+- Improved context menu handling and visibility control for created sensor prims
+
 ## [0.2.1] - 2026-01-24
 ### Changed
 - Fix issues with menu click and context menu tests being flaky

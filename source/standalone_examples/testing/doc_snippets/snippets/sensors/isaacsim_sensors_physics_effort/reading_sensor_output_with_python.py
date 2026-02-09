@@ -1,4 +1,4 @@
-from isaacsim.sensors.physics import EffortSensor
+from isaacsim.sensors.experimental.physics import EffortSensor
 
 # get sensor reading
-reading = sensor.get_sensor_reading(use_latest_data=True)
+reading = sensor.get_sensor_reading()

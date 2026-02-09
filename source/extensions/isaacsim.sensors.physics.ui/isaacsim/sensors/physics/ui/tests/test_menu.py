@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for physics sensor main menu items."""
+
 import omni.kit.app
 from isaacsim.core.experimental.prims import RigidPrim
 from isaacsim.test.utils import MenuUITestCase
@@ -28,6 +30,8 @@ PHYSICS_SENSORS = {
 
 
 class TestPhysicsMenuAssets(MenuUITestCase):
+    """Validate physics sensor entries in the main menu bar."""
+
     async def test_physics_sensors_menu_count(self):
         """Test all the physics sensors are added to main menus correctly."""
         window = get_main_window()

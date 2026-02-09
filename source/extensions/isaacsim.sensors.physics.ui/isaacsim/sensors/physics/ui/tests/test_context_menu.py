@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for physics sensor context menu items."""
+
 import omni.kit.app
 import omni.kit.ui_test as ui_test
 from isaacsim.core.experimental.prims import RigidPrim
@@ -27,6 +29,8 @@ PHYSICS_SENSORS = {
 
 
 class TestPhysicsContextMenu(MenuUITestCase):
+    """Validate physics sensor entries in the viewport context menu."""
+
     async def test_physics_sensors_context_menu_count(self):
         """Test all the physics sensors are added to context menus correctly."""
         viewport_context_menu = await self.get_viewport_context_menu()

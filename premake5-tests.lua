@@ -305,8 +305,8 @@ local function get_sensor_tests()
         },
         -- From Misc Physics
         {
-            "tests-nativepython-testing-isaacsim.sensors.physics.contact_sensor",
-            "standalone_examples/testing/isaacsim.sensors.physics/contact_sensor_test.py",
+            "tests-nativepython-testing-isaacsim.sensors.experimental.physics.contact_sensor",
+            "standalone_examples/testing/isaacsim.sensors.experimental.physics/contact_sensor_test.py",
         },
     }
 end
