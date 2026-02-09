@@ -75,8 +75,9 @@ class TestTrajectoryFollower(omni.kit.test.AsyncTestCase):
         # if I set a trajectory, and then I reset,
         # there should be no trajectory.
         follower.set_trajectory(trajectory, 0.0)
-        follower.reset(robot_state, None, 0.0)
+        reset_value = follower.reset(robot_state, None, 0.0)
         self.assertFalse(follower.has_trajectory())
+        self.assertTrue(reset_value)
 
         # if I set a trajectory, and then give a time before the start time of the trajectory, we should get an error,
         # and we will no longer have a set trajectory. The desired state should be None.
