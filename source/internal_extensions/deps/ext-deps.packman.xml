@@ -1,2 +1,9 @@
-<project toolsVersion="5.0">
+<project toolsVersion="5.6">
+  <!-- Import Kit SDK dependencies for internal extensions -->
+  <import path="../../../_build/${platform_target}/${config}/kit/dev/all-deps.packman.xml">
+    <filter include="openxr" />
+  </import>
+
+  <!-- Extension-specific dependencies -->
+  <dependency name="openxr" linkPath="../../../_build/target-deps/openxr" />
 </project>
