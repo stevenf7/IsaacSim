@@ -5,5 +5,5 @@
   </import>
 
   <!-- Extension-specific dependencies -->
-  <dependency name="openxr" linkPath="../../../_build/target-deps/openxr" />
+  <dependency name="openxr" linkPath="../../../_build/target-deps/openxr.${config}" />
 </project>

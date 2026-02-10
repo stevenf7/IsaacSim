@@ -28,12 +28,12 @@ if platform_target ~= "linux-aarch64" then -- Skip build for aarch64 architectur
         isaac_sim_extsbuild_dir .. "/omni.kit.xr.core/include",
         "%{root}/_build/%{platform}/%{config}/kit/exts/omni.kit.xr.core/include",
         "%{root}/_build/%{platform}/%{config}/kit/dev/fabric/include",
-        "%{target_deps}/openxr/include",
+        "%{target_deps}/openxr.%{cfg.buildcfg}/include",
     }
 
     -- OpenXR loader library directories and links
     local function add_openxr_links()
-        libdirs { "%{target_deps}/openxr/lib" }
+        libdirs { "%{target_deps}/openxr.%{cfg.buildcfg}/lib" }
         filter { "system:windows", "configurations:debug" }
             links { "openxr_loaderd" }
         filter { "system:windows", "configurations:release" }
