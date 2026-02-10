@@ -422,6 +422,8 @@ check-python-packages:
         variables:
           IPP_RUNNER_EPHEMERAL_STORAGE_REQUEST: "200Gi"
           IPP_RUNNER_EPHEMERAL_STORAGE_LIMIT: "200Gi"
+          KUBERNETES_EPHEMERAL_STORAGE_REQUEST: "200Gi"
+          KUBERNETES_EPHEMERAL_STORAGE_LIMIT: "200Gi"
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_BUILDS != "true"
         when: never
       - !reference [.rules-workflow, rules]
