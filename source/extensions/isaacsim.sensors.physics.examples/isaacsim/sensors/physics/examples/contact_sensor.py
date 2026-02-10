@@ -225,7 +225,7 @@ class Extension(omni.ext.IExt):
 
         for i in range(4):
             result, sensor = omni.kit.commands.execute(
-                "IsaacSensorCreateContactSensor",
+                "IsaacSensorExperimentalCreateContactSensor",
                 path="/sensor",
                 parent=self.leg_paths[i],
                 min_threshold=0,

@@ -2,7 +2,7 @@ import omni.kit.commands
 from pxr import Gf
 
 success, _isaac_sensor_prim = omni.kit.commands.execute(
-    "IsaacSensorCreateImuSensor",
+    "IsaacSensorExperimentalCreateImuSensor",
     path="imu_sensor",
     parent="/World/Cube",
     linear_acceleration_filter_size=10,

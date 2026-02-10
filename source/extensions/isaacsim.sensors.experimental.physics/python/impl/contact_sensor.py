@@ -126,7 +126,7 @@ class ContactSensor(XformPrim):
 
             carb.log_info(f"Creating a new contact sensor prim at path {prim_path}")
             success, self._isaac_sensor_prim = omni.kit.commands.execute(
-                "IsaacSensorCreateContactSensor",
+                "IsaacSensorExperimentalCreateContactSensor",
                 path="/" + self._sensor_name,
                 parent=self._body_prim_path,
                 min_threshold=min_threshold,

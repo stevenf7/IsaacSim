@@ -98,7 +98,7 @@ class Extension(omni.ext.IExt):
             **kargs: Additional keyword arguments from the menu callback.
         """
         result, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateContactSensor",
+            "IsaacSensorExperimentalCreateContactSensor",
             path="/Contact_Sensor",
             parent=self._get_stage_and_path(),
             min_threshold=0.0,
@@ -116,7 +116,7 @@ class Extension(omni.ext.IExt):
             **kargs: Additional keyword arguments from the menu callback.
         """
         result, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/Imu_Sensor",
             parent=self._get_stage_and_path(),
             translation=Gf.Vec3d(0, 0, 0),

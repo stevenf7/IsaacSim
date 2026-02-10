@@ -15,7 +15,7 @@
 
 """Tests for sensor creation commands.
 
-These tests verify that IsaacSensorCreateImuSensor and IsaacSensorCreateContactSensor
+These tests verify that IsaacSensorExperimentalCreateImuSensor and IsaacSensorExperimentalCreateContactSensor
 commands create prims at the correct paths, especially when the stage has a default prim.
 
 The key behavior being tested is that sensor paths should NOT be prepended with the
@@ -90,7 +90,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
         # Create IMU sensor
         expected_path = "/World/Cube/Imu_Sensor"
         success, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/Imu_Sensor",
             parent="/World/Cube",
         )
@@ -133,7 +133,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
         wrong_path = "/DefaultRoot/World/Cube/Imu_Sensor"  # This is what happens with the bug
 
         success, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/Imu_Sensor",
             parent="/World/Cube",
         )
@@ -187,7 +187,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
         # Create sensor
         expected_path = "/World/TestCube/Imu_Sensor"
         success, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/Imu_Sensor",
             parent="/World/TestCube",
         )
@@ -215,7 +215,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
 
         expected_path = "/World/Level1/Level2/Cube/DeepSensor"
         success, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/DeepSensor",
             parent="/World/Level1/Level2/Cube",
         )
@@ -233,7 +233,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
 
         # Create sensor with custom attributes
         success, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/CustomImu",
             parent="/World/Cube",
             translation=Gf.Vec3d(1.0, 2.0, 3.0),
@@ -263,7 +263,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         success, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/Sensor",
             parent="/World/Cube",
         )
@@ -287,7 +287,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
 
         expected_path = "/World/Cube/Contact_Sensor"
         success, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateContactSensor",
+            "IsaacSensorExperimentalCreateContactSensor",
             path="/Contact_Sensor",
             parent="/World/Cube",
         )
@@ -307,7 +307,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
 
         expected_path = "/World/Cube/Contact_Sensor"
         success, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateContactSensor",
+            "IsaacSensorExperimentalCreateContactSensor",
             path="/Contact_Sensor",
             parent="/World/Cube",
         )
@@ -331,7 +331,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         success, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateContactSensor",
+            "IsaacSensorExperimentalCreateContactSensor",
             path="/CustomContact",
             parent="/World/Cube",
             min_threshold=10.0,
@@ -358,7 +358,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
 
         # Try to create without parent
         success, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateContactSensor",
+            "IsaacSensorExperimentalCreateContactSensor",
             path="/Contact_Sensor",
             parent=None,
         )
@@ -379,7 +379,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
         # Parent path with trailing slash
         expected_path = "/World/Cube/Sensor"
         success, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/Sensor",
             parent="/World/Cube/",  # Note trailing slash
         )
@@ -399,7 +399,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
 
         expected_path = "/World/Cube/Sensor"
         success, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="Sensor",  # No leading slash
             parent="/World/Cube",
         )
@@ -417,14 +417,14 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
 
         # Create first sensor
         success1, prim1 = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/Sensor",
             parent="/World/Cube",
         )
 
         # Create second sensor with same name
         success2, prim2 = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/Sensor",
             parent="/World/Cube",
         )
@@ -457,7 +457,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
 
         # Create sensor
         success, prim = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/Sensor",
             parent="/World/Cube",
         )

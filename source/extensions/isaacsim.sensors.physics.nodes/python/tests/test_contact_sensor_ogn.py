@@ -58,7 +58,7 @@ class TestContactSensorOgn(omni.kit.test.AsyncTestCase):
         contact_report_api = PhysxSchema.PhysxContactReportAPI.Apply(prim_utils.get_prim_at_path("/World/Cube"))
         contact_report_api.CreateThresholdAttr().Set(0)
         omni.kit.commands.execute(
-            "IsaacSensorCreateContactSensor",
+            "IsaacSensorExperimentalCreateContactSensor",
             path="/contact_sensor",
             parent="/World/Cube",
             max_threshold=10000000,
@@ -158,7 +158,7 @@ class TestContactSensorOgnWithAnt(omni.kit.test.AsyncTestCase):
         """Helper to add contact sensors to ant legs."""
         for i in range(4):
             result, sensor = omni.kit.commands.execute(
-                "IsaacSensorCreateContactSensor",
+                "IsaacSensorExperimentalCreateContactSensor",
                 path="/sensor",
                 parent=self.leg_paths[i],
                 min_threshold=0,
@@ -193,7 +193,7 @@ class TestContactSensorOgnWithAnt(omni.kit.test.AsyncTestCase):
     async def test_node_outputs_reset(self):
         """Ensure OGN node outputs reset after playback stops."""
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateContactSensor",
+            "IsaacSensorExperimentalCreateContactSensor",
             path="/sensor",
             parent=self.leg_paths[0],
             min_threshold=0,

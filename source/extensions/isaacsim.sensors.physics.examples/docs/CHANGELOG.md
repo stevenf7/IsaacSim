@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.1] - 2026-02-10
+### Changed
+- IMU and Contact sensor creation commands renamed to include Experimental in their name to avoid name collision with deprecated sensor commands
+
 ## [1.0.0] - 2026-02-01
 ### Added
 - Updated to use interfaces from isaacsim.sensors.experimental.physics extension

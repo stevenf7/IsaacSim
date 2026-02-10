@@ -261,7 +261,7 @@ class Extension(omni.ext.IExt):
         self.meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
 
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/sensor",
             parent=self.body_path,
             translation=Gf.Vec3d(0, 0, 0),
