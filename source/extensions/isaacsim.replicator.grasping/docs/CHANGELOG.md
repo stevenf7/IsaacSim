@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.10] - 2026-02-09
+### Fixed
+- Defer `scipy.stats` import in `sampler_utils.py` to avoid module-level import failure under pycoverage
+
 ## [1.0.9] - 2025-07-07
 ### Fixed
 - Correctly enable omni.kit.loop-isaac in test dependency (fixes issue from 1.0.8)

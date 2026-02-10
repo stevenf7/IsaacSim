@@ -27,6 +27,52 @@ def _is_pycoverage_enabled() -> bool:
         return False
 
 
+def _apply_numpy_copymode_coverage_patch() -> None:
+    """Wrap ``np.array`` to translate ``_CopyMode`` enum values for ``copy``.
+
+    When coverage is enabled, scipy's ``array_api_compat`` layer passes
+    ``_CopyMode.IF_NEEDED`` to ``np.array(copy=...)``.  The bundled numpy
+    does not handle the ``_CopyMode`` enum natively: it tries
+    ``bool(copy)`` which either raises ``ValueError`` (for ``IF_NEEDED``)
+    or maps to the wrong semantics (``False`` means *never* copy).
+
+    This patch intercepts ``np.array`` calls and translates ``_CopyMode``
+    values to the plain-Python equivalents numpy understands:
+
+    * ``_CopyMode.ALWAYS``     → ``True``  (always copy)
+    * ``_CopyMode.IF_NEEDED``  → ``None``  (copy only when necessary)
+    * ``_CopyMode.NEVER``      → ``False`` (never copy, raise if impossible)
+    """
+    try:
+        import numpy as np
+        import numpy._globals as npg
+
+        _CopyMode = getattr(npg, "_CopyMode", None)
+        if _CopyMode is None:
+            return
+
+        if getattr(np, "_isaacsim_array_cov_patch_applied", False):
+            return
+
+        _COPYMODE_MAP = {
+            _CopyMode.ALWAYS: True,
+            _CopyMode.IF_NEEDED: None,
+            _CopyMode.NEVER: False,
+        }
+
+        _original_array = np.array
+
+        def _patched_array(*args, **kwargs):
+            if "copy" in kwargs and isinstance(kwargs["copy"], _CopyMode):
+                kwargs["copy"] = _COPYMODE_MAP.get(kwargs["copy"], kwargs["copy"])
+            return _original_array(*args, **kwargs)
+
+        np.array = _patched_array
+        np._isaacsim_array_cov_patch_applied = True
+    except (ImportError, AttributeError):
+        pass
+
+
 def _apply_numpy_coverage_patch() -> None:
     global _COVERAGE_PATCH_APPLIED
     if _COVERAGE_PATCH_APPLIED:
@@ -127,6 +173,7 @@ def _apply_numpy_coverage_patch() -> None:
 
 
 if _is_pycoverage_enabled():
+    _apply_numpy_copymode_coverage_patch()
     _apply_numpy_coverage_patch()
 
 from .file_validation import *

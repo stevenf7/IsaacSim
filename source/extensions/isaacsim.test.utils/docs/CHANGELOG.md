@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.0] - 2026-02-09
+### Changed
+- Add pycoverage patch for numpy `_CopyMode.__bool__` to prevent `ValueError` when scipy imports trigger `_CopyMode.IF_NEEDED` evaluation under coverage
+
 ## [0.7.3] - 2026-02-02
 ### Changed
 - Fix pycoverage compatibility issue with numpy sum and prod functions
