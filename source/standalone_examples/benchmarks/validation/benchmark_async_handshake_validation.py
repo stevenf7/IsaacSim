@@ -130,17 +130,18 @@ def validate_async_handshake_behavior(num_frames: int = 100) -> bool:
     gpu_recorder = GPUFrametimeRecorder()
     physics_recorder = PhysicsFrametimeRecorder()
 
-    app_recorder.start_collecting()
-    render_recorder.start_collecting()
-    gpu_recorder.start_collecting()
-    physics_recorder.start_collecting()
-
     # Start simulation
     simulation_context.play()
 
     # Give render thread time to initialize
     for i in range(5):
         simulation_context.step()
+
+    # Start collecting now that we've warmed up.
+    app_recorder.start_collecting()
+    render_recorder.start_collecting()
+    gpu_recorder.start_collecting()
+    physics_recorder.start_collecting()
 
     carb.log_info(
         f"After warmup - Render samples: {render_recorder.sample_count}, App samples: {app_recorder.sample_count}"
@@ -212,12 +213,53 @@ def validate_async_handshake_behavior(num_frames: int = 100) -> bool:
 
         # Validate mean frametime similarity
         ratio = max(app_mean, render_mean) / min(app_mean, render_mean)
-        if ratio < 1.25:
+        if ratio < 1.10:
             print(f"✓ Frametime ratio reasonable: {ratio:.2f}x")
             print("  App and Render threads are in sync")
         else:
             print(f"⚠ Large frametime ratio: {ratio:.2f}x")
             print("  Threads may not be properly synchronized")
+
+            # Debug output: show individual frame times to diagnose the issue
+            print()
+            print("  DEBUG: Individual frame times (first 20 and last 20):")
+            print("-" * 60)
+
+            # Show first 20 frames
+            num_to_show = min(20, len(app_recorder.samples), len(render_recorder.samples))
+            print(f"  First {num_to_show} frames:")
+            print(f"  {'Frame':<8} {'App (ms)':<12} {'Render (ms)':<12} {'Ratio':<8}")
+            for i in range(num_to_show):
+                app_time = app_recorder.samples[i]
+                render_time = render_recorder.samples[i] if i < len(render_recorder.samples) else 0
+                frame_ratio = app_time / render_time if render_time > 0 else 0
+                print(f"  {i:<8} {app_time:<12.2f} {render_time:<12.2f} {frame_ratio:<8.2f}")
+
+            # Show last 20 frames if we have more than 20 total
+            if len(app_recorder.samples) > num_to_show:
+                print()
+                print(f"  Last {num_to_show} frames:")
+                print(f"  {'Frame':<8} {'App (ms)':<12} {'Render (ms)':<12} {'Ratio':<8}")
+                start_idx = len(app_recorder.samples) - num_to_show
+                for i in range(start_idx, len(app_recorder.samples)):
+                    app_time = app_recorder.samples[i]
+                    render_time = render_recorder.samples[i] if i < len(render_recorder.samples) else 0
+                    frame_ratio = app_time / render_time if render_time > 0 else 0
+                    print(f"  {i:<8} {app_time:<12.2f} {render_time:<12.2f} {frame_ratio:<8.2f}")
+
+            # Show statistics
+            print()
+            print("  Frame time statistics:")
+            app_min = min(app_recorder.samples)
+            app_max = max(app_recorder.samples)
+            render_min = min(render_recorder.samples) if render_recorder.samples else 0
+            render_max = max(render_recorder.samples) if render_recorder.samples else 0
+            print(f"  App range:    {app_min:.2f} - {app_max:.2f} ms (variance: {app_max - app_min:.2f} ms)")
+            print(
+                f"  Render range: {render_min:.2f} - {render_max:.2f} ms (variance: {render_max - render_min:.2f} ms)"
+            )
+            print("-" * 60)
+
             validation_passed = False
 
     # Check GPU stats if available
