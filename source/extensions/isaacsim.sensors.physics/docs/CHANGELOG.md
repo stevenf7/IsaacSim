@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.1] - 2026-02-09
+### Fixed
+- Fix crash issue when IPhysxSimulation interface is not available
+
 ## [1.0.0] - 2026-02-01
 ### Changed
 - Deprecated this extension in favor of isaacsim.sensors.experimental.physics extension
