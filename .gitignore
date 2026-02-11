@@ -133,6 +133,7 @@ output
 !schema.usda
 !RobotSchema.usda
 generatedSchema.usda
+!RobotMotionSchema.usda
 
 # ignore crash logs from streaming client sessions
 NvStreamer-*.etli

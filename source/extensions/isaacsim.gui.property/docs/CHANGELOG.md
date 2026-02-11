@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2026-01-28
+### Added
+- Introduced new widget for setting the IsaacMotionPlanningAPI collisionEnabled attribute
+
 ## [1.2.1] - 2025-12-01
 ### Changed
 - Add missing license headers
