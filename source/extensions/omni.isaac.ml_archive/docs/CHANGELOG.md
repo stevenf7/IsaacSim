@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.0] - 2026-01-26
+### Changed
+- Update to pytorch 2.10.0+cu128, torchaudio 2.10.0+cu128, torchvision 0.25.0+cu128 and update dependencies
+
 ## [3.0.4] - 2025-08-22
 ### Changed
 - Version bump to fix extension publishing issues
