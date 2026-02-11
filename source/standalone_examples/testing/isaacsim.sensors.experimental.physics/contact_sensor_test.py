@@ -39,7 +39,7 @@ world.scene.add_default_ground_plane()
 
 # Setup contact sensor on cube
 result, sensor = omni.kit.commands.execute(
-    "IsaacSensorCreateContactSensor",
+    "IsaacSensorExperimentalCreateContactSensor",
     path="/Contact_Sensor",
     parent=cube_path,
     min_threshold=0,

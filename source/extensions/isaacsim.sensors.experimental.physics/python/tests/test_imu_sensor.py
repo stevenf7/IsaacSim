@@ -125,7 +125,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         for i in range(4):
             await omni.kit.app.get_app().next_update_async()
             result, sensor = omni.kit.commands.execute(
-                "IsaacSensorCreateImuSensor",
+                "IsaacSensorExperimentalCreateImuSensor",
                 path="/sensor",
                 parent=self.leg_paths[i],
                 translation=self.sensor_offsets[i],
@@ -136,7 +136,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             # Add sensor on body sphere
             await omni.kit.app.get_app().next_update_async()
             result, sensor = omni.kit.commands.execute(
-                "IsaacSensorCreateImuSensor",
+                "IsaacSensorExperimentalCreateImuSensor",
                 path="/sensor",
                 parent=self.sphere_path,
                 translation=self.sensor_offsets[4],
@@ -153,7 +153,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await self._setup_simple_articulation()
 
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/arm_imu",
             parent=self.arm_path,
             translation=Gf.Vec3d(0, 0, 0),
@@ -194,7 +194,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await self._setup_simple_articulation()
 
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/slider_imu",
             parent=self.slider_path,
             translation=Gf.Vec3d(0, 0, 0),
@@ -231,7 +231,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await self._setup_simple_articulation()
 
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/slider_imu",
             parent=self.slider_path,
             translation=Gf.Vec3d(0, 0, 0),
@@ -245,7 +245,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         # await self.test_add_arm_imu()
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/arm_imu",
             parent=self.arm_path,
             translation=Gf.Vec3d(0, 0, 0),
@@ -379,7 +379,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/sensor",
             parent=cube_path,
         )
@@ -403,7 +403,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/sphere_imu_1",
             parent=self.sphere_path,
             translation=Gf.Vec3d(0, 0, 0),
@@ -507,7 +507,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await self._setup_ant()
         await self._add_sensor_prims()
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/custom_sensor",
             parent=self.sphere_path,
             translation=self.sensor_offsets[4],
@@ -547,7 +547,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await self._setup_ant()
         await self._add_sensor_prims()
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/custom_sensor",
             parent=self.sphere_path,
             translation=self.sensor_offsets[4],
@@ -580,7 +580,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         XformPrim("/World/Cube/xform", translations=[10.0, 0.0, 0.0], reset_xform_op_properties=True)
 
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/custom_sensor",
             parent="/World/Cube/xform",
             translation=self.sensor_offsets[4],
@@ -619,7 +619,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     async def test_invalid_imu(self):
         # goal is to make sure an invalid imu doesn't crash the sim
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/sensor",
             parent="/World",
             translation=Gf.Vec3d(0, 0, 0),
@@ -643,7 +643,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         # Create an IMU sensor on the cube
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/imu_sensor",
             parent="/World/Cube",
             translation=Gf.Vec3d(0, 0, 0),
@@ -703,7 +703,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         # Also create a valid IMU sensor for comparison
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/imu_sensor",
             parent="/World/Cube",
         )

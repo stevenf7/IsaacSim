@@ -117,7 +117,7 @@ class IMUSensor(XformPrim):
             # Create new sensor prim
             carb.log_warn(f"Creating a new IMU prim at path {prim_path}")
             success, self._isaac_sensor_prim = omni.kit.commands.execute(
-                "IsaacSensorCreateImuSensor",
+                "IsaacSensorExperimentalCreateImuSensor",
                 path="/" + self._sensor_name,
                 parent=self._body_prim_path,
                 linear_acceleration_filter_size=linear_acceleration_filter_size,

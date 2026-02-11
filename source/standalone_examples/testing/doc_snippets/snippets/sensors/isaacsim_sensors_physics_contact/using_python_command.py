@@ -2,7 +2,7 @@ import omni.kit.commands
 from pxr import Gf
 
 success, _isaac_sensor_prim = omni.kit.commands.execute(
-    "IsaacSensorCreateContactSensor",
+    "IsaacSensorExperimentalCreateContactSensor",
     path="Contact_Sensor",
     parent="/World/Cube",
     min_threshold=0.0001,

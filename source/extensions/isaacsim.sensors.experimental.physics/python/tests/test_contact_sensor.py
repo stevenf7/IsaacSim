@@ -116,7 +116,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         self.sensor_geoms = []
         for i in range(4):
             result, sensor = omni.kit.commands.execute(
-                "IsaacSensorCreateContactSensor",
+                "IsaacSensorExperimentalCreateContactSensor",
                 path="/sensor",
                 parent=self.leg_paths[i],
                 min_threshold=0,
@@ -295,7 +295,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         # create 4 sensors at the center of the leg
         for i in range(4):
             result, sensor = omni.kit.commands.execute(
-                "IsaacSensorCreateContactSensor",
+                "IsaacSensorExperimentalCreateContactSensor",
                 path="/sensor",
                 parent=self.leg_paths[i],
                 min_threshold=0,
@@ -351,7 +351,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         await self._setup_ant()
         for i in range(4):
             result, sensor = omni.kit.commands.execute(
-                "IsaacSensorCreateContactSensor",
+                "IsaacSensorExperimentalCreateContactSensor",
                 path="/custom_sensor",
                 parent=self.leg_paths[i],
                 min_threshold=0,
@@ -402,7 +402,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         # create four sensors with custom thresholds
         for i in range(4):
             result, sensor = omni.kit.commands.execute(
-                "IsaacSensorCreateContactSensor",
+                "IsaacSensorExperimentalCreateContactSensor",
                 path="/custom_sensor",
                 parent=self.leg_paths[i],
                 min_threshold=min_threshold[i],
@@ -453,7 +453,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             xform = XformPrim(xform_path, translations=[20, 0, 0], reset_xform_op_properties=True)
 
             result, sensor = omni.kit.commands.execute(
-                "IsaacSensorCreateContactSensor",
+                "IsaacSensorExperimentalCreateContactSensor",
                 path="/xform/custom_sensor",
                 parent=self.leg_paths[i],
                 min_threshold=0.0,
@@ -581,7 +581,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         # Create a contact sensor on the cube
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateContactSensor",
+            "IsaacSensorExperimentalCreateContactSensor",
             path="/contact_sensor",
             parent="/World/Cube",
             min_threshold=0,

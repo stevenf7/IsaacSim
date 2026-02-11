@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.0] - 2026-02-10
+### Changed
+- IMU and Contact sensor creation commands renamed to include Experimental in their name to avoid name collision with deprecated sensor commands
+
 ## [1.0.0] - 2026-02-01
 ### Changed
 - Rebuilt physics sensors on core experimental APIs with Python-first implementations

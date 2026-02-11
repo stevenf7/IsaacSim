@@ -63,7 +63,7 @@ class TestIMUSensorOgn(omni.kit.test.AsyncTestCase):
         RigidPrim("/World/Cube", masses=[1.0])
 
         result, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
+            "IsaacSensorExperimentalCreateImuSensor",
             path="/imu_sensor",
             parent="/World/Cube",
         )

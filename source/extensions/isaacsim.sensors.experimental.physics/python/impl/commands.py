@@ -30,7 +30,7 @@ from isaacsim.core.experimental.utils import stage as stage_utils
 from pxr import Gf, PhysxSchema
 
 
-class IsaacSensorCreatePrim(omni.kit.commands.Command):
+class IsaacSensorExperimentalCreatePrim(omni.kit.commands.Command):
     """Base command for creating Isaac Sensor prims.
 
     Creates a sensor prim at the specified path with the given schema type
@@ -96,7 +96,7 @@ class IsaacSensorCreatePrim(omni.kit.commands.Command):
             stage_utils.delete_prim(self._prim_path)
 
 
-class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
+class IsaacSensorExperimentalCreateContactSensor(omni.kit.commands.Command):
     """Command for creating a contact sensor prim.
 
     Creates an IsaacContactSensor prim under the specified parent with
@@ -144,7 +144,7 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
 
         # Create base sensor prim
         success, self._prim = omni.kit.commands.execute(
-            "IsaacSensorCreatePrim",
+            "IsaacSensorExperimentalCreatePrim",
             path=self._path,
             parent=self._parent,
             schema_type=IsaacSensorSchema.IsaacContactSensor,
@@ -176,7 +176,7 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
         """
 
 
-class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
+class IsaacSensorExperimentalCreateImuSensor(omni.kit.commands.Command):
     """Command for creating an IMU sensor prim.
 
     Creates an IsaacImuSensor prim under the specified parent with
@@ -218,7 +218,7 @@ class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
         """
         # Create base sensor prim with orientation
         success, self._prim = omni.kit.commands.execute(
-            "IsaacSensorCreatePrim",
+            "IsaacSensorExperimentalCreatePrim",
             path=self._path,
             parent=self._parent,
             schema_type=IsaacSensorSchema.IsaacImuSensor,
@@ -240,7 +240,7 @@ class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
     def undo(self) -> None:
         """Undo the command.
 
-        Note: Prim deletion is handled by IsaacSensorCreatePrim.undo().
+        Note: Prim deletion is handled by IsaacSensorExperimentalCreatePrim.undo().
         """
 
 

@@ -12,9 +12,9 @@ Python API
 .. autosummary::
     :nosignatures:
 
-    IsaacSensorCreatePrim
-    IsaacSensorCreateContactSensor
-    IsaacSensorCreateImuSensor
+    IsaacSensorExperimentalCreatePrim
+    IsaacSensorExperimentalCreateContactSensor
+    IsaacSensorExperimentalCreateImuSensor
 
 .. rubric:: *Sensors*
 .. autosummary::
@@ -32,21 +32,21 @@ Python API
 Commands
 ^^^^^^^^
 
-.. autoclass:: isaacsim.sensors.physics.IsaacSensorCreatePrim
+.. autoclass:: isaacsim.sensors.physics.IsaacSensorExperimentalCreatePrim
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
     :exclude-members: do, undo
 
-.. autoclass:: isaacsim.sensors.physics.IsaacSensorCreateContactSensor
+.. autoclass:: isaacsim.sensors.physics.IsaacSensorExperimentalCreateContactSensor
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
     :exclude-members: do, undo
 
-.. autoclass:: isaacsim.sensors.physics.IsaacSensorCreateImuSensor
+.. autoclass:: isaacsim.sensors.physics.IsaacSensorExperimentalCreateImuSensor
     :members:
     :undoc-members:
     :inherited-members:
