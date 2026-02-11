@@ -22,11 +22,14 @@ comprehensive code quality checks. Extensions are discovered under:
 
 Tools:
     - mypy: Static type checking
-    - pydocstyle: Docstring style checking (Google convention)
     - darglint: Docstring argument/return validation
     - interrogate: Docstring coverage metrics
     - pydoclint: Docstring validation (enforces no types in docstrings)
-    - ruff: Fast linter with modern type annotation checks (UP rules)
+    - ruff: Fast linter with code quality checks:
+        - Default: docstring style (D, Google convention), modern annotations and
+          f-strings (UP), pycodestyle (E711/E712/E722), bugbear (B006), naming (N),
+          comprehensions (C4), return hygiene (RET), simplify (SIM)
+        - --ruff-clean: unused imports (F401), unnecessary pass (PIE790)
 
 Usage (via repo.sh):
     # Run all tools on all extensions
@@ -35,10 +38,7 @@ Usage (via repo.sh):
     # Run only mypy
     ./repo.sh run_python_linting --mypy
 
-    # Run mypy and pydocstyle
-    ./repo.sh run_python_linting --mypy --pydocstyle
-
-    # Run ruff to check modern type annotations
+    # Run ruff to check docstrings, type annotations, and code quality
     ./repo.sh run_python_linting --ruff
 
     # Run ruff with auto-fix enabled
@@ -84,12 +84,6 @@ from typing import Any, Callable
 # Tool Configurations (hardcoded defaults when config files not supported)
 # =============================================================================
 
-# pydocstyle configuration (Google style with ignored rules for our conventions)
-PYDOCSTYLE_CONFIG = {
-    "convention": "google",
-    "add_ignore": ["D104", "D107", "D412"],  # See python_docstrings.mdc for rationale
-}
-
 # darglint configuration
 # Note: "long" strictness doesn't require Returns section when function returns None
 DARGLINT_CONFIG = {
@@ -122,14 +116,60 @@ PYDOCLINT_CONFIG = {
     "exclude": ["_vendor"],
 }
 
-# ruff configuration (enforces modern Python type annotations)
-# UP = pyupgrade rules for modernizing type annotations
+# ruff configuration (enforces docstring style, modern Python, naming, and code quality)
+# D   = pydocstyle rules for docstring style (replaces standalone pydocstyle tool)
+# UP  = pyupgrade rules for modernizing type annotations and syntax
+# E   = pycodestyle error rules
+# B   = flake8-bugbear rules for common pitfalls
+# N   = pep8-naming rules for naming conventions
+# C4  = flake8-comprehensions rules
+# RET = flake8-return rules for return statement hygiene
+# SIM = flake8-simplify rules
 RUFF_CONFIG = {
     "select": [
+        # pydocstyle: docstring style checking (Google convention)
+        # Replaces standalone pydocstyle tool. See python_docstrings.mdc for rationale on ignores.
+        "D",  # all pydocstyle rules (D100-D418)
+        # pyupgrade: modern type annotations and syntax
         "UP006",  # non-pep585-annotation: List[X] -> list[X], Dict -> dict, Set -> set
         "UP007",  # non-pep604-annotation-union: Union[X, Y] -> X | Y
+        "UP008",  # super-call-with-parameters: Use super() instead of super(__class__, self)
+        "UP015",  # redundant-open-modes: Unnecessary open mode parameters (e.g., open(f, "r"))
+        "UP018",  # native-literals: Unnecessary call to str(), int(), float(), bytes()
+        "UP031",  # printf-string-formatting: Use format specifiers instead of percent format
+        "UP032",  # f-string: Use f-string instead of format() call
+        "UP034",  # extraneous-parentheses: Extraneous parentheses
         "UP035",  # deprecated-import: deprecated typing module imports
+        "UP039",  # unnecessary-class-parentheses: Unnecessary parentheses after class definition
+        # pycodestyle: basic error detection
+        "E711",  # comparison-to-none: Use `is` / `is not` for None comparisons
+        "E712",  # comparison-to-true-false: Use `if x:` / `if not x:` for booleans
+        "E722",  # bare-except: Do not use bare `except`
+        # flake8-bugbear: common pitfalls
+        "B006",  # mutable-argument-default: Do not use mutable data structures for argument defaults
+        # pep8-naming: enforce PEP 8 naming conventions
+        "N801",  # invalid-class-name: Class name should use CapWords (PascalCase)
+        "N802",  # invalid-function-name: Function name should be lowercase (snake_case)
+        # flake8-comprehensions: simplify comprehensions
+        "C4",  # all C4xx rules: unnecessary generators, list/dict/set comprehension simplifications
+        # flake8-return: return statement hygiene
+        "RET501",  # unnecessary-return-none: Do not explicitly return None if it's the only return
+        "RET502",  # implicit-return-value: Do not implicitly return None when other branches return values
+        # flake8-simplify: code simplifications
+        "SIM101",  # duplicate-isinstance-call: Multiple isinstance calls for same variable, merge into one
+        "SIM110",  # reimplemented-builtin: Use any()/all() instead of for-loop with early return
+        "SIM115",  # open-file-with-context-handler: Use context handler for opening files
+        "SIM118",  # in-dict-keys: Use `key in dict` instead of `key in dict.keys()`
+        "SIM201",  # negate-equal-op: Use `!=` instead of `not ... ==`
+        "SIM300",  # yoda-conditions: Yoda condition detected
     ],
+    # Ignored pydocstyle rules (see python_docstrings.mdc for rationale):
+    # D104: Missing docstring in public package - we skip __init__.py files intentionally
+    # D107: Missing docstring in __init__ - constructor Args go in class docstring for Sphinx autodoc
+    # D412: No blank lines allowed between section header and content - our Example sections use
+    #        .. code-block:: python RST directive which requires a blank line for proper Sphinx rendering
+    "ignore": ["D104", "D107", "D412"],
+    "pydocstyle_convention": "google",
     "target_version": "py310",  # Python 3.10+ for native union syntax
     "exclude": ["_vendor"],
 }
@@ -274,7 +314,7 @@ def find_tool(name: str, vendor_dir: str | None = None, packman_bin: str | None 
     """Find a tool binary, checking vendor directory and packman bin first, then PATH.
 
     Args:
-        name: Name of the tool (e.g., 'mypy', 'pydocstyle').
+        name: Name of the tool (e.g., 'mypy', 'ruff').
         vendor_dir: Vendor directory to check first. Defaults to None.
         packman_bin: Packman Python bin directory. Defaults to None.
 
@@ -331,7 +371,7 @@ def discover_tools(vendor_dir: str | None = None) -> dict[str, ToolInfo]:
     """
     packman_bin = get_packman_python_bin()
     tools = {}
-    for name in ["mypy", "pydocstyle", "darglint", "interrogate", "pydoclint", "ruff"]:
+    for name in ["mypy", "darglint", "interrogate", "pydoclint", "ruff"]:
         tools[name] = find_tool(name, vendor_dir, packman_bin)
     return tools
 
@@ -523,58 +563,6 @@ def run_mypy(
     except Exception as e:
         result.skipped = True
         result.skip_reason = f"Error running mypy: {e}"
-
-    return result
-
-
-def run_pydocstyle(
-    python_dir: Path,
-    python_files: list[Path] | None,
-    tool_info: ToolInfo,
-    cwd: Path,
-) -> ToolResult:
-    """Run pydocstyle on a directory."""
-    result = ToolResult(tool_name="pydocstyle")
-
-    if not tool_info.available:
-        result.skipped = True
-        result.skip_reason = tool_info.error_message
-        return result
-
-    cmd = [
-        tool_info.binary_path,
-        "--convention={}".format(PYDOCSTYLE_CONFIG["convention"]),
-        "--add-ignore={}".format(",".join(PYDOCSTYLE_CONFIG["add_ignore"])),
-    ]
-    if python_files:
-        cmd.extend([str(p) for p in python_files])
-    else:
-        cmd.append(str(python_dir))
-
-    start_time = time.time()
-    try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
-        result.duration_seconds = time.time() - start_time
-
-        # Check for tool crashes (e.g., ModuleNotFoundError)
-        combined_output = (proc.stdout or "") + (proc.stderr or "")
-        if "Traceback" in combined_output or "ModuleNotFoundError" in combined_output:
-            result.skipped = True
-            result.skip_reason = "pydocstyle crashed (possibly not installed in this Python environment)"
-            return result
-
-        if proc.stdout.strip():
-            for line in proc.stdout.strip().split("\n"):
-                if line.strip():
-                    result.errors += 1
-                    result.messages.append(line)
-
-        if proc.stderr.strip() and "error" in proc.stderr.lower():
-            result.messages.append("[stderr] {}".format(proc.stderr.strip()))
-
-    except Exception as e:
-        result.skipped = True
-        result.skip_reason = "Error running pydocstyle: {}".format(e)
 
     return result
 
@@ -792,20 +780,26 @@ def run_ruff(
 ) -> ToolResult:
     """Run ruff on a directory.
 
-    ruff checks for modern Python type annotation style:
-    - UP006: List[X] -> list[X], Dict -> dict, Set -> set
-    - UP007: Union[X, Y] -> X | Y
-    - UP035: Deprecated typing module imports
-    Optional cleanup rules:
+    ruff checks for docstring style, type annotations, naming, and code quality:
+    - D: pydocstyle rules for docstring style (Google convention)
+    - UP: pyupgrade rules for modern annotations, syntax, and f-strings
+    - E: pycodestyle error rules (None comparisons, bare except)
+    - B: flake8-bugbear rules (mutable defaults)
+    - N: pep8-naming conventions (PascalCase classes, snake_case functions)
+    - C4: flake8-comprehensions rules
+    - RET: return statement hygiene
+    - SIM: flake8-simplify rules
+    Optional cleanup rules (--ruff-clean):
     - F401: Remove unused imports
     - PIE790: Remove unnecessary pass statements
 
     Args:
         python_dir: Directory containing Python files to check.
+        python_files: Specific Python files to check, or None for all files in python_dir.
         tool_info: Information about the ruff tool.
         cwd: Current working directory for running the command.
-        fix: If True, automatically fix issues. Defaults to False.
-        cleanup: If True, include cleanup rules. Defaults to False.
+        fix: If True, automatically fix issues.
+        cleanup: If True, include cleanup rules.
 
     Returns:
         ToolResult with errors, warnings, and messages.
@@ -831,6 +825,14 @@ def run_ruff(
         "--select={}".format(select_rules_arg),
         "--target-version={}".format(RUFF_CONFIG["target_version"]),
     ]
+
+    # Add pydocstyle convention if D rules are selected
+    if any(rule.startswith("D") for rule in select_rules):
+        cmd.append('--config=lint.pydocstyle.convention="{}"'.format(RUFF_CONFIG["pydocstyle_convention"]))
+
+    # Add ignored rules
+    if RUFF_CONFIG.get("ignore"):
+        cmd.append("--ignore={}".format(",".join(RUFF_CONFIG["ignore"])))
 
     if fix:
         cmd.append("--fix")
@@ -895,11 +897,12 @@ def run_tools_on_extension(
         extension_path: Path to the extension directory.
         tools: Dictionary mapping tool names to ToolInfo objects.
         enabled_tools: Set of tool names to run.
-        mypy_config: Path to mypy configuration file. Defaults to None.
+        mypy_config: Path to mypy configuration file.
         exclude_patterns: List of patterns to exclude from checking.
-        vendor_dir: Vendor directory for tools. Defaults to None.
-        fix: If True, automatically fix issues where supported. Defaults to False.
-        cleanup: If True, include ruff cleanup rules. Defaults to False.
+        vendor_dir: Vendor directory for tools.
+        fix: If True, automatically fix issues where supported.
+        cleanup: If True, include ruff cleanup rules.
+        diff_files: Set of changed Python file paths, or None to check all files.
 
     Returns:
         ExtensionResult with results from all enabled tools.
@@ -948,9 +951,6 @@ def run_tools_on_extension(
         result.tool_results["mypy"] = run_mypy(
             python_dir, python_files, mypy_config, exclude_patterns, tools["mypy"], vendor_dir, cwd
         )
-
-    if "pydocstyle" in enabled_tools:
-        result.tool_results["pydocstyle"] = run_pydocstyle(python_dir, python_files, tools["pydocstyle"], cwd)
 
     if "darglint" in enabled_tools:
         result.tool_results["darglint"] = run_darglint(python_dir, python_files, tools["darglint"], cwd)
@@ -1158,7 +1158,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
     """
     parser.description = (
         "Run Python linting tools on extensions under source/extensions, source/internal_extensions, "
-        "and source/deprecated (mypy, pydocstyle, darglint, interrogate, pydoclint, ruff)."
+        "and source/deprecated (mypy, darglint, interrogate, pydoclint, ruff). "
+        "Ruff enforces docstring style (Google convention), modern annotations, naming, pycodestyle, "
+        "bugbear, comprehensions, return hygiene, and simplify rules by default. "
+        "Use --ruff-clean for unused import/pass removal."
     )
 
     # Extension selection
@@ -1186,11 +1189,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
         help="Run mypy type checking",
     )
     parser.add_argument(
-        "--pydocstyle",
-        action="store_true",
-        help="Run pydocstyle docstring style checking",
-    )
-    parser.add_argument(
         "--darglint",
         action="store_true",
         help="Run darglint docstring argument validation",
@@ -1208,7 +1206,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
     parser.add_argument(
         "--ruff",
         action="store_true",
-        help="Run ruff to check for modern type annotation style (UP rules: list[] not List[], X | Y not Union)",
+        help="Run ruff to check docstring style, modern type annotations, and code quality",
     )
     parser.add_argument(
         "--ruff-clean",
@@ -1276,7 +1274,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
         # Determine which tools to run
         tool_flags = {
             "mypy": args.mypy,
-            "pydocstyle": args.pydocstyle,
             "darglint": args.darglint,
             "interrogate": args.interrogate,
             "pydoclint": args.pydoclint,
