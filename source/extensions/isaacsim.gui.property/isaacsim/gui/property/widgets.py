@@ -16,6 +16,7 @@ import omni.usd
 
 from .array_widget import ArrayPropertiesWidget
 from .custom_data import CustomDataWidget
+from .motion_planning_schema import MotionPlanningAPIWidget
 from .name_override import NameOverrideWidget
 from .namespace import NamespaceWidget
 from .robot_schema import JointAPIWidget, LinkAPIWidget, RobotAPIWidget
@@ -28,6 +29,7 @@ class IsaacPropertyWidgets(omni.ext.IExt):
         self._robot_api_widget = None
         self._link_api_widget = None
         self._joint_api_widget = None
+        self._motion_planning_api_widget = None
 
     def on_startup(self, ext_id):
         self._register_widget()
@@ -53,6 +55,8 @@ class IsaacPropertyWidgets(omni.ext.IExt):
         w.register_widget("prim", "isaac_link_api", self._link_api_widget, False)
         self._joint_api_widget = JointAPIWidget(title="Robot Joint", collapsed=False)
         w.register_widget("prim", "isaac_joint_api", self._joint_api_widget, False)
+        self._motion_planning_api_widget = MotionPlanningAPIWidget(title="Motion Planning", collapsed=False)
+        w.register_widget("prim", "isaac_motion_planning_api", self._motion_planning_api_widget, False)
 
     def _unregister_widget(self):
         import omni.kit.window.property as p
@@ -66,6 +70,7 @@ class IsaacPropertyWidgets(omni.ext.IExt):
             w.unregister_widget("prim", "isaac_robot_api")
             w.unregister_widget("prim", "isaac_link_api")
             w.unregister_widget("prim", "isaac_joint_api")
+            w.unregister_widget("prim", "isaac_motion_planning_api")
             self._isaac_name_override.destroy()
             self._isaac_namespace.destroy()
             if self._robot_api_widget:
@@ -74,4 +79,6 @@ class IsaacPropertyWidgets(omni.ext.IExt):
                 self._link_api_widget.destroy()
             if self._joint_api_widget:
                 self._joint_api_widget.destroy()
+            if self._motion_planning_api_widget:
+                self._motion_planning_api_widget.destroy()
             self._registered = False
