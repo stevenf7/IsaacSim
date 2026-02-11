@@ -13,19 +13,81 @@ import requests
 
 
 BUILD_JOB_NAMES = [
-    "kit-build-release-linux-x86_64", 
-    "kit-build-debug-linux-x86_64", 
-    "kit-build-release-windows-x86_64", 
-    "kit-build-debug-windows-x86_64", 
-    "kit-build-release-linux-aarch64", 
-    "kit-build-debug-linux-aarch64"
+    "kit-build-release-linux-x86_64",
+    "kit-build-debug-linux-x86_64",
+    "kit-build-release-windows-x86_64",
+    "kit-build-debug-windows-x86_64",
+    "kit-build-release-linux-aarch64",
+    "kit-build-debug-linux-aarch64",
 ]
+
+# The Kit branch that Isaac Sim depends on.  Used by the nightly fallback
+# to find the latest scheduled pipeline with all build jobs passing.
+KIT_BRANCH = "feature/110.0"
+
+
+def setup_kit_upstream() -> None:
+    """Detect whether this build should use upstream Kit and set up accordingly.
+
+    Decision matrix:
+      1. Downstream trigger from Kit (CI_PIPELINE_SOURCE == "pipeline") with
+         UPSTREAM_PIPELINE_ID already set → honor it directly.
+      2. Running on the develop-kit-tot branch (post-merge push, scheduled, or
+         MR targeting it) → fall back to the latest Kit nightly on KIT_BRANCH.
+      3. Otherwise → skip Kit override entirely.
+
+    When an upstream Kit pipeline is identified (case 1 or 2), this function
+    launches ``build_isaac_from_kit`` which downloads Kit artifacts and
+    generates packman ``.user`` overrides so all Kit packages come from the
+    same commit.
+    """
+    import omni.repo.ci  # deferred so module can be imported outside CI
+
+    ci_pipeline_source = os.getenv("CI_PIPELINE_SOURCE", "")
+    ci_commit_ref = os.getenv("CI_COMMIT_REF_NAME", "")
+    ci_mr_target = os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME", "")
+    upstream_pipeline_id = os.getenv("UPSTREAM_PIPELINE_ID", "")
+
+    print(f"[setup_kit_upstream] CI_PIPELINE_SOURCE={ci_pipeline_source}")
+    print(f"[setup_kit_upstream] CI_COMMIT_REF_NAME={ci_commit_ref}")
+    print(f"[setup_kit_upstream] CI_MERGE_REQUEST_TARGET_BRANCH_NAME={ci_mr_target}")
+    print(f"[setup_kit_upstream] UPSTREAM_PIPELINE_ID={upstream_pipeline_id}")
+
+    downstream_pipeline = ci_pipeline_source == "pipeline"
+    develop_kit_tot_pipeline = (
+        ci_mr_target == "develop-kit-tot" or ci_commit_ref == "develop-kit-tot"
+    )
+
+    print(
+        f"[setup_kit_upstream] downstream_pipeline={downstream_pipeline}, "
+        f"develop_kit_tot_pipeline={develop_kit_tot_pipeline}"
+    )
+
+    if downstream_pipeline and upstream_pipeline_id:
+        # Upstream pipeline already provided the pipeline ID — honour it.
+        print(f"[setup_kit_upstream] Using upstream-provided UPSTREAM_PIPELINE_ID={upstream_pipeline_id}")
+    elif develop_kit_tot_pipeline:
+        # Fallback: find the latest Kit nightly on KIT_BRANCH.
+        print(f"[setup_kit_upstream] No upstream pipeline ID, falling back to latest Kit nightly on {KIT_BRANCH}")
+        nightly_pipeline_id = find_latest_nightly_pipeline_id()
+        if nightly_pipeline_id is None:
+            raise ValueError("Unable to find latest nightly pipeline")
+        os.environ["UPSTREAM_PIPELINE_ID"] = str(nightly_pipeline_id)
+        print(f"[setup_kit_upstream] Set UPSTREAM_PIPELINE_ID={nightly_pipeline_id} from nightly lookup")
+    else:
+        print("[setup_kit_upstream] Not a downstream or develop-kit-tot pipeline, skipping Kit override")
+        return
+
+    print("[setup_kit_upstream] Launching build_isaac_from_kit to override Kit packages...")
+    omni.repo.ci.launch(["${root}/repo${shell_ext}", "ci", "build_isaac_from_kit"])
+
 
 def find_latest_nightly_pipeline_id(project_id=6510, gitlab_url="https://gitlab-master.nvidia.com"):
     """Find the latest successful nightly pipeline ID from GitLab.
 
-    Queries GitLab API for scheduled pipelines on master branch and finds the most
-    recent one where all required kit build jobs have completed successfully.
+    Queries GitLab API for scheduled pipelines on KIT_BRANCH and finds the
+    most recent one where all required kit build jobs have completed
+    successfully.
 
     Args:
         project_id: The GitLab project ID to query. Defaults to 6510.
@@ -38,16 +100,16 @@ def find_latest_nightly_pipeline_id(project_id=6510, gitlab_url="https://gitlab-
         ValueError: If CI_GITLAB_API_TOKEN environment variable is not set.
         requests.HTTPError: If any API request fails.
     """
-    print("Querying for latest nightly pipeline...")
+    print(f"Querying for latest nightly pipeline on {KIT_BRANCH}...")
     private_token = os.getenv("CI_GITLAB_API_TOKEN")
     if private_token is None:
         raise ValueError("Unable to find PRIVATE_TOKEN, please set CI_GITLAB_API_TOKEN environment variable")
-    
+
     headers = {
         "PRIVATE-TOKEN": private_token
     }
-    
-    pipelines_url = f"{gitlab_url}/api/v4/projects/{project_id}/pipelines?source=schedule&ref=master"
+
+    pipelines_url = f"{gitlab_url}/api/v4/projects/{project_id}/pipelines?source=schedule&ref={KIT_BRANCH}"
     response = requests.get(pipelines_url, headers=headers, timeout=30)
     response.raise_for_status()
     pipelines = response.json()
@@ -147,11 +209,11 @@ def download_kit_artifacts(project_id, pipeline_id, platform, config, output_pat
     job_name = target_job["name"]
     job_web_url = target_job["web_url"]
     job_id = target_job["id"]
+    artifacts_url = f"{gitlab_url}/api/v4/projects/{project_id}/jobs/{job_id}/artifacts"
 
     print(f"Found kit {job_name} {job_web_url} proceeding to download...")
 
     # Download the artifacts
-    artifacts_url = f"{gitlab_url}/api/v4/projects/{project_id}/jobs/{job_id}/artifacts"
     response = requests.get(artifacts_url, headers=headers, stream=True, timeout=300)
     response.raise_for_status()
 

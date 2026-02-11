@@ -14,7 +14,7 @@ from typing import Callable, Dict
 
 
 import omni.repo.ci
-from tools.ci.upstream_kit_build.pull_kit import find_latest_nightly_pipeline_id
+from tools.ci.upstream_kit_build.pull_kit import setup_kit_upstream
 
 
 def pull_library_from_linbuild_usr_lib64(d: str, name: str):
@@ -27,23 +27,9 @@ def pull_library_from_linbuild_usr_lib64(d: str, name: str):
 
 def main(args: argparse.Namespace):
 
+    setup_kit_upstream()
 
-    downstream_pipeline = os.getenv("CI_PIPELINE_SOURCE","") == "pipeline"
-
-    develop_kit_tot_pipeline = (
-        os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME", "") == "develop-kit-tot" or 
-        os.getenv("CI_COMMIT_REF_NAME", "") == "develop-kit-tot"
-    )
-
-    if develop_kit_tot_pipeline:
-        nightly_pipeline_id = find_latest_nightly_pipeline_id()
-        if nightly_pipeline_id is None:
-            raise ValueError("Unable to find latest nightly pipeline")
-        os.environ["UPSTREAM_PIPELINE_ID"] = str(nightly_pipeline_id)
-
-
-    if downstream_pipeline or develop_kit_tot_pipeline:
-        omni.repo.ci.launch(["${root}/repo${shell_ext}", "ci", "build_isaac_from_kit"])
+    downstream_pipeline = os.getenv("CI_PIPELINE_SOURCE", "") == "pipeline"
 
 
 
@@ -108,9 +94,14 @@ def main(args: argparse.Namespace):
         repo_docs_enabled = False
 
 
-    if downstream_pipeline:
+    develop_kit_tot_pipeline = (
+        os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME", "") == "develop-kit-tot"
+        or os.getenv("CI_COMMIT_REF_NAME", "") == "develop-kit-tot"
+    )
+
+    if downstream_pipeline or develop_kit_tot_pipeline:
         repo_docs_enabled = False
-        print("Docs are disabled for downstream pipeline")
+        print("Docs are disabled for downstream/develop-kit-tot pipeline")
 
     # Docs
     if repo_docs_enabled:

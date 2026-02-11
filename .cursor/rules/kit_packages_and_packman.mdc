@@ -1,0 +1,16 @@
+---
+description: Kit SDK packages, packman dependency system, and how Isaac Sim depends on Kit
+globs:
+  - deps/*.packman.xml*
+  - tools/ci/upstream_kit_build/**
+  - tools/ci/build_isaac*.py
+alwaysApply: false
+---
+
+# Kit Packages and Packman Reference
+
+See `tools/ci/upstream_kit_build/KIT_PACKAGES_AND_PACKMAN.md` for full documentation
+on Kit packages, the packman dependency system, and the CI override mechanism.
+
+Always read that file before making changes to the upstream Kit build scripts or
+packman dependency files.
