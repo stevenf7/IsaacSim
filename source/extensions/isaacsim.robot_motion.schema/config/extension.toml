@@ -4,7 +4,7 @@ reloadable = false
 order = -100
 
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Simulation"
 title = "Isaac Sim Motion Generation"
 description = "Extension that provides USD schema for the Isaac Motion Planning API"
@@ -18,8 +18,8 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
+"omni.usd" = {}
 "omni.usd.libs" = {}
-"isaacsim.gui.components" = {}
 
 [[python.module]]
 name = "isaacsim.robot_motion.schema"
@@ -29,9 +29,6 @@ name = "isaacsim.robot_motion.schema.tests"
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -43,7 +40,6 @@ stdoutFailPatterns.exclude = [
 [[test]]
 timeout = 900
 dependencies = [
-    "omni.isaac.ml_archive",
     "omni.hydra.usdrt_delegate",
 ]
 
