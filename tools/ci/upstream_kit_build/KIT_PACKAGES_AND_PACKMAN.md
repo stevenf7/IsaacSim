@@ -116,9 +116,9 @@ All versioned artifacts from the same build share the same
 `{branch}.{build_number}.{commit_hash}` triple.
 
 
-## CI Override Mechanism (develop-kit-tot)
+## CI Override Mechanism (develop-kit-tot or kit-integration/*)
 
-When Kit triggers an Isaac Sim pipeline on the `develop-kit-tot` branch, the goal
+When Kit triggers an Isaac Sim pipeline on the `develop-kit-tot` or on a `kit-integration/*` branch, the goal
 is to test whether the upstream Kit commit breaks Isaac Sim. The build must use
 **all** Kit packages from the upstream commit, not the pinned versions.
 

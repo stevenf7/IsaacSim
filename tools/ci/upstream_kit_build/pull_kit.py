@@ -7,10 +7,10 @@
 * distribution of this software and related documentation without an express
 * license agreement from NVIDIA CORPORATION is strictly prohibited.
 """
+
 import os
 
 import requests
-
 
 BUILD_JOB_NAMES = [
     "kit-build-release-linux-x86_64",
@@ -32,7 +32,7 @@ def setup_kit_upstream() -> None:
     Decision matrix:
       1. Downstream trigger from Kit (CI_PIPELINE_SOURCE == "pipeline") with
          UPSTREAM_PIPELINE_ID already set → honor it directly.
-      2. Running on the develop-kit-tot branch (post-merge push, scheduled, or
+      2. Running on the develop-kit-tot or kit-integration/* branch (post-merge push, scheduled, or
          MR targeting it) → fall back to the latest Kit nightly on KIT_BRANCH.
       3. Otherwise → skip Kit override entirely.
 
@@ -55,8 +55,17 @@ def setup_kit_upstream() -> None:
 
     downstream_pipeline = ci_pipeline_source == "pipeline"
     develop_kit_tot_pipeline = (
-        ci_mr_target == "develop-kit-tot" or ci_commit_ref == "develop-kit-tot"
+        ci_mr_target == "develop-kit-tot"
+        or ci_commit_ref == "develop-kit-tot"
+        or ci_commit_ref.startswith("kit-integration/")
+        or ci_mr_target.startswith("kit-integration/")
     )
+
+    # for kit-integration/* pipelines we override the KIT_BRANCH, just in case its a non-downstream kit-integration pipeline
+    if ci_commit_ref.startswith("kit-integration/"):
+        KIT_BRANCH = ci_commit_ref.split("/")[1]
+    if ci_mr_target.startswith("kit-integration/"):
+        KIT_BRANCH = ci_mr_target.split("/")[1]
 
     print(
         f"[setup_kit_upstream] downstream_pipeline={downstream_pipeline}, "
@@ -75,7 +84,9 @@ def setup_kit_upstream() -> None:
         os.environ["UPSTREAM_PIPELINE_ID"] = str(nightly_pipeline_id)
         print(f"[setup_kit_upstream] Set UPSTREAM_PIPELINE_ID={nightly_pipeline_id} from nightly lookup")
     else:
-        print("[setup_kit_upstream] Not a downstream or develop-kit-tot pipeline, skipping Kit override")
+        print(
+            "[setup_kit_upstream] Not a downstream or develop-kit-tot/kit-integration pipeline, skipping Kit override"
+        )
         return
 
     print("[setup_kit_upstream] Launching build_isaac_from_kit to override Kit packages...")
@@ -105,9 +116,7 @@ def find_latest_nightly_pipeline_id(project_id=6510, gitlab_url="https://gitlab-
     if private_token is None:
         raise ValueError("Unable to find PRIVATE_TOKEN, please set CI_GITLAB_API_TOKEN environment variable")
 
-    headers = {
-        "PRIVATE-TOKEN": private_token
-    }
+    headers = {"PRIVATE-TOKEN": private_token}
 
     pipelines_url = f"{gitlab_url}/api/v4/projects/{project_id}/pipelines?source=schedule&ref={KIT_BRANCH}"
     response = requests.get(pipelines_url, headers=headers, timeout=30)
@@ -134,13 +143,14 @@ def find_latest_nightly_pipeline_id(project_id=6510, gitlab_url="https://gitlab-
                 if not child_pipeline_details:
                     break
                 for job in child_pipeline_details:
-                    if job['name'] in BUILD_JOB_NAMES and job['status'] == 'success':
+                    if job["name"] in BUILD_JOB_NAMES and job["status"] == "success":
                         build_job_count += 1
                 page += 1
             if build_job_count == len(BUILD_JOB_NAMES):
                 print(f"Found latest nightly pipeline {child_pipeline['id']}")
-                return child_pipeline['id']
+                return child_pipeline["id"]
     return None
+
 
 def find_kit_build_job_in_pipeline(platform, config, gitlab_url, project_id, pipeline_id, headers):
     """Search a GitLab pipeline for a specific kit build job.
@@ -171,7 +181,14 @@ def find_kit_build_job_in_pipeline(platform, config, gitlab_url, project_id, pip
     return False, None
 
 
-def download_kit_artifacts(project_id, pipeline_id, platform, config, output_path="artifacts.zip", gitlab_url="https://gitlab-master.nvidia.com"):
+def download_kit_artifacts(
+    project_id,
+    pipeline_id,
+    platform,
+    config,
+    output_path="artifacts.zip",
+    gitlab_url="https://gitlab-master.nvidia.com",
+):
     """Download kit build artifacts from a GitLab pipeline.
 
     Args:
@@ -194,9 +211,7 @@ def download_kit_artifacts(project_id, pipeline_id, platform, config, output_pat
     if private_token is None:
         raise ValueError("Unable to find PRIVATE_TOKEN, please set CI_GITLAB_API_TOKEN environment variable")
 
-    headers = {
-        "PRIVATE-TOKEN": private_token
-    }
+    headers = {"PRIVATE-TOKEN": private_token}
 
     print(f"Searching pipeline {pipeline_id} for kit build job...")
 

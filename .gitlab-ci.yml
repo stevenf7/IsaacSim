@@ -52,7 +52,7 @@ include:
     ref: v1_latest
   - local: tools/ci/test_matrixes/kit_mr_tests.yml
     rules:
-      - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE != "nightly"
+      - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE == "merge_request"
   - local: tools/ci/test_matrixes/all.yml
     rules:
       - if: $CI_PIPELINE_SOURCE != "pipeline" || ($CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE == "nightly")
@@ -210,8 +210,18 @@ post_to_slack:
     - ./tools/packman/python.sh -m pip install slack_sdk requests
     - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --pipeline-report --channel $SLACK_CHANNEL
   rules:
-    - if: $CI_COMMIT_REF_NAME == "develop-kit-tot" && $CI_PIPELINE_SOURCE != "push"
+    - if: $CI_COMMIT_REF_NAME =~ /^kit-integration\// && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "nightly"
       when: always
+      variables:
+       SLACK_CHANNEL: "#isaac-sim-kit-integration-ci"
+    - if: $CI_COMMIT_REF_NAME =~ /^kit-integration\// && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "merge_request"
+      when: always
+      variables:
+        SLACK_CHANNEL: "#isaac-sim-ci-mr"
+    - if: $CI_COMMIT_REF_NAME == "develop-kit-tot" && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "nightly"
+      when: always
+      variables:
+        SLACK_CHANNEL: "#isaac-sim-ci"
     - !reference [.rules-nightly-tests-always, rules]
     - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[x\] Post pipeline reports to slack/"
       when: always
@@ -430,7 +440,7 @@ check-python-packages:
 # ==============================================================================================================
 .disable_on_downstream_of_mr:
     rules:
-      - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE != "nightly"
+      - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE == "merge_request"
         when: never
 # ==============================================================================================================
 .aarch64-build-common:
@@ -1547,7 +1557,13 @@ bump-version:
       - !reference [.rules-bump-version, rules]
 
 # ==============================================================================================================
-rebase-develop-kit-tot:
+rebase-kit-integration-branches:
+    parallel:
+       matrix:
+           - BRANCH: 
+             - develop-kit-tot
+             - kit-integration/master
+             - kit-integration/feature/110.0
     extends:
       - .ipp_lnx_x86_64_cpu_small
     variables:
@@ -1558,10 +1574,10 @@ rebase-develop-kit-tot:
       - git config user.email "gitlab@nvidia.com"
       - git config user.name "gitlab"
       - git remote set-url --push origin $GITLAB_REPO_URL
-      - git fetch origin develop-kit-tot
-      - git checkout develop-kit-tot
+      - git fetch origin $BRANCH
+      - git checkout $BRANCH
       - git rebase origin/develop
-      - git push --force-with-lease origin develop-kit-tot
+      - git push --force-with-lease origin $BRANCH
     after_script:
       - !reference [.post_job_status_to_slack, after_script]
     needs: []
@@ -1597,7 +1613,8 @@ sign-windows-x86_64-release:
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
       - if: $UPSTREAM_PIPELINE_SOURCE == "nightly"
-        when: on_success
+        when: manual
+        allow_failure: true
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
 #   allow_failure: true
@@ -1974,7 +1991,8 @@ publish-to-packman:
         when: never
       # Allow execution when triggered by nightly upstream pipeline
       - if: $UPSTREAM_PIPELINE_SOURCE == "nightly"
-        when: on_success
+        when: manual
+        allow_failure: true
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
 

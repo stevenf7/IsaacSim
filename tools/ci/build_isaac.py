@@ -97,11 +97,13 @@ def main(args: argparse.Namespace):
     develop_kit_tot_pipeline = (
         os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME", "") == "develop-kit-tot"
         or os.getenv("CI_COMMIT_REF_NAME", "") == "develop-kit-tot"
+        or os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME", "").startswith("kit-integration/")
+        or os.getenv("CI_COMMIT_REF_NAME", "").startswith("kit-integration/")
     )
 
     if downstream_pipeline or develop_kit_tot_pipeline:
         repo_docs_enabled = False
-        print("Docs are disabled for downstream/develop-kit-tot pipeline")
+        print("Docs are disabled for downstream/develop-kit-tot/kit-integration pipeline")
 
     # Docs
     if repo_docs_enabled:
