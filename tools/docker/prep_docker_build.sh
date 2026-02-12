@@ -91,6 +91,15 @@ done
 # Run build sequence if --build was specified
 if [[ "$RUN_BUILD" == "true" ]]; then
     echo ""
+    # Remove stale Docker context and docs cache so build_docs does not see old paths (e.g. _container_temp in Sphinx doctree)
+    if [[ -d "_container_temp" ]]; then
+        echo "Removing existing _container_temp to avoid stale paths in docs build..."
+        rm -rf _container_temp
+    fi
+    if [[ -d "${HOME}/.cache/packman/chk/repo_docs_deps" ]]; then
+        echo "Clearing docs cache (repo_docs_deps) to avoid stale Sphinx doctrees..."
+        rm -rf "${HOME}/.cache/packman/chk/repo_docs_deps"
+    fi
     build_function
     if [[ $? -ne 0 ]]; then
         echo "Build sequence failed, exiting with error code 1" >&2
