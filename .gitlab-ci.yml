@@ -223,7 +223,7 @@ post_to_slack:
       variables:
         SLACK_CHANNEL: "#isaac-sim-ci"
     - !reference [.rules-nightly-tests-always, rules]
-    - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[x\] Post pipeline reports to slack/"
+    - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Post pipeline reports to slack/"
       when: always
       variables:
         SLACK_CHANNEL: "#isaac-sim-ci-mr"
@@ -1626,7 +1626,7 @@ sign-windows-x86_64-release:
       when: never
     - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
       when: never
-    - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[x\] Generate containers in MR pipelines/"
+    - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Generate containers in MR pipelines/"
       # Extra bit of hackery to get the MR suffix into the container tags
       variables:
          MR_SUFFIX: "-mr"
