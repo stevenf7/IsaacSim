@@ -19,7 +19,6 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.usd.libs" = {}
-"isaacsim.core.api" = {}
 "isaacsim.gui.components" = {}
 
 [[python.module]]
@@ -45,6 +44,7 @@ stdoutFailPatterns.exclude = [
 timeout = 900
 dependencies = [
     "omni.isaac.ml_archive",
+    "omni.hydra.usdrt_delegate",
 ]
 
 args = [

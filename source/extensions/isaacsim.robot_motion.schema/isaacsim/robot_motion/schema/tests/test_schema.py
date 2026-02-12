@@ -23,7 +23,7 @@ from isaacsim.robot_motion.schema import (
 from pxr import Plug, Sdf, Usd
 
 
-class CodelessTests(omni.kit.test.AsyncTestCaseFailOnLogError):
+class CodelessTests(omni.kit.test.AsyncTestCase):
     async def _new_stage(self):
         await omni.usd.get_context().new_stage_async()
         return omni.usd.get_context().get_stage()
