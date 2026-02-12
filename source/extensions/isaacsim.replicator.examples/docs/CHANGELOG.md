@@ -1,4 +1,8 @@
 # Changelog
+## [1.7.0] - 2026-02-08
+### Changed
+- Added SDG deformables example test
+
 ## [1.6.9] - 2026-02-04
 ### Changed
 - Synched snippets with docs, typos and print statements fixes
