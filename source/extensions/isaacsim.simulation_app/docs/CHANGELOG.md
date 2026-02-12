@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.15.0] - 2026-02-11
+### Added
+- Added separate default render settings for PathTracing and RealTimePathTracing modes
+
 ## [2.14.5] - 2026-01-29
 ### Changed
 - Skip explicit stage close in simulation app close() method to avoid crashes

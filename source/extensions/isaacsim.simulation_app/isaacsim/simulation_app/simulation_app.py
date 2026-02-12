@@ -98,6 +98,18 @@ class SimulationApp:
         "limit_cpu_threads": 32,
         "disable_viewport_updates": False,
     }
+    RENDERER_DEFAULTS = {
+        "pathtracing": {
+            "max_bounces": 4,
+            "max_specular_transmission_bounces": 6,
+            "max_volume_bounces": 64,
+        },
+        "realtimepathtracing": {
+            "max_bounces": 3,
+            "max_specular_transmission_bounces": 3,
+            "max_volume_bounces": 15,
+        },
+    }
     """
     The config variable is a dictionary containing the following entries
 
@@ -246,6 +258,7 @@ class SimulationApp:
 
         if launch_config is not None:
             self.config.update(launch_config)
+        self._apply_renderer_defaults(launch_config)
         if builtins.ISAAC_LAUNCHED_FROM_JUPYTER:
             if self.config["headless"] is False:
                 carb.log_warn("Non-headless mode not supported with jupyter notebooks")
@@ -357,6 +370,21 @@ class SimulationApp:
 
         self.update()  # This app update triggers app ready status.
         builtins.ISAACSIM_APP_LAUNCHED = True
+
+    def _apply_renderer_defaults(self, launch_config: dict | None) -> None:
+        """Apply renderer-specific defaults when values are not provided in the launch config.
+
+        Args:
+            launch_config: User-provided configuration overrides.
+        """
+        renderer_key = str(self.config.get("renderer", "")).lower()
+        renderer_defaults = self.RENDERER_DEFAULTS.get(renderer_key)
+        if not renderer_defaults:
+            return
+        override_keys = launch_config or {}
+        for setting_key, default_value in renderer_defaults.items():
+            if setting_key not in override_keys:
+                self.config[setting_key] = default_value
 
     def __del__(self):
         """Destructor for the SimulationApp class.
