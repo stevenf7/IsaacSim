@@ -53,9 +53,10 @@ simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
 import omni.kit.commands
+import omni.timeline
 from isaacsim.core.api.materials import OmniPBR
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.sensors.rtx import apply_nonvisual_material
+from isaacsim.sensors.rtx import LidarRtx, apply_nonvisual_material, get_gmo_data
 
 # =============================================================================
 # DEFINE SCENE OBJECTS WITH DIFFERENT MATERIALS
@@ -144,6 +145,27 @@ for i, config in enumerate(cube_configs):
     print(f"    Non-visual: base={base}, coating={coating}, attribute={attribute}")
 
 # =============================================================================
+# CREATE RTX LIDAR WITH GMO ANNOTATOR
+# =============================================================================
+# Create an RTX Lidar to sense the cubes with different non-visual materials.
+# The GenericModelOutput (GMO) annotator provides raw sensor data including intensity.
+
+ANNOTATOR_NAME = "GenericModelOutput"
+
+lidar = LidarRtx(
+    prim_path="/World/lidar",
+    name="lidar",
+    position=np.array([0.5, 0, -1]),
+)
+lidar.initialize()
+lidar.attach_annotator(ANNOTATOR_NAME)
+
+print(f"\n{'='*60}")
+print(f"Created RTX Lidar at position (0.5, 0, -1)")
+print(f"Attached {ANNOTATOR_NAME} annotator for intensity data")
+print(f"{'='*60}")
+
+# =============================================================================
 # INSTRUCTIONS FOR VIEWING NON-VISUAL MATERIALS
 # =============================================================================
 print(f"\n{'='*60}")
@@ -156,12 +178,30 @@ print("Each material will appear as a different color in this view.")
 print(f"{'='*60}\n")
 
 # =============================================================================
-# RUN SIMULATION
+# RUN SIMULATION AND PRINT INTENSITY DATA
 # =============================================================================
+timeline = omni.timeline.get_timeline_interface()
+timeline.play()
+
 frame_count = 0
 while simulation_app.is_running() and (not args.test or frame_count < 10):
     simulation_app.update()
+
+    # Get GMO data from the lidar
+    data = lidar.get_current_frame()[ANNOTATOR_NAME]
+    if len(data) > 0:
+        gmo = get_gmo_data(data)
+        if gmo.numElements > 0:
+            # Intensity is stored in the 'scalar' field of GMO
+            intensity = gmo.scalar
+            print(
+                f"Frame {frame_count}: {gmo.numElements} points, "
+                f"intensity min={intensity.min():.4f}, max={intensity.max():.4f}, mean={intensity.mean():.4f}"
+            )
+
     frame_count += 1
+
+timeline.stop()
 
 # =============================================================================
 # CLEANUP
