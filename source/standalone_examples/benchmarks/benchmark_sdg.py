@@ -17,14 +17,14 @@ import argparse
 
 VALID_ANNOTATORS = {
     "rgb",
-    "bounding_box_2d_tight",
-    "bounding_box_2d_loose",
+    "bounding_box_2d_tight_fast",
+    "bounding_box_2d_loose_fast",
     "semantic_segmentation",
-    "instance_id_segmentation",
-    "instance_segmentation",
+    "instance_id_segmentation_fast",
+    "instance_segmentation_fast",
     "distance_to_camera",
     "distance_to_image_plane",
-    "bounding_box_3d",
+    "bounding_box_3d_fast",
     "occlusion",
     "normals",
     "motion_vectors",
@@ -62,6 +62,7 @@ parser.add_argument("--skip-write", action="store_true", help="Skip writing anno
 parser.add_argument("--env-url", default=None, help="Path to the environment url, default None")
 parser.add_argument("--gpu-frametime", action="store_true", help="Enable GPU frametime measurement")
 parser.add_argument("--viewport-updates", action="store_false", help="Enable viewport updates when headless")
+parser.add_argument("--app-frametime", action="store_true", help="Enable Kit app frametime measurement")
 
 args, unknown = parser.parse_known_args()
 
@@ -78,6 +79,7 @@ skip_write = args.skip_write
 env_url = args.env_url
 gpu_frametime = args.gpu_frametime
 viewport_updates = args.viewport_updates
+app_frametime = args.app_frametime
 
 if "all" in args.annotators:
     annotators_kwargs = {annotator: True for annotator in VALID_ANNOTATORS}
@@ -213,9 +215,11 @@ recorders = DEFAULT_RECORDERS.copy()
 if gpu_frametime:
     recorders.append("gpu_frametime")
 
-# Don't track app_frametime to avoid overhead of timing Kit updates
-if "app_frametime" in recorders:
-    recorders.remove("app_frametime")
+# Don't track app_frametime by default to avoid overhead of timing Kit updates
+if not app_frametime:
+    if "app_frametime" in recorders:
+        recorders.remove("app_frametime")
+
 # Add replicator FPS recorder (useful for SDG benchmarks)
 recorders.append("replicator_fps")
 
