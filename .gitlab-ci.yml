@@ -196,7 +196,7 @@ variables:
 # Slack notifications
 .post_job_status_to_slack:
   after_script:
-    - ./tools/packman/python.sh -m pip install slack_sdk
+    - ./tools/packman/python.sh -m pip install slack_sdk requests
     - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --job-report
 
 post_to_slack:
