@@ -705,7 +705,11 @@ CLI arguments
                 # setup extension path and config
                 omni.repo.man.print_log(f"{ext_name}", logging.INFO)
                 ext_path = os.path.join(build_extension_path, ext_name)
-                ext_config = _load_extension_config(ext_path, options.error_as_warn)
+                try:
+                    ext_config = _load_extension_config(ext_path, options.error_as_warn)
+                except FileNotFoundError as e:
+                    omni.repo.man.print_log(f"  |-- Skipping (no config/extension.toml): {e}", logging.WARN)
+                    continue
                 # create docs/index.rst file
                 create_index(ext_path, ext_name, ext_config, sections, overwrite=not options.no_overwrite_index)
                 # generate extension docs
