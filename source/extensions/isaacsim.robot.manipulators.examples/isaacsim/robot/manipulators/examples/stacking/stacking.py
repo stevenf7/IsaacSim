@@ -18,7 +18,7 @@ from typing import List, Optional
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 from isaacsim.core.experimental.materials import PreviewSurfaceMaterial
-from isaacsim.core.experimental.objects import Cube, DistantLight, GroundPlane
+from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.robot.manipulators.examples.franka.franka_experimental import FrankaExperimental
 from isaacsim.storage.native import get_assets_root_path
@@ -45,7 +45,7 @@ class Stacking:
         """Initialize the stacking scene setup and controller.
 
         Args:
-            robot_path: USD path where the robot should be created. Defaults to "/World/robot".
+            robot_path: USD path where the robot should be created. Defaults to '/World/robot'.
             cube_positions: List of initial cube positions. Defaults to two cubes.
             cube_size: Size of each cube. Defaults to [0.05, 0.05, 0.05].
             stack_target_position: Target position for stacking. Defaults to [0.5, 0.5, 0.12].
@@ -99,24 +99,22 @@ class Stacking:
         self._step = 0
 
     def setup_scene(self):
-        """Set up the scene with robot, ground plane, and cubes."""
-        # Add ground plane (only if it doesn't exist)
+        """Set up the scene with robot, default environment, and cubes."""
+        # Add default environment (ground and lighting) only once (shared across multiple tasks)
         stage = stage_utils.get_current_stage()
-        if not stage.GetPrimAtPath("/World/GroundPlane"):
-            GroundPlane("/World/GroundPlane", positions=[[0, 0, 0]])
-
-        # Add distant light (only if it doesn't exist)
-        if not stage.GetPrimAtPath("/World/DistantLight"):
-            light = DistantLight("/World/DistantLight")
-            light.set_intensities([300])
+        if not stage.GetPrimAtPath("/World/ground"):
+            stage_utils.add_reference_to_stage(
+                usd_path=get_assets_root_path() + "/Isaac/Environments/Grid/default_environment.usd",
+                path="/World/ground",
+            )
 
         # Create Franka robot
         self.robot = FrankaExperimental(robot_path=self.robot_path, create_robot=True)
 
         # Position robot at offset location (robot base should be at z=0, on the ground)
-        robot_position = np.array([self.offset[0], self.offset[1], 0.0])
-        robot_orientation = np.array([1.0, 0.0, 0.0, 0.0])  # Identity quaternion (w, x, y, z)
-        self.robot.set_world_poses(positions=[robot_position], orientations=[robot_orientation])
+        robot_position = [self.offset[0], self.offset[1], 0.0]
+        robot_orientation = [1.0, 0.0, 0.0, 0.0]  # Identity quaternion (w, x, y, z)
+        self.robot.set_world_poses(positions=robot_position, orientations=robot_orientation)
 
         # Create visual material for cubes (different colors for each cube)
         colors = [
@@ -133,10 +131,9 @@ class Stacking:
 
             cube_shape = Cube(
                 paths=cube_path,
-                positions=[cube_pos],
-                sizes=[1.0],
-                scales=[self.cube_size],
-                reset_xform_op_properties=True,
+                positions=cube_pos,
+                sizes=1.0,
+                scales=self.cube_size,
             )
 
             # Apply collision and physics
@@ -189,8 +186,8 @@ class Stacking:
         """Reset all cubes to their initial positions."""
         for cube, initial_pos in zip(self.cubes, self.cube_positions):
             cube.set_world_poses(
-                positions=[initial_pos],
-                orientations=[[1.0, 0.0, 0.0, 0.0]],
+                positions=initial_pos,
+                orientations=[1.0, 0.0, 0.0, 0.0],
             )
 
     def reset_robot(self):

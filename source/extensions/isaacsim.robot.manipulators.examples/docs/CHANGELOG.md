@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2026-02-11
+### Changed
+- Supported multiple Franka robots for pick and place task
+
 ## [1.4.0] - 2026-01-10
 ### Changed
 - Updated the folder structure of the extension
