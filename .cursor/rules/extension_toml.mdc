@@ -36,7 +36,7 @@ The required sections must be present and in the correct order. Optional section
 ## Spacing Requirements
 
 - Each section should be preceded by exactly one blank line (not more, not less).
-- No extra blank lines should appear at the start or end of the file.
+- No extra blank lines at the start of the file; at the end of the file, 0 or 1 empty line is acceptable (not more).
 - Section headers that immediately follow comments do not require a blank line between the comment and the header.
 - Multiple array sections of the same type (e.g., multiple `[[python.module]]` sections) should be separated by exactly one blank line.
 
@@ -51,6 +51,8 @@ order = 0          # Load order priority (lower values are loaded first)
 ```
 
 ### 2. [package] Section
+
+Fields in the `[package]` section must appear in this order (enforced by the validator):
 
 ```toml
 [package]
@@ -130,7 +132,7 @@ recursive = false                # Whether to search recursively
 exts."extension.name".setting_name = value # Extension-specific settings
 ```
 
-Each setting in the [settings] section MUST have a descriptive comment above it explaining its purpose and expected values.
+Each setting in the [settings] section MUST have a descriptive comment above it explaining its purpose and expected values. Platform-specific settings sections (e.g. `[settings."filter:platform=linux*"]`) are allowed and are treated as part of the settings group for section ordering.
 
 ### 10. [[trigger]] Section
 
@@ -156,6 +158,8 @@ path = "path/to/exclude"         # Path to exclude from watching
 
 ### 13. [[test]] Section
 
+Fields within each `[[test]]` block must appear in this order (enforced by the validator): `name`, `timeout`, `dependencies`, `args`, `stdoutFailPatterns.exclude`, `stdoutFailPatterns.include`.
+
 ```toml
 [[test]]
 name = "optional_test_name"  # Optional: Name for the test case
@@ -171,15 +175,18 @@ args = [                         # Command-line arguments for the test
 stdoutFailPatterns.exclude = [   # Patterns to exclude from failure detection
     "*pattern to ignore*",
 ]
+stdoutFailPatterns.include = [   # Patterns to include in failure detection (optional)
+    "*pattern to match*",
+]
 ```
 
-The dependencies listed in the [[test]] section must be sorted alphabetically for consistency and easier maintenance.
+The dependencies listed in the `dependencies` array of each `[[test]]` section must be sorted alphabetically for consistency and easier maintenance.
 
 Test sections have specific ordering requirements:
-- The `name = "startup"` test section must appear first among all test sections
-- There must be at most one unnamed test section per extension.toml file
-- All other test sections (unnamed and named) should follow after the "startup" test section
-- Named test sections should have a `name` field that uniquely identifies the test
+- The `name = "startup"` test section must appear first among all test sections.
+- There must be at most one unnamed test section per extension.toml file.
+- After "startup", other named test sections must appear in alphabetical order by their `name` field; the single unnamed section (if present) must come last.
+- Named test sections should have a `name` field that uniquely identifies the test.
 
 Example of proper test section ordering:
 ```toml
@@ -189,15 +196,15 @@ args = [
     "--arg1=value1",
 ]
 
-[[test]]  # Unnamed test section comes after "startup"
-args = [
-    "--arg2=value2",
-]
-
 [[test]]
-name = "other_test"  # Other named test sections come after "startup"
+name = "other_test"  # Other named sections in alphabetical order by name
 args = [
     "--arg3=value3",
+]
+
+[[test]]  # Unnamed section last (at most one allowed)
+args = [
+    "--arg2=value2",
 ]
 ```
 
@@ -217,7 +224,7 @@ pages = [                        # Documentation pages
    - Always follow the prescribed section order for consistency
    - Group related settings together within their respective sections
    - Keep exactly one blank line between sections
-   - Avoid extra blank lines at the start or end of the file
+   - Avoid extra blank lines at the start of the file; at most one blank line at end of file
 
 2. **Alphabetical Ordering**:
    - All dependencies in the [dependencies] section must be alphabetically sorted
@@ -279,8 +286,9 @@ pages = [                        # Documentation pages
 The repository includes a validation tool at `tools/isaac/validate_extension_toml.py` that can be used to check for compliance with these rules and automatically fix common issues:
 
 - Run without arguments to validate all `extension.toml` files in the repository
-- Use `--fix-whitespace` to fix spacing between sections
-- Use `--fix-section-order` to fix the order of sections
-- Use `--fix-package-order` to fix the order of fields in the [package] section
+- Use `--fix-whitespace` to fix spacing between sections and file boundaries (allows 0 or 1 empty line at EOF)
+- Use `--fix-section-order` to fix the order of sections and of `[[test]]` blocks (startup first, then named alphabetically, then unnamed)
+- Use `--fix-package-order` to fix the order of fields in the `[package]` and `[[test]]` sections
 - Use `--fix-dependencies-order` to fix alphabetical ordering of dependencies
-- Use `--fix` to apply all available fixes 
+- Use `--check-write-target` to add missing `writeTarget.kit = true` when needed
+- Use `--fix` to apply all available fixes
