@@ -834,6 +834,20 @@ class SimulationApp:
             >>> simulation_app.close(skip_cleanup=True)
         """
         carb.log_info("SimulationApp.close: Closing application")
+        if self._exiting:
+            carb.log_info("SimulationApp.close: already exiting, skipping duplicate close call")
+            return
+
+        # `post_quit()` can already stop Kit's run loop before callers reach `close()`.
+        # In that state, forcing `shutdown_and_release_framework()` may block indefinitely.
+        if not self._app.is_running():
+            self._exiting = True
+            carb.log_info("SimulationApp.close: app already stopped, skipping framework shutdown")
+            if self.config.get("fast_shutdown", False):
+                self._app.print_and_log("Simulation App Shutting Down")
+                os._exit(0)
+            return
+
         if skip_cleanup:
             self._exiting = True
             carb.log_info("SimulationApp.close: immediate_exit")
@@ -861,26 +875,25 @@ class SimulationApp:
         carb.log_info("SimulationApp.close: Replicator shutdown finished")
         # Explicit stage close call is not needed as the framework shutdown will handle cleanup.
         # check if exited already
-        if not self._exiting:
-            self._exiting = True
-            self._app.print_and_log("Simulation App Shutting Down")
+        self._exiting = True
+        self._app.print_and_log("Simulation App Shutting Down")
 
-            # Cleanup any running tracy intances so data is not lost
-            try:
-                _profiler_tracy = carb.profiler.acquire_profiler_interface(plugin_name="carb.profiler-tracy.plugin")
-                if _profiler_tracy:
-                    _profiler_tracy.set_capture_mask(0)
-                    _profiler_tracy.end(0)
-                    _profiler_tracy.shutdown()
-            except RuntimeError:
-                # Tracy plugin was not loaded, so profiler never started - skip checks.
-                pass
-            carb.log_info("SimulationApp.close: shutting down app and releasing framework")
-            # Disable logging before shutdown to keep the log clean
-            # Warnings at this point don't matter as the python process is about to be terminated
-            _logging = carb.logging.acquire_logging()
-            _logging.set_log_enabled(False)
-            self._app.shutdown_and_release_framework()
+        # Cleanup any running tracy intances so data is not lost
+        try:
+            _profiler_tracy = carb.profiler.acquire_profiler_interface(plugin_name="carb.profiler-tracy.plugin")
+            if _profiler_tracy:
+                _profiler_tracy.set_capture_mask(0)
+                _profiler_tracy.end(0)
+                _profiler_tracy.shutdown()
+        except RuntimeError:
+            # Tracy plugin was not loaded, so profiler never started - skip checks.
+            pass
+        carb.log_info("SimulationApp.close: shutting down app and releasing framework")
+        # Disable logging before shutdown to keep the log clean
+        # Warnings at this point don't matter as the python process is about to be terminated
+        _logging = carb.logging.acquire_logging()
+        _logging.set_log_enabled(False)
+        self._app.shutdown_and_release_framework()
 
     def is_running(self) -> bool:
         """Check if the simulation application is currently running.
