@@ -1,4 +1,8 @@
 # Changelog
+## [15.12.3] - 2026-02-13
+### Changed
+- Re-enable object ID test in CI to track fix
+
 ## [15.12.2] - 2026-02-04
 ### Added
 - Test for scan tearing when --/app/player/useFixedTimeStepping=True
