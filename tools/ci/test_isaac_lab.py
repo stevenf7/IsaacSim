@@ -17,12 +17,12 @@ from omni.repo.man import find_and_extract_package
 
 def main(args: argparse.Namespace):
 
-    git_clone_command = ["git", "clone", f"https://oauth2:{os.environ.get('GITHUB_ISAACLAB_CLONER_TOKEN')}@github.com/isaac-sim/IsaacLab-Internal.git", "_isaaclab"]
+    git_clone_command = ["git", "clone", "https://github.com/isaac-sim/IsaacLab.git", "_isaaclab"]
     omni.repo.ci.launch(git_clone_command)
 
     os.chdir("_isaaclab")
 
-    git_checkout_command = ["git", "checkout", "devel"]
+    git_checkout_command = ["git", "checkout", "develop"]
     omni.repo.ci.launch(git_checkout_command)
 
     os.chdir("..")
@@ -40,7 +40,7 @@ def main(args: argparse.Namespace):
     setup_command = ["./isaaclab.sh", "-i"]
     omni.repo.ci.launch(setup_command)
 
-    test_command = ["./_isaac_sim/python.sh", "-m", "pytest", "tools", "-v",]
+    test_command = ["./isaaclab.sh","-p",  "-m", "pytest", "tools", "-v",]
 
     if os.getenv("RUN_NIGHTLY_TESTS","") != "true":
         test_command += ["-m", "isaacsim_ci"]

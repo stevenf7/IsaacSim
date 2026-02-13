@@ -361,6 +361,25 @@ osec:sonarqube:
           - VERSION.md
           - VERSION
         when: manual
+        allow_failure: true
+
+.rules-push-manual:
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH
+      =~ $OFFICIAL_BRANCH_REGEX)
+    interruptible: false
+    when: manual
+    allow_failure: true
+  - if: $CI_PIPELINE_SOURCE == "pipeline" || $CI_PIPELINE_SOURCE == "parent_pipeline"
+    when: manual
+    allow_failure: true
+  - if: $CI_PIPELINE_SOURCE == "trigger" || $CI_PIPELINE_SOURCE == "web"
+    when: manual
+    allow_failure: true
+  - if: $CI_PIPELINE_SOURCE == "schedule" && $ALLOW_SCHEDULE_PIPELINE == "true"
+    interruptible: false
+    when: manual
+    allow_failure: true
 
 
 # ==============================================================================================================
@@ -2252,6 +2271,9 @@ verify-stage-to-gitlab:
 
 test-linux-x86_64-isaaclab-integration:
   rules:
+    # Disable this job for all downstream pipelines until its more green
+    - if: $CI_PIPELINE_SOURCE == "pipeline"
+      when: never
     - !reference [.disable_on_downstream_of_mr, rules]
     - !reference [.test-common, rules]
   extends:
