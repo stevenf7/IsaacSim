@@ -76,7 +76,13 @@ headless = args.headless
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": headless, "max_gpu_count": n_gpu})
+extra_args = []
+if "ObjectId" in metadata_fields:
+    extra_args.append("--/rtx-transient/stableIds/enabled=true")
+if "HitNormal" in metadata_fields:
+    extra_args.append("--/app/sensors/nv/lidar/publishNormals=true")
+
+simulation_app = SimulationApp({"headless": headless, "max_gpu_count": n_gpu, "extra_args": extra_args})
 
 import carb
 import omni
