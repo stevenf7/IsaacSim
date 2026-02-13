@@ -1,5 +1,5 @@
 [package]
-version = "1.6.4"
+version = "1.7.0"
 category = "Simulation"
 title = "Isaac Sim Native Storage"
 description = "Provides utilities for accessing Isaac Sim assets from Nucleus servers or S3 buckets, including path resolution, asset downloading, and version verification."
@@ -27,6 +27,10 @@ name = "isaacsim.storage.native.tests"
 persistent.isaac.asset_root.default = "omniverse://isaac-dev.ov.nvidia.com"
 # Timeout in seconds for asset root path to be resolved
 persistent.isaac.asset_root.timeout = 5.0
+# Number of retries for transient asset root connectivity checks
+persistent.isaac.asset_root.retry_attempts = 3
+# Initial retry delay in seconds (exponential backoff)
+persistent.isaac.asset_root.retry_base_delay = 0.5
 
 [[test]]
 timeout = 900
