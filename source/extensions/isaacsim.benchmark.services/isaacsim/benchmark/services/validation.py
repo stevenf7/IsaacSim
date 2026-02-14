@@ -115,8 +115,11 @@ class Validator:
         self.render_product_map.clear()
 
         for prim in list(Usd.PrimRange(root_prim))[1:]:  # skip root itself
-            camera = ViewportManager.get_camera(prim)
-            if camera is None:  # not a render-product – ignore
+            try:
+                camera = ViewportManager.get_camera(prim)
+            except ValueError:
+                continue  # not a render-product – ignore
+            if camera is None:
                 continue
             nice_name = prim_utils.get_prim_path(camera).lstrip("/")
             if nice_name in self.render_product_map.values():

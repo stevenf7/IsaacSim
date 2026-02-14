@@ -1,4 +1,8 @@
 # Changelog
+## [4.1.1] - 2026-02-13
+### Fixed
+- Fixed validation tooling to correctly build the render product map
+
 ## [4.1.0] - 2026-02-02
 ### Added
 - Public API properties for frametime recorders: `sample_count` and `samples` for direct recorder access
