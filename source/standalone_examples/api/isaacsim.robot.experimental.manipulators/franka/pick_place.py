@@ -16,8 +16,7 @@
 from __future__ import annotations
 
 """
-This example demonstrates how to perform a simple pick-and-place operation using the Franka robot arm
-with the Isaac Sim robot manipulators API.
+This example demonstrates how to perform a simple pick-and-place operation using the Franka robot arm.
 
 The example serves to illustrate the following concepts:
 - How to set up a Franka robot manipulator for pick-and-place tasks.
