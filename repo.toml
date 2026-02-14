@@ -746,6 +746,9 @@ tc_report_enabled = false
 
 [[repo_test.suites.doc_snippets_async.group]]
 include = ["*test_snippets_async*"]
+args = [
+  "--experience-csv experiences.csv",
+]
 timeout = 1800
 
 [repo_test.suites.external]
