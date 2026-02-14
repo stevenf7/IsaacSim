@@ -360,8 +360,7 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         await self._test_tick_id()
         await self._test_hit_normal()
         await self._test_velocity()
-        if not os.getenv("GITLAB_CI"):
-            await self._test_object_id()
+        await self._test_object_id()
         await self._test_echo_id()
         await self._test_tick_state()
 
