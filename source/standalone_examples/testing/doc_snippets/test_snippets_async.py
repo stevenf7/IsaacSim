@@ -10,12 +10,16 @@ This script:
 """
 
 import argparse
+import csv
 import importlib.util
+import os
 import sys
 import traceback
+from collections import defaultdict
 from pathlib import Path
 
-from isaacsim import SimulationApp
+# Note: SimulationApp is imported inside the experience loop to allow fresh imports
+# after closing each SimulationApp instance.
 
 
 def parse_args():
@@ -28,7 +32,65 @@ def parse_args():
         default=None,
         help="Filter snippets to test only those in directories matching any of the given substrings.",
     )
+    parser.add_argument(
+        "--experience-csv",
+        type=str,
+        default=None,
+        help="Path to a CSV file mapping snippet files to Kit app experiences "
+        "(relative to the script directory or absolute). "
+        "First column is the snippet path (relative to the doc_snippets directory), "
+        "second column is the experience name.",
+    )
     return parser.parse_known_args()
+
+
+def parse_experience_csv(csv_path, base_dir):
+    """Parse the experience CSV file and return a mapping of absolute file paths to experiences.
+
+    Args:
+        csv_path: Path to the CSV file (relative to base_dir or absolute).
+        base_dir: Base directory for resolving relative paths in the CSV and the CSV path itself.
+
+    Returns:
+        Dictionary mapping absolute file paths (as strings) to experience names.
+    """
+    experience_map = {}
+    # Resolve CSV path relative to base_dir if not absolute
+    csv_file = Path(csv_path)
+    if not csv_file.is_absolute():
+        csv_file = base_dir / csv_file
+    if not csv_file.exists():
+        print(f"Warning: Experience CSV file not found: {csv_file}")
+        return experience_map
+
+    with open(csv_file, "r", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if len(row) >= 2:
+                snippet_path = row[0].strip()
+                experience = row[1].strip()
+                # Resolve relative path to absolute
+                abs_path = (base_dir / snippet_path).resolve()
+                experience_map[str(abs_path)] = experience
+
+    return experience_map
+
+
+def group_files_by_experience(files, experience_map):
+    """Group files by their associated experience.
+
+    Args:
+        files: List of file paths to group.
+        experience_map: Dictionary mapping file paths to experiences.
+
+    Returns:
+        Dictionary mapping experience names to lists of file paths.
+    """
+    groups = defaultdict(list)
+    for file_path in files:
+        experience = experience_map.get(str(file_path.resolve()), "")
+        groups[experience].append(file_path)
+    return groups
 
 
 def find_python_files(root_dir):
@@ -186,25 +248,58 @@ if args.filter:
     files_to_test = [f for f in files_to_test if any(keyword in str(f) for keyword in args.filter)]
     print(f"After applying filter {args.filter}: {len(files_to_test)} files to test")
 
-# Load SimulationApp
-simulation_app = SimulationApp(launch_config={"headless": True})
+# Parse experience CSV and group files by experience
+experience_map = {}
+if args.experience_csv:
+    experience_map = parse_experience_csv(args.experience_csv, script_dir)
+    print(f"Loaded {len(experience_map)} experience mappings from CSV")
 
-# Load each snippet and collect exceptions
-exceptions = []
-for index, file_path in enumerate(files_to_test):
-    print(f"[{index + 1}/{len(files_to_test)}] Testing: {file_path}")
+files_by_experience = group_files_by_experience(files_to_test, experience_map)
+experience_names = sorted(files_by_experience.keys(), key=lambda x: (x != "", x))  # Default experience first
+print(f"Files grouped into {len(experience_names)} experience group(s): {experience_names}")
 
-    result_file_path, exception = load_snippet_module(file_path, snippets_dir, index, simulation_app)
-    if exception is not None:
-        exceptions.append((result_file_path, exception))
+# Collect all exceptions across all experience groups
+all_exceptions = []
+global_index = 0
+
+# Process each experience group
+for experience in experience_names:
+    from isaacsim import SimulationApp
+
+    group_files = files_by_experience[experience]
+    experience_display = experience if experience else "(default)"
+    print(f"\n{'=' * 80}")
+    print(f"Processing experience group: {experience_display} ({len(group_files)} files)")
+    print("=" * 80)
+
+    # Load SimulationApp with the appropriate experience
+    launch_config = {"headless": True}
+    if experience:
+        launch_config["experience"] = os.environ["EXP_PATH"] + "/" + experience
+
+    simulation_app = SimulationApp(launch_config=launch_config)
+
+    # Load each snippet and collect exceptions
+    for file_path in group_files:
+        print(f"[{global_index + 1}/{len(files_to_test)}] Testing: {file_path}")
+
+        result_file_path, exception = load_snippet_module(file_path, snippets_dir, global_index, simulation_app)
+        if exception is not None:
+            all_exceptions.append((result_file_path, exception, experience_display))
+        global_index += 1
+
+    # Close SimulationApp for this experience group
+    simulation_app.close()
+    print(f"Closed SimulationApp for experience: {experience_display}")
 
 # Print any exceptions
-if exceptions:
+if all_exceptions:
     print("\n" + "=" * 80)
-    print(f"Found {len(exceptions)} files with exceptions:")
+    print(f"Found {len(all_exceptions)} files with exceptions:")
     print("=" * 80)
-    for file_path, exception in exceptions:
+    for file_path, exception, experience_display in all_exceptions:
         print(f"\nFile: {file_path}")
+        print(f"Experience: {experience_display}")
         print(f"Exception: {type(exception).__name__}: {exception}")
         print("Traceback:")
         if hasattr(exception, "__traceback__") and exception.__traceback__:
@@ -213,7 +308,6 @@ if exceptions:
         else:
             print(f"  {exception}")
         print("-" * 80)
+    sys.exit(1)
 else:
-    print("All files testedsuccessfully!")
-
-simulation_app.close()
+    print("\nAll files tested successfully!")
