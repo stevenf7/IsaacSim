@@ -365,6 +365,12 @@ local function get_asset_tests()
             "tests-nativepython-isaacsim.asset.importer.mjcf.mjcf_import",
             "standalone_examples/api/isaacsim.asset.importer.mjcf/mjcf_import.py",
         },
+        -- Asset Transformer
+        {
+            "tests-nativepython-isaacsim.asset.transformer.run_asset_transformer",
+            "standalone_examples/api/isaacsim.asset.transformer/run_asset_transformer.py",
+            "--test",
+        },
     }
 end
 

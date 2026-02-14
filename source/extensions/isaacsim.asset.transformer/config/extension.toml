@@ -1,0 +1,20 @@
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Isaac Sim Asset Transformer"
+description = "Python-only extension providing asset transformation utilities"
+authors = ["gasoto@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.asset.transformer"
+keywords = ["isaac", "assets", "transform"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+
+[[python.module]]
+name = "isaacsim.asset.transformer"
+
+
+[[python.module]]
+name = "isaacsim.asset.transformer.tests"

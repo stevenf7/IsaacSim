@@ -1,4 +1,8 @@
 # Changelog
+## [1.9.1] - 2026-02-05
+### Changed
+- Added dock info for Robot Hierarchy window
+
 ## [1.9.0] - 2026-01-26
 ### Changed
 - Update deprecated onclick_fn to on_click_action

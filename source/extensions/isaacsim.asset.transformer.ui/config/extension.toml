@@ -1,0 +1,34 @@
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Isaac Sim Asset Transformer"
+description = "Tool for applying asset transformations"
+authors = ["sharper@nvidia.com", "rgasoto@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim"
+keywords = ["isaac", "asset", "transformer", "ui"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+# writeTarget.kit = true
+feature = true
+
+[dependencies]
+"omni.kit.menu.utils" = {}
+"omni.kit.window.filepicker" = {}
+"omni.usd" = {}
+"isaacsim.asset.transformer" = {}
+"isaacsim.asset.transformer.rules" = {}
+
+[[python.module]]
+name = "isaacsim.asset.transformer.ui"
+
+[[test]]
+dependencies = []
+args = [
+    "--reset-user",
+    "--/app/fastShutdown=1",
+    "--/app/file/ignoreUnsavedOnExit=1",
+    "--/app/settings/persistent=0",
+    "--/crashreporter/skipOldDumpUpload=1",
+]

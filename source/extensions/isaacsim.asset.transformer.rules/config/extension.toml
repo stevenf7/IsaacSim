@@ -1,0 +1,22 @@
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Asset Transformer Rules"
+description = "Rule implementations for the Asset Transformer"
+authors = ["gasoto@nvidia.com"]
+keywords = ["isaac", "assets", "transform", "rules"]
+readme = "docs/README.md"
+changelog = "docs/CHANGELOG.md"
+
+[dependencies]
+"isaacsim.asset.transformer" = {}
+"isaacsim.robot.schema" = {}
+"omni.usdphysics" = {}
+
+[[python.module]]
+name = "isaacsim.asset.transformer.rules"
+
+
+[[python.module]]
+name = "isaacsim.asset.transformer.rules.tests"
+

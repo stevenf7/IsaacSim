@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.2] - 2026-02-05
+### Changed
+- Added dock info for Robot Hierarchy window
+
 ## [2.4.1] - 2025-12-05
 ### Changed
 - Migrate to Events 2.0.

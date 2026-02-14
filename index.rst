@@ -52,6 +52,9 @@ Extensions
    isaacsim.asset.importer.heightmap <source/extensions/isaacsim.asset.importer.heightmap/docs/index>
    isaacsim.asset.importer.urdf <source/extensions/isaacsim.asset.importer.urdf/docs/index>
    isaacsim.asset.importer.mjcf <source/extensions/isaacsim.asset.importer.mjcf/docs/index>
+   isaacsim.asset.transformer <source/extensions/isaacsim.asset.transformer/docs/index>
+   isaacsim.asset.transformer.rules <source/extensions/isaacsim.asset.transformer.rules/docs/index>
+   isaacsim.asset.transformer.ui <source/extensions/isaacsim.asset.transformer.ui/docs/index>
    isaacsim.asset.validation <source/extensions/isaacsim.asset.validation/docs/index>
 
 .. toctree::
