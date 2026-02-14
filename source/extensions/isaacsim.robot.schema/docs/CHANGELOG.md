@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.0.5] - 2026-01-28
+### Added
+- Loop detector on parsing of joints
+- Missing SiteAPI functions
+- Verify if all found links and joints are added to the schema
+- Detect and Create SiteAPIs when applying robot schema
+- Update Robot Schema relationships with missing links and joints
+
+### Changed
+- Updated deprecated schema checker and fixer
+
+## [4.0.4] - 2025-12-18
+### Changed
+- Update parsing of all robot joints and links
+
 ## [4.0.3] - 2025-12-16
 ### Changed
 - Add source link in compute backwards bodies from joint

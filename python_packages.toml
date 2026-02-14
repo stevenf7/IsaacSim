@@ -217,6 +217,9 @@ inventory.includes.all = [
     "exts/isaacsim.asset.importer.urdf",
     "exts/isaacsim.asset.importer.urdf.ui",
     "exts/isaacsim.asset.importer.mjcf",
+    "exts/isaacsim.asset.transformer",
+    "exts/isaacsim.asset.transformer.rules",
+    "exts/isaacsim.asset.transformer.ui",
     "exts/isaacsim.asset.validation",
 ]
 
@@ -481,6 +484,7 @@ inventory.includes.all = [
     "exts/isaacsim.robot.manipulators.ui",
     "exts/isaacsim.robot.policy.examples",
     "exts/isaacsim.robot.schema",
+    "exts/isaacsim.robot.schema.ui",
     "exts/isaacsim.robot.surface_gripper",
     "exts/isaacsim.robot.surface_gripper.ui",
     "exts/isaacsim.robot.wheeled_robots",

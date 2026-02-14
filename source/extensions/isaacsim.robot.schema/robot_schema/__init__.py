@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Robot schema helpers and applied schema utilities."""
 from enum import Enum
 
 import carb
@@ -20,10 +21,12 @@ from pxr import Sdf, Usd
 
 
 class Classes(Enum):
+    """Enumeration of robot schema class tokens."""
 
     ROBOT_API = "IsaacRobotAPI"
     LINK_API = "IsaacLinkAPI"
     REFERENCE_POINT_API = "IsaacReferencePointAPI"
+    SITE_API = "IsaacSiteAPI"
     JOINT_API = "IsaacJointAPI"
     SURFACE_GRIPPER = "IsaacSurfaceGripper"
     ATTACHMENT_POINT_API = "IsaacAttachmentPointAPI"
@@ -33,6 +36,7 @@ _attr_prefix = "isaac"
 
 
 class DofOffsetOpOrder(Enum):
+    """Enumeration of DOF offset operation ordering tokens."""
 
     TRANS_X = "TransX"
     TRANS_Y = "TransY"
@@ -43,6 +47,8 @@ class DofOffsetOpOrder(Enum):
 
 
 class Attributes(Enum):
+    """Enumeration of custom robot schema attributes."""
+
     DESCRIPTION = (f"{_attr_prefix}:description", "Description", pxr.Sdf.ValueTypeNames.String)
     NAMESPACE = (f"{_attr_prefix}:namespace", "Namespace", pxr.Sdf.ValueTypeNames.String)
     ROBOT_TYPE = (f"{_attr_prefix}:robotType", "Robot Type", pxr.Sdf.ValueTypeNames.Token)
@@ -70,18 +76,53 @@ class Attributes(Enum):
     # Custom properties for name and type
     @property
     def name(self):
+        """Get the USD attribute name.
+
+        Returns:
+            The USD attribute name string.
+
+        Example:
+
+        .. code-block:: python
+
+            attr_name = Attributes.DESCRIPTION.name
+        """
         return self.value[0]
 
     @property
     def display_name(self):
+        """Get the display name for the attribute.
+
+        Returns:
+            The display name for UI presentation.
+
+        Example:
+
+        .. code-block:: python
+
+            label = Attributes.DESCRIPTION.display_name
+        """
         return self.value[1]
 
     @property
     def type(self):
+        """Get the USD attribute type token.
+
+        Returns:
+            The USD attribute type token.
+
+        Example:
+
+        .. code-block:: python
+
+            attr_type = Attributes.DESCRIPTION.type
+        """
         return self.value[2]
 
 
 class Relations(Enum):
+    """Enumeration of robot schema relationships."""
+
     ROBOT_LINKS = (f"{_attr_prefix}:physics:robotLinks", "Robot Links")
     ROBOT_JOINTS = (f"{_attr_prefix}:physics:robotJoints", "Robot Joints")
     ATTACHMENT_POINTS = (f"{_attr_prefix}:attachmentPoints", "Attachment Points")
@@ -89,19 +130,55 @@ class Relations(Enum):
 
     @property
     def name(self):
+        """Get the USD relationship name.
+
+        Returns:
+            The USD relationship name string.
+
+        Example:
+
+        .. code-block:: python
+
+            rel_name = Relations.ROBOT_LINKS.name
+        """
         return self.value[0]
 
     @property
     def display_name(self):
+        """Get the display name for the relationship.
+
+        Returns:
+            The display name for UI presentation.
+
+        Example:
+
+        .. code-block:: python
+
+            label = Relations.ROBOT_LINKS.display_name
+        """
         return self.value[1]
 
 
 def _create_attributes(prim: pxr.Usd.Prim, attributes, write_sparsely: bool = True):
+    """Create attributes on a prim from attribute descriptors.
+
+    Args:
+        prim: The prim to receive attributes.
+        attributes: Iterable of attribute descriptors to create.
+        write_sparsely: Whether to author sparse values.
+    """
     for attr in attributes:
         prim.CreateAttribute(attr.name, attr.type, write_sparsely)
 
 
 def _create_relationships(prim: pxr.Usd.Prim, relationships, custom: bool = True):
+    """Create relationships on a prim from relationship descriptors.
+
+    Args:
+        prim: The prim to receive relationships.
+        relationships: Iterable of relationship descriptors to create.
+        custom: Whether to create custom relationships.
+    """
     for rel in relationships:
         prim.CreateRelationship(rel.name, custom=custom)
 
@@ -115,25 +192,36 @@ def _apply_api(
     write_sparsely: bool = True,
     relationships_custom: bool = True,
 ):
+    """Apply a schema API and create related attributes and relationships.
+
+    Args:
+        prim: The prim to update.
+        schema: The schema class token to apply.
+        attributes: Iterable of attribute descriptors to create.
+        relationships: Iterable of relationship descriptors to create.
+        write_sparsely: Whether to author sparse values.
+        relationships_custom: Whether to create custom relationships.
+    """
     prim.AddAppliedSchema(schema.value)
     _create_attributes(prim, attributes, write_sparsely)
     _create_relationships(prim, relationships, relationships_custom)
 
 
 def ApplyRobotAPI(prim: pxr.Usd.Prim):
+    """Apply the Robot API schema and populate robot relationships.
+
+    Args:
+        prim: The prim to update.
+
+    Example:
+
+    .. code-block:: python
+
+        ApplyRobotAPI(robot_prim)
+    """
     _apply_api(
         prim,
         Classes.ROBOT_API,
-        attributes=[
-            Attributes.DESCRIPTION,
-            Attributes.NAMESPACE,
-            Attributes.ROBOT_TYPE,
-            Attributes.LICENSE,
-            Attributes.VERSION,
-            Attributes.SOURCE,
-            Attributes.CHANGELOG,
-        ],
-        relationships=[Relations.ROBOT_LINKS, Relations.ROBOT_JOINTS],
     )
 
     stage = prim.GetStage()
@@ -144,10 +232,47 @@ def ApplyRobotAPI(prim: pxr.Usd.Prim):
 
 
 def ApplyLinkAPI(prim: pxr.Usd.Prim):
-    _apply_api(prim, Classes.LINK_API, attributes=[Attributes.NAME_OVERRIDE])
+    """Apply the Link API schema to a prim.
+
+    Args:
+        prim: The prim to update.
+
+    Example:
+
+    .. code-block:: python
+
+        ApplyLinkAPI(link_prim)
+    """
+    _apply_api(prim, Classes.LINK_API)
+
+
+def ApplySiteAPI(prim: pxr.Usd.Prim):
+    """Apply the IsaacSiteAPI schema to a prim.
+
+    Args:
+        prim: The USD prim to apply the SiteAPI schema to.
+
+    Example:
+
+    .. code-block:: python
+
+        ApplySiteAPI(site_prim)
+    """
+    _apply_api(prim, Classes.SITE_API)
 
 
 def ApplyReferencePointAPI(prim: pxr.Usd.Prim):
+    """Apply the deprecated ReferencePoint API schema to a prim.
+
+    Args:
+        prim: The prim to update.
+
+    Example:
+
+    .. code-block:: python
+
+        ApplyReferencePointAPI(reference_prim)
+    """
     carb.log_warn("ApplyReferencePointAPI is deprecated. Use ApplySiteAPI instead.")
     _apply_api(prim, Classes.SITE_API)
     # for attr in [Attributes.REFERENCE_DESCRIPTION, Attributes.FORWARD_AXIS]:
@@ -155,24 +280,35 @@ def ApplyReferencePointAPI(prim: pxr.Usd.Prim):
 
 
 def ApplyJointAPI(prim: pxr.Usd.Prim):
+    """Apply the Joint API schema to a prim.
+
+    Args:
+        prim: The prim to update.
+
+    Example:
+
+    .. code-block:: python
+
+        ApplyJointAPI(joint_prim)
+    """
     _apply_api(prim, Classes.JOINT_API)
-    # for attr in [
-    #     Attributes.DOF_OFFSET_OP_ORDER,
-    #     Attributes.JOINT_NAME_OVERRIDE,
-    #     Attributes.ACTUATOR,
-    # ]:
-    #     prim.CreateAttribute(attr.name, attr.type, True)
 
 
 def CreateSurfaceGripper(stage: pxr.Usd.Stage, prim_path: str) -> pxr.Usd.Prim:
-    """Creates a Surface Gripper prim with all its attributes and relationships.
+    """Create a Surface Gripper prim with attributes and relationships.
 
     Args:
-        stage: The USD stage to create the prim in
-        prim_path: The path where to create the prim
+        stage: The USD stage to create the prim in.
+        prim_path: The path where to create the prim.
 
     Returns:
-        The created Surface Gripper prim
+        The created Surface Gripper prim.
+
+    Example:
+
+    .. code-block:: python
+
+        gripper_prim = CreateSurfaceGripper(stage, "/World/Gripper")
     """
     # Create the prim
     prim = stage.DefinePrim(prim_path, Classes.SURFACE_GRIPPER.value)
@@ -201,6 +337,17 @@ def CreateSurfaceGripper(stage: pxr.Usd.Stage, prim_path: str) -> pxr.Usd.Prim:
 
 
 def ApplyAttachmentPointAPI(prim: pxr.Usd.Prim):
+    """Apply the Attachment Point API schema to a prim.
+
+    Args:
+        prim: The prim to update.
+
+    Example:
+
+    .. code-block:: python
+
+        ApplyAttachmentPointAPI(attachment_prim)
+    """
     _apply_api(prim, Classes.ATTACHMENT_POINT_API)
     # for attr in [Attributes.FORWARD_AXIS, Attributes.CLEARANCE_OFFSET]:
     #     prim.CreateAttribute(attr.name, attr.type, False)
