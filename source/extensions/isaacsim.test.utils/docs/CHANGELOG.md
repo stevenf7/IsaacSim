@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.1] - 2026-02-13
+### Changed
+- Suppress transient error logs from `omni.kit.ui_test.query` during intermediate retries in `menu_click_with_retry`; errors are only surfaced on the final retry attempt
+
 ## [0.8.0] - 2026-02-09
 ### Changed
 - Add pycoverage patch for numpy `_CopyMode.__bool__` to prevent `ValueError` when scipy imports trigger `_CopyMode.IF_NEEDED` evaluation under coverage

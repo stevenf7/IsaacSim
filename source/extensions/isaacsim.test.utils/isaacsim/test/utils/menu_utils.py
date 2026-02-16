@@ -13,9 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import carb.settings
 import omni.kit.app
 import omni.kit.ui_test as ui_test
 from omni.kit.ui_test import menu_click
+
+# Carb settings path used to control the log level of the omni.kit.ui_test.query
+# channel.  menu_click() unconditionally calls carb.log_error() when an
+# intermediate submenu does not become visible in time, so we temporarily raise
+# the threshold during non-final retries to avoid noisy logs.
+_LOG_CHANNEL_SETTING = "/log/channels/omni.kit.ui_test.query"
 
 
 async def menu_click_with_retry(
@@ -25,6 +32,10 @@ async def menu_click_with_retry(
 
     Some menu items require different timing to be clicked successfully.
     This function tries multiple delay values before giving up.
+
+    Error logs emitted by ``omni.kit.ui_test.menu_click`` are suppressed during
+    intermediate retry attempts so that transient timing failures do not pollute
+    the test output.  Errors are only surfaced on the final retry attempt.
 
     Args:
         menu_path: The menu path to click (e.g., "Create/Sensors/Contact Sensor").
@@ -52,7 +63,15 @@ async def menu_click_with_retry(
         ... )
     """
     delays = delays or [5, 50, 100]
-    for delay in delays:
+    settings = carb.settings.get_settings()
+
+    for i, delay in enumerate(delays):
+        is_last = i == len(delays) - 1
+
+        # Suppress error logs from menu_click during intermediate retries.
+        prev_level = settings.get(_LOG_CHANNEL_SETTING)
+        if not is_last:
+            settings.set(_LOG_CHANNEL_SETTING, "fatal")
         try:
             await menu_click(menu_path, human_delay_speed=delay)
             if window_name:
@@ -63,9 +82,17 @@ async def menu_click_with_retry(
                     await omni.kit.app.get_app().next_update_async()
                 return None
         except AttributeError as e:
-            if "NoneType" in str(e) and delay != delays[-1]:
+            if "NoneType" in str(e) and not is_last:
                 continue
             raise
+        finally:
+            # Restore the previous log level for non-final retries.
+            if not is_last:
+                if prev_level is not None:
+                    settings.set(_LOG_CHANNEL_SETTING, prev_level)
+                else:
+                    settings.set(_LOG_CHANNEL_SETTING, "warn")
+
     return None
 
 
