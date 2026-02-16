@@ -2,6 +2,13 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-02-13
+### Changed
+- `TrajectoryFollower.reset` now has semantically correct meaning. When `True` is returned, it means we can start to call `forward` on the controller.
+- `TrajectoryFollower` now follows a clear workflow: set_trajectory() --> reset() --> forward()
+- `TrajectoryFollower` deletes the trajectory and start time whenever the trajectory time is out of bounds.
+
+
 ## [2.1.1] - 2026-02-09
 ### Changed
 - Reset function of `TrajectoryFollower` bug fix, it was returning `False` when it should have returned `True`.
