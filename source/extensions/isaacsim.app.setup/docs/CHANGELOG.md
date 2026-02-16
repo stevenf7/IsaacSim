@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.9.2] - 2026-02-16
+### Changed
+- Add missing dependency for Robot Hierarchy window
+
 ## [1.9.1] - 2026-02-05
 ### Changed
 - Added dock info for Robot Hierarchy window
