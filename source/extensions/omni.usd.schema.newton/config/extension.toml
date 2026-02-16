@@ -26,4 +26,3 @@ usd = true
 
 [[python.module]]
 name = "usd.schema.newton"
-

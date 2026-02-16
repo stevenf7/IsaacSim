@@ -78,6 +78,7 @@ args = [
 ]
 enabled = true
 pythonTests.include = ["isaacsim.core.rendering_manager.tests.test_rendering_manager.*"]
+
 [[test]]
 name = "viewport_manager"
 timeout = 900
@@ -131,6 +132,7 @@ args = [
 ]
 enabled = true
 pythonTests.include = ["isaacsim.core.rendering_manager.tests.test_viewport_manager.*"]
+
 [[test]]
 name = "docstrings"
 timeout = 900

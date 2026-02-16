@@ -90,6 +90,7 @@ args = [
     "--/rtx/reservedDescriptors=900000",
 ]
 stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
     '*[Error] [omni.kit.commands.command] Failed to execute a command: ChangeProperty*',
     '*[Error] [asyncio] Task exception was never retrieved*',
     '*[Error] [omni.hydra] Unsupported data type 0 on primvar *doNotCastShadows*',

@@ -80,6 +80,7 @@ args = [
 ]
 
 stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
     '*[Error] [rtx.postprocessing.plugin] DepthSensor: Texture sizes do not match*',
     '*[Error] [rtx.postprocessing.plugin] DepthSensor: Failed to allocate view resources for view 1 device 0*',
 ]

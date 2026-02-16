@@ -11,17 +11,14 @@ readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
-
 [dependencies]
 "omni.usd.libs" = {}
 
 [[python.module]]
 name = "isaacsim.asset.transformer"
 
-
 [[python.module]]
 name = "isaacsim.asset.transformer.tests"
-
 
 [[test]]
 stdoutFailPatterns.exclude = [

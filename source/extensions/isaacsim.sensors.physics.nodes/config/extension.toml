@@ -40,9 +40,9 @@ args = [
 [[test]]
 timeout = 900
 dependencies = [
-    "omni.isaac.ml_archive",
     "isaacsim.core.experimental.objects",
     "isaacsim.test.utils",
+    "omni.isaac.ml_archive"
 ]
 stdoutFailPatterns.exclude = [
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physics_IsaacReadEffortSensor: [/TestGraph] OmniGraph Error: Failed to create effort sensor, unable to find prim path*',

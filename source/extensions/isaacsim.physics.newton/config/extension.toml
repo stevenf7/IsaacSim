@@ -14,19 +14,12 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.simulation_manager" = {}  # Required for SimulationManager integration
-"omni.warp.core" = {}
-"omni.warp" = {}
-"omni.physics" = {}  # Required for unified physics interface registration
-"usdrt.scenegraph" = {}  # Required for fabric integration
 "omni.isaac.ml_archive" = {}
+"omni.physics" = {}  # Required for unified physics interface registration
+"omni.warp" = {}
+"omni.warp.core" = {}
+"usdrt.scenegraph" = {}  # Required for fabric integration
 
-[settings]
-# Enable CUDA graph capture for physics stepping to improve performance on GPU
-exts."isaacsim.physics.newton".capture_graph_physics_step = true
-# Automatically switch to Newton physics engine when the extension starts up
-exts."isaacsim.physics.newton".auto_switch_on_startup = true
-
-# Main python module this extension provides
 [[python.module]]
 name = "isaacsim.physics.newton"
 
@@ -37,14 +30,21 @@ name = "isaacsim.physics.newton.tests"
 [[python.module]]
 path = "pip_prebundle"
 
+[settings]
+# Enable CUDA graph capture for physics stepping to improve performance on GPU
+exts."isaacsim.physics.newton".capture_graph_physics_step = true
+# Automatically switch to Newton physics engine when the extension starts up
+exts."isaacsim.physics.newton".auto_switch_on_startup = true
+
+# Main python module this extension provides
 [[test]]
 name = "startup"
 
 [[test]]
 timeout = 900
 dependencies = [
-    "isaacsim.test.utils", # Used to suppress NumPy coverage errors
-    "isaacsim.core.utils"
+    "isaacsim.core.utils",
+    "isaacsim.test.utils" # Used to suppress NumPy coverage errors
 ]
 
 stdoutFailPatterns.exclude = [
@@ -95,4 +95,3 @@ args = [
     "--/rtx/reservedDescriptors=900000",
     "--/exts/isaacsim.core.simulation_manager/default_engine=newton",
 ]
-

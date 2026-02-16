@@ -14,8 +14,8 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
-"isaacsim.robot_motion.schema" = {}
 "isaacsim.robot.schema" = {}
+"isaacsim.robot_motion.schema" = {}
 "omni.kit.pip_archive" = {}
 "omni.kit.property.usd" = {}
 "omni.kit.uiapp" = {}

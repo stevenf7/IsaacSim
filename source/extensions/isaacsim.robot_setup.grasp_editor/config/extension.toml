@@ -39,6 +39,9 @@ dependencies = [
     "omni.isaac.ml_archive",
     "omni.kit.viewport.window",
 ]
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
 
 args = [
     "--enable",

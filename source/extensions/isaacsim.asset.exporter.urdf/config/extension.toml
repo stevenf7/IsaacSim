@@ -41,6 +41,7 @@ dependencies = [
     "isaacsim.storage.native",
 ]
 stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
     "*Missing call to destroyResourceBindingSignature()*",
     '*not added to `TransformGraph` because it is not a link type or joint type prim.*',
     '*UserWarning: Sum of `faceVertexCounts` (392550) does not equal sum of length of `GeomSubset` `indices` (41287)*',

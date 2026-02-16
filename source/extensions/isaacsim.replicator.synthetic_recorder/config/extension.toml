@@ -34,6 +34,9 @@ timeout = 900
 dependencies = [
     "isaacsim.test.utils",
 ]
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
 args = [
     "--enable",
     "omni.kit.loop-isaac",
