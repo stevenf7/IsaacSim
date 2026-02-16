@@ -41,7 +41,7 @@ class TestTrajectoryFollower(omni.kit.test.AsyncTestCase):
 
         # create a trajectory follower:
         follower = mg.TrajectoryFollower()
-        follower.set_trajectory(trajectory, 0.0)
+        follower.set_trajectory(trajectory)
 
         # create a dummy robot state:
         robot_state = mg.RobotState(
@@ -55,6 +55,9 @@ class TestTrajectoryFollower(omni.kit.test.AsyncTestCase):
 
         # confirm that the trajectory follower has a trajectory:
         self.assertTrue(follower.has_trajectory())
+
+        # Before calling forward, we must call reset.
+        follower.reset(robot_state, None, 0.0)
 
         # by calling forward at t = 0.0, we should get the initial position:
         desired_state = follower.forward(robot_state, None, 0.0)
@@ -73,23 +76,25 @@ class TestTrajectoryFollower(omni.kit.test.AsyncTestCase):
         self.assertIsNone(desired_state.joints.efforts)
 
         # if I set a trajectory, and then I reset,
-        # there should be no trajectory.
-        follower.set_trajectory(trajectory, 0.0)
+        # we will still have a trajectory.
+        follower.set_trajectory(trajectory)
         reset_value = follower.reset(robot_state, None, 0.0)
-        self.assertFalse(follower.has_trajectory())
+        self.assertTrue(follower.has_trajectory())
         self.assertTrue(reset_value)
 
         # if I set a trajectory, and then give a time before the start time of the trajectory, we should get an error,
-        # and we will no longer have a set trajectory. The desired state should be None.
-        follower.set_trajectory(trajectory, 0.0)
+        # and the trajectory will be deleted. The desired state should be None.
+        follower.set_trajectory(trajectory)
+        follower.reset(robot_state, None, 0.0)
         desired_state = follower.forward(robot_state, None, -1.0)
         self.assertIsNone(desired_state)
         self.assertFalse(follower.has_trajectory())
 
         # if I give a time after the end-time of the trajectory,
-        # we should get None, and there will no longer be a trajectory.
+        # we should get None, and the trajectory will be deleted.
         # the returned desired state is None.
-        follower.set_trajectory(trajectory, 0.0)
+        follower.set_trajectory(trajectory)
+        follower.reset(robot_state, None, 0.0)
         desired_state = follower.forward(robot_state, None, trajectory.duration + 1.0)
         self.assertIsNone(desired_state)
         self.assertFalse(follower.has_trajectory())
@@ -97,7 +102,8 @@ class TestTrajectoryFollower(omni.kit.test.AsyncTestCase):
         # if the trajectory is set with a start_time of 1.0,
         # then we should be at the end of the trajectory at
         # end_time + 1.0. There should still be a trajectory set.
-        follower.set_trajectory(trajectory, 1.0)
+        follower.set_trajectory(trajectory)
+        follower.reset(robot_state, None, 1.0)
         desired_state = follower.forward(robot_state, None, trajectory.duration + 1.0)
         self.assertIsNotNone(desired_state)
         self.assertEqual(desired_state.joints.names, ["joint_0"])
@@ -105,3 +111,9 @@ class TestTrajectoryFollower(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(desired_state.joints.velocities.numpy(), np.array([0.0])))
         self.assertIsNone(desired_state.joints.efforts)
         self.assertTrue(follower.has_trajectory())
+
+        # We cannot set a trajectory and then run it, if we didn't yet
+        # call `reset`:
+        follower.set_trajectory(trajectory)
+        desired_state = follower.forward(robot_state, None, 0.0)
+        self.assertIsNone(desired_state)
