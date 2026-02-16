@@ -4,7 +4,7 @@
 #
 
 [package]
-version = "3.0.0"
+version = "5.0.0"
 category = "simulation"
 title = "motion_generation"
 description = "Contains APIs for interfacing external motion generation code to isaacsim."

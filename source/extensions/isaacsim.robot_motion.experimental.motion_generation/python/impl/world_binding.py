@@ -14,9 +14,9 @@
 # limitations under the License.
 from typing import Generic, TypeVar
 
+import isaacsim.core.experimental.utils.backend as backend_utils
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-import numpy as np
 import usdrt
 import warp as wp
 from isaacsim.core.experimental.objects import (
@@ -30,10 +30,9 @@ from isaacsim.core.experimental.objects import (
 )
 from isaacsim.core.experimental.prims import (
     GeomPrim,
-    Prim,
     XformPrim,
 )
-from pxr import UsdGeom, UsdPhysics
+from pxr import UsdPhysics
 
 from .obstacle_strategy import (
     ObstacleConfiguration,
@@ -48,9 +47,7 @@ _BOUNDING_BOX_CACHE = collision_approximation.create_bbox_cache()
 
 # Attribute name constants - centralized here to avoid hardcoding strings throughout
 # These match the attribute names from usdrt.Rt.Xformable and usdrt.UsdPhysics.CollisionAPI
-_TRANSFORM_TOKEN = usdrt.Rt.Tokens.fabricHierarchyWorldMatrix
 _LOCAL_TRANSFORM_TOKEN = usdrt.Rt.Tokens.fabricHierarchyLocalMatrix
-
 
 # Mappings of Tokens to track and APIs to verify, depending on the user selection.
 _COLLISION_ENABLED_TOKENS = {TrackableApi.PHYSICS_COLLISION: usdrt.UsdPhysics.Tokens.physicsCollisionEnabled}
@@ -471,23 +468,6 @@ _ADD_OBJECT_CALLBACK_MAP = {
 }
 
 
-def _update_prim_transforms(
-    prim_paths: list[str],
-    world_interface: WorldInterface,
-):
-    """Update transforms for a batch of tracked prims that have changed.
-
-    Args:
-        prim_paths: List of prim paths with transform changes to update.
-        world_interface: Planning world interface to update.
-    """
-    xformable_core = XformPrim(paths=prim_paths)
-    world_interface.update_obstacle_transforms(
-        prim_paths=prim_paths,
-        poses=xformable_core.get_world_poses(),
-    )
-
-
 def _update_prim_physics_collision_enables(
     prim_paths: list[str],
     world_interface: WorldInterface,
@@ -756,6 +736,9 @@ def _update_mesh_properties_from_prim(
         prim: USDRT prim object.
         world_interface: Planning world interface to update.
         rt_change_tracker: USDRT change tracker for monitoring changes.
+
+    Raises:
+        RuntimeError: This operation is not currently supported.
     """
     raise RuntimeError("updating mesh properties is not currently supported by Isaac Sim.")
 
@@ -773,6 +756,9 @@ def _update_triangulated_mesh_properties_from_prim(
         prim: USDRT prim object.
         world_interface: Planning world interface to update.
         rt_change_tracker: USDRT change tracker for monitoring changes.
+
+    Raises:
+        RuntimeError: This operation is not currently supported.
     """
     raise RuntimeError("updating triangulated mesh properties is not currently supported by Isaac Sim.")
 
@@ -933,13 +919,6 @@ class WorldBinding(Generic[TWorldInterface]):
             invalid_prims = [prim_path for prim_path, valid in zip(self._tracked_prims, valid_prims) if not valid]
             raise RuntimeError(f"The following paths do not correspond to valid prims in the stage: {invalid_prims}")
 
-        # with certainty, we will want to track the transforms, the
-        # collision enabled outputs, and the local-transform which is
-        # used to set the object scales:
-        self._rt_change_tracker.TrackAttribute(_TRANSFORM_TOKEN)
-        self._rt_change_tracker.TrackAttribute(_COLLISION_ENABLED_TOKENS[self._tracked_collision_api])
-        self._rt_change_tracker.TrackAttribute(_LOCAL_TRANSFORM_TOKEN)
-
         # We need to check that all ancestor prims have NO scaling about any axes.
         # This guarantees that no shearing can occur and ensures local_scale == world_scale.
         invalid_ancestors = scene_validation.find_all_invalid_ancestors(prim_paths=self._tracked_prims)
@@ -957,10 +936,23 @@ class WorldBinding(Generic[TWorldInterface]):
                 collision_api=self._tracked_collision_api,
             )
 
+        self._xform = XformPrim(paths=self._tracked_prims)
+
+        # with certainty, we will want to track the transforms, the
+        # collision enabled outputs, and the local-transform which is
+        # used to set the object scales:
+        self._rt_change_tracker.TrackAttribute(_COLLISION_ENABLED_TOKENS[self._tracked_collision_api])
+
+        # TODO: IS LOCAL SCALE TRACKABLE?
+        # self._rt_change_tracker.TrackAttribute(_LOCAL_TRANSFORM_TOKEN)
+
         self._initialized = True
 
     def synchronize(self):
-        """Synchronize tracked prim updates into the planning world.
+        """Synchronize both transforms and properties of tracked prims into the planning world.
+
+        This is a convenience method that calls both `synchronize_transforms()` and
+        `synchronize_properties()`.
 
         Raises:
             RuntimeError: If the world binding has not been initialized.
@@ -969,23 +961,67 @@ class WorldBinding(Generic[TWorldInterface]):
 
         .. code-block:: python
 
-            from isaacsim.robot_motion.experimental.motion_generation import (
-                ObstacleStrategy,
-                TrackableApi,
-                WorldBinding,
-            )
-            from isaacsim.robot_motion.experimental.motion_generation.tests.mirror_world_interface import (
-                MirrorWorldInterface,
-            )
+            >>> from isaacsim.robot_motion.experimental.motion_generation import (
+            ...     ObstacleStrategy,
+            ...     TrackableApi,
+            ...     WorldBinding,
+            ... )
+            >>> from isaacsim.robot_motion.experimental.motion_generation.tests.mirror_world_interface import (
+            ...     MirrorWorldInterface,
+            ... )
 
-            world_binding = WorldBinding(
-                world_interface=MirrorWorldInterface(),
-                obstacle_strategy=ObstacleStrategy(),
-                tracked_prims=[],
-                tracked_collision_api=TrackableApi.PHYSICS_COLLISION,
-            )
-            world_binding.initialize()
-            world_binding.synchronize()
+            >>> world_binding = WorldBinding(
+            ...     world_interface=MirrorWorldInterface(),
+            ...     obstacle_strategy=ObstacleStrategy(),
+            ...     tracked_prims=[],
+            ...     tracked_collision_api=TrackableApi.PHYSICS_COLLISION,
+            ... )
+            >>> world_binding.initialize()
+            >>> world_binding.synchronize()
+        """
+        self.synchronize_transforms()
+        self.synchronize_properties()
+
+    def synchronize_transforms(self):
+        """Synchronize tracked prim transforms into the planning world.
+
+        Updates only the world poses of tracked obstacles without checking for property changes.
+        This is more efficient than `synchronize_properties()` when only transforms have changed.
+
+        Raises:
+            RuntimeError: If the world binding has not been initialized.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> world_binding.synchronize_transforms()
+        """
+        if not self._initialized:
+            raise RuntimeError("WorldBinding is not initialized. Call initialize() first.")
+
+        if len(self._tracked_prims) == 0:
+            return
+
+        with backend_utils.use_backend("fabric"):
+            self._world_interface.update_obstacle_transforms(self._tracked_prims, self._xform.get_world_poses())
+
+    def synchronize_properties(self):
+        """Synchronize tracked prim property changes into the planning world.
+
+        Uses USDRT change tracking to efficiently detect and update only the properties
+        that have changed (collision enables, shape-specific attributes).
+        If no changes are detected, this method returns early without performing updates.
+        NOTE: this function does not currently support updating local scales.
+
+        Raises:
+            RuntimeError: If the world binding has not been initialized.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> world_binding.synchronize_properties()
         """
         # TODO: this can be implemented much more efficiently.
         if not self._initialized:
@@ -999,52 +1035,69 @@ class WorldBinding(Generic[TWorldInterface]):
         if not self._rt_change_tracker.HasChanges():
             return
 
+        # ========================================================================
+        # SECTION 1: Setup and token map initialization
+        # ========================================================================
         common_tokens_to_update_functions_map = {
-            _TRANSFORM_TOKEN: _update_prim_transforms,
-            _LOCAL_TRANSFORM_TOKEN: _update_prim_scales,
+            # TODO: Local transformed do not seem to be properly tracked.
+            # _LOCAL_TRANSFORM_TOKEN: _update_prim_scales,
             _COLLISION_ENABLED_TOKENS[TrackableApi.PHYSICS_COLLISION]: _update_prim_physics_collision_enables,
             # TODO: add other Motion Generation Collision APIs here when they are supported.
         }
 
-        def _prim_token_changed(prim_path, token):
-            prim = self._stage.GetPrimAtPath(usdrt.Sdf.Path(prim_path))
-            prim_changed_attrs = self._rt_change_tracker.GetChangedAttributes(prim)
-            return token in prim_changed_attrs
+        # ========================================================================
+        # SECTION 2: Update common tokens (transforms, scales, collision enables)
+        # ========================================================================
 
-        # Update all of the common tokens:
-        for token in common_tokens_to_update_functions_map:
-            objects_to_update = [p for p in self._tracked_prims if _prim_token_changed(p, token)]
-            if len(objects_to_update) > 0:
-                common_tokens_to_update_functions_map[token](
-                    prim_paths=objects_to_update,
+        # Cache prim lookups and changed attributes (look up and store only once)
+        cached_prim_data = {}
+        for prim_path in self._tracked_prims:
+            prim = self._stage.GetPrimAtPath(usdrt.Sdf.Path(prim_path))
+            if self._rt_change_tracker.PrimChanged(prim):
+                changed_attrs = self._rt_change_tracker.GetChangedAttributes(prim)
+                cached_prim_data[prim_path] = {
+                    "prim": prim,
+                    "changed_attributes": set(changed_attrs),  # Convert to set for fast lookup
+                }
+
+        # Group prims by which tokens changed
+        token_to_prims = {token: [] for token in common_tokens_to_update_functions_map}
+        for prim_path, data in cached_prim_data.items():
+            for token in common_tokens_to_update_functions_map:
+                if token in data["changed_attributes"]:
+                    token_to_prims[token].append(prim_path)
+
+        # Apply token updates in batches
+        for token, update_func in common_tokens_to_update_functions_map.items():
+            prims_to_update = token_to_prims[token]
+            if len(prims_to_update) > 0:
+                update_func(
+                    prim_paths=prims_to_update,
                     world_interface=self._world_interface,
                 )
 
-        # Update shape-level properties which have changed:
-        # loop through the collision_prims, and update which prims have changed:
-        for prim_path in self._tracked_prims:
-            # if there are no updates, ignore.
-            prim = self._stage.GetPrimAtPath(usdrt.Sdf.Path(prim_path))
-            if not self._rt_change_tracker.PrimChanged(prim):
-                continue
+        # ========================================================================
+        # SECTION 3: Update shape-level properties
+        # ========================================================================
+        # Reuse cached prim data from Section 2
+        common_tokens_set = set(common_tokens_to_update_functions_map.keys())
+        for prim_path, data in cached_prim_data.items():
+            # Check if anything other than the common tokens has changed:
+            if not data["changed_attributes"].issubset(common_tokens_set):
+                obstacle_configuration = self._obstacle_strategy.get_obstacle_configuration(prim_path)
+                _UPDATE_PROPERTIES_CALLBACK_MAP[obstacle_configuration.representation](
+                    prim_path=prim_path,
+                    prim=data["prim"],  # Reuse cached prim
+                    world_interface=self._world_interface,
+                    rt_change_tracker=self._rt_change_tracker,
+                )
 
-            # Check if anything other than the transform or collision enabled has changed:
-            changed_attributes = self._rt_change_tracker.GetChangedAttributes(prim)
-            if set(changed_attributes).issubset(set(common_tokens_to_update_functions_map.keys())):
-                continue
-
-            obstacle_configuration = self._obstacle_strategy.get_obstacle_configuration(prim_path)
-            _UPDATE_PROPERTIES_CALLBACK_MAP[obstacle_configuration.representation](
-                prim_path=prim_path,
-                prim=prim,
-                world_interface=self._world_interface,
-                rt_change_tracker=self._rt_change_tracker,
-            )
-
-        # clear the recorded changes:
+        # ========================================================================
+        # SECTION 4: Clear changes
+        # ========================================================================
         self._rt_change_tracker.ClearChanges()
 
-    def get_world_interface(self) -> TWorldInterface:
+    def get_world_interface(self) -> WorldInterface:
         """Return the planning world interface instance.
 
         Returns:

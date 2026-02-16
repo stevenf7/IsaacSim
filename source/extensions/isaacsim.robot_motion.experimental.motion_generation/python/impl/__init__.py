@@ -21,6 +21,6 @@ from .scene_query import SceneQuery
 from .trackable_api import TrackableApi
 from .trajectory import Trajectory
 from .trajectory_follower import TrajectoryFollower
-from .types import BodyState, JointState, RobotState, RootState
+from .types import JointState, RobotState, RootState, SpatialState, combine_robot_states
 from .world_binding import WorldBinding
 from .world_interface import WorldInterface

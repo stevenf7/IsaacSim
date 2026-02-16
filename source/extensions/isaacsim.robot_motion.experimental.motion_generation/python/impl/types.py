@@ -22,51 +22,926 @@ import warp as wp
 class JointState:
     """Container for the state of robot joints.
 
-    At least one of positions, velocities, or efforts must be provided. All provided arrays
-    must be 1D warp arrays with the same length as the names list.
+    User should almost never call this constructor directly. Instead, use the from_name or from_index methods.
 
     Args:
-        names: The names of the joints.
-        positions: The positions of the joints as a 1D warp array. Defaults to None.
-        velocities: The velocities of the joints as a 1D warp array. Defaults to None.
-        efforts: The efforts (torques) of the joints as a 1D warp array. Defaults to None.
+        robot_joint_space: The ordered list of joint names defining the joint space.
+        data_array: Pre-allocated data array with shape (3, N) where N is the length of robot_joint_space.
+            Row 0 contains positions, row 1 contains velocities, row 2 contains efforts.
+        valid_array: Boolean array with shape (3, N) indicating which fields are valid for each joint.
 
     Raises:
-        ValueError: If all of positions, velocities, and efforts are None.
-        ValueError: If any provided array is not a warp array.
-        ValueError: If any provided array is not 1D.
-        ValueError: If any provided array length does not match the length of names.
+        ValueError: If data_array is not a 2D wp.array with dtype wp.float32.
+        ValueError: If valid_array is not a 2D wp.array with dtype wp.bool.
+        ValueError: If data_array or valid_array shapes don't match (3, len(robot_joint_space)).
     """
 
     def __init__(
         self,
-        names: list[str],
-        positions: wp.array | None = None,
-        velocities: wp.array | None = None,
-        efforts: wp.array | None = None,
+        robot_joint_space: list[str],
+        data_array: wp.array,
+        valid_array: wp.array,
     ):
+        if not isinstance(data_array, wp.array) or not (data_array.dtype is wp.float32) or (data_array.ndim != 2):
+            raise ValueError(f"data_array must be a 2D wp.array with data-type wp.float32")
+
+        if not isinstance(valid_array, wp.array) or not (valid_array.dtype is wp.bool) or (valid_array.ndim != 2):
+            raise ValueError(f"valid_array must be a 2D wp.array with data-type wp.bool")
+
+        if not (data_array.shape == valid_array.shape == (3, len(robot_joint_space))):
+            raise ValueError(f"One of data array or valid array is not correctly sized for this joint-space.")
+
+        if not len(set(robot_joint_space)) == len(robot_joint_space):
+            raise ValueError("robot_joint_space is not valid: cannot have duplicated joint names.")
+
+        # Store full matrices, which makes for very efficient combining
+        # of JointState objects which are intended for the same robot joint space.
+        self.__robot_joint_space = robot_joint_space
+        self.__data_array = data_array
+        self.__valid_array = valid_array
+
+        # Based on the input data matrices, store data of interest independently
+        # for quick retrieval from the user:
+        self.__valid_positions = self.__get_valid_data_in_row(row=0)
+        self.__position_names = self.__valid_array_to_joint_names(row=0)
+        self.__position_indices = self.__valid_array_to_joint_indices(row=0)
+
+        self.__valid_velocities = self.__get_valid_data_in_row(row=1)
+        self.__velocity_names = self.__valid_array_to_joint_names(row=1)
+        self.__velocity_indices = self.__valid_array_to_joint_indices(row=1)
+
+        self.__valid_efforts = self.__get_valid_data_in_row(row=2)
+        self.__effort_names = self.__valid_array_to_joint_names(row=2)
+        self.__effort_indices = self.__valid_array_to_joint_indices(row=2)
+
+    @classmethod
+    def from_name(
+        cls,
+        robot_joint_space: list[str],
+        positions: tuple[list[str], wp.array] | None = None,
+        velocities: tuple[list[str], wp.array] | None = None,
+        efforts: tuple[list[str], wp.array] | None = None,
+    ):
+        """Create a JointState from joint names and data arrays.
+
+        At least one of positions, velocities, or efforts must be provided. Each tuple
+        contains a list of joint names and a corresponding 1D warp array of values.
+
+        Args:
+            robot_joint_space: The ordered list of joint names defining the joint space
+                of the controlled robot (for example, `Articulation.dof_names`).
+            positions: Tuple of (joint_names, position_array) where joint_names is a list
+                of joint names and position_array is a 1D warp array of position values.
+            velocities: Tuple of (joint_names, velocity_array) where joint_names is a list
+                of joint names and velocity_array is a 1D warp array of velocity values.
+            efforts: Tuple of (joint_names, effort_array) where joint_names is a list
+                of joint names and effort_array is a 1D warp array of effort values.
+
+        Returns:
+            A JointState instance with the provided joint data.
+
+        Raises:
+            ValueError: If all of positions, velocities, and efforts are None.
+            ValueError: If any provided array is not a 1D warp array of float types.
+            ValueError: If any provided array has length less than 1.
+            ValueError: If the first element of any tuple is not a list of joint names.
+            ValueError: If any array length doesn't match its corresponding name list length.
+            ValueError: If any joint names are duplicated.
+            ValueError: If any joint names are not in the robot_joint_space.
+        """
         if (positions is None) and (velocities is None) and (efforts is None):
             raise ValueError("One of positions, velocities, or efforts must be defined.")
 
-        for vector in [positions, velocities, efforts]:
-            if vector is None:
+        for vector_tuple in [positions, velocities, efforts]:
+            if vector_tuple is None:
                 continue
 
+            names, vector = vector_tuple
+
             # Enforce that these are warp array inputs:
-            if not isinstance(vector, wp.array) or (vector.ndim != 1):
-                raise ValueError("All defined [positions, velocities, efforts] must be a warp array.")
+            if (
+                not isinstance(vector, wp.array)
+                or (vector.ndim != 1)
+                or (vector.dtype not in (wp.float32, wp.float64, float))
+            ):
+                raise ValueError("All defined [positions, velocities, efforts] must be 1D-warp arrays of float-types.")
 
             if len(vector) < 1:
                 raise ValueError("Any defined [positions, velocities, efforts] must have at least len of 1.")
 
-            if len(vector) != len(names):
-                raise ValueError("Any defined [positions, velocities, efforts] must have the same length as 'names'")
+            if not isinstance(names, list):
+                raise ValueError(
+                    f"Expected a list of joint names as the first element of the tuple, but got {type(names).__name__}."
+                )
 
-        # all inputs are valid:
-        self.names = names
-        self.positions = positions
-        self.velocities = velocities
-        self.efforts = efforts
+            if len(vector) != len(names):
+                raise ValueError(
+                    "Any defined [positions, velocities, efforts] must have the same length as their corresponding name list"
+                )
+
+            if len(set(names)) != len(names):
+                raise ValueError("Joint names must all be unique.")
+
+            if not (set(names).issubset(robot_joint_space)):
+                raise ValueError("All joint names must be in the robot joint space.")
+
+        # all inputs are valid, construct the joint-data and valid-arrays:
+        # create full-sized warp array for the joint-data based on the joint-space
+        # described by the robot_joint_space:
+        n_joint_dims = len(robot_joint_space)
+        joint_name_to_index = {name: idx for idx, name in enumerate(robot_joint_space)}
+
+        # Storing on the CPU since we often have to do indexing operations.
+        data = wp.zeros(shape=[3, n_joint_dims], dtype=wp.float32, device="cpu")
+        valid = wp.zeros(shape=[3, n_joint_dims], dtype=wp.bool, device="cpu")
+
+        for i, vector_tuple in enumerate([positions, velocities, efforts]):
+            if vector_tuple is not None:
+                joint_names, joint_data = vector_tuple
+                joint_data = joint_data.numpy()
+                joint_indices = [joint_name_to_index[name] for name in joint_names]
+                data.numpy()[i, joint_indices] = joint_data
+                valid.numpy()[i, joint_indices] = True
+
+        return cls(robot_joint_space, data, valid)
+
+    @classmethod
+    def from_index(
+        cls,
+        robot_joint_space: list[str],
+        positions: tuple[wp.array, wp.array] | None = None,
+        velocities: tuple[wp.array, wp.array] | None = None,
+        efforts: tuple[wp.array, wp.array] | None = None,
+    ):
+        """Create a JointState from joint indices and data arrays.
+
+        At least one of positions, velocities, or efforts must be provided. Each tuple
+        contains a 1D warp array of joint indices and a corresponding 1D warp array of values.
+
+        Args:
+            robot_joint_space: The ordered list of joint names defining the joint space.
+            positions: Tuple of (indices, position_array) where indices is a 1D warp array
+                of joint indices and position_array is a 1D warp array of position values.
+            velocities: Tuple of (indices, velocity_array) where indices is a 1D warp array
+                of joint indices and velocity_array is a 1D warp array of velocity values.
+            efforts: Tuple of (indices, effort_array) where indices is a 1D warp array
+                of joint indices and effort_array is a 1D warp array of effort values.
+
+        Returns:
+            A JointState instance with the provided joint data.
+
+        Raises:
+            ValueError: If all of positions, velocities, and efforts are None.
+            ValueError: If any provided data array is not a 1D warp array of float types.
+            ValueError: If any provided indices array is not a 1D warp array of int types.
+            ValueError: If any provided array has length less than 1.
+            ValueError: If any index is out of range for the robot_joint_space.
+            ValueError: If any index values are duplicated.
+            ValueError: If any array length doesn't match its corresponding index array length.
+        """
+        if (positions is None) and (velocities is None) and (efforts is None):
+            raise ValueError("One of positions, velocities, or efforts must be defined.")
+
+        for vector_tuple in [positions, velocities, efforts]:
+            if vector_tuple is None:
+                continue
+
+            indices, vector = vector_tuple
+
+            # Enforce that these are warp array inputs:
+            if (
+                not isinstance(vector, wp.array)
+                or (vector.ndim != 1)
+                or (vector.dtype not in (wp.float32, wp.float64, float))
+            ):
+                raise ValueError("All defined [positions, velocities, efforts] must be 1D-warp arrays of float-types.")
+
+            if len(vector) < 1:
+                raise ValueError("Any defined [positions, velocities, efforts] must have at least len of 1.")
+
+            if not isinstance(indices, wp.array) or (indices.ndim != 1) or (indices.dtype not in (wp.int32, int)):
+                raise ValueError(
+                    "All defined [positions, velocities, efforts] indices must be 1D-warp arrays of int types."
+                )
+
+            if (indices.numpy() < 0).any() or (indices.numpy() >= len(robot_joint_space)).any():
+                raise ValueError(
+                    "All indices must be greater than or equal to 0 and less than the length of the robot joint space."
+                )
+
+            if len(set(indices.numpy())) != len(indices):
+                raise ValueError("Index values must all be unique.")
+
+            if len(vector) != len(indices):
+                raise ValueError(
+                    "Any defined [positions, velocities, efforts] must have the same length as their corresponding index list."
+                )
+
+        # all inputs are valid, construct the joint-data and valid-arrays:
+        # create full-sized warp array for the joint-data based on the joint-space
+        # described by the robot_joint_space:
+        n_joint_dims = len(robot_joint_space)
+
+        # Storing on the CPU since we often have to do indexing operations.
+        data = wp.zeros(shape=[3, n_joint_dims], dtype=wp.float32, device="cpu")
+        valid = wp.zeros(shape=[3, n_joint_dims], dtype=wp.bool, device="cpu")
+
+        for i, vector_tuple in enumerate([positions, velocities, efforts]):
+            if vector_tuple is not None:
+                joint_indices, joint_data = vector_tuple
+                joint_data = joint_data.numpy()
+                data.numpy()[i, joint_indices.numpy()] = joint_data
+                valid.numpy()[i, joint_indices.numpy()] = True
+
+        return cls(robot_joint_space, data, valid)
+
+    @property
+    def robot_joint_space(self):
+        """Get the list joints defining the joint-space of this JointState"""
+        return self.__robot_joint_space
+
+    @property
+    def position_names(self):
+        """Get the list of joint names that have valid positions."""
+        return self.__position_names
+
+    @property
+    def position_indices(self):
+        """Get the list of joint indices that have valid positions."""
+        return self.__position_indices
+
+    @property
+    def positions(self):
+        """Get valid positions as a warp array.
+
+        Returns:
+            A 1D warp array containing position values for joints with valid positions.
+            Returns None if no positions are valid.
+        """
+        return self.__valid_positions
+
+    @property
+    def velocity_names(self):
+        """Get the list of joint names that have valid velocities."""
+        return self.__velocity_names
+
+    @property
+    def velocity_indices(self):
+        """Get the list of joint indices that have valid velocities."""
+        return self.__velocity_indices
+
+    @property
+    def velocities(self):
+        """Get valid velocities as a warp array.
+
+        Returns:
+            A 1D warp array containing velocity values for joints with valid velocities.
+            Returns None if no velocities are valid.
+        """
+        return self.__valid_velocities
+
+    @property
+    def effort_names(self):
+        """Get the list of joint names that have valid efforts."""
+        return self.__effort_names
+
+    @property
+    def effort_indices(self):
+        """Get the list of joint indices that have valid efforts."""
+        return self.__effort_indices
+
+    @property
+    def efforts(self):
+        """Get valid efforts as a warp array.
+
+        Returns:
+            A 1D warp array containing effort values for joints with valid efforts.
+            Returns None if no efforts are valid.
+        """
+        return self.__valid_efforts
+
+    @property
+    def data_array(self):
+        """Get the full data array.
+
+        Returns:
+            A 2D warp array with shape (3, N) where N is the length of robot_joint_space.
+            Row 0 contains positions, row 1 contains velocities, row 2 contains efforts.
+        """
+        return self.__data_array
+
+    @property
+    def valid_array(self):
+        """Get the valid flags array.
+
+        Returns:
+            A 2D boolean warp array with shape (3, N) indicating which fields are valid
+            for each joint. Row 0 corresponds to positions, row 1 to velocities, row 2 to efforts.
+        """
+        return self.__valid_array
+
+    def __valid_array_to_joint_indices(self, row):
+        valid_indices = np.where(self.__valid_array.numpy()[row, :].flatten())[0]
+        return wp.from_numpy(valid_indices, dtype=wp.int32)
+
+    def __valid_array_to_joint_names(self, row):
+        valid_indices = np.where(self.__valid_array.numpy()[row, :].flatten())[0]
+        return [self.__robot_joint_space[i] for i in valid_indices]
+
+    def __get_valid_data_in_row(self, row):
+        valid_indices = np.where(self.__valid_array.numpy()[row, :].flatten())[0]
+
+        if len(valid_indices) == 0:
+            return None
+
+        return wp.from_numpy(self.__data_array.numpy()[row, valid_indices], dtype=wp.float32)
+
+
+class SpatialState:
+    """Container for the spatial state (pose and twist) of frames.
+
+    A spatial state represents the pose (position and orientation) and twist (linear and angular
+    velocities) of a set of frames. This can be used for robot links, sites (tool frames), or any
+    other frames of interest.
+
+    At least one of positions, orientations, linear_velocities, or angular_velocities must be
+    provided. All provided arrays must be 2D warp arrays with shape (N, K) where N equals the
+    length of names and K is the appropriate dimension for the field.
+
+    User should almost never call this constructor directly. Instead, use the from_name or from_index methods.
+
+    Args:
+        spatial_space: The ordered list of frame names (e.g., link names or site names).
+        position_data: Pre-allocated position data array with shape (N, 3).
+        linear_velocity_data: Pre-allocated linear velocity data array with shape (N, 3).
+        orientation_data: Pre-allocated orientation data array with shape (N, 4).
+        angular_velocity_data: Pre-allocated angular velocity data array with shape (N, 3).
+        valid_array: Boolean array with shape (N, 4) indicating which fields are valid for each frame.
+
+    Raises:
+        ValueError: If all of positions, orientations, linear_velocities, and angular_velocities
+            are None.
+        ValueError: If any provided array is not a 2D warp array.
+        ValueError: If any provided array has shape[0] not equal to the length of spatial_space.
+        ValueError: If positions, linear_velocities, or angular_velocities has shape[1] != 3.
+        ValueError: If orientations has shape[1] != 4.
+    """
+
+    def __init__(
+        self,
+        spatial_space: list[str],
+        position_data: wp.array,
+        linear_velocity_data: wp.array,
+        orientation_data: wp.array,
+        angular_velocity_data: wp.array,
+        valid_array: wp.array,
+    ):
+
+        if not len(set(spatial_space)) == len(spatial_space):
+            raise ValueError("spatial_space is not valid: cannot have duplicated reference frame names.")
+
+        if (
+            not isinstance(position_data, wp.array)
+            or not (position_data.dtype is wp.float32)
+            or (position_data.ndim != 2)
+        ):
+            raise ValueError(f"position_data must be a 2D wp.array with data-type wp.float32")
+
+        if (
+            not isinstance(linear_velocity_data, wp.array)
+            or not (linear_velocity_data.dtype is wp.float32)
+            or (linear_velocity_data.ndim != 2)
+        ):
+            raise ValueError(f"linear_velocity_data must be a 2D wp.array with data-type wp.float32")
+
+        if (
+            not isinstance(orientation_data, wp.array)
+            or not (orientation_data.dtype is wp.float32)
+            or (orientation_data.ndim != 2)
+        ):
+            raise ValueError(f"orientation_data must be a 2D wp.array with data-type wp.float32")
+
+        if (
+            not isinstance(angular_velocity_data, wp.array)
+            or not (angular_velocity_data.dtype is wp.float32)
+            or (angular_velocity_data.ndim != 2)
+        ):
+            raise ValueError(f"angular_velocity_data must be a 2D wp.array with data-type wp.float32")
+
+        if not isinstance(valid_array, wp.array) or not (valid_array.dtype is wp.bool) or (valid_array.ndim != 2):
+            raise ValueError(f"valid_array must be a 2D wp.array with data-type wp.bool")
+
+        if not (
+            position_data.shape == linear_velocity_data.shape == angular_velocity_data.shape == (len(spatial_space), 3)
+        ):
+            raise ValueError(
+                f"One of position_data, linear_velocity_data, or angular_velocity_data is not correctly sized for this spatial-space."
+            )
+
+        if not (valid_array.shape == (len(spatial_space), 4)):
+            raise ValueError(f"valid_array is not correctly sized for this spatial-space.")
+
+        if not (orientation_data.shape == (len(spatial_space), 4)):
+            raise ValueError(f"orientation_data is not correctly sized for this spatial-space.")
+
+        self.__spatial_space = spatial_space
+        self.__position_data = position_data
+        self.__linear_velocity_data = linear_velocity_data
+        self.__orientation_data = orientation_data
+        self.__angular_velocity_data = angular_velocity_data
+        self.__valid_array = valid_array
+
+        # Store data of interest independently for quick retrieval from the user:
+        self.__valid_positions = self.__get_valid_data_in_spatial_dimension(dimension="position")
+        self.__position_names = self.__valid_array_to_spatial_names(dimension="position")
+        self.__position_indices = self.__valid_array_to_spatial_indices(dimension="position")
+        self.__valid_orientations = self.__get_valid_data_in_spatial_dimension(dimension="orientation")
+        self.__orientation_names = self.__valid_array_to_spatial_names(dimension="orientation")
+        self.__orientation_indices = self.__valid_array_to_spatial_indices(dimension="orientation")
+        self.__valid_linear_velocities = self.__get_valid_data_in_spatial_dimension(dimension="linear_velocity")
+        self.__linear_velocity_names = self.__valid_array_to_spatial_names(dimension="linear_velocity")
+        self.__linear_velocity_indices = self.__valid_array_to_spatial_indices(dimension="linear_velocity")
+        self.__valid_angular_velocities = self.__get_valid_data_in_spatial_dimension(dimension="angular_velocity")
+        self.__angular_velocity_names = self.__valid_array_to_spatial_names(dimension="angular_velocity")
+        self.__angular_velocity_indices = self.__valid_array_to_spatial_indices(dimension="angular_velocity")
+
+    @classmethod
+    def from_name(
+        cls,
+        spatial_space: list[str],
+        positions: tuple[list[str], wp.array] | None = None,
+        orientations: tuple[list[str], wp.array] | None = None,
+        linear_velocities: tuple[list[str], wp.array] | None = None,
+        angular_velocities: tuple[list[str], wp.array] | None = None,
+    ):
+        """Create a SpatialState from frame names and data arrays.
+
+        At least one of positions, orientations, linear_velocities, or angular_velocities
+        must be provided. Each tuple contains a list of frame names and a corresponding
+        2D warp array of values.
+
+        Args:
+            spatial_space: The ordered list of frame names (e.g., link names or site names).
+            positions: Tuple of (frame_names, position_array) where frame_names is a list
+                of frame names and position_array is a 2D warp array with shape (N, 3).
+            orientations: Tuple of (frame_names, orientation_array) where frame_names is a list
+                of frame names and orientation_array is a 2D warp array with shape (N, 4).
+            linear_velocities: Tuple of (frame_names, velocity_array) where frame_names is a list
+                of frame names and velocity_array is a 2D warp array with shape (N, 3).
+            angular_velocities: Tuple of (frame_names, angular_velocity_array) where frame_names
+                is a list of frame names and angular_velocity_array is a 2D warp array with shape (N, 3).
+
+        Returns:
+            A SpatialState instance with the provided frame data.
+
+        Raises:
+            ValueError: If all of positions, orientations, linear_velocities, and angular_velocities
+                are None.
+            ValueError: If any provided array is not a 2D warp array of float types.
+            ValueError: If any provided array has shape[0] less than 1.
+            ValueError: If the first element of any tuple is not a list of frame names.
+            ValueError: If any array shape[0] doesn't match its corresponding name list length.
+            ValueError: If any frame names are duplicated.
+            ValueError: If any frame names are not in the spatial_space.
+            ValueError: If positions, linear_velocities, or angular_velocities has shape[1] != 3.
+            ValueError: If orientations has shape[1] != 4.
+        """
+        if (
+            (positions is None)
+            and (orientations is None)
+            and (linear_velocities is None)
+            and (angular_velocities is None)
+        ):
+            raise ValueError(
+                "One of positions, orientations, linear_velocities, or angular_velocities must be defined."
+            )
+
+        for vector_tuple in [positions, orientations, linear_velocities, angular_velocities]:
+            if vector_tuple is None:
+                continue
+
+            names, vector = vector_tuple
+
+            # Enforce that these are warp array inputs:
+            if (
+                not isinstance(vector, wp.array)
+                or (vector.ndim != 2)
+                or (vector.dtype not in (wp.float32, wp.float64, float))
+            ):
+                raise ValueError(
+                    "Any defined [positions, orientations, linear or angular velocity] must be a 2D warp array of float types."
+                )
+
+            if vector.shape[0] < 1:
+                raise ValueError(
+                    "Any defined [positions, orientations, linear or angular velocity] must have shape[0] >= 1"
+                )
+
+            if not isinstance(names, list):
+                raise ValueError(
+                    f"Expected a list of frame names as the first element of the tuple, but got {type(names).__name__}."
+                )
+
+            if len(set(names)) != len(names):
+                raise ValueError("Reference frame names must all be unique.")
+
+            if vector.shape[0] != len(names):
+                raise ValueError(
+                    "Any defined [positions, orientations, linear or angular velocity] must have the same length as their corresponding name list"
+                )
+
+            if not (set(names).issubset(spatial_space)):
+                raise ValueError("All frame names must be in the spatial space.")
+
+        if (positions is not None) and (positions[1].shape[1] != 3):
+            raise ValueError("position data array must have shape[1] == 3.")
+        if (linear_velocities is not None) and (linear_velocities[1].shape[1] != 3):
+            raise ValueError("linear velocity data array must have shape[1] == 3.")
+        if (orientations is not None) and (orientations[1].shape[1] != 4):
+            raise ValueError("orientation data array must have shape[1] == 4.")
+        if (angular_velocities is not None) and (angular_velocities[1].shape[1] != 3):
+            raise ValueError("angular velocity data array must have shape[1] == 3.")
+
+        # create warp arrays for the positions, linear velocities, orientations and angular velocities.
+        # fill in whether a given value is set:
+        n_frames = len(spatial_space)
+        frame_name_to_index = {name: idx for idx, name in enumerate(spatial_space)}
+        position_data = wp.zeros(shape=[n_frames, 3], dtype=wp.float32, device="cpu")
+        linear_velocity_data = wp.zeros(shape=[n_frames, 3], dtype=wp.float32, device="cpu")
+        orientation_data = wp.zeros(shape=[n_frames, 4], dtype=wp.float32, device="cpu")
+        angular_velocity_data = wp.zeros(shape=[n_frames, 3], dtype=wp.float32, device="cpu")
+        valid = wp.zeros(shape=[n_frames, 4], dtype=wp.bool, device="cpu")
+
+        # Fill in position data (column 0 of valid)
+        if positions is not None:
+            names, pos_array = positions
+            pos_array = pos_array.numpy()
+            indices = [frame_name_to_index[name] for name in names]
+            position_data.numpy()[indices, :] = pos_array
+            valid.numpy()[indices, 0] = True
+
+        # Fill in orientation data (column 1 of valid)
+        if orientations is not None:
+            names, orient_array = orientations
+            orient_array = orient_array.numpy()
+            indices = [frame_name_to_index[name] for name in names]
+            orientation_data.numpy()[indices, :] = orient_array
+            valid.numpy()[indices, 1] = True
+
+        # Fill in linear velocity data (column 2 of valid)
+        if linear_velocities is not None:
+            names, vel_array = linear_velocities
+            vel_array = vel_array.numpy()
+            indices = [frame_name_to_index[name] for name in names]
+            linear_velocity_data.numpy()[indices, :] = vel_array
+            valid.numpy()[indices, 2] = True
+
+        # Fill in angular velocity data (column 3 of valid)
+        if angular_velocities is not None:
+            names, ang_vel_array = angular_velocities
+            ang_vel_array = ang_vel_array.numpy()
+            indices = [frame_name_to_index[name] for name in names]
+            angular_velocity_data.numpy()[indices, :] = ang_vel_array
+            valid.numpy()[indices, 3] = True
+
+        return cls(spatial_space, position_data, linear_velocity_data, orientation_data, angular_velocity_data, valid)
+
+    @classmethod
+    def from_index(
+        cls,
+        spatial_space: list[str],
+        positions: tuple[wp.array, wp.array] | None = None,
+        orientations: tuple[wp.array, wp.array] | None = None,
+        linear_velocities: tuple[wp.array, wp.array] | None = None,
+        angular_velocities: tuple[wp.array, wp.array] | None = None,
+    ):
+        """Create a SpatialState from frame indices and data arrays.
+
+        At least one of positions, orientations, linear_velocities, or angular_velocities
+        must be provided. Each tuple contains a 1D warp array of frame indices and a
+        corresponding 2D warp array of values.
+
+        Args:
+            spatial_space: The ordered list of frame names (e.g., link names or site names).
+            positions: Tuple of (indices, position_array) where indices is a 1D warp array
+                of frame indices and position_array is a 2D warp array with shape (N, 3).
+            orientations: Tuple of (indices, orientation_array) where indices is a 1D warp array
+                of frame indices and orientation_array is a 2D warp array with shape (N, 4).
+            linear_velocities: Tuple of (indices, velocity_array) where indices is a 1D warp array
+                of frame indices and velocity_array is a 2D warp array with shape (N, 3).
+            angular_velocities: Tuple of (indices, angular_velocity_array) where indices is a 1D
+                warp array of frame indices and angular_velocity_array is a 2D warp array with shape (N, 3).
+
+        Returns:
+            A SpatialState instance with the provided frame data.
+
+        Raises:
+            ValueError: If all of positions, orientations, linear_velocities, and angular_velocities
+                are None.
+            ValueError: If any provided data array is not a 2D warp array of float types.
+            ValueError: If any provided indices array is not a 1D warp array of int types.
+            ValueError: If any provided array has shape[0] less than 1.
+            ValueError: If any index is out of range for the spatial_space.
+            ValueError: If any index values are duplicated.
+            ValueError: If any array shape[0] doesn't match its corresponding index array length.
+            ValueError: If positions, linear_velocities, or angular_velocities has shape[1] != 3.
+            ValueError: If orientations has shape[1] != 4.
+        """
+        if (
+            (positions is None)
+            and (orientations is None)
+            and (linear_velocities is None)
+            and (angular_velocities is None)
+        ):
+            raise ValueError(
+                "One of positions, orientations, linear_velocities, or angular_velocities must be defined."
+            )
+
+        for vector_tuple in [positions, orientations, linear_velocities, angular_velocities]:
+            if vector_tuple is None:
+                continue
+
+            indices, vector = vector_tuple
+
+            # Enforce that these are warp array inputs:
+            if (
+                not isinstance(vector, wp.array)
+                or (vector.ndim != 2)
+                or (vector.dtype not in (wp.float32, wp.float64, float))
+            ):
+                raise ValueError(
+                    "Any defined [positions, orientations, linear or angular velocity] must be a 2D warp array of float types."
+                )
+
+            if vector.shape[0] < 1:
+                raise ValueError(
+                    "Any defined [positions, orientations, linear or angular velocity] must have shape[0] >= 1"
+                )
+
+            if not isinstance(indices, wp.array) or (indices.ndim != 1) or (indices.dtype not in (wp.int32, int)):
+                raise ValueError(
+                    "All defined [positions, orientations, linear or angular velocity] indices must be 1D-warp arrays of int types."
+                )
+
+            if (indices.numpy() < 0).any() or (indices.numpy() >= len(spatial_space)).any():
+                raise ValueError(
+                    "All indices must be greater than or equal to 0 and less than the length of the spatial space."
+                )
+
+            if len(set(indices.numpy())) != len(indices):
+                raise ValueError("Index values must all be unique.")
+
+            if vector.shape[0] != len(indices):
+                raise ValueError(
+                    "Any defined [positions, orientations, linear or angular velocity] must have the same length as their corresponding name list"
+                )
+
+        if (positions is not None) and (positions[1].shape[1] != 3):
+            raise ValueError("position data array must have shape[1] == 3.")
+        if (linear_velocities is not None) and (linear_velocities[1].shape[1] != 3):
+            raise ValueError("linear velocity data array must have shape[1] == 3.")
+        if (orientations is not None) and (orientations[1].shape[1] != 4):
+            raise ValueError("orientation data array must have shape[1] == 4.")
+        if (angular_velocities is not None) and (angular_velocities[1].shape[1] != 3):
+            raise ValueError("angular velocity data array must have shape[1] == 3.")
+
+        # create warp arrays for the positions, linear velocities, orientations and angular velocities.
+        # fill in whether a given value is set:
+        n_frames = len(spatial_space)
+        frame_name_to_index = {name: idx for idx, name in enumerate(spatial_space)}
+        position_data = wp.zeros(shape=[n_frames, 3], dtype=wp.float32, device="cpu")
+        linear_velocity_data = wp.zeros(shape=[n_frames, 3], dtype=wp.float32, device="cpu")
+        orientation_data = wp.zeros(shape=[n_frames, 4], dtype=wp.float32, device="cpu")
+        angular_velocity_data = wp.zeros(shape=[n_frames, 3], dtype=wp.float32, device="cpu")
+        valid = wp.zeros(shape=[n_frames, 4], dtype=wp.bool, device="cpu")
+
+        # Fill in position data (column 0 of valid)
+        if positions is not None:
+            indices, pos_array = positions
+            pos_array = pos_array.numpy()
+            indices = indices.numpy()
+            position_data.numpy()[indices, :] = pos_array
+            valid.numpy()[indices, 0] = True
+
+        # Fill in orientation data (column 1 of valid)
+        if orientations is not None:
+            indices, orient_array = orientations
+            orient_array = orient_array.numpy()
+            indices = indices.numpy()
+            orientation_data.numpy()[indices, :] = orient_array
+            valid.numpy()[indices, 1] = True
+
+        # Fill in linear velocity data (column 2 of valid)
+        if linear_velocities is not None:
+            indices, vel_array = linear_velocities
+            vel_array = vel_array.numpy()
+            indices = indices.numpy()
+            linear_velocity_data.numpy()[indices, :] = vel_array
+            valid.numpy()[indices, 2] = True
+
+        # Fill in angular velocity data (column 3 of valid)
+        if angular_velocities is not None:
+            indices, ang_vel_array = angular_velocities
+            ang_vel_array = ang_vel_array.numpy()
+            indices = indices.numpy()
+            angular_velocity_data.numpy()[indices, :] = ang_vel_array
+            valid.numpy()[indices, 3] = True
+
+        return cls(spatial_space, position_data, linear_velocity_data, orientation_data, angular_velocity_data, valid)
+
+    @property
+    def spatial_space(self):
+        """Get the list of frame names."""
+        return self.__spatial_space
+
+    @property
+    def position_names(self):
+        """Get the list of frame names that have valid positions."""
+        return self.__position_names
+
+    @property
+    def position_indices(self):
+        """Get the list of frame indices that have valid positions."""
+        return self.__position_indices
+
+    @property
+    def positions(self):
+        """Get valid positions as a warp array.
+
+        Returns:
+            A 2D warp array with shape (N, 3) containing position values for frames with valid
+            positions. Returns None if no positions are valid.
+        """
+        return self.__valid_positions
+
+    @property
+    def orientation_names(self):
+        """Get the list of frame names that have valid orientations."""
+        return self.__orientation_names
+
+    @property
+    def orientation_indices(self):
+        """Get the list of frame indices that have valid orientations."""
+        return self.__orientation_indices
+
+    @property
+    def orientations(self):
+        """Get valid orientations as a warp array.
+
+        Returns:
+            A 2D warp array with shape (N, 4) containing orientation values (quaternions) for
+            frames with valid orientations. Returns None if no orientations are valid.
+        """
+        return self.__valid_orientations
+
+    @property
+    def linear_velocity_names(self):
+        """Get the list of frame names that have valid linear velocities."""
+        return self.__linear_velocity_names
+
+    @property
+    def linear_velocity_indices(self):
+        """Get the list of frame indices that have valid linear velocities."""
+        return self.__linear_velocity_indices
+
+    @property
+    def linear_velocities(self):
+        """Get valid linear velocities as a warp array.
+
+        Returns:
+            A 2D warp array with shape (N, 3) containing linear velocity values for frames
+            with valid linear velocities. Returns None if no linear velocities are valid.
+        """
+        return self.__valid_linear_velocities
+
+    @property
+    def angular_velocity_names(self):
+        """Get the list of frame names that have valid angular velocities."""
+        return self.__angular_velocity_names
+
+    @property
+    def angular_velocity_indices(self):
+        """Get the list of frame indices that have valid angular velocities."""
+        return self.__angular_velocity_indices
+
+    @property
+    def angular_velocities(self):
+        """Get valid angular velocities as a warp array.
+
+        Returns:
+            A 2D warp array with shape (N, 3) containing angular velocity values for frames
+            with valid angular velocities. Returns None if no angular velocities are valid.
+        """
+        return self.__valid_angular_velocities
+
+    @property
+    def position_data(self):
+        """Get the full position data array.
+
+        Returns:
+            A 2D warp array with shape (N, 3) containing position data for all frames in
+            the spatial space, regardless of validity flags.
+        """
+        return self.__position_data
+
+    @property
+    def orientation_data(self):
+        """Get the full orientation data array.
+
+        Returns:
+            A 2D warp array with shape (N, 4) containing orientation data (quaternions) for
+            all frames in the spatial space, regardless of validity flags.
+        """
+        return self.__orientation_data
+
+    @property
+    def linear_velocity_data(self):
+        """Get the full linear velocity data array.
+
+        Returns:
+            A 2D warp array with shape (N, 3) containing linear velocity data for all frames
+            in the spatial space, regardless of validity flags.
+        """
+        return self.__linear_velocity_data
+
+    @property
+    def angular_velocity_data(self):
+        """Get the full angular velocity data array.
+
+        Returns:
+            A 2D warp array with shape (N, 3) containing angular velocity data for all frames
+            in the spatial space, regardless of validity flags.
+        """
+        return self.__angular_velocity_data
+
+    @property
+    def valid_array(self):
+        """Get the valid flags array.
+
+        Returns:
+            A 2D boolean warp array with shape (N, 4) indicating which fields are valid
+            for each frame. Column 0 corresponds to positions, column 1 to orientations,
+            column 2 to linear velocities, column 3 to angular velocities.
+        """
+        return self.__valid_array
+
+    def __valid_array_to_spatial_indices(
+        self,
+        dimension: Literal["position", "orientation", "linear_velocity", "angular_velocity"],
+    ):
+        if dimension == "position":
+            column_index = 0
+        elif dimension == "orientation":
+            column_index = 1
+        elif dimension == "linear_velocity":
+            column_index = 2
+        elif dimension == "angular_velocity":
+            column_index = 3
+
+        valid_indices = np.where(self.__valid_array.numpy()[:, column_index].flatten())[0]
+        return wp.from_numpy(valid_indices, dtype=wp.int32)
+
+    def __valid_array_to_spatial_names(
+        self,
+        dimension: Literal["position", "orientation", "linear_velocity", "angular_velocity"],
+    ):
+        if dimension == "position":
+            column_index = 0
+        elif dimension == "orientation":
+            column_index = 1
+        elif dimension == "linear_velocity":
+            column_index = 2
+        elif dimension == "angular_velocity":
+            column_index = 3
+
+        valid_indices = np.where(self.__valid_array.numpy()[:, column_index].flatten())[0]
+
+        return [self.__spatial_space[i] for i in valid_indices]
+
+    def __get_valid_data_in_spatial_dimension(
+        self,
+        dimension: Literal["position", "orientation", "linear_velocity", "angular_velocity"],
+    ):
+
+        if dimension == "position":
+            column_index = 0
+            data_array = self.__position_data
+        elif dimension == "orientation":
+            column_index = 1
+            data_array = self.__orientation_data
+        elif dimension == "linear_velocity":
+            column_index = 2
+            data_array = self.__linear_velocity_data
+        elif dimension == "angular_velocity":
+            column_index = 3
+            data_array = self.__angular_velocity_data
+
+        valid_indices = np.where(self.__valid_array.numpy()[:, column_index].flatten())[0]
+
+        if len(valid_indices) == 0:
+            return None
+
+        return wp.from_numpy(data_array.numpy()[valid_indices, :], dtype=wp.float32)
 
 
 class RootState:
@@ -74,6 +949,8 @@ class RootState:
 
     At least one of position, orientation, linear_velocity, or angular_velocity must be provided.
     All provided arrays must be 1D warp arrays with the correct number of elements.
+
+    All properties are read-only after construction.
 
     Args:
         position: The position of the root as a 1D warp array with 3 elements (x, y, z).
@@ -103,153 +980,185 @@ class RootState:
             raise ValueError("One of position, orientation, linear_velocity, or angular_velocity must be defined.")
 
         if position is not None:
-            if not isinstance(position, wp.array) or (position.ndim != 1) or (len(position) != 3):
-                raise ValueError("position must be a 1D warp array with 3 elements (x, y, z).")
+            if (
+                not isinstance(position, wp.array)
+                or (position.ndim != 1)
+                or (len(position) != 3)
+                or (position.dtype not in (wp.float32, wp.float64, float))
+            ):
+                raise ValueError("position must be a 1D warp array with 3 elements (x, y, z) and a 32-bit float type.")
 
         if orientation is not None:
-            if not isinstance(orientation, wp.array) or (orientation.ndim != 1) or (len(orientation) != 4):
-                raise ValueError("orientation must be a 1D warp array with 4 elements (w, x, y, z).")
+            if (
+                not isinstance(orientation, wp.array)
+                or (orientation.ndim != 1)
+                or (len(orientation) != 4)
+                or (orientation.dtype not in (wp.float32, wp.float64, float))
+            ):
+                raise ValueError(
+                    "orientation must be a 1D warp array with 4 elements (w, x, y, z) and a 32-bit float type."
+                )
 
         if linear_velocity is not None:
-            if not isinstance(linear_velocity, wp.array) or (linear_velocity.ndim != 1) or (len(linear_velocity) != 3):
-                raise ValueError("linear_velocity must be a 1D warp array with 3 elements (x, y, z).")
+            if (
+                not isinstance(linear_velocity, wp.array)
+                or (linear_velocity.ndim != 1)
+                or (len(linear_velocity) != 3)
+                or (linear_velocity.dtype not in (wp.float32, wp.float64, float))
+            ):
+                raise ValueError(
+                    "linear_velocity must be a 1D warp array with 3 elements (x, y, z) and a 32-bit float type."
+                )
 
         if angular_velocity is not None:
             if (
                 not isinstance(angular_velocity, wp.array)
                 or (angular_velocity.ndim != 1)
                 or (len(angular_velocity) != 3)
+                or (angular_velocity.dtype not in (wp.float32, wp.float64, float))
             ):
-                raise ValueError("angular_velocity must be a 1D warp array with 3 elements (x, y, z).")
-
-        self.position = position
-        self.orientation = orientation
-        self.linear_velocity = linear_velocity
-        self.angular_velocity = angular_velocity
-
-
-class BodyState:
-    """Container for the state of non-root rigid bodies of the robot.
-
-    At least one of positions, orientations, linear_velocities, or angular_velocities must be
-    provided. All provided arrays must be 2D warp arrays with shape (N, K) where N equals the
-    length of names and K is the appropriate dimension for the field.
-
-    Args:
-        names: The names of the rigid bodies.
-        positions: The positions of the bodies as a 2D warp array with shape (N, 3).
-            Defaults to None.
-        orientations: The orientations of the bodies as a 2D warp array with shape (N, 4),
-            where each row is a quaternion in (w, x, y, z) order. Defaults to None.
-        linear_velocities: The linear velocities of the bodies as a 2D warp array with
-            shape (N, 3). Defaults to None.
-        angular_velocities: The angular velocities of the bodies as a 2D warp array with
-            shape (N, 3). Defaults to None.
-
-    Raises:
-        ValueError: If all of positions, orientations, linear_velocities, and angular_velocities
-            are None.
-        ValueError: If any provided array is not a 2D warp array.
-        ValueError: If any provided array has shape[0] not equal to the length of names.
-        ValueError: If positions, linear_velocities, or angular_velocities has shape[1] != 3.
-        ValueError: If orientations has shape[1] != 4.
-    """
-
-    def __init__(
-        self,
-        names: list[str],
-        positions: wp.array | None = None,
-        orientations: wp.array | None = None,
-        linear_velocities: wp.array | None = None,
-        angular_velocities: wp.array | None = None,
-    ):
-        if (
-            (positions is None)
-            and (orientations is None)
-            and (linear_velocities is None)
-            and (angular_velocities is None)
-        ):
-            raise ValueError(
-                "One of positions, orientations, linear_velocities, or angular_velocities must be defined."
-            )
-
-        for vector in [positions, orientations, linear_velocities, angular_velocities]:
-            if vector is None:
-                continue
-
-            # Enforce that these are warp array inputs:
-            if not isinstance(vector, wp.array) or (vector.ndim != 2):
                 raise ValueError(
-                    "Any defined [positions, orientations, linear or angular velocity] must be a 2D warp array."
+                    "angular_velocity must be a 1D warp array with 3 elements (x, y, z) and a 32-bit float type."
                 )
 
-            if vector.shape[0] < 1:
-                raise ValueError(
-                    "Any defined [positions, orientations, linear or angular velocity] must have shape[0] >= 1"
-                )
+        # Note, we don't need to do indexing operations on these warp arrays, so we allow them to
+        # be on any device.
+        self.__position = (
+            wp.from_numpy(position.numpy(), dtype=wp.float32, device=position.device) if position is not None else None
+        )
+        self.__orientation = (
+            wp.from_numpy(orientation.numpy(), dtype=wp.float32, device=orientation.device)
+            if orientation is not None
+            else None
+        )
+        self.__linear_velocity = (
+            wp.from_numpy(linear_velocity.numpy(), dtype=wp.float32, device=linear_velocity.device)
+            if linear_velocity is not None
+            else None
+        )
+        self.__angular_velocity = (
+            wp.from_numpy(angular_velocity.numpy(), dtype=wp.float32, device=angular_velocity.device)
+            if angular_velocity is not None
+            else None
+        )
 
-            if vector.shape[0] != len(names):
-                raise ValueError(
-                    "Any defined [positions, orientations, linear or angular velocity] must have the same length as 'names'"
-                )
+    @property
+    def position(self):
+        """Get the root position.
 
-        if (positions is not None) and (positions.shape[1] != 3):
-            raise ValueError("positions.shape[1] must equal 3.")
-        if (linear_velocities is not None) and (linear_velocities.shape[1] != 3):
-            raise ValueError("linear_velocities.shape[1] must equal 3.")
-        if (orientations is not None) and (orientations.shape[1] != 4):
-            raise ValueError("orientations.shape[1] must equal 4.")
-        if (angular_velocities is not None) and (angular_velocities.shape[1] != 3):
-            raise ValueError("angular_velocities.shape[1] must equal 3.")
+        Returns:
+            A 1D warp array with 3 elements (x, y, z) representing the root position, or None
+            if not set.
+        """
+        return self.__position
 
-        self.names = names
-        self.positions = positions
-        self.orientations = orientations
-        self.linear_velocities = linear_velocities
-        self.angular_velocities = angular_velocities
+    @property
+    def orientation(self):
+        """Get the root orientation.
+
+        Returns:
+            A 1D warp array with 4 elements (w, x, y, z quaternion) representing the root
+            orientation, or None if not set.
+        """
+        return self.__orientation
+
+    @property
+    def linear_velocity(self):
+        """Get the root linear velocity.
+
+        Returns:
+            A 1D warp array with 3 elements (x, y, z) representing the root linear velocity,
+            or None if not set.
+        """
+        return self.__linear_velocity
+
+    @property
+    def angular_velocity(self):
+        """Get the root angular velocity.
+
+        Returns:
+            A 1D warp array with 3 elements (x, y, z) representing the root angular velocity,
+            or None if not set.
+        """
+        return self.__angular_velocity
 
 
 class RobotState:
     """Composite container for the complete state of a robot.
 
     A RobotState aggregates the state of all robot components: joints, root link, rigid bodies,
-    and tool frames. All components are optional, allowing partial state representations.
+    and sites. All components are optional, allowing partial state representations.
 
     Args:
         joints: The state of the robot's joints. Defaults to None.
         root: The state of the robot's root link. Defaults to None.
-        bodies: The state of the robot's non-root rigid bodies. Defaults to None.
-        tool_frames: The state of the robot's tool frames (end-effectors). Defaults to None.
+        links: The state of the robot's non-root rigid bodies. Defaults to None.
+        sites: The state of non-link reference frames (tools, sensors, etc.). Defaults to None.
     """
 
     def __init__(
         self,
         joints: JointState | None = None,
         root: RootState | None = None,
-        bodies: BodyState | None = None,
-        tool_frames: BodyState | None = None,
+        links: SpatialState | None = None,
+        sites: SpatialState | None = None,
     ):
-        self.joints = joints
-        self.root = root
-        self.bodies = bodies
-        self.tool_frames = tool_frames
+        if (joints is not None) and not (isinstance(joints, JointState)):
+            raise ValueError("joints must be of type JointState")
 
+        if (root is not None) and not (isinstance(root, RootState)):
+            raise ValueError("root must be of type RootState")
 
-def _concatenate_warp_arrays(
-    array_1: wp.array,
-    array_2: wp.array,
-) -> wp.array:
-    """Concatenate two warp arrays along their first axis.
+        if (links is not None) and not (isinstance(links, SpatialState)):
+            raise ValueError("links must be of type SpatialState")
 
-    Args:
-        array_1: The first warp array.
-        array_2: The second warp array.
+        if (sites is not None) and not (isinstance(sites, SpatialState)):
+            raise ValueError("sites must be of type SpatialState")
 
-    Returns:
-        A new warp array containing the concatenated data with the same dtype and device
-        as array_1.
-    """
-    return wp.array(np.concatenate([array_1.numpy(), array_2.numpy()]), dtype=array_1.dtype, device=array_1.device)
+        self.__joints = joints
+        self.__root = root
+        self.__links = links
+        self.__sites = sites
+
+    @property
+    def joints(self):
+        """Get the joint state.
+
+        Returns:
+            The JointState instance containing joint positions, velocities, and efforts,
+            or None if not set.
+        """
+        return self.__joints
+
+    @property
+    def root(self):
+        """Get the root state.
+
+        Returns:
+            The RootState instance containing root position, orientation, and velocities,
+            or None if not set.
+        """
+        return self.__root
+
+    @property
+    def links(self):
+        """Get the link state.
+
+        Returns:
+            The SpatialState instance containing link positions, orientations, and velocities,
+            or None if not set.
+        """
+        return self.__links
+
+    @property
+    def sites(self):
+        """Get the site state.
+
+        Returns:
+            The SpatialState instance containing site positions, orientations, and velocities,
+            or None if not set.
+        """
+        return self.__sites
 
 
 def _combine_joint_states(
@@ -257,10 +1166,11 @@ def _combine_joint_states(
 ) -> JointState | Literal[False] | None:
     """Combine two joint states into one.
 
-    Two joint states can be combined if they either:
-    - Define the exact same joints with non-overlapping fields (e.g., one has positions, other
-      has velocities).
-    - Define completely different joints with the same fields defined.
+    Two joint states can be combined only if:
+    - They have exactly the same robot_joint_space (ensuring they are for the same robot
+      configuration).
+    - They have non-overlapping valid flags (i.e., no joint+field combination is set in both
+      states).
 
     Args:
         joint_state_1: The first joint state, or None.
@@ -268,7 +1178,7 @@ def _combine_joint_states(
 
     Returns:
         The combined JointState if successful, None if both inputs are None, or False if the
-        states cannot be combined due to conflicts.
+        states cannot be combined due to mismatched names or overlapping valid flags.
     """
     if joint_state_1 is None:
         return joint_state_2
@@ -276,164 +1186,110 @@ def _combine_joint_states(
     if joint_state_2 is None:
         return joint_state_1
 
-    common_names = set(joint_state_1.names) & set(joint_state_2.names)
-
-    # CASE 1: We can combine two joint states on the exact same joints, as long as they define
-    # non-overlapping fields.
-    if common_names == set(joint_state_1.names) == set(joint_state_2.names):
-        # If these two joint states define the same fields, they cannot be combined:
-        if (joint_state_1.positions is not None) and (joint_state_2.positions is not None):
-            return False
-        if (joint_state_1.velocities is not None) and (joint_state_2.velocities is not None):
-            return False
-        if (joint_state_1.efforts is not None) and (joint_state_2.efforts is not None):
-            return False
-
-        # These can be combined:
-        return JointState(
-            names=joint_state_1.names,
-            positions=joint_state_1.positions if joint_state_1.positions is not None else joint_state_2.positions,
-            velocities=joint_state_1.velocities if joint_state_1.velocities is not None else joint_state_2.velocities,
-            efforts=joint_state_1.efforts if joint_state_1.efforts is not None else joint_state_2.efforts,
-        )
-
-    # CASE 2: If we do not have _full_ overlap in joint names, then we cannot have any overlap.
-    if not len(common_names) == 0:
+    # States must have exactly the same robot_joint_space to be combined
+    # This ensures they are for the same robot configuration
+    if joint_state_1.robot_joint_space != joint_state_2.robot_joint_space:
         return False
 
-    # With no overlap, both of the joint-states must define the same fields:
-    if (joint_state_1.positions is None) != (joint_state_2.positions is None):
+    # Check for overlap in valid flags - if any joint+field combination is set in both states, cannot combine
+    joint_states_overlap = np.any(joint_state_1.valid_array.numpy() & joint_state_2.valid_array.numpy())
+    if joint_states_overlap:
         return False
 
-    if (joint_state_1.velocities is None) != (joint_state_2.velocities is None):
-        return False
-
-    if (joint_state_1.efforts is None) != (joint_state_2.efforts is None):
-        return False
-
-    # Combine the joint states:
-    positions_out = None
-    if joint_state_1.positions is not None:
-        positions_out = _concatenate_warp_arrays(joint_state_1.positions, joint_state_2.positions)
-
-    velocities_out = None
-    if joint_state_1.velocities is not None:
-        velocities_out = _concatenate_warp_arrays(joint_state_1.velocities, joint_state_2.velocities)
-
-    efforts_out = None
-    if joint_state_1.efforts is not None:
-        efforts_out = _concatenate_warp_arrays(joint_state_1.efforts, joint_state_2.efforts)
-
+    # There is no overlap, we can combine these values:
+    combined_data_array = np.where(
+        joint_state_1.valid_array.numpy(), joint_state_1.data_array.numpy(), joint_state_2.data_array.numpy()
+    )
+    combined_valid_array = np.where(
+        joint_state_1.valid_array.numpy(),
+        joint_state_1.valid_array.numpy(),
+        joint_state_2.valid_array.numpy(),
+    )
     return JointState(
-        names=[*joint_state_1.names, *joint_state_2.names],
-        positions=positions_out,
-        velocities=velocities_out,
-        efforts=efforts_out,
+        robot_joint_space=joint_state_1.robot_joint_space,
+        data_array=wp.from_numpy(combined_data_array, dtype=wp.float32, device="cpu"),
+        valid_array=wp.from_numpy(combined_valid_array, dtype=wp.bool, device="cpu"),
     )
 
 
-def _combine_body_states(
-    body_state_1: BodyState | None, body_state_2: BodyState | None
-) -> BodyState | Literal[False] | None:
-    """Combine two body states into one.
+def _combine_spatial_states(
+    spatial_state_1: SpatialState | None, spatial_state_2: SpatialState | None
+) -> SpatialState | Literal[False] | None:
+    """Combine two spatial states into one.
 
-    Two body states can be combined if they either:
-    - Define the exact same bodies with non-overlapping fields (e.g., one has positions, other
-      has orientations).
-    - Define completely different bodies with the same fields defined.
+    Two spatial states can be combined only if:
+    - They have exactly the same spatial_space (ensuring they are for the same robot
+      configuration).
+    - They have non-overlapping valid flags (i.e., no frame+field combination is set in both
+      states).
 
     Args:
-        body_state_1: The first body state, or None.
-        body_state_2: The second body state, or None.
+        spatial_state_1: The first spatial state, or None.
+        spatial_state_2: The second spatial state, or None.
 
     Returns:
-        The combined BodyState if successful, None if both inputs are None, or False if the
-        states cannot be combined due to conflicts.
+        The combined SpatialState if successful, None if both inputs are None, or False if the
+        states cannot be combined due to mismatched names or overlapping valid flags.
     """
-    if body_state_1 is None:
-        return body_state_2
+    if spatial_state_1 is None:
+        return spatial_state_2
 
-    if body_state_2 is None:
-        return body_state_1
+    if spatial_state_2 is None:
+        return spatial_state_1
 
-    common_names = set(body_state_1.names) & set(body_state_2.names)
-
-    # CASE 1: We can combine two body states on the exact same bodies, as long as they define
-    # non-overlapping fields.
-    if common_names == set(body_state_1.names) == set(body_state_2.names):
-        # If these two body states define the same fields, they cannot be combined:
-        if (body_state_1.positions is not None) and (body_state_2.positions is not None):
-            return False
-        if (body_state_1.orientations is not None) and (body_state_2.orientations is not None):
-            return False
-        if (body_state_1.linear_velocities is not None) and (body_state_2.linear_velocities is not None):
-            return False
-        if (body_state_1.angular_velocities is not None) and (body_state_2.angular_velocities is not None):
-            return False
-
-        # These can be combined:
-        return BodyState(
-            names=body_state_1.names,
-            positions=body_state_1.positions if body_state_1.positions is not None else body_state_2.positions,
-            orientations=(
-                body_state_1.orientations if body_state_1.orientations is not None else body_state_2.orientations
-            ),
-            linear_velocities=(
-                body_state_1.linear_velocities
-                if body_state_1.linear_velocities is not None
-                else body_state_2.linear_velocities
-            ),
-            angular_velocities=(
-                body_state_1.angular_velocities
-                if body_state_1.angular_velocities is not None
-                else body_state_2.angular_velocities
-            ),
-        )
-
-    # CASE 2: If we do not have _full_ overlap in body names, then we cannot have any overlap.
-    if not len(common_names) == 0:
+    # States must have exactly the same spatial_space to be combined
+    # This ensures they are for the same spatial configuration
+    if spatial_state_1.spatial_space != spatial_state_2.spatial_space:
         return False
 
-    # The two body states must define the same fields:
-    if (body_state_1.positions is None) != (body_state_2.positions is None):
+    # Check if there's any overlap in valid flags (same frame, same field)
+    spatial_states_overlap = np.any(spatial_state_1.valid_array.numpy() & spatial_state_2.valid_array.numpy())
+    if spatial_states_overlap:
         return False
 
-    if (body_state_1.orientations is None) != (body_state_2.orientations is None):
-        return False
+    # There is no overlap, we can combine these values:
+    # For each data array, use np.where to combine based on valid flags
+    # Fill in position data (column 0 of valid)
+    position_data = np.where(
+        spatial_state_1.valid_array.numpy()[:, 0],  # Broadcast to match shape [n_frames, 3]
+        spatial_state_1.position_data.numpy(),
+        spatial_state_2.position_data.numpy(),
+    )
+    # Fill in orientation data (column 1 of valid)
+    orientation_data = np.where(
+        spatial_state_1.valid_array.numpy()[:, 1],  # Broadcast to match shape [n_frames, 4]
+        spatial_state_1.orientation_data.numpy(),
+        spatial_state_2.orientation_data.numpy(),
+    )
 
-    if (body_state_1.linear_velocities is None) != (body_state_2.linear_velocities is None):
-        return False
+    # Fill in linear velocity data (column 2 of valid)
+    linear_velocity_data = np.where(
+        spatial_state_1.valid_array.numpy()[:, 2],  # Broadcast to match shape [n_frames, 3]
+        spatial_state_1.linear_velocity_data.numpy(),
+        spatial_state_2.linear_velocity_data.numpy(),
+    )
 
-    if (body_state_1.angular_velocities is None) != (body_state_2.angular_velocities is None):
-        return False
+    # Fill in angular velocity data (column 3 of valid)
+    angular_velocity_data = np.where(
+        spatial_state_1.valid_array.numpy()[:, 3],  # Broadcast to match shape [n_frames, 3]
+        spatial_state_1.angular_velocity_data.numpy(),
+        spatial_state_2.angular_velocity_data.numpy(),
+    )
 
-    # combine the states:
-    combined_positions = None
-    if body_state_1.positions is not None:
-        combined_positions = _concatenate_warp_arrays(body_state_1.positions, body_state_2.positions)
+    # Combine valid flags
+    valid = np.where(
+        spatial_state_1.valid_array.numpy(),
+        spatial_state_1.valid_array.numpy(),
+        spatial_state_2.valid_array.numpy(),
+    )
 
-    combined_linear_velocities = None
-    if body_state_1.linear_velocities is not None:
-        combined_linear_velocities = _concatenate_warp_arrays(
-            body_state_1.linear_velocities, body_state_2.linear_velocities
-        )
-
-    combined_orientations = None
-    if body_state_1.orientations is not None:
-        combined_orientations = _concatenate_warp_arrays(body_state_1.orientations, body_state_2.orientations)
-
-    combined_angular_velocities = None
-    if body_state_1.angular_velocities is not None:
-        combined_angular_velocities = _concatenate_warp_arrays(
-            body_state_1.angular_velocities, body_state_2.angular_velocities
-        )
-
-    return BodyState(
-        names=[*body_state_1.names, *body_state_2.names],
-        positions=combined_positions,
-        orientations=combined_orientations,
-        linear_velocities=combined_linear_velocities,
-        angular_velocities=combined_angular_velocities,
+    return SpatialState(
+        spatial_space=spatial_state_1.spatial_space,
+        position_data=wp.array(position_data, dtype=wp.float32),
+        linear_velocity_data=wp.array(linear_velocity_data, dtype=wp.float32),
+        orientation_data=wp.array(orientation_data, dtype=wp.float32),
+        angular_velocity_data=wp.array(angular_velocity_data, dtype=wp.float32),
+        valid_array=wp.from_numpy(valid, dtype=wp.bool),
     )
 
 
@@ -487,9 +1343,9 @@ def combine_robot_states(robot_state_1: RobotState | None, robot_state_2: RobotS
     """Combine two robot states into a single robot state.
 
     This function merges two RobotState objects by combining their respective joint states,
-    root states, body states, and tool frame states. The combination succeeds only if the
+    root states, link states (spatial states), and site states (spatial states). The combination succeeds only if the
     component states are compatible (i.e., they don't define conflicting values for the same
-    joints, bodies, or root fields).
+    joints, frames, or root fields).
 
     Args:
         robot_state_1: The first robot state to combine, or None.
@@ -510,15 +1366,21 @@ def combine_robot_states(robot_state_1: RobotState | None, robot_state_2: RobotS
 
             # Create two robot states with different joints
             state_1 = RobotState(
-                joints=JointState(names=["joint_0"], positions=wp.array([0.0]))
+                joints=JointState.from_name(
+                    robot_joint_space=["joint_0", "joint_1"],
+                    positions=(["joint_0"], wp.array([0.0]))
+                )
             )
             state_2 = RobotState(
-                joints=JointState(names=["joint_1"], positions=wp.array([1.0]))
+                joints=JointState.from_name(
+                    robot_joint_space=["joint_0", "joint_1"],
+                    positions=(["joint_1"], wp.array([1.0]))
+                )
             )
 
             # Combine them into a single state
             combined = combine_robot_states(state_1, state_2)
-            # combined.joints.names == ["joint_0", "joint_1"]
+            # combined.joints.position_names == ["joint_0", "joint_1"]
     """
     # If either robot state is undefined, the entire robot state should be undefined.
     if (robot_state_1 is None) or (robot_state_2 is None):
@@ -532,13 +1394,13 @@ def combine_robot_states(robot_state_1: RobotState | None, robot_state_2: RobotS
     if root is False:
         return None
 
-    tool_frames = _combine_body_states(robot_state_1.tool_frames, robot_state_2.tool_frames)
+    sites = _combine_spatial_states(robot_state_1.sites, robot_state_2.sites)
 
-    if tool_frames is False:
+    if sites is False:
         return None
 
-    bodies = _combine_body_states(robot_state_1.bodies, robot_state_2.bodies)
-    if bodies is False:
+    links = _combine_spatial_states(robot_state_1.links, robot_state_2.links)
+    if links is False:
         return None
 
-    return RobotState(joints=joints, root=root, tool_frames=tool_frames, bodies=bodies)
+    return RobotState(joints=joints, root=root, links=links, sites=sites)

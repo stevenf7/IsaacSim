@@ -2,12 +2,30 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2026-02-16
+### Changed
+- `BodyState` renamed to `SpatialState` for clarity and consistency (not only used for bodies).
+- `RobotState.tool_frames` renamed to `RobotState.sites`, which is more general.
+- `JointState` and `SpatialState` now require known state-spaces. This prevents combining `RobotState` objects which are not intended for the same control-space.
+- `JointState` has much greater flexibility to combine, i.e. `joint_0` can be controlled in position while `joint_1` is controlled in effort. The logic to combine states has also been simplified.
+- `SpatialState` has much greater flexibility to combine, i.e. `frame_0` can be controlled in orientation while `frame_1` is controlled in position. The logic to combine states has also been simplified.
+### Added
+- `JointState.from_name` and `JointState.from_index` constructors, intended for construction of `JointState` objects by users.
+- `SpatialState.from_name` and `SpatialState.from_index` constructors, intended for construction of `SpatialState` objects by users.
+
+
+## [4.0.0] - 2026-02-16
+### Changed
+- `WorldBinding.synchronize` is split across two separate functions which can be called independently (`synchronize_transforms` or `synchronize_properties`).
+- The `WorldBinding.synchronize_properties` does some caching to perform less prim and property lookups.
+### Removed
+- `WorldBinding.synchronize_properties` no longer tracks the local matrix attribute. The RT change tracking on this attributes was updating for every object which moved, which was not the intended purpose, and caused inefficient updates.
+
 ## [3.0.0] - 2026-02-13
 ### Changed
 - `TrajectoryFollower.reset` now has semantically correct meaning. When `True` is returned, it means we can start to call `forward` on the controller.
 - `TrajectoryFollower` now follows a clear workflow: set_trajectory() --> reset() --> forward()
 - `TrajectoryFollower` deletes the trajectory and start time whenever the trajectory time is out of bounds.
-
 
 ## [2.1.1] - 2026-02-09
 ### Changed

@@ -42,6 +42,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=np.array([max_velocity]),
             max_accelerations=np.array([max_acceleration]),
+            robot_joint_space=["joint_0"],
             active_joints=["joint_0"],
         )
 
@@ -51,6 +52,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=wp.array([max_velocity]),
             max_accelerations=wp.array([max_acceleration]),
+            robot_joint_space=["joint_0"],
             active_joints=["joint_0"],
         )
 
@@ -60,6 +62,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=[max_velocity],
             max_accelerations=[max_acceleration],
+            robot_joint_space=["joint_0"],
             active_joints=["joint_0"],
         )
 
@@ -69,6 +72,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
             path.to_minimal_time_joint_trajectory,
             max_velocities=[max_velocity],
             max_accelerations=[max_acceleration],
+            robot_joint_space=["joint_0", "joint_1"],
             active_joints=["joint_0", "joint_1"],
         )
 
@@ -82,6 +86,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=np.array([max_velocity]),
             max_accelerations=np.array([max_acceleration]),
+            robot_joint_space=["joint_0"],
             active_joints=["joint_0"],
         )
 
@@ -150,6 +155,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=np.array([max_velocity]),
             max_accelerations=np.array([max_acceleration]),
+            robot_joint_space=["joint_0"],
             active_joints=["joint_0"],
         )
 
@@ -219,6 +225,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=np.array([max_velocity]),
             max_accelerations=np.array([max_acceleration]),
+            robot_joint_space=["joint_0"],
             active_joints=["joint_0"],
         )
 
@@ -300,6 +307,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=max_velocities,
             max_accelerations=max_accelerations,
+            robot_joint_space=["joint_0", "joint_1"],
             active_joints=["joint_0", "joint_1"],
         )
 
@@ -356,7 +364,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
             # i.e., every joint should always be the same percentage
             # completed their motion.
             for i_element in range(len(t_values) - 1):
-                self.assertTrue(abs(t_values[i_element] - t_values[i_element + 1]) < 1e-8)
+                self.assertTrue(abs(t_values[i_element] - t_values[i_element + 1]) < 1e-6)
 
     async def test_two_joints_with_one_stationary_joint(self):
         waypoints = np.array([[0.0, 0.1], [1.5, 0.1], [1.1, 0.1]])
@@ -368,6 +376,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=max_velocities,
             max_accelerations=max_accelerations,
+            robot_joint_space=["joint_0", "joint_1"],
             active_joints=["joint_0", "joint_1"],
         )
 
@@ -396,6 +405,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=max_velocities,
             max_accelerations=max_accelerations,
+            robot_joint_space=["joint_0", "joint_1"],
             active_joints=["joint_0", "joint_1"],
         )
 
@@ -452,7 +462,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
             # i.e., every joint should always be the same percentage
             # completed their motion.
             for i_element in range(len(t_values) - 1):
-                self.assertTrue(abs(t_values[i_element] - t_values[i_element + 1]) < 1e-8)
+                self.assertTrue(abs(t_values[i_element] - t_values[i_element + 1]) < 1e-6)
 
     async def test_two_joints_on_cpu_device(self):
 
@@ -472,6 +482,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=max_velocities,
             max_accelerations=max_accelerations,
+            robot_joint_space=["joint_0", "joint_1"],
             active_joints=["joint_0", "joint_1"],
         )
 
@@ -528,7 +539,7 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
             # i.e., every joint should always be the same percentage
             # completed their motion.
             for i_element in range(len(t_values) - 1):
-                self.assertTrue(abs(t_values[i_element] - t_values[i_element + 1]) < 1e-8)
+                self.assertTrue(abs(t_values[i_element] - t_values[i_element + 1]) < 1e-6)
 
     async def test_degenerate_inputs(self):
         # waypoints must be unique:
@@ -536,52 +547,118 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = [1.0, 1.0, 1.0]
         joints = [f"joint{i}" for i in range(3)]
-        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
+        with self.assertRaises(ValueError):
+            path.to_minimal_time_joint_trajectory(
+                max_velocities=max_velocities,
+                max_accelerations=max_accelerations,
+                robot_joint_space=joints,
+                active_joints=joints,
+            )
 
         path = mg.Path(waypoints=np.array([[0.0, 0.0, 0.2], [0.0, 0.1, 0.2], [0.0, 0.0, 0.0]]))
 
         # any maximum velocity or acceleration which is non-positive will raise.
         max_velocities = [0.0, 1.0, 1.0]
         max_accelerations = [1.0, 1.0, 1.0]
-        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
+        with self.assertRaises(ValueError):
+            path.to_minimal_time_joint_trajectory(
+                max_velocities=max_velocities,
+                max_accelerations=max_accelerations,
+                robot_joint_space=joints,
+                active_joints=joints,
+            )
         max_velocities = [1.0, -1.0, 1.0]
         max_accelerations = [1.0, 1.0, 1.0]
-        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
+        with self.assertRaises(ValueError):
+            path.to_minimal_time_joint_trajectory(
+                max_velocities=max_velocities,
+                max_accelerations=max_accelerations,
+                robot_joint_space=joints,
+                active_joints=joints,
+            )
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = [1.0, 0.0, 1.0]
-        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
+        with self.assertRaises(ValueError):
+            path.to_minimal_time_joint_trajectory(
+                max_velocities=max_velocities,
+                max_accelerations=max_accelerations,
+                robot_joint_space=joints,
+                active_joints=joints,
+            )
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = [1.0, -1e-5, 1.0]
-        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
+        with self.assertRaises(ValueError):
+            path.to_minimal_time_joint_trajectory(
+                max_velocities=max_velocities,
+                max_accelerations=max_accelerations,
+                robot_joint_space=joints,
+                active_joints=joints,
+            )
 
         # waypoints which are not 2-dimensional raise an error:
         self.assertRaises(ValueError, mg.Path, np.array([[[0.0, 0.0, 0.2], [0.0, 0.1, 0.2], [0.0, 0.0, 0.0]]]))
         self.assertRaises(ValueError, mg.Path, np.array([0.0, 0.0, 0.0]))
 
-        # maximum velocities which are not 1-dimensional raise a value error:
+        # velocity or acceleration bounds which are not 1-dimensional raise a ValueError:
         path = mg.Path(waypoints=np.array([[0.0, 0.0, 0.2], [0.0, 0.1, 0.2], [0.0, 0.0, 0.0]]))
         max_velocities = [[1.0, 1.0, 1.0]]
         max_accelerations = [1.0, 1.0, 1.0]
-        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
+        with self.assertRaises(ValueError):
+            path.to_minimal_time_joint_trajectory(
+                max_velocities=max_velocities,
+                max_accelerations=max_accelerations,
+                robot_joint_space=joints,
+                active_joints=joints,
+            )
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = [[1.0, 1.0, 1.0]]
-        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
+        with self.assertRaises(ValueError):
+            path.to_minimal_time_joint_trajectory(
+                max_velocities=max_velocities,
+                max_accelerations=max_accelerations,
+                robot_joint_space=joints,
+                active_joints=joints,
+            )
         max_velocities = np.array([[1.0, 1.0, 1.0]])
         max_accelerations = [1.0, 1.0, 1.0]
-        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
+        with self.assertRaises(ValueError):
+            path.to_minimal_time_joint_trajectory(
+                max_velocities=max_velocities,
+                max_accelerations=max_accelerations,
+                robot_joint_space=joints,
+                active_joints=joints,
+            )
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = np.array([[1.0, 1.0, 1.0]])
-        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
+        with self.assertRaises(ValueError):
+            path.to_minimal_time_joint_trajectory(
+                max_velocities=max_velocities,
+                max_accelerations=max_accelerations,
+                robot_joint_space=joints,
+                active_joints=joints,
+            )
 
-        # trying to add the wrong number of joint names raises an error:
+        # trying to add the wrong number of joint names raises a ValueError:
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = np.array([1.0, 1.0, 1.0])
         joints = [f"joint{i}" for i in range(4)]
-        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
+        with self.assertRaises(ValueError):
+            path.to_minimal_time_joint_trajectory(
+                max_velocities=max_velocities,
+                max_accelerations=max_accelerations,
+                robot_joint_space=joints,
+                active_joints=joints,
+            )
 
         # Trying to create a trajectory with only a single waypoint raises an error:
         path = mg.Path(waypoints=np.array([[0.0, 0.0, 0.0]]))
         max_velocities = [1.0, 1.0, 1.0]
         max_accelerations = np.array([1.0, 1.0, 1.0])
         joints = [f"joint{i}" for i in range(3)]
-        self.assertRaises(ValueError, path.to_minimal_time_joint_trajectory, max_velocities, max_accelerations, joints)
+        with self.assertRaises(ValueError):
+            path.to_minimal_time_joint_trajectory(
+                max_velocities=max_velocities,
+                max_accelerations=max_accelerations,
+                robot_joint_space=joints,
+                active_joints=joints,
+            )
