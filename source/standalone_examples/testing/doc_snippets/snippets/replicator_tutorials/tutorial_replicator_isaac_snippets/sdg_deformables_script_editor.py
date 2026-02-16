@@ -201,4 +201,4 @@ async def run_example_async(assets_config: list[tuple[str, int, str, float, floa
     render_product.destroy()
 
 
-asyncio.ensure_future(run_example_async())
+asyncio.ensure_future(run_example_async(ASSETS_CONFIG))
