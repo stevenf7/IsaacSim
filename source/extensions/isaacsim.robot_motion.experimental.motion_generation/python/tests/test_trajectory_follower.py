@@ -36,6 +36,7 @@ class TestTrajectoryFollower(omni.kit.test.AsyncTestCase):
         trajectory = path.to_minimal_time_joint_trajectory(
             max_velocities=np.array([0.5]),
             max_accelerations=np.array([0.1]),
+            robot_joint_space=["joint_0"],
             active_joints=["joint_0"],
         )
 
@@ -45,11 +46,11 @@ class TestTrajectoryFollower(omni.kit.test.AsyncTestCase):
 
         # create a dummy robot state:
         robot_state = mg.RobotState(
-            joints=mg.JointState(
-                names=["joint_0"],
-                positions=wp.array([0.0]),
-                velocities=wp.array([0.0]),
-                efforts=wp.array([0.0]),
+            joints=mg.JointState.from_name(
+                robot_joint_space=["joint_0"],
+                positions=(["joint_0"], wp.array([0.0])),
+                velocities=(["joint_0"], wp.array([0.0])),
+                efforts=(["joint_0"], wp.array([0.0])),
             )
         )
 
@@ -62,7 +63,7 @@ class TestTrajectoryFollower(omni.kit.test.AsyncTestCase):
         # by calling forward at t = 0.0, we should get the initial position:
         desired_state = follower.forward(robot_state, None, 0.0)
         self.assertIsNotNone(desired_state)
-        self.assertEqual(desired_state.joints.names, ["joint_0"])
+        self.assertEqual(desired_state.joints.position_names, ["joint_0"])
         self.assertTrue(np.allclose(desired_state.joints.positions.numpy(), np.array([0.0])))
         self.assertTrue(np.allclose(desired_state.joints.velocities.numpy(), np.array([0.0])))
         self.assertIsNone(desired_state.joints.efforts)
@@ -70,7 +71,7 @@ class TestTrajectoryFollower(omni.kit.test.AsyncTestCase):
         # if we call forward at the end time of the trajectory, we should get the final position:
         desired_state = follower.forward(robot_state, None, trajectory.duration)
         self.assertIsNotNone(desired_state)
-        self.assertEqual(desired_state.joints.names, ["joint_0"])
+        self.assertEqual(desired_state.joints.position_names, ["joint_0"])
         self.assertTrue(np.allclose(desired_state.joints.positions.numpy(), np.array([2.0])))
         self.assertTrue(np.allclose(desired_state.joints.velocities.numpy(), np.array([0.0])))
         self.assertIsNone(desired_state.joints.efforts)
@@ -106,7 +107,7 @@ class TestTrajectoryFollower(omni.kit.test.AsyncTestCase):
         follower.reset(robot_state, None, 1.0)
         desired_state = follower.forward(robot_state, None, trajectory.duration + 1.0)
         self.assertIsNotNone(desired_state)
-        self.assertEqual(desired_state.joints.names, ["joint_0"])
+        self.assertEqual(desired_state.joints.position_names, ["joint_0"])
         self.assertTrue(np.allclose(desired_state.joints.positions.numpy(), np.array([2.0])))
         self.assertTrue(np.allclose(desired_state.joints.velocities.numpy(), np.array([0.0])))
         self.assertIsNone(desired_state.joints.efforts)

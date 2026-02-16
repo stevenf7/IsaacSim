@@ -93,6 +93,7 @@ class Path:
         self,
         max_velocities: Union[list, np.ndarray, wp.array],
         max_accelerations: Union[list, np.ndarray, wp.array],
+        robot_joint_space: list[str],
         active_joints: list[str],
         waypoint_relative_difference_tolerance: float = 1e-6,
         waypoint_absolute_difference_tolerance: float = 1e-10,
@@ -102,6 +103,7 @@ class Path:
         Args:
             max_velocities: The maximum joint velocities.
             max_accelerations: The maximum joint accelerations.
+            robot_joint_space: The ordered list of joint names defining the joint space.
             active_joints: The active joints.
             waypoint_relative_difference_tolerance: Minimal relative difference required between waypoints.
             waypoint_absolute_difference_tolerance: Minimal absolute difference required between waypoints.
@@ -126,6 +128,7 @@ class Path:
             path=self,
             max_velocities=place(max_velocities, dtype=self._waypoints.dtype, device=self._waypoints.device),
             max_accelerations=place(max_accelerations, dtype=self._waypoints.dtype, device=self._waypoints.device),
+            robot_joint_space=robot_joint_space,
             active_joints=active_joints,
             waypoint_relative_difference_tolerance=waypoint_relative_difference_tolerance,
             waypoint_absolute_difference_tolerance=waypoint_absolute_difference_tolerance,
@@ -145,6 +148,7 @@ class MinimalTimeJointTrajectory(Trajectory):
         path: Path,
         max_velocities: Union[list, np.ndarray, wp.array],
         max_accelerations: Union[list, np.ndarray, wp.array],
+        robot_joint_space: list[str],
         active_joints: list[str],
         waypoint_relative_difference_tolerance: float,
         waypoint_absolute_difference_tolerance: float,
@@ -155,6 +159,7 @@ class MinimalTimeJointTrajectory(Trajectory):
             path: The Path object containing waypoints in joint-space.
             max_velocities: The maximum joint velocities.
             max_accelerations: The maximum joint accelerations.
+            robot_joint_space: The ordered list of joint names defining the joint space.
             active_joints: The active joints.
             waypoint_relative_difference_tolerance: Minimal relative difference required between waypoints.
             waypoint_absolute_difference_tolerance: Minimal absolute difference required between waypoints.
@@ -171,6 +176,7 @@ class MinimalTimeJointTrajectory(Trajectory):
             ValueError: If consecutive waypoints are equal within the allowed tolerances.
             ValueError: If there are not at least two waypoints.
         """
+        self._robot_joint_space = robot_joint_space
         self._active_joints = active_joints
         self._waypoints = path.get_waypoints()
         self._n_waypoints = path.get_waypoints_count()
@@ -420,10 +426,10 @@ class MinimalTimeJointTrajectory(Trajectory):
         )
 
         return RobotState(
-            joints=JointState(
-                names=self._active_joints,
-                positions=positions_out,
-                velocities=velocities_out,
+            joints=JointState.from_name(
+                robot_joint_space=self._robot_joint_space,
+                positions=(self._active_joints, positions_out),
+                velocities=(self._active_joints, velocities_out),
                 efforts=None,
             )
         )

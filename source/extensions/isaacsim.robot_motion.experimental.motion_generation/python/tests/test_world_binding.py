@@ -261,9 +261,9 @@ class TestWorldBinding(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(planning_world_sphere)
         self.assertTrue(np.isclose(planning_world_sphere.scale, [1.0, 1.0, 1.0]).all())
 
-        # after synchronizing, the planning world sphere is up-to-date:
+        # We cannot track local scale, so the sphere is not updated even after synchronizing:
         world_binding.synchronize()
-        self.assertTrue(np.isclose(planning_world_sphere.scale, [2.0, 3.0, 4.0]).all())
+        self.assertTrue(np.isclose(planning_world_sphere.scale, [1.0, 1.0, 1.0]).all())
         # the cube should not have changed:
         self.assertIsNotNone(planning_world_cube)
         self.assertTrue(np.isclose(planning_world_cube.scale, [2.0, 2.0, 2.0]).all())
@@ -276,13 +276,13 @@ class TestWorldBinding(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(planning_world_cube)
         self.assertTrue(np.isclose(planning_world_cube.scale, [2.0, 2.0, 2.0]).all())
 
-        # after synchronizing, the planning world cube is up-to-date:
+        # We cannot track local scale, so the cube is not updated even after synchronizing:
         world_binding.synchronize()
         self.assertIsNotNone(planning_world_cube)
-        self.assertTrue(np.isclose(planning_world_cube.scale, [3.0, 4.0, 5.0]).all())
+        self.assertTrue(np.isclose(planning_world_cube.scale, [2.0, 2.0, 2.0]).all())
         # the sphere should not have changed:
         self.assertIsNotNone(planning_world_sphere)
-        self.assertTrue(np.isclose(planning_world_sphere.scale, [2.0, 3.0, 4.0]).all())
+        self.assertTrue(np.isclose(planning_world_sphere.scale, [1.0, 1.0, 1.0]).all())
 
     async def test_update_sphere_properties(self):
         # create a sphere:
@@ -634,10 +634,11 @@ class TestWorldBinding(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.isclose(planning_world_mesh.scale, [1.0, 1.0, 1.0]).all())
         self.assertTrue(planning_world_mesh.enabled)
 
+        # All is tracked, but the scale is not updated because we cannot track local scale:
         world_binding.synchronize()
         self.assertTrue(np.isclose(planning_world_mesh.pose[0], [-1.0, -2.0, -3.0]).all())
         self.assertTrue(np.isclose(planning_world_mesh.pose[1], [0.0, 1.0, 0.0, 0.0]).all())
-        self.assertTrue(np.isclose(planning_world_mesh.scale, [2.0, 3.0, 4.0]).all())
+        self.assertTrue(np.isclose(planning_world_mesh.scale, [1.0, 1.0, 1.0]).all())
         self.assertFalse(planning_world_mesh.enabled)
 
     async def test_add_triangulated_mesh(self):
@@ -740,11 +741,12 @@ class TestWorldBinding(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.isclose(planning_world_mesh.pose[1], [1.0, 0.0, 0.0, 0.0]).all())
         self.assertTrue(np.isclose(planning_world_mesh.scale, [1.0, 1.0, 1.0]).all())
 
+        # All is tracked, but the scale is not updated because we cannot track local scale:
         world_binding.synchronize()
         self.assertFalse(planning_world_mesh.enabled)
         self.assertTrue(np.isclose(planning_world_mesh.pose[0], [-1.0, -2.0, -3.0]).all())
         self.assertTrue(np.isclose(planning_world_mesh.pose[1], [0.0, 1.0, 0.0, 0.0]).all())
-        self.assertTrue(np.isclose(planning_world_mesh.scale, [2.0, 3.0, 4.0]).all())
+        self.assertTrue(np.isclose(planning_world_mesh.scale, [1.0, 1.0, 1.0]).all())
 
     async def test_add_oriented_bounding_box(self):
         sphere_path = "/World/Sphere"
@@ -806,11 +808,12 @@ class TestWorldBinding(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.isclose(planning_world_obb.pose[1], [1.0, 0.0, 0.0, 0.0]).all())
         self.assertTrue(np.isclose(planning_world_obb.scale, [2.0, 1.0, 1.0]).all())
 
+        # All is tracked, but the scale is not updated because we cannot track local scale:
         world_binding.synchronize()
         self.assertFalse(planning_world_obb.enabled)
         self.assertTrue(np.isclose(planning_world_obb.pose[0], [3.0, 4.0, 5.0]).all())
         self.assertTrue(np.isclose(planning_world_obb.pose[1], [0.0, 0.0, 1.0, 0.0]).all())
-        self.assertTrue(np.isclose(planning_world_obb.scale, [2.0, 2.0, 2.0]).all())
+        self.assertTrue(np.isclose(planning_world_obb.scale, [2.0, 1.0, 1.0]).all())
         self.assertTrue(np.isclose(planning_world_obb.rotation_matrix.numpy(), np.eye(3)).all())
         self.assertAlmostEqual(planning_world_obb.safety_tolerance, 0.01)
         self.assertTrue(np.allclose(planning_world_obb.center.numpy(), np.array([0.0, 0.0, 0.0], dtype=np.float32)))
@@ -864,3 +867,106 @@ class TestWorldBinding(omni.kit.test.AsyncTestCase):
 
         # Verify WorldBinding was not initialized
         self.assertFalse(world_binding._initialized)
+
+    async def test_synchronize_transforms(self):
+        """Test that synchronize_transforms updates only poses without checking properties."""
+        # Create a sphere
+        stage_sphere = Sphere(
+            paths="/World/Sphere",
+            radii=0.05,
+            positions=[1.0, 2.0, 3.0],
+            orientations=[1.0, 0.0, 0.0, 0.0],
+            scales=[1.0, 1.0, 1.0],
+        )
+
+        sphere_geom = GeomPrim("/World/Sphere", apply_collision_apis=True)
+        await get_app().next_update_async()
+
+        # Create world binding
+        world_binding: WorldBinding[MirrorWorldInterface] = WorldBinding(
+            world_interface=MirrorWorldInterface(),
+            obstacle_strategy=ObstacleStrategy(),
+            tracked_prims=["/World/Sphere"],
+            tracked_collision_api=TrackableApi.PHYSICS_COLLISION,
+        )
+        world_binding.initialize()
+        planning_world_sphere = world_binding.get_world_interface().collision_objects["/World/Sphere"]
+
+        # Verify initial position
+        self.assertTrue(np.isclose(planning_world_sphere.pose[0], [1.0, 2.0, 3.0]).all())
+
+        # Move the sphere and set the radii and collision enable.
+        stage_sphere.set_world_poses(
+            positions=[5.0, 6.0, 7.0],
+            orientations=[0.0, 1.0, 0.0, 0.0],
+        )
+        stage_sphere.set_radii(1.0)
+        sphere_geom.set_enabled_collisions(False)
+        await get_app().next_update_async()
+
+        # Before synchronizing transforms, pose should not be updated
+        self.assertTrue(np.isclose(planning_world_sphere.pose[0], [1.0, 2.0, 3.0]).all())
+
+        # Synchronize only transforms
+        world_binding.synchronize_transforms()
+
+        # After synchronizing transforms, pose should be updated
+        self.assertTrue(np.isclose(planning_world_sphere.pose[0], [5.0, 6.0, 7.0]).all())
+        self.assertTrue(np.isclose(planning_world_sphere.pose[1], [0.0, 1.0, 0.0, 0.0]).all())
+
+        # The radii and collision enables are not updated:
+        self.assertAlmostEqual(planning_world_sphere.radius, 0.05)
+        self.assertTrue(planning_world_sphere.enabled)
+
+    async def test_synchronize_properties(self):
+        """Test that synchronize_properties updates shape properties using change tracking."""
+        # Create a sphere
+        stage_sphere = Sphere(
+            paths="/World/Sphere",
+            radii=0.1,
+            positions=[0.0, 0.0, 0.0],
+            orientations=[1.0, 0.0, 0.0, 0.0],
+            scales=[1.0, 1.0, 1.0],
+        )
+
+        sphere_geom = GeomPrim("/World/Sphere", apply_collision_apis=True)
+        sphere_geom.set_enabled_collisions(True)
+        await get_app().next_update_async()
+
+        # Create world binding
+        world_binding: WorldBinding[MirrorWorldInterface] = WorldBinding(
+            world_interface=MirrorWorldInterface(),
+            obstacle_strategy=ObstacleStrategy(),
+            tracked_prims=["/World/Sphere"],
+            tracked_collision_api=TrackableApi.PHYSICS_COLLISION,
+        )
+        world_binding.initialize()
+        planning_world_sphere = world_binding.get_world_interface().collision_objects["/World/Sphere"]
+
+        # Verify initial properties
+        self.assertAlmostEqual(planning_world_sphere.radius, 0.1)
+        self.assertTrue(planning_world_sphere.enabled)
+
+        # Change sphere radius, disable collision, and move the sphere.
+        stage_sphere.set_world_poses(
+            positions=[5.0, 6.0, 7.0],
+            orientations=[0.0, 1.0, 0.0, 0.0],
+        )
+        stage_sphere.set_radii(0.2)
+        sphere_geom.set_enabled_collisions(False)
+        await get_app().next_update_async()
+
+        # Before synchronizing, properties should not be updated
+        self.assertAlmostEqual(planning_world_sphere.radius, 0.1)
+        self.assertTrue(planning_world_sphere.enabled)
+
+        # Synchronize only properties
+        world_binding.synchronize_properties()
+
+        # After synchronizing, properties should be updated
+        self.assertAlmostEqual(planning_world_sphere.radius, 0.2)
+        self.assertFalse(planning_world_sphere.enabled)
+
+        # The transforms are not updated.
+        self.assertFalse(np.isclose(planning_world_sphere.pose[0], [5.0, 6.0, 7.0]).all())
+        self.assertFalse(np.isclose(planning_world_sphere.pose[1], [0.0, 1.0, 0.0, 0.0]).all())
