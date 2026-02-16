@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Run Python linting tools on Isaac Sim extensions, one extension at a time.
 
 This script runs multiple linting tools on each extension separately, providing
@@ -69,6 +70,8 @@ Usage (via repo.sh):
     ./repo.sh run_python_linting --diff-only
 """
 
+from __future__ import annotations
+
 import argparse
 import fnmatch
 import json
@@ -77,8 +80,9 @@ import shutil
 import subprocess
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 # =============================================================================
 # Tool Configurations (hardcoded defaults when config files not supported)
