@@ -32,6 +32,8 @@ from omni.client import CopyBehavior, Result
 
 DEFAULT_ASSET_ROOT_PATH_SETTING = "/persistent/isaac/asset_root/default"
 DEFAULT_ASSET_ROOT_TIMEOUT_SETTING = "/persistent/isaac/asset_root/timeout"
+DEFAULT_ASSET_ROOT_RETRY_ATTEMPTS_SETTING = "/persistent/isaac/asset_root/retry_attempts"
+DEFAULT_ASSET_ROOT_RETRY_BASE_DELAY_SETTING = "/persistent/isaac/asset_root/retry_base_delay"
 
 
 class Version(namedtuple("Version", "major minor patch")):
@@ -260,30 +262,62 @@ def check_server(server: str, path: str, timeout: float = 10.0) -> bool:
 async def check_server_async(server: str, path: str, timeout: float = 10.0) -> bool:
     """Check a specific server for a path (asynchronous version).
 
+    This function retries transient failures using exponential backoff.
+    It retries when the stat operation times out or returns
+    ``omni.client.Result.ERROR_CONNECTION``. Retry behavior is controlled by:
+    ``/persistent/isaac/asset_root/retry_attempts`` and
+    ``/persistent/isaac/asset_root/retry_base_delay``.
+
     Args:
         server: Name of Nucleus server.
         path: Path to search.
-        timeout: Timeout in seconds. Default value: 10 seconds.
+        timeout: Per-attempt timeout in seconds. Default value: 10 seconds.
 
     Returns:
-        True if folder is found.
+        True if folder is found, False otherwise.
     """
     carb.log_info("Checking path: {}{}".format(server, path))
 
-    try:
-        result, _ = await asyncio.wait_for(omni.client.stat_async("{}{}".format(server, path)), timeout)
-        if result == Result.OK:
-            carb.log_info("Success: {}{}".format(server, path))
-            return True
-        else:
-            carb.log_info("Failure: {}{} not accessible".format(server, path))
+    settings = carb.settings.get_settings()
+    retry_attempts = settings.get(DEFAULT_ASSET_ROOT_RETRY_ATTEMPTS_SETTING)
+    if not isinstance(retry_attempts, int) or retry_attempts < 1:
+        retry_attempts = 3
+    retry_base_delay = settings.get(DEFAULT_ASSET_ROOT_RETRY_BASE_DELAY_SETTING)
+    if not isinstance(retry_base_delay, (int, float)) or retry_base_delay <= 0:
+        retry_base_delay = 0.5
+
+    delay = float(retry_base_delay)
+    server_path = "{}{}".format(server, path)
+    for attempt in range(1, retry_attempts + 1):
+        try:
+            result, _ = await asyncio.wait_for(omni.client.stat_async(server_path), timeout)
+            if result == Result.OK:
+                carb.log_info("Success: {}".format(server_path))
+                return True
+            if result == Result.ERROR_CONNECTION and attempt < retry_attempts:
+                carb.log_warn(
+                    f"check_server_async() connection error on attempt {attempt}/{retry_attempts}, retrying in {delay:.2f}s"
+                )
+                await asyncio.sleep(delay)
+                delay *= 2
+                continue
+            carb.log_info("Failure: {} not accessible".format(server_path))
             return False
-    except asyncio.TimeoutError:
-        carb.log_warn(f"check_server_async() timeout {timeout}")
-        return False
-    except Exception as ex:
-        carb.log_warn(f"Exception: {type(ex).__name__}")
-        return False
+        except asyncio.TimeoutError:
+            if attempt < retry_attempts:
+                carb.log_warn(
+                    f"check_server_async() timeout {timeout} on attempt {attempt}/{retry_attempts}, retrying in {delay:.2f}s"
+                )
+                await asyncio.sleep(delay)
+                delay *= 2
+                continue
+            carb.log_warn(f"check_server_async() timeout {timeout}")
+            return False
+        except Exception as ex:
+            carb.log_warn(f"Exception: {type(ex).__name__}")
+            return False
+
+    return False
 
 
 def build_server_list() -> typing.List:
