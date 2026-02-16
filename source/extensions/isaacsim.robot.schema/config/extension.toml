@@ -18,8 +18,8 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"omni.usd.libs" = {}
 "omni.usd" = {}
+"omni.usd.libs" = {}
 
 [[python.module]]
 name = "omni.isaac.RangeSensorSchema"

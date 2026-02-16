@@ -32,11 +32,10 @@ name = "isaacsim.robot.schema.ui"
 name = "isaacsim.robot.schema.ui.tests"
 
 [[test]]
-dependencies = ["isaacsim.storage.native"]
-
-
-[[test]]
 name = "startup"
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
 ]
+
+[[test]]
+dependencies = ["isaacsim.storage.native"]

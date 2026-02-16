@@ -21,3 +21,8 @@ writeTarget.kit = true
 
 [[python.module]]
 name = "isaacsim.asset.importer.heightmap"
+
+[[test]]
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]

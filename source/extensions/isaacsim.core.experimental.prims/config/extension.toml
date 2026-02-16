@@ -97,11 +97,11 @@ name = "newton"
 timeout = 900
 enabled = false
 dependencies = [
-    "isaacsim.core.experimental.materials",  # for visual/physics materials
-    "isaacsim.core.experimental.objects",  # for GroundPlane/Cube in tests
-    "isaacsim.storage.native",
+    "isaacsim.core.experimental.materials", # for visual/physics materials
+    "isaacsim.core.experimental.objects", # for GroundPlane/Cube in tests
     "isaacsim.physics.newton",
-    "isaacsim.test.utils", # Used to suppress NumPy coverage errors
+    "isaacsim.storage.native",
+    "isaacsim.test.utils" # Used to suppress NumPy coverage errors
 ]
 args = [
     "--enable",

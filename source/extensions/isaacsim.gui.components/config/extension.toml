@@ -36,6 +36,9 @@ name = "isaacsim.gui.components"
 name = "isaacsim.gui.components.tests"
 
 [[test]]
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
 
 dependencies = [
     "isaacsim.core.experimental.utils",

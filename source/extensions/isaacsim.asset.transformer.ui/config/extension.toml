@@ -14,11 +14,11 @@ icon = "data/icon.png"
 feature = true
 
 [dependencies]
+"isaacsim.asset.transformer" = {}
+"isaacsim.asset.transformer.rules" = {}
 "omni.kit.menu.utils" = {}
 "omni.kit.window.filepicker" = {}
 "omni.usd" = {}
-"isaacsim.asset.transformer" = {}
-"isaacsim.asset.transformer.rules" = {}
 
 [[python.module]]
 name = "isaacsim.asset.transformer.ui"

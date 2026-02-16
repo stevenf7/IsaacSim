@@ -22,3 +22,8 @@ name = "isaacsim.examples.ui"
 
 [[python.module]]
 name = "isaacsim.examples.ui.tests"
+
+[[test]]
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
