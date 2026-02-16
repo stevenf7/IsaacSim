@@ -23,6 +23,8 @@ from pxr import Gf, Sdf, Usd, UsdGeom
 
 from .common import _TEST_ADVANCED_USD, _TEST_COLLISION_FROM_VISUALS_USD, _UR10E_SHOULDER_USD, _UR10E_USD
 
+_TRANSFORM_TOLERANCE = 1e-6
+
 
 class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
     """Async tests for GeometriesRoutingRule."""
@@ -474,11 +476,25 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
             for p in Usd.PrimRange(base_stage.GetPrimAtPath("/"), Usd.TraverseInstanceProxies())
             if UsdGeom.Gprim(p)
         }
-        self.assertEqual(mesh_global_transforms_expected, mesh_global_transforms)
+        self.assertEqual(
+            set(mesh_global_transforms_expected.keys()),
+            set(mesh_global_transforms.keys()),
+            "Transform dict keys mismatch",
+        )
+        for prim_path, expected_xform in mesh_global_transforms_expected.items():
+            actual_xform = mesh_global_transforms[prim_path]
+            for row in range(4):
+                for col in range(4):
+                    self.assertAlmostEqual(
+                        expected_xform[row][col],
+                        actual_xform[row][col],
+                        msg=f"Transform mismatch at {prim_path}[{row}][{col}]",
+                        delta=_TRANSFORM_TOLERANCE,
+                    )
         self._success = True
 
     async def test_process_rule_name_clash_instances(self):
-        """Verify cylinders with name clashes are routed to unique instances."""
+        """Verify meshes with name clashes are routed to unique instances."""
         os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
         temp_input = os.path.join(self._tmpdir, "test_advanced.usda")
 
@@ -504,24 +520,32 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
         geometries_stage = Usd.Stage.Open(os.path.join(self._tmpdir, "payloads", "geometries.usd"))
         instances_stage = Usd.Stage.Open(os.path.join(self._tmpdir, "payloads", "instances.usda"))
 
-        cylinder_geometries = [prim for prim in geometries_stage.Traverse() if prim.IsA(UsdGeom.Cylinder)]
-        self.assertEqual(len(cylinder_geometries), 2)
+        mesh_geometries = [prim for prim in geometries_stage.Traverse() if prim.IsA(UsdGeom.Mesh)]
+        self.assertEqual(len(mesh_geometries), 2)
+
+        # Verify non-Mesh Gprims (Cylinders, Cubes, etc.) were NOT routed to geometries
+        non_mesh_in_geometries = [
+            prim for prim in geometries_stage.Traverse() if prim.IsA(UsdGeom.Gprim) and not prim.IsA(UsdGeom.Mesh)
+        ]
+        self.assertEqual(
+            len(non_mesh_in_geometries), 0, f"Non-Mesh Gprims found in geometries: {non_mesh_in_geometries}"
+        )
 
         instances_root = instances_stage.GetPrimAtPath("/Instances")
         self.assertTrue(instances_root.IsValid())
 
-        cylinder_instances = []
+        mesh_instances = []
         for instance_root in instances_root.GetChildren():
             for child in instance_root.GetChildren():
-                if child.IsA(UsdGeom.Cylinder):
-                    cylinder_instances.append((instance_root, child))
+                if child.IsA(UsdGeom.Mesh):
+                    mesh_instances.append((instance_root, child))
                     break
 
-        self.assertEqual(len(cylinder_instances), 4)
+        self.assertEqual(len(mesh_instances), 4)
 
         instances_layer = instances_stage.GetRootLayer()
         geometry_ref_counts = {}
-        for instance_root, _ in cylinder_instances:
+        for instance_root, _ in mesh_instances:
             prim_spec = instances_layer.GetPrimAtPath(instance_root.GetPath())
             self.assertIsNotNone(prim_spec)
             references = list(prim_spec.referenceList.GetAddedOrExplicitItems())
@@ -534,7 +558,7 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
         self.assertTrue(all(count == 2 for count in geometry_ref_counts.values()))
 
         source_layer = updated_stage.GetRootLayer()
-        source_cylinder_paths = [
+        source_mesh_paths = [
             "/test_advanced/Geometry/root_link/base_link/link_1/cylinder",
             "/test_advanced/Geometry/root_link/base_link/link_1/link_2/cylinder",
             "/test_advanced/Geometry/root_link/base_link/link_1/cylinder_1",
@@ -546,7 +570,7 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
         }
 
         referenced_instances = set()
-        for source_path in source_cylinder_paths:
+        for source_path in source_mesh_paths:
             prim_spec = source_layer.GetPrimAtPath(source_path)
             self.assertIsNotNone(prim_spec)
 
@@ -560,14 +584,14 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
             instance_root = instances_stage.GetPrimAtPath(instance_path)
             self.assertTrue(instance_root.IsValid())
 
-            instance_cylinder = None
+            instance_mesh = None
             for child in instance_root.GetChildren():
-                if child.IsA(UsdGeom.Cylinder):
-                    instance_cylinder = child
+                if child.IsA(UsdGeom.Mesh):
+                    instance_mesh = child
                     break
 
-            self.assertIsNotNone(instance_cylinder)
-            purpose_attr = instance_cylinder.GetAttribute("purpose")
+            self.assertIsNotNone(instance_mesh)
+            purpose_attr = instance_mesh.GetAttribute("purpose")
             has_guide = bool(purpose_attr and purpose_attr.HasAuthoredValue() and purpose_attr.Get() == "guide")
 
             if source_path in expected_guide_paths:
@@ -576,6 +600,12 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
                 self.assertFalse(has_guide)
 
         self.assertEqual(len(referenced_instances), 4)
+
+        # Verify the Cylinder prims in the source stage were NOT affected by the rule
+        cyl_prim = updated_stage.GetPrimAtPath("/test_advanced/Geometry/root_link/base_link/link_1/visual_cyl")
+        self.assertTrue(cyl_prim.IsValid())
+        self.assertTrue(cyl_prim.IsA(UsdGeom.Cylinder))
+
         self._success = True
 
     async def test_process_rule_preserves_parent_properties_on_merge(self):
@@ -624,6 +654,20 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
         inertia_attr = prim.GetAttribute("physics:diagonalInertia")
         self.assertTrue(inertia_attr and inertia_attr.HasAuthoredValue())
         self.assertEqual(inertia_attr.Get(), Gf.Vec3f(2, 3, 4))
+
+        # Verify non-Mesh Gprims (Sphere) were NOT routed to geometries
+        geometries_stage = Usd.Stage.Open(os.path.join(self._tmpdir, "payloads", "geometries.usd"))
+        non_mesh_in_geometries = [
+            prim for prim in geometries_stage.Traverse() if prim.IsA(UsdGeom.Gprim) and not prim.IsA(UsdGeom.Mesh)
+        ]
+        self.assertEqual(
+            len(non_mesh_in_geometries), 0, f"Non-Mesh Gprims found in geometries: {non_mesh_in_geometries}"
+        )
+
+        # Verify the Sphere in the source stage was NOT affected by the rule
+        sphere_prim = updated_stage.GetPrimAtPath("/test_collision_from_visuals/Geometry/root_link/base_link/sphere")
+        self.assertTrue(sphere_prim.IsValid())
+        self.assertTrue(sphere_prim.IsA(UsdGeom.Sphere))
 
         self._success = True
 

@@ -17,6 +17,8 @@ from ..utils import (
     copy_stage_metadata,
     find_first_resolvable_arc,
     get_path_string,
+    is_builtin_mdl,
+    norm_path,
     remap_asset_path,
     resolve_asset_path,
     sanitize_prim_name,
@@ -165,13 +167,13 @@ class VariantRoutingRule(RuleInterface):
                 if payload.assetPath:
                     resolved = self._resolve_asset_path(payload.assetPath)
                     if resolved:
-                        asset_to_variant[os.path.normpath(resolved)] = variant_name
+                        asset_to_variant[norm_path(resolved)] = variant_name
 
             for ref in references:
                 if ref.assetPath:
                     resolved = self._resolve_asset_path(ref.assetPath)
                     if resolved:
-                        asset_to_variant[os.path.normpath(resolved)] = variant_name
+                        asset_to_variant[norm_path(resolved)] = variant_name
 
         return asset_to_variant
 
@@ -196,7 +198,7 @@ class VariantRoutingRule(RuleInterface):
             Dict mapping original absolute paths to collected absolute paths.
         """
         collected: dict[str, str] = {}
-        source_norm = os.path.normpath(source_layer_path)
+        source_norm = norm_path(source_layer_path)
 
         try:
             layers, assets, unresolved = UsdUtils.ComputeAllDependencies(source_layer_path)
@@ -208,16 +210,16 @@ class VariantRoutingRule(RuleInterface):
             self.log_operation(f"Failed to compute dependencies for {source_layer_path}: {e}")
             return collected
 
-        def should_skip(norm_path: str) -> bool:
+        def should_skip(normed: str) -> bool:
             """Check if a path should be skipped from collection.
 
             Args:
-                norm_path: Normalized absolute path.
+                normed: Normalized (case-folded) absolute path.
 
             Returns:
                 True if the path should be skipped.
             """
-            return norm_path == source_norm or norm_path in variant_file_map or norm_path in collected
+            return normed == source_norm or normed in variant_file_map or normed in collected
 
         def collect_path(path_obj: object, is_layer: bool = False) -> None:
             """Collect a single dependency path.
@@ -232,15 +234,20 @@ class VariantRoutingRule(RuleInterface):
                     self.log_operation(f"Skipping non-existent layer: {abs_path}")
                 return
 
-            norm_path = os.path.normpath(abs_path)
-            if should_skip(norm_path):
-                if is_layer and norm_path in variant_file_map:
-                    self.log_operation(f"Skipping variant file (will be remapped): {norm_path}")
+            # Skip built-in MDL files (e.g. OmniPBR.mdl) -- they ship with
+            # the runtime and must not be collected as dependencies.
+            if is_builtin_mdl(abs_path):
+                return
+
+            normed = norm_path(abs_path)
+            if should_skip(normed):
+                if is_layer and normed in variant_file_map:
+                    self.log_operation(f"Skipping variant file (will be remapped): {normed}")
                 return
 
             dest_path = copy_file_to_directory(abs_path, dependencies_dir, collected)
             if dest_path:
-                collected[norm_path] = dest_path
+                collected[normed] = dest_path
                 log_type = "layer" if is_layer else "asset"
                 self.log_operation(f"Collected {log_type} dependency: {os.path.basename(abs_path)}")
 
@@ -354,10 +361,10 @@ class VariantRoutingRule(RuleInterface):
             self.log_operation(f"Variant delta arc references non-existent file: {asset_path} (tried: {abs_path})")
             return
 
-        norm_path = os.path.normpath(resolved_path)
+        normed = norm_path(resolved_path)
 
         # Skip if already collected or is a variant file
-        if norm_path in all_collected_deps or norm_path in variant_file_map:
+        if normed in all_collected_deps or normed in variant_file_map:
             return
 
         self.log_operation(f"Collecting variant delta dependency: {asset_path} -> {resolved_path}")
@@ -367,10 +374,10 @@ class VariantRoutingRule(RuleInterface):
         all_collected_deps.update(deps)
 
         # Also add the file itself if it wasn't included in deps
-        if norm_path not in all_collected_deps:
+        if normed not in all_collected_deps:
             dest_path = copy_file_to_directory(resolved_path, dependencies_dir, all_collected_deps)
             if dest_path:
-                all_collected_deps[norm_path] = dest_path
+                all_collected_deps[normed] = dest_path
                 self.log_operation(f"Collected arc target: {os.path.basename(resolved_path)}")
 
     def _copy_layer_with_remapping(
@@ -852,7 +859,7 @@ class VariantRoutingRule(RuleInterface):
         # This lets us find the original location of each copied file
         new_to_original: dict[str, str] = {}
         for orig_path, new_path in all_collected_deps.items():
-            norm_new = os.path.normpath(new_path)
+            norm_new = norm_path(new_path)
             new_to_original[norm_new] = orig_path
 
         usd_extensions = utils.USD_EXTENSIONS
@@ -874,7 +881,7 @@ class VariantRoutingRule(RuleInterface):
                 continue
 
             # Find the ORIGINAL location of this file
-            norm_filepath = os.path.normpath(filepath)
+            norm_filepath = norm_path(filepath)
             original_file_path = new_to_original.get(norm_filepath)
 
             if original_file_path:

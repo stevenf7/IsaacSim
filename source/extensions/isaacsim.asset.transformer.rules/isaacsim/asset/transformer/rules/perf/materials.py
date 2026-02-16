@@ -55,26 +55,6 @@ _TEXTURE_ASSET_EXTENSIONS: frozenset[str] = frozenset(
 )
 _TRANSFERABLE_ASSET_EXTENSIONS: frozenset[str] = _TEXTURE_ASSET_EXTENSIONS.union({".mdl"})
 
-# Built-in MDL files that ship with the runtime and should never be
-# downloaded, extracted, or have their paths rewritten.
-_BUILTIN_MDL_FILES: frozenset[str] = frozenset(
-    (
-        "omnipbr.mdl",
-        "omnipbr_base.mdl",
-        "omnipbr_clearcoat.mdl",
-        "omniglass.mdl",
-        "omniemissive.mdl",
-        "omnisurface.mdl",
-        "omnisurfacebase.mdl",
-        "omnisurfaceblend.mdl",
-        "omnisurfacelite.mdl",
-        "omnisurfacelitebase.mdl",
-        "omnihair.mdl",
-        "omnihairbase.mdl",
-        "usdpreviewsurface.mdl",
-    )
-)
-
 _MDL_TEXTURE_PATH_PATTERN = re.compile(
     r'"([^"]+\.(?:' + "|".join(sorted(ext.lstrip(".") for ext in _TEXTURE_ASSET_EXTENSIONS)) + r'))"',
     re.IGNORECASE,
@@ -599,7 +579,7 @@ class MaterialsRoutingRule(RuleInterface):
                 return
             # Skip built-in MDL files (e.g. OmniPBR.mdl) -- they ship with
             # the runtime and must not be extracted or have paths rewritten.
-            if os.path.basename(path).lower() in _BUILTIN_MDL_FILES:
+            if utils.is_builtin_mdl(path):
                 return
             asset_paths.add(path)
             if os.path.splitext(path)[1].lower() == ".mdl":
@@ -1125,8 +1105,7 @@ class MaterialsRoutingRule(RuleInterface):
                     new_rel_path = None
 
                     # Never rewrite paths to built-in MDL files
-                    _check_name = os.path.basename(old_path or old_resolved or "").lower()
-                    if _check_name in _BUILTIN_MDL_FILES:
+                    if utils.is_builtin_mdl(old_path or old_resolved or ""):
                         continue
 
                     # Try matching by resolved path first

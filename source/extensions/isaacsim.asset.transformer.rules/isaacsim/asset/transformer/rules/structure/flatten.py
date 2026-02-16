@@ -109,6 +109,11 @@ class FlattenRule(RuleInterface):
             self.log_operation(f"Failed to open input stage: {input_stage_path}")
             return None
 
+        # Reload the root layer from disk so that modifications made by
+        # previous flatten operations (e.g. cleared variant selections)
+        # do not leak through USD's process-wide layer cache.
+        input_stage.GetRootLayer().Reload()
+
         # Clear remaining variant selections before flattening
         if clear_variants:
             self._clear_all_variant_selections(input_stage)
@@ -119,6 +124,12 @@ class FlattenRule(RuleInterface):
 
         # Flatten the stage
         flattened_layer = input_stage.Flatten()
+
+        # Restore the root layer from disk so that in-memory edits
+        # (cleared/applied variant selections) don't persist in the
+        # USD layer cache and affect other code sharing the same layer.
+        input_stage.GetRootLayer().Reload()
+
         if not flattened_layer:
             self.log_operation("Failed to flatten input stage")
             return None

@@ -66,7 +66,15 @@ class TestModels(omni.kit.test.AsyncTestCase):
         parsed = json.loads(s1)
         self.assertSetEqual(
             set(parsed.keys()),
-            {"interface_asset_name", "output_package_root", "profile_name", "rules", "version"},
+            {
+                "base_name",
+                "flatten_source",
+                "interface_asset_name",
+                "output_package_root",
+                "profile_name",
+                "rules",
+                "version",
+            },
         )
         self.assertEqual(parsed["rules"][0]["name"], "A")
         self.assertIs(parsed["rules"][1]["enabled"], False)
