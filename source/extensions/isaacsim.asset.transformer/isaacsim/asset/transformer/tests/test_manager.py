@@ -28,7 +28,7 @@ class _DummyRule(RuleInterface):
     def process_rule(self) -> None:
         """Record a dummy log entry and affected stage."""
         self.log_operation("dummy-run")
-        self.add_affected_stage(self.args.get("destination") or "memory")
+        self.add_affected_stage(self.destination_path or "memory")
         return
 
     def get_configuration_parameters(self) -> list[RuleConfigurationParam]:
@@ -38,6 +38,34 @@ class _DummyRule(RuleInterface):
             Empty list of configuration parameters.
         """
         return []
+
+
+class _FakeLayer:
+    """Minimal layer mock supporting Export, Save, dirty, and realPath."""
+
+    def __init__(self) -> None:
+        self.realPath = ""
+        self.dirty = False
+
+    def Export(self, path: str) -> bool:  # noqa: N802
+        self.realPath = path
+        return True
+
+    def Save(self) -> None:  # noqa: N802
+        pass
+
+
+class _FakeStage:
+    """Minimal stage mock supporting GetRootLayer and Flatten."""
+
+    def __init__(self) -> None:
+        self._layer = _FakeLayer()
+
+    def GetRootLayer(self):  # noqa: N802
+        return self._layer
+
+    def Flatten(self):  # noqa: N802
+        return _FakeLayer()
 
 
 def _fake_usd(open_returns: object | None) -> types.SimpleNamespace:
@@ -53,6 +81,17 @@ def _fake_usd(open_returns: object | None) -> types.SimpleNamespace:
     fake_stage_mod.Open = lambda path: open_returns
     fake_stage_mod.CreateInMemory = lambda: object()
     return types.SimpleNamespace(Stage=fake_stage_mod)
+
+
+def _fake_sdf() -> types.SimpleNamespace:
+    """Create a fake Sdf module with a controllable Layer.FindOrOpen result.
+
+    Returns:
+        Simple namespace mimicking the Sdf module.
+    """
+    fake_layer_mod = types.SimpleNamespace()
+    fake_layer_mod.FindOrOpen = lambda path: None
+    return types.SimpleNamespace(Layer=fake_layer_mod)
 
 
 class TestManager(omni.kit.test.AsyncTestCase):
@@ -86,9 +125,13 @@ class TestManager(omni.kit.test.AsyncTestCase):
 
     async def test_manager_run_happy_path(self):
         """Verify manager run succeeds with a registered rule."""
-        fake_usd = _fake_usd(open_returns=object())
+        fake_stage = _FakeStage()
+        fake_usd = _fake_usd(open_returns=fake_stage)
+        fake_sdf = _fake_sdf()
         with (
             patch("isaacsim.asset.transformer.manager.Usd", fake_usd, create=True),
+            patch("isaacsim.asset.transformer.manager.Sdf", fake_sdf, create=True),
+            patch("isaacsim.asset.transformer.manager.os.makedirs"),
             patch("isaacsim.asset.transformer.rule_interface.Usd", fake_usd, create=True),
         ):
             reg = RuleRegistry()
@@ -117,9 +160,13 @@ class TestManager(omni.kit.test.AsyncTestCase):
 
     async def test_manager_run_missing_implementation_sets_error(self):
         """Verify missing rule implementations set error status."""
-        fake_usd = _fake_usd(open_returns=object())
+        fake_stage = _FakeStage()
+        fake_usd = _fake_usd(open_returns=fake_stage)
+        fake_sdf = _fake_sdf()
         with (
             patch("isaacsim.asset.transformer.manager.Usd", fake_usd, create=True),
+            patch("isaacsim.asset.transformer.manager.Sdf", fake_sdf, create=True),
+            patch("isaacsim.asset.transformer.manager.os.makedirs"),
             patch("isaacsim.asset.transformer.rule_interface.Usd", fake_usd, create=True),
         ):
             RuleRegistry().clear()

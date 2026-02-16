@@ -213,3 +213,98 @@ class TestFlattenRule(omni.kit.test.AsyncTestCase):
         self.assertTrue(any("FlattenRule start" in msg for msg in log))
         self.assertTrue(any("FlattenRule completed" in msg for msg in log))
         self._success = True
+
+    async def test_flatten_return_value_and_invalid_input(self):
+        """process_rule returns abs output path; invalid input stage path handled gracefully."""
+        stage = Usd.Stage.Open(_UR10E_USD)
+        failures = []
+
+        # -- Return value is absolute path ending with output filename --
+        os.makedirs(os.path.join(self._tmpdir, "rv"), exist_ok=True)
+        rule_rv = FlattenRule(
+            source_stage=stage,
+            package_root=self._tmpdir,
+            destination_path="rv",
+            args={
+                "input_stage_path": _UR10E_USD,
+                "params": {"output_path": "flat.usda", "clear_variants": False},
+            },
+        )
+        result = rule_rv.process_rule()
+        if result is None:
+            failures.append("process_rule returned None instead of output path")
+        elif not os.path.isabs(result):
+            failures.append(f"Return path not absolute: {result}")
+        elif not result.endswith("flat.usda"):
+            failures.append(f"Return path doesn't end with flat.usda: {result}")
+
+        # -- Invalid input stage path (Usd.Stage.Open raises on missing layers) --
+        rule_bad = FlattenRule(
+            source_stage=stage,
+            package_root=self._tmpdir,
+            destination_path="",
+            args={"input_stage_path": "/nonexistent/stage.usd"},
+        )
+        try:
+            bad_result = rule_bad.process_rule()
+            # If it doesn't raise, it should at least return None or log failure
+            bad_log = rule_bad.get_operation_log()
+            if bad_result is not None and not any("Failed" in m for m in bad_log):
+                failures.append("Invalid input path should return None or log failure")
+        except Exception:
+            pass  # pxr.Tf.ErrorException is the expected outcome
+
+        self.assertEqual(failures, [], "\n".join(failures))
+        self._success = True
+
+    async def test_flatten_variant_selection_edge_cases(self):
+        """Case-insensitive match, nonexistent variant set, nonexistent variant name."""
+        stage = Usd.Stage.Open(_UR10E_USD)
+        failures = []
+
+        # -- Case-insensitive variant match ('physx' -> 'PhysX') --
+        os.makedirs(os.path.join(self._tmpdir, "ci"), exist_ok=True)
+        rule_ci = FlattenRule(
+            source_stage=stage,
+            package_root=self._tmpdir,
+            destination_path="ci",
+            args={
+                "input_stage_path": _UR10E_USD,
+                "params": {
+                    "output_path": "ci.usda",
+                    "clear_variants": True,
+                    "selected_variants": {"Physics": "physx"},
+                    "case_insensitive": True,
+                },
+            },
+        )
+        rule_ci.process_rule()
+        ci_log = rule_ci.get_operation_log()
+        if not any("Case-insensitive match" in m or "Set variant" in m for m in ci_log):
+            failures.append("Case-insensitive match not logged")
+
+        # -- Nonexistent variant set --
+        os.makedirs(os.path.join(self._tmpdir, "ns"), exist_ok=True)
+        rule_ns = FlattenRule(
+            source_stage=stage,
+            package_root=self._tmpdir,
+            destination_path="ns",
+            args={
+                "input_stage_path": _UR10E_USD,
+                "params": {
+                    "output_path": "ns.usda",
+                    "clear_variants": False,
+                    "selected_variants": {"NonExistentSet": "value"},
+                },
+            },
+        )
+        rule_ns.process_rule()
+        ns_log = rule_ns.get_operation_log()
+        if not any("not found on default prim" in m for m in ns_log):
+            failures.append("Nonexistent variant set not logged as skipped")
+        ns_output = os.path.join(self._tmpdir, "ns", "ns.usda")
+        if not os.path.exists(ns_output):
+            failures.append("Output not created despite invalid variant set request")
+
+        self.assertEqual(failures, [], "\n".join(failures))
+        self._success = True

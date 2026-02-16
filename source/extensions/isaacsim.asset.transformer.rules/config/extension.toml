@@ -1,5 +1,5 @@
 [package]
-version = "0.1.0"
+version = "1.0.1"
 category = "Simulation"
 title = "Isaac Sim Asset Transformer Rules"
 description = "Rule implementations for the Asset Transformer"
@@ -7,6 +7,8 @@ authors = ["gasoto@nvidia.com"]
 keywords = ["isaac", "assets", "transform", "rules"]
 readme = "docs/README.md"
 changelog = "docs/CHANGELOG.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
 
 [dependencies]
 "isaacsim.asset.transformer" = {}

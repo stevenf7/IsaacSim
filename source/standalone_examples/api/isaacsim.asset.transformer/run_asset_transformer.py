@@ -97,7 +97,7 @@ parser.add_argument(
     action="store_true",
     help="Run in test mode: uses UR10e test asset with Isaac Sim Structure profile into a temp directory",
 )
-args = parser.parse_args()
+args, unknown = parser.parse_known_args()
 
 # In test mode, defer path resolution until after SimulationApp is initialized
 # (extension paths are only available after kit startup)
@@ -319,6 +319,10 @@ def main():
         return 1
 
     finally:
+        # Flush pending async operations before shutdown
+        kit.update()
+        kit.update()
+
         if test_tmpdir:
             import shutil
 
@@ -329,4 +333,3 @@ def main():
 if __name__ == "__main__":
     exit_code = main()
     kit.close()
-    sys.exit(exit_code)

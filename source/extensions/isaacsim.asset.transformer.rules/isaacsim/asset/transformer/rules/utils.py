@@ -13,6 +13,60 @@ from pxr import Sdf, Usd
 # USD file extensions (including zipped)
 USD_EXTENSIONS: frozenset[str] = frozenset({".usd", ".usda", ".usdc", ".usdz"})
 
+# Built-in MDL files that ship with the runtime and should never be
+# collected, extracted, or have their paths rewritten.  Compared
+# case-insensitively (all entries are lowercase).
+BUILTIN_MDL_FILES: frozenset[str] = frozenset(
+    (
+        "omnipbr.mdl",
+        "omnipbr_base.mdl",
+        "omnipbr_clearcoat.mdl",
+        "omniglass.mdl",
+        "omniemissive.mdl",
+        "omnisurface.mdl",
+        "omnisurfacebase.mdl",
+        "omnisurfaceblend.mdl",
+        "omnisurfacelite.mdl",
+        "omnisurfacelitebase.mdl",
+        "omnihair.mdl",
+        "omnihairbase.mdl",
+        "usdpreviewsurface.mdl",
+    )
+)
+
+
+def is_builtin_mdl(path: str) -> bool:
+    """Check whether *path* refers to a built-in MDL file.
+
+    The check is purely name-based and case-insensitive so that it works
+    regardless of how the path was resolved.
+
+    Args:
+        path: File-system or asset path (absolute or relative).
+
+    Returns:
+        ``True`` when the basename matches a known built-in MDL.
+    """
+    return os.path.basename(path).lower() in BUILTIN_MDL_FILES
+
+
+def norm_path(path: str) -> str:
+    """Normalize a path for cross-platform comparison.
+
+    Uses ``normpath`` for separator and dot normalization, then
+    ``normcase`` so that look-ups in dicts keyed by path work on
+    case-insensitive file systems (Windows).  On Linux ``normcase``
+    is a no-op, so behaviour is unchanged.
+
+    Args:
+        path: The file-system path to normalize.
+
+    Returns:
+        Normalized path string suitable for dict keys and comparisons.
+    """
+    return os.path.normcase(os.path.normpath(path))
+
+
 # Schema metadata keys to remove from copied attributes
 SCHEMA_METADATA_TO_REMOVE: tuple[str, ...] = ("allowedTokens", "doc", "displayName")
 
@@ -1059,15 +1113,15 @@ def remap_asset_path(
     else:
         abs_path = os.path.normpath(os.path.join(source_dir, original_path))
 
-    norm_path = os.path.normpath(abs_path)
+    normed = norm_path(abs_path)
 
     # Build list of paths to try (include USD extension variations)
-    paths_to_try = [norm_path]
-    base, ext = os.path.splitext(norm_path)
+    paths_to_try = [normed]
+    base, ext = os.path.splitext(normed)
     if ext.lower() == ".usd":
-        paths_to_try.extend([base + ".usda", base + ".usdc"])
+        paths_to_try.extend([norm_path(base + ".usda"), norm_path(base + ".usdc")])
     elif ext.lower() in (".usda", ".usdc"):
-        paths_to_try.append(base + ".usd")
+        paths_to_try.append(norm_path(base + ".usd"))
 
     # Check variant file map first (try all path variations)
     for try_path in paths_to_try:
@@ -1110,11 +1164,11 @@ def copy_file_to_directory(
     if not os.path.isfile(src_path):
         return None
 
-    norm_path = os.path.normpath(src_path)
+    normed = norm_path(src_path)
 
     # Skip if already collected
-    if existing_collected and norm_path in existing_collected:
-        return existing_collected[norm_path]
+    if existing_collected and normed in existing_collected:
+        return existing_collected[normed]
 
     filename = os.path.basename(src_path)
     dest_path = os.path.join(dest_dir, filename)

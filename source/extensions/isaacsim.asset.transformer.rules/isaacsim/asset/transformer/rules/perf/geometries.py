@@ -2844,8 +2844,8 @@ class GeometriesRoutingRule(RuleInterface):
             # Check for xformOps on this prim
             xform_op_names = [
                 attr_name
-                for attr_name in prim_spec.attributes.keys()
-                if attr_name.startswith("xformOp:")  # noqa: SIM118
+                for attr_name in prim_spec.attributes.keys()  # noqa: SIM118
+                if attr_name.startswith("xformOp:")
             ]
             has_xform_op_order = "xformOpOrder" in prim_spec.attributes
 
