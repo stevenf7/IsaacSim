@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.3] - 2026-02-12
+### Added
+- `XformPrim` now creates `FabricHierarchyLocalMatrix` and `FabricHierarchyWorldMatrix` if they don't exist.
+
 ## [1.1.2] - 2026-02-06
 ### Changed
 - Update deprecated Warp API calls to their updated names
