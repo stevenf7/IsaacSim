@@ -490,9 +490,14 @@ pydoclint validates that docstrings match function signatures and that types are
 ```
 
 Configuration used:
+- `--style=google` - Google-style docstrings
 - `--arg-type-hints-in-docstring=false` - Types should NOT be in docstrings
 - `--arg-type-hints-in-signature=true` - Types should be in function signatures
-- `--style=google` - Google-style docstrings
+- `--check-return-types=false` - Return types not checked in docstrings (types belong in signatures)
+- `--check-yield-types=false` - Yield types not checked in docstrings
+- `--require-return-section-when-returning-nothing=false` - Void functions don't need a Returns section
+- `--skip-checking-raises=true` - Raises sections are not enforced by pydoclint
+- `--check-class-attributes=false` - Class attribute documentation not enforced by pydoclint
 
 ### ruff (enforces docstring style, modern annotations, naming, and code quality)
 
