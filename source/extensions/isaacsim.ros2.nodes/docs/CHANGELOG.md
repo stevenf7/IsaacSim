@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.6.1] - 2026-02-16
+### Changed
+- Add missing dependency for isaacsim.sensors.physics.nodes
+
 ## [1.6.0] - 2026-02-01
 ### Changed
 - Update isaacsim.sensors.physics dependency to isaacsim.sensors.experimental.physics
