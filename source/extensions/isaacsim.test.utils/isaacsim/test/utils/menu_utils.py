@@ -13,16 +13,122 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import carb.settings
+import carb
 import omni.kit.app
 import omni.kit.ui_test as ui_test
-from omni.kit.ui_test import menu_click
+from omni import ui
+from omni.kit.ui_test import Vec2, emulate_mouse_move, get_menubar, wait_n_updates
 
-# Carb settings path used to control the log level of the omni.kit.ui_test.query
-# channel.  menu_click() unconditionally calls carb.log_error() when an
-# intermediate submenu does not become visible in time, so we temporarily raise
-# the threshold during non-final retries to avoid noisy logs.
-_LOG_CHANNEL_SETTING = "/log/channels/omni.kit.ui_test.query"
+# Maximum number of frames to poll when waiting for a menu item to become
+# findable or for a submenu to become visible after clicking.
+_DEFAULT_MAX_WAIT_FRAMES = 100
+
+
+async def _wait_for_menu_item(parent_widget, menu_name: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES):
+    """Poll until ``parent_widget.find_menu(menu_name)`` returns a non-None result.
+
+    Args:
+        parent_widget: The parent ``MenuRef`` to search within.
+        menu_name: The menu item text to search for.
+        max_frames: Maximum frames to poll before giving up.
+
+    Returns:
+        The found ``MenuRef``, or ``None`` if not found within *max_frames*.
+    """
+    for frame in range(max_frames):
+        result = parent_widget.find_menu(menu_name)
+        if result is not None:
+            if frame > 0:
+                carb.log_info(
+                    f"[menu_click_with_retry] find_menu('{menu_name}') " f"succeeded after {frame} extra frame(s)"
+                )
+            return result
+        await omni.kit.app.get_app().next_update_async()
+    return None
+
+
+async def _wait_for_shown(menu_widget, menu_name: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES) -> bool:
+    """Poll until ``menu_widget.widget.shown`` becomes True.
+
+    Args:
+        menu_widget: The ``MenuRef`` whose ``shown`` state to check.
+        menu_name: Menu name (used for logging).
+        max_frames: Maximum frames to poll before giving up.
+
+    Returns:
+        True if the menu became shown, False if timed out.
+    """
+    for frame in range(max_frames):
+        if menu_widget.widget.shown:
+            if frame > 0:
+                carb.log_info(f"[menu_click_with_retry] '{menu_name}' became shown " f"after {frame} extra frame(s)")
+            return True
+        await omni.kit.app.get_app().next_update_async()
+    return False
+
+
+async def _navigate_menu(menu_path: str, human_delay_speed: int = 10) -> bool:
+    """Navigate through a menu hierarchy step-by-step with polling.
+
+    Unlike ``omni.kit.ui_test.menu_click``, this function polls at each step
+    rather than waiting a fixed number of frames.  This avoids both the
+    ``AttributeError`` (from ``find_menu`` returning ``None``) and the
+    ``carb.log_error`` (from a submenu not becoming visible in time).
+
+    Args:
+        menu_path: Full menu path separated by ``/``.
+        human_delay_speed: Frames to wait between mouse interactions for
+            natural-feeling timing.
+
+    Returns:
+        True if the full path was navigated and clicked successfully,
+        False otherwise.
+    """
+    import omni.appwindow
+
+    menu_widget = get_menubar()
+    app_win = omni.appwindow.get_default_app_window()
+
+    # Move mouse away from menus first (mirrors menu_click behaviour).
+    await emulate_mouse_move(Vec2(app_win.get_size().x - 10, app_win.get_size().y - 10))
+    await wait_n_updates(human_delay_speed)
+
+    segments = menu_path.split("/")
+    for idx, menu_name in enumerate(segments):
+        # Poll until the menu item is findable in the widget tree.
+        child = await _wait_for_menu_item(menu_widget, menu_name)
+        if child is None:
+            carb.log_info(f"[menu_click_with_retry] could not find menu item " f"'{menu_name}' in '{menu_path}'")
+            return False
+
+        menu_widget = child
+
+        # Move mouse to the menu item.
+        menu_pos = menu_widget.center
+        if idx == 0:
+            menu_pos += Vec2(10 * ui.Workspace.get_dpi_scale(), 5 * ui.Workspace.get_dpi_scale())
+        await emulate_mouse_move(menu_pos)
+        await wait_n_updates(human_delay_speed)
+
+        # If this is a submenu (ui.Menu), click to open and poll for shown.
+        if isinstance(menu_widget.widget, ui.Menu):
+            if not menu_widget.widget.shown:
+                await menu_widget.click()
+            elif menu_widget.widget.has_triggered_fn():
+                menu_widget.widget.call_triggered_fn()
+
+            if not await _wait_for_shown(menu_widget, menu_name):
+                carb.log_info(
+                    f"[menu_click_with_retry] submenu '{menu_name}' did " f"not become shown in '{menu_path}'"
+                )
+                return False
+        else:
+            # Leaf menu item -- click it.
+            await menu_widget.click()
+            await wait_n_updates(human_delay_speed)
+
+    await wait_n_updates(human_delay_speed)
+    return True
 
 
 async def menu_click_with_retry(
@@ -31,18 +137,23 @@ async def menu_click_with_retry(
     """Click a menu item with retry at different delay speeds.
 
     Some menu items require different timing to be clicked successfully.
-    This function tries multiple delay values before giving up.
+    This function navigates the menu hierarchy step-by-step, polling at each
+    level until the submenu is found and becomes visible.  If a full
+    navigation attempt fails, it retries with the next delay value.
 
-    Error logs emitted by ``omni.kit.ui_test.menu_click`` are suppressed during
-    intermediate retry attempts so that transient timing failures do not pollute
-    the test output.  Errors are only surfaced on the final retry attempt.
+    This avoids the ``carb.log_error`` and ``AttributeError`` that
+    ``omni.kit.ui_test.menu_click`` can produce when submenus are slow to
+    appear.
 
     Args:
         menu_path: The menu path to click (e.g., "Create/Sensors/Contact Sensor").
-        delays: List of delay values to try in milliseconds. Defaults to [5, 50, 100].
+        delays: List of delay values (in frames) to use for ``human_delay_speed``
+            on each attempt. Defaults to ``[5, 10, 20]``.
         window_name: Optional window name to check for after clicking.
             If provided, the function returns early when the window is found
             and returns the window widget.
+        wait_n_frames: Number of frames to wait after a successful click when
+            ``window_name`` is not provided.
 
     Returns:
         The found window widget if window_name is provided and found, else None.
@@ -62,37 +173,41 @@ async def menu_click_with_retry(
         ...     window_name="Differential Controller"
         ... )
     """
-    delays = delays or [5, 50, 100]
-    settings = carb.settings.get_settings()
+    delays = delays or [5, 10, 20]
+
+    carb.log_info(
+        f"[menu_click_with_retry] starting: menu_path='{menu_path}', " f"window_name={window_name!r}, delays={delays}"
+    )
 
     for i, delay in enumerate(delays):
-        is_last = i == len(delays) - 1
+        carb.log_info(
+            f"[menu_click_with_retry] attempt {i + 1}/{len(delays)} " f"(human_delay_speed={delay}) for '{menu_path}'"
+        )
 
-        # Suppress error logs from menu_click during intermediate retries.
-        prev_level = settings.get(_LOG_CHANNEL_SETTING)
-        if not is_last:
-            settings.set(_LOG_CHANNEL_SETTING, "fatal")
-        try:
-            await menu_click(menu_path, human_delay_speed=delay)
-            if window_name:
-                if (window := ui_test.find(window_name)) is not None:
-                    return window
-            else:
-                for _ in range(wait_n_frames):
-                    await omni.kit.app.get_app().next_update_async()
-                return None
-        except AttributeError as e:
-            if "NoneType" in str(e) and not is_last:
-                continue
-            raise
-        finally:
-            # Restore the previous log level for non-final retries.
-            if not is_last:
-                if prev_level is not None:
-                    settings.set(_LOG_CHANNEL_SETTING, prev_level)
-                else:
-                    settings.set(_LOG_CHANNEL_SETTING, "warn")
+        success = await _navigate_menu(menu_path, human_delay_speed=delay)
 
+        if not success:
+            carb.log_info(
+                f"[menu_click_with_retry] navigation failed on attempt " f"{i + 1}/{len(delays)} for '{menu_path}'"
+            )
+            continue
+
+        if window_name:
+            if (window := ui_test.find(window_name)) is not None:
+                carb.log_info(
+                    f"[menu_click_with_retry] window '{window_name}' found " f"on attempt {i + 1}/{len(delays)}"
+                )
+                return window
+            carb.log_info(
+                f"[menu_click_with_retry] window '{window_name}' not found " f"on attempt {i + 1}/{len(delays)}"
+            )
+        else:
+            carb.log_info(f"[menu_click_with_retry] succeeded on attempt " f"{i + 1}/{len(delays)} for '{menu_path}'")
+            for _ in range(wait_n_frames):
+                await omni.kit.app.get_app().next_update_async()
+            return None
+
+    carb.log_info(f"[menu_click_with_retry] all {len(delays)} attempts exhausted for '{menu_path}'")
     return None
 
 
