@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.12] - 2026-02-06
+### Changed
+- Change occupancy map radius for Carter Robot
+
 ## [0.1.11] - 2025-12-10
 ### Changed
 - Fix USD path for placement of front camera on Carter with latest USD asset

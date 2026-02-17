@@ -1,5 +1,5 @@
 [package]
-version = "0.1.11"
+version = "0.1.12"
 category = "Simulation"
 title = "MobilityGen Examples"
 description = "Example robot and scenario implementations for MobilityGen"
@@ -37,7 +37,7 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
-stdoutFailPatterns.exclude = [    
+stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]
 
@@ -91,6 +91,6 @@ args = [
     "--/rtx/reservedDescriptors=900000",
 ]
 
-stdoutFailPatterns.exclude = [    
+stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]

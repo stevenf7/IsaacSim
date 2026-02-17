@@ -84,7 +84,10 @@ class MobilityGenWriter:
     def copy_stage(self, input_path: str):
         if not os.path.exists(self.path):
             os.makedirs(self.path)
-        shutil.copyfile(input_path, os.path.join(self.path, "stage.usd"))
+        if input_path.endswith(".usdz"):
+            shutil.copyfile(input_path, os.path.join(self.path, "stage.usdz"))
+        else:
+            shutil.copyfile(input_path, os.path.join(self.path, "stage.usd"))
 
     def write_config(self, config: Config):
         if not os.path.exists(self.path):
@@ -100,6 +103,9 @@ class MobilityGenWriter:
     def copy_init(self, other_path: str):
         if not os.path.exists(self.path):
             os.makedirs(self.path)
-        shutil.copyfile(os.path.join(other_path, "stage.usd"), os.path.join(self.path, "stage.usd"))
+        if os.path.exists(os.path.join(other_path, "stage.usdz")):
+            shutil.copyfile(os.path.join(other_path, "stage.usdz"), os.path.join(self.path, "stage.usdz"))
+        else:
+            shutil.copyfile(os.path.join(other_path, "stage.usd"), os.path.join(self.path, "stage.usd"))
         shutil.copyfile(os.path.join(other_path, "config.json"), os.path.join(self.path, "config.json"))
         shutil.copytree(os.path.join(other_path, "occupancy_map"), os.path.join(self.path, "occupancy_map"))

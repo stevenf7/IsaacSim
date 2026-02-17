@@ -32,7 +32,10 @@ def load_scenario(path: str) -> MobilityGenScenario:
     config = reader.read_config()
     robot_type = ROBOTS.get(config.robot_type)
     scenario_type = SCENARIOS.get(config.scenario_type)
-    open_stage(os.path.join(path, "stage.usd"))
+    if os.path.exists(os.path.join(path, "stage.usdz")):
+        open_stage(os.path.join(path, "stage.usdz"))
+    else:
+        open_stage(os.path.join(path, "stage.usd"))
 
     stage = get_current_stage()
 

@@ -224,7 +224,7 @@ class CarterRobot(WheeledMobilityGenRobot):
     chase_camera_z_offset: float = 0.8
     chase_camera_tilt_angle: float = 60.0
 
-    occupancy_map_radius: float = 1.0
+    occupancy_map_radius: float = 0.55
     occupancy_map_z_min: float = 0.1
     occupancy_map_z_max: float = 0.62
     occupancy_map_cell_size: float = 0.05
