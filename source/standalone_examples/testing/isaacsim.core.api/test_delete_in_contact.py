@@ -70,11 +70,10 @@ def block_1_is_contacting_block_0():
     raw_data = contact_manager.get_raw_contacts_for_body(body_token)
     in_contact = False
     for c in raw_data:
-        c = [*c]
         print(c)
         if block_0.prim_paths[0] in {
-            str(PhysicsSchemaTools.intToSdfPath(c[2])),
-            str(PhysicsSchemaTools.intToSdfPath(c[3])),
+            str(PhysicsSchemaTools.intToSdfPath(c["body0"])),
+            str(PhysicsSchemaTools.intToSdfPath(c["body1"])),
         }:
             in_contact = True
             break

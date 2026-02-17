@@ -256,6 +256,28 @@ Run performance benchmarks:
 ./tests/tests-standalone_benchmarks-benchmark_scene_loading.sh
 ```
 
+## Running Tests with Python Code Coverage
+
+To enable Python code coverage when running tests, append the Carb setting `--/exts/omni.kit.test/pyCoverageEnabled=True` to the test command.
+
+### Examples
+
+```bash
+# Extension test with coverage
+./tests/tests-isaacsim.core.nodes.sh --/exts/omni.kit.test/pyCoverageEnabled=True
+
+# Filtered test with coverage
+./tests/tests-isaacsim.core.nodes.sh -f "test_attach_hydra_texture" --/exts/omni.kit.test/pyCoverageEnabled=True
+
+# Standalone test with coverage
+./tests/tests-nativepython-isaacsim.core.api.add_cubes.sh --/exts/omni.kit.test/pyCoverageEnabled=True
+```
+
+### Notes
+- This is the same flag used by CI (configured in `repo.toml` under `repo_test.suites`).
+- When coverage is enabled, the `isaacsim.test.utils` extension automatically applies numpy compatibility patches to handle `coverage.py` sentinels that can interfere with numpy operations.
+- The setting is read at runtime via `carb.settings` at the path `/exts/omni.kit.test/pyCoverageEnabled`.
+
 ## Test Naming Convention
 
 Test names follow a consistent pattern:

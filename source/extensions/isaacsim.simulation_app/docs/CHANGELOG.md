@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.15.2] - 2026-02-16
+### Changed
+- Update error message when application fails to start and exit before proceeding to make debugging easier. 
+
 ## [2.15.1] - 2026-02-13
 ### Changed
 - Fix issue where simulation app close() method would hang if the app was already stopped

@@ -560,6 +560,12 @@ class SimulationApp:
         args.extend(unknown_args)
         self.app.startup("kit", os.environ["CARB_APP_PATH"], args)
         carb.log_info("SimulationApp._start_app: Kit application startup completed")
+
+        # Check if the app actually started successfully (e.g. dependency solver may have failed)
+        if not self._app.is_running():
+            carb.log_error("SimulationApp._start_app: Application failed to start. " "Check the log above for errors.")
+            sys.exit(1)
+
         # if user called with -h kit auto exits so we force exit the script here as well
         if "-h" in unknown_args or "--help" in unknown_args:
             carb.log_info("SimulationApp._start_app: Help requested, exiting")
