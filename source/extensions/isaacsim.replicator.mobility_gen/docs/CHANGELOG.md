@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.2.0] - 2026-02-06
+### Added
+- Support loading usdz asset
+
 ## [0.1.14] - 2025-12-07
 ### Changed
 - Fix clang tidy issues in cpp code

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.0] - 2026-02-06
+### Added
+- Support loading usdz asset
+
 ## [0.1.10] - 2025-10-27
 ### Changed
 - Make omni.isaac.ml_archive an explicit test dependency

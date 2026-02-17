@@ -28,6 +28,7 @@ import isaacsim.replicator.mobility_gen.examples
 import numpy as np
 import omni.ext
 import omni.kit
+import omni.kit.usdz_export as usdz_export
 import omni.ui as ui
 from isaacsim.core.utils.stage import open_stage, save_stage
 from isaacsim.core.utils.viewports import set_active_viewport_camera
@@ -284,8 +285,13 @@ class MobilityGenExtension(omni.ext.IExt):
 
             # Open stage and save local copy
             open_stage(scene_usd_str)
-            self.cached_stage_path = os.path.join(tempfile.mkdtemp(), "stage.usd")
-            save_stage(self.cached_stage_path, save_and_reload_in_place=False)
+            # Check if stage is a USDZ file
+            if scene_usd_str.endswith(".usdz"):
+                self.cached_stage_path = os.path.join(tempfile.mkdtemp(), "stage.usdz")
+                await usdz_export.usdz_export(scene_usd_str, self.cached_stage_path)
+            else:
+                self.cached_stage_path = os.path.join(tempfile.mkdtemp(), "stage.usd")
+                save_stage(self.cached_stage_path, save_and_reload_in_place=False)
 
             # Initialize world
             world = new_world(physics_dt=robot_type.physics_dt)
