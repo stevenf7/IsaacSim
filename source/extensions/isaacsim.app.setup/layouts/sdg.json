@@ -120,7 +120,7 @@
                 "height": 633.0,
                 "position_x": 1858.0,
                 "position_y": 26.0,
-                "selected_in_dock": true,
+                "selected_in_dock": false,
                 "title": "Robot Hierarchy",
                 "visible": true,
                 "width": 689.0
