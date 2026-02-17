@@ -895,6 +895,69 @@ limitations under the License.
 "platform:windows-x86_64".enabled = false # Disable docs generation for windows64 platforms, as it is not supported.
 "platform:linux-x86_64".enabled = true
 
+# User guide docs (migrated from isaacsim-docs)
+docs_root = "docs_temp/docs/app_isaacsim"
+name = "Isaac Sim Documentation"
+project = "isaac-sim"
+copyright_start = 2023
+version = "6.0.0"
+version_selector_enabled = true
+logo_target_url = "index.html"
+copybutton_enabled = true
+enhanced_search_enabled = true
+external_links_open_new_tab = true
+mr_version_override_enabled = false
+output_path_template = "${project}/latest${dash_build}"
+
+sphinx_exclude_patterns = [
+    "_build",
+    "**/license_files/*.md",
+    "**/custom/*.rst",
+    "${root}/docs_temp/docs/app_isaacsim/assets/SICK/**/readme.md",
+]
+
+python_paths = [
+    "${root}/docs_temp/docs",
+    "${root}/docs_temp/docs/conf/ext",
+]
+
+sphinx_parallel = "auto"
+
+sphinx_conf_py_extra = """
+from terms import TERMS
+rst_epilog = TERMS
+
+try:
+    suppress_warnings.append("myst.header")
+except NameError:
+    suppress_warnings = ["myst.header"]
+
+try:
+    extensions.append("config_selector")
+except NameError:
+    extensions = ["config_selector"]
+"""
+
+breadcrumbs_home_url = "../../index.html"
+breadcrumbs_add_project = true
+
+extra_content_head = [
+    "${env:TRACKING_SCRIPT}"
+]
+
+deps = [
+   ["extensions", "https://docs.omniverse.nvidia.com/extensions/latest"],
+   ["dev-guide", "https://docs.omniverse.nvidia.com/dev-guide/latest"],
+   ["composer", "https://docs.omniverse.nvidia.com/composer/latest"],
+   ["utilities", "https://docs.omniverse.nvidia.com/utilities/latest"],
+   ["nucleus", "https://docs.omniverse.nvidia.com/nucleus/latest"],
+   ["launcher", "https://docs.omniverse.nvidia.com/launcher/latest"],
+   ["kit", "https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest"],
+   ["kit-physics", "https://docs.omniverse.nvidia.com/kit/docs/omni_physics/latest"],
+   ["usd", "https://docs.omniverse.nvidia.com/usd/latest"],
+   ["developer_workstations", "https://docs.omniverse.nvidia.com/developer_workstations/latest"],
+]
+
 ########################################################################################################################
 # Extension documentation building (see: repo extension_docs --help)
 ########################################################################################################################

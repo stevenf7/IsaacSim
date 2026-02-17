@@ -1,0 +1,29 @@
+name,Camera_SG2_OX03CC_5200_GMSL2_H60YA
+focalLength,5.75
+focusDistance,700.0
+fStop,1.600000023841858
+projection,perspective
+stereoRole,mono
+horizontalAperture,5.760000228881836
+verticalAperture,3.240000009536743
+clippingRange,"(0.1, 1000000)"
+cameraProjectionType,fisheyeOrthographic
+nominalWidth,1920.0
+nominalHeight,1080.0
+opticalCenterX,959.595947265625
+opticalCenterY,647.6140747070312
+maxFOV,60.0
+polyK0,0.7182272672653198
+polyK1,60.113136291503906
+polyK2,2.598527431488037
+polyK3,1.1977670192718506
+polyK4,60.394771575927734
+polyK5,31.610383987426758
+p0,0.0004008802934549749
+p1,-0.0013344850158318877
+s0,0.0
+s1,0.0
+s2,0.0
+s3,0.0
+physicalDistortionCoefficients,Not Applicable
+physicalDistortionModel,Not Applicable

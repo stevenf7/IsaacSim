@@ -1,0 +1,3 @@
+.. note:: The node has an execution in and out connecter to allow you to control exactly when in the graph execution chain that the scene query will be processed, thereby avoiding redundant executions. However, to guarantee that the output data is current, make sure that any other nodes reading it are later in the execution chain, i.e. belong to a node tree connected to the node execution out.
+
+For examples of concrete use of scene query nodes within an ActionGraph, see the OmniGraph demos in the physics demo scenes under Scene Query.

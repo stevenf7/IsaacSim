@@ -1,0 +1,29 @@
+name,camera
+focalLength,1.3646053075790405
+focusDistance,0.6000000238418579
+fStop,180.0
+projection,perspective
+stereoRole,mono
+horizontalAperture,5.760000228881836
+verticalAperture,3.5999999046325684
+clippingRange,"(0.076, 100000)"
+cameraProjectionType,fisheyePolynomial
+nominalWidth,1920.0
+nominalHeight,1200.0
+opticalCenterX,943.99462890625
+opticalCenterY,602.3110961914062
+maxFOV,235.0
+polyK0,0.0002725422091316432
+polyK1,0.0021866457536816597
+polyK2,1.2340817079348199e-07
+polyK3,-1.079574096785052e-09
+polyK4,5.997452426180494e-13
+polyK5,0.0
+p0,-0.00037
+p1,-0.00074
+s0,-0.00058
+s1,-0.00022
+s2,0.00019
+s3,-0.0002
+physicalDistortionCoefficients,"[0.057225, 0.012671, -0.002978, -0.000472]"
+physicalDistortionModel,kannalaBrandt

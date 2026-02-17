@@ -1,0 +1,36 @@
+{
+    "CustomPythonRos2NodePy": {
+        "version": 1,
+        "language": "python",
+        "icon": "icons/icon.svg",
+        "uiName": "Custom Python ROS 2 Node",
+        "description": [
+            "This node subscribes to a ROS 2 topic (with message type 'std_msgs/msg/Int32') and computes and outputs the Fibonacci number"
+        ],
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": ["extension:Category"],
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "Input execution trigger"
+            },
+            "topic": {
+                "type": "string",
+                "uiName": "Subscription topic",
+                "description": "Topic to subscribe to",
+                "default": "/number"
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution trigger"
+            },
+            "fibonacci": {
+                "type": "uint64",
+                "uiName": "Fibonacci",
+                "description": "Computed Fibonacci number"
+            }
+        }
+    }
+}

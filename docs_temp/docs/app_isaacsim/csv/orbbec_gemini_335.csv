@@ -1,0 +1,29 @@
+name,Stream_rgb,Stream_ir_left,Stream_ir_right
+focalLength,2.9700000286102295,1.809999942779541,1.809999942779541
+focusDistance,80.0,45.0,45.0
+fStop,0.0,0.0,0.0
+projection,perspective,perspective,perspective
+stereoRole,mono,right,left
+horizontalAperture,5.539000034332275,3.880000114440918,3.880000114440918
+verticalAperture,3.0920000076293945,2.440000057220459,2.440000057220459
+clippingRange,"(0.005, 1000)","(0.005, 1000)","(0.005, 1000)"
+cameraProjectionType,pinhole,pinhole,pinhole
+nominalWidth,1936.0,1936.0,1936.0
+nominalHeight,1216.0,1216.0,1216.0
+opticalCenterX,970.94244,970.94244,970.94244
+opticalCenterY,600.37482,600.37482,600.37482
+maxFOV,200.0,200.0,200.0
+polyK0,0.0,0.0,0.0
+polyK1,0.00245,0.00245,0.00245
+polyK2,0.0,0.0,0.0
+polyK3,0.0,0.0,0.0
+polyK4,0.0,0.0,0.0
+polyK5,0.0,0.0,0.0
+p0,-0.00037,-0.00037,-0.00037
+p1,-0.00074,-0.00074,-0.00074
+s0,-0.00058,-0.00058,-0.00058
+s1,-0.00022,-0.00022,-0.00022
+s2,0.00019,0.00019,0.00019
+s3,-0.0002,-0.0002,-0.0002
+physicalDistortionCoefficients,Not Applicable,Not Applicable,Not Applicable
+physicalDistortionModel,Not Applicable,Not Applicable,Not Applicable

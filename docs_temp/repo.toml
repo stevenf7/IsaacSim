@@ -1,0 +1,127 @@
+[repo]
+logging = "info"
+
+# ---------------------------------------------------------------
+
+# This is the top-level configuration for the repository. The settings here
+# propagate to all subprojects of the repository.
+
+[repo_ci]
+[repo_ci.jobs.clean_build]
+script = "${config_root}/docs_temp/tools/ci/clean_build.py"
+[repo_ci.jobs.rebuild]
+script = "${config_root}/docs_temp/tools/ci/build.py"
+
+[repo_docs]
+enabled = true
+docs_root = "docs_temp/docs/app_isaacsim"
+name = "Isaac Sim Documentation"
+project = "isaac-sim"
+copyright_start = 2023
+version = "6.0.0"
+version_selector_enabled = true
+logo_target_url = "index.html"
+copybutton_enabled = true
+announcement = "<span style='color: orange; font-size: 1.2em;'>&#9888;</span><strong>Isaac Sim 6.0 Early Developer Release:</strong> This documentation is incomplete. To use this version, build Isaac Sim from source on <a href='https://github.com/isaac-sim/IsaacSim/tree/develop' target='_blank'>GitHub</a>.<br>Binaries, pip packages, pre-built containers and other artifacts will be available with the General Availability (GA) release."
+social_media = [
+    ["twitter", "https://twitter.com/nvidiaomniverse"],
+    ["youtube", "https://www.youtube.com/channel/UCSKUoczbGAcMld7HjpCR8OA"],
+    ["instagram", "https://www.instagram.com/nvidiarobotics"],
+    ["www", "https://developer.nvidia.com/isaac/sim"],
+    ["linkedin", "https://www.linkedin.com/showcase/nvidiarobotics"],
+    ["twitch", "https://www.twitch.tv/nvidiaomniverse"],
+    ["discord", "https://discord.gg/4ZsTFksGh8"],
+    ["github", "https://github.com/isaac-sim"],
+    # ["question", "https://forums.developer.nvidia.com/c/omniverse/simulation/69"],
+    # ["cloud", "https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim"],
+]
+
+# Enable LUNR search, which works better than Sphinx search - especially when running locally (from docs archive)
+enhanced_search_enabled = true
+
+# open all external links in a new tab
+external_links_open_new_tab = true
+
+# disable the version of docs being overridden in merge requests. this allows inter-project links to work in preview.
+mr_version_override_enabled = false
+
+# The default of this value is "${project}/${version}${dash_build}" so overriding it means that the version won't be injected into the URL and will always be latest.
+output_path_template = "${project}/latest${dash_build}"
+
+# Create temporary symlinks to the common and prod_content directories at build
+# time. Because this is defined in the [repo_docs] section, these two
+# directories are included in all subprojects, so all subprojects can and do
+# make use of those files as if they were physically included in the project's
+# directory.
+
+# temporary_links = [
+#     {source = "${root}/docs/common", link_path = "common"},
+#     {source = "${root}/docs/prod_content", link_path = "prod_content"}
+# ]
+
+sphinx_exclude_patterns = [
+    "_build",  # exclude the build directory
+    "**/license_files/*.md",  # exclude license markdown files
+    "**/custom/*.rst",  # exclude pre and post OGN files
+    "${root}/docs_temp/docs/app_isaacsim/assets/SICK/**/readme.md",
+]
+
+python_paths = [
+    "${root}/docs_temp/docs",
+    "${root}/docs_temp/docs/conf/ext",
+]
+
+# Build in parallel using all threads available.
+sphinx_parallel = "auto"
+
+# Append extra content to the Sphinx conf.py file, the bulk of which is
+# controlled by repo_docs. For now, we use this to include an rst_epilog for
+# all subprojects. We pull the contents for the rst_epilog from a Python file
+# called terms.py in the docs directory, which is accessible because it's
+# included in the python_paths configuration.
+sphinx_conf_py_extra = """
+from terms import TERMS
+rst_epilog = TERMS
+
+try:
+    suppress_warnings.append("myst.header")
+except NameError:
+    suppress_warnings = ["myst.header"]
+
+# Add config_selector extension
+try:
+    extensions.append("config_selector")
+except NameError:
+    extensions = ["config_selector"]
+"""
+
+# Home icon should take users back to portal page:
+breadcrumbs_home_url = "../../index.html"
+
+# Ensure that the project's home page is included in addition to the portal page above
+breadcrumbs_add_project = true
+
+extra_content_head = [
+    "${env:TRACKING_SCRIPT}"
+]
+
+deps = [
+   ["extensions", "https://docs.omniverse.nvidia.com/extensions/latest"],
+   ["dev-guide", "https://docs.omniverse.nvidia.com/dev-guide/latest"],
+   ["composer", "https://docs.omniverse.nvidia.com/composer/latest"],
+   ["utilities", "https://docs.omniverse.nvidia.com/utilities/latest"],
+   ["nucleus", "https://docs.omniverse.nvidia.com/nucleus/latest"],
+   ["launcher", "https://docs.omniverse.nvidia.com/launcher/latest"],
+   ["kit", "https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest"],
+   ["kit-physics", "https://docs.omniverse.nvidia.com/kit/docs/omni_physics/latest"],
+   ["usd", "https://docs.omniverse.nvidia.com/usd/latest"],
+   ["developer_workstations", "https://docs.omniverse.nvidia.com/developer_workstations/latest"],
+]
+
+# Redirect users to existing pages. Because our old omni-docs system didn't
+# have a project/version URL structure, we're including all the redirects at
+# the root level configuration. This way, the redirect will work from
+# https://docs.omniverse.nvidia.com/<redirect URL> instead of being nested
+# in a subproject's URL.
+# redirects = [
+# ]

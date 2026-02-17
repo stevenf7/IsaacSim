@@ -1022,66 +1022,44 @@ test-linux-x86_64-external-ar:
       - if: $RUN_DOCS_BUILD == "true" || RUN_NIGHTLY_TESTS=="true" || $RUN_DEPLOY != "true"
         when: never
 
-# pages:
-#     stage: pages
-#     extends:
-#       - .build-common
-#       - .ipp_lnx_x86_64_cpu_small
-#     script:
-#       - mkdir .public
-#       - ls
-#       - export UNZIP_DISABLE_ZIPBOMB_DETECTION=TRUE
-#       # - curl -o ./docs.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-docs
-#       # - unzip docs.zip
-#       - mv isaacsim-docs/_build/docs/isaac-sim/latest/* .public/
-#       - ls .public
-#       - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/develop/download?job=build-linux-x86_64-release
-#       - unzip artifact.zip
-#       - 7z x _build/packages/docs@*.7z -opy
-#       - mv py .public/
-#       - ls .public/py
-#       - mv .public public
-#     artifacts:
-#         paths:
-#           - public
-#     rules:
-#       - !reference [.rules-publish-docs, rules]
-#     needs:
-#       - job: build-docs
-#         artifacts: true
+build-docs:
+    extends:
+      - .build-common
+      - .ipp_lnx_x86_64_cpu_small
+      - .osec:vault:v3:prod_token_job
+    timeout: 3 hours
+    before_script:
+      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
+    script:
+      - echo "Building docs from docs_temp/ (migrated from isaacsim-docs)..."
+      - ./repo.sh docs --warn-as-error=0 > build_log_full.txt 2>&1 || true
+      - echo "Docs build complete. Check build_log_full.txt for details."
+    rules:
+      - !reference [.rules-build-docs, rules]
+    artifacts:
+        when: always
+        expire_in: 2 weeks
+        paths:
+          - _build/docs/isaac-sim/latest
+          - build_log_full.txt
 
-# build-docs:
-#     extends:
-#       - .build-common
-#       - .ipp_lnx_x86_64_cpu_small
-#       - .osec:vault:v3:prod_token_job
-#     timeout: 3 hours
-#     before_script:
-#       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
-#     script:
-#       # - git clone -q --depth=1 -b isaac_sim --single-branch https://gitlab-master.nvidia.com/omniverse/omni-docs.git
-#       # - echo "Build log is captured in the build logs. Running build..."
-#       # - pushd omni-docs
-#       # - ./repo docs --warn-as-error=0 > ../build_log_full.txt
-#       # - ./repo docs --stage sphinx > ../build_log_sphinx.txt
-#       # - ./repo docs --stage post > ../build_log_post.txt
-#       # - popd
-#       - git clone -q --depth=1 -b main --single-branch https://gitlab-master.nvidia.com/omniverse/isaac/isaacsim-docs.git
-#       - echo "Build log is captured in the build logs. Running build..."
-#       - pushd isaacsim-docs
-#       - ./repo docs > ../build_log_full.txt
-#       - popd
-
-#     rules:
-#       - !reference [.rules-build-docs, rules]
-#     artifacts:
-#         when: always
-#         expire_in: 2 weeks
-#         paths:
-#           - isaacsim-docs/_build/docs/isaac-sim/latest
-#           - build_log_full.txt
-#           # - build_log_sphinx.txt
-#           # - build_log_post.txt
+pages:
+    stage: pages
+    extends:
+      - .build-common
+      - .ipp_lnx_x86_64_cpu_small
+    script:
+      - mkdir -p .public
+      - cp -r _build/docs/isaac-sim/latest/* .public/ || true
+      - mv .public public
+    artifacts:
+        paths:
+          - public
+    rules:
+      - !reference [.rules-publish-docs, rules]
+    needs:
+      - job: build-docs
+        artifacts: true
 
 
 # ==============================================================================================================

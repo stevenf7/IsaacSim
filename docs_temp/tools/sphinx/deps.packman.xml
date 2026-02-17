@@ -1,0 +1,5 @@
+<project toolsVersion="5.0">
+  <dependency name="sphinx">
+    <package name="sphinx" version="2.2.2-1-py3.5" />
+  </dependency>
+</project>

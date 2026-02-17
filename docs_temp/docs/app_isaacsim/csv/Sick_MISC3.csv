@@ -1,0 +1,19 @@
+name,SICK microScan3 legacy
+type,lidar
+scanRateBaseHz,20.0
+reportRateBaseHz,72000
+numberOfEmitters,1
+nearRangeM,0.05
+farRangeM,64.0
+rangeResolutionM,0.001
+rangeAccuracyM,0.001
+minDistBetweenEchos,0.05
+minReflectance,0.02
+minReflectanceRange,9.0
+wavelengthNm,845.0
+pulseTimeNs,4
+azimuthErrorMean,0.0
+azimuthErrorStd,0.0
+elevationErrorMean,0.0
+elevationErrorStd,0.0
+maxReturns,1
