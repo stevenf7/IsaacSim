@@ -1,0 +1,9 @@
+nodes:
+{%- for node in nodes %}
+  - node-name: {{ node.name }}
+    keywords:
+      - omnigraph
+      - node
+      - {{ node.keyword }}
+    ogn_file: {{ node.ogn_path }}
+{%- endfor -%}

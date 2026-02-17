@@ -1,0 +1,65 @@
+1)  Search all repos for .OGN files and write them to 
+
+	*** "data/search_results.json" ***
+	
+	- project id's (not in skip_projects) => list of extensions with .ogn files
+
+ 
+    "39178": [
+        "source/extensions/omni.flora.core/nodes/ScatterBakeMaskToTexture.ogn",
+        "source/extensions/omni.flora.core/nodes/ScatterFileTexture.ogn",
+        "source/extensions/omni.flora.core/nodes/ScatterOutput.ogn", 
+    ],
+    "47979": [
+        "source/extensions/omni.graph.visualization.nodes/nodes/OgnDrawScreenSpaceText.ogn",
+        "source/extensions/omni.graph.visualization.nodes/nodes/OgnDrawLabel.ogn",
+		
+2) Pull/clone all repos in   "data/search_results.json"  
+	For each repo ID:
+		Clone repo
+		
+	"data/paths.json"
+		
+    "39178": "repos/paint-tools-ext",
+    "47979": "repos/kit-scene",
+    "39029": "repos/datastudio",
+    "61463": "repos/audio2gesture",	
+	
+3)  format_node_registry: 
+
+	"data/ogn_registry.json"
+
+    # create paths for all nodes by appending the 
+    # extensions' nodes path(s) to their repo's path 
+	
+	
+    "repos/paint-tools-ext/source/extensions/omni.flora.core/nodes",
+    "repos/paint-tools-ext/source/extensions/omni.paint.brush.point_instancer_editing/nodes",
+    "repos/kit-scene/source/extensions/omni.graph.visualization.nodes/nodes",
+    "repos/datastudio/source/extensions/omni.replicator.random/python/_impl/nodes",
+	
+4) Scaffold:
+	
+	# create output directories using the custom directory (and then node registry?)
+
+	- copy "custom" pre's and posts to staging area (assuming all will be used) 
+	- create ogn_files = [] :
+		for each path in registry:
+			get all ogn files in that path :_get_ogn_files(source_dir)
+	
+	
+	[
+	{'name': 'scatter', 'keyword': 'scatter', 'ogn_path': 'repos/paint-tools-ext/source/extensions/omni.flora.core/nodes\\Scatter.ogn'},
+	{'name': 'scatter-bake-mask-to-texture', 'keyword': 'scatter-bake-mask-to-texture', 'ogn_path': 'repos/paint-tools-ext/source/extensions/omni.flora.core/nodes\\ScatterBakeMaskToTexture.ogn'},
+	{'name': 'scatter-camera-surface', 'keyword': 'scatter-camera-surface', 'ogn_path': 'repos/paint-tools-ext/source/extensions/omni.flora.core/nodes\\ScatterCameraSurface.ogn'},
+	 
+	
+	
+	
+	
+	
+	
+	
+	
+	- for each file ogn_files:
+		in  using template from "templates/node_template.yaml"

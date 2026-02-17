@@ -1,0 +1,29 @@
+name,Camera_SG5_IMX490C_5300_GMSL2_H110SA
+focalLength,4.260000228881836
+focusDistance,220.0
+fStop,2.799999952316284
+projection,perspective
+stereoRole,mono
+horizontalAperture,8.640000343322754
+verticalAperture,5.579999923706055
+clippingRange,"(1, 1000000)"
+cameraProjectionType,fisheyeOrthographic
+nominalWidth,2880.0
+nominalHeight,1860.0
+opticalCenterX,1442.3316650390625
+opticalCenterY,926.6644287109375
+maxFOV,110.0
+polyK0,0.6106576919555664
+polyK1,-0.11334560066461563
+polyK2,-0.014692608267068863
+polyK3,0.9237731099128723
+polyK4,-0.011052233166992664
+polyK5,-0.051484767347574234
+p0,2.2259799152379856e-05
+p1,-7.929380080895498e-05
+s0,0.0
+s1,0.0
+s2,0.0
+s3,0.0
+physicalDistortionCoefficients,Not Applicable
+physicalDistortionModel,Not Applicable

@@ -1,0 +1,34 @@
+################################################################################
+## Copy this file to your repo and modify
+[main]
+parent_product = "Omniverse" # required, only change if necessary
+product = "Docs" # required, full name of the Product, will be used everywhere (ie: Kit)
+icon = "MainLogo.ico" # required, must exist in "resources" packman package.
+logo = "nvidia.bmp" # required, must exist in "resources" packman package.
+installer_script = '..\..\..\tools\nsis' # required, path to installer.nsi. default is same dir as build_installer.py
+admin_level = "user" # required, must be user or admin
+
+[shortcut]
+file = "index.html" # optional, full path and file name for Start Menu Shortcut
+command_line = "" # optional, any additional command line options to supply
+name = "" # optional, default is "product". 
+# This is the name of the Shortcut that the user will see in the Start Menu
+
+[license]
+show = false # required, default is false
+file = "" # required if show_license = true, pull path to license file
+
+[header]
+title = "EARLY ACCESS" # required
+text = "" # required
+
+[launcher]
+auto_launch = false # optional, works with both task_scheduler and use_launcher
+use_task_scheduler = false # optional, don't mix with launcher
+use_launcher = false # optional, don't mix with task_scheduler
+
+[extra_page]
+show_extra_dir_page = false # optional, default is false
+text_top = "" # Text to display at top of page
+text_destination = "" # Text to display above Directory
+text_path = "" # Text to display in Directory

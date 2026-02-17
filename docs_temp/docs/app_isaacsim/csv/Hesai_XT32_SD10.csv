@@ -1,0 +1,19 @@
+name,XT-32 10hz
+type,lidar
+scanRateBaseHz,10.0
+reportRateBaseHz,20000
+numberOfEmitters,32
+nearRangeM,0.05
+farRangeM,120.0
+rangeResolutionM,0.004
+rangeAccuracyM,0.02
+minDistBetweenEchos,0.05
+minReflectance,0.1
+minReflectanceRange,80.0
+wavelengthNm,905.0
+pulseTimeNs,10
+azimuthErrorMean,0.0
+azimuthErrorStd,0.015
+elevationErrorMean,0.0
+elevationErrorStd,0.0
+maxReturns,2

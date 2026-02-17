@@ -1,0 +1,18 @@
+name,OS2 REV6 128 10hz @ 2048 resolution
+type,lidar
+scanRateBaseHz,10.0
+reportRateBaseHz,20480
+numberOfEmitters,128
+nearRangeM,1.0
+farRangeM,240.0
+rangeResolutionM,0.001
+rangeAccuracyM,0.03
+minReflectance,0.1
+minReflectanceRange,100.0
+wavelengthNm,865.0
+pulseTimeNs,6
+azimuthErrorMean,0.0
+azimuthErrorStd,0.01
+elevationErrorMean,0.0
+elevationErrorStd,0.01
+maxReturns,2

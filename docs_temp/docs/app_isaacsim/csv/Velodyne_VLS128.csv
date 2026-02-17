@@ -1,0 +1,14 @@
+name,Velodyne VLS-128
+type,lidar
+scanRateBaseHz,10.0
+reportRateBaseHz,18761
+numberOfEmitters,128
+nearRangeM,1.0
+farRangeM,200.0
+rangeResolutionM,0.004
+rangeAccuracyM,0.02
+minReflectance,0.1
+minReflectanceRange,120.0
+wavelengthNm,903.0
+pulseTimeNs,6
+maxReturns,2

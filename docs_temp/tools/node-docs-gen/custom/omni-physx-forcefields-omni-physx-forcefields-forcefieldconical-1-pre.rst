@@ -1,0 +1,1 @@
+The conical force field is very similar to the spherical force field. It attracts or repels objects to a central point while it is enabled. The difference is that an angular limit can be set, past which no forces are applied. The forces can also be ramped down as the angular limit is approached. The following list of properties are available.

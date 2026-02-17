@@ -1,0 +1,10 @@
+{% extends "!breadcrumbs.html" %}
+
+
+{% block breadcrumbs %}
+  <li><a href="${home_url}" class="icon icon-home"></a> &raquo;</li>
+  {% for doc in parents %}
+    <li><a href="{{ doc.link|e }}">{{ doc.title }}</a> &raquo;</li>
+  {% endfor %}
+  <li>{{ title }}</li>
+{% endblock %}

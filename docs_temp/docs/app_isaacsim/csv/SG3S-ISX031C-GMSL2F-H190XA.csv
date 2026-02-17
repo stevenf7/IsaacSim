@@ -1,0 +1,29 @@
+name,SG3S_ISX031C_GMSL2F_H190XA_01
+focalLength,1.5099999904632568
+focusDistance,39.0
+fStop,2.0
+projection,perspective
+stereoRole,mono
+horizontalAperture,5.760000228881836
+verticalAperture,4.607999801635742
+clippingRange,"(1, 1000000)"
+cameraProjectionType,fisheyeEquidistant
+nominalWidth,1920.0
+nominalHeight,1536.0
+opticalCenterX,960.6082153320312
+opticalCenterY,768.0
+maxFOV,190.0
+polyK0,0.13215887546539307
+polyK1,-0.031036589294672012
+polyK2,-0.004391151946038008
+polyK3,0.0018116832943633199
+polyK4,0.0
+polyK5,0.0
+p0,0.0
+p1,0.0
+s0,0.0
+s1,0.0
+s2,0.0
+s3,0.0
+physicalDistortionCoefficients,Not Applicable
+physicalDistortionModel,Not Applicable

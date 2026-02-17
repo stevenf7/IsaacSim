@@ -1,0 +1,19 @@
+name,RPLIDAR S2E
+type,lidar
+scanRateBaseHz,10.0
+reportRateBaseHz,32000
+numberOfEmitters,1
+nearRangeM,0.05
+farRangeM,30.0
+rangeResolutionM,0.013
+rangeAccuracyM,0.03
+minDistBetweenEchos,0.05
+minReflectance,0.1
+minReflectanceRange,10.0
+wavelengthNm,905.0
+pulseTimeNs,5
+azimuthErrorMean,0.0
+azimuthErrorStd,0.0
+elevationErrorMean,0.0
+elevationErrorStd,0.0
+maxReturns,1

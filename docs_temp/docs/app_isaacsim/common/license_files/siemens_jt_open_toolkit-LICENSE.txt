@@ -1,0 +1,24 @@
+Siemens License Terms 
+ 
+Siemens License 
+ 
+The following terms apply to Your use of JT Converter 
+ 
+1. Definitions. 
+License means the terms and conditions for use, reproduction, and distribution as defined by Sections 2 through 4 of this document. 
+ SISW means Siemens Industry Software Inc. 
+Siemens Software means SISW software known as the JT Open Toolkit binary library licensed by SISW to You hereunder. 
+You (or Your) shall mean an individual or legal entity exercising permissions granted by this License. 
+2. You are hereby granted a nonexclusive, nontransferable, limited License to install and use the Siemens Software only when embedded as part of the Omniverse Product only for Your internal business purposes as set forth herein. Licenses granted hereunder may not be assigned, sublicensed, or otherwise transferred (by operation of law or otherwise) by you, except in connection with the sale (stock or assets) of the entire business unit which uses the Siemens Software, and it is understood that such third party agrees to the terms of the existing license agreement.  
+3. Restrictions. 
+ 
+A. You may use the Siemens Software to process only data associated with Your own business, including providing professional services for Licensees customers, but only while embedded within the Omniverse Product; 
+B. The Siemens Software contains SISW proprietary rights and trade secrets, you will retain all proprietary notices and legends contained on the Siemens Software and on all copies thereof; 
+C. You will not reverse engineer the Siemens Software (except as permitted by applicable law without the possibility of a contractual waiver) or create any derivative works, compilations or collective works thereof; 
+D. Copying of the Siemens Software is limited to normal installation needs and a reasonable number of backup copies; 
+E. You will comply with, all applicable export and re-export control regulations, embargoes and sanctions including, but not limited to, those of the United States of America and the United Kingdom (the Export Laws). Customer represents that the Integrated Products and any derivatives thereof will not be (i) downloaded, exported, re-exported (including any deemed export), or transferred, directly or indirectly, contrary to the Export Laws, (ii) used for any purpose prohibited by the Export Laws, or (iii) delivered to persons/entities otherwise ineligible to acquire or use the Siemens Software 
+F. You will comply with all applicable laws of the jurisdictions in which you are located. 
+ 
+4. Disclaimer of Warranty. Unless required by applicable law or agreed to in writing, SISW provides the Siemens Software on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE. You are solely responsible for determining the appropriateness of using Siemens Software and assume any risks associated with Your exercise of permissions under this 
+License. IN NO EVENT WILL SISW BE LIABLE TO YOU FOR ANY DAMAGES, ARISING OUT OF OR RELATED TO THIS LICENSE, REGARDLESS OF THE FORM OF ACTION, WHETHER IN CONTRACT, EQUITY, NEGLIGENCE, INTENDED CONDUCT, TORT OR OTHERWISE. 
+

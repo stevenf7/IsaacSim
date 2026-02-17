@@ -1,0 +1,1 @@
+Slang node, when executed, runs a compute :ref:`Slang <slang>` function. Node's *input*, *output*, and *state* attributes define variables that can be referenced in the Slang :ref:`code <code>`. The code of the node's function can be edited in the Slang :ref:`Code editor <code_editor>` and is saved in the USDA file as a node's Code attribute.

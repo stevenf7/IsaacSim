@@ -1,0 +1,1 @@
+The linear force field generates forces that attract or repel physics objects from the closest point on a line. No force is applied along the direction of the line. The following list of properties are available.
