@@ -46,7 +46,6 @@ result, sensor = omni.kit.commands.execute(
     max_threshold=100000000,
     color=Gf.Vec4f(1, 1, 1, 1),
     radius=-1,
-    sensor_period=1.0 / 60.0,
     translation=Gf.Vec3d(0, 0, 0),
 )
 
