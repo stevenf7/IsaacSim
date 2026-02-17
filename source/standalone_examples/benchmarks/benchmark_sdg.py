@@ -290,6 +290,8 @@ if not skip_write:
         + f"/_out_sdg_benchmark_{num_frames}_frames_{num_cameras}_cameras_{asset_count}_asset_count_{len(annotators_kwargs)}_annotators"
     )
     print(f"[SDG Benchmark] Output directory: {output_directory}")
+    # Remove _fast postfixes from annotators_kwargs for BasicWriter arguments (BasicWriter uses _fast internally)
+    annotators_kwargs = {k.replace("_fast", ""): v for k, v in annotators_kwargs.items()}
     writer.initialize(output_dir=output_directory, **annotators_kwargs)
     writer.attach(render_products)
 
