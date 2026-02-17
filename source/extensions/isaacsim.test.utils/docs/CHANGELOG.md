@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.2] - 2026-02-16
+### Changed
+- Replace `omni.kit.ui_test.menu_click` with custom step-by-step menu navigation that polls for each submenu to become findable and visible before proceeding, avoiding the `carb.log_error` and `AttributeError` that `menu_click` produces when submenus are slow to appear
+- Add `carb.log_info` diagnostics throughout `menu_click_with_retry` for log debugging
+
 ## [0.8.1] - 2026-02-13
 ### Changed
 - Suppress transient error logs from `omni.kit.ui_test.query` during intermediate retries in `menu_click_with_retry`; errors are only surfaced on the final retry attempt
