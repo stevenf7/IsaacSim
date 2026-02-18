@@ -204,3 +204,8 @@ ext_conflicts.json
 
 # Temp folders created by doc snippets tests
 xarm_antipodal
+
+# Temp files for slack posting stuff
+pipeline_test_chart_heatmap.html
+pipeline_test_chart_heatmap.png
+regressions.txt
