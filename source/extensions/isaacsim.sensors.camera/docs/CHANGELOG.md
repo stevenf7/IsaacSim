@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.6] - 2026-02-13
+### Changed
+- OMPE-78945: Split tests into two groups to avoid MMUFault|SMError|||imgui.pixel on Windows-Vk
+
 ## [1.6.5] - 2026-02-06
 ### Changed
 - Update deprecated Warp API calls to their updated names
