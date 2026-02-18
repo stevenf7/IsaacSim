@@ -196,7 +196,7 @@ variables:
 # Slack notifications
 .post_job_status_to_slack:
   after_script:
-    - ./tools/packman/python.sh -m pip install slack_sdk requests
+    - ./tools/packman/python.sh -m pip install -r tools/ci/slack/requirements.txt
     - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --job-report
 
 post_to_slack:
@@ -207,7 +207,7 @@ post_to_slack:
   extends:
     - .ipp_lnx_x86_64_cpu_small
   script:
-    - ./tools/packman/python.sh -m pip install slack_sdk requests
+    - ./tools/packman/python.sh -m pip install -r tools/ci/slack/requirements.txt
     - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --pipeline-report --channel $SLACK_CHANNEL
   rules:
     - if: $CI_COMMIT_REF_NAME =~ /^kit-integration\// && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "nightly"
@@ -1561,6 +1561,7 @@ rebase-kit-integration-branches:
              - develop-kit-tot
              - kit-integration/master
              - kit-integration/feature/110.0
+             - kit-integration/production/110.0
     extends:
       - .ipp_lnx_x86_64_cpu_small
     variables:
