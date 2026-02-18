@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.1] - 2026-02-14
+### Fixed
+- Fixed flaky UCX joint state and odometry tests by increasing connection wait time and adding retry logic
+
 ## [1.3.0] - 2025-12-15
 ### Changed
 - Migrate extension implementation to core experimental API

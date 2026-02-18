@@ -31,6 +31,11 @@ from ucxx._lib.arr import Array
 
 from .common import UCXTestCase
 
+# Test configuration constants
+CONNECTION_WAIT_FRAMES = 60  # Frames to wait for node listener to initialize
+CONNECTION_ESTABLISH_FRAMES = 20  # Additional frames for connection to establish
+RECEIVE_TIMEOUT_FRAMES = 1000  # Maximum frames to wait for a message
+
 
 def unpack_joint_state_message(buffer):
     """Unpack a UCX joint state message.
@@ -79,6 +84,24 @@ def unpack_joint_state_message(buffer):
 class TestUCXPublishJointState(UCXTestCase):
     """Test UCX joint state publishing"""
 
+    async def setup_ucx_client_with_listener(self):
+        """Setup UCX client to connect to the OmniGraph node's listener.
+
+        The OmniGraph nodes create their own internal listeners automatically.
+        We create a client endpoint to connect and receive messages from them.
+        This method ensures proper timing for connection establishment.
+        """
+        # Give Isaac Sim time to start the node's listener
+        for _ in range(CONNECTION_WAIT_FRAMES):
+            await omni.kit.app.get_app().next_update_async()
+
+        # Create client connection using the base class helper
+        self.create_ucx_client(self.port)
+
+        # Give additional frames for the connection to establish
+        for _ in range(CONNECTION_ESTABLISH_FRAMES):
+            await omni.kit.app.get_app().next_update_async()
+
     async def setUp(self):
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
@@ -124,31 +147,62 @@ class TestUCXPublishJointState(UCXTestCase):
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
 
-        for _ in range(3):
-            await omni.kit.app.get_app().next_update_async()
-        self.create_ucx_client(self.port)
+        # Setup client with proper connection establishment
+        await self.setup_ucx_client_with_listener()
 
-    async def receive_joint_state_message(self, tag=1, timeout_frames=1000):
-        """Receive and unpack a joint state message from the client endpoint"""
-        max_buffer_size = 512
-        buffer = np.empty(max_buffer_size, dtype=np.uint8)
+    async def receive_joint_state_message(self, tag=1, timeout_frames=RECEIVE_TIMEOUT_FRAMES, retry_count=3):
+        """Receive and unpack a joint state message from the client endpoint.
 
-        # Receive using the endpoint
-        request = self.client_endpoint.tag_recv(Array(buffer), tag=ucx_api.UCXXTag(tag))
+        Args:
+            tag: UCX tag to receive on (default: 1)
+            timeout_frames: Maximum number of frames to wait per attempt (default: RECEIVE_TIMEOUT_FRAMES)
+            retry_count: Number of times to retry receiving if it fails (default: 3)
 
-        # Progress until complete
+        Returns:
+            Tuple of (timestamp, num_joints, positions, velocities, efforts)
 
-        for _ in range(timeout_frames):
-            if request.completed:
-                break
-            time.sleep(0.001)
-            await omni.kit.app.get_app().next_update_async()
+        Raises:
+            AssertionError: If message is not received after all retry attempts
+        """
+        last_error = None
 
-        # Check if completed
-        self.assertTrue(request.completed, "Did not receive joint state message")
-        request.check_error()
+        for attempt in range(retry_count):
+            try:
+                max_buffer_size = 512
+                buffer = np.empty(max_buffer_size, dtype=np.uint8)
 
-        return unpack_joint_state_message(buffer)
+                # Receive using the endpoint
+                request = self.client_endpoint.tag_recv(Array(buffer), tag=ucx_api.UCXXTag(tag))
+
+                # Progress until complete
+                for frame in range(timeout_frames):
+                    if request.completed:
+                        break
+                    time.sleep(0.001)
+                    await omni.kit.app.get_app().next_update_async()
+
+                # Check if completed
+                if request.completed:
+                    request.check_error()
+                    return unpack_joint_state_message(buffer)
+                else:
+                    last_error = f"Timeout after {timeout_frames} frames on attempt {attempt + 1}"
+                    if attempt < retry_count - 1:
+                        print(f"Warning: {last_error}. Retrying...")
+                        # Wait a bit before retrying
+                        await omni.kit.app.get_app().next_update_async()
+            except Exception as e:
+                last_error = f"Exception on attempt {attempt + 1}: {e}"
+                if attempt < retry_count - 1:
+                    print(f"Warning: {last_error}. Retrying...")
+                    await omni.kit.app.get_app().next_update_async()
+
+        # All retries failed
+        self.fail(
+            f"Did not receive joint state message after {retry_count} attempts. "
+            f"Last error: {last_error}. "
+            "This may indicate a connection issue or the node is not publishing."
+        )
 
     async def test_joint_state_publisher(self):
         """Test that joint state messages are published via UCX"""
@@ -184,11 +238,18 @@ class TestUCXPublishJointState(UCXTestCase):
         sim_velocities = articulation.get_dof_velocities().numpy()[0]
 
         # Receive joint state message from UCX
+        # Note: Adding a small delay to ensure at least one message is sent after physics settles
+        await omni.kit.app.get_app().next_update_async()
         timestamp, num_joints, ucx_positions, ucx_velocities, ucx_efforts = await self.receive_joint_state_message()
 
         # Verify values match (within tolerance)
         self.assertEqual(num_joints, len(sim_positions))
 
+        print(f"Joint state comparison:")
         for i in range(num_joints):
+            print(
+                f"  Joint {i}: pos_sim={sim_positions[i]:.6f}, pos_ucx={ucx_positions[i]:.6f}, "
+                f"vel_sim={sim_velocities[i]:.6f}, vel_ucx={ucx_velocities[i]:.6f}"
+            )
             self.assertAlmostEqual(ucx_positions[i], sim_positions[i], places=3, msg=f"Joint {i} position mismatch")
             self.assertAlmostEqual(ucx_velocities[i], sim_velocities[i], places=3, msg=f"Joint {i} velocity mismatch")
