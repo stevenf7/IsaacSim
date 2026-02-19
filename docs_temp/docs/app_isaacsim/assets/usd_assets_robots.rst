@@ -58,6 +58,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** `BSD-3 <https://github.com/iRobotEducation/create3_sim/tree/main>`__
+
         | **Turtlebot**
 
         .. tab-set::
@@ -92,6 +94,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX ArticulationAPI
 
                     - PhysX JointAPI
+
+                    **License:** `Apache 2.0 <https://github.com/ROBOTIS-GIT/turtlebot3/tree/master/turtlebot3_description>`__
 
         | **NVIDIA**
 
@@ -129,6 +133,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX ArticulationAPI
 
                     - PhysX JointAPI
+
+                    **License:** `MIT <https://github.com/aws-samples/aws-robomaker-jetbot-ros/blob/main/LICENSE>`__  
 
             .. tab-item:: NovaCarter
 
@@ -182,6 +188,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX CollisionAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing - Nova Carter.pdf>`
+
             .. tab-item:: Leatherback
 
 
@@ -222,6 +230,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX ArticulationAPI
 
                     - PhysX CollisionAPI
+
+                    **License:** NVIDIA
 
             .. tab-item:: Jetbot
 
@@ -269,6 +279,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX CollisionAPI
 
                     - PhysX SceneAPI
+
+                    **License:** Email confirmation: `Jetbot 3D drawing <http://www.waveshare.net/w/upload/4/49/Jetbot_3D_Drawing.zip>`__  
 
             .. tab-item:: Carter
 
@@ -321,6 +333,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX SceneAPI
 
+                            **License:** NVIDIA
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_NVIDIA_Carter_carter_v1_physx_lidar.usd.png
@@ -366,6 +380,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX CollisionAPI
 
                             - PhysX SceneAPI
+
+                            **License:** NVIDIA
 
         | **IsaacSim**
 
@@ -646,6 +662,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX SceneAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/CLA-1_OpenLogisticsFoundation_Fraunhofer_-_NVIDIA.pdf>`
+
         | **Clearpath**
 
         .. tab-set::
@@ -701,6 +719,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX JointAPI
 
+                            **License:** `BSD-3 <https://github.com/jackal/jackal/blob/noetic-devel/LICENSE>`__  
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_Clearpath_Jackal_jackal_basic.usd.png
@@ -732,6 +752,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX ArticulationAPI
 
                             - PhysX JointAPI
+
+                            **License:** `BSD-3 <https://github.com/jackal/jackal/blob/noetic-devel/LICENSE>`__  
 
             .. tab-item:: Dingo
 
@@ -780,6 +802,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX JointAPI
 
+                            **License:** `BSD-3 <https://github.com/dingo-cpr/dingo/blob/noetic-devel/dingo_description/package.xml>`__  
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_Clearpath_Dingo_dingo_basic.usd.png
@@ -811,6 +835,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX ArticulationAPI
 
                             - PhysX JointAPI
+
+                            **License:** `BSD-3 <https://github.com/dingo-cpr/dingo/blob/noetic-devel/dingo_description/package.xml>`__  
 
         | **AgilexRobotics**
 
@@ -861,6 +887,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX CollisionAPI
 
+                    **License:** `BSD-3 <https://github.com/agilexrobotics/Limo-Isaac-Sim>`__
+
     .. tab-item:: Manipulator
 
 
@@ -903,6 +931,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX JointAPI
 
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing_YASKAWA Signed.pdf>`
+
                     .. tab-item:: NEX7
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Yaskawa_Motoman_Next_NEX7_NEX7_C00_c00.usd.png
@@ -932,6 +962,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX ArticulationAPI
 
                             - PhysX JointAPI
+
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing_YASKAWA Signed.pdf>`
 
                     .. tab-item:: NEX4
 
@@ -963,6 +995,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX JointAPI
 
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing_YASKAWA Signed.pdf>`
+
                     .. tab-item:: NEX35
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Yaskawa_Motoman_Next_NEX35_NEX35_C00.usd.png
@@ -992,6 +1026,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX ArticulationAPI
 
                             - PhysX JointAPI
+
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing_YASKAWA Signed.pdf>`
 
                     .. tab-item:: NEX20
 
@@ -1023,6 +1059,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX JointAPI
 
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing_YASKAWA Signed.pdf>`
+
                     .. tab-item:: NEX10
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Yaskawa_Motoman_Next_NEX10_NEX10_C00.usd.png
@@ -1052,6 +1090,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX ArticulationAPI
 
                             - PhysX JointAPI
+
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing_YASKAWA Signed.pdf>`
 
         | **Yahboom**
 
@@ -1104,6 +1144,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX SceneAPI
 
+                    **License:** Email confirmation: `Yahboom Technology <https://github.com/YahboomTechnology/dofbot-jetson_nano>`__  
+
         | **WonikRobotics**
 
         .. tab-set::
@@ -1145,6 +1187,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX JointAPI
 
+                            **License:** `BSD-2 <https://github.com/simlabrobotics/allegro_hand_ros_v4/blob/master/LICENSE>`__  
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_WonikRobotics_AllegroHand_allegro_hand.usd.png
@@ -1179,6 +1223,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX CollisionAPI
 
+                            **License:** `BSD-2 <https://github.com/simlabrobotics/allegro_hand_ros_v4/blob/master/LICENSE>`__
+
                     .. tab-item:: Variant 3
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_WonikRobotics_AllegroHand_allegro_hand_instanceable.usd.png
@@ -1212,6 +1258,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX JointAPI
 
                             * This robot is in Isaac Lab
+
+                            **License:** `BSD-2 <https://github.com/simlabrobotics/allegro_hand_ros_v4/blob/master/LICENSE>`__ 
 
         | **UniversalRobots**
 
@@ -1248,6 +1296,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** `BSD-3 <https://github.com/fmauch/universal_robot>`__  
+
             .. tab-item:: ur5
 
 
@@ -1279,6 +1329,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** `BSD-3 <https://github.com/fmauch/universal_robot>`__  
+
             .. tab-item:: ur3e
 
 
@@ -1309,6 +1361,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+
+                    **License:** `BSD-3 <https://github.com/fmauch/universal_robot>`__  
 
             .. tab-item:: ur30
 
@@ -1343,6 +1397,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** `BSD-3 <https://github.com/fmauch/universal_robot>`__  
+
             .. tab-item:: ur3
 
 
@@ -1373,6 +1429,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+
+                    **License:** `BSD-3 <https://github.com/fmauch/universal_robot>`__  
 
             .. tab-item:: ur20
 
@@ -1405,6 +1463,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** `BSD-3 <https://github.com/fmauch/universal_robot>`__  
+
             .. tab-item:: ur16e
 
 
@@ -1435,6 +1495,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+
+                    **License:** `BSD-3 <https://github.com/fmauch/universal_robot>`__  
 
             .. tab-item:: ur10e
 
@@ -1472,6 +1534,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+
+                    **License:** `BSD-3 <https://github.com/fmauch/universal_robot>`__  
 
             .. tab-item:: ur10
 
@@ -1512,6 +1576,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** `BSD-3 <https://github.com/fmauch/universal_robot>`__  
+
         | **Unitree**
 
         .. tab-set::
@@ -1547,6 +1613,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
+
             .. tab-item:: Dex5
 
 
@@ -1578,6 +1646,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
+
             .. tab-item:: Dex3
 
 
@@ -1608,6 +1678,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+
+                    **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
 
         | **Ufactory**
 
@@ -1646,6 +1718,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing 1_Ufactory.pdf>`
+
             .. tab-item:: xarm7
 
 
@@ -1679,6 +1753,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing 1_Ufactory.pdf>`
+
             .. tab-item:: xarm6
 
 
@@ -1711,6 +1787,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+                    
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing 1_Ufactory.pdf>`
 
             .. tab-item:: uf850
 
@@ -1742,6 +1820,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing 1_Ufactory.pdf>`
 
             .. tab-item:: lite6_gripper
 
@@ -1778,6 +1858,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX RigidBodyAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing 1_Ufactory.pdf>`
+
             .. tab-item:: lite6
 
 
@@ -1808,6 +1890,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing 1_Ufactory.pdf>`
 
         | **Techman**
 
@@ -1858,6 +1942,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/Techman - Signed 3D Content Sharing.pdf>`
+
         | **ShadowRobot**
 
         .. tab-set::
@@ -1901,6 +1987,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX CollisionAPI
 
+                            **License:** `BSD-3 <https://github.com/shadow-robot/sr_common/blob/noetic-devel/LICENSE>`__  
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_ShadowRobot_ShadowHand_shadow_hand_instanceable.usd.png
@@ -1934,6 +2022,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX JointAPI
 
                             * This robot is in Isaac Lab
+
+                            **License:** `BSD-3 <https://github.com/shadow-robot/sr_common/blob/noetic-devel/LICENSE>`__  
 
         | **Robotiq**
 
@@ -1972,6 +2062,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX ArticulationAPI
 
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/NVIDIA - Robotiq 3D Content Sharing.docx.pdf>`
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_Robotiq_Hand_E_Robotiq_Hand_E_edit.usd.png
@@ -1999,6 +2091,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             **Physics APIs:**
 
                             - PhysX ArticulationAPI
+
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/NVIDIA - Robotiq 3D Content Sharing.docx.pdf>`
 
             .. tab-item:: 2F-85
 
@@ -2032,6 +2126,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX ArticulationAPI
 
                     - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/NVIDIA - Robotiq 3D Content Sharing.docx.pdf>`
 
             .. tab-item:: 2F-140
 
@@ -2068,6 +2164,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX JointAPI
 
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/NVIDIA - Robotiq 3D Content Sharing.docx.pdf>`
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_Robotiq_2F_140_Robotiq_2F_140_base.usd.png
@@ -2095,6 +2193,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             **Physics APIs:**
 
                             - PhysX ArticulationAPI
+
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/NVIDIA - Robotiq 3D Content Sharing.docx.pdf>`
 
                     .. tab-item:: Variant 3
 
@@ -2145,6 +2245,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX MimicJointAPI
 
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/NVIDIA - Robotiq 3D Content Sharing.docx.pdf>`
+
                     .. tab-item:: Variant 4
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_Robotiq_2F_140_Robotiq_2F_140_physics_edit.usd.png
@@ -2190,6 +2292,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX JointAPI
 
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/NVIDIA - Robotiq 3D Content Sharing.docx.pdf>`
+
                     .. tab-item:: Variant 5
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_Robotiq_2F_140_Collected_2f140_instanceable_2f140_instanceable.usd.png
@@ -2219,6 +2323,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX ArticulationAPI
 
                             - PhysX JointAPI
+
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/NVIDIA - Robotiq 3D Content Sharing.docx.pdf>`
 
         | **RobotStudio**
 
@@ -2255,6 +2361,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** `Apache 2.0 <https://github.com/TheRobotStudio/SO-ARM100/tree/main/Simulation/SO101>`__
+
             .. tab-item:: so100
 
 
@@ -2285,6 +2393,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+
+                    **License:** `Apache 2.0 <https://github.com/TheRobotStudio/SO-ARM100/tree/main/Simulation/SO101>`__
 
         | **RethinkRobotics**
 
@@ -2325,6 +2435,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     * This robot is in Isaac Lab
 
+                    **License:** `Apache 2.0 <http://github.com/RethinkRobotics/sawyer_robot>`__
+
         | **Kuka**
 
         .. tab-set::
@@ -2361,6 +2473,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX ArticulationAPI
 
                     - PhysX JointAPI
+
+                    **License:** `Apache 2.0 <https://github.com/ros-industrial/kuka_experimental>`__
 
         | **Kinova**
 
@@ -2507,6 +2621,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing-Kawasaki.pdf>`
+
             .. tab-item:: RS025N
 
 
@@ -2541,6 +2657,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX SceneAPI
 
                     - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing-Kawasaki.pdf>`
 
             .. tab-item:: RS013N
 
@@ -2577,6 +2695,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing-Kawasaki.pdf>`
+
             .. tab-item:: RS007N
 
 
@@ -2612,6 +2732,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing-Kawasaki.pdf>`
+
             .. tab-item:: RS007L
 
 
@@ -2646,6 +2768,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX SceneAPI
 
                     - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing-Kawasaki.pdf>`
 
         | **FrankaRobotics**
 
@@ -2694,6 +2818,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX RigidBodyAPI
 
+                    **License:** `Apache 2.0 <https://github.com/frankaemika/franka_ros/tree/kinetic-devel/franka_description>`__  
+
             .. tab-item:: FrankaFR3
 
 
@@ -2729,6 +2855,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** `Apache 2.0 <https://github.com/frankaemika/franka_ros/tree/kinetic-devel/franka_description>`__  
+
             .. tab-item:: FrankaEmika
 
 
@@ -2759,6 +2887,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX ArticulationAPI
 
                     - PhysX JointAPI
+
+                    **License:** `Apache 2.0 <https://github.com/frankaemika/franka_ros/tree/kinetic-devel/franka_description>`__  
 
             .. tab-item:: FactoryFranka
 
@@ -2799,6 +2929,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX CollisionAPI
 
+                            **License:** `Apache 2.0 <https://github.com/frankaemika/franka_ros/tree/kinetic-devel/franka_description>`__  
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_FrankaRobotics_FactoryFranka_factory_franka_instanceable.usd.png
@@ -2830,6 +2962,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX ArticulationAPI
 
                             - PhysX JointAPI
+                            
+                            **License:** `Apache 2.0 <https://github.com/frankaemika/franka_ros/tree/kinetic-devel/franka_description>`__  
 
         | **Flexiv**
 
@@ -2869,6 +3003,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX SceneAPI
 
                     - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing- FlexIV.pdf>`
 
         | **Festo**
 
@@ -2946,6 +3082,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_FANUC.pdf>`
+
         | **Denso**
 
         .. tab-set::
@@ -2985,6 +3123,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing- Denso.pdf>`
+
             .. tab-item:: CobottaPro1300
 
 
@@ -3019,6 +3159,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX SceneAPI
 
                     - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing- Denso.pdf>`
 
         | **OpenArm**
 
@@ -3057,6 +3199,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX MimicJointAPI
 
+                    **License:** `Apache 2.0 <https://github.com/enactic/openarm>`__
+
             .. tab-item:: openarm_bimanual
 
 
@@ -3089,6 +3233,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX ArticulationAPI
 
                     - PhysX MimicJointAPI
+
+                    **License:** `Apache 2.0 <https://github.com/enactic/openarm>`__
 
     .. tab-item:: Humanoid
 
@@ -3132,6 +3278,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX ArticulationAPI
 
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/XPENG Robotics-Signed 3D Content Sharing.pdf>`
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_XiaoPeng_PX5_px5_without_housing.usd.png
@@ -3161,6 +3309,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX ArticulationAPI
 
                             - PhysX JointAPI
+
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/XPENG Robotics-Signed 3D Content Sharing.pdf>`
 
         | **X-Humanoid**
 
@@ -3199,6 +3349,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX CollisionAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing-HRIC.pdf>`
+
         | **Unitree**
 
         .. tab-set::
@@ -3233,6 +3385,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX ArticulationAPI
 
                     - PhysX JointAPI
+
+                    **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
 
             .. tab-item:: G1_23dof
 
@@ -3273,6 +3427,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX ArticulationAPI
 
+                            **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_Unitree_G1_23dof_g1_minimal.usd.png
@@ -3307,6 +3463,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX ArticulationAPI
 
+                            **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
+
             .. tab-item:: G1
 
 
@@ -3339,6 +3497,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+
+                    **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
 
         | **SanctuaryAI**
 
@@ -3377,6 +3537,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/Sanctuary-Signed 3D Content Sharing.pdf>`
+
         | **RobotEra**
 
         .. tab-set::
@@ -3412,6 +3574,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing-RobotEra20250117.pdf>`
+
         | **Ihmcrobotics**
 
         .. tab-set::
@@ -3446,6 +3610,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+
+                    **License:** `Apache 2.0 <https://github.com/ihmcrobotics/valkyrie>`__
 
         | **FourierIntelligence**
 
@@ -3492,6 +3658,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             * This robot is in Isaac Lab
 
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/Fourier Intelligence-Signed 3D Content Sharing.pdf>`
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_FourierIntelligence_GR_1_GR1T1_GR1_T1.usd.png
@@ -3523,6 +3691,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX ArticulationAPI
 
                             - PhysX JointAPI
+                            
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/Fourier Intelligence-Signed 3D Content Sharing.pdf>`
 
         | **Agility**
 
@@ -3575,6 +3745,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     * This robot is in Isaac Lab
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/Agility - Signed 3D Content Sharing.pdf>`
+
             .. tab-item:: Cassie
 
 
@@ -3607,6 +3779,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX CollisionAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/Agility - Signed 3D Content Sharing.pdf>`
 
         | **Agibot**
 
@@ -3645,6 +3819,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/Agitbot G1 Model Sharing Agreement.pdf>`
+
         | **1X**
 
         .. tab-set::
@@ -3682,6 +3858,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/1X-signed 3D Content Sharing.pdf>`
+
         | **BoosterRobotics**
 
         .. tab-set::
@@ -3716,6 +3894,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+
+                    **License:** `Apache 2.0 <https://github.com/BoosterRobotics/booster_gym>`__
 
     .. tab-item:: Quadruped
 
@@ -3755,6 +3935,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
+
             .. tab-item:: aliengo
 
 
@@ -3785,6 +3967,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+
+                    **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
 
             .. tab-item:: Go2
 
@@ -3818,6 +4002,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX ArticulationAPI
 
                     - PhysX JointAPI
+
+                    **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
 
             .. tab-item:: Go1
 
@@ -3853,6 +4039,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX ArticulationAPI
 
                             - PhysX JointAPI
+
+                            **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
 
                     .. tab-item:: Variant 2
 
@@ -3895,6 +4083,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX JointAPI
 
+                            **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
+
             .. tab-item:: B2
 
 
@@ -3928,6 +4118,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
+
             .. tab-item:: A1
 
 
@@ -3958,6 +4150,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX ArticulationAPI
 
                     - PhysX JointAPI
+
+                    **License:** `BSD-3 <https://github.com/unitreerobotics/unitree_ros>`__
 
         | **IsaacSim**
 
@@ -4000,6 +4194,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX JointAPI
 
+                            **License:** `MIT <https://github.com/openai/gym/blob/master/LICENSE.md>`__  
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_IsaacSim_Ant_ant_colored.usd.png
@@ -4031,6 +4227,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX CollisionAPI
 
                             - PhysX SceneAPI
+
+                            **License:** `MIT <https://github.com/openai/gym/blob/master/LICENSE.md>`__   
 
                     .. tab-item:: Variant 3
 
@@ -4065,6 +4263,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX JointAPI
 
                             * This robot is in Isaac Lab
+
+                            **License:** `MIT <https://github.com/openai/gym/blob/master/LICENSE.md>`__  
 
         | **BostonDynamics**
 
@@ -4105,6 +4305,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     * This robot is in Isaac Lab
 
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/Boston Dynamics-Signed 3D Content Sharing.pdf>`
+
         | **ANYbotics**
 
         .. tab-set::
@@ -4142,6 +4344,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX ArticulationAPI
 
+                    **License:** `BSD-3 <https://github.com/ANYbotics/anymal_d_simple_description/blob/master/LICENSE>`__  
+
             .. tab-item:: anymal_c
 
 
@@ -4175,6 +4379,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** `BSD-3 <https://github.com/ANYbotics/anymal_c_simple_description/blob/master/LICENSE>`__  
+
             .. tab-item:: anymal_b
 
 
@@ -4207,6 +4413,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     - PhysX ArticulationAPI
+
+                    **License:** `BSD-3 <https://github.com/ANYbotics/anymal_b_simple_description/blob/master/LICENSE>`__ 
 
         | **DeepRobotics**
 
@@ -4243,6 +4451,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** `BSD-3 <https://github.com/DeepRoboticsLab/deep_robotics_model/blob/main/LICENSE.txt>`__
+
             .. tab-item:: M20
 
 
@@ -4274,6 +4484,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** `BSD-3 <https://github.com/DeepRoboticsLab/deep_robotics_model/blob/main/LICENSE.txt>`__
+
             .. tab-item:: Lite3
 
 
@@ -4304,6 +4516,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX ArticulationAPI
 
                     - PhysX JointAPI
+
+                    **License:** `BSD-3 <https://github.com/DeepRoboticsLab/deep_robotics_model/blob/main/LICENSE.txt>`__
 
     .. tab-item:: Holonomic
 
@@ -4351,6 +4565,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX CollisionAPI
 
+                            **License:** NVIDIA
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_NVIDIA_Kaya_kaya_ogn_gamepad.usd.png
@@ -4384,6 +4600,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX JointAPI
 
                             - PhysX ArticulationAPI
+
+                            **License:** NVIDIA
 
         | **Fraunhofer**
 
@@ -4430,6 +4648,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX SceneAPI
 
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/CLA-1_OpenLogisticsFoundation_Fraunhofer_-_NVIDIA.pdf>`
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_Fraunhofer_O3dyn_o3dyn_controller.usd.png
@@ -4466,6 +4686,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX SceneAPI
 
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/CLA-1_OpenLogisticsFoundation_Fraunhofer_-_NVIDIA.pdf>`
+
                     .. tab-item:: Variant 3
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_Fraunhofer_O3dyn_o3dyn_trimmed.usd.png
@@ -4501,6 +4723,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX CollisionAPI
 
                             - PhysX SceneAPI
+
+                            **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/CLA-1_OpenLogisticsFoundation_Fraunhofer_-_NVIDIA.pdf>`
 
     .. tab-item:: Aerial
 
@@ -4541,6 +4765,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX ArticulationAPI
 
                     - PhysX CollisionAPI
+
+                    **License:** `NASA/JPL-Caltech 3D Model Download <https://science.nasa.gov/resource/mars-ingenuity-helicopter-3d-model>`__
 
         | **IsaacSim**
 
@@ -4614,6 +4840,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     * This robot is in Isaac Lab
 
+                    **License:** `MIT <https://github.com/bitcraze/crazyflie-simulation/blob/main/LICENSE>`__  
+
     .. tab-item:: Isaac Sim Simple
 
 
@@ -4653,6 +4881,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX CollisionAPI
 
                     - PhysX SceneAPI
+
+                    **License:** NVIDIA
 
             .. tab-item:: SimpleArticulation
 
@@ -4831,6 +5061,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             - PhysX JointAPI
 
+                            **License:** `MIT <https://github.com/openai/gym/blob/master/LICENSE.md>`__  
+
                     .. tab-item:: Variant 2
 
                         .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_IsaacSim_Humanoid_humanoid_instanceable.usd.png
@@ -4864,6 +5096,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                             - PhysX JointAPI
 
                             * This robot is in Isaac Lab
+
+                            **License:** `MIT <https://github.com/openai/gym/blob/master/LICENSE.md>`__ 
 
             .. tab-item:: DifferentialBase
 
@@ -5035,6 +5269,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+                    **License:** `BSD-3 <https://github.com/orgs/clearpathrobotics/repositories?q=dingo>`__
+
             .. tab-item:: RidgebackFranka
 
 
@@ -5069,6 +5305,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     * This robot is in Isaac Lab
+
+                    **License:** `BSD-3 <https://github.com/orgs/clearpathrobotics/repositories?q=dingo>`__
 
         | **BostonDynamics**
 
@@ -5106,3 +5344,5 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX ArticulationAPI
 
                     - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/Boston Dynamics-Signed 3D Content Sharing.pdf>`

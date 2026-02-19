@@ -70,7 +70,7 @@ import tempfile
 from pathlib import Path
 
 DEFAULT_GITLAB_URL = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim.git"
-DEFAULT_BRANCH = "main"
+DEFAULT_BRANCH = "develop"
 
 
 def clone_snippets_sparse(repo_url, branch, dest_dir):
@@ -169,41 +169,41 @@ def sync_snippets(source_repo, docs_repo, check_only=False, filters=None):
     if filters:
         print(f"Filtering by subdirectories: {', '.join(filters)}")
 
-    # Find all files in source
-    synced_count = 0
-    diverged = False
-
-    for source_file in source_base.rglob("*.py"):
-        if source_file.is_file():
-            # Skip .pyc files and __init__.py files
-            if source_file.suffix == ".pyc" or source_file.name == "__init__.py":
+    def _collect_rel_paths(base_dir):
+        """Collect filtered relative paths of .py files under base_dir."""
+        rel_paths = set()
+        if not base_dir.exists():
+            return rel_paths
+        for py_file in base_dir.rglob("*.py"):
+            if not py_file.is_file() or py_file.name == "__init__.py":
                 continue
-            rel_path = source_file.relative_to(source_base)
-            # Skip tests directory - tests live only in omni_isaac_sim
+            rel_path = py_file.relative_to(base_dir)
             if rel_path.parts[0] == "tests":
                 continue
-            # Apply subdirectory filter if provided
-            if filters and not any(rel_path.parts[0].startswith(f) for f in filters):
+            if filters and rel_path.parts[0] not in filters:
                 continue
-            dest_file = dest_base / rel_path
+            rel_paths.add(rel_path)
+        return rel_paths
 
-            if check_only:
-                if not dest_file.exists():
-                    print(f"MISSING: {rel_path}")
-                    diverged = True
-                else:
-                    src_content = source_file.read_bytes()
-                    dest_content = dest_file.read_bytes()
-                    if src_content != dest_content:
-                        print(f"DIFFERENT: {rel_path}")
-                        diverged = True
-            else:
-                # Ensure dest dir exists
-                dest_file.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(source_file, dest_file)
-                synced_count += 1
+    source_files = _collect_rel_paths(source_base)
+    dest_files = _collect_rel_paths(dest_base)
+
+    missing = sorted(source_files - dest_files)  # in source but not docs
+    extra = sorted(dest_files - source_files)  # in docs but not source
+    common = sorted(source_files & dest_files)  # in both
 
     if check_only:
+        diverged = False
+        for rel_path in missing:
+            print(f"MISSING: {rel_path} (exists in source but not in docs)")
+            diverged = True
+        for rel_path in extra:
+            print(f"EXTRA: {rel_path} (exists in docs but not in source)")
+            diverged = True
+        for rel_path in common:
+            if (source_base / rel_path).read_bytes() != (dest_base / rel_path).read_bytes():
+                print(f"DIFFERENT: {rel_path}")
+                diverged = True
         if diverged:
             print("FAILURE: Docs snippets are out of sync.")
             return False
@@ -211,7 +211,16 @@ def sync_snippets(source_repo, docs_repo, check_only=False, filters=None):
             print("SUCCESS: Docs snippets are in sync.")
             return True
     else:
-        print(f"Synced {synced_count} files.")
+        # Copy new and updated files from source to docs
+        for rel_path in sorted(source_files):
+            dest_file = dest_base / rel_path
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_base / rel_path, dest_file)
+        # Remove stale files from docs
+        for rel_path in extra:
+            print(f"REMOVING EXTRA: {rel_path} (exists in docs but not in source)")
+            (dest_base / rel_path).unlink()
+        print(f"Synced {len(source_files)} files, removed {len(extra)} extra files.")
         return True
 
 
