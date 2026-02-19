@@ -101,12 +101,19 @@ echo ""
 # Remove repo log file if it exists
 rm -f "$SCRIPT_DIR/../_repo/repo.log"
 
+REPO_ROOT="$SCRIPT_DIR/.."
+
 # Run each step with timing
-run_timed_step "Generate Doxygen Input" "$SCRIPT_DIR/../repo.sh" -v generate_doxygen_input
-run_timed_step "Extension Docs" "$SCRIPT_DIR/../repo.sh" -v extension_docs --error-as-warn "$@"
-run_timed_step "Extension TOC" "$SCRIPT_DIR/../repo.sh" -v extension_toc --error-as-warn "$@"
-run_timed_step "Build Docs (Doxygen + Sphinx)" "$SCRIPT_DIR/../repo.sh" -v docs -c release --warn-as-error=0 "$@"
-run_timed_step "Examples List" "$SCRIPT_DIR/../repo.sh" -v examples_list "$@"
+run_timed_step "Generate Doxygen Input" "$REPO_ROOT/repo.sh" -v generate_doxygen_input
+run_timed_step "Extension Docs" "$REPO_ROOT/repo.sh" -v extension_docs --error-as-warn "$@"
+run_timed_step "Extension TOC" "$REPO_ROOT/repo.sh" -v extension_toc --error-as-warn "$@"
+
+# Build user guide first (main docs), then API docs into its py/ subfolder
+# Use --project to build specific projects, or omit to build all
+run_timed_step "Build User Guide" "$REPO_ROOT/repo.sh" -v docs --project isaac-sim -c release --warn-as-error=0 "$@" || true
+run_timed_step "Build API Docs" "$REPO_ROOT/repo.sh" -v docs --project api -c release --warn-as-error=0 "$@" || true
+
+run_timed_step "Examples List" "$REPO_ROOT/repo.sh" -v examples_list "$@"
 
 # Calculate total time
 OVERALL_END=$(date +%s)
