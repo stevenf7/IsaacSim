@@ -105,14 +105,13 @@ def main(args: argparse.Namespace):
         repo_docs_enabled = False
         print("Docs are disabled for downstream/develop-kit-tot/kit-integration pipeline")
 
-    # Docs
+    # API docs only (user guide is built in a separate CI job)
     if repo_docs_enabled:
+        omni.repo.ci.launch(["${root}/repo${shell_ext}", "generate_doxygen_input"])
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "extension_toc"])
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "extension_docs"])
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "examples_list"])
-        # Temporarily ignore warnings in docs build
-        omni.repo.ci.launch(["${root}/repo${shell_ext}", "docs", "--config", build_config, "--warn-as-error=0"])
-        # omni.repo.ci.launch(["${root}/repo${shell_ext}", "docs", "--config", build_config])
+        omni.repo.ci.launch(["${root}/repo${shell_ext}", "docs", "--project", "api", "--config", build_config, "--warn-as-error=0"])
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "docs", "-c", build_config])
 
     # store the debugging symbols for release builds only.

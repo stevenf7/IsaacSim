@@ -94,7 +94,7 @@ files_exclude = [
 
 [isaac-sim-standalone.linux-x86_64]
 files = [
-    ["../../docs/isaac_sim/latest/**", "docs/py/"] # linux ext api docs
+    ["../../docs/isaac-sim/latest/py/**", "docs/py/"] # linux ext api docs
 ]
 files_strip = [
     ["**/*.so"],
@@ -112,7 +112,7 @@ files_strip_exclude = [
 [isaac-sim-standalone.windows-x86_64]
 files = [
     ["exts/omni.pip.compute/pip_prebundle/scipy/_lib"],
-    # ["../../docs/isaac_sim/latest/**", "docs/py/"] # windows ext api docs
+    # ["../../docs/isaac-sim/latest/py/**", "docs/py/"] # windows ext api docs
 ]
 files_exclude = [
     ["standalone_examples/cortex/**"], # Cortex not shipped on windows
@@ -166,7 +166,7 @@ files_exclude = [
 
 [docs]
 files = [
-    ["_build/docs/isaac_sim/latest/**",""],
+    ["_build/docs/isaac-sim/latest/**",""],
 ]
 
 ########################################################################################################################

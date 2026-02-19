@@ -60,6 +60,7 @@ include:
 stages:
   - check
   - build
+  - docs
   - test
   - nightly-test
   - external-test
@@ -94,6 +95,15 @@ workflow:
       - if: $CI_PIPELINE_SOURCE == "pipeline"
         auto_cancel:
             on_new_commit: none
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+        auto_cancel:
+            on_new_commit: conservative
+        variables:
+            RUN_CHECKS: "false"
+            RUN_BUILDS: "false"
+            RUN_TESTS: "false"
+            RUN_NIGHTLY_TESTS: "false"
+            RUN_DEPLOY: "false"
       - if: $CI_PIPELINE_SOURCE == "merge_request_event"
         auto_cancel:
             on_new_commit: conservative
@@ -258,6 +268,8 @@ osec:sonarqube:
       # OSEC-1623 (originally OSEC-1511) patch the compile_commands.json sonarqube will use for analysis to include our behaviour changing "SONAR" ifdef
       # - sed -i -e 's/"g++ /"g++ -DNV_SONAR_BUILD=1 /' $SONAR_CFAMILY_COMPILE_COMMANDS
     rules:
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+        when: never
       - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_REF_PROTECTED == "true")
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
@@ -325,16 +337,51 @@ osec:sonarqube:
 
 .rules-publish-docs:
     rules:
-      # allow schedule pipeline if RUN_DOCS_PUBLISH is set to "true" and its scheduled
-      - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_PUBLISH == "true"
+      # Publish release docs for release/x.y branches on push pipelines
+      - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+$/'
         when: always
+        variables:
+          PAGES_PATH_PREFIX: "$CI_COMMIT_REF_NAME"
+      # Publish release docs for release/x.y branches on scheduled docs builds
+      - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+$/ && $RUN_DOCS_BUILD == "true"'
+        when: always
+        variables:
+          PAGES_PATH_PREFIX: "$CI_COMMIT_REF_NAME"
+      # Publish root docs from develop on push pipelines
+      - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "develop"
+        when: always
+        variables:
+          PAGES_PATH_PREFIX: ""
+      # Publish root docs from develop on scheduled docs builds
+      - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH == "develop" && $RUN_DOCS_BUILD == "true"
+        when: always
+        variables:
+          PAGES_PATH_PREFIX: ""
       - when: never
 
 .rules-build-docs:
     rules:
-      # allow schedule pipeline if RUN_DOCS_BUILD is set to "true" and its scheduled
+      # allow docs build on push pipelines
+      - if: $CI_PIPELINE_SOURCE == "push"
+        when: always
+      # allow schedule pipeline if RUN_DOCS_BUILD is set to "true"
       - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_BUILD == "true"
         when: always
+      - when: never
+
+.rules-build-docs-mr:
+    rules:
+      # Skip if "Docs only change" is checked (handled by the lightweight job instead)
+      - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"
+        when: never
+      # MR checkbox opt-in for full docs (user guide + API)
+      - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Build docs in MR pipelines/"
+      - when: never
+
+.rules-build-docs-only-mr:
+    rules:
+      # Run only when user checks the box (no auto-trigger on docs_temp changes)
+      - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"
       - when: never
 
 # ==============================================================================================================
@@ -497,6 +544,16 @@ build-linux-x86_64-release:
       # Covered by build-linux-x86_64-c++-coverage, so skip it in MR pipelines to save resources.
       - !reference [.disable_on_downstream_of_mr, rules]
       - !reference [.build-common, rules]
+    artifacts:
+      when: always
+      expire_in: 2 weeks
+      paths:
+        - _build/packages/
+        - _repo/repo.log
+        - _repo/repolog*.txt
+        - deps/kit-sdk.packman.xml.user
+        # API docs produced in linux build and consumed by build-docs-mr.
+        - _build/docs/isaac-sim/latest/py
     script:
       - ./repo.sh ci build -c release
 # ==============================================================================================================
@@ -538,6 +595,8 @@ build-linux-aarch64-release:
   script:
     - ./repo.sh ci build -c release
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+      when: never
     - if: $RUN_BUMP_VERSION == "true"
       when: never
     - !reference [.disable_on_downstream_of_mr, rules]
@@ -1022,26 +1081,108 @@ test-linux-x86_64-external-ar:
       - if: $RUN_DOCS_BUILD == "true" || RUN_NIGHTLY_TESTS=="true" || $RUN_DEPLOY != "true"
         when: never
 
-build-docs:
+.build-docs-base:
     extends:
       - .build-common
       - .ipp_lnx_x86_64_cpu_small
       - .osec:vault:v3:prod_token_job
+    stage: docs
     timeout: 3 hours
     before_script:
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
-      - echo "Building docs from docs_temp/ (migrated from isaacsim-docs)..."
-      - ./repo.sh docs --warn-as-error=0 > build_log_full.txt 2>&1 || true
+      - echo "Building full docs (user guide + API)..."
+      - |
+        if [ -d "_build/docs/isaac-sim/latest/py" ]; then
+          rm -rf "_build/docs/.api-docs-backup"
+          mkdir -p "_build/docs/.api-docs-backup"
+          cp -a "_build/docs/isaac-sim/latest/py" "_build/docs/.api-docs-backup/"
+          echo "API docs backed up from linux build artifacts."
+        else
+          echo "WARNING - API docs not found in artifacts"
+        fi
+      - ./repo.sh docs --project isaac-sim --warn-as-error=0 > build_log_full.txt 2>&1 || true
+      - |
+        if [ -d "_build/docs/.api-docs-backup/py" ]; then
+          mkdir -p "_build/docs/isaac-sim/latest"
+          rm -rf "_build/docs/isaac-sim/latest/py"
+          cp -a "_build/docs/.api-docs-backup/py" "_build/docs/isaac-sim/latest/"
+          echo "API docs restored into final docs output."
+        fi
+      - ls _build/docs/isaac-sim/latest/py/index.html && echo "API docs present in final output" || echo "WARNING - API docs still missing in final output"
       - echo "Docs build complete. Check build_log_full.txt for details."
-    rules:
-      - !reference [.rules-build-docs, rules]
+    needs:
+      - job: build-linux-x86_64-release
+        artifacts: true
     artifacts:
         when: always
         expire_in: 2 weeks
         paths:
           - _build/docs/isaac-sim/latest
           - build_log_full.txt
+
+build-docs:
+    extends: .build-docs-base
+    rules:
+      - !reference [.rules-build-docs, rules]
+
+build-docs-mr:
+    extends: .build-docs-base
+    script:
+      - echo "Building full docs (user guide + API)..."
+      - |
+        if [ -d "_build/docs/isaac-sim/latest/py" ]; then
+          rm -rf "_build/docs/.api-docs-backup"
+          mkdir -p "_build/docs/.api-docs-backup"
+          cp -a "_build/docs/isaac-sim/latest/py" "_build/docs/.api-docs-backup/"
+          echo "API docs backed up from linux build artifacts."
+        else
+          echo "WARNING - API docs not found in artifacts"
+        fi
+      - ./repo.sh docs --project isaac-sim --warn-as-error=0 > build_log_full.txt 2>&1 || true
+      - |
+        if [ -d "_build/docs/.api-docs-backup/py" ]; then
+          mkdir -p "_build/docs/isaac-sim/latest"
+          rm -rf "_build/docs/isaac-sim/latest/py"
+          cp -a "_build/docs/.api-docs-backup/py" "_build/docs/isaac-sim/latest/"
+          echo "API docs restored into final docs output."
+        fi
+      - ls _build/docs/isaac-sim/latest/py/index.html && echo "API docs present in final output" || echo "WARNING - API docs still missing in final output"
+      - echo "Docs build complete. Check build_log_full.txt for details."
+      - echo "Preview at https://omniverse.gitlab-master-pages.nvidia.com/-/isaac/omni_isaac_sim/-/jobs/$CI_JOB_ID/artifacts/_build/docs/isaac-sim/latest/index.html"
+    rules:
+      - !reference [.rules-build-docs-mr, rules]
+    environment:
+      name: review/$CI_MERGE_REQUEST_IID
+      url: https://omniverse.gitlab-master-pages.nvidia.com/-/isaac/omni_isaac_sim/-/jobs/$CI_JOB_ID/artifacts/_build/docs/isaac-sim/latest/index.html
+      auto_stop_in: 2 weeks
+
+build-docs-only-mr:
+    extends:
+      - .build-common
+      - .ipp_lnx_x86_64_cpu_small
+      - .osec:vault:v3:prod_token_job
+    stage: docs
+    timeout: 1 hour
+    before_script:
+      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
+    script:
+      - echo "Building user guide only (docs-only change, no API docs)..."
+      - ./repo.sh docs --project isaac-sim --warn-as-error=0 > build_log_full.txt 2>&1 || true
+      - echo "Docs build complete. Check build_log_full.txt for details."
+      - echo "Preview at https://omniverse.gitlab-master-pages.nvidia.com/-/isaac/omni_isaac_sim/-/jobs/$CI_JOB_ID/artifacts/_build/docs/isaac-sim/latest/index.html"
+    rules:
+      - !reference [.rules-build-docs-only-mr, rules]
+    artifacts:
+        when: always
+        expire_in: 2 weeks
+        paths:
+          - _build/docs/isaac-sim/latest
+          - build_log_full.txt
+    environment:
+      name: review/$CI_MERGE_REQUEST_IID
+      url: https://omniverse.gitlab-master-pages.nvidia.com/-/isaac/omni_isaac_sim/-/jobs/$CI_JOB_ID/artifacts/_build/docs/isaac-sim/latest/index.html
+      auto_stop_in: 2 weeks
 
 pages:
     stage: pages
@@ -1055,6 +1196,9 @@ pages:
     artifacts:
         paths:
           - public
+    pages:
+      # develop -> root (empty prefix), release/x.y -> prefixed deployment
+      path_prefix: "$PAGES_PATH_PREFIX"
     rules:
       - !reference [.rules-publish-docs, rules]
     needs:
@@ -1443,8 +1587,8 @@ publish-docs:
     script:
       - curl -o ./artifact.zip  https://gitlab-master.nvidia.com/api/v4/projects/25020/jobs/artifacts/release/4.2/download?job=build-linux-x86_64-release
       - unzip artifact.zip
-      - mkdir -p /builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac_sim/latest
-      - 7z x _build/packages/docs@*.7z -o/builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac_sim/latest
+      - mkdir -p /builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac-sim/latest
+      - 7z x _build/packages/docs@*.7z -o/builds/omniverse/isaac/omni_isaac_sim/_build/docs/isaac-sim/latest
       - ./repo.sh docs --config release --stage publish --edition production
     rules:
       - if: $ALLOW_PUBLISH_DOCS != "true"
@@ -1644,7 +1788,7 @@ publish-container-x86_64:
     script:
       - source ./tools/ci/gitlab/section_marker.sh
       - section_start "unzipping_packages" "Unzipping packages"
-      - 7z x -y -o_build/docs/isaac_sim/latest _build/packages/docs*.7z
+      - 7z x -y -o_build/docs/isaac-sim/latest _build/packages/docs*.7z
       - 7z x -y -o_build/linux-x86_64/release _build/packages/isaac-sim-standalone*.7z
       - section_end "unzipping_packages"
       - rm -r .vscode
@@ -2041,6 +2185,10 @@ check_externals:
   stage: check-externals
   needs: []
   allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+      when: never
+    - !reference [.check-common, rules]
   artifacts:
     paths:
       - packman_private_results.csv
@@ -2060,6 +2208,10 @@ check-python-packages-dependencies-linux-x86_64:
   stage: check-externals
   needs: []
   allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+      when: never
+    - !reference [.check-common, rules]
   script:
     - ./repo.sh check_python_package_definitions --gitlab
     # check for dependency conflicts
@@ -2083,6 +2235,10 @@ check-python-packages-dependencies-linux-aarch64:
   stage: check-externals
   needs: []
   allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+      when: never
+    - !reference [.check-common, rules]
   script:
     - ./repo.sh check_python_package_definitions --gitlab
     # check for dependency conflicts
@@ -2106,6 +2262,10 @@ check-python-packages-dependencies-windows-x86_64:
   stage: check-externals
   needs: []
   allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+      when: never
+    - !reference [.check-common, rules]
   script:
     - ./repo.bat check_python_package_definitions --gitlab
     # check for dependency conflicts

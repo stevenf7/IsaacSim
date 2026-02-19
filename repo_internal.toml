@@ -25,30 +25,20 @@ linbuild_container_tag = "urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-bui
 
 config = "release"
 enabled = true
+"platform:linux-aarch64".enabled = false
+"platform:windows-x86_64".enabled = false
+"platform:linux-x86_64".enabled = true
 
-# the name of you project.  should be a single word. used to name files.
-project = "isaac_sim"
-
-# a slightly more descriptive name for your project. user visible. keep it short.
-long_name = "Isaac Sim"
-name = "Isaac Sim"
-
-# first year in your projects copyright.
-copyright_start = 2018
-
-# Use python from kit sdk
-# python_path =  "${root}/_build/${platform}/${config}/python${shell_ext}"
-
-# our api docs are not versioned
-version_selector_enabled = false
-
-# version = "6.0.0"
-
-# Move api docs to build directory
-# docs_dst = "${root}/_build/${platform}/${config}/docs"
+project_build_order = ["isaac-sim", "api"]
 
 logo_target_url = "index.html"
 copybutton_enabled = true
+enhanced_search_enabled = true
+external_links_open_new_tab = true
+sphinx_parallel = "auto"
+copyright_start = 2023
+version = "6.0.0"
+
 announcement = "<span style='color: orange; font-size: 1.2em;'>&#9888;</span><strong>Isaac Sim 6.0 Early Developer Release:</strong> This documentation is incomplete. To use this version, build Isaac Sim from source on <a href='https://github.com/isaac-sim/IsaacSim/tree/develop' target='_blank'>GitHub</a>.<br>Binaries, pip packages, pre-built containers and other artifacts will be available with the General Availability (GA) release."
 
 extra_content_head = [
@@ -64,17 +54,67 @@ social_media = [
     ["twitch", "https://www.twitch.tv/nvidiaomniverse"],
     ["discord", "https://discord.gg/4ZsTFksGh8"],
     ["github", "https://github.com/isaac-sim"],
-    # ["question", "https://forums.developer.nvidia.com/c/omniverse/simulation/69"],
-    # ["cloud", "https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim"],
 ]
 
-# Enable LUNR search, which works better than Sphinx search - especially when running locally (from docs archive)
-enhanced_search_enabled = true
+# ==============================
+# Project: isaac-sim (User Guide — main docs)
+# ==============================
+[repo_docs.projects.isaac-sim]
+docs_root = "docs_temp/docs/app_isaacsim"
+name = "Isaac Sim Documentation"
+version_selector_enabled = true
+mr_version_override_enabled = false
+output_path_template = "${project}/latest${dash_build}"
+breadcrumbs_home_url = "../../index.html"
+breadcrumbs_add_project = true
 
-# open all external links in a new tab
-external_links_open_new_tab = true
+python_paths = [
+    "${root}/docs_temp/docs",
+    "${root}/docs_temp/docs/conf/ext",
+]
 
-# Add all extensions to docs sys.path
+sphinx_conf_py_extra = """
+from terms import TERMS
+rst_epilog = TERMS
+
+try:
+    suppress_warnings.append("myst.header")
+except NameError:
+    suppress_warnings = ["myst.header"]
+
+try:
+    extensions.append("config_selector")
+except NameError:
+    extensions = ["config_selector"]
+"""
+
+sphinx_exclude_patterns = [
+    "_build",
+    "**/license_files/*.md",
+    "**/custom/*.rst",
+    "${root}/docs_temp/docs/app_isaacsim/assets/SICK/**/readme.md",
+]
+
+deps = [
+   ["extensions", "https://docs.omniverse.nvidia.com/extensions/latest"],
+   ["dev-guide", "https://docs.omniverse.nvidia.com/dev-guide/latest"],
+   ["composer", "https://docs.omniverse.nvidia.com/composer/latest"],
+   ["utilities", "https://docs.omniverse.nvidia.com/utilities/latest"],
+   ["nucleus", "https://docs.omniverse.nvidia.com/nucleus/latest"],
+   ["launcher", "https://docs.omniverse.nvidia.com/launcher/latest"],
+   ["kit", "https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest"],
+   ["kit-physics", "https://docs.omniverse.nvidia.com/kit/docs/omni_physics/latest"],
+   ["usd", "https://docs.omniverse.nvidia.com/usd/latest"],
+   ["developer_workstations", "https://docs.omniverse.nvidia.com/developer_workstations/latest"],
+]
+
+# ==============================
+# Project: api (API Reference — built into isaac-sim/latest/py/)
+# ==============================
+[repo_docs.projects.api]
+name = "Isaac Sim API"
+version_selector_enabled = false
+output_path_template = "isaac-sim/latest${dash_build}/py"
 
 library_paths = [
   "$root/_build/$platform/$config/kit",
@@ -89,17 +129,14 @@ python_paths = [
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot.schema/plugins",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.numpy.common*",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.commands*",
-  # archives
   "${root}/_build/${platform}/${config}/exts/omni.isaac.core_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.pip.cloud/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.pip.compute/pip_prebundle",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle",
-  "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle/Pillow/pillow*",  # PIL
+  "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle/Pillow/pillow*",
 ]
 
-
-sphinx_parallel = "auto"
 sphinx_conf_py_extra = """
     add_module_names = False
     html_logo = "docs/media/main_ov_logo_square.png"
@@ -112,43 +149,61 @@ sphinx_conf_py_extra = """
     autodoc_mock_imports = [
         "carb",
         "omni.appwindow",
+        "omni.asset_validator",
         "omni.client",
         "omni.ext",
         "omni.graph",
-        # don't mock 'omni.kit' (needed for 'omni.kit.loop-isaac'),
+        "omni.hydra",
+        "omni.inspect",
         "omni.kit.app",
         "omni.kit.actions",
+        "omni.kit.clipboard",
+        "omni.kit.collaboration",
         "omni.kit.commands",
+        "omni.kit.converter",
+        "omni.kit.debug",
+        "omni.kit.hydra_texture",
+        "omni.kit.manipulator",
         "omni.kit.menu",
         "omni.kit.notification_manager",
         "omni.kit.property",
+        "omni.kit.stage_template",
         "omni.kit.stage_templates",
         "omni.kit.test",
         "omni.kit.tool",
         "omni.kit.usd",
         "omni.kit.utils",
         "omni.kit.viewport",
+        "omni.kit.viewport_widgets_manager",
         "omni.kit.widget",
         "omni.kit.window",
+        "omni.mdl",
         "omni.metrics",
         "omni.physics",
         "omni.physx",
+        "omni.physxcamera",
+        "omni.physxcct",
         "omni.physxclashdetectioncore",
+        "omni.physxcommands",
+        "omni.physxpvd",
+        "omni.physxvehicle",
         "omni.platforminfo",
         "omni.replicator",
+        "omni.services",
         "omni.stats",
         "omni.structuredlog",
         "omni.syntheticdata",
         "omni.timeline",
         "omni.ui",
         "omni.usd",
+        "newton",
         "pxr",
         "Semantics",
         "usdrt",
         "warp",
         "OmniGraphSchema",
-        "omni.isaac.IsaacSensorSchema", # This cannot be documented because usd plugin needs to be loaded first
-        "omni.isaac.RangeSensorSchema", # This cannot be documented because usd plugin needs to be loaded first
+        "omni.isaac.IsaacSensorSchema",
+        "omni.isaac.RangeSensorSchema",
     ]
 
     rst_prolog = '''
@@ -164,7 +219,6 @@ sphinx_conf_py_extra = """
 
     '''
 
-    # hack to suppress 'WARNING: duplicate object description... use :no-index:'
     import logging
 
     class DuplicateObjectDescriptionFilter(logging.Filter):
@@ -206,7 +260,10 @@ sphinx_exclude_patterns = [
   ".nvidia-omniverse",
   "_build",
   ".cursor",
-  "CODING.md"
+  "CODING.md",
+  "docs_temp",
+  "_container_temp/extscache",
+  "_container_temp/kit",
 ]
 
 doxygen_input = [
