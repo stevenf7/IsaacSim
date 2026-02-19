@@ -1,0 +1,30 @@
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Isaac Sim Newton Physics UI"
+description = "Extension for Newton simulation to add UI elements and UI integration."
+authors = ["aborovicka@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim"
+keywords = ["isaac", "newton", "physics", "ui"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"isaacsim.physics.newton" = {}
+"omni.physics.ui" = {}
+"omni.kit.property.physics" = {}
+"omni.physics.isaacsimready" = {}
+
+[[python.module]]
+name = "isaacsim.physics.newton.ui"
+
+[[test]]
+dependencies = [
+
+]
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
