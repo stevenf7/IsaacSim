@@ -20,6 +20,7 @@ __all__ = ["AssetTransformerWindow"]
 import asyncio
 import json
 import os
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -220,6 +221,7 @@ class AssetTransformerWindow(MenuHelperWindow):
 
         self._profile_name_label: ui.Label | None = None
         self._last_preset_dir: str | None = None
+        self._confirmation_dialog: ui.Window | None = None
 
         # Subscribe to stage events to update stage field when stage changes
         self._usd_context = omni.usd.get_context()
@@ -558,14 +560,17 @@ class AssetTransformerWindow(MenuHelperWindow):
         self._profile.rules = rules
 
     def _update_profile_name_label(self) -> None:
-        """Sync the profile UI models from the current ``self._profile``."""
+        """Sync the profile UI models from the current ``self._profile``.
+
+        Note: the output directory field is intentionally *not* synced here.
+        Presets do not persist ``output_package_root``, so overwriting the
+        field would clear a user-supplied value every time a preset is loaded.
+        """
         self._profile_name_model.set_value(self._profile.profile_name or "")
         self._profile_version_model.set_value(self._profile.version or "")
         self._profile_interface_model.set_value(self._profile.interface_asset_name or "")
         self._profile_base_name_model.set_value(self._profile.base_name or "")
         self._profile_flatten_model.set_value(self._profile.flatten_source)
-        if self._file_data is not None:
-            self._file_data.output_dir_field.model.set_value(self._profile.output_package_root or "")
 
     def _build_profile_from_actions(self) -> RuleProfile:
         """Build and return a fully populated ``RuleProfile`` from the current UI state.
@@ -600,19 +605,175 @@ class AssetTransformerWindow(MenuHelperWindow):
             self._file_data.input_source_field.model.set_value("")
 
     def _close_file_picker(self) -> None:
-        """Close and destroy the current file picker dialog asynchronously."""
+        """Close the current file picker dialog.
+
+        The dialog is hidden immediately so a replacement picker can be shown
+        in the same frame.  Destruction is deferred to the next frame to avoid
+        the ``Container::destroy during draw`` error.
+        """
         if self._file_picker is None:
             return
 
         picker = self._file_picker
         self._file_picker = None
+        picker.hide()
 
-        async def _deferred_close():
+        async def _deferred_destroy():
             await omni.kit.app.get_app().next_update_async()
-            picker.hide()
             picker.destroy()
 
-        asyncio.ensure_future(_deferred_close())
+        asyncio.ensure_future(_deferred_destroy())
+
+    @staticmethod
+    def _estimate_dialog_height(message: str, dialog_width: int = 450) -> int:
+        """Estimate the dialog height needed to display *message* without clipping.
+
+        Args:
+            message: Body text (may contain newlines and long paths).
+            dialog_width: Pixel width of the dialog.
+
+        Returns:
+            Pixel height that accommodates the wrapped text plus buttons.
+        """
+        usable_chars_per_line = max(1, (dialog_width - 40) // 8)
+        wrapped_lines = 0
+        for line in message.split("\n"):
+            wrapped_lines += max(1, -(-len(line) // usable_chars_per_line))
+        text_height = wrapped_lines * 20
+        chrome = 16 + 8 + 30 + 8  # top spacer + gap + button row + bottom spacer
+        return max(160, text_height + chrome + 30)
+
+    def _show_confirmation_dialog(self, title: str, message: str, on_confirm: Callable[[], None]) -> None:
+        """Show a modal confirmation dialog with Confirm / Cancel buttons.
+
+        The window height is computed from the message content so that long
+        file paths do not cause the buttons to be clipped.  Destruction of
+        the dialog is deferred to the next frame to avoid
+        ``Container::destroy during draw`` errors.
+
+        Args:
+            title: Window title.
+            message: Body text displayed to the user.
+            on_confirm: Callable invoked when the user presses Confirm.
+        """
+        if self._confirmation_dialog is not None:
+            self._confirmation_dialog.visible = False
+            self._confirmation_dialog = None
+
+        dialog_height = self._estimate_dialog_height(message)
+        dialog = ui.Window(
+            title,
+            width=450,
+            height=dialog_height,
+            flags=(ui.WINDOW_FLAGS_NO_SCROLLBAR | ui.WINDOW_FLAGS_MODAL | ui.WINDOW_FLAGS_NO_SAVED_SETTINGS),
+        )
+        self._confirmation_dialog = dialog
+
+        def _deferred_destroy() -> None:
+            """Hide immediately, destroy on the next frame."""
+            dialog.visible = False
+            self._confirmation_dialog = None
+
+            async def _destroy_next_frame():
+                await omni.kit.app.get_app().next_update_async()
+                dialog.destroy()
+
+            asyncio.ensure_future(_destroy_next_frame())
+
+        def _confirm() -> None:
+            _deferred_destroy()
+            on_confirm()
+
+        def _cancel() -> None:
+            _deferred_destroy()
+
+        with dialog.frame:
+            with ui.VStack(spacing=8):
+                ui.Spacer(height=8)
+                ui.Label(message, word_wrap=True, alignment=ui.Alignment.CENTER, height=0)
+                ui.Spacer()
+                with ui.HStack(height=30):
+                    ui.Spacer()
+                    ui.Button("Confirm", width=100, clicked_fn=_confirm)
+                    ui.Spacer(width=8)
+                    ui.Button("Cancel", width=100, clicked_fn=_cancel)
+                    ui.Spacer()
+                ui.Spacer(height=8)
+
+        dialog.visible = True
+
+    def _show_picker_and_navigate(self, directory: str | None) -> None:
+        """Show the current file picker then navigate to *directory*.
+
+        The dialog is shown first so that its internal browser widget is
+        initialised.  Navigation is deferred to the next application frame
+        because the widget is not ready to accept ``navigate_to`` calls in
+        the same frame as ``show()``.
+
+        A trailing separator is appended to *directory* when absent so the
+        file picker treats the last path component as a directory.
+
+        Args:
+            directory: Absolute path to navigate to.  When *None* or not a
+                valid directory only ``show()`` is called.
+        """
+        if self._file_picker is None:
+            return
+
+        self._file_picker.show()
+
+        if not directory or not os.path.isdir(directory):
+            return
+
+        if not directory.endswith(os.sep):
+            directory += os.sep
+
+        picker = self._file_picker
+
+        async def _deferred_navigate():
+            await omni.kit.app.get_app().next_update_async()
+            if picker is not self._file_picker:
+                return
+            picker.set_current_directory(directory)
+            picker.navigate_to(directory)
+            picker.refresh_current_directory()
+
+        asyncio.ensure_future(_deferred_navigate())
+
+    def _resolve_input_dir(self) -> str | None:
+        """Return the parent directory of the current input asset.
+
+        When the radio is set to *Active Stage*, the directory is resolved
+        directly from the open USD stage so that even if the text field has
+        not been populated yet the correct folder is returned.  In *Pick
+        File* mode the value of the input text field is used instead.
+
+        Returns:
+            The parent directory path, or None.
+        """
+        if self._file_data is None:
+            return None
+
+        use_stage = (
+            self._file_type_radio_collection is not None
+            and self._file_type_radio_collection.model.get_value_as_int() == 0
+        )
+        if use_stage:
+            stage = self._usd_context.get_stage()
+            if stage is not None:
+                root_layer = stage.GetRootLayer()
+                real_path = root_layer.realPath if root_layer else None
+                if real_path:
+                    parent = str(Path(real_path).parent)
+                    if os.path.isdir(parent):
+                        return parent
+            return None
+
+        current = self._file_data.input_source_field.model.get_value_as_string().strip()
+        if not current or current.startswith("<"):
+            return None
+        parent = str(Path(current).parent)
+        return parent if os.path.isdir(parent) else None
 
     def _on_input_file_selected(self, file_name: str, dir_name: str) -> None:
         """Handle input file selection from the file picker.
@@ -628,13 +789,41 @@ class AssetTransformerWindow(MenuHelperWindow):
     def _on_output_dir_selected(self, file_name: str, dir_name: str) -> None:
         """Handle output directory selection from the file picker.
 
+        When the user selects a folder in the browser cards the
+        ``file_name`` argument contains that folder name.  If the combined
+        ``dir_name / file_name`` resolves to a directory it is used as the
+        output path; otherwise ``dir_name`` alone is used.
+
+        If the resolved directory is non-empty a confirmation dialog is
+        shown before applying the selection.
+
         Args:
-            file_name: Unused (directory selection).
-            dir_name: The selected directory path.
+            file_name: Name entered / selected in the file bar (may be a
+                subfolder name).
+            dir_name: The directory the picker is currently navigated to.
         """
         assert self._file_data is not None
-        self._file_data.output_dir_field.model.set_value(dir_name)
         self._close_file_picker()
+
+        # Prefer the combined path when the user selected a subfolder
+        selected_dir = dir_name
+        if file_name:
+            candidate = str(Path(dir_name).joinpath(file_name))
+            if os.path.isdir(candidate):
+                selected_dir = candidate
+
+        def _apply() -> None:
+            assert self._file_data is not None
+            self._file_data.output_dir_field.model.set_value(selected_dir)
+
+        if os.path.isdir(selected_dir) and os.listdir(selected_dir):
+            self._show_confirmation_dialog(
+                "Directory Not Empty",
+                f"The selected directory is not empty:\n{selected_dir}\n\nDo you want to use it anyway?",
+                _apply,
+            )
+        else:
+            _apply()
 
     def _on_preset_load_selected(self, file_name: str, dir_name: str) -> None:
         """Handle preset file selection for loading.
@@ -745,6 +934,9 @@ class AssetTransformerWindow(MenuHelperWindow):
     def _on_preset_save_selected(self, file_name: str, dir_name: str) -> None:
         """Handle preset file selection for saving.
 
+        If the target file already exists and is non-empty a confirmation
+        dialog is shown before overwriting.
+
         Args:
             file_name: File name chosen in the picker.
             dir_name: Directory chosen in the picker.
@@ -757,6 +949,21 @@ class AssetTransformerWindow(MenuHelperWindow):
         if filepath.suffix.lower() != ".json":
             filepath = filepath.with_suffix(".json")
 
+        if filepath.is_file() and filepath.stat().st_size > 0:
+            self._show_confirmation_dialog(
+                "File Already Exists",
+                f"The file already exists:\n{filepath}\n\nDo you want to overwrite it?",
+                lambda: self._do_save_preset(filepath),
+            )
+        else:
+            self._do_save_preset(filepath)
+
+    def _do_save_preset(self, filepath: Path) -> None:
+        """Write the current profile to *filepath* as a JSON preset.
+
+        Args:
+            filepath: Destination path (must end in ``.json``).
+        """
         carb.log_info(f"Saving preset to {filepath}")
 
         try:
@@ -780,7 +987,12 @@ class AssetTransformerWindow(MenuHelperWindow):
             carb.log_error(f"Failed to save preset: {e}")
 
     def _select_input_file(self) -> None:
-        """Open a file picker dialog to select an input USD file."""
+        """Open a file picker dialog to select an input USD file.
+
+        The picker navigates to the parent directory of the current input
+        file value, when available.
+        """
+        self._close_file_picker()
         self._file_picker = FilePickerDialog(
             "Select Input File",
             allow_multi_selection=False,
@@ -795,10 +1007,16 @@ class AssetTransformerWindow(MenuHelperWindow):
             ],
             item_filter_fn=lambda item: _filter_file_picker([".usd", ".usda", ".usdc", ".usdz"], item),
         )
-        self._file_picker.show()
+        self._show_picker_and_navigate(self._resolve_input_dir())
 
     def _select_output_dir(self) -> None:
-        """Open a file picker dialog to select the output directory."""
+        """Open a file picker dialog to select the output directory.
+
+        Navigates to the current output directory if set. Falls back to the
+        parent directory of the input asset when no output directory is
+        configured yet.
+        """
+        self._close_file_picker()
         self._file_picker = FilePickerDialog(
             "Select Output Directory",
             allow_multi_selection=False,
@@ -806,7 +1024,15 @@ class AssetTransformerWindow(MenuHelperWindow):
             click_apply_handler=self._on_output_dir_selected,
             enable_file_bar=True,
         )
-        self._file_picker.show()
+        self._file_picker.set_filebar_label_name("Folder Name")
+        start_dir: str | None = None
+        if self._file_data is not None:
+            output = self._file_data.output_dir_field.model.get_value_as_string().strip()
+            if output and os.path.isdir(output):
+                start_dir = output
+        if not start_dir:
+            start_dir = self._resolve_input_dir()
+        self._show_picker_and_navigate(start_dir)
 
     def _load_preset(self) -> None:
         """Show a popup menu with recent presets and a Browse option."""
@@ -833,6 +1059,7 @@ class AssetTransformerWindow(MenuHelperWindow):
 
     def _load_preset_from_file_picker(self) -> None:
         """Open a file picker dialog to browse for and load a preset JSON file."""
+        self._close_file_picker()
         self._file_picker = FilePickerDialog(
             "Select Preset",
             allow_multi_selection=False,
@@ -842,11 +1069,16 @@ class AssetTransformerWindow(MenuHelperWindow):
             file_extension_options=[(".json", "JSON Files (*.json, *.JSON)")],
             item_filter_fn=lambda item: _filter_file_picker([".json"], item),
         )
-        self._navigate_picker_to_last_preset_dir()
-        self._file_picker.show()
+        self._show_picker_and_navigate(self._resolve_last_preset_dir())
 
     def _save_preset(self) -> None:
-        """Open a file picker dialog to save the current profile as a JSON preset."""
+        """Open a file picker dialog to save the current profile as a JSON preset.
+
+        Navigates to the directory of the last-used preset file.  Falls back
+        to the user's ``Documents`` folder (or home directory) when no recent
+        preset path is available.
+        """
+        self._close_file_picker()
         self._file_picker = FilePickerDialog(
             "Save Preset",
             allow_multi_selection=False,
@@ -855,22 +1087,29 @@ class AssetTransformerWindow(MenuHelperWindow):
             file_extension_options=[(".json", "JSON Files (*.json, *.JSON)")],
             item_filter_fn=lambda item: _filter_file_picker([".json"], item),
         )
-        self._navigate_picker_to_last_preset_dir()
-        self._file_picker.show()
-
-    def _navigate_picker_to_last_preset_dir(self) -> None:
-        """Navigate the open file picker to the last-used preset directory."""
-        if self._file_picker is None:
-            return
-        target_dir = self._last_preset_dir
+        target_dir = self._resolve_last_preset_dir()
         if not target_dir:
-            recent = self._get_recent_presets()
-            if recent:
-                target_dir = str(Path(recent[0]["path"]).parent)
-        if target_dir and os.path.isdir(target_dir):
-            self._file_picker.set_current_directory(target_dir)
-            self._file_picker.navigate_to(target_dir)
-            self._file_picker.refresh_current_directory()
+            docs = str(Path.home() / "Documents")
+            target_dir = docs if os.path.isdir(docs) else str(Path.home())
+        self._show_picker_and_navigate(target_dir)
+
+    def _resolve_last_preset_dir(self) -> str | None:
+        """Return the directory of the last-used preset, if it still exists.
+
+        Falls back to the parent directory of the most recent preset entry
+        from persistent settings.
+
+        Returns:
+            The directory path, or None.
+        """
+        if self._last_preset_dir and os.path.isdir(self._last_preset_dir):
+            return self._last_preset_dir
+        recent = self._get_recent_presets()
+        if recent:
+            parent = str(Path(recent[0]["path"]).parent)
+            if os.path.isdir(parent):
+                return parent
+        return None
 
     def _build_actions_set_panel(self) -> None:
         """Build the actions configuration section with preset and profile controls."""
