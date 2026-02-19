@@ -206,7 +206,7 @@ variables:
 # Slack notifications
 .post_job_status_to_slack:
   after_script:
-    - ./tools/packman/python.sh -m pip install -r tools/ci/slack/requirements.txt
+    - ./tools/packman/python.sh -m pip install -r tools/ci/slack/requirements.txt --quiet
     - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --job-report
 
 post_to_slack:
@@ -217,7 +217,7 @@ post_to_slack:
   extends:
     - .ipp_lnx_x86_64_cpu_small
   script:
-    - ./tools/packman/python.sh -m pip install -r tools/ci/slack/requirements.txt
+    - ./tools/packman/python.sh -m pip install -r tools/ci/slack/requirements.txt --quiet
     - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --pipeline-report --channel $SLACK_CHANNEL
   rules:
     # Using rules to set the channel.  
@@ -371,7 +371,7 @@ osec:sonarqube:
 .rules-build-docs:
     rules:
       # allow docs build on push pipelines
-      - if: $CI_PIPELINE_SOURCE == "push"
+      - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ $OFFICIAL_BRANCH_REGEX)
         when: always
       # allow schedule pipeline if RUN_DOCS_BUILD is set to "true"
       - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_BUILD == "true"

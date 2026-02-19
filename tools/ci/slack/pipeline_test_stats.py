@@ -11,9 +11,14 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 import gitlab
+
+# Manually do chrome sync for kaleido to make sure chrome driver is present
+import kaleido
 import plotly.graph_objects as go
 from dotenv import load_dotenv
 from plotly.subplots import make_subplots
+
+kaleido.get_chrome_sync()
 
 # Load environment variables from .env file
 load_dotenv()
