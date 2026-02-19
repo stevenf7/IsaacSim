@@ -1328,6 +1328,9 @@ def run(
         variable_filters: Optional dict of variable_name: expected_value to filter pipelines
         pipeline_sources: Optional list of acceptable pipeline sources (e.g., ["push", "web", "schedule"])
     """
+
+    kaleido.get_chrome_sync()
+
     if not quiet:
         print(f"\nConnecting to GitLab at {GITLAB_URL}...")
     gl = get_gitlab_client(quiet=quiet)
