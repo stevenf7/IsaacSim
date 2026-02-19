@@ -120,6 +120,10 @@ dependencies = [
 "filter:platform"."windows-x86_64".pythonTests.include = [
     "isaacsim.sensors.camera.tests.test_single_view_depth_sensor.TestSingleViewDepthSensor.test_getter_setter_methods",
 ]
+# These tests should only run on Windows
+"filter:platform"."linux-x86_64".pythonTests.exclude = [
+    "*"
+]
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -183,6 +187,10 @@ dependencies = [
 ]
 "filter:platform"."windows-x86_64".pythonTests.include = [
     "isaacsim.sensors.camera.tests.test_single_view_depth_sensor.TestSingleViewDepthSensor.test_depth_sensor_distance_annotator",
+]
+# These tests should only run on Windows
+"filter:platform"."linux-x86_64".pythonTests.exclude = [
+    "*"
 ]
 args = [
     "--enable",
