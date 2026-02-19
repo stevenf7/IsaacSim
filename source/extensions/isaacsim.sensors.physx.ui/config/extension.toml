@@ -1,5 +1,5 @@
 [package]
-version = "2.4.2"
+version = "2.4.3"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensor UI components"
 description = "Isaac Sim PhysX Sensor UI components extension provides UI components for Isaac Sim PhysX-raycast-based sensor simulation, eg. menu options."
@@ -15,6 +15,7 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.gui.components" = {}
 "isaacsim.sensors.physx" = {}
+"omni.kit.actions.core" = {}
 "omni.kit.context_menu" = {}
 
 [[python.module]]

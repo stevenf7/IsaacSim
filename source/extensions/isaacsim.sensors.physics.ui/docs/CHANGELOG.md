@@ -1,4 +1,9 @@
 # Changelog
+## [1.0.2] - 2026-02-18
+### Fixed
+- Replaced deprecated `onclick_fn` with `onclick_action` in menu items to eliminate deprecation warnings
+- Registered proper actions for Contact Sensor and IMU Sensor creation menu items
+
 ## [1.0.1] - 2026-02-10
 ### Changed
 - IMU and Contact sensor creation commands renamed to include Experimental in their name to avoid name collision with deprecated sensor commands

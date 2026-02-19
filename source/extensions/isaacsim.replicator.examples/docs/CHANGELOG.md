@@ -1,4 +1,8 @@
 # Changelog
+## [1.7.1] - 2026-02-19
+### Changed
+- SimulationManager device is set back to its default state following the deformable SDG example test
+
 ## [1.7.0] - 2026-02-08
 ### Changed
 - Added SDG deformables example test

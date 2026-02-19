@@ -16,6 +16,7 @@
 import carb.settings
 import omni.kit
 import omni.usd
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.test.utils.file_validation import validate_folder_contents
 from isaacsim.test.utils.image_comparison import compare_images_in_directories
 
@@ -29,6 +30,7 @@ class TestSDGDeformables(omni.kit.test.AsyncTestCase):
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
         self.original_dlss_exec_mode = carb.settings.get_settings().get("rtx/post/dlss/execMode")
+        self.original_physics_sim_device = SimulationManager.get_device()
 
     async def tearDown(self):
         omni.usd.get_context().close_stage()
@@ -37,6 +39,8 @@ class TestSDGDeformables(omni.kit.test.AsyncTestCase):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
         carb.settings.get_settings().set("rtx/post/dlss/execMode", self.original_dlss_exec_mode)
+        # Make sure to reset the physics sim device to the original state for the following tests
+        SimulationManager.set_physics_sim_device(self.original_physics_sim_device)
 
     async def test_sdg_snippet_deformables(self):
         import asyncio

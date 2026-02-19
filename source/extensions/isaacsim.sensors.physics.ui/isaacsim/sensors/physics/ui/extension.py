@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 import omni.ext
+import omni.kit.actions.core
 import omni.kit.commands
 from isaacsim.core.experimental.prims import XformPrim
 from isaacsim.gui.components.menu import create_submenu
@@ -35,8 +36,31 @@ class Extension(omni.ext.IExt):
         Args:
             ext_id: Extension identifier provided by the extension manager.
         """
+        self._ext_id = ext_id
+        self._ext_name = omni.ext.get_extension_name(ext_id)
+        self._registered_actions = []
+
         icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
         sensor_icon_path = str(Path(icon_dir).joinpath("data/sensor.svg"))
+
+        # Register actions for each sensor menu item.
+        action_registry = omni.kit.actions.core.get_action_registry()
+
+        action_registry.register_action(
+            self._ext_name,
+            "create_contact_sensor",
+            lambda *_: self._add_contact_sensor(),
+            description="Create a contact sensor",
+        )
+        self._registered_actions.append("create_contact_sensor")
+
+        action_registry.register_action(
+            self._ext_name,
+            "create_imu_sensor",
+            lambda *_: self._add_imu_sensor(),
+            description="Create an IMU sensor",
+        )
+        self._registered_actions.append("create_imu_sensor")
 
         # Build menu dictionary structure
         sensors_menu_dict = {
@@ -44,11 +68,11 @@ class Extension(omni.ext.IExt):
                 "Sensors": [
                     {
                         "name": "Contact Sensor",
-                        "onclick_fn": lambda *_: self._add_contact_sensor(),
+                        "onclick_action": (self._ext_name, "create_contact_sensor"),
                     },
                     {
                         "name": "Imu Sensor",
-                        "onclick_fn": lambda *_: self._add_imu_sensor(),
+                        "onclick_action": (self._ext_name, "create_imu_sensor"),
                     },
                 ]
             },
@@ -74,6 +98,14 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self) -> None:
         """Remove menu items and clean up on shutdown."""
         remove_menu_items(self._menu_items, "Create")
+        self._viewport_create_menu = None
+
+        # Deregister all registered actions.
+        action_registry = omni.kit.actions.core.get_action_registry()
+        for action_id in self._registered_actions:
+            action_registry.deregister_action(self._ext_name, action_id)
+        self._registered_actions.clear()
+
         gc.collect()
 
     def _get_stage_and_path(self) -> str | None:

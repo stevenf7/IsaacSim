@@ -1,4 +1,9 @@
 # Changelog
+## [1.2.3] - 2026-02-18
+### Fixed
+- Replaced deprecated `onclick_fn` with `onclick_action` in menu items to eliminate deprecation warnings
+- Registered proper actions for all RTX Lidar and RTX Radar sensor creation menu items
+
 ## [1.2.2] - 2026-01-24
 ### Changed
 - Fix issues with menu click and context menu tests being flaky

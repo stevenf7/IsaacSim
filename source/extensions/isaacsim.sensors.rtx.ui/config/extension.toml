@@ -1,5 +1,5 @@
 [package]
-version = "1.2.2"
+version = "1.2.3"
 category = "Simulation"
 title = "Isaac Sim RTX Sensor Simulation UI Components"
 description = "Provides UI components for Isaac Sim RTX-based sensor simulation, eg. menu options."
@@ -15,6 +15,8 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.gui.components" = {}
 "isaacsim.sensors.rtx" = {}
+"omni.kit.actions.core" = {}
+"omni.kit.context_menu" = {}
 
 [[python.module]]
 name = "isaacsim.sensors.rtx.ui"

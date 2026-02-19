@@ -1,5 +1,5 @@
 [package]
-version = "1.0.1"
+version = "1.0.2"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation UI Components"
 description = "Isaac Sim Physics Sensor Simulation UI Components extension provides UI components for Isaac Sim physics-based sensor simulation, eg. menu options."
@@ -16,6 +16,7 @@ writeTarget.kit = true
 "isaacsim.core.experimental.prims" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.sensors.experimental.physics" = {}
+"omni.kit.actions.core" = {}
 "omni.kit.context_menu" = {}
 
 [[python.module]]
