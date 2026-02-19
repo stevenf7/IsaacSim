@@ -1,5 +1,5 @@
 ..
-   Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
+   Copyright (c) 2022-2026, NVIDIA CORPORATION. All rights reserved.
    NVIDIA CORPORATION and its licensors retain all intellectual property
    and proprietary rights in and to this software, related documentation
    and any modifications thereto. Any use, reproduction, disclosure or
@@ -296,7 +296,7 @@ Setup ROS 2 Workspaces
       
    #. Clone the |isaac-sim_short| ROS Workspace Repository from `<https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_.
 
-      A few ROS packages are needed to go through the |isaac-sim_short| ROS 2 tutorial series. The entire ROS 2 workspaces are included with the necessary packages.
+      A few ROS packages are necessary for the |isaac-sim_short| ROS 2 tutorial series. The entire ROS 2 workspaces are included with the necessary packages.
 
    #. If you have built ROS 2 from source, replace the ``source /opt/ros/<ros_distro>/setup.bash`` command with ``source <path_ros2_ws>/install/setup.bash`` before building additional workspaces.
 
@@ -324,7 +324,7 @@ Setup ROS 2 Workspaces
          git submodule update --init --recursive # If using docker, perform this step outside the container and relaunch the container
          rosdep install -i --from-path src --rosdistro humble -y
 
-   #. Build` the workspace:
+   #. Build the workspace:
 
       .. code-block:: bash
 
@@ -380,7 +380,7 @@ Setup ROS 2 Workspaces
 .. config-content::
    :show-when: platform=Ubuntu 22.04,ros_distro=Jazzy
 
-   To run our ROS 2 tutorials and examples, it's necessary to source your ROS 2 installation workspace in the terminal you plan to work in.
+   To run the ROS 2 tutorials and examples, it's necessary to source your ROS 2 installation workspace in the terminal you plan to work in.
 
    #. To build the |isaac-sim_short| ROS workspaces, ensure you have followed :ref:`isaac_sim_app_install_ros_options_other_platforms`. 
 
@@ -388,7 +388,7 @@ Setup ROS 2 Workspaces
       
    #. Clone the |isaac-sim_short| ROS Workspace Repository from `<https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_.
 
-      A few ROS packages are needed to go through the |isaac-sim_short| ROS 2 tutorial series. The entire ROS 2 workspaces are included with the necessary packages.
+      A few ROS packages are necessary for the |isaac-sim_short| ROS 2 tutorial series. The entire ROS 2 workspaces are included with the necessary packages.
                
    #. To build the ROS 2 workspace, you might need to install additional packages:
 
@@ -429,6 +429,7 @@ Setup ROS 2 Workspaces
       .. code-block:: bash
 
          source /opt/ros/jazzy/setup.bash
+
          cd jazzy_ws
          source install/local_setup.bash
 
@@ -501,12 +502,12 @@ Setup ROS 2 Workspaces
 
          source /opt/ros/humble/setup.bash
 
-   #. Resolve any package dependencies from the root of the ROS 2 workspace by running the following command:
+   #. Resolve any package dependencies from the root of the ROS 2 workspace by running the following commands:
 
       .. code-block:: bash
 
          cd humble_ws
-         git submodule update --init --recursive # If using docker, perform this step outside the container and relaunch the container
+         git submodule update --init --recursive # If using Docker, perform this step outside the container and relaunch the container
          rosdep install -i --from-path src --rosdistro humble -y
 
    #. Build the workspace:
@@ -647,7 +648,7 @@ Configuring Options and Enabling Internal ROS Libraries
 
       If you meet the following configuration, you must run Isaac Sim with the internal ROS libraries that ship with |isaac-sim_short|.
       
-      - Need to use ROS docker containers
+      - Need to use ROS Docker containers
       - Have a ROS 2 workspace built locally, but you only plan on using default or command ROS interfaces (for example, ``std_msgs``, ``geometry_msgs``, ``nav_msgs``).
 
       In Ubuntu 22.04, the |isaac-sim_short| interactive GUI automatically loads the **internal ROS 2 Humble** libraries, if no other ROS libraries are sourced. Therefore, you must manually override that setting to use Jazzy internal ROS 2 libs.
@@ -677,7 +678,7 @@ Configuring Options and Enabling Internal ROS Libraries
             # Run Isaac Sim Standalone scripts
             $isaac_sim_package_path/isaac-sim.sh
             
-      - To run using Standalone Scripts:
+      - To run using standalone scripts:
 
          .. code-block:: bash
 
@@ -878,7 +879,7 @@ Enabling the ROS 2 Bridge using Fast DDS
 
                      <?xml version="1.0" encoding="UTF-8" ?>
 
-                     <license>Copyright (c) 2022-2024, NVIDIA CORPORATION.  All rights reserved.
+                     <license>Copyright (c) 2022-2026, NVIDIA CORPORATION.  All rights reserved.
                      NVIDIA CORPORATION and its licensors retain all intellectual property
                      and proprietary rights in and to this software, related documentation
                      and any modifications thereto.  Any use, reproduction, disclosure or
@@ -921,7 +922,7 @@ Enabling the ROS 2 Bridge using Fast DDS
 
             <?xml version="1.0" encoding="UTF-8" ?>
 
-            <license>Copyright (c) 2022-2024, NVIDIA CORPORATION.  All rights reserved.
+            <license>Copyright (c) 2022-2026, NVIDIA CORPORATION.  All rights reserved.
             NVIDIA CORPORATION and its licensors retain all intellectual property
             and proprietary rights in and to this software, related documentation
             and any modifications thereto.  Any use, reproduction, disclosure or
@@ -1013,9 +1014,9 @@ Enabling the ROS 2 Bridge using Zenoh (ROS 2 Jazzy, Linux Only)
 
    |isaac-sim_short| supports Zenoh middleware for Linux and ROS 2 Jazzy. `Zenoh <https://zenoh.io/>`_ is an open source communication protocol designed for efficient data distribution across heterogeneous systems, providing an alternative to traditional DDS implementations.
 
-   .. note:: Currently, |isaac-sim_short| does not ship with internal Zenoh libraries. You must build Zenoh with Python 3.12 and source it before running |isaac-sim_short|.
+   .. note:: |isaac-sim_short| does not ship with internal Zenoh libraries. You must build Zenoh with Python 3.12 and source it before running |isaac-sim_short|.
 
-   For more details on Zenoh, see the `ROS 2 Zenoh documentation <https://docs.ros.org/en/jazzy/Installation/RMW-Implementations/Non-DDS-Implementations/Working-with-Zenoh.html>`_.
+   For more details on Zenoh, review the `ROS 2 Zenoh documentation <https://docs.ros.org/en/jazzy/Installation/RMW-Implementations/Non-DDS-Implementations/Working-with-Zenoh.html>`_.
 
    **Installing and running Zenoh**
 
@@ -1048,7 +1049,7 @@ Enabling the ROS 2 Bridge using Zenoh (ROS 2 Jazzy, Linux Only)
          source build_ws/jazzy/jazzy_ws/install/local_setup.bash
          ros2 run rmw_zenoh_cpp rmw_zenohd
 
-      .. note:: Without the Zenoh router, nodes will not be able to discover each other since multicast discovery is disabled by default in the node's session config. Instead, nodes receive discovery information about other peers via the Zenoh router's gossip functionality.
+      .. note:: Without the Zenoh router, nodes will not be able to discover each other because multicast discovery is disabled by default in the node's session config. Instead, nodes receive discovery information about other peers through the Zenoh router's gossip functionality.
 
    #. Before running |isaac-sim_short|, set the ``RMW_IMPLEMENTATION`` environment variable in the terminal where you will launch Isaac Sim. Moving forward, if any examples show setting the environment variable to ``rmw_fastrtps_cpp`` you can replace it with the command below:
 
@@ -1100,7 +1101,7 @@ Running ROS in Docker Containers
 .. config-content::
    :show-when: platform=Windows
 
-   .. note:: Docker workflow is not supported on Windows.
+   .. note:: The Docker workflow is not supported on Windows.
 
 .. config-content::
    :show-when: platform=Ubuntu 22.04
@@ -1137,7 +1138,7 @@ Running ROS in Docker Containers
 
       Here ``--net=host`` allows communication between |isaac-sim_short| and ROS Docker containers, while ``xhost +`` and ``--env="DISPLAY"`` facilitate passing through the DISPLAY environment variable, which enables GUI applications, such as ``rviz``, to open from the Docker container. ``--name <container name>`` allows you to refer to the container with a fixed name.
 
-   #. Inside the docker container navigate to the ros workspace.
+   #. Inside the Docker container navigate to the ros workspace.
 
       .. code-block:: bash
 
@@ -1151,7 +1152,7 @@ Running ROS in Docker Containers
 
          cd /${ROS_DISTRO}_ws
          apt-get update
-         git submodule update --init --recursive # If using docker, perform this step outside the container and relaunch the container
+         git submodule update --init --recursive # If using Docker, perform this step outside the container and relaunch the container
          rosdep install --from-paths src --ignore-src --rosdistro=$ROS_DISTRO -y
          source /opt/ros/$ROS_DISTRO/setup.sh
          colcon build
@@ -1166,7 +1167,7 @@ Running ROS in Docker Containers
 
    #. Optionally, to test your installation you can setup a basic publisher of clocks inside |isaac-sim_short| using the Omnigraph node :ref:`isaac_sim_app_tutorial_gui_omnigraph`:
 
-      #. Press `play` in the simulator. 
+      #. Press **play** in the simulator. 
       #. Open a separate terminal, open the Docker, set the ``FASTRTPS_DEFAULT_PROFILES_FILE`` environment variable.
       #. Source ROS 2. 
       #. Verify that ``ros2 topic echo /clock`` prints the timestamps coming from |isaac-sim_short|.
