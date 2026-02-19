@@ -92,17 +92,13 @@ class NewtonSimulationRegistry:
             )
             self.simulation.simulation_fns.get_simulation_timestamp = self.sim_fns.get_simulation_timestamp
             self.simulation.simulation_fns.get_simulation_step_count = self.sim_fns.get_simulation_step_count
-            self.simulation.simulation_fns.add_force_at_pos = self.sim_fns.add_force_at_pos
-            self.simulation.simulation_fns.add_torque = self.sim_fns.add_torque
-            self.simulation.simulation_fns.wake_up = self.sim_fns.wake_up
-            self.simulation.simulation_fns.put_to_sleep = self.sim_fns.put_to_sleep
-            self.simulation.simulation_fns.is_sleeping = self.sim_fns.is_sleeping
             self.simulation.simulation_fns.subscribe_physics_on_step_events = (
                 self.sim_fns.subscribe_physics_on_step_events
             )
             self.simulation.simulation_fns.unsubscribe_physics_on_step_events = (
                 self.sim_fns.unsubscribe_physics_on_step_events
             )
+            self.simulation.simulation_fns.is_capable_of_simulating = self.sim_fns.is_capable_of_simulating
 
             # Assign all stage_update_fns methods
             self.simulation.stage_update_fns.start_simulation = self.stage_update_fns.start_simulation
@@ -121,7 +117,7 @@ class NewtonSimulationRegistry:
 
             # Register with physics interface
             physics = get_physics_interface()
-            self.simulation_id = physics.register_simulation(self.simulation, "newton")
+            self.simulation_id = physics.register_simulation(self.simulation, "Newton")
 
             if self.simulation_id == k_invalid_simulation_id:
                 carb.log_error("[newton] Failed to register simulation with physics interface")

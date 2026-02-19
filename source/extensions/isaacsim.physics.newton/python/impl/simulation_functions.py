@@ -20,6 +20,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import carb
+from pxr import Plug, Tf, Usd
 
 if TYPE_CHECKING:
     from .newton_stage import NewtonStage
@@ -257,66 +258,6 @@ class NewtonSimulationFunctions:
         """
         return getattr(self.newton_stage, "simulation_step_count", 0)
 
-    def add_force_at_pos(
-        self,
-        stage_id: int,
-        path: int,
-        force: tuple[float, float, float],
-        pos: tuple[float, float, float],
-        mode: int,
-    ) -> None:
-        """Apply a force defined in the global coordinate frame at a point.
-
-        Args:
-            stage_id: USD stageId.
-            path: Body USD path encoded to uint64_t.
-            force: Force/impulse to add, defined in the global frame.
-            pos: Position in the global frame to add the force at.
-            mode: The mode to use when applying the force/impulse.
-        """
-        carb.log_warn("[Newton] add_force_at_pos not yet implemented")
-
-    def add_torque(self, stage_id: int, path: int, torque: tuple[float, float, float]) -> None:
-        """Apply a torque at the center of mass.
-
-        Args:
-            stage_id: USD stageId.
-            path: Body USD path encoded to uint64_t.
-            torque: Torque to add to the body center of mass.
-        """
-        carb.log_warn("[Newton] add_torque not yet implemented")
-
-    def wake_up(self, stage_id: int, path: int) -> None:
-        """Wake up body on given path.
-
-        Args:
-            stage_id: USD stageId.
-            path: Body USD path encoded to uint64_t.
-        """
-        carb.log_warn("[Newton] wake_up not implemented - Newton doesn't have sleep/wake mechanism like PhysX")
-
-    def put_to_sleep(self, stage_id: int, path: int) -> None:
-        """Put body to sleep on given path.
-
-        Args:
-            stage_id: USD stageId.
-            path: Body USD path encoded to uint64_t.
-        """
-        carb.log_warn("[Newton] put_to_sleep not implemented - Newton doesn't have sleep/wake mechanism like PhysX")
-
-    def is_sleeping(self, stage_id: int, path: int) -> bool:
-        """Check whether a body is sleeping.
-
-        Args:
-            stage_id: USD stageId.
-            path: Body USD path encoded to uint64_t.
-
-        Returns:
-            True if body is asleep.
-        """
-        carb.log_warn("[Newton] is_sleeping not implemented - Newton doesn't have sleep/wake mechanism like PhysX")
-        return False
-
     def subscribe_physics_on_step_events(self, pre_step: bool, order: int, on_update: Callable) -> int:
         """Subscribe to physics pre/post step events.
 
@@ -344,3 +285,33 @@ class NewtonSimulationFunctions:
         if subscription_id > 0 and subscription_id <= len(self.step_callbacks):
             # Use None instead of removing to preserve indices
             self.step_callbacks[subscription_id - 1] = None
+
+    def is_capable_of_simulating(self, schema_names: list[str]) -> tuple[bool, list[bool]]:
+        """Check if simulation is capable of simulating given schema types.
+
+        Args:
+            schema_names: List of schema names to check
+
+        Returns:
+            tuple: (success, capabilities) where success is True if the operation was successful
+                   and capabilities is a list of booleans indicating support for each schema.
+        """
+
+        capabilities = []
+        for schema_name in schema_names:
+            is_capable = False
+            # Find the TfType for this schema name
+            tf_type = Usd.SchemaRegistry.GetAPITypeFromSchemaTypeName(schema_name)
+            if tf_type.isUnknown:
+                tf_type = Usd.SchemaRegistry.GetConcreteTypeFromSchemaTypeName(schema_name)
+
+            if not tf_type.isUnknown:
+                # Get the plugin that declares this type
+                plugin = Plug.Registry().GetPluginForType(tf_type)
+                if plugin:
+                    plugin_name = plugin.name
+                    # Set isCapable to true if the schema is from known plugins
+                    is_capable = plugin_name == "newton" or plugin_name == "mjcPhysics" or plugin_name == "usdPhysics"
+            capabilities.append(is_capable)
+
+        return (True, capabilities)
