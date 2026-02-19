@@ -20,8 +20,12 @@ load_dotenv()
 
 # GitLab configuration from environment
 PRIVATE_TOKEN = os.getenv("CI_GITLAB_API_TOKEN")
+if PRIVATE_TOKEN is None:
+    PRIVATE_TOKEN = os.getenv("PRIVATE_TOKEN")
 GITLAB_URL = os.getenv("GITLAB_URL", "https://gitlab-master.nvidia.com")
 PROJECT_ID = os.getenv("CI_PROJECT_ID")
+if PROJECT_ID is None:
+    PROJECT_ID = os.getenv("PROJECT_ID")
 
 # Number of threads for parallel fetching
 MAX_WORKERS = 10
@@ -288,6 +292,7 @@ def get_finished_pipelines(
     limit: int = 20,
     quiet: bool = False,
     variable_filters: Optional[Dict[str, str]] = None,
+    pipeline_sources: Optional[List[str]] = None,
 ) -> List[Dict]:
     """
     Get finished pipelines for a branch with their test report stats.
@@ -300,6 +305,7 @@ def get_finished_pipelines(
         limit: Maximum number of pipelines to return (after filtering)
         quiet: If True, suppress progress bar and non-error output
         variable_filters: Optional dict of variable_name: expected_value to filter pipelines
+        pipeline_sources: Optional list of acceptable pipeline sources (e.g., ["push", "web", "schedule"])
 
     Returns:
         List of pipeline info dicts with test stats
@@ -377,6 +383,11 @@ def get_finished_pipelines(
 
                 # Only add if we have actual test stats (not None)
                 if pipeline.id in batch_results and batch_results[pipeline.id] is not None:
+                    # Check pipeline source filter if provided
+                    if pipeline_sources:
+                        if pipeline.source not in pipeline_sources:
+                            continue
+
                     # Check variable filters if provided
                     if variable_filters:
                         # Fetch full pipeline object to get variables
@@ -1138,6 +1149,10 @@ def create_test_heatmap(
             else:
                 y_labels.append(name)
 
+        # Use numeric y-indices to prevent Plotly from reordering categorical y-values
+        # This ensures hover_text stays aligned with z_data
+        y_indices = list(range(len(test_names)))
+
         # Create discrete colorscale with sharp boundaries at each integer value
         # Using zmin=-0.5 and zmax=5.5 so each integer (0-5) falls in the center of its color band
         # Total range = 6, each band = 1/6 ≈ 0.1667
@@ -1147,7 +1162,7 @@ def create_test_heatmap(
             go.Heatmap(
                 z=z_data,
                 x=list(range(len(pipelines_with_stats))),
-                y=y_labels,
+                y=y_indices,
                 colorscale=[
                     [0.0, "#e74c3c"],  # 0 = red (failed)
                     [b - 0.001, "#e74c3c"],
@@ -1190,10 +1205,30 @@ def create_test_heatmap(
         margin=dict(l=300, r=20, t=100, b=80),  # Tighter margins, more top for subtitle
     )
 
-    # Add y-axis title for each subplot
+    # Add y-axis configuration for each subplot
+    # We need to set tick labels for each subplot since we're using numeric y-indices
     for job_idx, job_name in enumerate(all_jobs):
         row = job_idx + 1
-        fig.update_yaxes(title_text="Test Cases", title_font=dict(size=10), tickfont=dict(size=9), row=row, col=1)
+        test_names = job_tests[job_name]
+
+        # Rebuild y_labels for this job (same logic as above)
+        y_labels = []
+        for name in test_names:
+            if len(name) > 60:
+                y_labels.append("..." + name[-57:])
+            else:
+                y_labels.append(name)
+
+        fig.update_yaxes(
+            title_text="Test Cases",
+            title_font=dict(size=10),
+            tickfont=dict(size=9),
+            tickmode="array",
+            tickvals=list(range(len(test_names))),
+            ticktext=y_labels,
+            row=row,
+            col=1,
+        )
 
     # Set x-axis tick labels on bottom subplot only
     fig.update_xaxes(
@@ -1271,6 +1306,7 @@ def run(
     quiet: bool = False,
     debug_output: bool = False,
     variable_filters: Optional[Dict[str, str]] = None,
+    pipeline_sources: Optional[List[str]] = None,
 ):
     """
     Main function to fetch and display pipeline test stats.
@@ -1285,6 +1321,7 @@ def run(
         quiet: If True, suppress all non-error output, progress bars, and browser opening
         debug_output: If True, print detailed debug information
         variable_filters: Optional dict of variable_name: expected_value to filter pipelines
+        pipeline_sources: Optional list of acceptable pipeline sources (e.g., ["push", "web", "schedule"])
     """
     if not quiet:
         print(f"\nConnecting to GitLab at {GITLAB_URL}...")
@@ -1292,7 +1329,9 @@ def run(
     if not gl:
         return
 
-    pipelines = get_finished_pipelines(gl, branch, limit, quiet=quiet, variable_filters=variable_filters)
+    pipelines = get_finished_pipelines(
+        gl, branch, limit, quiet=quiet, variable_filters=variable_filters, pipeline_sources=pipeline_sources
+    )
     if not quiet:
         print_pipeline_table(pipelines)
     if stacked_chart:
@@ -1354,6 +1393,12 @@ Examples:
 
   # Filter by multiple variables
   python pipeline_test_stats.py --filter BUILD_TYPE,release --filter PLATFORM,linux
+
+  # Filter by pipeline source (e.g., only show pipelines triggered by push or web)
+  python pipeline_test_stats.py --source push,web
+
+  # Combine filters
+  python pipeline_test_stats.py --source schedule --filter BUILD_TYPE,nightly
 """,
     )
     parser.add_argument(
@@ -1392,6 +1437,13 @@ Examples:
         help="Filter pipelines by variable (format: NAME,VALUE). Can be used multiple times for multiple filters.",
     )
     parser.add_argument(
+        "--source",
+        "-s",
+        type=str,
+        metavar="SOURCE1,SOURCE2,...",
+        help='Filter pipelines by source (comma-separated list, e.g., "push,web,schedule"). Common sources: push, web, schedule, api, trigger, pipeline, chat, merge_request_event, external_pull_request_event, parent_pipeline',
+    )
+    parser.add_argument(
         "--quiet", "-q", action="store_true", help="Suppress all non-error output, progress bars, and browser opening"
     )
     parser.add_argument(
@@ -1413,6 +1465,11 @@ Examples:
             name, value = parts
             variable_filters_dict[name.strip()] = value.strip()
 
+    # Parse pipeline sources from comma-separated list
+    pipeline_sources_list = None
+    if args.source:
+        pipeline_sources_list = [s.strip() for s in args.source.split(",") if s.strip()]
+
     run(
         branch=args.branch,
         limit=args.limit,
@@ -1423,4 +1480,5 @@ Examples:
         quiet=args.quiet,
         debug_output=args.debug_output,
         variable_filters=variable_filters_dict,
+        pipeline_sources=pipeline_sources_list,
     )

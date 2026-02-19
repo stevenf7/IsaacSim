@@ -220,6 +220,11 @@ post_to_slack:
     - ./tools/packman/python.sh -m pip install -r tools/ci/slack/requirements.txt
     - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --pipeline-report --channel $SLACK_CHANNEL
   rules:
+    # Using rules to set the channel.  
+    # Nightlies from Kit against a kit-integration branch get #isaac-sim-kit-integration-ci
+    # We shouldn't get them but nightlies from kit that do not hit a kit-integration branch get #isaac-sim-ci
+    # MRs from Kit (with checkbox selected) and Isaac (with checkbox selected) get #isaac-sim-ci-mr
+    # Nightlies from Isaac, and post-merge from Isaac get #isaac-sim-ci
     - if: $CI_COMMIT_REF_NAME =~ /^kit-integration\// && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "nightly"
       when: always
       variables:
@@ -229,6 +234,10 @@ post_to_slack:
       variables:
         SLACK_CHANNEL: "#isaac-sim-ci-mr"
     - if: $CI_COMMIT_REF_NAME == "develop-kit-tot" && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "nightly"
+      when: always
+      variables:
+        SLACK_CHANNEL: "#isaac-sim-ci"
+    - if: $UPSTREAM_PIPELINE_SOURCE == "post_merge"
       when: always
       variables:
         SLACK_CHANNEL: "#isaac-sim-ci"
