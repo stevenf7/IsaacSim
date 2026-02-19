@@ -9,7 +9,10 @@
 import argparse
 import os
 import time
+from enum import Enum
+from typing import Optional
 
+import gitlab
 from analyze_test_suites import run as run_analyze_test_suites
 from determine_develop_baseline import find_develop_baseline_pipeline
 from pipeline_test_stats import run as run_pipeline_test_stats
@@ -22,8 +25,8 @@ except ImportError:
     print("No slack_sdk found")
     exit(1)
 
-import requests
-
+# GitLab configuration
+GITLAB_URL = os.getenv("GITLAB_URL", "https://gitlab-master.nvidia.com")
 KIT_PROJECT_ID = 6510
 
 CHANNEL_NAME_TO_ID_MAP = {
@@ -34,14 +37,43 @@ CHANNEL_NAME_TO_ID_MAP = {
 }
 
 
-private_token = os.getenv("CI_GITLAB_API_TOKEN")
-if private_token is None:
-    raise ValueError("CI_GITLAB_API_TOKEN environment variable is not set")
+class PipelineType(Enum):
+    """Enum for different pipeline types."""
 
-headers = {"PRIVATE-TOKEN": private_token}
+    KIT_MR = "kit_mr"
+    KIT_POST_MERGE = "kit_post_merge"
+    KIT_NIGHTLY = "kit_nightly"
+    ISAAC_NIGHTLY = "isaac_nightly"
+    ISAAC_POST_MERGE = "isaac_post_merge"
+    ISAAC_MR = "isaac_mr"
+    UNKNOWN = "unknown"
 
 
-def emoji_for_job_status(status, allow_fail=False):
+def get_gitlab_client() -> Optional[gitlab.Gitlab]:
+    """Create and authenticate a GitLab client.
+
+    Returns:
+        Authenticated GitLab client or None if authentication fails
+    """
+    private_token = os.getenv("CI_GITLAB_API_TOKEN")
+    if not private_token:
+        print("ERROR: CI_GITLAB_API_TOKEN not set")
+        return None
+
+    gl = gitlab.Gitlab(url=GITLAB_URL, private_token=private_token)
+
+    try:
+        gl.auth()
+        if gl.user is None:
+            print("ERROR: GitLab authentication failed!")
+            return None
+        return gl
+    except Exception as e:
+        print(f"ERROR: GitLab authentication failed: {e}")
+        return None
+
+
+def emoji_for_job_status(status: str, allow_fail: bool = False) -> str:
     if status == "success":
         return ":gitlab_ci_status_success: "
     elif status == "failed":
@@ -56,58 +88,257 @@ def emoji_for_job_status(status, allow_fail=False):
         return ":gitlab_ci_status_not_found: "
 
 
-def source_for_pipeline(source_str):
+def detect_pipeline_type(source_str: str) -> PipelineType:
+    """Detect the pipeline type based on GitLab source and environment variables.
+
+    Args:
+        source_str: Pipeline source string from GitLab
+
+    Returns:
+        PipelineType enum value
+    """
+    upstream_pipeline_source = os.getenv("UPSTREAM_PIPELINE_SOURCE")
+
     if source_str == "pipeline":
-        if upstream_pipeline_id := os.getenv("UPSTREAM_PIPELINE_ID"):
-            upstream_pipeline_url = f"https://gitlab-master.nvidia.com/omniverse/kit/pipelines/{upstream_pipeline_id}"
+        # This is a downstream pipeline from Kit
+        if not os.getenv("UPSTREAM_PIPELINE_ID"):
+            # Downstream pipeline without upstream ID - unknown
+            return PipelineType.UNKNOWN
 
-            # Fetch the branch for the upstream pipeline
-            branch_url = (
-                f"https://gitlab-master.nvidia.com/api/v4/projects/{KIT_PROJECT_ID}/pipelines/{upstream_pipeline_id}"
-            )
-            try:
-                response = requests.get(branch_url, headers=headers)
-                response.raise_for_status()
-            except requests.RequestException:
-                # Fall back to basic message if API call fails
-                return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>"
-            branch = response.json()
-            branch_name = branch["ref"]
+        # Use UPSTREAM_PIPELINE_SOURCE as the discriminator
+        if upstream_pipeline_source == "nightly":
+            return PipelineType.KIT_NIGHTLY
+        elif upstream_pipeline_source == "merge_request":
+            return PipelineType.KIT_MR
+        elif upstream_pipeline_source == "post_merge":
+            return PipelineType.KIT_POST_MERGE
+        else:
+            # UPSTREAM_PIPELINE_SOURCE not set or not recognized
+            return PipelineType.UNKNOWN
 
-            if os.getenv("UPSTREAM_PIPELINE_SOURCE") == "nightly":
+    elif source_str == "merge_request_event":
+        # Isaac MR pipeline
+        return PipelineType.ISAAC_MR
+    elif source_str == "schedule":
+        # Isaac nightly scheduled pipeline
+        return PipelineType.ISAAC_NIGHTLY
+    elif source_str == "push":
+        # Isaac post-merge pipeline
+        return PipelineType.ISAAC_POST_MERGE
+    else:
+        # Unknown source type
+        return PipelineType.UNKNOWN
+
+
+def header_for_pipeline_post(pipeline_type: PipelineType, gl: gitlab.Gitlab) -> str:
+    """Generate Slack header string for a pipeline based on its type.
+
+    Args:
+        pipeline_type: PipelineType enum value
+        gl: Authenticated GitLab client
+
+    Returns:
+        Formatted header string for Slack post
+    """
+    # Kit downstream types need upstream pipeline information
+    if pipeline_type in (PipelineType.KIT_NIGHTLY, PipelineType.KIT_MR, PipelineType.KIT_POST_MERGE):
+        upstream_pipeline_id = os.getenv("UPSTREAM_PIPELINE_ID")
+        if not upstream_pipeline_id:
+            # No upstream pipeline ID available
+            return "Downstream pipeline"
+
+        upstream_pipeline_url = f"https://gitlab-master.nvidia.com/omniverse/kit/pipelines/{upstream_pipeline_id}"
+
+        try:
+            kit_project = gl.projects.get(KIT_PROJECT_ID)
+            upstream_pipeline = kit_project.pipelines.get(upstream_pipeline_id)
+
+            if pipeline_type == PipelineType.KIT_NIGHTLY:
+                # Downstream from Kit nightly - fetch branch name for context
+                branch_name = upstream_pipeline.ref
                 return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>, which was a nightly pipeline on branch `{branch_name}`"
-            else:
+
+            elif pipeline_type == PipelineType.KIT_MR:
+                # Downstream from Kit MR - fetch MR details
+                branch_name = upstream_pipeline.ref
+
                 if "refs/merge-requests" in branch_name:
                     mr_number = branch_name.split("/")[2]
-                    mr_url = (
-                        f"https://gitlab-master.nvidia.com/api/v4/projects/{KIT_PROJECT_ID}/merge_requests/{mr_number}"
-                    )
                     try:
-                        response = requests.get(mr_url, headers=headers)
-                        response.raise_for_status()
-                    except requests.RequestException:
-                        # Fall back to pipeline reference without MR details
-                        return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>"
-                    mr = response.json()
-                    mr_web_url = mr["web_url"]
-                    return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>, which was for merge request <{mr_web_url}|{mr_number}>\n`{mr['title']}`\n"
+                        mr = kit_project.mergerequests.get(mr_number)
+                        mr_web_url = mr.web_url
+                        return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>, which was for merge request <{mr_web_url}|{mr_number}>\n`{mr.title}`\n"
+                    except Exception:
+                        pass
 
+                # Fallback if MR fetch fails
+                return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}> (merge request)"
+
+            elif pipeline_type == PipelineType.KIT_POST_MERGE:
+                # Downstream from Kit post-merge
+                return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>"
+
+        except Exception:
+            # Fallback if any API call fails
             return (
                 f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>"
             )
 
-        else:
-            return "Downstream pipeline"
-    elif source_str == "merge_request_event":
-        # Inferrable from the MR number in the ref
-        return ""
-    elif source_str == "schedule":
+    elif pipeline_type == PipelineType.ISAAC_NIGHTLY:
+        # Isaac's own scheduled/nightly pipeline - no upstream info
         return "Schedule"
+
+    elif pipeline_type == PipelineType.ISAAC_MR:
+        ref_name = os.getenv("CI_COMMIT_REF_NAME")
+        if ref_name is None:
+            return "Isaac MR pipeline"
+        if "refs/merge-requests" in ref_name:
+            mr_number = ref_name.split("/")[2]
+            try:
+                project_id = os.getenv("CI_PROJECT_ID")
+                project = gl.projects.get(project_id)
+                mr = project.mergerequests.get(mr_number)
+                return f"Isaac MR pipeline started from <{mr.web_url}|MR {mr_number}>\n`{mr.title}`"
+            except Exception:
+                return f"Isaac MR pipeline - `{ref_name}`"
+        else:
+            return f"Isaac MR pipeline - `{ref_name}`"
+
+    elif pipeline_type == PipelineType.ISAAC_POST_MERGE:
+        return "Post Merge pipeline"
+
+    elif pipeline_type == PipelineType.UNKNOWN:
+        # Unknown pipeline type - provide generic message
+        upstream_pipeline_id = os.getenv("UPSTREAM_PIPELINE_ID")
+        if upstream_pipeline_id:
+            upstream_pipeline_url = f"https://gitlab-master.nvidia.com/omniverse/kit/pipelines/{upstream_pipeline_id}"
+            return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}> (type unknown)"
+        else:
+            return "Pipeline type unknown"
+
     else:
-        return source_str
+        # Shouldn't reach here, but handle gracefully
+        return ""
 
 
-def create_job_report_message(channel="#isaac-sim-ci"):
+def post_heatmap_to_slack(
+    display_pipeline_url: str,
+    channel: str,
+    thread_ts: str,
+    branch: str | None = None,
+    variable_filters: dict[str, str] | None = None,
+    pipeline_sources: list[str] | None = None,
+) -> None:
+    """Generate and upload test heatmap to Slack.
+
+    Args:
+        display_pipeline_url: Formatted pipeline URL for display in messages
+        channel: Slack channel to post to
+        thread_ts: Thread timestamp to post as reply
+        branch: Branch name to filter pipelines (optional)
+        variable_filters: Dict of variable filters for pipeline_test_stats (optional)
+        pipeline_sources: List of pipeline sources to filter (optional)
+    """
+    # Build kwargs for run_pipeline_test_stats
+    stats_kwargs = {
+        "heatmap": True,
+        "stacked_chart": False,
+        "quiet": True,
+    }
+
+    if branch is not None:
+        stats_kwargs["branch"] = branch
+    if variable_filters is not None:
+        stats_kwargs["variable_filters"] = variable_filters
+    if pipeline_sources is not None:
+        stats_kwargs["pipeline_sources"] = pipeline_sources
+
+    # Generate heatmap
+    run_pipeline_test_stats(**stats_kwargs)
+
+    heatmap_file = "pipeline_test_chart_heatmap.html"
+    heatmap_image = "pipeline_test_chart_heatmap.png"
+
+    # Upload files if they exist
+    if os.path.isfile(heatmap_image) and os.path.isfile(heatmap_file):
+        post_to_slack(f"Test heatmap for {display_pipeline_url}", channel=channel, thread=thread_ts, file=heatmap_file)
+        post_to_slack(f"Test heatmap for {display_pipeline_url}", channel=channel, thread=thread_ts, file=heatmap_image)
+
+
+def post_test_analysis_to_slack(
+    pipeline_id: str, project_id: str, channel: str, thread_ts: str, baseline_branch: str = "develop"
+) -> None:
+    """Generate and post test suite analysis report to Slack.
+
+    Args:
+        pipeline_id: Pipeline ID to analyze
+        project_id: Project ID for finding baseline
+        channel: Slack channel to post to
+        thread_ts: Thread timestamp to post as reply
+        baseline_branch: Branch to use as baseline (default: "develop")
+                        If "develop", uses find_develop_baseline_pipeline
+                        Otherwise, uses the branch name directly
+    """
+    # Determine baseline type and value based on baseline_branch
+    if baseline_branch == "develop":
+        baseline_pipeline_id = find_develop_baseline_pipeline(project_id)
+        if baseline_pipeline_id is None:
+            return
+        baseline_type = "pipeline"
+        baseline_value = str(baseline_pipeline_id["id"])
+    else:
+        baseline_type = "branch"
+        baseline_value = baseline_branch
+
+    # Run analysis
+    test_suites_text = run_analyze_test_suites(
+        source_type="pipeline",
+        source_value=pipeline_id,
+        baseline_type=baseline_type,
+        baseline_value=baseline_value,
+        quiet=True,
+        output_file="regressions.txt",
+    )
+
+    # Post sections (skip last section which is regressions detail)
+    if test_suites_text is None:
+        return
+
+    # Post sections (skip last section which is regressions detail)
+    for section in test_suites_text[:-1]:
+        if not section:  # Skip empty sections
+            continue
+
+        # Split large sections into multiple messages on line breaks
+        if len(section) > 3000:
+            lines = section.split("\n")
+            current_chunk = []
+            current_length = 0
+
+            for line in lines:
+                line_length = len(line) + 1  # +1 for the newline
+
+                # If adding this line would exceed the limit, send current chunk
+                if current_length + line_length > 3000 and current_chunk:
+                    post_to_slack(f"```\n{chr(10).join(current_chunk)}\n```", channel=channel, thread=thread_ts)
+                    current_chunk = []
+                    current_length = 0
+
+                current_chunk.append(line)
+                current_length += line_length
+
+            # Send remaining chunk if any
+            if current_chunk:
+                post_to_slack(f"```\n{chr(10).join(current_chunk)}\n```", channel=channel, thread=thread_ts)
+        else:
+            post_to_slack(f"```\n{section}\n```", channel=channel, thread=thread_ts)
+
+    # Post the full regression report as an attachment
+    if os.path.isfile("regressions.txt"):
+        post_to_slack("Regression Report", channel=channel, thread=thread_ts, file="regressions.txt")
+
+
+def create_job_report_message(channel: str = "#isaac-sim-ci") -> None:
     """Create a Slack message for a job status report."""
 
     job_status = os.getenv("CI_JOB_STATUS", "Unknown Job Status")
@@ -132,132 +363,157 @@ def create_job_report_message(channel="#isaac-sim-ci"):
     post_to_slack(message_text, channel=channel)
 
 
-def create_pipeline_report_message(channel="#isaac-sim-ci"):
+def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
     """Create a Slack message for a pipeline status report.
 
-    Returns:
-        Formatted message text for pipeline status.
-
     Raises:
-        NotImplementedError: This function is not yet implemented.
+        ValueError: If GitLab authentication fails.
     """
+    # Get GitLab client
+    gl = get_gitlab_client()
+    if not gl:
+        raise ValueError("Failed to authenticate with GitLab")
+
     # Infer data from just CI_PIPELINE_ID and CI_PROJECT_ID
     project_id = os.getenv("CI_PROJECT_ID")
     pipeline_id = os.getenv("CI_PIPELINE_ID")
-    private_token = os.getenv("CI_GITLAB_API_TOKEN")
-    if private_token is None:
-        raise ValueError("CI_GITLAB_API_TOKEN environment variable is not set")
 
-    pipeline_url = f"https://gitlab-master.nvidia.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}"
-    response = requests.get(pipeline_url, headers=headers)
-    response.raise_for_status()
-    pipeline = response.json()
+    try:
+        project = gl.projects.get(project_id)
+        pipeline = project.pipelines.get(pipeline_id)
+    except Exception as e:
+        print(f"ERROR: Failed to fetch pipeline: {e}")
+        return
 
-    display_pipeline_url = pipeline["web_url"]
+    display_pipeline_url = pipeline.web_url
     display_pipeline_url = f"<{display_pipeline_url}|{pipeline_id}>"
-    ref = pipeline["ref"]
+    ref = pipeline.ref
     if "refs/merge-requests/" in ref:
         mr_number = ref.split("/")[2]
-
-        mr_url = f"https://gitlab-master.nvidia.com/api/v4/projects/{project_id}/merge_requests/{mr_number}"
-        response = requests.get(mr_url, headers=headers)
-        response.raise_for_status()
-        mr = response.json()
-        ref = f" <{mr['web_url']}|MR {mr_number} - {mr['title']}>"
+        try:
+            mr = project.mergerequests.get(mr_number)
+            ref = f" <{mr.web_url}|MR {mr_number} - {mr.title}>"
+        except Exception:
+            ref = f"`{ref}`"
     else:
         ref = f"`{ref}`"
+
+    # Detect pipeline type and generate header
+    pipeline_type = detect_pipeline_type(pipeline.source)
+    source_header = header_for_pipeline_post(pipeline_type, gl)
+
     header_text = f":gitlab: *Pipeline Status for {display_pipeline_url}* :: {ref} :thread:\n"
-    source_str = source_for_pipeline(pipeline["source"])
-    if source_str != "":
-        header_text += f"{source_str}\n"
+    if source_header != "":
+        header_text += f"{source_header}\n"
     response = post_to_slack(header_text, channel=channel)
     thread_ts = response["ts"]
 
-    # Next we need to get the jobs for this pipeline
-    jobs_url = (
-        f"https://gitlab-master.nvidia.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}/jobs?per_page=100"
-    )
-    response = requests.get(jobs_url, headers=headers)
-    response.raise_for_status()
-    jobs = response.json()
+    # Get jobs for this pipeline
+    try:
+        jobs = pipeline.jobs.list(per_page=100, get_all=True)
+    except Exception as e:
+        print(f"ERROR: Failed to fetch jobs: {e}")
+        jobs = []
 
     job_text = "Jobs:\n"
-    for job in sorted(jobs, key=lambda x: (x.get("started_at") is None, x.get("started_at") or "")):
-        job_text += f"* {emoji_for_job_status(job['status'], job['allow_failure'])} `{job['name']}` :: <{job['web_url']}|{job['status']}>\n"
+    for job in sorted(jobs, key=lambda x: (x.started_at is None, x.started_at or "")):
+        job_text += (
+            f"* {emoji_for_job_status(job.status, job.allow_failure)} `{job.name}` :: <{job.web_url}|{job.status}>\n"
+        )
     post_to_slack(job_text, channel=channel, thread=thread_ts)
 
     # Check for downstream nightly pipelines to get extra reporting
-    if os.getenv("UPSTREAM_PIPELINE_SOURCE") == "nightly":
-
+    if pipeline_type == PipelineType.KIT_NIGHTLY:
         # Generate and upload a heatmap of the test report
-        run_pipeline_test_stats(
+        post_heatmap_to_slack(
+            display_pipeline_url,
+            channel,
+            thread_ts,
             branch=os.getenv("CI_COMMIT_REF_NAME", "develop-kit-tot"),
-            heatmap=True,
-            stacked_chart=False,
-            quiet=True,
             variable_filters={"UPSTREAM_PIPELINE_SOURCE": "nightly"},
         )
-        heatmap_file = "pipeline_test_chart_heatmap.html"
-        heatmap_image = "pipeline_test_chart_heatmap.png"
-
-        if os.path.isfile(heatmap_image) and os.path.isfile(heatmap_file):
-            post_to_slack(
-                f"Test heatmap for {display_pipeline_url}", channel=channel, thread=thread_ts, file=heatmap_file
-            )
-            post_to_slack(
-                f"Test heatmap for {display_pipeline_url}", channel=channel, thread=thread_ts, file=heatmap_image
-            )
-            time.sleep(10)
+        time.sleep(10)
 
         # Get a test report analysis against a recent completed develop pipeline
-        baseline_pipeline_id = find_develop_baseline_pipeline(project_id)
-        if baseline_pipeline_id is not None:
-            test_suites_text = run_analyze_test_suites(
-                source_type="pipeline",
-                source_value=pipeline_id,
-                baseline_type="pipeline",
-                baseline_value=str(baseline_pipeline_id["id"]),
-                quiet=True,
-                output_file="regressions.txt",
-            )
-            for section in test_suites_text[:-1]:
-                if not section:  # Skip empty sections
-                    continue
+        post_test_analysis_to_slack(pipeline_id, project_id, channel, thread_ts)
 
-                # Split large sections into multiple messages on line breaks
-                if len(section) > 3000:
-                    lines = section.split("\n")
-                    current_chunk = []
-                    current_length = 0
+    # For Kit post-merge we want to generate a heatmap
+    if pipeline_type == PipelineType.KIT_POST_MERGE:
+        # Generate and upload a heatmap of the test report
+        post_heatmap_to_slack(
+            display_pipeline_url,
+            channel,
+            thread_ts,
+            branch=os.getenv("CI_COMMIT_REF_NAME", "develop-kit-tot"),
+            variable_filters={"UPSTREAM_PIPELINE_SOURCE": "post_merge"},
+        )
 
-                    for line in lines:
-                        line_length = len(line) + 1  # +1 for the newline
+    if pipeline_type == PipelineType.KIT_MR:
+        try:
+            # Step 1 - get pipeline details from UPSTREAM_PIPELINE_ID
+            upstream_pipeline_id = os.getenv("UPSTREAM_PIPELINE_ID")
+            kit_project = gl.projects.get(KIT_PROJECT_ID)
+            upstream_pipeline = kit_project.pipelines.get(upstream_pipeline_id)
 
-                        # If adding this line would exceed the limit, send current chunk
-                        if current_length + line_length > 3000 and current_chunk:
-                            post_to_slack(f"```\n{chr(10).join(current_chunk)}\n```", channel=channel, thread=thread_ts)
-                            current_chunk = []
-                            current_length = 0
+            # Step 2 - get the MR details from the ref name
+            ref_parts = upstream_pipeline.ref.split("/")
+            if len(ref_parts) < 3 or ref_parts[0] != "refs":
+                raise ValueError(f"Unexpected upstream pipeline ref format: {upstream_pipeline.ref!r}")
+            mr_number = ref_parts[2]
+            mr = kit_project.mergerequests.get(mr_number)
+            mr_branch = mr.target_branch
 
-                        current_chunk.append(line)
-                        current_length += line_length
+            # Step 3 - check to see if we have an accommodating kit-integration/* branch
+            isaac_branch_name = f"kit-integration/{mr_branch}"
 
-                    # Send remaining chunk if any
-                    if current_chunk:
-                        post_to_slack(f"```\n{chr(10).join(current_chunk)}\n```", channel=channel, thread=thread_ts)
-                else:
-                    post_to_slack(f"```\n{section}\n```", channel=channel, thread=thread_ts)
+            isaac_project = gl.projects.get(project_id)
+            try:
+                # Try to get the specific branch
+                isaac_project.branches.get(isaac_branch_name)
+                # Branch exists, use it
+            except Exception:
+                # Branch doesn't exist, fall back to develop-kit-tot
+                isaac_branch_name = "develop-kit-tot"
 
-            # Post the txt of the full regression report as an attachment
-            post_to_slack("Regression Report", channel=channel, thread=thread_ts, file="regressions.txt")
+            post_test_analysis_to_slack(pipeline_id, project_id, channel, thread_ts, baseline_branch=isaac_branch_name)
+        except Exception as e:
+            print(f"ERROR: Failed to process KIT_MR pipeline: {e}")
+
+    if pipeline_type == PipelineType.ISAAC_NIGHTLY:
+        # Currently no special logic, placeholder left for future use
+        pass
+
+    # Check for post-merge develop pipelines to get just heatmaps
+    if pipeline_type == PipelineType.ISAAC_POST_MERGE:
+        # Generate and upload a heatmap of the test report
+        post_heatmap_to_slack(
+            display_pipeline_url,
+            channel,
+            thread_ts,
+            branch="develop",
+            pipeline_sources=["push"],
+        )
+
+    # For non-downstream MRs make sure we post the analyze_test_suites report
+    if pipeline_type == PipelineType.ISAAC_MR:
+        target_branch = os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME")
+        if target_branch is None:
+            target_branch = "develop"  # Default to develop if not set
+        # Get a test report analysis against a recent completed pipeilne matching
+        # the MR target branch
+        post_test_analysis_to_slack(pipeline_id, project_id, channel, thread_ts, baseline_branch=target_branch)
 
 
-def post_to_slack(message_text, channel="#isaac-sim-ci", thread=None, file=None):
+def post_to_slack(
+    message_text: str, channel: str = "#isaac-sim-ci", thread: str | None = None, file: str | None = None
+) -> dict:
     """Post a message to a Slack channel.
 
     Args:
-        param message_text: The message text to post.
-        param channel: The Slack channel to post to.
+        message_text: The message text to post.
+        channel: The Slack channel to post to.
+        thread: Thread timestamp to post as reply.
+        file: File path to upload.
 
     Returns:
         The response from the Slack API.
@@ -311,7 +567,7 @@ def post_to_slack(message_text, channel="#isaac-sim-ci", thread=None, file=None)
         return response
 
 
-def main():
+def main() -> None:
     """Main entry point for the Slack posting script."""
     parser = argparse.ArgumentParser(description="Post CI/CD status reports to Slack")
 

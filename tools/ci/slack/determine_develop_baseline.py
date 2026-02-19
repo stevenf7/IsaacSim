@@ -8,11 +8,12 @@
 #
 import argparse
 import os
+from typing import Optional
 
-import requests
+import gitlab
 
 
-def find_develop_baseline_pipeline(project_id, branch="develop", max_pipelines=100):
+def find_develop_baseline_pipeline(project_id: str, branch: str = "develop", max_pipelines: int = 100) -> dict | None:
     """Find a suitable develop pipeline for baseline comparison.
 
     Search for a finished develop pipeline that was not from a schedule and
@@ -28,54 +29,76 @@ def find_develop_baseline_pipeline(project_id, branch="develop", max_pipelines=1
 
     Raises:
         ValueError: If CI_GITLAB_API_TOKEN environment variable is not set.
-        requests.RequestException: If the GitLab API request fails.
+        Exception: If the GitLab API request fails.
     """
     private_token = os.getenv("CI_GITLAB_API_TOKEN")
     if private_token is None:
         raise ValueError("CI_GITLAB_API_TOKEN environment variable is not set")
 
-    headers = {"PRIVATE-TOKEN": private_token}
+    gitlab_url = os.getenv("GITLAB_URL", "https://gitlab-master.nvidia.com")
 
-    # Fetch pipelines for the develop branch
-    pipelines_url = f"https://gitlab-master.nvidia.com/api/v4/projects/{project_id}/pipelines"
-    params = {
-        "ref": branch,
-        "per_page": max_pipelines,
-        "order_by": "id",
-        "sort": "desc",
-    }
+    # Create GitLab client
+    gl = gitlab.Gitlab(url=gitlab_url, private_token=private_token)
 
-    response = requests.get(pipelines_url, headers=headers, params=params)
-    response.raise_for_status()
-    pipelines = response.json()
+    try:
+        gl.auth()
+        if gl.user is None:
+            raise ValueError("GitLab authentication failed")
+    except Exception as e:
+        raise ValueError(f"GitLab authentication failed: {e}")
 
-    for pipeline in pipelines:
-        # Check if pipeline is finished
-        if pipeline["status"] not in ["success", "failed"]:
-            continue
+    try:
+        project = gl.projects.get(project_id)
 
-        # Check if pipeline was from a schedule
-        if pipeline["source"] == "schedule":
-            continue
+        # Fetch pipelines for the specified branch
+        pipelines = project.pipelines.list(
+            ref=branch,
+            per_page=max_pipelines,
+            order_by="id",
+            sort="desc",
+            get_all=False,
+        )
 
-        # Fetch commit details to check for version bump
-        commit_sha = pipeline["sha"]
-        commit_url = f"https://gitlab-master.nvidia.com/api/v4/projects/{project_id}/repository/commits/{commit_sha}"
-        commit_response = requests.get(commit_url, headers=headers)
-        commit_response.raise_for_status()
-        commit = commit_response.json()
+        for pipeline in pipelines:
+            # Check if pipeline is finished
+            if pipeline.status not in ["success", "failed"]:
+                continue
 
-        # Check if commit message contains "Bumped version"
-        if "Bumped version" in commit.get("message", ""):
-            continue
+            # Check if pipeline was from a schedule
+            if pipeline.source == "schedule":
+                continue
 
-        # Found a suitable pipeline
-        return pipeline
+            # Fetch commit details to check for version bump
+            try:
+                commit = project.commits.get(pipeline.sha)
 
-    return None
+                # Check if commit message contains "Bumped version"
+                if "Bumped version" in commit.message:
+                    continue
+
+                # Found a suitable pipeline - return as dict for compatibility
+                return {
+                    "id": pipeline.id,
+                    "status": pipeline.status,
+                    "web_url": pipeline.web_url,
+                    "created_at": pipeline.created_at,
+                    "sha": pipeline.sha,
+                    "ref": pipeline.ref,
+                    "source": pipeline.source,
+                }
+
+            except Exception as e:
+                # If we can't fetch commit details, skip this pipeline
+                print(f"Warning: Could not fetch commit details for pipeline {pipeline.id}: {e}")
+                continue
+
+        return None
+
+    except Exception as e:
+        raise Exception(f"Failed to fetch pipelines: {e}")
 
 
-def main():
+def main() -> int | None:
     """Main entry point for the develop baseline determination script."""
     parser = argparse.ArgumentParser(description="Find a suitable develop pipeline for baseline comparison")
 
@@ -103,16 +126,21 @@ def main():
     if project_id is None:
         raise ValueError("Project ID must be provided via --project-id or CI_PROJECT_ID environment variable")
 
-    pipeline = find_develop_baseline_pipeline(project_id, args.branch, args.max_pipelines)
+    try:
+        pipeline = find_develop_baseline_pipeline(project_id, args.branch, args.max_pipelines)
 
-    if pipeline:
-        print(f"Found suitable baseline pipeline: {pipeline['id']}")
-        print(f"Status: {pipeline['status']}")
-        print(f"Web URL: {pipeline['web_url']}")
-        print(f"Created at: {pipeline['created_at']}")
-        return pipeline["id"]
-    else:
-        print("No suitable baseline pipeline found")
+        if pipeline:
+            print(f"Found suitable baseline pipeline: {pipeline['id']}")
+            print(f"Status: {pipeline['status']}")
+            print(f"Web URL: {pipeline['web_url']}")
+            print(f"Created at: {pipeline['created_at']}")
+            return pipeline["id"]
+        else:
+            print("No suitable baseline pipeline found")
+            return None
+
+    except Exception as e:
+        print(f"Error: {e}")
         return None
 
 
