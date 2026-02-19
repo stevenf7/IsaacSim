@@ -71,8 +71,8 @@ stages:
   - check-externals
   - github-staging
   - verify-github-staging
-  - pages
   - slack-notifications
+  - pages
 
 # ==============================================================================================================
 # Default values applied to all jobs
@@ -217,6 +217,8 @@ post_to_slack:
   extends:
     - .ipp_lnx_x86_64_cpu_small
   script:
+    # Installing some packages to get kaleido happy
+    - apt update && apt-get install libnss3 libatk-bridge2.0-0 libcups2 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2 libasound2
     - ./tools/packman/python.sh -m pip install -r tools/ci/slack/requirements.txt --quiet
     - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --pipeline-report --channel $SLACK_CHANNEL
   rules:
@@ -225,27 +227,30 @@ post_to_slack:
     # We shouldn't get them but nightlies from kit that do not hit a kit-integration branch get #isaac-sim-ci
     # MRs from Kit (with checkbox selected) and Isaac (with checkbox selected) get #isaac-sim-ci-mr
     # Nightlies from Isaac, and post-merge from Isaac get #isaac-sim-ci
-    - if: $CI_COMMIT_REF_NAME =~ /^kit-integration\// && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "nightly"
-      when: always
-      variables:
-       SLACK_CHANNEL: "#isaac-sim-kit-integration-ci"
     - if: $CI_COMMIT_REF_NAME =~ /^kit-integration\// && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "merge_request"
       when: always
       variables:
         SLACK_CHANNEL: "#isaac-sim-ci-mr"
     - if: $CI_COMMIT_REF_NAME == "develop-kit-tot" && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "nightly"
       when: always
-      variables:
-        SLACK_CHANNEL: "#isaac-sim-ci"
     - if: $UPSTREAM_PIPELINE_SOURCE == "post_merge"
       when: always
-      variables:
-        SLACK_CHANNEL: "#isaac-sim-ci"
-    - !reference [.rules-nightly-tests-always, rules]
     - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Post pipeline reports to slack/"
       when: always
       variables:
         SLACK_CHANNEL: "#isaac-sim-ci-mr"
+    - if: $CI_COMMIT_REF_NAME =~ /^kit-integration\// && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "nightly"
+      when: always
+      variables:
+       SLACK_CHANNEL: "#isaac-sim-kit-integration-ci"
+    - !reference [.rules-nightly-tests-always, rules]
+  artifacts:
+    paths:
+      - pipeline_test_chart_heatmap.html
+      - pipeline_test_chart_heatmap.png
+      - regressions.txt
+    expire_in: 1 week
+  
 
 
 # ==============================================================================================================
@@ -360,13 +365,8 @@ osec:sonarqube:
       - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "develop"
         when: always
         variables:
-          PAGES_PATH_PREFIX: ""
-      # Publish root docs from develop on scheduled docs builds
-      - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH == "develop" && $RUN_DOCS_BUILD == "true"
-        when: always
-        variables:
-          PAGES_PATH_PREFIX: ""
-      - when: never
+          PAGES_PATH_PREFIX: "develop"
+
 
 .rules-build-docs:
     rules:
@@ -1201,6 +1201,8 @@ pages:
     script:
       - mkdir -p .public
       - cp -r _build/docs/isaac-sim/latest/* .public/ || true
+      - mv pipeline_test_chart_heatmap.html .public/heatmap.html || true
+      - mv pipeline_test_chart_heatmap.png .public/heatmap.png || true
       - mv .public public
     artifacts:
         paths:
@@ -1213,6 +1215,9 @@ pages:
     needs:
       - job: build-docs
         artifacts: true
+      - job: post_to_slack
+        artifacts: true
+        optional: true
 
 
 # ==============================================================================================================
