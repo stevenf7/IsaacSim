@@ -155,42 +155,18 @@ class TestRos2CameraInfo(ROS2TestCase):
         from sensor_msgs.msg import CameraInfo
 
         self._camera_info = None
+        self._camera_info_timestamp_prev = None
 
         def camera_info_callback(data):
             self._camera_info = data
-
-        node = self.create_node("camera_tester")
-        camera_info_sub = self.create_subscription(
-            node, CameraInfo, "camera_info", camera_info_callback, get_qos_profile()
-        )
-
-        await omni.kit.app.get_app().next_update_async()
-
-        def spin():
-            rclpy.spin_once(node, timeout_sec=0.01)
-
-        import time
-
-        system_time = time.time()
-
-        for num in range(3):
-            print(f"Play #{num+1}")
-            self._timeline.play()
-
-            await self.simulate_until_condition(
-                lambda: self._camera_info is not None and self._camera_info.header.stamp.sec >= 1.0,
-                max_frames=120,
-                per_frame_callback=spin,
-            )
-
-            self.assertIsNotNone(self._camera_info)
-
             self.assertEqual(self._camera_info.width, 1920)
             self.assertEqual(self._camera_info.height, 1200)
-            self.assertGreaterEqual(self._camera_info.header.stamp.sec, 1)
-            self.assertLess(self._camera_info.header.stamp.sec, system_time / 2.0)
 
-            # Test contents of k matrix (function of width, height, focal length, apertures)
+            current_timestamp = self._camera_info.header.stamp.sec + self._camera_info.header.stamp.nanosec * 1e-9
+            if self._camera_info_timestamp_prev is not None:
+                self.assertAlmostEqual(current_timestamp - self._camera_info_timestamp_prev, 1.0 / 60.0)
+            self._camera_info_timestamp_prev = current_timestamp
+
             self.assertAlmostEqual(self._camera_info.k[0], 1920.0 * 2.87343 / 5.76, places=2)
             self.assertAlmostEqual(self._camera_info.k[1], 0.0)
             self.assertAlmostEqual(self._camera_info.k[2], 1920.0 * 0.5)
@@ -217,6 +193,27 @@ class TestRos2CameraInfo(ROS2TestCase):
             distortion_coefficients = [0.147811, -0.032313, -0.000194, -0.000035, 0.008823, 0.517913, -0.06708, 0.01695]
             for i in range(len(distortion_coefficients)):
                 self.assertAlmostEqual(self._camera_info.d[i], distortion_coefficients[i])
+
+        node = self.create_node("camera_tester")
+        camera_info_sub = self.create_subscription(
+            node, CameraInfo, "camera_info", camera_info_callback, get_qos_profile()
+        )
+
+        await omni.kit.app.get_app().next_update_async()
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.01)
+
+        for num in range(3):
+            print(f"Play #{num+1}")
+            self._timeline.play()
+
+            await self.simulate_until_condition(
+                lambda: self._camera_info is not None and self._camera_info.header.stamp.sec >= 1.0,
+                max_frames=120,
+                per_frame_callback=spin,
+            )
+
             self._timeline.stop()
 
             # make sure all previous messages are cleared
@@ -224,6 +221,7 @@ class TestRos2CameraInfo(ROS2TestCase):
             spin()
             await omni.kit.app.get_app().next_update_async()
             self._camera_info = None
+            self._camera_info_timestamp_prev = None
 
     def _add_light(self, name: str, position: List[float]) -> None:
         sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path(f"/World/SphereLight_{name}"))

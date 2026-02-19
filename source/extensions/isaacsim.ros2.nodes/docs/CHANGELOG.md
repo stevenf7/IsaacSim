@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.2] - 2026-02-18
+### Changed
+- Move some test assertions into node subscription callbacks
+
 ## [1.6.1] - 2026-02-16
 ### Changed
 - Add missing dependency for isaacsim.sensors.physics.nodes

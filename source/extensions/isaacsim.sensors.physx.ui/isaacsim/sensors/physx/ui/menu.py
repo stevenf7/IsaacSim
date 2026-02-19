@@ -16,7 +16,8 @@
 import weakref
 from pathlib import Path
 
-import carb
+import omni.ext
+import omni.kit.actions.core
 import omni.kit.commands
 from isaacsim.core.utils.prims import create_prim
 from isaacsim.core.utils.stage import get_next_free_path
@@ -28,8 +29,50 @@ from pxr import Gf
 
 class RangeSensorMenu:
     def __init__(self, ext_id: str):
+        self._ext_name = omni.ext.get_extension_name(ext_id)
+        self._registered_actions = []
+
         icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
         sensor_icon_path = str(Path(icon_dir).joinpath("data/sensor.svg"))
+
+        action_registry = omni.kit.actions.core.get_action_registry()
+
+        # Register actions for each sensor menu item.
+        action_registry.register_action(
+            self._ext_name,
+            "create_physx_lidar_rotating",
+            lambda *_, a=weakref.proxy(self): a._add_lidar(),
+            description="Create a rotating PhysX Lidar sensor",
+        )
+        self._registered_actions.append("create_physx_lidar_rotating")
+
+        action_registry.register_action(
+            self._ext_name,
+            "create_physx_lidar_generic",
+            lambda *_, a=weakref.proxy(self): a._add_generic(),
+            description="Create a generic PhysX Lidar sensor",
+        )
+        self._registered_actions.append("create_physx_lidar_generic")
+
+        action_registry.register_action(
+            self._ext_name,
+            "create_lightbeam_generic",
+            lambda *_, a=weakref.proxy(self): a._add_lightbeam_sensor(),
+            description="Create a generic LightBeam sensor",
+        )
+        self._registered_actions.append("create_lightbeam_generic")
+
+        action_registry.register_action(
+            self._ext_name,
+            "create_lightbeam_tashan_ts_f_a",
+            lambda *_: create_prim(
+                prim_path=get_next_free_path("/TS_F_A", None),
+                prim_type="Xform",
+                usd_path=get_assets_root_path() + "/Isaac/Sensors/Tashan/TS-F-A/TS-F-A.usd",
+            ),
+            description="Create a Tashan TS-F-A LightBeam sensor",
+        )
+        self._registered_actions.append("create_lightbeam_tashan_ts_f_a")
 
         # Build menu dictionary structure
         sensors_menu_dict = {
@@ -40,11 +83,11 @@ class RangeSensorMenu:
                             "PhysX Lidar": [
                                 {
                                     "name": "Rotating",
-                                    "onclick_fn": lambda *_, a=weakref.proxy(self): a._add_lidar(),
+                                    "onclick_action": (self._ext_name, "create_physx_lidar_rotating"),
                                 },
                                 {
                                     "name": "Generic",
-                                    "onclick_fn": lambda *_, a=weakref.proxy(self): a._add_generic(),
+                                    "onclick_action": (self._ext_name, "create_physx_lidar_generic"),
                                 },
                             ]
                         }
@@ -54,15 +97,11 @@ class RangeSensorMenu:
                             "LightBeam Sensor": [
                                 {
                                     "name": "Generic",
-                                    "onclick_fn": lambda *_, a=weakref.proxy(self): a._add_lightbeam_sensor(),
+                                    "onclick_action": (self._ext_name, "create_lightbeam_generic"),
                                 },
                                 {
                                     "name": "Tashan TS-F-A",
-                                    "onclick_fn": lambda *_: create_prim(
-                                        prim_path=get_next_free_path("/TS_F_A", None),
-                                        prim_type="Xform",
-                                        usd_path=get_assets_root_path() + "/Isaac/Sensors/Tashan/TS-F-A/TS-F-A.usd",
-                                    ),
+                                    "onclick_action": (self._ext_name, "create_lightbeam_tashan_ts_f_a"),
                                 },
                             ]
                         }
@@ -141,4 +180,10 @@ class RangeSensorMenu:
 
     def shutdown(self):
         remove_menu_items(self._menu_items, "Create")
-        self.menus = None
+        self._viewport_create_menu = None
+
+        # Deregister all registered actions.
+        action_registry = omni.kit.actions.core.get_action_registry()
+        for action_id in self._registered_actions:
+            action_registry.deregister_action(self._ext_name, action_id)
+        self._registered_actions.clear()

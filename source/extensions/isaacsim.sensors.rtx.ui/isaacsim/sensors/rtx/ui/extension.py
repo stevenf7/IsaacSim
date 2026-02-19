@@ -17,20 +17,26 @@ import gc
 from pathlib import Path
 
 import omni.ext
+import omni.kit.actions.core
 import omni.kit.commands
-from isaacsim.core.utils.stage import add_reference_to_stage, get_next_free_path
+from isaacsim.core.utils.stage import get_next_free_path
 from isaacsim.gui.components.menu import create_submenu
 from isaacsim.sensors.rtx import SUPPORTED_LIDAR_CONFIGS
-from isaacsim.storage.native import get_assets_root_path
-from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from pxr import Tf
 
 
 class Extension(omni.ext.IExt):
 
     def on_startup(self, ext_id: str) -> None:
+        self._ext_id = ext_id
+        self._ext_name = omni.ext.get_extension_name(ext_id)
+        self._registered_actions = []
+
         icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
         sensor_icon_path = str(Path(icon_dir).joinpath("data/sensor.svg"))
+
+        action_registry = omni.kit.actions.core.get_action_registry()
 
         rtx_lidar_vendor_dict = {}
         for config in SUPPORTED_LIDAR_CONFIGS:
@@ -43,16 +49,23 @@ class Extension(omni.ext.IExt):
                 # Note: assumes there is a single character (eg. underscore) between the vendor and sensor name
                 sensor_name = sensor_name[len(vendor_name) + 1 :]
 
+            # Register an action for this lidar sensor.
+            action_id = f"create_lidar_{config_path.stem}"
+            sensor_config = config_path.stem
+            action_registry.register_action(
+                self._ext_name,
+                action_id,
+                lambda *_, sn=sensor_name, sc=sensor_config: self._create_lidar(sn, sc),
+                description=f"Create {vendor_name} {sensor_name} RTX Lidar sensor",
+            )
+            self._registered_actions.append(action_id)
+
             if vendor_name not in rtx_lidar_vendor_dict:
                 rtx_lidar_vendor_dict[vendor_name] = []
             rtx_lidar_vendor_dict[vendor_name].append(
                 {
                     "name": sensor_name,
-                    "onclick_fn": (
-                        lambda *_, sensor_name=sensor_name, sensor_config=config_path.stem: self._create_lidar(
-                            sensor_name, sensor_config
-                        )
-                    ),
+                    "onclick_action": (self._ext_name, action_id),
                 }
             )
 
@@ -60,6 +73,16 @@ class Extension(omni.ext.IExt):
         rtx_lidar_vendor_list = []
         for vendor_name in sorted(rtx_lidar_vendor_dict.keys()):
             rtx_lidar_vendor_list.append({"name": {vendor_name: rtx_lidar_vendor_dict[vendor_name]}})
+
+        # Register an action for the RTX Radar sensor.
+        radar_action_id = "create_rtx_radar"
+        action_registry.register_action(
+            self._ext_name,
+            radar_action_id,
+            lambda *_: self._create_radar(),
+            description="Create RTX Radar sensor",
+        )
+        self._registered_actions.append(radar_action_id)
 
         # Compose the RTX Lidar menu dictionary.
         rtx_lidar_menu_dict = {"name": {"RTX Lidar": rtx_lidar_vendor_list}}
@@ -69,7 +92,7 @@ class Extension(omni.ext.IExt):
             "name": {
                 "Sensors": [
                     rtx_lidar_menu_dict,
-                    {"name": "RTX Radar", "onclick_fn": (lambda *_: self._create_radar())},
+                    {"name": "RTX Radar", "onclick_action": (self._ext_name, radar_action_id)},
                 ]
             },
             "glyph": sensor_icon_path,
@@ -94,6 +117,13 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         remove_menu_items(self._menu_items, "Create")
         self._viewport_create_menu = None
+
+        # Deregister all registered actions.
+        action_registry = omni.kit.actions.core.get_action_registry()
+        for action_id in self._registered_actions:
+            action_registry.deregister_action(self._ext_name, action_id)
+        self._registered_actions.clear()
+
         gc.collect()
 
     def _get_stage_and_path(self):

@@ -1,4 +1,9 @@
 # Changelog
+## [2.4.3] - 2026-02-18
+### Fixed
+- Replaced deprecated `onclick_fn` with `onclick_action` in menu items to eliminate deprecation warnings
+- Registered proper actions for PhysX Lidar and LightBeam sensor creation menu items
+
 ## [2.4.2] - 2026-01-24
 ### Changed
 - Fix issues with menu click and context menu tests being flaky
