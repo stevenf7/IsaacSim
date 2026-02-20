@@ -703,6 +703,12 @@ local function get_doc_snippets_tests()
             "standalone_examples/testing/doc_snippets/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/wait_until_all_the_data_is_saved_to_disk_and_clean.py",
             "--test",
         },
+        -- action_and_event_data_generation/tutorial_replicator_incident
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.action_and_event_data_generation.tutorial_replicator_incident.tutorial_replicator_incident",
+            "standalone_examples/testing/doc_snippets/snippets/action_and_event_data_generation/tutorial_replicator_incident.py",
+            "--test",
+        },
         -- robot_setup_tutorials/tutorial_pickplace_example (with PYTHONPATH)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup_tutorials.tutorial_pickplace_example.define_the_manipulator",
