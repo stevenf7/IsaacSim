@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.3.2] = 2026-02-18
+## [1.3.2] - 2026-02-18
 ### Changed
 - Add WAR to split Windows camera tests into groups to avoid GPU crashes due to descriptor count
 
