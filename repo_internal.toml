@@ -60,7 +60,7 @@ social_media = [
 # Project: isaac-sim (User Guide — main docs)
 # ==============================
 [repo_docs.projects.isaac-sim]
-docs_root = "docs_temp/docs/app_isaacsim"
+docs_root = "docs/isaacsim"
 name = "Isaac Sim Documentation"
 version_selector_enabled = true
 mr_version_override_enabled = false
@@ -69,8 +69,8 @@ breadcrumbs_home_url = "../../index.html"
 breadcrumbs_add_project = true
 
 python_paths = [
-    "${root}/docs_temp/docs",
-    "${root}/docs_temp/docs/conf/ext",
+    "${root}/docs",
+    "${root}/docs/conf/ext",
 ]
 
 sphinx_conf_py_extra = """
@@ -92,7 +92,7 @@ sphinx_exclude_patterns = [
     "_build",
     "**/license_files/*.md",
     "**/custom/*.rst",
-    "${root}/docs_temp/docs/app_isaacsim/assets/SICK/**/readme.md",
+    "${root}/docs/isaacsim/assets/SICK/**/readme.md",
 ]
 
 deps = [
@@ -139,10 +139,10 @@ python_paths = [
 
 sphinx_conf_py_extra = """
     add_module_names = False
-    html_logo = "docs/media/main_ov_logo_square.png"
-    html_favicon = "docs/media/favicon.ico"
+    html_logo = "docs/api/media/main_ov_logo_square.png"
+    html_favicon = "docs/api/media/favicon.ico"
     html_static_path += [
-        "docs/media/NVIDIA-LogoBlack.svg",
+        "docs/api/media/NVIDIA-LogoBlack.svg",
     ]
     autoclass_content = "both"
     autodoc_member_order = 'groupwise'
@@ -261,7 +261,6 @@ sphinx_exclude_patterns = [
   "_build",
   ".cursor",
   "CODING.md",
-  "docs_temp",
   "_container_temp/extscache",
   "_container_temp/kit",
 ]
@@ -738,7 +737,7 @@ exclude = [
     "CHANGELOG.md",
     "CODEOWNERS",
     "CODING.md",
-    "docs/media",
+    "docs/api/media",
     "index.rst",
     "PACKAGE-INFO.yaml",
     "python_packages.toml",

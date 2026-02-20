@@ -22,7 +22,7 @@ Source (omni_isaac_sim):
             ...
 
 Destination (isaacsim-docs):
-    docs/app_isaacsim/snippets/
+    docs/isaacsim/snippets/
         core_api_tutorials/
             hello_world.py
             ...
@@ -159,7 +159,7 @@ def sync_snippets(source_repo, docs_repo, check_only=False, filters=None):
               or files are out of sync (in check mode).
     """
     source_base = Path(source_repo) / "source/standalone_examples/testing/doc_snippets/snippets"
-    dest_base = Path(docs_repo) / "docs/app_isaacsim/snippets"
+    dest_base = Path(docs_repo) / "docs/isaacsim/snippets"
 
     if not source_base.exists():
         print(f"Error: Source directory {source_base} does not exist.")

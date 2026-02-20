@@ -80,8 +80,8 @@ def main():
     """Main function to demonstrate robot name finding."""
 
     # Example usage
-    assets_doc = "docs/app_isaacsim/assets/usd_assets_robots.rst"
-    examples_doc = "docs/app_isaacsim/introduction/menu_examples.rst"
+    assets_doc = "docs/isaacsim/assets/usd_assets_robots.rst"
+    examples_doc = "docs/isaacsim/introduction/menu_examples.rst"
 
     with open(examples_doc, "r", encoding="utf-8") as f:
         examples_content = f.read().split("\n")

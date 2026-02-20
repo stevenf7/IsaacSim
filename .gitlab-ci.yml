@@ -389,7 +389,7 @@ osec:sonarqube:
 
 .rules-build-docs-only-mr:
     rules:
-      # Run only when user checks the box (no auto-trigger on docs_temp changes)
+      # Run only when user checks the box (no auto-trigger on docs-only changes)
       - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"
       - when: never
 

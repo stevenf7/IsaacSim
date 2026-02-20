@@ -164,8 +164,8 @@ def main():
         script_start = time.time()
 
         # Default image directory and docs directory using relative paths from the root
-        image_dir = os.path.abspath("docs/app_isaacsim/images")
-        docs_dir = os.path.abspath("docs/app_isaacsim")
+        image_dir = os.path.abspath("docs/isaacsim/images")
+        docs_dir = os.path.abspath("docs/isaacsim")
 
         # Check if the directories exist
         if not os.path.exists(image_dir):
