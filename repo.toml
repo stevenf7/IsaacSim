@@ -43,9 +43,13 @@ version_file = "${root}/VERSION"
 linux_x86_64_cxx_abi=true
 
 [repo_build.stage_files]
+# Allowed destinations for prebuild_copy (e.g. GMO docs -> docs/source/generic_model_output).
+# Paths are resolved from repo root; include parent dirs so "p in resolved_dst.parents" can match.
 allowed_paths=[
   "${root}/_build",
+  "${root}/docs/api/source",
   "${root}/docs/source",
+  "docs/source",
 ]
 
 # AUTOREMOVE: BEGIN
@@ -1047,7 +1051,7 @@ app_version_regex = ""
 # Path to the examples directory (relative to workspace root or absolute)
 examples_dir = "${root}/source/standalone_examples"
 # Output RST file path (relative to workspace root or absolute)
-output_file = "${root}/docs/source/standalone_examples_list.rst"
+output_file = "${root}/docs/api/source/standalone_examples_list.rst"
 
 
 ########################################################################################################################
