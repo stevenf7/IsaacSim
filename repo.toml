@@ -508,6 +508,7 @@ stdout_fail_patterns.include = ["*[error]*", "*[fatal]*", "*[fail]*"]
   "--reset-user",
   "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
   "--/exts/omni.kit.test/pyCoverageEnabled=True",
+  "--/app/extensions/fsWatcherEnabled=0",
 ]
 "platform:linux-aarch64".args = [
   "--/app/settings/persistent=0",
