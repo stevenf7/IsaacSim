@@ -228,6 +228,8 @@ def post_heatmap_to_slack(
     branch: str | None = None,
     variable_filters: dict[str, str] | None = None,
     pipeline_sources: list[str] | None = None,
+    exclude_isaaclab: bool = True,
+    exclude_container_tests: bool = False,
 ) -> None:
     """Generate and upload test heatmap to Slack.
 
@@ -238,12 +240,14 @@ def post_heatmap_to_slack(
         branch: Branch name to filter pipelines (optional)
         variable_filters: Dict of variable filters for pipeline_test_stats (optional)
         pipeline_sources: List of pipeline sources to filter (optional)
+        exclude_isaaclab: Whether to exclude Isaac Lab integration tests (default: True)
     """
     # Build kwargs for run_pipeline_test_stats
     stats_kwargs = {
         "heatmap": True,
         "stacked_chart": False,
         "quiet": True,
+        "exclude_patterns": [],
     }
 
     if branch is not None:
@@ -252,6 +256,12 @@ def post_heatmap_to_slack(
         stats_kwargs["variable_filters"] = variable_filters
     if pipeline_sources is not None:
         stats_kwargs["pipeline_sources"] = pipeline_sources
+
+    if exclude_isaaclab:
+        stats_kwargs["exclude_patterns"].append("isaaclab")
+
+    if exclude_container_tests:
+        stats_kwargs["exclude_patterns"].append("test-container")
 
     # Generate heatmap
     run_pipeline_test_stats(**stats_kwargs)
@@ -446,6 +456,7 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
             thread_ts,
             branch=os.getenv("CI_COMMIT_REF_NAME", "develop-kit-tot"),
             variable_filters={"UPSTREAM_PIPELINE_SOURCE": "post_merge"},
+            exclude_container_tests=True,
         )
 
     if pipeline_type == PipelineType.KIT_MR:
@@ -502,6 +513,18 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
         # Get a test report analysis against a recent completed pipeilne matching
         # the MR target branch
         post_test_analysis_to_slack(pipeline_id, project_id, channel, thread_ts, baseline_branch=target_branch)
+
+    # Testing code, should not encounter normally
+    if os.getenv("SEND_HEATMAP") == "true":
+        post_heatmap_to_slack(
+            display_pipeline_url,
+            channel,
+            thread_ts,
+            branch="develop",
+            pipeline_sources=["push"],
+            exclude_isaaclab=True,
+            exclude_container_tests=True,
+        )
 
 
 def post_to_slack(

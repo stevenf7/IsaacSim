@@ -966,6 +966,30 @@ def create_test_heatmap(
                 if pbar:
                     pbar.close()
 
+    # Filter out pipelines that don't have any test cases (would show as blank columns)
+    # This happens when test reports are missing or incomplete
+    pipelines_with_test_cases = []
+    for p in pipelines_with_stats:
+        has_test_cases = False
+        for suite in p["test_stats"].get("suites", []):
+            if suite.get("test_cases"):
+                has_test_cases = True
+                break
+        if has_test_cases:
+            pipelines_with_test_cases.append(p)
+
+    if not pipelines_with_test_cases:
+        if not quiet:
+            print("\nNo pipelines with test case data to display in heatmap.")
+        return
+
+    # Use the filtered list for the rest of the function
+    pipelines_with_stats = pipelines_with_test_cases
+
+    if not quiet and len(pipelines_with_test_cases) < len(pipelines):
+        skipped = len(pipelines) - len(pipelines_with_test_cases)
+        print(f"Filtered out {skipped} pipelines without test case data")
+
     # Collect all jobs and their test cases
     job_tests = {}  # job_name -> set of test names
     excluded_jobs = set()
@@ -1289,7 +1313,7 @@ plot.on('plotly_click', function(data) {{
     # Also save as PNG with simpler labels (date only)
     fig.update_xaxes(ticktext=pipeline_labels_png, row=num_rows, col=1)
     png_file = output_file.replace(".html", ".png")
-    fig.write_image(png_file, scale=2)
+    fig.write_image(png_file, scale=1)
     if not quiet:
         print(f"Chart saved to: {png_file}")
 
@@ -1302,7 +1326,7 @@ plot.on('plotly_click', function(data) {{
 
 def run(
     branch: str = "develop",
-    limit: int = 20,
+    limit: int = 150,
     stacked_chart: bool = True,
     output_chart: str = "pipeline_test_chart.html",
     by_job: bool = False,
