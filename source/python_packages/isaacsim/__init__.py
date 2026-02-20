@@ -20,6 +20,23 @@ import os
 import platform
 import sys
 
+# Pre-load PyTorch c10.dll on Windows before any Qt/GUI stack loads to avoid
+# [WinError 1114] DLL initialization failure (pytorch/pytorch#166628).
+if platform.system() == "Windows":
+    try:
+        from importlib.util import find_spec
+
+        if (
+            (spec := find_spec("torch"))
+            and spec.origin
+            and os.path.exists(dll_path := os.path.join(os.path.dirname(spec.origin), "lib", "c10.dll"))
+        ):
+            import ctypes
+
+            ctypes.CDLL(os.path.normpath(dll_path))
+    except Exception:
+        pass
+
 
 def _aarch_preload_checking(queue):
     try:
