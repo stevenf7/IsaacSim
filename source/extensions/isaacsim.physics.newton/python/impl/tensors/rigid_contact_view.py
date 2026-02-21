@@ -102,7 +102,7 @@ class NewtonRigidContactView:
                     for filter_idx, filter_path in enumerate(filter_paths_for_sensor):
                         # Find the body index for this filter path
                         try:
-                            body_idx = list(self._model.body_key).index(filter_path)
+                            body_idx = list(self._model.body_label).index(filter_path)
                             body_filter_map[sensor_idx, body_idx] = filter_idx
                         except ValueError:
                             carb.log_warn(f"[NewtonRigidContactView] Filter body not found: {filter_path}")

@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.1.2] - 2026-02-20
+- Fixed broken newton usecases after upgrading the newton/mujoco packages
+
 ## [0.1.1] - 2026-02-06
 
 ### Added

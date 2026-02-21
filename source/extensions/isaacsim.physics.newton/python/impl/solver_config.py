@@ -108,7 +108,7 @@ class MuJoCoSolverConfig(NewtonSolverConfig):
     solver: str = "newton"
     """Solver type. Can be "cg" or "newton", or their corresponding MuJoCo integer constants."""
 
-    integrator: str = "implicit"
+    integrator: str = "implicitfast"
     """Integrator type. Can be "euler", "rk4", or "implicit", or their corresponding MuJoCo integer constants."""
 
     cone: str = "elliptic"

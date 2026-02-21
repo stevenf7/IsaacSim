@@ -48,7 +48,7 @@ class TestNewtonArticulationView(omni.kit.test.AsyncTestCase):
         await create_new_stage_async()
         self.stage = omni.usd.get_context().get_stage()
 
-        self.humanoid_asset = self._assets_root_path + "/Isaac/Robots/IsaacSim/Humanoid/humanoid_instanceable.usd"
+        self.humanoid_asset = self._assets_root_path + "/Isaac/Robots/IsaacSim/Humanoid/humanoid.usd"
         add_reference_to_stage(usd_path=self.humanoid_asset, prim_path="/nv_humanoid")
         await wait_for_stage_loading()
 
@@ -231,6 +231,7 @@ class TestNewtonArticulationView(omni.kit.test.AsyncTestCase):
             "Lower limits should be less than or equal to upper limits",
         )
 
+    # @unittest.skip("Issue after upgrading to mujoco 3.5.0")
     async def test_dof_positions(self):
         """Test getting and setting DOF positions."""
         articulations = self.sim.create_articulation_view("/nv_humanoid/torso*")
