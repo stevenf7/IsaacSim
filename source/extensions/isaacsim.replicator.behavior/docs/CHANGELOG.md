@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.6] - 2026-02-21
+### Changed
+- Updated SDG physics based volume filling behavior script to use the omni.physx api
+
 ## [1.3.5] - 2026-02-03
 ### Changed
 - Update sdg pipeline golden images with new randomization determinism by pausing the timeline before capturing frames

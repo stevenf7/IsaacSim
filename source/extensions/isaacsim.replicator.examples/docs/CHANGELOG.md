@@ -1,4 +1,8 @@
 # Changelog
+## [1.7.2] - 2026-02-21
+### Changed
+- Fixed SDG physics based volume filling example test to use the omni.physx api
+
 ## [1.7.1] - 2026-02-19
 ### Changed
 - SimulationManager device is set back to its default state following the deformable SDG example test
