@@ -39,6 +39,9 @@ parser.add_argument("--num-cameras", type=int, default=1, help="Number of camera
 parser.add_argument("--num-gpus", type=int, default=None, help="Number of GPUs on machine.")
 parser.add_argument("--resolution", nargs=2, type=int, default=[1280, 720], help="Camera resolution")
 parser.add_argument(
+    "--rt-subframes", type=int, default=-1, help="Number of RT subframes to render per step (-1: use renderer default)"
+)
+parser.add_argument(
     "--asset-count", type=int, default=10, help="Number of assets of each type (cube, cone, cylinder, sphere, torus)"
 )
 parser.add_argument(
@@ -50,7 +53,7 @@ parser.add_argument(
 )
 parser.add_argument("--delete-data-when-done", action="store_true", help="Delete local data after benchmarking")
 parser.add_argument("--print-results", action="store_true", help="Print results in terminal")
-parser.add_argument("--non-headless", action="store_false", help="Run in non-headless mode")
+parser.add_argument("--non-headless", action="store_true", help="Run in non-headless mode")
 parser.add_argument(
     "--backend-type",
     default="OmniPerfKPIFile",
@@ -63,6 +66,16 @@ parser.add_argument("--env-url", default=None, help="Path to the environment url
 parser.add_argument("--gpu-frametime", action="store_true", help="Enable GPU frametime measurement")
 parser.add_argument("--viewport-updates", action="store_false", help="Enable viewport updates when headless")
 parser.add_argument("--app-frametime", action="store_true", help="Enable Kit app frametime measurement")
+parser.add_argument(
+    "--with-og-randomization",
+    action="store_true",
+    help="Use OmniGraph-based randomization instead of functional API (default: functional)",
+)
+parser.add_argument(
+    "--no-wait-for-render",
+    action="store_true",
+    help="Do not wait for render to complete before capturing frame (default: wait)",
+)
 
 args, unknown = parser.parse_known_args()
 
@@ -73,14 +86,16 @@ asset_count = args.asset_count
 annotators_str = ", ".join(args.annotators)
 delete_data_when_done = args.delete_data_when_done
 print_results = args.print_results
-headless = args.non_headless
+headless = not args.non_headless
 n_gpu = args.num_gpus
 skip_write = args.skip_write
 env_url = args.env_url
 gpu_frametime = args.gpu_frametime
 viewport_updates = args.viewport_updates
+rt_subframes = args.rt_subframes
 app_frametime = args.app_frametime
-
+with_functional_randomization = not args.with_og_randomization
+wait_for_render = not args.no_wait_for_render
 if "all" in args.annotators:
     annotators_kwargs = {annotator: True for annotator in VALID_ANNOTATORS}
 else:
@@ -90,6 +105,7 @@ print(f"[SDG Benchmark] Running SDG Benchmark with:")
 print(f"\tnum_frames: {num_frames}")
 print(f"\tnum_cameras: {num_cameras}")
 print(f"\tresolution: {width}x{height}")
+print(f"\trt_subframes: {rt_subframes}")
 print(f"\tasset_count: {asset_count}")
 print(f"\tannotators: {annotators_kwargs.keys()}")
 print(f"\tdisable_viewport_rendering: {viewport_updates}")
@@ -98,6 +114,8 @@ print(f"\tprint_results: {print_results}")
 print(f"\theadless: {headless}")
 print(f"\tskip_write: {skip_write}")
 print(f"\tenv_url: {env_url}")
+print(f"\twith_functional_randomization: {with_functional_randomization}")
+print(f"\twait_for_render: {wait_for_render}")
 
 import os
 import shutil
@@ -111,14 +129,11 @@ simulation_app = SimulationApp(
 
 REPLICATOR_GLOBAL_SEED = 11
 
-from typing import List
-
 import carb
 import omni.kit.app
 import omni.replicator.core as rep
 import omni.usd
 from isaacsim.core.utils.extensions import enable_extension
-from isaacsim.storage.native import get_assets_root_path
 from omni.replicator.core import Writer
 
 enable_extension("isaacsim.benchmark.services")
@@ -147,10 +162,6 @@ class FPSWriter(Writer):
         time_per_frame = time.time() - self._last_frame_time
         self._times_per_frame.append(time_per_frame)
         self._last_frame_time = time.time()
-
-    def on_final_frame(self):
-        if self._times_per_frame:
-            time_per_frame = sum(self._times_per_frame) / len(self._times_per_frame)
 
 
 # ============================================================================
@@ -235,6 +246,8 @@ benchmark = BaseIsaacBenchmark(
             {"name": "annotators", "data": annotators_str},
             {"name": "num_gpus", "data": carb.settings.get_settings().get("/renderer/multiGpu/currentGpuCount")},
             {"name": "skip_write", "data": skip_write},
+            {"name": "with_functional_randomization", "data": with_functional_randomization},
+            {"name": "wait_for_render", "data": wait_for_render},
         ]
     },
     backend_type=args.backend_type,
@@ -244,25 +257,34 @@ benchmark = BaseIsaacBenchmark(
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
 if env_url is not None:
+    from isaacsim.storage.native import get_assets_root_path
+
     env_path = env_url if env_url.startswith("omniverse://") else get_assets_root_path() + env_url
     print(f"[SDG Benchmark] Loading stage from path: {env_path}")
     omni.usd.get_context().open_stage(env_path)
 else:
     print(f"[SDG Benchmark] Loading a new empty stage..")
     omni.usd.get_context().new_stage()
+    rep.functional.create.xform(name="World")
+    rep.functional.create.distant_light(intensity=2000, parent="/World", name="DistantLight")
+    rep.functional.create.dome_light(intensity=400, parent="/World", name="DomeLight")
 
 rep.set_global_seed(REPLICATOR_GLOBAL_SEED)
-rep.create.light(rotation=(315, 0, 0), intensity=2000, light_type="distant")
-rep.create.light(intensity=400, light_type="dome")
-cubes = rep.create.cube(count=asset_count, semantics=[("class", "cube")])
-cones = rep.create.cone(count=asset_count, semantics=[("class", "cone")])
-cylinders = rep.create.cylinder(count=asset_count, semantics=[("class", "cylinder")])
-spheres = rep.create.sphere(count=asset_count, semantics=[("class", "sphere")])
-tori = rep.create.torus(count=asset_count, semantics=[("class", "torus")])
+rng = rep.rng.ReplicatorRNG(seed=REPLICATOR_GLOBAL_SEED)
 
-cameras = []
-for i in range(num_cameras):
-    cameras.append(rep.create.camera(name=f"cam_{i}"))
+# Create the assets
+cubes = rep.functional.create_batch.cube(count=asset_count, parent="/World", name="Cube", semantics={"class": "cube"})
+cones = rep.functional.create_batch.cone(count=asset_count, parent="/World", name="Cone", semantics={"class": "cone"})
+cylinders = rep.functional.create_batch.cylinder(
+    count=asset_count, parent="/World", name="Cylinder", semantics={"class": "cylinder"}
+)
+spheres = rep.functional.create_batch.sphere(
+    count=asset_count, parent="/World", name="Sphere", semantics={"class": "sphere"}
+)
+tori = rep.functional.create_batch.torus(count=asset_count, parent="/World", name="Torus", semantics={"class": "torus"})
+assets = cubes + cones + cylinders + spheres + tori
+
+cameras = rep.functional.create_batch.camera(count=num_cameras, parent="/World", name="Camera")
 render_products = []
 for i, cam in enumerate(cameras):
     render_products.append(rep.create.render_product(cam, (width, height), name=f"rp_{i}"))
@@ -295,25 +317,38 @@ if not skip_write:
     writer.initialize(output_dir=output_directory, **annotators_kwargs)
     writer.attach(render_products)
 
-assets = rep.create.group([cubes, cones, cylinders, spheres, tori])
-cameras = rep.create.group(cameras)
+# Run one randomization and run a few frames to ensure everything is loaded
+if with_functional_randomization:
+    random_poses = rng.generator.uniform((-3, -3, -3), (3, 3, 3), size=(len(assets), 3))
+    random_rotations = rng.generator.uniform((0, 0, 0), (360, 360, 360), size=(len(assets), 3))
+    random_scales = rng.generator.uniform(0.1, 1, size=len(assets))
+    rep.functional.modify.pose(
+        prims=assets, position_value=random_poses, rotation_value=random_rotations, scale_value=random_scales
+    )
+    rep.functional.randomizer.display_color(assets, rng=rng)
+    random_camera_poses = rng.generator.uniform((5, 5, 5), (10, 10, 10), size=(len(cameras), 3))
+    rep.functional.modify.pose(
+        prims=cameras, position_value=random_camera_poses, look_at_value=(0, 0, 0), look_at_up_axis=(0, 0, 1)
+    )
+else:
+    # Run omnigraph-based randomization, setup the graph and run a preview to load the assets and materials
+    with rep.trigger.on_frame():
+        assets_group = rep.create.group([prim.GetPath() for prim in cubes + cones + cylinders + spheres + tori])
+        cameras_group = rep.create.group([cam.GetPath() for cam in cameras])
+        with assets_group:
+            rep.modify.pose(
+                position=rep.distribution.uniform((-3, -3, -3), (3, 3, 3)),
+                rotation=rep.distribution.uniform((0, 0, 0), (360, 360, 360)),
+                scale=rep.distribution.uniform(0.1, 1),
+            )
+            rep.randomizer.color(rep.distribution.uniform((0, 0, 0), (1, 1, 1)))
+        with cameras_group:
+            rep.modify.pose(
+                position=rep.distribution.uniform((5, 5, 5), (10, 10, 10)),
+                look_at=(0, 0, 0),
+            )
+    rep.orchestrator.preview()
 
-with rep.trigger.on_frame():
-    with assets:
-        rep.modify.pose(
-            position=rep.distribution.uniform((-3, -3, -3), (3, 3, 3)),
-            rotation=rep.distribution.uniform((0, 0, 0), (360, 360, 360)),
-            scale=rep.distribution.uniform(0.1, 1),
-        )
-        rep.randomizer.color(rep.distribution.uniform((0, 0, 0), (1, 1, 1)))
-    with cameras:
-        rep.modify.pose(
-            position=rep.distribution.uniform((5, 5, 5), (10, 10, 10)),
-            look_at=(0, 0, 0),
-        )
-
-rep.orchestrator.preview()
-# Run for a few frames to ensure everything is loaded
 for _ in range(10):
     omni.kit.app.get_app().update()
 benchmark.store_measurements()
@@ -321,13 +356,33 @@ benchmark.store_measurements()
 print("[SDG Benchmark] Starting SDG..")
 benchmark.set_phase("benchmark")
 start_time = time.time()
-rep.orchestrator.run_until_complete(num_frames=num_frames)
+for i in range(num_frames):
+    # Functional-api-based randomization
+    if with_functional_randomization:
+        random_poses = rng.generator.uniform((-3, -3, -3), (3, 3, 3), size=(len(assets), 3))
+        random_rotations = rng.generator.uniform((0, 0, 0), (360, 360, 360), size=(len(assets), 3))
+        random_scales = rng.generator.uniform(0.1, 1, size=len(assets))
+        rep.functional.modify.pose(
+            prims=assets, position_value=random_poses, rotation_value=random_rotations, scale_value=random_scales
+        )
+        rep.functional.randomizer.display_color(assets, rng=rng)
+        random_camera_poses = rng.generator.uniform((5, 5, 5), (10, 10, 10), size=(len(cameras), 3))
+        rep.functional.modify.pose(
+            prims=cameras, position_value=random_camera_poses, look_at_value=(0, 0, 0), look_at_up_axis=(0, 0, 1)
+        )
+    # Capture the frame
+    # NOTE: in omnigraph-based randomization this will also trigger the randomization beforehand
+    rep.orchestrator.step(rt_subframes=rt_subframes, wait_for_render=wait_for_render)
 end_time = time.time()
 benchmark.store_measurements()
 omni.kit.app.get_app().update()
 
 duration = end_time - start_time
 avg_frametime = duration / num_frames
+if not skip_write:
+    print("[SDG Benchmark] Waiting for the data to be written to disk..")
+    rep.orchestrator.wait_until_complete()
+    print("[SDG Benchmark] Data written to disk..")
 if delete_data_when_done and not skip_write:
     print(f"[SDG Benchmark] Deleting data: {output_directory}")
     shutil.rmtree(output_directory)
