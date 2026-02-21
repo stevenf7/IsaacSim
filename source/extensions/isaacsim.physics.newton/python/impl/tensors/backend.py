@@ -404,15 +404,15 @@ class NewtonSimView:
                 )
 
             for sensor_local_idx, sensor_path in enumerate(matched_sensor_paths):
-                if sensor_path not in self.model.body_key:
+                if sensor_path not in self.model.body_label:
                     carb.log_warn(f"Sensor path '{sensor_path}' not in simulator")
                     continue
 
-                body_idx = self.model.body_key.index(sensor_path)
+                body_idx = self.model.body_label.index(sensor_path)
                 all_sensor_paths.append(sensor_path)
                 all_sensor_indices.append(body_idx)
                 all_sensor_names.append(
-                    self.model.body_key[body_idx] if body_idx < len(self.model.body_key) else f"body_{body_idx}"
+                    self.model.body_label[body_idx] if body_idx < len(self.model.body_label) else f"body_{body_idx}"
                 )
 
                 sensor_filter_paths = []
@@ -423,10 +423,10 @@ class NewtonSimView:
                     filter_path = filter_paths_per_pattern[filter_pattern_idx][sensor_local_idx]
                     sensor_filter_paths.append(filter_path)
 
-                    if filter_path and filter_path in self.model.body_key:
-                        filter_body_idx = self.model.body_key.index(filter_path)
+                    if filter_path and filter_path in self.model.body_label:
+                        filter_body_idx = self.model.body_label.index(filter_path)
                         sensor_filter_indices.append(filter_body_idx)
-                        sensor_filter_names.append(self.model.body_key[filter_body_idx])
+                        sensor_filter_names.append(self.model.body_label[filter_body_idx])
                     else:
                         sensor_filter_indices.append(-1)
                         sensor_filter_names.append("")
@@ -494,10 +494,10 @@ class NewtonSimView:
 
         for body_path in prim_paths:
             try:
-                body_idx = self.model.body_key.index(body_path)
+                body_idx = self.model.body_label.index(body_path)
                 body_indices.append(body_idx)
                 body_paths.append(body_path)
-                body_names.append(self.model.body_key[body_idx])
+                body_names.append(self.model.body_label[body_idx])
             except ValueError:
                 carb.log_warn(f"Rigid body path '{body_path}' not found in Newton model")
 
@@ -542,7 +542,7 @@ class NewtonSimView:
         joint_axis_start = joint_qd_start
         joint_dof_dim = self.model.joint_dof_dim.numpy()
         joint_axis = self.model.joint_axis.numpy().tolist()
-        joint_key = self.model.joint_key
+        joint_label = self.model.joint_label
         joint_types = self.model.joint_type.numpy().tolist()
         view_indices = []
         root_indices = []
@@ -554,7 +554,7 @@ class NewtonSimView:
         max_dofs = 0
 
         for arti_idx in range(self.model.articulation_count):
-            arti_path = self.model.articulation_key[arti_idx]
+            arti_path = self.model.articulation_label[arti_idx]
             joint_start = arti_starts[arti_idx]
             root_body_idx = self.model.joint_child.numpy()[joint_start]
 
@@ -562,7 +562,7 @@ class NewtonSimView:
             if arti_path in matched_arti_paths:
                 view_indices.append(arti_idx)
                 root_indices.append(root_body_idx)
-                body_names.append(self.model.body_key[root_body_idx])
+                body_names.append(self.model.body_label[root_body_idx])
                 joint_count = arti_starts[arti_idx + 1] - arti_starts[arti_idx]
                 start_joint_index = arti_starts[arti_idx]
                 joint_index = 0
@@ -610,7 +610,7 @@ class NewtonSimView:
                         joint_axis_count = int(
                             joint_dof_dim[global_joint_index][0] + joint_dof_dim[global_joint_index][1]
                         )
-                        joint_path = joint_key[global_joint_index]
+                        joint_path = joint_label[global_joint_index]
                         for c in range(joint_axis_count):
                             dof_axis_indices.append(joint_axis_s + c)
                             if joint_type == newton.JointType.BALL or joint_type == newton.JointType.D6:
@@ -650,10 +650,10 @@ class NewtonSimView:
                 for idx in articulation_link_indices:
                     shape_ids = self.model.body_shapes[idx]
                     l_shapes.extend(shape_ids)
-                l_paths = [self.model.body_key[idx] for idx in articulation_link_indices]
+                l_paths = [self.model.body_label[idx] for idx in articulation_link_indices]
                 l_names = [path.rsplit("/", 1)[-1] for path in l_paths]
                 l_indices = dict([(name, idx) for name, idx in zip(l_names, articulation_link_indices)])
-                j_paths = [self.model.joint_key[j] for j in articulation_g_joint_indices]
+                j_paths = [self.model.joint_label[j] for j in articulation_g_joint_indices]
                 j_names = [path.rsplit("/", 1)[-1] for path in j_paths]
 
                 j_indices = dict([(name, idx) for name, idx in zip(j_names, articulation_joint_indices)])

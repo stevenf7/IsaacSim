@@ -329,6 +329,7 @@ class NewtonStage:
             use_warp_cloner = True
 
         self.builder = newton.ModelBuilder()
+        self.builder.validate_inertia_detailed = True
 
         # Set default contact and joint properties from config
         self.builder.default_shape_cfg.ke = self.cfg.contact_ke
@@ -346,6 +347,12 @@ class NewtonStage:
             SchemaResolverNewton,
             SchemaResolverPhysx,
         )
+
+        solver_type = self.cfg.solver_cfg.solver_type
+        if solver_type == "mujoco":
+            newton.solvers.SolverMuJoCo.register_custom_attributes(self.builder)
+        elif solver_type == "xpbd":
+            newton.solvers.SolverXPBD.register_custom_attributes(self.builder)
 
         # Parse USD using Newton API
         self.parsing_results = self.builder.add_usd(
@@ -399,7 +406,7 @@ class NewtonStage:
         self.qd_ik = self.model.joint_qd
         self.joint_torques = wp.zeros(self.model.joint_dof_count, dtype=wp.float32)
 
-        for i, path in enumerate(self.model.body_key):
+        for i, path in enumerate(self.model.body_label):
             prim = usdrt_stage.GetPrimAtPath(usdrt.Sdf.Path(path))
             if not prim:
                 continue

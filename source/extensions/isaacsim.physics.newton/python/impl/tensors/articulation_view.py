@@ -209,7 +209,7 @@ class NewtonArticulationView:
         # Get articulation paths from the model
         prim_paths = []
         for arti_idx in self._backend.articulation_indices.numpy():
-            prim_paths.append(self._model.articulation_key[arti_idx])
+            prim_paths.append(self._model.articulation_label[arti_idx])
         return prim_paths
 
     @property

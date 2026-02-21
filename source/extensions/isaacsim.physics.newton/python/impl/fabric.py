@@ -85,7 +85,7 @@ class FabricManager:
             return
 
         # Diagnostic: Check if selection count matches expected body count
-        expected_bodies = len(model.body_key) if hasattr(model, "body_key") else model.body_count
+        expected_bodies = len(model.body_label) if hasattr(model, "body_label") else model.body_count
         if selection.GetCount() != expected_bodies and not self._first_update_done:
             carb.log_warn(
                 f"[isaacsim.physics.newton] Fabric selection mismatch: selected {selection.GetCount()} prims, "
