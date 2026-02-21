@@ -1,6 +1,8 @@
 # Changelog
 
 ## [1.6.2] - 2026-02-18
+### Fixed
+- Fix `eFloat` and `eUnknown` cases in `writeNodeAttributeFromMessage` incorrectly hardcoding `"outputs:"` prefix instead of using `inputOutput(isOutput)` and `prependStr`
 ### Changed
 - Move some test assertions into node subscription callbacks
 

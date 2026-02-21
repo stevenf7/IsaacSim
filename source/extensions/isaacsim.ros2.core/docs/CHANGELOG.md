@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.1] - 2026-02-20
+### Changed
+- Fixed ROS 2 service request polling so `takeRequest()` can receive a pending request on its first poll call.
+- Added a regression doctest covering first-poll request/response behavior for `Ros2Service`.
+
 ## [1.3.0] - 2026-02-01
 ### Changed
 - Removed isaacsim.sensors.experimental.physics dependency
