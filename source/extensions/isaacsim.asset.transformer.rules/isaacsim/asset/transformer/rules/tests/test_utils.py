@@ -111,12 +111,12 @@ class TestPureStringUtilities(omni.kit.test.AsyncTestCase):
         # matches_prim_filter
         filter_cases = [
             # (prim_name, includes, excludes, expected)
-            ("Body", ["Body*"], None, True),
-            ("Arm", ["Body*"], None, False),
-            ("BodyIgnored", ["Body*"], ["*Ignored"], False),
-            ("anything", ["*"], None, True),
+            ("Body", ["Body.*"], None, True),
+            ("Arm", ["Body.*"], None, False),
+            ("BodyIgnored", ["Body.*"], [".*Ignored"], False),
+            ("anything", [".*"], None, True),
             ("Body", [], None, False),
-            ("Body", ["Body*"], [], True),
+            ("Body", ["Body.*"], [], True),
         ]
         for prim_name, includes, excludes, expected in filter_cases:
             result = utils.matches_prim_filter(prim_name, includes, excludes)

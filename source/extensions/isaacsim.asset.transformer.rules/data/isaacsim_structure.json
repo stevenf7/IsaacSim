@@ -58,8 +58,8 @@
       "params": {
         "stage_name": "robot.usda",
         "prim_types": [
-          "Isaac*",
-          "isaac*"
+          "Isaac.*",
+          "isaac.*"
         ]
       },
       "enabled": true
@@ -93,8 +93,8 @@
       "params": {
         "stage_name": "physx.usda",
         "schemas": [
-          "Physx*",
-          "physx*"
+          "Physx.*",
+          "physx.*"
         ]
       },
       "enabled": true
@@ -106,11 +106,11 @@
       "params": {
         "stage_name": "physx.usda",
         "prim_types": [
-          "Physx*",
-          "physx*"
+          "Physx.*",
+          "physx.*"
         ]
       },
-      "enabled": false
+      "enabled": true
     },
     {
       "name": "Route PhysX Properties",
@@ -119,11 +119,11 @@
       "params": {
         "stage_name": "physx.usda",
         "properties": [
-          "Physx*",
-          "physx*"
+          "Physx.*",
+          "physx.*"
         ]
       },
-      "enabled": false
+      "enabled": true
     },
     {
       "name": "Route MuJoCo Schemas",
@@ -132,8 +132,8 @@
       "params": {
         "stage_name": "mujoco.usda",
         "schemas": [
-          "Mjc*",
-          "mjc*"
+          "Mjc.*",
+          "mjc.*"
         ]
       },
       "enabled": true
@@ -145,8 +145,8 @@
       "params": {
         "stage_name": "mujoco.usda",
         "prim_types": [
-          "Mjc*",
-          "mjc*"
+          "Mjc.*",
+          "mjc.*"
         ]
       },
       "enabled": true
@@ -158,8 +158,8 @@
       "params": {
         "stage_name": "mujoco.usda",
         "properties": [
-          "Mjc*",
-          "mjc*"
+          "Mjc.*",
+          "mjc.*"
         ]
       },
       "enabled": true
@@ -171,14 +171,14 @@
       "params": {
         "stage_name": "physics.usda",
         "schemas": [
-          "Physics*",
-          "Newton*"
+          "Physics.*",
+          "Newton.*"
         ],
         "ignore_schemas": [
           "PhysicsCollisionAPI"
         ],
         "prim_names": [
-          "*"
+          ".*"
         ],
         "ignore_prim_names": []
       },
@@ -191,8 +191,8 @@
       "params": {
         "stage_name": "physics.usda",
         "prim_types": [
-          "Physics*",
-          "Newton*"
+          "Physics.*",
+          "Newton.*"
         ]
       },
       "enabled": true
@@ -257,8 +257,27 @@
         }
       },
       "enabled": true
+    },
+    {
+      "name": "Delete Physics Drive and Joint State APIs",
+      "type": "isaacsim.asset.transformer.rules.core.remove_schema.RemoveSchemaRule",
+      "destination": "payloads/Physics",
+      "params": {
+        "stage_name": "mujoco.usda",
+        "schema_patterns": [
+          "PhysicsDriveAPI.*",
+          "PhysicsJointStateAPI.*"
+        ],
+        "prim_path_patterns": [
+          ".*"
+        ],
+        "clear_properties": false
+      },
+      "enabled": true
     }
   ],
+  "interface_asset_name": null,
+  "output_package_root": null,
   "flatten_source": false,
   "base_name": "base.usd"
 }

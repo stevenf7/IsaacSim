@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import fnmatch
-
 from isaacsim.asset.transformer import RuleConfigurationParam, RuleInterface
 from pxr import Sdf, Usd
+
+from .. import utils
 
 _LIST_OP_PREPEND: str = "prepend"
 _LIST_OP_APPEND: str = "append"
@@ -35,16 +35,17 @@ def _normalize_list_op_type(list_op_type: str | None) -> str:
 
 
 def _matches_any(name: str, patterns: list[str]) -> bool:
-    """Check if a name matches any fnmatch patterns.
+    """Check if a name fully matches any regex pattern.
 
     Args:
         name: Name to check.
-        patterns: List of fnmatch patterns.
+        patterns: List of regex pattern strings.
 
     Returns:
         True if name matches any pattern, False otherwise.
     """
-    return any(fnmatch.fnmatch(name, pattern) for pattern in patterns)
+    compiled = utils.compile_patterns(patterns)
+    return utils.matches_any_pattern(name, compiled)
 
 
 def _convert_list_op(
@@ -187,14 +188,14 @@ class MakeListsNonExplicitRule(RuleInterface):
                 name="metadata_names",
                 display_name="Metadata Names",
                 param_type=list,
-                description="List of prim metadata names to convert (supports wildcards like 'api*')",
+                description="List of regex patterns for prim metadata names to convert (e.g., 'api.*')",
                 default_value=None,
             ),
             RuleConfigurationParam(
                 name="property_names",
                 display_name="Property Names",
                 param_type=list,
-                description="List of prim property names to convert (supports wildcards like 'material:*')",
+                description="List of regex patterns for prim property names to convert (e.g., 'material:.*')",
                 default_value=None,
             ),
             RuleConfigurationParam(

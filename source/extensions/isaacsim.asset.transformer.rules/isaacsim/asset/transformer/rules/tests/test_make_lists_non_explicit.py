@@ -13,29 +13,29 @@
 
 """Tests for MakeListsNonExplicitRule."""
 
-import fnmatch
 import os
 import shutil
 import tempfile
 
 import omni.kit.test
 from isaacsim.asset.transformer.rules.isaac_sim.make_lists_non_explicit import MakeListsNonExplicitRule
+from isaacsim.asset.transformer.rules.utils import compile_patterns, matches_any_pattern
 from pxr import Sdf, Usd
 
 from .common import _TEST_ADVANCED_USD
 
 
 def _matches_any(name: str, patterns: list[str]) -> bool:
-    """Check if a name matches any fnmatch patterns.
+    """Check if a name fully matches any regex pattern.
 
     Args:
         name: Name to check.
-        patterns: List of fnmatch patterns.
+        patterns: List of regex pattern strings.
 
     Returns:
         True if name matches any pattern, False otherwise.
     """
-    return any(fnmatch.fnmatch(name, pattern) for pattern in patterns)
+    return matches_any_pattern(name, compile_patterns(patterns))
 
 
 class TestMakeListsNonExplicitRule(omni.kit.test.AsyncTestCase):

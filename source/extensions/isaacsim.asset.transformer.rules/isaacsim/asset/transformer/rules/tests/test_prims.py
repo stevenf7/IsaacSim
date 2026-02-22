@@ -244,7 +244,7 @@ class TestPrimRoutingRule(omni.kit.test.AsyncTestCase):
             destination_path="payloads",
             args={
                 "params": {
-                    "prim_types": ["*Joint"],
+                    "prim_types": [".*Joint"],
                     "stage_name": "joints.usda",
                 }
             },
@@ -285,8 +285,8 @@ class TestPrimRoutingRule(omni.kit.test.AsyncTestCase):
             destination_path="payloads",
             args={
                 "params": {
-                    "prim_types": ["*Joint"],
-                    "ignore_prim_types": ["*Revolute*Joint"],
+                    "prim_types": [".*Joint"],
+                    "ignore_prim_types": [".*Revolute.*Joint"],
                     "stage_name": "scopes.usda",
                 }
             },

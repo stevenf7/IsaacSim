@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import fnmatch
 import os
+import re
 
 from isaacsim.asset.transformer import RuleConfigurationParam, RuleInterface
 from pxr import Sdf, Usd
@@ -173,10 +173,10 @@ def move_applied_api_schemas(src_spec: Sdf.PrimSpec, dst_spec: Sdf.PrimSpec, sch
 
 def move_applied_apis_and_props(
     src_prim: Usd.Prim,
-    api_schemas: list[str],
+    api_schemas: list[re.Pattern[str]],
     src_layer: Sdf.Layer,
     dst_layer: Sdf.Layer,
-    ignore_schemas: list[str] | None = None,
+    ignore_schemas: list[re.Pattern[str]] | None = None,
 ) -> None:
     """Move applied API schemas and their properties from source prim to destination layer.
 
@@ -185,16 +185,17 @@ def move_applied_apis_and_props(
 
     Args:
         src_prim: Source prim from the composed stage.
-        api_schemas: List of schema patterns to match (supports wildcards).
+        api_schemas: Compiled regex patterns for schemas to match.
         src_layer: Source layer containing the schema opinions.
         dst_layer: Destination layer to receive the schemas.
-        ignore_schemas: List of schema patterns to ignore (overrides positive matches).
+        ignore_schemas: Compiled regex patterns for schemas to ignore (overrides positive matches).
 
     Example:
 
     .. code-block:: python
 
-        move_applied_apis_and_props(prim, ["Physics*"], src_layer, dst_layer)
+        patterns = utils.compile_patterns(["Physics.*"])
+        move_applied_apis_and_props(prim, patterns, src_layer, dst_layer)
     """
     prim_path = src_prim.GetPath()
     applied = src_prim.GetAppliedSchemas()
@@ -204,9 +205,8 @@ def move_applied_apis_and_props(
     matched = []
     for t in applied:
         schema_str = str(t)
-        if any(fnmatch.fnmatch(schema_str, s) for s in api_schemas):
-            # Check if schema matches any ignore pattern (overrides positive match)
-            if not any(fnmatch.fnmatch(schema_str, s) for s in ignore_schemas):
+        if utils.matches_any_pattern(schema_str, api_schemas):
+            if not utils.matches_any_pattern(schema_str, ignore_schemas):
                 matched.append(t)
     if not matched:
         return
@@ -284,14 +284,14 @@ class SchemaRoutingRule(RuleInterface):
                 name="schemas",
                 display_name="Schemas",
                 param_type=list,
-                description="List of applied API schema patterns to route (supports wildcards like 'Physics*')",
+                description="List of regex patterns for applied API schemas to route (e.g., 'Physics.*')",
                 default_value=None,
             ),
             RuleConfigurationParam(
                 name="ignore_schemas",
                 display_name="Ignore Schemas",
                 param_type=list,
-                description="List of schema patterns to ignore, overrides schemas matches (supports wildcards)",
+                description="List of regex patterns for schemas to ignore, overrides schemas matches",
                 default_value=None,
             ),
             utils.make_stage_name_param("schemas.usda", "Name of the output USD file for the schemas"),
@@ -324,7 +324,7 @@ class SchemaRoutingRule(RuleInterface):
 
         destination_path = self.destination_path
         stage_name = params.get("stage_name") or "schemas.usda"
-        prim_names = params.get("prim_names") or ["*"]
+        prim_names = params.get("prim_names") or [".*"]
         ignore_prim_names = params.get("ignore_prim_names") or []
         destination_label = os.path.join(destination_path, stage_name)
 
@@ -340,6 +340,13 @@ class SchemaRoutingRule(RuleInterface):
         # Resolve output path relative to package root
         schemas_output_path = os.path.join(self.package_root, destination_label)
 
+        # Compile regex patterns
+        compiled_schemas = utils.compile_patterns(schemas, self.log_operation)
+        compiled_ignore = utils.compile_patterns(ignore_schemas, self.log_operation)
+        if not compiled_schemas:
+            self.log_operation("No valid schema patterns after compilation, skipping")
+            return None
+
         # First pass: collect all matching prims and schemas to determine if output file is needed
         root_prim = self.source_stage.GetPseudoRoot()
         matching_items = []  # List of (prim, matched_schemas)
@@ -353,9 +360,8 @@ class SchemaRoutingRule(RuleInterface):
             matched = []
             for t in applied:
                 schema_str = str(t)
-                if any(fnmatch.fnmatch(schema_str, s) for s in schemas):
-                    # Check if schema matches any ignore pattern (overrides positive match)
-                    if not any(fnmatch.fnmatch(schema_str, s) for s in ignore_schemas):
+                if utils.matches_any_pattern(schema_str, compiled_schemas):
+                    if not utils.matches_any_pattern(schema_str, compiled_ignore):
                         matched.append(t)
             if matched:
                 matching_items.append((prim, matched))
@@ -376,7 +382,9 @@ class SchemaRoutingRule(RuleInterface):
         schemas_moved = 0
 
         for prim, matched in matching_items:
-            move_applied_apis_and_props(prim, schemas, self.source_stage.GetRootLayer(), schemas_layer, ignore_schemas)
+            move_applied_apis_and_props(
+                prim, compiled_schemas, self.source_stage.GetRootLayer(), schemas_layer, compiled_ignore
+            )
             prims_processed += 1
             schemas_moved += len(matched)
             self.log_operation(

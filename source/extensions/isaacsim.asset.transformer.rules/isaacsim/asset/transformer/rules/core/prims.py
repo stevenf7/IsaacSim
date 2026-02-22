@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import fnmatch
 import os
 
 from isaacsim.asset.transformer import RuleConfigurationParam, RuleInterface
@@ -122,14 +121,14 @@ class PrimRoutingRule(RuleInterface):
                 name="prim_types",
                 display_name="Prim Types",
                 param_type=list,
-                description="List of prim type patterns to route (supports wildcards like 'Physics*')",
+                description="List of regex patterns for prim types to route (e.g., 'Physics.*')",
                 default_value=None,
             ),
             RuleConfigurationParam(
                 name="ignore_prim_types",
                 display_name="Ignore Prim Types",
                 param_type=list,
-                description="List of prim type patterns to ignore, overrides prim_types matches (supports wildcards)",
+                description="List of regex patterns for prim types to ignore, overrides prim_types matches",
                 default_value=None,
             ),
             utils.make_stage_name_param("prims.usda", "Name of the output USD file for the prims"),
@@ -163,7 +162,7 @@ class PrimRoutingRule(RuleInterface):
         destination_path = self.destination_path
         stage_name = params.get("stage_name") or "prims.usda"
         scope = params.get("scope") or "/"
-        prim_names = params.get("prim_names") or ["*"]
+        prim_names = params.get("prim_names") or [".*"]
         ignore_prim_names = params.get("ignore_prim_names") or []
         ignore_prim_types = params.get("ignore_prim_types") or []
         destination_label = os.path.join(destination_path, stage_name)
@@ -187,6 +186,13 @@ class PrimRoutingRule(RuleInterface):
             self.log_operation(f"Invalid scope path: {scope}")
             return None
 
+        # Compile regex patterns
+        compiled_types = utils.compile_patterns(prim_types, self.log_operation)
+        compiled_ignore_types = utils.compile_patterns(ignore_prim_types, self.log_operation)
+        if not compiled_types:
+            self.log_operation("No valid prim type patterns after compilation, skipping")
+            return None
+
         # Collect all matching prims first (to avoid iterator invalidation when removing)
         matching_prims = []
         for prim in Usd.PrimRange(scope_prim):
@@ -199,13 +205,11 @@ class PrimRoutingRule(RuleInterface):
             if not prim_type:
                 continue
 
-            # Check type patterns (use fnmatch directly for type matching)
-            matched = any(fnmatch.fnmatch(str(prim_type), pattern) for pattern in prim_types)
+            matched = utils.matches_any_pattern(str(prim_type), compiled_types)
             if not matched:
                 continue
 
-            # Check if prim type matches any ignore pattern (overrides positive match)
-            ignored = any(fnmatch.fnmatch(str(prim_type), pattern) for pattern in ignore_prim_types)
+            ignored = utils.matches_any_pattern(str(prim_type), compiled_ignore_types)
             if not ignored:
                 matching_prims.append((prim.GetPath(), prim_type))
 

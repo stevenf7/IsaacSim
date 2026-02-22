@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.0] - 2026-02-21
+### Changed
+- Add `find_widget_with_retry` to `MenuUITestCase` to find a widget with retry
+
 ## [0.8.2] - 2026-02-16
 ### Changed
 - Replace `omni.kit.ui_test.menu_click` with custom step-by-step menu navigation that polls for each submenu to become findable and visible before proceeding, avoiding the `carb.log_error` and `AttributeError` that `menu_click` produces when submenus are slow to appear

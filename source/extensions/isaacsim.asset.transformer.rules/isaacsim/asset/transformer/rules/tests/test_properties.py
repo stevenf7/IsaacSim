@@ -188,7 +188,7 @@ class TestPropertyRoutingRule(omni.kit.test.AsyncTestCase):
             destination_path="payloads",
             args={
                 "params": {
-                    "ignore_prim_names": ["*link*"],
+                    "ignore_prim_names": [".*link.*"],
                     "properties": ["xformOp:.*"],
                     "stage_name": "xform_props.usda",
                 }

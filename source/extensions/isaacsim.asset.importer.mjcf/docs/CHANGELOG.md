@@ -1,4 +1,11 @@
 # Changelog
+
+## [3.0.0] - 2026-01-01
+### Changed
+- USD exchange backend
+- New import format
+- New UI design and interface
+
 ## [2.5.15] - 2025-12-07
 ### Changed
 - Update description

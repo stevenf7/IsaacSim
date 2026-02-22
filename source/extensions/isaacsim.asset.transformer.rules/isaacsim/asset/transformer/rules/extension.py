@@ -6,6 +6,7 @@ from isaacsim.asset.transformer import RuleRegistry
 
 from .core.prims import PrimRoutingRule
 from .core.properties import PropertyRoutingRule
+from .core.remove_schema import RemoveSchemaRule
 from .core.schemas import SchemaRoutingRule
 from .isaac_sim.make_lists_non_explicit import MakeListsNonExplicitRule
 from .isaac_sim.robot_schema import RobotSchemaRule
@@ -32,6 +33,7 @@ class Extension(omni.ext.IExt):
         registry.register(GeometriesRoutingRule)
         registry.register(MaterialsRoutingRule)
         registry.register(MakeListsNonExplicitRule)
+        registry.register(RemoveSchemaRule)
         registry.register(PrimRoutingRule)
         registry.register(SchemaRoutingRule)
         registry.register(PropertyRoutingRule)

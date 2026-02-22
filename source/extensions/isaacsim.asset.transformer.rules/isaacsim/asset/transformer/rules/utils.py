@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import fnmatch
 import os
+import re
 import shutil
 from collections.abc import Callable
 
@@ -144,7 +144,7 @@ def make_stage_name_param(
 
 
 def make_prim_names_param(
-    description: str = "List of patterns to match prim names (supports wildcards like 'Body*')",
+    description: str = "List of regex patterns to match prim names (e.g. 'Body.*')",
 ) -> RuleConfigurationParam:
     """Create a prim_names configuration parameter.
 
@@ -165,12 +165,12 @@ def make_prim_names_param(
         display_name="Prim Names",
         param_type=list,
         description=description,
-        default_value=["*"],
+        default_value=[".*"],
     )
 
 
 def make_ignore_prim_names_param(
-    description: str = "List of patterns to match prim names to ignore (supports wildcards)",
+    description: str = "List of regex patterns to match prim names to ignore",
 ) -> RuleConfigurationParam:
     """Create an ignore_prim_names configuration parameter.
 
@@ -310,6 +310,64 @@ def get_default_prim_path(stage: Usd.Stage, fallback: str = "/World") -> str:
     return fallback
 
 
+def compile_patterns(
+    patterns: list[str] | None,
+    logger: Callable[[str], None] | None = None,
+) -> list[re.Pattern[str]]:
+    """Compile a list of regex pattern strings into compiled pattern objects.
+
+    Invalid patterns are silently skipped (with an optional log callback).
+
+    Args:
+        patterns: List of regex pattern strings. ``None`` or empty list returns ``[]``.
+        logger: Optional callback invoked with a message when a pattern is invalid.
+
+    Returns:
+        List of compiled regex patterns.
+
+    Example:
+
+    .. code-block:: python
+
+        compiled = compile_patterns(["Physics.*", "Newton.*"])
+    """
+    if not patterns:
+        return []
+    compiled: list[re.Pattern[str]] = []
+    for pattern in patterns:
+        if not pattern:
+            continue
+        try:
+            compiled.append(re.compile(pattern))
+        except re.error as exc:
+            if logger:
+                logger(f"Invalid regex pattern '{pattern}': {exc}, skipping")
+    return compiled
+
+
+def matches_any_pattern(value: str, compiled_patterns: list[re.Pattern[str]]) -> bool:
+    """Check if a string fully matches any of the compiled regex patterns.
+
+    Uses ``re.fullmatch`` so the entire string must match, consistent with
+    how glob/fnmatch patterns were historically interpreted.
+
+    Args:
+        value: The string to test.
+        compiled_patterns: Compiled regex patterns from :func:`compile_patterns`.
+
+    Returns:
+        True if *value* fully matches at least one pattern.
+
+    Example:
+
+    .. code-block:: python
+
+        patterns = compile_patterns(["Physics.*"])
+        matches_any_pattern("PhysicsRigidBodyAPI", patterns)  # True
+    """
+    return any(p.fullmatch(value) for p in compiled_patterns)
+
+
 def matches_prim_filter(
     prim_name: str,
     include_patterns: list[str],
@@ -319,8 +377,8 @@ def matches_prim_filter(
 
     Args:
         prim_name: The prim name to check.
-        include_patterns: List of fnmatch patterns that must match (at least one).
-        exclude_patterns: Optional list of fnmatch patterns that must not match.
+        include_patterns: List of regex patterns that must match (at least one).
+        exclude_patterns: Optional list of regex patterns that must not match.
 
     Returns:
         True if prim name passes the filter.
@@ -329,15 +387,18 @@ def matches_prim_filter(
 
     .. code-block:: python
 
-        matches = matches_prim_filter("Body", ["Body*"], ["BodyIgnore*"])
+        matches = matches_prim_filter("Body", ["Body.*"], ["BodyIgnore.*"])
     """
-    # Must match at least one include pattern
-    if not any(fnmatch.fnmatch(prim_name, pattern) for pattern in include_patterns):
+    compiled_include = compile_patterns(include_patterns)
+    if not compiled_include:
         return False
 
-    # Must not match any exclude pattern
+    if not matches_any_pattern(prim_name, compiled_include):
+        return False
+
     if exclude_patterns:
-        if any(fnmatch.fnmatch(prim_name, pattern) for pattern in exclude_patterns):
+        compiled_exclude = compile_patterns(exclude_patterns)
+        if matches_any_pattern(prim_name, compiled_exclude):
             return False
 
     return True

@@ -162,9 +162,9 @@ class GeometriesRoutingRule(RuleInterface):
             ),
             RuleConfigurationParam(
                 name="save_base_as_usda",
-                display_name="Save Base as USD",
+                display_name="Save Base as USDA",
                 param_type=bool,
-                description="If True, save the base stage as a USD file",
+                description="If True, save the base stage as a USDA file",
                 default_value=_DEFAULT_SAVE_BASE_AS_USDA,
             ),
             RuleConfigurationParam(
@@ -303,10 +303,13 @@ class GeometriesRoutingRule(RuleInterface):
 
         scale = Gf.Vec3d(scale_x, scale_y, scale_z)
 
-        # Build a normalized rotation matrix by removing scale from each row
-        # ExtractRotation() on a scaled matrix gives incorrect results
+        # Build a normalized rotation matrix by removing scale from each row.
+        # Division must use the SIGNED scale so that a negative scale flips the
+        # row direction, leaving a pure rotation matrix (det = +1).
+        # ExtractRotation() on a matrix that still contains a reflection (det = -1)
+        # produces an incorrect quaternion.
         if abs(scale_x) > 1e-10:
-            row0 = row0 / abs(scale_x)
+            row0 = row0 / scale_x
         if abs(scale_y) > 1e-10:
             row1 = row1 / scale_y
         if abs(scale_z) > 1e-10:
@@ -1050,6 +1053,10 @@ class GeometriesRoutingRule(RuleInterface):
 
         if not geometry_sources:
             self.log_operation("No geometry prims found, skipping")
+            if save_base_as_usda:
+                export_path = self._convert_base_to_usda()
+                if export_path:
+                    return export_path
             return None
 
         # Open or create geometries layer
@@ -1099,20 +1106,34 @@ class GeometriesRoutingRule(RuleInterface):
             if not prim.IsValid():
                 continue
 
-            # Compute geometry hash
+            # Compute geometry hash (used for deduplication when enabled)
             geom_hash = self._compute_geometry_hash(prim)
             source.geometry_hash = geom_hash
             source.type_name = prim.GetTypeName()
 
-            if geom_hash in geometry_by_hash:
+            # Use content hash as key when deduplicating, prim path when not
+            geom_key = geom_hash if deduplicate else source.prim_path
+
+            if geom_key in geometry_by_hash:
                 # Geometry already exists (either from this run or existing in layer)
-                existing_entry = geometry_by_hash[geom_hash]
+                existing_entry = geometry_by_hash[geom_key]
                 existing_entry.sources.append(source)
                 if existing_entry.existing:
                     reused_count += 1
             else:
-                # New unique geometry, create entry
-                base_name = self._get_geometry_name(prim)
+                # New unique geometry, create entry.
+                # When not deduplicating, derive the name from the parent prim. After
+                # stage flattening, mesh prims inlined from the same prototype share
+                # the same leaf name, but their parents retain the per-instance names
+                # from the original hierarchy.
+                if not deduplicate:
+                    parent = prim.GetParent()
+                    if parent and parent.IsValid() and parent != self.source_stage.GetPseudoRoot():
+                        base_name = self._get_geometry_name(parent)
+                    else:
+                        base_name = self._get_geometry_name(prim)
+                else:
+                    base_name = self._get_geometry_name(prim)
                 geometry_name_counter[base_name] += 1
                 if geometry_name_counter[base_name] > 1:
                     unique_name = f"{base_name}_{geometry_name_counter[base_name] - 1}"
@@ -1127,7 +1148,7 @@ class GeometriesRoutingRule(RuleInterface):
                     sources=[source],
                     existing=False,
                 )
-                geometry_by_hash[geom_hash] = entry
+                geometry_by_hash[geom_key] = entry
 
                 # Copy geometry to geometries layer
                 self._copy_geometry_to_layer(prim, entry, geom_stage)
@@ -1149,7 +1170,7 @@ class GeometriesRoutingRule(RuleInterface):
         # Track all used instance names globally to prevent collisions across different geometries
         used_instance_names: set[str] = set()
 
-        for geom_hash, entry in geometry_by_hash.items():
+        for geom_key, entry in geometry_by_hash.items():
             for source in entry.sources:
                 prim = self.source_stage.GetPrimAtPath(source.prim_path)
                 if not prim.IsValid():
@@ -1157,7 +1178,12 @@ class GeometriesRoutingRule(RuleInterface):
 
                 # Compute delta hash for instance deduplication
                 delta_hash = self._compute_instance_delta_hash(prim)
-                instance_key = (geom_hash, delta_hash)
+
+                # Use content hashes as key when deduplicating, prim path when not
+                if deduplicate:
+                    instance_key = (source.geometry_hash, delta_hash)
+                else:
+                    instance_key = (source.prim_path, delta_hash)
 
                 if instance_key in instance_by_key:
                     # Instance with same geometry and deltas already exists
@@ -1222,7 +1248,9 @@ class GeometriesRoutingRule(RuleInterface):
         self._finalize_instances_layer(instances_layer)
 
         # Deduplicate instances based on content hash (uses relative paths for material bindings)
-        instance_remap = self._deduplicate_instances_layer(instances_layer, instance_by_key)
+        instance_remap: dict[str, str] = {}
+        if deduplicate:
+            instance_remap = self._deduplicate_instances_layer(instances_layer, instance_by_key)
 
         # Export layers (Export does a clean serialization, Save can leave stale state in USDC)
         geometries_layer.Export(geometries_output_path)
@@ -1233,6 +1261,7 @@ class GeometriesRoutingRule(RuleInterface):
             instance_by_key,
             instance_output_path,
             instance_remap,
+            deduplicate=deduplicate,
         )
 
         # Clean up flattened prototypes created during de-instancing
@@ -1309,6 +1338,43 @@ class GeometriesRoutingRule(RuleInterface):
         )
 
         return export_path
+
+    def _convert_base_to_usda(self) -> str | None:
+        """Convert the base source layer from binary USD to text USDA format.
+
+        Handles the format conversion independently of geometry processing so that
+        downstream rules (e.g., InterfaceConnectionRule) can locate the .usda file
+        even when no geometry prims exist in the stage.
+
+        Returns:
+            The path to the exported .usda file, or None if already in .usda format.
+        """
+        source_layer = self.source_stage.GetRootLayer()
+        original_path = source_layer.realPath
+
+        if original_path.endswith(".usda"):
+            source_layer.Export(original_path)
+            self.log_operation(f"Base layer already USDA, re-exported in place: {original_path}")
+            return original_path
+
+        usda_path = os.path.splitext(original_path)[0] + ".usda"
+        source_layer.Export(usda_path)
+        self.add_affected_stage(usda_path)
+
+        cached = Sdf.Layer.Find(original_path)
+        if cached:
+            cached.Clear()
+            del cached
+
+        source_layer.Clear()
+        source_layer = None
+
+        gc.collect()
+
+        os.remove(original_path)
+        self.log_operation(f"Converted base layer to USDA: {usda_path}")
+
+        return usda_path
 
     def _find_geometry_sources(self, scope: str | None) -> list[GeometrySource]:
         """Find all geometry prims and track their source information.
@@ -2411,6 +2477,7 @@ class GeometriesRoutingRule(RuleInterface):
         instance_by_key: dict[tuple[str, str], InstanceEntry],
         instance_layer_abs_path: str,
         instance_remap: dict[str, str] | None = None,
+        deduplicate: bool = True,
     ) -> None:
         """Update the source stage to reference the deduplicated instances layer.
 
@@ -2425,6 +2492,9 @@ class GeometriesRoutingRule(RuleInterface):
             instance_layer_abs_path: Absolute path to the instances layer file.
             instance_remap: Optional dictionary mapping deleted instance paths to their
                 replacement (kept) instance paths from deduplication.
+            deduplicate: Whether deduplication is enabled. When False, source prims
+                whose names don't match their geometry entry are renamed so the
+                base layer hierarchy matches the geometry/instance naming.
         """
         if instance_remap is None:
             instance_remap = {}
@@ -2537,23 +2607,47 @@ class GeometriesRoutingRule(RuleInterface):
                     # Standard case: apply reference to the prim itself
                     self._ensure_source_prim_hierarchy(source_layer, update_path)
 
-                    prim_spec = source_layer.GetPrimAtPath(update_path)
+                    # Capture the mesh's local transform before clearing properties
+                    mesh_transform = self._get_mesh_local_transform_decomposed(source.prim_path)
 
-                    if not prim_spec:
-                        # Prim spec doesn't exist in root layer, create an over
-                        prim_spec = Sdf.CreatePrimInLayer(source_layer, update_path)
+                    # When not deduplicating, the source prim may have a prototype-derived
+                    # name that doesn't match the geometry entry name (derived from the
+                    # parent). Rename the prim so the base layer matches geometry/instance
+                    # naming (e.g. tn__lefttarsus_YF → tn__righttarsus_nG).
+                    expected_name = instance_entry.geometry_entry.name
+                    current_name = Sdf.Path(update_path).name
+                    if not deduplicate and current_name != expected_name:
+                        parent_path = Sdf.Path(update_path).GetParentPath().pathString
+                        new_path = f"{parent_path}/{expected_name}"
+
+                        # Remove the old prim spec
+                        old_spec = source_layer.GetPrimAtPath(update_path)
+                        if old_spec:
+                            parent_spec = source_layer.GetPrimAtPath(parent_path)
+                            if parent_spec and current_name in parent_spec.nameChildren:
+                                del parent_spec.nameChildren[current_name]
+
+                        # Create the prim at the renamed path
+                        prim_spec = Sdf.CreatePrimInLayer(source_layer, new_path)
                         if not prim_spec:
-                            self.log_operation(f"Failed to create prim spec for {update_path}")
+                            self.log_operation(f"Failed to create renamed prim spec at {new_path}")
                             continue
+                        prim_spec.specifier = Sdf.SpecifierDef
+                        update_path = new_path
+                    else:
+                        prim_spec = source_layer.GetPrimAtPath(update_path)
+                        if not prim_spec:
+                            # Prim spec doesn't exist in root layer, create an over
+                            prim_spec = Sdf.CreatePrimInLayer(source_layer, update_path)
+                            if not prim_spec:
+                                self.log_operation(f"Failed to create prim spec for {update_path}")
+                                continue
 
                     # Clear existing composition arcs (make explicit to override sublayers)
                     utils.clear_composition_arcs(prim_spec, make_explicit=True)
 
                     # Set type and clear properties (properties are now in the instances layer)
                     prim_spec.typeName = _XFORM_TYPE_NAME
-
-                    # Capture the mesh's local transform before clearing properties
-                    mesh_transform = self._get_mesh_local_transform_decomposed(source.prim_path)
 
                     props_to_remove = [prop.name for prop in prim_spec.properties]
                     for prop_name in props_to_remove:
