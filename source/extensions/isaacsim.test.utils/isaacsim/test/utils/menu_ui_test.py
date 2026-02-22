@@ -26,6 +26,39 @@ from omni.ui.tests.test_base import OmniUiTest
 
 from .menu_utils import menu_click_with_retry as _menu_click_with_retry
 
+_DEFAULT_MAX_FIND_FRAMES = 100
+
+
+async def find_widget_with_retry(query: str, max_frames: int = _DEFAULT_MAX_FIND_FRAMES, parent=None):
+    """Poll ``ui_test.find`` until the widget is found or *max_frames* is exceeded.
+
+    This is useful when a UI element may not be immediately available after a
+    menu click or navigation action.  Instead of a fixed ``human_delay``, this
+    function actively polls each frame so the test proceeds as soon as the
+    widget appears.
+
+    Args:
+        query: The widget query string (same syntax as ``omni.kit.ui_test.find``).
+        max_frames: Maximum number of app-update frames to wait before giving up.
+        parent: Optional parent widget to search within.  When provided,
+            ``parent.find(query)`` is used instead of ``ui_test.find(query)``.
+
+    Returns:
+        The found widget reference.
+
+    Raises:
+        TimeoutError: If the widget is not found within *max_frames*.
+    """
+    for frame in range(max_frames):
+        result = parent.find(query) if parent is not None else ui_test.find(query)
+        if result is not None:
+            if frame > 0:
+                carb.log_info(f"[find_widget_with_retry] find('{query}') succeeded after {frame} extra frame(s)")
+            return result
+        await omni.kit.app.get_app().next_update_async()
+
+    raise TimeoutError(f"Widget '{query}' not found after {max_frames} frames")
+
 
 class MenuUITestCase(OmniUiTest):
     """Base test class for Isaac Sim menu UI tests.
@@ -143,6 +176,24 @@ class MenuUITestCase(OmniUiTest):
         return await _menu_click_with_retry(
             menu_path, delays=delays, window_name=window_name, wait_n_frames=wait_n_frames
         )
+
+    async def find_widget_with_retry(self, query: str, max_frames: int = _DEFAULT_MAX_FIND_FRAMES, parent=None):
+        """Poll ``ui_test.find`` until the widget is found or *max_frames* is exceeded.
+
+        Convenience wrapper around the module-level :func:`find_widget_with_retry`.
+
+        Args:
+            query: The widget query string.
+            max_frames: Maximum frames to poll before raising.
+            parent: Optional parent widget to search within.
+
+        Returns:
+            The found widget reference.
+
+        Raises:
+            TimeoutError: If the widget is not found within *max_frames*.
+        """
+        return await find_widget_with_retry(query, max_frames=max_frames, parent=parent)
 
     def count_prims_by_type(self, prim_type: str) -> int:
         """Count the number of prims of a given type on the stage.

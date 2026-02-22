@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import re
 from collections import defaultdict
 
 from isaacsim.asset.transformer import RuleConfigurationParam, RuleInterface
@@ -169,29 +168,17 @@ class PropertyRoutingRule(RuleInterface):
             return None
 
         # Compile regex patterns
-        compiled_patterns = []
-        for pattern in property_patterns:
-            try:
-                compiled_patterns.append(re.compile(pattern))
-            except re.error as e:
-                self.log_operation(f"Invalid regex pattern '{pattern}': {e}, skipping")
-
+        compiled_patterns = utils.compile_patterns(property_patterns, self.log_operation)
         if not compiled_patterns:
             self.log_operation("No valid property patterns after compilation, skipping")
             return None
 
-        # Compile ignore patterns
-        compiled_ignore_patterns = []
-        for pattern in ignore_property_patterns:
-            try:
-                compiled_ignore_patterns.append(re.compile(pattern))
-            except re.error as e:
-                self.log_operation(f"Invalid ignore regex pattern '{pattern}': {e}, skipping")
+        compiled_ignore_patterns = utils.compile_patterns(ignore_property_patterns, self.log_operation)
 
         destination_path = self.destination_path
         stage_name = params.get("stage_name") or "properties.usda"
         scope = params.get("scope") or "/"
-        prim_names = params.get("prim_names") or ["*"]
+        prim_names = params.get("prim_names") or [".*"]
         ignore_prim_names = params.get("ignore_prim_names") or []
         destination_label = os.path.join(destination_path, stage_name)
 
@@ -227,18 +214,16 @@ class PropertyRoutingRule(RuleInterface):
 
             for attr in prim.GetAttributes():
                 attr_name = attr.GetName()
-                if any(pattern.match(attr_name) for pattern in compiled_patterns):
-                    # Check if property matches any ignore pattern (overrides positive match)
-                    if any(pattern.match(attr_name) for pattern in compiled_ignore_patterns):
+                if utils.matches_any_pattern(attr_name, compiled_patterns):
+                    if utils.matches_any_pattern(attr_name, compiled_ignore_patterns):
                         continue
                     if attr.HasAuthoredValue() or attr.GetConnections():
                         matching_items.append((prim, attr_name))
 
             for rel in prim.GetRelationships():
                 rel_name = rel.GetName()
-                if any(pattern.match(rel_name) for pattern in compiled_patterns):
-                    # Check if property matches any ignore pattern (overrides positive match)
-                    if any(pattern.match(rel_name) for pattern in compiled_ignore_patterns):
+                if utils.matches_any_pattern(rel_name, compiled_patterns):
+                    if utils.matches_any_pattern(rel_name, compiled_ignore_patterns):
                         continue
                     if rel.HasAuthoredTargets():
                         matching_items.append((prim, rel_name))

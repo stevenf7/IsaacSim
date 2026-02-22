@@ -364,6 +364,7 @@ local function get_asset_tests()
         {
             "tests-nativepython-isaacsim.asset.importer.mjcf.mjcf_import",
             "standalone_examples/api/isaacsim.asset.importer.mjcf/mjcf_import.py",
+            "--test --usd-path standalone_examples/api/isaacsim.asset.importer.mjcf/nv_humanoid",
         },
         -- Asset Transformer
         {

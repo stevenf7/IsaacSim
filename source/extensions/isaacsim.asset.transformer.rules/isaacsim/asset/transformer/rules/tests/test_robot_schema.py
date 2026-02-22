@@ -403,6 +403,32 @@ class TestRobotSchemaRule(omni.kit.test.AsyncTestCase):
         self.assertTrue(self._log_contains("sites_last=True"))
         self._success = True
 
+    async def test_process_rule_sublayer_path_is_relative_forward_slash(self):
+        """Verify the destination layer is added as a relative forward-slash sublayer path.
+
+        Regression test for Windows where os.path produces backslash paths and
+        raw layer identifiers may not resolve correctly as sublayer references.
+        The rule must use a relative path with forward slashes so that
+        Usd.EditContext can locate the layer in the stage's local layer stack.
+
+        The root layer is intentionally reloaded after processing to discard
+        temporary sublayer edits, so we verify the path format via the
+        operation log rather than inspecting the final sublayer list.
+        """
+        self._run_default_rule()
+
+        # The rule logs the sublayer path it added; extract and validate it.
+        sublayer_log = [msg for msg in self.log if "Added robot schema layer as sublayer:" in msg]
+        self.assertEqual(len(sublayer_log), 1, f"Expected one sublayer log entry, got: {sublayer_log}")
+        logged_path = sublayer_log[0].split("Added robot schema layer as sublayer:")[-1].strip()
+        self.assertNotIn("\\", logged_path, "Sublayer path must use forward slashes")
+        self.assertFalse(os.path.isabs(logged_path), "Sublayer path should be relative")
+
+        # Verify the edit context succeeded by checking the output layer has content
+        output_layer = self._get_output_layer()
+        self.assertTrue(self._has_api_schema(output_layer, "/ur10e", "IsaacRobotAPI"))
+        self._success = True
+
     async def test_process_rule_update_deprecated_schemas(self):
         """Verify deprecated schemas are updated and reordered."""
         custom_stage_name = "robot.usda"

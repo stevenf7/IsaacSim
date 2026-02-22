@@ -165,9 +165,11 @@ class RobotSchemaRule(RuleInterface):
             self._insert_sublayer(sublayer, root_layer)
 
         # Add destination layer as sublayer only if it's different from root layer
-        if editing_separate_layer and edit_layer.identifier not in root_layer.subLayerPaths:
-            root_layer.subLayerPaths.append(edit_layer.identifier)
-            self.log_operation(f"Added robot schema layer as sublayer: {edit_layer.identifier}")
+        if editing_separate_layer:
+            rel_path = os.path.relpath(edit_layer.realPath, os.path.dirname(root_layer.realPath)).replace("\\", "/")
+            if rel_path not in root_layer.subLayerPaths and edit_layer.identifier not in root_layer.subLayerPaths:
+                root_layer.subLayerPaths.append(rel_path)
+                self.log_operation(f"Added robot schema layer as sublayer: {rel_path}")
 
         robot_prim = self.source_stage.GetPrimAtPath(prim_path)
         if not robot_prim or not robot_prim.IsValid():

@@ -24,6 +24,91 @@ from pxr import Gf, Sdf, Usd, UsdGeom
 from .common import _TEST_ADVANCED_USD, _TEST_COLLISION_FROM_VISUALS_USD, _UR10E_SHOULDER_USD, _UR10E_USD
 
 _TRANSFORM_TOLERANCE = 1e-6
+_DECOMPOSE_TOLERANCE = 1e-6
+
+
+def _build_mirrored_meshes_stage(stage_path: str) -> str:
+    """Create a stage with two identical meshes under parents with different names.
+
+    Simulates the structure produced by stage flattening when left/right robot parts
+    share the same prototype mesh: both mesh prims have the same leaf name but sit
+    under parents with distinct per-instance names.  The right-side parent also
+    carries a negative-X scale to mirror the geometry.
+
+    Args:
+        stage_path: File path where the stage will be exported.
+
+    Returns:
+        The file path of the exported stage.
+    """
+    stage = Usd.Stage.CreateNew(stage_path)
+    stage.SetMetadata("metersPerUnit", 1.0)
+    stage.SetMetadata("upAxis", "Z")
+
+    root = UsdGeom.Xform.Define(stage, "/root")
+    stage.SetDefaultPrim(root.GetPrim())
+
+    # Shared triangle data
+    face_vertex_counts = [3]
+    face_vertex_indices = [0, 1, 2]
+    points = [Gf.Vec3f(0, 0, 0), Gf.Vec3f(1, 0, 0), Gf.Vec3f(0, 1, 0)]
+
+    # --- left side (identity scale) ---
+    left_parent = UsdGeom.Xform.Define(stage, "/root/left_link")
+    left_xf = left_parent.AddTranslateOp()
+    left_xf.Set(Gf.Vec3d(-1, 0, 0))
+
+    left_mesh = UsdGeom.Mesh.Define(stage, "/root/left_link/shared_mesh")
+    left_mesh.GetFaceVertexCountsAttr().Set(face_vertex_counts)
+    left_mesh.GetFaceVertexIndicesAttr().Set(face_vertex_indices)
+    left_mesh.GetPointsAttr().Set(points)
+
+    # --- right side (negative-X scale for mirroring) ---
+    right_parent = UsdGeom.Xform.Define(stage, "/root/right_link")
+    right_parent.AddTranslateOp().Set(Gf.Vec3d(1, 0, 0))
+    right_parent.AddOrientOp().Set(Gf.Quatf(0.7071068, 0, 0, 0.7071068))
+    right_parent.AddScaleOp().Set(Gf.Vec3f(-1, 1, 1))
+
+    right_mesh = UsdGeom.Mesh.Define(stage, "/root/right_link/shared_mesh")
+    right_mesh.GetFaceVertexCountsAttr().Set(face_vertex_counts)
+    right_mesh.GetFaceVertexIndicesAttr().Set(face_vertex_indices)
+    right_mesh.GetPointsAttr().Set(points)
+
+    stage.Export(stage_path)
+    return stage_path
+
+
+def _build_no_mesh_stage(stage_path: str) -> str:
+    """Create a stage with only non-Mesh Gprim geometry (Spheres, Capsules).
+
+    Simulates assets like MuJoCo-converted robots (e.g. ant) that contain
+    only primitive collision shapes and no Mesh prims.
+
+    Args:
+        stage_path: File path where the stage will be exported.
+
+    Returns:
+        The file path of the exported stage.
+    """
+    stage = Usd.Stage.CreateNew(stage_path)
+    stage.SetMetadata("metersPerUnit", 1.0)
+    stage.SetMetadata("upAxis", "Z")
+
+    root = UsdGeom.Xform.Define(stage, "/root")
+    stage.SetDefaultPrim(root.GetPrim())
+
+    body = UsdGeom.Xform.Define(stage, "/root/body")
+    body.AddTranslateOp().Set(Gf.Vec3d(0, 0, 0.75))
+
+    sphere = UsdGeom.Sphere.Define(stage, "/root/body/torso_geom")
+    sphere.GetRadiusAttr().Set(0.25)
+
+    capsule = UsdGeom.Capsule.Define(stage, "/root/body/leg_geom")
+    capsule.GetRadiusAttr().Set(0.08)
+    capsule.GetHeightAttr().Set(0.28)
+
+    stage.Export(stage_path)
+    return stage_path
 
 
 class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
@@ -760,4 +845,235 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
         log = rule.get_operation_log()
         self.assertTrue(any("GeometriesRoutingRule start" in msg for msg in log))
         self.assertTrue(any("GeometriesRoutingRule completed" in msg for msg in log))
+        self._success = True
+
+    # ------------------------------------------------------------------
+    # Tests for negative-scale decomposition and deduplicate=False path
+    # ------------------------------------------------------------------
+
+    async def test_decompose_transform_negative_scale(self):
+        """Verify _decompose_transform correctly handles negative scale (det < 0).
+
+        When a transform matrix has a negative determinant (reflection), the
+        decomposition must produce a negative scale component AND a pure
+        rotation quaternion (no reflection baked in).  Re-composing the TOS
+        transform must reproduce the original matrix within tolerance.
+        """
+        os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
+        stage = Usd.Stage.Open(self._temp_asset)
+
+        rule = GeometriesRoutingRule(
+            source_stage=stage,
+            package_root=self._tmpdir,
+            destination_path="payloads",
+            args={},
+        )
+
+        # Build a matrix with translation, 90-degree Y rotation, and negative-X scale
+        rotation = Gf.Rotation(Gf.Vec3d(0, 1, 0), 90.0)
+        rot_matrix = Gf.Matrix4d(1.0).SetRotate(rotation)
+        scale_matrix = Gf.Matrix4d().SetScale(Gf.Vec3d(-1, 1, 1))
+        translate_matrix = Gf.Matrix4d(1.0).SetTranslate(Gf.Vec3d(3, 4, 5))
+        # Row-vector convention: point * Scale * Rotate * Translate
+        original = scale_matrix * rot_matrix * translate_matrix
+
+        self.assertLess(original.GetDeterminant(), 0, "Test matrix must have negative determinant")
+
+        translate, orient, scale = rule._decompose_transform(original)
+
+        # Scale must have a negative component
+        self.assertLess(scale[0], 0, "scale_x should be negative for reflected transform")
+        self.assertAlmostEqual(abs(scale[0]), 1.0, delta=_DECOMPOSE_TOLERANCE)
+        self.assertAlmostEqual(scale[1], 1.0, delta=_DECOMPOSE_TOLERANCE)
+        self.assertAlmostEqual(scale[2], 1.0, delta=_DECOMPOSE_TOLERANCE)
+
+        # Translation must match
+        self.assertAlmostEqual(translate[0], 3.0, delta=_DECOMPOSE_TOLERANCE)
+        self.assertAlmostEqual(translate[1], 4.0, delta=_DECOMPOSE_TOLERANCE)
+        self.assertAlmostEqual(translate[2], 5.0, delta=_DECOMPOSE_TOLERANCE)
+
+        # Re-compose the TOS transform and compare against the original matrix
+        recomposed_scale = Gf.Matrix4d().SetScale(scale)
+        recomposed_rot = Gf.Matrix4d(1.0).SetRotate(Gf.Rotation(orient))
+        recomposed_translate = Gf.Matrix4d(1.0).SetTranslate(translate)
+        recomposed = recomposed_scale * recomposed_rot * recomposed_translate
+
+        for row in range(4):
+            for col in range(4):
+                self.assertAlmostEqual(
+                    original[row, col],
+                    recomposed[row, col],
+                    delta=_DECOMPOSE_TOLERANCE,
+                    msg=f"Recomposed matrix mismatch at [{row}][{col}]",
+                )
+
+        self._success = True
+
+    async def test_no_deduplicate_produces_separate_geometries(self):
+        """Verify deduplicate=False creates independent geometry and instance entries.
+
+        Two meshes with identical vertex data but different parent names must each
+        get their own geometry (named after the parent), their own instance, and
+        their own reference in the base layer.  The world-space transform of each
+        mesh must be preserved exactly.
+        """
+        os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
+        input_path = os.path.join(self._tmpdir, "mirrored.usda")
+        _build_mirrored_meshes_stage(input_path)
+
+        base_stage = Usd.Stage.Open(input_path)
+        # Capture world transforms of the original meshes before processing
+        xform_cache_before = UsdGeom.XformCache()
+        left_world_before = xform_cache_before.GetLocalToWorldTransform(
+            base_stage.GetPrimAtPath("/root/left_link/shared_mesh")
+        )
+        right_world_before = xform_cache_before.GetLocalToWorldTransform(
+            base_stage.GetPrimAtPath("/root/right_link/shared_mesh")
+        )
+
+        rule = GeometriesRoutingRule(
+            source_stage=base_stage,
+            package_root=self._tmpdir,
+            destination_path="payloads",
+            args={
+                "params": {
+                    "geometries_layer": "geometries.usd",
+                    "instance_layer": "instances.usda",
+                    "deduplicate": False,
+                }
+            },
+        )
+
+        updated_path = rule.process_rule()
+        self.assertIsNotNone(updated_path)
+
+        # --- geometries.usd: must have two separate geometries ---
+        geometries_stage = Usd.Stage.Open(os.path.join(self._tmpdir, "payloads", "geometries.usd"))
+        geom_scope = geometries_stage.GetPrimAtPath("/Geometries")
+        self.assertTrue(geom_scope.IsValid())
+        geom_children = list(geom_scope.GetChildren())
+        geom_names = {c.GetName() for c in geom_children}
+        self.assertEqual(len(geom_children), 2, f"Expected 2 geometries, got {len(geom_children)}: {geom_names}")
+        self.assertIn("left_link", geom_names, "Geometry for left parent missing")
+        self.assertIn("right_link", geom_names, "Geometry for right parent missing")
+
+        # --- instances.usda: must have two separate instances ---
+        instances_stage = Usd.Stage.Open(os.path.join(self._tmpdir, "payloads", "instances.usda"))
+        inst_scope = instances_stage.GetPrimAtPath("/Instances")
+        self.assertTrue(inst_scope.IsValid())
+        inst_children = list(inst_scope.GetChildren())
+        inst_names = {c.GetName() for c in inst_children}
+        self.assertEqual(len(inst_children), 2, f"Expected 2 instances, got {len(inst_children)}: {inst_names}")
+        self.assertIn("left_link", inst_names, "Instance for left parent missing")
+        self.assertIn("right_link", inst_names, "Instance for right parent missing")
+
+        # --- base layer: references must point to the correct instances ---
+        updated_stage = Usd.Stage.Open(updated_path)
+        source_layer = updated_stage.GetRootLayer()
+
+        for parent_name in ("left_link", "right_link"):
+            expected_instance = f"/Instances/{parent_name}"
+            parent_spec = source_layer.GetPrimAtPath(f"/root/{parent_name}")
+            self.assertIsNotNone(parent_spec, f"Parent spec missing for {parent_name}")
+
+            # The reference may be on the parent itself (merge case, when the parent
+            # had only one child) or on a child prim (standard case).
+            ref_holder = None
+            parent_refs = list(parent_spec.referenceList.GetAddedOrExplicitItems())
+            parent_refs.extend(parent_spec.referenceList.prependedItems)
+            if parent_refs:
+                ref_holder = parent_spec
+            else:
+                for child in parent_spec.nameChildren:
+                    child_refs = list(child.referenceList.GetAddedOrExplicitItems())
+                    child_refs.extend(child.referenceList.prependedItems)
+                    if child_refs:
+                        ref_holder = child
+                        break
+            self.assertIsNotNone(ref_holder, f"No reference found at or under /root/{parent_name}")
+            all_refs = list(ref_holder.referenceList.GetAddedOrExplicitItems())
+            all_refs.extend(ref_holder.referenceList.prependedItems)
+            ref_target = all_refs[0].primPath.pathString
+            self.assertEqual(
+                ref_target,
+                expected_instance,
+                f"Reference at /root/{parent_name} points to {ref_target}, expected {expected_instance}",
+            )
+
+        # --- world transforms of composed meshes must match the originals ---
+        xform_cache_after = UsdGeom.XformCache()
+        for prim in Usd.PrimRange(updated_stage.GetPrimAtPath("/root"), Usd.TraverseInstanceProxies()):
+            if not prim.IsA(UsdGeom.Mesh):
+                continue
+            path = prim.GetPath().pathString
+            world_after = xform_cache_after.GetLocalToWorldTransform(prim)
+            if "left_link" in path:
+                expected = left_world_before
+            elif "right_link" in path:
+                expected = right_world_before
+            else:
+                continue
+            for row in range(4):
+                for col in range(4):
+                    self.assertAlmostEqual(
+                        expected[row, col],
+                        world_after[row, col],
+                        delta=_TRANSFORM_TOLERANCE,
+                        msg=f"World transform mismatch at {path}[{row}][{col}]",
+                    )
+
+    async def test_no_geometry_prims_saves_base_as_usda(self):
+        """Verify save_base_as_usda converts the base layer even when no Mesh prims exist.
+
+        Assets like MuJoCo-converted robots (ant, humanoid) may contain only
+        Spheres, Capsules, and other non-Mesh Gprims.  The GeometriesRoutingRule
+        must still honour save_base_as_usda so downstream rules can locate the
+        .usda base layer.
+        """
+        os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
+        input_path = os.path.join(self._tmpdir, "payloads", "base.usd")
+        _build_no_mesh_stage(input_path)
+
+        self.assertTrue(input_path.endswith(".usd"))
+        self.assertTrue(os.path.exists(input_path))
+
+        base_stage = Usd.Stage.Open(input_path)
+
+        rule = GeometriesRoutingRule(
+            source_stage=base_stage,
+            package_root=self._tmpdir,
+            destination_path="payloads",
+            args={
+                "params": {
+                    "geometries_layer": "geometries.usd",
+                    "instance_layer": "instances.usda",
+                    "save_base_as_usda": True,
+                }
+            },
+        )
+
+        updated_path = rule.process_rule()
+
+        log = rule.get_operation_log()
+        self.assertTrue(any("No geometry prims found" in msg for msg in log))
+
+        # The returned path must be the .usda variant
+        expected_usda = os.path.splitext(input_path)[0] + ".usda"
+        self.assertIsNotNone(updated_path, "process_rule must return the converted path, not None")
+        self.assertEqual(updated_path, expected_usda)
+        self.assertTrue(os.path.exists(expected_usda), f"Expected .usda file not found: {expected_usda}")
+
+        # The original .usd binary must have been removed
+        self.assertFalse(os.path.exists(input_path), "Original .usd should be deleted after conversion")
+
+        # The converted file must be a valid stage with the original content preserved
+        converted_stage = Usd.Stage.Open(expected_usda)
+        self.assertIsNotNone(converted_stage)
+        sphere = converted_stage.GetPrimAtPath("/root/body/torso_geom")
+        self.assertTrue(sphere.IsValid())
+        self.assertTrue(sphere.IsA(UsdGeom.Sphere))
+        capsule = converted_stage.GetPrimAtPath("/root/body/leg_geom")
+        self.assertTrue(capsule.IsValid())
+        self.assertTrue(capsule.IsA(UsdGeom.Capsule))
+
         self._success = True
