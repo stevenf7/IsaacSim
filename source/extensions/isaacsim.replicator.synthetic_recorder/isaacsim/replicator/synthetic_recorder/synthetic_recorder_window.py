@@ -580,8 +580,8 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         with ui.VStack(spacing=5):
             with ui.HStack():
                 ui.Spacer(width=10)
-                ui.Label("Use S3", alignment=ui.Alignment.LEFT, tooltip="Write data to S3 buckets")
-                s3_model = ui.CheckBox().model
+                ui.Label("Use S3", width=250, alignment=ui.Alignment.LEFT, tooltip="Write data to S3 buckets")
+                s3_model = ui.CheckBox(width=10, height=0).model
                 s3_model.set_value(self._use_s3)
 
                 def value_changed(m):
@@ -762,8 +762,8 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         for key, val in self._basic_writer_params.items():
             with ui.HStack(spacing=5):
                 ui.Spacer(width=10)
-                ui.Label(key, alignment=ui.Alignment.LEFT, tooltip=PARAM_TOOLTIPS[key])
-                model = ui.CheckBox().model
+                ui.Label(key, width=300, alignment=ui.Alignment.LEFT, tooltip=PARAM_TOOLTIPS[key])
+                model = ui.CheckBox(width=10, height=0).model
                 model.set_value(val)
 
                 def value_changed(m, k=key):
@@ -877,8 +877,8 @@ class SyntheticRecorderWindow(MenuHelperWindow):
 
             with ui.HStack(spacing=5):
                 ui.Spacer(width=10)
-                ui.Label("Control Timeline", tooltip="Start/Stop/Pause timeline as well with the recorder")
-                control_timeline_model = ui.CheckBox().model
+                ui.Label("Control Timeline", width=130, tooltip="Start/Stop/Pause timeline as well with the recorder")
+                control_timeline_model = ui.CheckBox(width=10, height=0).model
                 control_timeline_model.set_value(self._recorder.control_timeline)
 
                 def control_timeline_value_changed(m):
@@ -886,9 +886,9 @@ class SyntheticRecorderWindow(MenuHelperWindow):
 
                 control_timeline_model.add_value_changed_fn(control_timeline_value_changed)
 
-                ui.Spacer(width=10)
-                ui.Label("Verbose", tooltip="Print recorder status to the terminal (e.g. current frame)")
-                verbose_model = ui.CheckBox().model
+                ui.Spacer(width=180)
+                ui.Label("Verbose", width=80, tooltip="Print recorder status to the terminal (e.g. current frame)")
+                verbose_model = ui.CheckBox(width=10, height=0).model
                 verbose_model.set_value(self._recorder.verbose)
 
                 def verbose_value_changed(m):

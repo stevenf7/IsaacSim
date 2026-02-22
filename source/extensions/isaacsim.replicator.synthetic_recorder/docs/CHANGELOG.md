@@ -1,4 +1,8 @@
 # Changelog
+## [2.3.3] - 2026-02-21
+### Changed
+- Updated UI to use width and height for checkboxes to fix click issues
+
 ## [2.3.2] - 2025-12-17
 ### Fixed
 - Fixed output directory not being updated when read from the UI field
