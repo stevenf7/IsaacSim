@@ -674,16 +674,19 @@ generate_report_cmd = [
   "--reset-user",
   "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
   "--/exts/omni.kit.test/pyCoverageEnabled=True",
+  "--/crashreporter/skipOldDumpUpload=1",
 ]
 "platform:linux-aarch64".args = [
   "--portable-root ${test_root}/portable_root",
   "--reset-user",
   "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
+  "--/crashreporter/skipOldDumpUpload=1",
 ]
 "platform:windows-x86_64".args = [
   "--portable-root ${test_root}/portable_root",
   "--reset-user",
   "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
+  "--/crashreporter/skipOldDumpUpload=1",
 ]
 exclude = []
 include = [
@@ -714,6 +717,7 @@ args = [
   "--portable-root ${test_root}/portable_root",
   "--reset-user",
   "--/exts/omni.kit.test/testExtOutputPath='${test_root}/_testoutput'",
+  "--/crashreporter/skipOldDumpUpload=1",
 ]
 exclude = []
 include = ["tests-nativepython*${shell_ext}"]
