@@ -84,8 +84,9 @@ except NameError:
 
 try:
     extensions.append("config_selector")
+    extensions.append("image_lightbox")
 except NameError:
-    extensions = ["config_selector"]
+    extensions = ["config_selector", "image_lightbox"]
 """
 
 sphinx_exclude_patterns = [
