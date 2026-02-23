@@ -108,6 +108,11 @@ class MenuUITestCase(OmniUiTest):
         while stage_utils.is_stage_loading():
             await omni.kit.app.get_app().next_update_async()
 
+        await omni.kit.material.library.get_mdl_list_async()
+        await ui_test.human_delay()
+        omni.kit.menu.utils.rebuild_menus()
+        await omni.kit.app.get_app().next_update_async()
+
     async def new_stage(self):
         """Create a new stage and wait for it to load.
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.1] - 2026-02-22
+### Changed
+- Add `omni.kit.material.library.get_mdl_list_async` and `omni.kit.menu.utils.rebuild_menus` to `MenuUITestCase.wait_for_stage_loading` to fix menu rebuild issues
+
 ## [0.9.0] - 2026-02-21
 ### Changed
 - Add `find_widget_with_retry` to `MenuUITestCase` to find a widget with retry
