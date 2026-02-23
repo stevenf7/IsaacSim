@@ -55,7 +55,7 @@ include:
       - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE == "merge_request"
   - local: tools/ci/test_matrixes/all.yml
     rules:
-      - if: $CI_PIPELINE_SOURCE != "pipeline" || ($CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE == "nightly")
+      - if: $CI_PIPELINE_SOURCE != "pipeline" || ($CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE != "merge_request")
 # ==============================================================================================================
 stages:
   - check
