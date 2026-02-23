@@ -76,6 +76,11 @@ parser.add_argument(
     action="store_true",
     help="Do not wait for render to complete before capturing frame (default: wait)",
 )
+parser.add_argument(
+    "--replicator-write-to-fabric",
+    action="store_true",
+    help="Enable Replicator write-to-fabric mode (default: disabled)",
+)
 
 args, unknown = parser.parse_known_args()
 
@@ -96,6 +101,7 @@ rt_subframes = args.rt_subframes
 app_frametime = args.app_frametime
 with_functional_randomization = not args.with_og_randomization
 wait_for_render = not args.no_wait_for_render
+replicator_write_to_fabric = args.replicator_write_to_fabric
 if "all" in args.annotators:
     annotators_kwargs = {annotator: True for annotator in VALID_ANNOTATORS}
 else:
@@ -116,6 +122,7 @@ print(f"\tskip_write: {skip_write}")
 print(f"\tenv_url: {env_url}")
 print(f"\twith_functional_randomization: {with_functional_randomization}")
 print(f"\twait_for_render: {wait_for_render}")
+print(f"\treplicator_write_to_fabric: {replicator_write_to_fabric}")
 
 import os
 import shutil
@@ -248,6 +255,7 @@ benchmark = BaseIsaacBenchmark(
             {"name": "skip_write", "data": skip_write},
             {"name": "with_functional_randomization", "data": with_functional_randomization},
             {"name": "wait_for_render", "data": wait_for_render},
+            {"name": "replicator_write_to_fabric", "data": replicator_write_to_fabric},
         ]
     },
     backend_type=args.backend_type,
@@ -269,6 +277,7 @@ else:
     rep.functional.create.distant_light(intensity=2000, parent="/World", name="DistantLight")
     rep.functional.create.dome_light(intensity=400, parent="/World", name="DomeLight")
 
+carb.settings.get_settings().set("/exts/omni.replicator.core/enableWriteToFabric", replicator_write_to_fabric)
 rep.set_global_seed(REPLICATOR_GLOBAL_SEED)
 rng = rep.rng.ReplicatorRNG(seed=REPLICATOR_GLOBAL_SEED)
 
