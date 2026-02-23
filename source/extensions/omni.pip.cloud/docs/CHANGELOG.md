@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.5] - 2026-02-22
+### Changed
+- Downgrage boto3 to 1.40.61
+- Downgrage botocore to 1.40.61
+- Downgrage s3transfer to 0.14.0
+- Update aioboto3 to 15.5.0
+
 ## [1.4.4] - 2025-11-25
 ### Changed
 - Update to aioboto3==15.2.0
