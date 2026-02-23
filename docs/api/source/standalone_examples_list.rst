@@ -211,6 +211,13 @@ isaacsim.robot.wheeled_robots.examples
 * ``jetbot_differential_move.py``
 * ``kaya_holonomic_move.py``
 
+isaacsim.robot_motion.experimental.motion_generation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``mobile_robot_control_example.py``
+* ``scene_interaction_example.py``
+* ``trajectory_example.py``
+
 isaacsim.ros2.bridge
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -362,6 +369,11 @@ snippets
 ^^^^^^^^
 
 * ``snippets/__init__.py``
+
+snippets/action_and_event_data_generation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``snippets/action_and_event_data_generation/tutorial_replicator_incident.py``
 
 snippets/assets
 ^^^^^^^^^^^^^^^
@@ -687,6 +699,21 @@ snippets/manipulators/manipulators_rmpflow
 * ``snippets/manipulators/manipulators_rmpflow/loading_rmpflow_for_supported_robots.py``
 * ``snippets/manipulators/manipulators_rmpflow/world_state.py``
 
+snippets/motion_generation/controllers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``snippets/motion_generation/controllers/mobile_robot_control_example.py``
+
+snippets/motion_generation/scene_interaction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``snippets/motion_generation/scene_interaction/scene_interaction_example.py``
+
+snippets/motion_generation/trajectories
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``snippets/motion_generation/trajectories/trajectory_example.py``
+
 snippets/omnigraph
 ^^^^^^^^^^^^^^^^^^
 
@@ -1009,6 +1036,21 @@ snippets/robot_setup/assemble_robots
 
 * ``snippets/robot_setup/assemble_robots/__init__.py``
 * ``snippets/robot_setup/assemble_robots/robot_assembler_api.py``
+
+snippets/robot_setup/asset_transformer_api
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``snippets/robot_setup/asset_transformer_api/accessing_rule_logs.py``
+* ``snippets/robot_setup/asset_transformer_api/basic_usage.py``
+* ``snippets/robot_setup/asset_transformer_api/custom_rule_example.py``
+* ``snippets/robot_setup/asset_transformer_api/error_handling.py``
+* ``snippets/robot_setup/asset_transformer_api/extension_based_registration.py``
+* ``snippets/robot_setup/asset_transformer_api/loading_profile_from_json.py``
+* ``snippets/robot_setup/asset_transformer_api/querying_registered_rules.py``
+* ``snippets/robot_setup/asset_transformer_api/rule_interface.py``
+* ``snippets/robot_setup/asset_transformer_api/rule_logging.py``
+* ``snippets/robot_setup/asset_transformer_api/rule_spec_reference.py``
+* ``snippets/robot_setup/asset_transformer_api/saving_execution_report.py``
 
 snippets/robot_setup_tutorials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

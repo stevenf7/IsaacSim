@@ -781,6 +781,48 @@ local function get_doc_snippets_tests()
             "standalone_examples/testing/doc_snippets/snippets/sensors/isaacsim_sensors_rtx_annotators/attach_the_render_product_after_the_annotator_is_i.py",
             "--test",
         },
+        -- motion_generation/controllers (no noise and no filtering)
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example",
+            "standalone_examples/testing/doc_snippets/snippets/motion_generation/controllers/mobile_robot_control_example.py",
+            "--test",
+        },
+        -- motion_generation/controllers (noise but no filtering)
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example.noise",
+            "standalone_examples/testing/doc_snippets/snippets/motion_generation/controllers/mobile_robot_control_example.py --noise",
+            "--test",
+        },
+        -- motion_generation/controllers (filter but no noise)
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example.filter",
+            "standalone_examples/testing/doc_snippets/snippets/motion_generation/controllers/mobile_robot_control_example.py --filter",
+            "--test",
+        },
+        -- motion_generation/controllers (filter and noise)
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example.filter_and_noise",
+            "standalone_examples/testing/doc_snippets/snippets/motion_generation/controllers/mobile_robot_control_example.py --filter --noise",
+            "--test",
+        },
+        -- motion_generation/scene_interaction
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.scene_interaction.scene_interaction_example",
+            "standalone_examples/testing/doc_snippets/snippets/motion_generation/scene_interaction/scene_interaction_example.py",
+            "--test",
+        },
+        -- motion_generation/trajectories (minimal-time trajectory)
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.trajectories.trajectory_example",
+            "standalone_examples/testing/doc_snippets/snippets/motion_generation/trajectories/trajectory_example.py",
+            "--test",
+        },
+        -- motion_generation/trajectories (linear trajectory)
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.trajectories.trajectory_example.linear",
+            "standalone_examples/testing/doc_snippets/snippets/motion_generation/trajectories/trajectory_example.py --linear",
+            "--test",
+        },
         -- utilities/debugging/profiling_performance
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.utilities.debugging.profiling_performance.standalone_workflow",
