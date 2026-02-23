@@ -158,14 +158,9 @@
 
         document.addEventListener('keydown', function (e) {
             if (s.idx < 0) return;
-            if (e.key === 'Escape') { hide(s); }
-            else if (e.key === 'ArrowLeft') { go(s, -1); }
-        document.addEventListener('keydown', function (e) {
-            if (s.idx < 0) return;
             if (e.key === 'Escape') { e.preventDefault(); hide(s); }
             else if (e.key === 'ArrowLeft') { e.preventDefault(); go(s, -1); }
             else if (e.key === 'ArrowRight') { e.preventDefault(); go(s, 1); }
-        });
         });
 
         s.el.addEventListener('touchstart', function (e) {
