@@ -78,6 +78,7 @@
 
    importer_exporter/importers_exporters
    robot_setup/index
+   motion_generation/index
    robot_simulation/index
    sensors/index
    physics/index
