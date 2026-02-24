@@ -33,3 +33,5 @@ Third-Party SimReady USD Assets
      - InteriorAgent, InteriorGS, InteriorAgent_Nav datasets for synthetic data generation.
    * - `XGrid  Scan to Simulation Tutorial <https://developer.xgrids.com/#/document?titleId=en-1761533581983>`_
      - Tutorial for converting a 3D scan to a simulation environment in |isaac-sim|.
+   * - `MolmoSpaces <https://allenai.org/blog/molmospaces>`_
+     - A large-scale dataset with articulated 3D objects and diverse indoor scenes.
