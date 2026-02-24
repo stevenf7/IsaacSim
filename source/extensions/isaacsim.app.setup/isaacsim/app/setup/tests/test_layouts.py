@@ -21,7 +21,7 @@ from pathlib import Path
 
 import carb
 import omni.kit.app
-from omni.kit import ui_test
+import omni.kit.ui_test as ui_test
 from omni.kit.quicklayout import QuickLayout
 from omni.kit.test import AsyncTestCase
 from omni.ui.workspace_utils import CompareDelegate

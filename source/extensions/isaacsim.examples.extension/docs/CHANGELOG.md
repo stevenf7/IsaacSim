@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.1.4] - 2026-02-23
+### Changed
+- Add ticked=True to Extension Generator menu item
+
 ## [2.1.3] - 2025-12-15
 ### Changed
 - Fix event name usage.

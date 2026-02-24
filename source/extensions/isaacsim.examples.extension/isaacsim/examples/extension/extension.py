@@ -16,18 +16,17 @@
 import asyncio
 import gc
 import os
-import weakref
 
 import carb
 import omni
+import omni.kit.actions.core
 import omni.kit.commands
 import omni.timeline
 import omni.ui as ui
 import omni.usd
 from isaacsim.gui.components.element_wrappers import CollapsableFrame, ScrollingWindow, TextBlock
-from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers, str_builder
-from omni.kit.menu.utils import add_menu_items, remove_menu_items
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, refresh_menu_items, remove_menu_items
 
 from .template_generator import TemplateGenerator
 
@@ -50,22 +49,42 @@ class Extension(omni.ext.IExt):
         # UI
         self._models = {}
         self._ext_id = ext_id
+        self._action_id = "show_generate_extension_templates"
+
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.register_action(
+            ext_id,
+            self._action_id,
+            lambda *_: self._menu_callback(),
+            description=f"Open {EXTENSION_NAME} window",
+        )
+
         self._menu_items = [
-            make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
+            MenuItemDescription(
+                name=EXTENSION_NAME,
+                onclick_action=(ext_id, self._action_id),
+                ticked=True,
+                ticked_fn=self._is_visible,
+            )
         ]
-        # self._menu_items = [MenuItemDescription(name="Workflows", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Utilities")
 
         self._template_generator = TemplateGenerator()
 
     def on_shutdown(self):
         self._models = {}
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.deregister_action(self._ext_id, self._action_id)
         remove_menu_items(self._menu_items, "Utilities")
         if self._window:
             self._window = None
         gc.collect()
 
+    def _is_visible(self) -> bool:
+        return self._window.visible if self._window else False
+
     def _on_window(self, visible):
+        refresh_menu_items("Utilities")
         if self._window.visible:
             self._build_ui()
 

@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utilities menu layout for Isaac Sim."""
+import omni.kit.actions.core
 import omni.kit.menu.utils
-from isaacsim.gui.components.menu import make_menu_item_description
-from omni.kit.menu.utils import LayoutSourceSearch, MenuItemDescription, MenuLayout
+from omni.kit.menu.utils import LayoutSourceSearch, MenuItemDescription, MenuLayout, refresh_menu_items
 
 from .asset_check import AssetCheck
 
@@ -28,13 +28,28 @@ class UtilitiesMenuExtension:
     """
 
     def __init__(self, ext_id: str) -> None:
-        self._asset_check = AssetCheck()
+        self._ext_id = ext_id
+        self._asset_check = AssetCheck(on_visibility_changed=self._on_asset_check_visibility_changed)
 
         self._menu_placeholder = [MenuItemDescription(name="placeholder", show_fn=lambda: False)]
         omni.kit.menu.utils.add_menu_items(self._menu_placeholder, "Utilities")
 
+        self._action_id = "check_default_assets_root_path"
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.register_action(
+            ext_id,
+            self._action_id,
+            self._asset_check.check_assets,
+            description="Check Default Assets Root Path",
+        )
+
         self._menu_items = [
-            make_menu_item_description(ext_id, "Check Default Assets Root Path", self._asset_check.check_assets),
+            MenuItemDescription(
+                name="Check Default Assets Root Path",
+                onclick_action=(ext_id, self._action_id),
+                ticked=True,
+                ticked_fn=self._is_visible,
+            ),
         ]
         omni.kit.menu.utils.add_menu_items(self._menu_items, "Utilities")
 
@@ -56,6 +71,12 @@ class UtilitiesMenuExtension:
         ]
         omni.kit.menu.utils.add_layout(self.__menu_layout)
 
+    def _is_visible(self) -> bool:
+        return self._asset_check.is_visible() if self._asset_check else False
+
+    def _on_asset_check_visibility_changed(self) -> None:
+        refresh_menu_items("Utilities")
+
     def shutdown(self) -> None:
         """Remove menu layouts and placeholders.
 
@@ -68,5 +89,7 @@ class UtilitiesMenuExtension:
         omni.kit.menu.utils.remove_layout(self.__menu_layout)
         omni.kit.menu.utils.remove_menu_items(self._menu_items, "Utilities")
         omni.kit.menu.utils.remove_menu_items(self._menu_placeholder, "Utilities")
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.deregister_action(self._ext_id, self._action_id)
         self._asset_check.destroy()
         self._asset_check = None

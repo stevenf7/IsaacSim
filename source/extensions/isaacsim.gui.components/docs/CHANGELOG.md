@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.6.1] - 2026-02-23
+### Changed
+- Remove unused dependencies
+
 ## [1.6.0] - 2026-02-07
 ### Changed
 - Add menu.open_content_browser_to_path to open the Content Browser to a specific path

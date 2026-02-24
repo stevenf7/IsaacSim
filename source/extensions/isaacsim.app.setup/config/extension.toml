@@ -1,5 +1,5 @@
 [package]
-version = "1.9.2"
+version = "1.9.3"
 category = "Setup"
 title = "Isaac Sim Setup"
 description = "This Extension does the setup of the Isaac Sim App"
@@ -46,6 +46,7 @@ isaac.startup.ros_sim_control_extension = false
 
 [[test]]
 dependencies = [
+    "omni.kit.ui_test",
     "isaacsim.asset.gen.omap.ui",            # extension with occupancy map,
     "isaacsim.examples.browser",         # robotics examples,
     "isaacsim.replicator.synthetic_recorder",    # extension with synthetic_recorder,

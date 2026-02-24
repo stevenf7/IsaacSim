@@ -14,6 +14,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.experimental.objects" = {}
 "isaacsim.core.experimental.utils" = {}
 "isaacsim.gui.components" = {}
 "omni.kit.uiapp" = {}

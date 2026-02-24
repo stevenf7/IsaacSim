@@ -31,13 +31,14 @@ class AssetCheck:
     manually from the *Utilities > Check Default Assets Root Path* menu item.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, on_visibility_changed=None) -> None:
         self._assets_check = False
         self._startup_run = True
         self._cancel_download_btn = None
         self._server_window = None
         self._check_success = None
         self._assets_server = None
+        self._on_visibility_changed = on_visibility_changed
 
         # Run initial check (skips on first startup)
         self._await_new_scene = asyncio.ensure_future(self._assets_check_window())
@@ -47,20 +48,37 @@ class AssetCheck:
         self._server_window = None
         self._check_success = None
 
+    def is_visible(self) -> bool:
+        """Return True if any asset-check window is currently visible."""
+        if self._server_window and self._server_window.visible:
+            return True
+        if self._check_success and self._check_success.visible:
+            return True
+        return False
+
+    def _notify_visibility_changed(self, _visible=None) -> None:
+        if self._on_visibility_changed:
+            self._on_visibility_changed()
+
     def check_assets(self) -> None:
-        """Trigger an asset root path check.
+        """Trigger an asset root path check, or hide result windows if already visible.
 
         This is the callback invoked by the Utilities menu item.
         """
-        if self._cancel_download_btn and self._cancel_download_btn.visible:
-            self._server_window.visible = True
-        else:
-            if self._server_window and self._server_window.visible:
+        if self.is_visible():
+            if self._server_window:
                 self._server_window.visible = False
                 self._server_window = None
-            if self._check_success and self._check_success.visible:
+            if self._check_success:
                 self._check_success.visible = False
                 self._check_success = None
+            self._notify_visibility_changed()
+            return
+
+        if self._cancel_download_btn and self._cancel_download_btn.visible:
+            self._server_window.visible = True
+            self._notify_visibility_changed()
+        else:
             asyncio.ensure_future(self._assets_check_window())
 
     # ------------------------------------------------------------------
@@ -93,6 +111,7 @@ class AssetCheck:
             flags=ui.WINDOW_FLAGS_NO_RESIZE | ui.WINDOW_FLAGS_NO_SCROLLBAR | ui.WINDOW_FLAGS_NO_TITLE_BAR,
             visible=True,
         )
+        self._check_success.set_visibility_changed_fn(self._notify_visibility_changed)
 
         def hide(w):
             w.visible = False
@@ -159,6 +178,7 @@ class AssetCheck:
 
             frame_height = 150
             self._server_window = ui.Window("Checking Isaac Sim Assets", width=350, height=frame_height, visible=True)
+            self._server_window.set_visibility_changed_fn(self._notify_visibility_changed)
             with self._server_window.frame:
                 with ui.VStack():
                     ui.Label("Warning: Isaac Sim Assets not found", style={"color": 0xFF00FFFF})

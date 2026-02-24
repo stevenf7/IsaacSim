@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.7.1] - 2026-02-23
+### Changed
+- Add ticked=True to Asset Check menu item
+
 ## [2.7.0] - 2026-02-07
 ### Changed
 - Remove Asset Browser from menu and context menu
