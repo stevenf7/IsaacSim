@@ -1,4 +1,7 @@
 # Changelog
+## [0.2.0] - 2026-02-18
+### Added
+- New `omni.simready.content.browser` extension for Simready asset search
 
 ## [0.1.19] - 2026-01-09
 ### Changed
