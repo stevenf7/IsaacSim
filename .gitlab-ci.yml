@@ -1496,7 +1496,7 @@ verify-publish-python-packages-linux-x86_64:
       - export OMNI_KIT_ACCEPT_EULA=YES
       # run tests
       - python -c "import isaacsim"
-      - isaacsim isaacsim.exp.full --/app/quitAfter=100 --/app/file/ignoreUnsavedOnExit=1 --no-window
+      - isaacsim isaacsim.exp.full --/app/quitAfter=100 --/app/file/ignoreUnsavedStage=1 --no-window
     needs:
       - job: publish-python-packages-linux-x86_64
         artifacts: true
@@ -1529,7 +1529,7 @@ verify-publish-python-packages-windows-x86_64:
       - $env:OMNI_KIT_ACCEPT_EULA = "YES"
       # run tests
       - python -c "import isaacsim"
-      - isaacsim isaacsim.exp.full --/app/quitAfter=100 --/app/file/ignoreUnsavedOnExit=1 --no-window
+      - isaacsim isaacsim.exp.full --/app/quitAfter=100 --/app/file/ignoreUnsavedStage=1 --no-window
     needs:
       - job: publish-python-packages-windows-x86_64
         artifacts: true

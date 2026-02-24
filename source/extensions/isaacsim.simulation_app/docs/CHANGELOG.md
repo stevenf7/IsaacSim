@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.15.3] - 2026-02-20
+### Changed
+- Close stage in simulation app close() method to avoid errors
+
 ## [2.15.2] - 2026-02-16
 ### Changed
 - Update error message when application fails to start and exit before proceeding to make debugging easier. 

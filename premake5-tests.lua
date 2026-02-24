@@ -55,22 +55,22 @@ local function get_startup_tests()
         {
             name = "tests-startup.main",
             kit_file = "isaacsim.exp.full",
-            extra_args = "--/app/quitAfter=100 --/app/file/ignoreUnsavedOnExit=1",
+            extra_args = "--/app/quitAfter=100 --/app/file/ignoreUnsavedStage=1",
         },
         {
             name = "tests-startup.streaming",
             kit_file = "isaacsim.exp.full.streaming",
-            extra_args = "--no-window --/app/quitAfter=100 --/app/file/ignoreUnsavedOnExit=1",
+            extra_args = "--no-window --/app/quitAfter=100 --/app/file/ignoreUnsavedStage=1",
         },
         {
             name = "tests-startup.extscache",
             kit_file = "isaacsim.exp.full",
-            extra_args = "--no-window --/app/quitAfter=100 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedOnExit=1",
+            extra_args = "--no-window --/app/quitAfter=100 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedStage=1",
         },
         {
             name = "tests-startup.xr.vr",
             kit_file = "isaacsim.exp.base.xr.vr",
-            extra_args = "--no-window --/app/quitAfter=100 --/app/file/ignoreUnsavedOnExit=1",
+            extra_args = "--no-window --/app/quitAfter=100 --/app/file/ignoreUnsavedStage=1",
         },
     }
 end

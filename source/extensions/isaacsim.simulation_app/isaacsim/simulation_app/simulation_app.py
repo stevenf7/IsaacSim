@@ -879,7 +879,12 @@ class SimulationApp:
         except Exception:
             pass
         carb.log_info("SimulationApp.close: Replicator shutdown finished")
-        # Explicit stage close call is not needed as the framework shutdown will handle cleanup.
+        # Prevents issues when exiting
+        if self.context.can_close_stage():
+            self.context.close_stage()
+            carb.log_info("SimulationApp.close: Stage closed")
+        else:
+            carb.log_info("SimulationApp.close: Stage could not be closed")
         # check if exited already
         self._exiting = True
         self._app.print_and_log("Simulation App Shutting Down")
