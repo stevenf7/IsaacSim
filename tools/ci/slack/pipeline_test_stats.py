@@ -24,7 +24,7 @@ kaleido.get_chrome_sync()
 load_dotenv()
 
 # GitLab configuration from environment
-PRIVATE_TOKEN = os.getenv("CI_GITLAB_API_TOKEN")
+PRIVATE_TOKEN = os.getenv("ISAAC_MAINTAINER_RO_TOKEN", os.getenv("CI_GITLAB_API_TOKEN"))
 if PRIVATE_TOKEN is None:
     PRIVATE_TOKEN = os.getenv("PRIVATE_TOKEN")
 GITLAB_URL = os.getenv("GITLAB_URL", "https://gitlab-master.nvidia.com")
@@ -903,6 +903,7 @@ def create_test_heatmap(
     exclude_patterns: Optional[List[str]] = None,
     quiet: bool = False,
     debug_output: bool = False,
+    subtitle: Optional[str] = None,
 ):
     """
     Create a heatmap showing individual test pass/fail status across pipelines.
@@ -914,6 +915,7 @@ def create_test_heatmap(
         exclude_patterns: List of substrings to exclude jobs by (e.g., ["integration-nightly"])
         quiet: If True, suppress output and don't open browser
         debug_output: If True, print detailed debug information about subplot allocation
+        subtitle: Optional second line title (subtitle) for the heatmap chart
     """
     if exclude_patterns is None:
         exclude_patterns = []
@@ -1231,9 +1233,20 @@ def create_test_heatmap(
     # Update layout - use the calculated total height
     base_height = 150  # For title and margins
 
+    legend_line = (
+        '<sup style="font-size:12px">🟢 Pass | ⬜ Skipped | ⬛ Not Run | 🔵 Timeout | 🟣 Error | 🔴 Failed</sup>'
+    )
+    title_text = "Test Results Heatmap by Job"
+    if subtitle:
+        title_text += f'<br><span style="font-size:14px">{subtitle}</span>'
+    title_text += f"<br>{legend_line}"
+
+    # Extra top margin when subtitle is present so title + subtitle + legend don't overlap the chart
+    top_margin = 160 if subtitle else 100
+
     fig.update_layout(
         title={
-            "text": 'Test Results Heatmap by Job<br><sup style="font-size:12px">🟢 Pass | ⬜ Skipped | ⬛ Not Run | 🔵 Timeout | 🟣 Error | 🔴 Failed</sup>',
+            "text": title_text,
             "x": 0.5,
             "xanchor": "center",
             "font": {"size": 24},
@@ -1241,7 +1254,7 @@ def create_test_heatmap(
         template="plotly_dark",
         height=max(400, base_height + total_pixel_height),
         width=1400,  # Wider chart
-        margin=dict(l=300, r=20, t=100, b=80),  # Tighter margins, more top for subtitle
+        margin=dict(l=300, r=20, t=top_margin, b=80),
     )
 
     # Add y-axis configuration for each subplot
@@ -1346,6 +1359,7 @@ def run(
     debug_output: bool = False,
     variable_filters: Optional[Dict[str, str]] = None,
     pipeline_sources: Optional[List[str]] = None,
+    heatmap_subtitle: Optional[str] = None,
 ):
     """
     Main function to fetch and display pipeline test stats.
@@ -1361,6 +1375,7 @@ def run(
         debug_output: If True, print detailed debug information
         variable_filters: Optional dict of variable_name: expected_value to filter pipelines
         pipeline_sources: Optional list of acceptable pipeline sources (e.g., ["push", "web", "schedule"])
+        heatmap_subtitle: Optional second line title for the heatmap chart
     """
 
     kaleido.get_chrome_sync()
@@ -1386,7 +1401,12 @@ def run(
     if heatmap:
         heatmap_file = output_chart.replace(".html", "_heatmap.html")
         create_test_heatmap(
-            pipelines, heatmap_file, exclude_patterns=exclude_patterns, quiet=quiet, debug_output=debug_output
+            pipelines,
+            heatmap_file,
+            exclude_patterns=exclude_patterns,
+            quiet=quiet,
+            debug_output=debug_output,
+            subtitle=heatmap_subtitle,
         )
 
 
@@ -1491,6 +1511,13 @@ Examples:
     parser.add_argument(
         "--debug-output", "-d", action="store_true", help="Print detailed debug information about heatmap generation"
     )
+    parser.add_argument(
+        "--heatmap-title",
+        type=str,
+        default=None,
+        metavar="TEXT",
+        help="Second line title (subtitle) for the heatmap chart (only used with --heatmap)",
+    )
 
     args = parser.parse_args()
 
@@ -1523,4 +1550,5 @@ Examples:
         debug_output=args.debug_output,
         variable_filters=variable_filters_dict,
         pipeline_sources=pipeline_sources_list,
+        heatmap_subtitle=args.heatmap_title,
     )

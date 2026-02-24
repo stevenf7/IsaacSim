@@ -169,14 +169,15 @@ def find_kit_build_job_in_pipeline(platform, config, gitlab_url, project_id, pip
     """
     # Find the target job in the pipeline
     target_job_name = f"kit-build-{config}-{platform}"
-    jobs_url = f"{gitlab_url}/api/v4/projects/{project_id}/pipelines/{pipeline_id}/jobs"
-    response = requests.get(jobs_url, headers=headers, params={"per_page": 100}, timeout=30)
-    response.raise_for_status()
-    jobs = response.json()
+    for page in range(1,4):
+        jobs_url = f"{gitlab_url}/api/v4/projects/{project_id}/pipelines/{pipeline_id}/jobs?per_page=100&page={page}"
+        response = requests.get(jobs_url, headers=headers, timeout=30)
+        response.raise_for_status()
+        jobs = response.json()
 
-    target_jobs = [job for job in jobs if job["name"] == target_job_name and job["status"] == "success"]
-    if len(target_jobs) == 1:
-        return True, target_jobs[0]
+        target_jobs = [job for job in jobs if job["name"] == target_job_name and job["status"] == "success"]
+        if len(target_jobs) == 1:
+            return True, target_jobs[0]
 
     return False, None
 
