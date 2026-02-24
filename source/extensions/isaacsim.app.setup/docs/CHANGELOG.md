@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.9.3] - 2026-02-23
+### Changed
+- Add logging to await_viewport to help debug viewport handle not being available
+
 ## [1.9.2] - 2026-02-16
 ### Changed
 - Add missing dependency for Robot Hierarchy window

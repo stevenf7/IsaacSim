@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.4.3] - 2026-02-23
+### Changed
+- Add ui test dependency
+
 ## [2.4.2] - 2026-02-05
 ### Changed
 - Added dock info for Robot Hierarchy window

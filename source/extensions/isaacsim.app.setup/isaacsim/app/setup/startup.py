@@ -94,11 +94,13 @@ async def await_viewport(
 
     # Wait for viewport handle if not already available
     if viewport_api.frame_info.get("viewport_handle", None) is None:
+        carb.log_info("await_viewport: viewport handle not yet available, waiting for first frame...")
         future: asyncio.Future = asyncio.Future()
 
         def on_frame_event(e: carb.eventdispatcher.Event) -> None:
             vp_handle = viewport_api.frame_info.get("viewport_handle", None)
             if vp_handle is not None and not future.done():
+                carb.log_info(f"await_viewport: viewport handle acquired ({vp_handle})")
                 future.set_result(None)
 
         usd_context = omni.usd.get_context()
@@ -108,7 +110,10 @@ async def await_viewport(
             on_event=on_frame_event,
             observer_name="isaacsim.app.setup.wait_for_viewport",
         )
+        frame_count = 0
         while not future.done():
+            frame_count += 1
+            carb.log_info(f"await_viewport: waiting for viewport handle... frame {frame_count}")
             await update_callback()
         sub = None
 

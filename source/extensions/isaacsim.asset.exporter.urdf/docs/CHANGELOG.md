@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.2] - 2026-02-23
+### Changed
+- Add explicit omni.physics.physx dependency
+
 ## [1.4.1] - 2025-12-14
 ### Changed
 - Update lxml==6.0.2
