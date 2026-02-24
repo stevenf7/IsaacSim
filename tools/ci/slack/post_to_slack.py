@@ -9,6 +9,7 @@
 import argparse
 import os
 import time
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 
@@ -230,6 +231,7 @@ def post_heatmap_to_slack(
     pipeline_sources: list[str] | None = None,
     exclude_isaaclab: bool = True,
     exclude_container_tests: bool = False,
+    heatmap_subtitle: str | None = None,
 ) -> None:
     """Generate and upload test heatmap to Slack.
 
@@ -241,6 +243,7 @@ def post_heatmap_to_slack(
         variable_filters: Dict of variable filters for pipeline_test_stats (optional)
         pipeline_sources: List of pipeline sources to filter (optional)
         exclude_isaaclab: Whether to exclude Isaac Lab integration tests (default: True)
+        heatmap_subtitle: Second line title for the heatmap chart (optional)
     """
     # Build kwargs for run_pipeline_test_stats
     stats_kwargs = {
@@ -256,7 +259,8 @@ def post_heatmap_to_slack(
         stats_kwargs["variable_filters"] = variable_filters
     if pipeline_sources is not None:
         stats_kwargs["pipeline_sources"] = pipeline_sources
-
+    if heatmap_subtitle is not None:
+        stats_kwargs["heatmap_subtitle"] = heatmap_subtitle
     if exclude_isaaclab:
         stats_kwargs["exclude_patterns"].append("isaaclab")
 
@@ -434,6 +438,11 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
 
     # Check for downstream nightly pipelines to get extra reporting
     if pipeline_type == PipelineType.KIT_NIGHTLY:
+
+        heatmap_subtitle = f"Nightly Kit Pipeline for branch {os.getenv('CI_COMMIT_REF_NAME', 'develop-kit-tot')}"
+        # Append datetime to the subtitle
+        heatmap_subtitle += f" on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+
         # Generate and upload a heatmap of the test report
         post_heatmap_to_slack(
             display_pipeline_url,
@@ -441,6 +450,7 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
             thread_ts,
             branch=os.getenv("CI_COMMIT_REF_NAME", "develop-kit-tot"),
             variable_filters={"UPSTREAM_PIPELINE_SOURCE": "nightly"},
+            heatmap_subtitle=heatmap_subtitle,
         )
         time.sleep(10)
 
@@ -449,6 +459,11 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
 
     # For Kit post-merge we want to generate a heatmap
     if pipeline_type == PipelineType.KIT_POST_MERGE:
+
+        heatmap_subtitle = f"Post-Merge Kit Pipeline for branch {os.getenv('CI_COMMIT_REF_NAME', 'develop-kit-tot')}"
+        # Append datetime to the subtitle
+        heatmap_subtitle += f" on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+
         # Generate and upload a heatmap of the test report
         post_heatmap_to_slack(
             display_pipeline_url,
@@ -457,6 +472,7 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
             branch=os.getenv("CI_COMMIT_REF_NAME", "develop-kit-tot"),
             variable_filters={"UPSTREAM_PIPELINE_SOURCE": "post_merge"},
             exclude_container_tests=True,
+            heatmap_subtitle=heatmap_subtitle,
         )
 
     if pipeline_type == PipelineType.KIT_MR:
@@ -496,6 +512,9 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
 
     # Check for post-merge develop pipelines to get just heatmaps
     if pipeline_type == PipelineType.ISAAC_POST_MERGE:
+        heatmap_subtitle = f"Post-Merge Isaac Pipeline for branch {os.getenv('CI_COMMIT_REF_NAME', 'develop')}"
+        # Append datetime to the subtitle
+        heatmap_subtitle += f" on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         # Generate and upload a heatmap of the test report
         post_heatmap_to_slack(
             display_pipeline_url,
@@ -503,6 +522,7 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
             thread_ts,
             branch="develop",
             pipeline_sources=["push"],
+            heatmap_subtitle=heatmap_subtitle,
         )
 
     # For non-downstream MRs make sure we post the analyze_test_suites report
@@ -516,6 +536,9 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
 
     # Testing code, should not encounter normally
     if os.getenv("SEND_HEATMAP") == "true":
+        heatmap_subtitle = f"Isaac Pipeline for branch {os.getenv('CI_COMMIT_REF_NAME', 'develop')}"
+        # Append datetime to the subtitle
+        heatmap_subtitle += f" on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         post_heatmap_to_slack(
             display_pipeline_url,
             channel,
@@ -524,6 +547,7 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
             pipeline_sources=["push"],
             exclude_isaaclab=True,
             exclude_container_tests=True,
+            heatmap_subtitle=heatmap_subtitle,
         )
 
 

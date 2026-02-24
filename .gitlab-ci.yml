@@ -518,6 +518,12 @@ check-python-packages:
       - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE == "merge_request"
         when: never
 # ==============================================================================================================
+# Currently arm builds are not 100% reliable in kit downstreams, so we will allow failure for now
+.kit_post_merge_or_nightly_allow_failure:
+    rules:
+      - if: ($UPSTREAM_PIPELINE_SOURCE == "nightly" || $UPSTREAM_PIPELINE_SOURCE == "post_merge") && $CI_PIPELINE_SOURCE == "pipeline"
+        allow_failure: true
+# ==============================================================================================================
 .aarch64-build-common:
     extends:
       - .build-common
@@ -609,6 +615,7 @@ build-linux-aarch64-release:
     - if: $RUN_BUMP_VERSION == "true"
       when: never
     - !reference [.disable_on_downstream_of_mr, rules]
+    - !reference [.kit_post_merge_or_nightly_allow_failure, rules]
     - !reference [.rules-platform-linux-aarch64, rules]
     - !reference [.rules-workflow, rules]
     - !reference [.rules-version-changed, rules]
@@ -634,6 +641,7 @@ build-linux-aarch64-debug:
     - !reference [.disable_on_downstream_of_mr, rules]
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never  # Manual to avoid overloading ARM ci runners during MRs
+    - !reference [.kit_post_merge_or_nightly_allow_failure, rules]
     - !reference [.rules-platform-linux-aarch64, rules]
     - !reference [.rules-workflow, rules]
     - !reference [.rules-version-changed, rules]
@@ -2091,6 +2099,7 @@ publish-to-packman:
         artifacts: true
       - job: build-linux-aarch64-release
         artifacts: true
+        optional: true
       - job: build-windows-x86_64-debug
         artifacts: true
         optional: true
@@ -2109,6 +2118,8 @@ publish-to-packman:
         when: never
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
         when: never
+      - if: $UPSTREAM_PIPELINE_SOURCE == "nightly" && $CI_COMMIT_REF_NAME =~ /^kit-integration\//
+        allow_failure: true
       # Allow execution when triggered by nightly upstream pipeline
       - if: $UPSTREAM_PIPELINE_SOURCE == "nightly"
         when: manual

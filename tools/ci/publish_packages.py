@@ -110,8 +110,14 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             if use_alternate_naming:
                 # Rename the package (move it to new name)
                 original_name = Path(package).name
-                # Replace "isaac-sim-standalone" with "isaac-sim-standalone-kit-tot"
-                new_name = original_name.replace("isaac-sim-standalone", "isaac-sim-standalone-kit-tot")
+
+                commit_ref = os.environ.get("CI_COMMIT_REF_NAME", "")
+                if commit_ref.startswith("kit-integration/"):
+                    kit_branch = commit_ref.removeprefix("kit-integration/")
+                    kit_branch = kit_branch.replace("/", "-")
+                    new_name = original_name.replace("isaac-sim-standalone", f"isaac-sim-standalone-kit-tot-{kit_branch}")
+                else:
+                    new_name = original_name.replace("isaac-sim-standalone", "isaac-sim-standalone-kit-tot")
                 new_package_path = Path(package).parent / new_name
                 
                 logger.info(f"Renaming package: {original_name} -> {new_name}")
