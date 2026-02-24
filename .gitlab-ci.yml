@@ -753,12 +753,19 @@ build-windows-x86_64-debug:
       - !reference [.disable_on_downstream_of_mr, rules]
       - !reference [.rules-workflow, rules]
 
+# Set REPORT_TIMING to "after_script" for pythontests/nativepythontests, "inline" otherwise. Reference at start of script in matrix test jobs.
+.determine_report_generation_timing_linux:
+  script:
+    - if [ "$SUITE" == "pythontests" ] || [ "$SUITE" == "nativepythontests" ]; then export REPORT_TIMING="after_script"; else export REPORT_TIMING="inline"; fi
+
+.determine_report_generation_timing_windows:
+  script:
+    - if ($env:SUITE -eq "pythontests" -or $env:SUITE -eq "nativepythontests") { $env:REPORT_TIMING = "after_script" } else { $env:REPORT_TIMING = "inline" }
+
 .test-linux-common:
-    variables:
-      REPORT_TIMING: "after_script"
     after_script:
       - !reference [.datadog-test-visibility-linux-x86_64, script]
-      - ./repo.sh ci test -- --generate-report
+      - !reference [.determine_report_generation_timing_linux, script]
       - mkdir -p _build/intermediate/${CI_JOB_ID}
       - mv _build/intermediate/linux-x86_64 _build/intermediate/${CI_JOB_ID}/
       - INTERMEDIATE_FOLDER=$(find _build/packages/ -type d -iname 'intermediate')
@@ -776,7 +783,9 @@ build-windows-x86_64-debug:
 .test-windows-common:
     after_script:
       - !reference [.datadog-test-visibility-windows-x86_64, script]
-      - ./repo.bat ci test -- --generate-report
+      # Only generate report in after_script when not using inline reporting (cmd.exe compatible)
+      - !reference [.determine_report_generation_timing_windows, script]
+      - cmd /c "if not \"%REPORT_TIMING%\"==\"inline\" (repo.bat ci test -- --generate-report)"
     needs:
       - job: build-windows-x86_64-release-vs2026
         artifacts: true
@@ -825,6 +834,7 @@ test-linux-x86_64:
       - .kit-runner-test-linux-x86_64-1x-gpu
       - .test-linux-matrix
   script:
+    - !reference [.determine_report_generation_timing_linux, script]
     - if [ "$REPORT_TIMING" == "inline" ]; then
     -   GEN_REPORT_CMD="--generate-report"
     - else
@@ -880,8 +890,11 @@ test-windows-x86_64:
       - .kit-runner-test-windows-x86_64-1x-gpu
       - .test-windows-matrix
     script:
+      - !reference [.determine_report_generation_timing_windows, script]
+      - if ($env:REPORT_TIMING -eq "inline") { $GEN_REPORT_CMD = @("--generate-report") } else { $GEN_REPORT_CMD = @() }
       - if ($BUCKET) { $BUCKET_CMD = @("-b", $BUCKET)} else { $BUCKET_CMD = @() }
-      - ./repo.bat ci test -- -s $SUITE @BUCKET_CMD
+      - Write-Host "Running test with suite $SUITE $BUCKET_CMD $GEN_REPORT_CMD"
+      - ./repo.bat ci test -- -s $SUITE @BUCKET_CMD @GEN_REPORT_CMD
 
 # ==============================================================================================================
 # nightly-tests

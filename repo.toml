@@ -491,6 +491,24 @@ tests_per_process = 1
 stdout_fail_patterns.include = ["*[error]*", "*[fatal]*", "*[fail]*"]
 
 
+generate_report_cmd = [
+  "./repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "startuptests",
+]
+
+"platform:windows-x86_64".generate_report_cmd = [
+  "repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "startuptests",
+]
+
 #-----------------------------------------------------------------------------------------------------------------------
 # Test Suite: 	Startup Tests
 # Description: 	Just run and exit big app configuration for both smoke testing and compiling shaders.
@@ -542,6 +560,24 @@ kind = "glob_and_exec"
 path = "${test_root}"
 tests_per_process = 1
 
+generate_report_cmd = [
+  "./repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "postinstalltests",
+]
+
+"platform:windows-x86_64".generate_report_cmd = [
+  "repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "postinstalltests",
+]
+
 [[repo_test.suites.postinstalltests.group]]
 include = ["post_install${shell_ext}"]
 timeout = 1500
@@ -550,6 +586,24 @@ timeout = 1500
 kind = "glob_and_exec"
 path = "${test_root}"
 tests_per_process = 1
+
+generate_report_cmd = [
+  "./repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "warmuptests",
+]
+
+"platform:windows-x86_64".generate_report_cmd = [
+  "repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "warmuptests",
+]
 
 [[repo_test.suites.warmuptests.group]]
 include = ["warmup${shell_ext}"]
@@ -570,6 +624,14 @@ generate_report_cmd = [
   "pythontests",
 ]
 
+"platform:windows-x86_64".generate_report_cmd = [
+  "repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "pythontests",
+]
 
 [[repo_test.suites.pythontests.group]]
 "platform:linux-x86_64".args = [
@@ -668,6 +730,15 @@ generate_report_cmd = [
   "benchmarks",
 ]
 
+"platform:windows-x86_64".generate_report_cmd = [
+  "repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "benchmarks",
+]
+
 [[repo_test.suites.benchmarks.group]]
 "platform:linux-x86_64".args = [
   "--portable-root ${test_root}/portable_root",
@@ -712,6 +783,15 @@ generate_report_cmd = [
   "nativepythontests",
 ]
 
+"platform:windows-x86_64".generate_report_cmd = [
+  "repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "nativepythontests",
+]
+
 [[repo_test.suites.nativepythontests.group]]
 args = [
   "--portable-root ${test_root}/portable_root",
@@ -743,6 +823,24 @@ path = "${test_root}/tests/doc_snippets"
 stdout_fail_patterns.include = ["*[error]*", "*[fatal]*", "*[fail]*"]
 tc_report_enabled = false
 
+generate_report_cmd = [
+  "./repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "doc_snippets",
+]
+
+"platform:windows-x86_64".generate_report_cmd = [
+  "repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "doc_snippets",
+]
+
 [[repo_test.suites.doc_snippets.group]]
 include = ["tests-nativepython*${shell_ext}"]
 exclude = ["*test_snippets_async*"]
@@ -753,6 +851,24 @@ kind = "glob_and_exec"
 path = "${test_root}/tests/doc_snippets"
 stdout_fail_patterns.include = ["*[error]*", "*[fatal]*", "*[fail]*"]
 tc_report_enabled = false
+
+generate_report_cmd = [
+  "./repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "doc_snippets_async",
+]
+
+"platform:windows-x86_64".generate_report_cmd = [
+  "repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "doc_snippets_async",
+]
 
 [[repo_test.suites.doc_snippets_async.group]]
 include = ["*test_snippets_async*"]
@@ -767,6 +883,15 @@ path = "${test_root}/tests"
 
 generate_report_cmd = [
   "./repo${shell_ext}",
+  "ci",
+  "standalone_report",
+  "--",
+  "${test_root}/_testoutput",
+  "external",
+]
+
+"platform:windows-x86_64".generate_report_cmd = [
+  "repo${shell_ext}",
   "ci",
   "standalone_report",
   "--",

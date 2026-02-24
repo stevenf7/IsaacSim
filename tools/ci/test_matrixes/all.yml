@@ -23,7 +23,6 @@
           - api
           - replicator
           - testing
-        REPORT_TIMING: ["inline"]
 
 
 .test-windows-matrix:
