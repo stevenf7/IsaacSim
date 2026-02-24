@@ -608,6 +608,13 @@ plot.on('plotly_click', function(data) {{
         webbrowser.open(f"file://{os.path.abspath(output_file)}")
 
 
+def _strip_inline_from_job_name(name: str) -> str:
+    """If job name contains ', inline]', normalize to ']' so inline and after_script jobs match."""
+    if ", inline]" in name:
+        return name.replace(", inline]", "]")
+    return name
+
+
 def parse_job_name(job_name: str) -> Tuple[str, str, str]:
     """
     Parse a job name into its components: base name, OS, and bucket (matrix args).
@@ -619,6 +626,8 @@ def parse_job_name(job_name: str) -> Tuple[str, str, str]:
         Tuple of (base_name, os_name, bucket)
         e.g., ("pythontests", "linux", "arg1, arg2")
     """
+    job_name = _strip_inline_from_job_name(job_name)
+
     # Extract bucket from square brackets
     bucket = ""
     base = job_name
@@ -990,12 +999,12 @@ def create_test_heatmap(
         skipped = len(pipelines) - len(pipelines_with_test_cases)
         print(f"Filtered out {skipped} pipelines without test case data")
 
-    # Collect all jobs and their test cases
+    # Collect all jobs and their test cases (normalize job name so ", inline]" is stripped for grouping)
     job_tests = {}  # job_name -> set of test names
     excluded_jobs = set()
     for p in pipelines_with_stats:
         for suite in p["test_stats"].get("suites", []):
-            job_name = suite["name"]
+            job_name = _strip_inline_from_job_name(suite["name"])
             if should_exclude_job(job_name):
                 excluded_jobs.add(job_name)
                 continue
@@ -1130,14 +1139,15 @@ def create_test_heatmap(
             row_hover = []
 
             for p in pipelines_with_stats:
-                # Find this test in this pipeline's suite
+                # Find this test in this pipeline's suite (match normalized job name)
                 tc_found = None
                 for suite in p["test_stats"].get("suites", []):
-                    if suite["name"] == job_name:
+                    if _strip_inline_from_job_name(suite["name"]) == job_name:
                         for tc in suite.get("test_cases", []):
                             if tc["name"] == test_name:
                                 tc_found = tc
                                 break
+                    if tc_found is not None:
                         break
 
                 if tc_found is None:

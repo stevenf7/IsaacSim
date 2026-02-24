@@ -267,6 +267,13 @@ def analyze_test_data(data: dict, name: str = "test_report", quiet: bool = False
         return None
 
 
+def _strip_inline_from_job_name(name: str) -> str:
+    """If job name contains ', inline]', normalize to ']' so inline and after_script jobs match."""
+    if ", inline]" in name:
+        return name.replace(", inline]", "]")
+    return name
+
+
 def normalize_suite_name(suite_name: str) -> tuple:
     """
     Normalize a suite name to extract platform and test category for matching.
@@ -278,6 +285,8 @@ def normalize_suite_name(suite_name: str) -> tuple:
         Tuple of (platform, category_key) for matching
     """
     import re
+
+    suite_name = _strip_inline_from_job_name(suite_name)
 
     # Extract platform (linux/windows)
     platform = "linux" if "linux" in suite_name.lower() else "windows"
@@ -538,9 +547,8 @@ def strip_common_prefix_and_suffix(suite_names: list) -> dict:
             if stripped.startswith("test-"):
                 stripped = stripped[5:]
 
-        # Strip ', inline' suffix from all names that have it
-        if ", inline" in stripped:
-            stripped = stripped.replace(", inline", "")
+        # Strip ', inline]' so inline and after_script jobs display the same
+        stripped = _strip_inline_from_job_name(stripped)
 
         result[name] = stripped
 
