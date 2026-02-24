@@ -46,8 +46,8 @@ Extensions (Asset)
       - Urdf Importer Extension
       - Imports URDF (Unified Robot Description Format) files into Omniverse USD scenes, converting robot models with their visual meshes, collision geometries, joints, and physics properties.
     * - :doc:`isaacsim.asset.importer.mjcf <source/extensions/isaacsim.asset.importer.mjcf/docs/index>`
-      - Omniverse MJCF Importer
-      - Imports MuJoCo's MJCF (MuJoCo XML Format) robot description files into Omniverse USD scenes, converting meshes, joints, and physics properties for robotics simulation.
+      - Omniverse MJCF Importer Core
+      - Core MJCF importer functionality - converts MuJoCo's MJCF (MuJoCo XML Format) robot description files into Omniverse USD scenes. UI provided by isaacsim.asset.importer.mjcf.ui.
     * - :doc:`isaacsim.asset.transformer <source/extensions/isaacsim.asset.transformer/docs/index>`
       - Isaac Sim Asset Transformer
       - Python-only extension providing asset transformation utilities

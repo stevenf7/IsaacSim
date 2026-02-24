@@ -1,5 +1,5 @@
 Asset Importer Utils Extension [isaacsim.asset.importer.utils]
-############################################################
+################################################################
 
 This extension provides shared utility functions for asset importers, including collision handling,
 mesh merging, and stage management operations.

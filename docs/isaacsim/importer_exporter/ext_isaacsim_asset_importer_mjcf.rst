@@ -55,7 +55,7 @@ Refer to the :ref:`isaac_sim_conventions` documentation for a complete list of |
 User Interface
 =====================
 
-.. image:: /images/isim_4.5_base_ext-isaacsim.asset.importer.mjcf-2.3.0_gui_0.png
+.. image:: /images/isim_6.0_full_ext-isaacsim.asset.importer.mjcf-3.0.0_user_interface.png
     :align: center
     :alt: User interface for MJCF Importer
 
@@ -64,23 +64,30 @@ User Interface
 Import Options
 ^^^^^^^^^^^^^^^^^^^^^^
 
-**Model**: Provides the Options to Import in Stage, or add as a referenced model. If Create in Stage is selected. Choose the options to Set as the default prim, and Clear Stage on Import. By default both are left unchecked.
-
-**Links**: Choose: 
-
-    * **Moveable base** (for example, a wheeled robot) the base link will be set to moveable.
-    * **Static base** (for example, a 6DoF robotic arm) the base link will be fixed in place with a ``root_joint``.
-
-The **Default Density** is used for links that do not have a mass specified in the URDF. If the density is set to ``0``, the physics engine will automatically compute the density with its default value.
+**USD Output**: Specifies where the generated USD file will be saved. By default, this is set to "Same as Imported Model(Default)",
+  which saves the USD file in the same directory as the source MJCF file. Users can click the folder icon to select a different
+  output location.
 
 **Colliders**:
+    - **Collision From Visuals**: When enabled, collision geometry is generated from the visual meshes in the MJCF file. This is useful
+      when the MJCF file doesn't have explicit collision geometry defined. When this option is checked, the Collision Type dropdown
+      becomes visible.
 
-    * **Visualize Collision Geometry**: When selected, the collision geometry will be visible in the viewport.
-    * **Allow self-collision**: Enables self collision between adjacent links. It might cause instability if the collision meshes are intersecting at the joint.
+    - **Collision Type**: Select between:
+        - **Convex Hull**: Creates a convex hull around the visual mesh.
+        - **Convex Decomposition**: Decomposes the visual mesh into multiple convex pieces for more accurate collision detection.
+        - **Bounding Sphere**: Uses a simple bounding sphere approximation.
+        - **Bounding Cube**: Uses a simple bounding box approximation.
 
-    .. note:: 
-        - It is recommended that you set Self Collision to false unless you are certain that links on the robot are not self colliding
-        - You must have write access to the output directory used for import, it will default to the current open stage, change this as necessary.
+**General Options**:
+    - **Allow Self-Collision**: When enabled, allows the robot model to collide with itself. This can be useful for certain simulation
+      scenarios but may cause instability if collision meshes between links are self-intersecting.
+
+    - **Merge Mesh**: When enabled, merges meshes where possible to optimize the model. This can reduce the number of prims in the
+      resulting USD file and improve performance.
+
+    - **Debug Mode**: When enabled, activates debug mode to preserve the intemediate files and asset transformer reports
+
 
 .. _isaac_sim_mjcf_robot_properties:
 
@@ -115,6 +122,8 @@ Alternatively you can use the :ref:`isaac_sim_command_tool` to change a value in
     - The drive damping parameter should be set when using velocity control on a joint drive.
     - A combination of setting stiffness and damping on a drive will result in both targets being applied, this can be useful in position control to reduce vibrations.
 
+..  note::
+    See the :ref:`isaac_gain_tuner` tutorial to tune the gains for your robot.
 
 References
 ==========
