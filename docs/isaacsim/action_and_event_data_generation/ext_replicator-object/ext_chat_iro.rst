@@ -34,12 +34,7 @@ Chat IRO has the following features:
 * Preview the generated scene immediately in the Isaac Sim viewport.
 * Save and reload configuration files for iterative workflows.
 
-.. image:: /images/isim_6.0_full_tut_gui_chat_iro_01_workflow.png
-   :align: center
 
-.. note::
-
-   This extension is not available on Linux aarch64 in Isaac Sim 6.0 EA. Support will be added in Isaac Sim 6.0 GA.
 
 Workflow
 --------
@@ -92,7 +87,7 @@ Enable ``Chat IRO`` Extension
    * Enable the extension and optionally enable **AUTOLOAD** so it is loaded
      automatically on future launches.
 
-   .. image:: /images/isim_6.0_full_tut_gui_chat_iro_02_extension_enabled.png
+   .. image:: /images/isim_6.0_full_tut_gui_chat_iro_03_window.png
       :align: center
 
 3. Configure the NVIDIA API key by setting it as an environment variable.
@@ -135,7 +130,7 @@ Once the extension is enabled:
    * A dockable Chat IRO panel opens, typically on the right side of the
      viewport.
 
-   .. image:: /images/isim_6.0_full_tut_gui_chat_iro_03_window.png
+   .. image:: /images/isim_6.0_full_tut_gui_chat_iro_01_workflow.png
       :align: center
 
 2. Select a model from the **Model** drop‑down menu. Verified working models include:
@@ -148,8 +143,8 @@ Once the extension is enabled:
    .. image:: /images/isim_6.0_full_tut_gui_chat_iro_04_model_selection.png
       :align: center
 
-3. Confirm that the status line in the Chat IRO panel indicates that the
-   model is ready and the extension is authenticated.
+3. After selecting a model, check the status line in the Chat IRO panel. If
+   you see no errors, the model is ready and the extension is authenticated. If you see an error, check the API authentication and model selection.
 
 
 Using Chat IRO
