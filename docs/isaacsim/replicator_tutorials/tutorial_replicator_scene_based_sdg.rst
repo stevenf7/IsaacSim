@@ -91,7 +91,7 @@ The following section provides an implementation overview of the script. It incl
             <details closed>
             <summary>Main script</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_scene_based_sdg/scene_based_sdg.py
+        .. literalinclude:: ../../../source/standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py
             :language: python
             :lines: 16-
 
@@ -104,7 +104,7 @@ The following section provides an implementation overview of the script. It incl
             <details closed>
             <summary>Utils module</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_scene_based_sdg/scene_based_sdg_utils.py
+        .. literalinclude:: ../../../source/standalone_examples/replicator/scene_based_sdg/scene_based_sdg_utils.py
             :language: python
             :lines: 16-
 
@@ -191,7 +191,7 @@ The following provides details about the various config scenarios:
             <details open>
             <summary>Custom YAML Config</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_scene_based_sdg/config_basic_writer.yaml
+        .. literalinclude:: ../../../source/standalone_examples/replicator/scene_based_sdg/config/config_basic_writer.yaml
             :language: yaml
             :lines: 16-
 
@@ -215,7 +215,7 @@ The following provides details about the various config scenarios:
             <details open>
             <summary>Custom JSON Config</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_scene_based_sdg/config_default_writer.json
+        .. literalinclude:: ../../../source/standalone_examples/replicator/scene_based_sdg/config/config_default_writer.json
             :language: json
 
         .. raw:: html
@@ -238,7 +238,7 @@ The following provides details about the various config scenarios:
             <details open>
             <summary>Custom YAML Config using KittiWriter</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_scene_based_sdg/config_kitti_writer.yaml
+        .. literalinclude:: ../../../source/standalone_examples/replicator/scene_based_sdg/config/config_kitti_writer.yaml
             :language: yaml
             :lines: 16-
 
@@ -263,7 +263,7 @@ The following provides details about the various config scenarios:
             <details open>
             <summary>Custom YAML Config using CocoWriter</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_scene_based_sdg/config_coco_writer.yaml
+        .. literalinclude:: ../../../source/standalone_examples/replicator/scene_based_sdg/config/config_coco_writer.yaml
             :language: yaml
             :lines: 16-
 

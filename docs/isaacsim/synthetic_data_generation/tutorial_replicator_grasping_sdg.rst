@@ -269,7 +269,7 @@ To run the standalone example from the terminal (on Windows, use ``python.bat`` 
             <details open>
             <summary>Grasping Synthetic Data Generation Workflow</summary>
 
-        .. literalinclude:: ../snippets/synthetic_data_generation/tutorial_replicator_grasping_sdg/grasping_workflow_sdg.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.grasping/grasping_workflow_sdg.py
             :language: python
             :lines: 16-
 

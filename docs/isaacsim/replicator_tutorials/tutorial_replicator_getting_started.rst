@@ -154,7 +154,7 @@ This example demonstrates how to use the ``BasicWriter`` for data capture with R
 
     .. tab-item:: Standalone Application
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_getting_started/sdg_getting_started_01.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_01.py
             :language: python
             :lines: 16-
 
@@ -183,7 +183,7 @@ This example demonstrates data capture by creating a custom writer to access ann
 
     .. tab-item:: Standalone Application
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_getting_started/sdg_getting_started_02.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_02.py
             :language: python
             :lines: 16-
 
@@ -212,7 +212,7 @@ This example demonstrates creating a custom randomization using Replicator's gra
 
     .. tab-item:: Standalone Application
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_getting_started/sdg_getting_started_03.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_03.py
             :language: python
             :lines: 16-
 
@@ -241,7 +241,7 @@ This example shows how to capture simulation data when specific conditions are m
 
     .. tab-item:: Standalone Application
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_getting_started/sdg_getting_started_04.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_04.py
             :language: python
             :lines: 16-
 

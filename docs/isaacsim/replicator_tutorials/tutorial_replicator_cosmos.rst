@@ -83,7 +83,7 @@ This example demonstrates a Carter Nova robot autonomously navigating through a 
             <details closed>
             <summary>Full Standalone Script</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_cosmos/cosmos_writer_warehouse.py
+        .. literalinclude:: ../../../source/standalone_examples/replicator/cosmos_writer_warehouse.py
             :language: python
             :lines: 16-
 
