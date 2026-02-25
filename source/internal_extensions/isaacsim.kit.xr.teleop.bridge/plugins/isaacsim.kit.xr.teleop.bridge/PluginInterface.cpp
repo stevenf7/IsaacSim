@@ -12,6 +12,8 @@
 
 #include <carb/PluginUtils.h>
 #include <carb/logging/Log.h>
+#include <carb/settings/ISettings.h>
+#include <carb/settings/SettingsUtils.h>
 
 #include <isaacsim/kit/xr/teleop/bridge/ITeleopBridge.h>
 #include <omni/core/IWeakObject.h>
@@ -19,11 +21,181 @@
 #include <omni/kit/xr/system/openxr/IOpenXRExtension.h>
 #include <openxr/openxr.h>
 
+#include <algorithm>
+#include <atomic>
+#include <cinttypes>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
 // Plugin dependencies
-CARB_PLUGIN_IMPL_DEPS(omni::kit::xr::openxr::IOpenXRExtension_v1)
+CARB_PLUGIN_IMPL_DEPS(omni::kit::xr::openxr::IOpenXRExtension_v1, carb::settings::ISettings)
 
 namespace isaacsim::kit::xr::teleop::bridge
 {
+
+namespace
+{
+constexpr const char* kRequiredExtensionsSetSetting = "/exts/isaacsim.kit.xr.teleop.bridge/openxr/requiredExtensions/set";
+constexpr const char* kRequiredExtensionsAddSetting = "/exts/isaacsim.kit.xr.teleop.bridge/openxr/requiredExtensions/add";
+constexpr const char* kRequiredExtensionsRemoveSetting =
+    "/exts/isaacsim.kit.xr.teleop.bridge/openxr/requiredExtensions/remove";
+
+std::vector<std::string> getStringArraySetting(carb::settings::ISettings* settings, const char* path)
+{
+    std::vector<std::string> values;
+    if (!settings)
+    {
+        return values;
+    }
+
+    const size_t arrayLength = settings->getArrayLength(path);
+    values.reserve(arrayLength);
+    for (size_t i = 0; i < arrayLength; ++i)
+    {
+        std::string value = carb::settings::getStringAt(settings, path, i);
+        if (!value.empty())
+        {
+            values.push_back(std::move(value));
+        }
+    }
+    return values;
+}
+
+void appendUniqueValues(std::vector<std::string>& values, const std::vector<std::string>& toAppend)
+{
+    for (const std::string& value : toAppend)
+    {
+        if (value.empty())
+        {
+            continue;
+        }
+
+        if (std::find(values.begin(), values.end(), value) == values.end())
+        {
+            values.push_back(value);
+        }
+    }
+}
+
+void removeValues(std::vector<std::string>& values, const std::vector<std::string>& toRemove)
+{
+    if (toRemove.empty())
+    {
+        return;
+    }
+
+    const std::unordered_set<std::string> removeSet(toRemove.begin(), toRemove.end());
+    values.erase(std::remove_if(values.begin(), values.end(),
+                                [&removeSet](const std::string& value) { return removeSet.count(value) > 0; }),
+                 values.end());
+}
+
+void logExtensionList(const char* stage, const std::vector<std::string>& values)
+{
+    CARB_LOG_INFO("%s (%zu)", stage, values.size());
+    for (const std::string& value : values)
+    {
+        CARB_LOG_INFO("  - %s", value.c_str());
+    }
+}
+
+class RequiredExtensionsRegistryStateImpl final : public ITeleopBridge::RequiredExtensionsRegistryState
+{
+public:
+    uint64_t subscribe(const ITeleopBridge::RequiredExtensionsCallback& callback)
+    {
+        if (!callback)
+        {
+            CARB_LOG_WARN("Ignored required extension callback subscription: callback is empty");
+            return 0;
+        }
+
+        const uint64_t subscriptionId = m_nextSubscriptionId.fetch_add(1);
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_callbacks[subscriptionId] = callback;
+        return subscriptionId;
+    }
+
+    virtual void unsubscribe(uint64_t subscriptionId) noexcept override
+    {
+        if (subscriptionId == 0)
+        {
+            return;
+        }
+
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_callbacks.erase(subscriptionId);
+    }
+
+    std::vector<std::pair<uint64_t, ITeleopBridge::RequiredExtensionsCallback>> getCallbackSnapshot() const
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        std::vector<std::pair<uint64_t, ITeleopBridge::RequiredExtensionsCallback>> callbackEntries;
+        callbackEntries.reserve(m_callbacks.size());
+        for (const auto& callbackEntry : m_callbacks)
+        {
+            callbackEntries.push_back(callbackEntry);
+        }
+        return callbackEntries;
+    }
+
+    void clear()
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_callbacks.clear();
+        m_nextSubscriptionId.store(1);
+    }
+
+private:
+    mutable std::mutex m_mutex;
+    std::unordered_map<uint64_t, ITeleopBridge::RequiredExtensionsCallback> m_callbacks;
+    std::atomic<uint64_t> m_nextSubscriptionId{ 1 };
+};
+
+std::shared_ptr<RequiredExtensionsRegistryStateImpl> g_requiredExtensionsRegistryState =
+    std::make_shared<RequiredExtensionsRegistryStateImpl>();
+
+void appendRequiredExtensionsFromCallbacks(std::vector<std::string>& requiredExtensions)
+{
+    auto registryState = g_requiredExtensionsRegistryState;
+    if (!registryState)
+    {
+        return;
+    }
+
+    const std::vector<std::pair<uint64_t, ITeleopBridge::RequiredExtensionsCallback>> callbackEntries =
+        registryState->getCallbackSnapshot();
+
+    for (const auto& callbackEntry : callbackEntries)
+    {
+        const uint64_t subscriptionId = callbackEntry.first;
+        const auto& callback = callbackEntry.second;
+        if (!callback)
+        {
+            continue;
+        }
+
+        try
+        {
+            std::vector<std::string> callbackExtensions = callback();
+            if (!callbackExtensions.empty())
+            {
+                CARB_LOG_INFO(
+                    "requiredExtensions.callback[%" PRIu64 "] (%zu)", subscriptionId, callbackExtensions.size());
+            }
+            appendUniqueValues(requiredExtensions, callbackExtensions);
+        }
+        catch (...)
+        {
+            CARB_LOG_ERROR("requiredExtensions.callback[%" PRIu64 "] raised an exception", subscriptionId);
+        }
+    }
+}
+} // namespace
 
 /**
  * @brief Identity pose constant used as the default pose when creating reference spaces.
@@ -70,12 +242,15 @@ public:
     }
 
     /**
-     * @brief Get the cached OpenXR stage reference space handle.
+     * @brief Get the OpenXR stage reference space handle.
      *
-     * @return The XrSpace handle for the stage space, or XR_NULL_HANDLE if no active session.
+     * @details Creates the stage reference space lazily on first request for the active session.
+     *
+     * @return The XrSpace handle for the stage space, or XR_NULL_HANDLE if unavailable.
      */
-    XrSpace getStageSpace() const
+    XrSpace getStageSpace()
     {
+        ensureStageSpace();
         return m_stageSpace;
     }
 
@@ -117,7 +292,31 @@ protected:
      */
     virtual void getRequiredExtensions(std::vector<std::string>& ret) override
     {
-        ret.push_back("XR_KHR_convert_timespec_time");
+        std::vector<std::string> requiredExtensions;
+        auto* settings = carb::getCachedInterface<carb::settings::ISettings>();
+        if (!settings)
+        {
+            CARB_LOG_WARN("ISettings not available, using hardcoded defaults");
+            requiredExtensions = { "XR_KHR_convert_timespec_time", "XR_NVX1_tensor_data" };
+        }
+        else
+        {
+            const auto getAndLog = [settings](const char* path, const char* stage)
+            {
+                std::vector<std::string> values = getStringArraySetting(settings, path);
+                logExtensionList(stage, values);
+                return values;
+            };
+
+            requiredExtensions = getAndLog(kRequiredExtensionsSetSetting, "requiredExtensions.set");
+            appendUniqueValues(requiredExtensions, getAndLog(kRequiredExtensionsAddSetting, "requiredExtensions.add"));
+            removeValues(requiredExtensions, getAndLog(kRequiredExtensionsRemoveSetting, "requiredExtensions.remove"));
+        }
+
+        appendRequiredExtensionsFromCallbacks(requiredExtensions);
+        logExtensionList("resolved requiredExtensions", requiredExtensions);
+
+        ret.insert(ret.end(), requiredExtensions.begin(), requiredExtensions.end());
     }
 
     /**
@@ -139,7 +338,7 @@ protected:
                             XrSystemId xrSystemId,
                             XrVersion openXRVersion) override
     {
-        CARB_LOG_INFO("[isaacsim.kit.xr.teleop.bridge] Component initialize() called with instance %p", instance);
+        CARB_LOG_INFO("Component initialize() called with instance %p", instance);
 
         m_instance = instance;
         m_xrGetInstanceProcAddr = xrGetInstanceProcAddr;
@@ -149,7 +348,7 @@ protected:
             instance, "xrCreateReferenceSpace", reinterpret_cast<PFN_xrVoidFunction*>(&m_xrCreateReferenceSpace));
         if (XR_FAILED(result) || !m_xrCreateReferenceSpace)
         {
-            CARB_LOG_ERROR("[isaacsim.kit.xr.teleop.bridge] Failed to get xrCreateReferenceSpace");
+            CARB_LOG_ERROR("Failed to get xrCreateReferenceSpace");
             return false;
         }
 
@@ -157,11 +356,11 @@ protected:
             xrGetInstanceProcAddr(instance, "xrDestroySpace", reinterpret_cast<PFN_xrVoidFunction*>(&m_xrDestroySpace));
         if (XR_FAILED(result) || !m_xrDestroySpace)
         {
-            CARB_LOG_ERROR("[isaacsim.kit.xr.teleop.bridge] Failed to get xrDestroySpace");
+            CARB_LOG_ERROR("Failed to get xrDestroySpace");
             return false;
         }
 
-        CARB_LOG_INFO("[isaacsim.kit.xr.teleop.bridge] Component initialized successfully");
+        CARB_LOG_INFO("Component initialized successfully");
         return true;
     }
 
@@ -175,7 +374,7 @@ protected:
      */
     virtual void shutdown(XrInstance instance) override
     {
-        CARB_LOG_INFO("[isaacsim.kit.xr.teleop.bridge] Component shutdown() called");
+        CARB_LOG_INFO("Component shutdown() called");
 
         // Cleanup is handled in onSessionStop, but reset state here too
         m_instance = XR_NULL_HANDLE;
@@ -187,45 +386,22 @@ protected:
     /**
      * @brief Handle the start of an OpenXR session.
      *
-     * @details Caches the session handle and creates a stage reference space using
-     * XR_REFERENCE_SPACE_TYPE_STAGE. Falls back to XR_REFERENCE_SPACE_TYPE_LOCAL
-     * if STAGE is not supported by the runtime.
+     * @details Caches the session handle. Stage reference space creation is deferred
+     * until getStageSpace() is called.
      *
      * @param[in] session The newly started OpenXR session.
      * @param[in] mode The XR mode token indicating the type of session.
      */
     virtual void onSessionStart(XrSession session, omni::kit::xr::XRToken mode) override
     {
-        CARB_LOG_INFO("[isaacsim.kit.xr.teleop.bridge] onSessionStart() called with session %p", session);
+        CARB_LOG_INFO("onSessionStart() called with session %p", session);
 
+        if (m_stageSpace != XR_NULL_HANDLE && m_xrDestroySpace)
+        {
+            m_xrDestroySpace(m_stageSpace);
+            m_stageSpace = XR_NULL_HANDLE;
+        }
         m_session = session;
-
-        // Create stage reference space (matching Kit's OxrSessionManager.cpp)
-        XrReferenceSpaceCreateInfo createInfo{ XR_TYPE_REFERENCE_SPACE_CREATE_INFO };
-        createInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_STAGE;
-        createInfo.poseInReferenceSpace = kIdentityPose;
-
-        XrResult result = m_xrCreateReferenceSpace(session, &createInfo, &m_stageSpace);
-        if (XR_FAILED(result))
-        {
-            CARB_LOG_WARN(
-                "[isaacsim.kit.xr.teleop.bridge] Failed to create STAGE reference space: %d, trying LOCAL", result);
-
-            // Fall back to LOCAL space if STAGE is not supported
-            createInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
-            result = m_xrCreateReferenceSpace(session, &createInfo, &m_stageSpace);
-            if (XR_FAILED(result))
-            {
-                CARB_LOG_ERROR("[isaacsim.kit.xr.teleop.bridge] Failed to create any reference space: %d", result);
-                m_stageSpace = XR_NULL_HANDLE;
-                return;
-            }
-            CARB_LOG_WARN("[isaacsim.kit.xr.teleop.bridge] Created LOCAL reference space as fallback");
-        }
-        else
-        {
-            CARB_LOG_INFO("[isaacsim.kit.xr.teleop.bridge] Created STAGE reference space");
-        }
     }
 
     /**
@@ -237,7 +413,7 @@ protected:
      */
     virtual void onSessionStop(XrSession session) override
     {
-        CARB_LOG_INFO("[isaacsim.kit.xr.teleop.bridge] onSessionStop() called");
+        CARB_LOG_INFO("onSessionStop() called");
 
         // Destroy the stage space
         if (m_stageSpace != XR_NULL_HANDLE && m_xrDestroySpace)
@@ -250,6 +426,41 @@ protected:
     }
 
 private:
+    /**
+     * @brief Ensure stage reference space exists for the active session.
+     *
+     * @details Tries STAGE first, then falls back to LOCAL if STAGE is unsupported.
+     */
+    void ensureStageSpace()
+    {
+        if (m_stageSpace != XR_NULL_HANDLE || m_session == XR_NULL_HANDLE || !m_xrCreateReferenceSpace)
+        {
+            return;
+        }
+
+        XrReferenceSpaceCreateInfo createInfo{ XR_TYPE_REFERENCE_SPACE_CREATE_INFO };
+        createInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_STAGE;
+        createInfo.poseInReferenceSpace = kIdentityPose;
+
+        XrResult result = m_xrCreateReferenceSpace(m_session, &createInfo, &m_stageSpace);
+        if (XR_FAILED(result))
+        {
+            CARB_LOG_WARN("Failed to create STAGE reference space: %d, trying LOCAL", result);
+            createInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
+            result = m_xrCreateReferenceSpace(m_session, &createInfo, &m_stageSpace);
+            if (XR_FAILED(result))
+            {
+                CARB_LOG_ERROR("Failed to create any reference space: %d", result);
+                m_stageSpace = XR_NULL_HANDLE;
+                return;
+            }
+            CARB_LOG_WARN("Created LOCAL reference space as fallback");
+            return;
+        }
+
+        CARB_LOG_INFO("Created STAGE reference space");
+    }
+
     /** @brief Cached OpenXR instance handle. */
     XrInstance m_instance = XR_NULL_HANDLE;
 
@@ -353,6 +564,24 @@ public:
         return component ? reinterpret_cast<uint64_t>(component->getInstanceProcAddr()) : 0;
     }
 
+    virtual RequiredExtensionsSubscription subscribeRequiredExtensions(const RequiredExtensionsCallback& callback) noexcept override
+    {
+        auto registryState = g_requiredExtensionsRegistryState;
+        if (!registryState)
+        {
+            CARB_LOG_WARN("Required extension callback registry is unavailable");
+            return RequiredExtensionsSubscription();
+        }
+
+        const uint64_t subscriptionId = registryState->subscribe(callback);
+        if (subscriptionId == 0)
+        {
+            return RequiredExtensionsSubscription();
+        }
+
+        return makeRequiredExtensionsSubscription(registryState, subscriptionId);
+    }
+
     /**
      * @brief Initialize the extension by registering the OpenXR component.
      *
@@ -363,7 +592,7 @@ public:
     {
         try
         {
-            CARB_LOG_INFO("[isaacsim.kit.xr.teleop.bridge] Registering OpenXR component");
+            CARB_LOG_INFO("Registering OpenXR component");
 
             // Create the component and register it with Kit's OpenXR system
             omni::core::ObjectPtr<omni::kit::xr::openxr::IOpenXRComponent_v1> component =
@@ -378,17 +607,17 @@ public:
                 if (componentRegistry)
                 {
                     componentRegistry->registerOpenXRComponent(component);
-                    CARB_LOG_INFO("[isaacsim.kit.xr.teleop.bridge] Component registered successfully");
+                    CARB_LOG_INFO("Component registered successfully");
                 }
             }
             else
             {
-                CARB_LOG_WARN("[isaacsim.kit.xr.teleop.bridge] IOpenXRExtension_v1 not available");
+                CARB_LOG_WARN("IOpenXRExtension_v1 not available");
             }
         }
         catch (...)
         {
-            CARB_LOG_ERROR("[isaacsim.kit.xr.teleop.bridge] Failed to register component");
+            CARB_LOG_ERROR("Failed to register component");
         }
     }
 
@@ -417,7 +646,7 @@ public:
         }
         catch (...)
         {
-            CARB_LOG_ERROR("[isaacsim.kit.xr.teleop.bridge] Exception during component unregistration");
+            CARB_LOG_ERROR("Exception during component unregistration");
         }
     }
 
@@ -460,7 +689,13 @@ isaacsim::kit::xr::teleop::bridge::TeleopBridgeImpl* g_teleopBridgeImpl = nullpt
  */
 CARB_EXPORT void carbOnPluginStartup()
 {
-    CARB_LOG_INFO("[isaacsim.kit.xr.teleop.bridge] Plugin startup");
+    CARB_LOG_INFO("Plugin startup");
+    if (!isaacsim::kit::xr::teleop::bridge::g_requiredExtensionsRegistryState)
+    {
+        isaacsim::kit::xr::teleop::bridge::g_requiredExtensionsRegistryState =
+            std::make_shared<isaacsim::kit::xr::teleop::bridge::RequiredExtensionsRegistryStateImpl>();
+    }
+
     if (g_teleopBridgeImpl == nullptr)
     {
         g_teleopBridgeImpl = new isaacsim::kit::xr::teleop::bridge::TeleopBridgeImpl();
@@ -475,6 +710,12 @@ CARB_EXPORT void carbOnPluginStartup()
  */
 CARB_EXPORT void carbOnPluginShutdown()
 {
+    if (isaacsim::kit::xr::teleop::bridge::g_requiredExtensionsRegistryState)
+    {
+        isaacsim::kit::xr::teleop::bridge::g_requiredExtensionsRegistryState->clear();
+        isaacsim::kit::xr::teleop::bridge::g_requiredExtensionsRegistryState.reset();
+    }
+
     if (g_teleopBridgeImpl)
     {
         g_teleopBridgeImpl->deinitExtension();
@@ -500,6 +741,12 @@ CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::kit::xr::teleop::bridge::TeleopBridgeI
  */
 void fillInterface(isaacsim::kit::xr::teleop::bridge::TeleopBridgeImpl& iface)
 {
+    if (!isaacsim::kit::xr::teleop::bridge::g_requiredExtensionsRegistryState)
+    {
+        isaacsim::kit::xr::teleop::bridge::g_requiredExtensionsRegistryState =
+            std::make_shared<isaacsim::kit::xr::teleop::bridge::RequiredExtensionsRegistryStateImpl>();
+    }
+
     // Ensure initialization happens
     if (g_teleopBridgeImpl == nullptr)
     {

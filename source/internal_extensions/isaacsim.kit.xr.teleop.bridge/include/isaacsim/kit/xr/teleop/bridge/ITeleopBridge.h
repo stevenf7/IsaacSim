@@ -14,6 +14,11 @@
 #include <carb/Interface.h>
 
 #include <cstdint>
+#include <functional>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace isaacsim::kit::xr::teleop::bridge
 {
@@ -32,7 +37,93 @@ namespace isaacsim::kit::xr::teleop::bridge
  */
 struct ITeleopBridge
 {
-    CARB_PLUGIN_INTERFACE("isaacsim::kit::xr::teleop::bridge::ITeleopBridge", 1, 0);
+    CARB_PLUGIN_INTERFACE("isaacsim::kit::xr::teleop::bridge::ITeleopBridge", 1, 3);
+
+    /** @brief Callback invoked to contribute extra required OpenXR extensions. */
+    using RequiredExtensionsCallback = std::function<std::vector<std::string>()>;
+
+    /**
+     * @brief Internal registry-state interface used by subscription handles.
+     */
+    class RequiredExtensionsRegistryState
+    {
+    public:
+        virtual ~RequiredExtensionsRegistryState() = default;
+        virtual void unsubscribe(uint64_t subscriptionId) noexcept = 0;
+    };
+
+    /**
+     * @brief RAII subscription handle for required-extension callbacks.
+     *
+     * @details Destroying this handle automatically unsubscribes the callback.
+     */
+    class RequiredExtensionsSubscription
+    {
+    public:
+        RequiredExtensionsSubscription() = default;
+
+        RequiredExtensionsSubscription(const RequiredExtensionsSubscription&) = delete;
+        RequiredExtensionsSubscription& operator=(const RequiredExtensionsSubscription&) = delete;
+
+        RequiredExtensionsSubscription(RequiredExtensionsSubscription&& other) noexcept
+            : m_registryState(std::move(other.m_registryState)), m_subscriptionId(other.m_subscriptionId)
+        {
+            other.m_subscriptionId = 0;
+        }
+
+        RequiredExtensionsSubscription& operator=(RequiredExtensionsSubscription&& other) noexcept
+        {
+            if (this != &other)
+            {
+                reset();
+                m_registryState = std::move(other.m_registryState);
+                m_subscriptionId = other.m_subscriptionId;
+                other.m_subscriptionId = 0;
+            }
+            return *this;
+        }
+
+        ~RequiredExtensionsSubscription()
+        {
+            reset();
+        }
+
+        /**
+         * @brief Explicitly release this subscription.
+         */
+        void reset() noexcept
+        {
+            if (m_subscriptionId != 0)
+            {
+                if (auto registryState = m_registryState.lock())
+                {
+                    registryState->unsubscribe(m_subscriptionId);
+                }
+            }
+            m_registryState.reset();
+            m_subscriptionId = 0;
+        }
+
+        /**
+         * @brief Check whether this subscription currently owns a valid registration.
+         */
+        explicit operator bool() const noexcept
+        {
+            return m_subscriptionId != 0;
+        }
+
+    private:
+        RequiredExtensionsSubscription(std::weak_ptr<RequiredExtensionsRegistryState> registryState,
+                                       uint64_t subscriptionId) noexcept
+            : m_registryState(std::move(registryState)), m_subscriptionId(subscriptionId)
+        {
+        }
+
+        std::weak_ptr<RequiredExtensionsRegistryState> m_registryState;
+        uint64_t m_subscriptionId = 0;
+
+        friend struct ITeleopBridge;
+    };
 
     /**
      * @brief Get the current OpenXR instance handle (XrInstance).
@@ -67,6 +158,30 @@ struct ITeleopBridge
      * @return The function pointer as uint64, or 0 if not available.
      */
     virtual uint64_t getInstanceProcAddr() noexcept = 0;
+
+    /**
+     * @brief Subscribe a callback that can contribute additional required OpenXR extensions.
+     *
+     * @details Subscribed callbacks are invoked when the OpenXR component resolves
+     * required extensions during startup. Callback return values are deduplicated
+     * before being appended to the final required extension list.
+     *
+     * @param[in] callback Callable that returns extension names to append.
+     *
+     * @return RAII subscription handle. Keep it alive while subscription is active.
+     */
+    virtual RequiredExtensionsSubscription subscribeRequiredExtensions(
+        const RequiredExtensionsCallback& callback) noexcept = 0;
+
+protected:
+    /**
+     * @brief Helper for implementations to create a subscription handle safely.
+     */
+    static RequiredExtensionsSubscription makeRequiredExtensionsSubscription(
+        std::weak_ptr<RequiredExtensionsRegistryState> registryState, uint64_t subscriptionId) noexcept
+    {
+        return RequiredExtensionsSubscription(std::move(registryState), subscriptionId);
+    }
 };
 
 } // namespace isaacsim::kit::xr::teleop::bridge

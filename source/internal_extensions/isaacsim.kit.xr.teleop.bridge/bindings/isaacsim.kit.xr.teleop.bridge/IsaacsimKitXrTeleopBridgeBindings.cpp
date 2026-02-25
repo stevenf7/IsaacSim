@@ -11,7 +11,9 @@
 #include <carb/BindingsPythonUtils.h>
 
 #include <isaacsim/kit/xr/teleop/bridge/ITeleopBridge.h>
+#include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 CARB_BINDINGS("isaacsim.kit.xr.teleop.bridge.python")
 
@@ -23,6 +25,14 @@ PYBIND11_MODULE(_bridge, m)
     using namespace isaacsim::kit::xr::teleop::bridge;
 
     m.doc() = "Isaac Kit XR Teleop Bridge - provides OpenXR handle functions for Kit";
+
+    pybind11::class_<ITeleopBridge::RequiredExtensionsSubscription>(m, "RequiredExtensionsSubscription")
+        .def("reset", &ITeleopBridge::RequiredExtensionsSubscription::reset,
+             R"doc(
+            Explicitly release this required-extension subscription.
+            )doc")
+        .def("__bool__",
+             [](const ITeleopBridge::RequiredExtensionsSubscription& self) { return static_cast<bool>(self); });
 
     // Define the Carbonite interface class with acquire/release functions
     // This properly integrates with Carbonite's plugin system and triggers
@@ -69,6 +79,19 @@ PYBIND11_MODULE(_bridge, m)
 
             Returns:
                 int: The xrGetInstanceProcAddr function pointer as uint64, or 0 if not available.
+            )doc")
+        .def("subscribe_required_extensions", &ITeleopBridge::subscribeRequiredExtensions,
+             R"doc(
+            Subscribe a callback to contribute additional OpenXR required extensions.
+
+            The callback must return a list of extension names to append to the
+            resolved required extension list. Duplicate values are ignored.
+
+            Args:
+                callback: Callable with signature ``() -> list[str]``.
+
+            Returns:
+                RequiredExtensionsSubscription: Keep this handle alive to keep the callback subscribed.
             )doc");
 }
 
