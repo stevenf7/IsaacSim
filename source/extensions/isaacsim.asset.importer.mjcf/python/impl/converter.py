@@ -17,11 +17,11 @@
 """MJCF to USD conversion pipeline."""
 
 import gc
+import importlib
 import logging
 import os
 import shutil
 
-import mujoco_usd_converter
 import omni
 from isaacsim.asset.importer.utils.impl import importer_utils, merge_mesh_utils, stage_utils
 from pxr import Sdf
@@ -48,7 +48,7 @@ class MJCFImporter:
 
     def __init__(self, config: MJCFImporterConfig | None = None) -> None:
         self._config = config if config else MJCFImporterConfig()
-        self.converter = mujoco_usd_converter.Converter(layer_structure=False, scene=False)
+        self.converter = None
 
     @property
     def config(self) -> MJCFImporterConfig:
@@ -109,6 +109,10 @@ class MJCFImporter:
 
         usdex_path = os.path.normpath(os.path.join(usd_path, "usdex"))
         intermediate_path = os.path.normpath(os.path.join(usd_path, "temp", f"{robot_name}.usd"))
+
+        if self.converter is None:
+            mujoco_usd_converter = importlib.import_module("mujoco_usd_converter")
+            self.converter = mujoco_usd_converter.Converter(layer_structure=False, scene=False)
 
         asset: Sdf.AssetPath = self.converter.convert(mjcf_path, usdex_path)
 
