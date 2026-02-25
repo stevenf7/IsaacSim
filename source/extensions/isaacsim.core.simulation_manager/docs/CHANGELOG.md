@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.1] - 2026-02-25
+### Fixed
+- rebuild with new physics package
+
 ## [1.11.0] - 2026-02-06
 ### Changed
 - Update deprecated Warp API calls to their updated names
