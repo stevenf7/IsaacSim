@@ -1,54 +1,117 @@
 # Isaac Kit XR Teleop Bridge
 
-This extension provides OpenXR handle functions that may be missing from older versions of `omni.kit.xr.system.openxr`. It polyfills missing functions into that module so that `OpenXRSessionHandles` can be fully constructed for use with IsaacTeleop's DeviceIO.
+This extension provides OpenXR handle access for teleoperation integrations and fills API gaps across Kit versions.
 
-## Overview
+It exposes a C++/Python bridge that:
+- gives access to OpenXR handles needed by external libraries (for example IsaacTeleop DeviceIO),
+- polyfills missing handle helpers into `omni.kit.xr.system.openxr`,
+- and lets you configure or extend required OpenXR extension names.
 
-Different Kit SDK versions provide different handle functions:
-- **Older versions**: No handle getter functions ❌
-- **Current versions**: `get_instance_handle()`, `get_session_handle()`, `get_stage_space_handle()` ✓
-- **All versions**: Missing `get_instance_proc_addr()` ❌
+## What It Provides
 
-This bridge extension provides all 4 functions and only patches the ones that don't already exist:
-- `get_instance_handle()` - XrInstance (forwards to Kit if available)
-- `get_session_handle()` - XrSession (forwards to Kit if available)
-- `get_stage_space_handle()` - XrSpace (forwards to Kit if available)
-- `get_instance_proc_addr()` - xrGetInstanceProcAddr function pointer (from OpenXR loader)
+The bridge exposes these functions from `isaacsim.kit.xr.teleop.bridge`:
+- `get_instance_handle()` -> `XrInstance` as `int` (`0` when unavailable)
+- `get_session_handle()` -> `XrSession` as `int` (`0` when unavailable)
+- `get_stage_space_handle()` -> `XrSpace` as `int` (`0` when unavailable)
+- `get_instance_proc_addr()` -> `xrGetInstanceProcAddr` as `int` (`0` when unavailable)
+- `subscribe_required_extensions(callback)` -> RAII subscription handle
 
-## Usage
+On import, the extension also patches missing functions into `omni.kit.xr.system.openxr`
+(only the missing ones, never overriding existing functions).
+
+## Quick Start
 
 ```python
+import isaacsim.kit.xr.teleop.bridge  # Triggers polyfill for missing openxr helpers
 import omni.kit.xr.system.openxr as openxr
-import isaacsim.kit.xr.teleop.bridge  # Adds get_instance_proc_addr to openxr
 
 from teleopcore.oxr import OpenXRSessionHandles
 from teleopcore.deviceio import DeviceIOSession, HandTracker
 
-# Construct OpenXRSessionHandles from Kit's handles
 handles = OpenXRSessionHandles(
     openxr.get_instance_handle(),
     openxr.get_session_handle(),
     openxr.get_stage_space_handle(),
-    openxr.get_instance_proc_addr()  # <-- Added by this extension
+    openxr.get_instance_proc_addr(),
 )
 
-# Create DeviceIO session with trackers
-trackers = [HandTracker()]
-with DeviceIOSession.run(trackers, handles) as session:
+with DeviceIOSession.run([HandTracker()], handles) as session:
     while running:
         session.update()
 ```
 
-## How It Works
+## Required OpenXR Extensions
 
-1. The C++ plugin exposes `xrGetInstanceProcAddr` from the OpenXR loader
-2. When the extension loads, it checks if `omni.kit.xr.system.openxr.get_instance_proc_addr` exists
-3. If it doesn't exist, it adds the function as a polyfill
-4. If it already exists (future Kit versions), nothing is patched
+The bridge component resolves its required OpenXR extension names using settings and optional runtime callbacks.
 
-## Direct Usage
+### Settings keys
 
-You can also use `get_instance_proc_addr` directly from this module:
+- `exts."isaacsim.kit.xr.teleop.bridge".openxr.requiredExtensions.set`
+- `exts."isaacsim.kit.xr.teleop.bridge".openxr.requiredExtensions.add`
+- `exts."isaacsim.kit.xr.teleop.bridge".openxr.requiredExtensions.remove`
+
+### Resolution order
+
+1. Start from `set`
+2. Apply `add` (deduplicated)
+3. Apply `remove`
+4. Append all callback-provided extensions (deduplicated)
+
+If settings are unavailable, the bridge falls back to:
+- `XR_KHR_convert_timespec_time`
+- `XR_NVX1_tensor_data`
+
+### Example: replace/add/remove via settings
+
+```toml
+[settings]
+exts."isaacsim.kit.xr.teleop.bridge".openxr.requiredExtensions.set = [
+    "XR_KHR_convert_timespec_time",
+]
+exts."isaacsim.kit.xr.teleop.bridge".openxr.requiredExtensions.add = [
+    "XR_FB_passthrough",
+]
+exts."isaacsim.kit.xr.teleop.bridge".openxr.requiredExtensions.remove = [
+    "XR_KHR_convert_timespec_time",
+]
+```
+
+### Example: explicitly clear the settings list
+
+```toml
+[settings]
+exts."isaacsim.kit.xr.teleop.bridge".openxr.requiredExtensions.set = []
+exts."isaacsim.kit.xr.teleop.bridge".openxr.requiredExtensions.add = []
+exts."isaacsim.kit.xr.teleop.bridge".openxr.requiredExtensions.remove = []
+```
+
+## Runtime Callback Subscription (RAII)
+
+You can append required extensions at runtime by subscribing a callback.
+
+```python
+import isaacsim.kit.xr.teleop.bridge as bridge
+
+required_ext_subscription = bridge.subscribe_required_extensions(
+    lambda: ["XR_FB_passthrough", "XR_EXT_hand_tracking"]
+)
+
+# Keep `required_ext_subscription` alive while you want callback active.
+# Unsubscribe explicitly:
+required_ext_subscription.reset()
+
+# Or drop all references (for example: required_ext_subscription = None).
+```
+
+Behavior notes:
+- Callback signature is `() -> list[str]` (or any iterable of strings).
+- Callback results are deduplicated against the final extension list.
+- Exceptions thrown by callbacks are caught and logged; resolution continues.
+- Subscription lifetime is tied to the returned subscription handle object.
+
+## Direct Function Usage
+
+You can call bridge helpers directly without going through `openxr` polyfills:
 
 ```python
 import isaacsim.kit.xr.teleop.bridge as bridge
@@ -56,6 +119,8 @@ import isaacsim.kit.xr.teleop.bridge as bridge
 proc_addr = bridge.get_instance_proc_addr()
 ```
 
-## Future
+## Compatibility Notes
 
-Once `omni.kit.xr.system.openxr` natively supports `get_instance_proc_addr()`, this extension will detect it and skip the patch, becoming a no-op.
+- On newer Kit versions where some helpers already exist in `omni.kit.xr.system.openxr`,
+  this extension only adds missing helpers.
+- If/when `get_instance_proc_addr()` is provided natively, the bridge will not override it.

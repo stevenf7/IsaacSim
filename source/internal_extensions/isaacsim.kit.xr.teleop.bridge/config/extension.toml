@@ -4,7 +4,7 @@ reloadable = false
 
 # This extension should be loaded after omni.kit.xr.system.openxr so we can register our component
 [package]
-version = "1.0.0"
+version = "1.1.0"
 category = "other"
 title = "Isaac Kit XR Teleop Bridge"
 description = "Provides OpenXR handle functions for constructing OpenXRSessionHandles with Kit XR"
@@ -29,3 +29,13 @@ path = "bin/*.plugin"
 recursive = false
 
 # Python module with bindings
+
+[settings]
+# Base required OpenXR extension list for this bridge component.
+# If non-empty, this list becomes the starting value before add/remove are applied.
+exts."isaacsim.kit.xr.teleop.bridge".openxr.requiredExtensions.set = ["XR_KHR_convert_timespec_time", "XR_NVX1_tensor_data"]
+# Additional OpenXR extensions to append to the resolved required extension list.
+# Duplicate values are ignored.
+exts."isaacsim.kit.xr.teleop.bridge".openxr.requiredExtensions.add = []
+# OpenXR extensions to remove from the resolved required extension list.
+exts."isaacsim.kit.xr.teleop.bridge".openxr.requiredExtensions.remove = []

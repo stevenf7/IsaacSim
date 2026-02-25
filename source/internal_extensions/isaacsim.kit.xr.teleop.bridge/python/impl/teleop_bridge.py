@@ -90,8 +90,25 @@ def get_instance_proc_addr() -> int:
     return _interface.get_instance_proc_addr()
 
 
+def subscribe_required_extensions(callback):
+    """Subscribe a callback that can contribute OpenXR required extensions.
+
+    The callback should return an iterable of extension strings. The C++ layer
+    deduplicates values before appending them to the resolved extension list.
+    Keep the returned subscription handle alive; releasing it unsubscribes.
+
+    Args:
+        callback: Callable with signature ``() -> list[str]``.
+
+    Returns:
+        RequiredExtensionsSubscription handle. Call ``reset()`` to unsubscribe.
+    """
+    return _interface.subscribe_required_extensions(callback)
+
+
 # Polyfill missing functions into omni.kit.xr.system.openxr
 try:
+    import carb
     import omni.kit.xr.system.openxr as openxr
 
     # Only patch functions that don't already exist
@@ -104,6 +121,7 @@ try:
 
     for func_name, func in _functions_to_patch:
         if not hasattr(openxr, func_name):
+            carb.log_info(f"[isaacsim.kit.xr.teleop.bridge] Polyfilling omni.kit.xr.system.openxr.{func_name}()")
             setattr(openxr, func_name, func)
             # Also add to __all__ if it exists
             if hasattr(openxr, "__all__") and func_name not in openxr.__all__:
@@ -119,4 +137,5 @@ __all__ = [
     "get_session_handle",
     "get_stage_space_handle",
     "get_instance_proc_addr",
+    "subscribe_required_extensions",
 ]
