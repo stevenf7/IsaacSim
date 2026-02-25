@@ -1,1 +1,0 @@
-create_parent_xforms(asset_usd_path=ASSET_USD_PATH, source_prim_path=SOURCE_PRIM_PATH, save_as_path=SAVE_AS_PATH)

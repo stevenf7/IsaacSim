@@ -575,265 +575,259 @@ local function get_doc_snippets_tests()
         -- assets
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.assets.usd_assets_nurec.run_the_simulation_for_the_given_number_of_steps",
-            "standalone_examples/testing/doc_snippets/snippets/assets/usd_assets_nurec/run_the_simulation_for_the_given_number_of_steps.py",
+            "docs/isaacsim/snippets/assets/usd_assets_nurec/run_the_simulation_for_the_given_number_of_steps.py",
             "--test",
         },
         -- core_api_tutorials
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.core_api_tutorials.tutorial_core_hello_world.open_a_new_my_applicationpy_file_and_add_the_follo",
-            "standalone_examples/testing/doc_snippets/snippets/core_api_tutorials/tutorial_core_hello_world/open_a_new_my_applicationpy_file_and_add_the_follo.py",
+            "docs/isaacsim/snippets/core_api_tutorials/tutorial_core_hello_world/open_a_new_my_applicationpy_file_and_add_the_follo.py",
             "--test",
         },
         -- cortex_tutorials
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.cortex_tutorials.tutorial_cortex_2_decider_networks.decision_framework_tooling",
-            "standalone_examples/testing/doc_snippets/snippets/cortex_tutorials/tutorial_cortex_2_decider_networks/decision_framework_tooling.py",
+            "docs/isaacsim/snippets/cortex_tutorials/tutorial_cortex_2_decider_networks/decision_framework_tooling.py",
             "--test",
         },
         -- development_tools
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.development_tools.jupyter_notebook.configuration_files_2",
-            "standalone_examples/testing/doc_snippets/snippets/development_tools/jupyter_notebook/configuration_files_2.py",
+            "docs/isaacsim/snippets/development_tools/jupyter_notebook/configuration_files_2.py",
             "--test",
         },
         -- installation
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.installation.install_python.perform_any_isaac_sim_omniverse_imports_after_inst",
-            "standalone_examples/testing/doc_snippets/snippets/installation/install_python/perform_any_isaac_sim_omniverse_imports_after_inst.py",
+            "docs/isaacsim/snippets/installation/install_python/perform_any_isaac_sim_omniverse_imports_after_inst.py",
             "--test",
         },
         -- introduction
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.introduction.quickstart_isaacsim_robot.set_all_joints_to_0",
-            "standalone_examples/testing/doc_snippets/snippets/introduction/quickstart_isaacsim_robot/set_all_joints_to_0.py",
+            "docs/isaacsim/snippets/introduction/quickstart_isaacsim_robot/set_all_joints_to_0.py",
             "--test",
         },
         -- python_scripting/manual_standalone_python
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.python_scripting.manual_standalone_python.from_python_code",
-            "standalone_examples/testing/doc_snippets/snippets/python_scripting/manual_standalone_python/from_python_code.py",
+            "docs/isaacsim/snippets/python_scripting/manual_standalone_python/from_python_code.py",
             "--test",
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.python_scripting.manual_standalone_python.usage_example",
-            "standalone_examples/testing/doc_snippets/snippets/python_scripting/manual_standalone_python/usage_example.py",
+            "docs/isaacsim/snippets/python_scripting/manual_standalone_python/usage_example.py",
             "--test",
         },
         -- python_scripting/util_snippets
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.python_scripting.util_snippets.rendering_frame_delay",
-            "standalone_examples/testing/doc_snippets/snippets/python_scripting/util_snippets/rendering_frame_delay.py",
+            "docs/isaacsim/snippets/python_scripting/util_snippets/rendering_frame_delay.py",
             "--test",
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.python_scripting.util_snippets.rendering_frame_delay_1",
-            "standalone_examples/testing/doc_snippets/snippets/python_scripting/util_snippets/rendering_frame_delay_1.py",
+            "docs/isaacsim/snippets/python_scripting/util_snippets/rendering_frame_delay_1.py",
             "--test",
         },
         -- reference_material
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.reference_material.sim_performance_optimization_handbook.cpu_thread_count_optimizations",
-            "standalone_examples/testing/doc_snippets/snippets/reference_material/sim_performance_optimization_handbook/cpu_thread_count_optimizations.py",
+            "docs/isaacsim/snippets/reference_material/sim_performance_optimization_handbook/cpu_thread_count_optimizations.py",
             "--test",
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.reference_material.sim_performance_optimization_handbook.scene_and_rendering_optimizations",
-            "standalone_examples/testing/doc_snippets/snippets/reference_material/sim_performance_optimization_handbook/scene_and_rendering_optimizations.py",
+            "docs/isaacsim/snippets/reference_material/sim_performance_optimization_handbook/scene_and_rendering_optimizations.py",
             "--test",
         },
         -- replicator_tutorials/tutorial_replicator_cosmos
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_cosmos.implementation",
-            "standalone_examples/testing/doc_snippets/snippets/replicator_tutorials/tutorial_replicator_cosmos/implementation.py",
+            "docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_cosmos/implementation.py",
             "--test",
         },
         -- replicator_tutorials/tutorial_replicator_getting_started
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_getting_started.run_the_example",
-            "standalone_examples/testing/doc_snippets/snippets/replicator_tutorials/tutorial_replicator_getting_started/run_the_example.py",
+            "docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_getting_started/run_the_example.py",
             "--test",
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_getting_started.run_the_example_1",
-            "standalone_examples/testing/doc_snippets/snippets/replicator_tutorials/tutorial_replicator_getting_started/run_the_example_1.py",
+            "docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_getting_started/run_the_example_1.py",
             "--test",
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_getting_started.run_the_example_2",
-            "standalone_examples/testing/doc_snippets/snippets/replicator_tutorials/tutorial_replicator_getting_started/run_the_example_2.py",
+            "docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_getting_started/run_the_example_2.py",
             "--test",
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_getting_started.run_the_example_3",
-            "standalone_examples/testing/doc_snippets/snippets/replicator_tutorials/tutorial_replicator_getting_started/run_the_example_3.py",
+            "docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_getting_started/run_the_example_3.py",
             "--test",
         },
         -- replicator_tutorials/tutorial_replicator_isaac_snippets
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.calculate_and_display_real_time_performance_factor",
-            "standalone_examples/testing/doc_snippets/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/calculate_and_display_real_time_performance_factor.py",
+            "docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/calculate_and_display_real_time_performance_factor.py",
             "--test",
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.pathtracing_examples",
-            "standalone_examples/testing/doc_snippets/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/pathtracing_examples.py",
+            "docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/pathtracing_examples.py",
             "--test",
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.run_example_with_duration_for_all_captures_plus_a_",
-            "standalone_examples/testing/doc_snippets/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/run_example_with_duration_for_all_captures_plus_a_.py",
+            "docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/run_example_with_duration_for_all_captures_plus_a_.py",
             "--test",
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.wait_for_all_data_to_be_written",
-            "standalone_examples/testing/doc_snippets/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/wait_for_all_data_to_be_written.py",
+            "docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/wait_for_all_data_to_be_written.py",
             "--test",
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.wait_for_the_data_to_be_written_and_release_resour",
-            "standalone_examples/testing/doc_snippets/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/wait_for_the_data_to_be_written_and_release_resour.py",
+            "docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/wait_for_the_data_to_be_written_and_release_resour.py",
             "--test",
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.wait_for_the_data_to_be_written_to_disk_and_clean_",
-            "standalone_examples/testing/doc_snippets/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/wait_for_the_data_to_be_written_to_disk_and_clean_.py",
+            "docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/wait_for_the_data_to_be_written_to_disk_and_clean_.py",
             "--test",
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.wait_until_all_the_data_is_saved_to_disk_and_clean",
-            "standalone_examples/testing/doc_snippets/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/wait_until_all_the_data_is_saved_to_disk_and_clean.py",
-            "--test",
-        },
-        -- action_and_event_data_generation/tutorial_replicator_incident
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.action_and_event_data_generation.tutorial_replicator_incident.tutorial_replicator_incident",
-            "standalone_examples/testing/doc_snippets/snippets/action_and_event_data_generation/tutorial_replicator_incident.py",
+            "docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/wait_until_all_the_data_is_saved_to_disk_and_clean.py",
             "--test",
         },
         -- robot_setup_tutorials/tutorial_pickplace_example (with PYTHONPATH)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup_tutorials.tutorial_pickplace_example.define_the_manipulator",
-            "standalone_examples/testing/doc_snippets/snippets/robot_setup_tutorials/tutorial_pickplace_example/define_the_manipulator.py",
+            "docs/isaacsim/snippets/robot_setup_tutorials/tutorial_pickplace_example/define_the_manipulator.py",
             "--test",
             pickplace_pythonpath,
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup_tutorials.tutorial_pickplace_example.define_the_manipulator_1",
-            "standalone_examples/testing/doc_snippets/snippets/robot_setup_tutorials/tutorial_pickplace_example/define_the_manipulator_1.py",
+            "docs/isaacsim/snippets/robot_setup_tutorials/tutorial_pickplace_example/define_the_manipulator_1.py",
             "--test",
             pickplace_pythonpath,
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup_tutorials.tutorial_pickplace_example.follow_target_example_using_rmp_flow_1",
-            "standalone_examples/testing/doc_snippets/snippets/robot_setup_tutorials/tutorial_pickplace_example/follow_target_example_using_rmp_flow_1.py",
+            "docs/isaacsim/snippets/robot_setup_tutorials/tutorial_pickplace_example/follow_target_example_using_rmp_flow_1.py",
             "--test",
             pickplace_pythonpath,
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup_tutorials.tutorial_pickplace_example.gripper_control_example",
-            "standalone_examples/testing/doc_snippets/snippets/robot_setup_tutorials/tutorial_pickplace_example/gripper_control_example.py",
+            "docs/isaacsim/snippets/robot_setup_tutorials/tutorial_pickplace_example/gripper_control_example.py",
             "--test",
             pickplace_pythonpath,
         },
         -- ros2_tutorials
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.ros2_tutorials.tutorial_ros2_camera_publishing.setup_a_camera_in_a_scene",
-            "standalone_examples/testing/doc_snippets/snippets/ros2_tutorials/tutorial_ros2_camera_publishing/setup_a_camera_in_a_scene.py",
+            "docs/isaacsim/snippets/ros2_tutorials/tutorial_ros2_camera_publishing/setup_a_camera_in_a_scene.py",
             "--test",
         },
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.ros2_tutorials.tutorial_ros2_rtx_lidar.create_a_separate_writer_for_the_objectid_mapping",
-            "standalone_examples/testing/doc_snippets/snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/create_a_separate_writer_for_the_objectid_mapping.py",
+            "docs/isaacsim/snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/create_a_separate_writer_for_the_objectid_mapping.py",
             "--test",
         },
         -- sensors/isaacsim_sensors_camera
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.sensors.isaacsim_sensors_camera.standalone_python",
-            "standalone_examples/testing/doc_snippets/snippets/sensors/isaacsim_sensors_camera/standalone_python.py",
+            "docs/isaacsim/snippets/sensors/isaacsim_sensors_camera/standalone_python.py",
             "--test",
         },
         -- sensors/isaacsim_sensors_physics_contact
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.sensors.isaacsim_sensors_physics_contact.creating_and_modifying_the_contact_sensor",
-            "standalone_examples/testing/doc_snippets/snippets/sensors/isaacsim_sensors_physics_contact/creating_and_modifying_the_contact_sensor.py",
+            "docs/isaacsim/snippets/sensors/isaacsim_sensors_physics_contact/creating_and_modifying_the_contact_sensor.py",
             "--test",
         },
         -- sensors/isaacsim_sensors_physics_imu
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.sensors.isaacsim_sensors_physics_imu.creating_and_modifying_the_imu",
-            "standalone_examples/testing/doc_snippets/snippets/sensors/isaacsim_sensors_physics_imu/creating_and_modifying_the_imu.py",
+            "docs/isaacsim/snippets/sensors/isaacsim_sensors_physics_imu/creating_and_modifying_the_imu.py",
             "--test",
         },
         -- sensors/isaacsim_sensors_physics_proximity
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.sensors.isaacsim_sensors_physics_proximity.standalone_python",
-            "standalone_examples/testing/doc_snippets/snippets/sensors/isaacsim_sensors_physics_proximity/standalone_python.py",
+            "docs/isaacsim/snippets/sensors/isaacsim_sensors_physics_proximity/standalone_python.py",
             "--test",
         },
         -- sensors/isaacsim_sensors_rtx
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.sensors.isaacsim_sensors_rtx.how_to_enable_motion_bvh",
-            "standalone_examples/testing/doc_snippets/snippets/sensors/isaacsim_sensors_rtx/how_to_enable_motion_bvh.py",
+            "docs/isaacsim/snippets/sensors/isaacsim_sensors_rtx/how_to_enable_motion_bvh.py",
             "--test",
         },
         -- sensors/isaacsim_sensors_rtx_annotators
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.sensors.isaacsim_sensors_rtx_annotators.attach_the_render_product_after_the_annotator_is_i",
-            "standalone_examples/testing/doc_snippets/snippets/sensors/isaacsim_sensors_rtx_annotators/attach_the_render_product_after_the_annotator_is_i.py",
+            "docs/isaacsim/snippets/sensors/isaacsim_sensors_rtx_annotators/attach_the_render_product_after_the_annotator_is_i.py",
             "--test",
         },
         -- motion_generation/controllers (no noise and no filtering)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example",
-            "standalone_examples/testing/doc_snippets/snippets/motion_generation/controllers/mobile_robot_control_example.py",
+            "docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py",
             "--test",
         },
         -- motion_generation/controllers (noise but no filtering)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example.noise",
-            "standalone_examples/testing/doc_snippets/snippets/motion_generation/controllers/mobile_robot_control_example.py --noise",
+            "docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py --noise",
             "--test",
         },
         -- motion_generation/controllers (filter but no noise)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example.filter",
-            "standalone_examples/testing/doc_snippets/snippets/motion_generation/controllers/mobile_robot_control_example.py --filter",
+            "docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py --filter",
             "--test",
         },
         -- motion_generation/controllers (filter and noise)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example.filter_and_noise",
-            "standalone_examples/testing/doc_snippets/snippets/motion_generation/controllers/mobile_robot_control_example.py --filter --noise",
+            "docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py --filter --noise",
             "--test",
         },
         -- motion_generation/scene_interaction
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.scene_interaction.scene_interaction_example",
-            "standalone_examples/testing/doc_snippets/snippets/motion_generation/scene_interaction/scene_interaction_example.py",
+            "docs/isaacsim/snippets/motion_generation/scene_interaction/scene_interaction_example.py",
             "--test",
         },
         -- motion_generation/trajectories (minimal-time trajectory)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.trajectories.trajectory_example",
-            "standalone_examples/testing/doc_snippets/snippets/motion_generation/trajectories/trajectory_example.py",
+            "docs/isaacsim/snippets/motion_generation/trajectories/trajectory_example.py",
             "--test",
         },
         -- motion_generation/trajectories (linear trajectory)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.trajectories.trajectory_example.linear",
-            "standalone_examples/testing/doc_snippets/snippets/motion_generation/trajectories/trajectory_example.py --linear",
+            "docs/isaacsim/snippets/motion_generation/trajectories/trajectory_example.py --linear",
             "--test",
         },
         -- utilities/debugging/profiling_performance
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.utilities.debugging.profiling_performance.standalone_workflow",
-            "standalone_examples/testing/doc_snippets/snippets/utilities/debugging/profiling_performance/standalone_workflow.py",
+            "docs/isaacsim/snippets/utilities/debugging/profiling_performance/standalone_workflow.py",
             "--test",
         },
         -- utilities/debugging/tutorial_advanced_python_debugging
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.utilities.debugging.tutorial_advanced_python_debugging.add_the_following_lines_to_hello_worldpy_and_place",
-            "standalone_examples/testing/doc_snippets/snippets/utilities/debugging/tutorial_advanced_python_debugging/add_the_following_lines_to_hello_worldpy_and_place.py",
+            "docs/isaacsim/snippets/utilities/debugging/tutorial_advanced_python_debugging/add_the_following_lines_to_hello_worldpy_and_place.py",
             "--test",
         },
         -- async snippets

@@ -1,1 +1,0 @@
-articulation_controller.apply_action(action)
