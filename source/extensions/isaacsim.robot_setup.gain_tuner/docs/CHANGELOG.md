@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.2.0] - 2026-02-25
+### Added
+- Added unit tests for equivalent inertia computation
+
 ## [3.1.5] - 2025-12-16
 ### Changed
 - Fixed Natural Frequency calculation:
