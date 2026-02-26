@@ -14,6 +14,7 @@
 # limitations under the License.
 """Shared UI utilities for robot schema visualization."""
 
+from enum import Enum, auto
 from typing import Any
 
 import carb
@@ -34,18 +35,41 @@ LINE_BACKGROUND_COLOR = cl("#c3c3c3")
 
 
 # --------------------------------------------------------------------------
+# Hierarchy display modes
+# --------------------------------------------------------------------------
+
+
+class HierarchyMode(Enum):
+    """Display mode for the robot hierarchy panel.
+
+    Attributes:
+        FLAT: Links and joints listed as two flat scopes under the robot,
+            ordered as they appear in the robot schema relationships.
+        LINKED: Linked-list traversal (parent link → joint → child link),
+            which is the default display mode.
+        MUJOCO: Tree rooted at the primary link. Each link's child links are
+            listed first, followed by the joint connecting that link to its
+            own parent as the last child entry.
+    """
+
+    FLAT = auto()
+    LINKED = auto()
+    MUJOCO = auto()
+
+
+# --------------------------------------------------------------------------
 # Stage and Prim Access Utilities
 # --------------------------------------------------------------------------
 
 
 def get_stage_safe(context_name: str = "") -> Usd.Stage | None:
-    """Retrieve the current USD stage safely.
+    """Return the current USD stage, or None if unavailable.
 
     Args:
-        context_name: Name of the USD context. Empty string uses the default context.
+        context_name: USD context name; empty string uses the default context.
 
     Returns:
-        The current USD stage, or None if unavailable.
+        Current USD stage, or None if unavailable.
 
     Example:
 
@@ -60,14 +84,14 @@ def get_stage_safe(context_name: str = "") -> Usd.Stage | None:
 
 
 def get_prim_safe(path: Sdf.Path | str | None, stage: Usd.Stage | None = None) -> Usd.Prim | None:
-    """Retrieve a prim at the given path safely.
+    """Return the prim at the given path, or None if missing or invalid.
 
     Args:
-        path: The USD path or path string to the prim.
-        stage: Optional USD stage. If None, retrieves from the default context.
+        path: USD path or path string to the prim.
+        stage: USD stage; if None, uses the default context.
 
     Returns:
-        The prim if it exists and is valid, or None otherwise.
+        Prim if it exists and is valid, None otherwise.
 
     Example:
 
@@ -98,10 +122,10 @@ def to_vec3d(position: Any) -> Gf.Vec3d | None:
     """Convert a position to a 3D vector.
 
     Args:
-        position: A position value (tuple, list, vector, or indexable object).
+        position: Position value (tuple, list, vector, or indexable object).
 
     Returns:
-        A vector representation, or None if conversion fails.
+        Vector representation, or None if conversion fails.
 
     Example:
 
@@ -126,10 +150,10 @@ def to_float_list(position: Any) -> list[float]:
     """Convert a position to a list of floats.
 
     Args:
-        position: A position value (tuple, list, vector, or indexable object).
+        position: Position value (tuple, list, vector, or indexable object).
 
     Returns:
-        A list of three floats [x, y, z].
+        List of three floats [x, y, z].
 
     Example:
 
@@ -146,10 +170,10 @@ def to_float_list(position: Any) -> list[float]:
 
 
 def get_camera_path() -> str | None:
-    """Retrieve the current viewport camera's USD path.
+    """Return the current viewport camera's USD path.
 
     Returns:
-        The camera prim path, or None if unavailable.
+        Camera prim path, or None if unavailable.
 
     Example:
 
@@ -161,10 +185,10 @@ def get_camera_path() -> str | None:
 
 
 def get_camera_position() -> Gf.Vec3d | None:
-    """Retrieve the current viewport camera's world position.
+    """Return the current viewport camera's world position.
 
     Returns:
-        The camera world position, or None if unavailable.
+        Camera world position, or None if unavailable.
 
     Example:
 
@@ -180,16 +204,16 @@ def get_camera_position() -> Gf.Vec3d | None:
 
 
 def get_camera_pose(offset: float = 0.0) -> tuple[Gf.Vec3d, Gf.Vec3d] | None:
-    """Retrieve the current camera position and forward direction.
+    """Return the current camera position and forward direction.
 
     Computes the camera's world-space position and forward direction vector.
     USD cameras look down -Z in local space.
 
     Args:
-        offset: Optional offset along the forward direction to apply to the position.
+        offset: Offset along the forward direction to apply to the position.
 
     Returns:
-        A tuple of (position, forward_direction), or None if the camera is unavailable.
+        Tuple of (position, forward_direction), or None if the camera is unavailable.
 
     Example:
 
@@ -223,13 +247,13 @@ def get_camera_pose(offset: float = 0.0) -> tuple[Gf.Vec3d, Gf.Vec3d] | None:
 def is_in_front_of_camera(
     point: Any, camera_position: Gf.Vec3d, camera_forward: Gf.Vec3d, z_offset: float = 0.001
 ) -> bool:
-    """Check if a point is in front of the camera.
+    """Return True if the point is in front of the camera.
 
     Args:
-        point: The world-space point to check (tuple, list, or vector).
-        camera_position: The camera position vector.
-        camera_forward: The camera forward direction vector.
-        z_offset: Small offset to avoid z-fighting issues.
+        point: World-space point to check (tuple, list, or vector).
+        camera_position: Camera position vector.
+        camera_forward: Camera forward direction vector.
+        z_offset: Small offset to avoid z-fighting.
 
     Returns:
         True if the point is in front of the camera, False otherwise.
@@ -255,10 +279,10 @@ def is_in_front_of_camera(
 
 
 def get_active_viewport() -> Any | None:
-    """Retrieve the active viewport API.
+    """Return the active viewport API.
 
     Returns:
-        The active viewport API object, or None if unavailable.
+        Active viewport API object, or None if unavailable.
 
     Example:
 
@@ -275,12 +299,11 @@ def world_to_screen_position(
     """Convert a world position to screen coordinates.
 
     Args:
-        position: The world-space position to convert.
-        viewport_api: Optional viewport API. If None, uses the active viewport.
+        position: World-space position to convert.
+        viewport_api: Viewport API; if None, uses the active viewport.
 
     Returns:
-        A tuple (x, y) of screen coordinates if the position is visible,
-        or a tuple (x, y, z) of world coordinates as fallback if viewport
+        (x, y) screen coordinates if visible, (x, y, z) world fallback if
         conversion fails, or None if the position is invalid.
 
     Example:
@@ -306,11 +329,11 @@ def world_to_screen_position(
 
 
 def is_position_in_viewport(position: Any, viewport_api: Any | None = None) -> bool:
-    """Check if a world position is within the viewport screen space.
+    """Return True if the world position is within the viewport screen space.
 
     Args:
-        position: The world-space position to check.
-        viewport_api: Optional viewport API. If None, uses the active viewport.
+        position: World-space position to check.
+        viewport_api: Viewport API; if None, uses the active viewport.
 
     Returns:
         True if the position is visible in the viewport, False otherwise.
@@ -422,13 +445,13 @@ class PathMap:
 
 
 def joint_has_both_bodies(joint_prim: Usd.Prim | None) -> bool:
-    """Check if a joint has both body0 and body1 relationships defined.
+    """Return True if the joint has both body0 and body1 relationships defined.
 
     Args:
-        joint_prim: The joint prim to inspect.
+        joint_prim: Joint prim to inspect.
 
     Returns:
-        True if both body0 and body1 relationships have valid targets, False otherwise.
+        True if both body0 and body1 have valid targets, False otherwise.
 
     Example:
 
@@ -452,13 +475,13 @@ def joint_has_both_bodies(joint_prim: Usd.Prim | None) -> bool:
 
 @Trace.TraceFunction
 def get_link_position(link: Usd.Prim | Sdf.Path | str | None) -> Gf.Vec3d | None:
-    """Compute the world-space position of a link prim origin.
+    """Return the world-space position of a link prim origin.
 
     Args:
         link: Link prim or prim path.
 
     Returns:
-        The link's world-space position vector, or None if computation fails.
+        Link world-space position, or None if computation fails.
 
     Example:
 
@@ -494,17 +517,17 @@ def get_link_position(link: Usd.Prim | Sdf.Path | str | None) -> Gf.Vec3d | None
 
 @Trace.TraceFunction
 def get_joint_position(robot_root_path: Sdf.Path | str, joint_path: Sdf.Path | str) -> Gf.Vec3d | None:
-    """Compute the world-space position of a robot joint.
+    """Return the world-space position of a robot joint.
 
     Retrieves the joint pose from the robot schema and transforms it
     to world coordinates using the robot's world transform.
 
     Args:
-        robot_root_path: The path to the robot root prim.
-        joint_path: The path to the joint prim.
+        robot_root_path: Path to the robot root prim.
+        joint_path: Path to the joint prim.
 
     Returns:
-        The joint's world-space position vector, or None if computation fails.
+        Joint world-space position, or None if computation fails.
 
     Example:
 
@@ -546,6 +569,24 @@ def get_joint_position(robot_root_path: Sdf.Path | str, joint_path: Sdf.Path | s
 # --------------------------------------------------------------------------
 
 
+def _copy_applied_schemas(source_prim: Usd.Prim, target_prim: Usd.Prim) -> None:
+    """Copy the ``apiSchemas`` metadata from *source_prim* to *target_prim*.
+
+    This transfers all applied API schemas (e.g. ``IsaacJointAPI``,
+    ``IsaacLinkAPI``, ``RigidBodyAPI``) so that the hierarchy stage prims
+    carry the same schema information as the original stage.
+
+    Args:
+        source_prim: Prim whose applied schemas are read.
+        target_prim: Prim that receives the copied schemas.
+    """
+    schemas = source_prim.GetAppliedSchemas()
+    if not schemas:
+        return
+    for schema_name in schemas:
+        target_prim.AddAppliedSchema(schema_name)
+
+
 def _create_hierarchy_node(
     hierarchy_stage: Usd.Stage,
     link_node: Any,
@@ -577,6 +618,7 @@ def _create_hierarchy_node(
     if current_joint_prim:
         hierarchy_joint_path = parent_link_prim.GetPath().AppendChild(current_joint_prim.GetName())
         hierarchy_joint_prim = hierarchy_stage.DefinePrim(hierarchy_joint_path, current_joint_prim.GetTypeName())
+        _copy_applied_schemas(current_joint_prim, hierarchy_joint_prim)
         hierarchy_link_path = hierarchy_joint_prim.GetPath().AppendChild(link_node.name)
         path_map.insert(current_joint_prim.GetPath(), hierarchy_joint_prim.GetPath())
 
@@ -602,6 +644,7 @@ def _create_hierarchy_node(
         next_parent_joint = parent_joint_in_chain
 
     hierarchy_link_prim = hierarchy_stage.DefinePrim(hierarchy_link_path, "Xform")
+    _copy_applied_schemas(link_node.prim, hierarchy_link_prim)
     path_map.insert(link_node.prim.GetPath(), hierarchy_link_prim.GetPath())
 
     for child_node in link_node.children:
@@ -617,12 +660,170 @@ def _create_hierarchy_node(
         )
 
 
-def generate_robot_hierarchy_stage() -> tuple[Usd.Stage | None, PathMap, list[Any]]:
+def _generate_flat_hierarchy(
+    hierarchy_stage: Usd.Stage,
+    source_robot_prim: Usd.Prim,
+    hierarchy_robot_prim: Usd.Prim,
+    robot_root_path: Sdf.Path,
+    path_map: PathMap,
+    joint_connections: list[Any],
+    stage: Usd.Stage,
+) -> None:
+    """Build a flat hierarchy under *hierarchy_robot_prim* with Links/Joints scopes.
+
+    Links and joints are listed in the order they appear in the robot schema
+    relationships, placed under dedicated ``Links`` and ``Joints`` scope prims.
+
+    Args:
+        hierarchy_stage: The in-memory hierarchy stage being built.
+        source_robot_prim: The robot root prim in the original stage.
+        hierarchy_robot_prim: The robot root prim already created in the hierarchy stage.
+        robot_root_path: The path to the robot root prim.
+        path_map: The path mapping object for tracking paths.
+        joint_connections: List to append connection items to.
+        stage: The original USD stage.
+    """
+    from .model import ConnectionItem
+
+    links_path = hierarchy_robot_prim.GetPath().AppendChild("Links")
+    hierarchy_stage.DefinePrim(links_path, "Scope")
+
+    robot_links_rel = source_robot_prim.GetRelationship(robot_schema.Relations.ROBOT_LINKS.name)
+    if robot_links_rel:
+        for link_target in robot_links_rel.GetTargets():
+            link_prim = stage.GetPrimAtPath(link_target)
+            if not (link_prim and link_prim.IsValid()):
+                continue
+            hier_link_path = links_path.AppendChild(link_prim.GetName())
+            hier_link_prim = hierarchy_stage.DefinePrim(hier_link_path, "Xform")
+            _copy_applied_schemas(link_prim, hier_link_prim)
+            path_map.insert(link_prim.GetPath(), hier_link_path)
+
+    joints_path = hierarchy_robot_prim.GetPath().AppendChild("Joints")
+    hierarchy_stage.DefinePrim(joints_path, "Scope")
+
+    robot_joints_rel = source_robot_prim.GetRelationship(robot_schema.Relations.ROBOT_JOINTS.name)
+    if robot_joints_rel:
+        for joint_target in robot_joints_rel.GetTargets():
+            joint_prim = stage.GetPrimAtPath(joint_target)
+            if not (joint_prim and joint_prim.IsValid()):
+                continue
+            hier_joint_path = joints_path.AppendChild(joint_prim.GetName())
+            hier_joint_prim = hierarchy_stage.DefinePrim(hier_joint_path, joint_prim.GetTypeName())
+            _copy_applied_schemas(joint_prim, hier_joint_prim)
+            path_map.insert(joint_prim.GetPath(), hier_joint_path)
+
+            joint_position = get_joint_position(robot_root_path, joint_prim.GetPath())
+            parent_link_prim = None
+            parent_pos = None
+            phys_joint = UsdPhysics.Joint(joint_prim)
+            if phys_joint:
+                body0_rel = phys_joint.GetBody0Rel()
+                if body0_rel:
+                    body0_targets = body0_rel.GetTargets()
+                    if body0_targets:
+                        parent_link_prim = stage.GetPrimAtPath(body0_targets[0])
+                        parent_pos = get_link_position(parent_link_prim)
+
+            connection_item = ConnectionItem(
+                joint_prim=joint_prim,
+                parent_joint_prim=None,
+                parent_link_prim=parent_link_prim,
+                robot_root_path=robot_root_path,
+                joint_pos=joint_position,
+                parent_joint_pos=parent_pos,
+            )
+            joint_connections.append(connection_item)
+
+
+def _create_hierarchy_node_mujoco(
+    hierarchy_stage: Usd.Stage,
+    link_node: Any,
+    parent_prim: Usd.Prim,
+    parent_joint_in_chain: Usd.Prim | None,
+    parent_link_source_prim: Usd.Prim | None,
+    robot_root_path: Sdf.Path,
+    path_map: PathMap,
+    joint_connections: list[Any],
+) -> None:
+    """Create a MuJoCo-style hierarchy node and its children recursively.
+
+    Each link is placed under its parent. Child links are listed first
+    (in order), and the joint connecting this link to its own parent is
+    appended as the last child of this link prim.
+
+    Args:
+        hierarchy_stage: The in-memory hierarchy stage being built.
+        link_node: The current link tree node to process.
+        parent_prim: The parent prim in the hierarchy stage.
+        parent_joint_in_chain: The kinematic-chain parent joint for connection lines.
+        parent_link_source_prim: The parent link prim in the source stage.
+        robot_root_path: The path to the robot root prim.
+        path_map: The path mapping object for tracking paths.
+        joint_connections: List to append connection items to.
+    """
+    from .model import ConnectionItem
+
+    hierarchy_link_path = parent_prim.GetPath().AppendChild(link_node.name)
+    hierarchy_link_prim = hierarchy_stage.DefinePrim(hierarchy_link_path, "Xform")
+    _copy_applied_schemas(link_node.prim, hierarchy_link_prim)
+    path_map.insert(link_node.prim.GetPath(), hierarchy_link_prim.GetPath())
+
+    # The joint connecting this link to its parent becomes the "next parent joint"
+    # for the children's connection lines (kinematic chain order).
+    next_parent_joint = link_node._joint_to_parent if link_node._joint_to_parent else parent_joint_in_chain
+
+    for child_node in link_node.children:
+        _create_hierarchy_node_mujoco(
+            hierarchy_stage,
+            child_node,
+            hierarchy_link_prim,
+            next_parent_joint,
+            link_node.prim,
+            robot_root_path,
+            path_map,
+            joint_connections,
+        )
+
+    current_joint_prim = link_node._joint_to_parent
+    if current_joint_prim:
+        hierarchy_joint_path = hierarchy_link_prim.GetPath().AppendChild(current_joint_prim.GetName())
+        hierarchy_joint_prim = hierarchy_stage.DefinePrim(hierarchy_joint_path, current_joint_prim.GetTypeName())
+        _copy_applied_schemas(current_joint_prim, hierarchy_joint_prim)
+        path_map.insert(current_joint_prim.GetPath(), hierarchy_joint_prim.GetPath())
+
+        joint_position = get_joint_position(robot_root_path, current_joint_prim.GetPath())
+        if parent_joint_in_chain:
+            parent_joint_position = get_joint_position(robot_root_path, parent_joint_in_chain.GetPath())
+        else:
+            parent_joint_position = get_link_position(parent_link_source_prim)
+
+        connection_item = ConnectionItem(
+            joint_prim=current_joint_prim,
+            parent_joint_prim=parent_joint_in_chain,
+            parent_link_prim=parent_link_source_prim,
+            robot_root_path=robot_root_path,
+            joint_pos=joint_position,
+            parent_joint_pos=parent_joint_position,
+        )
+        joint_connections.append(connection_item)
+
+
+def generate_robot_hierarchy_stage(
+    mode: HierarchyMode = HierarchyMode.LINKED,
+) -> tuple[Usd.Stage | None, PathMap, list[Any]]:
     """Generate an in-memory USD stage representing the robot joint hierarchy.
 
     Scans the current stage for prims with the Robot API applied, builds
     a link tree for each robot, and creates a hierarchy stage where joints
     are represented as parent-child relationships rather than as properties.
+
+    Args:
+        mode: The display mode for the hierarchy.  ``LINKED`` (default) uses
+            the parent-link → joint → child-link chain.  ``FLAT`` places all
+            links under a ``Links`` scope and all joints under a ``Joints``
+            scope in schema order.  ``MUJOCO`` roots the tree at the primary
+            link and appends the joint-to-parent as the last child of each link.
 
     Returns:
         A tuple of (hierarchy_stage, path_map, joint_connections).
@@ -636,7 +837,10 @@ def generate_robot_hierarchy_stage() -> tuple[Usd.Stage | None, PathMap, list[An
     .. code-block:: python
 
         hierarchy_stage, path_map, connections = generate_robot_hierarchy_stage()
+        hierarchy_stage, path_map, connections = generate_robot_hierarchy_stage(HierarchyMode.FLAT)
     """
+    from .masking_state import MaskingState
+
     stage = get_stage_safe()
     path_map = PathMap()
     joint_connections: list[Any] = []
@@ -644,13 +848,42 @@ def generate_robot_hierarchy_stage() -> tuple[Usd.Stage | None, PathMap, list[An
     if not stage:
         return None, path_map, joint_connections
 
+    # Mute the masking sublayer so the tree is built from the unmodified
+    # robot structure, ignoring any deactivation / bypass edits.
+    masking_layer_id = MaskingState.get_instance().get_masking_layer_id()
+    if masking_layer_id:
+        stage.MuteLayer(masking_layer_id)
+
+    try:
+        return _generate_robot_hierarchy_stage_inner(stage, mode)
+    finally:
+        if masking_layer_id:
+            stage.UnmuteLayer(masking_layer_id)
+
+
+def _generate_robot_hierarchy_stage_inner(
+    stage: Usd.Stage,
+    mode: HierarchyMode,
+) -> tuple[Usd.Stage | None, PathMap, list[Any]]:
+    """Core hierarchy generation executed while the masking layer is muted.
+
+    Args:
+        stage: Source USD stage containing the robot prims.
+        mode: Hierarchy display mode (FLAT, LINKED, or MUJOCO).
+
+    Returns:
+        Tuple of ``(hierarchy_stage, path_map, joint_connections)``; the
+        first element is ``None`` if no robots are found in the stage.
+    """
+    path_map = PathMap()
+    joint_connections: list[Any] = []
+
     root_prim = stage.GetPrimAtPath("/")
     robot_prims = [prim for prim in Usd.PrimRange(root_prim) if prim.HasAPI(robot_schema.Classes.ROBOT_API.value)]
 
     if not robot_prims:
         return None, path_map, joint_connections
 
-    # Collect valid robots with their link trees
     robot_data = []
     for prim in robot_prims:
         joints = robot_schema_utils.GetAllRobotJoints(stage, prim)
@@ -667,18 +900,41 @@ def generate_robot_hierarchy_stage() -> tuple[Usd.Stage | None, PathMap, list[An
 
     for robot_root_prim, robot_tree, joints in robot_data:
         hierarchy_root_prim = hierarchy_stage.DefinePrim(robot_root_prim.GetPath(), "Xform")
+        _copy_applied_schemas(robot_root_prim, hierarchy_root_prim)
         path_map.insert(robot_root_prim.GetPath(), hierarchy_root_prim.GetPath())
         robot_root_path = robot_root_prim.GetPath()
 
-        _create_hierarchy_node(
-            hierarchy_stage,
-            robot_tree,
-            hierarchy_root_prim,
-            None,
-            None,
-            robot_root_path,
-            path_map,
-            joint_connections,
-        )
+        if mode == HierarchyMode.FLAT:
+            _generate_flat_hierarchy(
+                hierarchy_stage,
+                robot_root_prim,
+                hierarchy_root_prim,
+                robot_root_path,
+                path_map,
+                joint_connections,
+                stage,
+            )
+        elif mode == HierarchyMode.MUJOCO:
+            _create_hierarchy_node_mujoco(
+                hierarchy_stage,
+                robot_tree,
+                hierarchy_root_prim,
+                None,
+                None,
+                robot_root_path,
+                path_map,
+                joint_connections,
+            )
+        else:
+            _create_hierarchy_node(
+                hierarchy_stage,
+                robot_tree,
+                hierarchy_root_prim,
+                None,
+                None,
+                robot_root_path,
+                path_map,
+                joint_connections,
+            )
 
     return hierarchy_stage, path_map, joint_connections

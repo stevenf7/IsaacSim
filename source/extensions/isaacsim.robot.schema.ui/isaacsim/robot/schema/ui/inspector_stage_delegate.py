@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Stage delegate customization for the hierarchy widget."""
+"""Stage delegate for the Robot Inspector stage widget."""
 
 from typing import Any
 
@@ -21,22 +21,21 @@ import omni.usd
 from omni.kit.widget.stage import ContextMenu
 from omni.kit.widget.stage.stage_delegate import StageDelegate
 
+from .masking_state import MaskingState, is_maskable_type
 
-class HierarchyContextMenu(ContextMenu):
-    """Custom context menu for the robot hierarchy stage widget.
 
-    Provides expand/collapse functionality for navigating the robot
-    joint hierarchy tree structure.
+class InspectorContextMenu(ContextMenu):
+    """Custom context menu for the Robot Inspector stage widget.
+
+    Provides expand/collapse and deactivate/activate for the robot
+    joint hierarchy tree.
     """
 
     def on_mouse_event(self, event: Any) -> None:
         """Handle mouse events to show the context menu.
 
         Args:
-            event: The mouse event with payload containing stage and prim info.
-
-        Returns:
-            None.
+            event: Mouse event with payload containing stage and prim info.
         """
         import omni.kit.menu.core
 
@@ -151,7 +150,7 @@ class HierarchyContextMenu(ContextMenu):
         return stage.GetPrimAtPath(prim_path)
 
     def _build_menu_dict(self) -> list[dict[str, Any]]:
-        """Build the context menu dictionary with expand/collapse options.
+        """Build the context menu dictionary with expand/collapse and deactivate options.
 
         Returns:
             List of menu entry dictionaries.
@@ -159,7 +158,131 @@ class HierarchyContextMenu(ContextMenu):
         return [
             self._build_expand_menu(),
             self._build_collapse_menu(),
+            self._build_deactivate_entry(),
+            self._build_activate_entry(),
         ]
+
+    def _build_deactivate_entry(self) -> dict[str, Any]:
+        """Build the 'Deactivate' menu entry, shown only for active maskable prims.
+
+        Returns:
+            Dictionary defining the deactivate menu item.
+        """
+        return {
+            "name": "Deactivate",
+            "onclick_fn": self._deactivate_selected,
+            "enabled_fn": [self._can_deactivate],
+            "show_fn": [self._show_when_active],
+        }
+
+    def _build_activate_entry(self) -> dict[str, Any]:
+        """Build the 'Activate' menu entry, shown only for deactivated prims.
+
+        Returns:
+            Dictionary defining the activate menu item.
+        """
+        return {
+            "name": "Activate",
+            "onclick_fn": self._deactivate_selected,
+            "show_fn": [self._show_when_deactivated],
+        }
+
+    def _get_target_prims(self, objects: dict[str, Any]) -> list[Any]:
+        """Get the list of target prims from the context menu objects.
+
+        Falls back to the hovered prim if no selected prims are found
+        in the inspector stage.
+
+        Args:
+            objects: Context menu objects dict.
+
+        Returns:
+            List of prims to operate on.
+        """
+        prim_list = objects.get("prim_list", [])
+        if not prim_list:
+            hovered = objects.get("hovered_prim", None)
+            if hovered:
+                prim_list = [hovered]
+        return prim_list
+
+    def _can_deactivate(self, objects: dict[str, Any]) -> bool:
+        """Check if the selected prim(s) can be deactivated.
+
+        Only links (Xform) and joints are maskable.
+
+        Args:
+            objects: Context menu objects dict with prim_list.
+
+        Returns:
+            True if at least one selected prim is maskable.
+        """
+        prim_list = self._get_target_prims(objects)
+        if not prim_list:
+            return False
+        return any(is_maskable_type(prim) for prim in prim_list)
+
+    def _is_any_target_deactivated(self, objects: dict[str, Any]) -> bool:
+        """Check if any of the target prims are currently deactivated.
+
+        Args:
+            objects: Context menu objects dict.
+
+        Returns:
+            True if at least one target prim is deactivated.
+        """
+        masking_state = MaskingState.get_instance()
+        path_map = masking_state.path_map
+        if not path_map:
+            return False
+        for prim in self._get_target_prims(objects):
+            if not is_maskable_type(prim):
+                continue
+            original_path = path_map.get_original_path(prim.GetPath())
+            if original_path and masking_state.is_deactivated(original_path.pathString):
+                return True
+        return False
+
+    def _show_when_active(self, objects: dict[str, Any]) -> bool:
+        """Show this menu item only when target prims are active (not deactivated).
+
+        Args:
+            objects: Context menu objects dict.
+
+        Returns:
+            True to show the item.
+        """
+        if not self._can_deactivate(objects):
+            return False
+        return not self._is_any_target_deactivated(objects)
+
+    def _show_when_deactivated(self, objects: dict[str, Any]) -> bool:
+        """Show this menu item only when target prims are deactivated.
+
+        Args:
+            objects: Context menu objects dict.
+
+        Returns:
+            True to show the item.
+        """
+        return self._is_any_target_deactivated(objects)
+
+    def _deactivate_selected(self, objects: dict[str, Any]) -> None:
+        """Toggle deactivation for the selected maskable prims.
+
+        Args:
+            objects: Context menu objects dict with prim_list.
+        """
+        prim_list = self._get_target_prims(objects)
+        masking_state = MaskingState.get_instance()
+        path_map = masking_state.path_map
+        if not path_map:
+            return
+        for prim in prim_list:
+            if is_maskable_type(prim):
+                original_path = path_map.get_original_path(prim.GetPath())
+                if original_path:
+                    masking_state.toggle_deactivated(original_path.pathString)
 
     def _build_expand_menu(self) -> dict[str, Any]:
         """Build the expand submenu entries.
@@ -244,11 +367,11 @@ class HierarchyContextMenu(ContextMenu):
         }
 
 
-class HierarchyStageDelegate(StageDelegate):
-    """Custom stage delegate for the robot hierarchy widget.
+class InspectorStageDelegate(StageDelegate):
+    """Stage delegate for the Robot Inspector widget.
 
-    Uses the hierarchy context menu for right-click functionality.
+    Uses InspectorContextMenu for right-click functionality.
     """
 
     def __init__(self) -> None:
-        super().__init__(context_menu=HierarchyContextMenu())
+        super().__init__(context_menu=InspectorContextMenu())

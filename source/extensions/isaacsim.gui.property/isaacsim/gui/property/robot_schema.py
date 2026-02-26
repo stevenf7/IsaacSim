@@ -13,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Property widgets for Isaac Robot Schema APIs (Robot, Link, Joint, Site)."""
+
 import carb
 import omni
 import omni.ui as ui
 from omni.kit.property.usd.prim_selection_payload import PrimSelectionPayload
 from omni.kit.property.usd.usd_property_widget import UsdPropertiesWidget
-from pxr import Sdf, Usd
+from pxr import Sdf, Usd, UsdGeom
 from usd.schema.isaac import robot_schema
 
 _EXCLUSIVE_SCHEMAS = (
@@ -28,8 +30,15 @@ _EXCLUSIVE_SCHEMAS = (
 )
 
 
-def Singleton(class_):
-    """A singleton decorator"""
+def _singleton(class_: type):  # noqa: N802
+    """Decorator that ensures only one instance of a class is created.
+
+    Args:
+        class_: The class to wrap as a singleton.
+
+    Returns:
+        A wrapper that always returns the same instance.
+    """
     instances = {}
 
     def getinstance(*args, **kwargs):
@@ -114,9 +123,8 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
     def _request_refresh(self):
         """Refresh the property window without touching USD selection."""
         property_window = omni.kit.window.property.get_window()
-        if not property_window or not property_window._window:  # noqa: SLF001
-            return
-        property_window._window.frame.rebuild()  # noqa: SLF001
+        if property_window and property_window._window:  # noqa: SLF001
+            property_window._window.frame.rebuild()  # noqa: SLF001
 
     def _on_usd_changed(self, notice, stage):
         targets = notice.GetChangedInfoOnlyPaths()
@@ -134,11 +142,15 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
                     return prim
         return None
 
-    def on_new_payload(self, payload):
-        """
-        See PropertyWidget.on_new_payload
-        """
+    def on_new_payload(self, payload: list):
+        """See ``PropertyWidget.on_new_payload``.
 
+        Args:
+            payload: The new prim selection payload.
+
+        Returns:
+            The prim if found, or ``False`` if the widget should not be shown.
+        """
         if not super().on_new_payload(payload):
             return False
 
@@ -185,17 +197,20 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
         return filtered
 
     def _has_exclusive_schema(self, prim):
-        for schema in self._exclusive_classes:
-            if prim.HasAPI(schema.value):
-                return True
-        return False
+        return any(prim.HasAPI(schema.value) for schema in self._exclusive_classes)
 
     def build_items(self):
         if self._collapsable_frame and not self._collapsable_frame.collapsed and self._prim:
             super().build_items()
 
-    def _build_frame_header(self, collapsed, text: str, id: str = None):
-        """Custom header for CollapsableFrame"""
+    def _build_frame_header(self, collapsed: bool, text: str, id: str | None = None):
+        """Build a custom header for the CollapsableFrame with a remove button.
+
+        Args:
+            collapsed: Whether the frame is currently collapsed.
+            text: The header label text.
+            id: Optional identifier for the header.
+        """
         if id is None:
             id = text
 
@@ -233,9 +248,16 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
                 )
 
 
-@Singleton
+@_singleton
 class RobotAPIWidget(_RobotSchemaWidgetBase):
-    def __init__(self, title: str, collapsed: bool = False):
+    """Property widget for prims with the IsaacRobotAPI schema applied.
+
+    Args:
+        title: Display title for the widget.
+        collapsed: Whether the widget starts collapsed.
+    """
+
+    def __init__(self, title: str, collapsed: bool = False) -> None:
         super().__init__(
             title,
             collapsed,
@@ -258,9 +280,16 @@ class RobotAPIWidget(_RobotSchemaWidgetBase):
         )
 
 
-@Singleton
+@_singleton
 class LinkAPIWidget(_RobotSchemaWidgetBase):
-    def __init__(self, title: str, collapsed: bool = False):
+    """Property widget for prims with the IsaacLinkAPI schema applied.
+
+    Args:
+        title: Display title for the widget.
+        collapsed: Whether the widget starts collapsed.
+    """
+
+    def __init__(self, title: str, collapsed: bool = False) -> None:
         super().__init__(
             title,
             collapsed,
@@ -273,9 +302,16 @@ class LinkAPIWidget(_RobotSchemaWidgetBase):
         )
 
 
-@Singleton
+@_singleton
 class JointAPIWidget(_RobotSchemaWidgetBase):
-    def __init__(self, title: str, collapsed: bool = False):
+    """Property widget for prims with the IsaacJointAPI schema applied.
+
+    Args:
+        title: Display title for the widget.
+        collapsed: Whether the widget starts collapsed.
+    """
+
+    def __init__(self, title: str, collapsed: bool = False) -> None:
         super().__init__(
             title,
             collapsed,
@@ -288,3 +324,55 @@ class JointAPIWidget(_RobotSchemaWidgetBase):
             "Joint API",
             robot_schema.ApplyJointAPI,
         )
+
+
+@_singleton
+class SiteAPIWidget(_RobotSchemaWidgetBase):
+    """Property widget for applying the IsaacSiteAPI to Xformable prims.
+
+    Args:
+        title: Display title for the widget.
+        collapsed: Whether the widget starts collapsed.
+    """
+
+    def __init__(self, title: str, collapsed: bool = False) -> None:
+        super().__init__(
+            title,
+            collapsed,
+            robot_schema.Classes.SITE_API,
+            [
+                robot_schema.Attributes.REFERENCE_DESCRIPTION,
+                robot_schema.Attributes.FORWARD_AXIS,
+            ],
+            "Site API",
+            robot_schema.ApplySiteAPI,
+            exclusive_classes=[robot_schema.Classes.SITE_API],
+        )
+
+    def _button_show(self, objects: dict) -> bool:
+        stage = objects.get("stage")
+        prim_list = objects.get("prim_list")
+        if not stage or not prim_list:
+            return False
+        for item in prim_list:
+            prim = stage.GetPrimAtPath(item) if isinstance(item, Sdf.Path) else item
+            if prim and prim.IsA(UsdGeom.Xformable) and not prim.HasAPI(self._schema_class.value):
+                return True
+        return False
+
+    def _button_onclick(self, payload: PrimSelectionPayload) -> None:
+        stage = self._payload.get_stage() if self._payload else omni.usd.get_context().get_stage()
+        if not stage:
+            return
+        for path in payload:
+            if not path:
+                continue
+            prim = stage.GetPrimAtPath(path)
+            if not prim or not prim.IsA(UsdGeom.Xformable) or prim.HasAPI(self._schema_class.value):
+                continue
+            self._apply_fn(prim)
+            instanceable = [p for p in Usd.PrimRange(prim) if p.IsInstanceable()]
+            if instanceable:
+                prim.SetInstanceable(True)
+                prim.ClearMetadata("instanceable")
+        self._request_refresh()

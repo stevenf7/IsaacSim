@@ -31,10 +31,7 @@ class OverlayMenu:
         """Display the overlay selection menu.
 
         Args:
-            connection: The overlay connection group to display.
-
-        Returns:
-            None.
+            connection: Overlay connection group to display.
 
         Example:
 

@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Property widget for the Isaac Name Override attribute on prims."""
+
 import asyncio
-from typing import List
 
 import carb
 import omni
@@ -41,8 +42,15 @@ _ROBOT_SCHEMA_CLASSES = (
 )
 
 
-def Singleton(class_):
-    """A singleton decorator"""
+def _singleton(class_: type):  # noqa: N802
+    """Decorator that ensures only one instance of a class is created.
+
+    Args:
+        class_: The class to wrap as a singleton.
+
+    Returns:
+        A wrapper that always returns the same instance.
+    """
     instances = {}
 
     def getinstance(*args, **kwargs):
@@ -56,14 +64,18 @@ def Singleton(class_):
 def _prim_has_robot_schema(prim):
     if not prim:
         return False
-    for schema in _ROBOT_SCHEMA_CLASSES:
-        if prim.HasAPI(schema.value):
-            return True
-    return False
+    return any(prim.HasAPI(schema.value) for schema in _ROBOT_SCHEMA_CLASSES)
 
 
-@Singleton
+@_singleton
 class NameOverrideWidget(UsdPropertiesWidget):
+    """Property widget for the Isaac Name Override attribute.
+
+    Args:
+        title: Display title for the widget.
+        collapsed: Whether the widget starts collapsed.
+    """
+
     def __init__(self, title: str, collapsed: bool = False):
         super().__init__(title, collapsed)
         from omni.kit.property.usd import PrimPathWidget
@@ -76,7 +88,8 @@ class NameOverrideWidget(UsdPropertiesWidget):
         )
         self._old_payload = None
 
-    def destroy(self):
+    def destroy(self) -> None:
+        """Remove button menu entries and clean up resources."""
         from omni.kit.property.usd import PrimPathWidget
 
         for menu in self._add_button_menus:
@@ -119,7 +132,7 @@ class NameOverrideWidget(UsdPropertiesWidget):
         self._request_refresh()
 
     def _request_refresh(self):
-        """Refreshes the entire property window"""
+        """Refresh the entire property window."""
         selection = omni.usd.get_context().get_selection()
         selected_paths = selection.get_selected_prim_paths()
         window = omni.kit.window.property.get_window()._window  # noqa: PLW0212
@@ -151,11 +164,15 @@ class NameOverrideWidget(UsdPropertiesWidget):
                     return prim
         return None
 
-    def on_new_payload(self, payload):
-        """
-        See PropertyWidget.on_new_payload
-        """
+    def on_new_payload(self, payload: list):
+        """See ``PropertyWidget.on_new_payload``.
 
+        Args:
+            payload: The new prim selection payload.
+
+        Returns:
+            The prim if found, or ``False`` if the widget should not be shown.
+        """
         if not super().on_new_payload(payload):
             return False
 
@@ -169,7 +186,8 @@ class NameOverrideWidget(UsdPropertiesWidget):
 
         return self._prim
 
-    def on_remove_attr(self):
+    def on_remove_attr(self) -> None:
+        """Remove the Name Override attribute from the selected prim."""
         stage = self._payload.get_stage()
         if stage:
             prim = self._get_prim(self._payload.get_paths()[0])
@@ -187,12 +205,19 @@ class NameOverrideWidget(UsdPropertiesWidget):
             props[0].SetDocumentation("Name override for prim lookup in base name search")
         return props
 
-    def build_items(self):
+    def build_items(self) -> None:
+        """Build property items only when the frame is expanded and a prim is selected."""
         if self._collapsable_frame and not self._collapsable_frame.collapsed and self._prim:
             super().build_items()
 
-    def _build_frame_header(self, collapsed, text: str, id: str = None):
-        """Custom header for CollapsableFrame"""
+    def _build_frame_header(self, collapsed: bool, text: str, id: str | None = None):
+        """Build a custom header for the CollapsableFrame with a remove button.
+
+        Args:
+            collapsed: Whether the frame is currently collapsed.
+            text: The header label text.
+            id: Optional identifier for the header.
+        """
         if id is None:
             id = text
 
