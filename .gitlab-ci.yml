@@ -1193,6 +1193,7 @@ pages:
     needs:
       - job: build-docs
         artifacts: true
+        optional: true
       - job: post_to_slack
         artifacts: true
         optional: true
