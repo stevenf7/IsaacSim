@@ -47,7 +47,7 @@ from isaacsim.replicator.behavior.utils.scene_utils import (
     set_transform_attributes,
 )
 from isaacsim.storage.native import get_assets_root_path_async
-from omni.kit.scripting import BehaviorScript
+from omni.behavior.scripting.core import BehaviorScript
 from pxr import Gf, PhysicsSchemaTools, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade, UsdUtils
 
 

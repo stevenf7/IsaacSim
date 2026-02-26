@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.7] - 2026-02-26
+### Changed
+- Migrated behavior scripting dependency from omni.kit.scripting to omni.behavior.scripting.core
+
 ## [1.3.6] - 2026-02-21
 ### Changed
 - Updated SDG physics based volume filling behavior script to use the omni.physx api
