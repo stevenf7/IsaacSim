@@ -131,10 +131,11 @@ async def add_franka(assets_root_path):
     (result, error) = await open_stage_async(assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd")
 
 
-def get_qos_profile(depth: int = 1):
+def get_qos_profile(depth: int = 1, history: str = "keep_last"):
     from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
 
-    return QoSProfile(reliability=QoSReliabilityPolicy.BEST_EFFORT, history=QoSHistoryPolicy.KEEP_LAST, depth=depth)
+    history_policy = QoSHistoryPolicy.SYSTEM_DEFAULT if history == "system_default" else QoSHistoryPolicy.KEEP_LAST
+    return QoSProfile(reliability=QoSReliabilityPolicy.BEST_EFFORT, history=history_policy, depth=depth)
 
 
 def set_joint_drive_parameters(joint_path, joint_type, drive_type, target_value, stiffness=None, damping=None):
