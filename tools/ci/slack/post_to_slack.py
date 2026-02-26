@@ -232,6 +232,7 @@ def post_heatmap_to_slack(
     exclude_isaaclab: bool = True,
     exclude_container_tests: bool = False,
     heatmap_subtitle: str | None = None,
+    include_pipeline_id: int | str | None = None,
 ) -> None:
     """Generate and upload test heatmap to Slack.
 
@@ -244,6 +245,7 @@ def post_heatmap_to_slack(
         pipeline_sources: List of pipeline sources to filter (optional)
         exclude_isaaclab: Whether to exclude Isaac Lab integration tests (default: True)
         heatmap_subtitle: Second line title for the heatmap chart (optional)
+        include_pipeline_id: Pipeline ID to show as latest in the heatmap (optional)
     """
     # Build kwargs for run_pipeline_test_stats
     stats_kwargs = {
@@ -261,6 +263,8 @@ def post_heatmap_to_slack(
         stats_kwargs["pipeline_sources"] = pipeline_sources
     if heatmap_subtitle is not None:
         stats_kwargs["heatmap_subtitle"] = heatmap_subtitle
+    if include_pipeline_id is not None:
+        stats_kwargs["include_pipeline_id"] = int(include_pipeline_id)
     if exclude_isaaclab:
         stats_kwargs["exclude_patterns"].append("isaaclab")
 
@@ -451,6 +455,7 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
             branch=os.getenv("CI_COMMIT_REF_NAME", "develop-kit-tot"),
             variable_filters={"UPSTREAM_PIPELINE_SOURCE": "nightly"},
             heatmap_subtitle=heatmap_subtitle,
+            include_pipeline_id=pipeline_id,
         )
         time.sleep(10)
 
@@ -473,6 +478,7 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
             variable_filters={"UPSTREAM_PIPELINE_SOURCE": "post_merge"},
             exclude_container_tests=True,
             heatmap_subtitle=heatmap_subtitle,
+            include_pipeline_id=pipeline_id,
         )
 
     if pipeline_type == PipelineType.KIT_MR:
@@ -523,6 +529,7 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
             branch="develop",
             pipeline_sources=["push"],
             heatmap_subtitle=heatmap_subtitle,
+            include_pipeline_id=pipeline_id,
         )
 
     # For non-downstream MRs make sure we post the analyze_test_suites report
@@ -548,6 +555,7 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
             exclude_isaaclab=True,
             exclude_container_tests=True,
             heatmap_subtitle=heatmap_subtitle,
+            include_pipeline_id=pipeline_id,
         )
 
 
