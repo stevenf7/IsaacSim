@@ -177,7 +177,7 @@ def header_for_pipeline_post(pipeline_type: PipelineType, gl: gitlab.Gitlab) -> 
 
             elif pipeline_type == PipelineType.KIT_POST_MERGE:
                 # Downstream from Kit post-merge
-                return f"Downstream pipeline started from <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>"
+                return f"Downstream pipeline started from Kit post-merge <{upstream_pipeline_url}|upstream pipeline {upstream_pipeline_id}>"
 
         except Exception:
             # Fallback if any API call fails
@@ -227,7 +227,7 @@ def post_heatmap_to_slack(
     channel: str,
     thread_ts: str,
     branch: str | None = None,
-    variable_filters: dict[str, str] | None = None,
+    variable_filters: dict[str, str | list[str]] | None = None,
     pipeline_sources: list[str] | None = None,
     exclude_isaaclab: bool = True,
     exclude_container_tests: bool = False,
@@ -241,7 +241,7 @@ def post_heatmap_to_slack(
         channel: Slack channel to post to
         thread_ts: Thread timestamp to post as reply
         branch: Branch name to filter pipelines (optional)
-        variable_filters: Dict of variable filters for pipeline_test_stats (optional)
+        variable_filters: Dict of variable filters for pipeline_test_stats (optional; values may be str or list of str to match any)
         pipeline_sources: List of pipeline sources to filter (optional)
         exclude_isaaclab: Whether to exclude Isaac Lab integration tests (default: True)
         heatmap_subtitle: Second line title for the heatmap chart (optional)
@@ -453,7 +453,7 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
             channel,
             thread_ts,
             branch=os.getenv("CI_COMMIT_REF_NAME", "develop-kit-tot"),
-            variable_filters={"UPSTREAM_PIPELINE_SOURCE": "nightly"},
+            variable_filters={"UPSTREAM_PIPELINE_SOURCE": ["nightly", "post_merge"]},
             heatmap_subtitle=heatmap_subtitle,
             include_pipeline_id=pipeline_id,
         )
@@ -475,7 +475,7 @@ def create_pipeline_report_message(channel: str = "#isaac-sim-ci") -> None:
             channel,
             thread_ts,
             branch=os.getenv("CI_COMMIT_REF_NAME", "develop-kit-tot"),
-            variable_filters={"UPSTREAM_PIPELINE_SOURCE": "post_merge"},
+            variable_filters={"UPSTREAM_PIPELINE_SOURCE": ["nightly", "post_merge"]},
             exclude_container_tests=True,
             heatmap_subtitle=heatmap_subtitle,
             include_pipeline_id=pipeline_id,

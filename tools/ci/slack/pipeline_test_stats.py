@@ -291,12 +291,31 @@ def is_timeout(tc: Dict) -> bool:
     return any(pattern in combined for pattern in timeout_patterns)
 
 
+def _variable_filter_matches(
+    pipeline_vars: Dict[str, str],
+    variable_filters: Dict[str, str | List[str]],
+) -> bool:
+    """Return True if pipeline variables satisfy all variable_filters.
+    For each key: if filter value is a str, pipeline value must equal it;
+    if filter value is a list, pipeline value must be in the list.
+    """
+    for key, filter_value in variable_filters.items():
+        pipeline_value = pipeline_vars.get(key)
+        if isinstance(filter_value, list):
+            if pipeline_value not in filter_value:
+                return False
+        else:
+            if pipeline_value != filter_value:
+                return False
+    return True
+
+
 def get_finished_pipelines(
     gl: gitlab.Gitlab,
     branch: str = "develop",
     limit: int = 20,
     quiet: bool = False,
-    variable_filters: Optional[Dict[str, str]] = None,
+    variable_filters: Optional[Dict[str, str | List[str]]] = None,
     pipeline_sources: Optional[List[str]] = None,
 ) -> List[Dict]:
     """
@@ -309,7 +328,8 @@ def get_finished_pipelines(
         branch: Branch name to filter pipelines
         limit: Maximum number of pipelines to return (after filtering)
         quiet: If True, suppress progress bar and non-error output
-        variable_filters: Optional dict of variable_name: expected_value to filter pipelines
+        variable_filters: Optional dict of variable_name: expected_value (str or list of str).
+            If value is a list, pipeline is kept when its variable is in the list.
         pipeline_sources: Optional list of acceptable pipeline sources (e.g., ["push", "web", "schedule"])
 
     Returns:
@@ -399,10 +419,7 @@ def get_finished_pipelines(
                         full_pipeline = project.pipelines.get(pipeline.id)
                         pipeline_vars = {var.key: var.value for var in full_pipeline.variables.list(get_all=True)}
 
-                        # Check if all filters match
-                        matches = all(pipeline_vars.get(key) == value for key, value in variable_filters.items())
-
-                        if not matches:
+                        if not _variable_filter_matches(pipeline_vars, variable_filters):
                             continue
 
                     pipeline_info = {
@@ -1357,7 +1374,7 @@ def run(
     exclude_patterns: Optional[List[str]] = None,
     quiet: bool = False,
     debug_output: bool = False,
-    variable_filters: Optional[Dict[str, str]] = None,
+    variable_filters: Optional[Dict[str, str | List[str]]] = None,
     pipeline_sources: Optional[List[str]] = None,
     heatmap_subtitle: Optional[str] = None,
     include_pipeline_id: Optional[int] = None,
@@ -1374,7 +1391,7 @@ def run(
         exclude_patterns: List of substrings to exclude jobs from heatmap
         quiet: If True, suppress all non-error output, progress bars, and browser opening
         debug_output: If True, print detailed debug information
-        variable_filters: Optional dict of variable_name: expected_value to filter pipelines
+        variable_filters: Optional dict of variable_name: expected_value (str or list of str) to filter pipelines
         pipeline_sources: Optional list of acceptable pipeline sources (e.g., ["push", "web", "schedule"])
         heatmap_subtitle: Optional second line title for the heatmap chart
         include_pipeline_id: If set, this pipeline is fetched and prepended as the latest; remaining
@@ -1479,6 +1496,9 @@ Examples:
   # Filter by multiple variables
   python pipeline_test_stats.py --filter BUILD_TYPE,release --filter PLATFORM,linux
 
+  # Filter by variable matching any of several values (e.g. nightly or post_merge)
+  python pipeline_test_stats.py --filter UPSTREAM_PIPELINE_SOURCE,nightly,post_merge
+
   # Filter by pipeline source (e.g., only show pipelines triggered by push or web)
   python pipeline_test_stats.py --source push,web
 
@@ -1517,9 +1537,9 @@ Examples:
         "-f",
         action="append",
         dest="variable_filters",
-        metavar="NAME,VALUE",
+        metavar="NAME,VALUE[,VALUE,...]",
         default=[],
-        help="Filter pipelines by variable (format: NAME,VALUE). Can be used multiple times for multiple filters.",
+        help="Filter pipelines by variable. Format: NAME,VALUE or NAME,VALUE1,VALUE2,... (multiple values = match any). Can be used multiple times for multiple keys.",
     )
     parser.add_argument(
         "--source",
@@ -1551,18 +1571,23 @@ Examples:
 
     args = parser.parse_args()
 
-    # Parse variable filters from NAME,VALUE format into dict
+    # Parse variable filters: NAME,VALUE or NAME,VALUE1,VALUE2,... (multiple values → list)
     variable_filters_dict = None
     if args.variable_filters:
         variable_filters_dict = {}
         for filter_str in args.variable_filters:
             if "," not in filter_str:
-                parser.error(f"Invalid filter format: '{filter_str}'. Expected format: NAME,VALUE")
-            parts = filter_str.split(",", 1)  # Split on first comma only
-            if len(parts) != 2:
-                parser.error(f"Invalid filter format: '{filter_str}'. Expected format: NAME,VALUE")
-            name, value = parts
-            variable_filters_dict[name.strip()] = value.strip()
+                parser.error(
+                    f"Invalid filter format: '{filter_str}'. Expected format: NAME,VALUE or NAME,VALUE1,VALUE2,..."
+                )
+            parts = [p.strip() for p in filter_str.split(",")]
+            name = parts[0]
+            values = parts[1:]
+            if not values:
+                parser.error(
+                    f"Invalid filter format: '{filter_str}'. At least one value required after the variable name."
+                )
+            variable_filters_dict[name] = values[0] if len(values) == 1 else values
 
     # Parse pipeline sources from comma-separated list
     pipeline_sources_list = None
