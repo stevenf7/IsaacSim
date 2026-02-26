@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.0] - 2026-02-24
+### Added
+- Robot Self-Collision Detector to Tools > Asset Editors menu
+
 ## [2.7.1] - 2026-02-23
 ### Changed
 - Add ticked=True to Asset Check menu item
