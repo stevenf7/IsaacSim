@@ -95,7 +95,7 @@ workflow:
       - if: $CI_PIPELINE_SOURCE == "pipeline"
         auto_cancel:
             on_new_commit: none
-      - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
         auto_cancel:
             on_new_commit: conservative
         variables:
@@ -282,7 +282,7 @@ osec:sonarqube:
       # OSEC-1623 (originally OSEC-1511) patch the compile_commands.json sonarqube will use for analysis to include our behaviour changing "SONAR" ifdef
       # - sed -i -e 's/"g++ /"g++ -DNV_SONAR_BUILD=1 /' $SONAR_CFAMILY_COMPILE_COMMANDS
     rules:
-      - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
         when: never
       - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_REF_PROTECTED == "true")
       - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true"
@@ -380,8 +380,8 @@ osec:sonarqube:
 
 .rules-build-docs-mr:
     rules:
-      # Skip if "Docs only change" is checked (handled by the lightweight job instead)
-      - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"
+      # Skip if "User docs only change" is checked (handled by the lightweight job instead)
+      - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"
         when: never
       # MR checkbox opt-in for full docs (user guide + API)
       - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Build docs in MR pipelines/"
@@ -390,7 +390,7 @@ osec:sonarqube:
 .rules-build-docs-only-mr:
     rules:
       # Run only when user checks the box (no auto-trigger on docs-only changes)
-      - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"
+      - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"
       - when: never
 
 # ==============================================================================================================
@@ -469,6 +469,9 @@ check-code-format:
       - .ipp_lnx_x86_64_cpu_small
     variables:
         GIT_DEPTH: 0 # needed to update copyrights
+    rules:
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
+      - !reference [.check-common, rules]
     script:
       - ./repo.sh format --verify
 
@@ -610,7 +613,7 @@ build-linux-aarch64-release:
   script:
     - ./repo.sh ci build -c release
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
       when: never
     - if: $RUN_BUMP_VERSION == "true"
       when: never
@@ -2176,7 +2179,7 @@ check_externals:
   needs: []
   allow_failure: true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
       when: never
     - !reference [.check-common, rules]
   artifacts:
@@ -2199,7 +2202,7 @@ check-python-packages-dependencies-linux-x86_64:
   needs: []
   allow_failure: true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
       when: never
     - !reference [.check-common, rules]
   script:
@@ -2226,7 +2229,7 @@ check-python-packages-dependencies-linux-aarch64:
   needs: []
   allow_failure: true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
       when: never
     - !reference [.check-common, rules]
   script:
@@ -2253,7 +2256,7 @@ check-python-packages-dependencies-windows-x86_64:
   needs: []
   allow_failure: true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Docs only change/"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
       when: never
     - !reference [.check-common, rules]
   script:

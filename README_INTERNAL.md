@@ -1,7 +1,7 @@
 # Omniverse Isaac Sim
 This is where the Omniverse Isaac Sim application is developed.
 
-* [Internal Documentation](https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs)
+* [Internal Documentation](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/develop/index.html)
 * [Public Documentation](https://docs.isaacsim.omniverse.nvidia.com)
 * Slack: [#omni-isaac-support](https://nvidia.slack.com/archives/CBDM22E5P)
 * [Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Sim)
@@ -12,7 +12,7 @@ This is where the Omniverse Isaac Sim application is developed.
 
 # Getting Started
 
-See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/installation/requirements.html) for general hardware and driver requirements
+See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/develop/installation/requirements.html) for general hardware and driver requirements
 
 There are multiple ways to use isaac sim based on your workflow:
 
@@ -76,9 +76,22 @@ See the [wiki section](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isa
 * [Filing Bugs And Requests](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/wikis/Developer-Resources/Jira-Board#creating-a-new-issue)
 * [Submitting a merge request](https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/wikis/Developer-Resources/Merge-Request)
 
+## MR Pipeline Options
+
+The MR description template includes checkboxes under **Pipeline Options** that control which CI jobs run. Check a box by replacing `[ ]` with `[x]` in the description before pushing.
+
+| Checkbox | Effect |
+|---|---|
+| **User docs only change** | Skips builds, tests, and deploy stages. Only runs `check-code-format` and the lightweight docs build (`build-docs-only-mr`). **Only check this if your changes are exclusively in `/docs/isaacsim/\*`.** |
+| **Build docs in MR pipelines** | Runs the full docs build (`build-docs-mr`) including user guide and API reference. Requires the linux release build. A preview link is posted as a job artifact. |
+| **Generate containers in MR pipelines** | Builds and pushes Docker containers (x86_64 and aarch64) from the MR. Container tags include an `-mr` suffix. |
+| **Post pipeline reports to slack** | Posts pipeline results to [#isaac-sim-ci-mr](https://nvidia.slack.com/archives/isaac-sim-ci-mr) when the pipeline finishes. |
+
+> **Note:** These options are evaluated via regex against the MR description, so the checkbox text must remain unchanged for them to work.
+
 # Running headless and connecting via a remote client
 
-See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/installation/install_container.html) for more information on how to use the container.
+See [here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/develop/installation/install_container.html) for more information on how to use the container.
 
 # List of internal Nucleus servers:
 * isaac-dev.ov.nvidia.com : http://isaac-dev.ov.nvidia.com/
@@ -220,7 +233,7 @@ To run isaac sim with a debugger attached:
 
 To attach a debugger to a running application:
 
-- See [Here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/isaacsim-docs/installation/install_python.html)
+- See [Here](https://omniverse.gitlab-master-pages.nvidia.com/isaac/omni_isaac_sim/develop/installation/install_python.html)
 
 To debug a native python (normally run from `python.sh`) application:
 
@@ -239,6 +252,36 @@ To debug a native python (normally run from `python.sh`) application:
 ## Running Tests
 
 - all tests are in the `_build/{platform}/{config}/tests` folder and start with `tests-*` in the filename. There are several categories of tests, extension, native python scripts, internal tests, startup tests, jupyter notebook tests.
+
+## Building Internal Docs
+
+A full release build is required before building docs, as API documentation is generated from the build output.
+
+**Prerequisites:**
+1. Run `./build.sh -r` (Linux) or `build.bat -r` (Windows) to complete a release build.
+2. Ensure `_repo/python/python3` and `_build/linux-x86_64/release/kit/python/python3` exist and are the same Python version. If there is a mismatch, remove `_repo/python` and `~/.cache/packman/chk/repo_docs_deps`, then re-run `./build.sh`.
+
+**Linux:**
+```bash
+./tools/build_docs.sh
+```
+
+This runs the full pipeline: Doxygen generation, extension docs, extension TOC, user guide (Sphinx), API reference, and examples list. A build summary with per-step timings is printed at the end.
+
+**Windows:**
+```bat
+tools\build_docs.bat
+```
+
+The Windows script builds extension TOC, extension docs, and the user guide.
+
+**Output:** The built docs are placed in `_build/docs/isaac-sim/latest/`. Open `_build/docs/isaac-sim/latest/index.html` in a browser to preview locally.
+
+> **Tip:** Pass extra arguments to the build scripts to forward them to the underlying `repo.sh docs` command (e.g. `./tools/build_docs.sh --project isaac-sim` to build only the user guide).
+
+## Best Practices for Creating New Assets
+
+See the [Asset Naming Best Practices](https://docs.google.com/document/d/1WmZo35smDxfjZPzuFBCLvsZu8bMQzy1bK_0J-13EUMM/edit?usp=sharing) guide for conventions on naming assets.
 
 # Troubleshooting
 
