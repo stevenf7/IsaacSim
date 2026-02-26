@@ -16,14 +16,13 @@
 local ext = get_current_extension_info()
 project_ext(ext)
 
--- Link Python source directories and pip prebundle to target
+-- Link Python source directories to target
 repo_build.prebuild_link {
     { "python/impl", ext.target_dir .. "/isaacsim/asset/importer/mjcf/impl" },
     { "python/tests", ext.target_dir .. "/isaacsim/asset/importer/mjcf/tests" },
     { "docs", ext.target_dir .. "/docs" },
     { "data", ext.target_dir .. "/data" },
     { "icons", ext.target_dir .. "/icons" },
-    { "$root/_build/target-deps/isaac_mujoco_usd_prebundle", ext.target_dir .. "/pip_prebundle" },
 }
 
 -- Copy Python module files
