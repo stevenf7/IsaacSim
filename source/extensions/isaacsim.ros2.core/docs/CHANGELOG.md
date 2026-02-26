@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.0] - 2026-02-24
+### Changed
+-  Removed hardcoded ROS 2 distribution checks. Added experimental support for any ROS 2 distribution beyond Jazzy to be sourced and used with Isaac Sim.
+
 ## [1.3.1] - 2026-02-20
 ### Changed
 - Fixed ROS 2 service request polling so `takeRequest()` can receive a pending request on its first poll call.
