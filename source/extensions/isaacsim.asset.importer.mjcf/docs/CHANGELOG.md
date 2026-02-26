@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.2] - 2026-02-25
+### Changed
+- Changed dep from pip prebundle to isaacsim.pip.newton
+
 ## [3.0.1] - 2026-02-25
 ### Changed
 - Switched to lazy import for mjcf-usd-converter to fix docs build issue
