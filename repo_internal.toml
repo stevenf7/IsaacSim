@@ -52,7 +52,7 @@ social_media = [
     ["www", "https://developer.nvidia.com/isaac/sim"],
     ["linkedin", "https://www.linkedin.com/showcase/nvidiarobotics"],
     ["twitch", "https://www.twitch.tv/nvidiaomniverse"],
-    ["discord", "https://discord.gg/4ZsTFksGh8"],
+    ["discord", "http://discord.gg/nvidiaomniverse"],
     ["github", "https://github.com/isaac-sim"],
 ]
 

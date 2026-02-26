@@ -10,7 +10,7 @@ Discussion Forums
 
 Discord
 ---------------
-`Discord <https://discord.com/invite/nvidiaomniverse>`__ offers a variety of channels to meet and interact with the Omniverse Community.  It is a great place to stay up to date with the latest information and keep track of our events.
+`Discord <http://discord.gg/nvidiaomniverse>`__ offers a variety of channels to meet and interact with the Omniverse Community.  It is a great place to stay up to date with the latest information and keep track of our events.
 
 Forms
 -----------------
