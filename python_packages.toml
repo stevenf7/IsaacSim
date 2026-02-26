@@ -304,6 +304,22 @@ pyproject.dependencies.all = [
     "jmespath==1.0.1",
     "python-dateutil==2.9.0.post0",
     "six==1.17.0",
+    # archives (isaacsim.pip.newton)
+    "mujoco==3.5.0",
+    "mujoco-warp==3.5.0",
+    "newton[sim] @ git+https://github.com/newton-physics/newton.git@283248d1",
+    "newton-actuators==0.1.0",
+    "newton-usd-schemas==0.1.0rc3",
+    "mujoco-usd-converter==0.1.0a7",
+    "cbor2==5.8.0",
+    "imgui-bundle==1.92.4",
+    "PyOpenGL-accelerate==3.1.10",
+    "glfw",
+    "absl-py",
+    "etils[epath]",
+    "numpy-stl",
+    "python-utils",
+    "tinyobjloader==2.0.0rc13",
 ]
 pyproject.dependencies.linux-x86_64 = [
     # archives (omni.isaac.ml_archive)

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.0] - 2026-02-24
+### Changed
+- Moved newton prebundle to isaacsim.pip.newton extension
+
 ## [0.1.2] - 2026-02-20
 - Fixed broken newton usecases after upgrading the newton/mujoco packages
 

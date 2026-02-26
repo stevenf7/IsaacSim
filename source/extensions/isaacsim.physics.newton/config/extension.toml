@@ -1,5 +1,5 @@
 [package]
-version = "0.1.2"
+version = "0.2.0"
 category = "Simulation"
 title = "Isaac Sim Newton Physics"
 description = "Extension for simulating physics with Newton and connecting with Fabric. Includes tensor interface (isaacsim.physics.newton.tensors) for NumPy/PyTorch/Warp frontends."
@@ -14,6 +14,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.simulation_manager" = {}  # Required for SimulationManager integration
+"isaacsim.pip.newton" = {}  # Newton pip packages
 "omni.isaac.ml_archive" = {}
 "omni.physics" = {}  # Required for unified physics interface registration
 "omni.warp" = {}
@@ -25,10 +26,6 @@ name = "isaacsim.physics.newton"
 
 [[python.module]]
 name = "isaacsim.physics.newton.tests"
-
-# Newton pip packages
-[[python.module]]
-path = "pip_prebundle"
 
 [settings]
 # Enable CUDA graph capture for physics stepping to improve performance on GPU
@@ -74,6 +71,7 @@ args = [
     "--/exts/omni.usd/locking/onClose=0",
     "--/omni/kit/plugin/syncUsdLoads=1",
     "--/omni/replicator/asyncRendering=0",
+    "--/omnihydra/parallelHydraSprimSync=1",
     '--/persistent/app/stage/upAxis="Z"',
     "--/persistent/app/viewport/defaults/tickRate=120",
     "--/persistent/app/viewport/displayOptions=31951",
@@ -93,5 +91,6 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    ### Extension specific args
     "--/exts/isaacsim.core.simulation_manager/default_engine=newton",
 ]

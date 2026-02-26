@@ -99,6 +99,7 @@ class NewtonStage:
         if e.type == int(omni.timeline.TimelineEventType.STOP):
             self.playing = False
             self.graph = None
+            self._restore_fabric_transforms()
         if e.type == int(omni.timeline.TimelineEventType.PAUSE):
             self.playing = False
             self.graph = None
@@ -269,6 +270,27 @@ class NewtonStage:
                 self.scene_scale,
                 self.device,
             )
+
+    def _restore_fabric_transforms(self) -> None:
+        """Restore Fabric body transforms to the initial USD state.
+
+        Called on timeline STOP to ensure nested rigid body hierarchies return
+        to their initial poses. Without this, Fabric hierarchy propagation
+        recomputes world matrices from stale local matrices, producing wrong
+        transforms for nested bodies.
+        """
+        if not self.initialized or not self.cfg.update_fabric or self.model is None:
+            return
+
+        if not hasattr(self, "stage") or self.stage is None:
+            return
+
+        for path in self.model.body_label:
+            prim = self.stage.GetPrimAtPath(usdrt.Sdf.Path(path))
+            if not prim:
+                continue
+            xformable = usdrt.Rt.Xformable(prim)
+            xformable.SetWorldXformFromUsd()
 
     def initialize_newton(self, device: str | None) -> None:
         """Initialize Newton simulation from the current USD stage.
