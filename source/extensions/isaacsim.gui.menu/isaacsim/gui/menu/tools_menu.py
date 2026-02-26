@@ -98,6 +98,7 @@ class ToolsMenuExtension:
                                     MenuLayout.Item("Gain Tuner"),
                                     MenuLayout.Item("Mesh Merge Tool"),
                                     MenuLayout.Item("Robot Assembler"),
+                                    MenuLayout.Item("Robot Self-Collision Detector"),
                                 ],
                             ),
                             MenuLayout.SubMenu(

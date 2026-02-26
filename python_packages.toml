@@ -543,6 +543,7 @@ inventory.includes.all = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.robot_setup.assembler",
+    "exts/isaacsim.robot_setup.collision_detector",
     "exts/isaacsim.robot_setup.gain_tuner",
     "exts/isaacsim.robot_setup.grasp_editor",
     "exts/isaacsim.robot_setup.xrdf_editor",

@@ -1,0 +1,71 @@
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Robot Self Collision Detector"
+description = "UI panel for detecting and managing self-collision pairs between rigid body links of a robot articulation"
+authors = ["rgasoto@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_setup.collision_detector"
+keywords = ["isaac", "robot", "collision", "self-collision", "physics"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"isaacsim.robot.schema" = {}
+"omni.kit.menu.utils" = {}
+"omni.kit.widget.filter" = {}
+"omni.kit.widget.options_button" = {}
+"omni.kit.widget.searchfield" = {}
+"omni.physx" = {}
+"omni.ui" = {}
+"omni.usd" = {}
+
+[[python.module]]
+name = "isaacsim.robot_setup.collision_detector"
+
+[[python.module]]
+name = "isaacsim.robot_setup.collision_detector.tests"
+
+[[test]]
+name = "startup"
+dependencies = [
+    "isaacsim.test.utils",
+    "omni.kit.loop-isaac",
+    "omni.kit.ui_test",
+]
+args = [
+    "--enable", "omni.kit.loop-isaac",
+]
+stdoutFailPatterns.exclude = [
+    "*omni.syntheticdata.scripts.extension*stageFrameHistoryCount*",
+]
+
+[[test]]
+name = "test_collision_detector"
+dependencies = [
+    "isaacsim.test.utils",
+    "omni.kit.loop-isaac",
+    "omni.kit.ui_test",
+]
+args = [
+    "--enable", "omni.kit.loop-isaac",
+]
+stdoutFailPatterns.exclude = [
+    "*omni.syntheticdata.scripts.extension*stageFrameHistoryCount*",
+]
+
+[[test]]
+name = "test_ui"
+dependencies = [
+    "isaacsim.test.utils",
+    "omni.kit.loop-isaac",
+    "omni.kit.ui_test",
+]
+args = [
+    "--enable", "omni.kit.loop-isaac",
+]
+stdoutFailPatterns.exclude = [
+    "*omni.syntheticdata.scripts.extension*stageFrameHistoryCount*",
+]
