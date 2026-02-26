@@ -174,10 +174,10 @@ follow the steps below to prepare some environment variables.
 The anatomy of an IRC configuration file, used to run the extension
 under IRO and IRA, is explained.
 
-1. Prepare the `NIM API key <https://docs.nvidia.com/nim/large-language-models/latest/getting-started.html#generate-an-api-key>`_ 
+1. Prepare the `NVIDIA NIM API key <https://docs.nvidia.com/nim/large-language-models/latest/getting-started.html#generate-an-api-key>`_ 
    for the extension to use. 
 
-   The extension requires NIM AI to generate captions. 
+   The extension requires NVIDIA NIM AI to generate captions. 
    The credentials must be stored in the environment variables.
 
    **Linux/Mac:**
@@ -186,7 +186,7 @@ under IRO and IRA, is explained.
       
    .. code:: bash
 
-      export NIM_API_KEY=<API_KEY>
+      export NVIDIA_API_KEY=<API_KEY>
 
    **Windows:**
 
@@ -194,11 +194,11 @@ under IRO and IRA, is explained.
 
    .. code:: bat
 
-      set NIM_API_KEY=<API_KEY>
+      set NVIDIA_API_KEY=<API_KEY>
 
    .. note::
 
-      * The NIM API key has a limited lifetime. The number of free credits is limited and is accessible through the account associated with the API key. After the credits are exhausted, you can apply for more credits through the developer portal. Refer to `the developer forum <https://forums.developer.nvidia.com/t/nim-pricing/290144>`_ for more details.
+      * The NVIDIA NIM API key has a limited lifetime. The number of free credits is limited and is accessible through the account associated with the API key. After the credits are exhausted, you can apply for more credits through the developer portal. Refer to `the developer forum <https://forums.developer.nvidia.com/t/nim-pricing/290144>`_ for more details.
 
       * If you only need to generate scene graphs without captions, the AI credentials are not required.
 
@@ -376,61 +376,61 @@ To enable IRC in IRA:
    .. code:: yaml
 
       isaacsim.replicator.agent:
-      version: 1.0.1
-      simulation_duration: 5
-      environment:
-         base_stage_asset_path: "Isaac/Samples/Replicator/Captioning/test_caption.usda"
-      sensor:
-         groups:
-            ceiling_cameras:
-            num: 2
-            aim_at_targets:
-               distance_range: [5, 10]
-               height_range: [7, 10]
-               focal_length_range: [10, 15]
-               look_down_angle_range: [30, 45]
-      character:
-         groups:
-            warehouse_workers:
-            asset_path: "Isaac/People/Characters/"
-            num: 10
-            routines:
-               - wander:
-                  weight: 1
-                  repeat: 1
-                  walk:
-                     speed_range: [0.8, 1.5]
-                     distance_range: [5.0, 10.0]
-                  idle:
-                     - animation: idle
-                        weight: 1
-                        time_range: [2.0, 5.0]
-      replicator:
-         writers:
-            SceneGraphWriter:
-            semantic_filter_predicate: "class:*"
-            rgb: true
-            camera_params: true
-            object_info_bounding_box_2d_tight: true
-            object_info_bounding_box_2d_loose: true
-            object_info_bounding_box_3d: true
-            pruning_ratio: 1.0
-            global_caption: true
-            qa_caption: false
-            brief_caption: true
-            visualize_caption: true
-            max_object_capacity: 100
-            export_edges: true
-            save_full_scene_graph: true
-            save_pruned_scene_graph: true
-            export_world: false
-            attach_label_to_usd: false
-            use_ai_label: false
-            verbose: false
-            random_seed: 0
-            caption_only: false
-            scene_graph_interval: 10
-            caption_interval: 10
+         version: 1.0.1
+         simulation_duration: 5
+         environment:
+            base_stage_asset_path: "Isaac/Samples/Replicator/Captioning/test_caption.usda"
+         sensor:
+            groups:
+               ceiling_cameras:
+               num: 2
+               aim_at_targets:
+                  distance_range: [5, 10]
+                  height_range: [7, 10]
+                  focal_length_range: [10, 15]
+                  look_down_angle_range: [30, 45]
+         character:
+            groups:
+               warehouse_workers:
+               asset_path: "Isaac/People/Characters/"
+               num: 10
+               routines:
+                  - wander:
+                     weight: 1
+                     repeat: 1
+                     walk:
+                        speed_range: [0.8, 1.5]
+                        distance_range: [5.0, 10.0]
+                     idle:
+                        - animation: idle
+                           weight: 1
+                           time_range: [2.0, 5.0]
+         replicator:
+            writers:
+               SceneGraphWriter:
+               semantic_filter_predicate: "class:*"
+               rgb: true
+               camera_params: true
+               object_info_bounding_box_2d_tight: true
+               object_info_bounding_box_2d_loose: true
+               object_info_bounding_box_3d: true
+               pruning_ratio: 1.0
+               global_caption: true
+               qa_caption: false
+               brief_caption: true
+               visualize_caption: true
+               max_object_capacity: 100
+               export_edges: true
+               save_full_scene_graph: true
+               save_pruned_scene_graph: true
+               export_world: false
+               attach_label_to_usd: false
+               use_ai_label: false
+               verbose: false
+               random_seed: 0
+               caption_only: false
+               scene_graph_interval: 10
+               caption_interval: 10
    
    The caption output will be stored in the output directory as:
 
