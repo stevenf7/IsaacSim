@@ -5,7 +5,7 @@
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "mujoco-usd-converter==0.1.0a6",  # Newton Physics MJCF to USD converter
+    "mujoco-usd-converter==0.1.0a7",  # Newton Physics MJCF to USD converter
 ]
 target = "../_build/target-deps/isaac_mujoco_usd_prebundle"
 platforms = ["*-x86_64", "*-aarch64"]

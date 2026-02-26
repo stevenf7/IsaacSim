@@ -539,6 +539,7 @@ excluded_extensions = [
   "omni.isaac.ml_archive",
   "omni.pip.compute",
   "omni.pip.cloud",
+  "isaacsim.pip.newton",
 ]
 extension_folder = [
   "${root}/source/extensions",
@@ -554,11 +555,13 @@ dependencies_files = [
   "${root}/deps/pip_ml.toml",  # omni.isaac.ml_archive
   "${root}/deps/pip_compute.toml",  # omni.pip.compute
   "${root}/deps/pip_cloud.toml",  # omni.pip.cloud
+  "${root}/deps/pip_newton.toml",  # isaacsim.pip.newton
 ]
 
 # comment archive extension dependencies
 [repo_comment_archive_deps]
 archives = [
+  "isaacsim.pip.newton",
   "omni.isaac.core_archive",
   "omni.isaac.ml_archive",
   "omni.pip.compute",

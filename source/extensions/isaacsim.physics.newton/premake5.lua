@@ -10,7 +10,6 @@ repo_build.prebuild_link {
     { "python/impl", ext.target_dir.."/isaacsim/physics/newton/impl" },
     { "python/impl/tensors", ext.target_dir.."/isaacsim/physics/newton/tensors" },  -- Link tensors directly to maintain module structure
     { "python/tests", ext.target_dir.."/isaacsim/physics/newton/tests" },
-    { "$root/_build/target-deps/isaac_newton_prebundle", ext.target_dir.."/pip_prebundle" },  -- Link Newton pip packages
 }
 
 -- Copy the main __init__.py to maintain the module root
