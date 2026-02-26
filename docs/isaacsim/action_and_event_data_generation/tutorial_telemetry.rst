@@ -1,5 +1,5 @@
 ..
-   Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
+   Copyright (c) 2026, NVIDIA CORPORATION. All rights reserved.
    NVIDIA CORPORATION and its licensors retain all intellectual property
    and proprietary rights in and to this software, related documentation
    and any modifications thereto. Any use, reproduction, disclosure or
@@ -53,6 +53,25 @@ The telemetry system supports different operational modes:
 Note that different modes have different data collection and transmission policies. 
 
 To disable telemetry, set the ``--/telemetry/enableAnonymousData=false`` command line argument.
+
+If you are running using headless mode, telemetry is disabled by default. To enable telemetry, pass ``--/telemetry/mode=dev`` using the application config:
+
+.. code-block:: python
+
+    import os
+    from isaacsim import SimulationApp
+
+    base_exp_path = os.path.join(
+        os.environ["EXP_PATH"],
+        "isaacsim.exp.action_and_event_data_generation.base.kit"
+    )
+    app_config = {
+        "headless": True,
+        "width": 1920,
+        "height": 1080,
+        "extra_args": ["--/telemetry/mode=dev"], # Enables telemetry in dev mode
+    }
+    sim_app = SimulationApp(launch_config=app_config, experience=base_exp_path)
 
 Regardless of the mode, data is saved locally to the user's home directory in the ``~/.nvidia-omniverse/logs/`` directory.
 
