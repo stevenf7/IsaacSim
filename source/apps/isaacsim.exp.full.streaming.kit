@@ -10,14 +10,12 @@ keywords = ["experience", "app", "usd"]
 [dependencies]
 "isaacsim.exp.full" = {}
 "omni.kit.livestream.app" = {}
-# "omni.services.livestream.webrtc" = {}
 
 [settings]
 app.name = "Isaac-Sim Streaming"
 app.version = "6.0.0"
 app.vulkan = true                        # Explicitly enable Vulkan
 app.enableDeveloperWarnings = false      # disable developer warnings to reduce log noise
-exts."omni.services.transport.server.http".port = 8211
 
 [settings.app.exts.folders]
 '++' = [

@@ -214,6 +214,8 @@ Isaac Sim uses a custom build system with the following key options:
 ## Usage
 Congratulations on installing Isaac Sim! To get started with using Isaac Sim, follow these [Quick Tutorials](https://docs.isaacsim.omniverse.nvidia.com/latest/introduction/quickstart_index.html). For more information, visit our full [documentation](https://docs.isaacsim.omniverse.nvidia.com/latest/index.html).
 
+For Docker deployment (building a container image, running with Docker Compose, and web-based streaming), see [tools/docker/README.md](tools/docker/README.md).
+
 
 ## Troubleshooting
 
