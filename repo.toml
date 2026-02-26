@@ -86,6 +86,7 @@ fetch.pip.files_to_pull = [
   "${root}/deps/pip_cumotion.toml",
   "${root}/deps/pip_compute.toml",
   "${root}/deps/pip_usd_to_urdf.toml",
+  "${root}/deps/pip_urdf_usd.toml",
   "${root}/deps/pip_cloud.toml",
   "${root}/deps/pip_ucx.toml",
   "${root}/deps/pip_newton.toml",

@@ -1,5 +1,5 @@
 [package]
-version = "1.4.2"
+version = "1.4.3"
 category = "Simulation"
 title = "Isaac Sim USD to URDF exporter"
 description = "Extension that exports USD files to URDF"
@@ -38,7 +38,7 @@ dependencies = [
 timeout = 400
 dependencies = [
     "isaacsim.asset.importer.urdf",
-    "isaacsim.core.experimental.prims",
+    "isaacsim.asset.importer.utils",
     "isaacsim.storage.native",
 ]
 stdoutFailPatterns.exclude = [
@@ -48,7 +48,6 @@ stdoutFailPatterns.exclude = [
     '*UserWarning: Sum of `faceVertexCounts` (392550) does not equal sum of length of `GeomSubset` `indices` (41287)*',
     '*Converted USD to URDF.*',
     '*Invalid Imu sensor prim*',
-    '*not added to `TransformGraph` because it is not a link type or joint type prim.*',
     '*parent prim is missing contact report API*',
     '*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*'
 ]

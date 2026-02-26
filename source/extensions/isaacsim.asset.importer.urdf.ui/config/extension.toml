@@ -13,7 +13,7 @@ version = "0.1.0"
 category = "Simulation"
 title = "URDF Importer UI Extension"
 description = "UI components for the URDF Importer. Provides the importer window, file picker, and configuration UI for importing URDF (Unified Robot Description Format) files into Omniverse USD scenes."
-authors = ["hmazhar@nvidia.com", "rgasoto@nvidia.com"]
+authors = ["hmazhar@nvidia.com", "stevfeng@nvidia.com"]
 repository = ""
 keywords = ["urdf", "importer", "isaac", "ui"]
 changelog = "docs/CHANGELOG.md"
@@ -24,10 +24,8 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.asset.importer.urdf" = {}
-"isaacsim.examples.browser" = {order = 1000}
-"isaacsim.gui.components" = {order = 1000}
-"omni.kit.browser.folder.core" = {}
 "omni.kit.helper.file_utils" = {}
+"omni.kit.notification_manager" = {}
 "omni.kit.tool.asset_importer" = {}
 "omni.kit.uiapp" = {}
 "omni.kit.viewport.utility" = {}
@@ -35,27 +33,13 @@ writeTarget.kit = true
 "omni.kit.window.extensions" = {}
 "omni.kit.window.filepicker" = {}
 "omni.kit.window.property" = {}
+"isaacsim.core.experimental.utils" = {}
 
 [[python.module]]
 name = "isaacsim.asset.importer.urdf.ui"
 
 [[python.module]]
 name = "isaacsim.asset.importer.urdf.ui.tests"
-
-[[python.module]]
-name = "isaacsim.asset.importer.urdf.ui.impl.ui"
-
-[[python.module]]
-name = "isaacsim.asset.importer.urdf.ui.impl.samples.import_carter"
-
-[[python.module]]
-name = "isaacsim.asset.importer.urdf.ui.impl.samples.import_franka"
-
-[[python.module]]
-name = "isaacsim.asset.importer.urdf.ui.impl.samples.import_kaya"
-
-[[python.module]]
-name = "isaacsim.asset.importer.urdf.ui.impl.samples.import_ur10"
 
 [settings]
 # Set the initial width of the file picker to 390
@@ -67,8 +51,8 @@ exts."omni.kit.window.filepicker".detail_width_max = 600
 
 [[test]]
 dependencies = [
-    "isaacsim.core.experimental.utils",
-    "omni.hydra.usdrt_delegate",
+    "omni.kit.ui_test",
+    "isaacsim.test.utils"
 ]
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',

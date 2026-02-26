@@ -32,7 +32,7 @@ To Import URDF files, go to the top menu bar and click **File > Import**.
 This extension is enabled by default. If it is ever disabled, it can be re-enabled from the :doc:`Extension Manager <extensions:ext_core/ext_extension-manager>`
 by searching for ``isaacsim.asset.importer.urdf``.
 
-.. image:: /images/isim_4.5_base_ext-isaacsim.asset.importer.urdf-2.2.3_gui_0.png
+.. image:: /images/isim_6.0_full_ext-isaacsim.asset.importer.urdf-3.0.0_gui_0.png
     :align: center
     :alt: Overview of URDF Importer Extension
 
@@ -63,50 +63,31 @@ Refer to the :ref:`isaac_sim_conventions` documentation for a complete list of |
 Import Options
 ========================
 
-**Model**: Provides the Options to Import in Stage, or add as a referenced model. If **Create in Stage** is selected. Choose the options to set as the default prim, and **Clear Stage on Import**. By default both are left unchecked.
+**USD Output**: Specifies where the generated USD file will be saved. By default, this is set to "Same as Imported Model(Default)",
+  which saves the USD file in the same directory as the source URDF file. Users can click the folder icon to select a different
+  output location.
 
-**Links**: Choose between a **Moveable base** (for example, a wheeled robot) or a **Static base** (for example, a 6DoF robotic arm). If the robot is a moveable base, the base link will be set to moveable. If the robot is a static base, the base link will be fixed in place with a ``root_joint``.
-
-The **Default Density** is used for links that do not have a mass specified in the URDF. If the density is set to ``0``, the physics engine will automatically compute the density with its default value.
-
-Joints and Drives
-=========================
-Provides an interface to configure individual joints and is loaded with the default values.
-
-**Ignore Mimic**: If checked, the Mimic tag will be ignored on import. Otherwise joints with the mimic tag will receive the PhysX Mimic API, allowing it to work in tandem with the primary joint that is defined in its setup.
-
-**Joint Configuration**: Choose between configuring the joints directly through stiffness or with natural frequency. Saved values will always be in stiffness.
-
-    - **Stiffness**: Edit the joint drive stiffness and damping directly.
-
-        The stiffness value is used to control the strength of the position drive. A combination of setting stiffness and damping on a drive will result in both targets being applied, this can be useful in position control to reduce vibrations.
-
-    - **Natural Frequency**: Computes the joint drive stiffness and Damping ratio based on the desired natural frequency using the formula:
-
-        .. math ::
-            Kp = m  \omega_n^2, Kd = 2  m  \zeta  \omega_n
-
-        where :math:`\omega_n` is the natural frequency, :math:`\zeta` is the damping ratio, and :math:`m` is the total equivalent inertia at the joint.
-        The damping ratio is such that :math:`\zeta = 1.0` is a critically damped system, :math:`\zeta < 1.0` is underdamped, and :math:`\zeta > 1.0` is overdamped.
-
-    - **Multi-Edit Edit**: To Edit multiple joints at the same time, you can ctrl+click at their names, to select individual joints, or shift+click to select a range of joints. After selected, the values will be applied to all selected joints.
-
-**Drive Type**: The drive type can be chosen between **Acceleration** and **Force**. Acceleration drives normalize the inertia before applying the effort, making it invariant to changes in robot mass (payload not included), equivalent to ideal damped actuator. In force drives, the effort is applied directly to the joint, equivalent to a spring-damper system.
-
-**Target**: Can be chosen between **None**, **Position**, and **Velocity**. If the drive type is set to position, the target will be the position in radians for revolute joints, or distance units for prismatic. For velocity drives, it's the unit per second. When the joint is configured as **Mimic** you cannot change the **Target Type**.
+**ROS Package List**: Add ROS package name/path mappings to resolve `package://` URLs in the URDF file. Click "Add Row" to add multiple package mappings.
 
 **Colliders**:
+    - **Collision From Visuals**: When enabled, collision geometry is generated from the visual meshes in the URDF file. This is useful
+      when the URDF file doesn't have explicit collision geometry defined. When this option is checked, the Collision Type dropdown
+      becomes visible.
 
-    - **Collision From Visuals**: If checked, the collision objects will be created from the visual meshes when a collision object is not provided. Otherwise, no collision will be created for that link.
-    - **Collider Type**: Select between:
-        - **Convex Hull** will create a single convex hull around the collision mesh.
-        - **Convex Decomposition** will create multiple convex hulls around the collision mesh to better match the visual asset.
-    - **Allow self-collision**:  Enables self collision between adjacent links. It may cause instability if the collision meshes are intersecting at the joint.
-    - **Replace Cylinders with Capsules**: When selected, cylinder colliders will be replaced with capsule primitives.
+    - **Collision Type**: Select between:
+        - **Convex Hull**: Creates a convex hull around the visual mesh.
+        - **Convex Decomposition**: Decomposes the visual mesh into multiple convex pieces for more accurate collision detection.
+        - **Bounding Sphere**: Uses a simple bounding sphere approximation.
+        - **Bounding Cube**: Uses a simple bounding box approximation.
 
-    .. note::
-        - It is recommended that you set Self Collision to false unless you are certain that links on the robot are not self colliding.
-        - You must have write access to the output directory used for import, it will default to the current open stage, change this as necessary.
+**General Options**:
+    - **Allow Self-Collision**: When enabled, allows the robot model to collide with itself. This can be useful for certain simulation
+      scenarios but may cause instability if collision meshes between links are self-intersecting.
+
+    - **Merge Mesh**: When enabled, merges meshes where possible to optimize the model. This can reduce the number of prims in the
+      resulting USD file and improve performance.
+
+    - **Debug Mode**: When enabled, activates debug mode to preserve the intemediate files and asset transformer reports
 
 
 Importing URDF from a ROS 2 Node
@@ -119,7 +100,7 @@ To select the appropriate node, type in the name of the node in the :code:`Node`
 
 .. note:: This feature is only available when the ROS 2 bridge is enabled.
 
-.. image:: /images/isim_4.5_base_ext-isaacsim.asset.importer.urdf-2.2.3_gui_1.png
+.. image:: /images/isim_6.0_full_ext-isaacsim.ros2.urdf_ui.png
     :align: center
     :alt: Interface when Importing from a ROS 2 Node
 
@@ -158,73 +139,13 @@ Alternatively you can use the :ref:`isaac_sim_command_tool` to change a value in
     - The drive damping parameter should be set when using velocity control on a joint drive.
     - A combination of setting stiffness and damping on a drive will result in both targets being applied, this can be useful in position control to reduce vibrations.
 
+..  note::
+    See the :ref:`isaac_gain_tuner` tutorial to tune the gains for your robot.
+
 Custom Isaac Sim URDF Attributes and Tags
 ==========================================
 
-sensor.isaac_sim_config
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-This this attribute is used in the sensor tag to provide Isaac Sim configuration for Sensors. There are two possible uses:
-
- - preconfigured Lidars that are shipped with Isaac Sim
- - user-defined configurations. When it's used with a user-defined configuration, the location of the configuration JSON must be provided, otherwise provide the configuration name for a preconfigured Lidar. A sample configuration file is provided in the tests provided with the URDF Importer in :code:`data/lidar_sensor_template`.
-
-    .. Note:: When using a custom Lidar configuration, the importer will try to create a symlink to the configuration in the `isaacsim.sensors.rtx`` folder. If you get `Error Code: 1314` on Windows try running |isaac-sim_short| with Administrator Priviledges, or manually create the Symbolic Link post-import. Alternatively, add the imported asset path into the lookup folders for `isaacsim.sensors.rtx`. If you get `Error Code: 183` on Windows, the symbolic link already exists, double check and replace manually if necessary.
-
-
-Example
---------
-
-.. code-block:: XML
-    :linenos:
-
-    <robot>
-        <link name="root_link"/>
-        <joint name="root_to_base" type="fixed">
-            <parent link="root_link"/>
-            <child link="link_1"/>
-        </joint>
-        <link name="link_1"/>
-
-        <sensor name="custom_lidar" type="ray" update_rate="30" isaac_sim_config="../lidar_sensor_template/lidar_template.json">
-            <parent link="link_1"/>
-            <origin xyz="0.5 0.5 0" rpy="0 0 0"/>
-        </sensor>
-
-        <sensor name="preconfigured_lidar" type="ray" update_rate="30" isaac_sim_config="Velodyne_VLS128">
-            <parent link="link_1"/>
-            <origin xyz="0.5 1.5 0" rpy="0 0 0"/>
-        </sensor>
-    </robot>
-
-
-loop_joint
-^^^^^^^^^^^
-
-Defines a joint to close kinematic chain loops. This is useful for robots with closed kinematic chains, such as a quadruped robot with a loop joint at the hip. The loop joint is defined in the URDF as follows:
-
-.. code-block:: XML
-    :linenos:
-
-    <loop_joint name="loop_joint_name" type="spherical">
-        <link1 link="link_1" rpy="0 0 0" xyz="0 0 0"/>
-        <link1 link="link_2" rpy="0 0 0" xyz="0 0 0"/>
-    </loop_joint>
-
-
-fixed_frame
-^^^^^^^^^^^^
-
-Fixed frames are used to define a reference point attached to a link. This is useful to define reference points (for example, sensor placements or end-effector offset) without using the `link` tag. The fixed frame is defined in the URDF as follows:
-
-.. code-block:: XML
-    :linenos:
-
-    <fixed_frame name="frame_0">
-        <parent link="link_1"/>
-        <origin rpy="0.0 0.0 0.0" xyz="1.00 -0.020 0.10"/>
-    </fixed_frame>
-
-Fixed frames must have an exclusive name and parent link pair.
+Custom URDF attributes are parsed as scopes in the USD Exchange USD file, however most of the attributes are not supported in Isaac Sim and disgarded by the URDF Importer in post processing for cleaniness of the stage.
 
 References
 ==========

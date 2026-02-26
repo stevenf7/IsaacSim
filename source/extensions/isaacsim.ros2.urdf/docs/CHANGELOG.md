@@ -1,6 +1,10 @@
 # Changelog
 
-## [1.1.22] - 2025-01-09
+## [2.0.0] - 2026-02-07
+### CHanged
+- Updated isaacssim.ros2.urdf to use URDF importer 3.x
+
+## [1.1.22] - 2026-01-09
 ### Changed
 - Make isaacsim.asset.importer.urdf.ui a dependency since this extension heavily depends on and modifies the default urdf importer ui
 
