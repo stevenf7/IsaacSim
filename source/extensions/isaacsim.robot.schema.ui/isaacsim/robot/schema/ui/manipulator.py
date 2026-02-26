@@ -55,6 +55,8 @@ class ConnectionManipulator(sc.Manipulator):
         self._connection_arrow_path = str(Path(extension_path).joinpath("data/icons/LinkArrow.svg"))
         self._stage: Any | None = None
         self._subscription: Any | None = None
+        self._connections_panel: sc.Transform | None = None
+        self._overlays_panel: sc.Transform | None = None
         super().__init__(**kwargs)
         self._connection_panel_map: dict[Any, sc.Transform] = {}
         self._overlay_panel_map: dict[Any, sc.Transform] = {}
@@ -68,12 +70,6 @@ class ConnectionManipulator(sc.Manipulator):
 
         Called when the manipulator needs to construct its visual elements.
         Creates transform containers for connection lines and overlay indicators.
-
-        Example:
-
-        .. code-block:: python
-
-            manipulator.on_build()
         """
         self._connections_panel = sc.Transform(transform=sc.Matrix44.get_translation_matrix(0, 0, 0))
         self._overlays_panel = sc.Transform(transform=sc.Matrix44.get_translation_matrix(0, 0, 0))
@@ -151,9 +147,6 @@ class ConnectionManipulator(sc.Manipulator):
 
         Args:
             check_visibility: Whether to check viewport visibility.
-
-        Returns:
-            None.
         """
         self._clear_all_panels()
 
@@ -269,7 +262,7 @@ class ConnectionManipulator(sc.Manipulator):
         """
         with sc.Transform(transform=sc.Matrix44.get_translation_matrix(*joint_position)):
             with sc.Transform(look_at=sc.Transform.LookAt.CAMERA, scale_to=sc.Space.NDC):
-                overlay_circle = sc.Arc(0.02, tesselation=4, color=(0, 0, 0, 0), wireframe=False, sector=False)
+                hit_area = sc.Arc(0.02, tesselation=11, color=(0, 0, 0, 0), wireframe=False, sector=False)
                 sc.Arc(
                     0.015,
                     tesselation=11,
@@ -288,7 +281,7 @@ class ConnectionManipulator(sc.Manipulator):
                 )
                 click_gesture = OverlayMenuClick(connection)
                 click_gesture.manager = PreventOthers()
-                overlay_circle.gestures = [click_gesture]
+                hit_area.gestures = [click_gesture]
 
     def update_connection_position(self, item: Any) -> None:
         """Update the position of an existing connection visualization.
@@ -310,16 +303,13 @@ class ConnectionManipulator(sc.Manipulator):
         Called when the model signals that an item has changed.
 
         Args:
-            item: The changed item, or None for a full rebuild.
-
-        Example:
-
-        .. code-block:: python
-
-            manipulator.on_model_updated(item)
+            item: Changed item, or None for a full rebuild.
         """
         if not item:
-            self.invalidate()
+            if self._connections_panel is None:
+                self.invalidate()
+            else:
+                self.rebuild_connections()
             return
         item.needs_position_refresh = True
         self.update_connection_position(item)

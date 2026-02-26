@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.0] - 2026-02-20
+### Added
+- Introduced widget for applying IsaacSiteAPI to Xformable prims
+
 ## [1.3.0] - 2026-01-28
 ### Added
 - Introduced new widget for setting the IsaacMotionPlanningAPI collisionEnabled attribute

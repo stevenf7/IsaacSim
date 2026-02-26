@@ -25,7 +25,7 @@ from isaacsim.robot_motion.schema import (
 )
 from pxr import Sdf
 
-from .robot_schema import Singleton, _RobotSchemaWidgetBase
+from .robot_schema import _RobotSchemaWidgetBase, _singleton
 
 
 @dataclass(frozen=True)
@@ -52,7 +52,7 @@ _MOTION_PLANNING_ENABLED = _SchemaAttribute(
 )
 
 
-@Singleton
+@_singleton
 class MotionPlanningAPIWidget(_RobotSchemaWidgetBase):
     """Widget that exposes IsaacMotionPlanningAPI properties.
 

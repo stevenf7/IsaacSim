@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.0.6] - 2026-02-23
+### Added
+- Schema diagram generation script
+- Extended test coverage for schema enums, internal helpers, and parsing utilities
+
 ## [4.0.5] - 2026-01-28
 ### Added
 - Loop detector on parsing of joints

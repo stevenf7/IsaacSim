@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Extension entry point that registers Isaac property widgets."""
+
 import omni.usd
 
 from .array_widget import ArrayPropertiesWidget
@@ -19,22 +22,31 @@ from .custom_data import CustomDataWidget
 from .motion_planning_schema import MotionPlanningAPIWidget
 from .name_override import NameOverrideWidget
 from .namespace import NamespaceWidget
-from .robot_schema import JointAPIWidget, LinkAPIWidget, RobotAPIWidget
+from .robot_schema import JointAPIWidget, LinkAPIWidget, RobotAPIWidget, SiteAPIWidget
 
 
 class IsaacPropertyWidgets(omni.ext.IExt):
+    """Omniverse extension that registers Isaac Sim property panel widgets."""
+
     def __init__(self):
         super().__init__()
         self._registered = False
         self._robot_api_widget = None
         self._link_api_widget = None
         self._joint_api_widget = None
+        self._site_api_widget = None
         self._motion_planning_api_widget = None
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
+        """Register all Isaac property widgets with the property window.
+
+        Args:
+            ext_id: The extension identifier.
+        """
         self._register_widget()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
+        """Unregister all Isaac property widgets from the property window."""
         self._unregister_widget()
 
     def _register_widget(self):
@@ -55,6 +67,8 @@ class IsaacPropertyWidgets(omni.ext.IExt):
         w.register_widget("prim", "isaac_link_api", self._link_api_widget, False)
         self._joint_api_widget = JointAPIWidget(title="Robot Joint", collapsed=False)
         w.register_widget("prim", "isaac_joint_api", self._joint_api_widget, False)
+        self._site_api_widget = SiteAPIWidget(title="Robot Site", collapsed=False)
+        w.register_widget("prim", "isaac_site_api", self._site_api_widget, False)
         self._motion_planning_api_widget = MotionPlanningAPIWidget(title="Motion Planning", collapsed=False)
         w.register_widget("prim", "isaac_motion_planning_api", self._motion_planning_api_widget, False)
 
@@ -70,6 +84,7 @@ class IsaacPropertyWidgets(omni.ext.IExt):
             w.unregister_widget("prim", "isaac_robot_api")
             w.unregister_widget("prim", "isaac_link_api")
             w.unregister_widget("prim", "isaac_joint_api")
+            w.unregister_widget("prim", "isaac_site_api")
             w.unregister_widget("prim", "isaac_motion_planning_api")
             self._isaac_name_override.destroy()
             self._isaac_namespace.destroy()
@@ -79,6 +94,8 @@ class IsaacPropertyWidgets(omni.ext.IExt):
                 self._link_api_widget.destroy()
             if self._joint_api_widget:
                 self._joint_api_widget.destroy()
+            if self._site_api_widget:
+                self._site_api_widget.destroy()
             if self._motion_planning_api_widget:
                 self._motion_planning_api_widget.destroy()
             self._registered = False

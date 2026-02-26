@@ -89,7 +89,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
 
     @property
     def needs_position_refresh(self) -> bool:
-        """Flag indicating if joint positions need recalculation.
+        """Return True if joint positions need recalculation.
 
         Returns:
             True if positions need refresh, False otherwise.
@@ -120,7 +120,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
 
     @property
     def joint_prim(self) -> Usd.Prim | None:
-        """The joint prim this connection represents.
+        """Return the joint prim this connection represents.
 
         Returns:
             The joint prim, or None if invalid.
@@ -135,7 +135,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
 
     @property
     def parent_joint_prim(self) -> Usd.Prim | None:
-        """The parent joint prim.
+        """Return the parent joint prim.
 
         Returns:
             The parent joint prim, or None if this is a root joint or invalid.
@@ -150,7 +150,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
 
     @property
     def robot_root_prim(self) -> Usd.Prim | None:
-        """The robot root prim.
+        """Return the robot root prim.
 
         Returns:
             The robot root prim, or None if invalid.
@@ -165,7 +165,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
 
     @property
     def joint_start_position(self) -> Gf.Vec3d | None:
-        """The world position of the parent joint (connection start).
+        """Return the world position of the parent joint (connection start).
 
         Refreshes positions if the refresh flag is set.
 
@@ -184,7 +184,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
 
     @property
     def joint_end_position(self) -> Gf.Vec3d | None:
-        """The world position of this joint (connection end).
+        """Return the world position of this joint (connection end).
 
         Refreshes positions if the refresh flag is set.
 
@@ -212,7 +212,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
 
     @property
     def visible(self) -> bool:
-        """Visibility state of this connection.
+        """Return True if this connection should be drawn.
 
         Returns:
             True if the connection should be drawn.
@@ -227,7 +227,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
 
     @property
     def overlay_prims(self) -> list[Usd.Prim]:
-        """List of overlapping joint prims at this position.
+        """Return overlapping joint prims at this position.
 
         Returns:
             List of joint prims that share this screen position.
@@ -270,7 +270,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
 
     @property
     def overlay_paths(self) -> list[Sdf.Path]:
-        """List of overlapping joint paths.
+        """Return overlapping joint paths.
 
         Returns:
             List of paths for overlapping joints.
@@ -300,7 +300,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
 
     @property
     def overlay_names(self) -> list[str]:
-        """Display names of overlapping joints.
+        """Return display names of overlapping joints.
 
         Returns:
             List of joint names for overlay menu display.
@@ -330,7 +330,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
 
     @property
     def parent_joint_path(self) -> Sdf.Path | None:
-        """The path of the parent joint.
+        """Return the path of the parent joint.
 
         Returns:
             Parent joint path, or None for root joints.
@@ -345,7 +345,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
 
     @property
     def joint_prim_path(self) -> Sdf.Path:
-        """The path of this joint.
+        """Return the path of this joint.
 
         Returns:
             The joint prim path.
@@ -360,7 +360,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
 
     @property
     def robot_root_path(self) -> Sdf.Path:
-        """The path of the robot root prim.
+        """Return the path of the robot root prim.
 
         Returns:
             The robot root path.
@@ -374,7 +374,7 @@ class ConnectionItem(sc.AbstractManipulatorItem):
         return self._robot_root_path
 
     def is_valid(self) -> bool:
-        """Check if this connection item references valid prims.
+        """Return True if this connection item references valid prims.
 
         Returns:
             True if both the joint and robot root prims are valid.
@@ -444,7 +444,7 @@ class ConnectionModel(sc.AbstractManipulatorModel):
         self._usd_listener = Tf.Notice.Register(Usd.Notice.ObjectsChanged, self._on_usd_changed, self._stage)
 
     def set_joint_connections(self, joint_connections: list[ConnectionItem]) -> None:
-        """Set the list of joint connections to visualize.
+        """Set the list of joint connections to visualize and trigger rebuild.
 
         Args:
             joint_connections: List of connection items.
@@ -474,7 +474,7 @@ class ConnectionModel(sc.AbstractManipulatorModel):
                 path = path.GetParentPath()
 
     def _has_camera_changed_significantly(self) -> bool:
-        """Check if camera movement exceeds the redraw threshold.
+        """Return True if camera movement exceeds the redraw threshold.
 
         Returns:
             True if camera position or rotation changed enough to warrant redraw.
@@ -510,11 +510,8 @@ class ConnectionModel(sc.AbstractManipulatorModel):
         appropriate rebuild operations.
 
         Args:
-            notice: The USD change notice.
-            stage: The USD stage that changed.
-
-        Returns:
-            None.
+            notice: USD change notice.
+            stage: USD stage that changed.
         """
         if self._is_self_editing:
             return
@@ -553,7 +550,7 @@ class ConnectionModel(sc.AbstractManipulatorModel):
                 self._queue_rebuild(None, RebuildType.CAMERA_ONLY)
 
     def get_joint_connections(self) -> list[ConnectionItem]:
-        """Get the list of all joint connections.
+        """Return the list of all joint connections.
 
         Returns:
             List of connection items.
@@ -572,8 +569,8 @@ class ConnectionModel(sc.AbstractManipulatorModel):
         """Request a rebuild of connection visualizations.
 
         Args:
-            connection: Optional specific connection to rebuild. If None, rebuilds all.
-            rebuild_type: The type of rebuild to perform.
+            connection: Optional specific connection to rebuild; None rebuilds all.
+            rebuild_type: Type of rebuild to perform.
 
         Example:
 
@@ -600,10 +597,7 @@ class ConnectionModel(sc.AbstractManipulatorModel):
 
         Args:
             connection: Optional specific connection for targeted rebuild.
-            rebuild_type: The type of rebuild requested.
-
-        Returns:
-            None.
+            rebuild_type: Type of rebuild requested.
         """
         if connection:
             self._pending_connections.add(connection)
@@ -658,10 +652,10 @@ class ConnectionModel(sc.AbstractManipulatorModel):
             self._pending_rebuild = False
 
     def _should_refresh_overlays(self, rebuild_type: RebuildType) -> bool:
-        """Determine if overlay clustering should run for this rebuild.
+        """Return True if overlay clustering should run for this rebuild.
 
         Args:
-            rebuild_type: The pending rebuild type.
+            rebuild_type: Pending rebuild type.
 
         Returns:
             True if overlays should be refreshed for this rebuild.

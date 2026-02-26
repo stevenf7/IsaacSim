@@ -95,7 +95,7 @@ class ConnectionScene:  # pragma: no cover
 
     @property
     def visible(self) -> bool:
-        """Get the visibility state of the connection manipulator.
+        """Return the visibility state of the connection manipulator.
 
         Returns:
             True if the manipulator is visible.
@@ -178,7 +178,7 @@ class ConnectionInstance:
 
     @staticmethod
     def get_instance() -> "ConnectionInstance":
-        """Get the singleton connection instance.
+        """Return the singleton connection instance.
 
         Returns:
             The shared instance.
@@ -206,7 +206,7 @@ class ConnectionInstance:
         ConnectionInstance._instance = None
 
     def get_model(self) -> ConnectionModel | None:
-        """Get the connection model managed by this instance.
+        """Return the connection model managed by this instance.
 
         Returns:
             The shared connection model.

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.9.4] - 2026-02-24
+### Fixed
+- Rename "Robot Hierarchy" window to "Robot Inspector" in default and sdg layouts
+
 ## [1.9.3] - 2026-02-23
 ### Changed
 - Add logging to await_viewport to help debug viewport handle not being available

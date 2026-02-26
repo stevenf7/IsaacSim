@@ -4,12 +4,12 @@ reloadable = false
 order = -100
 
 [package]
-version = "4.0.5"
+version = "4.0.6"
 category = "Simulation"
 title = "Isaac USD schema"
-description="Extension used to host all USD schemas made for robots. Provides the generated schema USDA. and a few utility functions used for informal schemas."
+description = "Extension used to host all USD schemas made for robots. Provides the generated schema USDA. and a few utility functions used for informal schemas."
 authors = ["hmazhar@nvidia.com", "rgasoto@nvidia.com"]
-repository="https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.schema"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.schema"
 keywords = ["isaac", "usd", "schema"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"

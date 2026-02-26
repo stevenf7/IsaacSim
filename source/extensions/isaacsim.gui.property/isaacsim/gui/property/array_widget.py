@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
+"""Property widgets for array-type USD attributes."""
 
 import omni
 import omni.ui as ui
@@ -28,7 +28,7 @@ REMOVE_BUTTON_STYLE = style = {"image_url": str(ICON_PATH.joinpath("remove.svg")
 ADD_BUTTON_STYLE = style = {"image_url": str(ICON_PATH.joinpath("plus.svg")), "margin": 1, "padding": 0}
 
 
-class BaseMultiField:
+class _BaseMultiField:
     def __init__(self, model, index, count, frame, button_style, callback, field_type, default):
         self._model = model
         self._index = index
@@ -51,6 +51,17 @@ class BaseMultiField:
                 )
             )
 
+    def get_field_value(self, index: int):
+        """Return the value of the field at the given index.
+
+        Args:
+            index: The field index to retrieve.
+
+        Raises:
+            NotImplementedError: Subclasses must implement this method.
+        """
+        raise NotImplementedError
+
     def remove(self):
         self._model.remove_item(self._index)
         self._frame.rebuild()
@@ -67,23 +78,39 @@ class BaseMultiField:
         )
 
 
-class CustomMultiIntField(BaseMultiField):
+class _CustomMultiIntField(_BaseMultiField):
     def __init__(self, model, index, count, frame, button_style, callback):
         super().__init__(model, index, count, frame, button_style, callback, ui.MultiIntField, 0)
 
-    def get_field_value(self, index):
+    def get_field_value(self, index: int) -> int:
+        """Return the integer value of the field at the given index.
+
+        Args:
+            index: The field index to retrieve.
+
+        Returns:
+            The integer value at the given index.
+        """
         return self._field.get_item_value_model(self._field.get_item_children()[index]).get_value_as_int()
 
 
-class CustomMultiFloatField(BaseMultiField):
+class _CustomMultiFloatField(_BaseMultiField):
     def __init__(self, model, index, count, frame, button_style, callback):
         super().__init__(model, index, count, frame, button_style, callback, ui.MultiFloatField, 0.0)
 
-    def get_field_value(self, index):
+    def get_field_value(self, index: int) -> float:
+        """Return the float value of the field at the given index.
+
+        Args:
+            index: The field index to retrieve.
+
+        Returns:
+            The float value at the given index.
+        """
         return self._field.get_item_value_model(self._field.get_item_children()[index]).get_value_as_float()
 
 
-class ArrayBaseItem:
+class _ArrayBaseItem:
     def __init__(self, type_name, model, index=None, frame=None):
         self._value = None
         self._type_name = type_name
@@ -94,24 +121,24 @@ class ArrayBaseItem:
     def create_list_item(self, button_style, callback):
         with ui.HStack(height=0):
             if self._type_name == Tf.Type.FindByName("VtArray<int>"):
-                CustomMultiIntField(self._model, self._index, 1, self._frame, button_style, callback)
+                _CustomMultiIntField(self._model, self._index, 1, self._frame, button_style, callback)
             elif self._type_name == Tf.Type.FindByName("VtArray<float>"):
-                CustomMultiFloatField(self._model, self._index, 1, self._frame, button_style, callback)
+                _CustomMultiFloatField(self._model, self._index, 1, self._frame, button_style, callback)
             elif self._type_name == Tf.Type.FindByName("VtArray<GfVec2i>"):
-                CustomMultiIntField(self._model, self._index, 2, self._frame, button_style, callback)
+                _CustomMultiIntField(self._model, self._index, 2, self._frame, button_style, callback)
             elif self._type_name == Tf.Type.FindByName("VtArray<GfVec2f>"):
-                CustomMultiFloatField(self._model, self._index, 2, self._frame, button_style, callback)
+                _CustomMultiFloatField(self._model, self._index, 2, self._frame, button_style, callback)
             elif self._type_name == Tf.Type.FindByName("VtArray<GfVec3i>"):
-                CustomMultiIntField(self._model, self._index, 3, self._frame, button_style, callback)
+                _CustomMultiIntField(self._model, self._index, 3, self._frame, button_style, callback)
             elif self._type_name == Tf.Type.FindByName("VtArray<GfVec3f>"):
-                CustomMultiFloatField(self._model, self._index, 3, self._frame, button_style, callback)
+                _CustomMultiFloatField(self._model, self._index, 3, self._frame, button_style, callback)
             elif self._type_name == Tf.Type.FindByName("VtArray<GfVec4i>"):
-                CustomMultiIntField(self._model, self._index, 4, self._frame, button_style, callback)
+                _CustomMultiIntField(self._model, self._index, 4, self._frame, button_style, callback)
             elif self._type_name == Tf.Type.FindByName("VtArray<GfVec4f>"):
-                CustomMultiFloatField(self._model, self._index, 4, self._frame, button_style, callback)
+                _CustomMultiFloatField(self._model, self._index, 4, self._frame, button_style, callback)
 
 
-class ArrayWidgetBuilder:
+class _ArrayWidgetBuilder:
     def __init__(self, stage, attr_name, type_name, model):
         self._model = model
         self._stage = stage
@@ -136,7 +163,7 @@ class ArrayWidgetBuilder:
                     with ui.ScrollingFrame():
                         with ui.VStack():
                             for i in range(self._model.get_length()):
-                                mod = ArrayBaseItem(self._type_name, self._model, i, frame)
+                                mod = _ArrayBaseItem(self._type_name, self._model, i, frame)
                                 mod.create_list_item(REMOVE_BUTTON_STYLE, "remove")
                     self._length_label.text = str(self._model.get_length())
 
@@ -144,14 +171,14 @@ class ArrayWidgetBuilder:
                 ui.Spacer(height=1)
                 ui.Label("Add new item:", height=0)
                 ui.Spacer(height=2)
-                mod = ArrayBaseItem(self._type_name, self._model, None, frame)
+                mod = _ArrayBaseItem(self._type_name, self._model, None, frame)
                 mod.create_list_item(ADD_BUTTON_STYLE, "append")
                 ui.Spacer(height=10)
 
     pass
 
 
-class UsdArrayAttributeModel(UsdAttributeModel):
+class _UsdArrayAttributeModel(UsdAttributeModel):
     def get_length(self):
         self._update_value()
         return len(self._value)
@@ -179,11 +206,17 @@ class UsdArrayAttributeModel(UsdAttributeModel):
 
 
 class ArrayPropertiesWidget(UsdPropertiesWidget):
-    def on_new_payload(self, payload):
-        """
-        See PropertyWidget.on_new_payload
-        """
+    """Property widget that handles array-based USD attributes."""
 
+    def on_new_payload(self, payload: list) -> bool:
+        """See ``PropertyWidget.on_new_payload``.
+
+        Args:
+            payload: The new prim selection payload.
+
+        Returns:
+            Whether the widget should be visible for this payload.
+        """
         if not super().on_new_payload(payload):
             return False
 
@@ -209,7 +242,14 @@ class ArrayPropertiesWidget(UsdPropertiesWidget):
             )
         ]
 
-    def build_property_item(self, stage, ui_prop: UsdPropertyUiEntry, prim_paths: List[Sdf.Path]):
+    def build_property_item(self, stage: Usd.Stage, ui_prop: UsdPropertyUiEntry, prim_paths: list[Sdf.Path]) -> None:
+        """Build the UI for a single array property.
+
+        Args:
+            stage: The USD stage.
+            ui_prop: The property UI entry.
+            prim_paths: The prim paths being inspected.
+        """
         if ui_prop.prim_paths:
             prim_paths = ui_prop.prim_paths
 
@@ -226,14 +266,14 @@ class ArrayPropertiesWidget(UsdPropertiesWidget):
         attr_name,
         type_name,
         metadata,
-        prim_paths: List[Sdf.Path],
+        prim_paths: list[Sdf.Path],
         additional_label_kwargs=None,
         additional_widget_kwargs=None,
     ):
         with ui.HStack(spacing=HORIZONTAL_SPACING):
-            model = UsdArrayAttributeModel(
+            model = _UsdArrayAttributeModel(
                 stage, [path.AppendProperty(attr_name) for path in prim_paths], False, metadata
             )
-            ArrayWidgetBuilder(stage, attr_name, type_name, model)
+            _ArrayWidgetBuilder(stage, attr_name, type_name, model)
 
             return model
