@@ -26,9 +26,9 @@ Discord
 
 .. |isaac_discord| raw:: html
 
-    <strong><h3><a href="https://discord.gg/4ZsTFksGh8">Link to Isaac Sim Discord Channel</a></strong></h3>
+    <strong><h3><a href="http://discord.gg/nvidiaomniverse">Link to Isaac Sim Discord Channel</a></strong></h3>
 
-Within the **NVIDIA Omniverse** Discord server, search for the **isaac-sim** channel.
+Within the **NVIDIA Omniverse** Discord server, search for the **isaac-sim** forum.
 
 
 
