@@ -818,6 +818,36 @@ local function get_doc_snippets_tests()
             "../../../docs/isaacsim/snippets/motion_generation/trajectories/trajectory_example.py --linear",
             "--test",
         },
+        -- cumotion/trajectory_optimizer
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.cumotion.trajectory_optimizer_example",
+            "../../../docs/isaacsim/snippets/cumotion/trajectory_optimizer_example.py",
+            "--test",
+        },
+        -- cumotion/graph_planner
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.cumotion.graph_planner_example",
+            "../../../docs/isaacsim/snippets/cumotion/graph_planner_example.py",
+            "--test",
+        },
+        -- cumotion/rmpflow
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.cumotion.rmpflow_example",
+            "../../../docs/isaacsim/snippets/cumotion/rmpflow_example.py",
+            "--test",
+        },
+        -- cumotion/trajectory_generator
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.cumotion.trajectory_generator_example",
+            "../../../docs/isaacsim/snippets/cumotion/trajectory_generator_example.py",
+            "--test",
+        },
+        -- cumotion/world_interface
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.cumotion.world_interface_example",
+            "../../../docs/isaacsim/snippets/cumotion/world_interface_example.py",
+            "--test",
+        },
         -- utilities/debugging/profiling_performance
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.utilities.debugging.profiling_performance.standalone_workflow",
