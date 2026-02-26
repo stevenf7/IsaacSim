@@ -1360,6 +1360,7 @@ def run(
     variable_filters: Optional[Dict[str, str]] = None,
     pipeline_sources: Optional[List[str]] = None,
     heatmap_subtitle: Optional[str] = None,
+    include_pipeline_id: Optional[int] = None,
 ):
     """
     Main function to fetch and display pipeline test stats.
@@ -1376,6 +1377,8 @@ def run(
         variable_filters: Optional dict of variable_name: expected_value to filter pipelines
         pipeline_sources: Optional list of acceptable pipeline sources (e.g., ["push", "web", "schedule"])
         heatmap_subtitle: Optional second line title for the heatmap chart
+        include_pipeline_id: If set, this pipeline is fetched and prepended as the latest; remaining
+            pipelines from the normal query appear after it.
     """
 
     kaleido.get_chrome_sync()
@@ -1389,6 +1392,26 @@ def run(
     pipelines = get_finished_pipelines(
         gl, branch, limit, quiet=quiet, variable_filters=variable_filters, pipeline_sources=pipeline_sources
     )
+
+    if include_pipeline_id is not None:
+        try:
+            project = gl.projects.get(PROJECT_ID)
+            pipeline_obj = project.pipelines.get(include_pipeline_id)
+            _, test_stats, _ = fetch_pipeline_data(gl, pipeline_obj)
+            included_info = {
+                "id": pipeline_obj.id,
+                "status": pipeline_obj.status,
+                "ref": pipeline_obj.ref,
+                "created_at": pipeline_obj.created_at,
+                "web_url": pipeline_obj.web_url,
+                "test_stats": test_stats,
+            }
+            pipelines = [p for p in pipelines if p["id"] != include_pipeline_id]
+            pipelines.insert(0, included_info)
+        except Exception as e:
+            if not quiet:
+                print(f"Warning: could not fetch include pipeline {include_pipeline_id}: {e}")
+
     if not quiet:
         print_pipeline_table(pipelines)
     if stacked_chart:
@@ -1518,6 +1541,13 @@ Examples:
         metavar="TEXT",
         help="Second line title (subtitle) for the heatmap chart (only used with --heatmap)",
     )
+    parser.add_argument(
+        "--include-pipeline",
+        type=int,
+        default=None,
+        metavar="PIPELINE_ID",
+        help="Pipeline ID to include as the latest (first) in the list; other pipelines from the query appear after it",
+    )
 
     args = parser.parse_args()
 
@@ -1551,4 +1581,5 @@ Examples:
         variable_filters=variable_filters_dict,
         pipeline_sources=pipeline_sources_list,
         heatmap_subtitle=args.heatmap_title,
+        include_pipeline_id=args.include_pipeline,
     )
