@@ -67,6 +67,8 @@ This section shows you the methods of livestreaming a headless instance of |isaa
             cd /isaac-sim
             ./runheadless.sh
 
+        Alternatively, use Docker Compose to deploy |isaac-sim_short| with a web-based streaming client. See :ref:`isaac_sim_web_streaming_client` below or the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_ for details.
+
     .. tab-item:: PIP
 
         See :ref:`isaac_sim_app_install_python` for full installation instructions.
@@ -144,3 +146,71 @@ This section shows you the methods of livestreaming a headless instance of |isaa
 
     .. figure:: /images/isim_4.5_full_ref_gui_iswsc_1.0.6_reload.png
         :align: center
+
+
+.. _isaac_sim_web_streaming_client:
+
+Web-Based Streaming Client (Docker Compose)
+------------------------------------------------------------------------------------------------
+
+As an alternative to the native desktop client, you can stream |isaac-sim_short| to any Chromium-based browser using a web-based WebRTC client deployed alongside |isaac-sim_short| via Docker Compose.
+
+For full details on Docker Compose configuration, multi-instance deployment, and environment variables, see the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_.
+
+This method does not require downloading or installing a native application. The web viewer is built from the `NVIDIA Omniverse Web SDK <https://docs.omniverse.nvidia.com/ov-web-sdk/latest/web-sample/overview.html>`_ (``@nvidia/create-ov-web-rtc-app``) and connects to |isaac-sim_short| over WebRTC.
+
+.. warning::
+
+    |isaac-sim_short| and the web viewer are designed for use on private/trusted networks. They do not include authentication or encryption. If you need to expose them over the Internet, add a reverse proxy with HTTPS/TLS and authentication (e.g. nginx with SSL certificates and basic auth). Users are responsible for securing any public-facing deployments.
+
+**Quick Start:**
+
+.. code-block:: bash
+
+    # Build the Isaac Sim image (skip if using a prebuilt NGC image)
+    ./tools/docker/prep_docker_build.sh --build
+    ./tools/docker/build_docker.sh
+
+    # Launch Isaac Sim + web viewer
+    docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+
+    # Check the web viewer URL
+    docker compose -p isim logs web-viewer
+
+Open the URL shown in the logs (e.g. ``http://<host-ip>:8210``) in a Chromium-based browser.
+
+To use a prebuilt NGC image instead of building locally:
+
+.. code-block:: bash
+
+    ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+
+**Keyboard Shortcuts:**
+
+.. list-table::
+    :widths: 30 35 35
+    :header-rows: 1
+
+    * - Action
+      - Windows / Linux
+      - Mac
+    * - Copy / paste
+      - **Ctrl+C** / **Ctrl+V**
+      - **Ctrl+C** / **Ctrl+V**
+    * - Refresh the browser page
+      - **F5** or **Ctrl+R**
+      - **Fn+F5** or **Cmd+R**
+    * - Maximize viewport in |isaac-sim_short|
+      - **F7**
+      - **Fn+F7**
+    * - Toggle browser fullscreen
+      - **F11**
+      - **Shift+Fn+F11**
+    * - Open DevTools
+      - **F12**
+      - **Fn+F12** or **Cmd+Option+I**
+
+.. note::
+
+    * The browser Clipboard API requires a secure context. When accessing the web viewer over HTTP from a non-localhost address, clipboard forwarding to |isaac-sim_short| is blocked. To enable it in Chrome, open ``chrome://flags/#unsafely-treat-insecure-origin-as-secure``, add the web viewer URL (e.g. ``http://192.168.1.100:8210``), and relaunch Chrome.
+    * The web viewer supports multi-instance deployment with dedicated GPUs, custom ports, and more. See the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_ for full configuration details.

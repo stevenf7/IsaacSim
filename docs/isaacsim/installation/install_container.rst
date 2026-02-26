@@ -210,13 +210,12 @@ This section describes how to run the |isaac-sim| container in headless mode wit
 
     * See :ref:`isaac_sim_setup_keep_configs` to make |isaac-sim_short| configs and cache persistent when using containers.
 
-8. Download and install the :ref:`isaac_sim_setup_livestream_webrtc` from the :ref:`isaac_sim_latest_release` section.
+8. Connect a streaming client to view |isaac-sim_short|. There are two options:
 
-9. Run the :ref:`isaac_sim_setup_livestream_webrtc`.
+    * **Desktop client**: Download and run the :ref:`isaac_sim_setup_livestream_webrtc` from the :ref:`isaac_sim_latest_release` section. Enter the IP address of the host and click **Connect**.
+    * **Web-based client**: Use Docker Compose to deploy a browser-based viewer alongside |isaac-sim_short|. See :ref:`isaac_sim_web_streaming_client` or :ref:`isaac_sim_docker_compose_deployment` below.
 
-10. Enter the IP address of the machine or instance running the |isaac-sim_short| container and click on the **Connect** button to begin live streaming.
-
-11. Proceed to :ref:`isaac_sim_intro_quickstart_series` to begin your first tutorial.
+9. Proceed to :ref:`isaac_sim_intro_quickstart_series` to begin your first tutorial.
 
 .. note::
 
@@ -226,6 +225,55 @@ This section describes how to run the |isaac-sim| container in headless mode wit
     * The latest NVIDIA drivers may not be fully supported for some features like livestreaming. See :doc:`Technical Requirements<dev-guide:common/technical-requirements>` for recommended drivers.
     * See also `Isaac Sim Dockerfiles`_ to build your own custom |isaac-sim_short| container.
     * You can debug :ref:`isaac_sim_app_tutorial_advanced_python_debugging_docker`.
+
+
+.. _isaac_sim_docker_compose_deployment:
+
+Docker Compose Deployment (Isaac Sim + Web Viewer)
+------------------------------------------------------------------------------------------------
+
+Docker Compose can deploy |isaac-sim_short| and a web-based WebRTC streaming client together. This is a simpler alternative to the manual ``docker run`` workflow above, and does not require downloading a native streaming client.
+
+For full details on Docker Compose configuration, multi-instance deployment, and environment variables, see the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_.
+
+The ``docker-compose.yml`` in ``tools/docker/`` handles volume mounts, GPU assignment, networking, and health checks automatically. The web viewer is built from the `NVIDIA Omniverse Web SDK <https://docs.omniverse.nvidia.com/ov-web-sdk/latest/web-sample/overview.html>`_.
+
+.. warning::
+
+    |isaac-sim_short| and the web viewer are designed for use on private/trusted networks. They do not include authentication or encryption. If you need to expose them over the Internet, add a reverse proxy with HTTPS/TLS and authentication (e.g. nginx with SSL certificates and basic auth). Users are responsible for securing any public-facing deployments.
+
+**Quick Start:**
+
+.. code-block:: console
+
+    # Build the Isaac Sim image (one-time)
+    $ ./tools/docker/prep_docker_build.sh --build
+    $ ./tools/docker/build_docker.sh
+
+    # Launch both services
+    $ docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+
+    # Check the web viewer URL
+    $ docker compose -p isim logs web-viewer
+
+Open the URL shown in the logs (e.g. ``http://<host-ip>:8210``) in a Chromium-based browser.
+
+To use a prebuilt NGC image instead of building locally:
+
+.. code-block:: console
+
+    $ ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+
+To stop:
+
+.. code-block:: console
+
+    $ docker compose -p isim -f tools/docker/docker-compose.yml down
+
+.. note::
+
+    * The web viewer bakes the signaling host and ports at build time. Use ``--build`` when changing ``ISAACSIM_HOST`` or port variables.
+    * Docker Compose supports multi-instance deployment with dedicated GPUs, custom signal/stream ports, and more. See the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_ for full configuration details.
 
 
 .. _isaac_sim_setup_local_gui_container:
