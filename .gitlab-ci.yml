@@ -366,7 +366,7 @@ osec:sonarqube:
         when: always
         variables:
           PAGES_PATH_PREFIX: "develop"
-      - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE == "nightly" && $CI_COMMIT_REF_NAME =~ /^kit-integration\//
+      - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE =~ /^(nightly|post_merge)$/ && $CI_COMMIT_REF_NAME =~ /^kit-integration\//
         when: always
         variables:
           PAGES_PATH_PREFIX: "$CI_COMMIT_REF_NAME"
@@ -527,7 +527,7 @@ check-python-packages:
 # Currently arm builds are not 100% reliable in kit downstreams, so we will allow failure for now
 .kit_post_merge_or_nightly_allow_failure:
     rules:
-      - if: ($UPSTREAM_PIPELINE_SOURCE == "nightly" || $UPSTREAM_PIPELINE_SOURCE == "post_merge") && $CI_PIPELINE_SOURCE == "pipeline"
+      - if: $UPSTREAM_PIPELINE_SOURCE =~ /^(nightly|post_merge)$/ && $CI_PIPELINE_SOURCE == "pipeline"
         allow_failure: true
 # ==============================================================================================================
 .aarch64-build-common:
