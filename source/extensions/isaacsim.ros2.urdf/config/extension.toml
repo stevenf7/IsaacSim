@@ -1,9 +1,9 @@
 [package]
-version = "1.1.22"
+version = "2.0.0"
 category = "Simulation"
 title = "Ros2 Robot Description URDF Importer"
 description = "This extensions expands the URDF Importer by enabling importing the robot description from a given ROS node"
-authors = ["hmazhar@nvidia.com", "rgasoto@nvidia.com", "ayushg@nvidia.com"]
+authors = ["hmazhar@nvidia.com", "stevfeng@nvidia.com", "rgasoto@nvidia.com", "ayushg@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.ros2.urdf"
 keywords = ["isaac", "ROS2", "URDF"]
 changelog = "docs/CHANGELOG.md"
@@ -31,13 +31,14 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
+
+[[test]]
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]
-
-[[test]]
 dependencies = [
     "omni.isaac.ml_archive",
+    "isaacsim.test.utils",
 ]
 args = [
     "--enable",
@@ -83,9 +84,4 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-]
-
-stdoutFailPatterns.exclude = [
-    '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
-    '*The NumPy module was reloaded*',
 ]

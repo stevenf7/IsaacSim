@@ -24,42 +24,40 @@ Getting Started
 
 .. tab-set::
 
-    .. tab-item:: Direct Import
+    .. tab-item:: Direct Import UI
 
-        To import a Franka Panda URDF from the *Built in URDF* files that come with the extension:
+        To import a UR10 URDF from the *Built in URDF* files that come with the extension:
 
         #. Enable the `isaacsim.asset.importer.urdf` extension in |isaac-sim| if it is not automatically loaded by going to **Window > Extensions** and enable `isaacsim.asset.importer.urdf`.
 
-            - In this example, import the `panda_arm_hand.urdf` that is included in the URDF importer extension. To find it:
+            - In this example, import the `ur10.urdf` that is included in the URDF importer extension. To find it:
                 - Click on the file icon beside *AUTOLOAD* to find the *isaacsim.asset.importer.urdf* extension.
-                - Navigate to ``/data/urdf/robots/franka_description/robots`` and find ``panda_arm_hand.urdf``, and copy this path.
+                - Navigate to ``/data/urdf/robots/ur10/urdf`` and find ``ur10.urdf``, and copy this path.
 
+        #. Accesses the URDF extension by going to the **File > Import**, and select an URDF file you want to import. In this case, paste the path above to the navigation bar and left-click on **ur10.urdf**.
 
-            .. image:: /images/isim_4.5_full_tut_gui_import_urdf_enable_extension.png
+            .. image:: /images/isim_6.0_full_ext-isaacsim.asset.importer.urdf-3.0.0_gui_0.png
                 :align: center
-                :alt: Enable extension and find Franka URDF
-
-
-        #. Accesses the URDF extension by going to the **File > Import**, and select an URDF file you want to import. In this case, paste the path above to the navigation bar and left-click on **panda_arm_hand.urdf**.
-
-            .. image:: /images/isim_4.5_full_tut_gui_import_urdf_select_robot.png
-                :align: center
-                :alt: Select Franka URDF
-
-        #. Specify the settings you want to use to import Franka with:
+                :alt: find UR10 URDF
+        
+        #. Specify the settings you want to use to import UR10 with:
 
             - Set USD Ouptut to your desired output location for the USD.
-            - Select **Static Base** and leave **Default Density** empty.
-            - Refer to :ref:`urdf importer Robot Properties<isaac_sim_urdf_robot_properties>` for joints and drive instructions. In this tutorial, increase the natural frequencies of the joints to reduce oscillations during movement.
+            - Select or enter an address to store the output USD file.
+            - Select **Merge Mesh** to merge the meshes under a rigid body into a single mesh.
             - Select **Allow Self-Collision** for the Colliders section and leave everything else as default.
+
+            .. image:: /images/isim_6.0_full_ext-isaacsim.asset.importer.urdf-3.0.0_gui_1.png
+                :align: center
+                :alt: import settings
 
             .. note:: You must have write access to the output directory used for import, it will default to the same directory as your URDF.
 
         #. Click the **Import** button to add the robot to the stage.
 
-            .. image:: /images/isim_4.5_full_tut_viewport_import_urdf_franka.png
+            .. image:: /images/isim_6.0_full_ext-isaacsim.asset.importer.urdf-3.0.0_gui_2.png
                 :align: center
-                :alt: Imported Franka
+                :alt: Imported UR10
 
         #. Visualize the collision meshes, not all the rigid bodies need to have collision properties, and collision meshes are often a simplified mesh compared to the visual ones. Therefore you might want to visualize the collision mesh for inspection.
         To visualize collision in any viewport:
@@ -70,83 +68,59 @@ Getting Started
             * **Select**: Colliders.
             * **Check**: All.
 
-            .. image:: /images/isim_4.5_full_tut_viewport_import_urdf_visualize_franka_colliders.png
+            .. image:: /images/isim_6.0_full_ext-isaacsim.asset.importer.urdf-3.0.0_gui_3.png
                 :align: center
                 :width: 660
 
-        .. Note:: If you are importing a mobile robot, you might need to change the following settings:
+        ..  Note:: See the :ref:`isaac_gain_tuner` tutorial to tune the gains for your robot.
 
-            - Select :ref:`Moveable Base<isaac_sim_urdf_configuration_options>`.
             - Set the joint drive type to **Velocity** drive for the velocity controlled joints (that is, wheels), and **Position** for the position controlled joints (that is, steering joint).
             - Set the **Joint Drive Strength** to the desired level. This will be imported as the joint's damping parameter. Joint stiffness are always set to zero in velocity drive mode.
 
         .. Note:: If you are importing a torque controlled mobile robot such as a quadruped:
 
-            - Select :ref:`Moveable Base<isaac_sim_urdf_configuration_options>`.
             - Set the joint drive type to **None** drive for the torque controlled joints (that is, legs), and **Position** or **Velocity** for the position or velocity controlled joints.
             - Set the **Joint Drive Strength** to the desired level. For the torque controlled drives, stiffness and damping have no effect and will be imported as zero.
 
 
-    .. tab-item:: UI Integration Examples
 
-        Activate **Windows** > **Examples** > **Robotics Examples**, which will open the **Robotics Examples** tab at the bottom dock.
+    .. tab-item:: Python API
 
-        .. note::
-            For these examples, wait for materials to get loaded.
-            You can track progress on the bottom right corner of the UI.
+        #. Open the **Script Editor**. Go to the top Menu Bar and click **Window > Script Editor**.
+        #. The window for the **Script Editor** is visible in the workspace.
+        #. Copy the following code into the **Script Editor** window.
 
-        There are Four examples available in the **Import Robots** section:
+            .. literalinclude:: ../snippets/importer_exporter/import_urdf/import_urdf_python_api.py
+                :language: python
 
-        - **Nova Carter URDF**
-        - **Franka URDF**
-        - **Kaya URDF**
-        - **UR10 URDF**
+    .. tab-item:: Python Standalone Script
 
-        Each one of them contains an individual import configuration and post import setup in code, but overall the usage is similar:
+        Do the exact same thing with Python standalone instead.
 
+        #. Open a terminal and navigate to the root of the Isaac Sim installation.
+        #. Run the following command:
 
-        #. Go to the **Robotics Examples** tab and navigate to **Import Robots > <Robot> URDF**.
-        #. Press the **Load Robot** button to import the URDF into the stage, add a ground plane, add a light, and a physics scene.
-        #. Press the **Configure Drives** button to configure the joint drives. This sets each drive stiffness and damping value.
-        #. Press the **Open Source Code** button to view the source code. The source code illustrates how to import and integrate the robot using the Python API.
-        #. Press the **PLAY** button to begin simulating.
-        #. Press the **Move to Pose** button to make the robot move to a home or rest position.
+            .. code-block:: bash
 
-        .. image:: /images/isim_4.5_full_ext-isaacsim.asset.importer.urdf-2.3.0_gui_example_import_franka.png
-            :align: center
-            :alt: Franka URDF Sample
+                ./python.sh standalone_examples/api/isaacsim.asset.importer.mjcf/mjcf_import.py 
 
+            **Args:**
+                - ``-u, --urdf``: Path to the URDF file (.urdf) to import.
+                - ``--usd-path``: Directory to write converted USD assets.
+                - ``--merge-mesh``: Merge meshes after conversion.
+                - ``-d, --debug-mode``: Enable debug mode and keep intermediate outputs.
+                - ``--collision-from-visuals``: Generate collision geometry from visuals.
+                - ``--collision-type``: Collision geometry type (e.g. default, Convex Hull, Convex Decomposition).
+                - ``--allow-self-collision``: Allow self-collision for the imported asset.
+                - ``--test``: Run in test mode: uses nv_ant.xml test asset into a temp directory
+                - ``--ros-package``: ROS package mapping in format 'name:path'. Can be specified multiple times for multiple packages.
 
+        Example:
 
+        .. code-block:: bash
 
-    .. tab-item:: Python Script
-
-
-        Use Python scripting to do what can be done through the Import window. Then use the imported robot with one of
-        the tasks defined under **isaacsim.robot.manipulators.examples.franka** extension to follow a target in the stage.
-
-        #. Open the **Hello World** example.
-            - Go to the top Menu Bar and click **Window > Examples > Robotics Examples**.
-            - In the **Robotics Examples** tab at the bottom, select **General > Hello World**.
-        #. Validate that the window for the *Hello World* example extension is in the workspace.
-        #. Click the **Open Source Code** button to launch the source code for editing in `Visual Studio Code`_.
-        #. Edit the ``hello_world.py`` file as shown below:
-
-        .. literalinclude:: ../snippets/importer_exporter/import_urdf/edit_the_hello_worldpy_file_as_shown_below.py
-            :language: python
-
-        #. Press :code:`Ctrl+S` to save the code and hot-reload |isaac-sim|.
-        #. Click the **File > New From Stage Template > Empty** to create a new stage. Click **Don't Save** if the simulator is prompting you to save the stage.
-        #. Open the menu again and load the example.
-        #. Click the **LOAD** button and move the target prim around to observe the robot follow it.
-
-
-
-            .. figure:: /images/isaac_sim_import_urdf.gif
-                :align: center
-
-
-
+            ./python.sh standalone_examples/api/isaacsim.asset.importer.urdf/urdf_import.py -u /path/to/ur10.urdf --usd-path /path/to/output --merge-mesh
+            
     .. tab-item:: Import from ROS 2 Node
 
         .. _isaac_sim_urdf_from_ros:
@@ -175,7 +149,8 @@ Getting Started
             - Enable the extension :code:`isaacsim.ros2.urdf`
             - Open the URDF Importer using the **File > Import from ROS 2 URDF Node** menu
             - Put the node name in the text box
-            - Define an output directory
+            - Click Find Node to find the node
+            - Define an output directory, if it's not defined, it will be stored in the extension(isaacsim.ros2.urdf)'s data folder
             - Import
 
         **Extra steps to try:**
@@ -183,7 +158,7 @@ Getting Started
         - Terminal 1
             - Stop the publisher, change it to another robot and start service again (for example, :code:`ros2 launch ur_description view_ur.launch.py ur_type:=ur3`)
         - Terminal 3
-            - Click the **Refresh** button
+            - Click the **Find Node** button
             - Change the output directory
             - Import
 

@@ -43,10 +43,10 @@ Extensions (Asset)
       - Heightmap extension for Isaac Sim Occupancy Map
       - The Heightmap extension converts heightmap images into 3D terrain environments
     * - :doc:`isaacsim.asset.importer.urdf <source/extensions/isaacsim.asset.importer.urdf/docs/index>`
-      - Urdf Importer Extension
+      - Omniverse URDF Importer Core
       - Imports URDF (Unified Robot Description Format) files into Omniverse USD scenes, converting robot models with their visual meshes, collision geometries, joints, and physics properties.
     * - :doc:`isaacsim.asset.importer.mjcf <source/extensions/isaacsim.asset.importer.mjcf/docs/index>`
-      - Omniverse MJCF Importer Core
+      - MJCF Importer
       - Core MJCF importer functionality - converts MuJoCo's MJCF (MuJoCo XML Format) robot description files into Omniverse USD scenes. UI provided by isaacsim.asset.importer.mjcf.ui.
     * - :doc:`isaacsim.asset.transformer <source/extensions/isaacsim.asset.transformer/docs/index>`
       - Isaac Sim Asset Transformer

@@ -251,7 +251,6 @@ def add_joint_schemas(stage: Usd.Stage) -> None:
 
         if not prim.HasAPI(PhysxSchema.PhysxJointAPI):
             PhysxSchema.PhysxJointAPI.Apply(prim)
-
         instance_name = "angular" if prim.IsA(UsdPhysics.RevoluteJoint) else "linear"
 
         if not prim.HasAPI(UsdPhysics.DriveAPI, instance_name):
@@ -272,3 +271,21 @@ def add_rigid_body_schemas(stage: Usd.Stage) -> None:
             continue
         if not prim.HasAPI(UsdPhysics.MassAPI):
             UsdPhysics.MassAPI.Apply(prim)
+
+
+def remove_custom_scopes(stage: Usd.Stage) -> None:
+    """Remove custom scopes from the stage.
+
+    Args:
+        stage: USD stage to update with custom scopes.
+    """
+    default_prim = stage.GetDefaultPrim()
+    if not default_prim:
+        return
+
+    default_prim_path = default_prim.GetPath()
+    scope_paths = default_prim_path.pathString + "/Geometry/custom"
+    scope = stage.GetPrimAtPath(scope_paths)
+    if scope and scope.IsA(UsdGeom.Scope):
+        stage.RemovePrim(Sdf.Path(scope_paths))
+    return

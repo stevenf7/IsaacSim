@@ -359,6 +359,7 @@ local function get_asset_tests()
         {
             "tests-nativepython-isaacsim.asset.importer.urdf.urdf_import",
             "standalone_examples/api/isaacsim.asset.importer.urdf/urdf_import.py",
+            "--test --usd-path standalone_examples/api/isaacsim.asset.importer.urdf/carter",
         },
         -- MJCF
         {

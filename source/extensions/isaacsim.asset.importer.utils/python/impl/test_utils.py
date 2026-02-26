@@ -33,10 +33,12 @@ async def compare_usd_files(paths: list[str]) -> bool:
     stage = stage_utils.create_new_stage()
     prims = []
     for i in range(len(paths)):
-        stage_utils.add_reference_to_stage(paths[i], f"/robot_{i}")
-        prim = stage.GetPrimAtPath(f"/robot_{i}")
-        prim.GetVariantSet("Physics").SetVariantSelection("physx")
-        UsdGeom.Xformable(prim).AddTranslateOp().Set(Gf.Vec3d(0.0, 10.0 * i, 0.0))
+        prim = stage_utils.add_reference_to_stage(paths[i], f"/robot_{i}", variants=[("Physics", "physx")])
+        if not prim or not prim.IsValid():
+            raise RuntimeError(f"Failed to add reference for path: {paths[i]}")
+        xform = UsdGeom.Xformable(prim)
+        xform.ClearXformOpOrder()
+        xform.AddTranslateOp().Set(Gf.Vec3d(0.0, 10.0 * i, 0.0))
         await omni.kit.app.get_app().next_update_async()
         prims.append(Articulation(f"/robot_{i}"))
 

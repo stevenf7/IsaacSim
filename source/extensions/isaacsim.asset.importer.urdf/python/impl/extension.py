@@ -12,9 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Core URDF importer extension entrypoint."""
+
+import gc
 
 import omni.ext
-from isaacsim.asset.importer.urdf import _urdf
+import omni.kit.app
 
 
 class Extension(omni.ext.IExt):
@@ -24,9 +27,15 @@ class Extension(omni.ext.IExt):
     For the UI components, see the isaacsim.asset.importer.urdf.ui extension.
     """
 
-    def on_startup(self, ext_id):
-        self._ext_id = ext_id
-        self._urdf_interface = _urdf.acquire_urdf_interface()
+    def on_startup(self, ext_id: str) -> None:
+        """Initialize the extension when it is loaded.
 
-    def on_shutdown(self):
-        _urdf.release_urdf_interface(self._urdf_interface)
+        Args:
+            ext_id: Extension identifier provided by the extension manager.
+        """
+        self._ext_id = ext_id
+        self._extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
+
+    def on_shutdown(self) -> None:
+        """Clean up resources when the extension is unloaded."""
+        gc.collect()

@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.0] - 2026-02-01
+### Changed
+- USD exchange based backend
+- Unified UI
+
 ## [2.5.0] - 2026-01-10
 ### Removed
 - Removed UI elements from the URDF importer, moved to isaacsim.asset.importer.urdf.ui extension

@@ -13,4 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .impl.extension import Extension, UrdfImporter, UrdfImporterDelegate
+from .impl.command import *
+from .impl.extension import *

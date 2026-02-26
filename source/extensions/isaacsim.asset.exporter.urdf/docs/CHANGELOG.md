@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.3] - 2026-02-24
+### Changed
+- Temporarily disable nova carter and go2 unit test for urdf converter fix
+
 ## [1.4.2] - 2026-02-23
 ### Changed
 - Add explicit omni.physics.physx dependency
