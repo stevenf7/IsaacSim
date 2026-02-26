@@ -681,6 +681,7 @@ exts.include = [
   "omni.pip.cloud",
   "omni.pip.compute",
   "omni.cuopt.*",
+  "omni.usd.schema.*",
   "isaacsim.etm.list.isaacsim_app_template*",  # ETM lists
 ]
 
