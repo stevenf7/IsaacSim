@@ -75,12 +75,8 @@ class HelpMenuExtension:
             name="Physics Examples",
             onclick_action=("omni.physxuicommon.windowmenuitem", "WindowMenuItemAction_PhysicsDemoScenes"),
         )
-        warp_demo = MenuItemDescription(
-            name="Warp Sample Scenes",
-            onclick_action=("omni.warp", "browse_scenes"),
-        )
 
-        demo_items = [robotics_demo, physics_demo, warp_demo]
+        demo_items = [robotics_demo, physics_demo]
 
         add_menu_items(demo_items, "Help")
 
