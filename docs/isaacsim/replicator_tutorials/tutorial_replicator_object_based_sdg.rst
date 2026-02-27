@@ -111,7 +111,7 @@ The complete implementation consists of two files: the main script and a utiliti
             <details closed>
             <summary>Main script</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_object_based_sdg/object_based_sdg.py
+        .. literalinclude:: ../../../source/standalone_examples/replicator/object_based_sdg/object_based_sdg.py
             :language: python
             :lines: 16-
 
@@ -124,7 +124,7 @@ The complete implementation consists of two files: the main script and a utiliti
             <details closed>
             <summary>Utils module</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_object_based_sdg/object_based_sdg_utils.py
+        .. literalinclude:: ../../../source/standalone_examples/replicator/object_based_sdg/object_based_sdg_utils.py
             :language: python
             :lines: 16-
 
@@ -245,7 +245,7 @@ The following provides details about the various config scenarios:
             <details open>
             <summary>Custom YAML Config using BasicWriter</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_object_based_sdg/object_based_sdg_config.yaml
+        .. literalinclude:: ../../../source/standalone_examples/replicator/object_based_sdg/config/object_based_sdg_config.yaml
             :language: yaml
             :lines: 16-
 
@@ -269,7 +269,7 @@ The following provides details about the various config scenarios:
             <details open>
             <summary>Custom YAML Config using PoseWriter with DOPE format</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_object_based_sdg/object_based_sdg_dope_config.yaml
+        .. literalinclude:: ../../../source/standalone_examples/replicator/object_based_sdg/config/object_based_sdg_dope_config.yaml
             :language: yaml
             :lines: 16-
 
@@ -293,7 +293,7 @@ The following provides details about the various config scenarios:
             <details open>
             <summary>Custom YAML Config using PoseWriter with CenterPose format</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_object_based_sdg/object_based_sdg_centerpose_config.yaml
+        .. literalinclude:: ../../../source/standalone_examples/replicator/object_based_sdg/config/object_based_sdg_centerpose_config.yaml
             :language: yaml
             :lines: 16-
 

@@ -70,7 +70,7 @@ The annotator example will output rgb images with the red and blue channels swit
             <details closed>
             <summary>Full Standalone Script</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_augmentation/annotator_augmentation.py
+        .. literalinclude:: ../../../source/standalone_examples/replicator/augmentation/annotator_augmentation.py
             :language: python
             :lines: 16-
 
@@ -277,7 +277,7 @@ The **writer** example will output gaussian noise augmented RGB and depth annota
             <details closed>
             <summary>Full Standalone Script</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_augmentation/writer_augmentation.py
+        .. literalinclude:: ../../../source/standalone_examples/replicator/augmentation/writer_augmentation.py
             :language: python
             :lines: 16-
 

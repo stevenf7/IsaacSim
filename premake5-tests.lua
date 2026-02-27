@@ -475,6 +475,10 @@ local function get_replicator_tests()
             "standalone_examples/api/isaacsim.replicator.examples/cosmos_writer_simple.py",
         },
         {
+            "tests-nativepython-isaacsim.replicator.examples.sdg_deformables",
+            "standalone_examples/api/isaacsim.replicator.examples/sdg_deformables.py",
+        },
+        {
             "tests-nativepython-isaacsim.replicator.examples.custom_event_and_write",
             "/standalone_examples/api/isaacsim.replicator.examples/custom_event_and_write.py",
         },
@@ -577,12 +581,6 @@ local function get_doc_snippets_tests()
     local pickplace_pythonpath = { "standalone_examples/api/isaacsim.robot.manipulators/ur10e" }
 
     return {
-        -- assets
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.assets.usd_assets_nurec.run_the_simulation_for_the_given_number_of_steps",
-            "../../../docs/isaacsim/snippets/assets/usd_assets_nurec/run_the_simulation_for_the_given_number_of_steps.py",
-            "--test",
-        },
         -- core_api_tutorials
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.core_api_tutorials.tutorial_core_hello_world.open_a_new_my_applicationpy_file_and_add_the_follo",
@@ -605,12 +603,6 @@ local function get_doc_snippets_tests()
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.installation.install_python.perform_any_isaac_sim_omniverse_imports_after_inst",
             "../../../docs/isaacsim/snippets/installation/install_python/perform_any_isaac_sim_omniverse_imports_after_inst.py",
-            "--test",
-        },
-        -- introduction
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.introduction.quickstart_isaacsim_robot.set_all_joints_to_0",
-            "../../../docs/isaacsim/snippets/introduction/quickstart_isaacsim_robot/set_all_joints_to_0.py",
             "--test",
         },
         -- python_scripting/manual_standalone_python
@@ -646,67 +638,10 @@ local function get_doc_snippets_tests()
             "../../../docs/isaacsim/snippets/reference_material/sim_performance_optimization_handbook/scene_and_rendering_optimizations.py",
             "--test",
         },
-        -- replicator_tutorials/tutorial_replicator_cosmos
+        -- action_and_event_data_generation/tutorial_replicator_incident
         {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_cosmos.implementation",
-            "../../../docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_cosmos/implementation.py",
-            "--test",
-        },
-        -- replicator_tutorials/tutorial_replicator_getting_started
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_getting_started.run_the_example",
-            "../../../docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_getting_started/run_the_example.py",
-            "--test",
-        },
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_getting_started.run_the_example_1",
-            "../../../docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_getting_started/run_the_example_1.py",
-            "--test",
-        },
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_getting_started.run_the_example_2",
-            "../../../docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_getting_started/run_the_example_2.py",
-            "--test",
-        },
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_getting_started.run_the_example_3",
-            "../../../docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_getting_started/run_the_example_3.py",
-            "--test",
-        },
-        -- replicator_tutorials/tutorial_replicator_isaac_snippets
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.calculate_and_display_real_time_performance_factor",
-            "../../../docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/calculate_and_display_real_time_performance_factor.py",
-            "--test",
-        },
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.pathtracing_examples",
-            "../../../docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/pathtracing_examples.py",
-            "--test",
-        },
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.run_example_with_duration_for_all_captures_plus_a_",
-            "../../../docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/run_example_with_duration_for_all_captures_plus_a_.py",
-            "--test",
-        },
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.wait_for_all_data_to_be_written",
-            "../../../docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/wait_for_all_data_to_be_written.py",
-            "--test",
-        },
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.wait_for_the_data_to_be_written_and_release_resour",
-            "../../../docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/wait_for_the_data_to_be_written_and_release_resour.py",
-            "--test",
-        },
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.wait_for_the_data_to_be_written_to_disk_and_clean_",
-            "../../../docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/wait_for_the_data_to_be_written_to_disk_and_clean_.py",
-            "--test",
-        },
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_snippets.wait_until_all_the_data_is_saved_to_disk_and_clean",
-            "../../../docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/wait_until_all_the_data_is_saved_to_disk_and_clean.py",
+            "doc_snippets/tests-nativepython-testing-doc_snippets.action_and_event_data_generation.tutorial_replicator_incident.tutorial_replicator_incident",
+            "standalone_examples/testing/doc_snippets/snippets/action_and_event_data_generation/tutorial_replicator_incident.py",
             "--test",
         },
         -- robot_setup_tutorials/tutorial_pickplace_example (with PYTHONPATH)

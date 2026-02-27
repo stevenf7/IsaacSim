@@ -97,7 +97,7 @@ The following section provides an overview and explanation of the implementation
             <details closed>
             <summary>Standalone Script</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_amr_navigation/amr_navigation.py
+        .. literalinclude:: ../../../source/standalone_examples/replicator/amr_navigation.py
             :language: python
             :lines: 16-
 

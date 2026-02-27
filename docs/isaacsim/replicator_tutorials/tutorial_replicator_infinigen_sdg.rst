@@ -157,7 +157,7 @@ The complete implementation consists of two files: the main script and a utiliti
     <details closed>
     <summary>Main script</summary>
 
-.. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_infinigen_sdg/infinigen_sdg.py
+.. literalinclude:: ../../../source/standalone_examples/replicator/infinigen/infinigen_sdg.py
     :language: python
     :lines: 16-
 
@@ -170,7 +170,7 @@ The complete implementation consists of two files: the main script and a utiliti
     <details closed>
     <summary>Utils module</summary>
 
-.. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_infinigen_sdg/infinigen_sdg_utils.py
+.. literalinclude:: ../../../source/standalone_examples/replicator/infinigen/infinigen_sdg_utils.py
     :language: python
     :lines: 16-
 
@@ -190,7 +190,7 @@ Here's an example of a custom YAML configuration file that demonstrates the use 
     <details open>
     <summary>Custom YAML Configuration File</summary>
 
-.. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_infinigen_sdg/infinigen_multi_writers_pt.yaml
+.. literalinclude:: ../../../source/standalone_examples/replicator/infinigen/config/infinigen_multi_writers_pt.yaml
     :language: yaml
     :lines: 16-
 

@@ -207,7 +207,7 @@ As a next step, custom `OmniGraph Nodes <omnigraph-nodes_>`_ are created for the
             <details open>
             <summary>OgnSampleInSphere.ogn</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_custom_og_randomizer/OgnSampleInSphere.ogn
+        .. literalinclude:: ../../../source/extensions/isaacsim.replicator.examples/python/nodes/OgnSampleInSphere.ogn
             :language: json
 
         .. raw:: html
@@ -219,7 +219,7 @@ As a next step, custom `OmniGraph Nodes <omnigraph-nodes_>`_ are created for the
             <details open>
             <summary>OgnSampleOnSphere.ogn</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_custom_og_randomizer/OgnSampleOnSphere.ogn
+        .. literalinclude:: ../../../source/extensions/isaacsim.replicator.examples/python/nodes/OgnSampleOnSphere.ogn
             :language: json
 
         .. raw:: html
@@ -231,7 +231,7 @@ As a next step, custom `OmniGraph Nodes <omnigraph-nodes_>`_ are created for the
             <details open>
             <summary>OgnSampleBetweenSpheres.ogn</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_custom_og_randomizer/OgnSampleBetweenSpheres.ogn
+        .. literalinclude:: ../../../source/extensions/isaacsim.replicator.examples/python/nodes/OgnSampleBetweenSpheres.ogn
             :language: json
 
         .. raw:: html
@@ -245,7 +245,7 @@ As a next step, custom `OmniGraph Nodes <omnigraph-nodes_>`_ are created for the
             <details open>
             <summary>OgnSampleInSphere.py</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_custom_og_randomizer/OgnSampleInSphere.py
+        .. literalinclude:: ../../../source/extensions/isaacsim.replicator.examples/python/nodes/OgnSampleInSphere.py
             :language: python
 
         .. raw:: html
@@ -257,7 +257,7 @@ As a next step, custom `OmniGraph Nodes <omnigraph-nodes_>`_ are created for the
             <details open>
             <summary>OgnSampleOnSphere.py</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_custom_og_randomizer/OgnSampleOnSphere.py
+        .. literalinclude:: ../../../source/extensions/isaacsim.replicator.examples/python/nodes/OgnSampleOnSphere.py
             :language: python
 
         .. raw:: html
@@ -267,7 +267,7 @@ As a next step, custom `OmniGraph Nodes <omnigraph-nodes_>`_ are created for the
             <details open>
             <summary>OgnSampleBetweenSpheres.py</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_custom_og_randomizer/OgnSampleBetweenSpheres.py
+        .. literalinclude:: ../../../source/extensions/isaacsim.replicator.examples/python/nodes/OgnSampleBetweenSpheres.py
             :language: python
 
         .. raw:: html

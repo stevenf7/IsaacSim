@@ -49,7 +49,7 @@ Example on how to access data from multiple cameras in a scene using annotators 
             <details open>
             <summary>Annotator and Custom Writer Data from Multiple Cameras</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/multi_camera.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/multi_camera.py
             :language: python
             :lines: 16-
 
@@ -91,7 +91,7 @@ Example on how to access synthetic data (RGB, semantic segmentation) from multip
             <details open>
             <summary>Synthetic Data Access at Specific Simulation Timepoints</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/simulation_get_data.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/simulation_get_data.py
             :language: python
             :lines: 16-
 
@@ -136,7 +136,7 @@ The following example showcases the use of custom events to trigger randomizatio
             <details open>
             <summary>Custom Event Randomization and Writing</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/custom_event_and_write.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/custom_event_and_write.py
             :language: python
             :lines: 16-
 
@@ -183,7 +183,7 @@ The standalone example can also be run directly (on Windows use ``python.bat`` i
             <details open>
             <summary>Motion Blur</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/motion_blur.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/motion_blur.py
             :language: python
             :lines: 16-
 
@@ -226,7 +226,7 @@ Examples of subscribing to various events (such as stage, physics, and render/ap
             <details open>
             <summary>Subscribers and Events at Custom FPS</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/subscribers_and_events.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/subscribers_and_events.py
             :language: python
             :lines: 16-
 
@@ -272,7 +272,7 @@ Example of how to trigger a writer and access annotator data at a custom FPS, wi
             <details open>
             <summary>Accessing Writer and Annotator Data at Custom FPS</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/custom_fps_writer_annotator.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/custom_fps_writer_annotator.py
             :language: python
             :lines: 16-
 
@@ -318,7 +318,7 @@ The standalone example can also be run directly (on Windows use ``python.bat`` i
             <details open>
             <summary>Cosmos Writer Example</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/cosmos_writer_simple.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/cosmos_writer_simple.py
             :language: python
             :lines: 16-
 
@@ -364,7 +364,7 @@ The standalone example can also be run directly (on Windows use ``python.bat`` i
             <details open>
             <summary>Synthetic Data Generation with Deformables</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/sdg_deformables.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/sdg_deformables.py
             :language: python
             :lines: 16-
 
