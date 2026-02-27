@@ -178,7 +178,9 @@ class SceneQuery:
             ... )
         """
 
-        if tracked_api not in set([TrackableApi.PHYSICS_COLLISION, TrackableApi.PHYSICS_RIGID_BODY]):
+        if tracked_api not in set(
+            [TrackableApi.PHYSICS_COLLISION, TrackableApi.PHYSICS_RIGID_BODY, TrackableApi.MOTION_GENERATION_COLLISION]
+        ):
             raise ValueError(f"{str(tracked_api)} is not in the list of supported TrackableApi.")
 
         if isinstance(search_box_origin, wp.array):

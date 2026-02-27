@@ -368,9 +368,7 @@ class TestSceneQuery(omni.kit.test.AsyncTestCase):
         self.assertTrue(collision_cube_path not in dynamic_prims)
         self.assertTrue(collision_cube_path in collision_prims)
 
-        # If I try to use the motion generation collision API, this
-        # should raise an error. This will change as soon as this
-        # Schema exists.
+        # Test that invalid API will raise an error
         from enum import Enum
 
         class MyForcedApi(Enum):
@@ -384,6 +382,61 @@ class TestSceneQuery(omni.kit.test.AsyncTestCase):
             search_box_maximum=[1] * 3,
             tracked_api=MyForcedApi.MOTION_PLANNING_COLLISION,
         )
+
+    async def test_motion_generation_collision_api(self):
+        # Test the new motion generation collision API
+        motion_planning_cube_path = "/World/MotionPlanningCube"
+        motion_planning_cube = Cube(
+            paths=motion_planning_cube_path,
+            sizes=1.0,
+        )
+
+        # Apply the motion planning API to the cube
+        import omni.usd
+        from isaacsim.robot_motion.schema import apply_motion_planning_api
+
+        stage = omni.usd.get_context().get_stage()
+        prim = stage.GetPrimAtPath(motion_planning_cube_path)
+        apply_motion_planning_api(prim, enabled=True)
+
+        scene_query = SceneQuery()
+        motion_planning_prims = scene_query.get_prims_in_aabb(
+            search_box_origin=[0, 0, 0],
+            search_box_minimum=[-1] * 3,
+            search_box_maximum=[1] * 3,
+            tracked_api=TrackableApi.MOTION_GENERATION_COLLISION,
+        )
+
+        self.assertTrue(motion_planning_cube_path in motion_planning_prims)
+
+        # Test that physics collision prims are not found with motion generation API
+        physics_cube_path = "/World/PhysicsCube"
+        physics_cube = Cube(
+            paths=physics_cube_path,
+            sizes=1.0,
+        )
+        GeomPrim(paths=physics_cube_path, apply_collision_apis=True)
+
+        motion_planning_prims = scene_query.get_prims_in_aabb(
+            search_box_origin=[0, 0, 0],
+            search_box_minimum=[-1] * 3,
+            search_box_maximum=[1] * 3,
+            tracked_api=TrackableApi.MOTION_GENERATION_COLLISION,
+        )
+
+        self.assertTrue(motion_planning_cube_path in motion_planning_prims)
+        self.assertTrue(physics_cube_path not in motion_planning_prims)
+
+        # Test that motion planning prims are not found with physics collision API
+        physics_prims = scene_query.get_prims_in_aabb(
+            search_box_origin=[0, 0, 0],
+            search_box_minimum=[-1] * 3,
+            search_box_maximum=[1] * 3,
+            tracked_api=TrackableApi.PHYSICS_COLLISION,
+        )
+
+        self.assertTrue(physics_cube_path in physics_prims)
+        self.assertTrue(motion_planning_cube_path not in physics_prims)
 
     async def test_search_bounds(self):
         scene_query = SceneQuery()

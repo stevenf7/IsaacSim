@@ -116,6 +116,16 @@ class TestWorldBinding(omni.kit.test.AsyncTestCase):
         world_binding.initialize()
         self.assertTrue(world_binding._initialized)
 
+        # Motion generation collision API should also be accepted
+        world_binding_motion: WorldBinding[MirrorWorldInterface] = WorldBinding(
+            world_interface=MirrorWorldInterface(),
+            obstacle_strategy=ObstacleStrategy(),
+            tracked_prims=[],
+            tracked_collision_api=TrackableApi.MOTION_GENERATION_COLLISION,
+        )
+        world_binding_motion.initialize()
+        self.assertTrue(world_binding_motion._initialized)
+
     async def test_common_updates(self):
         """
         Test that the WorldBinding class can correctly update the world interface when the common tokens change.
@@ -970,3 +980,98 @@ class TestWorldBinding(omni.kit.test.AsyncTestCase):
         # The transforms are not updated.
         self.assertFalse(np.isclose(planning_world_sphere.pose[0], [5.0, 6.0, 7.0]).all())
         self.assertFalse(np.isclose(planning_world_sphere.pose[1], [0.0, 1.0, 0.0, 0.0]).all())
+
+    async def test_motion_generation_collision_api(self):
+        """Test WorldBinding with the motion generation collision API."""
+        import omni.usd
+        from isaacsim.robot_motion.schema import apply_motion_planning_api
+
+        # Create prims with motion planning API
+        stage_sphere = Sphere(
+            paths="/World/MotionSphere",
+            radii=0.05,
+            positions=[1.0, 2.0, 3.0],
+            orientations=[1.0, 0.0, 0.0, 0.0],
+            scales=[1.0, 1.0, 1.0],
+        )
+        stage_cube = Cube(
+            paths="/World/MotionCube",
+            sizes=0.15,
+            positions=[-1.0, -2.0, -3.0],
+            orientations=[0.0, 1.0, 0.0, 0.0],
+            scales=[2.0, 2.0, 2.0],
+        )
+
+        # Apply motion planning API to the prims
+        stage = omni.usd.get_context().get_stage()
+        sphere_prim = stage.GetPrimAtPath("/World/MotionSphere")
+        cube_prim = stage.GetPrimAtPath("/World/MotionCube")
+        apply_motion_planning_api(sphere_prim, enabled=True)
+        apply_motion_planning_api(cube_prim, enabled=True)
+
+        await get_app().next_update_async()
+
+        # Create world binding with motion generation collision API
+        obstacle_strategy = ObstacleStrategy()
+        obstacle_strategy.set_default_safety_tolerance(0.06)
+        world_binding: WorldBinding[MirrorWorldInterface] = WorldBinding(
+            world_interface=MirrorWorldInterface(),
+            tracked_prims=["/World/MotionSphere", "/World/MotionCube"],
+            obstacle_strategy=obstacle_strategy,
+            tracked_collision_api=TrackableApi.MOTION_GENERATION_COLLISION,
+        )
+
+        world_binding.initialize()
+
+        world_interface = world_binding.get_world_interface()
+        planning_world_sphere = world_interface.collision_objects["/World/MotionSphere"]
+        planning_world_cube = world_interface.collision_objects["/World/MotionCube"]
+        self.assertIsNotNone(planning_world_sphere)
+        self.assertAlmostEqual(planning_world_sphere.radius, 0.05)
+        self.assertAlmostEqual(planning_world_sphere.safety_tolerance, 0.06)
+        self.assertTrue(np.isclose(planning_world_sphere.pose[0], [1.0, 2.0, 3.0]).all())
+        self.assertTrue(np.isclose(planning_world_sphere.pose[1], [1.0, 0.0, 0.0, 0.0]).all())
+        self.assertTrue(planning_world_sphere.enabled)
+
+        self.assertIsNotNone(planning_world_cube)
+        self.assertAlmostEqual(planning_world_cube.size, 0.15)
+        self.assertAlmostEqual(planning_world_cube.safety_tolerance, 0.06)
+        self.assertTrue(np.isclose(planning_world_cube.pose[0], [-1.0, -2.0, -3.0]).all())
+        self.assertTrue(np.isclose(planning_world_cube.pose[1], [0.0, 1.0, 0.0, 0.0]).all())
+        self.assertTrue(planning_world_cube.enabled)
+
+        # Test disabling collision via motion planning API
+        from isaacsim.robot_motion.schema import MOTION_PLANNING_ENABLED_ATTR
+
+        sphere_attr = sphere_prim.GetAttribute(MOTION_PLANNING_ENABLED_ATTR)
+        sphere_attr.Set(False)
+        await get_app().next_update_async()
+
+        # Before synchronizing, sphere still appears enabled
+        self.assertTrue(planning_world_sphere.enabled)
+        world_binding.synchronize()
+        # After synchronizing, sphere should be disabled
+        self.assertFalse(planning_world_sphere.enabled)
+        self.assertTrue(planning_world_cube.enabled)
+
+        # Re-enable sphere
+        sphere_attr.Set(True)
+        await get_app().next_update_async()
+        world_binding.synchronize()
+        self.assertTrue(planning_world_sphere.enabled)
+        self.assertTrue(planning_world_cube.enabled)
+
+        # Test that initialization fails if prim doesn't have the API
+        world_binding_no_api: WorldBinding[MirrorWorldInterface] = WorldBinding(
+            world_interface=MirrorWorldInterface(),
+            tracked_prims=["/World/MotionSphere"],
+            obstacle_strategy=ObstacleStrategy(),
+            tracked_collision_api=TrackableApi.MOTION_GENERATION_COLLISION,
+        )
+
+        # Remove the API from the sphere
+        sphere_prim.RemoveAppliedSchema("IsaacMotionPlanningAPI")
+        await get_app().next_update_async()
+
+        # Initialize should raise RuntimeError
+        self.assertRaises(RuntimeError, world_binding_no_api.initialize)

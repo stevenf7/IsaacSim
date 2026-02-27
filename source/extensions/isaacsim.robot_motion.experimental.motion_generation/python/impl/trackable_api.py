@@ -31,6 +31,4 @@ class TrackableApi(StrEnum):
 
     PHYSICS_COLLISION = "PhysicsCollisionAPI"
     PHYSICS_RIGID_BODY = "PhysicsRigidBodyAPI"
-
-    # TODO: add motion generation collision API when it is implemented.
-    # MOTION_GENERATION_COLLISION = "MotionGenerationCollisionAPI"
+    MOTION_GENERATION_COLLISION = "IsaacMotionPlanningAPI"
