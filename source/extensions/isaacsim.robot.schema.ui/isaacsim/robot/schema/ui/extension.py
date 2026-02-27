@@ -214,7 +214,6 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
         masking_state = MaskingState.get_instance()
         masking_state.operations = None
         masking_state.clear()
-        MaskingState.reset_instance()
         self._masking_ops = None
 
         self._stage_event_subs = []

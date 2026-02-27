@@ -1075,11 +1075,14 @@ class MaskingOperations:
     def _decompose_local_frame(m: Gf.Matrix4d) -> tuple[Gf.Vec3f, Gf.Quatf]:
         """Extract position and rotation from a 4x4 transform matrix.
 
+        Returns single-precision types (``Vec3f``, ``Quatf``) to match the
+        USD joint local-frame attribute types (``localPos*``, ``localRot*``).
+
         Args:
             m: The 4x4 transformation matrix to decompose.
 
         Returns:
-            Tuple of (position, rotation quaternion).
+            Tuple of (position, rotation quaternion) in single precision.
         """
         pos = Gf.Vec3f(m.ExtractTranslation())
         rot_d = m.ExtractRotation().GetQuat()

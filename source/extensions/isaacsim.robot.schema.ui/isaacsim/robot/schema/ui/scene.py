@@ -68,6 +68,9 @@ class ConnectionScene:  # pragma: no cover
             self.visible = False
         elif event_type == omni.timeline.TimelineEventType.STOP:
             self.visible = carb.settings.get_settings().get("/persistent/physics/visualizationDisplayJoints")
+            model = ConnectionInstance.get_instance().get_model()
+            if model:
+                model.force_rebuild()
 
     def _on_settings_changed(self, *args: Any) -> None:
         """Handle changes to the joint visualization setting.

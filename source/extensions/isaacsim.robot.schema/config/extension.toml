@@ -4,7 +4,7 @@ reloadable = false
 order = -100
 
 [package]
-version = "4.0.6"
+version = "5.0.0"
 category = "Simulation"
 title = "Isaac USD schema"
 description = "Extension used to host all USD schemas made for robots. Provides the generated schema USDA. and a few utility functions used for informal schemas."
@@ -20,6 +20,9 @@ writeTarget.kit = true
 [dependencies]
 "omni.usd" = {}
 "omni.usd.libs" = {}
+
+[[test]]
+dependencies = ["omni.isaac.ml_archive"]
 
 [[python.module]]
 name = "omni.isaac.RangeSensorSchema"

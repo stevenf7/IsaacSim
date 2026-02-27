@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for Isaac robot schema helpers and utilities."""
+
+from __future__ import annotations
+
 import os
 import tempfile
 from unittest import mock
@@ -21,7 +24,7 @@ import omni.kit.app
 import omni.kit.test
 import omni.usd
 import usd.schema.isaac as isaac_schema
-from pxr import Gf, Sdf, UsdGeom, UsdPhysics
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
 from usd.schema.isaac import robot_schema
 from usd.schema.isaac.robot_schema import utils as robot_utils
 
@@ -109,6 +112,9 @@ class TestRobotSchemaUtils(omni.kit.test.AsyncTestCase):
         robot_prim = robot_xform.GetPrim()
 
         robot_prim.AddAppliedSchema(robot_schema.Classes.ROBOT_API.value)
+
+        robot_utils._warned_missing_schema_links.discard("/World/Robot")
+        robot_utils._warned_missing_schema_joints.discard("/World/Robot")
 
         with mock.patch("usd.schema.isaac.robot_schema.utils.carb.log_warn") as log_warn:
             links = robot_utils.GetAllRobotLinks(self._stage, robot_prim)
@@ -615,7 +621,7 @@ class TestDetectAndApplySites(omni.kit.test.AsyncTestCase):
         """Build a robot with two links each having a site candidate child.
 
         Returns:
-            The root robot prim.
+            The robot prim with applied RobotAPI.
         """
         robot = UsdGeom.Xform.Define(self._stage, "/World/Robot2")
         UsdPhysics.RigidBodyAPI.Apply(robot.GetPrim())

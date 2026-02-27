@@ -166,11 +166,6 @@ class MaskingState:
             cls._instance = MaskingState()
         return cls._instance
 
-    @classmethod
-    def reset_instance(cls) -> None:
-        """Drop the singleton so the next ``get_instance`` creates a fresh one."""
-        cls._instance = None
-
     def __init__(self) -> None:
         self._deactivated_paths: set[str] = set()
         self._bypassed_paths: set[str] = set()
@@ -520,15 +515,12 @@ class MaskingState:
     # -- clear ------------------------------------------------------------
 
     def clear(self) -> None:
-        """Clear all masking, bypass, anchor state and callbacks, then notify subscribers."""
+        """Clear all masking, bypass, and anchor state and notify subscribers."""
         self._deactivated_paths.clear()
         self._bypassed_paths.clear()
         self._anchored_paths.clear()
         self._bypass_deactivated_joints.clear()
-        self._path_map = None
-        self._operations = None
         self._notify_changed()
-        self._on_changed_callbacks.clear()
 
     # -- subscriptions ----------------------------------------------------
 

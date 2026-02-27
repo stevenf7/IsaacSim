@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.2.1] - 2026-02-26
+### Fixed
+- Fix Vec3f/Vec3d type mismatch in inertia accumulation caused by robot schema double-precision change
+- Fixed hanging shutdown on tests
+
 ## [3.2.0] - 2026-02-25
 ### Added
 - Added unit tests for equivalent inertia computation

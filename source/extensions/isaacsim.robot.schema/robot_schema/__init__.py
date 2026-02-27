@@ -30,6 +30,7 @@ class Classes(Enum):
     JOINT_API = "IsaacJointAPI"
     SURFACE_GRIPPER = "IsaacSurfaceGripper"
     ATTACHMENT_POINT_API = "IsaacAttachmentPointAPI"
+    NAMED_POSE = "IsaacNamedPose"
 
 
 _attr_prefix = "isaac"
@@ -72,6 +73,17 @@ class Attributes(Enum):
     COAXIAL_FORCE_LIMIT = (f"{_attr_prefix}:coaxialForceLimit", "Coaxial Force Limit", pxr.Sdf.ValueTypeNames.Float)
     MAX_GRIP_DISTANCE = (f"{_attr_prefix}:maxGripDistance", "Max Grip Distance", pxr.Sdf.ValueTypeNames.Float)
     CLEARANCE_OFFSET = (f"{_attr_prefix}:clearanceOffset", "Clearance Offset", pxr.Sdf.ValueTypeNames.Float)
+    POSE_VALID = (f"{_attr_prefix}:robot:pose:valid", "Pose Valid", pxr.Sdf.ValueTypeNames.Bool)
+    POSE_JOINT_VALUES = (
+        f"{_attr_prefix}:robot:pose:jointValues",
+        "Pose Joint Values",
+        pxr.Sdf.ValueTypeNames.FloatArray,
+    )
+    POSE_JOINT_FIXED = (
+        f"{_attr_prefix}:robot:pose:jointFixed",
+        "Pose Joint Fixed",
+        pxr.Sdf.ValueTypeNames.BoolArray,
+    )
 
     # Custom properties for name and type
     @property
@@ -125,8 +137,12 @@ class Relations(Enum):
 
     ROBOT_LINKS = (f"{_attr_prefix}:physics:robotLinks", "Robot Links")
     ROBOT_JOINTS = (f"{_attr_prefix}:physics:robotJoints", "Robot Joints")
+    NAMED_POSES = (f"{_attr_prefix}:robot:namedPoses", "Named Poses")
     ATTACHMENT_POINTS = (f"{_attr_prefix}:attachmentPoints", "Attachment Points")
     GRIPPED_OBJECTS = (f"{_attr_prefix}:grippedObjects", "Gripped Objects")
+    POSE_START_LINK = (f"{_attr_prefix}:robot:pose:startLink", "Pose Start Link")
+    POSE_END_LINK = (f"{_attr_prefix}:robot:pose:endLink", "Pose End Link")
+    POSE_JOINTS = (f"{_attr_prefix}:robot:pose:joints", "Pose Joints")
 
     @property
     def name(self):
@@ -351,3 +367,33 @@ def ApplyAttachmentPointAPI(prim: pxr.Usd.Prim):
     _apply_api(prim, Classes.ATTACHMENT_POINT_API)
     # for attr in [Attributes.FORWARD_AXIS, Attributes.CLEARANCE_OFFSET]:
     #     prim.CreateAttribute(attr.name, attr.type, False)
+
+
+def CreateNamedPose(stage: pxr.Usd.Stage, prim_path: str) -> pxr.Usd.Prim:
+    """Create a Named Pose prim with attributes and relationships.
+
+    Args:
+        stage: The USD stage to create the prim in.
+        prim_path: The path where to create the prim.
+
+    Returns:
+        The created Named Pose prim.
+
+    Example:
+
+    .. code-block:: python
+
+        named_pose_prim = CreateNamedPose(stage, "/World/Robot/HomePose")
+    """
+    prim = stage.DefinePrim(prim_path, Classes.NAMED_POSE.value)
+    _create_attributes(
+        prim,
+        [Attributes.POSE_VALID, Attributes.POSE_JOINT_VALUES, Attributes.POSE_JOINT_FIXED],
+        write_sparsely=True,
+    )
+    _create_relationships(
+        prim,
+        [Relations.POSE_START_LINK, Relations.POSE_END_LINK, Relations.POSE_JOINTS],
+        custom=True,
+    )
+    return prim
