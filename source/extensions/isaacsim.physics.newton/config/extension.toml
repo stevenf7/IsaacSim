@@ -17,7 +17,6 @@ writeTarget.kit = true
 "isaacsim.pip.newton" = {}  # Newton pip packages
 "omni.isaac.ml_archive" = {}
 "omni.physics" = {}  # Required for unified physics interface registration
-"omni.warp" = {}
 "omni.warp.core" = {}
 "usdrt.scenegraph" = {}  # Required for fabric integration
 
