@@ -2,6 +2,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.0] - 2026-02-17
+### Added
+- `TrackableApi.MOTION_GENERATION_COLLISION` support for querying and tracking prims with `IsaacMotionPlanningAPI` instead of requiring physics collision APIs.
+- `SceneQuery` now supports finding prims with `IsaacMotionPlanningAPI` applied via `TrackableApi.MOTION_GENERATION_COLLISION`.
+- `WorldBinding` now supports tracking collision enabled state via the `isaac:motionPlanning:collisionEnabled` attribute when using `TrackableApi.MOTION_GENERATION_COLLISION`, allowing users to control collision checking independently from physics simulation.
+
 ## [5.0.0] - 2026-02-16
 ### Changed
 - `BodyState` renamed to `SpatialState` for clarity and consistency (not only used for bodies).

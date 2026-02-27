@@ -12,11 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 import isaacsim.core.experimental.utils.backend as backend_utils
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
+import numpy as np
 import usdrt
 import warp as wp
 from isaacsim.core.experimental.objects import (
@@ -32,6 +33,7 @@ from isaacsim.core.experimental.prims import (
     GeomPrim,
     XformPrim,
 )
+from isaacsim.robot_motion.schema import MOTION_PLANNING_API_NAME, MOTION_PLANNING_ENABLED_ATTR
 from pxr import UsdPhysics
 
 from .obstacle_strategy import (
@@ -50,8 +52,14 @@ _BOUNDING_BOX_CACHE = collision_approximation.create_bbox_cache()
 _LOCAL_TRANSFORM_TOKEN = usdrt.Rt.Tokens.fabricHierarchyLocalMatrix
 
 # Mappings of Tokens to track and APIs to verify, depending on the user selection.
-_COLLISION_ENABLED_TOKENS = {TrackableApi.PHYSICS_COLLISION: usdrt.UsdPhysics.Tokens.physicsCollisionEnabled}
-_COLLISION_APIS = {TrackableApi.PHYSICS_COLLISION: UsdPhysics.CollisionAPI}
+_COLLISION_ENABLED_TOKENS = {
+    TrackableApi.PHYSICS_COLLISION: usdrt.UsdPhysics.Tokens.physicsCollisionEnabled,
+    TrackableApi.MOTION_GENERATION_COLLISION: MOTION_PLANNING_ENABLED_ATTR,
+}
+_COLLISION_APIS = {
+    TrackableApi.PHYSICS_COLLISION: UsdPhysics.CollisionAPI,
+    TrackableApi.MOTION_GENERATION_COLLISION: MOTION_PLANNING_API_NAME,
+}
 
 
 def _add_sphere_from_prim(
@@ -72,8 +80,6 @@ def _add_sphere_from_prim(
         rt_change_tracker: USDRT change tracker for attribute monitoring.
         collision_api: Collision API which is used to signal that the obstacle is enabled/disabled.
     """
-    # collision_api not yet in use, but when it is, we should get the collision enabled
-    # from the correct API.
 
     # Track updates on relevant attributes:
     sphere_schema = usdrt.UsdGeom.Sphere(prim)
@@ -82,7 +88,6 @@ def _add_sphere_from_prim(
     # Given that this object is being added directly as a sphere,
     # we can get its data from the core API:
     isaac_core_object = Sphere(paths=prim_path)
-    collision_object = GeomPrim(paths=prim_path)
 
     world_interface.add_spheres(
         prim_paths=[prim_path],
@@ -90,7 +95,7 @@ def _add_sphere_from_prim(
         scales=isaac_core_object.get_local_scales(),
         safety_tolerances=wp.array([[obstacle_configuration.safety_tolerance]]),
         poses=isaac_core_object.get_world_poses(),
-        enabled_array=collision_object.get_enabled_collisions(),
+        enabled_array=_get_collision_enabled_values([prim_path], collision_api),
     )
 
 
@@ -112,8 +117,6 @@ def _add_cube_from_prim(
         rt_change_tracker: USDRT change tracker for attribute monitoring.
         collision_api: Collision API which is used to signal that the obstacle is enabled/disabled.
     """
-    # collision_api not yet in use, but when it is, we should get the collision enabled
-    # from the correct API.
 
     # Schemas which include attributes we will want to track for updates:
     cube_schema = usdrt.UsdGeom.Cube(prim)
@@ -122,7 +125,6 @@ def _add_cube_from_prim(
     # Given that this object is being added directly as a cube,
     # we can get its data from the core API:
     isaac_core_object = Cube(paths=prim_path)
-    collision_object = GeomPrim(paths=prim_path)
 
     world_interface.add_cubes(
         prim_paths=[prim_path],
@@ -130,7 +132,7 @@ def _add_cube_from_prim(
         scales=isaac_core_object.get_local_scales(),
         safety_tolerances=wp.array([[obstacle_configuration.safety_tolerance]]),
         poses=isaac_core_object.get_world_poses(),
-        enabled_array=collision_object.get_enabled_collisions(),
+        enabled_array=_get_collision_enabled_values([prim_path], collision_api),
     )
 
 
@@ -152,9 +154,6 @@ def _add_cone_from_prim(
         rt_change_tracker: USDRT change tracker for attribute monitoring.
         collision_api: Collision API which is used to signal that the obstacle is enabled/disabled.
     """
-    # collision_api not yet in use, but when it is, we should get the collision enabled
-    # from the correct API.
-
     # Track relevant attributes:
     cone_schema = usdrt.UsdGeom.Cone(prim)
     rt_change_tracker.TrackAttribute(cone_schema.GetAxisAttr().GetName())
@@ -164,7 +163,6 @@ def _add_cone_from_prim(
     # Given that this object is being added directly as a cone,
     # we can get its data from the core API:
     isaac_core_object = Cone(paths=prim_path)
-    collision_object = GeomPrim(paths=prim_path)
     world_interface.add_cones(
         prim_paths=[prim_path],
         axes=isaac_core_object.get_axes(),
@@ -173,7 +171,7 @@ def _add_cone_from_prim(
         scales=isaac_core_object.get_local_scales(),
         safety_tolerances=wp.array([[obstacle_configuration.safety_tolerance]]),
         poses=isaac_core_object.get_world_poses(),
-        enabled_array=collision_object.get_enabled_collisions(),
+        enabled_array=_get_collision_enabled_values([prim_path], collision_api),
     )
 
 
@@ -195,8 +193,6 @@ def _add_plane_from_prim(
         rt_change_tracker: USDRT change tracker for attribute monitoring.
         collision_api: Collision API which is used to signal that the obstacle is enabled/disabled.
     """
-    # collision_api not yet in use, but when it is, we should get the collision enabled
-    # from the correct API.
 
     # useful schemas:
     plane_schema = usdrt.UsdGeom.Plane(prim)
@@ -207,7 +203,6 @@ def _add_plane_from_prim(
     # Given that this object is being added directly as a plane,
     # we can get its data from the core API:
     isaac_core_object = Plane(paths=prim_path)
-    collision_object = GeomPrim(paths=prim_path)
     world_interface.add_planes(
         prim_paths=[prim_path],
         axes=isaac_core_object.get_axes(),
@@ -216,7 +211,7 @@ def _add_plane_from_prim(
         scales=isaac_core_object.get_local_scales(),
         safety_tolerances=wp.array([[obstacle_configuration.safety_tolerance]]),
         poses=isaac_core_object.get_world_poses(),
-        enabled_array=collision_object.get_enabled_collisions(),
+        enabled_array=_get_collision_enabled_values([prim_path], collision_api),
     )
 
 
@@ -238,8 +233,6 @@ def _add_capsule_from_prim(
         rt_change_tracker: USDRT change tracker for attribute monitoring.
         collision_api: Collision API which is used to signal that the obstacle is enabled/disabled.
     """
-    # collision_api not yet in use, but when it is, we should get the collision enabled
-    # from the correct API.
 
     # Track relevant attributes:
     capsule_schema = usdrt.UsdGeom.Capsule(prim)
@@ -250,7 +243,6 @@ def _add_capsule_from_prim(
     # Given that this object is being added directly as a capsule,
     # we can get its data from the core API:
     isaac_core_object = Capsule(paths=prim_path)
-    collision_object = GeomPrim(paths=prim_path)
     world_interface.add_capsules(
         prim_paths=[prim_path],
         axes=isaac_core_object.get_axes(),
@@ -259,7 +251,7 @@ def _add_capsule_from_prim(
         scales=isaac_core_object.get_local_scales(),
         safety_tolerances=wp.array([[obstacle_configuration.safety_tolerance]]),
         poses=isaac_core_object.get_world_poses(),
-        enabled_array=collision_object.get_enabled_collisions(),
+        enabled_array=_get_collision_enabled_values([prim_path], collision_api),
     )
 
 
@@ -290,7 +282,6 @@ def _add_cylinder_from_prim(
     # Given that this object is being added directly as a cylinder,
     # we can get its data from the core API:
     isaac_core_object = Cylinder(paths=prim_path)
-    collision_object = GeomPrim(paths=prim_path)
     world_interface.add_cylinders(
         prim_paths=[prim_path],
         axes=isaac_core_object.get_axes(),
@@ -299,7 +290,7 @@ def _add_cylinder_from_prim(
         scales=isaac_core_object.get_local_scales(),
         safety_tolerances=wp.array([[obstacle_configuration.safety_tolerance]]),
         poses=isaac_core_object.get_world_poses(),
-        enabled_array=collision_object.get_enabled_collisions(),
+        enabled_array=_get_collision_enabled_values([prim_path], collision_api),
     )
 
 
@@ -321,8 +312,6 @@ def _add_mesh_from_prim(
         rt_change_tracker: USDRT change tracker for attribute monitoring.
         collision_api: Collision API which is used to signal that the obstacle is enabled/disabled.
     """
-    # collision_api not yet in use, but when it is, we should get the collision enabled
-    # from the correct API.
 
     # Track relevant attributes:
     mesh_schema = usdrt.UsdGeom.Mesh(prim)
@@ -334,7 +323,6 @@ def _add_mesh_from_prim(
     # Given that this object is being added directly as a mesh,
     # we can get its data from the core API:
     isaac_core_object = Mesh(paths=prim_path)
-    collision_object = GeomPrim(paths=prim_path)
     face_indices, face_counts, _, _ = isaac_core_object.get_face_specs()
 
     world_interface.add_meshes(
@@ -346,7 +334,7 @@ def _add_mesh_from_prim(
         scales=isaac_core_object.get_local_scales(),
         safety_tolerances=wp.array([[obstacle_configuration.safety_tolerance]]),
         poses=isaac_core_object.get_world_poses(),
-        enabled_array=collision_object.get_enabled_collisions(),
+        enabled_array=_get_collision_enabled_values([prim_path], collision_api),
     )
 
 
@@ -368,8 +356,6 @@ def _add_triangulated_mesh_from_prim(
         rt_change_tracker: USDRT change tracker for attribute monitoring.
         collision_api: Collision API which is used to signal that the obstacle is enabled/disabled.
     """
-    # collision_api not yet in use, but when it is, we should get the collision enabled
-    # from the correct API.
 
     # Track relevant attributes:
     mesh_schema = usdrt.UsdGeom.Mesh(prim)
@@ -380,7 +366,6 @@ def _add_triangulated_mesh_from_prim(
     # Given that this object is being added directly as a triangulated mesh,
     # we can get its data from the core API:
     isaac_core_object = Mesh(paths=prim_path)
-    collision_object = GeomPrim(paths=prim_path)
 
     # triangulate the mesh:
     all_triangulated_mesh_indices = collision_approximation.triangulate_mesh(isaac_core_object)
@@ -402,7 +387,7 @@ def _add_triangulated_mesh_from_prim(
         scales=isaac_core_object.get_local_scales(),
         safety_tolerances=wp.array([[obstacle_configuration.safety_tolerance]]),
         poses=isaac_core_object.get_world_poses(),
-        enabled_array=collision_object.get_enabled_collisions(),
+        enabled_array=_get_collision_enabled_values([prim_path], collision_api),
     )
 
 
@@ -424,8 +409,6 @@ def _add_oriented_bounding_box_from_prim(
         rt_change_tracker: USDRT change tracker for attribute monitoring.
         collision_api: Collision API which is used to signal that the obstacle is enabled/disabled.
     """
-    # collision_api not yet in use, but when it is, we should get the collision enabled
-    # from the correct API.
 
     # TODO: Can we track "extent" or something like that?
 
@@ -436,7 +419,6 @@ def _add_oriented_bounding_box_from_prim(
     )
 
     isaac_core_object = XformPrim(paths=prim_path)
-    collision_object = GeomPrim(paths=prim_path)
 
     world_interface.add_oriented_bounding_boxes(
         prim_paths=[prim_path],
@@ -446,7 +428,7 @@ def _add_oriented_bounding_box_from_prim(
         scales=isaac_core_object.get_local_scales(),
         safety_tolerances=wp.array([[obstacle_configuration.safety_tolerance]]),
         poses=isaac_core_object.get_world_poses(),
-        enabled_array=collision_object.get_enabled_collisions(),
+        enabled_array=_get_collision_enabled_values([prim_path], collision_api),
     )
 
 
@@ -468,21 +450,54 @@ _ADD_OBJECT_CALLBACK_MAP = {
 }
 
 
-def _update_prim_physics_collision_enables(
+def _get_collision_enabled_values(prim_paths: list[str], collision_api: TrackableApi) -> wp.array:
+    """Get collision enabled values for prims based on the specified API.
+
+    Args:
+        prim_paths: List of prim paths to query.
+        collision_api: Collision API to use for reading enabled state.
+
+    Returns:
+        Boolean array indicating collision enabled state (shape ``(N, 1)``).
+    """
+    if collision_api == TrackableApi.PHYSICS_COLLISION:
+        collision_object = GeomPrim(paths=prim_paths)
+        return collision_object.get_enabled_collisions()
+    elif collision_api == TrackableApi.MOTION_GENERATION_COLLISION:
+        stage = stage_utils.get_current_stage(backend="usd")
+        enabled = np.zeros((len(prim_paths), 1), dtype=np.bool_)
+        for i, prim_path in enumerate(prim_paths):
+            prim = stage.GetPrimAtPath(prim_path)
+            if not prim or not prim.IsValid():
+                raise RuntimeError(f"Prim {prim_path} is invalid or does not exist.")
+            attr = prim.GetAttribute(MOTION_PLANNING_ENABLED_ATTR)
+            if not attr:
+                raise RuntimeError(
+                    f"Prim {prim_path} is missing the {MOTION_PLANNING_ENABLED_ATTR} attribute. "
+                    f"This should not happen if the prim was properly validated during WorldBinding.initialize()."
+                )
+            enabled[i] = attr.Get()
+        return wp.from_numpy(enabled, dtype=wp.bool)
+    else:
+        raise ValueError(f"Unsupported collision API: {collision_api}")
+
+
+def _update_prim_collision_enables(
     prim_paths: list[str],
     world_interface: WorldInterface,
+    collision_api: TrackableApi,
 ):
     """Update collision enable states for a batch of tracked prims that have changed.
 
     Args:
         prim_paths: List of prim paths with collision enable changes to update.
         world_interface: Planning world interface to update.
+        collision_api: Collision API to use for reading enabled state.
     """
-
-    collision_object = GeomPrim(paths=prim_paths)
+    enabled_array = _get_collision_enabled_values(prim_paths, collision_api)
     world_interface.update_obstacle_enables(
         prim_paths=prim_paths,
-        enabled_array=collision_object.get_enabled_collisions(),
+        enabled_array=enabled_array,
     )
 
 
@@ -845,9 +860,10 @@ class WorldBinding(Generic[TWorldInterface]):
         tracked_prims: list[str],
         tracked_collision_api: TrackableApi,
     ):
-        # TODO: extend support to Motion Generation Collision once it is available.
-        if tracked_collision_api is not TrackableApi.PHYSICS_COLLISION:
-            raise ValueError(f"No collision API other than PHYSICS_COLLISION is currently supported.")
+        if tracked_collision_api not in _COLLISION_APIS:
+            raise ValueError(
+                f"Unsupported collision API: {tracked_collision_api}. Supported APIs: {list(_COLLISION_APIS.keys())}"
+            )
 
         self._tracked_collision_api = tracked_collision_api
         self._world_interface = world_interface
@@ -855,6 +871,7 @@ class WorldBinding(Generic[TWorldInterface]):
         self._tracked_prims = tracked_prims
         self._stage = stage_utils.get_current_stage(backend="usdrt")
         self._rt_change_tracker: usdrt.Rt.ChangeTracker | None = None
+        self._collision_enabled_token: Any = None
         self._initialized = False
 
     def initialize(self):
@@ -925,6 +942,18 @@ class WorldBinding(Generic[TWorldInterface]):
         if len(invalid_ancestors) != 0:
             raise AssertionError(f"The following ancestor prims have non-unity scaling.\n{invalid_ancestors}")
 
+        # For motion planning API, validate that all prims have the attribute (required for change tracking)
+        if self._tracked_collision_api == TrackableApi.MOTION_GENERATION_COLLISION:
+            prims_without_attr = []
+            for prim, prim_path in zip(prims, self._tracked_prims):
+                attr = prim.GetAttribute(MOTION_PLANNING_ENABLED_ATTR)
+                if not attr:
+                    prims_without_attr.append(prim_path)
+            if prims_without_attr:
+                raise RuntimeError(
+                    f"The following prims have {MOTION_PLANNING_API_NAME} applied but are missing the {MOTION_PLANNING_ENABLED_ATTR} attribute: {prims_without_attr}"
+                )
+
         for prim, prim_path in zip(prims, self._tracked_prims):
             obstacle_configuration = self._obstacle_strategy.get_obstacle_configuration(prim_path)
             _ADD_OBJECT_CALLBACK_MAP[obstacle_configuration.representation](
@@ -941,7 +970,9 @@ class WorldBinding(Generic[TWorldInterface]):
         # with certainty, we will want to track the transforms, the
         # collision enabled outputs, and the local-transform which is
         # used to set the object scales:
-        self._rt_change_tracker.TrackAttribute(_COLLISION_ENABLED_TOKENS[self._tracked_collision_api])
+        self._collision_enabled_token = _COLLISION_ENABLED_TOKENS[self._tracked_collision_api]
+
+        self._rt_change_tracker.TrackAttribute(self._collision_enabled_token)
 
         # TODO: IS LOCAL SCALE TRACKABLE?
         # self._rt_change_tracker.TrackAttribute(_LOCAL_TRANSFORM_TOKEN)
@@ -1038,11 +1069,14 @@ class WorldBinding(Generic[TWorldInterface]):
         # ========================================================================
         # SECTION 1: Setup and token map initialization
         # ========================================================================
+        def _make_update_func(api: TrackableApi):
+            return lambda prim_paths, world_interface: _update_prim_collision_enables(prim_paths, world_interface, api)
+
+        # Build token map dynamically - only add the token for the API we're actually tracking
         common_tokens_to_update_functions_map = {
             # TODO: Local transformed do not seem to be properly tracked.
             # _LOCAL_TRANSFORM_TOKEN: _update_prim_scales,
-            _COLLISION_ENABLED_TOKENS[TrackableApi.PHYSICS_COLLISION]: _update_prim_physics_collision_enables,
-            # TODO: add other Motion Generation Collision APIs here when they are supported.
+            self._collision_enabled_token: _make_update_func(self._tracked_collision_api),
         }
 
         # ========================================================================
