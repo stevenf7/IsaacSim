@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.3.0] - 2026-02-26
+### Changed
+- Migrate mass property queries from PhysX property query interface to Articulation tensor API (`isaacsim.core.experimental.prims.Articulation`).
+- Remove `omni.physics.physx` dependency; mass, COM, and inertia are now queried via `get_link_masses()`, `get_link_coms()`, and `get_link_inertias()`.
+
 ## [3.2.1] - 2026-02-26
 ### Fixed
 - Fix Vec3f/Vec3d type mismatch in inertia accumulation caused by robot schema double-precision change

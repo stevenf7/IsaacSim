@@ -315,15 +315,19 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         link_prims = []
         joint_prims = []
 
+        base_pos = Gf.Vec3f(0, 0, 0.5)
+        body0_positions = {}
+        body0_positions[base_path] = base_pos
+
         for joint_index, joint_modality in enumerate(joint_modalities):
             link_path = f"{robot_path}/link_{joint_index}"
             if link_positions is not None and joint_index < len(link_positions):
-                pos = link_positions[joint_index]
+                pos = Gf.Vec3f(*link_positions[joint_index])
             else:
-                pos = ((joint_index + 1) * distance, 0, 0.5)
+                pos = Gf.Vec3f((joint_index + 1) * distance, 0, 0.5)
             link_geom = UsdGeom.Cube.Define(self._stage, link_path)
             link_geom.CreateSizeAttr(0.2)
-            link_geom.AddTranslateOp().Set(Gf.Vec3f(*pos))
+            link_geom.AddTranslateOp().Set(pos)
             link_prim = self._stage.GetPrimAtPath(link_path)
             UsdPhysics.CollisionAPI.Apply(link_prim)
             UsdPhysics.RigidBodyAPI.Apply(link_prim)
@@ -331,8 +335,10 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
             UsdPhysics.MassAPI(link_prim).CreateMassAttr(mass)
             UsdPhysics.MassAPI(link_prim).CreateDiagonalInertiaAttr(Gf.Vec3f(inertia_diag, inertia_diag, inertia_diag))
             link_prims.append(link_prim)
+            body0_positions[link_path] = pos
 
             body0 = base_path if (not chain or joint_index == 0) else f"{robot_path}/link_{joint_index - 1}"
+            body0_pos = body0_positions[body0]
             axis = (
                 axes[joint_index]
                 if joint_index < len(axes)
@@ -353,6 +359,10 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
                 joint.CreateBody1Rel().SetTargets([link_path])
                 drive_type = "angular"
                 stiffness, damping = _compute_stiffness_damping_revolute(inertia_diag, natural_freq_hz, damping_ratio)
+
+            local_pos1 = Gf.Vec3f(body0_pos[0] - pos[0], body0_pos[1] - pos[1], body0_pos[2] - pos[2])
+            joint.CreateLocalPos0Attr().Set(Gf.Vec3f(0, 0, 0))
+            joint.CreateLocalPos1Attr().Set(local_pos1)
 
             drive_api = UsdPhysics.DriveAPI.Apply(joint.GetPrim(), drive_type)
             drive_api.CreateTypeAttr(drive_submodality.value)
@@ -379,11 +389,13 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
     async def _run_setup_and_compute_inertia(self, robot_path: str, num_physics_steps: int = 60):
         """Setup gain tuner, run physics so mass query completes, then compute joint inertias."""
         self._gain_tuner.setup(robot_path)
+        for _ in range(2):
+            await app_utils.update_app_async()
         self._timeline.play()
         for _ in range(num_physics_steps):
             await app_utils.update_app_async()
-        self._timeline.stop()
         self._gain_tuner.compute_joints_accumulated_inertia()
+        self._timeline.stop()
 
     def _create_fixed_base_two_revolute_chain(
         self,

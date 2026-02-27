@@ -18,9 +18,9 @@ from math import inf
 
 import carb
 import numpy as np
-import omni.physics.tensors as physics_tensors
 import omni.ui as ui
 import pxr
+from omni.physics.tensors import DofType
 
 from ..gains_tuner import GainsTestMode
 from .base_table_widget import ITEM_HEIGHT, TableItem, TableItemDelegate, TableModel, TableWidget
@@ -71,7 +71,7 @@ class TestJointItem(TableItem):
         self.model = model
         self.dof_type = dof_type
         self.values_scale = 1.0
-        if dof_type == physics_tensors.DofType.Rotation:
+        if dof_type == DofType.Rotation:
             self.values_scale = 180.0 / np.pi
         if np.isinf(step_max) or step_max > 1e10:
             step_max = float("inf")
