@@ -334,3 +334,14 @@ SDG collection is handled by the replicator's SDG writers based on the semantic 
 is collected in the event log, which is a yaml file in the output directory.
 
 .. image:: /images/isim_5.0_full_ext-isaacsim.replicator.incident-0.1.0_viewport_semantic_label.png
+
+API usage
+--------------------------
+This extension also exposes a Python API which you can use to set up the various incidents from your own script. 
+Ensure that ``isaacsim.replicator.incident.core`` is enabled, and use the API as in the following example.
+
+
+.. literalinclude:: ../snippets/action_and_event_data_generation/tutorial_replicator_incident.py
+    :language: python
+    :start-after: <start-tutorial-snippet>
+    :end-before: <end-tutorial-snippet>

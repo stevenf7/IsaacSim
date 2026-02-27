@@ -581,6 +581,12 @@ local function get_doc_snippets_tests()
     local pickplace_pythonpath = { "standalone_examples/api/isaacsim.robot.manipulators/ur10e" }
 
     return {
+        -- assets
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.assets.usd_assets_nurec.run_the_simulation_for_the_given_number_of_steps",
+            "../../../docs/isaacsim/snippets/assets/usd_assets_nurec/run_the_simulation_for_the_given_number_of_steps.py",
+            "--test",
+        },
         -- core_api_tutorials
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.core_api_tutorials.tutorial_core_hello_world.open_a_new_my_applicationpy_file_and_add_the_follo",
