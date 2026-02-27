@@ -17,6 +17,7 @@ Editor Tools
 
    ext_isaacsim_util_merge_mesh
    ext_isaacsim_robot_setup_gain_tuner
+   ext_isaacsim_robot_setup_collision_detector
    assemble_robots
 
 
