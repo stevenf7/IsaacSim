@@ -24,7 +24,7 @@ import omni.kit.test
 import omni.timeline
 import omni.usd
 from isaacsim.replicator.behavior.global_variables import EXPOSED_ATTR_NS
-from omni.kit.scripting import BehaviorScript
+from omni.behavior.scripting.core import BehaviorScript
 from pxr import Sdf
 
 SCRIPTS_ATTR = "omni:scripting:scripts"
