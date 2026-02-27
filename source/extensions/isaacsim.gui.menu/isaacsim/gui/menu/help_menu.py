@@ -234,7 +234,7 @@ def resolve_physics_ref_url() -> str:
         response = requests.head(url, timeout=5)
         if response.status_code > 400:
             raise Exception()
-    except:
+    except Exception:
         url = "https://docs.omniverse.nvidia.com/kit/docs/omni_physics/latest/index.html"
 
     return url

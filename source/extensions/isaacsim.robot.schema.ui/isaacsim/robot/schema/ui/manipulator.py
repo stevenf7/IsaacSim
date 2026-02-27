@@ -14,6 +14,7 @@
 # limitations under the License.
 """Viewport manipulator for visualizing robot joint connections."""
 
+import asyncio
 from pathlib import Path
 from typing import Any
 
@@ -64,6 +65,32 @@ class ConnectionManipulator(sc.Manipulator):
         self._cached_camera_position: Gf.Vec3d | None = None
         self._cached_camera_forward: Gf.Vec3d | None = None
         self._cached_viewport_api: Any | None = None
+        self._redraw_future: asyncio.Task | None = None
+
+    REDRAW_DEBOUNCE_MS = 300
+
+    def _clear_connections_visuals(self) -> None:
+        """Clear all connection lines and overlays without rebuilding.
+
+        Stops drawing until the next debounced redraw, so the manipulator
+        does not show misaligned arrows while the robot is updating.
+        """
+        connections = getattr(self, "_connections_panel", None)
+        overlays = getattr(self, "_overlays_panel", None)
+        if not connections or not overlays:
+            return
+        self._clear_all_panels()
+        connections.clear()
+        overlays.clear()
+
+    async def _debounced_redraw(self) -> None:
+        """Run after DEBOUNCE_MS of no model updates, then invalidate to redraw."""
+        try:
+            await asyncio.sleep(self.REDRAW_DEBOUNCE_MS / 1000.0)
+        except asyncio.CancelledError:
+            return
+        self._redraw_future = None
+        self.invalidate()
 
     def on_build(self) -> None:
         """Build the manipulator's scene graph structure.
@@ -300,19 +327,38 @@ class ConnectionManipulator(sc.Manipulator):
     def on_model_updated(self, item: Any | None) -> None:
         """Handle model update notifications.
 
-        Called when the model signals that an item has changed.
+        When the robot (or camera) changes, clears connection visuals and
+        schedules a single redraw after a short debounce so arrows are not
+        drawn with stale positions. Redraw runs only after changes settle.
+
+        If the model's ``_force_redraw_requested`` flag is set (by
+        :meth:`~.model.ConnectionModel.force_rebuild`), the debounce is
+        skipped and ``invalidate()`` is called immediately so the viewport
+        lines update on the very next frame.
 
         Args:
             item: Changed item, or None for a full rebuild.
         """
+        if getattr(self.model, "_force_redraw_requested", False):
+            self.model._force_redraw_requested = False
+            if self._redraw_future is not None:
+                self._redraw_future.cancel()
+                self._redraw_future = None
+            self.invalidate()
+            return
         if not item:
             if self._connections_panel is None:
                 self.invalidate()
             else:
                 self.rebuild_connections()
             return
-        item.needs_position_refresh = True
-        self.update_connection_position(item)
+        if item:
+            item.needs_position_refresh = True
+        if self._redraw_future is not None:
+            self._redraw_future.cancel()
+            self._redraw_future = None
+        self._clear_connections_visuals()
+        self._redraw_future = asyncio.ensure_future(self._debounced_redraw())
 
     def _draw_connection_line(self, start_position: Gf.Vec3d, end_position: Gf.Vec3d) -> None:
         """Draw the complete connection line with arrow.

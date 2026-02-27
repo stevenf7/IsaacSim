@@ -14,7 +14,10 @@
 # limitations under the License.
 """Asset root path check utility for Isaac Sim."""
 
+from __future__ import annotations
+
 import asyncio
+from collections.abc import Callable
 
 import carb.settings
 import omni.kit.app
@@ -29,15 +32,18 @@ class AssetCheck:
 
     On startup the check is skipped to avoid blocking the UI. Users can trigger it
     manually from the *Utilities > Check Default Assets Root Path* menu item.
+
+    Args:
+        on_visibility_changed: Optional callback invoked when window visibility changes.
     """
 
-    def __init__(self, on_visibility_changed=None) -> None:
+    def __init__(self, on_visibility_changed: Callable[[], None] | None = None) -> None:
         self._assets_check = False
         self._startup_run = True
-        self._cancel_download_btn = None
-        self._server_window = None
-        self._check_success = None
-        self._assets_server = None
+        self._cancel_download_btn: ui.Button | None = None
+        self._server_window: ui.Window | None = None
+        self._check_success: ui.Window | None = None
+        self._assets_server: str | None = None
         self._on_visibility_changed = on_visibility_changed
 
         # Run initial check (skips on first startup)
@@ -49,7 +55,11 @@ class AssetCheck:
         self._check_success = None
 
     def is_visible(self) -> bool:
-        """Return True if any asset-check window is currently visible."""
+        """Return True if any asset-check window is currently visible.
+
+        Returns:
+            bool: Whether an asset-check window is visible.
+        """
         if self._server_window and self._server_window.visible:
             return True
         if self._check_success and self._check_success.visible:
@@ -76,7 +86,8 @@ class AssetCheck:
             return
 
         if self._cancel_download_btn and self._cancel_download_btn.visible:
-            self._server_window.visible = True
+            if self._server_window is not None:
+                self._server_window.visible = True
             self._notify_visibility_changed()
         else:
             asyncio.ensure_future(self._assets_check_window())
@@ -87,7 +98,11 @@ class AssetCheck:
 
     @staticmethod
     def _open_browser(path: str) -> None:
-        """Open *path* in the desktop web browser."""
+        """Open *path* in the desktop web browser.
+
+        Args:
+            path: URL to open.
+        """
         import platform
         import subprocess
         import webbrowser
@@ -120,7 +135,7 @@ class AssetCheck:
             with ui.VStack():
                 ui.Spacer(height=1)
                 ui.Label("Isaac Sim Assets found:", style={"font_size": 18}, alignment=ui.Alignment.CENTER)
-                ui.Label("{}".format(self._assets_server), style={"font_size": 18}, alignment=ui.Alignment.CENTER)
+                ui.Label(f"{self._assets_server}", style={"font_size": 18}, alignment=ui.Alignment.CENTER)
                 ui.Spacer(height=5)
                 ui.Button(
                     "OK", spacing=10, alignment=ui.Alignment.CENTER, clicked_fn=lambda w=self._check_success: hide(w)

@@ -316,7 +316,7 @@ class FileMenuExtension:
 
         sample_menu_list = [MenuItemDescription(name="Samples", appear_after="Open Recent", sub_menu=sub_menu)]
         omni.kit.menu.utils.add_menu_items(sample_menu_list, "File")
-        return None
+        return
 
     @staticmethod
     def is_new_stage():

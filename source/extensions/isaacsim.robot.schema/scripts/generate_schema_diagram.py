@@ -55,7 +55,7 @@ from pathlib import Path
 # USDA parser (unchanged)
 # ---------------------------------------------------------------------------
 
-_CLASS_RE = re.compile(r'^class\s+"(\w+)"', re.MULTILINE)
+_CLASS_RE = re.compile(r'^class\s+(?:\w+\s+)?"(\w+)"', re.MULTILINE)
 _INHERITS_RE = re.compile(r"inherits\s*=\s*</([\w]+)>")
 _ATTR_RE = re.compile(
     r"^\s+(uniform\s+)?(\w[\w\[\]]*)\s+(isaac:\S+)\s*=",
@@ -108,7 +108,7 @@ def parse_usda(path: Path) -> list[SchemaClass]:
         end = class_starts[i + 1].start() if i + 1 < len(class_starts) else len(text)
         block = text[start:end]
         inh = _INHERITS_RE.search(block)
-        schema_type = "Typed Schema" if (inh and inh.group(1) == "Typed") else "Applied API Schema"
+        schema_type = "Applied API Schema" if (inh and inh.group(1) == "APISchemaBase") else "Typed Schema"
         brace_open = block.find("{")
         brace_close = block.rfind("}")
         if brace_open == -1 or brace_close == -1:
@@ -143,6 +143,7 @@ _HEADER_COLORS = {
     "IsaacLinkAPI": _GREEN_SECONDARY,
     "IsaacJointAPI": _GREEN_SECONDARY,
     "IsaacSiteAPI": _GREEN_SECONDARY,
+    "IsaacNamedPose": _GREEN_SECONDARY,
     "IsaacAttachmentPointAPI": _GREEN_TERTIARY,
     "IsaacSurfaceGripper": _GREEN_TERTIARY,
 }
@@ -152,6 +153,7 @@ _SUBLABELS = {
     "IsaacLinkAPI": "Applied to rigid bodies (links)",
     "IsaacJointAPI": "Applied to physics joints",
     "IsaacSiteAPI": "Points of interest (tool mounts, sensors, EEF)",
+    "IsaacNamedPose": "Stored joint configurations with IK target transforms",
     "IsaacAttachmentPointAPI": "Surface gripper attachment points",
     "IsaacSurfaceGripper": "Surface gripper mechanics (forces, distances)",
 }
@@ -159,12 +161,13 @@ _SUBLABELS = {
 _REL_TARGETS = {
     "isaac:physics:robotLinks": ["IsaacLinkAPI", "IsaacSiteAPI"],
     "isaac:physics:robotJoints": ["IsaacJointAPI"],
+    "isaac:robot:namedPoses": ["IsaacNamedPose"],
     "isaac:attachmentPoints": ["IsaacAttachmentPointAPI"],
 }
 
 _ROW_POSITIONS = {
     0: ["IsaacRobotAPI"],
-    1: ["IsaacLinkAPI", "IsaacSiteAPI", "IsaacJointAPI"],
+    1: ["IsaacLinkAPI", "IsaacSiteAPI", "IsaacJointAPI", "IsaacNamedPose"],
     2: ["IsaacSurfaceGripper", "IsaacAttachmentPointAPI"],
 }
 
@@ -770,6 +773,8 @@ def generate_diagram(usda_path: Path, output_path: Path, fonts_dir: Path) -> Non
 
         cairosvg.svg2png(url=str(svg_path), write_to=str(output_path), scale=2)
         print(f"Saved PNG to {output_path}")
+        svg_path.unlink(missing_ok=True)
+        print(f"Removed intermediate SVG {svg_path}")
     except ImportError:
         print("cairosvg not available — PNG export skipped. Install with: pip install cairosvg")
 

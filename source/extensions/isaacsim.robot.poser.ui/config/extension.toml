@@ -1,0 +1,60 @@
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Robot Poser"
+description = "Create, manage, and export mimic training points for an active robot using an IK goal workflow."
+authors = ["isaacsim-robot-setup@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.poser.ui"
+keywords = ["isaac", "robot", "poser", "training points", "mimic", "ik", "articulation"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+writeTarget.kit = true
+
+[dependencies]
+"isaacsim.core.api" = {}
+"isaacsim.core.deprecation_manager" = {}
+"isaacsim.gui.components" = {}
+"isaacsim.robot.poser" = {}
+"isaacsim.robot.schema" = {}
+"omni.kit.property.usd" = {}
+"omni.kit.uiapp" = {}
+"omni.kit.widget.stage" = {}
+"omni.kit.window.property" = {}
+
+[[python.module]]
+name = "isaacsim.robot.poser.ui"
+
+[[python.module]]
+name = "isaacsim.robot.poser.ui.tests"
+
+[[test]]
+name = "startup"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+
+[[test]]
+name = "robot_poser"
+dependencies = [
+    "omni.isaac.ml_archive",
+]
+
+[[test]]
+name = "ui"
+dependencies = [
+    "isaacsim.test.utils",
+    "omni.isaac.ml_archive",
+    "omni.kit.ui_test",
+]
+args = [
+    "--/app/asyncRendering=0",
+    "--/app/fastShutdown=1",
+    "--/app/file/ignoreUnsavedOnExit=1",
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+    "--/app/settings/persistent=0",
+    "--/app/window/dpiScaleOverride=1.0",
+    "--/app/window/scaleToMonitor=false",
+]
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]

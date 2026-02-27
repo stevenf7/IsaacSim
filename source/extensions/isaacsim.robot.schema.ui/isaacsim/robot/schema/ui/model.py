@@ -24,12 +24,11 @@ import carb
 import omni.kit.app
 import omni.kit.viewport.utility as viewport_utility
 from omni.ui import scene as sc
-from pxr import Gf, Sdf, Tf, Usd, UsdGeom
+from pxr import Gf, Sdf, Tf, Usd, UsdGeom, UsdPhysics
 
 from .utils import (
     CONNECTION_COLOR,
     get_active_viewport,
-    get_camera_pose,
     get_joint_position,
     get_link_position,
     get_prim_safe,
@@ -399,17 +398,26 @@ class ConnectionItem(sc.AbstractManipulatorItem):
         return True
 
 
+class _ForceRedrawItem:
+    """Marker class for immediate-redraw requests from ConnectionModel.force_rebuild().
+
+    Used by ``ConnectionManipulator.on_model_updated`` to detect when the model
+    requests an immediate redraw.  The model sets ``_force_redraw_requested = True``
+    and fires
+    ``_item_changed(None)`` (the only value accepted by the C++ binding).
+    The manipulator reads the flag and calls ``invalidate()`` directly,
+    bypassing the debounce.
+    """
+
+
 class ConnectionModel(sc.AbstractManipulatorModel):
     """Model managing the state of joint connections for viewport visualization.
 
-    Tracks all joint connections, listens for USD stage changes, and handles
-    batched updates to minimize redraw overhead. Implements camera movement
-    thresholds to avoid unnecessary redraws during minor camera adjustments.
+    Tracks all joint connections, listens for USD stage changes, and queues
+    batched updates; the manipulator debouncer coalesces rapid changes.
     """
 
-    CAMERA_MOVE_THRESHOLD = 0.05
-    CAMERA_ROTATE_THRESHOLD = 0.05
-    OVERLAY_REFRESH_INTERVAL_MS = 200.0
+    OVERLAY_REFRESH_INTERVAL_MS = 100.0
 
     def __init__(self) -> None:
         super().__init__()
@@ -423,9 +431,8 @@ class ConnectionModel(sc.AbstractManipulatorModel):
         self._pending_rebuild = False
         self._pending_connections: set[ConnectionItem] = set()
         self._pending_rebuild_type = RebuildType.NONE
-        self._last_camera_position = None
-        self._last_camera_forward = None
         self._last_overlay_refresh_ms: float | None = None
+        self._force_redraw_requested: bool = False
         self._refresh_stage()
 
     def _refresh_stage(self) -> None:
@@ -463,45 +470,29 @@ class ConnectionModel(sc.AbstractManipulatorModel):
         self._refresh_stage()
 
     def _build_connection_prefix_map(self) -> None:
-        """Build a prefix map for fast USD change lookups."""
-        self._joint_connections_by_prefix = defaultdict(set)
-        for connection in self._joint_connections:
-            path = connection.joint_prim_path
-            while True:
-                self._joint_connections_by_prefix[path].add(connection)
-                if path == Sdf.Path.absoluteRootPath:
-                    break
-                path = path.GetParentPath()
+        """Build a prefix map for fast USD change lookups.
 
-    def _has_camera_changed_significantly(self) -> bool:
-        """Return True if camera movement exceeds the redraw threshold.
-
-        Returns:
-            True if camera position or rotation changed enough to warrant redraw.
+        Registers joint paths and the joint's body0/body1 (link) paths so
+        that xform changes on links during tracking trigger a redraw.
         """
-        camera_pose = get_camera_pose()
-        if not camera_pose:
-            return False
-        camera_position, camera_forward = camera_pose
-
-        if self._last_camera_position is None or self._last_camera_forward is None:
-            self._last_camera_position = camera_position
-            self._last_camera_forward = camera_forward
-            return True
-
-        position_delta = (camera_position - self._last_camera_position).GetLength()
-        if position_delta > self.CAMERA_MOVE_THRESHOLD:
-            self._last_camera_position = camera_position
-            self._last_camera_forward = camera_forward
-            return True
-
-        dot_product = Gf.Dot(camera_forward, self._last_camera_forward)
-        if dot_product < (1.0 - self.CAMERA_ROTATE_THRESHOLD):
-            self._last_camera_position = camera_position
-            self._last_camera_forward = camera_forward
-            return True
-
-        return False
+        self._joint_connections_by_prefix = defaultdict(set)
+        stage = get_stage_safe()
+        for connection in self._joint_connections:
+            paths_to_register = [connection.joint_prim_path]
+            joint_prim = get_prim_safe(connection.joint_prim_path, stage)
+            if joint_prim:
+                joint = UsdPhysics.Joint(joint_prim)
+                if joint:
+                    for rel in (joint.GetBody0Rel(), joint.GetBody1Rel()):
+                        targets = rel.GetTargets()
+                        if targets:
+                            paths_to_register.append(targets[0])
+            for path in paths_to_register:
+                while True:
+                    self._joint_connections_by_prefix[path].add(connection)
+                    if path == Sdf.Path.absoluteRootPath:
+                        break
+                    path = path.GetParentPath()
 
     def _on_usd_changed(self, notice: Any, stage: Any) -> None:
         """Handle USD stage change notifications.
@@ -540,14 +531,26 @@ class ConnectionModel(sc.AbstractManipulatorModel):
                     connection.needs_position_refresh = True
                 affected_connections.update(connections)
 
+        # Resync paths (e.g. first-time xform-op or joint-attribute authoring on
+        # body/joint prims) also require a position refresh.  Without this, a
+        # one-shot pose application whose USD writes land in GetResyncedPaths()
+        # (new attribute creation) is silently ignored and the manipulator never
+        # redraws.
+        for path in notice.GetResyncedPaths():
+            prim_path = path.GetPrimPath() if path.IsPropertyPath() else path
+            connections = self._joint_connections_by_prefix.get(prim_path)
+            if connections:
+                for connection in connections:
+                    connection.needs_position_refresh = True
+                affected_connections.update(connections)
+
         if affected_connections:
             if len(affected_connections) == 1:
-                self._queue_rebuild(next(iter(affected_connections)), RebuildType.SINGLE_JOINT)
+                self._queue_rebuild(next(iter(affected_connections)), RebuildType.FULL)
             else:
                 self._queue_rebuild(None, RebuildType.FULL)
         elif camera_changed:
-            if self._has_camera_changed_significantly():
-                self._queue_rebuild(None, RebuildType.CAMERA_ONLY)
+            self._queue_rebuild(None, RebuildType.CAMERA_ONLY)
 
     def get_joint_connections(self) -> list[ConnectionItem]:
         """Return the list of all joint connections.
@@ -586,6 +589,24 @@ class ConnectionModel(sc.AbstractManipulatorModel):
                 for connection in self._joint_connections_map.values():
                     connection.needs_position_refresh = True
             self._queue_rebuild(None, rebuild_type)
+
+    def force_rebuild(self) -> None:
+        """Mark all connections as needing position refresh and redraw immediately.
+
+        Unlike :meth:`rebuild_connections`, this method bypasses the
+        ``_pending_rebuild`` guard and the async deferred-rebuild chain.  It
+        sets ``_force_redraw_requested`` and fires ``_item_changed(None)``,
+        which the manipulator recognises as a signal to skip its debounce and
+        call ``invalidate()`` on the next frame.
+
+        Intended for one-shot pose applications ("Set Robot to Pose") where the
+        USD body-transform writes have already been committed synchronously and
+        we just need the viewport lines to catch up immediately.
+        """
+        for connection in self._joint_connections_map.values():
+            connection.needs_position_refresh = True
+        self._force_redraw_requested = True
+        self._item_changed(None)
 
     def _queue_rebuild(
         self, connection: ConnectionItem | None = None, rebuild_type: RebuildType = RebuildType.FULL

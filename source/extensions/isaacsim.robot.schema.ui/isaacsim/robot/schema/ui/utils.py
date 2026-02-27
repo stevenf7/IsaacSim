@@ -440,6 +440,55 @@ class PathMap:
 
 
 # --------------------------------------------------------------------------
+# Named Pose Utilities
+# --------------------------------------------------------------------------
+
+
+def get_robot_named_poses(robot_prim: Usd.Prim | None) -> list[Usd.Prim]:
+    """Return all named pose prims for a robot from the schema relationship.
+
+    Args:
+        robot_prim: The robot prim (must have Robot API).
+
+    Returns:
+        List of named pose prims in relationship order. Empty if stage or
+        robot is invalid or robot has no named poses.
+
+    Example:
+
+    .. code-block:: python
+
+        named_poses = get_robot_named_poses(robot_prim)
+    """
+    if not robot_prim or not robot_prim.IsValid():
+        return []
+    stage = get_stage_safe()
+    if not stage:
+        return []
+    return robot_schema_utils.GetAllNamedPoses(stage, robot_prim)
+
+
+def get_named_pose_joint_values(named_pose_prim: Usd.Prim | None) -> list[float] | None:
+    """Get the joint values from a named pose prim.
+
+    Args:
+        named_pose_prim: The named pose prim.
+
+    Returns:
+        The joint values array, or None if not authored or prim invalid.
+
+    Example:
+
+    .. code-block:: python
+
+        values = get_named_pose_joint_values(named_pose_prim)
+    """
+    if not named_pose_prim or not named_pose_prim.IsValid():
+        return None
+    return robot_schema_utils.GetNamedPoseJointValues(named_pose_prim)
+
+
+# --------------------------------------------------------------------------
 # Joint Position Utilities
 # --------------------------------------------------------------------------
 
@@ -507,7 +556,7 @@ def get_link_position(link: Usd.Prim | Sdf.Path | str | None) -> Gf.Vec3d | None
         return None
 
     try:
-        world_transform = UsdGeom.XformCache(Usd.TimeCode.Default()).GetLocalToWorldTransform(prim)
+        world_transform = Gf.Matrix4d(omni.usd.get_world_transform_matrix(prim))
         translation = world_transform.ExtractTranslation()
         return Gf.Vec3d(*translation)
     except Exception as error:
@@ -555,7 +604,6 @@ def get_joint_position(robot_root_path: Sdf.Path | str, joint_path: Sdf.Path | s
         if pose_matrix is None:
             return None
         translation = Gf.Vec3d(*pose_matrix.ExtractTranslation())
-        # Transform from robot coordinates to world coordinates
         robot_world_transform = UsdGeom.XformCache(Usd.TimeCode.Default()).GetLocalToWorldTransform(robot_prim)
         world_position = robot_world_transform.Transform(translation)
         return world_position
@@ -884,8 +932,18 @@ def _generate_robot_hierarchy_stage_inner(
     if not robot_prims:
         return None, path_map, joint_connections
 
+    # Exclude robots whose root path is nested inside another robot's subtree.
+    # Such robots are drawn exclusively by their parent robot's tree.
+    robot_paths = {prim.GetPath() for prim in robot_prims}
+    top_level_robot_prims = [
+        prim
+        for prim in robot_prims
+        if not any(candidate != prim.GetPath() and prim.GetPath().HasPrefix(candidate) for candidate in robot_paths)
+    ]
+
+    # Collect valid robots with their link trees
     robot_data = []
-    for prim in robot_prims:
+    for prim in top_level_robot_prims:
         joints = robot_schema_utils.GetAllRobotJoints(stage, prim)
         robot_tree = robot_schema_utils.GenerateRobotLinkTree(stage, prim)
         if robot_tree:

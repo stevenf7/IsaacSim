@@ -244,6 +244,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         self._timeline.stop()
         self._gain_tuner.reset()
         await app_utils.update_app_async()
+        await stage_utils.create_new_stage_async()
 
     def _create_articulation(
         self,

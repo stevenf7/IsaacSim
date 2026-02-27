@@ -756,14 +756,14 @@ class GainTuner:
 
             if not is_prismatic:
                 link_pose = omni.usd.get_world_transform_matrix(link)
-                world_com = pxr.Gf.Vec3f(
+                world_com = pxr.Gf.Vec3d(
                     (
                         link_pose
                         * pxr.Gf.Matrix4d().SetTranslate(pxr.Gf.Vec3d(*mass_data.center_of_mass))
                         * robot_transform.GetInverse()
                     ).ExtractTranslation()
                 )
-                displacement = world_com - joint_pose.ExtractTranslation()
+                displacement = world_com - (joint_pose.ExtractTranslation())
                 transformed_inertia = transform_inertia_tensor(
                     mass_data.diagonal_inertia, mass_data.principal_axes, mass, displacement
                 )

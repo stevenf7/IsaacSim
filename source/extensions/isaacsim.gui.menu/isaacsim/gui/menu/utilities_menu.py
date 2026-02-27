@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utilities menu layout for Isaac Sim."""
+
+from __future__ import annotations
+
 import omni.kit.actions.core
 import omni.kit.menu.utils
 from omni.kit.menu.utils import LayoutSourceSearch, MenuItemDescription, MenuLayout, refresh_menu_items
@@ -29,7 +32,7 @@ class UtilitiesMenuExtension:
 
     def __init__(self, ext_id: str) -> None:
         self._ext_id = ext_id
-        self._asset_check = AssetCheck(on_visibility_changed=self._on_asset_check_visibility_changed)
+        self._asset_check: AssetCheck | None = AssetCheck(on_visibility_changed=self._on_asset_check_visibility_changed)
 
         self._menu_placeholder = [MenuItemDescription(name="placeholder", show_fn=lambda: False)]
         omni.kit.menu.utils.add_menu_items(self._menu_placeholder, "Utilities")
@@ -91,5 +94,6 @@ class UtilitiesMenuExtension:
         omni.kit.menu.utils.remove_menu_items(self._menu_placeholder, "Utilities")
         action_registry = omni.kit.actions.core.get_action_registry()
         action_registry.deregister_action(self._ext_id, self._action_id)
-        self._asset_check.destroy()
-        self._asset_check = None
+        if self._asset_check is not None:
+            self._asset_check.destroy()
+            self._asset_check = None

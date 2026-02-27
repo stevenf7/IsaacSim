@@ -502,6 +502,8 @@ inventory.includes.all = [
     "exts/isaacsim.robot.manipulators.examples",
     "exts/isaacsim.robot.manipulators.ui",
     "exts/isaacsim.robot.policy.examples",
+    "exts/isaacsim.robot.poser",
+    "exts/isaacsim.robot.poser.ui",
     "exts/isaacsim.robot.schema",
     "exts/isaacsim.robot.schema.ui",
     "exts/isaacsim.robot.surface_gripper",

@@ -73,7 +73,6 @@ class RobotInspectorWindow(ui.Window):
         self._view_mode_collection: Any = None
         self._option_hovered: list[bool] = []
         self._option_frames: list[Any] = []
-        self._deferred_sync_task: asyncio.Task | None = None
 
         super().__init__(
             "Robot Inspector",
@@ -460,9 +459,6 @@ class RobotInspectorWindow(ui.Window):
 
             window.destroy()
         """
-        if self._deferred_sync_task and not self._deferred_sync_task.done():
-            self._deferred_sync_task.cancel()
-        self._deferred_sync_task = None
         self._visibility_changed_listener = None
         self._view_mode_collection = None
         self._option_hovered = []
@@ -531,14 +527,12 @@ class RobotInspectorWindow(ui.Window):
 
             async def _deferred_sync() -> None:
                 await omni.kit.app.get_app().next_update_async()
-                if self._selection_watch is None:
-                    return
                 if preserved_paths and usd_context:
                     usd_context.get_selection().set_selected_prim_paths(preserved_paths, True)
                 if self._selection_watch:
                     self._selection_watch.sync_from_stage()
 
-            self._deferred_sync_task = asyncio.ensure_future(_deferred_sync())
+            asyncio.ensure_future(_deferred_sync())
         ConnectionInstance.get_instance().set_joint_connections(joint_connections)
 
     def _extract_joint_paths(self, joint_connections: list[Any]) -> set[str]:

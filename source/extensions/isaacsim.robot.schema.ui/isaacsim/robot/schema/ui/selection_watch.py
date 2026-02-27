@@ -48,7 +48,6 @@ class SelectionWatch:
         self._expected_selection_paths: set[str] = set()
         self._ctrl_held_on_last_click = False
         self._events: Any | None = None
-        self._guard_reset_task: asyncio.Task | None = None
 
         self.set_tree_view(tree_view)
         self._stage_event_sub: Any | None = carb.eventdispatcher.get_eventdispatcher().observe_event(
@@ -88,9 +87,6 @@ class SelectionWatch:
 
             watch.destroy()
         """
-        if self._guard_reset_task and not self._guard_reset_task.done():
-            self._guard_reset_task.cancel()
-        self._guard_reset_task = None
         self._is_setting_usd_selection = False
         self._expected_selection_paths = set()
         self._ctrl_held_on_last_click = False
@@ -475,8 +471,6 @@ class SelectionWatch:
 
         async def _reset() -> None:
             await omni.kit.app.get_app().next_update_async()
-            if self._usd_context is None:
-                return
             self._is_setting_usd_selection = False
             if not (self._usd_context and self._path_map and self._tree_view):
                 return
@@ -486,4 +480,4 @@ class SelectionWatch:
                 self._selection.set_selected_prim_paths(list(expected), True)
             self.sync_from_stage()
 
-        self._guard_reset_task = asyncio.ensure_future(_reset())
+        asyncio.ensure_future(_reset())
