@@ -174,4 +174,4 @@ This tutorial demonstrated how to programmatically set up ROS 2 publishers for I
 Next Steps
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Continue on to the next tutorial in our ROS 2 Tutorials series, :ref:`isaac_sim_app_tutorial_ros2_rtx_lidar`, to learn how to add a RTX Lidar sensor to the Turtlebot3.
+Continue on to the next tutorial in our ROS 2 Tutorials series, :ref:`isaac_sim_app_tutorial_ros2_compressed_image`, to learn how to publish H.264 compressed camera images from |isaac-sim_short|.
