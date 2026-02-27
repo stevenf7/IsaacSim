@@ -86,33 +86,21 @@ This tutorial uses an example warehouse scene.
 
    #. Click **Visualize Image** to view the occupancy map.
 
-   #. In the **Visualization** window under **Rotate Image** select **180**.
+   #. Enter "map" in the **Image File Name** field and click **Update YAML**.
 
-   #. In the **Visualization** window under **Coordinate Type** select **ROS Occupancy Map Parameters File YAML**.
-
-      Please note, we must rotate the image and generate a ROS formatted YAML file, because MobilityGen expects Occupancy Maps saved in this format, and will not work with other formats.
-
-   #. Click **Regenerate Image**.
-
-   #. Copy the YAML text generated to your clipboard.
-
-   #. In a text editor of your choice, create a new file named ``~/MobilityGenData/maps/warehouse_multiple_shelves/map.yaml``.
+   #. Click **Save YAML**.
+   
+   #. In the tree explorer, open the folder ``~/MobilityGenData/maps/warehouse_multiple_shelves``.
 
       On Windows replace ~ with the directory of your choice.
 
-   #. Paste the YAML text copied from the **Visualization** window into the created file.
-
-   #. Edit the line ``image: warehouse_multiple_shelves.png`` to read ``image: map.png``.
-
-   #. Save the file.
+   #. Under the file name enter ``map.yaml`` and click save.
 
    #. Back in the **Visualization** window, click **Save Image**.
 
    #. In the tree explorer, open the folder ``~/MobilityGenData/maps/warehouse_multiple_shelves``.
 
-   #. Under the file name enter ``map.png``.
-
-   #. Click save.
+   #. Under the file name enter ``map.png`` and click save.
 
 Verify that you now have a folder named ``~/MobilityGenData/maps/warehouse_multiple_shelves/`` with
 a file named ``map.yaml`` and ``map.png`` inside.
@@ -276,32 +264,64 @@ Because the registration of a new robot requires editing the Isaac Sim build fil
 
 When defining your robot, you may find the following list of common parameters and their descriptions helpful
 
-* physics_dt: The physics timestep to use for simulating the robot.
-* z_offset: The Z-axis offset height to spawn the robot. 
-* chase_camera_base_path: The relative USD path which will be used to spawn the third person view camera.  This is typically set to the robot base frame.
-* chase_camera_x_offset: The relative X-axis offset to spawn the third person view camera.
-* chase_camera_z_offset: The relative Z-axis offset to spawn the third person view camera.
-* chase_camera_tilt_angle: The tilt angle to apply to the third person view camera.
-* occupancy_map_radius: The robot footprint radius to use for spawning and path planning.
-* occupancy_map_collision_radius: The robot footprint radius to use for collision based episode termination.
-* front_camera_type: The static class representing the front camera.
-* front_camera_base_path: The relative USD path to spawn the front camera.
-* front_camera_rotation: The relative XYZ rotation used when spawning the front camera.
-* front_camera_translation: The relative XYZ translation used when spawning the front camera.
-* keyboard_linear_velocity_gain: The gain used to map keyboard button presses to the robot's linear velocity.  A larger gain results in faster movement.
-* keyboard_angular_velocity_gain: The gain used to map keyboard button presses to the robot's angular velocity.  A larger gain results in faster movement.
-* gamepad_linear_velocity_gain: The gain used to map gamepad axis movement to the robot's linear velocity.  A larger gain results in faster movement.
-* gamepad_angular_velocity_gain: The gain used to map gamepad axis movement to the robot's angular velocity.  A larger gain results in faster movement.
-* random_action_linear_velocity_range: The robot linear velocity limits for the random acceleration scenario.
-* random_action_angular_velocity_range: The robot angular velocity limits for the random acceleration scenario.
-* random_action_linear_acceleration_std: The standard deviation used for sampling the robot linear acceleration each timestep during the random acceleration scenario.
-* random_action_angular_acceleration_std: The standard deviation used for sampling the robot angular acceleration each timestep during the random acceleration scenario.
-* random_action_grid_pose_sampler_grid_size: The grid size to use for spawning the robot during the random acceleration scenario.
-* path_following_speed: The constant linear speed to use for the path following scenario.
-* path_following_angular_gain: The gain used for the proportional steering control in the path following scenario. A larger gain results in quicker turning, but potential overshoot and wobbling.
-* path_following_stop_distance_threshold: The distance threshold at which point the robot will stop.  Applies to the path following scenario.
-* path_following_forward_angle_threshold: The angle threshold at which point the robot will move forward.  Applies to the path following scenario.
-* path_following_target_point_offset_meters: The offset distance used to generate the 'target point' that the robot will follow in the path following scenario. A larger offset results in smoother motion, but too large may cause the robot to cut corners during turns.
+.. list-table:: Common Robot Parameters
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Parameter
+     - Description
+   * - ``physics_dt``
+     - The physics timestep to use for simulating the robot.
+   * - ``z_offset``
+     - The Z-axis offset height to spawn the robot.
+   * - ``chase_camera_base_path``
+     - The relative USD path which will be used to spawn the third person view camera. This is typically set to the robot base frame.
+   * - ``chase_camera_x_offset``
+     - The relative X-axis offset to spawn the third person view camera.
+   * - ``chase_camera_z_offset``
+     - The relative Z-axis offset to spawn the third person view camera.
+   * - ``chase_camera_tilt_angle``
+     - The tilt angle to apply to the third person view camera.
+   * - ``occupancy_map_radius``
+     - The robot footprint radius to use for spawning and path planning.
+   * - ``occupancy_map_collision_radius``
+     - The robot footprint radius to use for collision based episode termination.
+   * - ``front_camera_type``
+     - The static class representing the front camera.
+   * - ``front_camera_base_path``
+     - The relative USD path to spawn the front camera.
+   * - ``front_camera_rotation``
+     - The relative XYZ rotation used when spawning the front camera.
+   * - ``front_camera_translation``
+     - The relative XYZ translation used when spawning the front camera.
+   * - ``keyboard_linear_velocity_gain``
+     - The gain used to map keyboard button presses to the robot's linear velocity. A larger gain results in faster movement.
+   * - ``keyboard_angular_velocity_gain``
+     - The gain used to map keyboard button presses to the robot's angular velocity. A larger gain results in faster movement.
+   * - ``gamepad_linear_velocity_gain``
+     - The gain used to map gamepad axis movement to the robot's linear velocity. A larger gain results in faster movement.
+   * - ``gamepad_angular_velocity_gain``
+     - The gain used to map gamepad axis movement to the robot's angular velocity. A larger gain results in faster movement.
+   * - ``random_action_linear_velocity_range``
+     - The robot linear velocity limits for the random acceleration scenario.
+   * - ``random_action_angular_velocity_range``
+     - The robot angular velocity limits for the random acceleration scenario.
+   * - ``random_action_linear_acceleration_std``
+     - The standard deviation used for sampling the robot linear acceleration each timestep during the random acceleration scenario.
+   * - ``random_action_angular_acceleration_std``
+     - The standard deviation used for sampling the robot angular acceleration each timestep during the random acceleration scenario.
+   * - ``random_action_grid_pose_sampler_grid_size``
+     - The grid size to use for spawning the robot during the random acceleration scenario.
+   * - ``path_following_speed``
+     - The constant linear speed to use for the path following scenario.
+   * - ``path_following_angular_gain``
+     - The gain used for the proportional steering control in the path following scenario. A larger gain results in quicker turning, but potential overshoot and wobbling.
+   * - ``path_following_stop_distance_threshold``
+     - The distance threshold at which point the robot will stop. Applies to the path following scenario.
+   * - ``path_following_forward_angle_threshold``
+     - The angle threshold at which point the robot will move forward. Applies to the path following scenario.
+   * - ``path_following_target_point_offset_meters``
+     - The offset distance used to generate the 'target point' that the robot will follow in the path following scenario. A larger offset results in smoother motion, but too large may cause the robot to cut corners during turns.
 
 Visualize Trajectory with Gradio
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

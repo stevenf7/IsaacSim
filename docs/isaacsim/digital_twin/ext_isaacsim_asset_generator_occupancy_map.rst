@@ -1,5 +1,5 @@
 ..
-   Copyright (c) 2022-2024, NVIDIA CORPORATION. All rights reserved.
+   Copyright (c) 2022-2026, NVIDIA CORPORATION. All rights reserved.
    NVIDIA CORPORATION and its licensors retain all intellectual property
    and proprietary rights in and to this software, related documentation
    and any modifications thereto. Any use, reproduction, disclosure or
@@ -104,8 +104,11 @@ Visualization window
 - **Unknown Color**: The color chosen to represent space that is interstitial or "unknown".
 - **Rotate Image**: Rotates the coordinates of the image space.  A rotation of :math:`\text{180}^{\circ}` will result in a Heightmap orientation that matches that of the original source stage of the occupancy map.
 - **Coordinate Type**: Determines the format of the output in the information window.  Stage Space coordinates reports values in the space of the stage, while the "ROS Occupancy Map Parameters File" returns the needed parameters for the ROS Occupancy Map.
+- **Image File Name**: The name of the map image file to be displayed in the YAML file for the ROS coordinate system.
+- **Update YAML**: Updates the YAML file with the new image file name.
 - **RE-GENERATE IMAGE**: This will regenerate the image and information window if you changed the stage.
 - **Save Image**: Opens the file picker interface to save the image.
+- **Save YAML**: Opens the file picker interface to save the YAML file.
 
 
 Heightmap Importer

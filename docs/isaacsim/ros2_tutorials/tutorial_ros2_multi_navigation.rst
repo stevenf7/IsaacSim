@@ -111,14 +111,9 @@ Follow the steps depending on what environment you would like to use.
 
 2. For `Rotate Image`, select 180 degrees and for Coordinate Type select **ROS Occupancy Map Parameters File (YAML)**. Click **RE-GENERATE IMAGE**. Occupancy map parameters formatted to YAML will appear in the field below. Change the image name to your preference. Copy the full text.
 
-3. Create a YAML file for the occupancy map parameters called ``carter_hospital_navigation.yaml`` and place it in the `maps` directory, which is located in the sample ``carter_navigation`` ROS2 package(``carter_navigation/maps/carter_hospital_navigation.yaml``).
+3. Click **Save YAML** and save the YAML file to the `maps` directory, which is located in the sample ``carter_navigation`` ROS2 package(``carter_navigation/maps/carter_hospital_navigation.yaml``).
 
-4. Insert the previously copied text in the ``carter_hospital_navigation.yaml`` file.
-
-.. note:: For the office environment, follow the previous steps however create a YAML file called ``carter_office_navigation.yaml`` instead.
-
-
-8. Back in the visualization tab in |isaac-sim|, click **Save Image**. Set the same image name as in the map parameters and choose to save in the same directory as the map parameters file.
+4. Back in the visualization tab in |isaac-sim|, click **Save Image**. Set the same image name as in the map parameters and choose to save in the same directory as the map parameters file.
 
     - The final saved image of the Hospital environment will look like the following:
 

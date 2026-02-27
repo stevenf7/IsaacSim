@@ -139,11 +139,7 @@ In this scenario, an occupancy map is required. For this sample, you are generat
 
 #. For `Rotate Image`, select 180 degrees and for `Coordinate Type` select **ROS Occupancy Map Parameters File (YAML)**. Click **RE-GENERATE IMAGE**. The ROS camera and Isaac Sim camera have different coordinates.
 
-#. Occupancy map parameters formatted to YAML appear in the field below. Copy the full text.
-
-#. Create a YAML file for the occupancy map parameters called ``carter_warehouse_navigation.yaml`` and place it in the ``maps`` directory, which is located in the sample ``carter_navigation`` ROS2 package (``<ros2_ws>/src/navigation/carter_navigation/maps/carter_warehouse_navigation.yaml``).
-
-#. Insert the previously copied text in the ``carter_warehouse_navigation.yaml`` file.
+#. Click **Save YAML** and save the YAML file to ``~/<ros2_ws>/src/navigation/carter_navigation/maps/carter_warehouse_navigation.yaml``.
 
 #. Back in the visualization tab in |isaac-sim|, click **Save Image**. Name the image as ``carter_warehouse_navigation.png`` and choose to save it in the same directory as the map parameters file.
 
