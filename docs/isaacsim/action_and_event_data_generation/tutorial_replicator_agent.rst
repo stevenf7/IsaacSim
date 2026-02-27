@@ -15,7 +15,7 @@ Actor Simulation and Synthetic Data Generation
 
 Detecting and tracking animated actors or agents like human characters and robots in diverse environments offers significant value across industries like retail, manufacturing, and logistics. It helps optimize layouts, improve safety, and enhance efficiency. However, collecting real-world data to train detection models is often costly and unscalable.
 
-Synthetic data generation offers a flexible, scalable solution. The ``Omni.Metropolis.Core`` (OMC), ``Isaacsim.Replicator.Agent`` (IRA), ``Isaacsim.Anim.Robot.Core`` (IAR) extensions together provide a way to set up human characters and robots in 3D environments and generate synthetic data. 
+Synthetic data generation offers a flexible, scalable solution. The ``Omni.Metropolis.Pipeline`` (OMP), ``Isaacsim.Replicator.Agent`` (IRA), ``Isaacsim.Anim.Robot.Core`` (IAR) extensions together provide a way to set up human characters and robots in 3D environments and generate synthetic data. 
 This framework also provides control over actor behaviors, environments, sensors, via configuration file. It aims to provide a GPU-accelerated solution for training computer vision models and testing software-in-the-loop systems.
 
 This framework simplifies simulation customization with features like:
@@ -38,7 +38,7 @@ Before enabling this extension, read :doc:`What Is Isaac Sim? </overview/overvie
 
 Enable Extensions 
 ----------------------------------
-1. Follow the `Omniverse Extension Manager guide <https://docs.omniverse.nvidia.com/extensions/latest/ext_core/ext_extension-manager.html>`_ to enable the ``Omni.Metropolis.Core``, ``Isaacsim.Replicator.Agent.Core & UI`` and ``Isaacsim.Anim.Robot.Core``. 
+1. Follow the `Omniverse Extension Manager guide <https://docs.omniverse.nvidia.com/extensions/latest/ext_core/ext_extension-manager.html>`_ to enable the ``Omni.Metropolis.Pipeline``, ``Isaacsim.Replicator.Agent.Core & UI`` and ``Isaacsim.Anim.Robot.Core``. 
 
     * The extensions fetch sample assets from Isaac Sim Assets during start. Refer to :doc:`Isaac Sim Assets </assets/usd_assets_overview>` if you encounter issues for loading assets.
     * If loading the UI appears to be hanging, try starting Isaac Sim with the flag ``--/persistent/isaac/asset_root/timeout=1.0``.
@@ -142,7 +142,7 @@ For detailed configuration instructions, parameter lists, and examples, refer to
 Actor Behaviors
 -------------------
 
-Actor behaviors are achieved by OMC, IRA and IAR together.
+Actor behaviors are achieved by OMP, IRA and IAR together.
 
 .. image:: /images/isim_6.0_full_tut_external_actor_sim_actor_behavior_ext_overview.png
     :width: 900
@@ -191,7 +191,7 @@ Each type of actor behavior is represented by a USD Prim type. It defines the co
 For human characters, the behavior prim types follows ``CharacterXXXBehavior`` naming pattern. For animated robots, they are ``RobotXXXBehavior``.
 
 Each actor trigger is also a USD Prim. It defines the trigger prioirty and has a refrence of behavior list to be executed sequentially when this trigger activates.
-Human characters and anim robots share the same trigger types that's defined in OMC with naming ``MetroXXXTrigger``.
+Human characters and anim robots share the same trigger types that's defined in OMP with naming ``MetroXXXTrigger``.
 
 In addition, actors leverage ``omni.behavior.behavior`` (Human characters) and ``isaacsim.anim.robot.core`` (Animated robots) as their animation implementation.
 For more information about them, please refer to the following documents:
