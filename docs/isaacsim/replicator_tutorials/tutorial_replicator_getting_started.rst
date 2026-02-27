@@ -40,13 +40,14 @@ The ``step()`` function has the following signature:
 
 .. code-block:: python
 
-    rep.orchestrator.step(rt_subframes: int = -1, pause_timeline: bool = True, delta_time: float = None)
+    rep.orchestrator.step(rt_subframes: int = -1, pause_timeline: bool = True, delta_time: float = None, wait_for_render: bool = True)
 
 Where:
 
 - ``rt_subframes``: Specifies the number of subframes to render. A value greater than 0 enables subframe generation, reducing rendering artifacts or allowing materials to load fully.
 - ``pause_timeline``: Pauses the timeline (if currently playing) after the step if set to ``True``.
 - ``delta_time``: Specifies the time to advance the timeline during a step. Defaults to the timeline's rate if ``None``.
+- ``wait_for_render``: If ``True``, the function blocks until the renderer completes the current frame before returning. Defaults to ``True``.
 
 More details on graph-based replicator randomizers can be found in the :doc:`Randomizer Details <extensions:ext_replicator/randomizer_details>`, and for custom |isaac-sim_short| or USD API-based randomizations, refer to the :ref:`Isaac Sim Randomizers Guide <isaac_sim_app_tutorial_replicator_isaac_randomizers>`.
 
@@ -97,6 +98,43 @@ When using Replicator for synthetic data generation (SDG) workflows, it is recom
 
     # Set DLSS to Quality mode (2) for best SDG results (Options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto))
     carb.settings.get_settings().set("/rtx/post/dlss/execMode", 2)
+
+.. _isaac_sim_replicator_getting_started_wait_for_render:
+
+Wait for Render Parameter
+-------------------------
+
+By default, the ``step()`` function blocks until the renderer finishes producing the current frame before returning. Setting ``wait_for_render=False`` decouples the capture request from the rendering pipeline, allowing the next randomization to begin immediately while the previous frame is still being rendered. This can significantly improve throughput in workflows where the captured data does not need to exactly match the current simulation state at the time the ``step()`` call returns.
+
+.. code-block:: python
+
+    # Default behavior: blocks until the frame is rendered
+    rep.orchestrator.step(wait_for_render=True)
+
+    # Non-blocking: returns immediately, allowing the next randomization to start
+    rep.orchestrator.step(wait_for_render=False)
+
+.. note::
+
+    When using ``wait_for_render=False``, the annotation and writer data may correspond to a previous frame rather than the frame triggered by the most recent ``step()`` call. Use this mode only when strict frame-to-data correspondence is not required.
+
+.. _isaac_sim_replicator_getting_started_write_to_fabric:
+
+Write to Fabric Mode
+--------------------
+
+Fabric is the runtime data layer that the renderer reads from directly. By default, Replicator writes attribute changes (such as positions, rotations, and colors) to the USD stage, which are then synchronized to Fabric before rendering. Enabling write-to-fabric mode bypasses the USD stage and writes changes directly to Fabric, reducing the overhead of USD-to-Fabric synchronization and improving randomization performance.
+
+.. code-block:: python
+
+    import carb.settings
+
+    # Enable write-to-fabric mode
+    carb.settings.get_settings().set("/exts/omni.replicator.core/enableWriteToFabric", True)
+
+.. note::
+
+    Because changes are written directly to Fabric and bypass the USD stage, they will not be reflected in the USD stage or persisted when saving the scene. This mode is intended for transient randomizations during data generation, not for permanent scene modifications.
 
 Custom Event Randomizations
 ---------------------------
@@ -249,6 +287,32 @@ The output directory will contain the RGB and semantic segmentation images with 
 
 .. figure:: /images/isim_4.5_replicator_tut_external_getting_started_04.jpg
     :align: center
+
+
+Batch Randomization with Performance Optimization
+##################################################
+
+This example demonstrates batch creation and randomization of 100 cubes using the functional API and ``ReplicatorRNG``. It runs three configurations to compare performance: default (``wait_for_render=True``), non-blocking capture (``wait_for_render=False``), and non-blocking capture with :ref:`write-to-fabric <isaac_sim_replicator_getting_started_write_to_fabric>` enabled. Each run prints per-step randomization and capture timings as well as the total duration including ``wait_until_complete``, illustrating the impact of :ref:`wait_for_render <isaac_sim_replicator_getting_started_wait_for_render>` and :ref:`write-to-fabric <isaac_sim_replicator_getting_started_write_to_fabric>` on throughput. The standalone example can also be run directly (on Windows use ``python.bat`` instead of ``python.sh``):
+
+.. code-block:: bash
+
+    ./python.sh standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_05.py
+
+.. tab-set::
+
+    .. tab-item:: Script Editor
+
+        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_getting_started/sdg_getting_started_05_script_editor.py
+            :language: python
+            :lines: 16-
+
+    .. tab-item:: Standalone Application
+
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_05.py
+            :language: python
+            :lines: 16-
+
+Each configuration writes its output to a separate directory. The terminal output shows per-step randomization and capture durations (in milliseconds) and total time, allowing direct comparison of the three modes.
 
 Troubleshooting
 ---------------

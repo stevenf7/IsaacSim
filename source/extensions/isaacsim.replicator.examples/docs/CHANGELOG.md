@@ -1,4 +1,8 @@
 # Changelog
+## [1.8.0] - 2026-02-26
+### Changed
+- Added test for SDG getting started example with replicator enableWriteToFabric and wait_for_render options
+
 ## [1.7.2] - 2026-02-21
 ### Changed
 - Fixed SDG physics based volume filling example test to use the omni.physx api
