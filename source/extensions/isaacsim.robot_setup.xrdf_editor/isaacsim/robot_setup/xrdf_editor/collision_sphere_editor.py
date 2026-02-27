@@ -379,6 +379,9 @@ class CollisionSphereEditor:
 
         if "spheres" in imported_group:
             spheres = imported_group["spheres"]
+            # Ensure spheres is a dict, not None
+            if spheres is None:
+                spheres = {}
 
         from collections import deque
 
@@ -397,7 +400,7 @@ class CollisionSphereEditor:
                 clone_group = geometry_groups[clone_group_name]
             else:
                 continue
-            if "spheres" in clone_group:
+            if "spheres" in clone_group and clone_group["spheres"] is not None:
                 for key in clone_group["spheres"]:
                     if key in spheres:
                         spheres[key].extend(clone_group["spheres"][key])
@@ -414,30 +417,46 @@ class CollisionSphereEditor:
         self._redo = []
         self._operations = []
 
-        if "collision" not in parsed_file:
-            carb.log_warn("No collision group specified in XRDF file. No spheres will be imported")
-            return
-        elif "geometry" not in parsed_file["collision"]:
-            carb.log_warn("No geometry group specified under 'collision' in XRDF file. No spheres will be imported")
+        # Determine which collision key to use based on format version
+        # Version 1.0 uses "collision", version 2.0 uses "world_collision"
+        format_version = parsed_file.get("format_version", 1.0)
+        if format_version == 2.0:
+            collision_key = "world_collision"
+        elif format_version == 1.0:
+            collision_key = "collision"
+        else:
+            carb.log_error(
+                f"Unsupported XRDF format version: {format_version}. Only versions 1.0 and 2.0 are supported."
+            )
             return
 
-        geometry_group_name = parsed_file["collision"]["geometry"]
+        if collision_key not in parsed_file:
+            carb.log_warn(f"No {collision_key} group specified in XRDF file. No spheres will be imported")
+            return
+        elif "geometry" not in parsed_file[collision_key]:
+            carb.log_warn(
+                f"No geometry group specified under '{collision_key}' in XRDF file. No spheres will be imported"
+            )
+            return
+
+        geometry_group_name = parsed_file[collision_key]["geometry"]
 
         if (
             "self_collision" in parsed_file
             and "geometry" in parsed_file["self_collision"]
-            and parsed_file["self_collision"]["geometry"]
-        ) != geometry_group_name:
+            and parsed_file["self_collision"]["geometry"] != geometry_group_name
+        ):
             carb.log_warn(
-                "Specifying a 'self_collision' geometry group that is not the same as "
-                + "the 'collision' geometry group is not supported by this importer. "
+                f"Specifying a 'self_collision' geometry group that is not the same as "
+                + f"the '{collision_key}' geometry group is not supported by this importer. "
                 + "The 'self_collision' group will be ignored."
             )
 
-        buffer_distances = parsed_file["collision"].get("buffer_distance", {})
+        buffer_distances = parsed_file[collision_key].get("buffer_distance", {})
 
         sphere_dict = self._get_sphere_list_from_xrdf_geometries(parsed_file, geometry_group_name)
-        if len(sphere_dict.keys()) == 0:
+        # Ensure sphere_dict is a dict (handle None case)
+        if sphere_dict is None or len(sphere_dict.keys()) == 0:
             return
 
         added_sphere_paths = ["ADD"]
