@@ -22,7 +22,7 @@ import subprocess
 import sys
 import tempfile
 from collections import defaultdict
-from typing import Callable, Dict
+from typing import Callable, Dict, Optional
 from xml.etree import ElementTree
 
 import omni.repo.man
@@ -33,8 +33,130 @@ from omni.repo.man.version import OVFlowBuildIdentifier, PackmanVersion
 
 logger = logging.getLogger(__name__)
 
+# From kit-sdk.packman.xml we only read the package "version" attribute (e.g. for kit-kernel).
+# That string is parsed by OVFlowBuildIdentifier to get: major, minor, patch, build_number,
+# githash, etc., which are used for template substitution (omniverse_kit_version and
+# dependencies_files URL). kit-sdk.packman.xml is not in the Kit repo; it lives in Isaac Sim's deps/.
+
+# GitLab Kit project and URL used when resolving kit version from upstream pipeline.
+KIT_GITLAB_PROJECT_ID = 6510
+KIT_GITLAB_BASE_URL = "https://gitlab-master.nvidia.com"
+# Path in the Kit repo (at pipeline sha) for major.minor.patch. Full version string is
+# {major}.{minor}.{patch}+{ref}.{pipeline_iid}.{githash_short}, with ref/iid/githash from the pipeline API.
+KIT_VERSION_PATH = "kit/VERSION"
+
+
+def _get_upstream_kit_tokens() -> Optional[Dict]:
+    """When running as a downstream pipeline (CI_PIPELINE_SOURCE == 'pipeline') with
+    UPSTREAM_PIPELINE_ID set, get version tokens from the upstream Kit pipeline: one
+    API call for sha/ref/iid, plus kit/VERSION for major.minor.patch. The version
+    string is {major}.{minor}.{patch}+{ref}.{pipeline_iid}.{githash_short}.
+    Returns a dict of tokens for template substitution, or None if not in upstream mode.
+    """
+    ci_source = os.getenv("CI_PIPELINE_SOURCE", "")
+    upstream_id = os.getenv("UPSTREAM_PIPELINE_ID", "").strip()
+    if ci_source != "pipeline" or not upstream_id:
+        return None
+
+    token = os.getenv("CI_GITLAB_API_TOKEN")
+    if not token:
+        omni.repo.man.print_log(
+            "GitLab upstream mode (CI_PIPELINE_SOURCE=pipeline, UPSTREAM_PIPELINE_ID set) requires "
+            "CI_GITLAB_API_TOKEN to fetch kit version from upstream pipeline",
+            logging.ERROR,
+        )
+        sys.exit(1)
+
+    headers = {"PRIVATE-TOKEN": token}
+
+    # Get pipeline to read the Kit commit sha (githash)
+    pipeline_url = f"{KIT_GITLAB_BASE_URL}/api/v4/projects/{KIT_GITLAB_PROJECT_ID}/pipelines/{upstream_id}"
+    try:
+        resp = requests.get(pipeline_url, headers=headers, timeout=30)
+        resp.raise_for_status()
+        pipeline = resp.json()
+    except requests.RequestException as e:
+        omni.repo.man.print_log(
+            f"Failed to get upstream pipeline {upstream_id}: {e}",
+            logging.ERROR,
+        )
+        sys.exit(1)
+
+    sha = pipeline.get("sha")
+    ref = pipeline.get("ref", "")
+    iid = pipeline.get("iid") or pipeline.get("id")
+    if not sha:
+        omni.repo.man.print_log(
+            f"Upstream pipeline {upstream_id} has no 'sha'; cannot resolve kit version",
+            logging.ERROR,
+        )
+        sys.exit(1)
+    # Normalize ref to branch/tag name (strip refs/heads/, refs/tags/)
+    if ref.startswith("refs/heads/"):
+        ref = ref[len("refs/heads/") :]
+    elif ref.startswith("refs/tags/"):
+        ref = ref[len("refs/tags/") :]
+    if iid is None:
+        omni.repo.man.print_log(
+            f"Upstream pipeline {upstream_id} has no 'iid' or 'id'; cannot build version string",
+            logging.ERROR,
+        )
+        sys.exit(1)
+
+    # Fetch kit/VERSION at that commit (major.minor.patch)
+    version_url = f"{KIT_GITLAB_BASE_URL}/omniverse/kit/-/raw/{sha}/{KIT_VERSION_PATH}"
+    try:
+        v_resp = requests.get(version_url, headers=headers, timeout=30)
+        v_resp.raise_for_status()
+        version_line = v_resp.text.strip().split("\n")[0].strip()
+    except requests.RequestException as e:
+        omni.repo.man.print_log(
+            f"Failed to fetch kit/VERSION from upstream commit {sha}: {e}",
+            logging.ERROR,
+        )
+        sys.exit(1)
+
+    # Parse major.minor.patch
+    parts = version_line.split(".")
+    if len(parts) < 3:
+        omni.repo.man.print_log(
+            f"Invalid kit/VERSION content (expected major.minor.patch): {version_line!r}",
+            logging.ERROR,
+        )
+        sys.exit(1)
+    try:
+        major, minor, patch = int(parts[0]), int(parts[1]), int(parts[2])
+    except ValueError:
+        omni.repo.man.print_log(
+            f"Invalid kit/VERSION content (expected numeric major.minor.patch): {version_line!r}",
+            logging.ERROR,
+        )
+        sys.exit(1)
+
+    # Build number segment: {ref}.{pipeline_iid}.{githash_short} (full string is major.minor.patch+build_number)
+    githash_short = sha[:8] if len(sha) >= 8 else sha
+    build_number = f"{ref}.{iid}.{githash_short}"
+
+    omni.repo.man.print_log(
+        f"Using kit version from upstream pipeline {upstream_id} (commit {sha[:8]}): {major}.{minor}.{patch}+{build_number}",
+        logging.INFO,
+    )
+
+    return {
+        "major": major,
+        "minor": minor,
+        "patch": patch,
+        "build_number": build_number,
+        "githash": sha,
+        "build_string": f"{major}.{minor}.{patch}+{build_number}",
+        "build_location": "",
+        "gitbranch": ref,
+    }
+
 
 def _parse_kit_version(kit_sdk_packman, template, exit_on_error=True):
+    """Read kit version from kit_sdk_packman XML and substitute into template. Unchanged for non-downstream runs."""
+
     def get_by_index_or_default(elems, index, default):
         return elems[index] if len(elems) > index else default
 
@@ -50,7 +172,6 @@ def _parse_kit_version(kit_sdk_packman, template, exit_on_error=True):
             sys.exit(1)
         return ""
 
-    # parse kit sdk/kernel build number to get the omniverse-kit target version
     ov_flow_version = OVFlowBuildIdentifier.from_build_string(build_number)
     packman_version = PackmanVersion(ov_flow_version.version)
     tokens = {
@@ -67,10 +188,18 @@ def _parse_kit_version(kit_sdk_packman, template, exit_on_error=True):
 
 
 def _check_omniverse_kit_version(
-    package_definitions, kit_sdk_packman, omniverse_kit_version, exit_on_error=True, print_errors=True
+    package_definitions,
+    kit_sdk_packman,
+    omniverse_kit_version,
+    exit_on_error=True,
+    print_errors=True,
+    tokens_override=None,
 ):
-    # get kit sdk/kernel build number
-    target_version = _parse_kit_version(kit_sdk_packman, omniverse_kit_version, exit_on_error)
+    # get kit sdk/kernel build number (from file, or from upstream tokens when in downstream pipeline)
+    if tokens_override is not None:
+        target_version = string.Template(omniverse_kit_version).substitute(tokens_override)
+    else:
+        target_version = _parse_kit_version(kit_sdk_packman, omniverse_kit_version, exit_on_error)
     if not target_version:
         return [], ""
 
@@ -179,7 +308,13 @@ def _check_extensions(package_definitions, extension_folder, excluded_extensions
         sys.exit(1)
 
 
-def _check_dependencies(package_definitions, kit_sdk_packman, dependencies_files, platforms):
+def _check_dependencies(
+    package_definitions,
+    kit_sdk_packman,
+    dependencies_files,
+    platforms,
+    tokens_override=None,
+):
     def _should_exclude_dependency(dependency):
         for item in ["isaacsim-", "nvidia-"]:
             if dependency.startswith(item):
@@ -249,7 +384,10 @@ def _check_dependencies(package_definitions, kit_sdk_packman, dependencies_files
         if os.path.isfile(dependencies_file):
             path = dependencies_file
         else:
-            url = _parse_kit_version(kit_sdk_packman, dependencies_file, exit_on_error=False)
+            if tokens_override is not None:
+                url = string.Template(dependencies_file).substitute(tokens_override)
+            else:
+                url = _parse_kit_version(kit_sdk_packman, dependencies_file, exit_on_error=False)
             if not url:
                 omni.repo.man.print_log(f"Unable to parse kit version from {dependencies_file}", logging.ERROR)
                 sys.exit(1)
@@ -333,12 +471,21 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         required=False,
         default=False,
         action="store_true",
-        help="Enable GitLab CI mode - ignores errors during dependabot kit-sdk updates",
+        help="Enable GitLab CI mode: use kit version from upstream pipeline when CI_PIPELINE_SOURCE=pipeline and UPSTREAM_PIPELINE_ID set; ignore errors during dependabot kit-sdk updates",
     )
 
     def run_repo_tool(options: Dict, config: Dict):
         tool_config = config["repo_check_python_package_definitions"]
         python_package_tool_config = config.get("repo_python_package", {})
+
+        # Only when we are in a downstream pipeline do we use upstream kit version; otherwise behavior is unchanged.
+        upstream_tokens = None
+        if (
+            options.gitlab
+            and os.getenv("CI_PIPELINE_SOURCE") == "pipeline"
+            and os.getenv("UPSTREAM_PIPELINE_ID", "").strip()
+        ):
+            upstream_tokens = _get_upstream_kit_tokens()
 
         # get python packages definitions
         definition_paths = python_package_tool_config.get("definition_paths", [])
@@ -353,6 +500,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 tool_config["omniverse_kit_version"],
                 exit_on_error=False,
                 print_errors=False,
+                tokens_override=upstream_tokens,
             )
             _update_omniverse_kit_version(definition_paths, incompatible_versions, target_version)
             return
@@ -371,10 +519,15 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             tool_config["kit_sdk_packman"],
             tool_config["omniverse_kit_version"],
             exit_on_error=not skip_exit_on_error,
+            tokens_override=upstream_tokens,
         )
         _check_extensions(package_definitions, tool_config["extension_folder"], tool_config["excluded_extensions"])
         _check_dependencies(
-            package_definitions, tool_config["kit_sdk_packman"], tool_config["dependencies_files"], platforms
+            package_definitions,
+            tool_config["kit_sdk_packman"],
+            tool_config["dependencies_files"],
+            platforms,
+            tokens_override=upstream_tokens,
         )
 
     return run_repo_tool
