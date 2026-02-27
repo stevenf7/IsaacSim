@@ -24,6 +24,8 @@ Tools
 
    robot_wizard
    robot_wizard_tutorials
+   robot_inspector
+   robot_poser
 
 
 .. toctree::

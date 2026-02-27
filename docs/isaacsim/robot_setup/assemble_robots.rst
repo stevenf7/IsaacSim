@@ -1,3 +1,11 @@
+..
+   Copyright (c) 2026, NVIDIA CORPORATION. All rights reserved.
+   NVIDIA CORPORATION and its licensors retain all intellectual property
+   and proprietary rights in and to this software, related documentation
+   and any modifications thereto. Any use, reproduction, disclosure or
+   distribution of this software and related documentation without an express
+   license agreement from NVIDIA CORPORATION is strictly prohibited.
+
 .. _isaac_sim_app_tutorial_advanced_assembling_robots:
 
 ===================================
@@ -60,7 +68,7 @@ To use the Robot Assembler, start by loading the assets you want  to assemble on
 
 With the **Robot Assembler** window open and both Robots available in the current stage, you can select a **Base Robot** and an **Attach Robot**. 
 
-Each robot has an "Attach Point" frame that can be used to specify the point on the robot that will be attached to the other robot. This attach point can be either a :ref:`Robot Link <isaac_sim_robot_schema_link_api>` or a :ref:`Reference Point <isaac_sim_robot_schema_reference_point_api>`.
+Each robot has an "Attach Point" frame that can be used to specify the point on the robot that will be attached to the other robot. This attach point should be a :ref:`Robot Link <isaac_sim_robot_schema_link_api>` or a :ref:`Site <isaac_sim_robot_schema_site_api>`.
 
 The Assembler also expects an assembly namespace, which defaults to "Gripper", but can be changed to any string. This namespace is used to identify the attachment point on the base robot when making the assembly directly on the base robot asset.
 
