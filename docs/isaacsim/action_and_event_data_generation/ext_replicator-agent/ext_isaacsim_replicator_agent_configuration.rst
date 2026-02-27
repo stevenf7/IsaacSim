@@ -154,55 +154,35 @@ Behaviors are defined in the ``routines`` list. Common fields:
 Triggers
 ^^^^^^^^
 
-Triggers define events that interrupt normal routines to execute a specific reaction behavior.
+Triggers define events that interrupt normal routines to execute a list of reaction behavior.
+
+Each actor can specify a list of triggers to listen to.
 
 -   ``priority`` (default 1): Higher priority triggers override lower ones.
 -   ``behavior``: List of behaviors to execute when triggered.
 
 **Trigger Types:**
 
--   ``event_trigger``: Fires on a named event (e.g., custom simulation events).
+-   ``event_trigger``: Fires on a named carb event.
 
--   ``time_trigger``: Fires after a specific duration (in seconds). *Not available in Isaac Sim 6.0 EA yet. (Coming in 6.0 GA)*
+-   ``time_trigger``: Fires after a specific duration during play (in seconds).
 
     .. tip::
 
         **Dispatching Events from Python**
 
-        The method for dispatching events differs between **Characters** and **Robots**.
-
-        **For Characters:**
-        Use the ``AgentManager`` to update the behavior tree blackboard directly.
-
         .. code-block:: python
 
-            from isaacsim.replicator.agent.core.agent_manager import AgentManager
-
-            # Arguments:
-            # - prim: The prim path of the specific character instance
-            # - key: The internal blackboard key for events (always "event_trigger_key")
-            # - value: The name of the event to trigger (matches the YAML 'event' field)
-            AgentManager._set_tree_blackboard(
-                prim="/World/Characters/warehouse_workers/Character", 
-                key="event_trigger_key", 
-                value="test_event"
-            )
-
-        **For Robots:**
-        Use the ``carb.eventdispatcher`` system.
-
-        .. code-block:: python
-
+            # Send out a custom event named 'my_test_event'
             import carb
+            carb.eventdispatcher.get_eventdispatcher().dispatch_event(event_name="my_test_event")
 
-            # Arguments:
-            # - event_name: The name of the event to trigger (matches the YAML 'event' field, e.g., "my_test_event")
-            # - payload: A dictionary containing:
-            #     - "prim_path": The prim path of the specific robot instance
-            carb.eventdispatcher.get_eventdispatcher().dispatch_event(
-                "my_test_event",
-                payload={"prim_path": "/World/Robots/iw_hub/iw_hub"}
-            )
+            # Actors spawned by trigger setting will react to `my_test_event`.
+            # triggers:
+            #   - event_trigger:
+            #     event: my_test_event
+            #     priority: 10
+            #     behavior: [...]
 
 **Example:**
 
@@ -385,6 +365,7 @@ Specialized Writers
         -   **Folder Structure**: Outputs each annotator's data into separate folders for better readability.
         -   **Object Detection**: Consolidates bounding box and skeleton data into a single file named ``object_detection.json``.
         -   **Default Semantic Filter**: ``class:character|robot;id:*`` (captures characters and robots).
+        -   **Action data output**: When object detection is enabled (object_info or agent_info annotators are on), the action data for each IRA actor will be included as well.
 
     -   **Overwritten Annotators**:
         The following standard annotators are replaced by specialized ``object_info_*`` versions and written to ``object_detection.json``:
@@ -404,6 +385,22 @@ Specialized Writers
 
         -   ``video_rendering_annotator_list``: Generates .mp4 videos for specified annotators (e.g., ``["rgb", "semantic_segmentation"]``).
         -   ``agent_info_skeleton_data``: Exports 2D/3D skeleton joints for characters.
+
+    -   **Action data**:
+
+        Action data is for describing the current behavior of each actor. It is in ``object_detection.json`` under the ``metro_agent_data`` section. Data includes:
+
+        - ``prim path``: The prim path of the actor schema is applied.
+        - ``agent_type``: The actor schema type.
+        - ``agent_name``: The name of the actor.
+        - ``agent_group``: The group name of the actor.
+        - ``world_position``: Actor position (vec3) in world space.
+        - ``world_rotation``: Actor rotation (quaternion) in world space.
+        - ``world_moving_direction``: Actor moving direction (vec3) in world space. ``null`` means actor is not moving.
+        - ``world_facing_direction``: Actor facing direction (vec3) in world space.
+        - ``speed``: The actor moving speed.
+        - ``current_task_name``: Actor's current action name (not behavior name).
+        - ``asset_url``: The asset URL of the actor.
 
 2.  **CosmosIRAWriter**:
 
