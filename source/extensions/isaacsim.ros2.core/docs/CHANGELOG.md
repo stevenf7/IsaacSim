@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.0] - 2026-02-26
+## Added
+- CompressedImage message backend
+
 ## [1.4.0] - 2026-02-24
 ### Changed
 -  Removed hardcoded ROS 2 distribution checks. Added experimental support for any ROS 2 distribution beyond Jazzy to be sourced and used with Isaac Sim.

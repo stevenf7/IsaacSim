@@ -285,6 +285,7 @@ pyproject.dependencies.all = [
     "opencv-python-headless==4.13.0.90",
     "trimesh==4.11.1",
     "rtree==1.4.1",
+    "pynvvideocodec==2.1.0",
     # archives (omni.pip.cloud)
     "aioboto3==15.5.0",
     "boto3==1.40.61",

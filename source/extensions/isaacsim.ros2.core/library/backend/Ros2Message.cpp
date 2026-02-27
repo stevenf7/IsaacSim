@@ -550,6 +550,78 @@ Ros2ImageMessageImpl::~Ros2ImageMessageImpl()
     sensor_msgs__msg__Image__destroy(imageMsg);
 }
 
+// CompressedImage message
+Ros2CompressedImageMessageImpl::Ros2CompressedImageMessageImpl()
+    : Ros2MessageInterfaceImpl("sensor_msgs", "msg", "CompressedImage")
+{
+    m_msg = sensor_msgs__msg__CompressedImage__create();
+}
+
+const void* Ros2CompressedImageMessageImpl::getTypeSupportHandle()
+{
+    return ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, CompressedImage);
+}
+
+void Ros2CompressedImageMessageImpl::writeHeader(const double timeStamp, const std::string& frameId)
+{
+    if (!m_msg)
+    {
+        return;
+    }
+    sensor_msgs__msg__CompressedImage* compressedMsg = static_cast<sensor_msgs__msg__CompressedImage*>(m_msg);
+    Ros2MessageInterfaceImpl::writeRosHeader(frameId, static_cast<int64_t>(timeStamp * 1e9), compressedMsg->header);
+}
+
+void Ros2CompressedImageMessageImpl::writeData(const uint8_t* data, size_t dataSize, const std::string& format)
+{
+    if (!m_msg)
+    {
+        return;
+    }
+    if (data == nullptr && dataSize > 0)
+    {
+        fprintf(stderr, "[Ros2CompressedImageMessage] data is null for dataSize=%zu\n", dataSize);
+        return;
+    }
+    sensor_msgs__msg__CompressedImage* compressedMsg = static_cast<sensor_msgs__msg__CompressedImage*>(m_msg);
+
+    // Set the format string
+    Ros2MessageInterfaceImpl::writeRosString(format, compressedMsg->format);
+
+    // Copy data to our internal buffer and point the message to it
+    if (dataSize > 0)
+    {
+        m_dataBuffer.resize(dataSize);
+        std::memcpy(m_dataBuffer.data(), data, dataSize);
+
+        compressedMsg->data.data = m_dataBuffer.data();
+        compressedMsg->data.size = dataSize;
+        compressedMsg->data.capacity = dataSize;
+    }
+    else
+    {
+        // Clear the data if size is 0
+        m_dataBuffer.clear();
+        compressedMsg->data.data = nullptr;
+        compressedMsg->data.size = 0;
+        compressedMsg->data.capacity = 0;
+    }
+}
+
+Ros2CompressedImageMessageImpl::~Ros2CompressedImageMessageImpl()
+{
+    if (!m_msg)
+    {
+        return;
+    }
+    sensor_msgs__msg__CompressedImage* compressedMsg = static_cast<sensor_msgs__msg__CompressedImage*>(m_msg);
+    // Lifetime of memory is managed by m_dataBuffer, clear the message pointers
+    compressedMsg->data.size = 0;
+    compressedMsg->data.capacity = 0;
+    compressedMsg->data.data = nullptr;
+    sensor_msgs__msg__CompressedImage__destroy(compressedMsg);
+}
+
 // NitrosBridgeImage message
 // For this specific message we disable logging when loading the message library to prevent spam
 Ros2NitrosBridgeImageMessageImpl::Ros2NitrosBridgeImageMessageImpl()
