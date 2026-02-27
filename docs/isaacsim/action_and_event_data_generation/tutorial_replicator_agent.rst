@@ -115,6 +115,14 @@ To run from script, open a terminal from where Isaac Sim is installed and run th
 
     * An example config file is also provided in the ``/tools/actor_sdg`` folder. For a sample Linux run, execute: ``./python.sh tools/actor_sdg/actor_sdg.py -c tools/actor_sdg/sample_config.yaml``
 
+API Usage
+--------------------------
+This extension also exposes a Python API which you can use to set up simulations and generate data from your own script.
+Ensure that ``isaacsim.replicator.agent.core`` is enabled, and use the API as in the following example.
+
+.. literalinclude:: ../snippets/action_and_event_data_generation/tutorial_replicator_agent.py
+    :language: python
+    :lines: 1-
 
 
 .. _configuration_file:
