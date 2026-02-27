@@ -1,4 +1,8 @@
 # Changelog
+## [1.7.0] - 2026-02-26
+### Added
+- ROS 2 H.264 Compressed Image support with H.264 RGB unit tests
+- omni.replicator.nv extension automatically enabled by omni.replicator.core and implictily used for HW H.264 encoding
 
 ## [1.6.2] - 2026-02-18
 ### Fixed

@@ -279,6 +279,38 @@ protected:
 };
 
 /**
+ * @class Ros2CompressedImageMessage
+ * @brief Class implementing a `sensor_msgs/msg/CompressedImage` message.
+ * @details
+ * Provides functionality to write ROS 2 CompressedImage messages that contain
+ * compressed image data (e.g., H264, HEVC encoded bitstreams).
+ */
+class Ros2CompressedImageMessage : public Ros2Message
+{
+public:
+    /**
+     * @brief Write the message header.
+     * @details
+     * Sets the header fields in a ROS 2 CompressedImage message.
+     *
+     * @param[in] timeStamp Time (seconds).
+     * @param[in] frameId Transform frame with which this data is associated.
+     */
+    virtual void writeHeader(const double timeStamp, const std::string& frameId) = 0;
+
+    /**
+     * @brief Write the compressed image data.
+     * @details
+     * Sets the format and data fields in a ROS 2 CompressedImage message.
+     *
+     * @param[in] data Pointer to the compressed image data (e.g., H264 bitstream).
+     * @param[in] dataSize Size of the data in bytes.
+     * @param[in] format Compression format string (e.g., "h264", "hevc", "jpeg").
+     */
+    virtual void writeData(const uint8_t* data, size_t dataSize, const std::string& format) = 0;
+};
+
+/**
  * @class Ros2NitrosBridgeImageMessage
  * @brief Class implementing a `isaac_ros_nitros_bridge_interfaces/msg/NitrosBridgeImage` message.
  * @details

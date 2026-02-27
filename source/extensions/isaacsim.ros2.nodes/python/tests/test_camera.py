@@ -796,6 +796,151 @@ class TestRos2Camera(ROS2TestCase):
         )
         self.assertTrue(results["passed"], f"Image comparison failed: {results}")
 
+    async def test_rgb_h264_compressed_golden_image_comparison(self):
+        """Subscribe to a compressed RGB H264 image topic, decode with PyNvVideoCodec, and compare against golden image."""
+        try:
+            import PyNvVideoCodec as nvc
+        except ImportError:
+            self.skipTest("PyNvVideoCodec not available - skipping H264 decode test")
+
+        import numpy as np
+        from sensor_msgs.msg import CompressedImage
+
+        # Ensure omni.replicator.nv extension is enabled (provides H264 hardware encoder)
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_manager.set_extension_enabled_immediate("omni.replicator.nv", True)
+        await omni.kit.app.get_app().next_update_async()
+
+        # Retrieve golden image from data/tests/golden_img folder
+        golden_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "golden")
+        golden_img_path = os.path.join(golden_dir, "nova_carter_warehouse_front_stereo_left_rgb.png")
+
+        # Open the nova carter warehouse scene
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        assets_root_path = get_assets_root_path()
+        warehouse_scene = assets_root_path + "/Isaac/Samples/ROS2/Scenario/carter_warehouse_navigation.usd"
+        (success, error) = await stage_utils.open_stage_async(warehouse_scene)
+        self.assertTrue(success, f"Failed to open stage: {error}")
+
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Modify the existing front stereo camera left RGB publisher to use H264 compression
+        og.Controller.attribute("/World/Nova_Carter_ROS/front_hawk/left_camera_publish_image.inputs:type").set(
+            "rgb_h264"
+        )
+
+        og.Controller.attribute("/World/Nova_Carter_ROS/front_hawk/left_camera_publish_image.inputs:topicName").set(
+            "left/image_raw/compressed"
+        )
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Setup ROS2 subscriber for the compressed image topic
+        self._received_compressed_image = None
+
+        def compressed_callback(data):
+            self._received_compressed_image = data
+
+        node = self.create_node("rgb_h264_test_node")
+        compressed_sub = self.create_subscription(
+            node,
+            CompressedImage,
+            "/front_stereo_camera/left/image_raw/compressed",
+            compressed_callback,
+            get_qos_profile(),
+        )
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.1)
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Move /World/Nova_Carter_ROS to -6, -1, 0
+        nova_carter = XformPrim("/World/Nova_Carter_ROS", reset_xform_op_properties=True)
+        nova_carter.set_world_poses(positions=[-6, -1, 0], orientations=[0, 0, 0, 1])
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Play scene and wait for compressed image
+        self._timeline.play()
+        await self.simulate_until_condition(
+            lambda: self._received_compressed_image is not None,
+            max_frames=300,
+            per_frame_callback=spin,
+        )
+
+        self.assertIsNotNone(self._received_compressed_image, "Failed to receive compressed image from topic")
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Get the H264 bitstream from ROS CompressedImage message
+        h264_bitstream = self._received_compressed_image.data.tobytes()
+
+        # Decode H264 using PyNvVideoCodec (core Decoder + buffer demuxer)
+        # Buffer feeder serves raw H264 elementary stream bytes to the demuxer
+        class H264BufferFeeder:
+            def __init__(self, data):
+                self._buffer = bytearray(data)
+                self._pos = 0
+                self._remaining = len(self._buffer)
+
+            def feed_chunk(self, demuxer_buffer):
+                chunk = min(self._remaining, len(demuxer_buffer))
+                if chunk == 0:
+                    return 0
+                demuxer_buffer[:chunk] = self._buffer[self._pos : self._pos + chunk]
+                self._pos += chunk
+                self._remaining -= chunk
+                return chunk
+
+        feeder = H264BufferFeeder(h264_bitstream)
+        dmx = nvc.CreateDemuxer(feeder.feed_chunk)
+        dec = nvc.CreateDecoder(
+            gpuid=0,
+            codec=dmx.GetNvCodecId(),
+            usedevicememory=False,
+        )
+
+        frames = []
+        for pkt in dmx:
+            for frame in dec.Decode(pkt):
+                frames.append(frame)
+
+        self.assertTrue(len(frames) > 0, f"Failed to decode H264 frame ({len(h264_bitstream)} bytes)")
+
+        # Convert last decoded frame to numpy array via DLPack
+        # Core decoder outputs NV12 (native format); convert to RGB
+        decoded_np = np.from_dlpack(frames[-1])
+        if decoded_np.dtype != np.uint8:
+            decoded_np = np.clip(decoded_np, 0, 255).astype(np.uint8)
+
+        # NV12 frame has shape (H * 3/2, W) — convert to RGB (H, W, 3)
+        import cv2
+
+        received_array = cv2.cvtColor(decoded_np, cv2.COLOR_YUV2RGB_NV12)
+
+        # Compare image with golden image
+        golden_img_data = read_image_as_array(str(golden_img_path))
+
+        # Handle channel mismatch between RGBA golden and RGB received
+        if golden_img_data.ndim == 3 and golden_img_data.shape[2] == 4:
+            golden_img_data = golden_img_data[:, :, :3]
+
+        # H264 compression is lossy, so we need a higher tolerance
+        results = compare_arrays_within_tolerances(
+            golden_img_data,
+            received_array,
+            allclose_rtol=None,
+            allclose_atol=None,
+            mean_tolerance=15,
+            print_all_stats=True,
+        )
+        self.assertTrue(results["passed"], f"H264 compressed image comparison failed: {results}")
+
     async def test_spinning_camera_golden_images(self):
         """Two cameras on one spinning rigid body: compare physics images to golden images.
 
