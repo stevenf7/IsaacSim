@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .camera import Camera
-from .ground_plane import GroundPlane
-from .lights import CylinderLight, DiskLight, DistantLight, DomeLight, Light, RectLight, SphereLight
-from .mesh import Mesh
-from .shapes import Capsule, Cone, Cube, Cylinder, Plane, Shape, Sphere
+
+from .camera_sensor import CameraSensor
+from .single_view_depth_camera_sensor import SingleViewDepthCameraSensor
+from .tiled_camera_sensor import TiledCameraSensor
+from .utils import draw_annotator_data_to_image

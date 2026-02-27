@@ -606,6 +606,7 @@ inventory.includes.all = [
     # extensions
     "exts/isaacsim.sensors.camera.ui",
     "exts/isaacsim.sensors.camera",
+    "exts/isaacsim.sensors.experimental.camera",
     "exts/isaacsim.sensors.experimental.physics",
     "exts/isaacsim.sensors.physics.examples",
     "exts/isaacsim.sensors.physics.nodes",

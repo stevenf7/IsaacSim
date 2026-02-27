@@ -1,11 +1,11 @@
 [package]
-version = "0.6.0"
+version = "0.1.0"
 category = "Simulation"
-title = "Isaac Sim Core (Objects)"
-description = "The Core Objects extension provides a set of APIs to create and/or wrap one or more USD objects in the stage..."
-authors = ["hmazhar@nvidia.com","aserranomuno@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.objects"
-keywords = ["isaacsim", "core", "objects"]
+title = "Isaac Sim Camera Simulation"
+description = "Provides APIs for camera prims, eg. setting lens distortion and enabling tiled rendering."
+authors = ["hmazhar@nvidia.com", "ahaidu@nvidia.com", "adevalla@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.experimental.camera"
+keywords = ["isaac", "physics", "robotics"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 preview_image = "data/preview.png"
@@ -14,24 +14,28 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
-"isaacsim.core.experimental.prims" = {}
-"isaacsim.core.experimental.utils" = {}
-"omni.isaac.core_archive" = {}
-"omni.warp.core" = {}
+"isaacsim.core.experimental.objects" = {}
+"omni.replicator.core" = {}
 
 [[python.module]]
-name = "isaacsim.core.experimental.objects"
+name = "isaacsim.sensors.experimental.camera"
 
-# define the Python module for tests
 [[python.module]]
-name = "isaacsim.core.experimental.objects.tests"
+name = "isaacsim.sensors.experimental.camera.tests"
+public = false
+
+[[test]]
+name = "startup"
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
 
 [[test]]
 timeout = 900
 dependencies = [
-    "isaacsim.core.experimental.materials",  # for visual/physics materials,
-    "omni.kit.material.library",
+    "isaacsim.core.rendering_manager",
 ]
+
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -40,7 +44,7 @@ args = [
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",
-    "--/app/file/ignoreUnsavedStage=1",
+    "--/app/file/ignoreUnsavedOnExit=1",
     "--/app/hydraEngine/waitIdle=0",
     "--/app/player/useFixedTimeStepping=false",
     "--/app/renderer/skipWhileMinimized=0",
@@ -77,8 +81,8 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
 ]
-pythonTests.include = ["isaacsim.core.experimental.objects.tests.*"]
-
 stdoutFailPatterns.exclude = [
-    '*The NumPy module was reloaded*',
+    '*[Error] [rtx.postprocessing.plugin] DepthSensor: Texture sizes do not match: inColorTexDesc 1920x1080x1:11@0 inDepthTexDesc 1500x843x1:33@0*',
+    '*[Error] [rtx.postprocessing.plugin] DepthSensor: Failed to allocate view resources for view * device **',
+    '*[Error] [carb.scenerenderer-rtx.plugin] Failed to export AOV 38 to render product. The renderer did not generate the AOV texture.*',
 ]
