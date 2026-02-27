@@ -72,14 +72,14 @@ parser.add_argument(
     help="Use OmniGraph-based randomization instead of functional API (default: functional)",
 )
 parser.add_argument(
-    "--no-wait-for-render",
+    "--wait-for-render",
     action="store_true",
-    help="Do not wait for render to complete before capturing frame (default: wait)",
+    help="Wait for render to complete before capturing frame (default: disabled)",
 )
 parser.add_argument(
-    "--replicator-write-to-fabric",
+    "--no-replicator-write-to-fabric",
     action="store_true",
-    help="Enable Replicator write-to-fabric mode (default: disabled)",
+    help="Disable Replicator write-to-fabric mode (default: enabled)",
 )
 
 args, unknown = parser.parse_known_args()
@@ -100,8 +100,8 @@ viewport_updates = args.viewport_updates
 rt_subframes = args.rt_subframes
 app_frametime = args.app_frametime
 with_functional_randomization = not args.with_og_randomization
-wait_for_render = not args.no_wait_for_render
-replicator_write_to_fabric = args.replicator_write_to_fabric
+wait_for_render = args.wait_for_render
+replicator_write_to_fabric = not args.no_replicator_write_to_fabric
 if "all" in args.annotators:
     annotators_kwargs = {annotator: True for annotator in VALID_ANNOTATORS}
 else:

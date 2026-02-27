@@ -970,12 +970,12 @@ local function get_benchmark_tests()
         {
             "tests-standalone_benchmarks-benchmark_sdg_simple",
             "standalone_examples/benchmarks/benchmark_sdg.py",
-            "--num-frames 10 --num-cameras 2 --resolution 1280 720 --asset-count 10 --annotators rgb distance_to_camera --disable-viewport-rendering --no-wait-for-render --delete-data-when-done --headless --print-results",
+            "--num-frames 10 --num-cameras 2 --resolution 1280 720 --asset-count 10 --annotators rgb distance_to_camera --disable-viewport-rendering --delete-data-when-done --print-results",
         },
         {
             "tests-standalone_benchmarks-benchmark_sdg_advanced",
             "standalone_examples/benchmarks/benchmark_sdg.py",
-            "--num-frames 10 --num-cameras 2 --resolution 1280 720 --asset-count 10 --annotators all --disable-viewport-rendering --no-wait-for-render --delete-data-when-done --headless --print-results",
+            "--num-frames 10 --num-cameras 2 --resolution 1280 720 --asset-count 10 --annotators all --disable-viewport-rendering --delete-data-when-done --print-results",
         },
         {
             "tests-standalone_benchmarks-benchmark_robots_ur10",
