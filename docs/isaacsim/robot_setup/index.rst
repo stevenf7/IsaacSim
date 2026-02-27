@@ -22,6 +22,7 @@ Tools
 .. toctree::
    :maxdepth: 1
 
+   robot_inspector
    robot_wizard
    robot_wizard_tutorials
    robot_inspector

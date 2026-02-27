@@ -23,7 +23,7 @@ The schema is implemented across two extensions:
 Schema Overview
 ===============
 
-The Robot Schema defines six applied API schemas and one typed schema:
+The Robot Schema defines five applied API schemas and two typed schema:
 
 .. list-table::
    :header-rows: 1
@@ -629,6 +629,99 @@ The ``isaacsim.robot.poser`` extension provides higher-level CRUD and I/O operat
 
 For interactive authoring of named poses, see the :ref:`Robot Poser <isaac_sim_robot_poser>` documentation.
 
+The ``isaacsim.robot.schema`` extension provides a comprehensive set of utility functions in the ``utils`` module, accessible via:
+
+.. code-block:: python
+
+   from usd.schema.isaac.robot_schema import utils
+
+Traversal and Tree Generation
+-----------------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - Function
+     - Description
+   * - ``GenerateRobotLinkTree(stage, robot_link_prim)``
+     - Builds and returns a ``RobotLinkNode`` tree representing the robot's kinematic structure. Returns the root node.
+   * - ``GetAllRobotLinks(stage, robot_link_prim, include_reference_points)``
+     - Returns all links of the robot. Retrieves from schema relationships and supplements with any missing links discovered through articulation traversal.
+   * - ``GetAllRobotJoints(stage, robot_link_prim, parse_nested_robots)``
+     - Returns all joints of the robot. Retrieves from schema relationships and supplements with any missing joints from articulation traversal.
+   * - ``GetJointBodyRelationship(joint_prim, bodyIndex)``
+     - Returns the target path for a joint's body connection (index 0 or 1). Returns ``None`` if the joint is excluded from articulation.
+   * - ``GetJointPose(robot_prim, joint_prim)``
+     - Returns the joint's pose as a 4x4 matrix in the robot's coordinate frame.
+   * - ``GetLinksFromJoint(root, joint_prim)``
+     - Given a tree root and a joint, returns two lists: links before the joint (toward the base) and links after the joint (toward the leaves).
+   * - ``PrintRobotTree(root, indent)``
+     - Prints an indented text representation of the link tree to the console.
+
+The ``RobotLinkNode`` class represents a node in the kinematic tree:
+
+.. code-block:: python
+
+   class RobotLinkNode:
+       prim       # The USD prim for this link
+       name       # Prim name (or None)
+       path       # Prim path (or None)
+       parent     # Parent RobotLinkNode (None for root)
+       children   # List of child RobotLinkNodes
+
+Schema Population
+-----------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 45 55
+
+   * - Function
+     - Description
+   * - ``PopulateRobotSchemaFromArticulation(stage, robot_prim, articulation_prim, *, detect_sites, sites_last)``
+     - Traverses the physics articulation graph via BFS, applies ``IsaacLinkAPI`` and ``IsaacJointAPI`` to discovered prims, and writes the ordered ``robotLinks`` and ``robotJoints`` relationships. Optionally detects and applies ``IsaacSiteAPI`` to leaf Xforms under links.
+   * - ``RecalculateRobotSchema(stage, robot_prim, articulation_prim, *, detect_sites, sites_last)``
+     - Similar to ``PopulateRobotSchemaFromArticulation`` but preserves the existing order of valid items. New links and joints are appended; invalid targets are removed. Use this for incremental updates.
+
+Both functions accept:
+
+- ``detect_sites`` (bool): When ``True``, child Xforms with no children under each link are detected and have ``IsaacSiteAPI`` applied automatically.
+- ``sites_last`` (bool): When ``False``, detected sites are inserted immediately after their parent link. When ``True``, all sites are appended at the end of the links list.
+
+Site Detection and Management
+-----------------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - Function
+     - Description
+   * - ``DetectAndApplySites(stage, robot_prim, *, sites_last)``
+     - Scans all links under a robot for child Xforms that qualify as sites (leaf Xforms with no children, no existing APIs). Applies ``IsaacSiteAPI`` to each. Returns ``(all_sites, sites_by_parent_path)``.
+   * - ``AddSitesToRobotLinks(robot_prim, sites, sites_by_parent, *, sites_last)``
+     - Adds detected sites to the ``robotLinks`` relationship, either interleaved after their parent link or appended at the end.
+
+Validation and Maintenance
+--------------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 45 55
+
+   * - Function
+     - Description
+   * - ``ValidateRobotSchemaRelationships(robot_prim)``
+     - Checks all targets in ``robotLinks`` and ``robotJoints``. Returns ``(valid_links, invalid_links, valid_joints, invalid_joints)``.
+   * - ``EnsurePrependListForRobotRelationships(robot_prim)``
+     - Rebuilds ``robotLinks`` and ``robotJoints`` using USD prepend list operations for correct layering behavior.
+   * - ``RebuildRelationshipAsPrepend(prim, rel_name, targets)``
+     - Low-level helper that rebuilds a single relationship using prepend list operations.
+   * - ``UpdateDeprecatedSchemas(robot_prim)``
+     - Traverses the robot subtree and replaces ``IsaacReferencePointAPI`` with ``IsaacSiteAPI``. Also migrates deprecated per-axis DOF offset attributes on joints.
+   * - ``UpdateDeprecatedJointDofOrder(joint_prim)``
+     - Migrates a single joint's deprecated per-axis ``DoFOffset`` attributes to the ``DofOffsetOpOrder`` token array. Removes the deprecated attributes from the edit layer.
 
 Asset Structure
 ===============
