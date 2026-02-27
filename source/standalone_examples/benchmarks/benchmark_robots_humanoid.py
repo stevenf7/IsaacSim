@@ -55,7 +55,7 @@ simulation_app = SimulationApp(
 )
 
 import carb
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.kit.test
 from isaacsim.core.experimental.prims import Articulation
@@ -100,7 +100,7 @@ set_camera_view(eye=[-6, -15.5, 6.5], target=[-6, 10.5, -1], camera_prim_path="/
 robot_positions = []
 for i in range(n_robots):
     prim_path = f"/Robots/Robot_{i}"
-    stage_utils.add_reference_to_stage(robot_path, prim_path=prim_path)
+    stage_utils.add_reference_to_stage(robot_path, path=prim_path)
     # Position robots in a grid pattern:
     robot_positions.append([-3 * (i % max_line) + 3, -3 * (i // max_line), 1.05])
 

@@ -50,9 +50,9 @@ simulation_app = SimulationApp(
 
 import carb
 import omni
+from isaacsim.core.experimental.utils.stage import is_stage_loading
 from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.core.utils.rotations import euler_angles_to_quat
-from isaacsim.core.utils.stage import is_stage_loading
 from isaacsim.sensors.camera import SingleViewDepthSensor
 
 enable_extension("isaacsim.benchmark.services")
