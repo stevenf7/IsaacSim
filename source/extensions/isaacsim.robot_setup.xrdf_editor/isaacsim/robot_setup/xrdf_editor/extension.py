@@ -69,7 +69,7 @@ from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
 from .collision_sphere_editor import CollisionSphereEditor
 
-EXTENSION_NAME = "Lula Robot Description Editor"
+EXTENSION_NAME = "cuMotion/Lula Robot Description Editor"
 
 DEFAULT_JERK_LIMIT = 10000
 DEFAULT_ACCELERATION_LIMIT = 10
@@ -1266,6 +1266,17 @@ class Extension(omni.ext.IExt):
                         self._models["xrdf_output_file"] = str_builder(**kwargs)
                         self._models["xrdf_output_file"].add_value_changed_fn(on_select_xrdf_output_file)
 
+                        # Version selection dropdown
+                        version_dropdown = DropDown(
+                            "XRDF Version",
+                            tooltip="Select the XRDF format version to export. Version 1.0 uses 'collision', version 2.0 uses 'world_collision'.",
+                            populate_fn=lambda: ["1.0", "2.0"],
+                        )
+                        version_dropdown.repopulate()
+                        version_dropdown.set_selection_by_index(1)  # Default to 2.0 (index 1)
+                        # Store reference to dropdown so we can read current selection
+                        self._models["xrdf_version_dropdown"] = version_dropdown
+
                         self._models["xrdf_export_btn"] = Button("Export XRDF", "Export", on_click_fn=self._export_xrdf)
                         self._models["xrdf_export_btn"].enabled = False
 
@@ -1532,9 +1543,10 @@ class Extension(omni.ext.IExt):
                 "XRDF file is expected to have a field:\nformat_version\nBut this field "
                 + "is missing. Aborting Import."
             )
-        elif parsed_file["format_version"] != 1.0:
+        elif parsed_file["format_version"] not in [1.0, 2.0]:
             carb.log_warn(
-                "Attempting to read an XRDF file that does not have format version 1.0.  This may not be supported."
+                f"Attempting to read an XRDF file with format version {parsed_file['format_version']}. "
+                + "Only versions 1.0 and 2.0 are supported."
             )
 
         self._active_joints = np.zeros(MAX_DOF_NUM, dtype=bool)
@@ -1658,9 +1670,10 @@ class Extension(omni.ext.IExt):
                 return False
 
         if "format" in parsed_file and parsed_file["format"] == "xrdf" and "format_version" in parsed_file:
-            if parsed_file["format_version"] != 1.0:
+            if parsed_file["format_version"] not in [1.0, 2.0]:
                 carb.log_warn(
-                    "Attempting to read an XRDF file that does not have format version 1.0.  This may not be supported."
+                    f"Attempting to read an XRDF file with format version {parsed_file['format_version']}. "
+                    + "Only versions 1.0 and 2.0 are supported."
                 )
             return True
         else:
@@ -1712,19 +1725,26 @@ class Extension(omni.ext.IExt):
         parsed_file.pop("default_joint_positions", None)
         parsed_file.pop("cspace", None)
 
+        # Convert version 1 "collision" to version 2 "world_collision" if needed
+        if "collision" in parsed_file and "world_collision" not in parsed_file:
+            parsed_file["world_collision"] = parsed_file.pop("collision")
+
+        # Use world_collision (version 2) going forward
+        collision_key = "world_collision"
+
         if (
             "self_collision" in parsed_file
             and "geometry" in parsed_file["self_collision"]
-            and "collision" in parsed_file
-            and "geometry" in parsed_file["collision"]
+            and collision_key in parsed_file
+            and "geometry" in parsed_file[collision_key]
         ):
-            if parsed_file["self_collision"]["geometry"] == parsed_file["collision"]["geometry"]:
-                # Since buffer distances in the "collision" group are going to be set to zero,
-                # to keep the relative sphere sizes between "collision" and "self_collision" the
-                # same, "collision" buffer distances will be subtracted "self_collision" buffer
+            if parsed_file["self_collision"]["geometry"] == parsed_file[collision_key]["geometry"]:
+                # Since buffer distances in the "world_collision" group are going to be set to zero,
+                # to keep the relative sphere sizes between "world_collision" and "self_collision" the
+                # same, "world_collision" buffer distances will be subtracted "self_collision" buffer
                 # distances.
-                if "buffer_distance" in parsed_file["collision"]:
-                    collision_buffer_distance = parsed_file["collision"]["buffer_distance"]
+                if "buffer_distance" in parsed_file[collision_key]:
+                    collision_buffer_distance = parsed_file[collision_key]["buffer_distance"]
                     self_collision_buffer_distance = parsed_file["self_collision"].get("buffer_distance", {})
                     for k, v in collision_buffer_distance.items():
                         if k in articulation_frames:
@@ -1734,15 +1754,15 @@ class Extension(omni.ext.IExt):
                                 self_collision_buffer_distance[k] = -v
                             collision_buffer_distance[k] = 0
             else:
-                parsed_file["self_collision"] = {"geometry": parsed_file["collision"]["geometry"]}
+                parsed_file["self_collision"] = {"geometry": parsed_file[collision_key]["geometry"]}
 
-        if "collision" not in parsed_file or "geometry" not in parsed_file["collision"]:
+        if collision_key not in parsed_file or "geometry" not in parsed_file[collision_key]:
             parsed_file.pop("geometry", None)
-            parsed_file.pop("collision", None)
+            parsed_file.pop(collision_key, None)
             parsed_file.pop("self_collision", None)
         else:
             for k in list(parsed_file["geometry"].keys()):
-                if k != parsed_file["collision"]["geometry"]:
+                if k != parsed_file[collision_key]["geometry"]:
                     parsed_file["geometry"].pop(k, None)
                 else:
                     parsed_file["geometry"][k].pop("clone", None)
@@ -1787,8 +1807,42 @@ class Extension(omni.ext.IExt):
             return
 
         path = self._models["xrdf_output_file"].get_value_as_string()
+
+        # Get the selected version from the UI dropdown (read directly from dropdown to ensure we get current selection)
+        version_dropdown = self._models.get("xrdf_version_dropdown")
+        if version_dropdown is not None:
+            selection_index = version_dropdown.get_selection_index()
+            format_version = 1.0 if selection_index == 0 else 2.0
+        else:
+            # Fallback to version 2.0 if dropdown not available
+            format_version = 2.0
+        carb.log_info(f"Exporting XRDF with version: {format_version}")
+        # Ensure version is exactly 1.0 or 2.0
+        if format_version != 1.0 and format_version != 2.0:
+            carb.log_warn(f"Invalid XRDF version {format_version}, defaulting to 2.0")
+            format_version = 2.0
+        # Determine collision key based on version
+        if format_version == 2.0:
+            collision_key = "world_collision"
+        else:  # format_version == 1.0 (guaranteed by validation above)
+            collision_key = "collision"
+        carb.log_info(f"Using collision_key: {collision_key} for version {format_version}")
+
         if self._models["xrdf_merge_cb"].get_value():
             parsed_file = self._copy_information_from_existing_xrdf(path)
+            # Convert collision key to match selected version
+            if format_version == 1.0:
+                # Convert world_collision to collision for version 1.0
+                if "world_collision" in parsed_file:
+                    parsed_file["collision"] = parsed_file.pop("world_collision")
+                # Remove world_collision if it still exists
+                parsed_file.pop("world_collision", None)
+            elif format_version == 2.0:
+                # Convert collision to world_collision for version 2.0
+                if "collision" in parsed_file:
+                    parsed_file["world_collision"] = parsed_file.pop("collision")
+                # Remove collision if it still exists
+                parsed_file.pop("collision", None)
         else:
             parsed_file = {}
 
@@ -1797,7 +1851,8 @@ class Extension(omni.ext.IExt):
         ordered_links = art_view.body_names  # Links in order from root to end effector
 
         parsed_file["format"] = "xrdf"
-        parsed_file["format_version"] = 1.0
+        # Ensure format_version is written as a float (1.0 or 2.0)
+        parsed_file["format_version"] = float(format_version)
 
         active_joints_mask = self._active_joints[: self.num_dof]
         acceleration_limits = self._acceleration_limits[: self.num_dof][active_joints_mask]
@@ -1816,9 +1871,9 @@ class Extension(omni.ext.IExt):
             cspace_dict["jerk_limits"].append(jerk_limits[i])
         parsed_file["cspace"] = cspace_dict
 
-        if "geometry" not in parsed_file or "collision" not in parsed_file:
+        if "geometry" not in parsed_file or collision_key not in parsed_file:
             default_name = "auto_generated_collision_sphere_group"
-            parsed_file["collision"] = {"geometry": default_name}
+            parsed_file[collision_key] = {"geometry": default_name}
             parsed_file["geometry"] = {default_name: {"spheres": {}}}
             parsed_file["self_collision"] = {"geometry": default_name}
 
@@ -1826,7 +1881,7 @@ class Extension(omni.ext.IExt):
             ignore_dict = self.get_ignore_dict(ordered_links)
             parsed_file["self_collision"]["ignore"] = ignore_dict
 
-        geometry_group_name = parsed_file["collision"]["geometry"]
+        geometry_group_name = parsed_file[collision_key]["geometry"]
         sphere_dict = parsed_file["geometry"][geometry_group_name].get("spheres", None)
         if sphere_dict is None:
             sphere_dict = {}
@@ -1835,6 +1890,13 @@ class Extension(omni.ext.IExt):
             sphere_dict.pop(link, None)
         self._collision_sphere_editor.write_spheres_to_dict(self._articulation_base_path, sphere_dict)
 
+        # Ensure we only have the correct collision key for the selected version
+        if format_version == 1.0:
+            parsed_file.pop("world_collision", None)  # Remove world_collision if it exists
+        elif format_version == 2.0:
+            parsed_file.pop("collision", None)  # Remove collision if it exists
+
+        # Build key_order based on version
         key_order = [
             "format",
             "format_version",
@@ -1842,7 +1904,7 @@ class Extension(omni.ext.IExt):
             "default_joint_positions",
             "cspace",
             "tool_frames",
-            "collision",
+            collision_key,
             "self_collision",
             "geometry",
         ]

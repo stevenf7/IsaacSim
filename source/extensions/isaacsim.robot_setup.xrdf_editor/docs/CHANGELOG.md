@@ -1,4 +1,8 @@
 # Changelog
+## [3.3.0] - 2026-02-26
+### Added
+- Can load and export XRDF version 2.0
+
 ## [3.2.5] - 2025-12-08
 ### Changed
 - Considers visual mesh scaling when generating collision spheres.

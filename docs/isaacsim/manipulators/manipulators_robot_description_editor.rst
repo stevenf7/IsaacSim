@@ -82,6 +82,14 @@ This section of the tutorial includes brief text descriptions of the different p
 	The **Robot Description Editor** is not compatible with :ref:`Instanceable Assets <isaac_sim_app_tutorial_instanceable_assets>`, but a robot description file generated
 	for an asset that was later converted to an instanceable asset will still work on the instanceable asset.
 
+	To use the **Robot Description Editor**, ensure that the ``Instanceable`` checkbox is unchecked for all geometry prims in the robot's hierarchy. This setting can be found in the **Property** panel when a geometry prim is selected.
+
+	.. figure:: images/isim_6.0_full_tut_gui_lula_description_editor_instanceable_disable.png
+	   :align: center
+	   :alt: Property panel showing the Instanceable checkbox that should be unchecked
+
+	   The ``Instanceable`` checkbox (highlighted in red) should be unchecked for all geometry prims when using the Robot Description Editor.
+
 Getting Started
 ^^^^^^^^^^^^^^^
 
@@ -145,9 +153,10 @@ XRDF File
 After completing the **Set Joint Properties** and creating a collision sphere representation of the robot, an `XRDF <https://nvidia-isaac-ros.github.io/concepts/manipulation/xrdf.html>`_
 file can be generated under **Export to File > Export to cuMotion XRDF.**  The file path must end in ``.yaml`` or ``.xrdf``.
 The **Save** button will become enabled when a valid file path has been typed.
+A version dropdown allows you to select XRDF format version 1.0 or 2.0 (version 1.0 uses ``collision``, version 2.0 uses ``world_collision``).
 When exporting an XRDF file, the **Robot Description Editor** has the following behavior:
 
-- Create a single collision group that is used for both ``collision`` and ``self_collision`` that uses the spheres created in the editor.
+- Create a single collision group that is used for both the collision group (``collision`` in version 1.0, ``world_collision`` in version 2.0) and ``self_collision`` that uses the spheres created in the editor.
 - Under ``self_collision``, set each link to ignore both its parent and other links that have the same parent.
 - Do not write Tool Frames.
 - Do not write Modifiers.
@@ -158,7 +167,7 @@ When merging with an existing XRDF file, the **Robot Description Editor** has th
 
 - Copy Tool Frames from the existing file.
 - Copy Modifiers from the existing file.
-- Copy `self_collision > ignore` from the existing file if `self_collision > geometry` matches `collision > geometry`.
+- Copy `self_collision > ignore` from the existing file if `self_collision > geometry` matches the collision group geometry (``collision > geometry`` in version 1.0, ``world_collision > geometry`` in version 2.0).
 - Copy collision spheres from the existing file for any frames that were not represented in the **Robot Description Editor**.
 
 Importing Configuration Files
@@ -176,7 +185,7 @@ XRDF File
 A pre-existing `XRDF <https://nvidia-isaac-ros.github.io/concepts/manipulation/xrdf.html>`_ file can be imported under **Import From File > Import XRDF File**.
 The **Robot Description Editor** imports XRDF files with the following behavior:
 
-- The format version is assumed to be compatible with version `1.0`.
+- Both format version 1.0 and 2.0 are supported (version 1.0 uses ``collision``, version 2.0 uses ``world_collision``).
 - Only the collision group spheres are imported.
 - Modifiers are not used.
 - Tool Frames are not used.
