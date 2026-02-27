@@ -650,6 +650,12 @@ local function get_doc_snippets_tests()
             "standalone_examples/testing/doc_snippets/snippets/action_and_event_data_generation/tutorial_replicator_incident.py",
             "--test",
         },
+        -- action_and_event_data_generation/tutorial_replicator_agent
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.action_and_event_data_generation.tutorial_replicator_agent.tutorial_replicator_agent",
+            "../../../docs/isaacsim/snippets/action_and_event_data_generation/tutorial_replicator_agent.py",
+            "--test",
+        },
         -- robot_setup_tutorials/tutorial_pickplace_example (with PYTHONPATH)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup_tutorials.tutorial_pickplace_example.define_the_manipulator",
