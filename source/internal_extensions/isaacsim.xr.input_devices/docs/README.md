@@ -154,6 +154,6 @@ isaacsim.xr.input_devices/
 
 ## License
 
-Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
+Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES.
 
 SPDX-License-Identifier: Apache-2.0
