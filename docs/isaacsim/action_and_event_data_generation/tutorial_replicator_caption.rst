@@ -164,6 +164,27 @@ To launch scene caption generation with the UI panel:
    .. image:: /images/isim_5.0_full_ext-isaacsim.replicator.caption-5.0.0_gui_IRC_start_8.png
       :align: center
 
+.. note::
+   | Focusing on specific regions of interest (ROIs) in a complex scene can be achieved by positioning a camera appropriately.
+   |
+   | The following steps demonstrate how to generate captions for a region of interest (ROI).
+
+
+8. To generate captions for a region of interest (ROI), select the desired camera from the camera drop-down as shown below:
+
+   .. image:: /images/isim_6.0_full_ext-isaacsim.replicator.caption-6.0.0_gui_IRC_roi_2.png
+      :align: center
+
+9. Position the camera at the desired location so that the ROI dominates the view plane, as shown below:
+
+   .. image:: /images/isim_6.0_full_ext-isaacsim.replicator.caption-6.0.0_gui_IRC_roi_3.png
+      :align: center
+
+10. Click on the **Generate Scene Graph** button to generate the captions for the ROI, after selecting the desired caption and output parameters described in earlier steps.
+
+   .. image:: /images/isim_6.0_full_ext-isaacsim.replicator.caption-6.0.0_gui_IRC_roi_4.png
+      :align: center
+
 
 Using the IRA Extension
 ###############################
