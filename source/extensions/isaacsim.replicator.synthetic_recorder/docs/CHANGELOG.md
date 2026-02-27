@@ -1,4 +1,9 @@
 # Changelog
+## [2.3.4] - 2026-02-26
+### Changed
+- Windows tests are now split into groups and added `--vulkan` flag to "startup" test args to avoid GPU crashes
+- Re-enabled `colorize_depth` argument in tests
+
 ## [2.3.3] - 2026-02-21
 ### Changed
 - Updated UI to use width and height for checkboxes to fix click issues
