@@ -191,8 +191,9 @@ Extensions
 
    isaacsim.sensors.camera <source/extensions/isaacsim.sensors.camera/docs/index>
    isaacsim.sensors.camera.ui <source/extensions/isaacsim.sensors.camera.ui/docs/index>
-   isaacsim.sensors.physics <source/extensions/isaacsim.sensors.physics/docs/index>
+   isaacsim.sensors.experimental.camera <source/extensions/isaacsim.sensors.experimental.camera/docs/index>
    isaacsim.sensors.experimental.physics <source/extensions/isaacsim.sensors.experimental.physics/docs/index>
+   isaacsim.sensors.physics <source/extensions/isaacsim.sensors.physics/docs/index>
    isaacsim.sensors.physics.examples <source/extensions/isaacsim.sensors.physics.examples/docs/index>
    isaacsim.sensors.physics.nodes <source/extensions/isaacsim.sensors.physics.nodes/docs/index>
    isaacsim.sensors.physics.ui <source/extensions/isaacsim.sensors.physics.ui/docs/index>
