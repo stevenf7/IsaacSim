@@ -19,7 +19,6 @@ from functools import partial
 
 import carb
 import numpy as np
-import omni.physics.tensors as physics_tensors
 import omni.timeline
 import omni.ui as ui
 import pxr
@@ -34,6 +33,7 @@ from isaacsim.gui.components.element_wrappers import (
     XYPlot,
 )
 from omni.kit.window.file import StageSaveDialog
+from omni.physics.tensors import DofType
 from omni.usd import StageEventType
 from pxr import Sdf, Usd
 from usd.schema.isaac.robot_schema import Classes
@@ -306,7 +306,7 @@ class UIBuilder:
                             joint_entries = self._gains_tuner.get_joint_entries()
                             self._gains_table_widget = JointWidget(
                                 joint_entries,
-                                lambda joint: self._gains_tuner._joint_acumulated_inertia.get(joint, 0.0),
+                                lambda joint: self._gains_tuner._joint_accumulated_inertia.get(joint, 0.0),
                             )
 
                         self._gains_splitter = ui.Placer(
@@ -634,7 +634,7 @@ class UIBuilder:
         cmd_times_list = []
         scale = [1.0] * len(joint_indices)
         for i, joint_index in enumerate(joint_indices):
-            if self._gains_tuner._articulation.dof_types[joint_index] == physics_tensors.DofType.Rotation:
+            if self._gains_tuner._articulation.dof_types[joint_index] == DofType.Rotation:
                 scale[i] = 180.0 / np.pi
         for i, joint_index in enumerate(joint_indices):
             (cmd_pos, cmd_vel, obs_pos, obs_vel, cmd_times) = self._gains_tuner.get_joint_states_from_gains_test(

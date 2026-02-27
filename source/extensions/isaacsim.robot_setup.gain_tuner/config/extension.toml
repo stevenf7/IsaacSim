@@ -20,7 +20,6 @@ writeTarget.kit = true
 "omni.kit.uiapp" = {}
 "omni.kit.window.file" = {}
 "omni.physics" = {}
-"omni.physics.physx" = {}
 
 [[python.module]]
 name = "isaacsim.robot_setup.gain_tuner"
