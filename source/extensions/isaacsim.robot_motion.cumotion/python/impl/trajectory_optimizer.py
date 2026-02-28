@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import pathlib
 import warnings
 
@@ -62,6 +63,9 @@ class TrajectoryOptimizer:
         tool_frame: str | None = None,
         trajectory_optimizer_config_filename: pathlib.Path | str | None = None,
     ):
+        if os.name == "nt":
+            raise AssertionError("Trajectory Optimizer is not supported on Windows.")
+
         # if there is no tool_frame, we will take the default (first one):
         if not tool_frame:
             tool_frame_names = cumotion_robot.robot_description.tool_frame_names()

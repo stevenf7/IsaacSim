@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import pathlib
 
 import cumotion
@@ -169,6 +170,9 @@ class GraphBasedMotionPlanner:
             )
 
         # create the planner with whatever the current parameters happen to be:
+        if os.name == "nt":
+            # patch for windows crash.
+            self._motion_planner_config.set_param("enable_cuda_tree", False)
         planner = cumotion.create_motion_planner(config=self._motion_planner_config)
 
         # update the world view:
@@ -236,6 +240,9 @@ class GraphBasedMotionPlanner:
 
         # create the planner with whatever the current parameters happen to be:
         self._cumotion_world_interface.world_view.update()
+        if os.name == "nt":
+            # patch for windows crash.
+            self._motion_planner_config.set_param("enable_cuda_tree", False)
         planner = cumotion.create_motion_planner(config=self._motion_planner_config)
 
         planning_result = planner.plan_to_pose_target(q_initial, pose_base_target)
@@ -294,6 +301,9 @@ class GraphBasedMotionPlanner:
         )
 
         # create the planner with whatever the current parameters happen to be:
+        if os.name == "nt":
+            # patch for windows crash.
+            self._motion_planner_config.set_param("enable_cuda_tree", False)
         planner = cumotion.create_motion_planner(config=self._motion_planner_config)
 
         self._cumotion_world_interface.world_view.update()

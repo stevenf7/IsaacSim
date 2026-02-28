@@ -4,6 +4,9 @@
 Trajectory Optimizer Tutorial
 ===========================================
 
+.. note::
+   **Windows Support**: The :class:`TrajectoryOptimizer` is not currently available on Windows.
+
 This tutorial demonstrates how to use the :class:`TrajectoryOptimizer` class in the |cumotion| integration to plan collision-free, kinematically constrained trajectories to configuration space or task space targets.
 
 By the end of this tutorial, you'll understand:

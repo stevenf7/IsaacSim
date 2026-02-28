@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import cumotion
 import numpy as np
 from isaacsim.core.experimental.objects import Cone, Cube, Cylinder, Mesh
@@ -20,9 +22,12 @@ from isaacsim.core.experimental.utils import prim as prim_utils
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.robot_motion.cumotion import (
     CumotionWorldInterface,
-    TrajectoryOptimizer,
     load_cumotion_supported_robot,
 )
+
+# temporary: TrajectoryOptimizer does not work on Windows.
+if os.name != "nt":
+    from isaacsim.robot_motion.cumotion import TrajectoryOptimizer
 from isaacsim.robot_motion.cumotion.impl.utils import isaac_sim_to_cumotion_pose
 from isaacsim.robot_motion.experimental.motion_generation import (
     ObstacleConfiguration,
@@ -71,14 +76,19 @@ class FrankaTrajectoryOptimizerExample:
         # Find all prims that have "CumotionDebug" in their path
         debug_prim_paths = prim_utils.find_matching_prim_paths(".*CumotionDebug.*", traverse=True)
 
-        # Delete each prim (delete parent will delete children, so we need to be careful)
-        # Sort by path length (longest first) to delete children before parents
-        debug_prim_paths.sort(key=lambda x: len(x.split("/")), reverse=True)
+        if not debug_prim_paths:
+            return
 
-        for prim_path in debug_prim_paths:
+        # Filter to only root-level prims (ones whose parent is not in the list)
+        # Deleting a parent automatically deletes all its children
+        debug_prim_paths_set = set(debug_prim_paths)
+        root_prim_paths = [path for path in debug_prim_paths if path.rsplit("/", 1)[0] not in debug_prim_paths_set]
+
+        # Delete only the root prims
+        for prim_path in root_prim_paths:
             try:
                 stage_utils.delete_prim(prim_path)
-            except (ValueError, Exception):
+            except ValueError:
                 # Prim may have already been deleted or doesn't exist, skip
                 pass
 

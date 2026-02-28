@@ -47,6 +47,8 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
 
+import os
+
 import cumotion
 
 # Now we can import Isaac Sim modules
@@ -59,9 +61,13 @@ from isaacsim.core.experimental.utils.stage import add_reference_to_stage
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.robot_motion.cumotion import (
     CumotionWorldInterface,
-    TrajectoryOptimizer,
     load_cumotion_supported_robot,
 )
+
+# temporary: TrajectoryOptimizer does not work on Windows.
+if os.name != "nt":
+    from isaacsim.robot_motion.cumotion import TrajectoryOptimizer
+
 from isaacsim.robot_motion.cumotion.impl.utils import isaac_sim_to_cumotion_pose
 from isaacsim.robot_motion.experimental.motion_generation import (
     ObstacleStrategy,
@@ -279,6 +285,10 @@ def access_parameters(optimizer):
 # ============================================================================
 def main():
     """Run the complete example."""
+
+    if os.name == "nt":
+        print("Trajectory optimizer is not available on Windows.")
+        return
 
     # Setup scene
     stage_utils.create_new_stage(template="sunlight")
