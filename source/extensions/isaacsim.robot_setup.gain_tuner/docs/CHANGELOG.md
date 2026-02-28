@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.1] - 2026-02-27
+### Fixed
+- Hang on test exit
+
 ## [3.3.0] - 2026-02-26
 ### Changed
 - Migrate mass property queries from PhysX property query interface to Articulation tensor API (`isaacsim.core.experimental.prims.Articulation`).

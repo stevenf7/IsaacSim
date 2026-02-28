@@ -399,7 +399,7 @@ class Camera(XformPrim):
         indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         fstops = ops_utils.place(fstops, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
-            self._geoms[index].GetfstopAttr().Set(fstops[0 if fstops.shape[0] == 1 else i].item())
+            self._geoms[index].GetFStopAttr().Set(fstops[0 if fstops.shape[0] == 1 else i].item())
 
     def get_fstops(
         self,
