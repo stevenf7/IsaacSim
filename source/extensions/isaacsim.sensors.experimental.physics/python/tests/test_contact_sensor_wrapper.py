@@ -86,33 +86,17 @@ class TestContactSensorWrapper(omni.kit.test.AsyncTestCase):
         self.assertTrue("contacts" not in data.keys())
         return
 
-    async def test_pause_resume(self):
-        """Verify pause/resume freezes and resumes frame updates."""
+    async def test_timeline_reset(self):
+        """Verify frame updates are consistent across timeline stop/start."""
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         data = self._contact_sensor.get_current_frame()
-        current_time = data["time"]
-        current_step = data["physics_step"]
-        self._contact_sensor.pause()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        data = self._contact_sensor.get_current_frame()
-        self.assertTrue(data["time"] == current_time)
-        self.assertTrue(data["physics_step"] == current_step)
-        self.assertTrue(self._contact_sensor.is_paused())
-        current_time = data["time"]
-        current_step = data["physics_step"]
-        self._contact_sensor.resume()
-        await omni.kit.app.get_app().next_update_async()
-        data = self._contact_sensor.get_current_frame()
-        self.assertTrue(data["time"] != current_time)
-        self.assertTrue(data["physics_step"] != current_step)
+        self.assertGreater(data["physics_step"], 0)
+        self.assertGreater(data["time"], 0)
+
         await reset_timeline(self._timeline, steps=1)
         data = self._contact_sensor.get_current_frame()
         self.assertEqual(data["physics_step"], 3)
-        # Time should be 3 steps × (1/60) = 0.05 (3 physics steps including 2 warm-up steps)
         self.assertAlmostEqual(data["time"], 0.05, delta=0.01)
         return
 

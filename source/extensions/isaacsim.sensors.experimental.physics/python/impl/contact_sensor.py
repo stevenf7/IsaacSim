@@ -146,8 +146,6 @@ class ContactSensor(XformPrim):
         self._prim = self.prims[0]
         self._backend: ContactSensorBackend = ContactSensorBackend(prim_path)
 
-        # Internal state
-        self._pause = False
         self._current_time = 0.0
         self._number_of_physics_steps = 0.0
 
@@ -156,7 +154,6 @@ class ContactSensor(XformPrim):
             "time": 0.0,
             "physics_step": 0.0,
         }
-        return
 
     @property
     def prim_path(self) -> str:
@@ -176,7 +173,6 @@ class ContactSensor(XformPrim):
         Args:
             physics_sim_view: Unused. Provided for API compatibility.
         """
-        return
 
     def get_current_frame(self) -> dict:
         """Get the current contact sensor data as a structured frame.
@@ -198,25 +194,26 @@ class ContactSensor(XformPrim):
             >>> frame["in_contact"]  # doctest: +NO_CHECK
             False
         """
-        cs_sensor_reading = self._backend.get_sensor_reading()
-        cs_raw_data = self._backend.get_raw_data()
+        contact_sensor_reading = self._backend.get_sensor_reading()
 
-        if cs_sensor_reading.is_valid:
-            self._current_frame["in_contact"] = bool(cs_sensor_reading.in_contact)
-            self._current_frame["force"] = float(cs_sensor_reading.value)
-            self._current_frame["time"] = float(cs_sensor_reading.time)
-            self._current_frame["number_of_contacts"] = len(cs_raw_data)
+        if contact_sensor_reading.is_valid:
+            self._current_frame["in_contact"] = bool(contact_sensor_reading.in_contact)
+            self._current_frame["force"] = float(contact_sensor_reading.value)
+            self._current_frame["time"] = float(contact_sensor_reading.time)
+            self._current_frame["physics_step"] = float(SimulationManager.get_num_physics_steps())
 
-            # Populate contact details if requested
+            contact_raw_data = self._backend.get_raw_data()
+            self._current_frame["number_of_contacts"] = len(contact_raw_data)
+
             if isinstance(self._current_frame.get("contacts"), list):
                 contacts: list[dict[str, object]] = []
-                for i in range(len(cs_raw_data)):
+                for i in range(len(contact_raw_data)):
                     contact_frame: dict[str, object] = {}
-                    body0 = cast(int, cs_raw_data[i]["body0"])
-                    body1 = cast(int, cs_raw_data[i]["body1"])
+                    body0 = cast(int, contact_raw_data[i]["body0"])
+                    body1 = cast(int, contact_raw_data[i]["body1"])
                     contact_frame["body0"] = str(PhysicsSchemaTools.intToSdfPath(int(body0)))
                     contact_frame["body1"] = str(PhysicsSchemaTools.intToSdfPath(int(body1)))
-                    position_dict = cast(dict[str, float], cs_raw_data[i]["position"])
+                    position_dict = cast(dict[str, float], contact_raw_data[i]["position"])
                     contact_frame["position"] = np.array(
                         [
                             position_dict["x"],
@@ -225,7 +222,7 @@ class ContactSensor(XformPrim):
                         ],
                         dtype=np.float32,
                     )
-                    normal_dict = cast(dict[str, float], cs_raw_data[i]["normal"])
+                    normal_dict = cast(dict[str, float], contact_raw_data[i]["normal"])
                     contact_frame["normal"] = np.array(
                         [
                             normal_dict["x"],
@@ -234,7 +231,7 @@ class ContactSensor(XformPrim):
                         ],
                         dtype=np.float32,
                     )
-                    impulse_dict = cast(dict[str, float], cs_raw_data[i]["impulse"])
+                    impulse_dict = cast(dict[str, float], contact_raw_data[i]["impulse"])
                     contact_frame["impulse"] = np.array(
                         [
                             impulse_dict["x"],
@@ -245,8 +242,6 @@ class ContactSensor(XformPrim):
                     )
                     contacts.append(contact_frame)
                 self._current_frame["contacts"] = contacts
-
-            self._current_frame["physics_step"] = float(SimulationManager.get_num_physics_steps())
 
         return self._current_frame
 
@@ -264,7 +259,6 @@ class ContactSensor(XformPrim):
         """
         contacts: list[dict[str, object]] = []
         self._current_frame["contacts"] = contacts
-        return
 
     def remove_raw_contact_data_from_frame(self) -> None:
         """Disable raw contact data in frame output.
@@ -278,52 +272,6 @@ class ContactSensor(XformPrim):
             >>> sensor.remove_raw_contact_data_from_frame()
         """
         del self._current_frame["contacts"]
-        return
-
-    def resume(self) -> None:
-        """Resume sensor data collection.
-
-        Re-enables the sensor after it has been paused.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> sensor.resume()
-        """
-        self._isaac_sensor_prim.GetEnabledAttr().Set(True)
-        return
-
-    def pause(self) -> None:
-        """Pause sensor data collection.
-
-        Disables sensor updates while keeping the sensor prim active.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> sensor.pause()
-        """
-        self._isaac_sensor_prim.GetEnabledAttr().Set(False)
-        return
-
-    def is_paused(self) -> bool:
-        """Check if the sensor is currently paused.
-
-        Returns:
-            True if sensor is paused, False otherwise.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> sensor.is_paused()  # doctest: +NO_CHECK
-            False
-        """
-        if not self._isaac_sensor_prim.GetEnabledAttr().Get():
-            return True
-        return False
 
     def get_radius(self) -> float:
         """Get the contact detection radius.
@@ -356,7 +304,6 @@ class ContactSensor(XformPrim):
             self._isaac_sensor_prim.CreateRadiusAttr().Set(value)
         else:
             self._prim.GetAttribute("radius").Set(value)
-        return
 
     def get_min_threshold(self) -> float | None:
         """Get the minimum force threshold.
@@ -395,7 +342,6 @@ class ContactSensor(XformPrim):
             self._isaac_sensor_prim.CreateThresholdAttr().Set((value, 10000))
         else:
             self._prim.GetAttribute("threshold").Set((value, self.get_max_threshold()))
-        return
 
     def get_max_threshold(self) -> float | None:
         """Get the maximum force threshold.
@@ -434,4 +380,3 @@ class ContactSensor(XformPrim):
             self._isaac_sensor_prim.CreateThresholdAttr().Set((0, value))
         else:
             self._prim.GetAttribute("threshold").Set((self.get_min_threshold(), value))
-        return

@@ -3,7 +3,7 @@
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": "Node that reads out contact sensor data",
-        "language": "python",
+        "language": "cpp",
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacPhysicsSensor",
         "metadata": {

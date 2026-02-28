@@ -151,7 +151,36 @@ class TestIMUSensorOgn(omni.kit.test.AsyncTestCase):
         sensor_time = og.Controller.attribute(self.graph_path + "/ReadIMUNode.outputs:sensorTime").get()
         self.assertNotEqual(sensor_time, 0.0)
 
-    # verifying that linear acceleration and sensor time equal zero in invalid case
+    async def test_imu_sensor_stop_play_lifecycle(self):
+        """IMU outputs recover valid data after a stop/play cycle."""
+        og.Controller.set(
+            og.Controller.attribute(self.graph_path + "/ReadIMUNode.inputs:imuPrim"),
+            [usdrt.Sdf.Path("/World/Cube/imu_sensor")],
+        )
+
+        self._timeline.play()
+        await step_simulation(1.5)
+
+        lin_acc = og.Controller.attribute(self.graph_path + "/ReadIMUNode.outputs:linAcc").get()
+        self.assertAlmostEqual(lin_acc[2], EARTH_GRAVITY, delta=SMALL_TOLERANCE)
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        self._timeline.play()
+        await step_simulation(1.5)
+
+        lin_acc_after = og.Controller.attribute(self.graph_path + "/ReadIMUNode.outputs:linAcc").get()
+        self.assertAlmostEqual(
+            lin_acc_after[2],
+            EARTH_GRAVITY,
+            delta=SMALL_TOLERANCE,
+            msg="Should recover valid gravity reading after stop/play",
+        )
+
+        sensor_time_after = og.Controller.attribute(self.graph_path + "/ReadIMUNode.outputs:sensorTime").get()
+        self.assertNotEqual(sensor_time_after, 0.0, "Should have non-zero time after stop/play")
+
     async def test_invalid_imu_sensor_ogn(self):
         og.Controller.set(
             og.Controller.attribute(self.graph_path + "/ReadIMUNode.inputs:imuPrim"),

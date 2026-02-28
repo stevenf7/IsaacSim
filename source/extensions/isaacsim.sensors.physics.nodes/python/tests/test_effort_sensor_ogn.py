@@ -99,10 +99,8 @@ class TestEffortSensorOgn(omni.kit.test.AsyncTestCase):
         sensor_time = og.Controller.attribute(self.graph_path + "/ReadEffortNode.outputs:sensorTime").get()
         self.assertNotEqual(sensor_time, 0.0)
 
-    # verifying that force value and sensor time equal zero in invalid case
-
     async def test_invalid_effort_sensor_ogn(self):
-
+        """Outputs remain zero when no prim is set."""
         self._timeline.play()
         await step_simulation(0.5)
 
@@ -111,3 +109,48 @@ class TestEffortSensorOgn(omni.kit.test.AsyncTestCase):
 
         sensor_time = og.Controller.attribute(self.graph_path + "/ReadEffortNode.outputs:sensorTime").get()
         self.assertEqual(sensor_time, 0.0)
+
+    async def test_effort_sensor_stop_play_lifecycle(self):
+        """Outputs reset to defaults after stop/play cycle and recover valid data."""
+        og.Controller.set(
+            og.Controller.attribute(self.graph_path + "/ReadEffortNode.inputs:prim"),
+            [usdrt.Sdf.Path("/Articulation/Arm/RevoluteJoint")],
+        )
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await step_simulation(1.0)
+
+        effort_value = og.Controller.attribute(self.graph_path + "/ReadEffortNode.outputs:value").get()
+        self.assertNotEqual(effort_value, 0.0, "Should have non-zero effort before stop")
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await step_simulation(1.0)
+
+        effort_value_after = og.Controller.attribute(self.graph_path + "/ReadEffortNode.outputs:value").get()
+        self.assertNotEqual(effort_value_after, 0.0, "Should recover valid effort after stop/play")
+
+        sensor_time_after = og.Controller.attribute(self.graph_path + "/ReadEffortNode.outputs:sensorTime").get()
+        self.assertNotEqual(sensor_time_after, 0.0, "Should have non-zero time after stop/play")
+
+    async def test_effort_sensor_deprecated_enabled_input_ignored(self):
+        """Setting the deprecated 'enabled' input to False should not affect outputs."""
+        og.Controller.set(
+            og.Controller.attribute(self.graph_path + "/ReadEffortNode.inputs:prim"),
+            [usdrt.Sdf.Path("/Articulation/Arm/RevoluteJoint")],
+        )
+        og.Controller.set(
+            og.Controller.attribute(self.graph_path + "/ReadEffortNode.inputs:enabled"),
+            False,
+        )
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await step_simulation(1.0)
+
+        effort_value = og.Controller.attribute(self.graph_path + "/ReadEffortNode.outputs:value").get()
+        self.assertNotEqual(effort_value, 0.0, "Deprecated enabled=False should be ignored")

@@ -32,7 +32,6 @@ from isaacsim.core.experimental.prims import GeomPrim, RigidPrim, XformPrim
 from isaacsim.core.experimental.utils.stage import add_reference_to_stage
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.sensors.experimental.physics import ContactSensor, ContactSensorBackend, ContactSensorReading
-from isaacsim.sensors.experimental.physics.impl.common import _ContactReportManager
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
@@ -181,7 +180,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         stage_utils.set_stage_units(meters_per_unit=1.0)
         SimulationManager.setup_simulation(dt=1.0 / self._physics_rate)
 
-        # Create ground plane for the blocks to land on
         GroundPlane("/World/GroundPlane", sizes=10.0)
 
         block_0_prim = add_reference_to_stage(
@@ -190,7 +188,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         block_0 = RigidPrim(
             "/World/block_0/Cube", positions=[10, 0, 5.0], scales=np.ones(3) * 1.0, reset_xform_op_properties=True
         )
-        PhysxSchema.PhysxContactReportAPI.Apply(block_0.prims[0])
 
         block_1_prim = add_reference_to_stage(
             usd_path=self._assets_root_path + "/Isaac/Props/Blocks/basic_block.usd", path="/World/block_1"
@@ -198,32 +195,22 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         block_1 = RigidPrim(
             "/World/block_1/Cube", positions=[10, 0, 10.0], scales=np.ones(3) * 1.0, reset_xform_op_properties=True
         )
-        PhysxSchema.PhysxContactReportAPI.Apply(block_1.prims[0])
 
-        def block_1_is_contacting_block_0():
-            body_token = PhysicsSchemaTools.sdfPathToInt(block_1.paths[0])
-            raw_data = _ContactReportManager.instance().get_raw_contacts_for_body(body_token)
-            in_contact = False
-            for contact in raw_data:
-                if block_0.paths[0] in {
-                    str(PhysicsSchemaTools.intToSdfPath(contact["body0"])),
-                    str(PhysicsSchemaTools.intToSdfPath(contact["body1"])),
-                }:
-                    in_contact = True
-                    break
-
-            return in_contact
+        sensor = ContactSensor("/World/block_1/Cube/contact_sensor")
+        backend = self._get_contact_backend("/World/block_1/Cube/contact_sensor")
 
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
 
         count = 0
-
-        while not block_1_is_contacting_block_0() and count < 500:
+        while count < 500:
             count += 1
             await omni.kit.app.get_app().next_update_async()
+            reading = backend.get_sensor_reading()
+            if reading.is_valid and reading.in_contact:
+                break
 
-        self.assertTrue(count < 500)
+        self.assertTrue(count < 500, "Block 1 never detected contact via C++ contact sensor")
 
     async def test_get_raw_data(self):
         """Validate raw contact data from a sensor when the ant contacts ground."""

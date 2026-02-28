@@ -119,6 +119,9 @@ class RigidPrim(XformPrim):
         self._default_angular_velocities = None
         # - physics tensor entity properties
         self._physics_rigid_body_view = None
+        # -- C++ data view for read-only access
+        self._cpp_data_view = None
+        self._cpp_data_view_id = None
         # - contact tracking properties
         self._physics_rigid_contact_view = None
         if contact_filter_paths is None:
@@ -1816,8 +1819,96 @@ class RigidPrim(XformPrim):
                 )
                 self._physics_rigid_contact_view = None
 
+        # C++ data view setup is intentionally opt-in to avoid affecting
+        # existing Python-only workflows/tests unless explicitly requested.
+
+    def _setup_cpp_data_view(self):
+        """Set up C++ read-only data view for this rigid body.
+
+        For PhysX: C++ sets up TensorApi callbacks internally -- no Python work needed.
+        For Newton: Python registers fill callbacks that copy tensor data into C++ buffers.
+        Transforms are handled in C++ via IFabricHierarchy for both engines.
+        """
+        if self._cpp_data_view is not None:
+            return
+        from isaacsim.core.experimental.utils import stage as stage_utils
+
+        from ._cpp_buffers import get_device_ordinal
+        from .extension import get_prim_data_reader
+
+        reader = get_prim_data_reader()
+        if reader is None:
+            return
+
+        stage = stage_utils.get_current_stage(backend="usd")
+        if stage is None:
+            return
+        reader.initialize(stage_utils.get_stage_id(stage), get_device_ordinal())
+
+        rb_view = self._physics_rigid_body_view
+        if rb_view is None:
+            return
+
+        is_newton = hasattr(rb_view, "_newton_stage")
+        engine_type = "newton" if is_newton else "physx"
+        view_id = f"rigid_body_{id(self)}"
+        self._cpp_data_view_id = view_id
+
+        self._cpp_data_view = reader.create_rigid_body_view(view_id, self.paths, engine_type)
+
+        if is_newton:
+            self._setup_newton_rigid_body_callbacks(rb_view)
+
+    def _setup_newton_rigid_body_callbacks(self, rb_view):
+        """Register Python fill callbacks for Newton-backed rigid body fields."""
+        from ._cpp_buffers import wrap_cpp_buffer
+
+        count = rb_view.count
+        view = self._cpp_data_view
+
+        field_defs = {
+            "linear_velocities": (count * 3, (count, 3), lambda: rb_view.get_velocities()[:, :3].contiguous()),
+            "angular_velocities": (count * 3, (count, 3), lambda: rb_view.get_velocities()[:, 3:].contiguous()),
+            "masses": (count * 1, (count, 1), lambda: rb_view.get_masses().contiguous()),
+            "inertias": (count * 9, (count, 9), lambda: rb_view.get_inertias().contiguous()),
+            "com_positions": (count * 3, (count, 3), lambda: rb_view.get_coms()[:, :3].contiguous()),
+        }
+
+        for field_name, (size, shape, getter_fn) in field_defs.items():
+            view.allocate_buffer(field_name, size, 4)
+            cpp_buf = wrap_cpp_buffer(view, field_name, shape=shape)
+            fn = getter_fn
+
+            def make_cb(f=fn, b=cpp_buf):
+                def cb():
+                    wp.copy(b, f())
+
+                return cb
+
+            view.register_field_callback(field_name, make_cb())
+
+    def initialize_cpp_data_view(self):
+        """Initialize the optional C++ read-only data view.
+
+        This method is opt-in and can be called by users that need C++ consumers
+        to read rigid-body data through `IPrimDataReader`.
+        """
+        self._setup_cpp_data_view()
+
+    def _teardown_cpp_data_view(self):
+        """Clean up C++ data view."""
+        if self._cpp_data_view_id is not None:
+            from .extension import get_prim_data_reader
+
+            reader = get_prim_data_reader()
+            if reader is not None:
+                reader.remove_view(self._cpp_data_view_id)
+            self._cpp_data_view = None
+            self._cpp_data_view_id = None
+
     def _on_timeline_stop(self, event) -> None:
         """Handle timeline stop event."""
+        self._teardown_cpp_data_view()
         # invalidate rigid body view
         self._physics_rigid_body_view = None
         # invalidate rigid contact view

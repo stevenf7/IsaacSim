@@ -18,14 +18,69 @@ local ogn = get_ogn_project_information(ext, "isaacsim/sensors/physics/nodes")
 
 project_ext(ext)
 
+-- C++ plugin for C++ OGN nodes
+project_ext_plugin(ext, "isaacsim.sensors.physics.nodes.plugin")
+add_files("impl", "plugins")
+add_files("impl", "nodes")
+add_files("iface", "%{root}/source/extensions/isaacsim.sensors.physics.nodes/include/**")
+add_files("ogn", ogn.nodes_path)
+
 add_ogn_dependencies(ogn, { "python/nodes" })
 
+includedirs {
+    "%{root}/source/extensions/isaacsim.sensors.physics.nodes/include",
+    "%{root}/source/extensions/isaacsim.sensors.experimental.physics/include",
+    "%{root}/source/extensions/isaacsim.core.includes/include",
+    "%{root}/source/extensions/isaacsim.core.simulation_manager/include",
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
+    "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
+    extsbuild_dir .. "/usdrt.scenegraph/include",
+    "%{kit_sdk_bin_dir}/dev/fabric/include/",
+}
+
+filter { "system:linux" }
+includedirs {
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include/boost",
+    "%{root}/_build/target-deps/python/include/python3.12",
+}
+filter {}
+
+libdirs {
+    "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
+    extsbuild_dir .. "/omni.usd.core/bin",
+}
+
+links { "omni.usd" }
+
+extra_usd_libs = { "usdGeom", "ts" }
+add_usd(extra_usd_libs)
+
+filter { "configurations:debug" }
+defines { "_DEBUG" }
+filter { "configurations:release" }
+defines { "NDEBUG" }
+filter {}
+
+-- OGN project (generates code from .ogn files)
+project_ext_ogn(ext, ogn)
+
+project_ext_bindings {
+    ext = ext,
+    project_name = ogn.python_project,
+    module = "_physics_sensor_nodes",
+    src = ogn.bindings_path,
+    target_subdir = ogn.bindings_target_path,
+}
+add_files("bindings", "bindings/*.*")
+includedirs {
+    "%{root}/source/extensions/isaacsim.sensors.physics.nodes/include",
+}
+
+-- Python files
 add_files("python", "python/*.py")
 add_files("python/impl", "python/impl/**.py")
 add_files("python/nodes", "python/nodes/*.py")
 add_files("python/tests", "python/tests/*.py")
-
-project_ext_ogn(ext, ogn)
 
 repo_build.prebuild_link {
     { "python/impl", ogn.python_target_path .. "/impl" },

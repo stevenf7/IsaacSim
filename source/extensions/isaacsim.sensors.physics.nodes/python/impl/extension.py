@@ -14,10 +14,12 @@
 # limitations under the License.
 """Omniverse extension entry point for physics sensor OmniGraph nodes.
 
-This extension provides only OmniGraph nodes; sensor backends and lifecycle
+This extension provides OmniGraph nodes; sensor backends and lifecycle
 are in isaacsim.sensors.experimental.physics.
 """
 import omni
+
+from ..bindings._physics_sensor_nodes import acquire_interface, release_interface
 
 
 class Extension(omni.ext.IExt):
@@ -28,9 +30,18 @@ class Extension(omni.ext.IExt):
     """
 
     def on_startup(self, ext_id: str):
-        """Initialize the extension when it is loaded."""
-        pass
+        """Initialize the extension when it is loaded.
+
+        Args:
+            ext_id: Extension identifier assigned by Omniverse.
+        """
+        self._interface = None
+
+        # Acquire the plugin interface so OGN node registration lifetime matches extension lifetime.
+        self._interface = acquire_interface()
 
     def on_shutdown(self):
         """Clean up when the extension is unloaded."""
-        pass
+        if self._interface is not None:
+            release_interface(self._interface)
+            self._interface = None

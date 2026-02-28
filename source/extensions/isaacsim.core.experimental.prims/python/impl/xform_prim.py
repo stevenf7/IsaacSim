@@ -105,7 +105,7 @@ class XformPrim(Prim):
         if positions is not None or translations is not None or orientations is not None or scales is not None:
             assert (
                 positions is None or translations is None
-            ), "Both 'positions' and 'translations' are specified. Specifie only one of them"
+            ), "Both 'positions' and 'translations' are specified. Specify only one of them"
             if self._non_root_articulation_link:
                 raise carb.log_warn(
                     (

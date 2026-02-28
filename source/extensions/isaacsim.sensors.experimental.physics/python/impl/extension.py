@@ -14,41 +14,120 @@
 # limitations under the License.
 """Omniverse extension entry point for physics-based sensors.
 
-This module provides the extension lifecycle management for the
-isaacsim.sensors.experimental.physics extension, initializing the sensor step
-manager when the extension loads.
+This module manages the lifecycle of:
+- The _SensorStepManager singleton for contact sensor coordination
+- The C++ IImuSensor Carbonite interface (acquired here, self-driven via physics events)
+- The C++ IContactSensor Carbonite interface (acquired here, self-driven via physics events)
+- The C++ IEffortSensor Carbonite interface (acquired here, self-driven via physics events)
 """
 from __future__ import annotations
 
+import carb
 import omni
 
 from .common import _SensorStepManager
 
+__all__ = ["Extension", "get_imu_sensor_interface", "get_contact_sensor_interface", "get_effort_sensor_interface"]
+
 EXTENSION_NAME = "Isaac Sensor"
+
+_imu_interface = None
+_contact_sensor_interface = None
+_effort_sensor_interface = None
+
+
+def get_imu_sensor_interface() -> object | None:
+    """Get the cached IImuSensor Carbonite interface.
+
+    Returns:
+        The IImuSensor interface, or None if not yet acquired.
+    """
+    return _imu_interface
+
+
+def get_contact_sensor_interface() -> object | None:
+    """Get the cached IContactSensor Carbonite interface.
+
+    Returns:
+        The IContactSensor interface, or None if not yet acquired.
+    """
+    return _contact_sensor_interface
+
+
+def get_effort_sensor_interface() -> object | None:
+    """Get the cached IEffortSensor Carbonite interface.
+
+    Returns:
+        The IEffortSensor interface, or None if not yet acquired.
+    """
+    return _effort_sensor_interface
 
 
 class Extension(omni.ext.IExt):
     """Omniverse extension class for physics-based sensors.
 
-    Manages the lifecycle of the sensor step manager singleton which
-    coordinates sensor updates with physics simulation events.
+    Acquires and releases the C++ IImuSensor and IContactSensor interfaces.
+    The C++ plugins self-drive via physics simulation events (eResumed / eStopped)
+    and physics step subscriptions, so no Python simulation callbacks are needed.
     """
 
     def on_startup(self, ext_id: str) -> None:
         """Initialize the extension when it is loaded.
 
-        Creates the _SensorStepManager singleton to register physics
-        and timeline callbacks for sensor coordination.
-
         Args:
             ext_id: Extension identifier provided by the extension manager.
         """
-        # Initialize sensor manager to set up physics callbacks
+        global _imu_interface, _contact_sensor_interface, _effort_sensor_interface
+
         _SensorStepManager.instance()
 
-    def on_shutdown(self) -> None:
-        """Clean up resources when the extension is unloaded.
+        try:
+            from .. import _physics_sensors
 
-        Currently no cleanup is required as the sensor manager
-        singleton handles its own callback lifecycle.
-        """
+            _imu_interface = _physics_sensors.acquire_imu_sensor_interface()
+        except Exception as e:
+            carb.log_warn(f"Failed to acquire IImuSensor C++ interface: {e}")
+            _imu_interface = None
+
+        try:
+            from .. import _physics_sensors
+
+            _contact_sensor_interface = _physics_sensors.acquire_contact_sensor_interface()
+        except Exception as e:
+            carb.log_warn(f"Failed to acquire IContactSensor C++ interface: {e}")
+            _contact_sensor_interface = None
+
+        try:
+            from .. import _physics_sensors
+
+            _effort_sensor_interface = _physics_sensors.acquire_effort_sensor_interface()
+        except Exception as e:
+            carb.log_warn(f"Failed to acquire IEffortSensor C++ interface: {e}")
+            _effort_sensor_interface = None
+
+    def on_shutdown(self) -> None:
+        """Clean up resources when the extension is unloaded."""
+        global _imu_interface, _contact_sensor_interface, _effort_sensor_interface
+
+        try:
+            from .. import _physics_sensors
+        except Exception:
+            _physics_sensors = None
+
+        if _effort_sensor_interface is not None:
+            _effort_sensor_interface.shutdown()
+            if _physics_sensors is not None:
+                _physics_sensors.release_effort_sensor_interface(_effort_sensor_interface)
+            _effort_sensor_interface = None
+
+        if _contact_sensor_interface is not None:
+            _contact_sensor_interface.shutdown()
+            if _physics_sensors is not None:
+                _physics_sensors.release_contact_sensor_interface(_contact_sensor_interface)
+            _contact_sensor_interface = None
+
+        if _imu_interface is not None:
+            _imu_interface.shutdown()
+            if _physics_sensors is not None:
+                _physics_sensors.release_imu_sensor_interface(_imu_interface)
+            _imu_interface = None

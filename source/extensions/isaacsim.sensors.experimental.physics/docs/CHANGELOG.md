@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.0.0] - 2026-02-27
+### Changed
+- Rewrite sensor implementations to use C++ core experimental prims APIs
+
 ## [1.1.0] - 2026-02-10
 ### Changed
 - IMU and Contact sensor creation commands renamed to include Experimental in their name to avoid name collision with deprecated sensor commands
