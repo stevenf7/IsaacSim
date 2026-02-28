@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.9.0] - 2026-02-27
+### Removed
+- Removed Warp Sample Scenes menu item from Help menu (omni.warp dependency removed)
+
 ## [2.8.0] - 2026-02-24
 ### Added
 - Robot Self-Collision Detector to Tools > Asset Editors menu

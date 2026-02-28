@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.4] - 2026-02-27
+### Fixed
+- Fixed Warp 1.12 compatibility for deformable prims (wp.mat33 row-vector constructor replaced with wp.matrix_from_rows)
+
 ## [1.1.3] - 2026-02-12
 ### Added
 - `XformPrim` now creates `FabricHierarchyLocalMatrix` and `FabricHierarchyWorldMatrix` if they don't exist.

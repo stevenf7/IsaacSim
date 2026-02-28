@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0] - 2026-02-27
+### Removed
+- Removed omni.warp extension dependency; only omni.warp.core is required
+
+### Changed
+- Upgraded Newton to 1.0.0rc1 with updated solver and USD schema handling
+
 ## [0.2.0] - 2026-02-24
 ### Changed
 - Moved newton prebundle to isaacsim.pip.newton extension
