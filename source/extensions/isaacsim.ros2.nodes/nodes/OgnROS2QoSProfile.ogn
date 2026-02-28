@@ -3,7 +3,6 @@
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": "This node generates a JSON config of a QoS Profile",
-        "language": "Python",
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacRos2",
         "metadata": {
@@ -48,7 +47,7 @@
                     "allowedTokens": {
                         "systemDefault": "systemDefault",
                         "transientLocal": "transientLocal",
-                        "volatile": "volatile",
+                        "volatilePolicy": "volatile",
                         "unknown": "unknown"
                     }
                 },

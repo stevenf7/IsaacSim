@@ -1,4 +1,8 @@
 # Changelog
+## [1.8.0] - 2026-02-27
+### Changed
+- Converted OgnROS2QoSProfile node from Python to C++ for improved performance and consistency with other C++ OG nodes
+
 ## [1.7.0] - 2026-02-26
 ### Added
 - ROS 2 H.264 Compressed Image support with H.264 RGB unit tests
