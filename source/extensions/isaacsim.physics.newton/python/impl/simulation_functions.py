@@ -44,33 +44,33 @@ class NewtonSimulationFunctions:
         self.change_tracking_paused = False
         self.simulation_id = 0  # Will be set after registration with physics interface
 
-    def attach_stage(self, stage_id: int) -> bool:
-        """Attach USD stage and populate the simulation with corresponding objects.
+    def initialize(self, stage_id: int) -> bool:
+        """Initialize physics simulation with a USD stage.
 
-        Previous stage will be detached.
+        This will run the physics parser and populate the simulation with
+        the corresponding simulation objects. Previous stage will be closed.
 
         Args:
             stage_id: USD stageId (can be retrieved from a stagePtr).
 
         Returns:
-            True if stage was successfully attached.
+            True if stage was successfully initialized.
         """
         try:
             self.newton_stage.stage_id = stage_id
-            # Call on_attach with default meters_per_unit
             self.newton_stage.on_attach(stage_id, meters_per_unit=1.0)
             return True
         except Exception as e:
-            carb.log_error(f"[Newton] Failed to attach stage: {e}")
+            carb.log_error(f"[Newton] Failed to initialize stage: {e}")
             return False
 
-    def detach_stage(self) -> None:
-        """Detach USD stage, removing all objects from the simulation."""
+    def close(self) -> None:
+        """Close the simulation, removing all objects from the simulation."""
         try:
             self.newton_stage.on_detach()
             self.newton_stage.stage_id = None
         except Exception as e:
-            carb.log_error(f"[Newton] Failed to detach stage: {e}")
+            carb.log_error(f"[Newton] Failed to close simulation: {e}")
 
     def get_attached_stage(self) -> int:
         """Get the currently attached USD stage.

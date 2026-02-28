@@ -18,7 +18,9 @@ folders = [
 "isaacsim.asset.gen.omap.ui" = {}
 "isaacsim.asset.gen.omap" = {}
 "isaacsim.asset.importer.heightmap" = {}
+"isaacsim.asset.transformer.rules" = {}
 "isaacsim.asset.transformer.ui" = {}
+"isaacsim.asset.transformer" = {}
 "isaacsim.asset.validation" = {}
 "isaacsim.benchmark.services" = {}
 "isaacsim.code_editor.jupyter" = {}
@@ -40,6 +42,7 @@ folders = [
 "isaacsim.core.version" = {}
 "isaacsim.cortex.behaviors" = {}
 "isaacsim.cortex.framework" = {}
+"isaacsim.examples.base" = {}
 "isaacsim.examples.browser" = {}
 "isaacsim.examples.extension" = {}
 "isaacsim.examples.interactive" = {}
@@ -49,11 +52,13 @@ folders = [
 "isaacsim.gui.menu" = {}
 "isaacsim.gui.property" = {}
 "isaacsim.gui.sensors.icon" = {}
+"isaacsim.physics.newton.ui" = {}
+"isaacsim.physics.newton" = {}
 "isaacsim.replicator.behavior.ui" = {}
 "isaacsim.replicator.behavior" = {}
 "isaacsim.replicator.domain_randomization" = {}
-"isaacsim.replicator.experimental.domain_randomization" = {}
 "isaacsim.replicator.examples" = {}
+"isaacsim.replicator.experimental.domain_randomization" = {}
 "isaacsim.replicator.grasping.ui" = {}
 "isaacsim.replicator.grasping" = {}
 "isaacsim.replicator.mobility_gen.examples" = {}
@@ -61,9 +66,12 @@ folders = [
 "isaacsim.replicator.mobility_gen" = {}
 "isaacsim.replicator.synthetic_recorder" = {}
 "isaacsim.replicator.writers" = {}
+"isaacsim.robot_motion.experimental.motion_generation" = {}
 "isaacsim.robot_motion.lula_test_widget" = {}
 "isaacsim.robot_motion.lula" = {}
+"isaacsim.robot_motion.motion_generation.tutorials" = {}
 "isaacsim.robot_motion.motion_generation" = {}
+"isaacsim.robot_motion.schema" = {}
 "isaacsim.robot_setup.assembler" = {}
 "isaacsim.robot_setup.gain_tuner" = {}
 "isaacsim.robot.poser.ui" = {}
@@ -74,15 +82,19 @@ folders = [
 "isaacsim.robot.manipulators.ui" = {}
 "isaacsim.robot.manipulators" = {}
 "isaacsim.robot.policy.examples" = {}
-"isaacsim.robot.schema" = {}
 "isaacsim.robot.schema.ui" = {}
+"isaacsim.robot.schema" = {}
 "isaacsim.robot.surface_gripper.ui" = {}
 "isaacsim.robot.surface_gripper" = {}
 "isaacsim.robot.wheeled_robots.ui" = {}
 "isaacsim.robot.wheeled_robots" = {}
 "isaacsim.ros2.bridge" = {}
+"isaacsim.ros2.core" = {}
+"isaacsim.ros2.examples" = {}
+"isaacsim.ros2.nodes" = {}
 "isaacsim.ros2.sim_control" = {}
 "isaacsim.ros2.tf_viewer" = {}
+"isaacsim.ros2.ui" = {}
 "isaacsim.ros2.urdf" = {}
 "isaacsim.sensors.camera.ui" = {}
 "isaacsim.sensors.camera" = {}
@@ -101,6 +113,7 @@ folders = [
 "isaacsim.storage.native" = {}
 "isaacsim.test.collection" = {}
 "isaacsim.test.docstring" = {}
+"isaacsim.test.utils" = {}
 "isaacsim.util.camera_inspector" = {}
 "isaacsim.util.merge_mesh" = {}
 "isaacsim.util.physics" = {}
@@ -116,13 +129,13 @@ folders = [
 "omni.warp.core" = {}
 
 # Physics Extensions
-"omni.physx.bundle" = {version = "110.0.5", exact = true}
-"omni.physx.fabric" = {version = "110.0.5", exact = true}
-"omni.physx.pvd" = {version = "110.0.5", exact = true}
-"omni.physics.tensors" = {version = "110.0.5", exact = true}
-"omni.physx.tensors" = {version = "110.0.5", exact = true}
-"omni.physx.tests" = {version = "110.0.5", exact = true}
-"omni.physx.tests.visual" = {version = "110.0.5", exact = true}
+"omni.physx.bundle" = {version = "110.0.6", exact = true}
+"omni.physx.fabric" = {version = "110.0.6", exact = true}
+"omni.physx.pvd" = {version = "110.0.6", exact = true}
+"omni.physics.tensors" = {version = "110.0.6", exact = true}
+"omni.physx.tensors" = {version = "110.0.6", exact = true}
+"omni.physx.tests" = {version = "110.0.6", exact = true}
+"omni.physx.tests.visual" = {version = "110.0.6", exact = true}
 
 # Isaac Sim Sensors
 "omni.sensors.net" = {}
@@ -290,6 +303,11 @@ folders = [
 
 # Linux x86_64 dependencies
 [dependencies."filter:platform"."linux-x86_64"]
+
+"isaacsim.ucx.bridge" = {}
+"isaacsim.ucx.core" = {}
+"isaacsim.ucx.nodes" = {}
+
 # XR
 "isaacsim.xr.input_devices" = {version = "1.0.4", exact = true}
 
@@ -316,17 +334,17 @@ folders = [
 # BEGIN GENERATED PART (Remove from 'BEGIN' to 'END' to regenerate)
 ########################################################################################################################
 
-# Kit SDK Version: 110.0.0+feature.267313.24ccb1c3.gl
+# Kit SDK Version: 110.0.0+feature.274308.5f0ed89a.gl
 
 # Exact Version dependencies:
 # 	isaacsim.xr.input_devices-1.0.4
-# 	omni.physics.tensors-110.0.5
-# 	omni.physx.bundle-110.0.5
-# 	omni.physx.fabric-110.0.5
-# 	omni.physx.pvd-110.0.5
-# 	omni.physx.tensors-110.0.5
-# 	omni.physx.tests-110.0.5
-# 	omni.physx.tests.visual-110.0.5
+# 	omni.physics.tensors-110.0.6
+# 	omni.physx.bundle-110.0.6
+# 	omni.physx.fabric-110.0.6
+# 	omni.physx.pvd-110.0.6
+# 	omni.physx.tensors-110.0.6
+# 	omni.physx.tests-110.0.6
+# 	omni.physx.tests.visual-110.0.6
 
 # Version lock for all dependencies:
 [settings.app.exts]
@@ -352,7 +370,7 @@ enabled = [
 	"omni.anim.asset-110.0.0",
 	"omni.anim.behavior.asset-110.0.1",
 	"omni.anim.behavior.bundle-110.0.2",
-	"omni.anim.behavior.core-110.0.7",
+	"omni.anim.behavior.core-110.0.8",
 	"omni.anim.behavior.schema-110.0.1",
 	"omni.anim.behavior.ui-110.0.6",
 	"omni.anim.curve.bundle-1.4.0",
@@ -376,14 +394,14 @@ enabled = [
 	"omni.anim.timeline-110.0.0",
 	"omni.anim.widget.timeline-0.4.0",
 	"omni.anim.window.timeline-110.0.0",
-	"omni.asset_validator.core-1.10.5",
-	"omni.asset_validator.ui-1.10.5",
+	"omni.asset_validator.core-1.11.2",
+	"omni.asset_validator.ui-1.11.2",
 	"omni.behavior.composer-0.7.0",
 	"omni.behavior.composer.schema-0.5.0",	
 	"omni.behavior.scripting.core-110.0.4",
-	"omni.convexdecomposition-110.0.5",
+	"omni.convexdecomposition-110.0.6",
 	"omni.cuopt.examples-1.4.1",
-	"omni.cuopt.service-1.3.1",
+	"omni.cuopt.service-1.3.2",
 	"omni.cuopt.visualization-1.4.0",
 	"omni.curve.creator-110.0.0",
 	"omni.curve.manipulator-110.0.0",
@@ -399,7 +417,7 @@ enabled = [
 	"omni.graph.scriptnode-2.10.2",
 	"omni.graph.telemetry-3.10.2",
 	"omni.graph.ui-2.10.2",
-	"omni.graph.ui_nodes-2.10.2",
+	"omni.graph.ui_nodes-2.10.5",
 	"omni.graph.visualization.nodes-2.1.4",
 	"omni.graph.window.action-2.10.2",
 	"omni.graph.window.core-3.10.2",
@@ -429,10 +447,10 @@ enabled = [
 	"omni.kit.graph.editor.core-1.5.4",
 	"omni.kit.graph.usd.commands-1.3.2",
 	"omni.kit.graph.widget.variables-2.1.1",
-	"omni.kit.livestream.app-9.0.1",
-	"omni.kit.livestream.core-9.0.1",
+	"omni.kit.livestream.app-10.1.0",
+	"omni.kit.livestream.core-10.0.0",
 	"omni.kit.livestream.messaging-1.2.1",
-	"omni.kit.livestream.webrtc-9.0.4",
+	"omni.kit.livestream.webrtc-10.1.0",
 	"omni.kit.menu.stage-1.2.7",
 	"omni.kit.mesh.raycast-110.0.0",
 	"omni.kit.ngsearch-0.3.3",
@@ -443,6 +461,7 @@ enabled = [
 	"omni.kit.profiler.tracy-1.2.0",
 	"omni.kit.property.collection-0.2.4",
 	"omni.kit.property.environment-1.2.3",
+	"omni.kit.property.physics-110.0.6",
 	"omni.kit.search.files-1.0.4",
 	"omni.kit.search.service-0.1.12",
 	"omni.kit.sequencer.core-110.0.0",
@@ -453,17 +472,17 @@ enabled = [
 	"omni.kit.stagerecorder.core-110.0.2",
 	"omni.kit.stagerecorder.ui-110.0.0",
 	"omni.kit.thumbnails.mdl-1.0.28",
-	"omni.kit.timeline.minibar-1.2.13",
+	"omni.kit.timeline.minibar-1.2.14",
 	"omni.kit.tool.asset_exporter-4.0.5",
 	"omni.kit.tool.asset_importer-5.1.3",
 	"omni.kit.tool.measure-200.0.5",
 	"omni.kit.tool.remove_unused.controller-0.2.0",
 	"omni.kit.tool.remove_unused.core-0.1.4",
-	"omni.kit.variant.editor-107.5.7",
+	"omni.kit.variant.editor-107.5.8",
 	"omni.kit.variant.presenter-107.1.3",
 	"omni.kit.viewport.menubar.lighting-107.3.2",
 	"omni.kit.viewport.menubar.waypoint-104.2.16",
-	"omni.kit.waypoint.core-1.6.3",
+	"omni.kit.waypoint.core-1.6.4",
 	"omni.kit.waypoint.playlist-1.1.1",
 	"omni.kit.widget.calendar-1.0.9",
 	"omni.kit.widget.collection-0.3.3",
@@ -486,31 +505,33 @@ enabled = [
 	"omni.metropolis.schema-0.0.1",
 	"omni.metropolis.utils-1.0.3",
 	"omni.no_code_ui.bundle-1.1.4",
-	"omni.physics-110.0.5",
-	"omni.physics.physx-110.0.5",
-	"omni.physics.stageupdate-110.0.5",
-	"omni.physics.ui-110.0.5",
-	"omni.physx-110.0.5",
-	"omni.physx.asset_validator-110.0.5",
-	"omni.physx.camera-110.0.5",
-	"omni.physx.cct-110.0.5",
-	"omni.physx.commands-110.0.5",
-	"omni.physx.cooking-110.0.5",
-	"omni.physx.demos-110.0.5",
-	"omni.physx.foundation-110.0.5",
-	"omni.physx.graph-110.0.5",
-	"omni.physx.supportui-110.0.5",
-	"omni.physx.ui-110.0.5",
-	"omni.physx.vehicle-110.0.5",
+	"omni.physics-110.0.6",
+	"omni.physics.isaacsimready-110.0.6",
+	"omni.physics.physx-110.0.6",
+	"omni.physics.physx.ui-110.0.6",
+	"omni.physics.stageupdate-110.0.6",
+	"omni.physics.ui-110.0.6",
+	"omni.physx-110.0.6",
+	"omni.physx.asset_validator-110.0.6",
+	"omni.physx.camera-110.0.6",
+	"omni.physx.cct-110.0.6",
+	"omni.physx.commands-110.0.6",
+	"omni.physx.cooking-110.0.6",
+	"omni.physx.demos-110.0.6",
+	"omni.physx.foundation-110.0.6",
+	"omni.physx.graph-110.0.6",
+	"omni.physx.supportui-110.0.6",
+	"omni.physx.ui-110.0.6",
+	"omni.physx.vehicle-110.0.6",
 	"omni.ramp-110.0.0",
 	"omni.replicator.core-1.13.3",
 	"omni.replicator.nv-1.1.0",
-	"omni.replicator.replicator_yaml-2.0.11",
-	"omni.scene.optimizer.analysis-110.0.1",
-	"omni.scene.optimizer.bundle-110.0.1",
-	"omni.scene.optimizer.core-110.0.1",
-	"omni.scene.optimizer.ui-110.0.1",
-	"omni.scene.optimizer.validators-110.0.1",
+	"omni.replicator.replicator_yaml-2.0.12",
+	"omni.scene.optimizer.analysis-110.0.4",
+	"omni.scene.optimizer.bundle-110.0.4",
+	"omni.scene.optimizer.core-110.0.4",
+	"omni.scene.optimizer.ui-110.0.4",
+	"omni.scene.optimizer.validators-110.0.4",
 	"omni.scene.visualization.bundle-105.1.0",
 	"omni.scene.visualization.core-110.0.0",
 	"omni.scene.visualization.ui-107.0.1",
@@ -521,7 +542,7 @@ enabled = [
 	"omni.services.facilities.base-1.0.5",
 	"omni.services.facilities.monitoring.metrics-0.3.1",
 	"omni.services.facilities.monitoring.progress-0.2.4",
-	"omni.services.pip_archive-0.18.4",
+	"omni.services.pip_archive-0.18.6",
 	"omni.services.starfleet.auth-0.1.6",
 	"omni.services.transport.client.base-1.2.5",
 	"omni.services.transport.client.http_async-1.4.2",
@@ -529,21 +550,25 @@ enabled = [
 	"omni.services.transport.server.http-1.3.2",
 	"omni.services.transport.server.zeroconf-1.0.10",
 	"omni.services.usd-1.1.1",
+	"omni.simready.configuration-1.0.0",
+	"omni.simready.content.browser-0.2.2",
+	"omni.simready.content.search-1.0.1",
 	"omni.simready.explorer-1.1.4",
+	"omni.simready.paths-0.1.0",
 	"omni.tools.array-108.0.0",
 	"omni.usd.fileformat.e57-1.7.0",
 	"omni.usd.fileformat.pts-108.0.0",
 	"omni.usd.metrics.assembler-110.0.0",
-	"omni.usd.metrics.assembler.physics-110.0.5",
+	"omni.usd.metrics.assembler.physics-110.0.6",
 	"omni.usd.metrics.assembler.ui-110.0.0",
 	"omni.usd.schema.flow-110.0.0",
 	"omni.usd.schema.metrics.assembler-110.0.0",
-	"omni.usd.schema.physx-110.0.5",
+	"omni.usd.schema.physx-110.0.6",
 	"omni.usd.schema.scene.visualization-2.0.2",
 	"omni.usd.schema.sequence-3.2.0",
 	"omni.usdex.libs-2.2.1",
-	"omni.usdphysics-110.0.5",
-	"omni.usdphysics.ui-110.0.5",
+	"omni.usdphysics-110.0.6",
+	"omni.usdphysics.ui-110.0.6",
 	"omni.vdb_timesample_editor-0.2.3",
 	"omni.warehouse_creator-0.4.4",
 	"omni.warp.core-1.12.0-rc.1",
