@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.0] - 2026-02-27
+### Changed
+- Pinned mujoco-warp to 3.5.0.2 for compatibility with newton[sim] 1.0.0rc1
+
 ## [0.3.0] - 2026-02-27
 ### Removed
 - Removed omni.warp extension dependency; only omni.warp.core is required
