@@ -109,7 +109,25 @@ class TestContactSensorOgn(omni.kit.test.AsyncTestCase):
         sensor_time = og.Controller.attribute(self.graph_path + "/ReadContactNode.outputs:sensorTime").get()
         self.assertNotEqual(sensor_time, 0.0)
 
-    # verifying force value and sensor time equal zero for invalid case
+    async def test_contact_sensor_stop_play_lifecycle(self):
+        """Outputs recover valid data after a stop/play cycle."""
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await step_simulation(1.0)
+
+        force_value = og.Controller.attribute(self.graph_path + "/ReadContactNode.outputs:value").get()
+        self.assertNotEqual(force_value, 0.0, "Should have non-zero force before stop")
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await step_simulation(1.0)
+
+        force_after = og.Controller.attribute(self.graph_path + "/ReadContactNode.outputs:value").get()
+        self.assertNotEqual(force_after, 0.0, "Should recover valid force after stop/play")
+
     async def test_invalid_contact_sensor_ogn(self):
         """Verify outputs are zero for an invalid contact sensor prim."""
         og.Controller.set(

@@ -135,6 +135,9 @@ class Articulation(XformPrim):
         # -- articulation physics view
         self._physics_articulation_view = None
         self._physics_tensor_entity_initialized = False
+        # -- C++ data view for read-only access
+        self._cpp_data_view = None
+        self._cpp_data_view_id = None
         # initialize base class
         super().__init__(
             paths,
@@ -4708,7 +4711,96 @@ class Articulation(XformPrim):
             self._num_shapes = self._physics_articulation_view.max_shapes
             self._num_fixed_tendons = self._physics_articulation_view.max_fixed_tendons
 
+        # C++ data view setup is intentionally opt-in to avoid affecting
+        # existing Python-only workflows/tests unless explicitly requested.
+
+    def _setup_cpp_data_view(self):
+        """Set up C++ read-only data view for this articulation.
+
+        For PhysX: C++ sets up TensorApi callbacks internally -- no Python work needed.
+        For Newton: Python registers fill callbacks that copy tensor data into C++ buffers.
+        Transforms are handled in C++ via IFabricHierarchy for both engines.
+        """
+        if self._cpp_data_view is not None:
+            return
+        from ._cpp_buffers import get_device_ordinal
+        from .extension import get_prim_data_reader
+
+        reader = get_prim_data_reader()
+        if reader is None:
+            return
+
+        stage = stage_utils.get_current_stage(backend="usd")
+        if stage is None:
+            return
+        reader.initialize(stage_utils.get_stage_id(stage), get_device_ordinal())
+
+        art_view = self._physics_articulation_view
+        if art_view is None:
+            return
+
+        is_newton = hasattr(art_view, "_newton_stage")
+        engine_type = "newton" if is_newton else "physx"
+        view_id = f"articulation_{id(self)}"
+        self._cpp_data_view_id = view_id
+
+        self._cpp_data_view = reader.create_articulation_view(view_id, self.paths, engine_type)
+
+        if is_newton:
+            self._setup_newton_articulation_callbacks(art_view)
+
+    def _setup_newton_articulation_callbacks(self, art_view):
+        """Register Python fill callbacks for Newton-backed articulation fields."""
+        from ._cpp_buffers import wrap_cpp_buffer
+
+        count = art_view.count
+        max_dofs = art_view.max_dofs
+        max_links = art_view.max_links
+        view = self._cpp_data_view
+
+        field_defs = {
+            "dof_positions": (count * max_dofs, (count, max_dofs), art_view.get_dof_positions),
+            "dof_velocities": (count * max_dofs, (count, max_dofs), art_view.get_dof_velocities),
+            "dof_efforts": (count * max_dofs, (count, max_dofs), art_view.get_dof_actuation_forces),
+            "root_transforms": (count * 7, (count, 7), art_view.get_root_transforms),
+            "root_velocities": (count * 6, (count, 6), art_view.get_root_velocities),
+            "link_masses": (count * max_links, (count, max_links), art_view.get_masses),
+        }
+
+        for field_name, (size, shape, getter_fn) in field_defs.items():
+            view.allocate_buffer(field_name, size, 4)
+            cpp_buf = wrap_cpp_buffer(view, field_name, shape=shape)
+            fn = getter_fn
+
+            def make_cb(f=fn, b=cpp_buf):
+                def cb():
+                    wp.copy(b, f())
+
+                return cb
+
+            view.register_field_callback(field_name, make_cb())
+
+    def initialize_cpp_data_view(self):
+        """Initialize the optional C++ read-only data view.
+
+        This method is opt-in and can be called by users that need C++ consumers
+        to read articulation data through `IPrimDataReader`.
+        """
+        self._setup_cpp_data_view()
+
+    def _teardown_cpp_data_view(self):
+        """Clean up C++ data view."""
+        if self._cpp_data_view_id is not None:
+            from .extension import get_prim_data_reader
+
+            reader = get_prim_data_reader()
+            if reader is not None:
+                reader.remove_view(self._cpp_data_view_id)
+            self._cpp_data_view = None
+            self._cpp_data_view_id = None
+
     def _on_timeline_stop(self, event):
         """Handle timeline stop event."""
+        self._teardown_cpp_data_view()
         # invalidate articulation view
         self._physics_articulation_view = None

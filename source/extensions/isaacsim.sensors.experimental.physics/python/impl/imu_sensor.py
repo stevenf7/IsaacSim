@@ -137,8 +137,6 @@ class IMUSensor(XformPrim):
         self._prim = self.prims[0]
         self._backend: ImuSensorBackend = ImuSensorBackend(prim_path)
 
-        # Internal state
-        self._pause = False
         self._current_time = 0.0
 
         # Initialize frame data structure with default values
@@ -151,7 +149,6 @@ class IMUSensor(XformPrim):
             "angular_velocity": np.zeros((3,), dtype=np.float32),
             "orientation": orientation_array,
         }
-        return
 
     @property
     def prim_path(self) -> str:
@@ -171,7 +168,6 @@ class IMUSensor(XformPrim):
         Args:
             physics_sim_view: Unused. Provided for API compatibility.
         """
-        return
 
     def get_current_frame(self, read_gravity: bool = True) -> dict:
         """Get the current IMU sensor data as a structured frame.
@@ -195,81 +191,26 @@ class IMUSensor(XformPrim):
             >>> frame["orientation"]  # doctest: +NO_CHECK
             array([1., 0., 0., 0.], dtype=float32)
         """
-        imu_sensor_reading = self._backend.get_sensor_reading(read_gravity=read_gravity)
+        reading = self._backend.get_sensor_reading(read_gravity=read_gravity)
 
-        if imu_sensor_reading.is_valid:
-            self._current_frame["linear_acceleration"] = np.array(
-                [
-                    imu_sensor_reading.linear_acceleration_x,
-                    imu_sensor_reading.linear_acceleration_y,
-                    imu_sensor_reading.linear_acceleration_z,
-                ],
-                dtype=np.float32,
-            )
-            self._current_frame["angular_velocity"] = np.array(
-                [
-                    imu_sensor_reading.angular_velocity_x,
-                    imu_sensor_reading.angular_velocity_y,
-                    imu_sensor_reading.angular_velocity_z,
-                ],
-                dtype=np.float32,
-            )
-            # Convert from internal [x, y, z, w] to frame output [w, x, y, z]
-            self._current_frame["orientation"] = np.array(
-                [
-                    imu_sensor_reading.orientation[3],  # w
-                    imu_sensor_reading.orientation[0],  # x
-                    imu_sensor_reading.orientation[1],  # y
-                    imu_sensor_reading.orientation[2],  # z
-                ],
-                dtype=np.float32,
-            )
-            self._current_frame["time"] = float(imu_sensor_reading.time)
+        if reading.is_valid:
+            linear_acceleration = self._current_frame["linear_acceleration"]
+            linear_acceleration[0] = reading.linear_acceleration_x
+            linear_acceleration[1] = reading.linear_acceleration_y
+            linear_acceleration[2] = reading.linear_acceleration_z
+
+            angular_velocity = self._current_frame["angular_velocity"]
+            angular_velocity[0] = reading.angular_velocity_x
+            angular_velocity[1] = reading.angular_velocity_y
+            angular_velocity[2] = reading.angular_velocity_z
+
+            orientation = self._current_frame["orientation"]
+            orientation[0] = reading.orientation_w
+            orientation[1] = reading.orientation_x
+            orientation[2] = reading.orientation_y
+            orientation[3] = reading.orientation_z
+
+            self._current_frame["time"] = reading.time
             self._current_frame["physics_step"] = float(SimulationManager.get_num_physics_steps())
 
         return self._current_frame
-
-    def resume(self) -> None:
-        """Resume sensor data collection.
-
-        Re-enables the sensor after it has been paused.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> sensor.resume()
-        """
-        self._isaac_sensor_prim.GetEnabledAttr().Set(True)
-        return
-
-    def pause(self) -> None:
-        """Pause sensor data collection.
-
-        Disables sensor updates while keeping the sensor prim active.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> sensor.pause()
-        """
-        self._isaac_sensor_prim.GetEnabledAttr().Set(False)
-        return
-
-    def is_paused(self) -> bool:
-        """Check if the sensor is currently paused.
-
-        Returns:
-            True if sensor is paused, False otherwise.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> sensor.is_paused()  # doctest: +NO_CHECK
-            False
-        """
-        if not self._isaac_sensor_prim.GetEnabledAttr().Get():
-            return True
-        return False

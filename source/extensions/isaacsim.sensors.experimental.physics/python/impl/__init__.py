@@ -21,6 +21,7 @@ from .contact_sensor import ContactSensor as ContactSensor
 from .contact_sensor_backend import ContactSensorBackend as ContactSensorBackend
 from .effort_sensor import EffortSensor as EffortSensor
 from .effort_sensor import EffortSensorReading as EffortSensorReading
+from .effort_sensor_backend import EffortSensorBackend as EffortSensorBackend
 from .extension import *
 from .imu_sensor import IMUSensor as IMUSensor
 from .imu_sensor_backend import ImuSensorBackend as ImuSensorBackend

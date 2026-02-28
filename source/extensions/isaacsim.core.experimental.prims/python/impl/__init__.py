@@ -15,6 +15,7 @@
 
 from .articulation import Articulation
 from .deformable_prim import DeformablePrim
+from .extension import Extension
 from .geom_prim import GeomPrim
 from .prim import Prim
 from .rigid_prim import RigidPrim

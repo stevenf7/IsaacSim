@@ -1,11 +1,11 @@
 {
     "isaacsim.sensors.physics.IsaacReadEffortSensor": {
         "version": 1,
-        "icon": "icons/isaac-sim.svg",        
+        "icon": "icons/isaac-sim.svg",
         "description": "Node that reads out joint effort values",
-        "language": "Python",
+        "language": "cpp",
         "categoryDefinitions": "config/CategoryDefinition.json",
-        "categories": ["isaacPhysicsSensor"],
+        "categories": "isaacPhysicsSensor",
         "metadata": {
             "uiName": "Isaac Read Effort Node"
         },
@@ -13,7 +13,7 @@
             "execIn": {
                 "type": "execution",
                 "description": "The input execution port"
-            },            
+            },
             "prim": {
                 "type": "target",
                 "description": "Path to the joint getting measured",
@@ -30,9 +30,10 @@
             "enabled": {
                 "type": "bool",
                 "description": "True to enable sensor, False to disable the sensor",
-                "default": true
+                "default": true,
+                "deprecated": "Enabling/disabling effort sensors at runtime is not supported. This input is ignored."
             },
-            "sensorPeriod":{
+            "sensorPeriod": {
                 "type": "float",
                 "description": "Downtime between sensor readings",
                 "default": 0,
@@ -44,7 +45,7 @@
                 "type": "execution",
                 "description": "Output execution triggers when sensor has data"
             },
-            "sensorTime":{
+            "sensorTime": {
                 "type": "float",
                 "description": "Timestamp of the sensor reading",
                 "default": 0

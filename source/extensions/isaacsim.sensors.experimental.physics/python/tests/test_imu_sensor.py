@@ -21,6 +21,7 @@ from __future__ import annotations
 import asyncio
 import math
 
+import carb
 import carb.tokens
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -34,7 +35,7 @@ from isaacsim.core.experimental.prims import Articulation, GeomPrim, RigidPrim, 
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.sensors.experimental.physics import ImuSensorBackend, IMUSensorReading
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import Gf, UsdGeom
+from pxr import Gf, UsdGeom, UsdUtils
 
 from .common import (
     ANGLE_TOLERANCE_DEG,
@@ -177,8 +178,9 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
 
+            r = self._get_imu_backend(self.arm_path + "/arm_imu").get_sensor_reading()
             euler = transform_utils.quaternion_to_euler_angles(
-                np.array(self._get_imu_backend(self.arm_path + "/arm_imu").get_sensor_reading().orientation),
+                np.array([r.orientation_x, r.orientation_y, r.orientation_z, r.orientation_w]),
                 degrees=True,
             )
             orientation = euler.numpy()[0]
@@ -610,11 +612,11 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         # rotated -90 degress abouty, check if this is correct
         # note: (-0.70711, 0 0.70711, 0) and (0.70711, 0, -0.70711, 0) represent the same angle
-        self.assertAlmostEqual(abs(custom_reading.orientation.w), 0.70711, delta=ORIENTATION_TOLERANCE)
-        self.assertAlmostEqual(custom_reading.orientation.x, 0.0, delta=ORIENTATION_TOLERANCE)
-        self.assertAlmostEqual(abs(custom_reading.orientation.y), 0.70711, delta=ORIENTATION_TOLERANCE)
-        self.assertAlmostEqual(custom_reading.orientation.z, 0.0, delta=ORIENTATION_TOLERANCE)
-        self.assertAlmostEqual(custom_reading.orientation.w, -custom_reading.orientation.y, delta=ORIENTATION_TOLERANCE)
+        self.assertAlmostEqual(abs(custom_reading.orientation_w), 0.70711, delta=ORIENTATION_TOLERANCE)
+        self.assertAlmostEqual(custom_reading.orientation_x, 0.0, delta=ORIENTATION_TOLERANCE)
+        self.assertAlmostEqual(abs(custom_reading.orientation_y), 0.70711, delta=ORIENTATION_TOLERANCE)
+        self.assertAlmostEqual(custom_reading.orientation_z, 0.0, delta=ORIENTATION_TOLERANCE)
+        self.assertAlmostEqual(custom_reading.orientation_w, -custom_reading.orientation_y, delta=ORIENTATION_TOLERANCE)
 
     async def test_invalid_imu(self):
         # goal is to make sure an invalid imu doesn't crash the sim
@@ -802,3 +804,89 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             linear_velocity_z,
             f"Velocity should increase in magnitude during free fall: {linear_velocity_z2} should be < {linear_velocity_z}",
         )
+
+    async def test_reader_reinitialize_during_play(self):
+        """Force reader.initialize() while IMU is active, then step physics.
+
+        Reproduces a crash where ImuSensorImpl holds a stale
+        IRigidBodyDataView pointer after the reader destroys all views.
+        """
+        await stage_utils.create_new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        stage_utils.set_stage_units(meters_per_unit=1.0)
+        SimulationManager.setup_simulation(dt=1.0 / 60.0)
+
+        cube_path = "/World/Cube"
+        Cube(cube_path, sizes=1.0, positions=[0.0, 0.0, 2.0])
+        GeomPrim(cube_path, apply_collision_apis=True)
+        RigidPrim(cube_path, masses=[1.0])
+
+        result, sensor = omni.kit.commands.execute(
+            "IsaacSensorExperimentalCreateImuSensor", path="/imu_sensor", parent=cube_path
+        )
+        self.assertTrue(result)
+        sensor_path = cube_path + "/imu_sensor"
+        await omni.kit.app.get_app().next_update_async()
+
+        from isaacsim.core.experimental.prims import _prims_reader
+
+        reader = _prims_reader.acquire_prim_data_reader_interface()
+        try:
+            self._timeline.play()
+            await step_simulation(0.25)
+
+            backend = ImuSensorBackend(sensor_path)
+            reading = backend.get_sensor_reading()
+            self.assertTrue(reading.is_valid)
+
+            stage = omni.usd.get_context().get_stage()
+            stage_id = UsdUtils.StageCache.Get().GetId(stage).ToLongInt()
+            gen_before = reader.get_generation()
+
+            reader.initialize(stage_id, -1)
+            self.assertGreater(reader.get_generation(), gen_before)
+
+            await step_simulation(0.25)
+
+            reading_after = backend.get_sensor_reading()
+            carb.log_info(f"Post-reinit IMU reading valid={reading_after.is_valid}")
+        finally:
+            _prims_reader.release_prim_data_reader_interface(reader)
+
+    async def test_multiple_reader_reinitializations(self):
+        """Reinitialize the reader several times in rapid succession while IMU is active."""
+        await stage_utils.create_new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        stage_utils.set_stage_units(meters_per_unit=1.0)
+        SimulationManager.setup_simulation(dt=1.0 / 60.0)
+
+        cube_path = "/World/Cube"
+        Cube(cube_path, sizes=1.0, positions=[0.0, 0.0, 2.0])
+        GeomPrim(cube_path, apply_collision_apis=True)
+        RigidPrim(cube_path, masses=[1.0])
+
+        result, sensor = omni.kit.commands.execute(
+            "IsaacSensorExperimentalCreateImuSensor", path="/imu_sensor", parent=cube_path
+        )
+        self.assertTrue(result)
+        sensor_path = cube_path + "/imu_sensor"
+        await omni.kit.app.get_app().next_update_async()
+
+        from isaacsim.core.experimental.prims import _prims_reader
+
+        reader = _prims_reader.acquire_prim_data_reader_interface()
+        try:
+            self._timeline.play()
+            await step_simulation(0.25)
+
+            backend = ImuSensorBackend(sensor_path)
+            self.assertTrue(backend.get_sensor_reading().is_valid)
+
+            stage = omni.usd.get_context().get_stage()
+            stage_id = UsdUtils.StageCache.Get().GetId(stage).ToLongInt()
+
+            for _ in range(3):
+                reader.initialize(stage_id, -1)
+                await step_simulation(0.1)
+        finally:
+            _prims_reader.release_prim_data_reader_interface(reader)

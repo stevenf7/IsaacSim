@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2026-02-27
+### Changed
+- Add C++ interface to read xform, rigid body and articulation data
+
 ## [1.1.4] - 2026-02-27
 ### Fixed
 - Fixed Warp 1.12 compatibility for deformable prims (wp.mat33 row-vector constructor replaced with wp.matrix_from_rows)

@@ -1,5 +1,5 @@
 [package]
-version = "1.0.1"
+version = "1.1.0"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor OmniGraph Nodes"
 description = "OmniGraph nodes for Isaac Sim physics-based sensors (Contact, Effort, IMU). Depends on isaacsim.sensors.experimental.physics for sensor backends."
@@ -20,6 +20,9 @@ writeTarget.kit = true
 "omni.timeline" = {}
 "omni.usd" = {}
 "usdrt.scenegraph" = {}
+
+[[native.plugin]]
+path = "bin/*.plugin"
 
 [[python.module]]
 name = "isaacsim.sensors.physics.nodes"
@@ -45,12 +48,12 @@ dependencies = [
     "omni.isaac.ml_archive"
 ]
 stdoutFailPatterns.exclude = [
-    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physics_IsaacReadEffortSensor: [/TestGraph] OmniGraph Error: Failed to create effort sensor, unable to find prim path*',
-    '*[Error] [omni.graph.core.plugin] /TestGraph/ReadEffortNode: [/TestGraph] OmniGraph Error: Failed to create effort sensor, unable to find prim path*',
-    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physics_IsaacReadContactSensor: [/TestGraph] OmniGraph Error: Invalid contact sensor prim*',
-    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_sensors_physics_IsaacReadIMU: [/TestGraph] OmniGraph Error: Invalid Imu sensor prim*',
+    '*[Error] [omni.graph.core.plugin]*Failed to create effort sensor*',
+    '*[Error] [omni.graph.core.plugin]*Invalid contact sensor prim*',
+    '*[Error] [omni.graph.core.plugin]*Failed to create contact sensor*',
+    '*[Error] [omni.graph.core.plugin]*Invalid Imu sensor prim*',
+    '*[Error] [omni.graph.core.plugin]*Failed to create IMU sensor*',
     '*[Error] [isaacsim.sensors.experimental.physics.impl.commands] Valid parent prim must be selected before creating contact sensor prim.*',
-    '*[Error] [omni.graph.core.plugin] /TestGraph/ReadIMUNode: [/TestGraph] Invalid Imu sensor prim*',
     '*[Error] [isaacsim.sensors.physics.plugin] Imu Sensor does not exist*',
     '*[Error] [isaacsim.sensors.physics.plugin] Contact Sensor does not exist*',
     '*parent prim is missing contact report API*',

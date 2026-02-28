@@ -25,15 +25,11 @@ from __future__ import annotations
 import weakref
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from typing import Any, cast
+from typing import Any
 
 import numpy as np
-from isaacsim.core.experimental.utils import prim as prim_utils
-from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.experimental.utils import transform as transform_utils
 from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
-from omni.physics.core import ContactEventType, get_physics_simulation_interface
-from pxr import PhysicsSchemaTools, PhysxSchema, UsdPhysics
 
 
 @dataclass
@@ -74,7 +70,7 @@ class IMUSensorReading:
     #: Angular velocity around Y axis in rad/s.
     angular_velocity_z: float = 0.0
     #: Angular velocity around Z axis in rad/s.
-    orientation: "Quaternion" = field(default_factory=lambda: Quaternion(1.0, 0.0, 0.0, 0.0))
+    orientation: Quaternion = field(default_factory=lambda: Quaternion(1.0, 0.0, 0.0, 0.0))
     #: Sensor orientation as a quaternion.
     time: float = 0.0
     #: Simulation time when the reading was taken.
@@ -241,35 +237,6 @@ def _quat_multiply(first: np.ndarray, second: np.ndarray) -> np.ndarray:
     return _to_numpy(transform_utils.quaternion_multiplication(first, second))
 
 
-def _vec3_to_dict(value: Any) -> dict[str, float]:
-    """Convert a 3D vector to a dictionary with x, y, z keys.
-
-    Args:
-        value: 3D vector-like value.
-
-    Returns:
-        Dict with x, y, z float entries.
-    """
-    return {"x": float(value[0]), "y": float(value[1]), "z": float(value[2])}
-
-
-def _get_contact_header_field(header: Any, *names: str, default: Any = None) -> Any:
-    """Get a field from a contact header, trying multiple attribute names.
-
-    Args:
-        header: Contact header object to query.
-        *names: Attribute names to try in order.
-        default: Default value if no attribute exists.
-
-    Returns:
-        Attribute value or default.
-    """
-    for name in names:
-        if hasattr(header, name):
-            return getattr(header, name)
-    return default
-
-
 def _clone_imu_reading(reading: IMUSensorReading) -> IMUSensorReading:
     """Create a deep copy of an IMU reading.
 
@@ -297,76 +264,13 @@ def _clone_imu_reading(reading: IMUSensorReading) -> IMUSensorReading:
     )
 
 
-def _find_rigid_body_parent_path(prim_path: str) -> tuple[str | None, bool]:
-    """Find the nearest ancestor prim with a rigid body API.
-
-    Args:
-        prim_path: USD prim path to start from.
-
-    Returns:
-        Tuple of rigid body prim path (or None) and articulation link flag.
-    """
-    prim = prim_utils.get_prim_at_path(prim_path)
-    articulation_link_api = getattr(PhysxSchema, "PhysxArticulationLinkAPI", None)
-    articulation_api = getattr(PhysxSchema, "PhysxArticulationAPI", None)
-
-    while prim.IsValid():
-        path_str = prim_utils.get_prim_path(prim)
-        if path_str == "/":
-            break
-
-        has_rigid = prim_utils.has_api(prim, UsdPhysics.RigidBodyAPI)
-        has_articulation_link = articulation_link_api is not None and prim_utils.has_api(prim, articulation_link_api)
-        has_articulation = articulation_api is not None and prim_utils.has_api(prim, articulation_api)
-
-        if has_rigid:
-            enabled_attr = prim.GetAttribute("physics:rigidBodyEnabled")
-            if not enabled_attr.IsValid() or enabled_attr.Get() is None:
-                return path_str, has_articulation_link
-            if enabled_attr.Get():
-                return path_str, has_articulation_link
-
-        if has_articulation_link:
-            return path_str, True
-
-        if has_articulation:
-            enabled_attr = prim.GetAttribute("physics:rigidBodyEnabled")
-            if not enabled_attr.IsValid() or enabled_attr.Get() is None:
-                return path_str, False
-            if enabled_attr.Get():
-                return path_str, False
-
-        prim = prim.GetParent()
-    return None, False
-
-
-def _resolve_rigid_body_token(body_token: int) -> int:
-    """Resolve a physics body token to its rigid body ancestor.
-
-    Args:
-        body_token: Token representing a physics body prim.
-
-    Returns:
-        Token for the rigid body ancestor, or the input token if not found.
-    """
-    prim_path = PhysicsSchemaTools.intToSdfPath(body_token)
-    prim = prim_utils.get_prim_at_path(str(prim_path))
-
-    while prim.IsValid() and prim_utils.get_prim_path(prim) != "/":
-        if prim_utils.has_api(prim, UsdPhysics.RigidBodyAPI):
-            return PhysicsSchemaTools.sdfPathToInt(prim.GetPath())
-        prim = prim.GetParent()
-    return body_token
-
-
 class _SensorStepManager:
     """Singleton manager for physics sensor lifecycle events."""
 
-    _instance: "_SensorStepManager | None" = None
+    _instance: _SensorStepManager | None = None
 
     def __init__(self) -> None:
-        self._sensors: "weakref.WeakSet[_PhysicsSensorBase]" = weakref.WeakSet()
-        self._imu_backends: dict[str, "_PhysicsSensorBase"] = {}
+        self._sensors: weakref.WeakSet[_PhysicsSensorBase] = weakref.WeakSet()
 
         self._post_step_callback = SimulationManager.register_callback(
             self._on_physics_step, event=SimulationEvent.PHYSICS_POST_STEP
@@ -379,7 +283,7 @@ class _SensorStepManager:
         )
 
     @classmethod
-    def instance(cls) -> "_SensorStepManager":
+    def instance(cls) -> _SensorStepManager:
         """Get the singleton instance, creating it if necessary.
 
         Returns:
@@ -389,7 +293,7 @@ class _SensorStepManager:
             cls._instance = cls()
         return cls._instance
 
-    def register(self, sensor: "_PhysicsSensorBase") -> None:
+    def register(self, sensor: _PhysicsSensorBase) -> None:
         """Register a sensor to receive physics step updates.
 
         Args:
@@ -397,183 +301,31 @@ class _SensorStepManager:
         """
         self._sensors.add(sensor)
 
-    def get_imu_backend(self, prim_path: str) -> "_PhysicsSensorBase | None":
-        """Get an auto-discovered IMU backend by prim path.
+    def get_imu_backend(self, prim_path: str) -> _PhysicsSensorBase | None:
+        """Get an IMU backend by prim path.
+
+        .. deprecated::
+            IMU backends are now managed by the C++ IImuSensor plugin.
+            Use ImuSensorBackend(prim_path) directly instead.
 
         Args:
             prim_path: IMU prim path to look up.
 
         Returns:
-            IMU backend instance or None if not found.
+            None (IMU backends are no longer tracked by the step manager).
         """
-        return self._imu_backends.get(prim_path)
+        return None
 
     def _on_simulation_start(self, event: Any) -> None:
-        _ContactReportManager.instance().reset()
+        pass
 
-        from .imu_sensor_backend import ImuSensorBackend
-
-        stage = stage_utils.get_current_stage(backend="usd")
-        if stage is None:
-            return
-
-        for prim in stage.Traverse():
-            if prim.GetTypeName() == "IsaacImuSensor":
-                prim_path = str(prim.GetPath())
-                if prim_path not in self._imu_backends:
-                    try:
-                        backend = ImuSensorBackend(prim_path)
-                        self._imu_backends[prim_path] = backend
-                    except Exception:
-                        pass
-
-    def _on_physics_step(self, step_dt: float, context: Any) -> None:
-        _ContactReportManager.instance().on_physics_step()
+    def _on_physics_step(self, step_dt: float, context: Any = None) -> None:
         for sensor in list(self._sensors):
             sensor.on_physics_step(step_dt)
 
     def _on_timeline_stop(self, event: Any) -> None:
         for sensor in list(self._sensors):
             sensor.on_timeline_stop()
-        self._imu_backends.clear()
-        _ContactReportManager.instance().reset()
-
-
-class _ContactReportManager:
-    """Singleton manager for physics contact events."""
-
-    _instance: "_ContactReportManager | None" = None
-
-    def __init__(self) -> None:
-        self._contact_raw: list[dict[str, object]] = []
-        self._contact_raw_map: dict[int, list[dict[str, object]]] = {}
-        self._current_time = 0.0
-        self._current_dt = 0.0
-        self._last_step_num = -1
-
-        self._subscription = get_physics_simulation_interface().subscribe_physics_contact_report_events(
-            self._on_contact_event
-        )
-
-    @classmethod
-    def instance(cls) -> "_ContactReportManager":
-        """Get the singleton instance, creating it if necessary.
-
-        Returns:
-            Singleton instance of the manager.
-        """
-        if cls._instance is None:
-            cls._instance = cls()
-        return cls._instance
-
-    def reset(self) -> None:
-        """Reset all contact data."""
-        self._contact_raw.clear()
-        self._contact_raw_map.clear()
-        self._last_step_num = -1
-
-    def on_physics_step(self) -> None:
-        """Clear contact data at start of each new physics step."""
-        current_step = SimulationManager.get_num_physics_steps()
-        if current_step != self._last_step_num:
-            self._contact_raw.clear()
-            self._contact_raw_map.clear()
-            self._last_step_num = current_step
-            self._current_time = float(SimulationManager.get_simulation_time())
-            self._current_dt = float(SimulationManager.get_physics_dt())
-
-    def _remove_pair_from_list(
-        self, contact_list: list[dict[str, object]], body0: int, body1: int
-    ) -> list[dict[str, object]]:
-        return [
-            entry
-            for entry in contact_list
-            if not (entry["body0"] == body0 and entry["body1"] == body1)
-            and not (entry["body0"] == body1 and entry["body1"] == body0)
-        ]
-
-    def _on_contact_event(self, contact_headers: Any, contact_data: Any, friction_anchors: Any) -> None:
-        sim_time = float(SimulationManager.get_simulation_time())
-        sim_dt = float(SimulationManager.get_physics_dt())
-        current_step = SimulationManager.get_num_physics_steps()
-
-        if current_step != self._last_step_num:
-            self._contact_raw.clear()
-            self._contact_raw_map.clear()
-            self._last_step_num = current_step
-            self._current_time = sim_time
-            self._current_dt = sim_dt
-
-        data_index = 0
-        for header in contact_headers:
-            event_type = _get_contact_header_field(header, "type")
-            body0 = _get_contact_header_field(header, "actor0", "collider0")
-            body1 = _get_contact_header_field(header, "actor1", "collider1")
-            if body0 is None or body1 is None:
-                continue
-
-            body0 = _resolve_rigid_body_token(int(body0))
-            body1 = _resolve_rigid_body_token(int(body1))
-            count = _get_contact_header_field(header, "numContactData", "num_contact_data", default=0)
-
-            if event_type in (ContactEventType.CONTACT_FOUND, ContactEventType.CONTACT_PERSIST):
-                self._contact_raw = self._remove_pair_from_list(self._contact_raw, body0, body1)
-
-                if body0 in self._contact_raw_map:
-                    del self._contact_raw_map[body0]
-                if body1 in self._contact_raw_map:
-                    del self._contact_raw_map[body1]
-
-                for i in range(int(count)):
-                    data = contact_data[data_index + i]
-                    entry = {
-                        "body0": int(body0),
-                        "body1": int(body1),
-                        "position": _vec3_to_dict(data.position),
-                        "normal": _vec3_to_dict(data.normal),
-                        "impulse": _vec3_to_dict(data.impulse),
-                        "time": sim_time,
-                        "dt": sim_dt,
-                    }
-                    self._contact_raw.append(entry)
-                data_index += int(count)
-
-            elif event_type == ContactEventType.CONTACT_LOST:
-                self._contact_raw = self._remove_pair_from_list(self._contact_raw, body0, body1)
-                if body0 in self._contact_raw_map:
-                    del self._contact_raw_map[body0]
-                if body1 in self._contact_raw_map:
-                    del self._contact_raw_map[body1]
-
-    def get_raw_contacts_for_body(self, body_token: int) -> list[dict[str, object]]:
-        """Get raw contact data for a specific rigid body.
-
-        Args:
-            body_token: Token for the rigid body prim.
-
-        Returns:
-            List of raw contact entries.
-        """
-        current_step = SimulationManager.get_num_physics_steps()
-        sim_time = float(SimulationManager.get_simulation_time())
-
-        is_new_simulation = current_step < self._last_step_num
-        has_future_timestamps = self._contact_raw and any(
-            cast(float, entry["time"]) > sim_time + 0.1 for entry in self._contact_raw
-        )
-
-        if is_new_simulation or has_future_timestamps:
-            self._contact_raw.clear()
-            self._contact_raw_map.clear()
-            self._last_step_num = current_step
-
-        if body_token not in self._contact_raw_map or not self._contact_raw_map[body_token]:
-            self._contact_raw_map[body_token] = [
-                entry
-                for entry in self._contact_raw
-                if cast(int, entry["body0"]) == body_token or cast(int, entry["body1"]) == body_token
-            ]
-        return list(self._contact_raw_map[body_token])
 
 
 class _PhysicsSensorBase:
