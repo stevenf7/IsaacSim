@@ -147,6 +147,13 @@ For detailed configuration instructions, parameter lists, and examples, refer to
 
     ./ext_replicator-agent/ext_isaacsim_replicator_agent_configuration.rst
 
+For editing the configuration files through UI or code, see the :ref:`Configuration Editor API <ira_configuration_editor_api>`:
+
+.. toctree::
+    :maxdepth: 1
+
+    ./ext_replicator-agent/ext_isaacsim_replicator_agent_configuration_editor.rst
+
 Actor Behaviors
 -------------------
 
