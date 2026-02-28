@@ -307,7 +307,7 @@ pyproject.dependencies.all = [
     "six==1.17.0",
     # archives (isaacsim.pip.newton)
     "mujoco==3.5.0",
-    "mujoco-warp==3.5.0",
+    "mujoco-warp==3.5.0.2",
     "newton[sim]==1.0.0rc1",
     "newton-actuators==0.1.0",
     "newton-usd-schemas==0.1.0rc3",
