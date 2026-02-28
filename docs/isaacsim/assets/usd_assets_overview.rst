@@ -63,7 +63,7 @@ Enable the ``omni.activity.ui`` extension in the Extension Manager (**Window > E
 or launch Isaac Sim from a terminal with the argument ``--enable omni.activity.ui``.
 Then, open the **Activity Progress** window (**Window > Utilities > Activity Progress** menu) before opening or loading the USD asset to monitor its loading progress.
 
-.. image:: /images/isim_4.5_base_ref_gui_asset_browsers.png
+.. image:: /images/isim_6.0_base_ref_gui_asset_browsers.png
     :align: center
     :width: 40%
 

@@ -144,7 +144,7 @@ Once the extension is enabled:
       :align: center
 
 3. After selecting a model, check the status line in the Chat IRO panel. If
-   you see no errors, the model is ready and the extension is authenticated. If you see an error, check the API authentication and model selection.
+   you see no errors, the model is ready and the extension is authenticated.
 
 
 Using Chat IRO

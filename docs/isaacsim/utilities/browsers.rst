@@ -15,7 +15,6 @@ Browsers
 
 Isaac Sim provides several browsers to help you manage your assets and scenes. 
 These include the :ref:`Content Browser <isaac_sim_app_gui_content_browser>`, 
-the :ref:`Isaac Sim Asset Browser <isaac_sim_app_gui_asset_browser>`, 
 the :doc:`NVIDIA Asset Browser <extensions:ext_core/ext_browser-extensions/asset-browser>`, 
 the :doc:`Material Browser <extensions:ext_core/ext_browser-extensions/material-browser>`, 
 and the :doc:`SimReady Explorer <extensions:ext_core/ext_browser-extensions/simready-explorer>`.
@@ -24,7 +23,6 @@ and the :doc:`SimReady Explorer <extensions:ext_core/ext_browser-extensions/simr
    :maxdepth: 1
 
    content_browser
-   asset_browser
    :doc:`extensions:ext_core/ext_browser-extensions/material-browser`
    :doc:`NVIDIA Asset Browser <extensions:ext_core/ext_browser-extensions/asset-browser>`
    :doc:`extensions:ext_core/ext_browser-extensions/simready-explorer`
