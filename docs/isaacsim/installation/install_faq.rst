@@ -32,7 +32,7 @@ Setup Tips
 
     .. _isaac_sim_setup_native_webrtc:
 
-    .. rubric:: |isaac-sim_short| Full Streaming App (via |isaac-sim_short| WebRTC Streaming Client)
+    .. rubric:: |isaac-sim_short| Full Streaming App (using |isaac-sim_short| WebRTC Streaming Client)
 
     This is a headless version of |isaac-sim_short|. It can be run remotely on a workstation with an RTX GPU
     and accessed from the :ref:`isaac_sim_setup_livestream_webrtc` app available for Linux, Windows and macOS.
@@ -224,7 +224,7 @@ Setup Tips
 
     Kit SDK now handles registry configuration automatically, and custom registry overrides are no longer needed. Removing these settings ensures compatibility with Isaac Sim 6.0 and later versions.
 
-    To add custom registries, go to **Window** → **Extensions** and add the new custom registry in the **Extension Registries** section.
+    To add custom registries, go to **Window** > **Extensions** and add the new custom registry in the **Extension Registries** section.
 
 
 .. dropdown:: Differences Between Workstation And Docker
@@ -353,13 +353,13 @@ Setup Tips
 
     .. rubric:: Multi-GPU
 
-    Multi-GPU support and specific GPU settings can be activated via usual configurations methods, either via command line ...
+    Multi-GPU support and specific GPU settings can be activated using the usual configurations methods, either by command line ...
 
     .. code-block:: console
 
             ./isaac-sim.sh --/renderer/multiGpu/enabled=true
 
-    ...or via kit configuration in python...
+    ...or by kit configuration in Python...
 
     .. literalinclude:: ../snippets/installation/install_faq/refisaac_sim_app_install_container_is_recommended_.py
         :language: python
@@ -371,7 +371,7 @@ Setup Tips
     * ``/renderer/multiGpu/maxGpuCount=2`` sets the maximum number of GPUs to be allocated for rendering
     * ``/renderer/activeGpu=0`` sets the active GPU according to `nvidia-smi`
 
-    .. for further details, checkout :ref:`RTX-renderer`
+    .. for further details, review :ref:`RTX-renderer`.
 
 
 
@@ -384,7 +384,7 @@ Setup Tips
     |isaac-sim_short| :ref:`isaac_sim_setup_assets_content_pack` are available to be used locally and in an air-gapped environment.
 
     1. Download the **Isaac Sim Assets Complete Pack** from the :ref:`isaac_sim_latest_release` section.
-       The example below shows using aria2 to download the complete assets zip file.
+       The example below shows using Aria2 to download the complete assets zip file.
 
     .. tab-set::
         .. tab-item:: Linux
@@ -430,7 +430,7 @@ Setup Tips
 
     .. note::
 
-        All three assets packs are required and they need to be combined into a single root folder (e.g. *~/isaacsim_assets/Assets/Isaac/5.1*).
+        All three assets packs are required and they need to be combined into a single root folder (for example, *~/isaacsim_assets/Assets/Isaac/5.1*).
 
         This root folder (*~/isaacsim_assets/Assets/Isaac/5.1*) must contain both the *NVIDIA* and *Isaac* folders.
 
@@ -448,18 +448,6 @@ Setup Tips
                 persistent.isaac.asset_root.default = "/home/<username>/isaacsim_assets/Assets/Isaac/5.1"
 
                 exts."isaacsim.gui.content_browser".folders = [
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/Robots",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/People",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/IsaacLab",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/Props",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/Environments",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/Materials",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/Samples",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/Sensors",
-                ]
-
-                # The lines below are optional. It is recommended to use the Content Browser instead.
-                exts."isaacsim.asset.browser".folders = [
                     "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/Robots",
                     "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/People",
                     "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/IsaacLab",
@@ -490,17 +478,6 @@ Setup Tips
                     "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/Sensors",
                 ]
 
-                # The lines below are optional. It is recommended to use the Content Browser instead.
-                exts."isaacsim.asset.browser".folders = [
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/Robots",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/People",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/IsaacLab",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/Props",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/Environments",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/Materials",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/Samples",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/Sensors",
-                ]
 
     4. Run |isaac-sim_short| with the flag below to use the local assets.
 
@@ -519,19 +496,17 @@ Setup Tips
 
     .. note::
 
-        * The `persistent.isaac.asset_root.default` setting can either be set in the .kit settings file (Step 3) or via commandline (Step 4). The default is set to `https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1`
+        * The `persistent.isaac.asset_root.default` setting can either be set in the .kit settings file (Step 3) or using the  commandline (Step 4). The default is set to `https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1`
         * The `persistent.isaac.asset_root.default` setting is used in the Python code that calls the `get_assets_root_path_async`` or `get_assets_root_path`` functions.
         * The `exts."isaacsim.gui.content_browser".folders` setting is used in the :ref:`Content Browser <isaac_sim_app_gui_content_browser>`.
-        * The `exts."isaacsim.asset.browser".folders` setting is used in the :ref:`Isaac Sim Asset Browser <isaac_sim_app_gui_asset_browser>`. It is recommended to use the Content Browser instead
-
 
     .. _isaac_sim_setup_assets_check:
 
     .. rubric::  Assets Check
 
-    In the |isaac-sim_short| app, to verify the access to the assets, go to the **Isaac Sim Assets** Browser tab. Then click the "Gear" icon and select **Check Default Assets Root Path**.
+    In the |isaac-sim_short| app, to verify the access to the assets, go to the **Utilities** menu. Then click **Check Default Assets Root Path**.
 
-    .. figure:: /images/isim_4.5_base_ref_gui_assets_check.png
+    .. figure:: /images/isim_6.0_base_ref_gui_assets_check.png
         :align: center
 
     If manually downloading the assets pack from the previous section, the logs should show:
@@ -590,7 +565,7 @@ Setup Tips
         -u 1234:1234 \
         nvcr.io/nvidia/isaac-sim:5.1.0
 
-    .. note:: These flags will use the use Home folder to save the |isaac-sim_short| cache, logs, config and data.
+    .. note:: These flags will use the use Home folder to save the |isaac-sim_short| cache, logs, config, and data.
 
 
     .. _isaac_sim_setup_net_host:
@@ -701,14 +676,14 @@ Setup Tips
 
     If you made significant changes inside the Docker, for example, installed ROS or other libraries, you may want to save the Docker image so that you can restart the Docker without having to reinstall everything.
 
-    1. Find the container's id and commit it.
+    1. Find the container's ID and commit it.
 
     .. code-block:: console
 
         $ docker ps
         $ docker commit <CONTAINER ID> <new docker name>
 
-    2. To reload a specific docker:
+    2. To reload a specific Docker:
 
     .. code-block:: console
 
@@ -731,7 +706,7 @@ Setup Tips
             -e "ACCEPT_EULA=Y" -e "PRIVACY_CONSENT=Y" \
             nvcr.io/nvidia/isaac-sim:5.1.0
 
-    2. Install any dependencies (e.g. ROS or other libraries) and warm up the shader cache.
+    2. Install any dependencies (for example, ROS or other libraries) and warm up the shader cache.
 
     .. code-block:: console
 
@@ -770,7 +745,7 @@ Setup Tips
     .. rubric:: Setting up Docker
 
 
-    Once you have Docker on Linux installed, follow the instructions at `Post-installation steps for Linux`_ to set it up so you would not need to use *sudo* to run a Docker container.
+    After you have Docker on Linux installed, follow the instructions at `Post-installation steps for Linux`_ to set it up so that you would not need to use *sudo* to run a Docker container.
 
 
     .. _isaac_sim_setup_mount_folder:
@@ -778,7 +753,7 @@ Setup Tips
     .. rubric:: Mount a Folder to the Container
 
 
-    To add data from the host machine to a container, mounting a folder is needed.
+    To add data from the host machine to a container, you must mount a folder.
 
     .. code-block:: console
 
@@ -794,7 +769,7 @@ Setup Tips
     .. rubric:: Getting IP Addresses of AWS EC2 Instance
 
 
-    To get the public and private IP addresses of an AWS EC2 instance, go to the **Instances** section of the **EC2 Dashboard** and select the instance. See the image below for an example of the Private and Public IPs:
+    To get the public and private IP addresses of an AWS EC2 instance, go to the **Instances** section of the **EC2 Dashboard** and select the instance. Refer to the image below for an example of the Private and Public IPs:
 
     .. figure:: /images/isaac_main_aws_ip_address.png
             :align: center
@@ -841,13 +816,13 @@ Setup Tips
 
     #. Download `PuTTYgen`_.
     #. Launch PuTTYgen, and click on "Generate a public/private key pair".
-    #. Click on "Save public key" and name the file "${ssh_key_name}.pub". This is your Public Key file.
-    #. From the "Conversions" menu, select "Export OpenSSH key" and name the file "${ssh_key_name}.pem". This is your Private Key file.
+    #. Click on **Save public key** and name the file "${ssh_key_name}.pub". This is your Public Key file.
+    #. From the **Conversions** menu, select **Export OpenSSH key** and name the file "${ssh_key_name}.pem". This is your Private Key file.
     #. Edit the properties of the "${ssh_key_name}.pem" file.
 
-        * Go to security settings, click “Advanced”
+        * Go to security settings, click **Advanced**
         * Remove inheritance
-        * Set current user as owner of the file and full permissions to only that user.
+        * Set current user as owner of the file and full permissions to only that user
         * This is to prevent permission errors when trying to SSH into the instance
 
 
@@ -864,7 +839,7 @@ Setup Tips
 
     .. note::
 
-        - Our |isaac-sim_short| assets is also available in the main **/NVIDIA/Assets/Isaac** folder in every |nuc_short| server.
+        - The |isaac-sim_short| assets are also available in the main **/NVIDIA/Assets/Isaac** folder in every |nuc_short| server.
 
     .. _isaac_sim_setup_set_omni_server:
 
