@@ -18,6 +18,9 @@ This integration provides access to |cumotion|'s planning and control algorithms
 * **Trajectory Generation**: Time-optimal collision-unaware trajectory generation from waypoints or path specifications
 * **Trajectory Optimization**: Collision-free and kinematically constrained global optimization-based trajectory planning (new to cuMotion, did not exist in Lula)
 
+.. note::
+   **Windows Support**: The Trajectory Optimizer is not currently available on Windows.
+
 These algorithms make use of two main classes that manage the |cumotion| robot and world: 
 
 * :class:`CumotionRobot` - encapsulates the robot description, kinematics, and configuration

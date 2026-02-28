@@ -16,6 +16,8 @@
 Motion generation extension: defines interfaces to work with IsaacSim.
 """
 
+import os
+
 from .configuration_loader import (
     CumotionRobot,
     load_cumotion_robot,
@@ -26,4 +28,7 @@ from .cumotion_world_interface import CumotionWorldInterface
 from .graph_based_motion_planner import GraphBasedMotionPlanner
 from .rmp_flow_controller import RmpFlowController
 from .trajectory_generator import TrajectoryGenerator
-from .trajectory_optimizer import TrajectoryOptimizer
+
+# temporary: TrajectoryOptimizer does not work on Windows.
+if os.name != "nt":
+    from .trajectory_optimizer import TrajectoryOptimizer

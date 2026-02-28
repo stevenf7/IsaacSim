@@ -109,6 +109,9 @@ Trajectory Generation
     :inherited-members:
     :show-inheritance:
 
+.. note::
+   **Windows Support**: The :class:`TrajectoryOptimizer` is not currently available on Windows.
+
 .. autoclass:: isaacsim.robot_motion.experimental.cumotion.TrajectoryOptimizer
     :members:
     :undoc-members:
