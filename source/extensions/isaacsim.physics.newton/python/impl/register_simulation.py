@@ -72,8 +72,8 @@ class NewtonSimulationRegistry:
             self.simulation = Simulation()
 
             # Assign all simulation_fns methods
-            self.simulation.simulation_fns.attach_stage = self.sim_fns.attach_stage
-            self.simulation.simulation_fns.detach_stage = self.sim_fns.detach_stage
+            self.simulation.simulation_fns.initialize = self.sim_fns.initialize
+            self.simulation.simulation_fns.close = self.sim_fns.close
             self.simulation.simulation_fns.get_attached_stage = self.sim_fns.get_attached_stage
             self.simulation.simulation_fns.simulate = self.sim_fns.simulate
             self.simulation.simulation_fns.fetch_results = self.sim_fns.fetch_results

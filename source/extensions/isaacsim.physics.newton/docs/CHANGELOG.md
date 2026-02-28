@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.1] - 2026-02-28
+### Changed
+- Updated SimulationFns registration to match new omni.physics.core API (`initialize`/`close` replaces removed `attach_stage`/`detach_stage`)
+
 ## [0.4.0] - 2026-02-27
 ### Changed
 - Pinned mujoco-warp to 3.5.0.2 for compatibility with newton[sim] 1.0.0rc1

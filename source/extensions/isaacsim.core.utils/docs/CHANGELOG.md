@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.0.4] - 2026-02-28
+### Changed
+- Updated test to use new omni.physics.core API (`IPhysicsStageUpdate.on_attach` replaces removed `IPhysicsSimulation.attach_stage`)
+
 ## [4.0.3] - 2026-02-06
 ### Changed
 - Update deprecated Warp API calls to their updated names
