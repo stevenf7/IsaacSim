@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.2.1] - 2026-03-02
+### Changed
+- Update assets path to 6.0 staging
+
 ## [0.2.0] - 2026-02-18
 ### Added
 - New `omni.simready.content.browser` extension for Simready asset search
