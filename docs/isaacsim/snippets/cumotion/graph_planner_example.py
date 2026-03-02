@@ -121,27 +121,9 @@ def setup_planner():
 
     # Set up obstacle strategy
     obstacle_strategy = ObstacleStrategy()
-    obstacle_strategy.set_default_configuration(
-        Mesh,
-        ObstacleConfiguration(
-            representation=ObstacleRepresentation.OBB,
-            safety_tolerance=0.01,
-        ),
-    )
-    obstacle_strategy.set_default_configuration(
-        Cone,
-        ObstacleConfiguration(
-            representation=ObstacleRepresentation.OBB,
-            safety_tolerance=0.01,
-        ),
-    )
-    obstacle_strategy.set_default_configuration(
-        Cylinder,
-        ObstacleConfiguration(
-            representation=ObstacleRepresentation.OBB,
-            safety_tolerance=0.01,
-        ),
-    )
+    obstacle_strategy.set_default_configuration(Mesh, ObstacleConfiguration("obb", 0.01))
+    obstacle_strategy.set_default_configuration(Cone, ObstacleConfiguration("obb", 0.01))
+    obstacle_strategy.set_default_configuration(Cylinder, ObstacleConfiguration("obb", 0.01))
 
     # Create world binding
     world_binding = WorldBinding(
@@ -290,12 +272,10 @@ def execute_trajectory_with_follower(
     follower.set_trajectory(trajectory)
 
     # Get current estimated state
-    all_dof_positions = articulation.get_dof_positions().reshape([-1])
-    all_dof_velocities = articulation.get_dof_velocities().reshape([-1])
     joint_state = JointState.from_name(
         robot_joint_space=robot_joint_space,
-        positions=(robot_joint_space, all_dof_positions),
-        velocities=(robot_joint_space, all_dof_velocities),
+        positions=(robot_joint_space, articulation.get_dof_positions()),
+        velocities=(robot_joint_space, articulation.get_dof_velocities()),
     )
     estimated_state = RobotState(joints=joint_state)
 
@@ -314,13 +294,11 @@ def execute_trajectory_with_follower(
         # Update simulation
         simulation_app.update()
         # Update estimated state and time for next iteration
-        all_dof_positions = articulation.get_dof_positions().reshape([-1])
-        all_dof_velocities = articulation.get_dof_velocities().reshape([-1])
         estimated_state = RobotState(
             joints=JointState.from_name(
                 robot_joint_space=robot_joint_space,
-                positions=(robot_joint_space, all_dof_positions),
-                velocities=(robot_joint_space, all_dof_velocities),
+                positions=(robot_joint_space, articulation.get_dof_positions()),
+                velocities=(robot_joint_space, articulation.get_dof_velocities()),
             )
         )
         t += step  # Advance time

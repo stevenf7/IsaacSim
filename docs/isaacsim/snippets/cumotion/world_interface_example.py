@@ -51,7 +51,6 @@ import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 
 # Now we can import Isaac Sim modules
-import omni.timeline
 from isaacsim.core.experimental.objects import Cone, Cube, Cylinder, Mesh
 from isaacsim.core.experimental.prims import Articulation, GeomPrim, RigidPrim
 from isaacsim.core.simulation_manager import SimulationManager
@@ -123,29 +122,9 @@ def configure_obstacle_strategy():
     obstacle_strategy.set_default_safety_tolerance(0.06)
 
     # Configure specific geometry types
-    obstacle_strategy.set_default_configuration(
-        Mesh,
-        ObstacleConfiguration(
-            representation=ObstacleRepresentation.OBB,  # Oriented Bounding Box
-            safety_tolerance=0.01,
-        ),
-    )
-
-    obstacle_strategy.set_default_configuration(
-        Cone,
-        ObstacleConfiguration(
-            representation=ObstacleRepresentation.OBB,
-            safety_tolerance=0.01,
-        ),
-    )
-
-    obstacle_strategy.set_default_configuration(
-        Cylinder,
-        ObstacleConfiguration(
-            representation=ObstacleRepresentation.OBB,
-            safety_tolerance=0.01,
-        ),
-    )
+    obstacle_strategy.set_default_configuration(Mesh, ObstacleConfiguration("obb", 0.01))
+    obstacle_strategy.set_default_configuration(Cone, ObstacleConfiguration("obb", 0.01))
+    obstacle_strategy.set_default_configuration(Cylinder, ObstacleConfiguration("obb", 0.01))
     # <end-configure-obstacle-strategy-snippet>
 
     return obstacle_strategy

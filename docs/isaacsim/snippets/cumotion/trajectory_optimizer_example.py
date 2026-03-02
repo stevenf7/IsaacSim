@@ -54,7 +54,6 @@ import cumotion
 # Now we can import Isaac Sim modules
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-import omni.timeline
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import Articulation, GeomPrim
 from isaacsim.core.experimental.utils.stage import add_reference_to_stage

@@ -58,16 +58,29 @@ Each USD shape type (Sphere, Cube, Mesh, etc.) has its own set of valid represen
 * **Plane** - Can only be represented as ``PLANE``
 
 .. note::
+   Since :class:`ObstacleRepresentation` is a :class:`StrEnum`, you can use either the enum value (e.g., ``ObstacleRepresentation.OBB``) or the string directly (e.g., ``"obb"``) when creating :class:`ObstacleConfiguration` objects.
+
+.. note::
    Additional representation types will be added in future versions of the API.
 
 ObstacleStrategy Management
 ###########################
 
-:class:`ObstacleStrategy` is the configuration manager that lets you set:
+:class:`ObstacleStrategy` uses a three-tier priority system to determine the configuration for each obstacle. By default, each shape type is represented by its native representation with zero safety tolerance (e.g., a Mesh object maps to ``MESH`` representation with 0.0 safety tolerance).
 
-* **Default configurations** - Default representation and safety tolerance for each shape type
-* **Per-object overrides** - Custom configurations for specific objects that differ from the defaults
-* **Global safety tolerance** - A convenience method to set safety tolerance across all defaults (per-object overrides take precedence)
+**Default Configurations and Global Safety Tolerance**
+
+The built-in defaults map each shape type to its native representation. You can adjust the safety tolerance for all these default mappings using :meth:`ObstacleStrategy.set_default_safety_tolerance`. This convenience method affects only the default configurations and does not modify shape-level overrides or prim-level overrides.
+
+**Shape-Level Overrides**
+
+:meth:`ObstacleStrategy.set_default_configuration` allows you to set a configuration override for an entire shape type (e.g., all Mesh objects). These shape-level overrides take precedence over the default configurations and any global safety tolerance setting. For example, you can configure all Mesh objects to use ``OBB`` representation with a specific safety tolerance, regardless of the default settings.
+
+**Prim-Level Overrides**
+
+:meth:`ObstacleStrategy.set_configuration_overrides` sets configuration overrides for specific prim paths. These prim-level overrides have the highest priority and take precedence over both default configurations and shape-level overrides. This allows you to customize individual obstacles (e.g., a specific Mesh prim uses ``TRIANGULATED_MESH`` representation) while maintaining shape-level defaults for other objects of the same type.
+
+When querying the configuration for a specific obstacle, :class:`ObstacleStrategy` checks these tiers in priority order: prim-level overrides first, then shape-level overrides, and finally default configurations.
 
 Here's how to configure an :class:`ObstacleStrategy`:
 

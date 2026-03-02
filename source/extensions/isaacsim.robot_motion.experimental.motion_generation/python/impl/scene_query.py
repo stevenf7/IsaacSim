@@ -140,8 +140,8 @@ class SceneQuery:
         search_box_minimum: wp.array | list[float] | np.ndarray,
         search_box_maximum: wp.array | list[float] | np.ndarray,
         tracked_api: TrackableApi,
-        include_prim_paths: list[str] | None = None,
-        exclude_prim_paths: list[str] | None = None,
+        include_prim_paths: list[str] | str | None = None,
+        exclude_prim_paths: list[str] | str | None = None,
     ) -> list[str]:
         """Return prim paths that intersect an AABB and match an applied API filter.
 
@@ -177,6 +177,16 @@ class SceneQuery:
             ...     tracked_api=TrackableApi.PHYSICS_COLLISION,
             ... )
         """
+
+        # Convert single include path to list if it exists:
+        if include_prim_paths is not None:
+            if isinstance(include_prim_paths, str):
+                include_prim_paths = [include_prim_paths]
+
+        # Convert single exclude path to list if it exists:
+        if exclude_prim_paths is not None:
+            if isinstance(exclude_prim_paths, str):
+                exclude_prim_paths = [exclude_prim_paths]
 
         if tracked_api not in set(
             [TrackableApi.PHYSICS_COLLISION, TrackableApi.PHYSICS_RIGID_BODY, TrackableApi.MOTION_GENERATION_COLLISION]

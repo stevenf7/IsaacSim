@@ -91,6 +91,22 @@ class TestJointState(omni.kit.test.AsyncTestCase):
         self.assertTrue(joint_state.position_indices.dtype == wp.int32)
         self.assertTrue(np.allclose(joint_state.position_indices.numpy(), [0, 1, 2]))
 
+        # Can create a joint-state with 2D array, as long as the first dimension only has size 1:
+        joint_state = JointState.from_name(
+            robot_joint_space=["joint_0"],
+            positions=(["joint_0"], wp.array([[0.0]])),  # 2D array
+        )
+        self.assertTrue(np.allclose(joint_state.positions.numpy(), [0.0]))
+        self.assertTrue(joint_state.position_names == ["joint_0"])
+        self.assertTrue(joint_state.positions.shape == (1,))
+
+        # cannot have 2D array if first dimension is not of size 1:
+        with self.assertRaises(ValueError):
+            joint_state = JointState.from_name(
+                robot_joint_space=["joint_0"],
+                positions=(["joint_0"], wp.array([[0.0], [1.0]])),  # 2D array
+            )
+
         # cannot provide a joint which is outside of the intended joint-space:
         with self.assertRaises(ValueError):
             joint_state = JointState.from_name(
@@ -151,13 +167,6 @@ class TestJointState(omni.kit.test.AsyncTestCase):
             joint_state = JointState.from_name(
                 robot_joint_space=["joint_0"],
                 positions=(["joint_0"], wp.array([])),  # Empty array
-            )
-
-        # cannot have 2D array instead of 1D:
-        with self.assertRaises(ValueError):
-            joint_state = JointState.from_name(
-                robot_joint_space=["joint_0"],
-                positions=(["joint_0"], wp.array([[0.0]])),  # 2D array
             )
 
         # cannot have wrong dtype (int32):
@@ -328,6 +337,23 @@ class TestJointState(omni.kit.test.AsyncTestCase):
         self.assertTrue(joint_state.position_indices.dtype == wp.int32)
         self.assertTrue(np.allclose(joint_state.position_indices.numpy(), [0, 1, 2]))
 
+        # can have 2D array instead of 1D for values, as long as the first dimension is of size 1:
+        joint_state = JointState.from_index(
+            robot_joint_space=["joint_0", "joint_1"],
+            positions=(wp.array([0, 1], dtype=wp.int32), wp.array([[0.0, 1.0]])),  # 2D array
+        )
+        self.assertTrue(np.allclose(joint_state.positions.numpy(), [0.0, 1.0]))
+        self.assertTrue(joint_state.position_names == ["joint_0", "joint_1"])
+        self.assertTrue(np.allclose(joint_state.position_indices.numpy(), [0, 1]))
+        self.assertTrue(joint_state.position_indices.dtype == wp.int32)
+
+        # cannot have 2D array if first dimension is not of size 1:
+        with self.assertRaises(ValueError):
+            joint_state = JointState.from_index(
+                robot_joint_space=["joint_0"],
+                positions=(wp.array([0], dtype=wp.int32), wp.array([[0.0], [1.0]])),  # 2D array
+            )
+
         # cannot provide an index which is outside of the intended joint-space (negative):
         with self.assertRaises(ValueError):
             joint_state = JointState.from_index(
@@ -420,13 +446,6 @@ class TestJointState(omni.kit.test.AsyncTestCase):
             joint_state = JointState.from_index(
                 robot_joint_space=["joint_0"],
                 positions=(wp.array([], dtype=wp.int32), wp.array([0.0])),  # Empty indices
-            )
-
-        # cannot have 2D array instead of 1D for values:
-        with self.assertRaises(ValueError):
-            joint_state = JointState.from_index(
-                robot_joint_space=["joint_0"],
-                positions=(wp.array([0], dtype=wp.int32), wp.array([[0.0]])),  # 2D array
             )
 
         # cannot have 2D array instead of 1D for indices:

@@ -157,21 +157,13 @@ def demonstrate_obstacle_strategy(obstacle_paths):
     # Create an obstacle strategy
     strategy = mg.ObstacleStrategy()
 
-    # Set default safety tolerance for all shape types
-    # This applies to all defaults, but can be overridden per-object
-    strategy.set_default_safety_tolerance(0.05)  # 5cm padding
-
     # Set default representation for Mesh shape type to OBB with large safety tolerance
     # This replaces the entire Mesh configuration, so the safety_tolerance=0.15 here
     # takes precedence over the 0.05 set by set_default_safety_tolerance() above
     # This is a common default - meshes are often represented as OBB for efficiency
     strategy.set_default_configuration(
-        Mesh,
-        mg.ObstacleConfiguration(
-            representation=mg.ObstacleRepresentation.OBB,
-            safety_tolerance=0.15,  # 15cm padding - large safety margin
-        ),
-    )
+        Mesh, mg.ObstacleConfiguration("obb", 0.15)
+    )  # 15cm padding - large safety margin
 
     # Set per-object overrides for specific prims
     # These take precedence over both default safety tolerance and default configurations
@@ -181,12 +173,16 @@ def demonstrate_obstacle_strategy(obstacle_paths):
     mesh2_path = "/World/Mesh2"
     if mesh2_path in obstacle_paths:
         overrides[mesh2_path] = mg.ObstacleConfiguration(
-            representation=mg.ObstacleRepresentation.TRIANGULATED_MESH,
-            safety_tolerance=0.01,  # 1cm padding - small tolerance for faithful representation
-        )
+            "triangulated_mesh", 0.01
+        )  # 1cm padding - small tolerance for faithful representation
 
     if len(overrides) > 0:
         strategy.set_configuration_overrides(overrides)
+
+    # Set default safety tolerance for all other shapes
+    # This will be overridden for all Mesh types (which will have 15cm padding),
+    # And for "/World/Mesh2" (which will have 1cm padding).
+    strategy.set_default_safety_tolerance(0.05)  # 5cm padding
 
     return strategy
 
@@ -220,7 +216,7 @@ class ExampleWorldInterface(WorldInterface):
         """Add spheres to your planning library using the provided data.
 
         Args:
-            prim_paths: Prim paths (for reference, not used directly)
+            prim_paths: Prim paths (Useful as unique identifiers)
             radii: Sphere radii as warp array (shape [N, 1])
             scales: Scale factors as warp array
             safety_tolerances: Safety margins as warp array (shape [N, 1])
@@ -249,7 +245,7 @@ class ExampleWorldInterface(WorldInterface):
         """Add cubes to your planning library using the provided data.
 
         Args:
-            prim_paths: Prim paths (for reference, not used directly)
+            prim_paths: Prim paths (Useful as unique identifiers)
             sizes: Cube side lengths as warp array (shape [N, 1])
             scales: Scale factors as warp array
             safety_tolerances: Safety margins as warp array (shape [N, 1])
@@ -285,7 +281,7 @@ class ExampleWorldInterface(WorldInterface):
         """Add triangulated meshes to your planning library using the provided data.
 
         Args:
-            prim_paths: Prim paths (for reference, not used directly)
+            prim_paths: Prim paths (Useful as unique identifiers)
             points: Vertex positions for each mesh (list of warp arrays)
             face_vertex_indices: Triangle vertex indices for each mesh (list of warp arrays)
             scales: Scale factors as warp array
@@ -325,7 +321,7 @@ class ExampleWorldInterface(WorldInterface):
         """Add oriented bounding boxes to your planning library using the provided data.
 
         Args:
-            prim_paths: Prim paths (for reference, not used directly)
+            prim_paths: Prim paths (Useful as unique identifiers)
             centers: Local center positions for each bounding box (list of warp arrays)
             rotation_matrices: Local rotation matrices for each bounding box (list of warp arrays)
             half_side_lengths: Half extents along each axis for each bounding box (list of warp arrays)
@@ -370,7 +366,7 @@ class ExampleWorldInterface(WorldInterface):
         """Add planes to your planning library using the provided data.
 
         Args:
-            prim_paths: Prim paths (for reference, not used directly)
+            prim_paths: Prim paths (Useful as unique identifiers)
             axes: Normal axis for each plane (list of "X", "Y", or "Z")
             lengths: Plane lengths as warp array (shape [N, 1])
             widths: Plane widths as warp array (shape [N, 1])

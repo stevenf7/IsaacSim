@@ -110,16 +110,12 @@ def get_estimated_state(articulation):
     # Get current robot state
     robot_joint_space = articulation.dof_names
 
-    # Get DOF positions and velocities (flatten to 1D array)
-    all_dof_positions = articulation.get_dof_positions().reshape([-1])
-    all_dof_velocities = articulation.get_dof_velocities().reshape([-1])
-
     # Create estimated state (current robot state)
     estimated_state = mg.RobotState(
         joints=mg.JointState.from_name(
             robot_joint_space=robot_joint_space,
-            positions=(robot_joint_space, all_dof_positions),
-            velocities=(robot_joint_space, all_dof_velocities),
+            positions=(robot_joint_space, articulation.get_dof_positions()),
+            velocities=(robot_joint_space, articulation.get_dof_velocities()),
         )
     )
     # <end-get-estimated-state-snippet>

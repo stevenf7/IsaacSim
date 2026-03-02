@@ -22,7 +22,6 @@ from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.robot_motion.cumotion import CumotionWorldInterface
 from isaacsim.robot_motion.experimental.motion_generation import (
     ObstacleConfiguration,
-    ObstacleRepresentation,
     ObstacleStrategy,
     SceneQuery,
     TrackableApi,
@@ -121,29 +120,9 @@ class CumotionWorldInterfaceExample:
         # or, try changing the safety tolerance to 0.05, 0.1, 0.2, etc.
         obstacle_strategy = ObstacleStrategy()
         obstacle_strategy.set_default_safety_tolerance(0.06)
-        obstacle_strategy.set_default_configuration(
-            Mesh,
-            ObstacleConfiguration(
-                representation=ObstacleRepresentation.OBB,
-                safety_tolerance=0.01,
-            ),
-        )
-
-        obstacle_strategy.set_default_configuration(
-            Cone,
-            ObstacleConfiguration(
-                representation=ObstacleRepresentation.OBB,
-                safety_tolerance=0.01,
-            ),
-        )
-
-        obstacle_strategy.set_default_configuration(
-            Cylinder,
-            ObstacleConfiguration(
-                representation=ObstacleRepresentation.OBB,
-                safety_tolerance=0.01,
-            ),
-        )
+        obstacle_strategy.set_default_configuration(Mesh, ObstacleConfiguration("obb", 0.01))
+        obstacle_strategy.set_default_configuration(Cone, ObstacleConfiguration("obb", 0.01))
+        obstacle_strategy.set_default_configuration(Cylinder, ObstacleConfiguration("obb", 0.01))
 
         # Create a world binding, debug visualizations enabled:
         self._world_binding = WorldBinding(

@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.2.0] - 2026-03-02
+### Added
+- Improved error message when setting/getting ObstacleConfigurations on prims that don't exist.
+- `SceneQuery` can accept a single include/exclude group.
+- `JointState.from_name` and `JointState.from_index` now accept 2D-array inputs, as long as the size of the first dimension is 1.
+### Changed
+- Makes more explicit the existing functionality that ObstacleRepresentation can be initialized via string
+- Adds an explicit check that the string maps to a valid ObstacleRepresentation
+- Examples/docs to use the improved QOL interfaces.
+### Fixed
+- bug-fix: default safety tolerances no longer override shape safety tolerances in `ObstacleStrategy` if set afterwards.
+
 ## [5.1.0] - 2026-02-17
 ### Added
 - `TrackableApi.MOTION_GENERATION_COLLISION` support for querying and tracking prims with `IsaacMotionPlanningAPI` instead of requiring physics collision APIs.
