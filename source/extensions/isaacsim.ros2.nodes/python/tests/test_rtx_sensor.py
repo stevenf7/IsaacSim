@@ -19,6 +19,7 @@ import time
 from typing import List
 from uuid import uuid4
 
+import carb
 import numpy as np
 import omni
 import omni.graph.core as og
@@ -331,14 +332,14 @@ class TestROS2PointCloudRTX(TestROS2SensorMsgRTX):
         def test_match(
             message_data: List[np.ndarray],
             annotator_data: np.ndarray,
-            full_scan: bool = False,
-            test_duration_s: float = 1.5,
             field_name: str = None,
         ):
 
             message_data = np.concatenate([m[..., None] for m in message_data], axis=1)
             if len(annotator_data.shape) == 1:
                 annotator_data = annotator_data[..., None]
+            self.assertGreater(message_data.shape[0], 0, f"Empty message data for {field_name}")
+            self.assertGreater(annotator_data.shape[0], 0, f"Empty annotator data for {field_name}")
             self.assertEqual(message_data.shape, annotator_data.shape, f"Shape mismatch for {field_name}")
             self.assertEqual(message_data.size, annotator_data.size, f"Size mismatch for {field_name}")
             self.assertTrue(

@@ -1,4 +1,8 @@
 # Changelog
+## [15.13.0] - 2026-03-02
+### Changed
+- Shifted RTX sensor scan accumulation and post-processing back to host by default to reduce GPU resource contention and improve frametime & frametime consistency. Post-processing-on-device still available as option by setting app.sensors.nv.[modality].outputBufferOnGPU=true.
+
 ## [15.12.3] - 2026-02-13
 ### Changed
 - Re-enable object ID test in CI to track fix
