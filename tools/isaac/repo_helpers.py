@@ -1,0 +1,312 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Repository layout, extension discovery, and git helpers for Isaac Sim tools.
+
+Provides constants and functions shared by the pre-commit orchestrator, the
+changelog validator, the extension test runner, and similar tooling scripts.
+"""
+
+from __future__ import annotations
+
+import platform
+import re
+import subprocess
+from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Repository layout
+# ---------------------------------------------------------------------------
+
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+TOOLS_DIR = REPO_ROOT / "tools" / "isaac"
+
+EXTENSION_ROOTS = [
+    REPO_ROOT / "source" / "extensions",
+    REPO_ROOT / "source" / "internal_extensions",
+    REPO_ROOT / "source" / "deprecated",
+]
+
+APPS_DIR = REPO_ROOT / "source" / "apps"
+APP_SETUP_EXT = "isaacsim.app.setup"
+
+_IS_WINDOWS = platform.system() == "Windows"
+BUILD_PLATFORM = "windows-x86_64" if _IS_WINDOWS else "linux-x86_64"
+BUILD_DIR = REPO_ROOT / "_build" / BUILD_PLATFORM / "release"
+TEST_SCRIPT_EXT = ".bat" if _IS_WINDOWS else ".sh"
+
+
+# ---------------------------------------------------------------------------
+# Extension discovery
+# ---------------------------------------------------------------------------
+
+
+def extension_for_file(file_path: Path) -> Path | None:
+    """Return the extension directory that contains *file_path*, or None."""
+    for root in EXTENSION_ROOTS:
+        try:
+            rel = file_path.resolve().relative_to(root.resolve())
+        except ValueError:
+            continue
+        ext_name = rel.parts[0] if rel.parts else None
+        if ext_name and ext_name.startswith("isaacsim."):
+            return root / ext_name
+    return None
+
+
+def affected_extensions(files: list[Path]) -> list[Path]:
+    """Unique, sorted list of extension directories touched by *files*."""
+    seen: set[Path] = set()
+    for f in files:
+        ext = extension_for_file(f)
+        if ext and ext.exists():
+            seen.add(ext)
+    return sorted(seen)
+
+
+def all_extension_names() -> list[str]:
+    """Collect every extension directory name across all extension roots."""
+    names: set[str] = set()
+    for root in EXTENSION_ROOTS:
+        if root.exists():
+            for child in root.iterdir():
+                if child.is_dir():
+                    names.add(child.name)
+    return sorted(names)
+
+
+def has_apps_changes(files: list[Path]) -> bool:
+    """Return True if any file in *files* lives under ``source/apps/``."""
+    for f in files:
+        try:
+            f.resolve().relative_to(APPS_DIR.resolve())
+            return True
+        except ValueError:
+            continue
+    return False
+
+
+# ---------------------------------------------------------------------------
+# extension.toml helpers
+# ---------------------------------------------------------------------------
+
+
+def read_toml_version(ext_path: Path) -> str | None:
+    """Read ``[package].version`` from an extension's ``config/extension.toml``.
+
+    Tries the ``toml`` module first; falls back to regex parsing.
+    """
+    toml_path = ext_path / "config" / "extension.toml"
+    if not toml_path.exists():
+        return None
+
+    try:
+        import toml as toml_mod
+
+        data = toml_mod.load(str(toml_path))
+        return data.get("package", {}).get("version")
+    except Exception:
+        pass
+
+    in_package = False
+    for line in toml_path.read_text().splitlines():
+        stripped = line.strip()
+        if stripped.startswith("["):
+            in_package = stripped == "[package]"
+            continue
+        if in_package and stripped.startswith("version"):
+            match = re.search(r'"([^"]+)"', stripped)
+            if match:
+                return match.group(1)
+    return None
+
+
+def parse_extension_deps(ext_path: Path) -> list[str]:
+    """Extract dependency names from an extension's ``config/extension.toml``.
+
+    Tries the ``toml`` module first; falls back to regex parsing.
+    """
+    toml_path = ext_path / "config" / "extension.toml"
+    if not toml_path.exists():
+        return []
+
+    try:
+        import toml as toml_mod
+
+        data = toml_mod.load(str(toml_path))
+        return list(data.get("dependencies", {}).keys())
+    except Exception:
+        pass
+
+    deps: list[str] = []
+    in_deps = False
+    for line in toml_path.read_text().splitlines():
+        stripped = line.strip()
+        if stripped == "[dependencies]":
+            in_deps = True
+            continue
+        if in_deps:
+            if stripped.startswith("["):
+                break
+            m = re.match(r'"([^"]+)"', stripped)
+            if m:
+                deps.append(m.group(1))
+    return deps
+
+
+def build_reverse_deps() -> dict[str, set[str]]:
+    """Build a reverse dependency map across all extension roots.
+
+    Returns a dict mapping each extension name to the set of extension names
+    that declare it as a direct dependency.
+    """
+    reverse: dict[str, set[str]] = {}
+    for root in EXTENSION_ROOTS:
+        if not root.exists():
+            continue
+        for child in root.iterdir():
+            if not child.is_dir():
+                continue
+            for dep in parse_extension_deps(child):
+                reverse.setdefault(dep, set()).add(child.name)
+    return reverse
+
+
+# ---------------------------------------------------------------------------
+# Git helpers
+# ---------------------------------------------------------------------------
+
+
+def _git_diff_names(extra_args: list[str]) -> set[Path]:
+    """Run ``git diff --name-only --diff-filter=ACMR`` and return resolved paths."""
+    cmd = ["git", "diff", "--name-only", "--diff-filter=ACMR", *extra_args]
+    proc = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT)
+    paths: set[Path] = set()
+    if proc.returncode == 0 and proc.stdout.strip():
+        for line in proc.stdout.strip().splitlines():
+            paths.add(REPO_ROOT / line.strip())
+    return paths
+
+
+def _uncommitted_files() -> set[Path]:
+    """Staged + unstaged working-tree changes (excludes deleted files)."""
+    return _git_diff_names([]) | _git_diff_names(["--staged"])
+
+
+def _ref_exists(ref: str) -> bool:
+    proc = subprocess.run(
+        ["git", "rev-parse", "--verify", "--quiet", ref],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    return proc.returncode == 0
+
+
+def _list_remotes() -> list[str]:
+    proc = subprocess.run(
+        ["git", "remote"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    if proc.returncode != 0:
+        return []
+    return [r.strip() for r in proc.stdout.strip().splitlines() if r.strip()]
+
+
+def detect_base_branch() -> str | None:
+    """Auto-detect the mainline integration branch this feature branch diverged from.
+
+    Search order per remote: develop, main, master.
+    Remote priority: ``main``, ``origin``, then any others alphabetically.
+    """
+    remotes = _list_remotes()
+    if not remotes:
+        for name in ["develop", "main", "master"]:
+            if _ref_exists(name):
+                return name
+        return None
+
+    preferred = []
+    for pref in ["main", "origin"]:
+        if pref in remotes:
+            preferred.append(pref)
+    rest = sorted(r for r in remotes if r not in preferred)
+    ordered_remotes = preferred + rest
+
+    for remote in ordered_remotes:
+        for branch in ["develop", "main", "master"]:
+            candidate = f"{remote}/{branch}"
+            if _ref_exists(candidate):
+                return candidate
+
+    return None
+
+
+def get_branch_files(base_ref: str) -> set[Path]:
+    """Files changed by commits unique to this branch since *base_ref*.
+
+    Uses ``--first-parent --no-merges`` to follow only this branch's own
+    commit lineage, excluding files brought in by upstream merges.
+    """
+    merge_base_proc = subprocess.run(
+        ["git", "merge-base", base_ref, "HEAD"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    if merge_base_proc.returncode != 0:
+        return set()
+    merge_base = merge_base_proc.stdout.strip()
+
+    proc = subprocess.run(
+        [
+            "git",
+            "log",
+            "--first-parent",
+            "--no-merges",
+            "--diff-filter=ACMR",
+            "--name-only",
+            "--format=",
+            f"{merge_base}..HEAD",
+        ],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    paths: set[Path] = set()
+    if proc.returncode == 0 and proc.stdout.strip():
+        for line in proc.stdout.strip().splitlines():
+            if line.strip():
+                paths.add(REPO_ROOT / line.strip())
+    return paths
+
+
+def get_all_modified_files(base_branch: str | None) -> tuple[list[Path], str | None]:
+    """Return ``(sorted_file_list, resolved_base_branch)``.
+
+    Collects the union of branch-level changes (since the merge-base) and
+    uncommitted working-tree changes.  If *base_branch* is ``None``, attempts
+    auto-detection via :func:`detect_base_branch`.
+    """
+    resolved_base = base_branch or detect_base_branch()
+
+    paths: set[Path] = set()
+    if resolved_base:
+        paths |= get_branch_files(resolved_base)
+    paths |= _uncommitted_files()
+
+    return sorted(paths), resolved_base

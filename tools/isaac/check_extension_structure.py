@@ -238,7 +238,7 @@ class ExtensionValidator:
             self.errors.append(f"Missing required docs folder\nExpected: {docs_path}")
             return
 
-        for required_file in ["CHANGELOG.md", "README.md", "index.rst"]:
+        for required_file in ["CHANGELOG.md", "README.md"]:
             if not (docs_path / required_file).exists():
                 self.errors.append(
                     f"Missing required file in docs folder: {required_file}\n" f"Expected: {docs_path}/{required_file}"
@@ -252,6 +252,12 @@ class ExtensionValidator:
                     f"Missing api.rst file in docs folder for extension that {reason}\n"
                     f"Expected: {docs_path}/api.rst"
                 )
+
+        if (docs_path / "api.rst").exists() and not (docs_path / "index.rst").exists():
+            self.errors.append(
+                f"Missing index.rst file in docs folder (required when api.rst is present)\n"
+                f"Expected: {docs_path}/index.rst"
+            )
 
     def _needs_api_rst(self) -> bool:
         """Check if the extension needs an api.rst file.
