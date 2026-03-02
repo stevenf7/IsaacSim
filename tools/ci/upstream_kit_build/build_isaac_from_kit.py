@@ -4,10 +4,11 @@ This script downloads Kit build artifacts from an upstream GitLab pipeline,
 extracts them, and prepares the environment for building Isaac Sim.
 
 It overrides ALL pinned Kit packages to use those from the upstream pipeline:
-  1. Kit SDK — extracted from omniverse-kit 7z, overridden via kit-sdk.packman.xml.user
-  2. Kit deps (generic-model-output, sensor-checker, etc.) — extracted from their
-     respective archives in the Kit build artifacts, overridden via
-     isaac-sim.packman.xml.user with <source path> elements
+  1. Kit SDK — extracted from omniverse-kit 7z (from kit-build-* job artifacts),
+     overridden via kit-sdk.packman.xml.user
+  2. Kit deps (generic-model-output, sensor-checker) — extracted from
+     rendering/_buildpackages in the RTX build job artifacts (rtx-build-*),
+     overridden via isaac-sim.packman.xml.user with <source path> elements
 
 This ensures every Kit-related package comes from the same upstream commit, so
 the build faithfully tests whether a new Kit commit breaks Isaac Sim.
@@ -17,15 +18,16 @@ Environment Variables:
     UPSTREAM_PIPELINE_ID: The GitLab pipeline ID to download Kit artifacts from (required).
     CI_GITLAB_API_TOKEN: GitLab API token for authentication (required).
 """
-import os
+
 import glob
+import os
 import re
 import shutil
 
-from omni.repo.man import extract_archive_to_folder
 from omni.repo.ci import resolve_tokens
+from omni.repo.man import extract_archive_to_folder
 
-from tools.ci.upstream_kit_build.pull_kit import download_kit_artifacts
+from tools.ci.upstream_kit_build.pull_kit import download_kit_artifacts, fetch_rtx_kit_dep_packages
 
 # Kit-related packages in isaac-sim.packman.xml that are versioned with the
 # Kit commit and must be overridden when building against an upstream Kit.
@@ -148,11 +150,7 @@ if not os.path.exists("kit"):
 # Download Kit artifacts from the upstream pipeline
 artifacts_path = "kit/artifacts.zip"
 success = download_kit_artifacts(
-    project_id=project_id,
-    pipeline_id=pipeline_id,
-    platform=platform,
-    config=build_config,
-    output_path=artifacts_path
+    project_id=project_id, pipeline_id=pipeline_id, platform=platform, config=build_config, output_path=artifacts_path
 )
 
 if not success:
@@ -204,19 +202,19 @@ print(f"[build_isaac_from_kit] Generated {kit_sdk_user_path}")
 print(f"[build_isaac_from_kit] kit-sdk.packman.xml.user content:\n{content}")
 
 # --- 2. Kit dep packages override (isaac-sim.packman.xml.user) ---
-# Extract Kit-related packages (generic-model-output, sensor-checker, etc.)
-# directly from the Kit build artifacts, so we use the exact same packages
-# that were built alongside the Kit SDK — no CDN dependency.
+# Fetch generic-model-output and sensor-checker from RTX job via +latest.txt and
+# single-file zip download (no full artifact download).
 
 kit_deps_dir = "_kit_deps"
 if os.path.exists(kit_deps_dir):
     shutil.rmtree(kit_deps_dir)
-
-extracted = extract_kit_dep_packages(
-    builtpackages_dir=builtpackages_dir,
-    output_base_dir=kit_deps_dir,
-    platform_target=platform_target,
+os.makedirs(kit_deps_dir, exist_ok=True)
+extracted = fetch_rtx_kit_dep_packages(
+    project_id=project_id,
+    pipeline_id=pipeline_id,
+    platform=platform,
     build_config=build_config,
+    output_base_dir=kit_deps_dir,
 )
 
 if extracted:
