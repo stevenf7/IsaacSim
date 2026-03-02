@@ -9,8 +9,13 @@
 """
 
 import os
+import tempfile
+from urllib.parse import quote
 
 import requests
+
+# Path in the Kit repo for major.minor.patch (fetched at pipeline sha).
+KIT_VERSION_PATH = "kit/VERSION"
 
 BUILD_JOB_NAMES = [
     "kit-build-release-linux-x86_64",
@@ -20,6 +25,20 @@ BUILD_JOB_NAMES = [
     "kit-build-release-linux-aarch64",
     "kit-build-debug-linux-aarch64",
 ]
+
+# RTX build jobs (no debug/release in job name; artifacts are in rendering/_builtpackages).
+# Used to fetch generic-model-output and sensor-checker via +latest.txt and single-file API.
+RTX_BUILD_JOB_NAMES = [
+    "rtx-build-linux-x86_64",
+    "rtx-build-linux-aarch64",
+    "rtx-build-windows-x86_64",
+]
+
+# Kit dep packages fetched from RTX job (package name -> local dir name).
+RTX_KIT_DEP_PACKAGES = {
+    "generic-model-output": "generic_model_output",
+    "sensor-checker": "sensor_checker",
+}
 
 # The Kit branch that Isaac Sim depends on.  Used by the nightly fallback
 # to find the latest scheduled pipeline with all build jobs passing.
@@ -97,8 +116,8 @@ def find_latest_nightly_pipeline_id(project_id=6510, gitlab_url="https://gitlab-
     """Find the latest successful nightly pipeline ID from GitLab.
 
     Queries GitLab API for scheduled pipelines on KIT_BRANCH and finds the
-    most recent one where all required kit build jobs have completed
-    successfully.
+    most recent one where all required kit build jobs and RTX build jobs have
+    completed successfully (so Kit dep packages from RTX artifacts are available).
 
     Args:
         project_id: The GitLab project ID to query. Defaults to 6510.
@@ -134,6 +153,7 @@ def find_latest_nightly_pipeline_id(project_id=6510, gitlab_url="https://gitlab-
         pipeline_details = response.json()
         for child_pipeline in pipeline_details.get("triggered_pipelines", []):
             build_job_count = 0
+            rtx_job_count = 0
             page = 1
             while True:
                 child_pipeline_url = f"{gitlab_url}/api/v4/projects/{project_id}/pipelines/{child_pipeline['id']}/jobs?per_page=100&page={page}"
@@ -143,43 +163,203 @@ def find_latest_nightly_pipeline_id(project_id=6510, gitlab_url="https://gitlab-
                 if not child_pipeline_details:
                     break
                 for job in child_pipeline_details:
-                    if job["name"] in BUILD_JOB_NAMES and job["status"] == "success":
+                    if job["status"] != "success":
+                        continue
+                    if job["name"] in BUILD_JOB_NAMES:
                         build_job_count += 1
+                    elif job["name"] in RTX_BUILD_JOB_NAMES:
+                        rtx_job_count += 1
                 page += 1
-            if build_job_count == len(BUILD_JOB_NAMES):
+            if build_job_count == len(BUILD_JOB_NAMES) and rtx_job_count == len(RTX_BUILD_JOB_NAMES):
                 print(f"Found latest nightly pipeline {child_pipeline['id']}")
                 return child_pipeline["id"]
     return None
 
 
-def find_kit_build_job_in_pipeline(platform, config, gitlab_url, project_id, pipeline_id, headers):
-    """Search a GitLab pipeline for a specific kit build job.
+def find_job_in_pipeline(
+    gitlab_url,
+    project_id,
+    pipeline_id,
+    expected_job_name,
+    headers,
+    status="success",
+):
+    """Search a GitLab pipeline for a job with the given name and status.
 
     Args:
-        platform: The platform identifier (e.g., 'linux-x86_64', 'windows-x86_64', 'linux-aarch64').
-        config: The build configuration ('release' or 'debug').
         gitlab_url: The base URL of the GitLab instance.
         project_id: The GitLab project ID.
         pipeline_id: The pipeline ID to search.
+        expected_job_name: The exact job name to find (e.g. 'kit-build-release-linux-x86_64', 'rtx-build-linux-x86_64').
         headers: Dictionary containing authentication headers with PRIVATE-TOKEN.
+        status: Required job status. Defaults to 'success' to match current behavior.
 
     Returns:
-        Tuple of (bool, dict or None): First element is True if a matching successful job was found,
-        False otherwise. Second element is the job dictionary if found, None otherwise.
+        Tuple of (bool, dict or None): True if exactly one matching job was found,
+        and the job dictionary if found, None otherwise.
     """
-    # Find the target job in the pipeline
-    target_job_name = f"kit-build-{config}-{platform}"
-    for page in range(1,4):
+    for page in range(1, 4):
         jobs_url = f"{gitlab_url}/api/v4/projects/{project_id}/pipelines/{pipeline_id}/jobs?per_page=100&page={page}"
         response = requests.get(jobs_url, headers=headers, timeout=30)
         response.raise_for_status()
         jobs = response.json()
 
-        target_jobs = [job for job in jobs if job["name"] == target_job_name and job["status"] == "success"]
+        target_jobs = [job for job in jobs if job["name"] == expected_job_name and job["status"] == status]
         if len(target_jobs) == 1:
             return True, target_jobs[0]
 
     return False, None
+
+
+def get_kit_version_file_content(project_id, pipeline_id, gitlab_url="https://gitlab-master.nvidia.com"):
+    """Return the contents of kit/VERSION at the pipeline's commit (e.g. 110.1.0).
+
+    Used to construct the path to +latest.txt files in the RTX job artifacts:
+    rendering/_builtpackages/{package}@{version}+latest.txt
+
+    Returns:
+        First line of the VERSION file, stripped, or None if pipeline or fetch fails.
+    """
+    private_token = os.getenv("CI_GITLAB_API_TOKEN")
+    if private_token is None:
+        raise ValueError("CI_GITLAB_API_TOKEN is not set")
+    headers = {"PRIVATE-TOKEN": private_token}
+
+    pipeline_url = f"{gitlab_url}/api/v4/projects/{project_id}/pipelines/{pipeline_id}"
+    resp = requests.get(pipeline_url, headers=headers, timeout=30)
+    resp.raise_for_status()
+    pipeline = resp.json()
+
+    sha = pipeline.get("sha")
+    if not sha:
+        return None
+
+    version_url = f"{gitlab_url}/omniverse/kit/-/raw/{sha}/{KIT_VERSION_PATH}"
+    v_resp = requests.get(version_url, headers=headers, timeout=30)
+    v_resp.raise_for_status()
+    return v_resp.text.strip().split("\n")[0].strip() or None
+
+
+def download_job_artifact_file(
+    project_id,
+    job_id,
+    artifact_path,
+    output_path,
+    gitlab_url="https://gitlab-master.nvidia.com",
+):
+    """Download a single file from a job's artifacts (GitLab API by job ID).
+
+    artifact_path is the path inside the archive (e.g. rendering/_builtpackages/foo+latest.txt).
+    Special characters (e.g. +) are quoted for the URL.
+    """
+    private_token = os.getenv("CI_GITLAB_API_TOKEN")
+    if private_token is None:
+        raise ValueError("CI_GITLAB_API_TOKEN is not set")
+    headers = {"PRIVATE-TOKEN": private_token}
+
+    encoded_path = quote(artifact_path, safe="/")
+    url = f"{gitlab_url}/api/v4/projects/{project_id}/jobs/{job_id}/artifacts/{encoded_path}"
+    resp = requests.get(url, headers=headers, stream=True, timeout=60)
+    resp.raise_for_status()
+    with open(output_path, "wb") as f:
+        for chunk in resp.iter_content(chunk_size=8192):
+            f.write(chunk)
+    return True
+
+
+def fetch_rtx_kit_dep_packages(
+    project_id,
+    pipeline_id,
+    platform,
+    build_config,
+    output_base_dir,
+    gitlab_url="https://gitlab-master.nvidia.com",
+):
+    """Fetch generic-model-output and sensor-checker from RTX job via +latest.txt and single-file download.
+
+    1. Get kit/VERSION file content at pipeline sha (e.g. 110.1.0).
+    2. Find the RTX job for the platform.
+    3. For each package: download rendering/_builtpackages/{package}@{version}+latest.txt,
+       read the release filename, fix to release/debug per build_config, download that zip,
+       extract to output_base_dir/{dir_name}.
+
+    Returns:
+        Dict mapping package name -> extracted directory path.
+    """
+    import shutil
+
+    from omni.repo.man import extract_archive_to_folder
+
+    private_token = os.getenv("CI_GITLAB_API_TOKEN")
+    if private_token is None:
+        raise ValueError("CI_GITLAB_API_TOKEN is not set")
+    headers = {"PRIVATE-TOKEN": private_token}
+
+    version_content = get_kit_version_file_content(project_id, pipeline_id, gitlab_url)
+    if not version_content:
+        print("[pull_kit] Failed to get kit VERSION file content for RTX artifacts")
+        return {}
+
+    found, target_job = find_job_in_pipeline(gitlab_url, project_id, pipeline_id, f"rtx-build-{platform}", headers)
+    if not found or target_job is None:
+        print(f"[pull_kit] No RTX job for platform '{platform}' in pipeline {pipeline_id}")
+        return {}
+
+    job_id = target_job["id"]
+    print(f"[pull_kit] Using RTX job {target_job['name']} (id={job_id}), VERSION={version_content}")
+
+    extracted = {}
+    builtpackages_prefix = "rendering/_builtpackages"
+
+    for package_name, dir_name in RTX_KIT_DEP_PACKAGES.items():
+        latest_txt_path = f"{builtpackages_prefix}/{package_name}@{version_content}+latest.txt"
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as tmp:
+            tmp_path = tmp.name
+        try:
+            download_job_artifact_file(project_id, job_id, latest_txt_path, tmp_path, gitlab_url)
+        except requests.HTTPError as e:
+            print(f"[pull_kit] Could not download {latest_txt_path}: {e}")
+            continue
+        try:
+            with open(tmp_path, "r") as f:
+                filename = f.read().strip().split("\n")[0].strip()
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+
+        if not filename:
+            print(f"[pull_kit] Empty filename in {latest_txt_path}")
+            continue
+
+        if build_config == "release" and filename.endswith(".debug.zip"):
+            filename = filename.replace(".debug.zip", ".release.zip")
+        elif build_config == "debug" and filename.endswith(".release.zip"):
+            filename = filename.replace(".release.zip", ".debug.zip")
+
+        zip_artifact_path = f"{builtpackages_prefix}/{filename}"
+        output_dir = os.path.join(output_base_dir, dir_name)
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
+        os.makedirs(output_dir)
+
+        zip_path = os.path.join(output_base_dir, f"_tmp_{dir_name}.zip")
+        try:
+            download_job_artifact_file(project_id, job_id, zip_artifact_path, zip_path, gitlab_url)
+            extract_archive_to_folder(zip_path, output_dir)
+            extracted[package_name] = output_dir
+            print(f"[pull_kit] Extracted {filename} -> {output_dir}")
+        except requests.HTTPError as e:
+            print(f"[pull_kit] Could not download {zip_artifact_path}: {e}")
+        finally:
+            if os.path.exists(zip_path):
+                try:
+                    os.unlink(zip_path)
+                except OSError:
+                    pass
+
+    return extracted
 
 
 def download_kit_artifacts(
@@ -216,7 +396,9 @@ def download_kit_artifacts(
 
     print(f"Searching pipeline {pipeline_id} for kit build job...")
 
-    found, target_job = find_kit_build_job_in_pipeline(platform, config, gitlab_url, project_id, pipeline_id, headers)
+    found, target_job = find_job_in_pipeline(
+        gitlab_url, project_id, pipeline_id, f"kit-build-{config}-{platform}", headers
+    )
 
     if not found or target_job is None:
         print(f"Found no matching job for config '{config}' and platform '{platform}' in pipeline {pipeline_id}")

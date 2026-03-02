@@ -98,20 +98,22 @@ explicitly overridden or updated.
 
 ## Kit Build Artifacts
 
-The Kit `kit-build-release-linux-x86_64` job produces artifacts at
-`kit/_builtpackages/` containing:
+The Kit `kit-build-{config}-{platform}` jobs (e.g. `kit-build-release-linux-x86_64`)
+produce artifacts at `kit/_builtpackages/` containing the Kit SDK and related
+artifacts (e.g. `omniverse-kit@*.7z`, wheels, etc.).
 
-| Package                  | Format | Description                |
-|--------------------------|--------|----------------------------|
-| `omniverse-kit@*.7z`    | 7z     | Full Kit SDK distribution  |
-| `generic-model-output@*.zip` | zip | Generic model output lib  |
-| `sensor-checker@*.zip`  | zip    | Sensor checker lib         |
-| `omniverse_kit-*.whl`   | whl    | Kit Python wheel           |
-| `generic_model_output-*.whl` | whl | GMO Python wheel         |
-| `sensor_checker-*.whl`  | whl    | Sensor checker Python wheel|
-| `test_runner@*.zip`     | zip    | Test runner                |
-| `*+latest.txt`          | txt    | Latest version markers     |
+The **RTX build jobs** (`rtx-build-linux-x86_64`, `rtx-build-linux-aarch64`,
+`rtx-build-windows-x86_64`) produce artifacts that contain
+`rendering/_builtpackages/` with:
 
+| Package                       | Format | Description             |
+|-------------------------------|--------|-------------------------|
+| `generic-model-output@*.zip`  | zip    | Generic model output lib (debug/release) |
+| `sensor-checker@*.zip`        | zip    | Sensor checker lib (debug/release)      |
+
+Artifact zip names follow the pattern
+`{package}@{version}.gl.{platform}.{config}.zip` (e.g.
+`generic-model-output@110.1.0+....gl.manylinux_2_35_x86_64.release.zip`).
 All versioned artifacts from the same build share the same
 `{branch}.{build_number}.{commit_hash}` triple.
 
@@ -144,11 +146,16 @@ pipeline ID passed via variables.
 - Category 2 deps (auto-matching) automatically follow
 
 **Kit dep packages** — `deps/isaac-sim.packman.xml.user`:
-- Extracts `generic-model-output@*.zip` and `sensor-checker@*.zip` from the
-  same Kit build artifacts to `_kit_deps/`
-- Reads the original `isaac-sim.packman.xml` and replaces the `<package>`
-  elements for these Kit deps with `<source path>` elements pointing to the
-  locally extracted directories
+- Reads the contents of `kit/VERSION` at the pipeline sha (e.g. 110.1.0) to build
+  the path to each +latest.txt file
+- Finds the RTX build job for the platform; uses the GitLab single-file artifact
+  API (by job ID) to download only:
+  - `rendering/_builtpackages/{package}@{version}+latest.txt` (small text file
+    containing the release zip filename)
+  - then the actual zip from `rendering/_builtpackages/{filename}` (release or
+    debug filename corrected to match the current build config)
+- Extracts those zips to `_kit_deps/` and generates the `.user` file with
+  `<source path>` overrides
 - All non-Kit deps (nv_ros2, lula, octomap, etc.) are preserved as-is
 
 ### Adding New Kit Dep Overrides
@@ -165,5 +172,5 @@ KIT_DEP_PACKAGES: dict[str, str] = {
 }
 ```
 
-The package must also be present in the Kit build artifacts at
-`kit/_builtpackages/` for the override to work.
+The package must also be present in the RTX build artifacts at
+`rendering/_builtpackages/` for the override to work.
