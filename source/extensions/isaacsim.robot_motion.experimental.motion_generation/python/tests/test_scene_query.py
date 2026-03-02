@@ -638,6 +638,19 @@ class TestSceneQuery(omni.kit.test.AsyncTestCase):
             == set(collision_prims)
         )
 
+        # If I exlclude a single group, it is not there:
+        collision_prims = scene_query.get_prims_in_aabb(
+            search_box_origin=[0] * 3,
+            search_box_minimum=[-100] * 3,
+            search_box_maximum=[100] * 3,
+            tracked_api=TrackableApi.PHYSICS_COLLISION,
+            exclude_prim_paths="/World/Group1",
+        )
+        self.assertTrue(
+            set(["/World/Group2/Cube", "/World/Group2/Sphere", "/World/Group3/Cube", "/World/Group3/Sphere"])
+            == set(collision_prims)
+        )
+
         # If I exlclude a group, it is not there:
         collision_prims = scene_query.get_prims_in_aabb(
             search_box_origin=[0] * 3,
@@ -669,6 +682,24 @@ class TestSceneQuery(omni.kit.test.AsyncTestCase):
             search_box_maximum=[100] * 3,
             tracked_api=TrackableApi.PHYSICS_COLLISION,
             include_prim_paths=["/World/Group2"],
+        )
+        self.assertTrue(
+            set(
+                [
+                    "/World/Group2/Cube",
+                    "/World/Group2/Sphere",
+                ]
+            )
+            == set(collision_prims)
+        )
+
+        # When I include a single group, it is the only one there:
+        collision_prims = scene_query.get_prims_in_aabb(
+            search_box_origin=[0] * 3,
+            search_box_minimum=[-100] * 3,
+            search_box_maximum=[100] * 3,
+            tracked_api=TrackableApi.PHYSICS_COLLISION,
+            include_prim_paths="/World/Group2",
         )
         self.assertTrue(
             set(

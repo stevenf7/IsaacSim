@@ -34,6 +34,10 @@ class TestObstacleStrategy(omni.kit.test.AsyncTestCase):
     async def tearDown(self):
         pass
 
+    async def test_representation_as_string(self):
+        obstacle_strategy = ObstacleStrategy()
+        obstacle_strategy.set_default_configuration(Mesh, ObstacleConfiguration("obb", 0.05))
+
     async def test_sphere_strategies(self):
         # can create an ObstacleStrategy:
         obstacle_strategy = ObstacleStrategy()
@@ -46,7 +50,7 @@ class TestObstacleStrategy(omni.kit.test.AsyncTestCase):
 
         # We can set valid default configurations:
         obstacle_strategy.set_default_configuration(
-            Sphere, ObstacleConfiguration(representation=ObstacleRepresentation.SPHERE, safety_tolerance=0.0)
+            Sphere, ObstacleConfiguration(representation="sphere", safety_tolerance=0.0)
         )
         self.assertEqual(
             obstacle_strategy.get_obstacle_configuration(sphere_path).representation, ObstacleRepresentation.SPHERE
@@ -54,7 +58,7 @@ class TestObstacleStrategy(omni.kit.test.AsyncTestCase):
         self.assertEqual(obstacle_strategy.get_obstacle_configuration(sphere_path).safety_tolerance, 0.0)
 
         obstacle_strategy.set_default_configuration(
-            Sphere, ObstacleConfiguration(representation=ObstacleRepresentation.OBB, safety_tolerance=1.0)
+            Sphere, ObstacleConfiguration(representation="obb", safety_tolerance=1.0)
         )
         self.assertEqual(
             obstacle_strategy.get_obstacle_configuration(sphere_path).representation, ObstacleRepresentation.OBB
@@ -76,7 +80,7 @@ class TestObstacleStrategy(omni.kit.test.AsyncTestCase):
             ValueError,
             obstacle_strategy.set_default_configuration,
             Sphere,
-            ObstacleConfiguration(representation=ObstacleRepresentation.CAPSULE, safety_tolerance=0.0),
+            ObstacleConfiguration(representation="capsule", safety_tolerance=0.0),
         )
         self.assertRaises(
             ValueError,
@@ -88,7 +92,7 @@ class TestObstacleStrategy(omni.kit.test.AsyncTestCase):
             ValueError,
             obstacle_strategy.set_default_configuration,
             Sphere,
-            ObstacleConfiguration(representation=ObstacleRepresentation.CONE, safety_tolerance=-1.0),
+            ObstacleConfiguration(representation="cone", safety_tolerance=-1.0),
             allow_negative_tolerance=False,
         )
 
@@ -189,7 +193,7 @@ class TestObstacleStrategy(omni.kit.test.AsyncTestCase):
 
         # We can set valid default configurations:
         obstacle_strategy.set_default_configuration(
-            Cone, ObstacleConfiguration(representation=ObstacleRepresentation.CONE, safety_tolerance=0.0)
+            Cone, ObstacleConfiguration(representation="cone", safety_tolerance=0.0)
         )
         self.assertEqual(
             obstacle_strategy.get_obstacle_configuration(cone_path).representation, ObstacleRepresentation.CONE
@@ -197,7 +201,7 @@ class TestObstacleStrategy(omni.kit.test.AsyncTestCase):
         self.assertEqual(obstacle_strategy.get_obstacle_configuration(cone_path).safety_tolerance, 0.0)
 
         obstacle_strategy.set_default_configuration(
-            Cone, ObstacleConfiguration(representation=ObstacleRepresentation.OBB, safety_tolerance=1.0)
+            Cone, ObstacleConfiguration(representation="obb", safety_tolerance=1.0)
         )
         self.assertEqual(
             obstacle_strategy.get_obstacle_configuration(cone_path).representation, ObstacleRepresentation.OBB
@@ -206,7 +210,7 @@ class TestObstacleStrategy(omni.kit.test.AsyncTestCase):
 
         obstacle_strategy.set_default_configuration(
             Cone,
-            ObstacleConfiguration(representation=ObstacleRepresentation.OBB, safety_tolerance=-1.0),
+            ObstacleConfiguration(representation="obb", safety_tolerance=-1.0),
             allow_negative_tolerance=True,
         )
         self.assertEqual(
@@ -1109,9 +1113,45 @@ class TestObstacleStrategy(omni.kit.test.AsyncTestCase):
         obstacle_strategy = ObstacleStrategy()
 
         stage = await create_new_stage_async()
+        with self.assertRaises(RuntimeError):
+            obstacle_strategy.get_obstacle_configuration("/World/NotAShape")
 
-        self.assertRaises(
-            RuntimeError,
-            obstacle_strategy.get_obstacle_configuration,
-            "/World/NotAShape",
-        )
+    async def test_set_configuration_overrides_invalid_prim(self):
+        obstacle_strategy = ObstacleStrategy()
+
+        stage = await create_new_stage_async()
+        Cube("/World/ValidPrim")
+        with self.assertRaises(RuntimeError):
+            obstacle_strategy.set_configuration_overrides(
+                {
+                    "/World/NotAShape": ObstacleConfiguration("mesh", 0.05),
+                    "/World/AlsoNotAShape": ObstacleConfiguration("obb", 0.05),
+                    "/World/ValidPrim": ObstacleConfiguration("obb", 0.05),
+                },
+            )
+
+    async def test_invalid_representation_type(self):
+        ObstacleRepresentation("sphere")
+        with self.assertRaises(ValueError):
+            ObstacleRepresentation("not_a_type")
+
+    async def test_shape_level_configuration_overrides(self):
+        obstacle_strategy = ObstacleStrategy()
+
+        await create_new_stage_async()
+
+        sphere_path = "/World/Sphere"
+        Sphere(paths=sphere_path)
+
+        cube_path = "/World/Cube"
+        Cube(paths=cube_path)
+
+        # first, set the shape-level configuration:
+        obstacle_strategy.set_default_configuration(Sphere, ObstacleConfiguration("sphere", 0.2))
+
+        # now, set a global default safety tolerance:
+        obstacle_strategy.set_default_safety_tolerance(0.1)
+
+        # the shape-level configuration should take precedence over the global default safety tolerance:
+        self.assertEqual(obstacle_strategy.get_obstacle_configuration(sphere_path).safety_tolerance, 0.2)
+        self.assertEqual(obstacle_strategy.get_obstacle_configuration(cube_path).safety_tolerance, 0.1)

@@ -164,16 +164,12 @@ def get_estimated_state_from_robot(robot: Articulation, robot_joint_space: list[
         RobotState with current joint positions, velocities, and efforts
     """
     # Get current joint positions, velocities, and efforts
-    positions = robot.get_dof_positions().numpy().flatten()
-    velocities = robot.get_dof_velocities().numpy().flatten()
-    efforts = robot.get_dof_efforts().numpy().flatten()
-
     return mg.RobotState(
         joints=mg.JointState.from_name(
             robot_joint_space=robot_joint_space,
-            positions=(robot_joint_space, wp.from_numpy(positions, dtype=wp.float32)),
-            velocities=(robot_joint_space, wp.from_numpy(velocities, dtype=wp.float32)),
-            efforts=(robot_joint_space, wp.from_numpy(efforts, dtype=wp.float32)),
+            positions=(robot_joint_space, robot.get_dof_positions()),
+            velocities=(robot_joint_space, robot.get_dof_velocities()),
+            efforts=(robot_joint_space, robot.get_dof_efforts()),
         )
     )
 

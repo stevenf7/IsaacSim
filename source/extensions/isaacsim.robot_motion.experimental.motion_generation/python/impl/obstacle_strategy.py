@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from dataclasses import dataclass
 from enum import StrEnum, auto
 from typing import Type
 
@@ -27,6 +26,7 @@ from isaacsim.core.experimental.objects import (
     Shape,
     Sphere,
 )
+from isaacsim.core.experimental.prims import Prim
 
 from .utils.prims import get_shape_type
 
@@ -98,13 +98,15 @@ _LEGAL_REPRESENTATIONS: dict[Type[Shape], list[ObstacleRepresentation]] = {
 }
 
 
-@dataclass
 class ObstacleConfiguration:
     """Define the planning representation and safety tolerance for a shape.
 
     Args:
         representation: Representation type used in planning.
         safety_tolerance: Safety distance buffer applied to the obstacle.
+
+    Raises:
+        ValueError: if representation is a str that does not map to an ObstacleRepresentation.
 
     Example:
 
@@ -115,18 +117,32 @@ class ObstacleConfiguration:
         ...     ObstacleRepresentation,
         ... )
         >>>
-        >>> config = ObstacleConfiguration(
-        ...     representation=ObstacleRepresentation.SPHERE,
-        ...     safety_tolerance=0.1,
-        ... )
+        >>> # Can use string representation
+        >>> config = ObstacleConfiguration(representation="sphere", safety_tolerance=0.1)
         >>> config.representation is ObstacleRepresentation.SPHERE
         True
         >>> config.safety_tolerance == 0.1
         True
+        >>>
+        >>> # Or use enum directly
+        >>> config2 = ObstacleConfiguration(
+        ...     representation=ObstacleRepresentation.SPHERE,
+        ...     safety_tolerance=0.1,
+        ... )
+        >>> config2.representation is ObstacleRepresentation.SPHERE
+        True
     """
 
-    representation: ObstacleRepresentation
-    safety_tolerance: float
+    def __init__(self, representation: ObstacleRepresentation | str, safety_tolerance: float):
+        if not isinstance(representation, (ObstacleRepresentation, str)):
+            raise ValueError("representation must be either ObstacleRepresentation or str")
+
+        if isinstance(representation, str):
+            # will raise value error if not an option.
+            representation = ObstacleRepresentation(representation)
+
+        self.representation = representation
+        self.safety_tolerance = safety_tolerance
 
 
 class ObstacleStrategy:
@@ -150,7 +166,14 @@ class ObstacleStrategy:
             Cylinder: ObstacleConfiguration(representation=ObstacleRepresentation.CYLINDER, safety_tolerance=0.0),
             Mesh: ObstacleConfiguration(representation=ObstacleRepresentation.MESH, safety_tolerance=0.0),
         }
-        self.__configuration_overrides = {}
+
+        # store overrides for an entire shape-type which are set by the user:
+        # these are higher priority than the default configurations.
+        self.__shape_configuration_overrides = {}
+
+        # store overrides for a specific prim which are set by the user:
+        # these are higher priority than the shape-type overrides.
+        self.__prim_configuration_overrides = {}
 
     def set_default_configuration(
         self, prim_type: Type[Shape], configuration: ObstacleConfiguration, allow_negative_tolerance: bool = False
@@ -195,7 +218,7 @@ class ObstacleStrategy:
                 f"Safety tolerance cannot be negative. Got {configuration.safety_tolerance}. Use allow_negative_tolerance=True to allow negative tolerances."
             )
 
-        self.__default_configurations[prim_type] = configuration
+        self.__shape_configuration_overrides[prim_type] = configuration
 
     def set_default_safety_tolerance(self, safety_tolerance: float, allow_negative_tolerance: bool = False):
         """Set the safety tolerance on the default configuration for all prim types.
@@ -234,6 +257,7 @@ class ObstacleStrategy:
             allow_negative_tolerance: An override flag to allow negative safety tolerances.
 
         Raises:
+            RuntimeError: If any prim paths do not correspond to valid prims on the stage.
             ValueError: If any representation is invalid for its shape type.
             ValueError: If any safety tolerance is negative and allow_negative_tolerance is False.
 
@@ -259,6 +283,16 @@ class ObstacleStrategy:
             ...     }
             ... )
         """
+        # Validate that all prims we want to set overrides on exist in the stage:
+        prim_paths = list(configurations.keys())
+        _, nonexistent_paths = Prim.resolve_paths(prim_paths, raise_on_mixed_paths=False)
+        if nonexistent_paths:
+            msg = (
+                f"Failed to set configuration overrides: one or more prim paths do not exist on the stage.\n"
+                f"Invalid prim paths: {nonexistent_paths}"
+            )
+            raise RuntimeError(msg)
+
         # First, confirm that ALL configurations are valid before setting any overrides:
         for prim_path, configuration in configurations.items():
             prim_type = get_shape_type(prim_path)
@@ -276,7 +310,7 @@ class ObstacleStrategy:
 
         # All configurations are valid, so set the overrides:
         for prim_path, configuration in configurations.items():
-            self.__configuration_overrides[prim_path] = configuration
+            self.__prim_configuration_overrides[prim_path] = configuration
 
     def get_obstacle_configuration(self, prim_path: str) -> ObstacleConfiguration:
         """Get the obstacle configuration for a given prim path.
@@ -288,7 +322,7 @@ class ObstacleStrategy:
             Obstacle configuration for the prim path.
 
         Raises:
-            RuntimeError: If the prim path is unsupported or configuration is invalid.
+            RuntimeError: If the prim path: does not exist on the stage, is unsupported, or configuration is invalid.
 
         Example:
 
@@ -303,10 +337,21 @@ class ObstacleStrategy:
             >>> config.safety_tolerance
             0.0
         """
+        # Validate that our prim exists on the stage:
+        _, nonexistent_paths = Prim.resolve_paths(prim_path, raise_on_mixed_paths=False)
+        if nonexistent_paths:
+            msg = (
+                f"Failed to get obstacle configuration: prim path does not exist on the stage.\n"
+                f"Invalid prim path: {prim_path}"
+            )
+            raise RuntimeError(msg)
+
         # get the defined obstacle configuration for this object:
         shape_type = get_shape_type(prim_path)
-        if prim_path in self.__configuration_overrides:
-            obstacle_configuration = self.__configuration_overrides[prim_path]
+        if prim_path in self.__prim_configuration_overrides:
+            obstacle_configuration = self.__prim_configuration_overrides[prim_path]
+        elif shape_type in self.__shape_configuration_overrides:
+            obstacle_configuration = self.__shape_configuration_overrides[shape_type]
         else:
             obstacle_configuration = self.__default_configurations[shape_type]
 

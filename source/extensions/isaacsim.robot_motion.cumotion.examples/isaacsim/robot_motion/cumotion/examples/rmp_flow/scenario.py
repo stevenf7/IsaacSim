@@ -29,7 +29,6 @@ from isaacsim.robot_motion.cumotion import (
 )
 from isaacsim.robot_motion.experimental.motion_generation import (
     ObstacleConfiguration,
-    ObstacleRepresentation,
     ObstacleStrategy,
     SceneQuery,
     TrackableApi,
@@ -131,27 +130,9 @@ class FrankaRmpFlowExample:
 
         # Set up obstacle strategy
         obstacle_strategy = ObstacleStrategy()
-        obstacle_strategy.set_default_configuration(
-            Mesh,
-            ObstacleConfiguration(
-                representation=ObstacleRepresentation.OBB,
-                safety_tolerance=0.01,
-            ),
-        )
-        obstacle_strategy.set_default_configuration(
-            Cone,
-            ObstacleConfiguration(
-                representation=ObstacleRepresentation.OBB,
-                safety_tolerance=0.01,
-            ),
-        )
-        obstacle_strategy.set_default_configuration(
-            Cylinder,
-            ObstacleConfiguration(
-                representation=ObstacleRepresentation.OBB,
-                safety_tolerance=0.01,
-            ),
-        )
+        obstacle_strategy.set_default_configuration(Mesh, ObstacleConfiguration("obb", 0.01))
+        obstacle_strategy.set_default_configuration(Cone, ObstacleConfiguration("obb", 0.01))
+        obstacle_strategy.set_default_configuration(Cylinder, ObstacleConfiguration("obb", 0.01))
 
         # Create world binding
         self._world_binding = WorldBinding(
@@ -204,15 +185,11 @@ class FrankaRmpFlowExample:
         # Get current robot state
         controlled_joint_names = self._controlled_joint_names
 
-        # Get DOF positions and velocities
-        all_dof_positions = self._articulation.get_dof_positions().reshape([-1])
-        all_dof_velocities = self._articulation.get_dof_velocities().reshape([-1])
-
         estimated_state = mg.RobotState(
             joints=mg.JointState.from_name(
                 robot_joint_space=self._robot_joint_space,
-                positions=(self._robot_joint_space, all_dof_positions),
-                velocities=(self._robot_joint_space, all_dof_velocities),
+                positions=(self._robot_joint_space, self._articulation.get_dof_positions()),
+                velocities=(self._robot_joint_space, self._articulation.get_dof_velocities()),
             )
         )
 

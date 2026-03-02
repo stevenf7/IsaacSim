@@ -85,29 +85,56 @@ class JointState:
         """Create a JointState from joint names and data arrays.
 
         At least one of positions, velocities, or efforts must be provided. Each tuple
-        contains a list of joint names and a corresponding 1D warp array of values.
+        contains a list of joint names and a corresponding warp array of values.
+
+        **Array Shape Support:**
+        The data arrays can be either:
+        - 1D arrays (shape: ``(N,)``) where N is the number of joints
+        - 2D arrays (shape: ``(1, N)``) where the first dimension must be size 1
 
         Args:
             robot_joint_space: The ordered list of joint names defining the joint space
                 of the controlled robot (for example, `Articulation.dof_names`).
             positions: Tuple of (joint_names, position_array) where joint_names is a list
-                of joint names and position_array is a 1D warp array of position values.
+                of joint names and position_array is a 1D or 2D warp array (with first
+                dimension size 1) of position values.
             velocities: Tuple of (joint_names, velocity_array) where joint_names is a list
-                of joint names and velocity_array is a 1D warp array of velocity values.
+                of joint names and velocity_array is a 1D or 2D warp array (with first
+                dimension size 1) of velocity values.
             efforts: Tuple of (joint_names, effort_array) where joint_names is a list
-                of joint names and effort_array is a 1D warp array of effort values.
+                of joint names and effort_array is a 1D or 2D warp array (with first
+                dimension size 1) of effort values.
 
         Returns:
             A JointState instance with the provided joint data.
 
         Raises:
             ValueError: If all of positions, velocities, and efforts are None.
-            ValueError: If any provided array is not a 1D warp array of float types.
+            ValueError: If any provided array is not a 1D or 2D warp array of float types.
+            ValueError: If a 2D array is provided and the first dimension is not size 1.
             ValueError: If any provided array has length less than 1.
             ValueError: If the first element of any tuple is not a list of joint names.
             ValueError: If any array length doesn't match its corresponding name list length.
             ValueError: If any joint names are duplicated.
             ValueError: If any joint names are not in the robot_joint_space.
+
+        Example:
+            .. code-block:: python
+
+                # Direct usage with Articulation (no flatten/reshape needed):
+                robot_joint_space = articulation.dof_names
+                joint_state = JointState.from_name(
+                    robot_joint_space=robot_joint_space,
+                    positions=(robot_joint_space, articulation.get_dof_positions()),
+                    velocities=(robot_joint_space, articulation.get_dof_velocities()),
+                )
+
+                # Or with 1D arrays:
+                positions_1d = wp.array([0.0, 1.0, 2.0], dtype=wp.float32)
+                joint_state = JointState.from_name(
+                    robot_joint_space=["joint_0", "joint_1", "joint_2"],
+                    positions=(["joint_0", "joint_1", "joint_2"], positions_1d),
+                )
         """
         if (positions is None) and (velocities is None) and (efforts is None):
             raise ValueError("One of positions, velocities, or efforts must be defined.")
@@ -118,11 +145,20 @@ class JointState:
 
             names, vector = vector_tuple
 
+            if not isinstance(vector, wp.array):
+                raise ValueError("All defined [positions, velocities, efforts] must be 1D-warp arrays of float-types.")
+
+            if vector.ndim == 2:
+                if vector.shape[0] != 1:
+                    raise ValueError(
+                        "All defined [positions, velocities, efforts] must only be defined for a single robot."
+                    )
+                # flatten the array:
+                vector = vector.reshape([-1])
+
             # Enforce that these are warp array inputs:
-            if (
-                not isinstance(vector, wp.array)
-                or (vector.ndim != 1)
-                or (vector.dtype not in (wp.float32, wp.float64, float))
+            if (vector.ndim != 1) or (  # can still occur if non-2D array passed in.
+                vector.dtype not in (wp.float32, wp.float64, float)
             ):
                 raise ValueError("All defined [positions, velocities, efforts] must be 1D-warp arrays of float-types.")
 
@@ -176,28 +212,57 @@ class JointState:
         """Create a JointState from joint indices and data arrays.
 
         At least one of positions, velocities, or efforts must be provided. Each tuple
-        contains a 1D warp array of joint indices and a corresponding 1D warp array of values.
+        contains a 1D warp array of joint indices and a corresponding warp array of values.
+
+        **Array Shape Support:**
+        The data arrays can be either:
+        - 1D arrays (shape: ``(N,)``) where N is the number of joints
+        - 2D arrays (shape: ``(1, N)``) where the first dimension must be size 1
 
         Args:
             robot_joint_space: The ordered list of joint names defining the joint space.
             positions: Tuple of (indices, position_array) where indices is a 1D warp array
-                of joint indices and position_array is a 1D warp array of position values.
+                of joint indices and position_array is a 1D or 2D warp array (with first
+                dimension size 1) of position values.
             velocities: Tuple of (indices, velocity_array) where indices is a 1D warp array
-                of joint indices and velocity_array is a 1D warp array of velocity values.
+                of joint indices and velocity_array is a 1D or 2D warp array (with first
+                dimension size 1) of velocity values.
             efforts: Tuple of (indices, effort_array) where indices is a 1D warp array
-                of joint indices and effort_array is a 1D warp array of effort values.
+                of joint indices and effort_array is a 1D or 2D warp array (with first
+                dimension size 1) of effort values.
 
         Returns:
             A JointState instance with the provided joint data.
 
         Raises:
             ValueError: If all of positions, velocities, and efforts are None.
-            ValueError: If any provided data array is not a 1D warp array of float types.
+            ValueError: If any provided data array is not a 1D or 2D warp array of float types.
+            ValueError: If a 2D array is provided and the first dimension is not size 1.
             ValueError: If any provided indices array is not a 1D warp array of int types.
             ValueError: If any provided array has length less than 1.
             ValueError: If any index is out of range for the robot_joint_space.
             ValueError: If any index values are duplicated.
             ValueError: If any array length doesn't match its corresponding index array length.
+
+        Example:
+            .. code-block:: python
+
+                # Direct usage with Articulation (no flatten/reshape needed):
+                robot_joint_space = articulation.dof_names
+                dof_indices = wp.array([0, 1, 2], dtype=wp.int32)
+                joint_state = JointState.from_index(
+                    robot_joint_space=robot_joint_space,
+                    positions=(dof_indices, articulation.get_dof_positions()),
+                    velocities=(dof_indices, articulation.get_dof_velocities()),
+                )
+
+                # Or with 1D arrays:
+                indices = wp.array([0, 1, 2], dtype=wp.int32)
+                positions_1d = wp.array([0.0, 1.0, 2.0], dtype=wp.float32)
+                joint_state = JointState.from_index(
+                    robot_joint_space=["joint_0", "joint_1", "joint_2"],
+                    positions=(indices, positions_1d),
+                )
         """
         if (positions is None) and (velocities is None) and (efforts is None):
             raise ValueError("One of positions, velocities, or efforts must be defined.")
@@ -208,11 +273,20 @@ class JointState:
 
             indices, vector = vector_tuple
 
+            if not isinstance(vector, wp.array):
+                raise ValueError("All defined [positions, velocities, efforts] must be 1D-warp arrays of float-types.")
+
+            if vector.ndim == 2:
+                if vector.shape[0] != 1:
+                    raise ValueError(
+                        "All defined [positions, velocities, efforts] must only be defined for a single robot."
+                    )
+                # flatten the array:
+                vector = vector.reshape([-1])
+
             # Enforce that these are warp array inputs:
-            if (
-                not isinstance(vector, wp.array)
-                or (vector.ndim != 1)
-                or (vector.dtype not in (wp.float32, wp.float64, float))
+            if (vector.ndim != 1) or (  # can still occur if non-2D array passed in.
+                vector.dtype not in (wp.float32, wp.float64, float)
             ):
                 raise ValueError("All defined [positions, velocities, efforts] must be 1D-warp arrays of float-types.")
 

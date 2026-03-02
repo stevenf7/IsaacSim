@@ -26,7 +26,6 @@ from isaacsim.robot_motion.cumotion import (
 )
 from isaacsim.robot_motion.experimental.motion_generation import (
     ObstacleConfiguration,
-    ObstacleRepresentation,
     ObstacleStrategy,
     SceneQuery,
     TrackableApi,
@@ -112,27 +111,9 @@ class FrankaGraphPlannerExample:
         print("Objects: ", objects)
 
         obstacle_strategy = ObstacleStrategy()
-        obstacle_strategy.set_default_configuration(
-            Mesh,
-            ObstacleConfiguration(
-                representation=ObstacleRepresentation.OBB,
-                safety_tolerance=0.01,
-            ),
-        )
-        obstacle_strategy.set_default_configuration(
-            Cone,
-            ObstacleConfiguration(
-                representation=ObstacleRepresentation.OBB,
-                safety_tolerance=0.01,
-            ),
-        )
-        obstacle_strategy.set_default_configuration(
-            Cylinder,
-            ObstacleConfiguration(
-                representation=ObstacleRepresentation.OBB,
-                safety_tolerance=0.01,
-            ),
-        )
+        obstacle_strategy.set_default_configuration(Mesh, ObstacleConfiguration("obb", 0.01))
+        obstacle_strategy.set_default_configuration(Cone, ObstacleConfiguration("obb", 0.01))
+        obstacle_strategy.set_default_configuration(Cylinder, ObstacleConfiguration("obb", 0.01))
 
         world_binding = WorldBinding(
             world_interface=CumotionWorldInterface(visualize_debug_prims=True),
