@@ -1,4 +1,8 @@
 # Changelog
+## [1.9.0] - 2026-03-02
+### Changed
+- Shifted RTX sensor scan accumulation and post-processing back to host by default to reduce GPU resource contention and improve frametime & frametime consistency. Post-processing-on-device still available as option by setting app.sensors.nv.[modality].outputBufferOnGPU=true.
+
 ## [1.8.0] - 2026-02-27
 ### Changed
 - Converted OgnROS2QoSProfile node from Python to C++ for improved performance and consistency with other C++ OG nodes

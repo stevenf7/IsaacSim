@@ -513,186 +513,169 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         self._annotator.initialize()
         self._annotator.attach([self.hydra_texture.path])
 
-        WARMUP_FRAMES = 5
+        WARMUP_FRAMES = 10
         NUM_FRAMES = 10
-        PAUSE_FRAMES = 5
-        # Tolerance for timestamp alignment (50ms in nanoseconds)
-        TIMESTAMP_TOLERANCE_NS = 50_000_000
+        PAUSE_FRAMES = 10
+        GRACE_FRAMES = 3
+        # Expected per-frame advance when playing: 1/60s in nanoseconds
+        EXPECTED_ADVANCE_NS = int(1.0 / 60.0 * 1e9)  # 16_666_666 ns
+        # Tolerance for timestamp delta (2ms in nanoseconds)
+        TOLERANCE_NS = 2_000_000
 
-        # Data collection for plotting
-        plot_data = {"before_pause": [], "during_pause": [], "after_resume": []}
+        prev_gmo_timestamp_ns = None
 
-        # Phase 1: Start timeline and wait for warmup, then verify timestamp alignment
+        # Phase 1: Start timeline and wait for warmup, then verify timestamp advances by 1/60s
         self._timeline.play()
-        last_valid_gmo_data = None
-        last_valid_timestamp_ns = None
 
         # Wait for warmup
-        for _ in range(WARMUP_FRAMES):
+        for i in range(WARMUP_FRAMES):
             await omni.kit.app.get_app().next_update_async()
-
-        # Collect frames and verify timestamp alignment
-        for frame_idx in range(NUM_FRAMES):
-            await omni.kit.app.get_app().next_update_async()
-            self._annotator_data = self._annotator.get_data()
-
-            if self._annotator_data is None or self._annotator_data.size == 0:
-                continue
-
-            gmo = get_gmo_data(self._annotator_data)
-            if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
-                continue
-
-            # Get timeline time in nanoseconds
             timeline_time_ns = int(self._timeline.get_current_time() * 1e9)
-            gmo_timestamp_ns = int(gmo.timestampNs)
+            self._annotator_data = self._annotator.get_data()
+            gmo_timestamp_ns = None
+            if self._annotator_data is not None and self._annotator_data.size > 0:
+                gmo = get_gmo_data(self._annotator_data)
+                if gmo.magicNumber == gmo_utils.getMagicNumberGMO():
+                    gmo_timestamp_ns = int(gmo.timestampNs)
+                    prev_gmo_timestamp_ns = gmo_timestamp_ns
+            print(f"[WARMUP  ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={str(gmo_timestamp_ns):>10s}")
 
-            # Store data for plotting
-            plot_data["before_pause"].append((timeline_time_ns, gmo_timestamp_ns))
+        self.assertIsNotNone(prev_gmo_timestamp_ns, "Expected at least one valid GMO frame during warmup")
 
-            # Verify timestampNs aligns with timeline time (within tolerance)
-            timestamp_diff = abs(gmo_timestamp_ns - timeline_time_ns)
-            self.assertLessEqual(
-                timestamp_diff,
-                TIMESTAMP_TOLERANCE_NS,
-                f"GMO timestampNs ({gmo_timestamp_ns}) does not align with timeline time ({timeline_time_ns}). "
-                f"Difference: {timestamp_diff / 1e6:.3f} ms, tolerance: {TIMESTAMP_TOLERANCE_NS / 1e6:.3f} ms",
-            )
-
-            last_valid_gmo_data = (
-                self._annotator_data.copy() if hasattr(self._annotator_data, "copy") else self._annotator_data
-            )
-            last_valid_timestamp_ns = gmo_timestamp_ns
-
-        self.assertIsNotNone(last_valid_gmo_data, "Expected to collect at least one valid GMO frame before pause")
-
-        # Phase 2: Pause the timeline and verify no new GMO data is produced
-        self._timeline.pause()
-        paused_timeline_time_ns = int(self._timeline.get_current_time() * 1e9)
-
-        for _ in range(PAUSE_FRAMES):
+        # Collect frames and verify GMO timestamp advances by 1/60s relative to previous
+        for i in range(NUM_FRAMES):
             await omni.kit.app.get_app().next_update_async()
+            timeline_time_ns = int(self._timeline.get_current_time() * 1e9)
             self._annotator_data = self._annotator.get_data()
 
             if self._annotator_data is None or self._annotator_data.size == 0:
+                print(f"[PLAYING ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (no data)")
                 continue
 
             gmo = get_gmo_data(self._annotator_data)
             if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
+                print(f"[PLAYING ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (bad magic)")
                 continue
 
-            # During pause, GMO timestamp should not advance beyond the paused timeline time
             gmo_timestamp_ns = int(gmo.timestampNs)
-
-            # Store data for plotting (timeline time stays constant during pause)
-            plot_data["during_pause"].append((paused_timeline_time_ns, gmo_timestamp_ns))
-
-            self.assertLessEqual(
-                gmo_timestamp_ns,
-                paused_timeline_time_ns + TIMESTAMP_TOLERANCE_NS,
-                f"GMO timestampNs ({gmo_timestamp_ns}) advanced beyond paused timeline time ({paused_timeline_time_ns}) "
-                f"during pause. New GMO data should not be produced while paused.",
+            delta_ns = gmo_timestamp_ns - prev_gmo_timestamp_ns
+            print(
+                f"[PLAYING ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={gmo_timestamp_ns:>10d}  delta_ns={delta_ns:>10d}  expected={EXPECTED_ADVANCE_NS}"
             )
 
-        # Phase 3: Resume the timeline and verify timestamps align again
+            self.assertAlmostEqual(
+                delta_ns,
+                EXPECTED_ADVANCE_NS,
+                delta=TOLERANCE_NS,
+                msg=f"Playing: GMO timestamp delta ({delta_ns} ns) != expected ({EXPECTED_ADVANCE_NS} ns). "
+                f"prev={prev_gmo_timestamp_ns}, curr={gmo_timestamp_ns}",
+            )
+            prev_gmo_timestamp_ns = gmo_timestamp_ns
+
+        # Phase 2: Pause the timeline and verify GMO timestamp does not advance (delta == 0)
+        self._timeline.pause()
+
+        for i in range(PAUSE_FRAMES):
+            await omni.kit.app.get_app().next_update_async()
+            timeline_time_ns = int(self._timeline.get_current_time() * 1e9)
+            self._annotator_data = self._annotator.get_data()
+
+            if self._annotator_data is None or self._annotator_data.size == 0:
+                print(f"[PAUSED  ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (no data)")
+                continue
+
+            gmo = get_gmo_data(self._annotator_data)
+            if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
+                print(f"[PAUSED  ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (bad magic)")
+                continue
+
+            gmo_timestamp_ns = int(gmo.timestampNs)
+            delta_ns = gmo_timestamp_ns - prev_gmo_timestamp_ns
+
+            if i < GRACE_FRAMES:
+                print(
+                    f"[PAUSED  ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={gmo_timestamp_ns:>10d}  delta_ns={delta_ns:>10d}  (grace)"
+                )
+                prev_gmo_timestamp_ns = gmo_timestamp_ns
+                continue
+
+            print(
+                f"[PAUSED  ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={gmo_timestamp_ns:>10d}  delta_ns={delta_ns:>10d}  expected=0"
+            )
+
+            self.assertEqual(
+                delta_ns,
+                0,
+                f"Paused: GMO timestamp should not advance (delta={delta_ns} ns). "
+                f"prev={prev_gmo_timestamp_ns}, curr={gmo_timestamp_ns}",
+            )
+
+        # Phase 3: Resume the timeline and verify timestamp advances by 1/60s again
         self._timeline.play()
+
+        for i in range(GRACE_FRAMES):
+            await omni.kit.app.get_app().next_update_async()
+            timeline_time_ns = int(self._timeline.get_current_time() * 1e9)
+            self._annotator_data = self._annotator.get_data()
+
+            gmo_timestamp_ns_str = "None"
+            delta_ns_str = ""
+            if self._annotator_data is not None and self._annotator_data.size > 0:
+                gmo = get_gmo_data(self._annotator_data)
+                if gmo.magicNumber == gmo_utils.getMagicNumberGMO():
+                    gmo_timestamp_ns = int(gmo.timestampNs)
+                    delta_ns = gmo_timestamp_ns - prev_gmo_timestamp_ns
+                    gmo_timestamp_ns_str = f"{gmo_timestamp_ns:>10d}"
+                    delta_ns_str = f"  delta_ns={delta_ns:>10d}"
+                    prev_gmo_timestamp_ns = gmo_timestamp_ns
+
+            print(
+                f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={gmo_timestamp_ns_str}  prev_gmo_ns={prev_gmo_timestamp_ns:>10d}  {delta_ns_str}    (grace)"
+            )
+
         resumed_frames_collected = 0
         found_new_data_after_resume = False
-        timestamp_before_pause = last_valid_timestamp_ns
 
-        for frame_idx in range(NUM_FRAMES * 2):  # Allow more frames to find new data
+        for i in range(NUM_FRAMES * 2):  # Allow more frames to find new data
             await omni.kit.app.get_app().next_update_async()
+            timeline_time_ns = int(self._timeline.get_current_time() * 1e9)
             self._annotator_data = self._annotator.get_data()
 
             if self._annotator_data is None or self._annotator_data.size == 0:
+                print(f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (no data)")
                 continue
 
             gmo = get_gmo_data(self._annotator_data)
             if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
+                print(f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (bad magic)")
                 continue
 
             gmo_timestamp_ns = int(gmo.timestampNs)
+            delta_ns = gmo_timestamp_ns - prev_gmo_timestamp_ns
 
             # Wait for timestamp to actually advance (skip stale/cached frames)
             if not found_new_data_after_resume:
-                if timestamp_before_pause is not None and gmo_timestamp_ns <= timestamp_before_pause:
-                    continue  # Still getting old data, keep waiting
+                if gmo_timestamp_ns <= prev_gmo_timestamp_ns:
+                    print(
+                        f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={gmo_timestamp_ns:>10d}  delta_ns={delta_ns:>10d}  (stale)"
+                    )
+                    continue
                 found_new_data_after_resume = True
 
-            # Get timeline time in nanoseconds
-            timeline_time_ns = int(self._timeline.get_current_time() * 1e9)
-
-            # Store data for plotting
-            plot_data["after_resume"].append((timeline_time_ns, gmo_timestamp_ns))
-
-            # After resume, timestampNs should align with timeline time again
-            timestamp_diff = abs(gmo_timestamp_ns - timeline_time_ns)
-            self.assertLessEqual(
-                timestamp_diff,
-                TIMESTAMP_TOLERANCE_NS,
-                f"After resume: GMO timestampNs ({gmo_timestamp_ns}) does not align with timeline time ({timeline_time_ns}). "
-                f"Difference: {timestamp_diff / 1e6:.3f} ms, tolerance: {TIMESTAMP_TOLERANCE_NS / 1e6:.3f} ms",
+            delta_ns = gmo_timestamp_ns - prev_gmo_timestamp_ns
+            print(
+                f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={gmo_timestamp_ns:>10d}  delta_ns={delta_ns:>10d}  expected={EXPECTED_ADVANCE_NS}"
             )
 
-            last_valid_timestamp_ns = gmo_timestamp_ns
+            self.assertAlmostEqual(
+                delta_ns,
+                EXPECTED_ADVANCE_NS,
+                delta=TOLERANCE_NS,
+                msg=f"Resumed: GMO timestamp delta ({delta_ns} ns) != expected ({EXPECTED_ADVANCE_NS} ns). "
+                f"prev={prev_gmo_timestamp_ns}, curr={gmo_timestamp_ns}",
+            )
+            prev_gmo_timestamp_ns = gmo_timestamp_ns
             resumed_frames_collected += 1
-
-        self._timeline.stop()
-
-        self.assertTrue(
-            found_new_data_after_resume,
-            f"Expected GMO timestamp to advance after resume. Last timestamp before pause: {timestamp_before_pause}",
-        )
-        self.assertGreater(
-            resumed_frames_collected,
-            0,
-            "Expected to collect at least one valid GMO frame after resume",
-        )
-
-        # Plot GMO timestampNs vs timeline time if DEBUG_DRAW_PRINT is enabled
-        if DEBUG_DRAW_PRINT:
-            fig, ax = plt.subplots(figsize=(12, 8))
-
-            # Extract x (timeline time) and y (GMO timestamp) for each phase
-            if plot_data["before_pause"]:
-                x_before = [d[0] / 1e6 for d in plot_data["before_pause"]]  # Convert to ms
-                y_before = [d[1] / 1e6 for d in plot_data["before_pause"]]
-                ax.scatter(x_before, y_before, c="blue", label="Before Pause", alpha=0.7, s=30)
-
-            if plot_data["during_pause"]:
-                x_during = [d[0] / 1e6 for d in plot_data["during_pause"]]
-                y_during = [d[1] / 1e6 for d in plot_data["during_pause"]]
-                ax.scatter(x_during, y_during, c="orange", label="During Pause", alpha=0.7, s=30, marker="x")
-
-            if plot_data["after_resume"]:
-                x_after = [d[0] / 1e6 for d in plot_data["after_resume"]]
-                y_after = [d[1] / 1e6 for d in plot_data["after_resume"]]
-                ax.scatter(x_after, y_after, c="green", label="After Resume", alpha=0.7, s=30)
-
-            # Add y=x reference line
-            all_times = []
-            for phase_data in plot_data.values():
-                all_times.extend([d[0] / 1e6 for d in phase_data])
-                all_times.extend([d[1] / 1e6 for d in phase_data])
-            if all_times:
-                min_t, max_t = min(all_times), max(all_times)
-                ax.plot([min_t, max_t], [min_t, max_t], "k--", alpha=0.3, label="y=x (perfect alignment)")
-
-            ax.set_xlabel("Timeline Time (get_current_time) [ms]")
-            ax.set_ylabel("GMO timestampNs [ms]")
-            ax.set_title(f"GMO Timestamp vs Timeline Time - {sensor_type.upper()} (Pause/Resume Test)")
-            ax.legend()
-            ax.grid(True, alpha=0.3)
-
-            plt.tight_layout()
-            plt.savefig(f"test_{sensor_type}_timestamp_alignment.png", dpi=150)
-            plt.close()
-
-            # Print summary
-            print(f"\n=== {sensor_type.upper()} Timestamp Alignment Summary ===")
-            print(f"Frames before pause: {len(plot_data['before_pause'])}")
-            print(f"Frames during pause: {len(plot_data['during_pause'])}")
-            print(f"Frames after resume: {len(plot_data['after_resume'])}")
 
     async def test_lidar_timestamp_alignment(self):
         """Test that RTX Lidar GMO timestamps align with timeline and pause/resume behavior."""
