@@ -4,7 +4,7 @@
 ### Changed
 - Migrate Odometry and joint name resolved nodes to use core experimental prims APIs
 
-## [5.3.0] - 2025-01-27
+## [5.3.0] - 2026-01-27
 ### Added
 - IsaacAttachHydraTexture node allows user to add HydraTextures and RenderVars on demand to RenderProduct prims already in the stage
 

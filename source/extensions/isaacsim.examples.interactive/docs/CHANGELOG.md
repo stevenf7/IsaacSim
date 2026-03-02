@@ -1,6 +1,6 @@
 # Changelog
 ## [4.13.0] - 2026-01-10
-### Changed 
+### Changed
 - The Getting Started, Replay Follow Target, Robo Factory, and Surface Gripper examples now depend on the new Warp-based APIs
 
 ## [4.12.1] - 2026-01-06

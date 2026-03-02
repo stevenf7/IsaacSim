@@ -47,9 +47,9 @@ args = [
 name = "cpp"
 dependencies = [
     "isaacsim.core.experimental.objects",
-    "isaacsim.test.utils",
     "isaacsim.storage.native",
-    "omni.isaac.ml_archive",
+    "isaacsim.test.utils",
+    "omni.isaac.ml_archive"
 ]
 stdoutFailPatterns.exclude = [
     '*[Error] [isaacsim.sensors.experimental.physics.impl.commands] Valid parent prim must be selected before creating contact sensor prim.*',

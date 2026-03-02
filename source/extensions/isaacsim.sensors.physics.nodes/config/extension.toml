@@ -21,15 +21,15 @@ writeTarget.kit = true
 "omni.usd" = {}
 "usdrt.scenegraph" = {}
 
-[[native.plugin]]
-path = "bin/*.plugin"
-
 [[python.module]]
 name = "isaacsim.sensors.physics.nodes"
 
 [[python.module]]
 name = "isaacsim.sensors.physics.nodes.tests"
 public = false
+
+[[native.plugin]]
+path = "bin/*.plugin"
 
 [[test]]
 name = "startup"

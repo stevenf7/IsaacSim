@@ -46,22 +46,22 @@ isaac.startup.ros_sim_control_extension = false
 
 [[test]]
 dependencies = [
-    "omni.kit.ui_test",
-    "isaacsim.asset.gen.omap.ui",            # extension with occupancy map,
-    "isaacsim.examples.browser",         # robotics examples,
-    "isaacsim.replicator.synthetic_recorder",    # extension with synthetic_recorder,
-    "isaacsim.robot.schema.ui",              # Robot Inspector window,
-    "omni.graph.window.action",          # window for action graph,
+    "isaacsim.asset.gen.omap.ui", # extension with occupancy map,
+    "isaacsim.examples.browser", # robotics examples,
+    "isaacsim.replicator.synthetic_recorder", # extension with synthetic_recorder,
+    "isaacsim.robot.schema.ui", # Robot Inspector window,
+    "omni.graph.window.action", # window for action graph,
     "omni.isaac.ml_archive",
-    "omni.kit.viewport.window",                 # viewport,
-    "omni.kit.widget.layers",        # layer window,
-    "omni.kit.window.console",           # console,
-    "omni.kit.window.content_browser",     # content browser,
-    "omni.kit.window.script_editor",     # window with script editor,
-    "omni.kit.window.stage",       # Stage,
-    "omni.kit.window.toolbar",     # main tool bar,
-    "omni.rtx.settings.core",      # Render Settings window,
-    "semantics.schema.editor",            # the extension containing semantics schema editor,
+    "omni.kit.ui_test",
+    "omni.kit.viewport.window", # viewport,
+    "omni.kit.widget.layers", # layer window,
+    "omni.kit.window.console", # console,
+    "omni.kit.window.content_browser", # content browser,
+    "omni.kit.window.script_editor", # window with script editor,
+    "omni.kit.window.stage", # Stage,
+    "omni.kit.window.toolbar", # main tool bar,
+    "omni.rtx.settings.core", # Render Settings window,
+    "semantics.schema.editor" # the extension containing semantics schema editor,
 ]
 
 args = [

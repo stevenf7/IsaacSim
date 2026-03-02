@@ -31,14 +31,13 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
-
 [[test]]
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]
 dependencies = [
-    "omni.isaac.ml_archive",
     "isaacsim.test.utils",
+    "omni.isaac.ml_archive"
 ]
 args = [
     "--enable",

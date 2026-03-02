@@ -16,8 +16,8 @@ writeTarget.kit = true
 "omni.kit.widget.filebrowser" = {}
 "omni.kit.window.content_browser" = {}
 "omni.kit.window.filepicker" = {}
-"omni.usd.core" = {}
 "omni.simready.content.browser" = {}
+"omni.usd.core" = {}
 
 [[python.module]]
 name = "isaacsim.gui.content_browser"

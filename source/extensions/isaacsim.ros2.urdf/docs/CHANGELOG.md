@@ -1,7 +1,7 @@
 # Changelog
 
 ## [2.0.0] - 2026-02-07
-### CHanged
+### Changed
 - Updated isaacssim.ros2.urdf to use URDF importer 3.x
 
 ## [1.1.22] - 2026-01-09

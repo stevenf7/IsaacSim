@@ -30,7 +30,8 @@ Tools:
         - Default: docstring style (D, Google convention), modern annotations and
           f-strings (UP), pycodestyle (E711/E712/E722), bugbear (B006), naming (N),
           comprehensions (C4), return hygiene (RET), simplify (SIM)
-        - --ruff-clean: unused imports (F401), unnecessary pass (PIE790)
+        - Also enabled by default: unused imports (F401), unnecessary pass (PIE790)
+          (disable with --no-ruff-clean)
 
 Usage (via repo.sh):
     # Run all tools on all extensions
@@ -42,11 +43,11 @@ Usage (via repo.sh):
     # Run ruff to check docstrings, type annotations, and code quality
     ./repo.sh run_python_linting --ruff
 
-    # Run ruff with auto-fix enabled
+    # Run ruff with auto-fix enabled (includes cleanup rules by default)
     ./repo.sh run_python_linting --ruff --fix
 
-    # Run ruff cleanup rules to remove unused imports and extra pass statements
-    ./repo.sh run_python_linting --ruff --ruff-clean --fix
+    # Run ruff with cleanup rules disabled
+    ./repo.sh run_python_linting --ruff --no-ruff-clean
 
     # Run pydoclint to check docstrings don't contain types
     ./repo.sh run_python_linting --pydoclint
@@ -793,7 +794,7 @@ def run_ruff(
     - C4: flake8-comprehensions rules
     - RET: return statement hygiene
     - SIM: flake8-simplify rules
-    Optional cleanup rules (--ruff-clean):
+    Cleanup rules (enabled by default, disable with --no-ruff-clean):
     - F401: Remove unused imports
     - PIE790: Remove unnecessary pass statements
 
@@ -1165,7 +1166,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
         "and source/deprecated (mypy, darglint, interrogate, pydoclint, ruff). "
         "Ruff enforces docstring style (Google convention), modern annotations, naming, pycodestyle, "
         "bugbear, comprehensions, return hygiene, and simplify rules by default. "
-        "Use --ruff-clean for unused import/pass removal."
+        "Ruff cleanup rules for unused imports/pass removal are enabled by default; "
+        "use --no-ruff-clean to disable."
     )
 
     # Extension selection
@@ -1214,8 +1216,16 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
     )
     parser.add_argument(
         "--ruff-clean",
+        dest="ruff_clean",
         action="store_true",
-        help="Include ruff cleanup rules (remove unused imports and extra pass statements)",
+        default=True,
+        help="Include ruff cleanup rules (enabled by default)",
+    )
+    parser.add_argument(
+        "--no-ruff-clean",
+        dest="ruff_clean",
+        action="store_false",
+        help="Disable ruff cleanup rules",
     )
 
     # Configuration

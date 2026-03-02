@@ -19,12 +19,11 @@ writeTarget.platform = true # pip prebundle makes this extension os specific
 writeTarget.python = true
 
 [dependencies]
-"omni.kit.pip_archive" = {} # import the base kit python archive
-"isaacsim.robot_motion.experimental.motion_generation" = {}
-"isaacsim.core.experimental.prims" = {}
 "isaacsim.core.experimental.materials" = {}
+"isaacsim.core.experimental.prims" = {}
+"isaacsim.robot_motion.experimental.motion_generation" = {}
+"omni.kit.pip_archive" = {} # import the base kit python archive
 
-# Add cumotion package to Python path
 [[python.module]]
 path = "pip_prebundle"
 

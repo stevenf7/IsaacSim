@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.8.6] - 2026-01-20
+## [0.8.7] - 2026-01-20
 ### Removed
 - Remove deprecated PhysX residual reporting APIs (`enable_residual_reports`, `get_position_residuals`, `get_velocity_residuals`) from `Articulation` and `SingleArticulation`.
 

@@ -13,8 +13,8 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.asset.transformer" = {}
-"isaacsim.core.experimental.utils" = {}
 "isaacsim.core.experimental.prims" = {}
+"isaacsim.core.experimental.utils" = {}
 "omni.kit.commands" = {}
 "omni.scene.optimizer.core" = {}
 

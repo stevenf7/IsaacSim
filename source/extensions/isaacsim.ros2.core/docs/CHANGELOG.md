@@ -1,7 +1,7 @@
 # Changelog
 
 ## [1.5.0] - 2026-02-26
-## Added
+### Added
 - CompressedImage message backend
 
 ## [1.4.0] - 2026-02-24
@@ -23,7 +23,7 @@
 
 ## [1.2.6] - 2026-01-21
 ### Added
-- Added ros2 image buffer utils 
+- Added ros2 image buffer utils
 
 ## [1.2.5] - 2025-12-23
 ### Changed

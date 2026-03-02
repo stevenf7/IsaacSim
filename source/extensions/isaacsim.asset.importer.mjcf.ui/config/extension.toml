@@ -14,6 +14,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.asset.importer.mjcf" = {}
+"isaacsim.core.experimental.utils" = {}
 "omni.kit.helper.file_utils" = {}
 "omni.kit.notification_manager" = {}
 "omni.kit.tool.asset_importer" = {}
@@ -23,7 +24,6 @@ writeTarget.kit = true
 "omni.kit.window.extensions" = {}
 "omni.kit.window.filepicker" = {}
 "omni.kit.window.property" = {}
-"isaacsim.core.experimental.utils" = {}
 
 [[python.module]]
 name = "isaacsim.asset.importer.mjcf.ui"
@@ -33,8 +33,8 @@ name = "isaacsim.asset.importer.mjcf.ui.tests"
 
 [[test]]
 dependencies = [ 
-    "omni.kit.ui_test",
-    "isaacsim.test.utils"
+    "isaacsim.test.utils",
+    "omni.kit.ui_test"
 ]
 
 stdoutFailPatterns.exclude = [

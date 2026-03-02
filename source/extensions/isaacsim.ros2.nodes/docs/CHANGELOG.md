@@ -11,6 +11,7 @@
 ## [1.6.2] - 2026-02-18
 ### Fixed
 - Fix `eFloat` and `eUnknown` cases in `writeNodeAttributeFromMessage` incorrectly hardcoding `"outputs:"` prefix instead of using `inputOutput(isOutput)` and `prependStr`
+
 ### Changed
 - Move some test assertions into node subscription callbacks
 
@@ -18,7 +19,7 @@
 ### Changed
 - Add missing dependency for isaacsim.sensors.physics.nodes
 
-## [1.6.0] - 2026-02-01
+## [1.6.0] - 2026-02-05
 ### Changed
 - Update isaacsim.sensors.physics dependency to isaacsim.sensors.experimental.physics
 

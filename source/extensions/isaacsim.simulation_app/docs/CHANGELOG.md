@@ -6,7 +6,7 @@
 
 ## [2.15.2] - 2026-02-16
 ### Changed
-- Update error message when application fails to start and exit before proceeding to make debugging easier. 
+- Update error message when application fails to start and exit before proceeding to make debugging easier.
 
 ## [2.15.1] - 2026-02-13
 ### Changed
@@ -30,7 +30,7 @@
 
 ## [2.14.2] - 2026-01-15
 ### Changed
-- simulation app close() method now waits for replicator workflows to complete even when using replicator step()
+- Simulation app close() method now waits for replicator workflows to complete even when using replicator step()
 
 ## [2.14.1] - 2025-12-11
 ### Changed

@@ -18,6 +18,7 @@ import json
 import os
 import re
 import sys
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 
@@ -122,8 +123,10 @@ def check_dependencies(kit_file, build_dir, deprecated_dir, verbose=False):
             log(f"Extension {ext} is in deprecated directory but not listed as dependency")
             missing_dependencies.append((ext, "deprecated"))
 
-    # Return False if there are missing dependencies, but don't print them
     if missing_dependencies:
+        print("Missing from [dependencies] section:")
+        for ext, source in missing_dependencies:
+            print(f"  - {ext} (found in {source} directory)")
         return False
     else:
         log("All extensions are correctly listed as dependencies.")
@@ -377,16 +380,27 @@ def compare_with_template(kit_file, verbose=False, dry_run=False, commit_hash=No
         template_url = f"https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/{commit_hash}/templates/omni.all.template.extensions.kit"
         log(f"Using commit hash {commit_hash} for template URL")
     else:
-        template_url = "https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/production/109.0/templates/omni.all.template.extensions.kit?ref_type=heads"
+        template_url = "https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/feature/110.0/templates/omni.all.template.extensions.kit"
         log("Using default production branch for template URL")
 
-    log(f"Template URL: {template_url}")
+    print(f"Fetching template from: {template_url}")
 
     try:
         with urllib.request.urlopen(template_url) as response:
             template_content = response.read().decode("utf-8")
+            log(f"Downloaded template file ({len(template_content)} bytes)")
+    except urllib.error.HTTPError as e:
+        print(f"Error downloading template file: HTTP {e.code} {e.reason}")
+        print(f"  URL: {template_url}")
+        return False
+    except urllib.error.URLError as e:
+        print(f"Error downloading template file: {e.reason}")
+        print(f"  URL: {template_url}")
+        print("  Check network connectivity and that the URL is accessible.")
+        return False
     except Exception as e:
         print(f"Error downloading template file: {e}")
+        print(f"  URL: {template_url}")
         return False
 
     # Extract the BEGIN GENERATED PART sections
@@ -400,7 +414,15 @@ def compare_with_template(kit_file, verbose=False, dry_run=False, commit_hash=No
     template_generated = extract_generated_part(template_content)
 
     if not kit_generated or not template_generated:
-        print("Could not find generated part in one or both files")
+        missing = []
+        if not kit_generated:
+            missing.append(f"kit file ({kit_file})")
+        if not template_generated:
+            missing.append(f"template ({template_url})")
+        print(f"Could not find '# BEGIN GENERATED PART' / '# END GENERATED PART' markers in: {', '.join(missing)}")
+        if not template_generated:
+            content_preview = template_content[:500].replace("\n", "\\n")
+            print(f"  Template response preview: {content_preview}")
         return False
 
     # Extract exact version dependencies
@@ -870,7 +892,9 @@ def clean_extscache(
     if check_deps:
         dependencies_ok = check_dependencies(kit_file, build_dir, deprecated_dir, verbose)
         if not dependencies_ok and not dry_run:
-            print("WARNING: Some extensions are missing from the dependencies section.")
+            print(
+                f"WARNING: Some extensions in build/deprecated dirs are missing from the [dependencies] section in {kit_file}."
+            )
 
     # Check version locks if requested
     if check_locks:
@@ -882,13 +906,13 @@ def clean_extscache(
     if update_physics:
         update_physics_ok = update_physics_versions(kit_file, packman_xml, verbose, dry_run)
         if not update_physics_ok and not dry_run:
-            print("WARNING: Failed to update physics extension versions.")
+            print(f"WARNING: Failed to update physics extension versions (packman XML: {packman_xml}).")
 
     # Compare with template if requested
     if match_kat:
         template_ok = compare_with_template(kit_file, verbose, dry_run, commit_hash)
         if not template_ok and not dry_run:
-            print("WARNING: Failed to compare with template file.")
+            print("WARNING: Failed to compare with template file. See errors above for details.")
 
     return True
 
