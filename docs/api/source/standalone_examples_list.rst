@@ -96,6 +96,7 @@ isaacsim.replicator.examples
 * ``sdg_getting_started_02.py``
 * ``sdg_getting_started_03.py``
 * ``sdg_getting_started_04.py``
+* ``sdg_getting_started_05.py``
 * ``simready_assets_sdg.py``
 * ``simulation_get_data.py``
 * ``subscribers_and_events.py``

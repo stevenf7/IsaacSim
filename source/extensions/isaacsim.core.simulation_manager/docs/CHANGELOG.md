@@ -2,21 +2,20 @@
 
 ## [1.11.1] - 2026-02-25
 ### Fixed
-- rebuild with new physics package
+- Rebuild with new physics package
 
 ## [1.11.0] - 2026-02-06
 ### Changed
 - Update deprecated Warp API calls to their updated names
 
-## [1.10.1] - 2026-02-05
-### Changed
-- Make omni.isaac.ml_archive an explicit test dependency
-
-## [1.11.0] - 2026-02-04
 ### Added
 - Add Newton physics engine support with `switch_physics_engine()` method
 - Add `NewtonMjcScene` and `NewtonXpbdScene` classes for Newton solver-specific scene configuration
 - Add `PhysicsScene` base class for common physics scene operations
+
+## [1.10.1] - 2026-02-05
+### Changed
+- Make omni.isaac.ml_archive an explicit test dependency
 
 ## [1.10.0] - 2026-02-03
 ### Added

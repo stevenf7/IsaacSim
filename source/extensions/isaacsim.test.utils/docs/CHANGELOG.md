@@ -28,12 +28,12 @@
 ## [0.7.2] - 2026-02-02
 ### Changed
 - Add a pycoverage compatible amin and amax implementation that is monkeypatched into numpy on extension startup. Removed from image_comparison.py as it is no longer needed.
-- This is only used if --/exts/omni.kit.test/pyCoverageEnabled=1 is set 
+- This is only used if --/exts/omni.kit.test/pyCoverageEnabled=1 is set
 
 ## [0.7.1] - 2026-01-24
 ### Changed
-- refactor menu_click_with_retry into a separate function
-- add new_stage to MenuUITestCase
+- Refactor menu_click_with_retry into a separate function
+- Add new_stage to MenuUITestCase
 
 ## [0.7.0] - 2025-12-22
 ### Added

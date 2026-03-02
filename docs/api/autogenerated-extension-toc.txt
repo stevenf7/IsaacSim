@@ -377,10 +377,13 @@ Extensions (Sensors)
     * - :doc:`isaacsim.sensors.camera.ui <source/extensions/isaacsim.sensors.camera.ui/docs/index>`
       - Isaac Sim Camera Simulation UI Components
       - Provides UI components for Isaac Sim camera simulation, eg. menu options.
-    * - :doc:`isaacsim.sensors.physics <source/extensions/isaacsim.sensors.physics/docs/index>`
+    * - :doc:`isaacsim.sensors.experimental.camera <source/extensions/isaacsim.sensors.experimental.camera/docs/index>`
+      - Isaac Sim Camera Simulation
+      - Provides APIs for camera prims, eg. setting lens distortion and enabling tiled rendering.
+    * - :doc:`isaacsim.sensors.experimental.physics <source/extensions/isaacsim.sensors.experimental.physics/docs/index>`
       - Isaac Sim Physics Sensor Simulation
       - Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor.
-    * - :doc:`isaacsim.sensors.experimental.physics <source/extensions/isaacsim.sensors.experimental.physics/docs/index>`
+    * - :doc:`isaacsim.sensors.physics <source/extensions/isaacsim.sensors.physics/docs/index>`
       - Isaac Sim Physics Sensor Simulation
       - Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor.
     * - :doc:`isaacsim.sensors.physics.examples <source/extensions/isaacsim.sensors.physics.examples/docs/index>`

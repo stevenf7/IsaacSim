@@ -14,9 +14,9 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.asset.importer.utils" = {}
-"omni.usdex.libs" = {}
 "isaacsim.asset.transformer.rules" = {}
 "isaacsim.pip.newton" = {}
+"omni.usdex.libs" = {}
 
 [[python.module]]
 name = "isaacsim.asset.importer.mjcf"

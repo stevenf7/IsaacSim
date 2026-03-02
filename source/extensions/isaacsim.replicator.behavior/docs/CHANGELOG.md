@@ -11,9 +11,9 @@
 ### Changed
 - Update sdg pipeline golden images with new randomization determinism by pausing the timeline before capturing frames
 
-## [1.3.4] - 2026-01-21
+## [1.3.4] - 2026-01-22
 ### Changed
-- Increased test tolerances for golden image comparison until randomizations are deterministic 
+- Increased test tolerances for golden image comparison until randomizations are deterministic
 
 ## [1.3.3] - 2026-01-22
 ### Changed

@@ -12,7 +12,7 @@
 ### Changed
 - Added pinholeOpenCV and fisheyePolynomial projection support to pose writer
 - Moved DOPE utils to DOPEWriter class
- 
+
 ## [1.2.1] - 2025-12-01
 ### Changed
 - Deprecate DOPEWriter and YCBVideoWriter writers

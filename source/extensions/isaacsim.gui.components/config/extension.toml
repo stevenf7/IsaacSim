@@ -39,12 +39,12 @@ stdoutFailPatterns.exclude = [
 dependencies = [
     "isaacsim.core.experimental.utils",
     "isaacsim.storage.native",
-    "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?,
+    "omni.hydra.rtx",
     "omni.kit.ui_test",
     "omni.kit.viewport.window",
-    "omni.physics.stageupdate",
-    "omni.physx",
     "omni.physics.physx",
+    "omni.physics.stageupdate",
+    "omni.physx"
 ]
 args = [
     "--enable",

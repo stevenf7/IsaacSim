@@ -20,16 +20,15 @@
 ### Changed
 - Disable newton physics engine tests
 
-
-## [1.1.0] - 2026-02-04
+## [1.1.0] - 2026-02-05
 ### Added
 - Add Newton physics engine support for articulation and rigid body tests
 
-## [1.0.1] - 2026-02-05
+## [1.0.1] - 2026-02-04
 ### Fixed
 - Only return values for DOFs that have applied the `PhysxDrivePerformanceEnvelopeAPI` when querying drive model properties
 
-## [1.0.0] - 2026-01-20
+## [1.0.0] - 2026-01-23
 ### Removed
 - Remove deprecated PhysX residual reporting APIs (`enable_residual_reports`, `get_solver_residual_reports`) from `Articulation`
 

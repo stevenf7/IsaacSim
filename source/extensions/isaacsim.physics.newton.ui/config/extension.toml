@@ -14,9 +14,9 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.physics.newton" = {}
-"omni.physics.ui" = {}
 "omni.kit.property.physics" = {}
 "omni.physics.isaacsimready" = {}
+"omni.physics.ui" = {}
 
 [[python.module]]
 name = "isaacsim.physics.newton.ui"

@@ -1,7 +1,6 @@
 # Changelog
 
 ## [0.1.0] - 2026-02-20
-
 ### Added
 - Initial release of the Robot Self Collision Detector panel.
 - Docks next to the Content window by default.

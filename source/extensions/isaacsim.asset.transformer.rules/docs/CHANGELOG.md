@@ -2,7 +2,7 @@
 
 ## [1.1.0] - 2026-02-17
 ### Added
-- overwrite schema rule
+- Overwrite schema rule
 
 ## [1.0.2] - 2026-02-16
 ### Fixed
@@ -15,5 +15,3 @@
 ## [1.0.0] - 2026-02-12
 ### Added
 - First version of Asset Transformer core rules
-
-

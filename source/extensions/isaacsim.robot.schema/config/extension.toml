@@ -21,9 +21,6 @@ writeTarget.kit = true
 "omni.usd" = {}
 "omni.usd.libs" = {}
 
-[[test]]
-dependencies = ["omni.isaac.ml_archive"]
-
 [[python.module]]
 name = "omni.isaac.RangeSensorSchema"
 path = "./plugins"
@@ -48,3 +45,6 @@ name = "isaacsim.robot.schema.tests"
 "filter:platform"."linux-x86_64"."path" = "plugins/lib/${lib_prefix}isaacSensorSchema${lib_ext}"
 "filter:platform"."linux-aarch64"."path" = "plugins/lib/${lib_prefix}isaacSensorSchema${lib_ext}"
 "filter:platform"."windows-x86_64"."path" = "plugins/bin/${lib_prefix}isaacSensorSchema${lib_ext}"
+
+[[test]]
+dependencies = ["omni.isaac.ml_archive"]

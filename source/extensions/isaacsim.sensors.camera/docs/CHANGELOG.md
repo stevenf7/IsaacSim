@@ -16,11 +16,10 @@
 ### Changed
 - Camera sensor: updated test camera orientation to use experimental rotation utils for euler angles to quaternion
 
-## [1.6.2] - 2026-01-15
+## [1.6.2] - 2026-01-20
 ### Changed
 - Moved to experimental APIs in tests for visual objects and rotation utils
 
-## [1.6.2] - 2026-01-20
 ### Fixed
 - TestSingleViewDepthSensor.test_getter_setter_methods uses correct initial value for confidenceThreshold.
 

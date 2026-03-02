@@ -20,9 +20,9 @@ writeTarget.platform = true
 "isaacsim.core.prims" = {}
 "isaacsim.core.utils" = {}
 "omni.kit.pip_archive" = {}
+"omni.kit.usdz_export" = {}
 "omni.kit.viewport.utility" = {}
 "omni.replicator.core" = {}
-"omni.kit.usdz_export" = {}
 
 [[python.module]]
 name = "isaacsim.replicator.mobility_gen"

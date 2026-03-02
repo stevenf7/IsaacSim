@@ -1,6 +1,4 @@
 # Changelog
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [5.1.0] - 2026-02-17
 ### Added
@@ -15,15 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `JointState` and `SpatialState` now require known state-spaces. This prevents combining `RobotState` objects which are not intended for the same control-space.
 - `JointState` has much greater flexibility to combine, i.e. `joint_0` can be controlled in position while `joint_1` is controlled in effort. The logic to combine states has also been simplified.
 - `SpatialState` has much greater flexibility to combine, i.e. `frame_0` can be controlled in orientation while `frame_1` is controlled in position. The logic to combine states has also been simplified.
+
 ### Added
 - `JointState.from_name` and `JointState.from_index` constructors, intended for construction of `JointState` objects by users.
 - `SpatialState.from_name` and `SpatialState.from_index` constructors, intended for construction of `SpatialState` objects by users.
-
 
 ## [4.0.0] - 2026-02-16
 ### Changed
 - `WorldBinding.synchronize` is split across two separate functions which can be called independently (`synchronize_transforms` or `synchronize_properties`).
 - The `WorldBinding.synchronize_properties` does some caching to perform less prim and property lookups.
+
 ### Removed
 - `WorldBinding.synchronize_properties` no longer tracks the local matrix attribute. The RT change tracking on this attributes was updating for every object which moved, which was not the intended purpose, and caused inefficient updates.
 
@@ -54,18 +53,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2026-01-31
 ### Added
 - Additional control structures, in particular the `SequentialController` and `ParallelController`
+
 ### Changed
 - `BaseController`, function `reset` now returns `True` if it is successful.
 - `BaseController` function `forward` now returns an `Optional[RobotState]`. `None` indicates no valid output.
 - `Trajectory` no longer has a (redundant) function for `get_joint_names`
 - `Trajectory` returns an `Optional[RobotState]`. `None` indicates no valid output.
 - `MinimalTimeTrajectory` is now named `MinimalTimeJointTrajectory`
+
 ### Removed
 - `Action` type is no longer used, as `RobotState` is more general.
 
 ## [0.2.0] - 2026-01-27
 ### Added
-- Introduces a full obstacle strategy and configurations. 
+- Introduces a full obstacle strategy and configurations.
 - Adds collision approximation utilities
 
 ## [0.1.1] - 2026-01-25
