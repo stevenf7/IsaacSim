@@ -91,7 +91,7 @@ Robot API
      - Unique namespace identifier used for component messaging.
    * - ``isaac:robotType``
      - Token
-     - Category of robot (e.g. ``Manipulator``, ``Humanoid``, ``Mobile Base``).
+     - Category of robot, such as ``Manipulator``, ``Humanoid``, or ``Mobile Base``.
    * - ``isaac:license``
      - Token
      - License under which the robot asset is distributed.
@@ -173,7 +173,7 @@ Site API
      - Description
    * - ``isaac:Description``
      - String
-     - Description of the site (e.g. ``"Tool Attachment Point"``).
+     - Description of the site, such as ``"Tool Attachment Point"``.
    * - ``isaac:forwardAxis``
      - Token
      - Axis considered the forward direction of the site (``X``, ``Y``, or ``Z``).
@@ -258,7 +258,7 @@ This applies ``IsaacRobotAPI`` to the root prim and automatically traverses the 
 
 Properties for each schema appear in the Properties panel under their respective API sections (displayed in purple).
 
-If the robot structure changes over time (e.g., new links or joints are added), either manually apply the individual APIs to new prims, or reapply the Robot API to the root prim to re-run automatic population.
+If the robot structure changes over time (for instance, new links or joints are added), either manually apply the individual APIs to new prims, or reapply the Robot API to the root prim to re-run automatic population.
 
 .. note:: When applying the schema, if your asset follows the :ref:`isaac_sim_app_reference_asset_structure` guidelines, apply it either in the base layer or in a dedicated robot schema layer -- not directly in the interface layer. Auto-population requires authored physics, so temporarily add the physics layer as a sublayer during schema application, then remove it before saving.
 
