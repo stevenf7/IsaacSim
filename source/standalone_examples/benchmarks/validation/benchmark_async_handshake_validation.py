@@ -81,6 +81,10 @@ def validate_async_handshake_behavior(num_frames: int = 100) -> bool:
     Returns:
         True if validation passes, False otherwise.
     """
+    # Number of boundary frames to discard from each end of the collection
+    # window when computing the frametime ratio (see trimming logic below).
+    TRIM_FRAMES = 2
+
     # Verify async settings are actually enabled
     settings = carb.settings.get_settings()
     async_rendering = settings.get("/app/asyncRendering")
@@ -147,12 +151,14 @@ def validate_async_handshake_behavior(num_frames: int = 100) -> bool:
         f"After warmup - Render samples: {render_recorder.sample_count}, App samples: {app_recorder.sample_count}"
     )
 
-    # Run simulation for N frames
-    for frame in range(num_frames):
+    # Run extra frames to compensate for boundary trimming so the trimmed
+    # dataset still contains num_frames of usable data.
+    total_frames = num_frames + 2 * TRIM_FRAMES
+    for frame in range(total_frames):
         simulation_context.step()
         if frame % 10 == 0:
             carb.log_info(
-                f"Frame {frame}/{num_frames} - Render: {render_recorder.sample_count}, App: {app_recorder.sample_count}"
+                f"Frame {frame}/{total_frames} - Render: {render_recorder.sample_count}, App: {app_recorder.sample_count}"
             )
 
     # Stop collecting
@@ -211,52 +217,115 @@ def validate_async_handshake_behavior(num_frames: int = 100) -> bool:
             print("  Handshake may not be working as expected")
             validation_passed = False
 
-        # Validate mean frametime similarity
-        ratio = max(app_mean, render_mean) / min(app_mean, render_mean)
+        # Build paired frame data and apply trimming to remove collection
+        # boundary artifacts. The first/last frames of a collection window often
+        # have anomalous timing because stop_collecting() is not instantaneous
+        # across the app and render threads (e.g. a final app sample with no
+        # corresponding render sample, or transient spikes at collection start).
+        # Use index alignment for the ratio: pair app[i] with render[i] over the
+        # overlapping range. Display preserves holes (all frame indices 0..max-1)
+        # with "-" where one stream has no sample; unpaired rows are marked [TRIMMED].
+        app_count = len(app_recorder.samples)
+        render_count = len(render_recorder.samples)
+        paired_count = min(app_count, render_count)
+        app_samples_raw = list(app_recorder.samples[:paired_count])
+        render_samples_raw = list(render_recorder.samples[:paired_count])
+
+        if paired_count > TRIM_FRAMES * 2 + 1:
+            app_samples_trimmed = app_samples_raw[TRIM_FRAMES:-TRIM_FRAMES]
+            render_samples_trimmed = render_samples_raw[TRIM_FRAMES:-TRIM_FRAMES]
+        else:
+            app_samples_trimmed = app_samples_raw
+            render_samples_trimmed = render_samples_raw
+
+        trimmed_app_mean = sum(app_samples_trimmed) / len(app_samples_trimmed)
+        trimmed_render_mean = sum(render_samples_trimmed) / len(render_samples_trimmed)
+
+        print(
+            f"  Trimmed analysis: using {len(app_samples_trimmed)} of {paired_count} paired frames"
+            f" (dropped first/last {TRIM_FRAMES})"
+        )
+        trimmed = paired_count > TRIM_FRAMES * 2 + 1
+        if trimmed:
+            print(
+                f"  Trimmed analysis: using {len(app_samples_trimmed)} of {paired_count} paired frames"
+                f" (dropped first/last {TRIM_FRAMES})"
+            )
+        else:
+            print(f"  Trimmed analysis: using all {paired_count} paired frames" f" (too few to trim)")
+        print(f"  Trimmed mean App: {trimmed_app_mean:.2f} ms, Render: {trimmed_render_mean:.2f} ms")
+
+        # Validate mean frametime similarity on the trimmed data
+        ratio = max(trimmed_app_mean, trimmed_render_mean) / min(trimmed_app_mean, trimmed_render_mean)
         if ratio < 1.10:
-            print(f"✓ Frametime ratio reasonable: {ratio:.2f}x")
+            print(f"✓ Frametime ratio reasonable: {ratio:.2f}x (trimmed)")
             print("  App and Render threads are in sync")
         else:
-            print(f"⚠ Large frametime ratio: {ratio:.2f}x")
+            print(f"⚠ Large frametime ratio: {ratio:.2f}x (trimmed)")
             print("  Threads may not be properly synchronized")
 
-            # Debug output: show individual frame times to diagnose the issue
+            # Debug output: show individual frame times, preserving holes (unpaired
+            # frames shown with "-" and marked [TRIMMED]).
             print()
             print("  DEBUG: Individual frame times (first 20 and last 20):")
             print("-" * 60)
+            trimming_active = paired_count > TRIM_FRAMES * 2 + 1
+            total_display_frames = max(app_count, render_count)
+            if trimming_active or total_display_frames > paired_count:
+                print("  (Frames marked [TRIMMED] are excluded from the ratio or unpaired.)")
+                print()
 
-            # Show first 20 frames
-            num_to_show = min(20, len(app_recorder.samples), len(render_recorder.samples))
+            def is_trimmed(idx):
+                boundary = trimming_active and (idx < TRIM_FRAMES or idx >= paired_count - TRIM_FRAMES)
+                unpaired = idx >= app_count or idx >= render_count
+                return boundary or unpaired
+
+            def format_row(i):
+                app_val = app_recorder.samples[i] if i < app_count else None
+                render_val = render_recorder.samples[i] if i < render_count else None
+                app_str = f"{app_val:.2f}" if app_val is not None else "-"
+                render_str = f"{render_val:.2f}" if render_val is not None else "-"
+                if app_val is not None and render_val is not None and render_val > 0:
+                    ratio_str = f"{app_val / render_val:.2f}"
+                else:
+                    ratio_str = "-"
+                marker = " [TRIMMED]" if is_trimmed(i) else ""
+                return f"  {i:<8} {app_str:<12} {render_str:<12} {ratio_str:<8}{marker}"
+
+            num_to_show = min(20, total_display_frames)
             print(f"  First {num_to_show} frames:")
             print(f"  {'Frame':<8} {'App (ms)':<12} {'Render (ms)':<12} {'Ratio':<8}")
             for i in range(num_to_show):
-                app_time = app_recorder.samples[i]
-                render_time = render_recorder.samples[i] if i < len(render_recorder.samples) else 0
-                frame_ratio = app_time / render_time if render_time > 0 else 0
-                print(f"  {i:<8} {app_time:<12.2f} {render_time:<12.2f} {frame_ratio:<8.2f}")
+                print(format_row(i))
 
-            # Show last 20 frames if we have more than 20 total
-            if len(app_recorder.samples) > num_to_show:
+            if total_display_frames > num_to_show:
                 print()
                 print(f"  Last {num_to_show} frames:")
                 print(f"  {'Frame':<8} {'App (ms)':<12} {'Render (ms)':<12} {'Ratio':<8}")
-                start_idx = len(app_recorder.samples) - num_to_show
-                for i in range(start_idx, len(app_recorder.samples)):
-                    app_time = app_recorder.samples[i]
-                    render_time = render_recorder.samples[i] if i < len(render_recorder.samples) else 0
-                    frame_ratio = app_time / render_time if render_time > 0 else 0
-                    print(f"  {i:<8} {app_time:<12.2f} {render_time:<12.2f} {frame_ratio:<8.2f}")
+                start_idx = max(0, total_display_frames - num_to_show)
+                for i in range(start_idx, total_display_frames):
+                    print(format_row(i))
 
             # Show statistics
             print()
-            print("  Frame time statistics:")
-            app_min = min(app_recorder.samples)
-            app_max = max(app_recorder.samples)
-            render_min = min(render_recorder.samples) if render_recorder.samples else 0
-            render_max = max(render_recorder.samples) if render_recorder.samples else 0
+            print("  Frame time statistics (raw):")
+            app_min = min(app_samples_raw)
+            app_max = max(app_samples_raw)
+            render_min = min(render_samples_raw)
+            render_max = max(render_samples_raw)
             print(f"  App range:    {app_min:.2f} - {app_max:.2f} ms (variance: {app_max - app_min:.2f} ms)")
             print(
                 f"  Render range: {render_min:.2f} - {render_max:.2f} ms (variance: {render_max - render_min:.2f} ms)"
+            )
+            print()
+            print("  Frame time statistics (trimmed):")
+            tapp_min = min(app_samples_trimmed)
+            tapp_max = max(app_samples_trimmed)
+            trender_min = min(render_samples_trimmed)
+            trender_max = max(render_samples_trimmed)
+            print(f"  App range:    {tapp_min:.2f} - {tapp_max:.2f} ms (variance: {tapp_max - tapp_min:.2f} ms)")
+            print(
+                f"  Render range: {trender_min:.2f} - {trender_max:.2f} ms (variance: {trender_max - trender_min:.2f} ms)"
             )
             print("-" * 60)
 
