@@ -266,9 +266,9 @@ class WorldInterface:
     def add_oriented_bounding_boxes(
         self,
         prim_paths: list[str],
-        centers: list[wp.array],
-        rotation_matrices: list[wp.array],
-        half_side_lengths: list[wp.array],
+        centers: wp.array,
+        rotations: wp.array,
+        half_side_lengths: wp.array,
         scales: wp.array,
         safety_tolerances: wp.array,
         poses: tuple[wp.array, wp.array],
@@ -279,7 +279,7 @@ class WorldInterface:
         Args:
             prim_paths: USD prim paths for each bounding box.
             centers: Local center positions for each bounding box.
-            rotation_matrices: Local rotation matrices for each bounding box.
+            rotations: Local rotations as quaternions (w, x, y, z) for each bounding box.
             half_side_lengths: Half extents along each axis for each bounding box.
             scales: Local scale factors for each bounding box.
             safety_tolerances: Safety margin around each bounding box.
@@ -520,16 +520,16 @@ class WorldInterface:
     def update_oriented_bounding_box_properties(
         self,
         prim_paths: list[str],
-        centers: list[wp.array] | None,
-        rotation_matrices: list[wp.array] | None,
-        half_side_lengths: list[wp.array] | None,
+        centers: wp.array | None,
+        rotations: wp.array | None,
+        half_side_lengths: wp.array | None,
     ):
         """Update oriented bounding box-specific properties for existing obstacles.
 
         Args:
             prim_paths: USD prim paths of bounding boxes to update.
             centers: New local center positions. Pass None to skip updating.
-            rotation_matrices: New local rotation matrices. Pass None to skip updating.
+            rotations: New local rotations as quaternions (w, x, y, z). Pass None to skip updating.
             half_side_lengths: New half extents. Pass None to skip updating.
 
         Raises:

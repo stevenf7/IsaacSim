@@ -107,7 +107,7 @@ class MirrorTriangulatedMesh:
 @dataclass
 class MirrorOrientedBoundingBox:
     center: Any
-    rotation_matrix: Any
+    rotation: Any
     half_side_length: Any
     scale: Any
     safety_tolerance: Any
@@ -340,9 +340,9 @@ class MirrorWorldInterface(WorldInterface):
     def add_oriented_bounding_boxes(
         self,
         prim_paths: list[str],
-        centers: list[wp.array],
-        rotation_matrices: list[wp.array],
-        half_side_lengths: list[wp.array],
+        centers: wp.array,
+        rotations: wp.array,
+        half_side_lengths: wp.array,
         scales: wp.array,
         safety_tolerances: wp.array,
         poses: tuple[wp.array, wp.array],
@@ -353,11 +353,14 @@ class MirrorWorldInterface(WorldInterface):
         quaternions_np = poses[1].numpy()
         enabled_np = enabled_array.numpy()
         safety_tolerances_np = safety_tolerances.numpy()
+        centers_np = centers.numpy()
+        rotations_np = rotations.numpy()
+        half_side_lengths_np = half_side_lengths.numpy()
         for index, prim_path in enumerate(prim_paths):
             self.collision_objects[prim_path] = MirrorOrientedBoundingBox(
-                center=centers[index],
-                rotation_matrix=rotation_matrices[index],
-                half_side_length=half_side_lengths[index],
+                center=centers_np[index],
+                rotation=rotations_np[index],
+                half_side_length=half_side_lengths_np[index],
                 scale=scales_np[index],
                 safety_tolerance=safety_tolerances_np[index],
                 pose=(positions_np[index], quaternions_np[index]),
@@ -513,14 +516,17 @@ class MirrorWorldInterface(WorldInterface):
     def update_oriented_bounding_box_properties(
         self,
         prim_paths: list[str],
-        centers: list[wp.array] | None,
-        rotation_matrices: list[wp.array] | None,
-        half_side_lengths: list[wp.array] | None,
+        centers: wp.array | None,
+        rotations: wp.array | None,
+        half_side_lengths: wp.array | None,
     ):
+        centers_np = centers.numpy() if centers is not None else None
+        rotations_np = rotations.numpy() if rotations is not None else None
+        half_side_lengths_np = half_side_lengths.numpy() if half_side_lengths is not None else None
         for index, prim_path in enumerate(prim_paths):
-            if centers is not None:
-                self.collision_objects[prim_path].center = centers[index]
-            if rotation_matrices is not None:
-                self.collision_objects[prim_path].rotation_matrix = rotation_matrices[index]
-            if half_side_lengths is not None:
-                self.collision_objects[prim_path].half_side_length = half_side_lengths[index]
+            if centers_np is not None:
+                self.collision_objects[prim_path].center = centers_np[index]
+            if rotations_np is not None:
+                self.collision_objects[prim_path].rotation = rotations_np[index]
+            if half_side_lengths_np is not None:
+                self.collision_objects[prim_path].half_side_length = half_side_lengths_np[index]

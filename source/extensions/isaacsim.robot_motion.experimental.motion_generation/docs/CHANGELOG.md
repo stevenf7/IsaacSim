@@ -1,5 +1,10 @@
 # Changelog
 
+## [6.0.0] - 2026-03-03
+### Changed
+- `add_oriented_bounding_boxes` use pure warp-arrays, accepts a quaternion for local rotation instead of a rotation matrix.
+- `OBB` uses quaternion instead of rotation matrix to represent its rotation.
+
 ## [5.2.0] - 2026-03-02
 ### Added
 - Improved error message when setting/getting ObstacleConfigurations on prims that don't exist.

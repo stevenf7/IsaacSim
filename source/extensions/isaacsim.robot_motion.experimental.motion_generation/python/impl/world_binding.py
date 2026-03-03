@@ -420,11 +420,16 @@ def _add_oriented_bounding_box_from_prim(
 
     isaac_core_object = XformPrim(paths=prim_path)
 
+    # Stack arrays to match expected format: (N, 3) for centers, (N, 4) for rotations, (N, 3) for half_side_lengths
+    centers = wp.from_numpy(obb.center.reshape(1, 3), dtype=wp.float32)
+    rotations = wp.from_numpy(obb.rotation.reshape(1, 4), dtype=wp.float32)
+    half_side_lengths = wp.from_numpy(obb.half_side_lengths.reshape(1, 3), dtype=wp.float32)
+
     world_interface.add_oriented_bounding_boxes(
         prim_paths=[prim_path],
-        centers=[wp.from_numpy(obb.center, dtype=wp.float32)],
-        rotation_matrices=[wp.from_numpy(obb.rotation_matrix, dtype=wp.float32)],
-        half_side_lengths=[wp.from_numpy(obb.half_side_lengths, dtype=wp.float32)],
+        centers=centers,
+        rotations=rotations,
+        half_side_lengths=half_side_lengths,
         scales=isaac_core_object.get_local_scales(),
         safety_tolerances=wp.array([[obstacle_configuration.safety_tolerance]]),
         poses=isaac_core_object.get_world_poses(),

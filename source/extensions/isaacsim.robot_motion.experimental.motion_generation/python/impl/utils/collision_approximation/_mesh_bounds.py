@@ -16,7 +16,7 @@
 import numpy as np
 import trimesh
 from isaacsim.core.experimental.objects import Mesh
-from isaacsim.core.experimental.utils.transform import quaternion_to_rotation_matrix
+from isaacsim.core.experimental.utils.transform import quaternion_to_rotation_matrix, rotation_matrix_to_quaternion
 
 from .bounding_geometries import AABB, OBB, ConvexHull
 from .triangulate_mesh import triangulate_mesh
@@ -93,7 +93,11 @@ def compute_obb_mesh(input_mesh: Mesh) -> OBB:
     # compute the mesh OBB:
     transform, extent = trimesh.bounds.oriented_bounds(_trimesh)
 
-    return OBB(rotation_matrix=transform[:3, :3], half_side_lengths=extent / 2.0, center=transform[:3, 3])
+    # Extract rotation matrix from transform and convert to quaternion (w, x, y, z)
+    rotation_matrix = transform[:3, :3]
+    rotation_quaternion = rotation_matrix_to_quaternion(rotation_matrix).numpy()
+
+    return OBB(rotation=rotation_quaternion, half_side_lengths=extent / 2.0, center=transform[:3, 3])
 
 
 def compute_world_aabb_mesh(input_mesh: Mesh) -> AABB:
