@@ -37,6 +37,7 @@ import isaacsim.robot_motion.experimental.motion_generation as mg
 import numpy as np
 import omni.timeline
 import warp as wp
+from isaacsim.core.experimental.objects import Cylinder
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.viewports import set_camera_view
@@ -186,9 +187,6 @@ class DifferentialDriveController(mg.BaseController):
         robot_joint_space: list[str],
         wheel_radius: float,
         wheel_base: float,
-        max_linear_speed: float = 1.0e20,
-        max_angular_speed: float = 1.0e20,
-        max_wheel_speed: float = 1.0e20,
     ):
         """Initialize the differential drive controller.
 
@@ -196,21 +194,11 @@ class DifferentialDriveController(mg.BaseController):
             robot_joint_space: The full joint space of the robot
             wheel_radius: Radius of left and right wheels in meters
             wheel_base: Distance between left and right wheels in meters
-            max_linear_speed: Maximum linear speed limit (m/s). Defaults to 1e20 (no limit).
-            max_angular_speed: Maximum angular speed limit (rad/s). Defaults to 1e20 (no limit).
-            max_wheel_speed: Maximum wheel angular speed limit (rad/s). Defaults to 1e20 (no limit).
         """
         self.robot_joint_space = robot_joint_space
         self.wheel_radius = wheel_radius
         self.wheel_base = wheel_base
-        self.max_linear_speed = max_linear_speed
-        self.max_angular_speed = max_angular_speed
-        self.max_wheel_speed = max_wheel_speed
         self.controlled_joints = ["left_wheel_joint", "right_wheel_joint"]
-
-        assert self.max_linear_speed >= 0
-        assert self.max_angular_speed >= 0
-        assert self.max_wheel_speed >= 0
 
     # <end-differential-drive-init-snippet>
 
@@ -282,29 +270,12 @@ class DifferentialDriveController(mg.BaseController):
         else:
             v_angular = 0.0
 
-        # Limit vehicle speed
-        command = np.array([v_linear, v_angular])
-        command = np.clip(
-            command,
-            a_min=[-self.max_linear_speed, -self.max_angular_speed],
-            a_max=[self.max_linear_speed, self.max_angular_speed],
-        )
-        v_linear = command[0]
-        v_angular = command[1]
-
         # Convert root velocities to wheel angular velocities using differential drive kinematics
         # ω_R = (1/(2r)) * (2V + ωb)
         # ω_L = (1/(2r)) * (2V - ωb)
-        denominator = 2.0 * self.wheel_radius
-        omega_left = ((2.0 * v_linear) - (v_angular * self.wheel_base)) / denominator
-        omega_right = ((2.0 * v_linear) + (v_angular * self.wheel_base)) / denominator
-
-        # Limit wheel speeds
-        wheel_velocities = np.clip(
-            [omega_left, omega_right],
-            a_min=[-self.max_wheel_speed, -self.max_wheel_speed],
-            a_max=[self.max_wheel_speed, self.max_wheel_speed],
-        )
+        inv_denominator = 1.0 / (2.0 * self.wheel_radius)
+        omega_left = ((2.0 * v_linear) - (v_angular * self.wheel_base)) * inv_denominator
+        omega_right = ((2.0 * v_linear) + (v_angular * self.wheel_base)) * inv_denominator
 
         # Output velocity commands for both wheels
         return mg.RobotState(
@@ -312,7 +283,7 @@ class DifferentialDriveController(mg.BaseController):
                 robot_joint_space=self.robot_joint_space,
                 velocities=(
                     self.controlled_joints,
-                    wp.from_numpy(wheel_velocities, dtype=wp.float32),
+                    wp.array([omega_left, omega_right]),
                 ),
             )
         )
@@ -353,6 +324,7 @@ def get_estimated_state_from_robot(robot: Articulation, robot_joint_space: list[
 # <end-create-robotstate-from-robot-snippet>
 
 
+# <start-apply-desired-state-to-robot-snippet>
 def apply_desired_state_to_robot(robot: Articulation, desired_state: mg.RobotState):
     """Apply a desired RobotState to the robot.
 
@@ -367,17 +339,18 @@ def apply_desired_state_to_robot(robot: Articulation, desired_state: mg.RobotSta
 
     # Apply positions if present
     if joint_state.positions is not None:
-        robot.set_dof_position_targets(joint_state.positions, dof_indices=desired_state.joints.position_indices)
+        robot.set_dof_position_targets(joint_state.positions, dof_indices=joint_state.position_indices)
 
     # Apply velocities if present
     if joint_state.velocities is not None:
-        robot.set_dof_velocity_targets(joint_state.velocities, dof_indices=desired_state.joints.velocity_indices)
+        robot.set_dof_velocity_targets(joint_state.velocities, dof_indices=joint_state.velocity_indices)
 
     # Apply efforts if present
     if joint_state.efforts is not None:
-        robot.set_dof_efforts(joint_state.efforts, dof_indices=desired_state.joints.effort_indices)
+        robot.set_dof_efforts(joint_state.efforts, dof_indices=joint_state.effort_indices)
 
 
+# <end-apply-desired-state-to-robot-snippet>
 # ============================================================================
 # 4. Real-time Control Loop
 # ============================================================================
@@ -387,7 +360,7 @@ def run_differential_control_loop(
     robot: Articulation,
     robot_joint_space: list[str],
     add_noise: bool = False,
-    duration_seconds: float = 10.0,
+    duration_seconds: float = 15.0,
 ):
     """Run a real-time control loop with a differential drive controller.
 
@@ -398,7 +371,7 @@ def run_differential_control_loop(
         robot: The robot articulation
         robot_joint_space: The full joint space of the robot
         add_noise: If True, add noise to the root velocity setpoints
-        duration_seconds: How long to run the simulation (default: 10 seconds)
+        duration_seconds: How long to run the simulation
     """
     # Start timeline
     timeline = omni.timeline.get_timeline_interface()
@@ -417,10 +390,13 @@ def run_differential_control_loop(
     dt = SimulationManager.get_physics_dt()
     num_steps = int(duration_seconds / dt)
 
-    # Noise parameters
-    noise_std_linear = 0.2  # m/s
-    noise_std_angular = 0.4  # rad/s
+    # setpoint velocities:
+    v_linear = 0.1  # m/s
+    v_angular = 1.0  # rad/s
 
+    # Noise parameters
+    noise_std_linear = 0.1  # m/s
+    noise_std_angular = 1.0  # rad/s
     for step in range(num_steps):
         # Update simulation
         simulation_app.update()
@@ -429,26 +405,20 @@ def run_differential_control_loop(
         # Get current estimated state
         estimated_state = get_estimated_state_from_robot(robot, robot_joint_space)
 
-        # Create root velocity setpoint (sinusoidal after 2 seconds)
         if simulation_time > 2.0:
-            # Generate sinusoidal linear and angular velocity commands
-            linear_amplitude = 0.3  # m/s
-            angular_amplitude = 0.5  # rad/s
-            frequency = 0.3  # Hz
-
-            v_linear = linear_amplitude * np.sin(2 * np.pi * frequency * (simulation_time - 2.0))
-            v_angular = angular_amplitude * np.cos(2 * np.pi * frequency * (simulation_time - 2.0))
 
             # Add noise if requested
+            v_linear_command = v_linear
+            v_angular_command = v_angular
             if add_noise:
-                v_linear += np.random.normal(0.0, noise_std_linear)
-                v_angular += np.random.normal(0.0, noise_std_angular)
+                v_linear_command += np.random.normal(0.0, noise_std_linear)
+                v_angular_command += np.random.normal(0.0, noise_std_angular)
 
             # <start-create-robotstate-root-space-snippet>
             setpoint_state = mg.RobotState(
                 root=mg.RootState(
-                    linear_velocity=wp.array([v_linear, 0.0, 0.0], dtype=wp.float32),  # Forward velocity
-                    angular_velocity=wp.array([0.0, 0.0, v_angular], dtype=wp.float32),  # Yaw rate
+                    linear_velocity=wp.array([v_linear_command, 0.0, 0.0]),  # Forward velocity
+                    angular_velocity=wp.array([0.0, 0.0, v_angular_command]),  # Yaw rate
                 )
             )
             # <end-create-robotstate-root-space-snippet>
@@ -489,17 +459,14 @@ def differential_drive_control(
     differential_controller = DifferentialDriveController(
         robot_joint_space=robot_joint_space,
         wheel_radius=0.03,  # 3 cm wheel radius
-        wheel_base=0.1,  # 10 cm wheel base
-        max_linear_speed=1.0,  # 1 m/s max linear speed
-        max_angular_speed=2.0,  # 2 rad/s max angular speed
-        max_wheel_speed=10.0,  # 10 rad/s max wheel speed
+        wheel_base=0.1125,  # 11.25 cm wheel base
     )
 
     # Optionally wrap with low-pass filter using SequentialController
     if use_filter:
         filter_controller = LowPassFilterController(
             robot_joint_space=robot_joint_space,
-            alpha=0.1,  # Low-pass filter coefficient
+            alpha=0.01,  # Low-pass filter coefficient
         )
         # SequentialController: differential controller output becomes filter input
         controller = mg.SequentialController([differential_controller, filter_controller])
@@ -529,17 +496,23 @@ def setup_scene() -> tuple[Articulation, list[str]]:
 
     # Add ground plane
     assets_root_path = get_assets_root_path()
-    stage_utils.add_reference_to_stage(
-        usd_path=assets_root_path + "/Isaac/Environments/Grid/default_environment.usd",
-        path="/World/ground",
-    )
 
     # Add Jetbot robot
     jetbot_path = assets_root_path + "/Isaac/Robots/NVIDIA/Jetbot/jetbot.usd"
     stage_utils.add_reference_to_stage(usd_path=jetbot_path, path="/World/Jetbot")
 
     # Set camera view
-    set_camera_view(eye=[2.0, 2.0, 1.5], target=[0.0, 0.0, 0.0], camera_prim_path="/OmniverseKit_Persp")
+    set_camera_view(eye=[0.0, 0.1, 1.5], target=[0.0, 0.1, 0.0], camera_prim_path="/OmniverseKit_Persp")
+
+    # draw a small red disk:
+    disk = Cylinder(
+        paths="/World/red_disk",
+        radii=0.1,
+        heights=0.01,
+        axes="Z",
+        colors=[1.0, 0.0, 0.0],
+        positions=[0, 0.1, 0],
+    )
 
     # Create articulation wrapper
     robot = Articulation("/World/Jetbot")

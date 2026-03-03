@@ -65,28 +65,31 @@ def setup_scene():
 
     # Add some example obstacles
     # These will be found by SceneQuery and synchronized via WorldBinding
-    Sphere("/World/Obstacle1", positions=[1.0, 0.0, 0.5], radii=0.2)
-    Cube("/World/Obstacle2", positions=[-1.0, 1.0, 0.3], sizes=[0.4, 0.4, 0.6])
-    Sphere("/World/Obstacle3", positions=[0.0, -1.0, 0.4], radii=0.15)
-    Cube("/World/Obstacle4", positions=[1.5, 1.5, 0.25], sizes=[0.3, 0.3, 0.5])
+    Cube("/World/Obstacle1", positions=[-1.0, 1.0, 0.6], sizes=0.4)
+    Sphere("/World/Obstacle2", positions=[1.0, 0.0, 0.75], radii=0.2)
 
     # Apply collision APIs to obstacles so they can be found by SceneQuery
-    GeomPrim(
-        ["/World/Obstacle1", "/World/Obstacle2", "/World/Obstacle3", "/World/Obstacle4"], apply_collision_apis=True
-    )
+    GeomPrim(["/World/Obstacle1", "/World/Obstacle2"], apply_collision_apis=True)
 
     # Make obstacles rigid bodies so they fall under gravity
-    RigidPrim(
-        ["/World/Obstacle1", "/World/Obstacle2", "/World/Obstacle3", "/World/Obstacle4"], masses=[1.0, 1.0, 1.0, 1.0]
-    )
+    RigidPrim(["/World/Obstacle1", "/World/Obstacle2"], masses=1.0)
 
     # Add two simple meshes
     # Mesh1: Will use default OBB representation with large safety tolerance
-    Mesh("/World/Mesh1", primitives="Sphere", positions=[-1.5, -1.5, 0.2], scales=[0.5, 0.5, 0.1])
+    # we will start with mesh with some initial orientation.
+    angle = np.pi / 4
+    Mesh(
+        "/World/Mesh1",
+        primitives="Cube",
+        positions=[-1.5, -1.5, 0.5],
+        scales=[0.5, 0.5, 0.1],
+        # create quaternion:
+        orientations=[np.cos(angle / 2), np.sin(angle / 2), 0.0, 0.0],
+    )
 
     # Mesh2: Will be overridden to use TRIANGULATED_MESH with small safety tolerance
     # This mesh might need more faithful representation for interaction
-    Mesh("/World/Mesh2", primitives="Cube", positions=[0.0, 1.5, 0.3], scales=[0.3, 0.3, 0.3])
+    Mesh("/World/Mesh2", primitives="Sphere", positions=[0.0, 1.5, 0.3], scales=[0.3, 0.3, 0.3])
 
     # Apply collision APIs to meshes so they can be found by SceneQuery
     mesh_geom = GeomPrim(["/World/Mesh1", "/World/Mesh2"], apply_collision_apis=True)
@@ -158,25 +161,16 @@ def demonstrate_obstacle_strategy(obstacle_paths):
     strategy = mg.ObstacleStrategy()
 
     # Set default representation for Mesh shape type to OBB with large safety tolerance
-    # This replaces the entire Mesh configuration, so the safety_tolerance=0.15 here
-    # takes precedence over the 0.05 set by set_default_safety_tolerance() above
-    # This is a common default - meshes are often represented as OBB for efficiency
-    strategy.set_default_configuration(
-        Mesh, mg.ObstacleConfiguration("obb", 0.15)
-    )  # 15cm padding - large safety margin
+    # of 0.15 meters.
+    strategy.set_default_configuration(Mesh, mg.ObstacleConfiguration("obb", 0.15))
 
     # Set per-object overrides for specific prims
-    # These take precedence over both default safety tolerance and default configurations
     # Mesh2 needs more faithful representation for interaction, so use triangulated mesh
     # with smaller safety tolerance (1cm)
     overrides = {}
     mesh2_path = "/World/Mesh2"
     if mesh2_path in obstacle_paths:
-        overrides[mesh2_path] = mg.ObstacleConfiguration(
-            "triangulated_mesh", 0.01
-        )  # 1cm padding - small tolerance for faithful representation
-
-    if len(overrides) > 0:
+        overrides[mesh2_path] = mg.ObstacleConfiguration("triangulated_mesh", 0.01)
         strategy.set_configuration_overrides(overrides)
 
     # Set default safety tolerance for all other shapes
@@ -518,21 +512,19 @@ def main():
     binding, world_interface = demonstrate_world_binding(obstacle_paths, obstacle_strategy)
 
     # Step 4: Demonstrate updating (simulate scene changes)
-    print("\n" + "=" * 60)
-    print("Simulating Scene Updates")
-    print("=" * 60)
-    print("\nRunning simulation for a few steps...")
 
-    # Pick a target object to print its pose (first obstacle)
-    target_path = obstacle_paths[0] if len(obstacle_paths) > 0 else None
+    # Pick a target object to print its pose
+    target_path = "/World/Mesh1"
 
     # Start timeline
     timeline = omni.timeline.get_timeline_interface()
-    timeline.play()
-    simulation_app.update()  # Allow physics to initialize
+    # let objects float for a few seconds:
+    for _ in range(500):
+        simulation_app.update()
 
+    timeline.play()
     # Run simulation loop
-    for step in range(60):  # Run for 1 second at 60Hz
+    for step in range(25):  # Run for short period while falling:
         # Update the app (advances timeline, handles rendering, physics, etc.)
         simulation_app.update()
 
@@ -540,19 +532,19 @@ def main():
         # For full synchronization including property changes, use synchronize() instead
         # Note: synchronize_transforms() reads current world poses, which are updated by physics
         binding.synchronize_transforms()
-        if step % 30 == 0:  # Periodically check for property changes (less frequent)
+
+        # Print transforms
+        obstacle = world_interface.obstacles[target_path]
+        position = obstacle["position"]
+        orientation = obstacle["orientation"]
+        print(f"  WorldBinding update - {target_path}:")
+        print(f"    Position: [{position[0]:.3f}, {position[1]:.3f}, {position[2]:.3f}]")
+        print(
+            f"    Orientation (quat wxyz): [{orientation[0]:.3f}, {orientation[1]:.3f}, {orientation[2]:.3f}, {orientation[3]:.3f}]"
+        )
+
+        if step % 5 == 0:  # Periodically check for property changes (less frequent)
             binding.synchronize_properties()
-            # Print transform of target object at reduced frequency
-            if target_path and target_path in world_interface.obstacles:
-                obstacle = world_interface.obstacles[target_path]
-                position = obstacle["position"]
-                orientation = obstacle["orientation"]
-                print(f"  Synchronized binding at step {step}")
-                print(f"  WorldBinding update - {target_path}:")
-                print(f"    Position: [{position[0]:.3f}, {position[1]:.3f}, {position[2]:.3f}]")
-                print(
-                    f"    Orientation (quat wxyz): [{orientation[0]:.3f}, {orientation[1]:.3f}, {orientation[2]:.3f}, {orientation[3]:.3f}]"
-                )
 
     print("\n" + "=" * 60)
     print("Summary")
@@ -566,8 +558,8 @@ def main():
     timeline.pause()
 
     # Keep window open for a moment to see results
-    print("\nClosing in 2 seconds...")
-    for _ in range(120):
+    print("\nClosing soon...")
+    for _ in range(500):
         simulation_app.update()
 
     simulation_app.close()
