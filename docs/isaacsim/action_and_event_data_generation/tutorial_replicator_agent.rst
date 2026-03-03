@@ -38,7 +38,7 @@ Before enabling this extension, read :doc:`What Is Isaac Sim? </overview/overvie
 
 Enable Extensions 
 ----------------------------------
-1. Follow the `Omniverse Extension Manager guide <https://docs.omniverse.nvidia.com/extensions/latest/ext_core/ext_extension-manager.html>`_ to enable the ``Omni.Metropolis.Pipeline``, ``Isaacsim.Replicator.Agent.Core & UI`` and ``Isaacsim.Anim.Robot.Core``. 
+1. Follow the `Omniverse Extension Manager guide <https://docs.omniverse.nvidia.com/extensions/latest/ext_core/ext_extension-manager.html>`_ to enable the ``Omni.Metropolis.Pipeline``, ``Isaacsim.Anim.Robot.Core`` and ``Isaacsim.Replicator.Agent.Core & UI``. 
 
     * The extensions fetch sample assets from Isaac Sim Assets during start. Refer to :doc:`Isaac Sim Assets </assets/usd_assets_overview>` if you encounter issues for loading assets.
     * If loading the UI appears to be hanging, try starting Isaac Sim with the flag ``--/persistent/isaac/asset_root/timeout=1.0``.
@@ -191,7 +191,7 @@ Once all active triggers complete, actors will fallback to routine.
 
 |
 
-Configuerate Behaviors
+Configure Behaviors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 After actors are loaded into scene by config file, the configurations are embedded in the USD API schemas and USD Prims. Each actor is represented by MetroAgentAPI schema and its derived type. 
