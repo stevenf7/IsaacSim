@@ -246,15 +246,23 @@ The ``docker-compose.yml`` in ``tools/docker/`` handles volume mounts, GPU assig
 
 .. code-block:: console
 
+    # Create cache/log mounts (use uid 1234 to match container user)
+    $ mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
+    $ sudo chown -R 1234:1234 ~/docker
+
     # Build the Isaac Sim image (one-time)
-    $ ./tools/docker/prep_docker_build.sh --build
-    $ ./tools/docker/build_docker.sh
+    $ ./tools/docker/prep_docker_build.sh --build --x86_64
+    $ ./tools/docker/build_docker.sh --x86_64
 
     # Launch both services
     $ docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 
     # Check the web viewer URL
     $ docker compose -p isim logs web-viewer
+
+.. note::
+
+   On DGX Spark, use ``--aarch64`` instead of ``--x86_64`` in the build commands above.
 
 Open the URL shown in the logs (e.g. ``http://<host-ip>:8210``) in a Chromium-based browser.
 

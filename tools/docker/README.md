@@ -26,6 +26,9 @@ Before running these scripts, ensure you have the following installed on your ho
 - **rsync** - Required for file synchronization during the preparation phase
 - **python3** - Required for running the preparation scripts and installing dependencies
 - **Docker** - Required for building the final image
+- **NVIDIA Container Toolkit** - Required for GPU access inside the container when running the image
+
+See also: [Container Setup](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_container.html#container-setup) in the Isaac Sim documentation.
 
 ### Installing Prerequisites
 
@@ -36,7 +39,26 @@ sudo apt-get update
 sudo apt-get install -y rsync python3 docker.io
 ```
 
-On other systems, install these packages using your system's package manager.
+**NVIDIA Container Toolkit** (required for running the built image with GPU support):
+
+```bash
+# Configure the repository
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+  && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+  sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+  sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
+  && sudo apt-get update
+
+# Install and configure
+sudo apt-get install -y nvidia-container-toolkit
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+
+# Verify (optional)
+docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
+```
+
+On other systems, install these packages using your system's package manager. For full details and alternatives, see [Container Setup](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_container.html#container-setup).
 
 ## Build Process
 
@@ -52,10 +74,6 @@ Use `prep_docker_build.sh` to prepare the Docker build context:
 
 - `--build` - Run the full Isaac Sim build sequence before preparing Docker files:
   - Executes `build.sh -r`
-<!-- AUTOREMOVE: BEGIN -->
-  - Executes `repo.sh examples_list`
-  - Executes `tools/build_docs.sh`
-<!-- AUTOREMOVE: END -->
 - `--x86_64` - Build x86_64 container (default)
 - `--aarch64` - Build aarch64 container
 - `--skip-dedupe` - Skip the file deduplication process (faster but larger image)
@@ -215,8 +233,8 @@ mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
 sudo chown -R 1234:1234 ~/docker
 
 # 1. Build the Isaac Sim image (existing workflow)
-./tools/docker/prep_docker_build.sh --build
-./tools/docker/build_docker.sh
+./tools/docker/prep_docker_build.sh --build --x86_64
+./tools/docker/build_docker.sh --x86_64
 
 # 2. Launch both services (logs stream to the terminal; Ctrl+C stops everything)
 docker compose -p isim -f tools/docker/docker-compose.yml up
@@ -224,6 +242,8 @@ docker compose -p isim -f tools/docker/docker-compose.yml up
 # Or, launch in detached mode (runs in the background)
 docker compose -p isim -f tools/docker/docker-compose.yml up -d
 ```
+
+> **Note:** On DGX Spark, use `--aarch64` instead of `--x86_64` in the build commands above.
 
 Running without `-d` (foreground) streams combined logs from both containers to your terminal, which is useful for debugging. Press `Ctrl+C` to stop all services. Running with `-d` (detached) starts everything in the background.
 
