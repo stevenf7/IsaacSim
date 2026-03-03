@@ -26,7 +26,7 @@ Key Concepts
 -   **Agents (Actors)**: Dynamic entities in the scene, which can be **Characters** (humans) or **Robots**.
 -   **Behaviors**: Atomic actions an actor can perform, such as ``wander``, ``patrol``, or ``idle``.
 -   **Routines**: A collection of behaviors assigned to an actor group. Actors randomly select behaviors from this pool based on assigned weights.
--   **Triggers**: Conditional logic that interrupts normal routines. When a condition is met (e.g., a specific time or event), the trigger executes its defined list of behaviors in sequence. Once the trigger sequence is complete, the agent resumes its standard routine until another trigger activates.
+-   **Triggers**: Conditional logic that interrupts normal routines. When a condition is met (for example, a specific time or event), the trigger executes its defined list of behaviors in sequence. Once the trigger sequence is complete, the agent resumes its standard routine until another trigger activates.
 -   **Sensors**: Cameras placed in the scene to observe the simulation.
 -   **Replicator**: The system responsible for rendering frames and writing annotated data (ground truth) to disk or cloud storage.
 
@@ -50,18 +50,18 @@ Configs are YAML files with a single root key ``isaacsim.replicator.agent``:
 Root Parameters
 ---------------
 
--   **version** (required): Semantic version of the configuration schema (e.g., "1.0.0").
+-   **version** (required): Semantic version of the configuration schema (for example, "1.0.0").
 -   **environment** (required): Defines the simulation world.
 -   **seed** (optional): A 32-bit unsigned integer (0..4,294,967,295).
-    -   Used to initialize random number generators for deterministic simulations (e.g., character spawn locations, routine variations).
+    -   Used to initialize random number generators for deterministic simulations (for example, character spawn locations, routine variations).
     -   If omitted, a seed is generated based on the current system time.
--   **simulation_duration** (optional): The total run time of the simulation in seconds.
+-   **simulation_duration** (optional): The total run time of the simulation in seconds (must be >= 0).
     -   The simulation runs at a fixed time step corresponding to **30 FPS**.
     -   Defaults to ``60.0`` seconds.
 -   **character** (optional): Configures human agents (appearance, behaviors like wander/patrol, and triggers).
 -   **robot** (optional): Configures robot agents (config path, behaviors/commands, data collection).
--   **sensor** (optional): Configures static cameras using placement strategies (e.g., aim at targets, coverage).
--   **replicator** (optional): Configures data writers (e.g., output directory, annotators like RGB/segmentation).
+-   **sensor** (optional): Configures static cameras using placement strategies (for example, aim at targets, coverage).
+-   **replicator** (optional): Configures data writers (for example, output directory, annotators like RGB/segmentation).
 
 Quick Start (Minimal)
 ---------------------
@@ -105,7 +105,7 @@ Defines groups of human characters, their appearance, and their behavior.
 Character Group Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--   ``num`` (required): Number of characters to spawn.
+-   ``num`` (required): Number of characters to spawn (>= 0).
 -   ``asset_path`` (optional): USD path to character assets. Supports paths relative to the :ref:`isaac_assets_overview` root. Default: ``Isaac/People/Characters/``.
 -   ``spawn_areas`` (optional): List of **NavMesh area names** where characters can spawn. If empty, spawns anywhere on the NavMesh.
 -   ``semantic_labels`` (optional): List of ``[type, data]`` pairs for semantic segmentation. Default: ``[["class", "character"]]``.
@@ -145,11 +145,10 @@ Behaviors are defined in the ``routines`` list. Common fields:
         .. note::
             Both ``path_points`` and ``target_prims`` must be on the :doc:`NavMesh <extensions:ext_navigation-mesh>` and reachable by the actors.
 
-3.  **custom_behavior**: Execute a Behavior Tree from a file.
+3.  **stop**: Stop and idle in place for a random duration.
 
-    -   ``behavior_name``: Identifier.
-    -   ``behavior_subtree``: Path to the behavior JSON file.
-    -   ``params``: Dictionary of arbitrary parameters passed to the tree.
+    -   ``time_range``: [min, max] duration in seconds (default [5.0, 5.0]).
+
 
 Triggers
 ^^^^^^^^
@@ -159,7 +158,13 @@ Triggers define events that interrupt normal routines to execute a list of react
 Each actor can specify a list of triggers to listen to.
 
 -   ``priority`` (default 1): Higher priority triggers override lower ones.
--   ``behavior``: List of behaviors to execute when triggered.
+-   ``behavior``: List of behaviors to execute **in sequence** when triggered.
+
+.. tip::
+
+    **Authoring a specific sequence of actions**
+
+    Routines select behaviors randomly based on weights, so they are not suited for deterministic sequences. If you need actors to perform actions in a specific order (for example, walk to point A, idle for 5 seconds, then walk to point B), use a **trigger** instead. A trigger's ``behavior`` list is always executed in order, making it the right tool for scripted sequences. Use a ``time_trigger`` with ``time: 0`` to start the sequence immediately when the simulation begins.
 
 **Trigger Types:**
 
@@ -224,7 +229,7 @@ Each actor can specify a list of triggers to listen to.
 Robot
 -----
 
-Defines robot agents. Robots can be controlled via behaviors OR an external command file.
+Defines robot agents.
 
 -   ``root_prim_path`` (optional): Root path for robots (default: ``/World/Robots``).
 -   ``groups``: Dictionary of robot groups.
@@ -232,27 +237,33 @@ Defines robot agents. Robots can be controlled via behaviors OR an external comm
 Robot Group Parameters
 ^^^^^^^^^^^^^^^^^^^^^^
 
--   ``num`` (required): Number of robots.
--   ``config_file_path`` (required): Path to the **IAR (Isaac Agent) configuration file** for this robot type. Supports absolute paths or paths relative to the IAR built-in robot config sample folder (located in ``isaacsim/anim/robot/agent/configs`` within the ``isaacsim.anim.robot`` extension).
--   ``command_file_path`` (optional): Path to a global command file. **Mutually exclusive with** ``routines``.
+-   ``num`` (required): Number of robots (>= 1).
+-   ``config_file_path`` (required): Path to the robot agent YAML configuration file for this robot type. Supports absolute paths or paths relative to the built-in sample config folder (``data/sample_configs/`` within the ``isaacsim.anim.robot.core`` extension).
 -   ``spawn_areas`` (optional): NavMesh areas for spawning.
--   ``agent_radius`` (optional): Radius in meters (default 0.5) used for NavMesh queries.
+-   ``agent_radius`` (optional): Radius in meters used for NavMesh queries. Must be > 0 when set. If omitted, defaults to ``0.3`` at runtime.
 -   ``write_data`` (optional): If ``true``, enables data collection from the robot's onboard cameras. *Not available in Isaac Sim 6.0 EA yet. (Coming in 6.0 GA)*
--   ``camera_prim_paths`` (optional): List of specific camera prims on the robot to use. If empty and ``write_data`` is true, *all* cameras on the robot are used. *Not available in Isaac Sim 6.0 EA yet. (Coming in 6.0 GA)*
+-   ``camera_prim_paths`` (optional): List of specific camera prims on the robot to use. If empty and ``write_data`` is true, *all* cameras on the robot are used. Requires ``write_data`` to be ``true``. *Not available in Isaac Sim 6.0 EA yet. (Coming in 6.0 GA)*
 -   ``semantic_labels`` (optional): Default ``[["class", "robot"]]``.
 -   ``semantic_label_path`` (optional): Relative path under the robot prim to apply semantics.
--   ``routines`` / ``triggers``: Similar to characters but with robot-specific behaviors.
+-   ``routines`` (optional): List of robot behaviors. Default: ``[{ wander: {} }]``.
+-   ``triggers`` (optional): List of triggers that interrupt routines. Robots support ``event_trigger`` and ``time_trigger``.
 
 Robot Behaviors
 ^^^^^^^^^^^^^^^
 
 -   **wander**:
-    -   ``move``: { ``distance_range``: [min, max] (default [10.0, 15.0]), ``navigation_areas``: [tags] }
+    -   ``move``: { ``distance_range``: [min, max] (default [10.0, 15.0]), ``navigation_areas``: list of allowed NavMesh area tags (default []) }
     -   ``idle``: { ``time_range``: [min, max] (default [2.0, 5.0]) }
 -   **patrol**:
-    -   ``path_points``: List of 3D points.
--   **stop**:
-    -   ``time_range``: [min, max] seconds to remain stopped (default [5.0, 5.0]).
+    -   One of (exactly one must be provided):
+        -   ``path_points``: List of 3D points ``[[x,y,z], [x,y,z], ...]``.
+        -   ``target_prims``: List of prim paths to visit.
+
+    .. note::
+        Both ``path_points`` and ``target_prims`` must be on the :doc:`NavMesh <extensions:ext_navigation-mesh>` and reachable by the robots.
+
+-   **halt**:
+    -   ``time_range``: [min, max] seconds to remain halted (default [5.0, 5.0]).
 
 Sensor
 ------
@@ -273,7 +284,7 @@ Each group must specify ``num`` (number of cameras) and **one** placement strate
 
 Places cameras to look at specific targets.
 
--   ``targets`` (optional): List of target prim paths (e.g., ``/World/Characters``) or identifiers.
+-   ``targets`` (optional): List of target prim paths (for example, ``/World/Characters``) or identifiers.
 -   ``raycast_density`` (optional): Density of rays used to find valid camera positions. Higher values are more precise but slower.
 -   ``yaw_range`` (optional): [min, max] degrees (0..360) for the camera's rotation around the target.
 -   ``occlusion_threshold`` (optional): Threshold for filtering occluded views (-1 to disable).
@@ -351,7 +362,7 @@ Supported writers: ``BasicWriter``, ``IRABasicWriter``, ``CosmosIRAWriter``, ``R
 -   ``distance_to_camera``: Depth map.
 -   ``normals``: Surface normals.
 -   ``motion_vectors``: Pixel motion.
--   ``colorize_*``: e.g., ``colorize_semantic_segmentation`` (save as visible color map vs raw ID).
+-   ``colorize_*``: for example, ``colorize_semantic_segmentation`` (save as visible color map vs raw ID).
 
 Specialized Writers
 ^^^^^^^^^^^^^^^^^^^
@@ -383,7 +394,7 @@ Specialized Writers
 
     -   **Special Parameters**:
 
-        -   ``video_rendering_annotator_list``: Generates .mp4 videos for specified annotators (e.g., ``["rgb", "semantic_segmentation"]``).
+        -   ``video_rendering_annotator_list``: Generates .mp4 videos for specified annotators (for example, ``["rgb", "semantic_segmentation"]``).
         -   ``agent_info_skeleton_data``: Exports 2D/3D skeleton joints for characters.
 
     -   **Action data**:
@@ -520,4 +531,3 @@ Specialized Writers
 
           # Video
           video_rendering_annotator_list: ["rgb", "semantic_segmentation"]
-

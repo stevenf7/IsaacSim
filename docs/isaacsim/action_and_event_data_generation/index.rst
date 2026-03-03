@@ -9,9 +9,9 @@
 
 .. _action_and_event_data_generation:
 
-================================
+==================================
 Action and Event Data Generation
-================================
+==================================
 
 **Action and Event Data Generation** is a reference application for |isaac-sim_short| that provides a suite of extensions for realistic indoor simulation and large-scale synthetic data generation. It is designed to address the challenges of collecting high-quality, diverse, and richly labeled datasets for training Vision AI models.
 
@@ -102,11 +102,19 @@ Extension Tutorials
 .. toctree::
    :maxdepth: 1
 
-   ./tutorial_telemetry
-   ./tutorial_omni_metropolis_pipeline
    ./tutorial_replicator_agent
    ./tutorial_replicator_object
    ./tutorial_replicator_caption
    ./tutorial_replicator_incident
    ./tutorial_sensors_rtx_placement
    ./ext_agent_planner/ext_isaacsim_agent_planner
+
+
+Other Tools and Utilities
+-------------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   ./tutorial_omni_metropolis_pipeline
+   ./tutorial_telemetry
