@@ -32,7 +32,7 @@ default_exclusions = [
 class Report:
     """Format benchmark metrics into a human-readable report."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         self._test_phases: list[measurements.TestPhase] = []
         self._phase_data: list[dict[str, list[str]]] = []
         self._addt_metadata: list[str] = []
@@ -41,7 +41,7 @@ class Report:
         self._cpu_metrics: dict[str, dict[str, str]] = {}
         self._use_section_headers = False  # Set to True for section headers within phases
 
-    def add_metric_phase(self, test_phase: measurements.TestPhase) -> None:
+    def add_metric_phase(self, test_phase: measurements.TestPhase):
         """Add a test phase and pre-format its output lines.
 
         Args:
@@ -158,7 +158,7 @@ class Report:
         line = f"{measurement.name}: {measurement.value} {measurement.unit}"
         return f"| {line:<{self._report_width}} |"
 
-    def _add_metadata(self, measurement: measurements.SingleMeasurement) -> None:
+    def _add_metadata(self, measurement: measurements.SingleMeasurement):
         """Add measurement to the metadata list.
 
         Args:
@@ -168,7 +168,7 @@ class Report:
         if metadata not in self._addt_metadata:
             self._addt_metadata.append(metadata)
 
-    def _process_frametime_metric(self, measurement: measurements.SingleMeasurement) -> None:
+    def _process_frametime_metric(self, measurement: measurements.SingleMeasurement):
         """Add frametime metric data to the frametime table.
 
         Args:
@@ -180,7 +180,7 @@ class Report:
             self._frametime_metrics[frametime] = {}
         self._frametime_metrics[frametime][metric_type] = f"{measurement.value:.2f}"
 
-    def _process_cpu_metric(self, measurement: measurements.SingleMeasurement) -> None:
+    def _process_cpu_metric(self, measurement: measurements.SingleMeasurement):
         """Add CPU usage data to the CPU metrics table.
 
         Args:
@@ -192,7 +192,7 @@ class Report:
             self._cpu_metrics["Process"] = {}
         self._cpu_metrics["Process"][metric_type] = f"{measurement.value:.2f}"
 
-    def print_formatted_lines(self, phase: dict[str, list[str]]) -> None:
+    def print_formatted_lines(self, phase: dict[str, list[str]]):
         """Print formatted metric data for a phase.
 
         Args:
@@ -223,7 +223,7 @@ class Report:
         separator = "|" + "-" * (self._report_width + 2) + "|"
         return separator
 
-    def print_metadata(self) -> None:
+    def print_metadata(self):
         """Print formatted benchmark metadata.
 
         Example:
@@ -292,7 +292,7 @@ class Report:
 
         return logs
 
-    def create_report(self) -> None:
+    def create_report(self):
         """Print the full summary report.
 
         Example:

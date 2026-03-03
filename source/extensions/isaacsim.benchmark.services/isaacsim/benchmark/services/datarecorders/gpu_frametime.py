@@ -32,8 +32,8 @@ class GPUFrametimeRecorder(MeasurementDataRecorder):
     """Record GPU render frametime from Hydra engine stats.
 
     Args:
-        context: Input context for the recorder. Defaults to None.
-        enable_multi_gpu: Enable per-GPU sampling when multiple GPUs are present. Defaults to False.
+        context: Input context for the recorder.
+        enable_multi_gpu: Enable per-GPU sampling when multiple GPUs are present.
     """
 
     def __init__(self, context: InputContext | None = None, enable_multi_gpu: bool = False):
@@ -53,7 +53,7 @@ class GPUFrametimeRecorder(MeasurementDataRecorder):
         except Exception as e:
             logger.warning(f"GPUFrametimeRecorder: Failed to initialize HydraEngineStats: {e}")
 
-    def start_collecting(self) -> None:
+    def start_collecting(self):
         """Start collecting GPU frametime data.
 
         Example:
@@ -77,7 +77,7 @@ class GPUFrametimeRecorder(MeasurementDataRecorder):
         )
         logger.info("GPUFrametimeRecorder: Started collecting")
 
-    def stop_collecting(self) -> None:
+    def stop_collecting(self):
         """Stop collecting GPU frametime data.
 
         Example:
@@ -128,7 +128,7 @@ class GPUFrametimeRecorder(MeasurementDataRecorder):
         """
         return self._samples
 
-    def _on_app_update(self, _event: Any) -> None:
+    def _on_app_update(self, _event: Any):
         """Sample GPU frametime on each app update.
 
         Args:
@@ -136,11 +136,8 @@ class GPUFrametimeRecorder(MeasurementDataRecorder):
         """
         self.sample_gpu_time()
 
-    def sample_gpu_time(self) -> None:
+    def sample_gpu_time(self):
         """Sample GPU frametime for the current frame.
-
-        Returns:
-            None.
 
         Example:
 

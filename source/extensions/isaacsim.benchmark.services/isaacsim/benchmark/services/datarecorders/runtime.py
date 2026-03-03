@@ -29,7 +29,7 @@ class RuntimeRecorder(MeasurementDataRecorder):
     """Record wall-clock runtime of a benchmark phase.
 
     Args:
-        context: Input context for the recorder. Defaults to None.
+        context: Input context for the recorder.
     """
 
     def __init__(self, context: InputContext | None = None):
@@ -38,7 +38,7 @@ class RuntimeRecorder(MeasurementDataRecorder):
         self._elapsed_ms: float | None = None
         self._phase: str | None = None
 
-    def start_collecting(self) -> None:
+    def start_collecting(self):
         """Start timing.
 
         Example:
@@ -53,7 +53,7 @@ class RuntimeRecorder(MeasurementDataRecorder):
         self._start_ms = omni.kit.app.get_app().get_time_since_start_ms()
         logger.info("RuntimeRecorder: Started timing at %fms", self._start_ms)
 
-    def stop_collecting(self) -> None:
+    def stop_collecting(self):
         """Stop timing.
 
         Example:

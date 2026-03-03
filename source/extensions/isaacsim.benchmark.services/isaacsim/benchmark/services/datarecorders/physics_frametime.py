@@ -31,7 +31,7 @@ class PhysicsFrametimeRecorder(MeasurementDataRecorder):
     """Record PhysX simulation step frametime.
 
     Args:
-        context: Input context for the recorder. Defaults to None.
+        context: Input context for the recorder.
     """
 
     def __init__(self, context: InputContext | None = None):
@@ -46,7 +46,7 @@ class PhysicsFrametimeRecorder(MeasurementDataRecorder):
         except Exception as e:
             logger.warning(f"PhysicsFrametimeRecorder: Failed to get physics interface: {e}")
 
-    def start_collecting(self) -> None:
+    def start_collecting(self):
         """Start collecting physics frametime data.
 
         Example:
@@ -66,7 +66,7 @@ class PhysicsFrametimeRecorder(MeasurementDataRecorder):
         else:
             logger.warning("PhysicsFrametimeRecorder: Physics interface not available")
 
-    def stop_collecting(self) -> None:
+    def stop_collecting(self):
         """Stop collecting physics frametime data.
 
         Example:
@@ -84,7 +84,7 @@ class PhysicsFrametimeRecorder(MeasurementDataRecorder):
 
     @property
     def sample_count(self) -> int:
-        """Get the number of collected samples.
+        """Number of collected frametime samples.
 
         Returns:
             Number of frametime samples collected.
@@ -99,7 +99,7 @@ class PhysicsFrametimeRecorder(MeasurementDataRecorder):
 
     @property
     def samples(self) -> list[float]:
-        """Get the raw frametime samples in milliseconds.
+        """Raw frametime samples in milliseconds.
 
         Returns:
             List of frametime samples (read-only access).
@@ -113,7 +113,7 @@ class PhysicsFrametimeRecorder(MeasurementDataRecorder):
         """
         return self._samples
 
-    def _on_physics_stats(self, profile_stats: Any) -> None:
+    def _on_physics_stats(self, profile_stats: Any):
         """Callback for physics profile stats.
 
         Args:

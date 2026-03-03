@@ -22,6 +22,19 @@ from typing import Any, Protocol, cast
 
 
 class _MetadataWithData(Protocol):
+    """Protocol for metadata objects that contain a name and data.
+
+    This protocol defines the interface that all metadata objects must implement to be used with the
+    benchmark measurement system. Any class implementing this protocol must have a `name` attribute
+    for identifying the metadata and a `data` attribute containing the actual metadata value.
+
+    Args:
+        *args: Variable length argument list passed to the implementing class.
+
+    Keyword Args:
+        **kwargs: Additional keyword arguments passed to the implementing class.
+    """
+
     name: str
     data: Any
 
@@ -52,12 +65,13 @@ class SingleMeasurement(Measurement):
         name: Measurement name.
         value: Measurement value.
         unit: Unit string.
-        type: Measurement type label. Defaults to "single".
+        type: Measurement type label.
     """
 
     value: float | int | str
     unit: str
     type: str = "single"
+    """Measurement type label."""
 
 
 @dataclass
@@ -67,11 +81,12 @@ class BooleanMeasurement(Measurement):
     Args:
         name: Measurement name.
         bvalue: Measurement value.
-        type: Measurement type label. Defaults to "boolean".
+        type: Measurement type label.
     """
 
     bvalue: bool
     type: str = "boolean"
+    """Measurement type label."""
 
 
 @dataclass
@@ -81,11 +96,12 @@ class DictMeasurement(Measurement):
     Args:
         name: Measurement name.
         value: Measurement value.
-        type: Measurement type label. Defaults to "dict".
+        type: Measurement type label.
     """
 
     value: dict
     type: str = "dict"
+    """Measurement type label."""
 
 
 @dataclass
@@ -95,13 +111,14 @@ class ListMeasurement(Measurement):
     Args:
         name: Measurement name.
         value: Measurement value.
-        type: Measurement type label. Defaults to "list".
+        type: Measurement type label.
     """
 
     value: list
     type: str = "list"
+    """Measurement type label."""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return a compact string representation.
 
         Returns:
@@ -134,11 +151,12 @@ class StringMetadata(MetadataBase):
     Args:
         name: Metadata name.
         data: Metadata value.
-        type: Metadata type label. Defaults to "string".
+        type: Metadata type label.
     """
 
     data: str
     type: str = "string"
+    """Metadata type label."""
 
 
 @dataclass
@@ -148,11 +166,12 @@ class IntMetadata(MetadataBase):
     Args:
         name: Metadata name.
         data: Metadata value.
-        type: Metadata type label. Defaults to "int".
+        type: Metadata type label.
     """
 
     data: int
     type: str = "int"
+    """Metadata type label."""
 
 
 @dataclass
@@ -162,11 +181,12 @@ class FloatMetadata(MetadataBase):
     Args:
         name: Metadata name.
         data: Metadata value.
-        type: Metadata type label. Defaults to "float".
+        type: Metadata type label.
     """
 
     data: float
     type: str = "float"
+    """Metadata type label."""
 
 
 @dataclass
@@ -176,11 +196,12 @@ class DictMetadata(MetadataBase):
     Args:
         name: Metadata name.
         data: Metadata value.
-        type: Metadata type label. Defaults to "dict".
+        type: Metadata type label.
     """
 
     data: dict
     type: str = "dict"
+    """Metadata type label."""
 
 
 @dataclass
@@ -189,8 +210,8 @@ class TestPhase(object):
 
     Args:
         phase_name: Name of the phase.
-        measurements: Measurements recorded for the phase. Defaults to an empty list.
-        metadata: Metadata recorded for the phase. Defaults to an empty list.
+        measurements: Measurements recorded for the phase.
+        metadata: Metadata recorded for the phase.
     """
 
     phase_name: str

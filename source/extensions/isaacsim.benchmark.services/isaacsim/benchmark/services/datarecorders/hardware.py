@@ -30,7 +30,7 @@ class HardwareSpecRecorder(MeasurementDataRecorder):
     """Record hardware specifications such as CPU count and GPU model.
 
     Args:
-        context: Input context for the recorder. Defaults to None.
+        context: Input context for the recorder.
     """
 
     def __init__(self, context: InputContext | None = None):
