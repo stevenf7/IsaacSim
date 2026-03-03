@@ -244,6 +244,7 @@ sphinx_exclude_patterns = [
   "**/omni.pip.cloud",
   "include",
   "tools",
+  "docs/tools",
   "tests",
   "**/README.md",
   "TESTING.md",
@@ -587,18 +588,12 @@ ignore_folders = []
 ignore_files = ["UsdPCH.h"]
 
 ########################################################################################################################
-# Validate changelogs
+# Update changelogs
 ########################################################################################################################
 
 [repo_update_changelogs]
-# Default configuration for changelog updating and validation
-check_unreleased = false
-check_references = false
-check_all = false
-format = true
+# Default configuration for changelog updating
 verbose = false
-# Update options
-update = false
 # Path to extensions directories (relative to repo root)
 extensions_dir = [
   "source/extensions",

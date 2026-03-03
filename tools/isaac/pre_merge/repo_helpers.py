@@ -30,8 +30,8 @@ from pathlib import Path
 # Repository layout
 # ---------------------------------------------------------------------------
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-TOOLS_DIR = REPO_ROOT / "tools" / "isaac"
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+TOOLS_DIR = REPO_ROOT / "tools" / "isaac" / "pre_merge"
 
 EXTENSION_ROOTS = [
     REPO_ROOT / "source" / "extensions",
@@ -54,7 +54,14 @@ TEST_SCRIPT_EXT = ".bat" if _IS_WINDOWS else ".sh"
 
 
 def extension_for_file(file_path: Path) -> Path | None:
-    """Return the extension directory that contains *file_path*, or None."""
+    """Return the extension directory that contains the given file path, or None.
+
+    Args:
+        file_path: Path to the file to look up.
+
+    Returns:
+        Extension directory path if found, otherwise None.
+    """
     for root in EXTENSION_ROOTS:
         try:
             rel = file_path.resolve().relative_to(root.resolve())
@@ -67,7 +74,14 @@ def extension_for_file(file_path: Path) -> Path | None:
 
 
 def affected_extensions(files: list[Path]) -> list[Path]:
-    """Unique, sorted list of extension directories touched by *files*."""
+    """Return unique, sorted list of extension directories touched by the given files.
+
+    Args:
+        files: List of file paths to check.
+
+    Returns:
+        Sorted list of extension directory paths.
+    """
     seen: set[Path] = set()
     for f in files:
         ext = extension_for_file(f)
@@ -76,19 +90,42 @@ def affected_extensions(files: list[Path]) -> list[Path]:
     return sorted(seen)
 
 
-def all_extension_names() -> list[str]:
-    """Collect every extension directory name across all extension roots."""
-    names: set[str] = set()
+def all_extensions() -> list[Path]:
+    """Return every extension directory across all extension roots.
+
+    A directory is considered an extension only if it contains
+    ``config/extension.toml``.
+
+    Returns:
+        Sorted list of extension directory paths.
+    """
+    exts: set[Path] = set()
     for root in EXTENSION_ROOTS:
         if root.exists():
             for child in root.iterdir():
-                if child.is_dir():
-                    names.add(child.name)
-    return sorted(names)
+                if child.is_dir() and (child / "config" / "extension.toml").exists():
+                    exts.add(child)
+    return sorted(exts)
+
+
+def all_extension_names() -> list[str]:
+    """Collect every extension directory name across all extension roots.
+
+    Returns:
+        List of extension directory names.
+    """
+    return [ext.name for ext in all_extensions()]
 
 
 def has_apps_changes(files: list[Path]) -> bool:
-    """Return True if any file in *files* lives under ``source/apps/``."""
+    """Return True if any file in the given list lives under ``source/apps/``.
+
+    Args:
+        files: List of file paths to check.
+
+    Returns:
+        True if any file is under source/apps, otherwise False.
+    """
     for f in files:
         try:
             f.resolve().relative_to(APPS_DIR.resolve())
@@ -107,13 +144,19 @@ def read_toml_version(ext_path: Path) -> str | None:
     """Read ``[package].version`` from an extension's ``config/extension.toml``.
 
     Tries the ``toml`` module first; falls back to regex parsing.
+
+    Args:
+        ext_path: Path to the extension directory.
+
+    Returns:
+        Version string if found, otherwise None.
     """
     toml_path = ext_path / "config" / "extension.toml"
     if not toml_path.exists():
         return None
 
     try:
-        import toml as toml_mod
+        import toml as toml_mod  # type: ignore[import-untyped]
 
         data = toml_mod.load(str(toml_path))
         return data.get("package", {}).get("version")
@@ -137,13 +180,19 @@ def parse_extension_deps(ext_path: Path) -> list[str]:
     """Extract dependency names from an extension's ``config/extension.toml``.
 
     Tries the ``toml`` module first; falls back to regex parsing.
+
+    Args:
+        ext_path: Path to the extension directory.
+
+    Returns:
+        List of dependency extension names.
     """
     toml_path = ext_path / "config" / "extension.toml"
     if not toml_path.exists():
         return []
 
     try:
-        import toml as toml_mod
+        import toml as toml_mod  # type: ignore[import-untyped]
 
         data = toml_mod.load(str(toml_path))
         return list(data.get("dependencies", {}).keys())
@@ -169,8 +218,9 @@ def parse_extension_deps(ext_path: Path) -> list[str]:
 def build_reverse_deps() -> dict[str, set[str]]:
     """Build a reverse dependency map across all extension roots.
 
-    Returns a dict mapping each extension name to the set of extension names
-    that declare it as a direct dependency.
+    Returns:
+        Dict mapping each extension name to the set of extension names
+        that declare it as a direct dependency.
     """
     reverse: dict[str, set[str]] = {}
     for root in EXTENSION_ROOTS:
@@ -190,7 +240,14 @@ def build_reverse_deps() -> dict[str, set[str]]:
 
 
 def _git_diff_names(extra_args: list[str]) -> set[Path]:
-    """Run ``git diff --name-only --diff-filter=ACMR`` and return resolved paths."""
+    """Run ``git diff --name-only --diff-filter=ACMR`` and return resolved paths.
+
+    Args:
+        extra_args: Extra arguments to pass to git diff.
+
+    Returns:
+        Set of resolved file paths.
+    """
     cmd = ["git", "diff", "--name-only", "--diff-filter=ACMR", *extra_args]
     proc = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT)
     paths: set[Path] = set()
@@ -201,11 +258,23 @@ def _git_diff_names(extra_args: list[str]) -> set[Path]:
 
 
 def _uncommitted_files() -> set[Path]:
-    """Staged + unstaged working-tree changes (excludes deleted files)."""
+    """Return staged and unstaged working-tree changes (excludes deleted files).
+
+    Returns:
+        Set of modified file paths.
+    """
     return _git_diff_names([]) | _git_diff_names(["--staged"])
 
 
 def _ref_exists(ref: str) -> bool:
+    """Check whether a git ref (branch, tag, or commit) exists.
+
+    Args:
+        ref: Git ref to verify.
+
+    Returns:
+        True if the ref exists, otherwise False.
+    """
     proc = subprocess.run(
         ["git", "rev-parse", "--verify", "--quiet", ref],
         capture_output=True,
@@ -216,6 +285,11 @@ def _ref_exists(ref: str) -> bool:
 
 
 def _list_remotes() -> list[str]:
+    """List configured git remote names.
+
+    Returns:
+        List of remote names.
+    """
     proc = subprocess.run(
         ["git", "remote"],
         capture_output=True,
@@ -232,6 +306,9 @@ def detect_base_branch() -> str | None:
 
     Search order per remote: develop, main, master.
     Remote priority: ``main``, ``origin``, then any others alphabetically.
+
+    Returns:
+        Base branch ref if found, otherwise None.
     """
     remotes = _list_remotes()
     if not remotes:
@@ -257,10 +334,16 @@ def detect_base_branch() -> str | None:
 
 
 def get_branch_files(base_ref: str) -> set[Path]:
-    """Files changed by commits unique to this branch since *base_ref*.
+    """Return files changed by commits unique to this branch since the base ref.
 
     Uses ``--first-parent --no-merges`` to follow only this branch's own
     commit lineage, excluding files brought in by upstream merges.
+
+    Args:
+        base_ref: Base branch or ref to compare against.
+
+    Returns:
+        Set of changed file paths.
     """
     merge_base_proc = subprocess.run(
         ["git", "merge-base", base_ref, "HEAD"],
@@ -296,11 +379,17 @@ def get_branch_files(base_ref: str) -> set[Path]:
 
 
 def get_all_modified_files(base_branch: str | None) -> tuple[list[Path], str | None]:
-    """Return ``(sorted_file_list, resolved_base_branch)``.
+    """Return sorted file list and resolved base branch.
 
     Collects the union of branch-level changes (since the merge-base) and
-    uncommitted working-tree changes.  If *base_branch* is ``None``, attempts
+    uncommitted working-tree changes.  If base_branch is None, attempts
     auto-detection via :func:`detect_base_branch`.
+
+    Args:
+        base_branch: Base branch to compare against, or None for auto-detection.
+
+    Returns:
+        Tuple of (sorted list of modified file paths, resolved base branch ref).
     """
     resolved_base = base_branch or detect_base_branch()
 

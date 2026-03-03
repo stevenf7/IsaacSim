@@ -15,11 +15,9 @@ changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
-
-[package.writeTarget]
-kit = true
-python = true
-usd = true
+writeTarget.kit = true
+writeTarget.python = true
+writeTarget.usd = true
 
 [dependencies]
 "omni.usd.libs" = { }

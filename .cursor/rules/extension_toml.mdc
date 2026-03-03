@@ -1,6 +1,7 @@
 ---
-description: 
-globs: *.extension.toml
+description: Validation and formatting rules for extension.toml files
+globs:
+  - "**/config/extension.toml"
 alwaysApply: false
 ---
 # Extension Configuration File (extension.toml) Rules
@@ -283,7 +284,7 @@ pages = [                        # Documentation pages
 
 ## Validation
 
-The repository includes a validation tool at `tools/isaac/validate_extension_toml.py` that can be used to check for compliance with these rules and automatically fix common issues:
+The repository includes a validation tool at `tools/isaac/pre_merge/validate_extension_toml.py` that can be used to check for compliance with these rules and automatically fix common issues:
 
 - Run without arguments to validate all `extension.toml` files in the repository
 - Use `--fix-whitespace` to fix spacing between sections and file boundaries (allows 0 or 1 empty line at EOF)

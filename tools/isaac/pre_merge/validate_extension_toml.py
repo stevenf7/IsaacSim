@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Validate and fix extension.toml files to ensure they follow the specified structure and ordering rules.
+r"""Validate and fix extension.toml files to ensure they follow the specified structure and ordering rules.
 
 This comprehensive validation script checks and can automatically fix multiple aspects of extension.toml files:
 
@@ -67,14 +66,12 @@ Supports both validation-only mode and automatic fixing with various granularity
 import argparse
 import difflib
 import os
-import re
 import sys
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Optional
 
-import toml
+import toml  # type: ignore[import-untyped]
 
 
 class Colors(str, Enum):
@@ -104,7 +101,14 @@ class ValidationConfig:
 
     @classmethod
     def from_args(cls, args: argparse.Namespace) -> "ValidationConfig":
-        """Create config from command-line arguments."""
+        """Create config from command-line arguments.
+
+        Args:
+            args: Parsed command-line arguments.
+
+        Returns:
+            A new ValidationConfig populated from the argument namespace.
+        """
         fix_all = args.fix
         return cls(
             fix_whitespace=fix_all or args.fix_whitespace,
@@ -188,27 +192,30 @@ class ValidationError:
     line_number: Optional[int] = None
 
     def __str__(self) -> str:
-        """Format error message with optional line number."""
+        """Format error message with optional line number.
+
+        Returns:
+            Human-readable error string including file path and context.
+        """
         location = f" at line {self.line_number}" if self.line_number is not None else ""
         return f"{self.file_path}{location}: {self.error_type}: {self.message}"
 
 
 class ExtensionTomlValidator:
-    """Validator for extension.toml files."""
+    """Validate extension.toml files.
+
+    Args:
+        config: Validation configuration. If None, uses default config.
+    """
 
     def __init__(self, config: Optional[ValidationConfig] = None):
-        """Initialize validator with optional configuration.
 
-        Args:
-            config: Validation configuration. If None, uses default config.
-        """
-        self.errors: List[ValidationError] = []
-        self.fixes_applied: List[str] = []
+        self.errors: list[ValidationError] = []
+        self.fixes_applied: list[str] = []
         self.config = config or ValidationConfig()
 
-    def _create_line_mapping(self, content: str) -> Dict[str, int]:
-        """
-        Create a mapping of section names to line numbers.
+    def _create_line_mapping(self, content: str) -> dict[str, int]:
+        """Create a mapping of section names to line numbers.
 
         Args:
             content: TOML content as string
@@ -228,9 +235,8 @@ class ExtensionTomlValidator:
 
         return line_mapping
 
-    def _is_section_header(self, line: str) -> Tuple[bool, str, str]:
-        """
-        Check if a line is a section header and return its type and name.
+    def _is_section_header(self, line: str) -> tuple[bool, str, str]:
+        """Check if a line is a section header and return its type and name.
 
         Args:
             line: Line to check
@@ -248,9 +254,8 @@ class ExtensionTomlValidator:
             return True, line_stripped[2:-2], "array"
         return False, "", ""
 
-    def _has_blank_line_before(self, lines: List[str], index: int) -> bool:
-        """
-        Check if there's a blank line before the given index.
+    def _has_blank_line_before(self, lines: list[str], index: int) -> bool:
+        """Check if there's a blank line before the given index.
 
         Args:
             lines: List of lines
@@ -265,8 +270,8 @@ class ExtensionTomlValidator:
         return False
 
     def _fix_whitespace(self, content: str) -> str:
-        """
-        Fix whitespace between sections by ensuring each section is preceded by exactly one blank line.
+        r"""Fix whitespace between sections by ensuring each section is preceded by exactly one blank line.
+
         If there are more than one consecutive blank lines, reduce them to exactly one.
         Don't add blank lines between comments and the section headers they describe.
         Also ensures at most one empty line at the end of the file (0 or 1 is acceptable).
@@ -283,7 +288,7 @@ class ExtensionTomlValidator:
         content = content.replace("\r\n", "\n").replace("\r", "\n")
 
         lines = content.split("\n")
-        fixed_lines = []
+        fixed_lines: list[str] = []
         reduced_excessive_whitespace = False
         removed_leading_trailing = False
         removed_whitespace_only_lines = False
@@ -387,8 +392,8 @@ class ExtensionTomlValidator:
         return "\n".join(fixed_lines)
 
     def _check_section_spacing(self, file_path: str, content: str) -> bool:
-        """
-        Check if sections are properly separated by blank lines.
+        """Check if sections are properly separated by blank lines.
+
         Ensures each section has exactly one blank line before it (not more or less),
         except when a section is preceded by a comment that describes it.
         Also checks for extra empty lines at the start or end of the file.
@@ -518,9 +523,10 @@ class ExtensionTomlValidator:
 
         return has_spacing_issue
 
-    def _extract_sections(self, content: str) -> Tuple[List[str], Dict[str, str], Dict[str, List[str]], Dict[str, str]]:
-        """
-        Extract sections from TOML content.
+    def _extract_sections(
+        self, content: str
+    ) -> tuple[list[str], dict[str, str], dict[str, list[str]], dict[str, list[list[str]]]]:
+        """Extract sections from TOML content.
 
         Args:
             content: TOML content
@@ -544,7 +550,7 @@ class ExtensionTomlValidator:
 
         # Second pass: extract content for each section
         regular_sections = {}
-        array_sections = {}
+        array_sections: dict[str, list[list[str]]] = {}
 
         current_section = None
         current_content = []
@@ -594,9 +600,8 @@ class ExtensionTomlValidator:
 
     def _extract_package_fields(
         self, content: str
-    ) -> Tuple[int, int, List[Tuple[str, str]], Dict[str, List[Tuple[int, str]]]]:
-        """
-        Extract fields from the [package] section.
+    ) -> tuple[int | None, int | None, list[tuple[str, tuple[int, str]]], dict[str, list[tuple[int, str]]]]:
+        """Extract fields from the [package] section.
 
         Args:
             content: TOML content
@@ -633,7 +638,7 @@ class ExtensionTomlValidator:
                     field_name = line_stripped.split("=")[0].strip()
 
                     # Collect any comments preceding this field
-                    field_comments = []
+                    field_comments: list[tuple[int, str]] = []
                     j = len(package_section_lines) - 2
                     while j >= 0:
                         prev_line = package_section_lines[j][1].strip()
@@ -659,7 +664,7 @@ class ExtensionTomlValidator:
 
         return package_section_start, package_section_end, field_lines, package_section_comments
 
-    def _parse_dependency_line(self, line: str) -> Tuple[str, str, str]:
+    def _parse_dependency_line(self, line: str) -> tuple[str, str, str]:
         """Parse a dependency line into its components: value, comma, and comment.
 
         Args:
@@ -748,8 +753,8 @@ class ExtensionTomlValidator:
             return False
 
     def _validate_settings_comments(self, file_path: str, content: str) -> bool:
-        """
-        Check if each setting in the [settings] section has at least one comment line above it.
+        """Check if each setting in the [settings] section has at least one comment line above it.
+
         Also checks platform-specific settings sections like [settings."filter:platform=linux*"].
         For multiline lists, only requires one comment at the top of the list declaration.
 
@@ -786,7 +791,7 @@ class ExtensionTomlValidator:
                     (line_stripped.startswith("[") and not line_stripped.startswith("[["))
                     or line_stripped.startswith("[[")
                 )
-                and not (line_stripped == current_settings_section)
+                and line_stripped != current_settings_section
             ):
                 in_settings_section = False
                 in_multiline_list = False
@@ -845,7 +850,7 @@ class ExtensionTomlValidator:
         return has_comment_issue
 
     def _validate_and_fix_dependencies_order(
-        self, file_path: str, content: str, toml_data: Dict, line_mapping: Dict[str, int], fix: bool = False
+        self, file_path: str, content: str, toml_data: dict, line_mapping: dict[str, int], fix: bool = False
     ) -> FixResult:
         """Validate that dependencies in the [dependencies] section are alphabetically sorted and fix if needed.
 
@@ -976,7 +981,7 @@ class ExtensionTomlValidator:
         return FixResult(was_fixed=False, fixed_content=content)
 
     def _validate_and_fix_test_dependencies_order(
-        self, file_path: str, content: str, toml_data: Dict, line_mapping: Dict[str, int], fix: bool = False
+        self, file_path: str, content: str, toml_data: dict, line_mapping: dict[str, int], fix: bool = False
     ) -> FixResult:
         """Validate that dependencies in the [[test]] section(s) are alphabetically sorted and fix if needed.
 
@@ -1112,7 +1117,7 @@ class ExtensionTomlValidator:
 
         return FixResult(was_fixed=False, fixed_content=content)
 
-    def validate_file(self, file_path: str, config: Optional[ValidationConfig] = None) -> List[ValidationError]:
+    def validate_file(self, file_path: str, config: Optional[ValidationConfig] = None) -> list[ValidationError]:
         """Validate a TOML file against the extension.toml style guide.
 
         Args:
@@ -1132,7 +1137,7 @@ class ExtensionTomlValidator:
             return self.errors
 
         try:
-            with open(file_path, "r") as f:
+            with open(file_path) as f:
                 content = f.read()
         except Exception as e:
             self.errors.append(ValidationError(file_path, "File Read Error", str(e)))
@@ -1334,9 +1339,8 @@ class ExtensionTomlValidator:
 
         return self.errors
 
-    def _apply_fixes(self, file_path: str, fixed_content: str, original_toml_data: Dict) -> None:
-        """
-        Apply fixes to the file and verify the result.
+    def _apply_fixes(self, file_path: str, fixed_content: str, original_toml_data: dict) -> None:
+        """Apply fixes to the file and verify the result.
 
         Args:
             file_path: Path to the file being fixed
@@ -1382,8 +1386,7 @@ class ExtensionTomlValidator:
             print(f"  - ERROR: Failed to parse fixed content: {str(e)}")
 
     def _report_fixes(self, file_path: str, original_content: str, fixed_content: str, show_diff: bool) -> None:
-        """
-        Report fixes that would be applied in dry-run mode.
+        """Report fixes that would be applied in dry-run mode.
 
         Args:
             file_path: Path to the file being checked
@@ -1413,7 +1416,7 @@ class ExtensionTomlValidator:
                 print("```")
 
     def _validate_and_fix_section_order(
-        self, file_path: str, content: str, toml_data: Dict, line_mapping: Dict[str, int], fix: bool = False
+        self, file_path: str, content: str, toml_data: dict, line_mapping: dict[str, int], fix: bool = False
     ) -> FixResult:
         """Validate that sections appear in the correct order and fix if needed.
 
@@ -1446,9 +1449,8 @@ class ExtensionTomlValidator:
 
         return FixResult(was_fixed=False, fixed_content=content)
 
-    def _check_section_order(self, file_path: str, sections: List[str], line_mapping: Dict[str, int]) -> bool:
-        """
-        Check if sections are in the correct order.
+    def _check_section_order(self, file_path: str, sections: list[str], line_mapping: dict[str, int]) -> bool:
+        """Check if sections are in the correct order.
 
         Args:
             file_path: Path to the file being validated
@@ -1494,7 +1496,7 @@ class ExtensionTomlValidator:
         return has_order_issue
 
     def _reorder_sections(
-        self, content: str, regular_sections: Dict[str, List[str]], array_sections: Dict[str, List[List[str]]]
+        self, content: str, regular_sections: dict[str, list[str]], array_sections: dict[str, list[list[str]]]
     ) -> FixResult:
         """Reorder sections according to the expected order.
 
@@ -1590,7 +1592,7 @@ class ExtensionTomlValidator:
         return FixResult(was_fixed=True, fixed_content=new_content)
 
     def _validate_and_fix_package_fields(
-        self, file_path: str, content: str, package_data: Dict, section_line: int, fix: bool = False
+        self, file_path: str, content: str, package_data: dict, section_line: int, fix: bool = False
     ) -> FixResult:
         """Validate that fields in the [package] section appear in the correct order and fix if needed.
 
@@ -1619,6 +1621,8 @@ class ExtensionTomlValidator:
 
             # Fix the order if needed
             if has_order_issue and fix:
+                assert package_section_start is not None
+                assert package_section_end is not None
                 result = self._reorder_package_fields(
                     content, field_lines, package_section_comments, package_section_start, package_section_end
                 )
@@ -1645,10 +1649,9 @@ class ExtensionTomlValidator:
         return FixResult(was_fixed=False, fixed_content=content)
 
     def _check_package_field_order(
-        self, file_path: str, field_lines: List[Tuple[str, Tuple[int, str]]], section_line: int
+        self, file_path: str, field_lines: list[tuple[str, tuple[int, str]]], section_line: int
     ) -> bool:
-        """
-        Check if package fields are in the correct order.
+        """Check if package fields are in the correct order.
 
         Args:
             file_path: Path to the file being validated
@@ -1682,8 +1685,8 @@ class ExtensionTomlValidator:
     def _reorder_package_fields(
         self,
         content: str,
-        field_lines: List[Tuple[str, Tuple[int, str]]],
-        package_section_comments: Dict[str, List[Tuple[int, str]]],
+        field_lines: list[tuple[str, tuple[int, str]]],
+        package_section_comments: dict[str, list[tuple[int, str]]],
         package_section_start: int,
         package_section_end: int,
     ) -> FixResult:
@@ -1747,9 +1750,8 @@ class ExtensionTomlValidator:
         )
         return FixResult(was_fixed=True, fixed_content=new_content)
 
-    def _validate_deprecation_section(self, file_path: str, deprecation_data: Dict, section_line: int) -> None:
-        """
-        Validate the [deprecation] section.
+    def _validate_deprecation_section(self, file_path: str, deprecation_data: dict, section_line: int) -> None:
+        """Validate the [deprecation] section.
 
         Args:
             file_path: Path to the TOML file
@@ -1776,7 +1778,7 @@ class ExtensionTomlValidator:
             )
 
     def _validate_and_fix_test_fields(
-        self, file_path: str, content: str, toml_data: Dict, line_mapping: Dict[str, int], fix: bool = False
+        self, file_path: str, content: str, toml_data: dict, line_mapping: dict[str, int], fix: bool = False
     ) -> FixResult:
         """Validate that fields in [[test]] sections appear in the correct order and fix if needed.
 
@@ -1827,7 +1829,7 @@ class ExtensionTomlValidator:
                                 if name_value.startswith('"') and name_value.endswith('"'):
                                     name_value = name_value[1:-1]
                                 section_dict["name"] = name_value
-                            except:
+                            except Exception:
                                 pass
 
                 # Try to find a matching section in non_empty_test_sections
@@ -1879,9 +1881,9 @@ class ExtensionTomlValidator:
 
         return FixResult(was_fixed=False, fixed_content=content)
 
-    def _extract_test_sections(self, content: str) -> Tuple[List[int], List[List[str]]]:
-        """
-        Extract all [[test]] sections from the content.
+    def _extract_test_sections(self, content: str) -> tuple[list[int], list[list[str]], int, int]:
+        """Extract all [[test]] sections from the content.
+
         Also returns the start line of the first test section and end line of the last test section.
 
         Args:
@@ -1899,7 +1901,7 @@ class ExtensionTomlValidator:
         block_end_line = -1
 
         in_test_section = False
-        current_section_lines = []
+        current_section_lines: list[str] = []
         current_section_start_line = -1
 
         for i, line in enumerate(lines):
@@ -1955,9 +1957,9 @@ class ExtensionTomlValidator:
 
         return section_line_numbers, section_contents, block_start_line, block_end_line
 
-    def _validate_test_section_order(self, file_path: str, content: str) -> Tuple[bool, bool]:
-        """
-        Validate that:
+    def _validate_test_section_order(self, file_path: str, content: str) -> tuple[bool, bool]:
+        """Validate test section naming and ordering constraints.
+
         1. There is only one unnamed test section
         2. The "startup" test section appears first among all test sections
 
@@ -2011,7 +2013,7 @@ class ExtensionTomlValidator:
                         if name_value.startswith('"') and name_value.endswith('"'):
                             name_value = name_value[1:-1]
                         current_section_name = name_value
-                    except:
+                    except Exception:
                         pass
                 # End of test section block (start of a new, non-test section)
                 elif (line_stripped.startswith("[") and not line_stripped.startswith("[[")) or (
@@ -2126,7 +2128,7 @@ class ExtensionTomlValidator:
 
         for section_content in section_contents:
             has_name = False
-            section_name = ""
+            section_name: str | None = ""
             # Check for name field within the section content
             for line in section_content:
                 line_stripped = line.strip()
@@ -2138,7 +2140,7 @@ class ExtensionTomlValidator:
                         if name_value.startswith('"') and name_value.endswith('"'):
                             name_value = name_value[1:-1]
                         section_name = name_value
-                    except:
+                    except Exception:
                         pass  # Ignore potential errors in extracting name
                     break  # Found name, no need to check further lines in this section
 
@@ -2166,7 +2168,7 @@ class ExtensionTomlValidator:
 
         # Rebuild the block content
         # Order: "startup" first, then other named sections alphabetically, then unnamed section(s)
-        reordered_block_lines = []
+        reordered_block_lines: list[str] = []
 
         # Add named sections first (startup will be first due to sorting)
         for i, (section_content, _) in enumerate(named_test_sections):
@@ -2198,7 +2200,7 @@ class ExtensionTomlValidator:
                     try:
                         name_value = line_stripped.split("=", 1)[1].strip().strip('"')
                         section_name = name_value
-                    except:
+                    except Exception:
                         pass
                     break
             if section_name is not None:
@@ -2235,7 +2237,7 @@ class ExtensionTomlValidator:
             "Fixed spacing between sections (added missing blank lines and reduced excessive blank lines)",
         ]
         # Keep only the last instance of each whitespace fix message
-        final_fixes = []
+        final_fixes: list[str] = []
         seen_ws_fixes = set()
         for fix_msg in reversed(self.fixes_applied):
             if fix_msg in ws_fixes:
@@ -2250,7 +2252,7 @@ class ExtensionTomlValidator:
             print(f"DEBUG: Original content length: {len(content)}, Fixed content length: {len(fixed_content)}")
 
         # Return True if any structural change was made
-        was_fixed = (
+        was_fixed = bool(
             has_multiple_unnamed_sections
             or has_startup_order_issue
             or (named_test_sections and original_named_names != sorted_original_names)
@@ -2265,9 +2267,8 @@ class ExtensionTomlValidator:
 
         return FixResult(was_fixed=was_fixed, fixed_content=fixed_content)
 
-    def _check_test_field_order(self, file_path: str, test_section: Dict, section_line: int) -> bool:
-        """
-        Check if fields in a [[test]] section are in the correct order.
+    def _check_test_field_order(self, file_path: str, test_section: dict, section_line: int) -> bool:
+        """Check if fields in a [[test]] section are in the correct order.
 
         Args:
             file_path: Path to the file being validated
@@ -2304,10 +2305,9 @@ class ExtensionTomlValidator:
         return has_order_issue
 
     def _reorder_test_fields(
-        self, content: str, test_sections: List[Dict], section_lines: List[int], section_contents: List[List[str]]
+        self, content: str, test_sections: list[dict], section_lines: list[int], section_contents: list[list[str]]
     ) -> str:
-        """
-        Reorder fields in test sections to match the expected order.
+        """Reorder fields in test sections to match the expected order.
 
         Args:
             content: Original content
@@ -2331,14 +2331,14 @@ class ExtensionTomlValidator:
             section_start = section_lines[i] + line_offset
 
             # Parse the original section to extract each field
-            parsed_fields = {}
+            parsed_fields: dict[str, dict[str, Any]] = {}
 
             # Keep track of non-field lines (comments, whitespace) to preserve them
             non_field_lines = []
 
             # Extract all fields and their original formatting
             in_array_field = False
-            current_field = None
+            current_field: str | None = None
             field_lines = []
 
             j = 1  # Skip the [[test]] header
@@ -2375,6 +2375,7 @@ class ExtensionTomlValidator:
                 # End of array field
                 if in_array_field and line_stripped == "]":
                     field_lines.append(line)
+                    assert current_field is not None
                     parsed_fields[current_field] = {"lines": field_lines, "original_pos": j - len(field_lines) + 1}
                     in_array_field = False
                     j += 1
@@ -2432,8 +2433,7 @@ class ExtensionTomlValidator:
         return "\n".join(fixed_lines)
 
     def _generate_diff(self, file_path: str, original_content: str, fixed_content: str) -> str:
-        """
-        Generate a unified diff between the original and fixed content.
+        """Generate a unified diff between the original and fixed content.
 
         Args:
             file_path: Path to the file being validated
@@ -2465,7 +2465,7 @@ class ExtensionTomlValidator:
         else:
             return "\n".join(diff_lines)
 
-    def _colorize_diff(self, diff_lines: List[str]) -> str:
+    def _colorize_diff(self, diff_lines: list[str]) -> str:
         """Add color formatting to diff lines.
 
         Args:
@@ -2493,7 +2493,7 @@ class ExtensionTomlValidator:
         return "\n".join(colored_diff)
 
     def _validate_required_write_target_kit(
-        self, file_path: str, content: str, package_data: Dict, section_line: int, fix: bool = False
+        self, file_path: str, content: str, package_data: dict, section_line: int, fix: bool = False
     ) -> FixResult:
         """Validate that the package section contains the required writeTarget.kit = true field.
 
@@ -2692,7 +2692,7 @@ class ExtensionTomlValidator:
         return FixResult(was_fixed=False, fixed_content=fixed_content)
 
     def _validate_and_fix_core_section(
-        self, file_path: str, content: str, toml_data: Dict, line_mapping: Dict[str, int], fix: bool = False
+        self, file_path: str, content: str, toml_data: dict, line_mapping: dict[str, int], fix: bool = False
     ) -> FixResult:
         """Validate the [core] section and remove it if it only contains default values.
 
@@ -2785,9 +2785,8 @@ class ExtensionTomlValidator:
 
         return FixResult(was_fixed=False, fixed_content=content)
 
-    def _validate_package_first_section(self, file_path: str, content: str, toml_data: Dict) -> None:
-        """
-        Validate that [package] is the first section if there's no [core] section.
+    def _validate_package_first_section(self, file_path: str, content: str, toml_data: dict) -> None:
+        """Validate that [package] is the first section if there's no [core] section.
 
         Args:
             file_path: Path to the TOML file
@@ -2833,9 +2832,8 @@ class ExtensionTomlValidator:
             )
 
 
-def find_extension_toml_files(root_dir: str, specific_dir: Optional[str] = None) -> List[str]:
-    """
-    Find all extension.toml files in the repository.
+def find_extension_toml_files(root_dir: str, specific_dir: Optional[str] = None) -> list[str]:
+    """Find all extension.toml files in the repository.
 
     Args:
         root_dir: Root directory of the repository
@@ -2862,6 +2860,11 @@ def find_extension_toml_files(root_dir: str, specific_dir: Optional[str] = None)
 
 
 def main():
+    """Parse arguments, validate extension.toml files, and report results.
+
+    Returns:
+        0 on success, 1 if validation errors were found.
+    """
     parser = argparse.ArgumentParser(description="Validate extension.toml files structure and order")
     parser.add_argument(
         "--root-dir",
@@ -2917,8 +2920,7 @@ def main():
 
 
 def _print_file_diagnostics(file_path: str):
-    """
-    Print diagnostic information for a file, showing any whitespace or line-ending issues.
+    """Print diagnostic information for a file, showing any whitespace or line-ending issues.
 
     Args:
         file_path: Path to the file to diagnose
@@ -2950,7 +2952,7 @@ def _print_file_diagnostics(file_path: str):
                 trailing_spaces = len(line.rstrip("\r\n")) - len(line.rstrip(" \r\n"))
                 tabs = line.count("\t")
 
-                if i < 10 or line.strip() == "" or " \n" in line or "\t" in line or "\r" in line_bytes:
+                if i < 10 or line.strip() == "" or " \n" in line or "\t" in line or b"\r" in line_bytes:
                     # Print details for first 10 lines, empty lines, or lines with special characters
                     line_repr = repr(line.rstrip("\r\n"))
                     bytes_repr = " ".join([f"{b:02x}" for b in line_bytes])
@@ -3045,7 +3047,7 @@ def process_files(args: argparse.Namespace, validator: ExtensionTomlValidator, c
 
     # Print summary
     if all_errors:
-        print(f"\nFound {len(all_errors)} validation errors in {len(set(e.file_path for e in all_errors))} files:")
+        print(f"\nFound {len(all_errors)} validation errors in {len({e.file_path for e in all_errors})} files:")
         for error in all_errors:
             print(f"  - {error}")
         return 1

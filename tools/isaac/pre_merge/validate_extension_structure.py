@@ -12,15 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Validate extension directory structure for Isaac Sim extensions."""
+
 import argparse
 import json
 import os
 import re
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
-import toml
+import toml  # type: ignore[import-untyped]
 
 
 class Colors:
@@ -61,7 +65,7 @@ def colorize(text: str, color_code: str) -> str:
     return f"{color_code}{text}{Colors.RESET}"
 
 
-def print_messages(messages: List[str], color: str) -> None:
+def print_messages(messages: list[str], color: str) -> None:
     """Print a list of messages with proper indentation.
 
     Args:
@@ -76,7 +80,11 @@ def print_messages(messages: List[str], color: str) -> None:
 
 
 class ExtensionValidator:
-    """Validates the structure and naming conventions of Isaac Sim extensions."""
+    """Validate the structure and naming conventions of Isaac Sim extensions.
+
+    Args:
+        extension_path: Path to the extension directory to validate.
+    """
 
     # Dictionary of folders to ignore for specific extensions
     IGNORED_FOLDERS = {
@@ -84,15 +92,10 @@ class ExtensionValidator:
     }
 
     def __init__(self, extension_path: str) -> None:
-        """Initialize the extension validator.
-
-        Args:
-            extension_path: Path to the extension directory to validate.
-        """
         self.extension_path = Path(extension_path)
         self.extension_name = self.extension_path.name
-        self.errors: List[str] = []
-        self.warnings: List[str] = []
+        self.errors: list[str] = []
+        self.warnings: list[str] = []
         self.ignored_folders = self.IGNORED_FOLDERS.get(self.extension_name, [])
 
     def validate_extension_name(self) -> None:
@@ -164,7 +167,7 @@ class ExtensionValidator:
             toml_path: Path to the extension.toml file to validate.
         """
         try:
-            with open(toml_path, "r") as f:
+            with open(toml_path) as f:
                 toml_content = toml.load(f)
         except Exception as e:
             self.errors.append(f"Error reading extension.toml: {e}")
@@ -328,13 +331,11 @@ class ExtensionValidator:
             return
 
         try:
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 category_def = json.load(f)
 
             # Extract category names from CategoryDefinition.json
-            category_names = [
-                name for name in category_def.get("categoryDefinitions", {}).keys() if not name.startswith("$")
-            ]
+            category_names = [name for name in category_def.get("categoryDefinitions", {}) if not name.startswith("$")]
 
             if not category_names:
                 self.errors.append(
@@ -351,7 +352,7 @@ class ExtensionValidator:
         except Exception as e:
             self.errors.append(f"Error processing CategoryDefinition.json or .ogn files: {e}")
 
-    def _validate_ogn_files(self, nodes_path: Path, category_names: List[str]) -> None:
+    def _validate_ogn_files(self, nodes_path: Path, category_names: list[str]) -> None:
         """Validate .ogn files in the nodes folder.
 
         Args:
@@ -361,7 +362,7 @@ class ExtensionValidator:
         ogn_files = list(nodes_path.glob("Ogn*.ogn"))
         for ogn_file in ogn_files:
             try:
-                with open(ogn_file, "r") as f:
+                with open(ogn_file) as f:
                     ogn_json = json.load(f)
 
                 if len(ogn_json) != 1:
@@ -380,7 +381,7 @@ class ExtensionValidator:
             except json.JSONDecodeError:
                 self.errors.append(f"Invalid JSON in .ogn file: {ogn_file.name}")
 
-    def _validate_ogn_required_fields(self, filename: str, node_def: Dict[str, Any]) -> None:
+    def _validate_ogn_required_fields(self, filename: str, node_def: dict[str, Any]) -> None:
         """Validate that an .ogn file has all required fields.
 
         Args:
@@ -396,7 +397,7 @@ class ExtensionValidator:
                 f"Every .ogn file must have the following fields: {required_fields}"
             )
 
-    def _validate_ogn_category_icon_pairing(self, filename: str, node_def: Dict[str, Any]) -> None:
+    def _validate_ogn_category_icon_pairing(self, filename: str, node_def: dict[str, Any]) -> None:
         """Validate that categoryDefinitions and icon are either both present or both absent.
 
         Args:
@@ -418,7 +419,7 @@ class ExtensionValidator:
                     "When 'icon' is present, 'categoryDefinitions' must also be present"
                 )
 
-    def _validate_ogn_categories(self, filename: str, node_def: Dict[str, Any], category_names: List[str]) -> None:
+    def _validate_ogn_categories(self, filename: str, node_def: dict[str, Any], category_names: list[str]) -> None:
         """Validate the categories field in an .ogn file.
 
         Args:
@@ -622,7 +623,7 @@ class ExtensionValidator:
             file_path: Path to the header file to validate.
         """
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
                 if "CARB_PLUGIN_INTERFACE" in content and not file_path.stem.startswith("I"):
                     self.errors.append(
@@ -639,7 +640,7 @@ class ExtensionValidator:
             file_path: Path to the C++ file to validate.
         """
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
                 if "CARB_PLUGIN_IMPL" in content and file_path.name != "PluginInterface.cpp":
                     self.errors.append(
@@ -664,7 +665,7 @@ class ExtensionValidator:
         name_parts = self.extension_name.replace(".", "_").split("_")
         return "".join(part.capitalize() for part in name_parts)
 
-    def validate(self) -> Tuple[bool, List[str], List[str]]:
+    def validate(self) -> tuple[bool, list[str], list[str]]:
         """Run all validation checks on the extension.
 
         Returns:
@@ -715,7 +716,7 @@ def validate_extension(path: str) -> bool:
 
 
 def validate_extensions_in_directory(
-    directory_path: str, recursive: bool = False, ignored_extensions: List[str] = None
+    directory_path: str, recursive: bool = False, ignored_extensions: list[str] | None = None
 ) -> bool:
     """Validate all extensions in a directory.
 
@@ -750,7 +751,7 @@ def validate_extensions_in_directory(
             continue
 
         print(colorize(f"\nValidating extension: {path}", Colors.CYAN + Colors.BOLD))
-        if validate_extension(path):
+        if validate_extension(str(path)):
             valid_count += 1
         else:
             invalid_count += 1
@@ -772,7 +773,7 @@ def validate_extensions_in_directory(
     return all_valid
 
 
-def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> callable:
+def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> Callable[..., int]:
     """Setup the repo tool with command-line arguments.
 
     Args:
@@ -817,7 +818,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict[str, Any]) -> 
     return run_tool
 
 
-def run_tool(args: argparse.Namespace, config: Dict[str, Any]) -> int:
+def run_tool(args: argparse.Namespace, config: dict[str, Any]) -> int:
     """Run the extension structure validation tool.
 
     Args:
@@ -873,7 +874,7 @@ if __name__ == "__main__":
         os.environ["NO_COLOR"] = "1"
 
     if not args.extension_path:
-        print(colorize("Usage: python check_extension_structure.py <extension_path>", Colors.YELLOW))
+        print(colorize("Usage: python validate_extension_structure.py <extension_path>", Colors.YELLOW))
         sys.exit(1)
 
     is_valid = validate_extension(args.extension_path)

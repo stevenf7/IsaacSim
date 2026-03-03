@@ -33,30 +33,62 @@ class Colors:
 
 
 def colorize(text: str, color: str) -> str:
-    """Wrap *text* in ANSI color when stdout is a TTY."""
+    """Wrap *text* in ANSI color when stdout is a TTY.
+
+    Args:
+        text: The string to colorize.
+        color: ANSI escape sequence(s) to apply.
+
+    Returns:
+        The wrapped string, or the original string when not on a TTY.
+    """
     if sys.stdout.isatty():
         return f"{color}{text}{Colors.RESET}"
     return text
 
 
 def header(title: str) -> None:
-    """Print a section header banner."""
+    """Print a section header banner.
+
+    Args:
+        title: Title text shown inside the banner.
+    """
     print(f"\n{'=' * 72}", flush=True)
     print(colorize(f"  {title}", Colors.BOLD + Colors.CYAN), flush=True)
     print(f"{'=' * 72}", flush=True)
 
 
 def log_pass(msg: str) -> None:
+    """Print a green PASS status line.
+
+    Args:
+        msg: Message to display after the PASS label.
+    """
     print(f"  {colorize('PASS', Colors.GREEN)}  {msg}", flush=True)
 
 
 def log_fail(msg: str) -> None:
+    """Print a red FAIL status line.
+
+    Args:
+        msg: Message to display after the FAIL label.
+    """
     print(f"  {colorize('FAIL', Colors.RED)}  {msg}", flush=True)
 
 
 def log_warn(msg: str) -> None:
+    """Print a yellow WARN status line.
+
+    Args:
+        msg: Message to display after the WARN label.
+    """
     print(f"  {colorize('WARN', Colors.YELLOW)}  {msg}", flush=True)
 
 
 def log_info(msg: str) -> None:
+    """Print a dim INFO status line.
+
+    Args:
+        msg: Message to display after the INFO label.
+    """
     print(f"  {colorize('INFO', Colors.DIM)}  {msg}", flush=True)

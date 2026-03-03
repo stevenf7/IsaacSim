@@ -27,7 +27,7 @@ These rules define the standard Doxygen documentation style for C++ code.
 5. Do not fix any code issues when adding documentation
 6. Documentation should describe the code as-is, not as it could/should be
 7. Keep all existing code structure, formatting, and logic intact
-7. Focus solely on adding descriptive comments and documentation
+8. Focus solely on adding descriptive comments and documentation
 
 ## Formatting Guidelines
 1. Use proper grammar and punctuation

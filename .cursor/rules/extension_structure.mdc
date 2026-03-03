@@ -1,6 +1,8 @@
 ---
-description: 
-globs: 
+description: Required Isaac Sim extension layout and naming conventions
+globs:
+  - source/extensions/**
+  - source/internal_extensions/**
 alwaysApply: false
 ---
 # Isaac Sim Extension Structure Guidelines
@@ -33,6 +35,7 @@ Every extension MUST include:
    - Must contain `api.rst` file if the extension has a `bindings/` folder OR contains Python implementation files in `python/impl/` (other than `extension.py` and `__init__.py`)
    - Must contain `index.rst` file if it contains `api.rst`. 
    - May contain additional `.rst` files
+   - Scope note: these are required for new extensions and structural extension work; do not create unrelated docs files for non-extension tasks (see `documentation_policy.mdc`)
 
 4. **premake5.lua** file in the root of the extension
 
