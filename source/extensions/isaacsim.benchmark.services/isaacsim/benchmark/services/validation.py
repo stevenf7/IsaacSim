@@ -34,12 +34,12 @@ class Validator:
     """Capture and validate render-product images for benchmarks.
 
     Args:
-        tolerance: Mean-difference threshold used during validation. Defaults to DEFAULT_TOLERANCE.
-        blur_kernel: Gaussian-blur kernel size. Defaults to DEFAULT_BLUR.
-        regenerate_golden: Replace the golden reference images instead of validating. Defaults to False.
-        output_root: Base directory where capture folders are created. Defaults to "captures".
-        golden_root: Base directory storing golden reference images. Defaults to "golden_data".
-        auto_cleanup: True to delete the last capture folder after validation. Defaults to True.
+        tolerance: Mean-difference threshold used during validation.
+        blur_kernel: Gaussian-blur kernel size.
+        regenerate_golden: Replace the golden reference images instead of validating.
+        output_root: Base directory where capture folders are created.
+        golden_root: Base directory storing golden reference images.
+        auto_cleanup: True to delete the last capture folder after validation.
 
     Example:
 
@@ -64,7 +64,7 @@ class Validator:
         output_root: str = "captures",
         golden_root: str = "golden_data",
         auto_cleanup: bool = True,
-    ) -> None:
+    ):
         self.tolerance: float = tolerance
         self.blur_kernel: int = blur_kernel
         self.regenerate_golden: bool = regenerate_golden
@@ -150,9 +150,9 @@ class Validator:
         Args:
             stage: USD stage to capture from.
             benchmark_name: Benchmark name used to label outputs.
-            output_root: Base directory where capture folders are created. Defaults to None.
-            golden_root: Base directory storing golden reference images. Defaults to None.
-            writer_name: Replicator writer name. Defaults to "BasicWriter".
+            output_root: Base directory where capture folders are created.
+            golden_root: Base directory storing golden reference images.
+            writer_name: Replicator writer name.
 
         Returns:
             Absolute path of the directory where PNGs were written.
@@ -350,7 +350,7 @@ class Validator:
 
         return all_passed
 
-    def clear_last_capture(self) -> None:
+    def clear_last_capture(self):
         """Delete the last capture directory created by capture_images.
 
         Example:
@@ -382,7 +382,7 @@ class Validator:
         return arr
 
     @staticmethod
-    def _write_png(path: str, rgb: Any) -> None:
+    def _write_png(path: str, rgb: Any):
         """Write an RGB array to a PNG file.
 
         Args:
@@ -441,7 +441,7 @@ class Validator:
 
         Args:
             args: Parsed argparse namespace with expected attributes.
-            auto_cleanup: True to delete capture directory after validation. Defaults to None.
+            auto_cleanup: True to delete capture directory after validation.
 
         Returns:
             Validator instance.
@@ -536,7 +536,7 @@ class CoordinateValidator:
             "max_final_rotation": max_final_rotation,
         }
 
-    def _load_historical_data(self) -> None:
+    def _load_historical_data(self):
         """Load historical coordinate data for statistical validation."""
         if os.path.exists(self.historical_data_path):
             with open(self.historical_data_path, "r") as f:
@@ -853,7 +853,7 @@ class CoordinateValidator:
         rot_pass: bool,
         rot_results: dict,
         robot_voting_pass: bool,
-    ) -> None:
+    ):
         """Print detailed validation results for a robot.
 
         Args:
@@ -896,7 +896,7 @@ class CoordinateValidator:
                 print(f"    - Rotation validation failed ({rot_results['methods_passed']}/3 methods passed)")
         print(f"{'='*60}")
 
-    def _print_method_results(self, coord_type: str, results: dict) -> None:
+    def _print_method_results(self, coord_type: str, results: dict):
         """Print results for individual validation methods.
 
         Args:

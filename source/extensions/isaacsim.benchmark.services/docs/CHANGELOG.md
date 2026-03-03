@@ -1,4 +1,8 @@
 # Changelog
+## [4.1.2] - 2026-03-02
+### Changed
+- Add Overview.md, add python_api.md, add SETTINGS.md and update docstrings
+
 ## [4.1.1] - 2026-02-13
 ### Fixed
 - Fixed validation tooling to correctly build the render product map

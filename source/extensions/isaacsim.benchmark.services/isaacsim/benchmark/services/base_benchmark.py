@@ -161,15 +161,13 @@ class _BaseIsaacBenchmarkCore:
         self.test_mode = os.getenv("ISAAC_TEST_MODE") == "1"
         logger.info("Test mode = %s", self.test_mode)
 
-    def set_phase(
-        self, phase: str, start_recording_frametime: bool = True, start_recording_runtime: bool = True
-    ) -> None:
+    def set_phase(self, phase: str, start_recording_frametime: bool = True, start_recording_runtime: bool = True):
         """Set the active benchmarking phase and start recorders.
 
         Args:
             phase: Name of the phase, used in output.
-            start_recording_frametime: False to skip frametime recorders. Defaults to True.
-            start_recording_runtime: False to skip runtime recorder. Defaults to True.
+            start_recording_frametime: False to skip frametime recorders.
+            start_recording_runtime: False to skip runtime recorder.
 
         Raises:
             RuntimeError: If the benchmark context or recorders are not initialized.
@@ -250,7 +248,7 @@ class _BaseIsaacBenchmarkCore:
                     logger.debug("Activated stateless recorder %s for phase '%s'", recorder_name, phase)
                 self._active_recorders.add(recorder)
 
-    def _store_measurements_impl(self) -> None:
+    def _store_measurements_impl(self):
         """Stop active recorders and collect their data."""
         context = self.context
         if context is None:
@@ -282,7 +280,7 @@ class _BaseIsaacBenchmarkCore:
         # Clear active recorders after storing measurements
         self._active_recorders.clear()
 
-    def _finalize_impl(self) -> None:
+    def _finalize_impl(self):
         """Finalize metrics collection and write output files."""
         if not os.path.exists(self._metrics_output_folder):
             os.mkdir(path=self._metrics_output_folder)
@@ -317,7 +315,7 @@ class _BaseIsaacBenchmarkCore:
         self.recorders = None
         self.context = None
 
-    def _store_custom_measurement_impl(self, phase_name: str, custom_measurement: measurements) -> None:
+    def _store_custom_measurement_impl(self, phase_name: str, custom_measurement: measurements):
         """Store a custom measurement for a specific phase.
 
         Args:
@@ -350,10 +348,10 @@ class BaseIsaacBenchmark(_BaseIsaacBenchmarkCore):
     """Benchmark class for standalone (synchronous) scripts.
 
     Args:
-        benchmark_name: Name of benchmark to use in outputs. Defaults to "BaseIsaacBenchmark".
-        backend_type: Type of backend used to collect and print metrics. Defaults to "OmniPerfKPIFile".
-        report_generation: Whether to generate a formatted report. Defaults to True.
-        workflow_metadata: Metadata describing benchmark, defaults to None.
+        benchmark_name: Name of benchmark to use in outputs.
+        backend_type: Type of backend used to collect and print metrics.
+        report_generation: Whether to generate a formatted report.
+        workflow_metadata: Metadata describing benchmark.
         recorders: List of recorder names to use, or None for defaults.
 
     Example:
@@ -393,7 +391,7 @@ class BaseIsaacBenchmark(_BaseIsaacBenchmarkCore):
             recorders=recorders,
         )
 
-    def stop(self) -> None:
+    def stop(self):
         """Stop benchmarking and write accumulated metrics to file.
 
         Example:
@@ -404,7 +402,7 @@ class BaseIsaacBenchmark(_BaseIsaacBenchmarkCore):
         """
         self._finalize_impl()
 
-    def store_measurements(self) -> None:
+    def store_measurements(self):
         """Store measurements and metadata collected during the previous phase.
 
         Example:
@@ -415,7 +413,7 @@ class BaseIsaacBenchmark(_BaseIsaacBenchmarkCore):
         """
         self._store_measurements_impl()
 
-    def fully_load_stage(self, usd_path: str) -> None:
+    def fully_load_stage(self, usd_path: str):
         """Load a USD stage and block until it is fully loaded.
 
         Args:
@@ -430,7 +428,7 @@ class BaseIsaacBenchmark(_BaseIsaacBenchmarkCore):
         stage_utils.open_stage(usd_path)
         wait_until_stage_is_fully_loaded()
 
-    def store_custom_measurement(self, phase_name: str, custom_measurement: measurements) -> None:
+    def store_custom_measurement(self, phase_name: str, custom_measurement: measurements):
         """Store a custom measurement for the current benchmark.
 
         Args:
@@ -480,13 +478,10 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
         """Must be awaited by derived benchmarks to properly set up the benchmark.
 
         Args:
-            backend_type: Type of backend used to collect and print metrics. Defaults to "JSONFileMetrics".
-            report_generation: Whether to generate a formatted report. Defaults to False.
+            backend_type: Type of backend used to collect and print metrics.
+            report_generation: Whether to generate a formatted report.
             workflow_metadata: Metadata describing the benchmark workflow.
             recorders: List of recorder names to use, or None for defaults.
-
-        Returns:
-            None.
         """
         set_sync_mode()
 
@@ -509,7 +504,7 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
             recorders=recorders,
         )
 
-    async def tearDown(self) -> None:
+    async def tearDown(self):
         """Tear down the benchmark and finalize metrics."""
         # Wait for stage to finish loading
         while stage_utils.is_stage_loading():
@@ -521,7 +516,7 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
 
         await omni.kit.app.get_app().next_update_async()
 
-    async def store_measurements(self) -> None:
+    async def store_measurements(self):
         """Store measurements and metadata collected during the previous phase.
 
         Example:
@@ -532,7 +527,7 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
         """
         self._store_measurements_impl()
 
-    async def fully_load_stage(self, usd_path: str) -> None:
+    async def fully_load_stage(self, usd_path: str):
         """Open a stage and wait for it to fully load.
 
         Args:
@@ -547,7 +542,7 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
         stage_utils.open_stage(usd_path)
         await wait_until_stage_is_fully_loaded_async()
 
-    async def store_custom_measurement(self, phase_name: str, custom_measurement: measurements) -> None:
+    async def store_custom_measurement(self, phase_name: str, custom_measurement: measurements):
         """Store a custom measurement for the current benchmark.
 
         Args:

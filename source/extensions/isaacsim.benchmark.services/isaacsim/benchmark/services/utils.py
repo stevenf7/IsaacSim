@@ -68,7 +68,7 @@ def set_up_logging(name: str) -> logging.Logger:
     return logger
 
 
-def set_persistent_setting(name: str, value: Any, type: type) -> None:
+def set_persistent_setting(name: str, value: Any, type: type):
     """Set a persistent setting and remember the original value.
 
     Args:
@@ -96,7 +96,7 @@ def set_persistent_setting(name: str, value: Any, type: type) -> None:
     _set_settings_value(name, value, type)
 
 
-def restore_persistent_settings() -> None:
+def restore_persistent_settings():
     """Restore all previously captured persistent settings.
 
     Example:
@@ -109,7 +109,7 @@ def restore_persistent_settings() -> None:
         _set_settings_value(name, _dict["value"], _dict["type"])
 
 
-def _set_settings_value(name: str, value: Any, type: type) -> None:
+def _set_settings_value(name: str, value: Any, type: type):
     """Set a settings value directly.
 
     Args:
@@ -166,13 +166,13 @@ async def stage_event() -> int:
     return event
 
 
-async def capture_next_frame(app: Any, capture_file_path: str, timeout_sec: float = 2.0) -> None:
+async def capture_next_frame(app: Any, capture_file_path: str, timeout_sec: float = 2.0):
     """Capture the next frame to a file using viewport capture APIs.
 
     Args:
         app: Kit application instance.
         capture_file_path: Output image path.
-        timeout_sec: Timeout in seconds. Defaults to 2.0.
+        timeout_sec: Timeout in seconds.
 
     Raises:
         RuntimeError: If the viewport never produces valid resources.
@@ -218,7 +218,7 @@ def omni_url_parser(url: str) -> tuple[str, str | None, str | None, str]:
         url: Omni URL.
 
     Returns:
-        Tuple of (netloc, username, password, path).
+        A tuple containing (netloc, username, password, path).
 
     Example:
 
@@ -238,7 +238,7 @@ async def load_stage(stage_path: str, syncloads: bool, num_assets_loaded: int = 
     Args:
         stage_path: USD stage path.
         syncloads: True to wait for a single asset load event.
-        num_assets_loaded: Number of asset load events to wait for. Defaults to 2.
+        num_assets_loaded: Number of asset load events to wait for.
 
     Returns:
         Stage load time in seconds.
@@ -325,7 +325,7 @@ def getStageDefaultPrimPath(stage: Any):
 class LogErrorChecker:
     """Monitor log events and count errors during a test."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         # Setup this test case to fail if any error is produced
         self._error_count = 0
 
@@ -340,7 +340,7 @@ class LogErrorChecker:
             observer_name="isaacsim.benchmark.services.utils.on_log_event",
         )
 
-    def shutdown(self) -> None:
+    def shutdown(self):
         """Unsubscribe from log events.
 
         Example:
@@ -408,7 +408,7 @@ def get_calling_test_id() -> str:
     return ""
 
 
-def ensure_dir(file_path: str | Path) -> None:
+def ensure_dir(file_path: str | Path):
     """Create a directory if it does not exist.
 
     Args:
@@ -429,7 +429,7 @@ def get_kit_version_branch() -> tuple[str, str, str]:
     """Get Kit version, branch, and combined version_branch string.
 
     Returns:
-        Tuple of (version, branch, version_branch).
+        A tuple containing (version, branch, version_branch).
 
     Example:
 
@@ -451,13 +451,13 @@ def get_kit_version_branch() -> tuple[str, str, str]:
 # e.g. current frame needed X times less time than the previous one
 async def wait_until_stage_is_fully_loaded_async(
     max_frames: int = 10, frametime_threshold: float = 0.1, time_ratio_treshold: float = 5
-) -> None:
+):
     """Wait for stage to fully load by observing frame times.
 
     Args:
-        max_frames: Maximum frames to wait. Defaults to 10.
-        frametime_threshold: Frametime threshold to consider fully loaded. Defaults to 0.1.
-        time_ratio_treshold: Ratio threshold between frames. Defaults to 5.
+        max_frames: Maximum frames to wait.
+        frametime_threshold: Frametime threshold to consider fully loaded.
+        time_ratio_treshold: Ratio threshold between frames.
 
     Example:
 
@@ -483,13 +483,13 @@ async def wait_until_stage_is_fully_loaded_async(
 # e.g. current frame needed X times less time than the previous one
 def wait_until_stage_is_fully_loaded(
     max_frames: int = 10, frametime_threshold: float = 0.1, time_ratio_treshold: float = 5
-) -> None:
+):
     """Wait for stage to fully load by observing frame times.
 
     Args:
-        max_frames: Maximum frames to wait. Defaults to 10.
-        frametime_threshold: Frametime threshold to consider fully loaded. Defaults to 0.1.
-        time_ratio_treshold: Ratio threshold between frames. Defaults to 5.
+        max_frames: Maximum frames to wait.
+        frametime_threshold: Frametime threshold to consider fully loaded.
+        time_ratio_treshold: Ratio threshold between frames.
 
     Example:
 

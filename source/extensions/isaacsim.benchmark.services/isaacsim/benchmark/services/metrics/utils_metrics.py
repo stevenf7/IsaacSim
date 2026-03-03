@@ -180,7 +180,7 @@ def get_package_info_yaml(yaml_path: str | None = None) -> dict:
     """Get PACKAGE-INFO.yaml contents.
 
     Args:
-        yaml_path: Explicit path to PACKAGE-INFO.yaml. Defaults to None.
+        yaml_path: Explicit path to PACKAGE-INFO.yaml.
 
     Returns:
         Parsed YAML contents.

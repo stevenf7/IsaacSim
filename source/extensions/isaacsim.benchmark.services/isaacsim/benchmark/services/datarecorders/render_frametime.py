@@ -32,7 +32,7 @@ class RenderFrametimeRecorder(MeasurementDataRecorder):
     """Record render thread frametime for async rendering scenarios.
 
     Args:
-        context: Input context for the recorder. Defaults to None.
+        context: Input context for the recorder.
     """
 
     def __init__(self, context: InputContext | None = None):
@@ -42,7 +42,7 @@ class RenderFrametimeRecorder(MeasurementDataRecorder):
         self._subscription = None
         self._phase: str | None = None
 
-    def start_collecting(self) -> None:
+    def start_collecting(self):
         """Start collecting render thread frametime data.
 
         Example:
@@ -65,7 +65,7 @@ class RenderFrametimeRecorder(MeasurementDataRecorder):
         )
         logger.info("RenderFrametimeRecorder: Started collecting")
 
-    def stop_collecting(self) -> None:
+    def stop_collecting(self):
         """Stop collecting render thread frametime data.
 
         Example:
@@ -83,7 +83,7 @@ class RenderFrametimeRecorder(MeasurementDataRecorder):
 
     @property
     def sample_count(self) -> int:
-        """Get the number of collected samples.
+        """Number of collected frametime samples.
 
         Returns:
             Number of frametime samples collected.
@@ -98,7 +98,7 @@ class RenderFrametimeRecorder(MeasurementDataRecorder):
 
     @property
     def samples(self) -> list[float]:
-        """Get the raw frametime samples in milliseconds.
+        """Raw frametime samples in milliseconds.
 
         Returns:
             List of frametime samples (read-only access).
@@ -112,7 +112,7 @@ class RenderFrametimeRecorder(MeasurementDataRecorder):
         """
         return self._samples
 
-    def _on_render_update(self, _event: Any) -> None:
+    def _on_render_update(self, _event: Any):
         """Callback for render update events.
 
         Args:

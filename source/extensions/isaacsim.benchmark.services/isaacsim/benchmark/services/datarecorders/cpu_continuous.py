@@ -38,8 +38,8 @@ class CPUContinuousRecorder(MeasurementDataRecorder):
     systems. For example, 400% means the process is using 4 full cores.
 
     Args:
-        context: Benchmark context. Defaults to None.
-        sample_interval_frames: Sample CPU every N frames. Defaults to 10.
+        context: Benchmark context.
+        sample_interval_frames: Sample CPU every N frames.
     """
 
     def __init__(self, context: InputContext | None = None, sample_interval_frames: int = 10):
@@ -51,7 +51,7 @@ class CPUContinuousRecorder(MeasurementDataRecorder):
         self._phase: str | None = None
         self._process = psutil.Process(os.getpid())
 
-    def start_collecting(self) -> None:
+    def start_collecting(self):
         """Start continuous CPU sampling.
 
         Example:
@@ -80,7 +80,7 @@ class CPUContinuousRecorder(MeasurementDataRecorder):
             self.sample_interval_frames,
         )
 
-    def stop_collecting(self) -> None:
+    def stop_collecting(self):
         """Stop continuous CPU sampling.
 
         Example:
@@ -92,7 +92,7 @@ class CPUContinuousRecorder(MeasurementDataRecorder):
         self._subscription = None
         logger.info("CPUContinuousRecorder: Stopped collecting. Collected %d samples", len(self._samples))
 
-    def _on_app_update(self, _event: Any) -> None:
+    def _on_app_update(self, _event: Any):
         """Sample CPU usage periodically.
 
         Args:

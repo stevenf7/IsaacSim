@@ -27,9 +27,9 @@ class MeasurementData:
     """Container for recorder measurements, metadata, and artifacts.
 
     Args:
-        measurements: Recorded measurement values. Defaults to an empty list.
-        metadata: Recorded metadata values. Defaults to an empty list.
-        artefacts: Artifact tuples of (path, label). Defaults to an empty list.
+        measurements: Recorded measurement values.
+        metadata: Recorded metadata values.
+        artefacts: Artifact tuples of (path, label).
     """
 
     measurements: Sequence[Measurement] = field(default_factory=lambda: [])
@@ -42,14 +42,17 @@ class InputContext:
     """Miscellaneous input data required by recorders.
 
     Args:
-        artifact_prefix: Prefix for artifact filenames. Defaults to "".
-        kit_version: Kit version string. Defaults to "".
-        phase: Current benchmark phase name. Defaults to "".
+        artifact_prefix: Prefix for artifact filenames.
+        kit_version: Kit version string.
+        phase: Current benchmark phase name.
     """
 
     artifact_prefix: str = ""
+    """Prefix for artifact filenames."""
     kit_version: str = ""
+    """Kit version string."""
     phase: str = ""
+    """Current benchmark phase name."""
 
 
 class MeasurementDataRecorder:
@@ -59,8 +62,8 @@ class MeasurementDataRecorder:
     a point in time, and sampling-based measurements gathered over a period.
 
     Args:
-        context: Input context for the recorder. Defaults to None.
-        root_dir: Root directory for output artifacts. Defaults to None.
+        context: Input context for the recorder.
+        root_dir: Root directory for output artifacts.
     """
 
     def __init__(
@@ -89,9 +92,10 @@ class MeasurementDataRecorderRegistry:
     """Registry for measurement data recorders with decorator-based registration."""
 
     name_to_class: dict[str, type[MeasurementDataRecorder]] = {}
+    """Mapping from recorder names to their corresponding recorder classes."""
 
     @classmethod
-    def add(cls, name: str, recorder: type[MeasurementDataRecorder]) -> None:
+    def add(cls, name: str, recorder: type[MeasurementDataRecorder]):
         """Register a recorder class by name.
 
         Args:
