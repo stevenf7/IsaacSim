@@ -19,6 +19,7 @@ are cleaned and triangulated before computing bounds.
 """
 
 import isaacsim.core.experimental.utils.prim as prim_utils
+import isaacsim.core.experimental.utils.transform as transform_utils
 import numpy as np
 from pxr import Gf, Usd, UsdGeom
 
@@ -100,9 +101,12 @@ def compute_obb_primitive(
     z_axis = rotation_matrix.GetRow(2)
     half_extent = bound.GetRange().GetSize() * 0.5
 
+    # Convert rotation matrix to quaternion (w, x, y, z)
+    axes_np = np.array([[*x_axis], [*y_axis], [*z_axis]])
+    rotation_quaternion = transform_utils.rotation_matrix_to_quaternion(axes_np).numpy()
+
     # return the OBB
     center_np = np.array([*centroid])
-    axes_np = np.array([[*x_axis], [*y_axis], [*z_axis]])
     half_extent_np = np.array(half_extent)
 
-    return OBB(rotation_matrix=axes_np, center=center_np, half_side_lengths=half_extent_np)
+    return OBB(rotation=rotation_quaternion, center=center_np, half_side_lengths=half_extent_np)

@@ -154,6 +154,38 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         collision_data = world_interface._prim_path_to_collision_data["/World/Capsule"]
         self.assertEqual(collision_data.n_colliders, 1)
 
+    async def test_add_oriented_bounding_box_obstacle(self):
+        """Test adding oriented bounding box obstacles directly."""
+        world_interface = cu_mg.CumotionWorldInterface()
+
+        # Create OBB data
+        prim_paths = ["/World/OBB"]
+        centers = wp.array([[0.0, 0.0, 0.0]], dtype=wp.float32)
+        rotations = wp.array([[1.0, 0.0, 0.0, 0.0]], dtype=wp.float32)  # Identity quaternion (w, x, y, z)
+        half_side_lengths = wp.array([[0.5, 0.5, 0.5]], dtype=wp.float32)
+        scales = wp.array([[1.0, 1.0, 1.0]], dtype=wp.float32)
+        safety_tolerances = wp.array([[0.0]], dtype=wp.float32)
+        positions = wp.array([[0.5, 0.0, 0.5]], dtype=wp.float32)
+        quaternions = wp.array([[1.0, 0.0, 0.0, 0.0]], dtype=wp.float32)
+        enabled = wp.array([True], dtype=bool)
+
+        # Add OBB
+        world_interface.add_oriented_bounding_boxes(
+            prim_paths=prim_paths,
+            centers=centers,
+            rotations=rotations,
+            half_side_lengths=half_side_lengths,
+            scales=scales,
+            safety_tolerances=safety_tolerances,
+            poses=(positions, quaternions),
+            enabled_array=enabled,
+        )
+
+        # Verify OBB was added
+        self.assertIn("/World/OBB", world_interface._prim_path_to_collision_data)
+        collision_data = world_interface._prim_path_to_collision_data["/World/OBB"]
+        self.assertEqual(collision_data.n_colliders, 1)
+
     async def test_update_obstacle_transform(self):
         """Test updating obstacle transforms."""
         world_interface = cu_mg.CumotionWorldInterface()
@@ -932,15 +964,15 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         world_interface = cu_mg.CumotionWorldInterface()
 
         # OBBs must have uniform scale
-        centers = [wp.array([0.0, 0.0, 0.0], dtype=wp.float32)]
-        rotation_matrices = [wp.array(np.eye(3), dtype=wp.float32)]
-        half_side_lengths = [wp.array([0.5, 0.5, 0.5], dtype=wp.float32)]
+        centers = wp.array([[0.0, 0.0, 0.0]], dtype=wp.float32)
+        rotations = wp.array([[1.0, 0.0, 0.0, 0.0]], dtype=wp.float32)  # Identity quaternion (w, x, y, z)
+        half_side_lengths = wp.array([[0.5, 0.5, 0.5]], dtype=wp.float32)
 
         with self.assertRaises(ValueError):
             world_interface.add_oriented_bounding_boxes(
                 prim_paths=["/World/OBB"],
                 centers=centers,
-                rotation_matrices=rotation_matrices,
+                rotations=rotations,
                 half_side_lengths=half_side_lengths,
                 scales=wp.array([[1.0, 2.0, 1.0]], dtype=wp.float32),  # Non-uniform scale
                 safety_tolerances=wp.array([[0.0]], dtype=wp.float32),
@@ -955,15 +987,15 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         """Test that negative half side lengths for OBB raise an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
-        centers = [wp.array([0.0, 0.0, 0.0], dtype=wp.float32)]
-        rotation_matrices = [wp.array(np.eye(3), dtype=wp.float32)]
-        half_side_lengths = [wp.array([-0.5, 0.5, 0.5], dtype=wp.float32)]  # Negative value
+        centers = wp.array([[0.0, 0.0, 0.0]], dtype=wp.float32)
+        rotations = wp.array([[1.0, 0.0, 0.0, 0.0]], dtype=wp.float32)  # Identity quaternion (w, x, y, z)
+        half_side_lengths = wp.array([[-0.5, 0.5, 0.5]], dtype=wp.float32)  # Negative value
 
         with self.assertRaises(ValueError):
             world_interface.add_oriented_bounding_boxes(
                 prim_paths=["/World/OBB"],
                 centers=centers,
-                rotation_matrices=rotation_matrices,
+                rotations=rotations,
                 half_side_lengths=half_side_lengths,
                 scales=wp.array([[1.0, 1.0, 1.0]], dtype=wp.float32),
                 safety_tolerances=wp.array([[0.0]], dtype=wp.float32),

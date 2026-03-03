@@ -793,17 +793,16 @@ class TestWorldBinding(omni.kit.test.AsyncTestCase):
 
         self.assertIsNotNone(planning_world_obb)
         self.assertIsInstance(planning_world_obb, MirrorOrientedBoundingBox)
-        print("OBB ROTATION MATRIX OUTPUT")
-        print("ROTATION MATRIX")
-        print(planning_world_obb.rotation_matrix)
+        print("OBB ROTATION OUTPUT")
+        print("ROTATION (quaternion w, x, y, z)")
+        print(planning_world_obb.rotation)
         print("HALF SIDE LENGTHS")
         print(planning_world_obb.half_side_length)
-        self.assertTrue(np.isclose(planning_world_obb.rotation_matrix.numpy(), np.eye(3)).all())
+        # Identity quaternion is [1.0, 0.0, 0.0, 0.0]
+        self.assertTrue(np.allclose(planning_world_obb.rotation, np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32)))
         self.assertAlmostEqual(planning_world_obb.safety_tolerance, 0.01)
-        self.assertTrue(np.allclose(planning_world_obb.center.numpy(), np.array([0.0, 0.0, 0.0], dtype=np.float32)))
-        self.assertTrue(
-            np.allclose(planning_world_obb.half_side_length.numpy(), np.array([0.5, 0.5, 0.5], dtype=np.float32))
-        )
+        self.assertTrue(np.allclose(planning_world_obb.center, np.array([0.0, 0.0, 0.0], dtype=np.float32)))
+        self.assertTrue(np.allclose(planning_world_obb.half_side_length, np.array([0.5, 0.5, 0.5], dtype=np.float32)))
 
         cube_geom.set_enabled_collisions(False)
         stage_sphere.set_world_poses(
@@ -824,13 +823,12 @@ class TestWorldBinding(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.isclose(planning_world_obb.pose[0], [3.0, 4.0, 5.0]).all())
         self.assertTrue(np.isclose(planning_world_obb.pose[1], [0.0, 0.0, 1.0, 0.0]).all())
         self.assertTrue(np.isclose(planning_world_obb.scale, [2.0, 1.0, 1.0]).all())
-        self.assertTrue(np.isclose(planning_world_obb.rotation_matrix.numpy(), np.eye(3)).all())
+        # Identity quaternion is [1.0, 0.0, 0.0, 0.0]
+        self.assertTrue(np.allclose(planning_world_obb.rotation, np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32)))
         self.assertAlmostEqual(planning_world_obb.safety_tolerance, 0.01)
-        self.assertTrue(np.allclose(planning_world_obb.center.numpy(), np.array([0.0, 0.0, 0.0], dtype=np.float32)))
+        self.assertTrue(np.allclose(planning_world_obb.center, np.array([0.0, 0.0, 0.0], dtype=np.float32)))
         print(planning_world_obb.half_side_length)
-        self.assertTrue(
-            np.allclose(planning_world_obb.half_side_length.numpy(), np.array([0.5, 0.5, 0.5], dtype=np.float32))
-        )
+        self.assertTrue(np.allclose(planning_world_obb.half_side_length, np.array([0.5, 0.5, 0.5], dtype=np.float32)))
 
     async def test_world_binding_validates_ancestor_scaling(self):
         """

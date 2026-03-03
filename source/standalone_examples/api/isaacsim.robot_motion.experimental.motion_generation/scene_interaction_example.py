@@ -311,7 +311,7 @@ class ExampleWorldInterface(WorldInterface):
         self,
         prim_paths,
         centers,
-        rotation_matrices,
+        rotations,
         half_side_lengths,
         scales,
         safety_tolerances,
@@ -322,30 +322,33 @@ class ExampleWorldInterface(WorldInterface):
 
         Args:
             prim_paths: Prim paths (Useful as unique identifiers)
-            centers: Local center positions for each bounding box (list of warp arrays)
-            rotation_matrices: Local rotation matrices for each bounding box (list of warp arrays)
-            half_side_lengths: Half extents along each axis for each bounding box (list of warp arrays)
-            scales: Scale factors as warp array (shape [N, 1])
-            safety_tolerances: Safety margins as warp array (shape [N, 1])
-            poses: Tuple of (positions, orientations) as warp arrays
-            enabled_array: Enabled flags as warp array (shape [N, 1])
+            centers: Local center positions for each bounding box.
+            rotations: Local rotations as quaternions (w, x, y, z) for each bounding box.
+            half_side_lengths: Half extents along each axis for each bounding box.
+            scales: Scale factors as warp array.
+            safety_tolerances: Safety margins as warp array.
+            poses: Tuple of (positions, orientations) as warp arrays.
+            enabled_array: Enabled flags as warp array.
         """
         positions, orientations = poses
+        centers_np = centers.numpy()
+        rotations_np = rotations.numpy()
+        half_side_lengths_np = half_side_lengths.numpy()
         for i, path in enumerate(prim_paths):
-            # Extract data from warp arrays (all are shape [N, 1] for scalars)
+            # Extract data from warp arrays
             position = positions.numpy()[i]
             orientation = orientations.numpy()[i]
             safety_tolerance = safety_tolerances.numpy()[i, 0]
-            center = centers[i].numpy() if i < len(centers) else None
-            rotation_matrix = rotation_matrices[i].numpy() if i < len(rotation_matrices) else None
-            half_extents = half_side_lengths[i].numpy() if i < len(half_side_lengths) else None
+            center = centers_np[i]
+            rotation = rotations_np[i]
+            half_extents = half_side_lengths_np[i]
 
             # In a real implementation, you would add this to your planning library here
-            # e.g., self.world_model.add_obb(path, center, rotation_matrix, half_extents, position, orientation, safety_tolerance)
+            # e.g., self.world_model.add_obb(path, center, rotation, half_extents, position, orientation, safety_tolerance)
             self.obstacles[path] = {
                 "type": "oriented_bounding_box",
                 "center": center,
-                "rotation_matrix": rotation_matrix,
+                "rotation": rotation,
                 "half_extents": half_extents,
                 "position": position,
                 "orientation": orientation,

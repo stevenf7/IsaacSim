@@ -49,7 +49,7 @@ class OBB:
     """Oriented bounding box representation.
 
     Args:
-        rotation_matrix: 3x3 rotation matrix of the box orientation.
+        rotation: Rotation as quaternion (w, x, y, z) of the box orientation.
         half_side_lengths: Half-lengths along each box axis.
         center: Center position of the box in world space.
 
@@ -60,7 +60,7 @@ class OBB:
         >>> import numpy as np
         >>> from isaacsim.robot_motion.experimental.motion_generation.utils.collision_approximation import OBB
         >>> obb = OBB(
-        ...     rotation_matrix=np.eye(3),
+        ...     rotation=np.array([1.0, 0.0, 0.0, 0.0]),
         ...     half_side_lengths=np.array([0.5, 1.0, 1.5]),
         ...     center=np.array([0.0, 0.0, 0.0]),
         ... )
@@ -68,7 +68,7 @@ class OBB:
         (3,)
     """
 
-    rotation_matrix: np.ndarray
+    rotation: np.ndarray
     half_side_lengths: np.ndarray
     center: np.ndarray
 

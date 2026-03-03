@@ -23,7 +23,6 @@ import warp as wp
 from isaacsim.core.experimental.materials import OmniPbrMaterial
 from isaacsim.core.experimental.objects import Capsule, Cube, Sphere
 from isaacsim.core.experimental.prims import XformPrim
-from isaacsim.core.experimental.utils.transform import rotation_matrix_to_quaternion
 
 from .utils import (
     ColliderBatchTransformOutput,
@@ -837,9 +836,9 @@ class CumotionWorldInterface(mg.WorldInterface):
     def add_oriented_bounding_boxes(
         self,
         prim_paths: list[str],
-        centers: list[wp.array],
-        rotation_matrices: list[wp.array],
-        half_side_lengths: list[wp.array],
+        centers: wp.array,
+        rotations: wp.array,
+        half_side_lengths: wp.array,
         scales: wp.array,
         safety_tolerances: wp.array,
         poses: tuple[wp.array, wp.array],
@@ -852,9 +851,9 @@ class CumotionWorldInterface(mg.WorldInterface):
         safety_tolerances_np = safety_tolerances.numpy()
         scales_np = scales.numpy()
 
-        centers_np = [c.numpy() for c in centers]
-        rotation_matrices_np = np.array([r.numpy() for r in rotation_matrices])
-        half_side_lengths_np = np.array([l.numpy() for l in half_side_lengths])
+        centers_np = centers.numpy()
+        rotations_np = rotations.numpy()
+        half_side_lengths_np = half_side_lengths.numpy()
 
         for scale in scales_np:
             if not np.allclose(scale, scale[0]) or np.any(scale <= 0.0):
@@ -865,14 +864,14 @@ class CumotionWorldInterface(mg.WorldInterface):
 
         if not (
             len(prim_paths)
-            == len(positions_np)
-            == len(quaternions_np)
-            == len(centers_np)
-            == len(rotation_matrices_np)
-            == len(half_side_lengths_np)
-            == len(scales_np)
-            == len(safety_tolerances_np)
-            == len(enabled_array_np)
+            == positions_np.shape[0]
+            == quaternions_np.shape[0]
+            == centers_np.shape[0]
+            == rotations_np.shape[0]
+            == half_side_lengths_np.shape[0]
+            == scales_np.shape[0]
+            == safety_tolerances_np.shape[0]
+            == enabled_array_np.shape[0]
         ):
             raise ValueError(f"All input arrays must have the same length in cuMotion.")
 
@@ -893,7 +892,7 @@ class CumotionWorldInterface(mg.WorldInterface):
             position = positions_np[i]
             quaternion = quaternions_np[i]
             center = centers_np[i]
-            rotation_matrix = rotation_matrices_np[i]
+            rotation_quaternion = rotations_np[i]
             half_side_length = half_side_lengths_np[i]
             scale = scales_np[i]
             safety_tolerance = safety_tolerances_np[i]
@@ -913,9 +912,8 @@ class CumotionWorldInterface(mg.WorldInterface):
             obstacle.set_attribute(cumotion.Obstacle.Attribute.SIDE_LENGTHS, side_lengths)
 
             # Store the constant offset between the OBB-frame and the object-frame:
-            # Convert cumotion.Pose3 to position and quaternion for storage
+            # The rotation is already a quaternion (w, x, y, z)
             collider_translation = scale * center
-            collider_quaternion = rotation_matrix_to_quaternion(rotation_matrix).numpy()
 
             debug_prim_path = None
             if self._visualize_debug_prims:
@@ -935,7 +933,7 @@ class CumotionWorldInterface(mg.WorldInterface):
                     _CumotionCollider(
                         obstacle_handle=obstacle_handle,
                         transform_object_to_collider_index=self._extend_objects_to_colliders_matrix(
-                            position=collider_translation, quaternion=collider_quaternion
+                            position=collider_translation, quaternion=rotation_quaternion
                         ),
                         debug_prim_path=debug_prim_path,
                     )
