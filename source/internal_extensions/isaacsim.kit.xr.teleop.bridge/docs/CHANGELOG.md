@@ -1,7 +1,6 @@
 # Changelog
 
 ## [1.1.0] - 2026-02-23
-
 ### Added
 - Configurable OpenXR required extension settings via carb settings:
   - `exts."isaacsim.kit.xr.teleop.bridge".openxr.requiredExtensions.set`
@@ -16,7 +15,6 @@
 - Documentation updates in `docs/README.md` with runtime callback usage examples
 
 ## [1.0.0] - 2026-02-02
-
 ### Added
 - Initial release
 - `get_instance_handle()` function (forwards to Kit Python API)

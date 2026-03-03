@@ -20,9 +20,9 @@ to a standalone script:
 
   1. Python linting (ruff)          -> run_python_linting.py
   2. Code formatting verification   -> repo.sh format --verify
-  3. Changelog and version bump     -> check_changelog_version.py
+  3. Changelog and version bump     -> validate_changelog.py
   4. extension.toml validation      -> validate_extension_toml.py
-  5. Extension structure validation  -> check_extension_structure.py
+  5. Extension structure validation  -> validate_extension_structure.py
   6. Extension test discovery & run  -> run_extension_tests.py
 
 Determines the full set of changed files by comparing against the merge-base
@@ -32,31 +32,31 @@ When source/apps/ files are modified, isaacsim.app.setup tests are also included
 
 Usage:
     # Run all validation checks (no tests)
-    python tools/isaac/pre_merge_validate.py
+    python tools/isaac/pre_merge/pre_merge_validate.py
 
     # Run specific checks
-    python tools/isaac/pre_merge_validate.py --lint --format
+    python tools/isaac/pre_merge/pre_merge_validate.py --lint --format
 
     # Run validation + extension tests
-    python tools/isaac/pre_merge_validate.py --test
+    python tools/isaac/pre_merge/pre_merge_validate.py --test
 
     # Run only tests for modified extensions
-    python tools/isaac/pre_merge_validate.py --test-only
+    python tools/isaac/pre_merge/pre_merge_validate.py --test-only
 
     # Auto-fix what can be fixed (ruff, extension.toml)
-    python tools/isaac/pre_merge_validate.py --fix
+    python tools/isaac/pre_merge/pre_merge_validate.py --fix
 
     # Fast format check for pre-commit hooks (uncommitted files only)
-    python tools/isaac/pre_merge_validate.py --modified
+    python tools/isaac/pre_merge/pre_merge_validate.py --modified
 
     # Re-run only the extensions that failed in a previous test run
-    python tools/isaac/pre_merge_validate.py --retest isaacsim.robot.poser isaacsim.robot.schema
+    python tools/isaac/pre_merge/pre_merge_validate.py --retest isaacsim.robot.poser isaacsim.robot.schema
 
     # Save all output to a log file (ANSI-stripped)
-    python tools/isaac/pre_merge_validate.py --log validation.log
+    python tools/isaac/pre_merge/pre_merge_validate.py --log validation.log
 
     # Compare changelog/version against a specific base branch
-    python tools/isaac/pre_merge_validate.py --base-branch main
+    python tools/isaac/pre_merge/pre_merge_validate.py --base-branch main
 """
 
 from __future__ import annotations
@@ -67,13 +67,14 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import TextIO
+from typing import Any, TextIO
 
 from repo_helpers import (
     _IS_WINDOWS,
     REPO_ROOT,
     TOOLS_DIR,
     affected_extensions,
+    all_extensions,
     get_all_modified_files,
     has_apps_changes,
 )
@@ -96,7 +97,12 @@ _ANSI_RE = re.compile(r"\033\[[0-9;]*m")
 
 
 class _TeeStream:
-    """Wrap a stream to duplicate writes to a log file with ANSI stripping."""
+    """Wrap a stream to duplicate writes to a log file with ANSI stripping.
+
+    Args:
+        stream: The stream to wrap.
+        log_file: The log file to duplicate writes to (ANSI codes stripped).
+    """
 
     def __init__(self, stream: TextIO, log_file: TextIO) -> None:
         self._stream = stream
@@ -119,12 +125,19 @@ class _TeeStream:
         return self._stream.encoding
 
 
-def _run_teed(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess:
+def _run_teed(cmd: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
     """Run a command, teeing its stdout to the log file when active.
 
     When ``_log_fh`` is ``None`` this is equivalent to ``subprocess.run()``.
     When logging is active the subprocess stdout is captured via a pipe and
     relayed line-by-line through ``sys.stdout`` (which is a ``_TeeStream``).
+
+    Args:
+        cmd: Command and arguments to run.
+        **kwargs: Additional arguments passed to subprocess.run.
+
+    Returns:
+        Completed process result.
     """
     if _log_fh is None:
         return subprocess.run(cmd, **kwargs)
@@ -152,7 +165,15 @@ def _run_teed(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess:
 
 
 def check_python_lint(extensions: list[Path], fix: bool = False) -> int:
-    """Run ruff via ``run_python_linting.py`` on affected extensions."""
+    """Run ruff via ``run_python_linting.py`` on affected extensions.
+
+    Args:
+        extensions: List of extension paths to lint.
+        fix: Whether to auto-fix issues.
+
+    Returns:
+        Exit code (0 if clean, 1 if issues).
+    """
     if not extensions:
         log_info("No modified extensions to lint.")
         return 0
@@ -197,7 +218,13 @@ def start_format_check(
     relative to the repo root and passed as a positional ``select_files``
     argument so the formatter only inspects the listed files.
 
-    Returns None if repo.sh is not found.
+    Args:
+        modified_only: If True, only check uncommitted files.
+        files: Optional list of files to check; ignored if modified_only is True.
+        fix: Whether to auto-fix formatting issues.
+
+    Returns:
+        Popen handle for the format process, or None if repo.sh is not found.
     """
     if _IS_WINDOWS:
         repo_script = REPO_ROOT / "repo.bat"
@@ -231,7 +258,15 @@ def start_format_check(
 
 
 def collect_format_result(proc: subprocess.Popen | None, fix: bool = False) -> int:
-    """Wait for the background format check and report the result."""
+    """Wait for the background format check and report the result.
+
+    Args:
+        proc: Format check process handle from start_format_check.
+        fix: Whether fix was attempted (affects error message).
+
+    Returns:
+        Exit code (0 if OK, 1 if issues).
+    """
     if proc is None:
         log_warn("repo script not found; skipping format check.")
         return 0
@@ -255,24 +290,35 @@ def collect_format_result(proc: subprocess.Popen | None, fix: bool = False) -> i
 
 
 # ---------------------------------------------------------------------------
-# Check 3: Changelog & version bump — delegates to check_changelog_version.py
+# Check 3: Changelog & version bump — delegates to validate_changelog.py
 # ---------------------------------------------------------------------------
 
 
-def check_changelog(extensions: list[Path], base_branch: str | None) -> int:
-    """Validate changelog and version bump via ``check_changelog_version.py``."""
+def check_changelog(extensions: list[Path], base_branch: str | None, fix: bool = False) -> int:
+    """Validate changelog and version bump via ``validate_changelog.py``.
+
+    Args:
+        extensions: List of extension paths to check.
+        base_branch: Base branch to diff against for version comparison.
+        fix: Whether to auto-fix issues.
+
+    Returns:
+        Exit code (0 if OK, 1 if issues).
+    """
     if not extensions:
         log_info("No modified extensions to check for changelog/version.")
         return 0
 
-    script = TOOLS_DIR / "check_changelog_version.py"
+    script = TOOLS_DIR / "validate_changelog.py"
     if not script.exists():
-        log_warn("check_changelog_version.py not found; skipping.")
+        log_warn("validate_changelog.py not found; skipping.")
         return 0
 
     cmd = [sys.executable, str(script)] + [str(ext) for ext in extensions]
     if base_branch:
         cmd.extend(["--base-branch", base_branch])
+    if fix:
+        cmd.append("--fix")
 
     proc = _run_teed(cmd, cwd=REPO_ROOT)
     return 1 if proc.returncode != 0 else 0
@@ -284,7 +330,15 @@ def check_changelog(extensions: list[Path], base_branch: str | None) -> int:
 
 
 def check_extension_toml(extensions: list[Path], fix: bool = False) -> int:
-    """Validate extension.toml for each modified extension. Returns error count."""
+    """Validate extension.toml for each modified extension.
+
+    Args:
+        extensions: List of extension paths to validate.
+        fix: Whether to auto-fix issues.
+
+    Returns:
+        Number of extensions with validation errors.
+    """
     if not extensions:
         log_info("No modified extensions to validate extension.toml.")
         return 0
@@ -321,12 +375,20 @@ def check_extension_toml(extensions: list[Path], fix: bool = False) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Check 5: Extension structure — delegates to check_extension_structure.py
+# Check 5: Extension structure — delegates to validate_extension_structure.py
 # ---------------------------------------------------------------------------
 
 
 def _normalize_structure_output(output: str, ext_root: str) -> set[str]:
-    """Replace the extension root path with a placeholder for diffing."""
+    """Replace the extension root path with a placeholder for diffing.
+
+    Args:
+        output: Raw validation output.
+        ext_root: Extension root path to replace with placeholder.
+
+    Returns:
+        Set of normalized error lines.
+    """
     normalized: set[str] = set()
     for line in output.splitlines():
         stripped = line.strip()
@@ -336,7 +398,16 @@ def _normalize_structure_output(output: str, ext_root: str) -> set[str]:
 
 
 def _get_base_structure_errors(ext_path: Path, base_ref: str, script: Path) -> set[str]:
-    """Run structure validation on the base-branch version of an extension."""
+    """Run structure validation on the base-branch version of an extension.
+
+    Args:
+        ext_path: Path to the extension.
+        base_ref: Base branch ref (e.g. origin/main).
+        script: Path to validate_extension_structure.py.
+
+    Returns:
+        Set of normalized error strings from base version.
+    """
     import shutil
     import tempfile
 
@@ -388,14 +459,22 @@ def _get_base_structure_errors(ext_path: Path, base_ref: str, script: Path) -> s
 
 
 def check_extension_structure(extensions: list[Path], base_ref: str | None = None) -> int:
-    """Validate extension directory structure, reporting only new failures."""
+    """Validate extension directory structure, reporting only new failures.
+
+    Args:
+        extensions: List of extension paths to validate.
+        base_ref: Base branch ref for diffing; if None, all failures are reported.
+
+    Returns:
+        Number of extensions with new structure errors.
+    """
     if not extensions:
         log_info("No modified extensions to check structure.")
         return 0
 
-    script = TOOLS_DIR / "check_extension_structure.py"
+    script = TOOLS_DIR / "validate_extension_structure.py"
     if not script.exists():
-        log_warn("check_extension_structure.py not found; skipping.")
+        log_warn("validate_extension_structure.py not found; skipping.")
         return 0
 
     errors = 0
@@ -437,7 +516,19 @@ def check_tests(
     include_downstream: bool = True,
     only_extensions: list[str] | None = None,
 ) -> int:
-    """Discover and run extension tests via ``run_extension_tests.py``."""
+    """Discover and run extension tests via ``run_extension_tests.py``.
+
+    Args:
+        extensions: List of extension paths to test.
+        modified_files: List of modified files (used for apps-changed detection).
+        test_filter: Optional filter expression for test selection.
+        timeout: Per-extension test timeout in seconds.
+        include_downstream: Whether to include downstream dependent extensions.
+        only_extensions: If set, run tests only for these extension names.
+
+    Returns:
+        Exit code (0 if all pass, 1 if any fail).
+    """
     script = TOOLS_DIR / "run_extension_tests.py"
     if not script.exists():
         log_warn("run_extension_tests.py not found; skipping tests.")
@@ -468,6 +559,11 @@ def check_tests(
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the argument parser for pre-merge validation.
+
+    Returns:
+        Configured ArgumentParser instance.
+    """
     parser = argparse.ArgumentParser(
         description="Pre-commit validation for Isaac Sim: lint, format, changelog, toml, and structure checks.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -514,6 +610,13 @@ def build_parser() -> argparse.ArgumentParser:
         "(applied as a whitelist after discovery and downstream expansion).",
     )
 
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        dest="all_extensions",
+        help="Run checks on every extension in the repo, not just those with "
+        "modified files. Ignores the branch diff for extension discovery.",
+    )
     parser.add_argument(
         "--modified",
         action="store_true",
@@ -565,6 +668,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
+    """Parse arguments, set up logging if requested, and run the validation pipeline.
+
+    Returns:
+        Exit code (0 on success, 1 on failure; 0 always if --keep-going).
+    """
     global _log_fh
 
     parser = build_parser()
@@ -588,8 +696,14 @@ def main() -> int:
 
 
 def _run(args: argparse.Namespace) -> int:
-    """Execute the validation pipeline — called by :func:`main`."""
+    """Execute the validation pipeline — called by :func:`main`.
 
+    Args:
+        args: Parsed command-line arguments.
+
+    Returns:
+        Exit code (0 on success, 1 on failure; 0 always if --keep-going).
+    """
     if args.test_only:
         args.test = True
     if args.retest:
@@ -598,19 +712,26 @@ def _run(args: argparse.Namespace) -> int:
     check_flags = [args.lint, args.format, args.changelog, args.toml, args.structure, args.test]
     run_all_validation = not any(check_flags)
 
-    modified, resolved_base = get_all_modified_files(args.base_branch)
-
-    if resolved_base:
-        log_info(f"Base branch: {resolved_base}")
+    if args.all_extensions:
+        modified: list[Path] = []
+        resolved_base = args.base_branch
+        extensions = all_extensions()
+        log_info(f"Running on all {len(extensions)} extensions.")
     else:
-        log_warn("Could not detect base branch; only uncommitted changes will be checked.")
+        modified, resolved_base = get_all_modified_files(args.base_branch)
 
-    if not modified:
-        print(colorize("No modified files detected. Nothing to validate.", Colors.GREEN), flush=True)
-        return 0
+        if resolved_base:
+            log_info(f"Base branch: {resolved_base}")
+        else:
+            log_warn("Could not detect base branch; only uncommitted changes will be checked.")
+
+        if not modified:
+            print(colorize("No modified files detected. Nothing to validate.", Colors.GREEN), flush=True)
+            return 0
+
+        extensions = affected_extensions(modified)
 
     py_files = [f for f in modified if f.suffix == ".py" and f.exists()]
-    extensions = affected_extensions(modified)
 
     print(
         colorize(
@@ -638,7 +759,7 @@ def _run(args: argparse.Namespace) -> int:
 
         if run_all_validation or args.changelog:
             header("Changelog & Version Bump")
-            total_errors += check_changelog(extensions, resolved_base)
+            total_errors += check_changelog(extensions, resolved_base, fix=args.fix)
 
         if run_all_validation or args.toml:
             header("extension.toml Validation")

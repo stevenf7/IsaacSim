@@ -11,12 +11,14 @@
 ## [1.3.0] - 2025-06-30
 ### Fixed
 - Updated access to cuOpt OSS service
+
 ### Added
 - Updated readme to point to source code
 
 ## [1.2.0] - 2024-12-12
 ### Fixed
 - Asset paths
+
 ### Added
 - Create Network Example
 - Loading networks from usd files

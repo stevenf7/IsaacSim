@@ -19,6 +19,7 @@
 ## [1.2.0] - 2024-12-12
 ### Fixed
 - Asset paths
+
 ### Added
 - Create Network Example
 - Loading networks from usd files
@@ -35,6 +36,7 @@
 ## [0.1.2] - 2022-12-13
 ### Fixed
 - Ignore deleted semantic prims
+
 ### Added
 - Code formatting and comments for clarity
 - Required NVIDIA info

@@ -99,7 +99,7 @@
 
 ## [0.5.1] - 2023-08-25
 ### Changed
-- added stdout fail pattern for the expected no prim found edge case for the ogn test
+- Added stdout fail pattern for the expected no prim found edge case for the ogn test
 
 ## [0.5.0] - 2023-08-22
 ### Changed
@@ -111,7 +111,7 @@
 
 ## [0.4.0] - 2023-08-15
 ### Changed
-- rename width to size for point cloud debug node to prevent auto connection when using in replicator pipelines
+- Rename width to size for point cloud debug node to prevent auto connection when using in replicator pipelines
 
 ## [0.3.0] - 2023-08-01
 ### Added
@@ -119,18 +119,18 @@
 - xPrim Radius Visualizer node
 
 ### Changed
-- pass width vector by reference.
+- Pass width vector by reference.
 - Simplified DebugDrawPointCloud internals.
 - DebugDrawPointCloud Node updated to work with dataPtr/bufferSize inputs.
 - DebugDrawPointCloud Node updated to auto connect with synthetic data/replicator nodes.
 
 ## [0.2.3] - 2023-01-19
 ### Fixed
-- crash when trying to draw without a valid renderer
+- Crash when trying to draw without a valid renderer
 
 ## [0.2.2] - 2022-12-14
 ### Fixed
-- crash when deleting
+- Crash when deleting
 
 ## [0.2.1] - 2022-10-18
 ### Changed
@@ -159,7 +159,7 @@
 
 ## [0.1.1] - 2021-08-20
 ### Added
-- world space flag to specify if width value is in world coordinates.
+- World space flag to specify if width value is in world coordinates.
 
 ## [0.1.0] - 2021-07-27
 ### Added

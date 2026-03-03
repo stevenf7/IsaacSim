@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Discover and run tests for Isaac Sim extensions.
+r"""Discover and run tests for Isaac Sim extensions.
 
 Scans the build directory for test scripts related to each specified extension:
   - Extension unit tests:    tests-{ext}.sh  (.bat on Windows)
@@ -33,35 +33,35 @@ A rolling terminal window shows the last 20 lines of test output in real time
 when attached to a TTY.
 
 Extensions can be specified by name or by directory path:
-    python tools/isaac/run_extension_tests.py isaacsim.robot.poser
-    python tools/isaac/run_extension_tests.py source/extensions/isaacsim.robot.poser
+    python tools/isaac/pre_merge/run_extension_tests.py isaacsim.robot.poser
+    python tools/isaac/pre_merge/run_extension_tests.py source/extensions/isaacsim.robot.poser
 
 Usage:
     # Run tests for specific extensions
-    python tools/isaac/run_extension_tests.py isaacsim.robot.poser
+    python tools/isaac/pre_merge/run_extension_tests.py isaacsim.robot.poser
 
     # Multiple extensions
-    python tools/isaac/run_extension_tests.py isaacsim.robot.poser isaacsim.robot.schema
+    python tools/isaac/pre_merge/run_extension_tests.py isaacsim.robot.poser isaacsim.robot.schema
 
     # Include isaacsim.app.setup when source/apps/ changed
-    python tools/isaac/run_extension_tests.py isaacsim.robot.poser --apps-changed
+    python tools/isaac/pre_merge/run_extension_tests.py isaacsim.robot.poser --apps-changed
 
     # Skip downstream dependents
-    python tools/isaac/run_extension_tests.py isaacsim.robot.poser --no-downstream
+    python tools/isaac/pre_merge/run_extension_tests.py isaacsim.robot.poser --no-downstream
 
     # Filter to specific test names
-    python tools/isaac/run_extension_tests.py isaacsim.robot.poser \\
+    python tools/isaac/pre_merge/run_extension_tests.py isaacsim.robot.poser \\
         --filter "test_named_poses*"
 
     # Re-run only specific failing extensions from a previous run
-    python tools/isaac/run_extension_tests.py isaacsim.robot.poser isaacsim.robot.schema \\
+    python tools/isaac/pre_merge/run_extension_tests.py isaacsim.robot.poser isaacsim.robot.schema \\
         --only isaacsim.robot.poser
 
     # Write results to a log file as tests finish
-    python tools/isaac/run_extension_tests.py isaacsim.robot.poser --log test_results.log
+    python tools/isaac/pre_merge/run_extension_tests.py isaacsim.robot.poser --log test_results.log
 
     # List discovered tests without running them
-    python tools/isaac/run_extension_tests.py isaacsim.robot.poser --list
+    python tools/isaac/pre_merge/run_extension_tests.py isaacsim.robot.poser --list
 """
 
 from __future__ import annotations
@@ -96,7 +96,7 @@ _REDRAW_MIN_INTERVAL = 0.10
 
 
 def _find_all_test_scripts(ext_name: str, all_ext_names: list[str]) -> list[Path]:
-    """Locate all test scripts related to *ext_name* in the build directory.
+    """Locate all test scripts related to the given extension in the build directory.
 
     Searches for (using .sh on Linux, .bat on Windows):
       - Extension unit tests:  tests-{ext_name}{ext}
@@ -106,6 +106,14 @@ def _find_all_test_scripts(ext_name: str, all_ext_names: list[str]) -> list[Path
     Scripts belonging to a longer-named extension that shares the same prefix
     are excluded (e.g. isaacsim.robot.poser.ui tests are not claimed when
     searching for isaacsim.robot.poser).
+
+    Args:
+        ext_name: Extension name to search for (e.g. isaacsim.robot.poser).
+        all_ext_names: All known extension names, used to exclude longer prefixes.
+
+    Returns:
+        Sorted list of test script paths for the extension.
+
     """
     tests_dir = BUILD_DIR / "tests"
     if not tests_dir.exists():
@@ -144,9 +152,15 @@ def _run_test_script(
     The window is cleared when the test finishes, leaving only the pass/fail
     summary.
 
+    Args:
+        script: Path to the test shell script (.sh or .bat).
+        test_filter: Optional filter expression passed to the script via -f.
+        timeout: Per-script timeout in seconds.
+
     Returns:
-        (passed, output) -- on success *output* is ``"passed"``; on failure it
-        contains the complete test output for full stack-trace visibility.
+        Tuple of (passed, output). On success output is "passed"; on failure
+        it contains the complete test output for full stack-trace visibility.
+
     """
     cmd = ["cmd.exe", "/c", str(script)] if script.suffix == ".bat" else ["bash", str(script)]
     if test_filter:
@@ -257,8 +271,13 @@ def _print_discovery(
 ) -> None:
     """Print the test-script discovery table for one tier.
 
-    When *dep_reasons* is provided, each extension line is annotated with the
+    When dep_reasons is provided, each extension line is annotated with the
     Tier 1 extension(s) it directly depends on.
+
+    Args:
+        discovery: Map of extension name to list of test script paths.
+        dep_reasons: Optional map of extension name to set of Tier 1 deps.
+
     """
     for name in sorted(discovery):
         scripts = discovery[name]
@@ -280,7 +299,15 @@ def _write_test_result(
     passed: bool,
     detail: str,
 ) -> None:
-    """Append one test result to the log file and flush immediately."""
+    """Append one test result to the log file and flush immediately.
+
+    Args:
+        log_fh: Open log file handle.
+        script_name: Name of the test script.
+        passed: Whether the test passed.
+        detail: Full output on failure, or "passed" on success.
+
+    """
     status = "PASS" if passed else "FAIL"
     log_fh.write(f"{'=' * 72}\n")
     log_fh.write(f"{script_name} [{status}]\n")
@@ -299,10 +326,21 @@ def _run_tier(
     log_fh: TextIO | None,
     failures: list[tuple[str, str]],
 ) -> int:
-    """Execute all test scripts in *discovery*, returning the failure count.
+    """Execute all test scripts in discovery, returning the failure count.
 
-    Failed test labels and their full output are appended to *failures* so the
+    Failed test labels and their full output are appended to failures so the
     caller can print a consolidated summary after all tiers complete.
+
+    Args:
+        discovery: Map of extension name to list of test script paths.
+        test_filter: Optional filter expression passed to test scripts.
+        timeout: Per-script timeout in seconds.
+        log_fh: Optional log file handle for incremental result writing.
+        failures: List to append (label, detail) tuples for failed tests.
+
+    Returns:
+        Number of test scripts that failed.
+
     """
     errors = 0
     for name in sorted(discovery):
@@ -332,6 +370,13 @@ def _extract_errors(output: str) -> str:
     Recognises unittest-style output (``======`` separator followed by
     ``FAIL:`` / ``ERROR:`` lines) and generic Python tracebacks.  Falls back
     to the last 50 lines when no pattern is matched.
+
+    Args:
+        output: Full test output string.
+
+    Returns:
+        Extracted error/failure portion of the output.
+
     """
     lines = output.splitlines()
 
@@ -361,6 +406,11 @@ def _print_failure_summary(
 
     Only the error/traceback portion of each failure is shown, not the
     full test output.
+
+    Args:
+        failures: List of (label, detail) tuples for failed tests.
+        log_fh: Optional log file handle to write the summary.
+
     """
     separator = "=" * 72
     print(f"\n{separator}", flush=True)
@@ -404,16 +454,28 @@ def run_tests(
     Execution is split into two tiers:
 
     - **Tier 1 (direct):** tests for the extensions explicitly listed in
-      *ext_names*.  These run first.
-    - **Tier 2 (downstream):** tests for extensions that declare a *direct*
+      ext_names.  These run first.
+    - **Tier 2 (downstream):** tests for extensions that declare a direct
       dependency on any Tier 1 extension (no transitive walk — with adequate
       coverage, passing direct dependents implies upstream correctness).
       Only executed when every Tier 1 test passes.
 
-    When *log_path* is set, results (including full output for failures) are
+    When log_path is set, results (including full output for failures) are
     written incrementally after each test finishes.
 
-    Returns the total number of test scripts that failed.
+    Args:
+        ext_names: Extension names or directory paths to test.
+        include_downstream: Whether to include downstream dependent extensions.
+        apps_changed: If True, add isaacsim.app.setup when source/apps/ changed.
+        test_filter: Optional filter expression passed to test scripts.
+        timeout: Per-script timeout in seconds.
+        log_path: Optional path to write incremental results.
+        list_only: If True, only list discovered tests without running.
+        only_extensions: Optional whitelist of extension names to run.
+
+    Returns:
+        Total number of test scripts that failed.
+
     """
     if not BUILD_DIR.exists():
         log_warn(f"Build directory not found ({BUILD_DIR}). Build first, then re-run.")
@@ -544,6 +606,12 @@ def run_tests(
 
 
 def main() -> int:
+    """Parse CLI arguments and run extension tests.
+
+    Returns:
+        0 if all tests passed, 1 otherwise.
+
+    """
     parser = argparse.ArgumentParser(
         description="Discover and run tests for Isaac Sim extensions.",
         formatter_class=argparse.RawDescriptionHelpFormatter,

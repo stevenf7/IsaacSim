@@ -5,10 +5,12 @@
 - Improved error message when setting/getting ObstacleConfigurations on prims that don't exist.
 - `SceneQuery` can accept a single include/exclude group.
 - `JointState.from_name` and `JointState.from_index` now accept 2D-array inputs, as long as the size of the first dimension is 1.
+
 ### Changed
 - Makes more explicit the existing functionality that ObstacleRepresentation can be initialized via string
 - Adds an explicit check that the string maps to a valid ObstacleRepresentation
 - Examples/docs to use the improved QOL interfaces.
+
 ### Fixed
 - bug-fix: default safety tolerances no longer override shape safety tolerances in `ObstacleStrategy` if set afterwards.
 

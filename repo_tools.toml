@@ -162,7 +162,7 @@ command = "generate_doxygen_input"
 entry_point = "${config_root}/tools/isaac/generate_doxygen_input.py:setup_repo_tool"
 
 ########################################################################################################################
-# Update and validate changelogs
+# Update changelogs
 ########################################################################################################################
 
 [update_changelogs]
@@ -175,7 +175,7 @@ entry_point = "${config_root}/tools/isaac/update_changelogs.py:setup_repo_tool"
 
 [check_extension_structure]
 command = "check_extension_structure"
-entry_point = "${config_root}/tools/isaac/check_extension_structure.py:setup_repo_tool"
+entry_point = "${config_root}/tools/isaac/pre_merge/validate_extension_structure.py:setup_repo_tool"
 
 ########################################################################################################################
 # Format Lua files
@@ -191,6 +191,6 @@ entry_point = "${config_root}/tools/isaac/format_lua.py:setup_repo_tool"
 
 [run_python_linting]
 command = "run_python_linting"
-entry_point = "${config_root}/tools/isaac/run_python_linting.py:setup_repo_tool"
+entry_point = "${config_root}/tools/isaac/pre_merge/run_python_linting.py:setup_repo_tool"
 
 # AUTOREMOVE: END
