@@ -39,7 +39,7 @@ The telemetry system is built on NVIDIA Omniverse's structured logging framework
 * **Data Collection**: Instrumented code that emits telemetry events
 * **Storage and Analysis**: Events logged locally and transmitted to analysis platforms
 
-For more details, see the `Omniverse Telemetry Walkthrough <https://docs.omniverse.nvidia.com/kit/docs/carbonite/latest/structuredlog/Walkthrough.html>`_.
+For more details, refer to the `Omniverse Telemetry Walkthrough <https://docs.omniverse.nvidia.com/kit/docs/carbonite/latest/docs/structuredlog/Walkthrough.html>`_.
 
 Telemetry Modes
 ---------------
@@ -50,9 +50,7 @@ The telemetry system supports different operational modes:
 * **Test Mode**: ``--/telemetry/mode=test`` - Internal mode for QA, validation, and testing.
 * **Dev Mode**: ``--/telemetry/mode=dev`` - Internal mode for development.
 
-Note that different modes have different data collection and transmission policies. 
-
-To disable telemetry, set the ``--/telemetry/enableAnonymousData=false`` command line argument.
+Note that different modes have different data collection and transmission policies. To disable transmission or structured logging, refer to :ref:`Configuring Telemetry <configuring-telemetry>` below.
 
 If you are running using headless mode, telemetry is disabled by default. To enable telemetry, pass ``--/telemetry/mode=dev`` using the application config:
 
@@ -75,15 +73,27 @@ If you are running using headless mode, telemetry is disabled by default. To ena
 
 Regardless of the mode, data is saved locally to the user's home directory in the ``~/.nvidia-omniverse/logs/`` directory.
 
+.. _configuring-telemetry:
+
 Configuring Telemetry
 ----------------------
 
-Telemetry can be enabled or disabled through extension settings in ``extension.toml``.
+To disable telemetry transmission (data collection), set ``--/telemetry/enableAnonymousData=false`` (or 0) on the command line or in the application config. Telemetry events will still be logged locally. Alternatively, in the app's ``.kit`` file, set ``enableAnonymousData = false`` under ``[settings.telemetry]`` (refer to :doc:`Data Collection & Usage <../common/data-collection>`).
+
+To disable all telemetry (transmission and local logging), set ``--/structuredLog/enable=false`` (or 0) on the command line or in the application config.
+
+Telemetry can also be enabled or disabled at the extension level through individual ``extension.toml`` files.
 
 The following extensions contain specific telemetry settings:
 
-* ``isaacsim.replicator.agent``
-* ``omni.metropolis.utils``
+* ``isaacsim.replicator.agent`` — config at ``EXTS_PATH/isaacsim.replicator.agent.core/config/extension.toml``
+* ``omni.metropolis.utils`` — config at ``EXTS_PATH/omni.metropolis.utils/config/extension.toml``
+
+.. note::
+
+   ``isaacsim.replicator.agent`` has two parts (``isaacsim.replicator.agent.core`` and ``isaacsim.replicator.agent.ui``). Updating the setting in the **core** extension affects both.
+
+   ``EXTS_PATH`` varies by platform. For example, on **Windows** it might look like ``C:\isaacsim\extscache\isaacsim.replicator.agent.core-1.x.y\config\extension.toml``; on **Linux**, like ``~/isaacsim/extscache/isaacsim.replicator.agent.core-1.x.y/config/extension.toml`` (version ``1.x.y`` might differ).
 
 .. code-block:: toml
 
@@ -133,4 +143,4 @@ Related Documentation
 Additional Resources
 --------------------
 
-* `Omniverse Telemetry Walkthrough <https://docs.omniverse.nvidia.com/kit/docs/carbonite/latest/structuredlog/Walkthrough.html>`_
+* `Omniverse Telemetry Walkthrough <https://docs.omniverse.nvidia.com/kit/docs/carbonite/latest/docs/structuredlog/Walkthrough.html>`_
