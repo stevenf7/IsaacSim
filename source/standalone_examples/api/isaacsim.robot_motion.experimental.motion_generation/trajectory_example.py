@@ -135,10 +135,7 @@ class LinearTrajectory(mg.Trajectory):
         return mg.RobotState(
             joints=mg.JointState.from_name(
                 robot_joint_space=self._robot_joint_space,
-                positions=(
-                    self._active_joints,
-                    wp.from_numpy(target_positions.astype(np.float32), dtype=wp.float32),
-                ),
+                positions=(self._active_joints, wp.from_numpy(target_positions)),
             )
         )
 
@@ -213,14 +210,8 @@ def setup_scene() -> tuple[Articulation, list[str]]:
     # Setup scene
     stage_utils.create_new_stage(template="default stage")
 
-    # Add ground plane
-    assets_root_path = get_assets_root_path()
-    stage_utils.add_reference_to_stage(
-        usd_path=assets_root_path + "/Isaac/Environments/Grid/default_environment.usd",
-        path="/World/ground",
-    )
-
     # Add Franka robot
+    assets_root_path = get_assets_root_path()
     franka_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
     robot_prim = stage_utils.add_reference_to_stage(usd_path=franka_path, path="/World/Franka")
 
@@ -324,8 +315,9 @@ def run_trajectory_following_example(robot: Articulation, robot_joint_space: lis
         # Create Path and convert to minimal-time trajectory
         path = mg.Path(waypoints)
 
-        # Joint limits for Franka Panda (approximate values)
-        max_velocities = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])  # rad/s
+        # Joint velocity and acceleration limits for Franka Panda
+        # (not real values, just for demonstration)
+        max_velocities = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])  # rad/s
         max_accelerations = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])  # rad/s²
 
         trajectory = path.to_minimal_time_joint_trajectory(
@@ -364,6 +356,10 @@ def run_trajectory_following_example(robot: Articulation, robot_joint_space: lis
     # <start-trajectory-control-loop-snippet>
     dt = SimulationManager.get_physics_dt()
     num_steps = int((trajectory.duration + 1.0) / dt)  # Run slightly longer than trajectory duration
+
+    for step in range(300):
+        # stand still for a bit.
+        simulation_app.update()
 
     for step in range(num_steps):
         # Update simulation

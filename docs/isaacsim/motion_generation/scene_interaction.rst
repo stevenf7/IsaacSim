@@ -239,25 +239,92 @@ Running the Example
 
 When you run the standalone example, you should see a group of objects falling in the simulation. The example demonstrates how :class:`WorldBinding` synchronizes obstacle data from the USD scene to your planning library as the objects move.
 
-You should see output in the terminal showing the synchronization updates:
+.. figure:: images/isim_6.0_full_tut_viewport_falling_objects_capture.webp
+   :align: center
+   :width: 100%
+
+   Objects falling under gravity.
+
+You should see output in the terminal showing the synchronization updates. As expected, the synchronizations show ``/World/Mesh1`` (the thin box) free falling, and then rotating as it hits the ground.
 
 .. code-block:: text
 
-   Synchronized binding at step 0
-   WorldBinding update - /World/Obstacle1:
-     Position: [1.000, 0.000, 0.473]
-     Orientation (quat wxyz): [1.000, 0.000, 0.000, 0.000]
-   Synchronized binding at step 30
-   WorldBinding update - /World/Obstacle1:
-     Position: [1.000, 0.000, 0.200]
-     Orientation (quat wxyz): [1.000, 0.000, 0.000, 0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.500, 0.484]
+    Orientation (quat wxyz): [0.924, 0.383, 0.000, 0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.500, 0.473]
+    Orientation (quat wxyz): [0.924, 0.383, 0.000, 0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.500, 0.459]
+    Orientation (quat wxyz): [0.924, 0.383, 0.000, 0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.500, 0.443]
+    Orientation (quat wxyz): [0.924, 0.383, 0.000, 0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.500, 0.424]
+    Orientation (quat wxyz): [0.924, 0.383, 0.000, 0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.500, 0.402]
+    Orientation (quat wxyz): [0.924, 0.383, 0.000, 0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.500, 0.377]
+    Orientation (quat wxyz): [0.924, 0.383, 0.000, 0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.500, 0.350]
+    Orientation (quat wxyz): [0.924, 0.383, 0.000, 0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.500, 0.320]
+    Orientation (quat wxyz): [0.924, 0.383, 0.000, 0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.500, 0.287]
+    Orientation (quat wxyz): [0.924, 0.383, 0.000, 0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.500, 0.252]
+    Orientation (quat wxyz): [0.924, 0.383, 0.000, 0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.500, 0.214]
+    Orientation (quat wxyz): [0.924, 0.383, 0.000, 0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.486, 0.203]
+    Orientation (quat wxyz): [0.936, 0.353, 0.000, -0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.472, 0.192]
+    Orientation (quat wxyz): [0.948, 0.320, -0.000, -0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.458, 0.178]
+    Orientation (quat wxyz): [0.959, 0.284, -0.000, -0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.443, 0.163]
+    Orientation (quat wxyz): [0.970, 0.245, -0.000, -0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.429, 0.146]
+    Orientation (quat wxyz): [0.979, 0.203, -0.000, -0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.415, 0.126]
+    Orientation (quat wxyz): [0.988, 0.158, -0.000, -0.000]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.401, 0.104]
+    Orientation (quat wxyz): [0.994, 0.109, -0.000, -0.001]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.387, 0.079]
+    Orientation (quat wxyz): [0.998, 0.058, -0.000, -0.001]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.374, 0.053]
+    Orientation (quat wxyz): [1.000, 0.004, -0.000, -0.001]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.373, 0.050]
+    Orientation (quat wxyz): [1.000, -0.000, -0.000, -0.001]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.373, 0.050]
+    Orientation (quat wxyz): [1.000, 0.000, -0.000, -0.001]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.373, 0.050]
+    Orientation (quat wxyz): [1.000, -0.000, 0.000, -0.001]
+  WorldBinding update - /World/Mesh1:
+    Position: [-1.500, -1.373, 0.050]
+    Orientation (quat wxyz): [1.000, 0.000, 0.000, -0.001]
 
-The output shows how the obstacle's position changes as it falls, demonstrating that :class:`WorldBinding` is successfully tracking and updating the obstacle data in your planning library's world representation.
-
-.. image:: images/isim_6.0_full_tut_viewport_falling_objects_capture.png
-   :alt: Falling objects in the simulation scene
-   :align: center
-   :width: 100%
 
 Summary
 -------

@@ -195,7 +195,7 @@ Initialization: Parameterizing the Controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We need to parameterize the controller based on the geometry of our particular robot. The differential drive controller needs to know the wheel radius, 
-the distance between wheels (wheel base), and optionally some speed limits. We also need to know which joints control the left and right wheels:
+the distance between wheels (wheel base). We also need to know which joints control the left and right wheels:
 
 .. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
    :start-after: <start-differential-drive-init-snippet>
@@ -226,20 +226,20 @@ The :meth:`forward` method is where the controller does its work. We first verif
    :end-before: <end-differential-drive-forward-snippet>
    :language: python
 
-The controller uses differential drive kinematics to convert root velocities to wheel velocities. It also includes speed limiting to prevent excessive commands.
+The controller uses differential drive kinematics to convert root velocities to wheel velocities.
 
 Step 2: Adding Smoothing with a Low-Pass Filter
 #################################################
 
-Our differential drive controller works, but the wheel commands might be jerky if the input velocities change suddenly. To make our robot move more smoothly, 
-we'll add a low-pass filter controller that smooths the wheel velocity commands. This filter controller is generic and can be reused any other time we may want 
-joint filtering - it's not specific to differential drive controllers.
+Our differential drive controller works, but the wheel commands might be jerky if the input velocities change suddenly. We'll add a low-pass filter controller, which will smooth the wheel velocity commands
+at the expense of adding some lag into the system dynamics.
+This filter controller is generic and can be reused any other time we may want joint filtering - it's not specific to differential drive controllers.
 
 Initialization: Configuring the Filter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The low-pass filter controller needs to know the robot's joint space and the filter coefficient (alpha). The alpha parameter controls how much filtering 
-is applied - smaller values mean more filtering (smoother but slower response):
+is applied - smaller values mean more filtering (smoother but more lag in the system response):
 
 .. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
    :start-after: <start-low-pass-filter-init-snippet>
@@ -273,8 +273,8 @@ The filter controller applies a low-pass filter to the entire underlying data ar
 Step 3: Composing the Controllers
 ##################################
 
-Now we'll combine our two controllers using :class:`SequentialController`. The differential drive controller computes the wheel velocities, 
-and then the filter smooths them before they're sent to the robot:
+If the ``--filter`` argument is passed, we'll combine our two controllers using :class:`SequentialController`; the differential drive controller computes the wheel velocities, 
+and then the filter smooths them before they're sent to the robot. Otherwise, we'll use the differential drive controller alone.
 
 .. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
    :start-after: <start-sequential-controller-snippet>
@@ -282,13 +282,22 @@ and then the filter smooths them before they're sent to the robot:
    :language: python
 
 
-The :class:`SequentialController` runs the differential controller first, then passes its output as the setpoint to the filter controller. This creates a smooth, filtered command stream.
-
 Step 4: The Complete Control Loop
 ###################################
 
 Now we have all the pieces - the differential drive controller, the filter, and they're composed together. The final step is to put it all together 
-in a control loop that runs in real-time. Here's the complete control loop that brings everything together:
+in a control loop that runs in real-time. 
+
+First, this is how we will apply the desired state to the robot:
+
+.. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
+   :start-after: <start-apply-desired-state-to-robot-snippet>
+   :end-before: <end-apply-desired-state-to-robot-snippet>
+   :language: python
+
+And finally, here's the complete control loop that brings everything together. We set the setpoint linear and angular
+velocities (``v_linear`` and ``v_angular``) to be constant numbers, which should make the robot follow a circular path.
+If the ``--noise`` argument is passed, we add noise to the setpoint velocities.
 
 .. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
    :start-after: <start-mobile-control-loop-snippet>
@@ -316,10 +325,23 @@ The motion becomes jerky when you add the ``--noise`` argument, as the noisy inp
 smooth commands. However, when you add both ``--noise`` and ``--filter`` arguments, the motion becomes smooth again, 
 demonstrating how the low-pass filter controller rejects the high-frequency noise.
 
-.. image:: images/isim_6.0_full_tut_viewport_mobile_control.png
-   :alt: Mobile robot control demonstration showing smooth motion with filtering
+.. figure:: images/isim_6.0_full_tut_viewport_mobile_control.webp
    :align: center
    :width: 100%
+
+   Running the controller with no noise and no filtering.
+
+.. figure:: images/isim_6.0_full_tut_viewport_mobile_control_noise.webp
+   :align: center
+   :width: 100%
+
+   Running the controller with noise and no filtering.
+
+.. figure:: images/isim_6.0_full_tut_viewport_mobile_control_noise_filter.webp
+   :align: center
+   :width: 100%
+
+   Running the controller with noise and filtering.
 
 Next Steps
 ----------

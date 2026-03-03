@@ -169,10 +169,17 @@ Observing Trajectory Performance
 
 When you run the standalone example, you can observe how different trajectory types affect the robot's motion. The motion should be slightly more jerky when you add the ``--linear`` argument, as the linear interpolation between waypoints doesn't respect acceleration limits.
 
-.. image:: images/isim_6.0_full_tut_viewport_trajectory.png
-   :alt: Trajectory execution demonstration showing robot following a path
+.. figure:: images/isim_6.0_full_tut_viewport_trajectory.webp
    :align: center
    :width: 100%
+
+   Running the minimal-time joint trajectory (trapezoidal velocity profile).
+
+.. figure:: images/isim_6.0_full_tut_viewport_trajectory_linear.webp
+   :align: center
+   :width: 100%
+
+   Running the linear joint trajectory (equal time per segment).
 
 Summary
 -------
