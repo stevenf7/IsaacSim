@@ -81,19 +81,16 @@ files_strip_exclude = [
     ["*exts/omni.pip.compute/pip_prebundle/**"],
     ["*libscipy_openblas*.so"],
     ["*extscache/omni.kit.livestream.*/**"],
+    ["*exts/isaacsim.pip.newton/pip_prebundle/**"],
+    ["*kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
 ]
 
 [isaac-sim-docker.linux-x86_64]
 files = [
     ["_build/linux-x86_64/release/**", "."],
-    ["_build/docs/isaac-sim/latest/py/**", "docs/py/"],
 ]
 
 [isaac-sim-docker.linux-aarch64]
 files = [
     ["_build/linux-aarch64/release/**", "."]
-]
-
-files_strip_exclude = [
-    ["**/*.so"],
 ]

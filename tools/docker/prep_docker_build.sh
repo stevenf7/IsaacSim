@@ -39,20 +39,6 @@ build_function() {
         return 1
     fi
 
-# AUTOREMOVE: BEGIN
-    echo "Running repo.sh examples_list"
-    if ! ./repo.sh examples_list; then
-        echo "Error: repo.sh examples_list failed" >&2
-        return 1
-    fi
-
-    echo "Running build_docs.sh"
-    if ! ./tools/build_docs.sh; then
-        echo "Error: tools/build_docs.sh failed" >&2
-        return 1
-    fi
-# AUTOREMOVE: END
-
     echo "Build sequence completed successfully!"
 }
 
@@ -91,14 +77,10 @@ done
 # Run build sequence if --build was specified
 if [[ "$RUN_BUILD" == "true" ]]; then
     echo ""
-    # Remove stale Docker context and docs cache so build_docs does not see old paths (e.g. _container_temp in Sphinx doctree)
+    # Remove stale Docker context before rebuild
     if [[ -d "_container_temp" ]]; then
-        echo "Removing existing _container_temp to avoid stale paths in docs build..."
+        echo "Removing existing _container_temp for fresh Docker context..."
         rm -rf _container_temp
-    fi
-    if [[ -d "${HOME}/.cache/packman/chk/repo_docs_deps" ]]; then
-        echo "Clearing docs cache (repo_docs_deps) to avoid stale Sphinx doctrees..."
-        rm -rf "${HOME}/.cache/packman/chk/repo_docs_deps"
     fi
     build_function
     if [[ $? -ne 0 ]]; then
