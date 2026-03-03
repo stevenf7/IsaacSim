@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.1] - 2026-03-02
+### Changed
+- Update assets path to 6.0 staging
+
 ## [1.7.0] - 2026-02-13
 ### Changed
 - Add retry attempts and retry base delay settings for asset root connectivity checks
