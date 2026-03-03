@@ -150,11 +150,8 @@ Alternatively, use the provided helper script which drops into a bash shell insi
 
 ```bash
 # Create cache/log mounts (optional; use uid 1234 to match container user)
-mkdir -p ~/docker/isaac-sim/cache/main/ov ~/docker/isaac-sim/cache/main/warp
-mkdir -p ~/docker/isaac-sim/cache/computecache
-mkdir -p ~/docker/isaac-sim/config ~/docker/isaac-sim/data/documents ~/docker/isaac-sim/data/Kit
-mkdir -p ~/docker/isaac-sim/logs ~/docker/isaac-sim/pkg
-sudo chown -R 1234:1234 ~/docker/isaac-sim
+mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
+sudo chown -R 1234:1234 ~/docker
 
 docker run --name isaac-sim --rm -it --gpus all --network=host \
   -e ACCEPT_EULA=Y \
@@ -213,6 +210,10 @@ A `docker-compose.yml` is provided that launches both Isaac Sim (headless stream
 ### Quick start
 
 ```bash
+# Create cache/log mounts (use uid 1234 to match container user)
+mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
+sudo chown -R 1234:1234 ~/docker
+
 # 1. Build the Isaac Sim image (existing workflow)
 ./tools/docker/prep_docker_build.sh --build
 ./tools/docker/build_docker.sh
