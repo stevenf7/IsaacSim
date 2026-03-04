@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Provides world binding functionality to synchronize USD prims with planning world interfaces for motion generation."""
+
+
 from typing import Any, Generic, TypeVar
 
 import isaacsim.core.experimental.utils.backend as backend_utils

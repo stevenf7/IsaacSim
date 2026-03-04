@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""UI builder module for the UR10 trajectory generation tutorial extension."""
+
+
 import numpy as np
 import omni.timeline
 import omni.ui as ui
@@ -29,6 +32,21 @@ from .scenario import UR10TrajectoryGenerationExample
 
 
 class UIBuilder:
+    """UI builder for the UR10 trajectory generation tutorial extension.
+
+    Provides an interactive interface for demonstrating robot motion generation concepts including configuration space
+    trajectories, task space trajectories, and advanced trajectory planning. The UI enables users to load a UR10 robot
+    scenario, reset the simulation, and execute different types of trajectory generation examples.
+
+    The interface includes world control buttons for loading and resetting the scenario, and trajectory execution
+    buttons for running configuration space, task space, and advanced trajectory demonstrations. Each trajectory type
+    showcases different aspects of robot motion planning and control.
+
+    The UI automatically handles timeline events, physics step callbacks, and stage events to maintain proper state
+    management throughout the simulation lifecycle. It integrates with the Isaac Sim World system to manage scene
+    objects and simulation parameters.
+    """
+
     def __init__(self):
         # Frames are sub-windows that can contain multiple UI elements
         self.frames = []
@@ -75,7 +93,7 @@ class UIBuilder:
         Physics steps only occur when the timeline is playing
 
         Args:
-            step (float): Size of physics step
+            step: Size of physics step.
         """
         pass
 
@@ -91,8 +109,7 @@ class UIBuilder:
         self._reset_extension()
 
     def cleanup(self):
-        """
-        Called when the stage is closed or the extension is hot reloaded.
+        """Called when the stage is closed or the extension is hot reloaded.
         Perform any necessary cleanup such as removing active callback functions
         Buttons imported from omni.isaac.ui.element_wrappers implement a cleanup function that should be called
         """
@@ -100,8 +117,7 @@ class UIBuilder:
             ui_elem.cleanup()
 
     def build_ui(self):
-        """
-        Build a custom UI tool to run your extension.
+        """Build a custom UI tool to run your extension.
         This function will be called any time the UI window is closed and reopened.
         """
         world_controls_frame = CollapsableFrame("World Controls", collapsed=False)
@@ -163,22 +179,20 @@ class UIBuilder:
     ######################################################################################
 
     def _on_init(self):
+        """Initialize the extension state and scenario."""
         self._articulation = None
         self._cuboid = None
         self._scenario = UR10TrajectoryGenerationExample()
 
     def _add_light_to_stage(self):
-        """
-        A new stage does not have a light by default.  This function creates a spherical light
-        """
+        """A new stage does not have a light by default. This function creates a spherical light"""
         sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
         SingleXFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
 
     def _setup_scene(self):
-        """
-        This function is attached to the Load Button as the setup_scene_fn callback.
+        """This function is attached to the Load Button as the setup_scene_fn callback.
         On pressing the Load Button, a new instance of World() is created and then this function is called.
         The user should now load their assets onto the stage and add them to the World Scene.
         """
@@ -194,8 +208,7 @@ class UIBuilder:
             world.scene.add(loaded_object)
 
     def _setup_scenario(self):
-        """
-        This function is attached to the Load Button as the setup_post_load_fn callback.
+        """This function is attached to the Load Button as the setup_post_load_fn callback.
         The user may assume that their assets have been loaded by their setup_scene_fn callback, that
         their objects are properly initialized, and that the timeline is paused on timestep 0.
 
@@ -211,8 +224,7 @@ class UIBuilder:
         self._reset_btn.enabled = True
 
     def _on_post_reset_btn(self):
-        """
-        This function is attached to the Reset Button as the post_reset_fn callback.
+        """This function is attached to the Reset Button as the post_reset_fn callback.
         The user may assume that their objects are properly initialized, and that the timeline is paused on timestep 0.
 
         They may also assume that objects that were added to the World.Scene have been moved to their default positions.
@@ -233,11 +245,18 @@ class UIBuilder:
         When the b_text "STOP" is pressed, the physics callback is removed.
 
         Args:
-            step (float): The dt of the current physics step
+            step: The dt of the current physics step
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
         """
         self._scenario.update(step)
 
     def _on_run_cspace(self):
+        """Initiates the configuration space trajectory demonstration.
+
+        Starts the timeline, resets the scenario, and sets up the configuration space trajectory.
+        Disables other trajectory buttons to prevent conflicts.
+        """
         self._timeline.play()
         self._scenario.reset()
         self._taskspace_trajectory_btn.reset()
@@ -245,6 +264,11 @@ class UIBuilder:
         self._scenario.setup_cspace_trajectory()
 
     def _on_run_taskspace(self):
+        """Initiates the task space trajectory demonstration.
+
+        Starts the timeline, resets the scenario, and sets up the task space trajectory.
+        Disables other trajectory buttons to prevent conflicts.
+        """
         self._timeline.play()
         self._scenario.reset()
         self._cspace_trajectory_btn.reset()
@@ -252,6 +276,11 @@ class UIBuilder:
         self._scenario.setup_taskspace_trajectory()
 
     def _on_run_advanced(self):
+        """Initiates the advanced trajectory demonstration.
+
+        Starts the timeline, resets the scenario, and sets up the advanced trajectory.
+        Disables other trajectory buttons to prevent conflicts.
+        """
         self._timeline.play()
         self._scenario.reset()
         self._cspace_trajectory_btn.reset()
@@ -259,6 +288,10 @@ class UIBuilder:
         self._scenario.setup_advanced_trajectory()
 
     def _on_stop(self):
+        """Stops the currently running trajectory demonstration.
+
+        Pauses the timeline to halt the physics simulation.
+        """
         self._timeline.pause()
 
     def _reset_extension(self):
@@ -269,6 +302,10 @@ class UIBuilder:
         self._reset_ui()
 
     def _reset_ui(self):
+        """Resets the UI elements to their initial state.
+
+        Disables all trajectory buttons and the reset button, and resets their visual state.
+        """
         self._cspace_trajectory_btn.reset()
         self._taskspace_trajectory_btn.reset()
         self._advanced_trajectory_btn.reset()

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utilities for computing bounding box approximations from mesh geometries."""
+
+
 import numpy as np
 import trimesh
 from isaacsim.core.experimental.objects import Mesh
@@ -52,7 +55,7 @@ def _core_mesh_to_trimesh(input_mesh: Mesh) -> trimesh.Trimesh:
     return _trimesh
 
 
-def _clean_mesh(input_mesh: trimesh.Trimesh) -> None:
+def _clean_mesh(input_mesh: trimesh.Trimesh):
     """Clean an Trimesh triangle mesh in-place.
 
     Args:

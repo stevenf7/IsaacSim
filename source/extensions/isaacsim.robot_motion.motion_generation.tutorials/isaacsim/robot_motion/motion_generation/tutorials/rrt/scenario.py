@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides a complete tutorial example demonstrating RRT path planning for a Franka Panda robot with collision avoidance."""
+
+
 import os
 
 import numpy as np
@@ -29,6 +32,23 @@ from isaacsim.storage.native import get_assets_root_path
 
 
 class FrankaRrtExample:
+    """A tutorial example demonstrating RRT path planning for a Franka Panda robot.
+
+    This class provides a complete example of using the RRT (Rapidly-exploring Random Tree) path planner
+    to generate collision-free trajectories for a Franka Panda robot arm. The example includes loading
+    a robot and target assets, setting up obstacles, and continuously replanning paths as the target moves.
+
+    The example demonstrates:
+        - Loading a Franka Panda robot and target object into the scene
+        - Setting up an RRT path planner with collision avoidance
+        - Adding obstacles to the planning environment
+        - Generating and executing motion plans as ArticulationActions
+        - Replanning when the target position changes
+
+    The robot will continuously plan paths to reach a movable target frame while avoiding a wall obstacle.
+    Path replanning occurs every 60 simulation frames when the target has moved beyond a threshold distance.
+    """
+
     def __init__(self):
         self._rrt = None
         self._path_planner_visualizer = None
@@ -41,6 +61,14 @@ class FrankaRrtExample:
         self._frame_counter = 0
 
     def load_example_assets(self):
+        """Loads and configures the Franka Panda robot, target frame, and obstacle into the USD stage.
+
+        Adds a Franka Panda robot at "/panda", a target frame at "/World/target", and a wall obstacle
+        at "/World/Wall". The target is positioned at [0.45, 0.5, 0.7] with a specific orientation.
+
+        Returns:
+            A tuple containing the articulation and target XForm prim for registration with core.World.
+        """
         # Add the Franka and target to the stage
         # The position in which things are loaded is also the position in which they
 
@@ -62,6 +90,12 @@ class FrankaRrtExample:
         return self._articulation, self._target
 
     def setup(self):
+        """Initializes the RRT path planner and visualization components.
+
+        Configures the RRT planner with Franka robot configuration files, adds the obstacle to the
+        planner's world representation, sets maximum iterations to 5000, and creates a PathPlannerVisualizer
+        for generating articulation actions. Also calls reset to initialize the planning state.
+        """
         # Lula config files for supported robots are stored in the motion_generation extension under
         # "/path_planner_configs" and "/motion_policy_configs"
         mg_extension_path = get_extension_path_from_name("isaacsim.robot_motion.motion_generation")
@@ -92,6 +126,15 @@ class FrankaRrtExample:
         self.reset()
 
     def update(self, step: float):
+        """Updates the robot motion planning and execution based on target movement.
+
+        Checks if the target has moved beyond thresholds (0.01 for translation, 0.01 radians for rotation).
+        If the target moved and 60 frames have passed, replans the path using RRT. Executes the next
+        action from the current plan if available.
+
+        Args:
+            step: Time step for the update cycle.
+        """
         current_target_translation, current_target_orientation = self._target.get_world_pose()
         current_target_rotation = quats_to_rot_matrices(current_target_orientation)
 
@@ -115,6 +158,11 @@ class FrankaRrtExample:
         self._frame_counter += 1
 
     def reset(self):
+        """Resets the planning state to initial conditions.
+
+        Clears the target position and rotation tracking, resets the frame counter to zero,
+        and empties the current motion plan.
+        """
         self._target_translation = np.zeros(3)
         self._target_rotation = np.eye(3)
         self._frame_counter = 0

@@ -1,4 +1,8 @@
 # Changelog
+## [0.2.0] - 2026-03-04
+### Changed
+- Added Overview.md and python_api.md and updated docstrings
+
 ## [0.1.3] - 2026-01-25
 ### Changed
 - Update license headers

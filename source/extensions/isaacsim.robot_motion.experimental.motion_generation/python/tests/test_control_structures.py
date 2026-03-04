@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Tests for motion generation control structures including controllers and their compositions."""
+
+
 from enum import Enum
 from typing import Optional
 
@@ -26,6 +30,24 @@ import warp as wp
 # we can control whether or not they throw errors.
 # we can also see whether or not they were reset.
 class DefaultController(mg.BaseController):
+    """A test controller implementation that extends BaseController for motion generation testing.
+
+    This controller provides basic functionality for testing robot motion generation workflows. It maintains
+    internal state to track reset calls and can be configured to simulate error conditions for testing
+    failure scenarios.
+
+    The controller generates simple robot states with default joint configurations, returning zero values
+    for positions, velocities, and efforts. It includes flags to control whether reset and forward
+    operations should succeed or fail, making it useful for unit testing and validation of controller
+    container behavior.
+
+    Key features:
+    - Tracks whether the controller has been reset via the ``was_reset`` attribute
+    - Can simulate error conditions when ``should_error`` is set to True
+    - Returns consistent default joint state with "default" joint name
+    - Supports standard BaseController interface for reset and forward operations
+    """
+
     def __init__(self):
         self.was_reset = False
         self.should_error = False
@@ -33,12 +55,35 @@ class DefaultController(mg.BaseController):
     def reset(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> bool:
+        """Resets the controller state and marks it as having been reset.
+
+        Args:
+            estimated_state: Current estimated state of the robot.
+            setpoint_state: Desired target state for the robot.
+            t: Current simulation time in seconds.
+            **kwargs: Additional keyword arguments passed to the reset method.
+
+        Returns:
+            True if reset was successful, False if the controller is configured to error.
+        """
         self.was_reset = True
         return not self.should_error
 
     def forward(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> Optional[mg.RobotState]:
+        """Computes the next robot state with default joint configurations.
+
+        Args:
+            estimated_state: Current estimated state of the robot.
+            setpoint_state: Desired target state for the robot.
+            t: Current simulation time in seconds.
+            **kwargs: Additional keyword arguments passed to the forward method.
+
+        Returns:
+            Robot state with default joint positions, velocities, and efforts set to zero.
+            Returns None if the controller is configured to error.
+        """
         if self.should_error:
             return None
         return mg.RobotState(
@@ -52,6 +97,17 @@ class DefaultController(mg.BaseController):
 
 
 class OtherController(mg.BaseController):
+    """A test controller that generates robot state outputs for the "other" joint space.
+
+    This controller inherits from BaseController and provides a simple implementation for testing purposes.
+    It maintains internal state to track reset status and error conditions, and generates robot states with
+    specific joint values for the "other" joint in a dual-joint robot configuration.
+
+    The controller outputs joint positions, velocities, and efforts all set to 1.0 for the "other" joint,
+    while operating within a robot joint space containing both "default" and "other" joints. It can be
+    configured to simulate error conditions for testing controller failure scenarios.
+    """
+
     def __init__(self):
         self.was_reset = False
         self.should_error = False
@@ -59,12 +115,35 @@ class OtherController(mg.BaseController):
     def reset(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> bool:
+        """Resets the controller to its initial state.
+
+        Args:
+            estimated_state: Current estimated state of the robot.
+            setpoint_state: Desired target state for the robot.
+            t: Current simulation time.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            True if reset was successful, False otherwise.
+        """
         self.was_reset = True
         return not self.should_error
 
     def forward(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> Optional[mg.RobotState]:
+        """Computes the next control action for the robot.
+
+        Args:
+            estimated_state: Current estimated state of the robot.
+            setpoint_state: Desired target state for the robot.
+            t: Current simulation time.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            The computed robot state with joint positions, velocities, and efforts set to 1.0 for the "other" joint,
+            or None if an error occurs.
+        """
         if self.should_error:
             return None
         return mg.RobotState(
@@ -78,14 +157,44 @@ class OtherController(mg.BaseController):
 
 
 class AddOneController(mg.BaseController):
+    """A test controller that adds one to all joint state values from the setpoint state.
+
+    This controller is designed for testing purposes and takes the setpoint robot state,
+    adds 1.0 to all joint positions, velocities, and efforts, and returns the modified state.
+    If no setpoint state is provided, it returns None.
+    """
+
     def reset(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> bool:
+        """Reset the controller.
+
+        Args:
+            estimated_state: The current estimated robot state.
+            setpoint_state: The desired robot state target.
+            t: Current time.
+            **kwargs: Additional keyword arguments passed to the controller.
+
+        Returns:
+            True indicating successful reset.
+        """
         return True
 
     def forward(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> Optional[mg.RobotState]:
+        """Generate control commands by adding one to all setpoint values.
+
+        Args:
+            estimated_state: The current estimated robot state.
+            setpoint_state: The desired robot state target to modify.
+            t: Current time.
+            **kwargs: Additional keyword arguments passed to the controller.
+
+        Returns:
+            Modified robot state with all joint positions, velocities, and efforts increased by 1.0,
+            or None if no setpoint state is provided.
+        """
         if setpoint_state is None:
             return None
         return mg.RobotState(
@@ -105,27 +214,91 @@ class AddOneController(mg.BaseController):
 
 
 class AlwaysFailsController(mg.BaseController):
+    """A test controller that always fails during both reset and forward operations.
+
+    This controller is designed for testing error handling and failure scenarios in motion generation
+    systems. It consistently returns failure states to verify that parent controllers and control
+    structures handle failures correctly.
+    """
 
     def reset(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> bool:
+        """Resets the controller and always returns failure status.
+
+        Args:
+            estimated_state: Current estimated robot state.
+            setpoint_state: Target setpoint state for the robot.
+            t: Current time in seconds.
+            **kwargs: Additional keyword arguments passed to the controller.
+
+        Returns:
+            Always returns False to indicate reset failure.
+        """
         return False
 
     def forward(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> Optional[mg.RobotState]:
+        """Computes the control output and always returns None to indicate failure.
+
+        Args:
+            estimated_state: Current estimated robot state.
+            setpoint_state: Target setpoint state for the robot.
+            t: Current time in seconds.
+            **kwargs: Additional keyword arguments passed to the controller.
+
+        Returns:
+            Always returns None to indicate control computation failure.
+        """
         return None
 
 
 class RootController(mg.BaseController):
+    """A test controller that outputs fixed root state values.
+
+    This controller generates a ``RobotState`` containing hardcoded root state information including position,
+    orientation, linear velocity, and angular velocity. It is primarily used for testing purposes to validate
+    root state handling in the motion generation system.
+
+    The controller always succeeds during reset operations and returns a consistent root state with:
+    - Position: [1.0, 2.0, 3.0]
+    - Orientation: [0.0, 0.0, 0.0, 1.0] (quaternion)
+    - Linear velocity: [0.1, 0.2, 0.3]
+    - Angular velocity: [0.4, 0.5, 0.6]
+    """
+
     def reset(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> bool:
+        """Initialize the root controller with the current robot state.
+
+        Args:
+            estimated_state: Current estimated robot state.
+            setpoint_state: Target robot state to achieve.
+            t: Current time in seconds.
+            **kwargs: Additional keyword arguments passed to the controller.
+
+        Returns:
+            True if initialization was successful.
+        """
         return True
 
     def forward(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> Optional[mg.RobotState]:
+        """Generate a robot state with root position, orientation, and velocity commands.
+
+        Args:
+            estimated_state: Current estimated robot state.
+            setpoint_state: Target robot state to achieve.
+            t: Current time in seconds.
+            **kwargs: Additional keyword arguments passed to the controller.
+
+        Returns:
+            Robot state containing root position at [1.0, 2.0, 3.0], orientation as identity quaternion,
+            linear velocity at [0.1, 0.2, 0.3], and angular velocity at [0.4, 0.5, 0.6].
+        """
         return mg.RobotState(
             root=mg.RootState(
                 position=wp.array([1.0, 2.0, 3.0]),
@@ -137,14 +310,47 @@ class RootController(mg.BaseController):
 
 
 class LinkController(mg.BaseController):
+    """A test controller that generates link spatial states for robot motion testing.
+
+    This controller is designed for testing purposes and returns a predefined ``RobotState`` containing
+    link spatial information. It always succeeds during reset operations and generates consistent output
+    with a single link named "link_a" positioned at the origin with a specific orientation.
+
+    The controller outputs spatial state data including positions, orientations, linear velocities,
+    and angular velocities for the specified link. This makes it useful for validating link-based
+    control systems and testing spatial state handling in robot motion generation pipelines.
+    """
+
     def reset(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> bool:
+        """Resets the link controller.
+
+        Args:
+            estimated_state: Current estimated state of the robot.
+            setpoint_state: Desired state to be achieved.
+            t: Current time in seconds.
+            **kwargs: Additional keyword arguments passed to the controller.
+
+        Returns:
+            True if reset was successful.
+        """
         return True
 
     def forward(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> Optional[mg.RobotState]:
+        """Computes the desired robot state for link control.
+
+        Args:
+            estimated_state: Current estimated state of the robot.
+            setpoint_state: Desired state to be achieved.
+            t: Current time in seconds.
+            **kwargs: Additional keyword arguments passed to the controller.
+
+        Returns:
+            Robot state containing spatial state for link "link_a" with position and orientation data.
+        """
         return mg.RobotState(
             links=mg.SpatialState.from_name(
                 spatial_space=["link_a"],
@@ -157,14 +363,46 @@ class LinkController(mg.BaseController):
 
 
 class SiteController(mg.BaseController):
+    """A test controller that generates spatial states for robot sites.
+
+    This controller is designed for testing purposes and generates a fixed spatial state for a single site
+    named "site_a". It sets the site position to [1.0, 0.0, 0.0] and orientation to [0.0, 0.0, 1.0, 0.0]
+    with zero velocities.
+
+    The controller always succeeds during reset operations and returns a valid RobotState containing
+    site spatial information during forward passes.
+    """
+
     def reset(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> bool:
+        """Resets the site controller.
+
+        Args:
+            estimated_state: Current estimated robot state.
+            setpoint_state: Desired setpoint robot state.
+            t: Current time in seconds.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            True if reset was successful.
+        """
         return True
 
     def forward(
         self, estimated_state: mg.RobotState, setpoint_state: Optional[mg.RobotState], t: float, **kwargs
     ) -> Optional[mg.RobotState]:
+        """Computes the robot state with site spatial information.
+
+        Args:
+            estimated_state: Current estimated robot state.
+            setpoint_state: Desired setpoint robot state.
+            t: Current time in seconds.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Robot state containing site spatial data with position, orientation, and velocity information for site_a.
+        """
         return mg.RobotState(
             sites=mg.SpatialState.from_name(
                 spatial_space=["site_a"],
@@ -178,15 +416,34 @@ class SiteController(mg.BaseController):
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of the module will make it auto-discoverable by omni.kit.test
 class TestControlStructures(omni.kit.test.AsyncTestCase):
+    """Test class for validating control structure implementations in the motion generation framework.
+
+    This class contains comprehensive test cases for the core control structures including ControllerContainer,
+    ParallelController, and SequentialController. It verifies controller switching mechanisms, error handling,
+    state management, and proper composition of multiple controllers.
+
+    The tests use dummy controller implementations to validate:
+
+    - Controller container functionality with enum-based controller selection
+    - Parallel execution of multiple controllers with state merging
+    - Sequential controller chaining with output propagation
+    - Error propagation and failure handling across control structures
+    - Reset behavior and state management
+    - Proper handling of robot state components (joints, root, links, sites)
+    """
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures before each test method is run."""
         pass
 
     # After running each test
     async def tearDown(self):
+        """Clean up after each test method has run."""
         pass
 
     async def test_controller_container(self):
+        """Test ControllerContainer functionality including creation, controller switching, and error handling."""
 
         # creating a controller selection enum:
         class ControllerSelection(Enum):
@@ -325,6 +582,7 @@ class TestControlStructures(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(controller_container.get_controller(ControllerSelection.OTHER))
 
     async def test_parallel_controller(self):
+        """Test ParallelController functionality including output combination and error propagation."""
         # parallel controller must have at least two controllers.
         self.assertRaises(ValueError, mg.ParallelController, controllers=[])
         self.assertRaises(ValueError, mg.ParallelController, controllers=[DefaultController()])
@@ -389,6 +647,7 @@ class TestControlStructures(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(desired_state.sites.angular_velocities.numpy(), np.array([[0.0, 0.0, 0.0]])))
 
     async def test_sequential_controller(self):
+        """Test SequentialController functionality including chaining controllers and error propagation."""
         # sequential controller must have at least two controllers.
         self.assertRaises(ValueError, mg.SequentialController, controllers=[])
         self.assertRaises(ValueError, mg.SequentialController, controllers=[DefaultController()])

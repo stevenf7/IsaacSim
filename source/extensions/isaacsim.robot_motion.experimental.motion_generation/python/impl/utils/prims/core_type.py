@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utilities for determining USD prim shape types in the Isaac Sim robot motion generation system."""
+
+
 from typing import Type
 
 # TODO: Does something in the core experimental API already do this?

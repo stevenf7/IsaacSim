@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""User interface builder for the Franka RMP Flow robot motion generation tutorial."""
+
+
 import omni.timeline
 import omni.ui as ui
 from isaacsim.core.api.world import World
@@ -28,6 +31,24 @@ from .scenario import FrankaRmpFlowExample
 
 
 class UIBuilder:
+    """Builds and manages the user interface for the Franka RMP Flow robot motion generation tutorial.
+
+    This class creates a comprehensive UI that enables users to load robot scenarios, control simulation playback,
+    and run motion generation examples. It provides world controls for loading and resetting scenes, as well as
+    scenario controls for running and stopping robot motion demonstrations.
+
+    The UI includes:
+    - World Controls frame with Load and Reset buttons for scene management
+    - Run Scenario frame with state button for controlling motion execution
+    - Automatic timeline and physics step management
+    - Integration with the FrankaRmpFlowExample scenario
+
+    The class handles all UI lifecycle events including menu callbacks, timeline events, physics steps, and stage
+    events. It automatically sets up lighting, camera positioning, and loads robot assets when scenes are
+    initialized. The interface allows users to start and stop robot motion generation algorithms while providing
+    visual feedback through state-aware buttons.
+    """
+
     def __init__(self):
         # Frames are sub-windows that can contain multiple UI elements
         self.frames = []
@@ -70,7 +91,7 @@ class UIBuilder:
         Physics steps only occur when the timeline is playing
 
         Args:
-            step (float): Size of physics step
+            step: Size of physics step.
         """
         pass
 
@@ -86,8 +107,7 @@ class UIBuilder:
         self._reset_extension()
 
     def cleanup(self):
-        """
-        Called when the stage is closed or the extension is hot reloaded.
+        """Called when the stage is closed or the extension is hot reloaded.
         Perform any necessary cleanup such as removing active callback functions
         Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called
         """
@@ -95,8 +115,7 @@ class UIBuilder:
             ui_elem.cleanup()
 
     def build_ui(self):
-        """
-        Build a custom UI tool to run your extension.
+        """Build a custom UI tool to run your extension.
         This function will be called any time the UI window is closed and reopened.
         """
         world_controls_frame = CollapsableFrame("World Controls", collapsed=False)
@@ -135,22 +154,20 @@ class UIBuilder:
     ######################################################################################
 
     def _on_init(self):
+        """Initialize the extension state and scenario objects."""
         self._articulation = None
         self._cuboid = None
         self._scenario = FrankaRmpFlowExample()
 
     def _add_light_to_stage(self):
-        """
-        A new stage does not have a light by default.  This function creates a spherical light
-        """
+        """A new stage does not have a light by default. This function creates a spherical light"""
         sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
         XFormPrim(str(sphereLight.GetPath())).set_world_pose([6.5, 0, 12])
 
     def _setup_scene(self):
-        """
-        This function is attached to the Load Button as the setup_scene_fn callback.
+        """This function is attached to the Load Button as the setup_scene_fn callback.
         On pressing the Load Button, a new instance of World() is created and then this function is called.
         The user should now load their assets onto the stage and add them to the World Scene.
         """
@@ -166,8 +183,7 @@ class UIBuilder:
             world.scene.add(loaded_object)
 
     def _setup_scenario(self):
-        """
-        This function is attached to the Load Button as the setup_post_load_fn callback.
+        """This function is attached to the Load Button as the setup_post_load_fn callback.
         The user may assume that their assets have been loaded by their setup_scene_fn callback, that
         their objects are properly initialized, and that the timeline is paused on timestep 0.
 
@@ -182,8 +198,7 @@ class UIBuilder:
         self._reset_btn.enabled = True
 
     def _on_post_reset_btn(self):
-        """
-        This function is attached to the Reset Button as the post_reset_fn callback.
+        """This function is attached to the Reset Button as the post_reset_fn callback.
         The user may assume that their objects are properly initialized, and that the timeline is paused on timestep 0.
 
         They may also assume that objects that were added to the World.Scene have been moved to their default positions.
@@ -202,13 +217,14 @@ class UIBuilder:
         When the b_text "STOP" is pressed, the physics callback is removed.
 
         Args:
-            step (float): The dt of the current physics step
+            step: The dt of the current physics step.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
         """
         self._scenario.update(step)
 
     def _on_run_scenario_a_text(self):
-        """
-        This function is attached to the Run Scenario StateButton.
+        """This function is attached to the Run Scenario StateButton.
         This function was passed in as the on_a_click_fn argument.
         It is called when the StateButton is clicked while saying a_text "RUN".
 
@@ -219,8 +235,7 @@ class UIBuilder:
         self._timeline.play()
 
     def _on_run_scenario_b_text(self):
-        """
-        This function is attached to the Run Scenario StateButton.
+        """This function is attached to the Run Scenario StateButton.
         This function was passed in as the on_b_click_fn argument.
         It is called when the StateButton is clicked while saying a_text "STOP"
 
@@ -241,6 +256,10 @@ class UIBuilder:
         self._reset_ui()
 
     def _reset_ui(self):
+        """Resets the UI elements to their initial state.
+
+        Disables scenario and reset buttons and resets the scenario state button.
+        """
         self._scenario_state_btn.reset()
         self._scenario_state_btn.enabled = False
         self._reset_btn.enabled = False

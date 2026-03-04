@@ -20,7 +20,15 @@ from pxr import Plug
 from .api import MOTION_PLANNING_API_NAME, MOTION_PLANNING_ENABLED_ATTR, apply_motion_planning_api
 
 
-def _register_plugin_path(path: str) -> None:
+def _register_plugin_path(path: str):
+    """Register USD plugins from a directory path if not already registered.
+
+    Reads the plugInfo.json file in the specified path and registers USD plugins with the Pixar USD
+    plugin registry. Only registers plugins that are not already registered in the system.
+
+    Args:
+        path: Directory path containing the plugInfo.json file.
+    """
     pluginfo_path = os.path.join(path, "plugInfo.json")
     if not os.path.exists(pluginfo_path):
         return
@@ -53,7 +61,15 @@ def _register_plugin_path(path: str) -> None:
     Plug.Registry().RegisterPlugins(path)
 
 
-def _register_plugins(ext_path: str) -> None:
+def _register_plugins(ext_path: str):
+    """Register robot motion schema USD plugins from extension paths.
+
+    Registers USD plugins from the standard schema locations within the extension directory structure.
+    Attempts to register from both the main schema path and a fallback location.
+
+    Args:
+        ext_path: Root path of the extension directory.
+    """
     _register_plugin_path(os.path.join(ext_path, "usd", "schema", "isaac", "robot_motion_schema"))
     _register_plugin_path(os.path.join(ext_path, "robot_motion_schema"))
 

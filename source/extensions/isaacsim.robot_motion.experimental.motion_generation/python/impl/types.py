@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides container classes for representing robot states including joints, spatial frames, and root links."""
+
+
 from typing import Literal
 
 import numpy as np
@@ -81,7 +84,7 @@ class JointState:
         positions: tuple[list[str], wp.array] | None = None,
         velocities: tuple[list[str], wp.array] | None = None,
         efforts: tuple[list[str], wp.array] | None = None,
-    ):
+    ) -> "JointState":
         """Create a JointState from joint names and data arrays.
 
         At least one of positions, velocities, or efforts must be provided. Each tuple
@@ -208,7 +211,7 @@ class JointState:
         positions: tuple[wp.array, wp.array] | None = None,
         velocities: tuple[wp.array, wp.array] | None = None,
         efforts: tuple[wp.array, wp.array] | None = None,
-    ):
+    ) -> "JointState":
         """Create a JointState from joint indices and data arrays.
 
         At least one of positions, velocities, or efforts must be provided. Each tuple
@@ -330,23 +333,35 @@ class JointState:
         return cls(robot_joint_space, data, valid)
 
     @property
-    def robot_joint_space(self):
-        """Get the list joints defining the joint-space of this JointState"""
+    def robot_joint_space(self) -> list[str]:
+        """List of joints defining the joint-space of this JointState.
+
+        Returns:
+            The ordered list of joint names defining the joint space.
+        """
         return self.__robot_joint_space
 
     @property
-    def position_names(self):
-        """Get the list of joint names that have valid positions."""
+    def position_names(self) -> list[str]:
+        """List of joint names that have valid positions.
+
+        Returns:
+            The list of joint names with valid position data.
+        """
         return self.__position_names
 
     @property
-    def position_indices(self):
-        """Get the list of joint indices that have valid positions."""
+    def position_indices(self) -> wp.array:
+        """List of joint indices that have valid positions.
+
+        Returns:
+            A 1D warp array of joint indices with valid position data.
+        """
         return self.__position_indices
 
     @property
-    def positions(self):
-        """Get valid positions as a warp array.
+    def positions(self) -> wp.array | None:
+        """Valid positions as a warp array.
 
         Returns:
             A 1D warp array containing position values for joints with valid positions.
@@ -355,18 +370,26 @@ class JointState:
         return self.__valid_positions
 
     @property
-    def velocity_names(self):
-        """Get the list of joint names that have valid velocities."""
+    def velocity_names(self) -> list[str]:
+        """List of joint names that have valid velocities.
+
+        Returns:
+            The list of joint names with valid velocity data.
+        """
         return self.__velocity_names
 
     @property
-    def velocity_indices(self):
-        """Get the list of joint indices that have valid velocities."""
+    def velocity_indices(self) -> wp.array:
+        """List of joint indices that have valid velocities.
+
+        Returns:
+            A 1D warp array of joint indices with valid velocity data.
+        """
         return self.__velocity_indices
 
     @property
-    def velocities(self):
-        """Get valid velocities as a warp array.
+    def velocities(self) -> wp.array | None:
+        """Valid velocities as a warp array.
 
         Returns:
             A 1D warp array containing velocity values for joints with valid velocities.
@@ -375,18 +398,26 @@ class JointState:
         return self.__valid_velocities
 
     @property
-    def effort_names(self):
-        """Get the list of joint names that have valid efforts."""
+    def effort_names(self) -> list[str]:
+        """List of joint names that have valid efforts.
+
+        Returns:
+            The list of joint names with valid effort data.
+        """
         return self.__effort_names
 
     @property
-    def effort_indices(self):
-        """Get the list of joint indices that have valid efforts."""
+    def effort_indices(self) -> wp.array:
+        """List of joint indices that have valid efforts.
+
+        Returns:
+            A 1D warp array containing the indices of joints with valid efforts.
+        """
         return self.__effort_indices
 
     @property
-    def efforts(self):
-        """Get valid efforts as a warp array.
+    def efforts(self) -> wp.array | None:
+        """Valid efforts as a warp array.
 
         Returns:
             A 1D warp array containing effort values for joints with valid efforts.
@@ -395,8 +426,8 @@ class JointState:
         return self.__valid_efforts
 
     @property
-    def data_array(self):
-        """Get the full data array.
+    def data_array(self) -> wp.array:
+        """Full data array.
 
         Returns:
             A 2D warp array with shape (3, N) where N is the length of robot_joint_space.
@@ -405,8 +436,8 @@ class JointState:
         return self.__data_array
 
     @property
-    def valid_array(self):
-        """Get the valid flags array.
+    def valid_array(self) -> wp.array:
+        """Valid flags array.
 
         Returns:
             A 2D boolean warp array with shape (3, N) indicating which fields are valid
@@ -414,15 +445,40 @@ class JointState:
         """
         return self.__valid_array
 
-    def __valid_array_to_joint_indices(self, row):
+    def __valid_array_to_joint_indices(self, row: int) -> wp.array:
+        """Convert valid flags in a row to joint indices.
+
+        Args:
+            row: Row index to extract valid joint indices from (0 for positions, 1 for velocities, 2 for efforts).
+
+        Returns:
+            A 1D warp array containing the indices of joints that have valid data in the specified row.
+        """
         valid_indices = np.where(self.__valid_array.numpy()[row, :].flatten())[0]
         return wp.from_numpy(valid_indices, dtype=wp.int32)
 
-    def __valid_array_to_joint_names(self, row):
+    def __valid_array_to_joint_names(self, row: int) -> list[str]:
+        """Convert valid flags in a row to joint names.
+
+        Args:
+            row: Row index to extract valid joint names from (0 for positions, 1 for velocities, 2 for efforts).
+
+        Returns:
+            A list of joint names that have valid data in the specified row.
+        """
         valid_indices = np.where(self.__valid_array.numpy()[row, :].flatten())[0]
         return [self.__robot_joint_space[i] for i in valid_indices]
 
-    def __get_valid_data_in_row(self, row):
+    def __get_valid_data_in_row(self, row: int) -> wp.array | None:
+        """Extract valid data values from a specific row.
+
+        Args:
+            row: Row index to extract valid data from (0 for positions, 1 for velocities, 2 for efforts).
+
+        Returns:
+            A 1D warp array containing valid data values from the specified row.
+            Returns None if no valid data exists in the row.
+        """
         valid_indices = np.where(self.__valid_array.numpy()[row, :].flatten())[0]
 
         if len(valid_indices) == 0:
@@ -547,7 +603,7 @@ class SpatialState:
         orientations: tuple[list[str], wp.array] | None = None,
         linear_velocities: tuple[list[str], wp.array] | None = None,
         angular_velocities: tuple[list[str], wp.array] | None = None,
-    ):
+    ) -> "SpatialState":
         """Create a SpatialState from frame names and data arrays.
 
         At least one of positions, orientations, linear_velocities, or angular_velocities
@@ -688,7 +744,7 @@ class SpatialState:
         orientations: tuple[wp.array, wp.array] | None = None,
         linear_velocities: tuple[wp.array, wp.array] | None = None,
         angular_velocities: tuple[wp.array, wp.array] | None = None,
-    ):
+    ) -> "SpatialState":
         """Create a SpatialState from frame indices and data arrays.
 
         At least one of positions, orientations, linear_velocities, or angular_velocities
@@ -824,23 +880,35 @@ class SpatialState:
         return cls(spatial_space, position_data, linear_velocity_data, orientation_data, angular_velocity_data, valid)
 
     @property
-    def spatial_space(self):
-        """Get the list of frame names."""
+    def spatial_space(self) -> list[str]:
+        """List of frame names.
+
+        Returns:
+            The ordered list of frame names defining the spatial space.
+        """
         return self.__spatial_space
 
     @property
-    def position_names(self):
-        """Get the list of frame names that have valid positions."""
+    def position_names(self) -> list[str]:
+        """List of frame names that have valid positions.
+
+        Returns:
+            The list of frame names that have valid positions.
+        """
         return self.__position_names
 
     @property
-    def position_indices(self):
-        """Get the list of frame indices that have valid positions."""
+    def position_indices(self) -> wp.array:
+        """List of frame indices that have valid positions.
+
+        Returns:
+            A 1D warp array of frame indices that have valid positions.
+        """
         return self.__position_indices
 
     @property
-    def positions(self):
-        """Get valid positions as a warp array.
+    def positions(self) -> wp.array | None:
+        """Valid positions as a warp array.
 
         Returns:
             A 2D warp array with shape (N, 3) containing position values for frames with valid
@@ -849,18 +917,26 @@ class SpatialState:
         return self.__valid_positions
 
     @property
-    def orientation_names(self):
-        """Get the list of frame names that have valid orientations."""
+    def orientation_names(self) -> list[str]:
+        """List of frame names that have valid orientations.
+
+        Returns:
+            The list of frame names that have valid orientations.
+        """
         return self.__orientation_names
 
     @property
-    def orientation_indices(self):
-        """Get the list of frame indices that have valid orientations."""
+    def orientation_indices(self) -> wp.array:
+        """List of frame indices that have valid orientations.
+
+        Returns:
+            A 1D warp array of frame indices that have valid orientations.
+        """
         return self.__orientation_indices
 
     @property
-    def orientations(self):
-        """Get valid orientations as a warp array.
+    def orientations(self) -> wp.array | None:
+        """Valid orientations as a warp array.
 
         Returns:
             A 2D warp array with shape (N, 4) containing orientation values (quaternions) for
@@ -869,91 +945,107 @@ class SpatialState:
         return self.__valid_orientations
 
     @property
-    def linear_velocity_names(self):
-        """Get the list of frame names that have valid linear velocities."""
+    def linear_velocity_names(self) -> list[str]:
+        """List of frame names that have valid linear velocities.
+
+        Returns:
+            The list of frame names that have valid linear velocities.
+        """
         return self.__linear_velocity_names
 
     @property
     def linear_velocity_indices(self):
-        """Get the list of frame indices that have valid linear velocities."""
+        """List of frame indices that have valid linear velocities.
+
+        Returns:
+            A 1D Warp array containing the indices of frames with valid linear velocities.
+        """
         return self.__linear_velocity_indices
 
     @property
     def linear_velocities(self):
-        """Get valid linear velocities as a warp array.
+        """Valid linear velocities as a Warp array.
 
         Returns:
-            A 2D warp array with shape (N, 3) containing linear velocity values for frames
+            A 2D Warp array with shape (N, 3) containing linear velocity values for frames
             with valid linear velocities. Returns None if no linear velocities are valid.
         """
         return self.__valid_linear_velocities
 
     @property
     def angular_velocity_names(self):
-        """Get the list of frame names that have valid angular velocities."""
+        """List of frame names that have valid angular velocities.
+
+        Returns:
+            A list of frame names that have valid angular velocities.
+        """
         return self.__angular_velocity_names
 
     @property
     def angular_velocity_indices(self):
-        """Get the list of frame indices that have valid angular velocities."""
+        """List of frame indices that have valid angular velocities.
+
+        Returns:
+            A 1D Warp array containing the indices of frames with valid angular velocities.
+        """
         return self.__angular_velocity_indices
 
     @property
     def angular_velocities(self):
-        """Get valid angular velocities as a warp array.
+        """Valid angular velocities as a Warp array.
 
         Returns:
-            A 2D warp array with shape (N, 3) containing angular velocity values for frames
+            A 2D Warp array with shape (N, 3) containing angular velocity values for frames
             with valid angular velocities. Returns None if no angular velocities are valid.
         """
         return self.__valid_angular_velocities
 
     @property
     def position_data(self):
-        """Get the full position data array.
+        """Full position data array.
 
         Returns:
-            A 2D warp array with shape (N, 3) containing position data for all frames in
+            A 2D Warp array with shape (N, 3) containing position data for all frames in
             the spatial space, regardless of validity flags.
         """
         return self.__position_data
 
     @property
     def orientation_data(self):
-        """Get the full orientation data array.
+        """Full orientation data array.
 
         Returns:
-            A 2D warp array with shape (N, 4) containing orientation data (quaternions) for
+            A 2D Warp array with shape (N, 4) containing orientation data (quaternions) for
             all frames in the spatial space, regardless of validity flags.
         """
         return self.__orientation_data
 
     @property
     def linear_velocity_data(self):
-        """Get the full linear velocity data array.
+        """Full linear velocity data array.
 
         Returns:
-            A 2D warp array with shape (N, 3) containing linear velocity data for all frames
+            A 2D Warp array with shape (N, 3) containing linear velocity data for all frames
             in the spatial space, regardless of validity flags.
         """
         return self.__linear_velocity_data
 
     @property
     def angular_velocity_data(self):
-        """Get the full angular velocity data array.
+        """Full angular velocity data array.
 
         Returns:
-            A 2D warp array with shape (N, 3) containing angular velocity data for all frames
+            A 2D Warp array with shape (N, 3) containing angular velocity data for all frames
             in the spatial space, regardless of validity flags.
         """
         return self.__angular_velocity_data
 
     @property
     def valid_array(self):
-        """Get the valid flags array.
+        """Valid flags array.
 
         Returns:
-            A 2D boolean warp array with shape (N, 4) indicating which fields are valid
+            A 2D boolean Warp array with shape (N, 4) indicating which fields are valid
             for each frame. Column 0 corresponds to positions, column 1 to orientations,
             column 2 to linear velocities, column 3 to angular velocities.
         """
@@ -962,7 +1054,15 @@ class SpatialState:
     def __valid_array_to_spatial_indices(
         self,
         dimension: Literal["position", "orientation", "linear_velocity", "angular_velocity"],
-    ):
+    ) -> wp.array:
+        """Get frame indices for valid entries in the specified spatial dimension.
+
+        Args:
+            dimension: The spatial dimension to check for valid entries.
+
+        Returns:
+            A 1D warp array containing indices of frames with valid data for the specified dimension.
+        """
         if dimension == "position":
             column_index = 0
         elif dimension == "orientation":
@@ -978,7 +1078,15 @@ class SpatialState:
     def __valid_array_to_spatial_names(
         self,
         dimension: Literal["position", "orientation", "linear_velocity", "angular_velocity"],
-    ):
+    ) -> list[str]:
+        """Get frame names for valid entries in the specified spatial dimension.
+
+        Args:
+            dimension: The spatial dimension to check for valid entries.
+
+        Returns:
+            A list of frame names with valid data for the specified dimension.
+        """
         if dimension == "position":
             column_index = 0
         elif dimension == "orientation":
@@ -995,7 +1103,16 @@ class SpatialState:
     def __get_valid_data_in_spatial_dimension(
         self,
         dimension: Literal["position", "orientation", "linear_velocity", "angular_velocity"],
-    ):
+    ) -> wp.array | None:
+        """Extract valid data for the specified spatial dimension.
+
+        Args:
+            dimension: The spatial dimension to extract valid data from.
+
+        Returns:
+            A 2D warp array containing valid data for the specified dimension.
+            Returns None if no valid data exists for the dimension.
+        """
 
         if dimension == "position":
             column_index = 0
@@ -1028,19 +1145,13 @@ class RootState:
 
     Args:
         position: The position of the root as a 1D warp array with 3 elements (x, y, z).
-            Defaults to None.
         orientation: The orientation of the root as a 1D warp array with 4 elements (w, x, y, z).
-            Defaults to None.
-        linear_velocity: The linear velocity of the root as a 1D warp array with 3 elements
-            (x, y, z). Defaults to None.
-        angular_velocity: The angular velocity of the root as a 1D warp array with 3 elements
-            (x, y, z). Defaults to None.
+        linear_velocity: The linear velocity of the root as a 1D warp array with 3 elements (x, y, z).
+        angular_velocity: The angular velocity of the root as a 1D warp array with 3 elements (x, y, z).
 
     Raises:
-        ValueError: If all of position, orientation, linear_velocity, and angular_velocity
-            are None.
-        ValueError: If any provided array is not a 1D warp array with the correct number
-            of elements.
+        ValueError: If all of position, orientation, linear_velocity, and angular_velocity are None.
+        ValueError: If any provided array is not a 1D warp array with the correct number of elements.
     """
 
     def __init__(
@@ -1117,8 +1228,8 @@ class RootState:
         )
 
     @property
-    def position(self):
-        """Get the root position.
+    def position(self) -> wp.array | None:
+        """Root position.
 
         Returns:
             A 1D warp array with 3 elements (x, y, z) representing the root position, or None
@@ -1127,8 +1238,8 @@ class RootState:
         return self.__position
 
     @property
-    def orientation(self):
-        """Get the root orientation.
+    def orientation(self) -> wp.array | None:
+        """Root orientation.
 
         Returns:
             A 1D warp array with 4 elements (w, x, y, z quaternion) representing the root
@@ -1137,8 +1248,8 @@ class RootState:
         return self.__orientation
 
     @property
-    def linear_velocity(self):
-        """Get the root linear velocity.
+    def linear_velocity(self) -> wp.array | None:
+        """Root linear velocity.
 
         Returns:
             A 1D warp array with 3 elements (x, y, z) representing the root linear velocity,
@@ -1147,8 +1258,8 @@ class RootState:
         return self.__linear_velocity
 
     @property
-    def angular_velocity(self):
-        """Get the root angular velocity.
+    def angular_velocity(self) -> wp.array | None:
+        """Root angular velocity.
 
         Returns:
             A 1D warp array with 3 elements (x, y, z) representing the root angular velocity,
@@ -1164,10 +1275,10 @@ class RobotState:
     and sites. All components are optional, allowing partial state representations.
 
     Args:
-        joints: The state of the robot's joints. Defaults to None.
-        root: The state of the robot's root link. Defaults to None.
-        links: The state of the robot's non-root rigid bodies. Defaults to None.
-        sites: The state of non-link reference frames (tools, sensors, etc.). Defaults to None.
+        joints: The state of the robot's joints.
+        root: The state of the robot's root link.
+        links: The state of the robot's non-root rigid bodies.
+        sites: The state of non-link reference frames (tools, sensors, etc.).
     """
 
     def __init__(
@@ -1195,8 +1306,8 @@ class RobotState:
         self.__sites = sites
 
     @property
-    def joints(self):
-        """Get the joint state.
+    def joints(self) -> JointState | None:
+        """Joint state containing joint positions, velocities, and efforts.
 
         Returns:
             The JointState instance containing joint positions, velocities, and efforts,
@@ -1205,8 +1316,8 @@ class RobotState:
         return self.__joints
 
     @property
-    def root(self):
-        """Get the root state.
+    def root(self) -> RootState | None:
+        """Root state containing root position, orientation, and velocities.
 
         Returns:
             The RootState instance containing root position, orientation, and velocities,
@@ -1215,8 +1326,8 @@ class RobotState:
         return self.__root
 
     @property
-    def links(self):
-        """Get the link state.
+    def links(self) -> SpatialState | None:
+        """Link state containing link positions, orientations, and velocities.
 
         Returns:
             The SpatialState instance containing link positions, orientations, and velocities,
@@ -1225,8 +1336,8 @@ class RobotState:
         return self.__links
 
     @property
-    def sites(self):
-        """Get the site state.
+    def sites(self) -> SpatialState | None:
+        """Site state containing site positions, orientations, and velocities.
 
         Returns:
             The SpatialState instance containing site positions, orientations, and velocities,

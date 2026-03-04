@@ -1,3 +1,5 @@
+"""Tests for collision approximation utilities used in robot motion generation."""
+
 import numpy as np
 import omni.kit.test
 import omni.timeline
@@ -13,6 +15,23 @@ from omni.kit.app import get_app
 
 
 class TestCollisionApproximations(omni.kit.test.AsyncTestCase):
+    """Test suite for collision approximation utilities in motion generation.
+
+    This test class validates the functionality of collision approximation algorithms used in robot motion
+    generation, including oriented bounding boxes (OBB), world axis-aligned bounding boxes (AABB), and mesh
+    triangulation. The tests ensure that geometric approximations are computed correctly for various mesh and
+    geometric primitive configurations.
+
+    The test suite covers:
+    - Oriented bounding box computation for meshes with unreferenced vertices
+    - World axis-aligned bounding box computation and comparison between cube and mesh primitives
+    - Mesh triangulation error handling for malformed geometry
+    - Geometric transformations including position, orientation, and scale effects on bounding calculations
+
+    Each test creates stage geometry using Isaac Sim's experimental object system and validates the collision
+    approximation results against expected geometric properties.
+    """
+
     # Before running each test
     async def setUp(self):
         """Set up test environment before each test."""
@@ -25,6 +44,7 @@ class TestCollisionApproximations(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Clean up test environment after each test."""
         # Stop timeline if running
         if self._timeline.is_playing():
             self._timeline.stop()
@@ -36,6 +56,11 @@ class TestCollisionApproximations(omni.kit.test.AsyncTestCase):
         await get_app().next_update_async()
 
     async def test_oriented_bounding_box(self):
+        """Test that oriented bounding box computation correctly handles mesh geometry.
+
+        Verifies that the OBB calculation ignores unreferenced vertices and produces correct
+        bounding box dimensions for a cube mesh.
+        """
         # create a mesh in the scene:
         stage_mesh = Mesh(
             paths="/World/Mesh",
@@ -116,6 +141,11 @@ class TestCollisionApproximations(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.isclose(obb.half_side_lengths, [0.5, 0.5, 0.5]).all())
 
     async def test_world_axis_aligned_bounding_box(self):
+        """Test that world axis-aligned bounding box computation produces consistent results.
+
+        Verifies that AABB calculations for geometrically equivalent Cube and Mesh objects
+        with identical transformations produce matching bounding boxes.
+        """
         positions = [1.0, 2.0, 3.0]
         q_ = np.array([0.5, 0.1, 0.6, -0.9])
         orientations = q_ / np.linalg.norm(q_)
@@ -291,6 +321,11 @@ class TestCollisionApproximations(omni.kit.test.AsyncTestCase):
     #     self.assertIsNotNone(convex_hull_data.triangles)
 
     async def test_triangulate_mesh_no_faces_raises(self):
+        """Test that triangulate_mesh raises ValueError for meshes without faces.
+
+        Verifies that attempting to triangulate a mesh with no face specifications
+        raises the expected ValueError exception.
+        """
         stage_mesh = Mesh(paths="/World/EmptyMesh")
         stage_mesh.set_points([[(0.0, 0.0, 0.0)]])
         stage_mesh.set_face_specs(vertex_indices=[[]], vertex_counts=[[]])

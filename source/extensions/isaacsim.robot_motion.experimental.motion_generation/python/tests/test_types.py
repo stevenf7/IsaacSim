@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for motion generation data types in the isaacsim.robot_motion.experimental.motion_generation extension."""
+
+
 import isaacsim.robot_motion.experimental.motion_generation as mg
 
 # Import extension python module we are testing with absolute import path, as if we are an external user (i.e. a different extension)
@@ -30,15 +33,40 @@ from isaacsim.robot_motion.experimental.motion_generation import (
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of the module will make it auto-discoverable by omni.kit.test
 class TestJointState(omni.kit.test.AsyncTestCase):
+    """Test class for validating JointState functionality in the isaacsim.robot_motion.experimental.motion_generation extension.
+
+    This test class inherits from omni.kit.test.AsyncTestCase and provides comprehensive testing for JointState creation,
+    validation, and behavior. It tests various construction methods including from_name, from_index, and direct constructor
+    approaches. The tests verify proper handling of joint spaces, data validation, error conditions, and read-only
+    properties.
+
+    The test methods validate:
+        - Joint state creation using named joints with from_name method
+        - Joint state creation using indices with from_index method
+        - Direct constructor validation with data arrays
+        - Read-only property enforcement
+        - Input validation and error handling for incorrect data types, shapes, and values
+        - Proper ordering and indexing of joint data
+        - Valid array population for different joint state components
+    """
+
     # Before running each test
     async def setUp(self):
+        """Sets up the test environment before each test method."""
         pass
 
     # After running each test
     async def tearDown(self):
+        """Cleans up the test environment after each test method."""
         pass
 
     async def test_joint_state_from_name(self):
+        """Tests creating JointState objects using joint names for various configurations.
+
+        Verifies joint state creation with different joint spaces, partial states,
+        input validation, error handling for invalid inputs, and proper ordering
+        of returned joint values.
+        """
         # can create a joint state:
         joint_state = JointState.from_name(
             robot_joint_space=["joint_0"],
@@ -284,6 +312,12 @@ class TestJointState(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(joint_state.positions.numpy(), [0.0, 5.0, 10.0, 15.0, 19.0]))
 
     async def test_joint_state_from_index(self):
+        """Tests creating JointState objects using joint indices for various configurations.
+
+        Verifies joint state creation with different joint spaces, partial states,
+        input validation, error handling for invalid inputs, and proper ordering
+        of returned joint values when using index-based specification.
+        """
         # can create a joint state:
         joint_state = JointState.from_index(
             robot_joint_space=["joint_0"],
@@ -580,6 +614,12 @@ class TestJointState(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(joint_state.positions.numpy(), [0.0, 5.0, 10.0, 15.0, 19.0]))
 
     async def test_joint_state_constructor(self):
+        """Tests creating JointState objects using the direct constructor.
+
+        Verifies joint state creation with raw data and valid arrays,
+        validation of array shapes and types, and proper handling of
+        valid array flags for determining which joints have valid data.
+        """
         # can create a joint state with valid arrays:
         robot_joint_space = ["joint_0", "joint_1", "joint_2"]
         data_array = wp.zeros(shape=[3, 3], dtype=wp.float32, device="cpu")
@@ -789,6 +829,12 @@ class TestJointState(omni.kit.test.AsyncTestCase):
         self.assertEqual(joint_state.effort_names, ["joint_2"])
 
     async def test_joint_state_is_read_only(self):
+        """Tests that JointState objects are immutable after creation.
+
+        Verifies that all properties of a JointState cannot be modified
+        after instantiation, ensuring data integrity by preventing
+        accidental modifications to joint state data.
+        """
         joint_state = JointState.from_name(
             robot_joint_space=["joint_0", "joint_1", "joint_2"],
             positions=(["joint_0", "joint_1"], wp.array([0.0, 0.1])),
@@ -824,15 +870,30 @@ class TestJointState(omni.kit.test.AsyncTestCase):
 
 
 class TestSpatialState(omni.kit.test.AsyncTestCase):
+    """Test class for the SpatialState class from the isaacsim.robot_motion.experimental.motion_generation extension.
+
+    This class contains comprehensive test cases for creating, manipulating, and validating SpatialState objects
+    which represent spatial state data for robot frames including positions, orientations, linear velocities,
+    and angular velocities. Tests cover both name-based and index-based creation methods, constructor validation,
+    and read-only property enforcement.
+
+    The tests verify proper handling of spatial coordinate frames, Warp array operations, data validation,
+    error conditions, and edge cases to ensure the SpatialState implementation is robust and reliable for
+    robot motion generation applications.
+    """
+
     # Before running each test
     async def setUp(self):
+        """Sets up test fixtures before each test method."""
         pass
 
     # After running each test
     async def tearDown(self):
+        """Tears down test fixtures after each test method."""
         pass
 
     async def test_spatial_state_from_name(self):
+        """Tests creating SpatialState instances using the from_name method with various configurations and validates error handling."""
         # can create a spatial state:
         spatial_state = SpatialState.from_name(
             spatial_space=["frame_0"],
@@ -1204,6 +1265,7 @@ class TestSpatialState(omni.kit.test.AsyncTestCase):
         )
 
     async def test_spatial_state_from_index(self):
+        """Tests creating SpatialState instances using the from_index method with various configurations and validates error handling."""
         # can create a spatial state:
         spatial_state = SpatialState.from_index(
             spatial_space=["frame_0"],
@@ -1600,6 +1662,7 @@ class TestSpatialState(omni.kit.test.AsyncTestCase):
         )
 
     async def test_spatial_state_constructor(self):
+        """Tests creating SpatialState instances using the direct constructor with various array configurations and validates error handling."""
         # can create a spatial state with valid arrays:
         spatial_space = ["frame_0", "frame_1", "frame_2"]
         position_data = wp.zeros(shape=[3, 3], dtype=wp.float32, device="cpu")
@@ -1971,6 +2034,7 @@ class TestSpatialState(omni.kit.test.AsyncTestCase):
         self.assertEqual(spatial_state.angular_velocity_names, ["frame_0"])
 
     async def test_spatial_state_is_read_only(self):
+        """Tests that SpatialState fields are read-only and cannot be modified after creation."""
         spatial_state = SpatialState.from_name(
             spatial_space=["frame_0", "frame_1", "frame_2"],
             positions=(["frame_0", "frame_1"], wp.array([[0.0, 0.0, 0.0], [0.1, 0.0, 0.0]])),
@@ -2019,7 +2083,23 @@ class TestSpatialState(omni.kit.test.AsyncTestCase):
 
 
 class TestRootState(omni.kit.test.AsyncTestCase):
+    """Test class for RootState functionality.
+
+    This class contains unit tests for the RootState class, which represents the pose and velocity state
+    of a robot's root/base frame. The tests verify proper construction, validation of input parameters,
+    read-only property enforcement, and correct handling of various data types and edge cases.
+
+    The test methods validate that RootState correctly handles position, orientation, linear velocity,
+    and angular velocity data as Warp arrays, ensures proper dimensionality and data type validation,
+    and maintains immutability of state objects after creation.
+    """
+
     async def test_root_state(self):
+        """Test RootState creation and functionality.
+
+        Tests creating RootState objects with different combinations of parameters,
+        validating data types and shapes, and verifying error handling for invalid inputs.
+        """
         # can create a RootState:
         root_state = RootState(
             position=wp.array([0.1, 0.0, 0.0]),
@@ -2296,6 +2376,11 @@ class TestRootState(omni.kit.test.AsyncTestCase):
         self.assertIsNone(root_state.angular_velocity)
 
     async def test_root_state_is_read_only(self):
+        """Test that RootState fields are read-only.
+
+        Verifies that all fields of a RootState object cannot be modified after creation,
+        ensuring immutability of the state data.
+        """
         root_state = RootState(
             position=wp.array([0.1, 0.0, 0.0], dtype=wp.float32),
             orientation=wp.array([1.0, 0.0, 0.0, 0.0], dtype=wp.float32),
@@ -2315,7 +2400,20 @@ class TestRootState(omni.kit.test.AsyncTestCase):
 
 
 class TestRobotState(omni.kit.test.AsyncTestCase):
+    """Test class for validating RobotState functionality and the combine_robot_states function.
+
+    This test class verifies the construction of RobotState objects from various component states
+    (JointState, RootState, SpatialState) and validates the combination logic for merging
+    multiple RobotState instances. It ensures proper error handling for invalid combinations
+    and validates that state data is correctly preserved during operations.
+    """
+
     async def test_construct_robot_state(self):
+        """Test creation of RobotState instances with various component combinations.
+
+        Verifies that RobotState can be created with different combinations of joint states,
+        root states, link states, and site states, including partial states and empty states.
+        """
         # create valid component states for testing
         joint_state = JointState.from_name(
             robot_joint_space=["joint_0", "joint_1"],
@@ -2392,6 +2490,12 @@ class TestRobotState(omni.kit.test.AsyncTestCase):
         self.assertIsNone(robot_state.sites)
 
     async def test_combine_robot_state(self):
+        """Test combining robot states with various component types and configurations.
+
+        Verifies successful combination of non-overlapping states within the same spaces,
+        failure cases for overlapping states, and proper handling of different state types
+        including joint states, root states, link states, and site states.
+        """
 
         #########################################################
         ######### Create different control spaces ###############
@@ -2715,6 +2819,11 @@ class TestRobotState(omni.kit.test.AsyncTestCase):
         self.assertIsNone(combine_robot_states(partial_overlap_link_1, partial_overlap_link_2))
 
     async def test_different_joint_state_order(self):
+        """Test that robot states with different joint space ordering cannot be combined.
+
+        Verifies that combine_robot_states returns None when attempting to combine robot states
+        where the joint spaces have the same joints but in different orders.
+        """
         # cannot combine two robot states if the joint-spaces are not listed in the
         # same order:
         robot_state_1 = RobotState(

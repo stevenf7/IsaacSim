@@ -14,6 +14,10 @@
 # limitations under the License.
 
 # Import extension python module we are testing with absolute import path, as if we are an external user (i.e. a different extension)
+
+"""Tests for Path functionality in the motion generation extension."""
+
+
 import isaacsim.robot_motion.experimental.motion_generation as mg
 import numpy as np
 import omni.kit.test
@@ -22,15 +26,29 @@ import warp as wp
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of the module will make it auto-discoverable by omni.kit.test
 class TestPath(omni.kit.test.AsyncTestCase):
+    """Test class for validating Path functionality in the motion generation extension.
+
+    This test class validates the creation, manipulation, and indexing of Path objects from the
+    isaacsim.robot_motion.experimental.motion_generation module. It tests various input formats including NumPy arrays,
+    Warp arrays, and Python lists, while verifying error handling for invalid inputs.
+    """
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures before each test method is run."""
         pass
 
     # After running each test
     async def tearDown(self):
+        """Clean up after each test method is run."""
         pass
 
     async def test_path(self):
+        """Test Path creation and manipulation with various input types.
+
+        Tests creating Path objects with NumPy arrays, Warp arrays, and lists.
+        Verifies waypoint counting, retrieval, indexing, and error handling for invalid inputs.
+        """
         # can create a path using numpy arrays:
         path = mg.Path(waypoints=np.array([[0.0], [1.0], [2.0]]))
         self.assertEqual(path.get_waypoints_count(), 3)

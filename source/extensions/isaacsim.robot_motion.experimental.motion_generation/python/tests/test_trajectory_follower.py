@@ -14,6 +14,10 @@
 # limitations under the License.
 
 # Import extension python module we are testing with absolute import path, as if we are an external user (i.e. a different extension)
+
+"""Unit tests for the TrajectoryFollower functionality in the motion generation module."""
+
+
 import isaacsim.robot_motion.experimental.motion_generation as mg
 import numpy as np
 import omni.kit.test
@@ -22,15 +26,34 @@ import warp as wp
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of the module will make it auto-discoverable by omni.kit.test
 class TestTrajectoryFollower(omni.kit.test.AsyncTestCase):
+    """Test class for validating the TrajectoryFollower functionality in the motion generation module.
+
+    This class contains comprehensive tests to verify that trajectory following works correctly,
+    including trajectory creation, follower initialization, state tracking, timing validation,
+    and error handling scenarios. The tests cover various edge cases such as times outside
+    the trajectory bounds, proper reset behavior, and trajectory lifecycle management.
+
+    The test validates that the TrajectoryFollower can:
+    - Accept and store trajectories created from waypoint paths
+    - Track trajectory state and report whether a trajectory is set
+    - Follow trajectories with proper position and velocity interpolation
+    - Handle timing constraints including start times and end times
+    - Clean up trajectories when encountering invalid time requests
+    - Require proper reset before trajectory execution
+    """
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures before each test method is run."""
         pass
 
     # After running each test
     async def tearDown(self):
+        """Clean up test fixtures after each test method is run."""
         pass
 
     async def test_trajectory_follower(self):
+        """Test trajectory follower functionality including trajectory setting, state tracking, and time-based execution."""
         # create a trajectory:
         path = mg.Path(waypoints=np.array([[0.0], [1.0], [2.0]]))
         trajectory = path.to_minimal_time_joint_trajectory(
