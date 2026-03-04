@@ -1,5 +1,5 @@
-  ..
-   Copyright (c) 2022-2026, NVIDIA CORPORATION. All rights reserved.
+..
+  Copyright (c) 2022-2026, NVIDIA CORPORATION. All rights reserved.
    NVIDIA CORPORATION and its licensors retain all intellectual property
    and proprietary rights in and to this software, related documentation
    and any modifications thereto. Any use, reproduction, disclosure or
@@ -11,12 +11,15 @@
 Asset Transformer
 =================
 
-The Asset Transformer is a framework for transforming USD assets in Isaac Sim. It provides utilities for batch transforms, schema routing, mesh deduplication, material optimization, and structural reorganization. The transformer operates through a rule-based pipeline where each rule performs a specific transformation on the USD stage, enabling complex multi-step asset optimization workflows.
+The Asset Transformer is a framework for transforming USD assets in |isaac-sim_short|. It provides utilities for batch transforms, schema routing, mesh deduplication, material optimization, and structural reorganization. The transformer operates through a rule-based pipeline where each rule performs a specific transformation on the USD stage, enabling complex multi-step asset optimization workflows.
 
 .. image:: /images/isim_6.0_full_ext-isaacsim.asset.transformer-1.0.0_gui_workflow.png
    :align: center
    :width: 90%
    :alt: Asset Transformer Workflow
+
+The following sections explain the UI and functions behind each part of the Asset Transformer. To see the tool in action with step-by-step walkthroughs, refer to :ref:`isaac_sim_app_asset_transformer_tutorials`.
+
 
 Purpose
 -------
@@ -32,58 +35,29 @@ The result is a modular, simulation-ready asset structure that follows the :ref:
 
 **Related Documentation**:
 
+- :ref:`Asset Transformer Tutorials <isaac_sim_app_asset_transformer_tutorials>` - Step-by-step practical walkthroughs
 - :ref:`Asset Transformer Rules Reference <isaac_sim_app_asset_transformer_rules>` - Complete reference of available transformation rules
 - :ref:`Asset Transformer API <isaac_sim_app_asset_transformer_api>` - Programmatic usage and custom rule development
 
-Transformer Manager Process
----------------------------
 
-The ``AssetTransformerManager`` coordinates execution of a rule profile over USD stages.
+Opening the Asset Transformer
+-----------------------------
 
-.. image:: /images/isim_6.0_full_ext-isaacsim.asset.transformer-1.0.0_gui_manager_flow.png
-   :align: center
-   :width: 85%
-   :alt: Asset Transformer Manager Flow
+The Asset Transformer UI is accessible from the menu bar: **Tools > Robotics > Asset Editors > Asset Transformer**.
 
-**Process Flow**:
 
-1. **Initialize**: Create an execution report to track results.
-2. **Open Source Stage**: Load the input USD stage from the specified path.
-3. **Create Base Copy**: Export the source stage to ``{package_root}/payloads/{base_name}``. If ``flatten_source`` is enabled, the stage is flattened first.
-4. **Collect External Assets**: Copy external assets (textures, materials) to ``{package_root}/source_assets/`` and update paths to local references.
-5. **Execute Rules**: For each enabled rule in the profile:
-
-   - Instantiate the rule with the working stage
-   - Execute ``process_rule()``
-   - If the rule returns a new stage path, switch to that stage for subsequent rules
-   - Collect operation logs and affected stages
-
-6. **Save Working Stage**: Save any unsaved changes to the root layer.
-7. **Return Report**: Generate an execution report with per-rule logs and status.
-
-.. note::
-
-   The Asset Transformer is meant to be used with atomic assets (assets that are not composed of other assets, or with external references). If the asset is composed of other assets, or has external references, the Asset Transformer will collect the external assets and include them in the output package.
-   
-   Example:
-   
-   - Asset is composed of a base asset and a secondary asset (A robot and a Gripper or Sensor).
-   - The base asset is the atomic asset.
-   - The Asset Transformer will collect the referenced asset (Gripper or Sensor) and include it in the output package.
-   - The output package will contain the base asset, and the referenced asset on a single new atomic asset.
-   - If the secondary asset is loaded from a variant, it will be included in the variant structure of the new atomic asset.
+.. _isaac_sim_app_asset_transformer_ui:
 
 User Interface
 --------------
-
-The Asset Transformer UI is accessible using **Tools > Robotics > Asset Editors > Asset Transformer**.
 
 .. image:: /images/isim_6.0_full_ext-isaacsim.asset.transformer-1.0.0_gui_ui.png
    :align: center
    :width: 80%
    :alt: Asset Transformer UI
 
-The window contains three main sections:
+The window contains three main sections described below. Each section controls a stage of the transformation workflow: selecting input, configuring actions, and executing the pipeline.
+
 
 Input Section
 ^^^^^^^^^^^^^
@@ -93,6 +67,7 @@ Configure the source asset and output location:
 - **Active Stage / Pick File**: Choose between transforming the currently open stage or selecting a file from disk.
 - **Output Directory**: Destination folder for the transformed asset package.
 - **Load Restructured File**: Automatically open the output file after execution.
+
 
 Actions Section
 ^^^^^^^^^^^^^^^
@@ -126,10 +101,51 @@ When an action is expanded, the following configuration options appear:
 - **Destination**: Output path for the rule (relative to package root).
 - **Parameters**: Dynamic parameter editors generated from the rule's configuration parameters.
 
+
 Execute Section
 ^^^^^^^^^^^^^^^
 
 - **Execute Actions**: Run the transformation pipeline. The button is enabled when at least one action is enabled and an output directory is set.
+
+
+Transformer Manager Process
+---------------------------
+
+The ``AssetTransformerManager`` coordinates execution of a rule profile over USD stages.
+
+.. image:: /images/isim_6.0_full_ext-isaacsim.asset.transformer-1.0.0_gui_manager_flow.png
+   :align: center
+   :width: 85%
+   :alt: Asset Transformer Manager Flow
+
+**Process Flow**:
+
+1. **Initialize**: Create an execution report to track results.
+2. **Open Source Stage**: Load the input USD stage from the specified path.
+3. **Create Base Copy**: Export the source stage to ``{package_root}/payloads/{base_name}``. If ``flatten_source`` is enabled, the stage is flattened first.
+4. **Collect External Assets**: Copy external assets (textures, materials) to ``{package_root}/source_assets/`` and update paths to local references.
+5. **Execute Rules**: For each enabled rule in the profile:
+
+   - Instantiate the rule with the working stage
+   - Execute ``process_rule()``
+   - If the rule returns a new stage path, switch to that stage for subsequent rules
+   - Collect operation logs and affected stages
+
+6. **Save Working Stage**: Save any unsaved changes to the root layer.
+7. **Return Report**: Generate an execution report with per-rule logs and status.
+
+.. note::
+
+   The Asset Transformer is meant to be used with atomic assets (assets that are not composed of other assets, or with external references). If the asset is composed of other assets, or has external references, the Asset Transformer will collect the external assets and include them in the output package.
+
+   Example:
+
+   - Asset is composed of a base asset and a secondary asset (A robot and a Gripper or Sensor).
+   - The base asset is the atomic asset.
+   - The Asset Transformer will collect the referenced asset (Gripper or Sensor) and include it in the output package.
+   - The output package will contain the base asset, and the referenced asset on a single new atomic asset.
+   - If the secondary asset is loaded from a variant, it will be included in the variant structure of the new atomic asset.
+
 
 Rule Profiles
 -------------
@@ -200,6 +216,7 @@ A rule profile defines a complete transformation pipeline. Profiles are stored a
    * - ``enabled``
      - Whether the rule is active
 
+
 Managing Profiles
 ^^^^^^^^^^^^^^^^^
 
@@ -223,6 +240,7 @@ Managing Profiles
 3. Drag rules to reorder execution.
 4. Use checkboxes to enable or disable rules.
 5. Save the modified profile using **Save Preset**.
+
 
 Transform Report
 ----------------
@@ -336,10 +354,11 @@ The transform report serves multiple purposes:
 
 For programmatic access to reports, refer to the :ref:`Asset Transformer API <isaac_sim_app_asset_transformer_api>`.
 
+
 Isaac Sim Asset Structure Profile
 ---------------------------------
 
-Isaac Sim includes a default profile called **Isaac Sim Structure** that transforms assets into the recommended :ref:`Isaac Sim Asset Structure <isaac_sim_app_reference_asset_structure>`. This profile is automatically available in the recent presets menu.
+|isaac-sim_short| includes a default profile called **Isaac Sim Structure** that transforms assets into the recommended :ref:`Isaac Sim Asset Structure <isaac_sim_app_reference_asset_structure>`. This profile is automatically available in the recent presets menu.
 
 .. image:: /images/isim_6.0_full_ext-isaacsim.asset.transformer-1.0.0_gui_output_structure.png
    :align: center
@@ -389,3 +408,8 @@ The resulting output follows the modular asset structure documented in :ref:`isa
 - Variant options in individual files
 - Final composed asset in the interface layer
 
+
+Tutorials
+---------
+
+:ref:`isaac_sim_app_asset_transformer_tutorials`
