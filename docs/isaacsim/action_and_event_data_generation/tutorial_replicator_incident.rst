@@ -345,3 +345,7 @@ Ensure that ``isaacsim.replicator.incident.core`` is enabled, and use the API as
     :language: python
     :start-after: <start-tutorial-snippet>
     :end-before: <end-tutorial-snippet>
+
+You can now press the play button to observe the simulated incidents in a windowed mode or
+use Isaac's ``SimulationApp`` API to step through the scene frames if running the scene using
+Python in a headless mode.
