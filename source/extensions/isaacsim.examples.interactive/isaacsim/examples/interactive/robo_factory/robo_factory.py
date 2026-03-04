@@ -20,13 +20,13 @@ This interactive example demonstrates multiple robots performing stacking tasks
 in the same scene using experimental APIs.
 """
 
+import isaacsim.core.experimental.utils.app as app_utils
 import numpy as np
-import omni.kit.app
 from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
 from isaacsim.examples.base.base_sample_experimental import BaseSample
-from isaacsim.robot.manipulators.examples.stacking import Stacking
+from isaacsim.robot.manipulators.examples.franka.stacking import Stacking
 
 
 class RoboFactory(BaseSample):
@@ -154,5 +154,5 @@ class RoboFactory(BaseSample):
         )
 
         # Start timeline playback
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        app_utils.play()
+        await app_utils.update_app_async(steps=1)

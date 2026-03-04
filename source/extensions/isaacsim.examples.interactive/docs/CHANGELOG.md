@@ -1,4 +1,10 @@
 # Changelog
+
+## [4.14.0] - 2026-03-02
+### Changed
+- Replaced timeline API with app utils for simulation control.
+- Converted Robo Party to Experimental APIs.
+
 ## [4.13.0] - 2026-01-10
 ### Changed
 - The Getting Started, Replay Follow Target, Robo Factory, and Surface Gripper examples now depend on the new Warp-based APIs

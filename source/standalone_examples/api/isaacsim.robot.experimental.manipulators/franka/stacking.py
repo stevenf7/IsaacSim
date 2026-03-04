@@ -54,7 +54,7 @@ simulation_app = SimulationApp({"headless": False})
 # by the extension/runtime plugin system, it must be loaded before they will be available to import).
 import omni.timeline
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.robot.manipulators.examples.stacking import Stacking
+from isaacsim.robot.manipulators.examples.franka.stacking import Stacking
 
 # 2. --------------------------------------------------------------------
 

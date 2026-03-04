@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.0] - 2026-03-03
+### Changed
+- Replaced timeline API with app utils for simulation control
+
 ## [1.1.5] - 2026-01-10
 ### Changed
 - Add functionality to allow setting rendering_dt.

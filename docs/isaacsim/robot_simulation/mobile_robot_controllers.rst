@@ -86,7 +86,7 @@ Python
 
 The code snippet below setups the differential controller for a NVIDIA Jetbot with a wheel radius of 3 cm and a base of 11.25cm, with a linear speed of 0.3m/s and angular speed of 1.0rad/s. 
 
-.. literalinclude:: ../snippets/robot_simulation/mobile_robot_controllers/python.py
+.. literalinclude:: ../snippets/robot_simulation/mobile_robot_controllers/differential_controller.py
     :language: python
 
 .. _isaac_sim_mobile_robot_controller_holonomic:
@@ -107,7 +107,7 @@ The problem is framed as a quadratic program to minimize the residual "net force
 
    The wheel joints of the robot prim must have additional attributes to definine the roller angles and radii of the mecanum wheels.
 
-   .. literalinclude:: ../snippets/robot_simulation/mobile_robot_controllers/holonomic_controller.py
+   .. literalinclude:: ../snippets/robot_simulation/mobile_robot_controllers/holonomic_robot_usd_setup.py
        :language: python
 
    The :class:`HolonomicRobotUsdSetup` class automates this process.
@@ -183,7 +183,7 @@ Python
 
 The code snippet below computes the joint velocity output for a three wheeled NVIDIA Kaya holonomic robot with command velocity of [1.0, 1.0, 0.1]
 
-.. literalinclude:: ../snippets/robot_simulation/mobile_robot_controllers/python.py
+.. literalinclude:: ../snippets/robot_simulation/mobile_robot_controllers/holonomic_controller.py
     :language: python
 
 .. _isaac_sim_mobile_robot_controller_ackermann:
@@ -191,8 +191,8 @@ The code snippet below computes the joint velocity output for a three wheeled NV
 Ackermann Controller
 ===============================
 
-The ackeramnn controller is commonly used for robots with steerable wheels, an example of steerable robot is the NVIDIA leatherback robot. 
-The ackeramnn controller in Isaac Sim will assume the desired steering angle and linear velocity is provided, and based on the robot geometry 
+The Ackermann controller is commonly used for robots with steerable wheels, an example of steerable robot is the NVIDIA leatherback robot. 
+The Ackermann controller in Isaac Sim assumes the desired steering angle and linear velocity are provided, and based on the robot geometry 
 
 .. figure:: /images/usd_assets_robots/isim_4.5_full_ref_viewport_Isaac_Robots_Leatherback_leatherback.usd.png
    :align: center
@@ -295,7 +295,7 @@ OmniGraph Node
 Python
 ----------------
 
-The python snippet below creates an ackerrmann controller for a NVIDIA Leatherback robot with a wheel base of 1.65m, trackwidth of 1.25m, and wheel radius of 0.25m, sending it a desired forward velocity of 1.1 rad/s and steering angle of 0.1rad.
+The python snippet below creates an Ackermann controller for a NVIDIA Leatherback robot with a wheel base of 1.65m, track width of 1.25m, and wheel radius of 0.25m, sending it a desired forward velocity of 1.1 m/s and steering angle of 0.1 rad.
 
-.. literalinclude:: ../snippets/robot_simulation/mobile_robot_controllers/python.py
+.. literalinclude:: ../snippets/robot_simulation/mobile_robot_controllers/ackemann_controller.py
     :language: python

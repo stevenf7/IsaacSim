@@ -1108,6 +1108,7 @@ ogn_exts_includes = [
   "isaacsim.core.nodes",
   "isaacsim.examples.interactive_nodes",
   "isaacsim.robot.wheeled_robots",
+  "isaacsim.robot.experimental.wheeled_robots",
   # "isaacsim.util.debug_draw",
 
 ]

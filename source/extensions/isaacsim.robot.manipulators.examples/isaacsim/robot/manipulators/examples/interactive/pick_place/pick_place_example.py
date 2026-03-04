@@ -21,7 +21,7 @@ without complex layers or RL concepts. Users can trigger pick-and-place actions
 through the UI.
 """
 
-import omni.kit.app
+import isaacsim.core.experimental.utils.app as app_utils
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.robot.manipulators.examples.franka import FrankaPickPlace
@@ -169,6 +169,6 @@ class FrankaPickPlaceInteractive(BaseSample):
             self._pick_place_physics_callback, IsaacEvents.POST_PHYSICS_STEP
         )
 
-        # Start timeline playback
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        # Start timeline playback via app_utils (Rule 4: app/timeline; Rule 5: update loop)
+        app_utils.play()
+        await app_utils.update_app_async(steps=1)
