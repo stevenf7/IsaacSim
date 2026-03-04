@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Global variables and constants used throughout the kinematics tutorials in the robot motion generation module."""
+
+
 EXTENSION_TITLE = "Lula Kinematics Example"
 
 EXTENSION_DESCRIPTION = ""

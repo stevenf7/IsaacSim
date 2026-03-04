@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides enumeration of USD APIs supported by SceneQuery and WorldBinding for motion generation."""
+
+
 from enum import StrEnum
 
 
@@ -30,5 +33,8 @@ class TrackableApi(StrEnum):
     """
 
     PHYSICS_COLLISION = "PhysicsCollisionAPI"
+    """USD PhysicsCollisionAPI identifier."""
     PHYSICS_RIGID_BODY = "PhysicsRigidBodyAPI"
+    """USD PhysicsRigidBodyAPI identifier."""
     MOTION_GENERATION_COLLISION = "IsaacMotionPlanningAPI"
+    """IsaacMotionPlanningAPI identifier."""

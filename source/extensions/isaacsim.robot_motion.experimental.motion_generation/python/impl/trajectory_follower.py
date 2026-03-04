@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Implementation for robot motion trajectory following controllers."""
+
+
 from typing import Optional
 
 from .base_controller import BaseController
@@ -105,7 +108,7 @@ class TrajectoryFollower(BaseController):
         # read the trajectory, and return the desired joint states.
         return self._trajectory.get_target_state(trajectory_time)
 
-    def set_trajectory(self, trajectory: Trajectory) -> None:
+    def set_trajectory(self, trajectory: Trajectory):
         """Set the trajectory to follow.
 
         Sets the trajectory and clears the start time. Call `reset()` after setting

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides obstacle representation strategies and configurations for robot motion planning."""
+
+
 from enum import StrEnum, auto
 from typing import Type
 
@@ -45,14 +48,23 @@ class ObstacleRepresentation(StrEnum):
     """
 
     SPHERE = auto()
+    """Spherical obstacle representation for planning."""
     CONE = auto()
+    """Conical obstacle representation for planning."""
     CUBE = auto()
+    """Cubic obstacle representation for planning."""
     PLANE = auto()
+    """Planar obstacle representation for planning."""
     CAPSULE = auto()
+    """Capsular obstacle representation for planning."""
     CYLINDER = auto()
+    """Cylindrical obstacle representation for planning."""
     MESH = auto()
+    """Mesh obstacle representation for planning."""
     TRIANGULATED_MESH = auto()
+    """Triangulated mesh obstacle representation for planning."""
     OBB = auto()
+    """Oriented bounding box obstacle representation for planning."""
 
     # TODO:
     # CONVEX_HULL = auto()

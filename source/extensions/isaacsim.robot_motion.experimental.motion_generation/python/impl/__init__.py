@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Internal implementation classes and functions for the robot motion generation system."""
+
+
 from .base_controller import BaseController
 from .controller_structures import ControllerContainer, ParallelController, SequentialController
 from .obstacle_strategy import ObstacleConfiguration, ObstacleRepresentation, ObstacleStrategy

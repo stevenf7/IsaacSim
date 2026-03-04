@@ -1,4 +1,8 @@
 # Changelog
+## [8.2.0] - 2026-03-04
+### Changed
+- Added Overview.md and python_api.md and updated docstrings
+
 ## [8.1.4] - 2026-01-20
 ### Removed
 - Removed tests which made use of a deprecated asset.

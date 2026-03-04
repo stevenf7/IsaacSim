@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides a UI-based extension for robot motion generation tutorials using RRT algorithms in Isaac Sim."""
+
+
 import asyncio
 import gc
 
@@ -50,8 +53,28 @@ This class sets up standard useful callback functions in UIBuilder:
 
 
 class Extension(omni.ext.IExt):
+    """Extension class for the isaacsim.robot_motion.motion_generation.tutorials extension.
+
+    This extension provides a UI-based framework for robot motion generation tutorials. It creates a
+    scrollable window interface that integrates with Isaac Sim's timeline and physics systems to demonstrate
+    motion generation techniques. The extension handles standard boilerplate operations for UI-based extensions,
+    including menu integration, window management, and event handling.
+
+    The extension automatically subscribes to physics steps during timeline playback and provides callbacks
+    for stage and timeline events. It uses a UIBuilder component to handle the actual UI construction and
+    user interactions, following a separation of concerns pattern where this class manages the extension
+    lifecycle and the UIBuilder handles the specific tutorial content.
+
+    The extension window is dockable and appears in the left bottom area by default, providing an integrated
+    experience within the Isaac Sim interface.
+    """
+
     def on_startup(self, ext_id: str):
-        """Initialize extension and UI elements"""
+        """Initialize extension and UI elements
+
+        Args:
+            ext_id: The extension identifier.
+        """
 
         self.ext_id = ext_id
         self._usd_context = omni.usd.get_context()
@@ -85,6 +108,7 @@ class Extension(omni.ext.IExt):
         self._timeline = omni.timeline.get_timeline_interface()
 
     def on_shutdown(self):
+        """Clean up extension resources and UI elements."""
         self._models = {}
         remove_menu_items(self._menu_items, EXTENSION_TITLE)
 
@@ -97,6 +121,11 @@ class Extension(omni.ext.IExt):
         gc.collect()
 
     def _on_window(self, visible):
+        """Handle window visibility changes and manage event subscriptions.
+
+        Args:
+            visible: Whether the window is visible.
+        """
         if self._window.visible:
             # Subscribe to Stage and Timeline Events
             self._usd_context = omni.usd.get_context()
@@ -131,6 +160,7 @@ class Extension(omni.ext.IExt):
             self.ui_builder.cleanup()
 
     def _build_ui(self):
+        """Build the extension UI and dock the window."""
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
                 self._build_extension_ui()
@@ -155,35 +185,62 @@ class Extension(omni.ext.IExt):
     #################################################################
 
     def _menu_callback(self):
+        """Toggle window visibility and notify the UI builder."""
         self._window.visible = not self._window.visible
         self.ui_builder.on_menu_callback()
 
     def _on_timeline_play(self, event):
-        """Timeline play event callback."""
+        """Timeline play event callback.
+
+        Args:
+            event: The timeline play event.
+        """
         if not self._physics_subscription:
             self._physics_subscription = self._physics_simulation_interface.subscribe_physics_on_step_events(
                 pre_step=False, order=0, on_update=self._on_physics_step
             )
 
     def _on_timeline_stop(self, event):
-        """Timeline stop event callback."""
+        """Timeline stop event callback.
+
+        Args:
+            event: The timeline stop event.
+        """
         self._physics_subscription = None
         self.ui_builder.on_timeline_event(event)
 
     def _on_physics_step(self, step, context):
+        """Handle physics step events and forward to the UI builder.
+
+        Args:
+            step: The physics step information.
+            context: The physics context.
+        """
         self.ui_builder.on_physics_step(step)
 
     def _on_stage_opened(self, event):
-        """Stage opened event callback."""
+        """Stage opened event callback.
+
+        Args:
+            event: The stage opened event.
+        """
         self._physics_subscription = None
         self.ui_builder.cleanup()
         self.ui_builder.on_stage_event(event)
 
     def _on_stage_closed(self, event):
-        """Stage closed event callback."""
+        """Stage closed event callback.
+
+        Args:
+            event: The stage closed event.
+        """
         self._physics_subscription = None
         self.ui_builder.cleanup()
 
     def _build_extension_ui(self):
+        """Builds the extension UI by calling the user-defined UI builder.
+
+        This method serves as a bridge between the extension's UI framework and the user's custom UI implementation in the UIBuilder class.
+        """
         # Call user function for building UI
         self.ui_builder.build_ui()

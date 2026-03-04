@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Interface for searching the USD world for objects with a given TrackableApi."""
+
+
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
@@ -151,9 +154,9 @@ class SceneQuery:
             search_box_maximum: Maximum bounds in the box frame, relative to the search_box_origin.
             tracked_api: API schema filter to apply when searching.
             include_prim_paths: Optional list of prim paths to include (including their children).
-                If this is None, then all prims are included. Defaults to None.
+                If this is None, then all prims are included.
             exclude_prim_paths: Optional list of prim paths to exclude (including their children).
-                If this is None, then no prims are excluded. Defaults to None.
+                If this is None, then no prims are excluded.
 
         Returns:
             List of prim paths that intersect the AABB and match the API filter.
@@ -278,7 +281,7 @@ class SceneQuery:
 
         return [path.GetString() for path in collision_prims_paths]
 
-    def get_robots_in_stage(self):
+    def get_robots_in_stage(self) -> list[str]:
         """Return robot prim paths in the current stage.
 
         Returns:

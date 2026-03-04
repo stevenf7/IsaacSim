@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tutorial module demonstrating kinematics-based robot control for the Franka Panda robot using inverse kinematics computations."""
+
+
 import os
 
 import carb
@@ -31,6 +34,25 @@ from isaacsim.storage.native import get_assets_root_path
 
 
 class FrankaKinematicsExample:
+    """A tutorial example demonstrating kinematics-based robot control for the Franka Panda robot.
+
+    This class showcases how to use the Lula kinematics solver and ArticulationKinematicsSolver to perform
+    inverse kinematics computations for robot motion control. The example loads a Franka Panda robot and a
+    target object, then continuously computes joint actions to move the robot's end effector toward the target
+    position using inverse kinematics.
+
+    The example demonstrates:
+    - Loading robot assets and target objects into the simulation
+    - Setting up kinematics solvers using robot description files and URDF
+    - Computing inverse kinematics solutions in real-time
+    - Applying computed joint actions to control the robot
+    - Handling cases where inverse kinematics fails to converge
+
+    The kinematics solver uses Lula's robot description and URDF files to understand the robot's kinematic
+    structure and constraints. The ArticulationKinematicsSolver provides a high-level interface that bridges
+    between the USD articulation and the underlying kinematics computation.
+    """
+
     def __init__(self):
         self._kinematics_solver = None
         self._articulation_kinematics_solver = None
@@ -39,6 +61,14 @@ class FrankaKinematicsExample:
         self._target = None
 
     def load_example_assets(self):
+        """Loads the Franka robot and target assets into the simulation stage.
+
+        Adds a Franka Panda robot at `/panda` and a target frame at `/World/target` to the stage.
+        The target is scaled down and positioned at [0.3, 0, 0.5] with appropriate orientation.
+
+        Returns:
+            A tuple containing the articulation and target XForm prim for stage registration.
+        """
         # Add the Franka and target to the stage
 
         robot_prim_path = "/panda"
@@ -55,6 +85,11 @@ class FrankaKinematicsExample:
         return self._articulation, self._target
 
     def setup(self):
+        """Initializes the kinematics solvers for the Franka robot.
+
+        Loads the robot description and URDF files, creates a LulaKinematicsSolver,
+        and sets up an ArticulationKinematicsSolver for the right gripper end effector.
+        """
         # Load a URDF and Lula Robot Description File for this robot:
         mg_extension_path = get_extension_path_from_name("isaacsim.robot_motion.motion_generation")
         kinematics_config_dir = os.path.join(mg_extension_path, "motion_policy_configs")
@@ -77,6 +112,14 @@ class FrankaKinematicsExample:
         )
 
     def update(self, step: float):
+        """Updates the robot motion to track the target position.
+
+        Computes inverse kinematics to move the robot's end effector to the target pose.
+        Tracks any movements of the robot base and applies the computed joint actions.
+
+        Args:
+            step: Time step for the update cycle.
+        """
         target_position, target_orientation = self._target.get_world_pose()
 
         # Track any movements of the robot base
@@ -96,5 +139,9 @@ class FrankaKinematicsExample:
         # ee_position,ee_rot_mat = articulation_kinematics_solver.compute_end_effector_pose()
 
     def reset(self):
+        """Resets the kinematics example.
+
+        Since kinematics is stateless, this method performs no operations.
+        """
         # Kinematics is stateless
         pass

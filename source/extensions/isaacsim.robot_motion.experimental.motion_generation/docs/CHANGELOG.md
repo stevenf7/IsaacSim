@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.1.0] - 2026-03-04
+### Changed
+- Added Overview.md and python_api.md and updated docstrings
+
 ## [6.0.0] - 2026-03-03
 ### Changed
 - `add_oriented_bounding_boxes` use pure warp-arrays, accepts a quaternion for local rotation instead of a rotation matrix.

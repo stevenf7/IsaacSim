@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Tests for minimal time trajectory generation functionality."""
+
+
 from copy import deepcopy
 
 # Import extension python module we are testing with absolute import path, as if we are an external user (i.e. a different extension)
@@ -23,15 +27,41 @@ import warp as wp
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of the module will make it auto-discoverable by omni.kit.test
 class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
+    """Test suite for minimal time trajectory generation functionality.
+
+    This test class validates the behavior of minimal time trajectory generation for robot motion,
+    including trajectory creation with various input formats, motion planning with velocity and
+    acceleration constraints, and handling of edge cases. The tests cover single and multi-joint
+    scenarios, drift behavior analysis, and input validation.
+
+    The test cases verify:
+    - Trajectory creation with NumPy arrays, Warp arrays, and Python lists
+    - One-dimensional trajectories with and without velocity drifting
+    - Multi-joint coordination ensuring synchronized waypoint arrival
+    - Stationary joint handling during motion
+    - CPU and CUDA device compatibility
+    - Input validation and error handling for degenerate cases
+
+    Each test method validates trajectory properties including position accuracy, velocity constraints,
+    acceleration limits, and timing synchronization across multiple joints.
+    """
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures before each test method."""
         pass
 
     # After running each test
     async def tearDown(self):
+        """Clean up after each test method."""
         pass
 
     async def test_can_create_trajectory(self):
+        """Test that minimal time trajectories can be created with different input data types.
+
+        Verifies trajectory creation using numpy arrays, Warp arrays, and Python lists for waypoints,
+        velocities, and accelerations. Also tests that mismatched joint specifications raise ValueError.
+        """
 
         max_velocity = 0.5
         max_acceleration = 0.1
@@ -77,6 +107,13 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         )
 
     async def test_one_dimensional_trajectory_no_drifting(self):
+        """Test one-dimensional trajectory generation without velocity drifting phase.
+
+        Verifies that when maximum velocity exceeds the threshold for drift-free motion
+        (v_max > sqrt(a_max*s_motion)), the trajectory consists only of acceleration and
+        deceleration phases. Tests trajectory duration, velocity limits, and position/velocity
+        values at key time points.
+        """
 
         max_velocity = 0.5
         max_acceleration = 0.1
@@ -146,6 +183,12 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         self.assertTrue(abs(middle_velocity) < 1e-8)
 
     async def test_one_dimensional_trajectory_no_drifting_negative_direction(self):
+        """Test one-dimensional trajectory generation in negative direction without drifting.
+
+        Verifies trajectory behavior when moving from higher to lower position values
+        without velocity drifting phase. Tests that velocity constraints and position
+        bounds are maintained throughout the motion.
+        """
 
         max_velocity = 0.5
         max_acceleration = 0.1
@@ -216,6 +259,13 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
 
     # Actual test, notice it is an "async" function, so "await" can be used if needed
     async def test_one_dimensional_trajectory_with_drifting(self):
+        """Test one-dimensional trajectory generation with velocity drifting phase.
+
+        Verifies that when maximum velocity is below the drift threshold
+        (v_max < sqrt(a_max*s_motion)), the trajectory includes acceleration,
+        constant velocity (drift), and deceleration phases. Tests drift time
+        calculations and velocity behavior at switching points.
+        """
 
         max_velocity = 0.2
         max_acceleration = 0.1
@@ -295,6 +345,12 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
         self.assertTrue(abs(switch_time_velocity - max_velocity) < 1e-8)
 
     async def test_two_joints(self):
+        """Test two-joint trajectory generation with synchronized motion.
+
+        Verifies that both joints reach waypoints simultaneously, with trajectory timing
+        limited by the slowest joint. Tests that joints maintain synchronized motion
+        along straight-line paths in joint space throughout the trajectory.
+        """
         # this should make sure that when two joints are defined, they both
         # get to their middle waypoints at EXACTLY the same time, which will
         # be the minimal time for the slowest joint.
@@ -367,6 +423,11 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
                 self.assertTrue(abs(t_values[i_element] - t_values[i_element + 1]) < 1e-6)
 
     async def test_two_joints_with_one_stationary_joint(self):
+        """Test trajectory generation when one joint remains stationary.
+
+        Verifies that a joint with identical waypoint values maintains zero position
+        change and velocity throughout the entire trajectory duration.
+        """
         waypoints = np.array([[0.0, 0.1], [1.5, 0.1], [1.1, 0.1]])
         path = mg.Path(waypoints=waypoints)
 
@@ -390,6 +451,12 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
             self.assertTrue(np.isclose(joint_velocities[1], 0.0))
 
     async def test_two_joints_with_list_waypoints(self):
+        """Test two-joint trajectory generation using Python list waypoints.
+
+        Replicates the two-joint synchronization test using Python lists instead of
+        numpy arrays for waypoints, velocities, and accelerations to verify
+        compatibility with different input data types.
+        """
 
         # This test is the same as the test_two_joints test, but with list waypoints.
 
@@ -465,6 +532,12 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
                 self.assertTrue(abs(t_values[i_element] - t_values[i_element + 1]) < 1e-6)
 
     async def test_two_joints_on_cpu_device(self):
+        """Test two-joint trajectory generation using CPU device for Warp arrays.
+
+        Verifies trajectory generation and synchronization when using Warp arrays
+        specifically allocated on CPU device, ensuring device compatibility
+        for motion generation computations.
+        """
 
         # This test is the same as the test_two_joints test, but with list waypoints.
 
@@ -542,6 +615,12 @@ class TestMinimalTimeTrajectory(omni.kit.test.AsyncTestCase):
                 self.assertTrue(abs(t_values[i_element] - t_values[i_element + 1]) < 1e-6)
 
     async def test_degenerate_inputs(self):
+        """Tests degenerate input handling for minimal time joint trajectory generation.
+
+        Validates that the trajectory generation raises appropriate ValueErrors for invalid inputs including:
+        duplicate waypoints, non-positive velocity/acceleration limits, incorrect array dimensions,
+        mismatched joint counts, and single waypoint paths.
+        """
         # waypoints must be unique:
         path = mg.Path(waypoints=np.array([[0.0, 0.1, 0.2], [0.0, 0.1, 0.2], [0.0, 0.0, 0.0]]))
         max_velocities = [1.0, 1.0, 1.0]

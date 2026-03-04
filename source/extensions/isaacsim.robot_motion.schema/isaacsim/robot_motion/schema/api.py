@@ -27,7 +27,7 @@ def apply_motion_planning_api(prim: Usd.Prim, enabled: bool | None = None) -> Us
 
     Args:
         prim: Prim to apply the API to.
-        enabled: Optional value to author on the collision-enabled attribute. Defaults to None.
+        enabled: Optional value to author on the collision-enabled attribute.
 
     Returns:
         The prim with the API applied.

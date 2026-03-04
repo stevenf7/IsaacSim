@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Global variables and constants for the RMP Flow tutorial."""
+
+
 EXTENSION_TITLE = "RMPflow Example"
 
 EXTENSION_DESCRIPTION = ""

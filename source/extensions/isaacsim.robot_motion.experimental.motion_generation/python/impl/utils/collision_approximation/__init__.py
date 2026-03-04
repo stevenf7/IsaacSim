@@ -14,6 +14,10 @@
 # limitations under the License.
 
 # from ._mesh_bounds import compute_mesh_convex_hull
+
+"""Utilities for collision detection and geometric approximation including bounding volumes and mesh processing."""
+
+
 from .bounding_geometries import AABB, OBB, ConvexHull
 from .bounds import compute_obb, compute_world_aabb, create_bbox_cache
 from .triangulate_mesh import triangulate_mesh

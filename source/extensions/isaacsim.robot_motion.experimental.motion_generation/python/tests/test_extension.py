@@ -26,6 +26,13 @@ import omni.kit.test
 
 
 class TestExtension(omni.kit.test.AsyncTestCase):
+    """Test case class for the isaacsim.robot_motion.experimental.motion_generation extension.
+
+    This class provides unit tests to verify the functionality and behavior of the motion generation extension.
+    It inherits from omni.kit.test.AsyncTestCase to support asynchronous test execution and integrates with
+    the Omniverse Kit testing framework for extension validation.
+    """
+
     async def setUp(self):
         """Method called to prepare the test fixture"""
         super().setUp()
@@ -43,6 +50,7 @@ class TestExtension(omni.kit.test.AsyncTestCase):
     # --------------------------------------------------------------------
 
     async def test_extension(self):
+        """Test case for the extension functionality."""
         # Kit extension system test for Python is based on the unittest module.
         # Visit https://docs.python.org/3/library/unittest.html to see the
         # available assert methods to check for and report failures.

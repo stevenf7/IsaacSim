@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Controller structures for composing and organizing multiple robot motion controllers."""
+
+
 from enum import Enum
 from typing import Optional
 
@@ -126,7 +129,7 @@ class ControllerContainer(BaseController):
         # run the controller and return its result.
         return self._active_controller.forward(estimated_state, setpoint_state, t, **kwargs)
 
-    def set_next_controller(self, next_controller_selection: Enum) -> None:
+    def set_next_controller(self, next_controller_selection: Enum):
         """Set the controller which will be running starting at the next time-step.
 
         This function is typically called by a higher-level behavior control scheme,

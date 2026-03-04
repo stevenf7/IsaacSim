@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Base controller interface for robot motion generation in Isaac Sim."""
+
+
 from abc import ABC, abstractmethod
 from typing import Optional
 
