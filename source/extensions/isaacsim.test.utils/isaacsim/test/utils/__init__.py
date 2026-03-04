@@ -12,12 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Utilities for testing Isaac Sim applications including image comparison, file validation, and UI testing."""
+
+
 import carb.settings
 
 _COVERAGE_PATCH_APPLIED = False
 
 
 def _is_pycoverage_enabled() -> bool:
+    """Check if Python coverage is enabled in the test settings.
+
+    Returns:
+        True if coverage is enabled via the /exts/omni.kit.test/pyCoverageEnabled setting.
+    """
     settings = carb.settings.get_settings()
     if settings is None:
         return False
@@ -27,7 +36,7 @@ def _is_pycoverage_enabled() -> bool:
         return False
 
 
-def _apply_numpy_copymode_coverage_patch() -> None:
+def _apply_numpy_copymode_coverage_patch():
     """Wrap ``np.array`` to translate ``_CopyMode`` enum values for ``copy``.
 
     When coverage is enabled, scipy's ``array_api_compat`` layer passes
@@ -73,7 +82,12 @@ def _apply_numpy_copymode_coverage_patch() -> None:
         pass
 
 
-def _apply_numpy_coverage_patch() -> None:
+def _apply_numpy_coverage_patch():
+    """Apply patches to NumPy methods to handle coverage.py's _NoValueType sentinels.
+
+    This patches NumPy's core methods (_amax, _amin, _sum, _prod) to properly handle
+    coverage.py's sentinel values that can cause TypeError exceptions during array operations.
+    """
     global _COVERAGE_PATCH_APPLIED
     if _COVERAGE_PATCH_APPLIED:
         return
@@ -183,3 +197,26 @@ from .image_io import *
 from .menu_ui_test import *
 from .menu_utils import *
 from .timed_async_test import *
+
+__all__ = [
+    "validate_folder_contents",
+    "get_folder_file_summary",
+    "validate_file_list",
+    "capture_annotator_data_async",
+    "capture_rgb_data_async",
+    "capture_depth_data_async",
+    "capture_viewport_annotator_data_async",
+    "compute_difference_metrics",
+    "print_difference_statistics",
+    "compare_arrays_within_tolerances",
+    "compare_images_within_tolerances",
+    "compare_images_in_directories",
+    "save_rgb_image",
+    "save_depth_image",
+    "read_image_as_array",
+    "MenuUITestCase",
+    "menu_click_with_retry",
+    "get_all_menu_paths",
+    "count_menu_items",
+    "TimedAsyncTestCase",
+]

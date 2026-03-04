@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utilities for navigating and testing UI menus in Isaac Sim."""
+
+
 import carb
 import omni.kit.app
 import omni.kit.ui_test as ui_test
@@ -148,7 +151,7 @@ async def menu_click_with_retry(
     Args:
         menu_path: The menu path to click (e.g., "Create/Sensors/Contact Sensor").
         delays: List of delay values (in frames) to use for ``human_delay_speed``
-            on each attempt. Defaults to ``[5, 10, 20]``.
+            on each attempt.
         window_name: Optional window name to check for after clicking.
             If provided, the function returns early when the window is found
             and returns the window widget.

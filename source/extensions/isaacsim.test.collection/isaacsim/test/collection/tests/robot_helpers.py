@@ -22,7 +22,7 @@ from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.experimental.utils.stage import open_stage_async
 
 
-async def init_robot_sim(art_path: str, graph_path: str = "/ActionGraph") -> None:
+async def init_robot_sim(art_path: str, graph_path: str = "/ActionGraph"):
     """Initialize robot simulation by resetting pose and velocities.
 
     Creates an articulation at the given path, resets its position, orientation,
@@ -31,7 +31,6 @@ async def init_robot_sim(art_path: str, graph_path: str = "/ActionGraph") -> Non
     Args:
         art_path: USD path to the robot articulation prim.
         graph_path: USD path to the OmniGraph containing the controller.
-            Defaults to "/ActionGraph".
     """
     art = Articulation(art_path)
     # Wait for physics to be ready (replaces _articulation_view.initialize())

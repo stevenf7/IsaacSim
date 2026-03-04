@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for pycoverage compatibility patches applied to NumPy and SciPy functions."""
+
+
 import numpy as np
 import omni.kit.test
 
@@ -21,7 +24,7 @@ class TestPyCoveragePatches(omni.kit.test.AsyncTestCase):
     """Tests verifying that pycoverage compatibility patches work correctly.
 
     These patches are applied at import time by isaacsim.test.utils.__init__
-    when ``/exts/omni.kit.test/pyCoverageEnabled`` is set.  The tests below
+    when ``/exts/omni.kit.test/pyCoverageEnabled`` is set. The tests below
     exercise the patched code paths to ensure they produce correct results
     regardless of whether coverage is active.
     """

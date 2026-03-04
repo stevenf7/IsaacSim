@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.0] - 2026-03-04
+### Changed
+- Added Overview.md, python_api.md, and SETTINGS.md and updated docstrings
+
 ## [1.7.1] - 2026-03-02
 ### Changed
 - Update assets path to 6.0 staging

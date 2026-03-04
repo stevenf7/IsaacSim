@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the NVIDIA JetBot robot simulation including loading, movement, acceleration, braking, spinning, and circular motion behaviors."""
+
+
 import math
 import time
 
@@ -39,7 +42,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
     """Tests for the NVIDIA JetBot robot simulation."""
 
     # Before running each test
-    async def setUp(self) -> None:
+    async def setUp(self):
         """Set up test environment with JetBot robot."""
         self._timeline = omni.timeline.get_timeline_interface()
 
@@ -69,7 +72,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         pass
 
     # After running each test
-    async def tearDown(self) -> None:
+    async def tearDown(self):
         """Clean up test environment and stop timeline."""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
@@ -80,7 +83,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         pass
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
-    async def test_loading(self) -> None:
+    async def test_loading(self):
         """Test that the JetBot robot loads and can move forward."""
 
         stage_utils.delete_prim("/ActionGraph")
@@ -112,7 +115,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
 
     # general, slowly building up speed testcase
     # note, jetbot cannot exceed 0.42 m/s
-    async def test_accel(self) -> None:
+    async def test_accel(self):
         """Test acceleration behavior with gradually increasing velocities."""
 
         odom_velocity = og.Controller.attribute("outputs:linearVelocity", self.odom_node)
@@ -144,7 +147,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         pass
 
     # braking from different init speeds
-    async def test_brake(self) -> None:
+    async def test_brake(self):
         """Test braking behavior from various initial velocities."""
 
         odom_velocity = og.Controller.attribute("outputs:linearVelocity", self.odom_node)
@@ -182,7 +185,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         pass
 
-    async def test_spin(self) -> None:
+    async def test_spin(self):
         """Test spinning behavior at different angular velocities."""
         odom_ang_vel = og.Controller.attribute("outputs:angularVelocity", self.odom_node)
 
@@ -210,7 +213,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         pass
 
     # go in circle
-    async def test_circle(self) -> None:
+    async def test_circle(self):
         """Test circular motion and verify return to starting position."""
         odom_velocity = og.Controller.attribute("outputs:linearVelocity", self.odom_node)
         odom_ang_vel = og.Controller.attribute("outputs:angularVelocity", self.odom_node)

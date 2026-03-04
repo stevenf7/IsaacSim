@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test suite for timeline advancement and physics stepping behavior in Isaac Sim."""
+
+
 import carb
 import numpy as np
 import omni.kit.app
@@ -33,7 +36,6 @@ def print_unique_values_and_counts(values: np.ndarray, tolerance: float = 1e-6) 
     Args:
         values: Array of numeric values to analyze.
         tolerance: Maximum difference for values to be considered equal.
-            Defaults to 1e-6.
 
     Returns:
         List of (value, count) tuples sorted by value.
@@ -65,7 +67,7 @@ def print_unique_values_and_counts(values: np.ndarray, tolerance: float = 1e-6) 
 class TestAdvanceTimelineAndPhysics(omni.kit.test.AsyncTestCase):
     """Tests for timeline advancement and physics stepping behavior."""
 
-    async def setUp(self) -> None:
+    async def setUp(self):
         """Set up test environment with a new stage."""
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
@@ -73,7 +75,7 @@ class TestAdvanceTimelineAndPhysics(omni.kit.test.AsyncTestCase):
         self._initial_stage_fps = omni.timeline.get_timeline_interface().get_time_codes_per_second()
         print(f"[setUp] Default stage FPS: {self._initial_stage_fps}")
 
-    async def tearDown(self) -> None:
+    async def tearDown(self):
         """Clean up test environment and restore original FPS."""
         omni.timeline.get_timeline_interface().set_time_codes_per_second(self._initial_stage_fps)
         await omni.kit.app.get_app().next_update_async()
@@ -91,9 +93,9 @@ class TestAdvanceTimelineAndPhysics(omni.kit.test.AsyncTestCase):
 
         Args:
             num_frames: Number of frames to simulate.
-            stage_fps: Stage frame rate to set. Defaults to None (use default).
-            physx_fps: Physics timesteps per second. Defaults to None (use default).
-            verbose: If True, print delta time for each frame. Defaults to False.
+            stage_fps: Stage frame rate to set.
+            physx_fps: Physics timesteps per second.
+            verbose: If True, print delta time for each frame.
 
         Returns:
             List of delta times between consecutive frames.
@@ -141,7 +143,7 @@ class TestAdvanceTimelineAndPhysics(omni.kit.test.AsyncTestCase):
             prev_time = timeline.get_current_time()
         return delta_times
 
-    async def test_timeline_delta_times_with_default_fps(self) -> None:
+    async def test_timeline_delta_times_with_default_fps(self):
         """Test that delta times are consistent with default FPS settings."""
         num_frames = 11
         stage_fps = None
@@ -157,7 +159,7 @@ class TestAdvanceTimelineAndPhysics(omni.kit.test.AsyncTestCase):
         all_equal = np.all(np.abs(delta_times_without_first - delta_times_without_first[0]) < 1e-6)
         self.assertTrue(all_equal, f"All delta times should be equal, stage_fps={stage_fps}, physx_fps={physx_fps}")
 
-    async def test_timeline_delta_times_with_matching_fps(self) -> None:
+    async def test_timeline_delta_times_with_matching_fps(self):
         """Test that delta times are consistent when stage and physics FPS match."""
         num_frames = 11
         stage_fps = 100
@@ -173,7 +175,7 @@ class TestAdvanceTimelineAndPhysics(omni.kit.test.AsyncTestCase):
         all_equal = np.all(np.abs(delta_times_without_first - delta_times_without_first[0]) < 1e-6)
         self.assertTrue(all_equal, f"All delta times should be equal, stage_fps={stage_fps}, physx_fps={physx_fps}")
 
-    async def test_timeline_delta_times_with_stage_fps_higher_than_physics(self) -> None:
+    async def test_timeline_delta_times_with_stage_fps_higher_than_physics(self):
         """Test delta times when stage FPS exceeds physics FPS."""
         num_frames = 11
         stage_fps = 100
@@ -189,7 +191,7 @@ class TestAdvanceTimelineAndPhysics(omni.kit.test.AsyncTestCase):
         all_equal = np.all(np.abs(delta_times_without_first - delta_times_without_first[0]) < 1e-6)
         self.assertTrue(all_equal, f"All delta times should be equal, stage_fps={stage_fps}, physx_fps={physx_fps}")
 
-    async def test_timeline_delta_times_with_stage_fps_lower_than_physics(self) -> None:
+    async def test_timeline_delta_times_with_stage_fps_lower_than_physics(self):
         """Test delta times when physics FPS exceeds stage FPS."""
         num_frames = 11
         stage_fps = 75
@@ -266,12 +268,12 @@ class TestAdvanceTimelineAndPhysics(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(frame_after, 1.0, 3, msg=f"Frame after should be 1.0, got {frame_after}")
         self.assertAlmostEqual(time_after, 0.0167, 3, msg=f"Time after should be 0.0167, got {time_after}")
 
-    async def step_simulation_method(self, step_method: str, no_replicator: bool = False) -> None:
+    async def step_simulation_method(self, step_method: str, no_replicator: bool = False):
         """Run simulation stepping test with specified method.
 
         Args:
             step_method: The stepping method to test.
-            no_replicator: If True, skip attaching replicator writer. Defaults to False.
+            no_replicator: If True, skip attaching replicator writer.
         """
         # Wait for a few frames to ensure all extensions are loaded.
         for i in range(5):
@@ -295,18 +297,18 @@ class TestAdvanceTimelineAndPhysics(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         await self.step_simulation(step_method=step_method)
 
-    async def test_rep_orchestrator(self) -> None:
+    async def test_rep_orchestrator(self):
         """Test simulation stepping using replicator orchestrator."""
         await self.step_simulation_method(step_method="rep_orchestrator")
 
-    async def test_timeline_two_steps(self) -> None:
+    async def test_timeline_two_steps(self):
         """Test simulation stepping using two-step timeline method."""
         await self.step_simulation_method(step_method="timeline_two_steps")
 
-    async def test_timeline_one_step(self) -> None:
+    async def test_timeline_one_step(self):
         """Test simulation stepping using single timeline step method."""
         await self.step_simulation_method(step_method="timeline_one_step")
 
-    async def test_timeline_one_step_no_replicator(self) -> None:
+    async def test_timeline_one_step_no_replicator(self):
         """Test simulation stepping without replicator attachment."""
         await self.step_simulation_method(step_method="timeline_one_step", no_replicator=True)
