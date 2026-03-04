@@ -50,7 +50,7 @@ def start_kit_app(
     app_id: str,
     console: bool = True,
     custom_args: list[str] | None = None,
-) -> None:
+):
     """Start another Kit application with inherited settings.
 
     Launches a new Kit application process, passing through extension folder
@@ -100,7 +100,7 @@ def start_kit_app(
         subprocess.Popen(run_args, close_fds=False)
 
 
-def create_desktop_icon(app: IApp, ext_manager: IExtensionManager, ext_id: str) -> None:
+def create_desktop_icon(app: IApp, ext_manager: IExtensionManager, ext_id: str):
     """Create a desktop application icon entry on Linux systems.
 
     Creates a .desktop file in the user's applications folder for easy

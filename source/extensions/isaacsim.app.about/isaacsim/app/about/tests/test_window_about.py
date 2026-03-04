@@ -80,5 +80,5 @@ class TestAboutWindow(OmniUiTest):
         try:
             await self.docked_test_window(window=about_window, width=400, height=510)
             await self.finalize_test(golden_img_dir=self._golden_img_dir, golden_img_name="test_about_ui.png")
-        except:
-            carb.log_warn("Could not run test because carb::windowing is not available")
+        except Exception as e:
+            carb.log_warn(f"Could not run test because carb::windowing is not available: {e}")

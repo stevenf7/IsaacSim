@@ -122,7 +122,7 @@ async def await_viewport(
     await update_callback()
 
 
-def record_startup_benchmark(ext_manager: IExtensionManager) -> None:
+def record_startup_benchmark(ext_manager: IExtensionManager):
     """Record startup time as a benchmark metric if benchmarking is enabled.
 
     Args:
