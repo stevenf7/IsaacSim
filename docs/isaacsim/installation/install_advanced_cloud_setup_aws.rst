@@ -9,7 +9,7 @@
 
 .. _key pair: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
 .. _security group: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html
-.. _NICE DCV Client: https://www.amazondcv.com
+.. _DCV Client: https://www.amazondcv.com
 .. _PuTTY: https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html
 .. _AWS Marketplace: https://aws.amazon.com/marketplace/search/results?searchTerms=isaac+sim
 .. _Isaac Sim Container: https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim
@@ -31,13 +31,13 @@ The requirements for running |isaac-sim| on Amazon Web Services (AWS) are:
 3. An Amazon EC2 `security group`_ to control access to ports:
 
    - TCP Port 22 for SSH
-   - TCP Port 8443 for NICE DCV
+   - TCP Port 8443 for DCV
    - TCP Port 49100 for WebRTC streaming
    - UDP Port 47998 for WebRTC streaming
 
 4. `PuTTY`_, or other SSH terminal client to connect to the AMI instance.
 
-5. `NICE DCV Client`_ or Remote Desktop app (For Windows EC2 instance).
+5. `DCV Client`_ or Remote Desktop app (For Windows EC2 instance).
 
 Setup
 ---------------------------
@@ -72,7 +72,7 @@ Follow these steps to launch an AWS EC2 instance:
    - Click the **Launch** button.
 
 8.  On the *Launch an instance* page, name your instance.
-9.  Set the *Instance type* to **g6e.2xlarge**, if not already listed. (Only the g6e.2xlarge instance type is supported.)
+9.  Set the *Instance type* to **g6e.2xlarge** or **g7e.8xlarge**, if not already listed.
 10. Set the *Key Pair (login)* to use your pre-configured `key pair`_.
 11. In the *Network settings* section, select the **Select existing security group** option. In the **Common security groups** dropdown, select your `security group`_.
 12. In the **Summary** section on the right side of the page, click **Launch instance**.
@@ -81,7 +81,14 @@ Follow these steps to launch an AWS EC2 instance:
 Connect
 ---------------------------
 
-Follow the instructions below depending on the EC2 instance type selected in the previous section:
+Before you log in, make sure that:
+
+- The AMI instance is running
+- `PuTTY`_ (or other SSH terminal software) is installed
+- The `DCV Client`_ is installed
+- Your `key pair`_ is created
+
+Follow the instructions below depending on the OS you are running and the instance type:
 
 .. tab-set::
     .. tab-item:: Linux Instance
@@ -103,25 +110,15 @@ Follow the instructions below depending on the EC2 instance type selected in the
 
            .. note:: Using the Terminal, you can connect using the command ``ssh -i <my_key_pair>.pem ubuntu@<public_ip>``.
 
-        3. When you are connected to the AMI, change the password. The password **must** be changed for NICE DCV to connect in a later step.
+        3. When you are connected to the AMI, change the password. The password **must** be changed for DCV to connect in a later step.
 
-           - Change the password for the Ubuntu account in order to use the Amazon DCV client. Use the following command to change the password: ``sudo passwd ubuntu``.
+           - Change the password for the Ubuntu account in order to use the DCV client. Use the following command to change the password: ``sudo passwd ubuntu``.
 
            .. note:: The password needs to be set via SSH each time a new instance is created, this is by design for security.
 
            - Enter a new password.
 
-           - Check your session is running by using the following command: ``sudo dcv list-sessions``. (There should be a ‘console’ session running.)
-
-        4. Open the locally installed NICE DCV Client and enter the Public IP Address of your instance in this format ``https://<public_ip>:8443``, followed by clicking **Connect**.
-
-           - If you see the Server Identity Check message, click **Trust and Connect**.
-
-           - Log in by entering the username ``ubuntu`` and the password that was set in a previous step, followed by clicking **Login**.
-
-           - The Ubuntu desktop GUI will now be displayed in the NICE DCV window.
-
-           .. note:: You can also use the NICE DCV Web Browser Client by navigating to ``https://<public_ip>:8443`` on a browser.
+           - Check your session is running by using the following command: ``sudo dcv list-sessions``. (There should be a 'console' session running.)
 
     .. tab-item:: Windows Instance
         :sync: windows
@@ -134,17 +131,22 @@ Follow the instructions below depending on the EC2 instance type selected in the
 
         #. Upload your private key file associated with the instance and select **Decrypt password**.
 
-        #. Use this username and password to log in when you connect with the `NICE DCV Client`_ or Remote Desktop app.
+        #. Use this username and password to log in when you connect with the `DCV Client`_ or Remote Desktop app.
 
-        #. Open the locally installed NICE DCV Client and enter the Public IP Address of your instance in this format ``https://<public_ip>:8443``, followed by clicking **Connect**.
+Connect to the Instance with DCV Client
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-           - If you see the Server Identity Check message, click **Trust and Connect**.
+The `DCV Client`_ is available for Windows, macOS, and Linux. Install it on your local machine, then:
 
-           - Log in by entering the username and the password that was set in a previous step, followed by clicking **Login**.
+1. Open the locally installed `DCV Client`_ and enter the Public IP Address of your instance in this format ``https://<public_ip>:8443``, followed by clicking **Connect**.
 
-           - The Windows desktop GUI will now be displayed in the NICE DCV window.
+   - If you see the Server Identity Check message, click **Trust and Connect**.
 
-           .. note:: You can also use the NICE DCV Web Browser Client by navigating to ``https://<public_ip>:8443`` on a browser.
+   - Log in by entering the username ``ubuntu`` (or your Windows username) and the password that was set in a previous step, followed by clicking **Login**.
+
+   - The desktop GUI will now be displayed in the DCV window.
+
+.. note:: You can also use the DCV Web Browser Client by navigating to ``https://<public_ip>:8443`` on a browser.
 
 You have now logged in and your AWS instance is ready for use.
 
@@ -162,8 +164,9 @@ Running Isaac Sim
 
         .. code-block:: console
 
-            sudo chown -R ubuntu.root /opt/IsaacSim
+            sudo chown -R ubuntu:root /opt/IsaacSim
             cd ~/IsaacSim
+            ./post_install.sh
             ./warmup.sh
             ./isaac-sim.sh
 
@@ -173,8 +176,9 @@ Running Isaac Sim
         :sync: windows
 
         1. Using the File Explorer, navigate to ``C:\IsaacSim``.
-        2. Run ``warmup.bat``.
-        3. Run ``isaac-sim.bat``.
+        2. Run ``post_install.bat``.
+        3. Run ``warmup.bat``.
+        4. Run ``isaac-sim.bat``.
 
         .. note:: The warm up script may take 15 minutes or longer to complete.
 
@@ -276,4 +280,3 @@ Running Isaac Sim Container
 
     - :ref:`isaac_sim_setup_remote_headless_container`
     - :ref:`isaac_sim_manual_livestream_client`
-
