@@ -253,6 +253,7 @@ def post_heatmap_to_slack(
         "stacked_chart": False,
         "quiet": True,
         "exclude_patterns": [],
+        "limit": 100,
     }
 
     if branch is not None:

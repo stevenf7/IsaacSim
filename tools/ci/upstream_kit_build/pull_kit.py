@@ -11,6 +11,7 @@
 import os
 import tempfile
 from urllib.parse import quote
+from xml.etree import ElementTree
 
 import requests
 
@@ -40,104 +41,51 @@ RTX_KIT_DEP_PACKAGES = {
     "sensor-checker": "sensor_checker",
 }
 
+# Fallback when rtx-build-{platform} is not present: job that produces rendering_deps.xml.
+RTX_PLUGINS_LOOKUP_JOB_PREFIX = "kit-rtx-plugins-lookup-"
+RENDERING_DEPS_ARTIFACT_PATH = "kit/_build/rendering_deps.xml"
+
 # The Kit branch that Isaac Sim depends on.  Used by the nightly fallback
 # to find the latest scheduled pipeline with all build jobs passing.
 KIT_BRANCH = "feature/110.0"
 
 
-def setup_kit_upstream() -> None:
-    """Detect whether this build should use upstream Kit and set up accordingly.
-
-    Decision matrix:
-      1. Downstream trigger from Kit (CI_PIPELINE_SOURCE == "pipeline") with
-         UPSTREAM_PIPELINE_ID already set → honor it directly.
-      2. Running on the develop-kit-tot or kit-integration/* branch (post-merge push, scheduled, or
-         MR targeting it) → fall back to the latest Kit nightly on KIT_BRANCH.
-      3. Otherwise → skip Kit override entirely.
-
-    When an upstream Kit pipeline is identified (case 1 or 2), this function
-    launches ``build_isaac_from_kit`` which downloads Kit artifacts and
-    generates packman ``.user`` overrides so all Kit packages come from the
-    same commit.
-    """
-    import omni.repo.ci  # deferred so module can be imported outside CI
-
-    ci_pipeline_source = os.getenv("CI_PIPELINE_SOURCE", "")
-    ci_commit_ref = os.getenv("CI_COMMIT_REF_NAME", "")
-    ci_mr_target = os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME", "")
-    upstream_pipeline_id = os.getenv("UPSTREAM_PIPELINE_ID", "")
-
-    print(f"[setup_kit_upstream] CI_PIPELINE_SOURCE={ci_pipeline_source}")
-    print(f"[setup_kit_upstream] CI_COMMIT_REF_NAME={ci_commit_ref}")
-    print(f"[setup_kit_upstream] CI_MERGE_REQUEST_TARGET_BRANCH_NAME={ci_mr_target}")
-    print(f"[setup_kit_upstream] UPSTREAM_PIPELINE_ID={upstream_pipeline_id}")
-
-    downstream_pipeline = ci_pipeline_source == "pipeline"
-    develop_kit_tot_pipeline = (
-        ci_mr_target == "develop-kit-tot"
-        or ci_commit_ref == "develop-kit-tot"
-        or ci_commit_ref.startswith("kit-integration/")
-        or ci_mr_target.startswith("kit-integration/")
-    )
-
-    # for kit-integration/* pipelines we override the KIT_BRANCH, just in case its a non-downstream kit-integration pipeline
-    if ci_commit_ref.startswith("kit-integration/"):
-        KIT_BRANCH = ci_commit_ref.split("/")[1]
-    if ci_mr_target.startswith("kit-integration/"):
-        KIT_BRANCH = ci_mr_target.split("/")[1]
-
-    print(
-        f"[setup_kit_upstream] downstream_pipeline={downstream_pipeline}, "
-        f"develop_kit_tot_pipeline={develop_kit_tot_pipeline}"
-    )
-
-    if downstream_pipeline and upstream_pipeline_id:
-        # Upstream pipeline already provided the pipeline ID — honour it.
-        print(f"[setup_kit_upstream] Using upstream-provided UPSTREAM_PIPELINE_ID={upstream_pipeline_id}")
-    elif develop_kit_tot_pipeline:
-        # Fallback: find the latest Kit nightly on KIT_BRANCH.
-        print(f"[setup_kit_upstream] No upstream pipeline ID, falling back to latest Kit nightly on {KIT_BRANCH}")
-        nightly_pipeline_id = find_latest_nightly_pipeline_id()
-        if nightly_pipeline_id is None:
-            raise ValueError("Unable to find latest nightly pipeline")
-        os.environ["UPSTREAM_PIPELINE_ID"] = str(nightly_pipeline_id)
-        print(f"[setup_kit_upstream] Set UPSTREAM_PIPELINE_ID={nightly_pipeline_id} from nightly lookup")
-    else:
-        print(
-            "[setup_kit_upstream] Not a downstream or develop-kit-tot/kit-integration pipeline, skipping Kit override"
-        )
-        return
-
-    print("[setup_kit_upstream] Launching build_isaac_from_kit to override Kit packages...")
-    omni.repo.ci.launch(["${root}/repo${shell_ext}", "ci", "build_isaac_from_kit"])
+def _gitlab_headers() -> dict:
+    """Return GitLab API auth headers. CI_GITLAB_API_TOKEN preferred, then GITLAB_API_TOKEN."""
+    token = os.getenv("CI_GITLAB_API_TOKEN") or os.getenv("GITLAB_API_TOKEN")
+    if not token:
+        raise ValueError("GitLab API token required. Set CI_GITLAB_API_TOKEN or GITLAB_API_TOKEN.")
+    return {"PRIVATE-TOKEN": token}
 
 
-def find_latest_nightly_pipeline_id(project_id=6510, gitlab_url="https://gitlab-master.nvidia.com"):
+def find_latest_nightly_pipeline_id(
+    project_id=6510,
+    gitlab_url="https://gitlab-master.nvidia.com",
+    branch=None,
+):
     """Find the latest successful nightly pipeline ID from GitLab.
 
-    Queries GitLab API for scheduled pipelines on KIT_BRANCH and finds the
+    Queries GitLab API for scheduled pipelines on the given branch and finds the
     most recent one where all required kit build jobs and RTX build jobs have
     completed successfully (so Kit dep packages from RTX artifacts are available).
 
     Args:
         project_id: The GitLab project ID to query. Defaults to 6510.
         gitlab_url: The base URL of the GitLab instance. Defaults to 'https://gitlab-master.nvidia.com'.
+        branch: Branch name to query (e.g. feature/110.0). Defaults to KIT_BRANCH.
 
     Returns:
         The pipeline ID of the latest successful nightly build, or None if no suitable pipeline found.
 
     Raises:
-        ValueError: If CI_GITLAB_API_TOKEN environment variable is not set.
+        ValueError: If CI_GITLAB_API_TOKEN and GITLAB_API_TOKEN environment variables are not set.
         requests.HTTPError: If any API request fails.
     """
-    print(f"Querying for latest nightly pipeline on {KIT_BRANCH}...")
-    private_token = os.getenv("CI_GITLAB_API_TOKEN")
-    if private_token is None:
-        raise ValueError("Unable to find PRIVATE_TOKEN, please set CI_GITLAB_API_TOKEN environment variable")
+    ref = branch if branch is not None else KIT_BRANCH
+    print(f"Querying for latest nightly pipeline on {ref}...")
+    headers = _gitlab_headers()
 
-    headers = {"PRIVATE-TOKEN": private_token}
-
-    pipelines_url = f"{gitlab_url}/api/v4/projects/{project_id}/pipelines?source=schedule&ref={KIT_BRANCH}"
+    pipelines_url = f"{gitlab_url}/api/v4/projects/{project_id}/pipelines?source=schedule&ref={ref}"
     response = requests.get(pipelines_url, headers=headers, timeout=30)
     response.raise_for_status()
     pipelines = response.json()
@@ -220,10 +168,7 @@ def get_kit_version_file_content(project_id, pipeline_id, gitlab_url="https://gi
     Returns:
         First line of the VERSION file, stripped, or None if pipeline or fetch fails.
     """
-    private_token = os.getenv("CI_GITLAB_API_TOKEN")
-    if private_token is None:
-        raise ValueError("CI_GITLAB_API_TOKEN is not set")
-    headers = {"PRIVATE-TOKEN": private_token}
+    headers = _gitlab_headers()
 
     pipeline_url = f"{gitlab_url}/api/v4/projects/{project_id}/pipelines/{pipeline_id}"
     resp = requests.get(pipeline_url, headers=headers, timeout=30)
@@ -252,10 +197,7 @@ def download_job_artifact_file(
     artifact_path is the path inside the archive (e.g. rendering/_builtpackages/foo+latest.txt).
     Special characters (e.g. +) are quoted for the URL.
     """
-    private_token = os.getenv("CI_GITLAB_API_TOKEN")
-    if private_token is None:
-        raise ValueError("CI_GITLAB_API_TOKEN is not set")
-    headers = {"PRIVATE-TOKEN": private_token}
+    headers = _gitlab_headers()
 
     encoded_path = quote(artifact_path, safe="/")
     url = f"{gitlab_url}/api/v4/projects/{project_id}/jobs/{job_id}/artifacts/{encoded_path}"
@@ -265,6 +207,143 @@ def download_job_artifact_file(
         for chunk in resp.iter_content(chunk_size=8192):
             f.write(chunk)
     return True
+
+
+def _platform_to_packman_target(platform: str) -> str:
+    """Map platform (linux-x86_64, linux-aarch64, windows-x86_64) to packman platform string."""
+    if platform == "windows-x86_64":
+        return "windows-x86_64"
+    if platform == "linux-aarch64":
+        return "manylinux_2_35_aarch64"
+    return "manylinux_2_35_x86_64"
+
+
+def _tweak_rendering_deps_xml(xml_content: str, build_config: str) -> str:
+    """Tweak the artifact XML: drop the dependency we do not need, add linkPath to the rest.
+
+    Removes the release dependency when doing a debug build and vice versa.
+    Sets linkPath="rtx_plugins" on the remaining dependency so packman extracts there.
+    """
+    root = ElementTree.fromstring(xml_content)
+    config_suffix = ".release." if build_config == "release" else ".debug."
+    for dep in list(root.findall("dependency")):
+        dep_name = dep.get("name") or ""
+        if config_suffix not in dep_name:
+            root.remove(dep)
+        else:
+            dep.set("linkPath", "rtx_plugins")
+    return ElementTree.tostring(root, encoding="unicode", default_namespace="")
+
+
+def fetch_rendering_deps_from_lookup_job(
+    project_id,
+    pipeline_id,
+    platform,
+    gitlab_url="https://gitlab-master.nvidia.com",
+) -> tuple[bool, str | None]:
+    """Fallback when rtx-build-{platform} is missing: use kit-rtx-plugins-lookup-{platform}.
+
+    Finds the lookup job, downloads kit/_build/rendering_deps.xml from its artifacts.
+
+    Returns:
+        (True, XML content string) on success, (False, None) if job or file missing.
+    """
+    lookup_job_name = f"{RTX_PLUGINS_LOOKUP_JOB_PREFIX}{platform}"
+    headers = _gitlab_headers()
+
+    found, target_job = find_job_in_pipeline(gitlab_url, project_id, pipeline_id, lookup_job_name, headers)
+    if not found or target_job is None:
+        return False, None
+
+    job_id = target_job["id"]
+    with tempfile.NamedTemporaryFile(mode="wb", suffix=".xml", delete=False) as tmp:
+        tmp_path = tmp.name
+    try:
+        download_job_artifact_file(project_id, job_id, RENDERING_DEPS_ARTIFACT_PATH, tmp_path, gitlab_url)
+        with open(tmp_path, "r") as f:
+            xml_content = f.read()
+        print(f"[pull_kit] Fallback: got rendering_deps.xml from {lookup_job_name}")
+        return True, xml_content
+    except (requests.HTTPError, OSError) as e:
+        print(f"[pull_kit] Fallback: failed to get rendering_deps.xml: {e}")
+        return False, None
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+
+
+# Folder names under rtx_plugins/_build/{platform}/{config}/libs/ we map to our packages.
+RTX_LIBS_SUBDIR_TO_PACKAGE = {
+    "sensors-checker": "sensor-checker",
+    "sensors-gmo": "generic-model-output",
+}
+
+
+def _fetch_rtx_deps_via_packman_lookup(
+    rendering_deps_xml: str,
+    build_config: str,
+    platform: str,
+    output_base_dir: str,
+) -> dict[str, str]:
+    """Use rendering_deps XML to run packman pull, then copy libs subdirs to match expected layout.
+
+    Tweaks the artifact XML (drop other config, add linkPath), runs packmanapi.pull, then copies
+    rtx_plugins/_build/library/{platform_target}/{config}/libs/... to output_base_dir.
+    """
+    import shutil
+
+    import packmanapi
+
+    packman_platform = _platform_to_packman_target(platform)
+    try:
+        xml_content = _tweak_rendering_deps_xml(rendering_deps_xml, build_config)
+    except ElementTree.ParseError as e:
+        print(f"[pull_kit] Fallback: failed to parse/tweak rendering_deps.xml: {e}")
+        return {}
+    if "<dependency " not in xml_content:
+        print("[pull_kit] Fallback: no dependencies left after filtering for config")
+        return {}
+
+    xml_path = os.path.join(output_base_dir, "rendering_deps.packman.xml")
+    with open(xml_path, "w") as f:
+        f.write(xml_content)
+
+    try:
+        packmanapi.pull(
+            project_path=xml_path,
+            platform=packman_platform,
+            include_tags=[build_config],
+            tokens={"config": build_config},
+        )
+    except Exception as e:
+        print(f"[pull_kit] Fallback: packman pull failed: {e}")
+        return {}
+
+    rtx_plugins_dir = os.path.join(output_base_dir, "rtx_plugins")
+    libs_dir = os.path.join(rtx_plugins_dir, "_build", packman_platform, build_config, "libs")
+    if not os.path.isdir(libs_dir):
+        print(f"[pull_kit] Fallback: libs dir not found at {libs_dir}")
+        return {}
+
+    extracted = {}
+    for subdir in os.listdir(libs_dir):
+        pkg_name = RTX_LIBS_SUBDIR_TO_PACKAGE.get(subdir)
+        if pkg_name is None:
+            continue
+        dir_name = RTX_KIT_DEP_PACKAGES[pkg_name]
+        src = os.path.join(libs_dir, subdir)
+        if not os.path.isdir(src):
+            continue
+        dst = os.path.join(output_base_dir, dir_name)
+        if os.path.exists(dst):
+            shutil.rmtree(dst)
+        shutil.copytree(src, dst)
+        extracted[pkg_name] = dst
+        print(f"[pull_kit] Fallback: copied {subdir} -> {dst}")
+
+    return extracted
 
 
 def fetch_rtx_kit_dep_packages(
@@ -290,10 +369,7 @@ def fetch_rtx_kit_dep_packages(
 
     from omni.repo.man import extract_archive_to_folder
 
-    private_token = os.getenv("CI_GITLAB_API_TOKEN")
-    if private_token is None:
-        raise ValueError("CI_GITLAB_API_TOKEN is not set")
-    headers = {"PRIVATE-TOKEN": private_token}
+    headers = _gitlab_headers()
 
     version_content = get_kit_version_file_content(project_id, pipeline_id, gitlab_url)
     if not version_content:
@@ -302,7 +378,10 @@ def fetch_rtx_kit_dep_packages(
 
     found, target_job = find_job_in_pipeline(gitlab_url, project_id, pipeline_id, f"rtx-build-{platform}", headers)
     if not found or target_job is None:
-        print(f"[pull_kit] No RTX job for platform '{platform}' in pipeline {pipeline_id}")
+        print(f"[pull_kit] No rtx-build job for platform '{platform}', trying kit-rtx-plugins-lookup fallback...")
+        ok, rendering_deps_xml = fetch_rendering_deps_from_lookup_job(project_id, pipeline_id, platform, gitlab_url)
+        if ok and rendering_deps_xml is not None:
+            return _fetch_rtx_deps_via_packman_lookup(rendering_deps_xml, build_config, platform, output_base_dir)
         return {}
 
     job_id = target_job["id"]
@@ -384,15 +463,10 @@ def download_kit_artifacts(
         True if the download was successful, False if no matching job was found.
 
     Raises:
-        ValueError: If CI_GITLAB_API_TOKEN environment variable is not set.
+        ValueError: If CI_GITLAB_API_TOKEN or GITLAB_API_TOKEN environment variable is not set.
         requests.HTTPError: If any API request fails.
     """
-    private_token = os.getenv("CI_GITLAB_API_TOKEN")
-
-    if private_token is None:
-        raise ValueError("Unable to find PRIVATE_TOKEN, please set CI_GITLAB_API_TOKEN environment variable")
-
-    headers = {"PRIVATE-TOKEN": private_token}
+    headers = _gitlab_headers()
 
     print(f"Searching pipeline {pipeline_id} for kit build job...")
 

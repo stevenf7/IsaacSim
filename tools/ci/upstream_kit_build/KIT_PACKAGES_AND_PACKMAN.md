@@ -131,14 +131,14 @@ is to test whether the upstream Kit commit breaks Isaac Sim. The build must use
    `UPSTREAM_PIPELINE_ID=$CI_PIPELINE_ID`
 3. Isaac Sim's `build_isaac.py` detects `CI_PIPELINE_SOURCE == "pipeline"` and
    honors the provided `UPSTREAM_PIPELINE_ID`
-4. Isaac Sim's `build_isaac_from_kit.py` downloads Kit build artifacts via the
+4. Isaac Sim's `prepare_kit_overrides.py` downloads Kit build artifacts via the
    GitLab API and creates packman `.user` overrides
 
 Note: GitLab does not support passing artifacts across projects in multi-project
 pipelines. Isaac Sim downloads Kit artifacts itself using the GitLab API with the
 pipeline ID passed via variables.
 
-### What `build_isaac_from_kit.py` Overrides
+### What `prepare_kit_overrides.py` Overrides
 
 **Kit SDK** — `deps/kit-sdk.packman.xml.user`:
 - Extracts `omniverse-kit@*.7z` to `_kit/`
@@ -162,7 +162,7 @@ pipeline ID passed via variables.
 
 If a new Kit-versioned package is added to `isaac-sim.packman.xml`, add its
 packman package name and local directory name to the `KIT_DEP_PACKAGES` dict
-in `tools/ci/upstream_kit_build/build_isaac_from_kit.py`:
+in `tools/ci/upstream_kit_build/prepare_kit_overrides.py`:
 
 ```python
 KIT_DEP_PACKAGES: dict[str, str] = {

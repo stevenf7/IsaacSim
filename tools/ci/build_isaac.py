@@ -14,7 +14,7 @@ from typing import Callable, Dict
 
 
 import omni.repo.ci
-from tools.ci.upstream_kit_build.pull_kit import setup_kit_upstream
+from tools.ci.upstream_kit_build.arbitrate_kit_upstream import arbitrate_kit_upstream
 
 
 def pull_library_from_linbuild_usr_lib64(d: str, name: str):
@@ -27,7 +27,7 @@ def pull_library_from_linbuild_usr_lib64(d: str, name: str):
 
 def main(args: argparse.Namespace):
 
-    setup_kit_upstream()
+    arbitrate_kit_upstream()
 
     downstream_pipeline = os.getenv("CI_PIPELINE_SOURCE", "") == "pipeline"
 
