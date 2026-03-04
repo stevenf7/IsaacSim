@@ -23,20 +23,16 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import omni.kit.app
 import omni.ui as ui
-
-if TYPE_CHECKING:
-    from omni.kit.app import IApp
 
 # Path to layout JSON files
 _EXTENSION_FOLDER_NAME = "isaacsim.app.setup"
 LAYOUTS_PATH = Path(__file__).parent.parent.parent.parent.parent / _EXTENSION_FOLDER_NAME / "layouts"
 
 
-async def load_layout(layout_file: str, keep_windows_open: bool = False) -> None:
+async def load_layout(layout_file: str, keep_windows_open: bool = False):
     """Load a window layout from a JSON file.
 
     Applies a saved window layout configuration with a short delay to avoid
@@ -62,7 +58,7 @@ async def load_layout(layout_file: str, keep_windows_open: bool = False) -> None
     QuickLayout.load_file(layout_file, keep_windows_open)
 
 
-async def dock_windows(update_callback: Callable[[], Awaitable[None]]) -> None:
+async def dock_windows(update_callback: Callable[[], Awaitable[None]]):
     """Configure default window docking order and focus.
 
     Sets up the standard Isaac Sim window arrangement with proper dock order
@@ -109,7 +105,7 @@ async def dock_windows(update_callback: Callable[[], Awaitable[None]]) -> None:
         assets.focus()
 
 
-async def setup_property_window(update_callback: Callable[[], Awaitable[None]]) -> None:
+async def setup_property_window(update_callback: Callable[[], Awaitable[None]]):
     """Configure the property window layout scheme.
 
     Sets up the property window with the appropriate delegate layout for

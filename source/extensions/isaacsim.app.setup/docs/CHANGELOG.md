@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.10.0] - 2026-03-04
+### Changed
+- Add Overview.md, python_api.md, SETTINGS.md and update docstrings
+
 ## [1.9.4] - 2026-02-24
 ### Fixed
 - Rename "Robot Hierarchy" window to "Robot Inspector" in default and sdg layouts

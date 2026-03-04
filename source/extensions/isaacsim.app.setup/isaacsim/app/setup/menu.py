@@ -38,7 +38,7 @@ _registered_actions = []
 _ext_name = "isaacsim.app.setup"
 
 
-def _load_layout_async(layout_file: str) -> None:
+def _load_layout_async(layout_file: str):
     """Load a layout file asynchronously.
 
     Args:
@@ -47,7 +47,7 @@ def _load_layout_async(layout_file: str) -> None:
     asyncio.ensure_future(load_layout(layout_file))
 
 
-def _execute_func_async(func: Callable[[], Any]) -> None:
+def _execute_func_async(func: Callable[[], Any]):
     """Execute an async function.
 
     Args:
@@ -118,7 +118,7 @@ def create_layout_menu_item(
     )
 
 
-def setup_menus(show_ui_docs_callback: Callable[[], None]) -> None:
+def setup_menus(show_ui_docs_callback: Callable[[], None]):
     """Configure application menus including layouts and help items.
 
     Sets up the Help menu with UI documentation link and the Layouts menu
@@ -172,7 +172,7 @@ def setup_menus(show_ui_docs_callback: Callable[[], None]) -> None:
         add_menu_items(menu_dict[group], group)
 
 
-def cleanup_menus() -> None:
+def cleanup_menus():
     """Clean up registered menu actions.
 
     Example:

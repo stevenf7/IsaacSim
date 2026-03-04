@@ -39,7 +39,7 @@ _extension_instance = None
 class AboutExtension(omni.ext.IExt):
     """Extension that provides the About dialog UI."""
 
-    def on_startup(self, ext_id: str) -> None:
+    def on_startup(self, ext_id: str):
         """Initialize the extension when it is loaded.
 
         Args:
@@ -71,7 +71,7 @@ class AboutExtension(omni.ext.IExt):
         global _extension_instance
         _extension_instance = self
 
-    def on_shutdown(self) -> None:
+    def on_shutdown(self):
         """Clean up resources when the extension is unloaded."""
         global _extension_instance
         _extension_instance = None
@@ -82,7 +82,7 @@ class AboutExtension(omni.ext.IExt):
 
         self._about_menu = None
 
-    def get_values(self) -> None:
+    def get_values(self):
         """Load application and version values for the About dialog.
 
         This populates cached values used by the About window, including
@@ -113,7 +113,7 @@ class AboutExtension(omni.ext.IExt):
         self.app_version = f"{self.app_version_core}-{self.app_version_prerel}"
 
     @staticmethod
-    def _resize_window(window: ui.Window, scrolling_frame: ui.ScrollingFrame) -> None:
+    def _resize_window(window: ui.Window, scrolling_frame: ui.ScrollingFrame):
         """Resize the scrolling area to match the window.
 
         Args:
@@ -123,7 +123,7 @@ class AboutExtension(omni.ext.IExt):
         scrolling_frame.width = ui.Pixel(window.width - 10)
         scrolling_frame.height = ui.Pixel(window.height - 235)
 
-    def _on_menu_show_about(self) -> None:
+    def _on_menu_show_about(self):
         """Handle the menu action to show the About dialog."""
         plugins = carb.get_framework().get_plugins()
         plugins = sorted(plugins, key=lambda x: x.impl.name)
