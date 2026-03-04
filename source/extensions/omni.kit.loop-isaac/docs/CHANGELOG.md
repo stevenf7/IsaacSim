@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.0] - 2026-03-04
+### Changed
+- Added python_api.md
+
 ## [1.4.0] - 2026-02-03
 ### Added
 - Added `set_next_simulation_time` function and Python binding to support multi-tick rendering mode

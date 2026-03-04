@@ -2,4 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
+"""Tests for the USD schema MuJoCo extension."""
+
+
 scan_for_test_modules = True

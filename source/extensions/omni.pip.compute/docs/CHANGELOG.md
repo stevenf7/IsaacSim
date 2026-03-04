@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.9.0] - 2026-03-04
+### Changed
+- Added python_api.md
+
 ## [1.8.0] - 2026-02-26
 ### Added
 - Added "pynvvideocodec==2.1.0"

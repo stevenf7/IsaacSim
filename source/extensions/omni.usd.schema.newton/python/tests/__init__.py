@@ -2,4 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
+"""Tests module for the Newton USD schema extensions."""
+
+
 scan_for_test_modules = True
