@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Extension module for RTX sensor UI integration in Isaac Sim."""
+
+
 import gc
 from pathlib import Path
 
@@ -27,8 +30,29 @@ from pxr import Tf
 
 
 class Extension(omni.ext.IExt):
+    """Extension class for the isaacsim.sensors.rtx.ui extension.
 
-    def on_startup(self, ext_id: str) -> None:
+    This extension provides UI integration for creating RTX sensors in Isaac Sim. It registers menu items
+    and actions that allow users to create RTX Lidar and RTX Radar sensors directly from the Create menu
+    and viewport context menus.
+
+    The extension supports multiple RTX Lidar sensor configurations from various vendors, organizing them
+    into vendor-specific submenus. It also provides RTX Radar sensor creation capabilities. All sensors
+    can be created either through the main Create menu or via right-click context menus in the viewport.
+
+    When sensors are created, they are automatically placed at the next available path and can be parented
+    to selected prims in the scene.
+    """
+
+    def on_startup(self, ext_id: str):
+        """Initializes the extension by registering sensor creation actions and menu items.
+
+        Sets up RTX Lidar and RTX Radar sensor creation actions, builds the sensor menu hierarchy,
+        and adds menu items to both the Create menu and Isaac context menu.
+
+        Args:
+            ext_id: The extension identifier.
+        """
         self._ext_id = ext_id
         self._ext_name = omni.ext.get_extension_name(ext_id)
         self._registered_actions = []
@@ -115,6 +139,11 @@ class Extension(omni.ext.IExt):
         self._viewport_create_menu = omni.kit.context_menu.add_menu(context_menu_dict, "CREATE")
 
     def on_shutdown(self):
+        """Cleans up extension resources by removing menu items and deregistering actions.
+
+        Removes all registered menu items from the Create menu, deregisters all sensor creation
+        actions from the action registry, and performs garbage collection.
+        """
         remove_menu_items(self._menu_items, "Create")
         self._viewport_create_menu = None
 
@@ -126,7 +155,12 @@ class Extension(omni.ext.IExt):
 
         gc.collect()
 
-    def _get_stage_and_path(self):
+    def _get_stage_and_path(self) -> str | None:
+        """Gets the currently selected prim path from the USD stage.
+
+        Returns:
+            The path of the last selected prim, or None if no prims are selected.
+        """
         selectedPrims = omni.usd.get_context().get_selection().get_selected_prim_paths()
 
         if len(selectedPrims) > 0:
@@ -136,6 +170,15 @@ class Extension(omni.ext.IExt):
         return curr_prim
 
     def _create_lidar(self, sensor_name, sensor_config):
+        """Creates an RTX Lidar sensor at the selected location.
+
+        Generates a unique path based on the sensor name and executes the IsaacSensorCreateRtxLidar
+        command to create the sensor prim.
+
+        Args:
+            sensor_name: The display name of the lidar sensor.
+            sensor_config: The configuration identifier for the lidar sensor.
+        """
         selected_prim = self._get_stage_and_path()
         prim_path = get_next_free_path("/" + Tf.MakeValidIdentifier(sensor_name), None)
         omni.kit.commands.execute(
@@ -143,5 +186,10 @@ class Extension(omni.ext.IExt):
         )
 
     def _create_radar(self):
+        """Creates an RTX Radar sensor at the selected location.
+
+        Executes the IsaacSensorCreateRtxRadar command to create the radar sensor prim
+        at a fixed path under the selected parent prim.
+        """
         selected_prim = self._get_stage_and_path()
         omni.kit.commands.execute("IsaacSensorCreateRtxRadar", path="/RtxRadar", parent=selected_prim)

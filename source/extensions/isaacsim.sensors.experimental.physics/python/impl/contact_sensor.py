@@ -55,25 +55,25 @@ class ContactSensor(XformPrim):
 
     Example:
 
-        .. code-block:: python
+    .. code-block:: python
 
-            from isaacsim.sensors.experimental.physics import ContactSensor
+        from isaacsim.sensors.experimental.physics import ContactSensor
 
-            # Create sensor on existing prim
-            sensor = ContactSensor("/World/Robot/foot/contact_sensor")
+        # Create sensor on existing prim
+        sensor = ContactSensor("/World/Robot/foot/contact_sensor")
 
-            # Or create new sensor with custom parameters
-            sensor = ContactSensor(
-                "/World/Robot/foot/contact_sensor",
-                min_threshold=1.0,
-                max_threshold=1000.0,
-                radius=0.05
-            )
+        # Or create new sensor with custom parameters
+        sensor = ContactSensor(
+            "/World/Robot/foot/contact_sensor",
+            min_threshold=1.0,
+            max_threshold=1000.0,
+            radius=0.05
+        )
 
-            # Get current contact data
-            frame = sensor.get_current_frame()
-            if frame["in_contact"]:
-                print(f"Contact force: {frame['force']}")
+        # Get current contact data
+        frame = sensor.get_current_frame()
+        if frame["in_contact"]:
+            print(f"Contact force: {frame['force']}")
     """
 
     def __init__(
@@ -85,7 +85,7 @@ class ContactSensor(XformPrim):
         min_threshold: float | None = None,
         max_threshold: float | None = None,
         radius: float | None = None,
-    ) -> None:
+    ):
         if position is not None and translation is not None:
             raise ValueError("Sensor position and translation can't be both specified")
 
@@ -164,7 +164,7 @@ class ContactSensor(XformPrim):
         """
         return self.paths[0]
 
-    def initialize(self, physics_sim_view: Any = None) -> None:
+    def initialize(self, physics_sim_view: Any = None):
         """Initialize the sensor for simulation.
 
         This method is provided for API compatibility and currently performs
@@ -245,7 +245,7 @@ class ContactSensor(XformPrim):
 
         return self._current_frame
 
-    def add_raw_contact_data_to_frame(self) -> None:
+    def add_raw_contact_data_to_frame(self):
         """Enable raw contact data in frame output.
 
         After calling this, get_current_frame() will include a "contacts" list
@@ -260,7 +260,7 @@ class ContactSensor(XformPrim):
         contacts: list[dict[str, object]] = []
         self._current_frame["contacts"] = contacts
 
-    def remove_raw_contact_data_from_frame(self) -> None:
+    def remove_raw_contact_data_from_frame(self):
         """Disable raw contact data in frame output.
 
         Removes the "contacts" key from frame output to reduce overhead.
@@ -288,7 +288,7 @@ class ContactSensor(XformPrim):
         """
         return self._prim.GetAttribute("radius").Get()
 
-    def set_radius(self, value: float) -> None:
+    def set_radius(self, value: float):
         """Set the contact detection radius.
 
         Args:
@@ -306,7 +306,7 @@ class ContactSensor(XformPrim):
             self._prim.GetAttribute("radius").Set(value)
 
     def get_min_threshold(self) -> float | None:
-        """Get the minimum force threshold.
+        """Minimum force threshold in Newtons.
 
         Returns:
             Minimum threshold in Newtons, or None if not set.
@@ -324,7 +324,7 @@ class ContactSensor(XformPrim):
         else:
             return None
 
-    def set_min_threshold(self, value: float) -> None:
+    def set_min_threshold(self, value: float):
         """Set the minimum force threshold.
 
         Contacts with force below this threshold are ignored.
@@ -344,7 +344,7 @@ class ContactSensor(XformPrim):
             self._prim.GetAttribute("threshold").Set((value, self.get_max_threshold()))
 
     def get_max_threshold(self) -> float | None:
-        """Get the maximum force threshold.
+        """Maximum force threshold in Newtons.
 
         Returns:
             Maximum threshold in Newtons, or None if not set.
@@ -362,7 +362,7 @@ class ContactSensor(XformPrim):
         else:
             return None
 
-    def set_max_threshold(self, value: float) -> None:
+    def set_max_threshold(self, value: float):
         """Set the maximum force threshold.
 
         Contact forces are clamped to this maximum value.

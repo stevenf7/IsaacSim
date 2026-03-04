@@ -30,7 +30,7 @@ from pxr import Gf
 class Extension(omni.ext.IExt):
     """Extension that adds physics sensors to create menus."""
 
-    def on_startup(self, ext_id: str) -> None:
+    def on_startup(self, ext_id: str):
         """Register sensor menu items when the extension starts.
 
         Args:
@@ -95,7 +95,7 @@ class Extension(omni.ext.IExt):
 
         self._viewport_create_menu = omni.kit.context_menu.add_menu(context_menu_dict, "CREATE")
 
-    def on_shutdown(self) -> None:
+    def on_shutdown(self):
         """Remove menu items and clean up on shutdown."""
         remove_menu_items(self._menu_items, "Create")
         self._viewport_create_menu = None
@@ -122,7 +122,7 @@ class Extension(omni.ext.IExt):
             curr_prim = None
         return curr_prim
 
-    def _add_contact_sensor(self, *args: Any, **kargs: Any) -> None:
+    def _add_contact_sensor(self, *args: Any, **kargs: Any):
         """Create a contact sensor under the current selection.
 
         Args:
@@ -140,7 +140,7 @@ class Extension(omni.ext.IExt):
             translation=Gf.Vec3d(0, 0, 0),
         )
 
-    def _add_imu_sensor(self, *args: Any, **kargs: Any) -> None:
+    def _add_imu_sensor(self, *args: Any, **kargs: Any):
         """Create an IMU sensor under the current selection.
 
         Args:

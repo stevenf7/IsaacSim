@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.0] - 2026-03-04
+### Changed
+- Added Overview.md and python_api.md and updated docstrings
+
 ## [1.6.6] - 2026-02-13
 ### Changed
 - OMPE-78945: Split tests into two groups to avoid MMUFault|SMError|||imgui.pixel on Windows-Vk

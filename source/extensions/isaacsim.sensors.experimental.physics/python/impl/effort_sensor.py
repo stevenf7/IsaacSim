@@ -40,7 +40,7 @@ class EffortSensorReading:
         value: Effort (torque/force) value at the joint.
     """
 
-    def __init__(self, is_valid: bool = False, time: float = 0, value: float = 0) -> None:
+    def __init__(self, is_valid: bool = False, time: float = 0, value: float = 0):
         self.is_valid = is_valid
         self.time = time
         self.value = value
@@ -72,7 +72,7 @@ class EffortSensor:
                 print(f"Joint torque: {reading.value}")
     """
 
-    def __init__(self, prim_path: str, enabled: bool = True) -> None:
+    def __init__(self, prim_path: str, enabled: bool = True):
         self.enabled = enabled
         self.prim_path = prim_path
 
@@ -106,7 +106,7 @@ class EffortSensor:
             observer_name="isaacsim.sensors.experimental.physics.EffortSensor._timeline_stop_callback",
         )
 
-    def _stage_open_callback_fn(self, event: Any = None) -> None:
+    def _stage_open_callback_fn(self, event: Any = None):
         """Handle stage open by releasing all subscriptions.
 
         Args:
@@ -115,7 +115,7 @@ class EffortSensor:
         self._stage_open_sub = None
         self._timeline_stop_sub = None
 
-    def _timeline_stop_callback_fn(self, event: Any) -> None:
+    def _timeline_stop_callback_fn(self, event: Any):
         """Handle timeline stop by resetting state.
 
         Args:
@@ -159,7 +159,7 @@ class EffortSensor:
 
         return reading
 
-    def update_dof_name(self, dof_name: str) -> None:
+    def update_dof_name(self, dof_name: str):
         """Update the DOF (degree of freedom) name being measured.
 
         Creates a new backend targeting the updated joint path.
@@ -178,7 +178,7 @@ class EffortSensor:
         self._backend.reset()
         self._backend = EffortSensorBackend(new_path)
 
-    def change_buffer_size(self, new_buffer_size: int) -> None:
+    def change_buffer_size(self, new_buffer_size: int):
         """Change the size of the sensor reading buffer.
 
         Args:

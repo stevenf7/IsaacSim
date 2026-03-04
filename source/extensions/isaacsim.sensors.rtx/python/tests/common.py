@@ -44,11 +44,10 @@ def create_sarcophagus(enable_nonvisual_material: bool = True) -> dict:
     """Create a sarcophagus-shaped test environment made of cubes.
 
     Args:
-        enable_nonvisual_material (bool): Whether to apply nonvisual materials to the cubes.
-            Defaults to True.
+        enable_nonvisual_material: Whether to apply nonvisual materials to the cubes.
 
     Returns:
-        dict: Dictionary mapping cube prim paths to their material information.
+        Dictionary mapping cube prim paths to their material information.
     """
     # Autogenerate sarcophagus
     dims = [(10, 5, 7), (15, 9, 11), (20, 13, 15), (25, 17, 19)]

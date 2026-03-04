@@ -37,12 +37,13 @@ class ContactSensorReading:
     """Contact sensor reading data."""
 
     _in_contact: bool = field(default=False, init=False)
+    """Internal state indicating whether the sensor is currently in contact."""
     value: float = 0.0
-    #: Contact force magnitude in Newtons.
+    """Contact force magnitude in Newtons."""
     time: float = 0.0
-    #: Simulation time when the reading was taken.
+    """Simulation time when the reading was taken."""
     is_valid: bool = False
-    #: Whether this reading contains valid data.
+    """Whether this reading contains valid data."""
 
     @property
     def in_contact(self) -> bool:
@@ -59,23 +60,23 @@ class IMUSensorReading:
     """IMU sensor reading data."""
 
     linear_acceleration_x: float = 0.0
-    #: Linear acceleration along X axis in m/s^2.
+    """Linear acceleration along X axis in m/s^2."""
     linear_acceleration_y: float = 0.0
-    #: Linear acceleration along Y axis in m/s^2.
+    """Linear acceleration along Y axis in m/s^2."""
     linear_acceleration_z: float = 0.0
-    #: Linear acceleration along Z axis in m/s^2.
+    """Linear acceleration along Z axis in m/s^2."""
     angular_velocity_x: float = 0.0
-    #: Angular velocity around X axis in rad/s.
+    """Angular velocity around X axis in rad/s."""
     angular_velocity_y: float = 0.0
-    #: Angular velocity around Y axis in rad/s.
+    """Angular velocity around Y axis in rad/s."""
     angular_velocity_z: float = 0.0
-    #: Angular velocity around Z axis in rad/s.
+    """Angular velocity around Z axis in rad/s."""
     orientation: Quaternion = field(default_factory=lambda: Quaternion(1.0, 0.0, 0.0, 0.0))
-    #: Sensor orientation as a quaternion.
+    """Sensor orientation as a quaternion."""
     time: float = 0.0
-    #: Simulation time when the reading was taken.
+    """Simulation time when the reading was taken."""
     is_valid: bool = False
-    #: Whether this reading contains valid data.
+    """Whether this reading contains valid data."""
 
 
 @dataclass
@@ -87,13 +88,13 @@ class Quaternion:
     """
 
     w: float
-    #: Scalar (real) component.
+    """Scalar (real) component."""
     x: float
-    #: First imaginary component.
+    """First imaginary component."""
     y: float
-    #: Second imaginary component.
+    """Second imaginary component."""
     z: float
-    #: Third imaginary component.
+    """Third imaginary component."""
 
     def __len__(self) -> int:
         """Return the number of quaternion components.
@@ -157,29 +158,29 @@ class IMURawData:
     """
 
     time: float = 0.0
-    #: Simulation time of this sample.
+    """Simulation time of this sample."""
     dt: float = 0.0
-    #: Physics timestep duration.
+    """Physics timestep duration."""
     linear_velocity_x: float = 0.0
-    #: Linear velocity along X axis in m/s.
+    """Linear velocity along X axis in m/s."""
     linear_velocity_y: float = 0.0
-    #: Linear velocity along Y axis in m/s.
+    """Linear velocity along Y axis in m/s."""
     linear_velocity_z: float = 0.0
-    #: Linear velocity along Z axis in m/s.
+    """Linear velocity along Z axis in m/s."""
     angular_velocity_x: float = 0.0
-    #: Angular velocity around X axis in rad/s.
+    """Angular velocity around X axis in rad/s."""
     angular_velocity_y: float = 0.0
-    #: Angular velocity around Y axis in rad/s.
+    """Angular velocity around Y axis in rad/s."""
     angular_velocity_z: float = 0.0
-    #: Angular velocity around Z axis in rad/s.
+    """Angular velocity around Z axis in rad/s."""
     orientation_w: float = 1.0
-    #: Quaternion w component.
+    """Quaternion w component."""
     orientation_x: float = 0.0
-    #: Quaternion x component.
+    """Quaternion x component."""
     orientation_y: float = 0.0
-    #: Quaternion y component.
+    """Quaternion y component."""
     orientation_z: float = 0.0
-    #: Quaternion z component.
+    """Quaternion z component."""
 
 
 def _to_numpy(value: Any) -> np.ndarray:
@@ -269,7 +270,7 @@ class _SensorStepManager:
 
     _instance: _SensorStepManager | None = None
 
-    def __init__(self) -> None:
+    def __init__(self):
         self._sensors: weakref.WeakSet[_PhysicsSensorBase] = weakref.WeakSet()
 
         self._post_step_callback = SimulationManager.register_callback(
@@ -293,7 +294,7 @@ class _SensorStepManager:
             cls._instance = cls()
         return cls._instance
 
-    def register(self, sensor: _PhysicsSensorBase) -> None:
+    def register(self, sensor: _PhysicsSensorBase):
         """Register a sensor to receive physics step updates.
 
         Args:
@@ -317,13 +318,33 @@ class _SensorStepManager:
         return None
 
     def _on_simulation_start(self, event: Any) -> None:
+        """Handle simulation start events.
+
+        Args:
+            event: Simulation start event data.
+        """
         pass
 
-    def _on_physics_step(self, step_dt: float, context: Any = None) -> None:
+    def _on_physics_step(self, step_dt: float, context: Any = None):
+        """Handle physics step events.
+
+        Notifies the contact report manager and all registered sensors of the physics step update.
+
+        Args:
+            step_dt: Physics step duration in seconds.
+            context: Physics step context data.
+        """
         for sensor in list(self._sensors):
             sensor.on_physics_step(step_dt)
 
-    def _on_timeline_stop(self, event: Any) -> None:
+    def _on_timeline_stop(self, event: Any):
+        """Handle timeline stop events.
+
+        Notifies all registered sensors of the timeline stop and clears auto-discovered IMU backends and contact data.
+
+        Args:
+            event: Timeline stop event data.
+        """
         for sensor in list(self._sensors):
             sensor.on_timeline_stop()
 
@@ -331,7 +352,7 @@ class _SensorStepManager:
 class _PhysicsSensorBase:
     """Abstract base class for physics-based sensors."""
 
-    def on_physics_step(self, step_dt: float) -> None:
+    def on_physics_step(self, step_dt: float):
         """Called after each physics simulation step.
 
         Args:
@@ -342,7 +363,7 @@ class _PhysicsSensorBase:
         """
         raise NotImplementedError
 
-    def on_timeline_stop(self) -> None:
+    def on_timeline_stop(self):
         """Called when the simulation timeline stops.
 
         Raises:

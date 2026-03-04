@@ -65,13 +65,18 @@ class ImuSensorBackend(_PhysicsSensorBase):
         >>> backend = ImuSensorBackend("/World/ImuSensor")  # doctest: +NO_CHECK
     """
 
-    def __init__(self, prim_path: str) -> None:
+    def __init__(self, prim_path: str):
         self._prim_path = prim_path
         self._sensor_id: int = -1
         self._iface = None
         _SensorStepManager.instance().register(self)
 
     def _ensure_sensor(self) -> bool:
+        """Ensure the IMU sensor is created and initialized.
+
+        Returns:
+            True if the sensor is created and initialized, False otherwise.
+        """
         if self._iface is None:
             self._iface = _get_imu_interface()
         if self._iface is None:
@@ -99,14 +104,24 @@ class ImuSensorBackend(_PhysicsSensorBase):
             reading = self._iface.get_sensor_reading(self._sensor_id, read_gravity)
         return reading
 
-    def on_physics_step(self, step_dt: float) -> None:
+    def on_physics_step(self, step_dt: float):
+        """Handle physics step events.
+
+        Args:
+            step_dt: Physics step duration in seconds.
+        """
         pass
 
-    def on_timeline_stop(self) -> None:
+    def on_timeline_stop(self):
+        """Handle timeline stop events."""
         self._sensor_id = -1
         self._iface = None
 
-    def reset(self) -> None:
+    def reset(self):
+        """Reset the IMU sensor.
+
+        Removes the sensor from the simulation and resets the sensor ID.
+        """
         if self._iface is not None and self._sensor_id >= 0:
             self._iface.remove_sensor(self._sensor_id)
         self._sensor_id = -1

@@ -71,7 +71,7 @@ class Extension(omni.ext.IExt):
     and physics step subscriptions, so no Python simulation callbacks are needed.
     """
 
-    def on_startup(self, ext_id: str) -> None:
+    def on_startup(self, ext_id: str):
         """Initialize the extension when it is loaded.
 
         Args:

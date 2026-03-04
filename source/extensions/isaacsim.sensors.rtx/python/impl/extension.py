@@ -52,7 +52,7 @@ class Extension(omni.ext.IExt):
     visualization.
     """
 
-    def on_startup(self, ext_id: str) -> None:
+    def on_startup(self, ext_id: str):
         """Initialize the extension when it is loaded.
 
         Args:
@@ -67,7 +67,7 @@ class Extension(omni.ext.IExt):
         except Exception as e:
             carb.log_warn(f"Could not register node templates {e}")
 
-    def on_shutdown(self) -> None:
+    def on_shutdown(self):
         """Clean up resources when the extension is unloaded."""
         _release(self.__interface)
         self.__interface = None
@@ -78,9 +78,7 @@ class Extension(omni.ext.IExt):
             carb.log_warn(f"Could not unregister node templates {e}")
         gc.collect()
 
-    def _update_upstream_node_attributes(
-        self, upstream_node_type_name: str, attribute: str, value: Any, node: og.Node
-    ) -> None:
+    def _update_upstream_node_attributes(self, upstream_node_type_name: str, attribute: str, value: Any, node: og.Node):
         """Update attributes on upstream nodes of a specific type.
 
         Traverses the upstream graph to find nodes of the specified type and sets
@@ -116,7 +114,7 @@ class Extension(omni.ext.IExt):
 
     def _on_attach_callback_base(
         self, annotator_name: str, connections: list[tuple[str, str, str, str]], node: og.Node
-    ) -> None:
+    ):
         """Connect upstream nodes when an annotator is attached.
 
         Callback function for annotator attachment. Will connect ancestral upstream node(s)
@@ -171,7 +169,7 @@ class Extension(omni.ext.IExt):
         except Exception as e:
             carb.log_error(f"Error connecting {annotator_name}: {e}. Annotator will not be attached correctly.")
 
-    def _register_nodes(self) -> None:
+    def _register_nodes(self):
         """Register RTX sensor annotators and writers.
 
         Registers various annotators for RTX sensor data extraction including point cloud,
@@ -341,7 +339,7 @@ class Extension(omni.ext.IExt):
             category="isaacsim.sensors.rtx",
         )
 
-    def _unregister_nodes(self) -> None:
+    def _unregister_nodes(self):
         """Unregister RTX sensor annotators and writers.
 
         Removes all annotators and writers registered by this extension.

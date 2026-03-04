@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Extension for the isaacsim.sensors.camera.ui extension that provides UI integration for camera and depth sensor creation."""
+
+
 import gc
 from pathlib import Path
 
@@ -27,6 +31,23 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items
 
 
 class Extension(omni.ext.IExt):
+    """Extension for the isaacsim.sensors.camera.ui extension that provides UI integration for camera and depth sensor creation.
+
+    This extension adds menu items to the Create menu and context menus that allow users to create various camera and depth sensor prims in the USD stage. It supports sensors from multiple vendors including Orbbec, Leopard Imaging, RealSense, Sensing, SICK, and Stereolabs.
+
+    The extension automatically registers actions for each supported sensor type and creates a hierarchical menu structure organized by vendor. For depth sensors, it creates specialized SingleViewDepthSensorAsset instances with proper initialization. For regular camera sensors, it creates standard Xform prims with the appropriate USD reference.
+
+    Supported sensor vendors and models include:
+    - Orbbec: Gemini 2, FemtoMega, Gemini 335, Gemini 335L (all depth sensors)
+    - Leopard Imaging: Hawk, Owl
+    - RealSense: D455, D457, D555 (all depth sensors)
+    - Sensing: Multiple SG series models with various configurations
+    - SICK: Inspector83x
+    - Stereolabs: ZED_X (depth sensor)
+
+    The extension provides both main menu integration under Create > Sensors > Camera and Depth Sensors and context menu integration accessible via right-click in the viewport under Isaac > Sensors.
+    """
+
     # Define sensors data organized by vendor and sensor name
     SENSORS = {
         "Orbbec": {
@@ -116,8 +137,18 @@ class Extension(omni.ext.IExt):
             }
         },
     }
+    """Dictionary containing sensor configurations organized by vendor and sensor name.
 
-    def on_startup(self, ext_id: str) -> None:
+The structure maps vendor names to their sensor models, where each sensor model contains
+configuration data including prim prefix, USD asset path, and optional depth sensor flag.
+Used to dynamically generate menu items and actions for creating sensor prims in the scene."""
+
+    def on_startup(self, ext_id: str):
+        """Initializes the extension by setting up sensor creation actions and menu items.
+
+        Args:
+            ext_id: The extension identifier.
+        """
         self._ext_id = ext_id
         self._ext_name = omni.ext.get_extension_name(ext_id)
         self._registered_actions = []
@@ -195,6 +226,7 @@ class Extension(omni.ext.IExt):
         self._viewport_create_menu = omni.kit.context_menu.add_menu(context_menu_dict, "CREATE")
 
     def on_shutdown(self):
+        """Cleans up the extension by removing menu items and deregistering actions."""
         remove_menu_items(self._menu_items, "Create")
         self._viewport_create_menu = None
 
@@ -207,6 +239,11 @@ class Extension(omni.ext.IExt):
         gc.collect()
 
     def _get_stage_and_path(self):
+        """Gets the currently selected prim path from the USD stage.
+
+        Returns:
+            The path of the last selected prim, or None if no prims are selected.
+        """
         selectedPrims = omni.usd.get_context().get_selection().get_selected_prim_paths()
 
         if len(selectedPrims) > 0:
@@ -215,7 +252,13 @@ class Extension(omni.ext.IExt):
             curr_prim = None
         return curr_prim
 
-    def _create_depth_sensor(self, prim_prefix, usd_path):
+    def _create_depth_sensor(self, prim_prefix: str, usd_path: str):
+        """Creates and initializes a depth sensor asset at the next available path.
+
+        Args:
+            prim_prefix: The prefix for the prim path.
+            usd_path: The USD asset path for the depth sensor.
+        """
         depth_sensor = SingleViewDepthSensorAsset(
             prim_path=get_next_free_path(prim_prefix, None),
             asset_path=get_assets_root_path() + usd_path,

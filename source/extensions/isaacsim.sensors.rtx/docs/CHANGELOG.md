@@ -1,4 +1,8 @@
 # Changelog
+## [15.14.0] - 2026-03-04
+### Changed
+- Added Overview.md, python_api.md, and SETTINGS.md and updated docstrings
+
 ## [15.13.0] - 2026-03-02
 ### Changed
 - Shifted RTX sensor scan accumulation and post-processing back to host by default to reduce GPU resource contention and improve frametime & frametime consistency. Post-processing-on-device still available as option by setting app.sensors.nv.[modality].outputBufferOnGPU=true.
