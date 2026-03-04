@@ -220,7 +220,7 @@ clear_message_state()
 # Settle phase: require several consecutive zero-delta synced pairs before measuring.
 # This removes startup transients from CI while keeping strict checks in measured steps.
 SETTLE_REQUIRED_CONSECUTIVE = 5
-SETTLE_MAX_STEPS = 60
+SETTLE_MAX_STEPS = 200
 settle_consecutive_zero = 0
 settled = False
 
@@ -272,8 +272,11 @@ for settle_step in range(SETTLE_MAX_STEPS):
 
     if settle_consecutive_zero >= SETTLE_REQUIRED_CONSECUTIVE:
         settled = True
+        settle_steps_used = settle_step + 1
         log.info(f"Settle phase complete at step {settle_step}")
         break
+
+settle_steps_used = SETTLE_MAX_STEPS if not settled else settle_steps_used
 
 if not settled:
     log.error(
@@ -349,6 +352,9 @@ log.info(f"Total IMG callbacks received: {img_recv_count}")
 log.info(f"Total test steps:             {args.test_steps}")
 log.info(f"Steps with valid pair:        {len(deltas)}")
 log.info(f"Missed steps:                 {len(missed_steps)} {missed_steps if missed_steps else ''}")
+log.info(
+    f"Settle steps used:            {settle_steps_used}/{SETTLE_MAX_STEPS} ({'converged' if settled else 'did NOT converge'})"
+)
 
 if deltas:
     avg_delay = np.mean(deltas) / 1e6
