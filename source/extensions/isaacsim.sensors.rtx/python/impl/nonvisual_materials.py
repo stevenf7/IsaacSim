@@ -140,8 +140,8 @@ def apply_nonvisual_material(
     Args:
         prim: USD prim that must be a material prim.
         base: Base material type, either string name or integer ID.
-        coating: Coating type, either string name or integer ID. Defaults to "none".
-        attribute: Material attribute, either string name or integer ID. Defaults to "none".
+        coating: Coating type, either string name or integer ID.
+        attribute: Material attribute, either string name or integer ID.
 
     Returns:
         True if the nonvisual material was successfully applied, False otherwise.

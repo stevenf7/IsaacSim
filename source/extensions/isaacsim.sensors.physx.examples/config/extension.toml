@@ -1,5 +1,5 @@
 [package]
-version = "2.3.4"
+version = "2.4.0"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensor Examples"
 description = "Provides example usage and snippets for Isaac Sim PhysX-raycast-based sensors."
@@ -7,7 +7,7 @@ authors = ["hmazhar@nvidia.com", "stevfeng@nvidia.com", "adevalla@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.physx.examples"
 keywords = ["isaac", "physics", "sensor", "lidar", "examples"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -91,3 +91,6 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
 ]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

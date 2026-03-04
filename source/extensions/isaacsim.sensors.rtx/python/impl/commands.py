@@ -48,37 +48,31 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
     Replicator API, or direct camera prim creation.
 
     Args:
-        path: Path where the sensor will be created. If None, a default path will be
-            used. Defaults to None.
-        parent: Parent prim path for the sensor. Defaults to None.
-        config: Configuration name for the sensor. Defaults to None.
-        usd_path: Path to a USD file containing the sensor asset. If both config and
-            usd_path are provided, config takes precedence and a warning is logged.
-            Defaults to None.
+        path: Path where the sensor will be created. If None, a default path will be used.
+        parent: Parent prim path for the sensor.
+        config: Configuration name for the sensor.
+        usd_path: Path to a USD file containing the sensor asset. If both config and usd_path are provided, config
+            takes precedence and a warning is logged.
         translation: 3D translation vector for sensor placement.
-            Defaults to Gf.Vec3d(0, 0, 0).
-        orientation: Quaternion for sensor orientation. Defaults to Gf.Quatd(1, 0, 0, 0).
-        visibility: Visibility flag for the sensor. Defaults to False.
-        variant: Variant name for the sensor configuration. Defaults to None.
-        force_camera_prim: If True, forces creation of a camera prim instead of using
-            references or Replicator API. Defaults to False.
+        orientation: Quaternion for sensor orientation.
+        visibility: Visibility flag for the sensor.
+        variant: Variant name for the sensor configuration.
+        force_camera_prim: If True, forces creation of a camera prim instead of using references or Replicator API.
         **kwargs: Additional keyword arguments for prim creation.
-
-    Attributes:
-        _replicator_api: Static method reference to the Replicator API for sensor creation.
-        _sensor_type: String identifier for the type of sensor.
-        _supported_configs: List of supported sensor configurations.
-        _schema: Schema for the sensor type.
-        _sensor_plugin_name: Name of the sensor plugin.
-        _camera_config_name: Name of the camera configuration.
     """
 
     _replicator_api: Callable[..., Any] | None = None
+    """Static method reference to the Replicator API for sensor creation."""
     _sensor_type: str = "sensor"
+    """String identifier for the type of sensor."""
     _supported_configs: list[Any] | dict[str, set[str]] = []
+    """List of supported sensor configurations."""
     _schema: Any = None
+    """Schema for the sensor type."""
     _sensor_plugin_name: str = ""
+    """Name of the sensor plugin."""
     _camera_config_name: str = ""
+    """Name of the camera configuration."""
 
     def __init__(
         self,
@@ -92,7 +86,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         variant: str | None = None,
         force_camera_prim: bool = False,
         **kwargs,
-    ) -> None:
+    ):
         self._parent = parent
         self._config = config
         self._usd_path = usd_path
@@ -295,7 +289,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         ) or self._create_camera_prim()
         return self._prim
 
-    def undo(self) -> None:
+    def undo(self):
         """Undo the sensor creation command by deleting the created prim."""
         if self._prim_path:
             delete_prim(self._prim_path)
@@ -310,22 +304,20 @@ class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
     Args:
         **kwargs: Keyword arguments passed to the parent class constructor.
             See IsaacSensorCreateRtxSensor for available parameters.
-
-    Attributes:
-        _replicator_api: Static method reference to the Lidar Replicator API.
-        _sensor_type: Set to "lidar".
-        _supported_configs: List of supported Lidar configurations.
-        _schema: Schema for Lidar sensors.
-        _sensor_plugin_name: Name of the Lidar sensor plugin.
     """
 
     _replicator_api: Callable[..., Any] = staticmethod(rep.functional.create.omni_lidar)
+    """Static method reference to the Lidar Replicator API for creating Lidar sensors."""
     _sensor_type: str = "lidar"
+    """String identifier set to "lidar" for the sensor type."""
     _supported_configs: dict[str, set[str]] = SUPPORTED_LIDAR_CONFIGS
+    """Dictionary mapping supported Lidar configurations to their available variants."""
     _schema: Any = IsaacSensorSchema.IsaacRtxLidarSensorAPI
+    """Schema for Lidar sensors using IsaacRtxLidarSensorAPI."""
     _sensor_plugin_name: str = "omni.sensors.nv.lidar.lidar_core.plugin"
+    """Name of the Lidar sensor plugin "omni.sensors.nv.lidar.lidar_core.plugin"."""
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         if self._config and self._config.startswith("OS") and len(self._config) > 3:
             carb.log_warn(
@@ -363,18 +355,16 @@ class IsaacSensorCreateRtxRadar(IsaacSensorCreateRtxSensor):
     Args:
         **kwargs: Keyword arguments passed to the parent class constructor.
             See IsaacSensorCreateRtxSensor for available parameters.
-
-    Attributes:
-        _replicator_api: Static method reference to the Radar Replicator API.
-        _sensor_type: Set to "radar".
-        _schema: Schema for Radar sensors.
-        _sensor_plugin_name: Name of the Radar sensor plugin.
     """
 
     _replicator_api: Callable[..., Any] = staticmethod(rep.functional.create.omni_radar)
+    """Static method reference to the Radar Replicator API."""
     _sensor_type: str = "radar"
+    """Set to "radar"."""
     _schema: Any = IsaacSensorSchema.IsaacRtxRadarSensorAPI
+    """Schema for Radar sensors."""
     _sensor_plugin_name: str = "omni.sensors.nv.radar.wpm_dmatapprox.plugin"
+    """Name of the Radar sensor plugin."""
 
     def do(self) -> Usd.Prim | None:
         """Execute the Radar sensor creation command.
@@ -411,16 +401,14 @@ class IsaacSensorCreateRtxIDS(IsaacSensorCreateRtxSensor):
     Args:
         **kwargs: Keyword arguments passed to the parent class constructor.
             See IsaacSensorCreateRtxSensor for available parameters.
-
-    Attributes:
-        _sensor_type: Set to "ids".
-        _sensor_plugin_name: Name of the IDS sensor plugin.
     """
 
     _sensor_type: str = "ids"
+    """String identifier for the type of sensor."""
     _sensor_plugin_name: str = "omni.sensors.nv.ids.ids.plugin"
+    """Name of the sensor plugin."""
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         if self._config is None:
             self._config = "idsoccupancy"
@@ -436,14 +424,12 @@ class IsaacSensorCreateRtxUltrasonic(IsaacSensorCreateRtxSensor):
     Args:
         **kwargs: Keyword arguments passed to the parent class constructor.
             See IsaacSensorCreateRtxSensor for available parameters.
-
-    Attributes:
-        _sensor_type: Set to "ultrasonic".
-        _sensor_plugin_name: Name of the Ultrasonic sensor plugin.
     """
 
     _sensor_type: str = "ultrasonic"
+    """String identifier for the type of sensor."""
     _sensor_plugin_name: str = "omni.sensors.nv.ultrasonic.wpm_ultrasonic.plugin"
+    """Name of the Ultrasonic sensor plugin."""
 
 
 omni.kit.commands.register_all_commands_in_module(__name__)

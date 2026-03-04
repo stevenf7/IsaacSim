@@ -1,5 +1,5 @@
 [package]
-version = "2.4.3"
+version = "2.5.0"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensor UI components"
 description = "Isaac Sim PhysX Sensor UI components extension provides UI components for Isaac Sim PhysX-raycast-based sensor simulation, eg. menu options."
@@ -7,7 +7,7 @@ authors = ["hmazhar@nvidia.com", "adevalla@nvidia.com", "stevfeng@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.physx.ui"
 keywords = ["isaac", "physics", "sensor", "lidar", "ui"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -89,3 +89,6 @@ args = [
     "--/app/window/dpiScaleOverride=1.0",
     "--/app/window/scaleToMonitor=false",
 ]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

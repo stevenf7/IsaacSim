@@ -90,7 +90,7 @@ class IsaacSensorExperimentalCreatePrim(omni.kit.commands.Command):
 
         return self._prim
 
-    def undo(self) -> None:
+    def undo(self):
         """Undo the command by deleting the created prim."""
         if self._prim_path is not None:
             stage_utils.delete_prim(self._prim_path)
@@ -169,7 +169,7 @@ class IsaacSensorExperimentalCreateContactSensor(omni.kit.commands.Command):
             carb.log_error("Could not create contact sensor prim")
             return None
 
-    def undo(self) -> None:
+    def undo(self):
         """Undo the command.
 
         Note: Does not remove PhysxContactReportAPI from parent.
@@ -237,7 +237,7 @@ class IsaacSensorExperimentalCreateImuSensor(omni.kit.commands.Command):
             carb.log_error("Could not create Imu sensor prim")
             return None
 
-    def undo(self) -> None:
+    def undo(self):
         """Undo the command.
 
         Note: Prim deletion is handled by IsaacSensorExperimentalCreatePrim.undo().

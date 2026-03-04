@@ -84,7 +84,7 @@ class IMUSensor(XformPrim):
         linear_acceleration_filter_size: int | None = 1,
         angular_velocity_filter_size: int | None = 1,
         orientation_filter_size: int | None = 1,
-    ) -> None:
+    ):
         if position is not None and translation is not None:
             raise ValueError("Sensor position and translation can't be both specified")
 
@@ -159,7 +159,7 @@ class IMUSensor(XformPrim):
         """
         return self.paths[0]
 
-    def initialize(self, physics_sim_view: Any = None) -> None:
+    def initialize(self, physics_sim_view: Any = None):
         """Initialize the sensor for simulation.
 
         This method is provided for API compatibility and currently performs

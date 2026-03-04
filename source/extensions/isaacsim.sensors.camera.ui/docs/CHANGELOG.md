@@ -1,4 +1,8 @@
 # Changelog
+## [0.5.0] - 2026-03-04
+### Changed
+- Added Overview.md and python_api.md and updated docstrings
+
 ## [0.4.2] - 2026-02-18
 ### Fixed
 - Replaced deprecated `onclick_fn` with `onclick_action` in menu items to eliminate deprecation warnings

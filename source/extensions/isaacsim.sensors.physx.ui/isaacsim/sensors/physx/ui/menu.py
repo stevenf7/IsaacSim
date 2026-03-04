@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides menu integration for creating PhysX and LightBeam range sensors in Isaac Sim."""
+
+
 import weakref
 from pathlib import Path
 
@@ -28,6 +31,21 @@ from pxr import Gf
 
 
 class RangeSensorMenu:
+    """Provides menu integration for creating PhysX and LightBeam range sensors in Isaac Sim.
+
+    This class registers actions and creates menu entries in both the Create menu and context menu for various
+    range sensor types including PhysX Lidar (rotating and generic) and LightBeam sensors (generic and
+    Tashan TS-F-A). Each menu item triggers the creation of the corresponding sensor prim with predefined
+    configurations.
+
+    The menu structure includes:
+    - PhysX Lidar sensors with rotating and generic variants
+    - LightBeam sensors with generic and Tashan TS-F-A variants
+
+    Args:
+        ext_id: Extension identifier used to register actions and manage the menu lifecycle.
+    """
+
     def __init__(self, ext_id: str):
         self._ext_name = omni.ext.get_extension_name(ext_id)
         self._registered_actions = []
@@ -128,6 +146,11 @@ class RangeSensorMenu:
         self._viewport_create_menu = omni.kit.context_menu.add_menu(context_menu_dict, "CREATE")
 
     def _get_stage_and_path(self):
+        """Gets the current stage and selected prim path.
+
+        Returns:
+            The path of the last selected prim, or None if no prims are selected.
+        """
         self._stage = omni.usd.get_context().get_stage()
         selectedPrims = omni.usd.get_context().get_selection().get_selected_prim_paths()
 
@@ -138,6 +161,12 @@ class RangeSensorMenu:
         return curr_prim
 
     def _add_lidar(self, *args, **kwargs):
+        """Creates a PhysX Lidar sensor with predefined configuration.
+
+        Args:
+            *args: Variable length argument list passed to the command.
+            **kwargs: Additional keyword arguments passed to the command.
+        """
         result, prim = omni.kit.commands.execute(
             "RangeSensorCreateLidar",
             path="/Lidar",
@@ -157,6 +186,12 @@ class RangeSensorMenu:
         )
 
     def _add_generic(self, *args, **kwargs):
+        """Creates a generic range sensor with predefined configuration.
+
+        Args:
+            *args: Variable length argument list passed to the command.
+            **kwargs: Additional keyword arguments passed to the command.
+        """
         result, prim = omni.kit.commands.execute(
             "RangeSensorCreateGeneric",
             path="/GenericSensor",
@@ -169,6 +204,12 @@ class RangeSensorMenu:
         )
 
     def _add_lightbeam_sensor(self, *args, **kargs):
+        """Creates a LightBeam sensor with predefined configuration.
+
+        Args:
+            *args: Variable length argument list passed to the command.
+            **kargs: Additional keyword arguments passed to the command.
+        """
         result, prim = omni.kit.commands.execute(
             "IsaacSensorCreateLightBeamSensor",
             path="/LightBeam_Sensor",
@@ -179,6 +220,7 @@ class RangeSensorMenu:
         )
 
     def shutdown(self):
+        """Shuts down the range sensor menu by removing menu items and deregistering actions."""
         remove_menu_items(self._menu_items, "Create")
         self._viewport_create_menu = None
 

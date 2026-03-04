@@ -65,7 +65,7 @@ class ContactSensorBackend(_PhysicsSensorBase):
         >>> backend = ContactSensorBackend("/World/ContactSensor")  # doctest: +NO_CHECK
     """
 
-    def __init__(self, prim_path: str) -> None:
+    def __init__(self, prim_path: str):
         self._prim_path = prim_path
         self._cpp_sensor_id: int = -1
         self._iface = None
@@ -93,6 +93,11 @@ class ContactSensorBackend(_PhysicsSensorBase):
         return prim.GetTypeName() == "IsaacContactSensor"
 
     def _ensure_cpp_sensor(self) -> bool:
+        """Ensure the C++ sensor is created and initialized.
+
+        Returns:
+            True if the sensor is created and initialized, False otherwise.
+        """
         if self._cpp_sensor_id >= 0:
             return True
         iface = self._get_iface()
@@ -129,7 +134,7 @@ class ContactSensorBackend(_PhysicsSensorBase):
 
         self._latest_reading = cpp_reading
 
-    def on_timeline_stop(self) -> None:
+    def on_timeline_stop(self):
         """Reset sensor state when timeline stops."""
         self._latest_reading = ContactSensorReading()
         self._last_physics_step = -1

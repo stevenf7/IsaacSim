@@ -42,11 +42,11 @@ class LidarRtx(BaseSensor):
 
     Args:
         prim_path: Path to the USD prim for the Lidar sensor.
-        name: Name of the Lidar sensor. Defaults to "lidar_rtx".
-        position: Global position of the sensor as [x, y, z]. Defaults to None.
-        translation: Local translation of the sensor as [x, y, z]. Defaults to None.
-        orientation: Orientation quaternion as [w, x, y, z]. Defaults to None.
-        config_file_name: Path to the configuration file for the sensor. Defaults to None.
+        name: Name of the Lidar sensor.
+        position: Global position of the sensor as [x, y, z].
+        translation: Local translation of the sensor as [x, y, z].
+        orientation: Orientation quaternion as [w, x, y, z].
+        config_file_name: Path to the configuration file for the sensor.
         **kwargs: Additional keyword arguments for sensor configuration.
 
     Raises:
@@ -86,7 +86,7 @@ class LidarRtx(BaseSensor):
         orientation: np.ndarray | None = None,
         config_file_name: str | None = None,
         **kwargs,
-    ) -> None:
+    ):
         DEPRECATED_ARGS = [
             "firing_frequency",
             "firing_dt",
@@ -159,7 +159,7 @@ class LidarRtx(BaseSensor):
 
         return
 
-    def __del__(self) -> None:
+    def __del__(self):
         """Clean up resources when the Lidar sensor is destroyed."""
         self.detach_all_writers()
         self.detach_all_annotators()
@@ -234,7 +234,7 @@ class LidarRtx(BaseSensor):
             "GenericModelOutput",
         ],
         **kwargs,
-    ) -> None:
+    ):
         """Attach an annotator to the Lidar sensor.
 
         Args:
@@ -262,7 +262,7 @@ class LidarRtx(BaseSensor):
         self._annotators[annotator_name] = annotator
         return
 
-    def detach_annotator(self, annotator_name: str) -> None:
+    def detach_annotator(self, annotator_name: str):
         """Detach an annotator from the Lidar sensor.
 
         Args:
@@ -284,7 +284,7 @@ class LidarRtx(BaseSensor):
             carb.log_warn(f"Annotator {annotator_name} not attached to {self._render_product_path}")
         return
 
-    def detach_all_annotators(self) -> None:
+    def detach_all_annotators(self):
         """Detach all annotators from the Lidar sensor.
 
         Example:
@@ -320,7 +320,7 @@ class LidarRtx(BaseSensor):
         """
         return self._writers
 
-    def attach_writer(self, writer_name: str, **kwargs) -> None:
+    def attach_writer(self, writer_name: str, **kwargs):
         """Attach a writer to the Lidar sensor.
 
         Args:
@@ -343,7 +343,7 @@ class LidarRtx(BaseSensor):
         writer.attach([self._render_product_path])
         self._writers[writer_name] = writer
 
-    def detach_writer(self, writer_name: str) -> None:
+    def detach_writer(self, writer_name: str):
         """Detach a writer from the Lidar sensor.
 
         Args:
@@ -365,7 +365,7 @@ class LidarRtx(BaseSensor):
             carb.log_warn(f"Writer {writer_name} not attached to {self._render_product_path}")
         return
 
-    def detach_all_writers(self) -> None:
+    def detach_all_writers(self):
         """Detach all writers from the Lidar sensor.
 
         Example:
@@ -402,11 +402,11 @@ class LidarRtx(BaseSensor):
         )
         self.attach_annotator("IsaacComputeRTXLidarFlatScan")  # type: ignore[arg-type]
 
-    def initialize(self, physics_sim_view: Any = None) -> None:
+    def initialize(self, physics_sim_view: Any = None):
         """Initialize the Lidar sensor.
 
         Args:
-            physics_sim_view: Optional physics simulation view. Defaults to None.
+            physics_sim_view: Optional physics simulation view.
         """
         BaseSensor.initialize(self, physics_sim_view=physics_sim_view)
         self._acquisition_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
@@ -471,12 +471,12 @@ class LidarRtx(BaseSensor):
         """
         self.resume()
 
-    def post_reset(self) -> None:
+    def post_reset(self):
         """Perform post-reset operations for the Lidar sensor."""
         BaseSensor.post_reset(self)
         return
 
-    def resume(self) -> None:
+    def resume(self):
         """Resume data acquisition for the Lidar sensor.
 
         Example:
@@ -497,7 +497,7 @@ class LidarRtx(BaseSensor):
             )
         return
 
-    def pause(self) -> None:
+    def pause(self):
         """Pause data acquisition for the Lidar sensor.
 
         Example:
@@ -681,7 +681,7 @@ class LidarRtx(BaseSensor):
             return self._current_frame["IsaacComputeRTXLidarFlatScan"].get("azimuthRange")
         return None
 
-    def enable_visualization(self) -> None:
+    def enable_visualization(self):
         """Enable visualization of the Lidar point cloud data.
 
         Example:
@@ -695,7 +695,7 @@ class LidarRtx(BaseSensor):
         self.attach_writer("RtxLidar" + "DebugDrawPointCloud")
         return
 
-    def disable_visualization(self) -> None:
+    def disable_visualization(self):
         """Disable visualization of the Lidar point cloud data.
 
         Example:

@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.0] - 2026-03-04
+### Changed
+- Added Overview.md and python_api.md and updated docstrings
+
 ## [1.0.1] - 2026-02-09
 ### Fixed
 - Fix crash issue when IPhysxSimulation interface is not available
