@@ -1,4 +1,7 @@
 # Changelog
+## [1.5.0] - 2026-03-02
+### Added
+- UR (Universal Robots) stacking example
 
 ## [1.4.1] - 2026-02-11
 ### Changed
@@ -129,3 +132,4 @@
 ## [0.1.0] - 2024-08-09
 ### Added
 - Franka and universal_robots folder
+

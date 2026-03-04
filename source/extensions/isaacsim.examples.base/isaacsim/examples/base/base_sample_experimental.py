@@ -15,18 +15,16 @@
 import gc
 from abc import abstractmethod
 
+import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.app
 import omni.physics.core
-import omni.timeline
 from isaacsim.core.rendering_manager import RenderingManager, ViewportManager
 from isaacsim.core.simulation_manager import SimulationManager
-from pxr import UsdPhysics
 
 
 class BaseSample(object):
     def __init__(self) -> None:
-        self._timeline = omni.timeline.get_timeline_interface()
         self._physics_sim_interface = omni.physics.core.get_physics_simulation_interface()
         self._world_settings = {"physics_dt": 1.0 / 60.0, "stage_units_in_meters": 1.0, "rendering_dt": 1.0 / 60.0}
         self._logging_info = ""
@@ -49,17 +47,13 @@ class BaseSample(object):
         self.setup_scene()
         ViewportManager.set_camera_view(eye=[1.5, 1.5, 1.5], target=[0.01, 0.01, 0.01], camera="/OmniverseKit_Persp")
 
-        # TODO: physics scene should be created by simulation manager
-        stage = stage_utils.get_current_stage()
-        self._physics_scene_path = "/World/PhysicsScene"
-        UsdPhysics.Scene.Define(stage, self._physics_scene_path)
         await omni.kit.app.get_app().next_update_async()
 
-        SimulationManager.set_physics_dt(dt=self._world_settings["physics_dt"])
+        SimulationManager.setup_simulation(dt=self._world_settings["physics_dt"])
         RenderingManager.set_dt(dt=self._world_settings["rendering_dt"])
         await omni.kit.app.get_app().next_update_async()
 
-        self._timeline.play()
+        app_utils.play()
         await omni.kit.app.get_app().next_update_async()
 
         await self.setup_post_load()
@@ -69,10 +63,10 @@ class BaseSample(object):
         await self.setup_pre_reset()
 
         # Stop and restart timeline to reset simulation
-        self._timeline.stop()
+        app_utils.stop()
         await omni.kit.app.get_app().next_update_async()
 
-        self._timeline.play()
+        app_utils.play()
         await omni.kit.app.get_app().next_update_async()
 
         await self.setup_post_reset()
@@ -113,8 +107,8 @@ class BaseSample(object):
 
     def _physics_cleanup(self):
         """Cleanup physics resources"""
-        if self._timeline is not None and self._timeline.is_playing():
-            self._timeline.stop()
+        if app_utils.is_playing():
+            app_utils.stop()
         self.physics_cleanup()
 
     def physics_cleanup(self):

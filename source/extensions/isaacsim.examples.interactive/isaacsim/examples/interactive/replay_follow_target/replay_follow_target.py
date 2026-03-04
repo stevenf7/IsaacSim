@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-import omni.kit.app
 from isaacsim.core.experimental.materials import PreviewSurfaceMaterial
 from isaacsim.core.experimental.objects import Cube, DistantLight
 from isaacsim.core.experimental.prims import GeomPrim
@@ -135,8 +135,8 @@ class ReplayFollowTarget(BaseSample):
         self._current_time_step_index = 0
 
         # Start timeline playback
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        app_utils.play()
+        await app_utils.update_app_async(steps=1)
 
         # Register physics callback
         self._physics_callback_id = SimulationManager.register_callback(
@@ -149,8 +149,8 @@ class ReplayFollowTarget(BaseSample):
         self._current_time_step_index = 0
 
         # Start timeline playback
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        app_utils.play()
+        await app_utils.update_app_async(steps=1)
 
         # Register physics callback
         self._physics_callback_id = SimulationManager.register_callback(
