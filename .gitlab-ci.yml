@@ -801,7 +801,57 @@ build-windows-x86_64-debug:
       - job: build-linux-x86_64-c++-coverage
         artifacts: true
 
+# ==============================================================================================================
+# Install VC++ Redistributable for Windows test jobs (required for PyTorch DLLs like c10.dll)
+.install-windows-vcredist:
+    before_script:
+      - |
+        # Print Windows version info for debugging
+        Write-Host "=== Windows Version Info ==="
+        Write-Host "OS: $([System.Environment]::OSVersion.VersionString)"
+        Write-Host "Platform: $([System.Environment]::Is64BitOperatingSystem)"
+        Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsBuildNumber | Format-List
+        Write-Host "==========================="
+      - |
+        # Install VC++ Redistributable and UCRT using multiple methods for reliability
+        Write-Host "Installing Visual C++ Redistributable 2015-2022 (includes UCRT)..."
+        
+        # Method 1: Try winget first (fastest, most reliable on modern Windows)
+        $wingetAvailable = Get-Command winget -ErrorAction SilentlyContinue
+        if ($wingetAvailable) {
+          Write-Host "Using winget to install VC++ Redistributable..."
+          winget install Microsoft.VCRedist.2015+.x64 --silent --accept-package-agreements --accept-source-agreements
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "winget installation successful."
+          } else {
+            Write-Host "winget installation returned code $LASTEXITCODE, trying direct download..."
+          }
+        } else {
+          Write-Host "winget not available, using direct download..."
+        }
+        
+        # Method 2: Direct download as fallback/supplement
+        Write-Host "Downloading and installing VC++ Redistributable directly..."
+        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "vc_redist.x64.exe"
+        Start-Process -FilePath ".\vc_redist.x64.exe" -ArgumentList "/install","/quiet","/norestart" -Wait
+        Write-Host "Direct installation complete."
+        
+        # Verify installation
+        Write-Host "`nVerifying VC++ Runtime installation:"
+        $vcDlls = @("vcruntime140.dll", "vcruntime140_1.dll", "msvcp140.dll", "ucrtbase.dll")
+        foreach ($dll in $vcDlls) {
+          $path = "$env:SystemRoot\System32\$dll"
+          if (Test-Path $path) {
+            Write-Host "  FOUND: $dll"
+          } else {
+            Write-Host "  MISSING: $dll"
+          }
+        }
+
+
 .test-windows-common:
+    extends:
+      - .install-windows-vcredist
     after_script:
       - !reference [.datadog-test-visibility-windows-x86_64, script]
       # Only generate report in after_script when not using inline reporting (cmd.exe compatible)
