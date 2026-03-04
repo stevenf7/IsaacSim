@@ -397,62 +397,62 @@ To enable IRC in IRA:
    .. code:: yaml
 
       isaacsim.replicator.agent:
-         version: 1.0.1
+         version: 1.2.0
          simulation_duration: 5
          environment:
             base_stage_asset_path: "Isaac/Samples/Replicator/Captioning/test_caption.usda"
          sensor:
             groups:
                ceiling_cameras:
-               num: 2
-               aim_at_targets:
-                  distance_range: [5, 10]
-                  height_range: [7, 10]
-                  focal_length_range: [10, 15]
-                  look_down_angle_range: [30, 45]
+                  num: 2
+                  aim_at_targets:
+                     distance_range: [5, 10]
+                     height_range: [7, 10]
+                     focal_length_range: [10, 15]
+                     look_down_angle_range: [30, 45]
          character:
             groups:
                warehouse_workers:
-               asset_path: "Isaac/People/Characters/"
-               num: 10
-               routines:
+                  asset_path: "Isaac/People/Characters/"
+                  num: 5
+                  routines:
                   - wander:
-                     weight: 1
-                     repeat: 1
-                     walk:
-                        speed_range: [0.8, 1.5]
-                        distance_range: [5.0, 10.0]
-                     idle:
-                        - animation: idle
-                           weight: 1
-                           time_range: [2.0, 5.0]
+                       weight: 1
+                       repeat: 1
+                       walk:
+                          speed_range: [0.8, 1.5]
+                          distance_range: [5.0, 10.0]
+                       idle:
+                          - animation: idle
+                            weight: 1
+                            time_range: [2.0, 5.0]
          replicator:
             writers:
                SceneGraphWriter:
-               semantic_filter_predicate: "class:*"
-               rgb: true
-               camera_params: true
-               object_info_bounding_box_2d_tight: true
-               object_info_bounding_box_2d_loose: true
-               object_info_bounding_box_3d: true
-               pruning_ratio: 1.0
-               global_caption: true
-               qa_caption: false
-               brief_caption: true
-               visualize_caption: true
-               max_object_capacity: 100
-               export_edges: true
-               save_full_scene_graph: true
-               save_pruned_scene_graph: true
-               export_world: false
-               attach_label_to_usd: false
-               use_ai_label: false
-               verbose: false
-               random_seed: 0
-               caption_only: false
-               scene_graph_interval: 10
-               caption_interval: 10
-   
+                  semantic_filter_predicate: "class:*"
+                  rgb: true
+                  camera_params: true
+                  object_info_bounding_box_2d_tight: true
+                  object_info_bounding_box_2d_loose: true
+                  object_info_bounding_box_3d: true
+                  pruning_ratio: 1.0
+                  global_caption: true
+                  qa_caption: false
+                  brief_caption: true
+                  visualize_caption: true
+                  max_object_capacity: 100
+                  export_edges: true
+                  save_full_scene_graph: true
+                  save_pruned_scene_graph: true
+                  export_world: false
+                  attach_label_to_usd: false
+                  use_ai_label: false
+                  verbose: false
+                  random_seed: 0
+                  caption_only: false
+                  scene_graph_interval: 10
+                  caption_interval: 10
+
    The caption output will be stored in the output directory as:
 
    * pruned scene graph: ``<output_dir>/<Camera Prim Name>/caption_pruned_json/scene_graph_pruned_<frame id>.json``
