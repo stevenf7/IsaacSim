@@ -1135,6 +1135,7 @@ test-linux-x86_64-external-ar:
     before_script:
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
+      - git lfs pull
       - echo "Building full docs (user guide + API)..."
       - |
         if [ -d "_build/docs/isaac-sim/latest/py" ]; then
@@ -1173,6 +1174,7 @@ build-docs:
 build-docs-mr:
     extends: .build-docs-base
     script:
+      - git lfs pull
       - echo "Building full docs (user guide + API)..."
       - |
         if [ -d "_build/docs/isaac-sim/latest/py" ]; then
@@ -1211,6 +1213,7 @@ build-docs-only-mr:
     before_script:
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
+      - git lfs pull
       - echo "Building user guide only (docs-only change, no API docs)..."
       - ./repo.sh docs --project isaac-sim --warn-as-error=0 > build_log_full.txt 2>&1 || true
       - echo "Docs build complete. Check build_log_full.txt for details."
