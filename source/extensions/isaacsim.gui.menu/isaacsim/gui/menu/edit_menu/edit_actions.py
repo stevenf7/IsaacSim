@@ -24,7 +24,7 @@ from typing import Any
 import omni.kit.actions.core
 
 
-def register_actions(extension_id: str, cls: type[Any], get_self_fn: Callable[[], Any]) -> None:
+def register_actions(extension_id: str, cls: type[Any], get_self_fn: Callable[[], Any]):
     """Register edit-related actions for an extension.
 
     Args:
@@ -307,7 +307,7 @@ def register_actions(extension_id: str, cls: type[Any], get_self_fn: Callable[[]
     )
 
 
-def deregister_actions(extension_id: str) -> None:
+def deregister_actions(extension_id: str):
     """Deregister all actions for an extension.
 
     Args:

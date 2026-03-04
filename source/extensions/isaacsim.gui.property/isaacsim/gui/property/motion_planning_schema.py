@@ -23,14 +23,20 @@ from isaacsim.robot_motion.schema import (
     MOTION_PLANNING_ENABLED_ATTR,
     apply_motion_planning_api,
 )
-from pxr import Sdf
+from pxr import Sdf, Usd
 
 from .robot_schema import _RobotSchemaWidgetBase, _singleton
 
 
 @dataclass(frozen=True)
 class _SchemaAttribute:
-    """Container describing a schema attribute."""
+    """Container describing a schema attribute.
+
+    Args:
+        name: Name of the schema attribute.
+        display_name: Display name for the schema attribute.
+        type: Value type name for the schema attribute.
+    """
 
     name: str
     display_name: str
@@ -39,7 +45,11 @@ class _SchemaAttribute:
 
 @dataclass(frozen=True)
 class _SchemaClass:
-    """Container describing a schema class identifier."""
+    """Container describing a schema class identifier.
+
+    Args:
+        value: The schema class identifier value.
+    """
 
     value: str
 
@@ -58,10 +68,11 @@ class MotionPlanningAPIWidget(_RobotSchemaWidgetBase):
 
     Args:
         title: Widget title shown in the property window.
-        collapsed: Whether the widget starts collapsed. Defaults to False.
+        collapsed: Whether the widget starts collapsed.
     """
 
     _MENU_PREFIX = "Isaac/Motion Planning"
+    """Menu prefix used for organizing Motion Planning related menu items."""
 
     def __init__(self, title: str, collapsed: bool = False):
         super().__init__(
@@ -77,11 +88,27 @@ class MotionPlanningAPIWidget(_RobotSchemaWidgetBase):
         )
 
     def _prim_has_schema(self, prim) -> bool:
+        """Checks if the prim has the IsaacMotionPlanningAPI schema applied.
+
+        Args:
+            prim: The USD prim to check.
+
+        Returns:
+            True if the prim has the motion planning schema applied.
+        """
         if not prim:
             return False
         return MOTION_PLANNING_API_NAME in prim.GetAppliedSchemas()
 
-    def _get_prim(self, prim_path):
+    def _get_prim(self, prim_path) -> Usd.Prim | None:
+        """Retrieves a prim at the given path if it has the IsaacMotionPlanningAPI schema applied.
+
+        Args:
+            prim_path: The path to the prim in the USD stage.
+
+        Returns:
+            The prim if it exists and has the motion planning schema applied, otherwise None.
+        """
         if prim_path:
             stage = self._payload.get_stage()
             if stage:
@@ -90,5 +117,13 @@ class MotionPlanningAPIWidget(_RobotSchemaWidgetBase):
                     return prim
         return None
 
-    def _has_exclusive_schema(self, prim):
+    def _has_exclusive_schema(self, prim) -> bool:
+        """Checks if the prim has the exclusive IsaacMotionPlanningAPI schema.
+
+        Args:
+            prim: The USD prim to check.
+
+        Returns:
+            True if the prim has the exclusive motion planning schema.
+        """
         return self._prim_has_schema(prim)

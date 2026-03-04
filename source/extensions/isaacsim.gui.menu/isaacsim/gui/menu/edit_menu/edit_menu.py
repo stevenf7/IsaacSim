@@ -55,7 +55,7 @@ class EditMenuExtension:
         ext_id: Extension identifier provided by the extension manager.
     """
 
-    def __init__(self, ext_id: str) -> None:
+    def __init__(self, ext_id: str):
         omni.kit.menu.utils.set_default_menu_priority("Edit", -9)
         self._select_recent_menu_list: list[MenuItemDescription] = [MenuItemDescription(name="None", enabled=False)]
         self._selection_set_menu_list: list[MenuItemDescription] = [MenuItemDescription(name="None", enabled=False)]
@@ -144,7 +144,7 @@ class EditMenuExtension:
 
         omni.kit.menu.utils.add_layout(self.__menu_layout)
 
-    def shutdown(self) -> None:
+    def shutdown(self):
         """Remove menu items, hooks, and UI resources.
 
         Example:
@@ -175,7 +175,7 @@ class EditMenuExtension:
         omni.kit.menu.utils.remove_menu_items(self._edit_menu_list, "Edit")
         deregister_actions(self._ext_name)
 
-    def _register_page(self) -> None:
+    def _register_page(self):
         """Register the screenshot preferences page if available."""
         try:
             from omni.kit.window.preferences import register_page
@@ -186,7 +186,7 @@ class EditMenuExtension:
         except ModuleNotFoundError:
             pass
 
-    def _unregister_page(self) -> None:
+    def _unregister_page(self):
         """Unregister the screenshot preferences page if present."""
         if self._preferences_page:
             try:
@@ -198,13 +198,13 @@ class EditMenuExtension:
                 pass
 
     @staticmethod
-    def post_notification(message: str, info: bool = False, duration: int = 3) -> None:
+    def post_notification(message: str, info: bool = False, duration: int = 3):
         """Post a notification message to the UI.
 
         Args:
             message: The message to display.
-            info: Whether to display an info notification. Defaults to False.
-            duration: Duration in seconds for the notification. Defaults to 3.
+            info: Whether to display an info notification.
+            duration: Duration in seconds for the notification.
 
         Example:
             .. code-block:: python
@@ -239,7 +239,7 @@ class EditMenuExtension:
         all_kinds = set(Kind.Registry.GetAllKinds())
         return all_kinds - set(self._usd_kinds())
 
-    def _create_selection_set(self) -> None:
+    def _create_selection_set(self):
         """Create or show the selection set naming dialog."""
         paths = omni.usd.get_context().get_selection().get_selected_prim_paths()
         if not paths:
@@ -251,7 +251,7 @@ class EditMenuExtension:
         else:
             self._create_selection_window = SelectionSetWindow(self._add_to_selection_set)
 
-    def _build_recent_menu(self) -> None:
+    def _build_recent_menu(self):
         """Build the Select Recent submenu items."""
         if self._select_recent:
             self._select_recent_menu_list.clear()
@@ -269,7 +269,7 @@ class EditMenuExtension:
 
             omni.kit.menu.utils.rebuild_menus()
 
-    def _on_select_recent(self, index: int) -> None:
+    def _on_select_recent(self, index: int):
         """Handle selection of a recent item by index.
 
         Args:
@@ -286,7 +286,7 @@ class EditMenuExtension:
 
         asyncio.ensure_future(select_func())
 
-    def _add_to_selection_set(self, description: str) -> None:
+    def _add_to_selection_set(self, description: str):
         """Add the current selection to the named selection set.
 
         Args:
@@ -301,7 +301,7 @@ class EditMenuExtension:
         self._selection_set.append(Selection(description, new_selection))
         self._build_selection_set_menu()
 
-    def _add_to_recent(self, description: str, selection: list[str]) -> None:
+    def _add_to_recent(self, description: str, selection: list[str]):
         """Add a selection to the recent list.
 
         Args:
@@ -320,7 +320,7 @@ class EditMenuExtension:
 
         self._build_recent_menu()
 
-    def _on_select_selection_set(self, index: int) -> None:
+    def _on_select_selection_set(self, index: int):
         """Handle selection of a saved selection set by index.
 
         Args:
@@ -335,7 +335,7 @@ class EditMenuExtension:
 
         asyncio.ensure_future(select_func())
 
-    def _build_selection_set_menu(self) -> None:
+    def _build_selection_set_menu(self):
         """Build the Select Set submenu items."""
         self._selection_set_menu_list.clear()
 
@@ -352,7 +352,7 @@ class EditMenuExtension:
 
         omni.kit.menu.utils.rebuild_menus()
 
-    def _on_select_by_kind(self, kind: str) -> None:
+    def _on_select_by_kind(self, kind: str):
         """Handle selection of prims by kind.
 
         Args:
@@ -366,7 +366,7 @@ class EditMenuExtension:
 
         asyncio.ensure_future(select_func())
 
-    def _build_selection_kind_menu(self) -> None:
+    def _build_selection_kind_menu(self):
         """Build the Select by Kind submenu items."""
         self._selection_kind_menu_list.clear()
 
@@ -384,7 +384,7 @@ class EditMenuExtension:
                 )
             )
 
-    def _build_edit_menu(self) -> None:
+    def _build_edit_menu(self):
         """Build the Edit menu items and register update hooks."""
 
         def is_edit_type_enabled(type_name: str) -> bool:
@@ -588,7 +588,7 @@ class EditMenuExtension:
             observer_name="isaacsim.gui.menu stage watcher",
         )
 
-    def _on_stage_event(self, event: carb.events.IEvent) -> None:
+    def _on_stage_event(self, event: carb.events.IEvent):
         """Refresh edit menu items after a stage event.
 
         Args:
@@ -601,7 +601,7 @@ class EditMenuExtension:
 
         asyncio.ensure_future(refresh_menu_items())
 
-    def _register_context_menu(self) -> None:
+    def _register_context_menu(self):
         """Register Edit-related context menus."""
         import omni.kit.context_menu
 
@@ -630,7 +630,7 @@ class EditMenuExtension:
             omni.kit.context_menu.add_menu(select_context_menu_dict, "MENU", "omni.kit.window.viewport")
         )
 
-    def _unregister_context_menu(self) -> None:
+    def _unregister_context_menu(self):
         """Unregister context menus and release resources."""
         for menu in self._context_menus:
             menu.release()
@@ -787,7 +787,7 @@ class EditMenuExtension:
         return True
 
     @staticmethod
-    def instance_prim() -> None:
+    def instance_prim():
         """Create instances for the selected prims.
 
         Example:
@@ -807,7 +807,7 @@ class EditMenuExtension:
 
     # When combine_layers is True, it means to duplicate with flattening references.
     @staticmethod
-    def duplicate_prim(duplicate_layers: bool, combine_layers: bool) -> None:
+    def duplicate_prim(duplicate_layers: bool, combine_layers: bool):
         """Duplicate selected prims with layer options.
 
         Args:
@@ -842,7 +842,7 @@ class EditMenuExtension:
             )
 
     @staticmethod
-    def parent_prims() -> None:
+    def parent_prims():
         """Parent selected prims to the last selected prim.
 
         Example:
@@ -903,7 +903,7 @@ class EditMenuExtension:
             omni.usd.get_context().get_selection().set_selected_prim_paths(paths, True)
 
     @staticmethod
-    def unparent_prims() -> None:
+    def unparent_prims():
         """Unparent selected prims.
 
         Example:
@@ -1002,7 +1002,7 @@ class EditMenuExtension:
         return False
 
     @staticmethod
-    def delete_prim(destructive: bool) -> None:
+    def delete_prim(destructive: bool):
         """Delete selected prims from the stage.
 
         Args:
@@ -1104,7 +1104,7 @@ class EditMenuExtension:
             )
 
     @staticmethod
-    def focus_prim() -> None:
+    def focus_prim():
         """Focus the viewport camera on selected prims.
 
         Example:
@@ -1117,7 +1117,7 @@ class EditMenuExtension:
         frame_viewport_selection()
 
     @staticmethod
-    def toggle_visibillity() -> None:
+    def toggle_visibillity():
         """Toggle visibility of selected prims in the viewport.
 
         Example:
@@ -1133,7 +1133,7 @@ class EditMenuExtension:
         omni.kit.commands.execute("ToggleVisibilitySelectedPrims", selected_paths=paths)
 
     @staticmethod
-    def deactivate_prims() -> None:
+    def deactivate_prims():
         """Deactivate selected prims.
 
         Example:
@@ -1198,7 +1198,7 @@ class EditMenuExtension:
         return screenshot_path
 
     @staticmethod
-    def capture_screenshot(on_complete_fn: Callable[[bool, str], None] | None = None) -> None:
+    def capture_screenshot(on_complete_fn: Callable[[bool, str], None] | None = None):
         """Capture a screenshot of the active viewport or the app.
 
         Args:
@@ -1284,7 +1284,7 @@ class EditMenuExtension:
         asyncio.ensure_future(capture_frame(capture_filename, on_complete_fn))
 
     @staticmethod
-    def _rename_viewport_active_camera(old_prim_name: Sdf.Path, new_prim_name: Sdf.Path) -> None:
+    def _rename_viewport_active_camera(old_prim_name: Sdf.Path, new_prim_name: Sdf.Path):
         """Update the active viewport camera path after a rename.
 
         Args:
@@ -1306,7 +1306,7 @@ class EditMenuExtension:
         prim: Usd.Prim,
         window: ui.Widget | None,
         field_widget: ui.StringField | None,
-    ) -> None:
+    ):
         """Rename a prim using the provided UI field.
 
         Args:

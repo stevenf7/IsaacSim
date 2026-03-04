@@ -49,7 +49,7 @@ class AssetCheck:
         # Run initial check (skips on first startup)
         self._await_new_scene = asyncio.ensure_future(self._assets_check_window())
 
-    def destroy(self) -> None:
+    def destroy(self):
         """Release UI resources."""
         self._server_window = None
         self._check_success = None
@@ -67,6 +67,11 @@ class AssetCheck:
         return False
 
     def _notify_visibility_changed(self, _visible=None) -> None:
+        """Notify the visibility changed callback.
+
+        Args:
+            _visible: The visibility state of the window.
+        """
         if self._on_visibility_changed:
             self._on_visibility_changed()
 
@@ -113,7 +118,7 @@ class AssetCheck:
             # use native system level open, handles snap based browsers better
             subprocess.Popen(["xdg-open", path])
 
-    async def _assets_check_success_window(self) -> None:
+    async def _assets_check_success_window(self):
         """Show a small pop-up confirming that assets were found."""
         self._check_success = ui.Window(
             "Isaac Sim Assets Check Successful",
@@ -144,7 +149,7 @@ class AssetCheck:
 
         await omni.kit.app.get_app().next_update_async()
 
-    async def _assets_check_window(self) -> None:
+    async def _assets_check_window(self):
         """Perform the actual asset root path check and show results."""
         if self._assets_check is False and self._startup_run:
             self._startup_run = False

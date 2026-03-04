@@ -20,10 +20,10 @@ from omni.kit.menu.utils import MenuItemDescription
 class HookMenuHandler:
     """Register a hook to adjust menu item appearance."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         omni.kit.menu.utils.add_hook(self.__hook_func)
 
-    def shutdown(self) -> None:
+    def shutdown(self):
         """Remove the menu hook.
 
         Example:
@@ -34,7 +34,7 @@ class HookMenuHandler:
         """
         omni.kit.menu.utils.remove_hook(self.__hook_func)
 
-    def __hook_func(self, merged_menu: dict[str, list[MenuItemDescription]]) -> None:
+    def __hook_func(self, merged_menu: dict[str, list[MenuItemDescription]]):
         """Strip glyphs from non-Create menus.
 
         Args:

@@ -32,7 +32,7 @@ from omni.kit.window.property.templates import (
 from pxr import Gf, Sdf, Tf, Usd
 
 
-def iterate_custom_data(custom_data: dict) -> None:
+def iterate_custom_data(custom_data: dict):
     """Recursively convert numpy arrays in custom data to plain Python lists.
 
     Args:
@@ -49,6 +49,14 @@ class CustomDataWidget(SimplePropertyWidget):
     """Property widget for displaying and editing prim custom data as JSON."""
 
     def _get_prim(self, prim_path):
+        """Gets the prim at the specified path from the current stage.
+
+        Args:
+            prim_path: Path to the prim.
+
+        Returns:
+            The prim at the given path, or None if the path is invalid or stage is unavailable.
+        """
         if prim_path:
             stage = self._payload.get_stage()
             if stage:
@@ -76,7 +84,7 @@ class CustomDataWidget(SimplePropertyWidget):
 
         return True
 
-    def build_items(self) -> None:
+    def build_items(self):
         """Build the JSON editor UI for custom data."""
         import json
 
@@ -118,7 +126,7 @@ class CustomDataWidget(SimplePropertyWidget):
 
         pass
 
-    def build_property_item(self, stage: Usd.Stage, ui_prop: UsdPropertyUiEntry, prim_paths: list[Sdf.Path]) -> None:
+    def build_property_item(self, stage: Usd.Stage, ui_prop: UsdPropertyUiEntry, prim_paths: list[Sdf.Path]):
         """Build the UI for a single property item.
 
         Args:

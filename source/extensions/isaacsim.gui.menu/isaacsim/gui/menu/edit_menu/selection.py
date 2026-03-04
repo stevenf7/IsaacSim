@@ -27,7 +27,7 @@ class Selection:
         selection: Selection data or paths to store.
     """
 
-    def __init__(self, description: str, selection: list[str]) -> None:
+    def __init__(self, description: str, selection: list[str]):
         self.time = time.monotonic()
         self.description = description
         self.selection = selection

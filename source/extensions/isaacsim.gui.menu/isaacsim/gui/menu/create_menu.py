@@ -36,7 +36,7 @@ def create_asset(
     stage_path: str,
     camera_position: Sequence[float] | None = None,
     camera_target: Sequence[float] | None = None,
-) -> None:
+):
     """Create a reference to an Isaac Sim asset in the stage.
 
     Args:
@@ -49,9 +49,6 @@ def create_asset(
         .. code-block:: python
 
             create_asset("/Isaac/Robots/IsaacSim/Ant/ant_instanceable.usd", "/Ant")
-
-    Returns:
-        None.
     """
     assets_root_path = get_assets_root_path()
     if assets_root_path is None:
@@ -75,7 +72,7 @@ def create_asset(
 # -----------------------------------------------------------------------------
 # Global create_apriltag function
 # -----------------------------------------------------------------------------
-def create_apriltag(usd_path: str, shader_name: str, stage_path: str, tag_path: str) -> None:
+def create_apriltag(usd_path: str, shader_name: str, stage_path: str, tag_path: str):
     """Create an AprilTag material with a selected tag texture.
 
     Args:
@@ -93,9 +90,6 @@ def create_apriltag(usd_path: str, shader_name: str, stage_path: str, tag_path: 
                 "/Looks/AprilTag",
                 "/Isaac/Materials/AprilTag/Textures/tag36h11.png",
             )
-
-    Returns:
-        None.
     """
     from pxr import Sdf
 
@@ -132,7 +126,7 @@ class CreateMenuExtension:
         ext_id: Extension identifier provided by the extension manager.
     """
 
-    def __init__(self, ext_id: str) -> None:
+    def __init__(self, ext_id: str):
         self._ext_id = ext_id
         self._ext_name = omni.ext.get_extension_name(ext_id)
         self._menu_categories = []
@@ -395,7 +389,7 @@ class CreateMenuExtension:
             "CREATE",
         )
 
-    def shutdown(self) -> None:
+    def shutdown(self):
         """Remove menu layouts and deregister actions.
 
         Example:

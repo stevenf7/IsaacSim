@@ -37,7 +37,7 @@ from .window_menu import WindowMenuExtension
 class Extension(omni.ext.IExt):
     """Register and manage Isaac Sim GUI menus."""
 
-    def on_startup(self, ext_id: str) -> None:
+    def on_startup(self, ext_id: str):
         """Initialize menu extensions and menu ordering.
 
         Args:
@@ -67,7 +67,7 @@ class Extension(omni.ext.IExt):
         menu_order["Layouts"] = 6
         menu_order["Help"] = 99
 
-    def on_shutdown(self) -> None:
+    def on_shutdown(self):
         """Tear down menu extensions and release resources."""
         # remove_menu_items(self._menu_items, "Create")
         self.__hook_menu.shutdown()

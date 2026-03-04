@@ -29,7 +29,7 @@ class HelpMenuExtension:
         ext_id: Extension identifier provided by the extension manager.
     """
 
-    def __init__(self, ext_id: str) -> None:
+    def __init__(self, ext_id: str):
         self._ext_id = ext_id
         self._ext_name = omni.ext.get_extension_name(ext_id)
         self._registered_actions = []
@@ -162,7 +162,7 @@ class HelpMenuExtension:
             "Help",
         )
 
-    def shutdown(self) -> None:
+    def shutdown(self):
         """Remove menu layouts and deregister actions.
 
         Example:
@@ -179,11 +179,11 @@ class HelpMenuExtension:
             action_registry.deregister_action(self._ext_name, action_id)
         self._registered_actions = []
 
-    def _open_physics_manual(self) -> None:
+    def _open_physics_manual(self):
         """Open the physics programming manual URL."""
         self.open_ref_url(resolve_physics_ref_url())
 
-    def open_ref_url(self, url: str) -> None:
+    def open_ref_url(self, url: str):
         """Open a documentation URL using the system browser.
 
         Args:

@@ -26,7 +26,27 @@ from .robot_schema import JointAPIWidget, LinkAPIWidget, RobotAPIWidget, SiteAPI
 
 
 class IsaacPropertyWidgets(omni.ext.IExt):
-    """Omniverse extension that registers Isaac Sim property panel widgets."""
+    """Extension that provides custom property widgets for Isaac Sim robotics workflows.
+
+    This extension registers specialized property panel widgets in the USD Property Window to enhance
+    the editing experience for robotics-specific USD prims and schemas. The widgets provide intuitive
+    interfaces for configuring robot components, motion planning parameters, and other Isaac Sim-specific
+    attributes.
+
+    The extension registers the following property widgets:
+
+    - Array Properties: Manages array-based properties on USD prims
+    - Prim Custom Data: Handles custom metadata stored on prims
+    - Name Override: Provides name override functionality for prims
+    - Namespace: Manages namespace properties for organizational purposes
+    - Robot Schema: Configures robot-level properties and parameters
+    - Robot Link: Handles link-specific properties for articulated robots
+    - Robot Joint: Manages joint properties including limits, drives, and DOF settings
+    - Motion Planning: Configures motion planning API parameters and constraints
+
+    These widgets appear in the Property Window when relevant USD prims are selected, providing
+    context-sensitive editing capabilities for robotics applications in Isaac Sim.
+    """
 
     def __init__(self):
         super().__init__()
@@ -50,6 +70,11 @@ class IsaacPropertyWidgets(omni.ext.IExt):
         self._unregister_widget()
 
     def _register_widget(self):
+        """Registers Isaac property widgets with the property window.
+
+        Creates and registers widgets for array properties, custom data, name override, namespace,
+        robot schema, robot link, robot joint, and motion planning.
+        """
         import omni.kit.window.property as p
 
         w = p.get_window()
@@ -73,6 +98,10 @@ class IsaacPropertyWidgets(omni.ext.IExt):
         w.register_widget("prim", "isaac_motion_planning_api", self._motion_planning_api_widget, False)
 
     def _unregister_widget(self):
+        """Unregisters Isaac property widgets from the property window.
+
+        Removes all registered widgets and destroys their instances to free up resources.
+        """
         import omni.kit.window.property as p
 
         w = p.get_window()

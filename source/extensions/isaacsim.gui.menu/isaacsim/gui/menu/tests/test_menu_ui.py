@@ -25,7 +25,7 @@ from omni.ui.tests.test_base import OmniUiTest
 class TestMenuUI(OmniUiTest):
     """UI tests for menu link validation."""
 
-    async def setUp(self) -> None:
+    async def setUp(self):
         """Create a new stage before each test."""
         self._timeline = omni.timeline.get_timeline_interface()
         omni.usd.get_context().new_stage()
@@ -34,7 +34,7 @@ class TestMenuUI(OmniUiTest):
 
     # After running each test
 
-    async def tearDown(self) -> None:
+    async def tearDown(self):
         """Wait for asset loads before teardown."""
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load

@@ -75,12 +75,22 @@ class UtilitiesMenuExtension:
         omni.kit.menu.utils.add_layout(self.__menu_layout)
 
     def _is_visible(self) -> bool:
+        """Return True if the asset check window is visible.
+
+        Returns:
+            bool: Whether the asset check window is visible.
+        """
         return self._asset_check.is_visible() if self._asset_check else False
 
-    def _on_asset_check_visibility_changed(self) -> None:
+    def _on_asset_check_visibility_changed(self):
+        """Notify the visibility changed callback.
+
+        Args:
+            _visible: The visibility state of the window.
+        """
         refresh_menu_items("Utilities")
 
-    def shutdown(self) -> None:
+    def shutdown(self):
         """Remove menu layouts and placeholders.
 
         Example:

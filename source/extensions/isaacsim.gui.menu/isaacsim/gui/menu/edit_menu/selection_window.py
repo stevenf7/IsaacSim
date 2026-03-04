@@ -28,7 +28,7 @@ class SelectionSetWindow:
         callback: Function to call with the new selection set name.
     """
 
-    def __init__(self, callback: Callable[[str], None]) -> None:
+    def __init__(self, callback: Callable[[str], None]):
         self._callback: Callable[[str], None] | None = callback
         window = ui.Window(
             "Selection Set Name",
@@ -93,7 +93,7 @@ class SelectionSetWindow:
         self._window: ui.Window = window
         self._widget: ui.StringField = widget
 
-    def shutdown(self) -> None:
+    def shutdown(self):
         """Release UI resources for the selection set dialog.
 
         Example:
@@ -105,7 +105,7 @@ class SelectionSetWindow:
         self._callback = None
         del self._window
 
-    def show(self) -> None:
+    def show(self):
         """Show the dialog and reset the input field.
 
         Example:
