@@ -98,6 +98,14 @@ command = "bump_version"
 entry_point = "${config_root}/tools/ci/bump_version.py:setup_repo_tool"
 
 ########################################################################################################################
+# Prepare Kit overrides (upstream Kit artifacts -> packman .user files)
+########################################################################################################################
+
+[prepare_kit_overrides]
+command = "prepare_kit_overrides"
+entry_point = "${config_root}/tools/ci/upstream_kit_build/prepare_kit_overrides.py:setup_repo_tool"
+
+########################################################################################################################
 # Generate Changelog
 ########################################################################################################################
 

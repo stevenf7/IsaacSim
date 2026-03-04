@@ -11,13 +11,13 @@ import argparse
 import os
 import sys
 from typing import Callable, Dict
-from tools.ci.upstream_kit_build.pull_kit import setup_kit_upstream
+from tools.ci.upstream_kit_build.arbitrate_kit_upstream import arbitrate_kit_upstream
 import omni.repo.ci
 
 
 def main(args: argparse.Namespace):
 
-    setup_kit_upstream()
+    arbitrate_kit_upstream()
 
     build_config = args.build_config
 

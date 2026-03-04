@@ -420,6 +420,14 @@ branch_name = "develop"
 # branch_name = "release/6.0"
 
 ########################################################################################################################
+# Prepare Kit overrides (fetch upstream Kit artifacts, write packman .user files)
+########################################################################################################################
+
+[prepare_kit_overrides]
+project_id = 6510
+gitlab_url = "https://gitlab-master.nvidia.com"
+
+########################################################################################################################
 # Generate changelog
 ########################################################################################################################
 
@@ -467,9 +475,6 @@ script = "${config_root}/tools/ci/test_isaac_lab.py"
 
 [repo_ci.jobs."generate_etm_list"]
 script = "${root}/tools/ci/generate_etm_list.py"
-
-[repo_ci.jobs.build_isaac_from_kit]
-script = "${root}/tools/ci/upstream_kit_build/build_isaac_from_kit.py"
 
 [repo_ci.jobs.check_app_version_locks]
 script = "${root}/tools/ci/check_app_version_locks/check_app_version_locks.py"

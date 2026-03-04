@@ -6,6 +6,7 @@ Generates a stacked bar chart visualization using Plotly.
 """
 
 import os
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
@@ -34,6 +35,11 @@ if PROJECT_ID is None:
 
 # Number of threads for parallel fetching
 MAX_WORKERS = 10
+
+
+def _gitlab_base_url(web_url: str) -> str:
+    """Strip /-/pipelines/<id> from pipeline web_url to get project base URL for rebuilding links."""
+    return re.sub(r"/-/pipelines/\d+$", "", web_url)
 
 
 def get_gitlab_client(quiet: bool = False) -> Optional[gitlab.Gitlab]:
@@ -578,10 +584,11 @@ def create_stacked_bar_chart(pipelines: List[Dict], output_file: str = "pipeline
         tickangle=45 if len(tick_labels_html) > 10 else 0,
     )
 
-    # Build test report URLs for each pipeline
+    # Build compact URL data: base URL + pipeline IDs (recombine in JS to reduce HTML size)
     import json as json_module
 
-    test_report_urls = [f"{p['web_url']}/test_report" for p in pipelines_with_stats]
+    base_url = _gitlab_base_url(pipelines_with_stats[0]["web_url"])
+    pipeline_ids = [p["id"] for p in pipelines_with_stats]
 
     # Save base HTML first
     fig.write_html(output_file, include_plotlyjs=True, full_html=True, div_id="plotly-chart")
@@ -592,12 +599,13 @@ def create_stacked_bar_chart(pipelines: List[Dict], output_file: str = "pipeline
 
     click_js = f"""
 <script>
-var defined_urls = {json_module.dumps(test_report_urls)};
+var base_url = {json_module.dumps(base_url)};
+var pipeline_ids = {json_module.dumps(pipeline_ids)};
 var plot = document.getElementById('plotly-chart');
 plot.on('plotly_click', function(data) {{
     var pointIndex = data.points[0].pointIndex;
-    if (defined_urls[pointIndex]) {{
-        window.open(defined_urls[pointIndex], '_blank');
+    if (pipeline_ids[pointIndex] !== undefined) {{
+        window.open(base_url + '/-/pipelines/' + pipeline_ids[pointIndex] + '/test_report', '_blank');
     }}
 }});
 </script>
@@ -856,20 +864,12 @@ def create_job_grouped_chart(
     # Set custom tick labels
     fig.update_xaxes(tickmode="array", tickvals=x_indices, ticktext=pipeline_labels_html, tickangle=45)
 
-    # Build URL mapping: for each trace, map pipeline index to test report URL
+    # Build compact URL data: base URL + pipeline IDs + job names per trace (recombine in JS to reduce HTML size)
     import json as json_module
-    from urllib.parse import quote
 
-    # Create a mapping from (trace_index, pipeline_index) -> URL
-    url_map = {}
-    for trace_idx, (bucket, os_name, job_names) in enumerate(trace_info):
-        url_map[trace_idx] = {}
-        for pipeline_idx, job_name in enumerate(job_names):
-            if job_name:
-                encoded_job = quote(job_name, safe="")
-                url_map[trace_idx][
-                    pipeline_idx
-                ] = f"{pipelines_with_stats[pipeline_idx]['web_url']}/test_report?job_name={encoded_job}"
+    base_url = _gitlab_base_url(pipelines_with_stats[0]["web_url"])
+    pipeline_ids = [p["id"] for p in pipelines_with_stats]
+    trace_job_names = [job_names for (_, _, job_names) in trace_info]
 
     # Save base HTML first
     fig.write_html(output_file, include_plotlyjs=True, full_html=True, div_id="plotly-chart")
@@ -880,13 +880,16 @@ def create_job_grouped_chart(
 
     click_js = f"""
 <script>
-var url_map = {json_module.dumps(url_map)};
+var base_url = {json_module.dumps(base_url)};
+var pipeline_ids = {json_module.dumps(pipeline_ids)};
+var trace_job_names = {json_module.dumps(trace_job_names)};
 var plot = document.getElementById('plotly-chart');
 plot.on('plotly_click', function(data) {{
     var pointIndex = data.points[0].pointIndex;
     var curveNumber = data.points[0].curveNumber;
-    if (url_map[curveNumber] && url_map[curveNumber][pointIndex]) {{
-        window.open(url_map[curveNumber][pointIndex], '_blank');
+    var job = trace_job_names[curveNumber] && trace_job_names[curveNumber][pointIndex];
+    if (job && pipeline_ids[pointIndex] !== undefined) {{
+        window.open(base_url + '/-/pipelines/' + pipeline_ids[pointIndex] + '/test_report?job_name=' + encodeURIComponent(job), '_blank');
     }}
 }});
 </script>
@@ -1137,15 +1140,14 @@ def create_test_heatmap(
         if debug_output and len(test_names) > 20:
             print(f"DEBUG: Adding {len(test_names)} rows to subplot for {display_jobs[job_idx]}")
 
-        # Build the heatmap data matrix
+        # Build the heatmap data matrix (no per-cell hover text - we use compact data + custom hover in JS)
         # Rows = tests, Columns = pipelines
         # Values (0-5 scale for clean colorscale mapping):
         # 0 = failed (red), 1 = error (purple), 2 = timeout (cyan),
         # 3 = not run (dark gray), 4 = skipped (light gray), 5 = pass (green)
         z_data = []
-        hover_text = []
 
-        # Constants for z values
+        # Constants for z values (must match status_labels in injected script)
         Z_FAILED = 0
         Z_ERROR = 1
         Z_TIMEOUT = 2
@@ -1155,7 +1157,6 @@ def create_test_heatmap(
 
         for test_name in test_names:
             row_data = []
-            row_hover = []
 
             for p in pipelines_with_stats:
                 # Find this test in this pipeline's suite (match normalized job name)
@@ -1171,31 +1172,19 @@ def create_test_heatmap(
 
                 if tc_found is None:
                     row_data.append(Z_NOT_RUN)
-                    row_hover.append(f"{test_name}<br>Status: NOT RUN<br>Pipeline: #{p['id']}")
                 elif tc_found["status"] == "success":
                     row_data.append(Z_PASS)
-                    row_hover.append(f"{test_name}<br>Status: PASS<br>Pipeline: #{p['id']}")
                 elif tc_found["status"] == "failed":
                     row_data.append(Z_FAILED)
-                    row_hover.append(f"{test_name}<br>Status: FAILED<br>Pipeline: #{p['id']}")
                 elif tc_found["status"] == "error":
                     # Check if it's a timeout
-                    if is_timeout(tc_found):
-                        row_data.append(Z_TIMEOUT)
-                        row_hover.append(f"{test_name}<br>Status: TIMEOUT<br>Pipeline: #{p['id']}")
-                    else:
-                        row_data.append(Z_ERROR)
-                        row_hover.append(f"{test_name}<br>Status: ERROR<br>Pipeline: #{p['id']}")
+                    row_data.append(Z_TIMEOUT if is_timeout(tc_found) else Z_ERROR)
                 elif tc_found["status"] == "skipped":
                     row_data.append(Z_SKIPPED)
-                    row_hover.append(f"{test_name}<br>Status: SKIPPED<br>Pipeline: #{p['id']}")
                 else:
-                    # Unknown status - treat as not run but show actual status
                     row_data.append(Z_NOT_RUN)
-                    row_hover.append(f"{test_name}<br>Status: {tc_found['status']}<br>Pipeline: #{p['id']}")
 
             z_data.append(row_data)
-            hover_text.append(row_hover)
 
         # Truncate long test names for y-axis labels
         # Show the END of the name (most specific part) rather than the beginning
@@ -1208,7 +1197,6 @@ def create_test_heatmap(
                 y_labels.append(name)
 
         # Use numeric y-indices to prevent Plotly from reordering categorical y-values
-        # This ensures hover_text stays aligned with z_data
         y_indices = list(range(len(test_names)))
 
         # Create discrete colorscale with sharp boundaries at each integer value
@@ -1238,8 +1226,7 @@ def create_test_heatmap(
                 zmin=-0.5,
                 zmax=5.5,
                 showscale=False,
-                hovertext=hover_text,
-                hovertemplate="%{hovertext}<extra></extra>",
+                hoverinfo="none",  # hide default hover label but keep trace interactive for events; custom hover builds from compact data
                 xgap=2,
                 ygap=2,
             ),
@@ -1309,35 +1296,70 @@ def create_test_heatmap(
         col=1,
     )
 
-    # Build URL mapping for heatmap clicks
-    # Map (job_index, pipeline_index) -> test report URL with job filter
+    # Build compact URL + hover data: base URL, pipeline IDs, job names, test names per trace (recombine in JS)
     import json as json_module
-    from urllib.parse import quote
 
-    url_map = {}
-    for job_idx, job_name in enumerate(all_jobs):
-        url_map[job_idx] = {}
-        for p_idx, p in enumerate(pipelines_with_stats):
-            encoded_job = quote(job_name, safe="")
-            url_map[job_idx][p_idx] = f"{p['web_url']}/test_report?job_name={encoded_job}"
+    base_url = _gitlab_base_url(pipelines_with_stats[0]["web_url"])
+    pipeline_ids = [p["id"] for p in pipelines_with_stats]
+    job_names = all_jobs  # one per heatmap subplot (curveNumber)
+    # One list of test names per heatmap trace (row names for hover); avoids storing full hovertext per cell
+    trace_test_names = [job_tests[job] for job in all_jobs]
+    status_labels = ["FAILED", "ERROR", "TIMEOUT", "NOT RUN", "SKIPPED", "PASS"]  # index = z value 0-5
 
     # Save base HTML first
     fig.write_html(output_file, include_plotlyjs=True, full_html=True, div_id="plotly-chart")
 
-    # Read the HTML and inject click handler before closing body tag
+    # Read the HTML and inject click + custom hover handler before closing body tag
     with open(output_file, "r") as f:
         html_content = f.read()
 
     click_js = f"""
 <script>
-var url_map = {json_module.dumps(url_map)};
+var base_url = {json_module.dumps(base_url)};
+var pipeline_ids = {json_module.dumps(pipeline_ids)};
+var job_names = {json_module.dumps(job_names)};
+var trace_test_names = {json_module.dumps(trace_test_names)};
+var status_labels = {json_module.dumps(status_labels)};
 var plot = document.getElementById('plotly-chart');
+var hoverTip = null;
+function esc(s) {{ var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }}
+function showHoverTip(msg, x, y) {{
+  if (!hoverTip) {{
+    hoverTip = document.createElement('div');
+    hoverTip.className = 'plotly-hoverlayer';
+    hoverTip.style.cssText = 'position:fixed;z-index:9999;padding:8px 12px;background:rgba(42,42,42,0.95);color:#f0f0f0;border:1px solid #fff;border-radius:4px;font-family:Open Sans,verdana,arial,sans-serif;font-size:13px;pointer-events:none;line-height:1.4;box-shadow:0 1px 3px rgba(0,0,0,0.4),0 0 0 1px #fff;width:max-content;';
+    document.body.appendChild(hoverTip);
+  }}
+  hoverTip.innerHTML = msg;
+  hoverTip.style.left = (x + 12) + 'px';
+  hoverTip.style.top = (y + 12) + 'px';
+  hoverTip.style.display = 'block';
+}}
+function hideHoverTip() {{
+  if (hoverTip) hoverTip.style.display = 'none';
+}}
+plot.on('plotly_hover', function(data) {{
+  if (!data.points || !data.points.length) return;
+  var pt = data.points[0];
+  var evt = data.event || (arguments[1] && arguments[1].clientX != null ? arguments[1] : null);
+  var cn = pt.curveNumber, x = pt.x, y = pt.y, z = pt.z;
+  var names = trace_test_names[cn];
+  var pid = pipeline_ids[x];
+  var status = status_labels[Math.round(z)] || String(z);
+  var name = (names && names[y] !== undefined) ? names[y] : ('Row ' + y);
+  var msg = '<span style="white-space:nowrap">' + esc(name) + '</span><br>Status: ' + esc(status) + '<br>Pipeline: #' + esc(String(pid));
+  var cx = evt && evt.clientX != null ? evt.clientX : 20;
+  var cy = evt && evt.clientY != null ? evt.clientY : 80;
+  showHoverTip(msg, cx, cy);
+}});
+plot.on('plotly_unhover', function() {{ hideHoverTip(); }});
 plot.on('plotly_click', function(data) {{
-    var curveNumber = data.points[0].curveNumber;
-    var x = data.points[0].x;
-    if (url_map[curveNumber] && url_map[curveNumber][x]) {{
-        window.open(url_map[curveNumber][x], '_blank');
-    }}
+  var curveNumber = data.points[0].curveNumber;
+  var x = data.points[0].x;
+  var job = job_names[curveNumber];
+  if (job !== undefined && pipeline_ids[x] !== undefined) {{
+    window.open(base_url + '/-/pipelines/' + pipeline_ids[x] + '/test_report?job_name=' + encodeURIComponent(job), '_blank');
+  }}
 }});
 </script>
 </body>"""
@@ -1519,6 +1541,11 @@ Examples:
         default="pipeline_test_chart.html",
         help="Output file for the chart (default: pipeline_test_chart.html)",
     )
+    parser.add_argument(
+        "--stacked-chart",
+        action="store_true",
+        help="Create the stacked bar chart (fails/errors by pipeline)",
+    )
     parser.add_argument("--by-job", "-j", action="store_true", help="Also create a chart grouped by job/test suite")
     parser.add_argument(
         "--heatmap", "-m", action="store_true", help="Also create a heatmap of individual test results per job"
@@ -1597,6 +1624,7 @@ Examples:
     run(
         branch=args.branch,
         limit=args.limit,
+        stacked_chart=args.stacked_chart,
         output_chart=args.output,
         by_job=args.by_job,
         heatmap=args.heatmap,
