@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Defines the extension lifecycle management for the Isaac Sim Replicator experimental domain randomization implementation."""
+
+
 import omni.ext
 
 

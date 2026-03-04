@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Module defining attribute constants for domain randomization across simulation contexts, rigid bodies, articulations, and tendons."""
+
+
 SIMULATION_CONTEXT_ATTRIBUTES = ["gravity"]
 
 RIGID_PRIM_ATTRIBUTES = [

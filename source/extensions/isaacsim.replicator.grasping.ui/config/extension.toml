@@ -1,5 +1,5 @@
 [package]
-version = "1.0.8"
+version = "1.1.0"
 category = "Simulation"
 title = "Replicator Grasping Pipeline UI"
 description = "UI for the synthetic data generation workflow for grasping scenarios"
@@ -7,7 +7,7 @@ authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.grasping.ui"
 keywords = ["isaac", "grasping", "replicator", "sdg"]
 changelog = "docs/CHANGELOG.md"
-readme  = "docs/README.md"
+readme  = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -87,3 +87,6 @@ args = [
 stdoutFailPatterns.exclude = [    
     '*The NumPy module was reloaded*',
 ]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

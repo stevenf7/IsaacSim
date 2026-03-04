@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides functionality for building and loading mobility generation scenarios with robots, occupancy maps, and camera configurations."""
+
+
 import os
 
 import isaacsim.core.api.objects as objects
@@ -28,6 +31,17 @@ from .utils.global_utils import new_world
 
 
 def load_scenario(path: str) -> MobilityGenScenario:
+    """Load a mobility generation scenario from the specified directory.
+
+    Sets up the complete simulation environment including the USD stage, robot, occupancy map,
+    and camera configuration based on the scenario configuration file.
+
+    Args:
+        path: Directory path containing the scenario files (config, stage, occupancy map).
+
+    Returns:
+        The loaded and configured mobility generation scenario.
+    """
     reader = MobilityGenReader(path)
     config = reader.read_config()
     robot_type = ROBOTS.get(config.robot_type)

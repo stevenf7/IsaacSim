@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Context management for domain randomization triggers and tendon execution in Isaac Sim replicator."""
+
+
 import omni.graph.core as og
 from omni.replicator.core.utils import utils
 
@@ -20,7 +23,12 @@ _context = None
 
 
 class ReplicatorIsaacContext:
-    """Context for managing domain randomization triggers and tendon execution."""
+    """Context for managing domain randomization triggers and tendon execution.
+
+    Args:
+        num_envs: Number of environments to manage.
+        action_graph_entry_node: Entry node for the action graph that handles randomization execution.
+    """
 
     def __init__(self, num_envs, action_graph_entry_node):
         self._num_envs = num_envs
@@ -33,7 +41,11 @@ class ReplicatorIsaacContext:
         self._tendon_attribute_stack = [None]
 
     def trigger_randomization(self, reset_inds):
-        """Trigger randomization for the given reset indices."""
+        """Trigger randomization for the given reset indices.
+
+        Args:
+            reset_inds: The reset indices to trigger randomization for.
+        """
         self.trigger = True
         self._reset_inds = reset_inds
         self._action_graph_entry_node.request_compute()
@@ -41,29 +53,54 @@ class ReplicatorIsaacContext:
 
     @property
     def reset_inds(self):
-        """Get the current reset indices."""
+        """Current reset indices.
+
+        Returns:
+            The reset indices.
+        """
         return self._reset_inds
 
     def get_tendon_exec_context(self):
-        """Get the current tendon execution context node."""
+        """Get the current tendon execution context node.
+
+        Returns:
+            The current tendon execution context node.
+        """
         return self._tendon_attribute_stack[-1]
 
     def add_tendon_exec_context(self, node):
-        """Add a node to the tendon execution context stack."""
+        """Add a node to the tendon execution context stack.
+
+        Args:
+            node: The node to add to the tendon execution context stack.
+        """
         self._tendon_attribute_stack.append(node)
 
 
 def initialize_context(num_envs, action_graph_entry_node):
-    """Initialize the global context for domain randomization."""
+    """Initialize the global context for domain randomization.
+
+    Args:
+        num_envs: Number of environments to manage.
+        action_graph_entry_node: Entry node for the action graph that handles randomization execution.
+    """
     global _context
     _context = ReplicatorIsaacContext(num_envs, action_graph_entry_node)
 
 
 def get_reset_inds():
-    """Get the current reset indices from the global context."""
+    """Get the current reset indices from the global context.
+
+    Returns:
+        The current reset indices used for domain randomization.
+    """
     return _context.reset_inds
 
 
 def trigger_randomization(reset_inds):
-    """Trigger randomization for the given reset indices."""
+    """Trigger randomization for the given reset indices.
+
+    Args:
+        reset_inds: Indices of environments to reset and apply randomization to.
+    """
     _context.trigger_randomization(reset_inds)
