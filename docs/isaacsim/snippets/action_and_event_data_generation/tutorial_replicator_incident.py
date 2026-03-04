@@ -20,10 +20,28 @@ from isaacsim.replicator.incident.core import get_instance
 from isaacsim.replicator.incident.core.extension import IncidentExt
 from isaacsim.replicator.incident.core.settings import IncidentSettings
 from omni.metropolis.pipeline.triggers import TriggersManager
-from pxr import UsdGeom
+from pxr import Gf
 
 SEED = 12345
 stage = omni.usd.get_context().get_stage()
+
+# Create a background plane in the y-z plane behind the objects
+omni.kit.commands.execute(
+    "AddGroundPlaneCommand",
+    stage=stage,
+    planePath="/World/BackgroundPlane",
+    axis="X",  # Normal along X-axis for y-z plane
+    size=10.0,
+    position=Gf.Vec3f(-2.0, 0.0, 0.5),
+    color=Gf.Vec3f(0.5, 0.5, 0.5),
+)
+
+# Get the incident manager and create pyro event manager
+incident_manager = get_instance().get_incident_manager()
+
+# Create a TimeTrigger and add callback
+time_trigger = TriggersManager.get_instance().create_trigger_by_dict({"trigger": {"type": "time", "time": 1.0}})
+time_trigger.add_callback(lambda trigger: carb.log_info("Trigger fired!"))
 
 # Create 3 cubes with incident tags
 # Cube 1: Flammable item (for fire events)
@@ -33,37 +51,8 @@ prims_utils.create_prim(
     position=[-1.0, 0.0, 0.5],
     attributes={"size": 0.5},
 )
+
 omni.kit.commands.execute("ApplyFlammableItemTagCommand", prims="/World/FlammableCube", flammable_item_type="Box")
-
-# Cube 2: Loose item (for topple events)
-prims_utils.create_prim(
-    prim_path="/World/LooseCube",
-    prim_type="Cube",
-    position=[0.0, 0.0, 0.5],
-    attributes={"size": 0.5},
-)
-omni.kit.commands.execute("ApplyLooseItemTagCommand", prims="/World/LooseCube", loose_item_type="RandomDir")
-
-# Cube 3: Leakable item (for spill events)
-prims_utils.create_prim(
-    prim_path="/World/LeakableCube",
-    prim_type="Cube",
-    position=[1.0, 0.0, 0.5],
-    attributes={"size": 0.5},
-)
-omni.kit.commands.execute("ApplyLeakableItemTagCommand", prims="/World/LeakableCube", leakable_item_type="Item")
-
-# Create a plane for the floor and tag it as a spillable area
-UsdGeom.Plane.Define(stage, "/World/Floor")
-omni.kit.commands.execute("ApplySpillableAreaTagCommand", prims="/World/Floor", spillable_area_type="Floor")
-
-# Get the incident manager and create pyro event manager
-incident_manager = get_instance().get_incident_manager()
-
-# Create a TimeTrigger and add callback
-time_trigger = TriggersManager.get_instance().create_trigger_by_dict({"trigger": {"type": "time", "time": 1.0}})
-time_trigger.add_callback(lambda trigger: carb.log_info("Trigger fired!"))
-
 # Create randomly selected fire event
 pyro_event_manager = incident_manager.create_pyro_event_manager(
     data_path=IncidentExt.data_path, seed=SEED, report=incident_manager.get_incident_report()
@@ -76,6 +65,15 @@ pyro_event_manager.generate_pyro_event(
     trigger=time_trigger,
 )
 
+# Cube 2: Loose item (for topple events)
+prims_utils.create_prim(
+    prim_path="/World/LooseCube",
+    prim_type="Cube",
+    position=[0.0, 0.0, 0.5],
+    attributes={"size": 0.5},
+)
+
+omni.kit.commands.execute("ApplyLooseItemTagCommand", prims="/World/LooseCube", loose_item_type="RandomDir")
 # Create randomly selected topple event
 topple_event_manager = incident_manager.create_topple_event_manager(
     seed=SEED, report=incident_manager.get_incident_report()
@@ -83,10 +81,30 @@ topple_event_manager = incident_manager.create_topple_event_manager(
 topple_event_manager.generate_topple_event(
     name="topple event",
     selected_loose_item=IncidentSettings.RANDOM_LOOSE_ITEM,
-    topple_nearby_radius=0.0,
+    topple_nearby_radius=0.01,
     trigger=time_trigger,
 )
 
+# Cube 3: Leakable item (for spill events)
+prims_utils.create_prim(
+    prim_path="/World/LeakableCube",
+    prim_type="Cube",
+    position=[1.0, 0.0, 0.5],
+    attributes={"size": 0.5},
+)
+omni.kit.commands.execute("ApplyLeakableItemTagCommand", prims="/World/LeakableCube", leakable_item_type="Item")
+
+# Create a plane for the floor and tag it as a spillable area
+omni.kit.commands.execute(
+    "AddGroundPlaneCommand",
+    stage=stage,
+    planePath="/World/Floor",
+    axis="Z",  # Normal along Z-axis for x-y plane (ground)
+    size=25.0,
+    position=Gf.Vec3f(0.0, 0.0, 0.0),
+    color=Gf.Vec3f(0.5, 0.5, 0.5),
+)
+omni.kit.commands.execute("ApplySpillableAreaTagCommand", prims="/World/Floor", spillable_area_type="Floor")
 # Create randomly selected spill event
 spill_event_manager = incident_manager.create_spill_event_manager(
     seed=SEED, report=incident_manager.get_incident_report()
@@ -98,5 +116,6 @@ spill_event_manager.generate_spill_event(
     leak_duration=1.0,
     trigger=time_trigger,
 )
+
 
 # <end-tutorial-snippet>
