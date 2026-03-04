@@ -25,30 +25,10 @@ All transformation rules implement the ``RuleInterface`` abstract base class. Th
    :width: 75%
    :alt: Rule Interface Architecture
 
-.. code-block:: python
-
-   class RuleInterface(ABC):
-       def __init__(self, source_stage: Usd.Stage, package_root: str, 
-                    destination_path: str, args: dict[str, Any]) -> None:
-           ...
-
-       @abstractmethod
-       def process_rule(self) -> str | None:
-           """Execute the rule logic. Return a stage path to switch stages, or None."""
-           ...
-
-       @abstractmethod
-       def get_configuration_parameters(self) -> list[RuleConfigurationParam]:
-           """Return the configuration parameters for this rule."""
-           ...
-
-       def log_operation(self, message: str) -> None:
-           """Append a message to the operation log."""
-           ...
-
-       def add_affected_stage(self, stage_identifier: str) -> None:
-           """Record an identifier for a stage affected by this rule."""
-           ...
+.. literalinclude:: ../snippets/robot_setup/asset_transformer_api.py
+   :start-after: <start-rule-interface-snippet>
+   :end-before: <end-rule-interface-snippet>
+   :language: python
 
 **Key Methods**:
 
@@ -72,17 +52,10 @@ Rule Logging
 
 Every rule implementation must provide adequate logging through the ``log_operation()`` method. This creates a detailed audit trail of transformations:
 
-.. code-block:: python
-
-   def process_rule(self) -> str | None:
-       self.log_operation("SchemaRoutingRule start destination=payloads/physics.usda")
-       self.log_operation("Schema patterns: Physics*, Physx*")
-       
-       # ... processing ...
-       
-       self.log_operation("Moved 5 schema(s) from /World/Robot: PhysicsRigidBodyAPI, PhysicsMassAPI, ...")
-       self.log_operation("Processed 12 prim(s), moved 24 schema instance(s)")
-       self.log_operation("SchemaRoutingRule completed")
+.. literalinclude:: ../snippets/robot_setup/asset_transformer_api.py
+   :start-after: <start-process-rule-logging-snippet>
+   :end-before: <end-process-rule-logging-snippet>
+   :language: python
 
 **Logging Best Practices**:
 
@@ -128,96 +101,29 @@ To create a custom transformation rule, implement the ``RuleInterface`` abstract
    :color: primary
    :open:
 
-   .. code-block:: python
-
-      from isaacsim.asset.transformer import RuleInterface, RuleRegistry, RuleConfigurationParam
-      from pxr import Usd
-
-      class MyCustomRule(RuleInterface):
-          """A custom transformation rule."""
-
-          def get_configuration_parameters(self) -> list[RuleConfigurationParam]:
-              return [
-                  RuleConfigurationParam(
-                      name="my_param",
-                      display_name="My Parameter",
-                      param_type=str,
-                      description="Description of the parameter",
-                      default_value="default_value",
-                  ),
-                  RuleConfigurationParam(
-                      name="scope",
-                      display_name="Scope",
-                      param_type=str,
-                      description="Root prim path to process",
-                      default_value="/",
-                  ),
-              ]
-
-          def process_rule(self) -> str | None:
-              params = self.args.get("params", {}) or {}
-              my_param = params.get("my_param", "default_value")
-              scope = params.get("scope", "/")
-
-              self.log_operation(f"MyCustomRule start my_param={my_param} scope={scope}")
-              stage = self.source_stage
-
-              # Process prims within scope
-              scope_prim = stage.GetPrimAtPath(scope)
-              if not scope_prim.IsValid():
-                  self.log_operation(f"Scope prim not found: {scope}")
-                  return None
-
-              processed_count = 0
-              for prim in Usd.PrimRange(scope_prim):
-                  # Your transformation logic here
-                  processed_count += 1
-
-              self.log_operation(f"Processed {processed_count} prim(s)")
-              self.log_operation("MyCustomRule completed")
-              self.add_affected_stage("my_output.usda")
-
-              return None  # Continue with current working stage
-
-      # Register the rule with the singleton registry
-      registry = RuleRegistry()
-      registry.register(MyCustomRule)
+   .. literalinclude:: ../snippets/robot_setup/asset_transformer_api.py
+      :start-after: <start-custom-rule-example-snippet>
+      :end-before: <end-custom-rule-example-snippet>
+      :language: python
 
 **Referencing a Custom Rule in a Profile**:
 
 The rule is registered using its fully qualified class name (``{module}.{class_name}``), which becomes the ``type`` string in rule specifications:
 
-.. code-block:: python
-
-   from isaacsim.asset.transformer import RuleSpec
-
-   rule_spec = RuleSpec(
-       name="My Custom Transformation",
-       type="my_extension.rules.MyCustomRule",
-       destination="payloads",
-       params={"my_param": "custom_value", "scope": "/World/Robot"},
-       enabled=True,
-   )
+.. literalinclude:: ../snippets/robot_setup/asset_transformer_api.py
+   :start-after: <start-rule-spec-snippet>
+   :end-before: <end-rule-spec-snippet>
+   :language: python
 
 Extension-Based Registration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For Isaac Sim extensions, register rules when the extension loads:
 
-.. code-block:: python
-
-   import omni.ext
-   from isaacsim.asset.transformer import RuleRegistry
-   from .rules import MyCustomRule, AnotherRule
-
-   class MyExtension(omni.ext.IExt):
-       def on_startup(self, ext_id):
-           registry = RuleRegistry()
-           registry.register(MyCustomRule)
-           registry.register(AnotherRule)
-
-       def on_shutdown(self):
-           pass
+.. literalinclude:: ../snippets/robot_setup/asset_transformer_api.py
+   :start-after: <start-extension-registration-snippet>
+   :end-before: <end-extension-registration-snippet>
+   :language: python
 
 Programmatic API Usage
 ----------------------
@@ -227,132 +133,42 @@ The Asset Transformer can be invoked programmatically using the Python API. This
 Basic Usage
 ^^^^^^^^^^^
 
-.. code-block:: python
-
-   from isaacsim.asset.transformer import (
-       AssetTransformerManager,
-       RuleProfile,
-       RuleSpec,
-   )
-
-   # Create a profile with rules
-   profile = RuleProfile(
-       profile_name="My Transform Profile",
-       version="1.0",
-       rules=[
-           RuleSpec(
-               name="Route Physics Schemas",
-               type="isaacsim.asset.transformer.rules.core.schemas.SchemaRoutingRule",
-               destination="payloads/Physics",
-               params={
-                   "schemas": ["Physics*", "Physx*"],
-                   "stage_name": "physics.usda",
-               },
-               enabled=True,
-           ),
-           RuleSpec(
-               name="Route Materials",
-               type="isaacsim.asset.transformer.rules.perf.materials.MaterialsRoutingRule",
-               destination="payloads",
-               params={
-                   "materials_layer": "materials.usda",
-                   "deduplicate": True,
-               },
-               enabled=True,
-           ),
-       ],
-   )
-
-   # Create manager and run transformation
-   manager = AssetTransformerManager()
-   report = manager.run(
-       input_stage_path="/path/to/robot.usd",
-       profile=profile,
-       package_root="/output/robot_package",
-   )
-
-   # Check results
-   print(f"Transform completed: {report.output_stage_path}")
-   for result in report.results:
-       status = "SUCCESS" if result.success else "FAILED"
-       print(f"  {result.rule.name}: {status}")
-       if result.error:
-           print(f"    Error: {result.error}")
+.. literalinclude:: ../snippets/robot_setup/asset_transformer_api.py
+   :start-after: <start-basic-usage-snippet>
+   :end-before: <end-basic-usage-snippet>
+   :language: python
 
 Loading a Profile from JSON
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: python
-
-   import json
-   from isaacsim.asset.transformer import AssetTransformerManager, RuleProfile
-
-   # Load profile from JSON file
-   with open("/path/to/profile.json", "r") as f:
-       profile_data = json.load(f)
-
-   profile = RuleProfile.from_dict(profile_data)
-
-   # Run transformation
-   manager = AssetTransformerManager()
-   report = manager.run(
-       input_stage_path="/path/to/robot.usd",
-       profile=profile,
-       package_root="/output/robot_package",
-   )
+.. literalinclude:: ../snippets/robot_setup/asset_transformer_api.py
+   :start-after: <start-load-profile-from-json-snippet>
+   :end-before: <end-load-profile-from-json-snippet>
+   :language: python
 
 Saving the Execution Report
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: python
-
-   import json
-
-   # After running transformation
-   report = manager.run(input_stage_path, profile, package_root)
-
-   # Save report to JSON
-   report_path = f"{package_root}/transform_report.json"
-   with open(report_path, "w") as f:
-       json.dump(report.to_dict(), f, indent=2)
+.. literalinclude:: ../snippets/robot_setup/asset_transformer_api.py
+   :start-after: <start-save-execution-report-snippet>
+   :end-before: <end-save-execution-report-snippet>
+   :language: python
 
 Accessing Rule Logs
 ^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: python
-
-   # Iterate through rule results
-   for result in report.results:
-       print(f"\n=== {result.rule.name} ===")
-       print(f"Type: {result.rule.type}")
-       print(f"Success: {result.success}")
-       print(f"Duration: {result.started_at} to {result.finished_at}")
-       print(f"Affected stages: {result.affected_stages}")
-       
-       # Print log entries
-       print("Log:")
-       for entry in result.log:
-           print(f"  {entry['message']}")
+.. literalinclude:: ../snippets/robot_setup/asset_transformer_api.py
+   :start-after: <start-accessing-rule-logs-snippet>
+   :end-before: <end-accessing-rule-logs-snippet>
+   :language: python
 
 Querying Registered Rules
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: python
-
-   from isaacsim.asset.transformer import RuleRegistry
-
-   registry = RuleRegistry()
-   rule_types = registry.list_rule_types()
-   for rule_type in rule_types:
-       print(rule_type)
-
-   rule_cls = registry.get("isaacsim.asset.transformer.rules.core.schemas.SchemaRoutingRule")
-   if rule_cls:
-       temp_rule = rule_cls.__new__(rule_cls)
-       temp_rule._log = []
-       params = temp_rule.get_configuration_parameters()
-       for param in params:
-           print(f"  {param.name}: {param.param_type.__name__} = {param.default_value}")
+.. literalinclude:: ../snippets/robot_setup/asset_transformer_api.py
+   :start-after: <start-querying-registered-rules-snippet>
+   :end-before: <end-querying-registered-rules-snippet>
+   :language: python
 
 API Classes Reference
 ---------------------
@@ -383,22 +199,10 @@ API Classes Reference
 Error Handling
 --------------
 
-.. code-block:: python
-
-   from isaacsim.asset.transformer import AssetTransformerManager, RuleProfile
-
-   manager = AssetTransformerManager()
-
-   try:
-       report = manager.run(input_stage_path, profile, package_root)
-   except RuntimeError as e:
-       print(f"Transformation failed to start: {e}")
-       # Raised if source stage cannot be opened or base export fails
-
-   # Check individual rule failures
-   for result in report.results:
-       if not result.success:
-           print(f"Rule '{result.rule.name}' failed: {result.error}")
+.. literalinclude:: ../snippets/robot_setup/asset_transformer_api.py
+   :start-after: <start-error-handling-snippet>
+   :end-before: <end-error-handling-snippet>
+   :language: python
 
 **Common Errors**:
 

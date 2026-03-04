@@ -41,6 +41,7 @@ Asset Structure
 
    asset_structure
    asset_transformer
+   asset_transformer_tutorials
    asset_transformer_api
    asset_transformer_rules
 
