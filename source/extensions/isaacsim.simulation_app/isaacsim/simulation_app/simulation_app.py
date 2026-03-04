@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides the SimulationApp class for launching and managing an Omniverse Toolkit application instance."""
+
+
 from __future__ import annotations  # This allows us to hint types that do not yet exist like omni.usd etc
 
 import argparse
@@ -24,7 +27,7 @@ import re
 import signal
 import sys
 import time
-from typing import Any
+from typing import Any, Coroutine
 
 import carb
 import omni.kit.app
@@ -36,6 +39,16 @@ class SimulationApp:
     Omniverse loads various plugins at runtime which cannot be imported unless
     the Toolkit is already running. Thus, it is necessary to launch the Toolkit first from
     your python application and then import everything else.
+
+    Args:
+        launch_config: A dictionary containing the configuration for the app.
+        experience: Path to the application config loaded by the launcher.
+            If not specified, the launcher will load one of the following experience files in order
+            (where ``$EXP_PATH`` points to the ``apps`` folder in a default Isaac Sim setup):
+
+            - ``$EXP_PATH/omni.isaac.sim.python.kit``
+            - ``$EXP_PATH/isaacsim.exp.base.python.kit``
+            - ``$EXP_PATH/isaacsim.exp.base.kit``
 
     Usage:
 
@@ -56,16 +69,6 @@ class SimulationApp:
 
     Note:
             The settings in :obj:`DEFAULT_LAUNCHER_CONFIG` are overwritten by those in :obj:`config`.
-
-    Arguments:
-        config (dict): A dictionary containing the configuration for the app. (default: None)
-        experience (str): Path to the application config loaded by the launcher.
-            If not specified, the launcher will load one of the following experience files in order
-            (where ``$EXP_PATH`` points to the ``apps`` folder in a default Isaac Sim setup):
-
-            - ``$EXP_PATH/omni.isaac.sim.python.kit``
-            - ``$EXP_PATH/isaacsim.exp.base.python.kit``
-            - ``$EXP_PATH/isaacsim.exp.base.kit``
     """
 
     DEFAULT_LAUNCHER_CONFIG = {
@@ -98,6 +101,12 @@ class SimulationApp:
         "limit_cpu_threads": 32,
         "disable_viewport_updates": False,
     }
+    """Default configuration dictionary for launching the SimulationApp.
+
+    Contains default values for rendering settings, window dimensions, physics configuration,
+    and other application launch parameters. These settings are overwritten by values
+    provided in the launch_config parameter during initialization."""
+
     RENDERER_DEFAULTS = {
         "pathtracing": {
             "max_bounces": 4,
@@ -144,7 +153,7 @@ class SimulationApp:
         disable_viewport_updates (bool): Disable viewport updates to improve performance. Defaults to False.
     """
 
-    def __init__(self, launch_config: dict = None, experience: str = "") -> None:
+    def __init__(self, launch_config: dict = None, experience: str = ""):
         """Initialize the SimulationApp with specified configuration.
 
         Launches the Omniverse Toolkit with the provided configuration settings.
@@ -371,7 +380,7 @@ class SimulationApp:
         self.update()  # This app update triggers app ready status.
         builtins.ISAACSIM_APP_LAUNCHED = True
 
-    def _apply_renderer_defaults(self, launch_config: dict | None) -> None:
+    def _apply_renderer_defaults(self, launch_config: dict | None):
         """Apply renderer-specific defaults when values are not provided in the launch config.
 
         Args:
@@ -401,7 +410,7 @@ class SimulationApp:
 
     ### Private methods
 
-    def _start_app(self) -> None:
+    def _start_app(self):
         """Launch the Omniverse application."""
         carb.log_info("SimulationApp._start_app: Starting app launch process")
         exe_path = os.path.abspath(f'{os.environ["CARB_APP_PATH"]}')
@@ -571,7 +580,7 @@ class SimulationApp:
             carb.log_info("SimulationApp._start_app: Help requested, exiting")
             self.close(skip_cleanup=True)
 
-    def _set_render_settings(self, default: bool = False) -> None:
+    def _set_render_settings(self, default: bool = False):
         """Set render settings to those in config.
 
         Note:
@@ -579,7 +588,7 @@ class SimulationApp:
             to be re-applied.
 
         Args:
-            default (bool, optional): Whether to setup RTX default or non-default settings. Defaults to False.
+            default: Whether to setup RTX default or non-default settings.
         """
         from .utils import set_carb_setting
 
@@ -638,7 +647,7 @@ class SimulationApp:
         set_carb_setting(self._carb_settings, "/omni.kit.plugin/syncUsdLoads", self.config["sync_loads"])
         carb.log_info("SimulationApp._set_render_settings: Completed render settings configuration")
 
-    def _prepare_ui(self) -> None:
+    def _prepare_ui(self):
         """Dock the windows in the UI if they exist."""
         carb.log_info("SimulationApp._prepare_ui: Starting UI setup")
         try:
@@ -662,7 +671,7 @@ class SimulationApp:
         self._update_without_ready()
         carb.log_info("SimulationApp._prepare_ui: UI setup completed")
 
-    def _update_without_ready(self) -> None:
+    def _update_without_ready(self):
         """Update the application without waiting for the app to be ready.
 
         This is a convenience function that updates the application without waiting for the app to be ready.
@@ -672,7 +681,8 @@ class SimulationApp:
             app.delay_app_ready("IsaacSim")
         self._app.update()
 
-    def _wait_for_viewport(self) -> None:
+    def _wait_for_viewport(self):
+        """Wait for the viewport to become available and properly initialized."""
         MAX_FRAMES = 240 if os.name == "nt" else 120
         DOCKING_FRAMES = 10
         frame_count = 0
@@ -708,7 +718,7 @@ class SimulationApp:
 
     ### Public methods
 
-    def update(self) -> None:
+    def update(self):
         """Step the application forward by one frame.
 
         This is a convenience function that advances the simulation by a single frame,
@@ -726,7 +736,7 @@ class SimulationApp:
         """
         self._app.update()
 
-    def set_setting(self, setting: str, value) -> None:
+    def set_setting(self, setting: str, value):
         """Set a Carbonite framework setting.
 
         Sets a configuration value in the Carbonite settings system.
@@ -815,7 +825,7 @@ class SimulationApp:
             return task_or_future.result()
         return task_or_future
 
-    def close(self, wait_for_replicator=True, skip_cleanup=False) -> None:
+    def close(self, wait_for_replicator=True, skip_cleanup=False):
         """Close the running Omniverse Toolkit application.
 
         Performs cleanup and shuts down the application. Can either perform
@@ -954,7 +964,7 @@ class SimulationApp:
 
     @property
     def app(self) -> omni.kit.app.IApp:
-        """Get the underlying Omniverse Kit application object.
+        """Underlying Omniverse Kit application object.
 
         Provides access to the low-level Kit application interface for advanced
         operations and direct framework access.
@@ -975,7 +985,7 @@ class SimulationApp:
 
     @property
     def context(self) -> omni.usd.UsdContext:
-        """Get the current USD context for stage operations.
+        """Current USD context for stage operations.
 
         Provides access to the USD context which manages the current stage
         and USD-related operations.

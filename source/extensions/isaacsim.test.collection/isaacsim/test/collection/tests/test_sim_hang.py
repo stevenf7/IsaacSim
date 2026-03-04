@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for various hang and crash bugs in Isaac Sim simulation."""
+
+
 import asyncio
 
 import carb
@@ -29,7 +32,7 @@ from pxr import Usd, UsdPhysics
 from .robot_helpers import open_stage_async
 
 
-def create_fixed_cuboid(stage: Usd.Stage, prim_path: str, position: list, scale: list) -> None:
+def create_fixed_cuboid(stage: Usd.Stage, prim_path: str, position: list, scale: list):
     """Create a fixed (kinematic) cuboid using experimental Cube, RigidPrim, and GeomPrim.
 
     Args:
@@ -55,7 +58,7 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
     """Tests for various hang and crash bugs in simulation."""
 
     # Before running each test
-    async def setUp(self) -> None:
+    async def setUp(self):
         """Set up test environment with new stage."""
         self._physics_dt = 1 / 60  # duration of physics frame in seconds
 
@@ -69,7 +72,7 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
         pass
 
     # After running each test
-    async def tearDown(self) -> None:
+    async def tearDown(self):
         """Clean up test environment and stop timeline."""
         self._timeline.stop()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -78,7 +81,7 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
         await app_utils.update_app_async()
         pass
 
-    async def test_prim_visibility_bug(self) -> None:
+    async def test_prim_visibility_bug(self):
         """Test that making prim invisible and deleting it does not crash."""
         # Bug report:
         #     From the Test Runner run this test case
@@ -113,7 +116,7 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
 
         # But Sim will segfault a within a few seconds after this returns.  The time varies wildly
 
-    async def test_segfault_bug(self) -> None:
+    async def test_segfault_bug(self):
         """Test that recreating cuboids with different scales does not segfault."""
 
         # Bug Report:
@@ -158,7 +161,7 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
             carb.log_info(f"Iteration {i}")
             await app_utils.update_app_async()
 
-    async def test_freeze_sim(self) -> None:
+    async def test_freeze_sim(self):
         """Test that repeatedly opening stages does not cause simulation freeze."""
         usd_path = await get_assets_root_path_async()
         usd_path += "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"

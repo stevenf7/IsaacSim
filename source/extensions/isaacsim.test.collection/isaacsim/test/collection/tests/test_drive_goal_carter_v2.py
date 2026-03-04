@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for Nova Carter goal-driven navigation with path planning functionality."""
+
+
 import carb
 import carb.tokens
 import isaacsim.core.experimental.utils.app as app_utils
@@ -44,7 +47,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
     """Tests for Nova Carter goal-driven navigation with path planning."""
 
     # Before running each test
-    async def setUp(self) -> None:
+    async def setUp(self):
         """Set up test environment with Nova Carter and navigation graph."""
         self._timeline = omni.timeline.get_timeline_interface()
 
@@ -146,7 +149,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         pass
 
     # After running each test
-    async def tearDown(self) -> None:
+    async def tearDown(self):
         """Clean up test environment and stop timeline."""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
@@ -156,7 +159,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         pass
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
-    async def test_quintic_planner(self) -> None:
+    async def test_quintic_planner(self):
         """Test quintic polynomial path planner generates valid paths."""
         # Start Simulation and wait
         self._timeline.play()
@@ -183,7 +186,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         print("quintic passed")
         pass
 
-    async def test_check_goal_2d(self) -> None:
+    async def test_check_goal_2d(self):
         """Test 2D goal checking detects when robot reaches target."""
         # Start Simulation and wait
         self._timeline.play()
@@ -228,7 +231,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
 
         pass
 
-    async def test_stanley_control_pid(self) -> None:
+    async def test_stanley_control_pid(self):
         """Test Stanley control provides valid steering commands."""
         # Start Simulation and wait
         self._timeline.play()

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utilities and base class for testing menu UI components in Isaac Sim."""
+
+
 import asyncio
 from typing import Any
 
@@ -174,6 +177,7 @@ class MenuUITestCase(OmniUiTest):
             window_name: Optional window name to check for after clicking.
                 If provided, the method returns early when the window is found
                 and returns the window widget.
+            wait_n_frames: Number of frames to wait.
 
         Returns:
             The found window widget if window_name is provided and found, else None.

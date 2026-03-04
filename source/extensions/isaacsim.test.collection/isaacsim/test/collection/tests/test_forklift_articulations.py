@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test module for forklift robot articulation and movement functionality."""
+
+
 import carb
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -29,7 +32,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
     """Tests for forklift robot articulation and movement."""
 
     # Before running each test
-    async def setUp(self) -> None:
+    async def setUp(self):
         """Set up test environment with forklift robot and action graph."""
         await stage_utils.create_new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -113,7 +116,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         pass
 
     # After running each test
-    async def tearDown(self) -> None:
+    async def tearDown(self):
         """Clean up test environment and stop timeline."""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
@@ -121,7 +124,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         pass
 
-    async def test_forklift_forward(self) -> None:
+    async def test_forklift_forward(self):
         """Test forklift moves forward when positive wheel velocity is applied."""
         body_prim = RigidPrim("/World/Forklift/body")
 
@@ -146,7 +149,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(pos[1], new_pos[1], delta=1)
         self.assertAlmostEqual(pos[2], new_pos[2], delta=1)
 
-    async def test_forklift_reverse(self) -> None:
+    async def test_forklift_reverse(self):
         """Test forklift moves backward when negative wheel velocity is applied."""
         body_prim = RigidPrim("/World/Forklift/body")
 
@@ -171,7 +174,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(pos[1], new_pos[1], delta=1)
         self.assertAlmostEqual(pos[2], new_pos[2], delta=1)
 
-    async def test_forklift_reverse_turn(self) -> None:
+    async def test_forklift_reverse_turn(self):
         """Test forklift turns while reversing with steering angle applied."""
         body_prim = RigidPrim("/World/Forklift/body")
 
@@ -196,7 +199,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         self.assertNotAlmostEqual(pos[1], new_pos[1], delta=1)
         self.assertAlmostEqual(pos[2], new_pos[2], delta=1)
 
-    async def test_forklift_lift(self) -> None:
+    async def test_forklift_lift(self):
         """Test forklift lift mechanism raises when position target is set."""
         lift_prim = RigidPrim("/World/Forklift/lift")
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.16.0] - 2026-03-04
+### Changed
+- Added Overview.md and python_api.md and updated docstrings
+
 ## [2.15.3] - 2026-02-20
 ### Changed
 - Close stage in simulation app close() method to avoid errors

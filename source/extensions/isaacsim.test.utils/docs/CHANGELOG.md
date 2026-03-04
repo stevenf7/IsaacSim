@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.10.0] - 2026-03-04
+### Changed
+- Added Overview.md and python_api.md and updated docstrings
+
 ## [0.9.1] - 2026-02-22
 ### Changed
 - Add `omni.kit.material.library.get_mdl_list_async` and `omni.kit.menu.utils.rebuild_menus` to `MenuUITestCase.wait_for_stage_loading` to fix menu rebuild issues

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the Leatherback Ackermann-steering robot with ROS2 integration."""
+
+
 from collections.abc import Callable
 
 import carb
@@ -43,13 +46,13 @@ def get_qos_profile():
     return QoSProfile(reliability=QoSReliabilityPolicy.BEST_EFFORT, history=QoSHistoryPolicy.KEEP_LAST, depth=1)
 
 
-async def simulate_async(duration_seconds: float, callback: Callable | None = None, physics_rate: int = 60) -> None:
+async def simulate_async(duration_seconds: float, callback: Callable | None = None, physics_rate: int = 60):
     """Simulate for a given duration by looping through app updates.
 
     Args:
         duration_seconds: Duration to simulate in seconds.
-        callback: Optional function to call each frame. Defaults to None.
-        physics_rate: Physics update rate in Hz. Defaults to 60.
+        callback: Optional function to call each frame.
+        physics_rate: Physics update rate in Hz.
     """
     frames = int(duration_seconds * physics_rate)
     for _ in range(frames):
@@ -63,7 +66,7 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
     """Tests for the Leatherback Ackermann-steering robot with ROS2 integration."""
 
     # Before running each test
-    async def setUp(self) -> None:
+    async def setUp(self):
         """Set up test environment with Leatherback robot and ROS2."""
         import rclpy
 
@@ -92,7 +95,7 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
         pass
 
     # After running each test
-    async def tearDown(self) -> None:
+    async def tearDown(self):
         """Clean up test environment, stop timeline, and shutdown ROS2."""
         import rclpy
 
@@ -106,7 +109,7 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
 
         pass
 
-    async def test_drive_forward(self) -> None:
+    async def test_drive_forward(self):
         """Test that Leatherback drives forward via ROS2 Ackermann commands."""
         import rclpy
         from ackermann_msgs.msg import AckermannDriveStamped
@@ -148,7 +151,7 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
 
         pass
 
-    async def test_cameras(self) -> None:
+    async def test_cameras(self):
         """Test that RGB and depth cameras publish valid data via ROS2."""
 
         import rclpy

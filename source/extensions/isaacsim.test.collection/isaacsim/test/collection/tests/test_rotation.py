@@ -1,3 +1,5 @@
+"""Test suite for rotation conversion utilities across different implementations including numpy, experimental, scipy, and USD to ensure consistency in quaternion and Euler angle calculations."""
+
 import numpy as np
 import omni.kit.test
 import omni.replicator.core as rep
@@ -387,7 +389,6 @@ async def test_rotation_utils_async(
         euler_angles: List of Euler angle tuples to test.
         print_comparison_stats: If True, print detailed comparison output.
         create_cubes: If True, create USD cubes for visual verification.
-            Defaults to False.
 
     Returns:
         List of comparison dictionaries, each containing device, extrinsic flag,

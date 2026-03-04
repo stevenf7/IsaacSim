@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Nucleus server utilities for Isaac Sim asset storage and management operations."""
+
+
 import asyncio
 import json
 import os
@@ -20,6 +23,7 @@ import os
 # python
 import typing
 from collections import namedtuple
+from typing import List, Tuple, Union
 from urllib.parse import urlparse
 
 # omniverse
@@ -182,11 +186,10 @@ async def download_assets_async(
         dst: URL of Nucleus server to copy assets to.
         progress_callback: Callback function to keep track of progress of copy.
             The callback receives two arguments: current count and total count.
-        concurrency: Number of concurrent copy operations. Default value: 10.
-        copy_behaviour: Behavior if the destination exists. Default value: OVERWRITE.
+        concurrency: Number of concurrent copy operations.
+        copy_behaviour: Behavior if the destination exists.
         copy_after_delete: True if destination needs to be deleted before a copy.
-            Default value: True.
-        timeout: Timeout in seconds for each copy operation. Default value: 300 seconds.
+        timeout: Timeout in seconds for each copy operation.
 
     Returns:
         Result of the copy operation.
@@ -242,7 +245,7 @@ def check_server(server: str, path: str, timeout: float = 10.0) -> bool:
     Args:
         server: Name of Nucleus server.
         path: Path to search.
-        timeout: Timeout in seconds. Default value: 10 seconds.
+        timeout: Timeout in seconds.
 
     Returns:
         True if folder is found.
@@ -260,7 +263,7 @@ def check_server(server: str, path: str, timeout: float = 10.0) -> bool:
 
 
 async def check_server_async(server: str, path: str, timeout: float = 10.0) -> bool:
-    """Check a specific server for a path (asynchronous version).
+    """Check a specific server for a path.
 
     This function retries transient failures using exponential backoff.
     It retries when the stat operation times out or returns
@@ -271,7 +274,7 @@ async def check_server_async(server: str, path: str, timeout: float = 10.0) -> b
     Args:
         server: Name of Nucleus server.
         path: Path to search.
-        timeout: Per-attempt timeout in seconds. Default value: 10 seconds.
+        timeout: Per-attempt timeout in seconds.
 
     Returns:
         True if folder is found, False otherwise.
@@ -347,7 +350,7 @@ def find_nucleus_server(suffix: str) -> typing.Tuple[bool, str]:
         This function is deprecated. Use :func:`get_assets_root_path` instead.
 
     Args:
-        suffix: Path to folder to search for. Default value: /Isaac.
+        suffix: Path to folder to search for.
 
     Returns:
         Tuple of (found, url) where found is True if Nucleus server with suffix is found
@@ -599,7 +602,7 @@ def get_assets_root_path(*, skip_check: bool = False) -> str:
 
 
 async def get_assets_root_path_async(*, skip_check: bool = False) -> str:
-    """Tries to find the root path to the Isaac Sim assets on a Nucleus server (asynchronous version).
+    """Tries to find the root path to the Isaac Sim assets on a Nucleus server.
 
     Args:
         skip_check: If True, skip the checking step to verify that the resolved path exists.
@@ -775,11 +778,11 @@ async def list_folder(path: str) -> typing.Tuple[typing.List, typing.List]:
     Args:
         path: Path to root folder.
 
-    Raises:
-        Exception: When unable to find files under the path.
-
     Returns:
         Tuple containing list of file paths and list of sub-folder paths.
+
+    Raises:
+        Exception: When unable to find files under the path.
     """
     # omni.client is a singleton, import locally to allow to run with multiprocessing
     import omni.client

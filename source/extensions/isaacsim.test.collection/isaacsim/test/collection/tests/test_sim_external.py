@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for external dependencies and asset conversion functionality."""
+
+
 import os
 
 import carb
@@ -23,7 +26,7 @@ import omni.kit.test
 class TestExternalDependencies(omni.kit.test.AsyncTestCase):
     """Tests for external dependencies and asset conversion."""
 
-    async def setUp(self) -> None:
+    async def setUp(self):
         """Set up test environment with new stage."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
@@ -31,12 +34,12 @@ class TestExternalDependencies(omni.kit.test.AsyncTestCase):
         ext_id = self.ext_manager.get_enabled_extension_id("isaacsim.test.collection")
         self._extension_path = self.ext_manager.get_extension_path(ext_id)
 
-    async def tearDown(self) -> None:
+    async def tearDown(self):
         """Clean up test environment."""
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    async def test_asset_converter(self) -> None:
+    async def test_asset_converter(self):
         """Test that OBJ files can be converted to USD format."""
         import omni.kit.asset_converter
 

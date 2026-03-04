@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for simulation context crash scenarios to ensure timeline operations don't cause crashes."""
+
+
 import asyncio
 
 import isaacsim.core.experimental.utils.app as app_utils
@@ -29,7 +32,7 @@ class TestSimulationContextCrash(omni.kit.test.AsyncTestCase):
     """Tests for simulation context crash scenarios."""
 
     # Before running each test
-    async def setUp(self) -> None:
+    async def setUp(self):
         """Set up test environment with new stage."""
         self._physics_dt = 1 / 60  # duration of physics frame in seconds
 
@@ -41,7 +44,7 @@ class TestSimulationContextCrash(omni.kit.test.AsyncTestCase):
         pass
 
     # After running each test
-    async def tearDown(self) -> None:
+    async def tearDown(self):
         """Clean up test environment and stop timeline."""
         self._timeline.stop()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -50,7 +53,7 @@ class TestSimulationContextCrash(omni.kit.test.AsyncTestCase):
         await app_utils.update_app_async()
         pass
 
-    async def test_simulation_context_crash(self) -> None:
+    async def test_simulation_context_crash(self):
         """Test that stopping timeline after articulation creation does not crash."""
         usd_path = await get_assets_root_path_async()
         usd_path += "/Isaac/Robots/Denso/CobottaPro900/cobotta_pro_900.usd"
