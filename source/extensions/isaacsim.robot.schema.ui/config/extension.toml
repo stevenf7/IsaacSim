@@ -34,7 +34,7 @@ name = "isaacsim.robot.schema.ui.tests"
 [[test]]
 name = "startup"
 args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount = 3",
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
 [[test]]
