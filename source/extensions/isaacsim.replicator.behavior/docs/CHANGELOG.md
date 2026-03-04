@@ -1,4 +1,8 @@
 # Changelog
+## [1.4.0] - 2026-03-04
+### Changed
+- Added Overview.md, python_api.md and updated docstrings
+
 ## [1.3.7] - 2026-02-26
 ### Changed
 - Migrated behavior scripting dependency from omni.kit.scripting to omni.behavior.scripting.core

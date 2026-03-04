@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""A Replicator writer that outputs pose data including 3D bounding box annotations, camera parameters, and optional debug images for object pose estimation tasks."""
+
+
 from functools import partial
 
 import numpy as np
@@ -38,15 +41,23 @@ class PoseWriter(Writer):
         use_subfolders:
             If True, the writer will create subfolders for each render product, otherwise all data is saved in the same folder.
         visibility_threshold:
-            Objects with visibility below this threshold will be skipped.  Default: ``0.0`` (fully occluded)
+            Objects with visibility below this threshold will be skipped.
         skip_empty_frames:
             If True, the writer will skip frames that do not have visible objects.
         write_debug_images:
             If True, the writer will include rgb images overlaid with the projected 3d bounding boxes.
         frame_padding:
-            Pad the frame number with leading zeroes.  Default: ``4``
+            Pad the frame number with leading zeroes.
         format:
-            Specifies which format the data will be outputted as. Default: ``None`` (will write most of the available data)
+            Specifies which format the data will be outputted as.
+        use_s3:
+            If True, uses S3 backend for data storage.
+        s3_bucket:
+            S3 bucket name when using S3 backend.
+        s3_endpoint_url:
+            S3 endpoint URL when using S3 backend.
+        s3_region:
+            S3 region when using S3 backend.
         backend:
             Backend instance used to handle I/O scheduling. Prefer using this argument, for example with
             ``rep.backends.get("DiskBackend")``.
@@ -55,13 +66,21 @@ class PoseWriter(Writer):
     """
 
     RGB_ANNOT_NAME = "rgb"
+    """Name of the RGB annotator used for retrieving color image data."""
     BB3D_ANNOT_NAME = "bounding_box_3d_fast"
+    """Name of the 3D bounding box annotator used for retrieving object pose and geometry data."""
     CAM_PARAMS_ANNOT_NAME = "camera_params"
+    """Name of the camera parameters annotator used for retrieving camera intrinsic and extrinsic data."""
     SUPPORTED_FORMATS = set(["dope", "centerpose"])
+    """Set of supported output formats for pose data."""
     CUBOID_KEYPOINTS_ORDER_DEFAULT = ["Center", "LDB", "LDF", "LUB", "LUF", "RDB", "RDF", "RUB", "RUF"]
+    """Default ordering of cuboid keypoints for 3D bounding box representation."""
     CUBOID_KEYPOINT_ORDER_DOPE = ["LUF", "RUF", "RDF", "LDF", "LUB", "RUB", "RDB", "LDB", "Center"]
+    """DOPE format ordering of cuboid keypoints for 3D bounding box representation."""
     CUBOID_KEYPOINT_COLORS = ["white", "red", "green", "blue", "yellow", "cyan", "magenta", "orange", "purple"]
+    """Colors used for drawing cuboid keypoints in debug visualization images."""
     CUBOID_EDGE_COLORS = {"front": "red", "back": "blue", "connecting": "green"}
+    """Colors used for drawing different types of cuboid edges in debug visualization images."""
 
     def __init__(
         self,
@@ -145,6 +164,11 @@ class PoseWriter(Writer):
 
     # Abstract method from Writer to access the annotator data and write to disk
     def write(self, data: dict):
+        """Writes pose data for all render products in the frame.
+
+        Args:
+            data: Dictionary containing render product data with annotator information.
+        """
         # Iterate over the render products
         for rp_name, annotators_data in data["renderProducts"].items():
 
@@ -176,10 +200,24 @@ class PoseWriter(Writer):
 
     # Note that the frame id can be incremented for each render product write (if use_subfolders is False) or for each step (if use_subfolders is True)
     def get_current_frame_id(self):
+        """Current frame ID counter.
+
+        Returns:
+            The current frame ID counter value.
+        """
         return self._frame_id
 
     # Process the render product data and store it in the selected format, return the number of objects in the frame
     def _process_frame_data(self, bounding_box_3d_data: dict, camera_params_data: dict) -> int:
+        """Processes frame data and stores it in the selected format.
+
+        Args:
+            bounding_box_3d_data: 3D bounding box annotator data containing object information.
+            camera_params_data: Camera parameters annotator data containing camera configuration.
+
+        Returns:
+            Number of visible objects in the frame.
+        """
         # Store the frame data for writing to disk
         self._frame_data = {}
 
@@ -203,6 +241,15 @@ class PoseWriter(Writer):
 
     # Process the bounding box annotator data (extract objects label, location, rotation, visibility, etc.)
     def _process_bounding_boxes(self, bounding_box_3d_data: dict, camera_params: dict) -> list:
+        """Processes 3D bounding box data to extract object pose information.
+
+        Args:
+            bounding_box_3d_data: 3D bounding box annotator data containing object information.
+            camera_params: Camera parameters for projection calculations.
+
+        Returns:
+            List of processed object data with pose, keypoints, and visibility information.
+        """
         # Map the ids to class names from the bbox annotator "idToLabels" data
         # ('idToLabels': {0: {'class': 'cube'}, 1: {'class': 'sphere'}} -> {0: 'cube', 1: 'sphere'})
         id_to_labels = {k: v["class"] for k, v in bounding_box_3d_data["idToLabels"].items()}
@@ -340,6 +387,14 @@ class PoseWriter(Writer):
 
     # Get the camera parameters from the annotator data
     def _process_camera_parameters(self, camera_params) -> dict:
+        """Processes camera parameters from annotator data.
+
+        Args:
+            camera_params: Raw camera parameters from the annotator.
+
+        Returns:
+            Processed camera data including intrinsics, view matrix, and projection matrix.
+        """
         camera_data = {}
         if self._format is None:
             camera_data["aperture"] = camera_params["cameraAperture"].tolist()
@@ -372,6 +427,12 @@ class PoseWriter(Writer):
 
     # Write the processed data to disk
     def _write_frame_data(self, rgb_data: dict, render_product_subfolder: str = ""):
+        """Writes frame data and RGB image to disk.
+
+        Args:
+            rgb_data: RGB image data to be written.
+            render_product_subfolder: Subfolder path for the render product.
+        """
         # Write frame data to as a JSON file
         file_path_json = f"{render_product_subfolder}{self._frame_id:0{self._frame_padding}}.json"
         self.backend.schedule(F.write_json, path=file_path_json, data=self._frame_data, indent=2)
@@ -382,6 +443,12 @@ class PoseWriter(Writer):
 
     # Write overlay debug data to disk
     def _write_debug_data(self, rgb_data: dict, render_product_subfolder: str = ""):
+        """Writes debug overlay image with projected keypoints and coordinate axes.
+
+        Args:
+            rgb_data: RGB image data to overlay debug information on.
+            render_product_subfolder: Subfolder path for the render product.
+        """
         # Create overlay image from the RGB data
         rgb_img = Image.fromarray(rgb_data)
         draw = ImageDraw.Draw(rgb_img)
@@ -416,6 +483,15 @@ class PoseWriter(Writer):
 
     # Transform a 3D point from world coordinates to camera coordinates
     def _world_point_to_camera_point(self, world_point, view_matrix):
+        """Transforms a 3D point from world coordinates to camera coordinates.
+
+        Args:
+            world_point: 3D point in world coordinates.
+            view_matrix: Camera view transformation matrix.
+
+        Returns:
+            Point transformed to camera coordinate space.
+        """
         # Convert the 3D point to homogeneous coordinates (if not already in that form)
         point_homogeneous = np.array(world_point) if len(world_point) == 4 else np.array([*world_point, 1.0])
 
@@ -425,7 +501,15 @@ class PoseWriter(Writer):
         return point_camera
 
     def _project_world_point_to_screen(self, world_point, camera_params):
-        """Project a 3D world point to 2D screen coordinates."""
+        """Project a 3D world point to 2D screen coordinates.
+
+        Args:
+            world_point: 3D point in world coordinates to project.
+            camera_params: Camera parameters for projection calculations.
+
+        Returns:
+            2D screen coordinates of the projected point.
+        """
         view_matrix = camera_params["cameraViewTransform"].reshape(4, 4)
         point_camera = self._world_point_to_camera_point(world_point, view_matrix)
         return project_point_to_screen(point_camera, camera_params)
@@ -440,6 +524,16 @@ class PoseWriter(Writer):
         origin_local=[0, 0, 0],
         axes_length_perc=0.25,
     ):
+        """Draws local coordinate frame axes of an object projected onto the screen.
+
+        Args:
+            draw: ImageDraw object for rendering the axes.
+            local_to_world_transform: Transformation matrix from local to world coordinates.
+            camera_params: Camera parameters for projection calculations.
+            size_local: Local size of the object for scaling axes length.
+            origin_local: Local origin point of the coordinate frame.
+            axes_length_perc: Percentage of mean object size to use for axes length.
+        """
         # The length of the local axes is a percentage of the mean size of the object in local frame (before any scaling)
         local_axes_length = np.mean(size_local) * axes_length_perc
 
@@ -471,6 +565,14 @@ class PoseWriter(Writer):
 
     # Draws the world frame axes at the bottom left corner of the image.
     def _draw_world_frame_axes_bottom_left(self, draw, camera_params, axes_scale=0.03, margin_percentage=0.03):
+        """Draws the world coordinate system axes at the bottom-left corner of the image.
+
+        Args:
+            draw: ImageDraw instance for drawing on the image.
+            camera_params: Camera parameters containing view transform and resolution data.
+            axes_scale: Scale factor for the axes length in world units.
+            margin_percentage: Margin as a percentage of screen size to offset axes from the edge.
+        """
         camera_view_matrix = camera_params["cameraViewTransform"].reshape(4, 4)
         screen_size = camera_params["renderProductResolution"]
 
@@ -511,6 +613,14 @@ class PoseWriter(Writer):
 
     # Draw the projected cuboid and its edges
     def _draw_projected_keypoints(self, draw, keypoints, point_size=4, edge_size=2):
+        """Draws the projected cuboid keypoints and edges on the image.
+
+        Args:
+            draw: ImageDraw instance for drawing on the image.
+            keypoints: List of projected keypoint coordinates.
+            point_size: Radius of the keypoint circles in pixels.
+            edge_size: Width of the edge lines in pixels.
+        """
         # Draw the projected cuboid keypoint vertices in the specified colors
         for i, point in enumerate(keypoints):
             draw.ellipse(
@@ -530,5 +640,6 @@ class PoseWriter(Writer):
 
     # Override to clear the writer state
     def detach(self):
+        """Clears the writer state by resetting the frame counter to zero."""
         super().detach()
         self._frame_id = 0

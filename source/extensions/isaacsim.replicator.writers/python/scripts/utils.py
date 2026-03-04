@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utility functions for 3D-to-2D point projection and camera coordinate transformations in replicator writers."""
+
+
 import numpy as np
 
 
@@ -24,15 +27,15 @@ def project_point_to_screen(camera_point, camera_params):
     Unsupported models fall back to pinhole projection.
 
     Args:
-        camera_point: numpy array (4,) representing [x, y, z, w] in camera coordinates.
-        camera_params: dict containing camera parameters from the camera_params annotator.
+        camera_point: Numpy array (4,) representing [x, y, z, w] in camera coordinates.
+        camera_params: Dict containing camera parameters from the camera_params annotator.
             Required keys vary by model but typically include:
             - "cameraModel": str identifying the projection model
             - "cameraProjection": 4x4 projection matrix (for pinhole)
             - "renderProductResolution": [width, height] of the output image
 
     Returns:
-        tuple (x, y) of rounded pixel coordinates.
+        Tuple (x, y) of rounded pixel coordinates.
     """
     camera_model = camera_params.get("cameraModel", "pinhole")
 
@@ -50,13 +53,13 @@ def project_pinhole(camera_point, camera_params):
     """Project using standard pinhole model.
 
     Args:
-        camera_point: numpy array (4,) representing [x, y, z, w] in camera coordinates.
-        camera_params: dict containing:
+        camera_point: Numpy array (4,) representing [x, y, z, w] in camera coordinates.
+        camera_params: Dict containing:
             - "cameraProjection": flattened 4x4 projection matrix
             - "renderProductResolution": [width, height]
 
     Returns:
-        tuple (x, y) of rounded pixel coordinates.
+        Tuple (x, y) of rounded pixel coordinates.
     """
     projection_matrix = camera_params["cameraProjection"].reshape((4, 4))
     screen_size = camera_params["renderProductResolution"]
@@ -78,8 +81,8 @@ def project_fisheye_polynomial(camera_point, camera_params):
     For projection (theta -> r), we invert this numerically.
 
     Args:
-        camera_point: numpy array (4,) representing [x, y, z, w] in camera coordinates.
-        camera_params: dict containing:
+        camera_point: Numpy array (4,) representing [x, y, z, w] in camera coordinates.
+        camera_params: Dict containing:
             - "cameraFisheyePolynomial": [a, b, c, d, e, f] coefficients
             - "cameraFisheyeOpticalCentre": [cx, cy] in pixels
             - "cameraFisheyeNominalWidth": nominal image width
@@ -87,7 +90,7 @@ def project_fisheye_polynomial(camera_point, camera_params):
             - "renderProductResolution": [width, height]
 
     Returns:
-        tuple (x, y) of rounded pixel coordinates.
+        Tuple (x, y) of rounded pixel coordinates.
     """
     poly_coeffs = camera_params["cameraFisheyePolynomial"]
     optical_center = camera_params["cameraFisheyeOpticalCentre"]
@@ -122,15 +125,15 @@ def project_pinhole_opencv(camera_point, camera_params):
     """Project using OpenCV pinhole model with fx, fy, cx, cy.
 
     Args:
-        camera_point: numpy array (4,) representing [x, y, z, w] in camera coordinates.
-        camera_params: dict from camera_params annotator containing:
+        camera_point: Numpy array (4,) representing [x, y, z, w] in camera coordinates.
+        camera_params: Dict from camera_params annotator containing:
             - "cameraOpenCVFx": focal length in x (pixels)
             - "cameraOpenCVFy": focal length in y (pixels)
             - "cameraFisheyeOpticalCentre": [cx, cy] principal point (annotator uses this key for all models)
             - "renderProductResolution": [width, height]
 
     Returns:
-        tuple (x, y) of rounded pixel coordinates.
+        Tuple (x, y) of rounded pixel coordinates.
     """
     fx = camera_params["cameraOpenCVFx"]
     fy = camera_params["cameraOpenCVFy"]
@@ -168,13 +171,13 @@ def invert_fisheye_polynomial(theta, poly_coeffs, max_iterations=10, tolerance=1
     We solve for r using Newton-Raphson iteration.
 
     Args:
-        theta: float, the angle from optical axis in radians.
-        poly_coeffs: list/array of 6 coefficients [a, b, c, d, e, f].
-        max_iterations: int, maximum Newton-Raphson iterations.
-        tolerance: float, convergence tolerance.
+        theta: The angle from optical axis in radians.
+        poly_coeffs: List/array of 6 coefficients [a, b, c, d, e, f].
+        max_iterations: Maximum Newton-Raphson iterations.
+        tolerance: Convergence tolerance.
 
     Returns:
-        float, the radial distance r in pixels.
+        The radial distance r in pixels.
     """
     a, b, c, d, e, f = poly_coeffs
 
@@ -205,12 +208,12 @@ def invert_fisheye_polynomial(theta, poly_coeffs, max_iterations=10, tolerance=1
 
 
 def calculate_truncation_ratio_simple(corners, img_width, img_height):
-    """
-    Calculate the truncation ratio of a cuboid using a simplified bounding box method.
+    """Calculate the truncation ratio of a cuboid using a simplified bounding box method.
+
     Args:
         corners: (9, 2) numpy array containing the projected corners of the cuboid.
-        img_width: width of image
-        img_height: height of image
+        img_width: Width of image.
+        img_height: Height of image.
 
     Returns:
         The truncation ratio of the cuboid.
@@ -240,12 +243,14 @@ def calculate_truncation_ratio_simple(corners, img_width, img_height):
 
 
 def get_image_space_points(points, view_proj_matrix):
-    """
+    """Project world space points into image space using a view projection matrix.
+
     Args:
-        points: numpy array of N points (N, 3) in the world space. Points will be projected into the image space.
-        view_proj_matrix: Desired view projection matrix, transforming points from world frame to image space of desired camera
+        points: Numpy array of N points (N, 3) in the world space. Points will be projected into the image space.
+        view_proj_matrix: Desired view projection matrix, transforming points from world frame to image space of desired camera.
+
     Returns:
-        numpy array of shape (N, 3) of points projected into the image space.
+        Numpy array of shape (N, 3) of points projected into the image space.
     """
 
     homo = np.pad(points, ((0, 0), (0, 1)), constant_values=1.0)

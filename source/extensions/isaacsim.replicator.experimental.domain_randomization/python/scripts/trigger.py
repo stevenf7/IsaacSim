@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides trigger functionality for reinforcement learning frame events in domain randomization workflows."""
+
+
 from omni.replicator.core.utils import ReplicatorWrapper, create_node
 
 from .context import initialize_context
@@ -23,8 +26,8 @@ def on_rl_frame(num_envs: int):
     """Create the trigger node for reinforcement learning frame events.
 
     Args:
-        num_envs (int): The number of environments corresponding to the number of prims
-                        encapsulated in the RigidPrim and Articulation views.
+        num_envs: The number of environments corresponding to the number of prims
+                  encapsulated in the RigidPrim and Articulation views.
 
     Returns:
         The OmniGraph node for RL frame triggers.

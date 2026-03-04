@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utility functions and classes for domain randomization operations in Isaac Sim Replicator."""
+
+
 import json
 from typing import Dict, List
 
@@ -20,14 +23,14 @@ import numpy as np
 from omni.replicator.core.utils import ReplicatorItem
 
 
-def set_distribution_params(distribution: ReplicatorItem, parameters: Dict) -> None:
+def set_distribution_params(distribution: ReplicatorItem, parameters: Dict):
     """Set parameters on a replicator distribution object.
 
     Args:
-        distribution (ReplicatorItem): The replicator distribution object to be modified.
-        parameters (Dict): A dictionary where the keys are the names of the replicator
-                           distribution parameters and the values are the parameter values
-                           to be set.
+        distribution: The replicator distribution object to be modified.
+        parameters: A dictionary where the keys are the names of the replicator
+            distribution parameters and the values are the parameter values
+            to be set.
 
     Raises:
         ValueError: If the distribution does not have the specified parameter.
@@ -45,11 +48,11 @@ def get_distribution_params(distribution: ReplicatorItem, parameters: List[str])
     """Get parameters from a replicator distribution object.
 
     Args:
-        distribution (ReplicatorItem): A replicator distribution object.
-        parameters (List[str]): A list of the names of the replicator distribution parameters.
+        distribution: A replicator distribution object.
+        parameters: A list of the names of the replicator distribution parameters.
 
     Returns:
-        List: A list of the distribution parameters of the given replicator distribution object.
+        A list of the distribution parameters of the given replicator distribution object.
 
     Raises:
         ValueError: If the distribution does not have the specified parameter.
@@ -119,6 +122,14 @@ class NumpyEncoder(json.JSONEncoder):
     """JSON encoder that handles numpy arrays."""
 
     def default(self, obj):
+        """Converts numpy arrays to JSON-serializable format.
+
+        Args:
+            obj: Object to be serialized. If it's a numpy array, converts it to a list.
+
+        Returns:
+            JSON-serializable representation of the object.
+        """
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)

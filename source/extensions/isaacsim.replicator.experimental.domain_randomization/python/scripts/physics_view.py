@@ -49,14 +49,14 @@ _rigid_prim_views_reset_values = dict()
 _articulation_views_reset_values = dict()
 
 
-def register_simulation_context(simulation_context: Optional[Type[SimulationManager]] = None) -> None:
+def register_simulation_context(simulation_context: Optional[Type[SimulationManager]] = None):
     """Register SimulationManager for domain randomization.
 
     Note: Only SimulationManager is supported. Custom subclasses are not supported as
     physics views and scenes are always retrieved from SimulationManager directly.
 
     Args:
-        :param simulation_context: Optional, defaults to SimulationManager. Pass None to use default.
+        simulation_context: Optional, defaults to SimulationManager. Pass None to use default.
     """
     global _simulation_context
     global _physics_sim_view
@@ -93,7 +93,7 @@ def register_simulation_context(simulation_context: Optional[Type[SimulationMana
     _simulation_context_reset_values["gravity"] = copy.deepcopy(gravity_vector)
 
 
-def register_rigid_prim_view(rigid_prim_view: RigidPrim, name: str) -> None:
+def register_rigid_prim_view(rigid_prim_view: RigidPrim, name: str):
     """Register a RigidPrim view for domain randomization.
 
     Args:
@@ -131,7 +131,7 @@ def register_rigid_prim_view(rigid_prim_view: RigidPrim, name: str) -> None:
     _rigid_prim_views_reset_values[name] = copy.deepcopy(initial_values)
 
 
-def register_articulation_view(articulation_view: Articulation, name: str) -> None:
+def register_articulation_view(articulation_view: Articulation, name: str):
     """Register an Articulation view for domain randomization.
 
     Args:
@@ -203,7 +203,7 @@ def register_articulation_view(articulation_view: Articulation, name: str) -> No
     _articulation_views_reset_values[name] = copy.deepcopy(initial_values)
 
 
-def step_randomization(reset_inds: Optional[Union[list, np.ndarray]] = None) -> None:
+def step_randomization(reset_inds: Optional[Union[list, np.ndarray]] = None):
     """Step the randomization with the given reset indices.
 
     Args:
@@ -216,7 +216,19 @@ def step_randomization(reset_inds: Optional[Union[list, np.ndarray]] = None) -> 
 
 @ReplicatorWrapper
 def _write_physics_view_node(view, attribute, values, operation, node_type, num_buckets=None):
-    """Create and configure an OmniGraph node for physics view randomization."""
+    """Create and configure an OmniGraph node for physics view randomization.
+
+    Args:
+        view: The physics view to randomize.
+        attribute: The attribute to randomize on the view.
+        values: The values or distribution for randomization.
+        operation: The operation type for randomization.
+        node_type: The OmniGraph node type to create.
+        num_buckets: Number of buckets for bucketed randomization.
+
+    Returns:
+        The created and configured OmniGraph node.
+    """
     node = utils.create_node(node_type)
     node.get_attribute("inputs:attribute").set(attribute)
     node.get_attribute("inputs:prims").set(view)
@@ -268,7 +280,7 @@ def randomize_rigid_prim_view(
     material_properties: ReplicatorItem = None,
     contact_offset: ReplicatorItem = None,
     rest_offset: ReplicatorItem = None,
-) -> None:
+):
     """Randomize properties of a registered RigidPrim view.
 
     Args:
@@ -357,7 +369,7 @@ def randomize_articulation_view(
     tendon_upper_limits: ReplicatorItem = None,
     tendon_rest_lengths: ReplicatorItem = None,
     tendon_offsets: ReplicatorItem = None,
-) -> None:
+):
     """Randomize properties of a registered Articulation view.
 
     Args:

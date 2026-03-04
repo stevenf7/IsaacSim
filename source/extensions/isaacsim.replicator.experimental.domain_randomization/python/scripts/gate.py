@@ -21,7 +21,7 @@ def on_interval(interval):
     """Create a gate that triggers randomization at specified intervals.
 
     Args:
-        :param interval: The frequency interval for randomization. The interval is incremented
+        interval: The frequency interval for randomization. The interval is incremented
             by physics_view.step_randomization() call.
 
     Returns:

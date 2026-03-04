@@ -1,5 +1,5 @@
 [package]
-version = "1.1.0"
+version = "1.2.0"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Domain Randomization"
 description="The extension provides various Domain Randomization scripts and OmniGraph nodes for randomizing simulation environments."
@@ -87,3 +87,6 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
 ]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]
