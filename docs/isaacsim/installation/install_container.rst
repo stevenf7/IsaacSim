@@ -24,7 +24,7 @@
 
 .. _Unix Driver Archive: https://www.nvidia.com/en-us/drivers/unix/
 .. _NVIDIA GPU Driver Archive: https://www.nvidia.com/en-us/drivers/unix/linux-amd64-display-archive/
-.. _Isaac Sim Dockerfiles: https://github.com/NVIDIA-Omniverse/IsaacSim-dockerfiles
+.. _Isaac Sim Dockerfiles: https://github.com/isaac-sim/IsaacSim/tree/main/tools/docker
 
 
 .. _isaac_sim_app_install_container:
