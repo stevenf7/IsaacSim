@@ -334,10 +334,10 @@ def detect_base_branch() -> str | None:
 
 
 def get_branch_files(base_ref: str) -> set[Path]:
-    """Return files changed by commits unique to this branch since the base ref.
+    """Return files that differ from base at ``HEAD`` since the merge-base.
 
-    Uses ``--first-parent --no-merges`` to follow only this branch's own
-    commit lineage, excluding files brought in by upstream merges.
+    Uses a direct tree diff from ``merge-base(base_ref, HEAD)`` to ``HEAD``,
+    so files that were touched and later reverted are not reported.
 
     Args:
         base_ref: Base branch or ref to compare against.
@@ -358,12 +358,9 @@ def get_branch_files(base_ref: str) -> set[Path]:
     proc = subprocess.run(
         [
             "git",
-            "log",
-            "--first-parent",
-            "--no-merges",
+            "diff",
             "--diff-filter=ACMR",
             "--name-only",
-            "--format=",
             f"{merge_base}..HEAD",
         ],
         capture_output=True,
