@@ -23,10 +23,28 @@ Merge Mesh Utils
     :no-show-inheritance:
 
 
+MJCF to PhysX Conversion Utils
+==============================
+
+.. automodule:: isaacsim.asset.importer.utils.impl.mjc_to_physx_conversion_utils
+    :members:
+    :undoc-members:
+    :no-show-inheritance:
+
+
 Stage Utils
 ===========
 
 .. automodule:: isaacsim.asset.importer.utils.impl.stage_utils
+    :members:
+    :undoc-members:
+    :no-show-inheritance:
+
+
+URDF to MJCF/PhysX Conversion Utils
+===================================
+
+.. automodule:: isaacsim.asset.importer.utils.impl.urdf_to_mjc_physx_conversion_utils
     :members:
     :undoc-members:
     :no-show-inheritance:

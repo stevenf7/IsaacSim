@@ -102,7 +102,7 @@ Getting Started
 
             .. code-block:: bash
 
-                ./python.sh standalone_examples/api/isaacsim.asset.importer.mjcf/mjcf_import.py 
+                ./python.sh standalone_examples/api/isaacsim.asset.importer.urdf/urdf_import.py 
 
             **Args:**
                 - ``-u, --urdf``: Path to the URDF file (.urdf) to import.

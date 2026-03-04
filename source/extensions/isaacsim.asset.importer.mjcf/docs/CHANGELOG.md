@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.0] - 2026-02-25
+### Changed
+- Added mjc / newton to physx attribute conversion for multi-physics engine asset support
+
 ## [3.0.2] - 2026-02-25
 ### Changed
 - Changed dep from pip prebundle to isaacsim.pip.newton

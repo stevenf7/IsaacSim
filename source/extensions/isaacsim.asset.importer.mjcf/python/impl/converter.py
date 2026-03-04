@@ -23,7 +23,12 @@ import os
 import shutil
 
 import omni
-from isaacsim.asset.importer.utils.impl import importer_utils, merge_mesh_utils, stage_utils
+from isaacsim.asset.importer.utils.impl import (
+    importer_utils,
+    merge_mesh_utils,
+    mjc_to_physx_conversion_utils,
+    stage_utils,
+)
 from pxr import Sdf
 
 from .config import MJCFImporterConfig
@@ -134,6 +139,7 @@ class MJCFImporter:
             importer_utils.collision_from_visuals(self.stage, self.config.collision_type)
 
         importer_utils.enable_self_collision(self.stage, self.config.allow_self_collision)
+        mjc_to_physx_conversion_utils.convert_mjc_to_physx(self.stage)
         stage_utils.save_stage(self.stage, intermediate_path)  # save the stage to the output path
         self.stage = None
         gc.collect()

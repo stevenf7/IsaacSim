@@ -142,6 +142,96 @@ Alternatively you can use the :ref:`isaac_sim_command_tool` to change a value in
 ..  note::
     See the :ref:`isaac_gain_tuner` tutorial to tune the gains for your robot.
 
+Multi-Physics Engine Support
+============================
+The URDF importer supports the conversion of URDF joint data to PhysX schemas for multi-physics engine support.
+This allows you to use the same URDF file with different physics engines.
+
+The conversion is done automatically when the URDF importer is used.
+You can use the :ref:`isaac_gain_tuner` tutorial to tune the gains for your robot with the multi-physics engine.
+
+.. list-table:: URDF to PhysX attribute conversion
+    :widths: 20 20 20 40
+    :header-rows: 1
+    :align: center
+
+    * - URDF Attribute
+      - PhysX Attribute
+      - MJCF Attribute
+      - Notes
+
+    * - urdf:limit:effort
+      - UsdPhysics DriveAPI.maxForce
+      - mjc:forceRange:max
+      - The URDF joint's effort limit is mapped to the UsdPhysics drive's maxForce and the MJCF actuator's force range max attribute. MJCF min force is set to the negative of maxForce.
+
+    * - urdf:limit:velocity
+      - PhysxJointAPI.maxJointVelocity
+      - N/A
+      - The URDF velocity limit is stored in the PhysX schema for max joint velocity.
+
+    * - N/A
+      - UsdPhysics DriveAPI.stiffness
+      - mjc:gainPrm
+      - If stiffness is present, it is mapped directly. For MJCF, gainPrm and biasPrm arrays are constructed from drive attributes (stiffness -> gainPrm[0] or -biasPrm[1]).
+
+    * - N/A
+      - UsdPhysics DriveAPI.damping
+      - mjc:biasPrm
+      - If damping is present, it is mapped directly. For MJCF, biasPrm is constructed from drive attributes (damping -> -biasPrm[2]).
+
+    * - N/A
+      - N/A
+      - mjc:gainType
+      - PhysX stiffness and damping only match the MJCF "fixed" gain type and "affine" bias type.
+
+    * - N/A
+      - N/A
+      - mjc:biasType
+      - PhysX stiffness and damping only match the MJCF "fixed" gain type and "affine" bias type.
+
+    * - N/A
+      - PhysxJointAPI.jointFriction
+      - mjc:frictionloss
+      - Friction attribute in URDF is mapped to both the PhysX joint friction and MJCF actuator friction loss.
+
+    * - N/A
+      - PhysxJointAPI.armature
+      - mjc:armature
+      - Armature data is mapped directly between PhysX and MJCF joints.
+
+    * - N/A
+      - UsdPhysics DriveAPI.targetPosition
+      - mjc:ref
+      - The drive target position attribute is mapped to the initial reference position in MJCF.
+
+.. important::
+
+  USD Physics uses PD controller for position control and P controller for velocity control, which is different from MJCF's 
+  general controller formulation F = gain * control + bias, so only fixed gain type and affine bias type are supported.
+  For mujoco backend, you can alter the gain and bias type and parameters to have other controller formulations.
+
+.. note::
+
+    **Mimic joints:**  
+    The MJCF importer supports conversion of mimic (dependent) joints, allowing one joint's motion to follow another with scaling and offset. In MuJoCo/MJCF, mimic relationships use ``mimicJoint``, ``mimicCoef`` 
+    to model a higher order relationship between teh follower and leader joint. In PhysX, this is limited to a first order relationship, where ``mimicCoef0`` is the offset and ``mimicCoef1`` is the scale.
+
+    When importing, these are mapped to corresponding PhysX and Newton schemas:
+    
+    - The source joint will have a relationship targeting the mimic joint, with ``mimicCoef`` modelling the higher order relationship.
+    - For PhysX, these values are applied via ``PhysxMimicJointAPI``, where the ``MimicJointRel`` points to the driven joint, and ``Gearing`` or ``Offset`` attributes are set.
+    - For Newton, the mimic attributes are applied through the ``NewtonMimicAPI`` (via relationship and attributes).
+    - Both schemas are applied automatically if mimic attributes are present.
+    - Newton Mimic API is disabled in the PhysX layer, to avoid conflicts with the PhysX Mimic Joint API.
+
+    See source code for precise logic and usage.
+
+Articulation Root API
+=====================
+The URDF importer will create ``UsdPhysics ArticulationRootAPI``, ``Newton ArticulationRootAPI`` and ``PhysxArticulationAPI`` on the root link of the URDF file.
+``Newton ArticulationRootAPI`` is disabled in the PhysX layer, to avoid conflicts with the ``PhysxArticulationRootAPI``.
+
 Custom Isaac Sim URDF Attributes and Tags
 ==========================================
 

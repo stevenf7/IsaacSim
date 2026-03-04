@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.1] - 2026-02-26
+### Changed
+- Updated isaacsim_structure.json to delete Newton Mimic api in physx to avoid conflict
+
 ## [1.1.0] - 2026-02-17
 ### Added
 - Overwrite schema rule
