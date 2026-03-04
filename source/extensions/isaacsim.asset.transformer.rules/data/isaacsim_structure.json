@@ -274,6 +274,23 @@
         "clear_properties": false
       },
       "enabled": true
+    },
+    {
+      "name": "Delete Newton Redundant APIs",
+      "type": "isaacsim.asset.transformer.rules.core.remove_schema.RemoveSchemaRule",
+      "destination": "payloads/Physics",
+      "params": {
+        "stage_name": "physx.usda",
+        "schema_patterns": [
+          "NewtonMimicAPI.*",
+          "NewtonArticulationRootAPI.*"
+        ],
+        "prim_path_patterns": [
+          ".*"
+        ],
+        "clear_properties": false
+      },
+      "enabled": true
     }
   ],
   "interface_asset_name": null,

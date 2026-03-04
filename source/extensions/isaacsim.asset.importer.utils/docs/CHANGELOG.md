@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0] - 2026-02-26
+
+### Added
+- Utilities to convert between mjc, physx, urdf attributes
+- Utilities to add physx mimic joints based on Newton Minic API
+
 ## [1.0.0] - 2026-01-16
 ### Added
 - Initial release of shared asset importer utilities.

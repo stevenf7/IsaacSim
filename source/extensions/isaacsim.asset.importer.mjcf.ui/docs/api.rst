@@ -19,11 +19,3 @@ Commands
     :members:
     :undoc-members:
     :no-show-inheritance:
-
-
-Extension Module
-================
-
-.. automodule:: isaacsim.asset.importer.mjcf.ui.impl.extension
-    :members:
-    :undoc-members:

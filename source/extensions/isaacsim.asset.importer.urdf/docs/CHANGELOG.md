@@ -1,9 +1,14 @@
 # Changelog
 
+## [3.1.0] - 2026-02-26
+### Changed
+- Added mjc / newton to physx attribute conversion for multi-physics engine asset support
+
 ## [3.0.0] - 2026-02-01
 ### Changed
 - USD exchange based backend
 - Unified UI
+- Asset structure 3
 
 ## [2.5.0] - 2026-01-10
 ### Removed

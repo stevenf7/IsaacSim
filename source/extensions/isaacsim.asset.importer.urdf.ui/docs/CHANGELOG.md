@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1] - 2026-02-26
+### Changed
+- Remove extension api doc
+
+## [1.0.0] - 2026-02-01
+### Changed
+- URDF importer 3.x user interface
+
 ## [0.1.0] - 2026-01-10
 ### Added
 - Initial release of the URDF Importer UI extension

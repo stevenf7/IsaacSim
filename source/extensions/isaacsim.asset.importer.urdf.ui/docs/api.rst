@@ -31,10 +31,3 @@ New code should use :class:`URDFImporter` and :class:`URDFImporterConfig` direct
     :members:
     :undoc-members:
     :no-show-inheritance:
-
-Extension Module
-================
-
-.. automodule:: isaacsim.asset.importer.urdf.ui.impl.extension
-    :members:
-    :undoc-members:

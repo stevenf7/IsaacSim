@@ -13,10 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Testing utilities for comparing articulated USD assets."""
+
 from __future__ import annotations
 
 import gc
 import itertools
+from collections.abc import Callable
 from typing import Any
 
 import carb
@@ -29,7 +32,17 @@ from pxr import Gf, UsdGeom
 
 
 async def compare_usd_files(paths: list[str]) -> bool:
-    """Compare two USD files by loading them into separate stages and comparing their articulations."""
+    """Compare USD files by loading and validating articulation properties.
+
+    Args:
+        paths: List of USD file paths to compare.
+
+    Returns:
+        True if all compared articulation properties and values match, False otherwise.
+
+    Raises:
+        RuntimeError: If a USD reference cannot be added to the comparison stage.
+    """
     stage = stage_utils.create_new_stage()
     prims = []
     for i in range(len(paths)):
@@ -118,12 +131,25 @@ async def compare_usd_files(paths: list[str]) -> bool:
 
 
 def check(
-    prims,
-    member,
+    prims: list[Articulation],
+    member: property | Callable[..., Any],
     member_args: list[tuple] | None = None,
-    member_kwargs: list[dict] | None = None,
+    member_kwargs: list[dict[str, Any]] | None = None,
     msg: list[str] | None = None,
 ) -> bool:
+    """Compare a member value/method result across articulation prims.
+
+    Args:
+        prims: Articulation wrapper objects to compare.
+        member: Property or bound method descriptor to evaluate on each prim.
+        member_args: Optional positional args per prim for method calls.
+        member_kwargs: Optional keyword args per prim for method calls.
+        msg: Optional labels used in mismatch logging.
+
+    Returns:
+        True if all pairwise comparisons match, False otherwise.
+    """
+
     def show_mismatch(member_name: str, *, i: int, x: Any, j: int, y: Any) -> None:
         if msg is None:
             carb.log_info(f"\n'{member_name}' mismatch")
@@ -156,13 +182,13 @@ def check(
         return True, x, y
 
     status = True
-    member_name = member.fget.__name__ if isinstance(member, property) else member.__name__
+    member_getter = member.fget if isinstance(member, property) else member
+    if member_getter is None:
+        return False
+    member_name = member_getter.__name__
     member_args = [()] * len(prims) if member_args is None else member_args
     member_kwargs = [{}] * len(prims) if member_kwargs is None else member_kwargs
-    results = [
-        (member.fget if isinstance(member, property) else member)(prim, *member_args[i], **member_kwargs[i])
-        for i, prim in enumerate(prims)
-    ]
+    results = [member_getter(prim, *member_args[i], **member_kwargs[i]) for i, prim in enumerate(prims)]
     for (i, x), (j, y) in itertools.combinations(enumerate(results), 2):
         result, x, y = check_values(x, y)
         if not result:

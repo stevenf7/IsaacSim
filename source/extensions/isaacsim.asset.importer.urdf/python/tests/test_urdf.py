@@ -528,7 +528,6 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._delete_directory(os.path.dirname(output_path))
 
-    @unittest.skip("urdf converter feature missing")
     async def test_urdf_parse_mimic(self):
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_mimic.urdf")
         _, prim_path = self._import_urdf(urdf_path)
@@ -537,18 +536,18 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         stage = omni.usd.get_context().get_stage()
 
         # Verify source joint exists and has no mimic API
-        source_joint = stage.GetPrimAtPath("/test_mimic/joints/source_joint")
+        source_joint = stage.GetPrimAtPath("/test_mimic/Physics/source_joint")
         self.assertNotEqual(source_joint.GetPath(), Sdf.Path.emptyPath)
         self.assertFalse(source_joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
 
         # Verify a_mimic_joint (lexicographically BEFORE source_joint) has mimic API configured
         # This tests that mimic joints are configured after all joints are created
-        a_mimic_joint = stage.GetPrimAtPath("/test_mimic/joints/a_mimic_joint")
+        a_mimic_joint = stage.GetPrimAtPath("/test_mimic/Physics/a_mimic_joint")
         self.assertNotEqual(a_mimic_joint.GetPath(), Sdf.Path.emptyPath)
         self.assertTrue(a_mimic_joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
 
         a_mimic_api = PhysxSchema.PhysxMimicJointAPI(a_mimic_joint, UsdPhysics.Tokens.rotZ)
-        self.assertAlmostEqual(a_mimic_api.GetGearingAttr().Get(), -1.5)  # negated multiplier
+        self.assertAlmostEqual(a_mimic_api.GetGearingAttr().Get(), 1.5)
         self.assertAlmostEqual(a_mimic_api.GetOffsetAttr().Get(), 0.1)
         # Verify reference joint relationship points to source_joint
         ref_joint_targets = a_mimic_api.GetReferenceJointRel().GetTargets()
@@ -556,12 +555,12 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self.assertEqual(ref_joint_targets[0], source_joint.GetPath())
 
         # Verify z_mimic_joint (lexicographically AFTER source_joint) has mimic API configured
-        z_mimic_joint = stage.GetPrimAtPath("/test_mimic/joints/z_mimic_joint")
+        z_mimic_joint = stage.GetPrimAtPath("/test_mimic/Physics/z_mimic_joint")
         self.assertNotEqual(z_mimic_joint.GetPath(), Sdf.Path.emptyPath)
         self.assertTrue(z_mimic_joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
 
         z_mimic_api = PhysxSchema.PhysxMimicJointAPI(z_mimic_joint, UsdPhysics.Tokens.rotZ)
-        self.assertAlmostEqual(z_mimic_api.GetGearingAttr().Get(), 1.0)  # negated multiplier
+        self.assertAlmostEqual(z_mimic_api.GetGearingAttr().Get(), -1.0)
         self.assertAlmostEqual(z_mimic_api.GetOffsetAttr().Get(), 0.0)
         # Verify reference joint relationship points to source_joint
         ref_joint_targets = z_mimic_api.GetReferenceJointRel().GetTargets()

@@ -125,6 +125,91 @@ Alternatively you can use the :ref:`isaac_sim_command_tool` to change a value in
 ..  note::
     See the :ref:`isaac_gain_tuner` tutorial to tune the gains for your robot.
 
+Multi-Physics Engine Support
+============================
+The MJCF importer supports the conversion of MJCF actuator/joint data to PhysX schemas for multi-physics engine support.
+This allows you to use the same MJCF file with different physics engines.
+
+The conversion is done automatically when the MJCF importer is used.
+You can use the :ref:`isaac_gain_tuner` tutorial to tune the gains for your robot with the multi-physics engine.
+
+.. list-table:: MJCF to PhysX attribute conversion
+    :widths: 25 25 50
+    :header-rows: 1
+    :align: center
+
+    * - MJCF Attribute
+      - PhysX Attribute
+      - Notes
+
+    * - MJC Actuator: gainType (fixed)
+      - UsdPhysics DriveAPI.gainType
+      - If gainType is present and is "fixed", and bias type is "affine", the gainPrm array is used to set the stiffness and damping. Only "fixed" gain type is supported. See explanation in the warning below.
+
+    * - MJC Actuator: biasType (affine)
+      - UsdPhysics DriveAPI.biasType
+      - If biasType is present and is "affine", and gain type is "fixed", the biasPrm array is used to set the damping. Only "affine" bias type is supported. See explanation in the warning below.
+
+    * - MJC Actuator: gainprm ([kp, 0, 0, ...]) - position control
+      - UsdPhysics DriveAPI.stiffness
+      - if gainprm array is present and the first element is not 0, stiffness = gainprm[0]. Stiffness must be a positive value in USD Physics.
+
+    * - MJC Actuator: gainprm ([kd, 0, 0, ...]) - velocity control
+      - UsdPhysics DriveAPI.damping
+      - if gainprm array is present and the first element is not 0, damping = gainprm[0]. Damping must be a positive value in USD Physics.
+
+    * - MJC Actuator: biasprm ([0, -kp, -kd, ...]) - position control
+      - UsdPhysics DriveAPI.damping, UsdPhysics DriveAPI.stiffness
+      - if biasprm array is present and the second and third elements are not 0, damping = -biasprm[2], stiffness = -biasprm[1]. Stiffness and damping must be positive values in USD Physics.
+    
+    * - MJC Actuator: biasprm ([0, 0, -kd, ...]) - velocity control
+      - UsdPhysics DriveAPI.damping
+      - if biasprm array is present and the third element is not 0, damping = -biasprm[2], stiffness = 0. Damping must be a positive value in USD Physics.
+
+    * - mjc:forceRange:max
+      - UsdPhysics DriveAPI.maxForce
+      - MJCF uses min/max while PhysX uses maxForce. PhysX does not support min force ranges, so converted behavior may differ if abs(min) != max.
+
+    * - mjc:frictionloss
+      - PhysxJointAPI.jointFriction
+      - Applied to joint friction attribute
+
+    * - mjc:armature
+      - PhysxJointAPI.armature
+      - Sets armature parameter
+
+    * - mjc:ref
+      - UsdPhysics DriveAPI.targetPosition
+      - Initial joint target position
+
+.. warning::
+
+  USD Physics uses PD controller for position control and P controller for velocity control, which is different from MJCF's 
+  general controller formulation F = gain * control + bias, so only fixed gain type and affine bias type are supported.
+  If the gain type or bias type is not "fixed" or "affine", the physics drive stiffness and damping will not be created, 
+  please check the MJCF actuator attributes and adjust the gain type and bias type accordingly.
+
+.. note::
+
+    **Mimic joints:**  
+    The MJCF importer supports conversion of mimic (dependent) joints, allowing one joint's motion to follow another with scaling and offset. In MuJoCo/MJCF, mimic relationships use ``mimicJoint``, ``mimicCoef`` 
+    to model a higher order relationship between teh follower and leader joint. In PhysX, this is limited to a first order relationship, where ``mimicCoef0`` is the offset and ``mimicCoef1`` is the scale.
+
+    When importing, these are mapped to corresponding PhysX and Newton schemas:
+    
+    - The source joint will have a relationship targeting the mimic joint, with ``mimicCoef`` modelling the higher order relationship.
+    - For PhysX, these values are applied via ``PhysxMimicJointAPI``, where the ``MimicJointRel`` points to the driven joint, and ``Gearing`` or ``Offset`` attributes are set.
+    - For Newton, the mimic attributes are applied through the ``NewtonMimicAPI`` (via relationship and attributes).
+    - Both schemas are applied automatically if mimic attributes are present.
+    - Newton Mimic API is disabled in the PhysX layer, to avoid conflicts with the PhysX Mimic Joint API.
+
+    See source code for precise logic and usage.
+
+Articulation Root API
+=====================
+The MJCF importer will create ``UsdPhysics ArticulationRootAPI``, ``Newton ArticulationRootAPI`` and ``PhysxArticulationAPI`` on the root link of the MJCF file.
+``Newton ArticulationRootAPI`` is disabled in the PhysX layer, to avoid conflicts with the ``PhysxArticulationRootAPI``.
+
 References
 ==========
 
