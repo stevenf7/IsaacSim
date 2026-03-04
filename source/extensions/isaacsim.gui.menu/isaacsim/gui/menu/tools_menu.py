@@ -24,7 +24,7 @@ class ToolsMenuExtension:
         ext_id: Extension identifier provided by the extension manager.
     """
 
-    def __init__(self, ext_id: str) -> None:
+    def __init__(self, ext_id: str):
         self.__menu_layout = [
             MenuLayout.Menu(
                 "Tools",
@@ -151,7 +151,7 @@ class ToolsMenuExtension:
 
         add_menu_items([physics_inspector], "Tools")
 
-    def shutdown(self) -> None:
+    def shutdown(self):
         """Remove menu layouts.
 
         Example:

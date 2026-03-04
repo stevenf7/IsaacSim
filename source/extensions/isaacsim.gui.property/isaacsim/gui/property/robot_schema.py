@@ -50,7 +50,30 @@ def _singleton(class_: type):  # noqa: N802
 
 
 class _RobotSchemaWidgetBase(UsdPropertiesWidget):
+    """Base class for USD Robot Schema property widgets in Isaac Sim.
+
+    Provides a unified interface for creating property widgets that manage robot schema APIs
+    (Robot API, Link API, Joint API) in the property panel. The widget displays schema-specific
+    attributes and relationships, handles schema application/removal, and provides contextual
+    menu integration for applying schemas to USD prims.
+
+    The widget automatically filters and displays only the attributes and relationships
+    specified during initialization, with proper display names and validation. It includes
+    a remove button in the header for cleaning up applied schemas and their properties.
+
+    Args:
+        title: Display title for the widget in the property panel.
+        collapsed: Whether the widget should start in a collapsed state.
+        schema_class: The USD schema class enum value (e.g., robot_schema.Classes.ROBOT_API).
+        attributes: List of schema attribute objects to display in the widget.
+        menu_label: Label text for the context menu entry used to apply the schema.
+        apply_fn: Function to call when applying the schema to a prim.
+        relationships: List of schema relationship objects to display in the widget.
+        exclusive_classes: List of schema classes that prevent this widget from being shown or applied.
+    """
+
     _MENU_PREFIX = "Isaac/Robot Schema"
+    """Prefix used for menu entries in the property window button menu."""
 
     def __init__(
         self,
@@ -84,6 +107,7 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
         ]
 
     def destroy(self):
+        """Clean up resources and remove menu entries."""
         from omni.kit.property.usd import PrimPathWidget
 
         for menu in self._menu_entries:
@@ -91,6 +115,14 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
         self._menu_entries = []
 
     def _button_show(self, objects: dict):
+        """Determines if the button should be shown based on prim selection.
+
+        Args:
+            objects: Dictionary containing stage and prim_list for evaluation.
+
+        Returns:
+            True if button should be shown, False otherwise.
+        """
         stage = objects.get("stage")
         prim_list = objects.get("prim_list")
         if not stage or not prim_list:
@@ -102,6 +134,11 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
         return False
 
     def _button_onclick(self, payload: PrimSelectionPayload):
+        """Handles button click to apply schema to selected prims.
+
+        Args:
+            payload: The prim selection payload containing paths to process.
+        """
         stage = self._payload.get_stage() if self._payload else omni.usd.get_context().get_stage()
         if not stage:
             return
@@ -127,6 +164,12 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
             property_window._window.frame.rebuild()  # noqa: SLF001
 
     def _on_usd_changed(self, notice, stage):
+        """Handles USD change notifications.
+
+        Args:
+            notice: The USD change notice.
+            stage: The USD stage that changed.
+        """
         targets = notice.GetChangedInfoOnlyPaths()
         if self._old_payload != self.on_new_payload(self._payload):
             self._request_refresh()
@@ -134,6 +177,14 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
             super()._on_usd_changed(notice, stage)
 
     def _get_prim(self, prim_path):
+        """Retrieves a prim with the required schema from the given path.
+
+        Args:
+            prim_path: The path to the prim.
+
+        Returns:
+            The prim if it exists and has the required schema, None otherwise.
+        """
         if prim_path:
             stage = self._payload.get_stage()
             if stage:
@@ -165,6 +216,7 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
         return self._prim
 
     def on_remove_attr(self):
+        """Removes the schema and associated attributes and relationships from the prim."""
         stage = self._payload.get_stage()
         if not stage or not self._payload:
             return
@@ -184,6 +236,14 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
         self._request_refresh()
 
     def _filter_props_to_build(self, props):
+        """Filters properties to build based on the schema's attributes and relationships.
+
+        Args:
+            props: List of properties to filter.
+
+        Returns:
+            Filtered list of properties with display names set.
+        """
         filtered = []
         for prop in props:
             if isinstance(prop, Usd.Attribute) and prop.GetName() in self._attr_map:
@@ -197,9 +257,21 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
         return filtered
 
     def _has_exclusive_schema(self, prim):
+        """Checks if the prim has any exclusive schema applied.
+
+        Args:
+            prim: The prim to check.
+
+        Returns:
+            True if prim has exclusive schema, False otherwise.
+        """
         return any(prim.HasAPI(schema.value) for schema in self._exclusive_classes)
 
     def build_items(self):
+        """Builds property widget items for the robot schema.
+
+        Constructs the property items only when the collapsible frame is expanded and a valid prim is available.
+        """
         if self._collapsable_frame and not self._collapsable_frame.collapsed and self._prim:
             super().build_items()
 

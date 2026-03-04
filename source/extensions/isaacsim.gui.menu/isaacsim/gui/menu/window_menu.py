@@ -24,7 +24,7 @@ class WindowMenuExtension:
         ext_id: Extension identifier provided by the extension manager.
     """
 
-    def __init__(self, ext_id: str) -> None:
+    def __init__(self, ext_id: str):
         self.__menu_layout = [
             MenuLayout.Menu(
                 "Window",
@@ -91,7 +91,7 @@ class WindowMenuExtension:
 
         add_menu_items([simulation_setting_window], "Window")
 
-    def shutdown(self) -> None:
+    def shutdown(self):
         """Remove menu layouts.
 
         Example:

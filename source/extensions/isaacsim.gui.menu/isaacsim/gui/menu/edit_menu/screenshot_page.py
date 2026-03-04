@@ -25,7 +25,7 @@ __all__ = ["ScreenshotPreferences"]
 class ScreenshotPreferences(PreferenceBuilder):
     """Preferences page for configuring screenshot capture."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__("Capture Screenshot")
 
         self._settings = carb.settings.get_settings()
@@ -58,7 +58,7 @@ class ScreenshotPreferences(PreferenceBuilder):
                 carb.log_error(f"Failed to create directory {template_path}")
         os.umask(original_umask)
 
-    def build(self) -> None:
+    def build(self):
         """Build the screenshot preferences UI.
 
         Example:
@@ -88,12 +88,8 @@ class ScreenshotPreferences(PreferenceBuilder):
                     # Show Ansel super resolution configuration, only when Ansel enabled
                     self._create_ansel_super_resolution_settings()
 
-    def _add_ansel_settings(self) -> None:  # pragma: no cover
-        """Add Ansel quality settings when Ansel is enabled.
-
-        Returns:
-            None.
-        """
+    def _add_ansel_settings(self):  # pragma: no cover
+        """Add Ansel quality settings when Ansel is enabled."""
         # check if Ansel enabled. If not, do not show Ansel settings
         if not self._is_ansel_enabled():
             return
@@ -102,12 +98,8 @@ class ScreenshotPreferences(PreferenceBuilder):
             "Quality", PERSISTENT_SETTINGS_PREFIX + "/exts/omni.ansel/quality", ["Low", "Medium", "High"]
         )
 
-    def _create_ansel_super_resolution_settings(self) -> None:  # pragma: no cover
-        """Add Ansel super resolution settings when available.
-
-        Returns:
-            None.
-        """
+    def _create_ansel_super_resolution_settings(self):  # pragma: no cover
+        """Add Ansel super resolution settings when available."""
         # check if Ansel enabled. If not, do not show Ansel settings
         if not self._is_ansel_enabled():
             return
@@ -131,7 +123,7 @@ class ScreenshotPreferences(PreferenceBuilder):
         """
         return self._settings.get("/exts/omni.ansel/enable")
 
-    def _on_browse_button_fn(self, owner: ui.Widget) -> None:
+    def _on_browse_button_fn(self, owner: ui.Widget):
         """Handle Browse button clicks for selecting a directory.
 
         Args:
@@ -145,7 +137,7 @@ class ScreenshotPreferences(PreferenceBuilder):
             show_only_folders=True,
         )
 
-    def _on_dir_pick(self, real_path: str) -> None:
+    def _on_dir_pick(self, real_path: str):
         """Handle directory selection from the file importer.
 
         Args:

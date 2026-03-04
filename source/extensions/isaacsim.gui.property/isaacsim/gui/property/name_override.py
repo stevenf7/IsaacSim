@@ -62,6 +62,14 @@ def _singleton(class_: type):  # noqa: N802
 
 
 def _prim_has_robot_schema(prim):
+    """Checks if a USD prim has any robot schema API applied.
+
+    Args:
+        prim: USD prim to check for robot schema APIs.
+
+    Returns:
+        True if the prim has any robot schema API (ROBOT_API, LINK_API, or JOINT_API), False otherwise.
+    """
     if not prim:
         return False
     return any(prim.HasAPI(schema.value) for schema in _ROBOT_SCHEMA_CLASSES)
@@ -88,7 +96,7 @@ class NameOverrideWidget(UsdPropertiesWidget):
         )
         self._old_payload = None
 
-    def destroy(self) -> None:
+    def destroy(self):
         """Remove button menu entries and clean up resources."""
         from omni.kit.property.usd import PrimPathWidget
 
@@ -96,7 +104,15 @@ class NameOverrideWidget(UsdPropertiesWidget):
             PrimPathWidget.remove_button_menu_entry(menu)
         self._add_button_menus = []
 
-    def _button_show(self, objects: dict):
+    def _button_show(self, objects: dict) -> bool:
+        """Determines whether to show the Name Override button in the prim path widget.
+
+        Args:
+            objects: Dictionary containing stage and prim_list information.
+
+        Returns:
+            True if any prim without robot schema lacks the name override attribute.
+        """
         if "prim_list" not in objects or "stage" not in objects:
             return False
         stage = objects["stage"]
@@ -119,6 +135,11 @@ class NameOverrideWidget(UsdPropertiesWidget):
         return False
 
     def _button_onclick(self, payload: PrimSelectionPayload):
+        """Handles button click to add name override attributes to selected prims.
+
+        Args:
+            payload: The prim selection payload containing paths to process.
+        """
         stage = self._payload.get_stage()
         for path in payload:
             if path:
@@ -143,6 +164,12 @@ class NameOverrideWidget(UsdPropertiesWidget):
         window.frame.rebuild()
 
     def _on_usd_changed(self, notice, stage):
+        """Handles USD stage change notifications by refreshing the widget if needed.
+
+        Args:
+            notice: The USD change notice containing modification information.
+            stage: The USD stage that changed.
+        """
         targets = notice.GetChangedInfoOnlyPaths()
         if self._old_payload != self.on_new_payload(
             self._payload
@@ -151,7 +178,15 @@ class NameOverrideWidget(UsdPropertiesWidget):
         else:
             super()._on_usd_changed(notice, stage)
 
-    def _get_prim(self, prim_path):
+    def _get_prim(self, prim_path) -> Usd.Prim | None:
+        """Retrieves a prim if it exists, lacks robot schema, and has a name override attribute.
+
+        Args:
+            prim_path: Path to the prim to retrieve.
+
+        Returns:
+            The prim if it meets all criteria, None otherwise.
+        """
         if prim_path:
             stage = self._payload.get_stage()
             if stage:
@@ -164,7 +199,7 @@ class NameOverrideWidget(UsdPropertiesWidget):
                     return prim
         return None
 
-    def on_new_payload(self, payload: list):
+    def on_new_payload(self, payload: list) -> Usd.Prim | bool:
         """See ``PropertyWidget.on_new_payload``.
 
         Args:
@@ -186,7 +221,7 @@ class NameOverrideWidget(UsdPropertiesWidget):
 
         return self._prim
 
-    def on_remove_attr(self) -> None:
+    def on_remove_attr(self):
         """Remove the Name Override attribute from the selected prim."""
         stage = self._payload.get_stage()
         if stage:
@@ -194,7 +229,15 @@ class NameOverrideWidget(UsdPropertiesWidget):
             if prim and prim.HasAttribute(robot_schema.Attributes.NAME_OVERRIDE.name):
                 prim.RemoveProperty(robot_schema.Attributes.NAME_OVERRIDE.name)
 
-    def _filter_props_to_build(self, props):
+    def _filter_props_to_build(self, props) -> List[Usd.Attribute]:
+        """Filters properties to only include name override attributes and sets their display properties.
+
+        Args:
+            props: List of properties to filter.
+
+        Returns:
+            Filtered list containing only name override attributes with updated display settings.
+        """
         props = [
             prop
             for prop in props
@@ -205,7 +248,7 @@ class NameOverrideWidget(UsdPropertiesWidget):
             props[0].SetDocumentation("Name override for prim lookup in base name search")
         return props
 
-    def build_items(self) -> None:
+    def build_items(self):
         """Build property items only when the frame is expanded and a prim is selected."""
         if self._collapsable_frame and not self._collapsable_frame.collapsed and self._prim:
             super().build_items()

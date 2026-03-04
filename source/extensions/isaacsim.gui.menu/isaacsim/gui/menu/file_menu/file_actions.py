@@ -22,13 +22,13 @@ import omni.kit.window.file
 import omni.usd
 
 
-def post_notification(message: str, info: bool = False, duration: int = 3) -> None:
+def post_notification(message: str, info: bool = False, duration: int = 3):
     """Post a notification with a message.
 
     Args:
         message: The message to display.
-        info: Whether to post an info notification. Defaults to False.
-        duration: Duration in seconds for the notification. Defaults to 3.
+        info: Whether to post an info notification.
+        duration: Duration in seconds for the notification.
 
     Example:
         .. code-block:: python
@@ -47,11 +47,11 @@ def post_notification(message: str, info: bool = False, duration: int = 3) -> No
         carb.log_warn(message)
 
 
-def quit_kit(fast: bool = False) -> None:
+def quit_kit(fast: bool = False):
     """Request the application to quit.
 
     Args:
-        fast: Whether to enable fast shutdown. Defaults to False.
+        fast: Whether to enable fast shutdown.
 
     Example:
         .. code-block:: python
@@ -63,7 +63,7 @@ def quit_kit(fast: bool = False) -> None:
     omni.kit.app.get_app().post_quit()
 
 
-def open_stage_with_new_edit_layer() -> None:
+def open_stage_with_new_edit_layer():
     """Open the current USD stage with a new edit layer.
 
     This posts a notification if no valid stage is available.
@@ -81,7 +81,7 @@ def open_stage_with_new_edit_layer() -> None:
     omni.kit.window.file.open_with_new_edit_layer(stage.GetRootLayer().identifier)
 
 
-def register_actions(extension_id: str) -> None:
+def register_actions(extension_id: str):
     """Register file-related actions within an extension.
 
     Args:
@@ -122,7 +122,7 @@ def register_actions(extension_id: str) -> None:
     )
 
 
-def deregister_actions(extension_id: str) -> None:
+def deregister_actions(extension_id: str):
     """Remove all registered actions for an extension.
 
     Args:

@@ -71,7 +71,7 @@ class FileMenuExtension:
         ext_id: Extension identifier provided by the extension manager.
     """
 
-    def __init__(self, ext_id: str = "") -> None:
+    def __init__(self, ext_id: str = ""):
         super().__init__()
         omni.kit.menu.utils.set_default_menu_priority("File", -10)
         self._ext_name = ""
@@ -146,7 +146,7 @@ class FileMenuExtension:
 
         omni.kit.menu.utils.add_layout(self.__menu_layout)
 
-    def shutdown(self) -> None:
+    def shutdown(self):
         """Remove menu items and deregister file actions.
 
         Example:
@@ -168,7 +168,7 @@ class FileMenuExtension:
         self._event_sub = None
         self._stage_event_subscription = None
 
-    def _on_stage_event(self, event: carb.events.IEvent) -> None:
+    def _on_stage_event(self, event: carb.events.IEvent):
         """Handle stage events that require rebuilding the menu.
 
         Args:
@@ -176,7 +176,7 @@ class FileMenuExtension:
         """
         self._build_file_menu()
 
-    def _build_file_menu(self) -> None:
+    def _build_file_menu(self):
         """Build the File menu items."""
         # setup menu
         self._file_menu_list = [
@@ -243,7 +243,7 @@ class FileMenuExtension:
         self._build_sample_menu()
         omni.kit.menu.utils.add_menu_items(self._file_menu_list, "File", -10, delegate=self._file_delegate)
 
-    def _build_recent_menu(self, event: carb.events.IEvent | None = None) -> None:
+    def _build_recent_menu(self, event: carb.events.IEvent | None = None):
         """Build or refresh the Open Recent submenu.
 
         Args:
@@ -319,7 +319,7 @@ class FileMenuExtension:
         return
 
     @staticmethod
-    def is_new_stage():
+    def is_new_stage() -> bool:
         """Check whether the current stage is new and unsaved.
 
         Returns:
@@ -334,7 +334,7 @@ class FileMenuExtension:
         return omni.usd.get_context().is_new_stage()
 
     @staticmethod
-    def can_open():
+    def can_open() -> bool:
         """Check whether the stage can be opened.
 
         Returns:
@@ -350,7 +350,7 @@ class FileMenuExtension:
         return stage_state in [omni.usd.StageState.OPENED, omni.usd.StageState.CLOSED]
 
     @staticmethod
-    def can_save():
+    def can_save() -> bool:
         """Check whether the stage can be saved.
 
         Returns:
@@ -369,7 +369,7 @@ class FileMenuExtension:
         )
 
     @staticmethod
-    def can_close():
+    def can_close() -> bool:
         """Check whether the stage can be closed.
 
         Returns:
@@ -384,7 +384,7 @@ class FileMenuExtension:
         return omni.usd.get_context().get_stage_state() == omni.usd.StageState.OPENED
 
     @staticmethod
-    def can_close_and_not_is_new_stage():
+    def can_close_and_not_is_new_stage() -> bool:
         """Check whether the stage can be closed and is not new.
 
         Returns:
