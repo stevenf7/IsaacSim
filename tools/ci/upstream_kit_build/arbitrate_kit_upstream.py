@@ -7,6 +7,9 @@ prepare_kit_overrides to download artifacts and generate packman overrides.
 
 It does not perform the actual artifact fetching; that lives in pull_kit and
 prepare_kit_overrides.
+
+Config for artifact selection comes from the caller (build_config). Platform is
+auto-detected by prepare_kit_overrides via repo_man when we launch it.
 """
 
 import os
@@ -14,7 +17,7 @@ import os
 from tools.ci.upstream_kit_build.pull_kit import KIT_BRANCH, find_latest_nightly_pipeline_id
 
 
-def arbitrate_kit_upstream() -> None:
+def arbitrate_kit_upstream(build_config: str | None = None) -> None:
     """Detect whether this build should use upstream Kit and set up accordingly.
 
     Decision matrix:
@@ -28,8 +31,14 @@ def arbitrate_kit_upstream() -> None:
     launches ``prepare_kit_overrides`` which downloads Kit artifacts and
     generates packman ``.user`` overrides so all Kit packages come from the
     same commit.
+
+    Config for which artifacts to pull comes from the caller (build_config).
+    Platform is auto-detected by prepare_kit_overrides via repo_man.
     """
     import omni.repo.ci  # deferred so module can be imported outside CI
+
+    config = build_config if build_config is not None else "release"
+    print(f"[arbitrate_kit_upstream] config={config} (caller); prepare_kit_overrides will auto-detect platform")
 
     ci_pipeline_source = os.getenv("CI_PIPELINE_SOURCE", "")
     ci_commit_ref = os.getenv("CI_COMMIT_REF_NAME", "")
@@ -79,4 +88,4 @@ def arbitrate_kit_upstream() -> None:
         return
 
     print("[arbitrate_kit_upstream] Launching prepare_kit_overrides to override Kit packages...")
-    omni.repo.ci.launch(["${root}/repo${shell_ext}", "prepare_kit_overrides"])
+    omni.repo.ci.launch(["${root}/repo${shell_ext}", "prepare_kit_overrides", "--config", config])

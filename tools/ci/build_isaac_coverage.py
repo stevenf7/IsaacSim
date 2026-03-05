@@ -17,7 +17,7 @@ import omni.repo.ci
 
 def main(args: argparse.Namespace):
 
-    arbitrate_kit_upstream()
+    arbitrate_kit_upstream(build_config=args.build_config)
 
     build_config = args.build_config
 

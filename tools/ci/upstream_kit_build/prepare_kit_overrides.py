@@ -15,10 +15,10 @@ Can be run as a repo tool (repo prepare_kit_overrides) with:
   --pipeline-id ID   Use this GitLab pipeline (or set UPSTREAM_PIPELINE_ID in env).
   --branch NAME      Find latest nightly pipeline on this branch and use it.
   --kit-path PATH    Use existing kit artifacts at PATH (kit/kit/_builtpackages layout).
-  --platform         linux-x86_64 | linux-aarch64 | windows-x86_64 (default: linux-x86_64).
+  --platform         Override platform (default: auto-detect via omni.repo.man.get_host_platform()).
   --config           release | debug (default: release).
 
-Environment (when not passed as args): CI_JOB_NAME, UPSTREAM_PIPELINE_ID, CI_GITLAB_API_TOKEN.
+Environment (when not passed as args): UPSTREAM_PIPELINE_ID, CI_GITLAB_API_TOKEN.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ import shutil
 from typing import Callable, Dict
 
 from omni.repo.ci import resolve_tokens
-from omni.repo.man import extract_archive_to_folder
+from omni.repo.man import extract_archive_to_folder, get_host_platform
 
 from tools.ci.upstream_kit_build.pull_kit import (
     download_kit_artifacts,
@@ -45,6 +45,19 @@ KIT_DEP_PACKAGES: dict[str, str] = {
     "generic-model-output": "generic_model_output",
     "sensor-checker": "sensor_checker",
 }
+
+SUPPORTED_PLATFORMS = ("linux-x86_64", "linux-aarch64", "windows-x86_64")
+
+
+def _platform_from_repo_man() -> str:
+    """Get host platform from repo_man; must be one of SUPPORTED_PLATFORMS."""
+    platform = get_host_platform()
+    if platform not in SUPPORTED_PLATFORMS:
+        raise ValueError(
+            f"repo_man get_host_platform() returned {platform!r}; "
+            f"prepare_kit_overrides only supports {SUPPORTED_PLATFORMS}"
+        )
+    return platform
 
 
 def _platform_from_name(platform: str) -> tuple[str, str]:
@@ -232,9 +245,9 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         "--platform",
         dest="platform",
         type=str,
-        default="linux-x86_64",
-        choices=("linux-x86_64", "linux-aarch64", "windows-x86_64"),
-        help="Target platform (default: linux-x86_64).",
+        default=None,
+        choices=SUPPORTED_PLATFORMS,
+        help="Override platform (default: auto-detect from repo_man get_host_platform()). One of: %(choices)s.",
     )
     parser.add_argument(
         "--config",
@@ -253,7 +266,12 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         pipeline_id = getattr(options, "pipeline_id", None)
         branch = getattr(options, "branch", None)
         kit_path = getattr(options, "kit_path", None)
-        platform = getattr(options, "platform", "linux-x86_64")
+        platform = getattr(options, "platform", None)
+        if platform is None:
+            platform = _platform_from_repo_man()
+            print(f"[prepare_kit_overrides] platform={platform} (auto from repo_man)")
+        else:
+            print(f"[prepare_kit_overrides] platform={platform} (explicit override)")
         build_config = getattr(options, "config", "release")
 
         if pipeline_id is None and branch is None and kit_path is None:
