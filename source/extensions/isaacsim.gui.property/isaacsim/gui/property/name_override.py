@@ -229,7 +229,7 @@ class NameOverrideWidget(UsdPropertiesWidget):
             if prim and prim.HasAttribute(robot_schema.Attributes.NAME_OVERRIDE.name):
                 prim.RemoveProperty(robot_schema.Attributes.NAME_OVERRIDE.name)
 
-    def _filter_props_to_build(self, props) -> List[Usd.Attribute]:
+    def _filter_props_to_build(self, props) -> list[Usd.Attribute]:
         """Filters properties to only include name override attributes and sets their display properties.
 
         Args:

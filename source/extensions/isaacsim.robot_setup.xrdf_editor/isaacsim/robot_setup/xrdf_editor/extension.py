@@ -15,6 +15,7 @@
 
 """Provides an interactive editor for creating and modifying Lula Robot Description files and cuMotion XRDF files."""
 
+from __future__ import annotations
 
 import asyncio
 import copy
@@ -709,7 +710,7 @@ class Extension(omni.ext.IExt):
             self._reset_ui()
             self._on_selection("None")
 
-    def _on_physics_step(self, step: float, context: omni.physics.SimulationContext):
+    def _on_physics_step(self, step: float, context):
         """Callback for Physics Step.
 
         Args:

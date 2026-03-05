@@ -1,4 +1,8 @@
 # Changelog
+## [1.5.1] - 2026-03-05
+### Fixed
+- Fixed incorrect type annotation (List to list)
+
 ## [1.5.0] - 2026-03-04
 ### Changed
 - Add Overview.md, python_api.md, and update docstrings

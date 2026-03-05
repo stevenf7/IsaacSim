@@ -1659,7 +1659,7 @@ class SearchListItemDelegate(ui.AbstractItemDelegate):
 
 def build_simple_search(
     label="", type="search", model=None, delegate=None, tooltip=""
-) -> tuple[ui.SearchWidget, ui.TreeView]:
+) -> tuple["SearchWidget", ui.TreeView]:
     """A Simple Search Bar + TreeView Widget.
 
     Pass a list of items through the model, and a custom on_click_fn through the delegate.

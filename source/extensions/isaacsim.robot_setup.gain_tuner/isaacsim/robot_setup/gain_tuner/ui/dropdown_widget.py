@@ -15,7 +15,6 @@
 
 """Provides UI components and models for dropdown/combo box widgets using Omni UI."""
 
-
 import omni.ui as ui
 
 ###########################################
@@ -181,7 +180,7 @@ class ComboListModel(ui.AbstractItemModel):
         return len(self._items) > 0
 
 
-def create_combo_list_model(items_list: list[str], index: int) -> ComboListModel:
+def create_combo_list_model(items_list: list[str], index: int) -> "ComboListModel":
     """Creates a ComboListModel for use in combo box UI elements.
 
     Args:
