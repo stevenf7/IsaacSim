@@ -60,7 +60,8 @@ struct IXformDataView
     virtual bool update() = 0;
 
     // Buffer / callback management (used by Python during setup)
-    virtual bool allocateBuffer(const char* fieldName, size_t count, size_t elementSize) = 0;
+    virtual bool allocateBufferFloat(const char* fieldName, size_t count) = 0;
+    virtual bool allocateBufferUint8(const char* fieldName, size_t count) = 0;
     virtual uintptr_t getBufferPtr(const char* fieldName) = 0;
     virtual size_t getBufferSize(const char* fieldName) = 0;
     virtual int getBufferDevice() = 0;
@@ -92,6 +93,7 @@ struct IArticulationDataView : public IXformDataView
     virtual const float* getDofEfforts(int* outCount) = 0;
     virtual const float* getRootTransforms(int* outCount) = 0;
     virtual const float* getRootVelocities(int* outCount) = 0;
+    virtual const uint8_t* getDofTypes(int* outCount) = 0;
 
     // Host variants
     virtual const float* getDofPositionsHost(int* outCount) = 0;
@@ -99,6 +101,7 @@ struct IArticulationDataView : public IXformDataView
     virtual const float* getDofEffortsHost(int* outCount) = 0;
     virtual const float* getRootTransformsHost(int* outCount) = 0;
     virtual const float* getRootVelocitiesHost(int* outCount) = 0;
+    virtual const uint8_t* getDofTypesHost(int* outCount) = 0;
 
     /**
      * @brief Resolve the DOF index for a joint given its USD prim path.
@@ -106,6 +109,13 @@ struct IArticulationDataView : public IXformDataView
      * @return DOF index (>= 0), or -1 if the joint is not found in this view.
      */
     virtual int getDofIndex(const char* dofPrimPath) = 0;
+
+    /**
+     * @brief Get DOF names in articulation order (index 0 .. N-1).
+     * @param outCount Receives the number of DOFs.
+     * @return Pointer to array of C-strings, or nullptr if none. Valid until view is removed or reader re-initialized.
+     */
+    virtual const char* const* getDofNames(int* outCount) = 0;
 };
 
 /**
@@ -199,6 +209,17 @@ struct IPrimDataReader
      * @param viewId Identifier of the view to remove.
      */
     virtual void removeView(const char* viewId) = 0;
+
+    /**
+     * @brief Set DOF names and types for an articulation view (used by Newton backend from Python).
+     * @param viewId Identifier of the articulation view.
+     * @param names Array of DOF name C-strings.
+     * @param numNames Number of names.
+     * @param types Array of DOF types (0 = rotation, 1 = translation).
+     * @param numTypes Number of types.
+     */
+    virtual void setArticulationDofMetadata(
+        const char* viewId, const char** names, size_t numNames, const uint8_t* types, size_t numTypes) = 0;
 
     /**
      * @brief Monotonically increasing counter incremented on each initialize() call.

@@ -28,7 +28,7 @@ TEST_SUITE("isaacsim.core.experimental.prims.tests")
     {
         ViewData data;
         data.deviceOrdinal = -1;
-        auto& field = data.getOrCreateField("dof_positions", 100, -1);
+        auto& field = data.getOrCreateField<float>("dof_positions", 100, -1);
         CHECK_UNARY(field.buffer != nullptr);
         CHECK_EQ(field.buffer->size(), 100);
         CHECK_EQ(field.count, 100);
@@ -39,9 +39,9 @@ TEST_SUITE("isaacsim.core.experimental.prims.tests")
     {
         ViewData data;
         data.deviceOrdinal = -1;
-        auto& field1 = data.getOrCreateField("dof_positions", 50, -1);
+        auto& field1 = data.getOrCreateField<float>("dof_positions", 50, -1);
         float* ptr1 = field1.buffer->data();
-        auto& field2 = data.getOrCreateField("dof_positions", 50, -1);
+        auto& field2 = data.getOrCreateField<float>("dof_positions", 50, -1);
         CHECK_EQ(field2.buffer->data(), ptr1);
     }
 
@@ -49,8 +49,8 @@ TEST_SUITE("isaacsim.core.experimental.prims.tests")
     {
         ViewData data;
         data.deviceOrdinal = -1;
-        data.getOrCreateField("dof_positions", 50, -1);
-        auto& field2 = data.getOrCreateField("dof_positions", 200, -1);
+        data.getOrCreateField<float>("dof_positions", 50, -1);
+        auto& field2 = data.getOrCreateField<float>("dof_positions", 200, -1);
         CHECK_EQ(field2.count, 200);
         CHECK_EQ(field2.buffer->size(), 200);
     }
@@ -59,7 +59,7 @@ TEST_SUITE("isaacsim.core.experimental.prims.tests")
     {
         ViewData data;
         data.deviceOrdinal = -1;
-        auto& field = data.getOrCreateField("test_field", 10, -1);
+        auto& field = data.getOrCreateField<float>("test_field", 10, -1);
 
         int callCount = 0;
         field.callback = [&callCount, &field]()
@@ -107,21 +107,21 @@ TEST_SUITE("isaacsim.core.experimental.prims.tests")
     {
         ViewData data;
         data.deviceOrdinal = -1;
-        data.getOrCreateField("dof_positions", 18, -1);
-        data.getOrCreateField("dof_velocities", 18, -1);
-        data.getOrCreateField("root_transforms", 14, -1);
+        data.getOrCreateField<float>("dof_positions", 18, -1);
+        data.getOrCreateField<float>("dof_velocities", 18, -1);
+        data.getOrCreateField<float>("root_transforms", 14, -1);
 
-        CHECK_EQ(data.fields.size(), 3);
-        CHECK_UNARY(data.fields.at("dof_positions").buffer->data() != nullptr);
-        CHECK_UNARY(data.fields.at("dof_velocities").buffer->data() != nullptr);
-        CHECK_UNARY(data.fields.at("root_transforms").buffer->data() != nullptr);
+        CHECK_EQ(data.fieldsF.size(), 3);
+        CHECK_UNARY(data.fieldsF.at("dof_positions").buffer->data() != nullptr);
+        CHECK_UNARY(data.fieldsF.at("dof_velocities").buffer->data() != nullptr);
+        CHECK_UNARY(data.fieldsF.at("root_transforms").buffer->data() != nullptr);
     }
 
     TEST_CASE("GPU buffer allocation")
     {
         ViewData data;
         data.deviceOrdinal = 0;
-        auto& field = data.getOrCreateField("dof_positions", 100, 0);
+        auto& field = data.getOrCreateField<float>("dof_positions", 100, 0);
         CHECK_UNARY(field.buffer != nullptr);
         CHECK_EQ(field.buffer->size(), 100);
         CHECK_EQ(field.buffer->type(), isaacsim::core::includes::MemoryType::eDevice);
@@ -131,7 +131,7 @@ TEST_SUITE("isaacsim.core.experimental.prims.tests")
     {
         ViewData data;
         data.deviceOrdinal = 0;
-        auto& field = data.getOrCreateField("test", 10, 0);
+        auto& field = data.getOrCreateField<float>("test", 10, 0);
         CHECK_UNARY(field.hostStaging == nullptr);
 
         field.hostStaging = std::make_unique<isaacsim::core::includes::GenericBufferBase<float>>(10, -1);
@@ -141,7 +141,7 @@ TEST_SUITE("isaacsim.core.experimental.prims.tests")
 
     TEST_CASE("FieldEntry default state")
     {
-        FieldEntry entry;
+        FieldEntry<float> entry;
         CHECK_EQ(entry.lastStep, -1);
         CHECK_EQ(entry.count, 0);
         CHECK_UNARY(entry.buffer == nullptr);

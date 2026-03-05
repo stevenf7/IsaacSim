@@ -4768,7 +4768,7 @@ class Articulation(XformPrim):
         }
 
         for field_name, (size, shape, getter_fn) in field_defs.items():
-            view.allocate_buffer(field_name, size, 4)
+            view.allocate_buffer(field_name, size, "float")
             cpp_buf = wrap_cpp_buffer(view, field_name, shape=shape)
             fn = getter_fn
 
@@ -4779,6 +4779,23 @@ class Articulation(XformPrim):
                 return cb
 
             view.register_field_callback(field_name, make_cb())
+
+        # Push DOF names and types into the C++ view so get_dof_names/get_dof_types work for Newton.
+        if count > 0 and self._cpp_data_view_id and art_view._backend.meta_types:
+            from .extension import get_prim_data_reader
+
+            reader = get_prim_data_reader()
+            if reader is not None:
+                meta = art_view._backend.meta_types[0]
+                names = list(meta.dof_names)
+                try:
+                    import omni.physics.tensors as physics_tensors
+
+                    types = [1 if t == physics_tensors.DofType.Translation else 0 for t in meta.dof_types]
+                except (ImportError, AttributeError):
+                    types = [0] * len(names)
+                if names and len(types) == len(names):
+                    reader.set_articulation_dof_metadata(self._cpp_data_view_id, names, types)
 
     def initialize_cpp_data_view(self):
         """Initialize the optional C++ read-only data view.

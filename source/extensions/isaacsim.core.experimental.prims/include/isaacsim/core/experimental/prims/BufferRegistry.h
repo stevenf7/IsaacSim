@@ -22,6 +22,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -54,16 +55,22 @@ namespace prims
  * buffer for Host variants, and a callback that fills the buffer from the physics backend.
  * The @c lastStep field tracks the most recent physics step at which the buffer was filled;
  * a value of @c -1 indicates the field has never been fetched.
+ * @tparam T Element type (e.g. float for DOF/transform data, uint8_t for dof_types).
  */
+template <typename T>
 struct FieldEntry
 {
-    std::unique_ptr<includes::GenericBufferBase<float>> buffer;
-    std::unique_ptr<includes::GenericBufferBase<float>> hostStaging;
+    std::unique_ptr<includes::GenericBufferBase<T>> buffer;
+    std::unique_ptr<includes::GenericBufferBase<T>> hostStaging;
     std::function<void()> callback;
     int64_t lastStep = -1; ///< -1 sentinel means "never fetched"
     int64_t hostLastStep = -1; ///< -1 sentinel means "host staging not copied yet"
     size_t count = 0;
 };
+
+/// Common instantiations
+using FieldEntryFloat = FieldEntry<float>;
+using FieldEntryU8 = FieldEntry<uint8_t>;
 
 /**
  * @enum EngineType
@@ -99,8 +106,13 @@ public:
     EngineType engine = EngineType::ePhysX;
     ViewType type = ViewType::eXform;
     int deviceOrdinal = -1;
-    std::unordered_map<std::string, FieldEntry> fields;
+    std::unordered_map<std::string, FieldEntry<float>> fieldsF;
+    std::unordered_map<std::string, FieldEntry<uint8_t>> fieldsU8;
     std::vector<std::string> primPaths;
+
+    /// DOF names for articulation views (in DOF index order).
+    std::vector<std::string> dofNames;
+    std::vector<const char*> dofNamePtrs;
 
     /// PhysX tensor view handles (null for Newton).
     omni::physics::tensors::IArticulationView* physxArticulationView = nullptr;
@@ -108,18 +120,35 @@ public:
 
     /**
      * @brief Get an existing field or create a new one with the given buffer size.
-     * @param[in] name  Field name (e.g., "dof_positions").
-     * @param[in] count Number of float elements in the buffer.
+     * @tparam T Element type (e.g. float, uint8_t).
+     * @param[in] name   Field name (e.g., "dof_positions").
+     * @param[in] count Number of elements in the buffer.
      * @param[in] device CUDA device ordinal (-1 for CPU, >=0 for GPU).
      * @return Reference to the (possibly new) field entry.
      */
-    FieldEntry& getOrCreateField(const std::string& name, size_t count, int device)
+    template <typename T>
+    FieldEntry<T>& getOrCreateField(const std::string& name, size_t count, int device)
+    {
+        static_assert(std::is_same_v<T, float> || std::is_same_v<T, uint8_t>,
+                      "Invalid field type: only float and uint8_t are supported");
+        if constexpr (std::is_same_v<T, float>)
+            return getOrCreateFieldImpl(fieldsF, name, count, device);
+        else
+            return getOrCreateFieldImpl(fieldsU8, name, count, device);
+    }
+
+private:
+    template <typename T>
+    static FieldEntry<T>& getOrCreateFieldImpl(std::unordered_map<std::string, FieldEntry<T>>& fields,
+                                               const std::string& name,
+                                               size_t count,
+                                               int device)
     {
         auto it = fields.find(name);
         if (it == fields.end())
         {
-            FieldEntry entry;
-            entry.buffer = std::make_unique<includes::GenericBufferBase<float>>(count, device);
+            FieldEntry<T> entry;
+            entry.buffer = std::make_unique<includes::GenericBufferBase<T>>(count, device);
             entry.count = count;
             auto result = fields.emplace(name, std::move(entry));
             return result.first->second;

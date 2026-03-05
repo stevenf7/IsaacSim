@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.0] - 2026-03-03
+### Added
+- `getDofNames()` and `getDofTypes()` on `IArticulationDataView` for articulation DOF metadata (names and types in articulation order)
+- `setArticulationDofMetadata()` on `IPrimDataReader` for Newton backend to supply DOF names and types from Python
+
 ## [1.2.1] - 2026-03-02
 ### Changed
 - Enable a set of Newton unit tests that are implemented and pass

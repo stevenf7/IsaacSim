@@ -1875,7 +1875,7 @@ class RigidPrim(XformPrim):
         }
 
         for field_name, (size, shape, getter_fn) in field_defs.items():
-            view.allocate_buffer(field_name, size, 4)
+            view.allocate_buffer(field_name, size, "float")
             cpp_buf = wrap_cpp_buffer(view, field_name, shape=shape)
             fn = getter_fn
 
