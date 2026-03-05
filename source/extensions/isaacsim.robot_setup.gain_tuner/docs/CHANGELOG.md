@@ -1,4 +1,8 @@
 # Changelog
+## [3.4.1] - 2026-03-04
+### Changed
+- Fix api errors
+
 
 ## [3.4.1] - 2026-03-04
 ### Fixed

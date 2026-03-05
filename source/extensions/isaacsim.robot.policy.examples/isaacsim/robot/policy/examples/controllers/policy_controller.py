@@ -186,7 +186,7 @@ class PolicyController(ABC):
         )
 
     def forward(self) -> NotImplementedError:
-        """Execute one step of the policy controller.
+        r"""Execute one step of the policy controller.
 
         This method must be implemented by derived classes to\:
         1. Compute the current observation

@@ -307,7 +307,7 @@ class LulaCSpaceTrajectoryGenerator:
         self._c_space_trajectory_generator.set_jerk_limits(c_space_jerk_limits)
 
     def set_solver_param(self, param_name: str, param_val: Union[int, float, str]):
-        """Set solver parameters for the cspace trajectory generator.  A complete list of
+        r"""Set solver parameters for the cspace trajectory generator.  A complete list of
             parameters is provided in this docstring.
 
             'max_segment_iterations': (int)

@@ -1,4 +1,8 @@
 # Changelog
+## [5.1.1] - 2026-03-04
+### Changed
+- Fix api errors
+
 
 ## [5.1.0] - 2026-03-04
 ### Changed

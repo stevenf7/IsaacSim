@@ -167,6 +167,8 @@ RUFF_CONFIG: dict[str, Any] = {
         "SIM118",  # in-dict-keys: Use `key in dict` instead of `key in dict.keys()`
         "SIM201",  # negate-equal-op: Use `!=` instead of `not ... ==`
         "SIM300",  # yoda-conditions: Yoda condition detected
+        # pycodestyle: invalid escape sequences (SyntaxWarning in 3.12+, SyntaxError in future)
+        "W605",  # invalid-escape-sequence: Invalid escape sequence in string
     ],
     # Ignored pydocstyle rules (see python_docstrings.mdc for rationale):
     # D104: Missing docstring in public package - we skip __init__.py files intentionally

@@ -15,12 +15,14 @@
 
 """Provides utility functions for creating stylized UI components and widgets for Isaac Sim extensions."""
 
+from __future__ import annotations
 
 import asyncio
 import os
 import subprocess
 import sys
 from cmath import inf
+from typing import TYPE_CHECKING
 
 import carb.settings
 import omni.appwindow
@@ -28,6 +30,10 @@ import omni.ext
 import omni.ui as ui
 from omni.kit.window.extensions import SimpleCheckBox
 from omni.kit.window.filepicker import FilePickerDialog
+
+if TYPE_CHECKING:
+    from omni.kit.window.extensions.ext_components import SearchWidget
+
 from omni.kit.window.property.templates import LABEL_HEIGHT, LABEL_WIDTH
 
 from .callbacks import on_copy_to_clipboard, on_docs_link_clicked, on_open_folder_clicked, on_open_IDE_clicked
@@ -1659,7 +1665,7 @@ class SearchListItemDelegate(ui.AbstractItemDelegate):
 
 def build_simple_search(
     label="", type="search", model=None, delegate=None, tooltip=""
-) -> tuple["SearchWidget", ui.TreeView]:
+) -> tuple[SearchWidget, ui.TreeView]:
     """A Simple Search Bar + TreeView Widget.
 
     Pass a list of items through the model, and a custom on_click_fn through the delegate.
