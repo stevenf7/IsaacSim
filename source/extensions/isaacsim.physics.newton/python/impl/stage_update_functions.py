@@ -35,7 +35,7 @@ class NewtonStageUpdateFunctions:
         newton_stage: NewtonStage instance that manages the Newton simulation.
     """
 
-    def __init__(self, newton_stage: NewtonStage) -> None:
+    def __init__(self, newton_stage: NewtonStage):
         self.newton_stage = newton_stage
         self.is_physics_loaded = False
         self.is_paused_state = False
@@ -187,7 +187,7 @@ class NewtonStageUpdateFunctions:
             carb.log_error(f"[Newton] release_physics_objects failed: {e}")
             return False
 
-    def handle_raycast(self, origin: "carb.Float3 | None", direction: "carb.Float3 | None", has_input: bool) -> bool:
+    def handle_raycast(self, origin: carb.Float3 | None, direction: carb.Float3 | None, has_input: bool) -> bool:
         """Called when a raycast request is executed.
 
         Args:

@@ -76,7 +76,7 @@ def get_available_physics_engines(verbose: bool = False) -> list[tuple[str, bool
     """Get list of all available physics engines.
 
     Args:
-        verbose: If True, print available engines to console. Defaults to False.
+        verbose: If True, print available engines to console.
 
     Returns:
         List of tuples (engine_name, is_active) for all registered engines.
@@ -107,7 +107,7 @@ def get_available_physics_engines(verbose: bool = False) -> list[tuple[str, bool
 class NewtonSimExtension(omni.ext.IExt):
     """Newton physics simulation extension for Isaac Sim."""
 
-    def on_startup(self, ext_id: str) -> None:
+    def on_startup(self, ext_id: str):
         """Initialize the extension when it is loaded.
 
         Args:
@@ -155,7 +155,7 @@ class NewtonSimExtension(omni.ext.IExt):
                 f"[isaacsim.physics.newton] Failed to register Newton (solver: {cfg.solver_cfg.solver_type})"
             )
 
-    def on_shutdown(self) -> None:
+    def on_shutdown(self):
         """Clean up resources when the extension is unloaded."""
         global _newton_stage
 

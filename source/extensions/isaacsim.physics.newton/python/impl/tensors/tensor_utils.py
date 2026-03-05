@@ -133,7 +133,7 @@ def move_tensor_to_cpu(tensor: "wp.array | torch.Tensor | np.ndarray") -> "wp.ar
         return None
 
 
-def zero_tensor(tensor: "wp.array | torch.Tensor | np.ndarray") -> None:
+def zero_tensor(tensor: "wp.array | torch.Tensor | np.ndarray"):
     """Zero out a tensor in a backend-agnostic way.
 
     Args:

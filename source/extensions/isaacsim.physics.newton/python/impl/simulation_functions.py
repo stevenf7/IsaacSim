@@ -64,7 +64,7 @@ class NewtonSimulationFunctions:
             carb.log_error(f"[Newton] Failed to initialize stage: {e}")
             return False
 
-    def close(self) -> None:
+    def close(self):
         """Close the simulation, removing all objects from the simulation."""
         try:
             self.newton_stage.on_detach()
@@ -82,7 +82,7 @@ class NewtonSimulationFunctions:
             self.newton_stage.stage_id if hasattr(self.newton_stage, "stage_id") and self.newton_stage.stage_id else 0
         )
 
-    def simulate(self, elapsed_time: float, current_time: float) -> None:
+    def simulate(self, elapsed_time: float, current_time: float):
         """Execute physics simulation.
 
         The simulation will simulate the exact elapsedTime passed. No substepping will happen.
@@ -129,7 +129,7 @@ class NewtonSimulationFunctions:
         except Exception as e:
             carb.log_error(f"[Newton] Simulation step error: {e}")
 
-    def start_simulation(self) -> None:
+    def start_simulation(self):
         """Start simulation.
 
         This method is called at the beginning of simulation to allow the physics engine
@@ -139,7 +139,7 @@ class NewtonSimulationFunctions:
         # PhysX uses this to store initial transformations for reset
         # Newton doesn't need to do anything here - initialization happens lazily in step_sim
 
-    def fetch_results(self) -> None:
+    def fetch_results(self):
         """Fetch simulation results.
 
         Writing out simulation results based on physics settings.
@@ -171,7 +171,7 @@ class NewtonSimulationFunctions:
         """
         return self.newton_stage.initialized
 
-    def flush_changes(self) -> None:
+    def flush_changes(self):
         """Flush changes to force physics to process buffered changes.
 
         Changes to physics get buffered. In some cases flushing changes is required
@@ -182,7 +182,7 @@ class NewtonSimulationFunctions:
         if not self.newton_stage.initialized:
             carb.log_warn("[Newton] flush_changes called but Newton not initialized yet")
 
-    def pause_change_tracking(self, pause: bool) -> None:
+    def pause_change_tracking(self, pause: bool):
         """Pause change tracking for physics listener.
 
         Args:
@@ -212,7 +212,7 @@ class NewtonSimulationFunctions:
         self.contact_callbacks.append(on_event)
         return len(self.contact_callbacks)
 
-    def unsubscribe_physics_contact_report_events(self, subscription_id: int) -> None:
+    def unsubscribe_physics_contact_report_events(self, subscription_id: int):
         """Unsubscribe from physics contact report events.
 
         Args:
@@ -276,7 +276,7 @@ class NewtonSimulationFunctions:
         self.step_callbacks.append((pre_step, order, on_update))
         return len(self.step_callbacks)
 
-    def unsubscribe_physics_on_step_events(self, subscription_id: int) -> None:
+    def unsubscribe_physics_on_step_events(self, subscription_id: int):
         """Unsubscribe from physics step events.
 
         Args:
@@ -293,7 +293,7 @@ class NewtonSimulationFunctions:
             schema_names: List of schema names to check
 
         Returns:
-            tuple: (success, capabilities) where success is True if the operation was successful
+            A tuple of (success, capabilities) where success is True if the operation was successful
                    and capabilities is a list of booleans indicating support for each schema.
         """
 

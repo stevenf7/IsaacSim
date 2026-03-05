@@ -52,7 +52,7 @@ class NewtonArticulationView:
         frontend: Tensor framework frontend.
     """
 
-    def __init__(self, backend: Any, frontend: Any) -> None:
+    def __init__(self, backend: Any, frontend: Any):
         self._backend = backend
         self._frontend = frontend
         self._newton_stage = backend.newton_stage
@@ -84,7 +84,11 @@ class NewtonArticulationView:
         return convert_to_warp(tensor, self._frontend.device)
 
     def _check_state(self):
-        """Check if Newton state is initialized."""
+        """Check if Newton state is initialized.
+
+        Raises:
+            RuntimeError: If Newton simulation state is not initialized.
+        """
         if self._newton_stage.state_0 is None:
             raise RuntimeError(
                 "Newton simulation state is not initialized. "
@@ -102,32 +106,52 @@ class NewtonArticulationView:
 
     @property
     def count(self):
-        """Number of articulations in this view."""
+        """Number of articulations in this view.
+
+        Returns:
+            Number of articulations.
+        """
         return self._backend.count
 
     @property
     def max_dofs(self):
-        """Maximum number of DOFs across all articulations."""
+        """Maximum number of DOFs across all articulations.
+
+        Returns:
+            Maximum DOF count.
+        """
         return self._backend.max_dofs
 
     @property
     def max_links(self):
-        """Maximum number of links across all articulations."""
+        """Maximum number of links across all articulations.
+
+        Returns:
+            Maximum link count.
+        """
         return self._backend.max_links
 
     @property
     def max_shapes(self):
-        """Maximum number of shapes across all articulations."""
+        """Maximum number of shapes across all articulations.
+
+        Returns:
+            Maximum shape count.
+        """
         return self._backend.max_shapes
 
     @property
     def max_fixed_tendons(self):
-        """Maximum number of fixed tendons across all articulations."""
+        """Maximum number of fixed tendons across all articulations.
+
+        Returns:
+            Maximum fixed tendon count.
+        """
         return self._backend.max_fixed_tendons
 
     @property
     def dof_paths(self):
-        """Get DOF paths for all articulations in the view.
+        """DOF paths for all articulations in the view.
 
         Returns:
             List of DOF path lists, one per articulation.
@@ -141,8 +165,8 @@ class NewtonArticulationView:
         return dof_paths_list
 
     @property
-    def dof_names(self):
-        """Get DOF names for all articulations in the view.
+    def dof_names(self) -> list[list[str]]:
+        """Degree of freedom (DOF) names for all articulations in the view.
 
         Returns:
             List of DOF name lists, one per articulation.
@@ -153,8 +177,8 @@ class NewtonArticulationView:
         return dof_names_list
 
     @property
-    def link_paths(self):
-        """Get link paths for all articulations in the view.
+    def link_paths(self) -> list[list[str]]:
+        """Link paths for all articulations in the view.
 
         Returns:
             List of link path lists, one per articulation.
@@ -165,8 +189,8 @@ class NewtonArticulationView:
         return link_paths_list
 
     @property
-    def link_names(self):
-        """Get link names for all articulations in the view.
+    def link_names(self) -> list[list[str]]:
+        """Link names for all articulations in the view.
 
         Returns:
             List of link name lists, one per articulation.
@@ -177,8 +201,8 @@ class NewtonArticulationView:
         return link_names_list
 
     @property
-    def joint_paths(self):
-        """Get joint paths for all articulations in the view.
+    def joint_paths(self) -> list[list[str]]:
+        """Joint paths for all articulations in the view.
 
         Returns:
             List of joint path lists, one per articulation.
@@ -189,8 +213,8 @@ class NewtonArticulationView:
         return joint_paths_list
 
     @property
-    def joint_names(self):
-        """Get joint names for all articulations in the view.
+    def joint_names(self) -> list[list[str]]:
+        """Joint names for all articulations in the view.
 
         Returns:
             List of joint name lists, one per articulation.
@@ -201,10 +225,11 @@ class NewtonArticulationView:
         return joint_names_list
 
     @property
-    def prim_paths(self):
-        """Get articulation root prim paths.
+    def prim_paths(self) -> list[str]:
+        """Articulation root prim paths.
 
-        Returns a list of articulation root paths.
+        Returns:
+            List of articulation root paths.
         """
         # Get articulation paths from the model
         prim_paths = []
@@ -213,17 +238,22 @@ class NewtonArticulationView:
         return prim_paths
 
     @property
-    def shared_metatype(self):
-        """Shared metadata type for articulations (if all same type)."""
+    def shared_metatype(self) -> Any | None:
+        """Shared metadata type for articulations (if all same type).
+
+        Returns:
+            ArticulationMetaType object if all articulations have the same structure, None if different types or no articulations.
+        """
         if self.count == 0:
             return None
         return self._backend.shared_metatype
 
     @property
-    def is_homogeneous(self):
-        """Check if all articulations in the view have the same structure.
+    def is_homogeneous(self) -> bool:
+        """Whether all articulations in the view have the same structure.
 
-        Returns True if all articulations have the same number of DOFs, links, and joints.
+        Returns:
+            True if all articulations have the same number of DOFs, links, and joints.
         """
         if self.count <= 1:
             return True
@@ -241,12 +271,14 @@ class NewtonArticulationView:
         return True
 
     @property
-    def jacobian_shape(self):
-        """Get Jacobian matrix shape for articulations.
+    def jacobian_shape(self) -> tuple[int, int]:
+        """Jacobian matrix shape for articulations.
 
-        Returns tuple (rows, cols) where:
-        - Fixed base: rows = (max_links - 1) * 6, cols = max_dofs
-        - Floating base: rows = max_links * 6, cols = max_dofs + 6
+        Returns:
+            Tuple (rows, cols) where\:
+
+            - Fixed base: rows = (max_links - 1) * 6, cols = max_dofs
+            - Floating base: rows = max_links * 6, cols = max_dofs + 6
         """
         # Check if any articulation is floating base
         is_floating = False
@@ -267,12 +299,14 @@ class NewtonArticulationView:
         return (rows, cols)
 
     @property
-    def generalized_mass_matrix_shape(self):
-        """Get generalized mass matrix shape for articulations.
+    def generalized_mass_matrix_shape(self) -> tuple[int, int]:
+        """Generalized mass matrix shape for articulations.
 
-        Returns tuple (n, n) where:
-        - Fixed base: n = max_dofs
-        - Floating base: n = max_dofs + 6
+        Returns:
+            Tuple (n, n) where\:
+
+            - Fixed base: n = max_dofs
+            - Floating base: n = max_dofs + 6
         """
         # Check if any articulation is floating base
         is_floating = False
@@ -304,7 +338,7 @@ class NewtonArticulationView:
             raise IndexError(f"Articulation index {index} out of range [0, {self.count})")
         return self._backend.meta_types[index]
 
-    def update(self, dt: float) -> None:
+    def update(self, dt: float):
         """Update simulation timestamp.
 
         Args:
@@ -491,7 +525,7 @@ class NewtonArticulationView:
         )
         return self._coms
 
-    def set_coms(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_coms(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set link center of mass positions and orientations.
 
         Args:
@@ -746,13 +780,11 @@ class NewtonArticulationView:
         else:
             return wp.indexedarray(control.joint_target_vel, self._backend.dof_axis_indices)
 
-    def _update_articulation_state(
-        self, indices: Any, indices_mask: Any | None = None, update_positions: bool = True
-    ) -> None:
+    def _update_articulation_state(self, indices: Any, indices_mask: Any | None = None, update_positions: bool = True):
         """Helper function to update articulation joint coordinates and evaluate forward kinematics.
 
-        This should be called after modifying root transforms or velocities to ensure
-        joint coordinates are consistent and all link transforms are updated.
+            This should be called after modifying root transforms or velocities to ensure
+            joint coordinates are consistent and all link transforms are updated.
 
         Args:
             indices: Indices of articulations to update.
@@ -768,14 +800,14 @@ class NewtonArticulationView:
             eval_fk(self._model, state.joint_q, state.joint_qd, state)
 
     @carb.profiler.profile
-    def set_root_transforms(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_root_transforms(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set root body transforms.
 
-        Automatically detects whether each articulation is fixed-base or floating-base
-        and handles them appropriately:
-        - Fixed-base: Updates Model's joint_X_p (parent transforms)
-        - Floating-base: Updates State's joint coordinates
-        After setting transforms, forward kinematics is evaluated to update all link positions.
+            Automatically detects whether each articulation is fixed-base or floating-base
+            and handles them appropriately:
+            - Fixed-base: Updates Model's joint_X_p (parent transforms)
+            - Floating-base: Updates State's joint coordinates
+            After setting transforms, forward kinematics is evaluated to update all link positions.
 
         Args:
             data: Root transforms to set (dtype=wp.transform).
@@ -821,7 +853,7 @@ class NewtonArticulationView:
         self._update_articulation_state(indices, indices_mask, update_positions=True)
 
     @carb.profiler.profile
-    def set_root_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_root_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set root body velocities.
 
         Automatically detects whether each articulation is fixed-base or floating-base:
@@ -858,7 +890,7 @@ class NewtonArticulationView:
         # Note: We don't call FK for velocity updates as it might reset the velocities
 
     @carb.profiler.profile
-    def set_masses(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_masses(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set link masses.
 
         Args:
@@ -893,7 +925,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_inertias(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_inertias(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set link inertias.
 
         Args:
@@ -929,7 +961,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_dof_positions(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_dof_positions(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint positions.
 
         Args:
@@ -953,7 +985,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_dof_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_dof_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint velocities.
 
         Args:
@@ -977,7 +1009,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_dof_stiffnesses(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_dof_stiffnesses(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint stiffnesses.
 
         Args:
@@ -1002,7 +1034,7 @@ class NewtonArticulationView:
         self._notify_joint_dof_properties_changed()
 
     @carb.profiler.profile
-    def set_dof_dampings(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_dof_dampings(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint dampings.
 
         Args:
@@ -1027,7 +1059,7 @@ class NewtonArticulationView:
         self._notify_joint_dof_properties_changed()
 
     @carb.profiler.profile
-    def set_dof_armatures(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_dof_armatures(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint armatures (rotor inertias).
 
         Args:
@@ -1052,7 +1084,7 @@ class NewtonArticulationView:
         self._notify_joint_dof_properties_changed()
 
     @carb.profiler.profile
-    def set_dof_position_targets(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_dof_position_targets(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint position targets.
 
         Args:
@@ -1077,7 +1109,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_dof_velocity_targets(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_dof_velocity_targets(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint velocity targets.
 
         Args:
@@ -1101,7 +1133,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_dof_actuation_forces(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_dof_actuation_forces(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint actuation forces/torques.
 
         Newton doesn't have convert_joint_torques_to_body_forces like warp.sim.
@@ -1180,7 +1212,7 @@ class NewtonArticulationView:
             return wp.indexedarray(self._model.joint_effort_limit, self._backend.dof_axis_indices)
 
     @carb.profiler.profile
-    def set_dof_max_forces(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_dof_max_forces(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint maximum forces/torques (effort limits).
 
         Args:
@@ -1204,7 +1236,7 @@ class NewtonArticulationView:
         self._notify_joint_dof_properties_changed()
 
     @carb.profiler.profile
-    def set_dof_limits(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_dof_limits(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint limits (lower and upper bounds).
 
         Args:
@@ -1228,7 +1260,7 @@ class NewtonArticulationView:
         self._notify_joint_dof_properties_changed()
 
     @carb.profiler.profile
-    def set_dof_max_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_dof_max_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint maximum velocities.
 
         Args:
@@ -1253,7 +1285,7 @@ class NewtonArticulationView:
         self._notify_joint_dof_properties_changed()
 
     @carb.profiler.profile
-    def set_dof_drive_model_properties(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_dof_drive_model_properties(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint drive model properties.
 
         Args:
@@ -1266,7 +1298,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_dof_friction_properties(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_dof_friction_properties(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint friction properties.
 
         Args:
@@ -1279,7 +1311,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_disable_gravities(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_disable_gravities(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set gravity disable flags for links.
 
         Args:
@@ -1292,7 +1324,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def update_joints(self, indices: Any, indices_mask: Any | None = None) -> None:
+    def update_joints(self, indices: Any, indices_mask: Any | None = None):
         """Update joint states after setting positions/velocities.
 
         This evaluates forward kinematics to update body transforms from joint states.

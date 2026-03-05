@@ -52,13 +52,13 @@ class FabricManager:
         usdrt_stage: The USDRT stage instance to synchronize with.
     """
 
-    def __init__(self, usdrt_stage: usdrt.Usd.Stage) -> None:
+    def __init__(self, usdrt_stage: usdrt.Usd.Stage):
         self.stage = usdrt_stage
         self.newton_index_attr = "newton:index"
         self._first_update_done = False
         self._no_prims_warning_logged = False
 
-    def update_fabric(self, model: "newton.Model", state: "newton.State", scene_scale: float, device: str) -> None:
+    def update_fabric(self, model: "newton.Model", state: "newton.State", scene_scale: float, device: str):
         """Sync Newton body transforms to Fabric.
 
         Args:

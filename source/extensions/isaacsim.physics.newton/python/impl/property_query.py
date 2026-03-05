@@ -36,24 +36,32 @@ class NewtonPropertyQueryArticulationLink:
     Matches the interface of omni.physx.bindings._physx.PhysxPropertyQueryArticulationLink.
 
     Args:
-        rigid_body: Encoded USD path of the rigid body. Defaults to 0.
-        joint: Encoded USD path of the joint. Defaults to 0.
-        joint_dof: Number of DOFs for this joint. Defaults to 0.
+        rigid_body: Encoded USD path of the rigid body.
+        joint: Encoded USD path of the joint.
+        joint_dof: Number of DOFs for this joint.
     """
 
-    def __init__(self, rigid_body: int = 0, joint: int = 0, joint_dof: int = 0) -> None:
+    def __init__(self, rigid_body: int = 0, joint: int = 0, joint_dof: int = 0):
         self._rigid_body = rigid_body
         self._joint = joint
         self._joint_dof = joint_dof
 
     @property
     def rigid_body(self) -> int:
-        """Encoded USD path of the rigid body."""
+        """Encoded USD path of the rigid body.
+
+        Returns:
+            Encoded USD path of the rigid body.
+        """
         return self._rigid_body
 
     @property
     def rigid_body_name(self) -> str:
-        """USD path of the rigid body as string."""
+        """USD path of the rigid body as string.
+
+        Returns:
+            USD path of the rigid body as string.
+        """
         if self._rigid_body:
             from pxr import PhysicsSchemaTools
 
@@ -62,12 +70,20 @@ class NewtonPropertyQueryArticulationLink:
 
     @property
     def joint(self) -> int:
-        """Encoded USD path of the joint."""
+        """Encoded USD path of the joint.
+
+        Returns:
+            Encoded USD path of the joint.
+        """
         return self._joint
 
     @property
     def joint_name(self) -> str:
-        """USD path of the joint as string."""
+        """USD path of the joint as string.
+
+        Returns:
+            USD path of the joint as string.
+        """
         if self._joint:
             from pxr import PhysicsSchemaTools
 
@@ -76,7 +92,11 @@ class NewtonPropertyQueryArticulationLink:
 
     @property
     def joint_dof(self) -> int:
-        """Number of DOFs for this joint."""
+        """Number of DOFs for this joint.
+
+        Returns:
+            Number of DOFs for this joint.
+        """
         return self._joint_dof
 
 
@@ -86,10 +106,10 @@ class NewtonPropertyQueryArticulationResponse:
     Matches the interface of omni.physx.bindings._physx.PhysxPropertyQueryArticulationResponse.
 
     Args:
-        result: Query result code. Defaults to 0.
-        stage_id: USD stage ID. Defaults to 0.
-        path_id: Encoded USD prim path. Defaults to 0.
-        links: List of articulation links. Defaults to None.
+        result: Query result code.
+        stage_id: USD stage ID.
+        path_id: Encoded USD prim path.
+        links: List of articulation links.
     """
 
     def __init__(
@@ -98,7 +118,7 @@ class NewtonPropertyQueryArticulationResponse:
         stage_id: int = 0,
         path_id: int = 0,
         links: list[NewtonPropertyQueryArticulationLink] | None = None,
-    ) -> None:
+    ):
         self.result = result
         self.stage_id = stage_id
         self.path_id = path_id
@@ -109,6 +129,7 @@ class NewtonPropertyQueryInterface:
     """Newton implementation of property query interface."""
 
     _instance: NewtonPropertyQueryInterface | None = None
+    """Singleton instance of the Newton property query interface."""
 
     def __new__(cls) -> NewtonPropertyQueryInterface:
         """Return singleton instance.

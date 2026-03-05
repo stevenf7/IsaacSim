@@ -98,7 +98,7 @@ class NewtonSimulationView:
         frontend: Tensor framework frontend (NumPy, PyTorch, or Warp).
     """
 
-    def __init__(self, backend: NewtonSimView, frontend: "NumpyFrontend | TorchFrontend | WarpFrontend") -> None:
+    def __init__(self, backend: NewtonSimView, frontend: "NumpyFrontend | TorchFrontend | WarpFrontend"):
         self._backend = backend
         self._frontend = frontend
 
@@ -143,7 +143,7 @@ class NewtonSimulationView:
             self._backend.create_rigid_contact_view(pattern, filter_patterns, max_contact_data_count), self._frontend
         )
 
-    def invalidate(self) -> None:
+    def invalidate(self):
         """Invalidate the simulation view.
 
         Called when the simulation is stopped to clean up resources.

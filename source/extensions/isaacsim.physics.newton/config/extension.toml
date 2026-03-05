@@ -1,5 +1,5 @@
 [package]
-version = "0.4.1"
+version = "0.5.0"
 category = "Simulation"
 title = "Isaac Sim Newton Physics"
 description = "Extension for simulating physics with Newton and connecting with Fabric. Includes tensor interface (isaacsim.physics.newton.tensors) for NumPy/PyTorch/Warp frontends."
@@ -7,7 +7,7 @@ authors = ["Milad-Rakhsha"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim"
 keywords = ["isaac", "newton", "physics", "tensors"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -93,3 +93,6 @@ args = [
     ### Extension specific args
     "--/exts/isaacsim.core.simulation_manager/default_engine=newton",
 ]
+
+[documentation]
+pages = ["docs/Overview.md","docs/SETTINGS.md", "docs/CHANGELOG.md"]

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests pattern matching functionality for articulation views."""
+
+
 import re
 
 import omni.kit.test

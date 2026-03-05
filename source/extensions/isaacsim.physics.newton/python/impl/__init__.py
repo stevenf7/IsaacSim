@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Newton physics implementation module providing core classes and interfaces for physics simulation."""
+
+
 from .fabric import FabricManager
 from .interface import NewtonPhysicsInterface
 from .newton_config import NewtonConfig

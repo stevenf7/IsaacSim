@@ -71,7 +71,7 @@ def find_matching_paths(stage: Usd.Stage, pattern: str | list[str]) -> list[str]
     return result
 
 
-def _find_matching_children(root: Usd.Prim, pattern: str, prims_ret: list[Usd.Prim]) -> None:
+def _find_matching_children(root: Usd.Prim, pattern: str, prims_ret: list[Usd.Prim]):
     """Find children of a prim matching a regex pattern.
 
     Args:

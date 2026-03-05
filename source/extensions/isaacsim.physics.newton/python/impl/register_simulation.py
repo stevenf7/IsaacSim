@@ -35,7 +35,7 @@ class NewtonSimulationRegistry:
     seamlessly alongside PhysX using the same unified API.
     """
 
-    def __init__(self) -> None:
+    def __init__(self):
         self.simulation_id = None
         self.newton_stage = None
         self.simulation = None
@@ -136,7 +136,7 @@ class NewtonSimulationRegistry:
             traceback.print_exc()
             return None
 
-    def unregister_newton(self) -> None:
+    def unregister_newton(self):
         """Unregister Newton simulation from physics interface."""
         if self.simulation_id is not None:
             try:

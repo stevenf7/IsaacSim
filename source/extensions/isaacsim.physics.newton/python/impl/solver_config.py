@@ -46,6 +46,7 @@ class XPBDSolverConfig(NewtonSolverConfig):
     """
 
     solver_type: Literal["xpbd"] = "xpbd"
+    """Type of solver to use: 'xpbd', 'mujoco', 'featherstone', 'semiImplicit'."""
 
     iterations: int = 2
     """Number of solver iterations."""
@@ -92,6 +93,7 @@ class MuJoCoSolverConfig(NewtonSolverConfig):
     """
 
     solver_type: Literal["mujoco"] = "mujoco"
+    """Type of solver to use: 'xpbd', 'mujoco', 'featherstone', 'semiImplicit'."""
 
     njmax: int = 1200
     """Number of constraints per environment (world)."""

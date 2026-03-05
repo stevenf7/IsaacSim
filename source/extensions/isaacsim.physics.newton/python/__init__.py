@@ -47,6 +47,4 @@ __all__ = [
     "NewtonStage",
     "XPBDSolverConfig",
     "MuJoCoSolverConfig",
-    # Extension class
-    "NewtonSimExtension",
 ]

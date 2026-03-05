@@ -32,11 +32,11 @@ class NewtonStage:
     """Newton simulation stage that manages physics simulation state and stepping.
 
     Args:
-        cfg: Configuration for Newton simulation. Defaults to None (uses default config).
-        device: Device to run simulation on. Defaults to None (uses wp.get_device()).
+        cfg: Configuration for Newton simulation.
+        device: Device to run simulation on.
     """
 
-    def __init__(self, cfg: NewtonConfig | None = None, device: str | None = None) -> None:
+    def __init__(self, cfg: NewtonConfig | None = None, device: str | None = None):
         # Default to a generic NewtonConfig unless provided
         self.cfg = cfg or NewtonConfig()
 
@@ -69,7 +69,7 @@ class NewtonStage:
         self.simulation_step_count = 0
         self.stage_id = None
 
-    def init(self) -> None:
+    def init(self):
         """Reset simulation state to initial values."""
         self.initialized = False
         self._initializing = False  # Reentrant guard
@@ -87,7 +87,7 @@ class NewtonStage:
         self.simulation_timestamp = 0
         self.simulation_step_count = 0
 
-    def on_timeline_event(self, e: omni.timeline.TimelineEventType) -> None:
+    def on_timeline_event(self, e: omni.timeline.TimelineEventType):
         """Handle timeline events (play, stop, pause).
 
         Args:
@@ -139,7 +139,7 @@ class NewtonStage:
             raise ValueError(f"Invalid solver type: {solver_type}")
 
     @carb.profiler.profile
-    def on_update(self, event: "carb.events.IEvent", dt: float) -> None:
+    def on_update(self, event: "carb.events.IEvent", dt: float):
         """Update callback for stage update events.
 
         Args:
@@ -169,7 +169,7 @@ class NewtonStage:
         self.update_fabric()
 
     @carb.profiler.profile
-    def step_sim(self, dt: float) -> None:
+    def step_sim(self, dt: float):
         """Step the simulation by the given time delta.
 
         Args:
@@ -206,7 +206,7 @@ class NewtonStage:
                 if callback is not None:
                     callback(dt)
 
-    def update_fabric(self) -> None:
+    def update_fabric(self):
         """Update Fabric attributes with current simulation state."""
         if self.playing and self.initialized:
             if self.cfg.disable_physx_fabric_tracker:
@@ -219,12 +219,12 @@ class NewtonStage:
                     pass
             self.update_fabric_attrs()
 
-    def on_detach(self) -> None:
+    def on_detach(self):
         """Handle stage detach event."""
         self._in_stage_transition = True
         self.init()
 
-    def on_attach(self, stage_id: int, meters_per_unit: float) -> None:
+    def on_attach(self, stage_id: int, meters_per_unit: float):
         """Handle stage attach event.
 
         Args:
@@ -246,14 +246,14 @@ class NewtonStage:
         self.simulation_step_count = 0
         self.sim_time = 0.0
 
-    def on_resume(self, currentTime: float) -> None:
+    def on_resume(self, currentTime: float):
         """Handle simulation resume event.
 
         Args:
             currentTime: Current simulation time.
         """
 
-    def on_change(self, path: str) -> None:
+    def on_change(self, path: str):
         """Handle USD prim change event.
 
         Args:
@@ -261,7 +261,7 @@ class NewtonStage:
         """
         self.initialized = False
 
-    def update_fabric_attrs(self) -> None:
+    def update_fabric_attrs(self):
         """Update Fabric attributes from Newton state."""
         if self.cfg.update_fabric and self.model:
             self.fabric_manager.update_fabric(
@@ -271,7 +271,7 @@ class NewtonStage:
                 self.device,
             )
 
-    def _restore_fabric_transforms(self) -> None:
+    def _restore_fabric_transforms(self):
         """Restore Fabric body transforms to the initial USD state.
 
         Called on timeline STOP to ensure nested rigid body hierarchies return
@@ -292,7 +292,7 @@ class NewtonStage:
             xformable = usdrt.Rt.Xformable(prim)
             xformable.SetWorldXformFromUsd()
 
-    def initialize_newton(self, device: str | None) -> None:
+    def initialize_newton(self, device: str | None):
         """Initialize Newton simulation from the current USD stage.
 
         Args:
@@ -451,12 +451,12 @@ class NewtonStage:
         self.initialized = True
         self._initializing = False
 
-    def simulate(self, num_substeps: int | None = None, dt: float | None = None) -> None:
+    def simulate(self, num_substeps: int | None = None, dt: float | None = None):
         """Simulate the world with the given number of substeps.
 
         Args:
-            num_substeps: Number of substeps. Defaults to None (uses solver_cfg.num_substeps).
-            dt: Physics timestep. Defaults to None (uses self.sim_dt from USD PhysicsScene).
+            num_substeps: Number of substeps.
+            dt: Physics timestep.
         """
         if num_substeps is None:
             num_substeps = getattr(self.cfg, "num_substeps", 1)

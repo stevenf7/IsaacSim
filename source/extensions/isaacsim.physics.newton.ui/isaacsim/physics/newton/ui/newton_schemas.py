@@ -99,7 +99,28 @@ from omni.physics.isaacsimready import get_variant_switcher
 
 
 class ExtendedNewtonSceneWidget(ExtensionSchemaWidget):
+    """A specialized widget for Newton physics scene property display and editing.
+
+    This widget extends the ExtensionSchemaWidget to provide custom handling for Newton physics
+    scene properties. It filters and adds Newton-specific properties when the active simulation
+    variant is set to "Newton", including the Newton solver selection property.
+
+    The widget automatically detects when Newton physics is active and dynamically adds the
+    "newton:solver" property to the property panel, allowing users to configure the solver
+    used by the Newton physics system.
+    """
+
     def _filter_props_to_build(self, prim):
+        """Filters properties to build for Newton scene widgets.
+
+        Adds Newton solver property to the filtered properties when Newton simulation is active.
+
+        Args:
+            prim: The USD prim to filter properties for.
+
+        Returns:
+            List of filtered properties including Newton solver property when applicable.
+        """
         filtered_props = super()._filter_props_to_build(prim)
         if get_variant_switcher().get_active_simulation()[1] == "Newton":
             filtered_props.append(
@@ -118,14 +139,20 @@ class NewtonUiDefinitions:
     """UI definitions (widgets, property builders, ordering) for Newton schemas."""
 
     ignore = {}
+    """Empty dictionary for properties to ignore in the UI."""
     extensions = {
         UsdPhysics.Scene: ["NewtonSceneAPI"],
     }
+    """Maps USD schema types to their Newton extension schemas."""
     extras = {}
+    """Empty dictionary for additional UI extras."""
     widgets = {
         "NewtonSceneAPI": ExtendedNewtonSceneWidget,
     }
+    """Maps schema names to their corresponding UI widget classes."""
     property_builders = {
         "newton:solver": [PrettyPrintTokenComboBuilder, [], [("mjcwarp", "MuJoCo Warp")]],
     }
+    """Maps property names to their UI builder configuration including builder class and display options."""
     property_order = {}
+    """Empty dictionary for custom property ordering in the UI."""
