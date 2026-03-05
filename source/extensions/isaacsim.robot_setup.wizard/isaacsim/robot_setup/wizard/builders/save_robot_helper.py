@@ -32,7 +32,18 @@ from ..utils.utils import apply_standard_stage_settings
 from .robot_templates import RobotRegistry
 
 
-def create_variant_usd(add_ground=False, add_lights=False, add_physics_scene=False):
+def create_variant_usd(add_ground: bool = False, add_lights: bool = False, add_physics_scene: bool = False):
+    """Creates a variant USD file with multiple physics configurations for the registered robot.
+
+    Generates a master USD file with variant sets containing three physics levels: None, PhysX, and Robot.
+    Each variant references separate configuration files (_base.usd, _physics.usd, _robot.usd) and
+    optionally adds environment components like ground plane, lighting, and physics scene.
+
+    Args:
+        add_ground: Whether to add a ground plane to the environment.
+        add_lights: Whether to add a distant light to the environment.
+        add_physics_scene: Whether to add a physics scene to the environment.
+    """
 
     def _add_ground(stage):
         print("Adding ground plane")
@@ -102,7 +113,18 @@ def create_variant_usd(add_ground=False, add_lights=False, add_physics_scene=Fal
         _add_physics_scene(stage)
 
 
-def apply_articulation_apis(robot_path, articulation_root_path):
+def apply_articulation_apis(robot_path: str, articulation_root_path: str):
+    """Applies articulation APIs to the specified robot prim for physics simulation.
+
+    Removes any existing articulation root APIs from the robot hierarchy and applies
+    UsdPhysics.ArticulationRootAPI and PhysxSchema.PhysxArticulationAPI to the specified
+    articulation root prim.
+
+    Args:
+        robot_path: Path to the robot prim in the stage.
+        articulation_root_path: Path to the prim that should become the articulation root.
+            Use "Pick from the Robot" to automatically use the robot prim as root.
+    """
     stage = omni.usd.get_context().get_stage()
     robot_prim = stage.GetPrimAtPath(robot_path)
     robot_name = robot_prim.GetName()
@@ -127,7 +149,19 @@ def apply_articulation_apis(robot_path, articulation_root_path):
     articulation_prim.ApplyAPI(PhysxSchema.PhysxArticulationAPI)
 
 
-def apply_robot_schema(robot_path):
+def apply_robot_schema(robot_path: str):
+    """Applies Isaac Robot Schema to the robot prim and its components.
+
+    Applies RobotAPI to the main robot prim, LinkAPI to all robot links, and JointAPI
+    to all joints. Creates relationships between the robot and its links/joints as
+    defined by the Isaac Robot Schema.
+
+    Args:
+        robot_path: Path to the robot prim in the stage.
+
+    Raises:
+        ValueError: If the robot prim does not exist or no robot is found in the registry.
+    """
     stage = omni.usd.get_context().get_stage()
     robot_prim = stage.GetPrimAtPath(robot_path)
     robot = RobotRegistry().get()

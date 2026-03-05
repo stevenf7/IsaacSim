@@ -12,7 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Provides interactive editing capabilities for collision spheres in robot descriptions."""
+
+
 from collections import OrderedDict
+from typing import Generator
 
 import carb
 import lula
@@ -26,6 +31,28 @@ from pxr import Sdf
 
 
 class CollisionSphereEditor:
+    """Provides interactive editing capabilities for collision spheres in robot descriptions.
+
+    This class enables users to create, modify, visualize, and manage collision spheres for robot links
+    within the Isaac Sim environment. It supports operations such as adding individual spheres, generating
+    multiple spheres from mesh geometry, scaling existing spheres, and applying visual filters for better
+    organization. The editor maintains undo/redo functionality for all operations and provides import/export
+    capabilities for XRDF and robot description files.
+
+    Key features include:
+    - Interactive sphere creation and deletion with undo/redo support
+    - Automatic sphere generation from mesh triangulation using collision sphere algorithms
+    - Visual filtering system with customizable colors for different sphere categories
+    - Preview mode for testing sphere placements before committing changes
+    - Sphere interpolation between two existing spheres for smooth collision coverage
+    - Import/export functionality for XRDF files and robot description formats
+    - Link-based organization allowing operations on all spheres within specific robot links
+
+    The editor uses visual materials to distinguish between filtered and non-filtered spheres, making it
+    easy to identify and work with specific subsets of collision geometry. All sphere modifications are
+    tracked as operations that can be undone or redone, providing a robust editing experience.
+    """
+
     def __init__(self):
         self.path_2_spheres = {}
         self.path_2_sphere_serial_copy = {}
@@ -54,6 +81,7 @@ class CollisionSphereEditor:
         self._preview_sphere_surface = None
 
     def _ensure_preview_sphere_visual_material(self):
+        """Ensures the visual material for preview sphere visualization is created and valid."""
         if not is_prim_path_valid(self._preview_sphere_surface_prim_path):
             self._preview_sphere_surface = PreviewSurface(
                 self._preview_sphere_surface_prim_path, color=np.array([1.0, 0, 0])
@@ -88,14 +116,29 @@ class CollisionSphereEditor:
             )
 
     @staticmethod
-    def _path_generator(path: str):
-        """Get a generator that incrementally adds integers to `path` forever"""
+    def _path_generator(path: str) -> Generator[str, None, None]:
+        """Get a generator that incrementally adds integers to `path` forever
+
+        Args:
+            path: Base path to append incremental integers to.
+
+        Yields:
+            Path strings with incrementally added integers.
+        """
         count = 1
         while True:
             yield f"{path}_{count}"
             count += 1
 
-    def _get_unused_collision_sphere_path(self, link_path: str):
+    def _get_unused_collision_sphere_path(self, link_path: str) -> str:
+        """Gets an unused collision sphere path for the specified link.
+
+        Args:
+            link_path: Path to the link where the sphere will be created.
+
+        Returns:
+            An unused collision sphere path under the specified link.
+        """
         sphere_base_path = self._get_collision_sphere_base_path(link_path)
 
         if sphere_base_path not in self._sphere_path_generators:
@@ -107,7 +150,12 @@ class CollisionSphereEditor:
             sphere_path = next(sphere_path_generator)
         return sphere_path
 
-    def clear_spheres(self, store_op=True):
+    def clear_spheres(self, store_op: bool = True):
+        """Removes all collision spheres from the editor.
+
+        Args:
+            store_op: Whether to store this operation for undo functionality.
+        """
         self._sphere_path_generators = {}
         sphere_paths = list(self.path_2_spheres.keys())
         if len(sphere_paths) == 0:
@@ -123,7 +171,13 @@ class CollisionSphereEditor:
         for sphere_path in sphere_paths:
             self.delete_sphere(sphere_path)
 
-    def clear_link_spheres(self, link_path, store_op=True):
+    def clear_link_spheres(self, link_path: str, store_op: bool = True):
+        """Removes all collision spheres associated with the specified link.
+
+        Args:
+            link_path: Path to the link whose spheres should be cleared.
+            store_op: Whether to store this operation for undo functionality.
+        """
         if self._get_collision_sphere_base_path(link_path) in self._sphere_path_generators:
             del self._sphere_path_generators[self._get_collision_sphere_base_path(link_path)]
         path_len = len(link_path)
@@ -142,14 +196,26 @@ class CollisionSphereEditor:
         for s in to_delete:
             self.delete_sphere(s)
 
-    def delete_sphere(self, sphere_path):
+    def delete_sphere(self, sphere_path: str):
+        """Deletes the collision sphere at the specified path.
+
+        Args:
+            sphere_path: Path to the sphere to delete.
+        """
         if is_prim_path_valid(sphere_path):
             delete_prim(sphere_path)
 
         if sphere_path in self.path_2_spheres:
             del self.path_2_spheres[sphere_path]
 
-    def set_sphere_colors(self, filter, color_in=None, color_out=None):
+    def set_sphere_colors(self, filter: str, color_in: np.ndarray | None = None, color_out: np.ndarray | None = None):
+        """Sets the colors for spheres based on filter matching.
+
+        Args:
+            filter: Filter string to match against sphere paths.
+            color_in: Color for spheres that match the filter.
+            color_out: Color for spheres that do not match the filter.
+        """
         self._ensure_collision_sphere_visual_material()
 
         if color_in is not None:
@@ -165,7 +231,13 @@ class CollisionSphereEditor:
             for sphere_path in self.path_2_spheres.keys():
                 self.set_sphere_color(sphere_path, False)
 
-    def set_sphere_color(self, sphere_path, ensure_visual_material=True):
+    def set_sphere_color(self, sphere_path: str, ensure_visual_material: bool = True):
+        """Sets the color of a specific collision sphere based on filter matching.
+
+        Args:
+            sphere_path: Path to the sphere to color.
+            ensure_visual_material: Whether to ensure visual materials are created before setting color.
+        """
         if ensure_visual_material:
             self._ensure_collision_sphere_visual_material()
         if not is_prim_path_valid(sphere_path):
@@ -177,6 +249,7 @@ class CollisionSphereEditor:
             sphere.apply_visual_material(self._filter_out_surface)
 
     def copy_all_sphere_data(self):
+        """Copies all current sphere data to the serial copy storage for undo operations."""
         self._ensure_collision_sphere_visual_material()
         sphere_paths = list(self.path_2_spheres.keys())
         deleted_spheres = ["DEL"]
@@ -577,7 +650,15 @@ class CollisionSphereEditor:
                 scaled_spheres.append({"sphere_path": p, "radius": rad, "factor": factor})
         self._operations.append(scaled_spheres)
 
-    def get_sphere_names_by_link(self, link_path):
+    def get_sphere_names_by_link(self, link_path: str) -> list[str]:
+        """Sphere names for collision spheres belonging to a specific link.
+
+        Args:
+            link_path: Path to the robot link.
+
+        Returns:
+            List of sphere names (relative paths from the link path).
+        """
         sphere_names = []
         for sphere_path in self.path_2_spheres.keys():
             sphere_link_path = self._get_link_path(sphere_path)
@@ -587,7 +668,15 @@ class CollisionSphereEditor:
         return sphere_names
 
     # Used for XRDF files
-    def write_spheres_to_dict(self, robot_prim_path, link_to_spheres):
+    def write_spheres_to_dict(self, robot_prim_path: str, link_to_spheres: dict):
+        """Writes collision sphere data to a dictionary grouped by link names.
+
+        Used for XRDF files. Updates the provided dictionary with sphere data for each link.
+
+        Args:
+            robot_prim_path: Path to the robot prim.
+            link_to_spheres: Dictionary to update with sphere data, keyed by link name.
+        """
         for sphere in self.path_2_spheres.values():
             prim_path = sphere.prim_path
             if is_prim_path_valid(prim_path):
@@ -605,7 +694,15 @@ class CollisionSphereEditor:
                 link_to_spheres[link_name] = link_spheres
 
     # Used for Robot Description Files
-    def save_spheres(self, robot_prim_path, f):
+    def save_spheres(self, robot_prim_path: str, f):
+        """Saves collision sphere data to a robot description file.
+
+        Writes collision spheres in YAML format grouped by link names to the provided file handle.
+
+        Args:
+            robot_prim_path: Path to the robot prim.
+            f: File handle to write the sphere data to.
+        """
         link_to_spheres = OrderedDict()
         for sphere in self.path_2_spheres.values():
             prim_path = sphere.prim_path
@@ -633,24 +730,63 @@ class CollisionSphereEditor:
                 f.write('      "radius": {}\n'.format(sphere["radius"]))
 
     def on_shutdown(self):
+        """Cleans up resources when the editor is shut down.
+
+        Removes all spheres, preview spheres, and deletes the Lula robot description editor prim.
+        """
         self.clear_spheres(store_op=False)
         self.clear_preview()
         if is_prim_path_valid(self._lula_path):
             delete_prim(self._lula_path)
 
-    def _get_collision_sphere_base_path(self, link_path):
+    def _get_collision_sphere_base_path(self, link_path: str) -> str:
+        """Base path for collision spheres belonging to a link.
+
+        Args:
+            link_path: Path to the robot link.
+
+        Returns:
+            Base path where collision spheres for this link are stored.
+        """
         return link_path + "/collision_sphere"
 
-    def _get_collision_sphere_preview_path(self, link_path):
+    def _get_collision_sphere_preview_path(self, link_path: str) -> str:
+        """Base path for preview spheres belonging to a link.
+
+        Args:
+            link_path: Path to the robot link.
+
+        Returns:
+            Base path where preview spheres for this link are stored.
+        """
         return link_path + "/preview_sphere"
 
-    def _round_list_floats(self, l, decimals=3):
+    def _round_list_floats(self, l: list, decimals: int = 3) -> list:
+        """Rounds all float values in a list to a specified number of decimal places.
+
+        Args:
+            l: List containing float values to round.
+            decimals: Number of decimal places to round to.
+
+        Returns:
+            New list with rounded float values.
+        """
         r = []
         for f in l:
             r.append(round(f, decimals))
         return r
 
-    def _get_link_path(self, sphere_path):
+    def _get_link_path(self, sphere_path: str) -> str:
+        """Parent link path for a collision sphere.
+
+        Extracts the link path by removing the sphere name from the sphere's full path.
+
+        Args:
+            sphere_path: Full path to the collision sphere prim.
+
+        Returns:
+            Path to the parent link containing the sphere.
+        """
         # Remove last element of Prim path to sphere
 
         slash_ind = sphere_path.rfind("/")
