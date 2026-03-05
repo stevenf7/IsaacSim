@@ -11,6 +11,8 @@
         "internal_extensions"
     ],
     "whitelisted_files": [
-        "tools/internal-licenses/omniverse-LICENSE.txt"
+        "tools/internal-licenses/omniverse-LICENSE.txt",
+        "README.md",
+        "SECURITY.md"
     ]
 }

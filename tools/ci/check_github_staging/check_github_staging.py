@@ -55,4 +55,13 @@ def check_path_for_banned_words(path: str):
 
 if __name__ == "__main__":
     _, results_by_file = check_path_for_banned_words(sys.argv[1])
-    exit(len(results_by_file))
+    num_files = len(results_by_file)
+    if num_files > 0:
+        print(
+            f"Banned word check failed: found banned words in {num_files} file(s). "
+            "See results.json and results_by_file.json for details.",
+            file=sys.stderr,
+        )
+    else:
+        print("Banned word check passed: no banned words found.")
+    sys.exit(num_files)
