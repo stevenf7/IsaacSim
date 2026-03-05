@@ -1,4 +1,4 @@
-![Isaac Sim](docs/api/readme/hero_shot_compressed.png)
+![Isaac Sim](docs/readme/hero_shot_compressed.png)
 
 ---
 # Isaac Sim
@@ -81,7 +81,7 @@ Ensure your system is set up with the following before building Isaac Sim:
   winget install --id=Microsoft.VisualStudio.Community -e --override "--add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended"
   ```
   
-  [Additional information on Windows development configuration](docs/api/readme/windows_developer_configuration.md)
+  [Additional information on Windows development configuration](docs/readme/windows_developer_configuration.md)
 
 
 - **(Linux) build-essentials**: A package that includes `make` and other essential tools for building applications.  For Ubuntu, install with:
