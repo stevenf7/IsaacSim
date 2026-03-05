@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.2] - 2026-03-05
+### Fixed
+- Fixed incorrect type annotation for SearchWidget
+
 ## [1.0.1] - 2026-02-26
 ### Changed
 - Remove extension api doc

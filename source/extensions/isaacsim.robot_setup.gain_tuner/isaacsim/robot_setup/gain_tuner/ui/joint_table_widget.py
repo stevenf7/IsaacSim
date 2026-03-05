@@ -15,6 +15,7 @@
 
 """Provides a widget for tuning joint drive parameters including stiffness, damping, natural frequency, and damping ratio in Isaac Sim."""
 
+from __future__ import annotations
 
 from ctypes import alignment
 from enum import Enum, IntEnum, auto
@@ -183,7 +184,7 @@ class ComboListModel(ui.AbstractItemModel):
             for item in item_list:
                 self._items.append(ComboListModel.ComboListItem(item))
 
-    def get_item_children(self, item) -> list[ComboListModel.ComboListItem]:
+    def get_item_children(self, item) -> list["ComboListModel.ComboListItem"]:
         """Returns the child items for the combo box list.
 
         Args:
@@ -274,7 +275,7 @@ def is_joint_mimic(joint) -> bool:
     return len([a for a in joint.GetAppliedSchemas() if "MimicJointAPI" in a]) > 0
 
 
-def get_mimic_natural_frequency_attr(joint) -> pxr.Vt.Value | None:
+def get_mimic_natural_frequency_attr(joint) -> pxr.Usd.Attribute | None:
     """Get the natural frequency attribute for a mimic joint.
 
     Args:
@@ -290,7 +291,7 @@ def get_mimic_natural_frequency_attr(joint) -> pxr.Vt.Value | None:
     return None
 
 
-def get_mimic_damping_ratio_attr(joint) -> pxr.Vt.Value | None:
+def get_mimic_damping_ratio_attr(joint) -> pxr.Usd.Attribute | None:
     """Get the damping ratio attribute for a mimic joint.
 
     Args:
@@ -306,7 +307,7 @@ def get_mimic_damping_ratio_attr(joint) -> pxr.Vt.Value | None:
     return None
 
 
-def get_stiffness_attr(joint, drive_axis=None) -> pxr.Vt.Value | None:
+def get_stiffness_attr(joint, drive_axis=None) -> pxr.Usd.Attribute | None:
     """Get the stiffness attribute for a joint.
 
     Args:
@@ -330,7 +331,7 @@ def get_stiffness_attr(joint, drive_axis=None) -> pxr.Vt.Value | None:
     return None
 
 
-def get_joint_drive_type_attr(joint, drive_axis=None) -> pxr.Vt.Value | None:
+def get_joint_drive_type_attr(joint, drive_axis=None) -> pxr.Usd.Attribute | None:
     """Get the drive type attribute for a joint.
 
     Args:
@@ -355,7 +356,7 @@ def get_joint_drive_type_attr(joint, drive_axis=None) -> pxr.Vt.Value | None:
     return None
 
 
-def get_damping_attr(joint, drive_axis=None) -> pxr.Vt.Value | None:
+def get_damping_attr(joint, drive_axis=None) -> pxr.Usd.Attribute | None:
     """Get the damping attribute for a joint.
 
     Args:

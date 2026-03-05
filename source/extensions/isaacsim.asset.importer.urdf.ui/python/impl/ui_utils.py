@@ -2103,7 +2103,7 @@ def build_simple_search(
     model: ui.AbstractItemModel | None = None,
     delegate: ui.AbstractItemDelegate | None = None,
     tooltip: str = "",
-) -> tuple[typing.Any, ui.TreeView]:
+) -> tuple["SearchWidget", ui.TreeView]:
     r"""Build a simple search bar and tree view.
 
     Pass a list of items through the model, and a custom on_click_fn through the delegate.
