@@ -47,6 +47,7 @@
 
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.core.experimental.prims.plugin",
@@ -129,10 +130,19 @@ protected:
     ViewData* m_data = nullptr;
     ISimulationManager* m_simulationManager = nullptr;
 
-    const float* _fetchField(const std::string& name, int* outCount)
+    /**
+     * @brief Look up a field by name, run its callback if stale, and return the device buffer pointer.
+     * @tparam T Element type (float or uint8_t).
+     * @param[in] fields   Map of field name to FieldEntry<T> (fieldsF or fieldsU8).
+     * @param[in] name    Field name (e.g. "dof_positions").
+     * @param[out] outCount If non-null, receives the number of elements; set to 0 if field not found.
+     * @return Pointer to the buffer data, or nullptr if the field does not exist or has no buffer.
+     */
+    template <typename T>
+    const T* _fetchFieldImpl(std::unordered_map<std::string, FieldEntry<T>>& fields, const std::string& name, int* outCount)
     {
-        auto it = m_data->fields.find(name);
-        if (it == m_data->fields.end())
+        auto it = fields.find(name);
+        if (it == fields.end())
         {
             if (outCount)
                 *outCount = 0;
@@ -151,34 +161,95 @@ protected:
         return field.buffer ? field.buffer->data() : nullptr;
     }
 
-    const float* _fetchFieldHost(const std::string& name, int* outCount)
+    /**
+     * @brief Ensure host staging buffer exists for the field, copy from device if needed, and return host pointer.
+     * @tparam T Element type (float or uint8_t).
+     * @param[in] fields Map of field name to FieldEntry<T> (fieldsF or fieldsU8).
+     * @param[in] name  Field name.
+     * @return Pointer to the host staging data, or nullptr if the field does not exist.
+     */
+    template <typename T>
+    const T* _copyToHostAndGet(std::unordered_map<std::string, FieldEntry<T>>& fields, const std::string& name)
     {
-        const float* ptr = _fetchField(name, outCount);
+        auto it = fields.find(name);
+        if (it == fields.end())
+            return nullptr;
+        auto& field = it->second;
+        if (!field.hostStaging)
+            field.hostStaging = std::make_unique<includes::GenericBufferBase<T>>(field.count, -1);
+        if (field.hostLastStep < field.lastStep)
+        {
+            field.buffer->copyTo(field.hostStaging->data(), field.count);
+            field.hostLastStep = field.lastStep;
+        }
+        return field.hostStaging->data();
+    }
+
+    /**
+     * @brief Fetch field data on device (runs callback if stale). Dispatches to float or uint8_t map.
+     * @tparam T Element type (float or uint8_t).
+     * @param[in] name     Field name (e.g. "dof_positions", "dof_types").
+     * @param[out] outCount If non-null, receives the number of elements.
+     * @return Pointer to the buffer data, or nullptr if not found.
+     */
+    template <typename T>
+    const T* _fetchFieldT(const std::string& name, int* outCount)
+    {
+        if constexpr (std::is_same_v<T, float>)
+            return _fetchFieldImpl(m_data->fieldsF, name, outCount);
+        else if constexpr (std::is_same_v<T, uint8_t>)
+            return _fetchFieldImpl(m_data->fieldsU8, name, outCount);
+        return nullptr;
+    }
+
+    /**
+     * @brief Fetch field data on host. If device is GPU, copies to host staging and returns that pointer.
+     * @tparam T Element type (float or uint8_t).
+     * @param[in] name     Field name.
+     * @param[out] outCount If non-null, receives the number of elements.
+     * @return Pointer to host-accessible data, or nullptr if field not found.
+     */
+    template <typename T>
+    const T* _fetchFieldHostT(const std::string& name, int* outCount)
+    {
+        const T* ptr = _fetchFieldT<T>(name, outCount);
         if (!ptr)
             return nullptr;
         if (m_data->deviceOrdinal >= 0)
         {
-            auto& field = m_data->fields[name];
-            if (!field.hostStaging)
-            {
-                field.hostStaging = std::make_unique<includes::GenericBufferBase<float>>(field.count, -1);
-            }
-            // Avoid duplicate GPU->CPU copies when multiple host getters read
-            // the same field within one simulation step.
-            if (field.hostLastStep < field.lastStep)
-            {
-                field.buffer->copyTo(field.hostStaging->data(), field.count);
-                field.hostLastStep = field.lastStep;
-            }
-            return field.hostStaging->data();
+            if constexpr (std::is_same_v<T, float>)
+                return _copyToHostAndGet(m_data->fieldsF, name);
+            else if constexpr (std::is_same_v<T, uint8_t>)
+                return _copyToHostAndGet(m_data->fieldsU8, name);
+            return nullptr;
         }
         return ptr;
     }
 
-    bool _updateImpl()
+    const float* _fetchField(const std::string& name, int* outCount)
     {
-        int64_t step = m_simulationManager ? static_cast<int64_t>(m_simulationManager->getNumPhysicsSteps()) : 0;
-        for (auto& [name, field] : m_data->fields)
+        return _fetchFieldT<float>(name, outCount);
+    }
+
+    const float* _fetchFieldHost(const std::string& name, int* outCount)
+    {
+        return _fetchFieldHostT<float>(name, outCount);
+    }
+
+    const uint8_t* _fetchFieldU8(const std::string& name, int* outCount)
+    {
+        return _fetchFieldT<uint8_t>(name, outCount);
+    }
+
+    const uint8_t* _fetchFieldU8Host(const std::string& name, int* outCount)
+    {
+        return _fetchFieldHostT<uint8_t>(name, outCount);
+    }
+
+    template <typename T>
+    static void _runFieldCallbacksForStep(std::unordered_map<std::string, FieldEntry<T>>& map, int64_t step)
+    {
+        for (auto& [name, field] : map)
         {
             if (field.lastStep < step && field.callback)
             {
@@ -186,27 +257,45 @@ protected:
                 field.lastStep = step;
             }
         }
+    }
+
+    bool _updateImpl()
+    {
+        int64_t step = m_simulationManager ? static_cast<int64_t>(m_simulationManager->getNumPhysicsSteps()) : 0;
+        _runFieldCallbacksForStep(m_data->fieldsF, step);
+        _runFieldCallbacksForStep(m_data->fieldsU8, step);
         return true;
     }
 
-    bool _allocateBufferImpl(const char* fieldName, size_t count, size_t elementSize)
+    template <typename T>
+    bool _allocateBufferImpl(const char* fieldName, size_t count)
     {
-        (void)elementSize;
-        m_data->getOrCreateField(fieldName, count, m_data->deviceOrdinal);
+        m_data->getOrCreateField<T>(std::string(fieldName), count, m_data->deviceOrdinal);
         return true;
     }
 
     uintptr_t _getBufferPtrImpl(const char* fieldName)
     {
-        auto it = m_data->fields.find(fieldName);
-        return it != m_data->fields.end() && it->second.buffer ? reinterpret_cast<uintptr_t>(it->second.buffer->data()) :
-                                                                 0;
+        const std::string name(fieldName);
+        auto itF = m_data->fieldsF.find(name);
+        if (itF != m_data->fieldsF.end() && itF->second.buffer)
+            return reinterpret_cast<uintptr_t>(itF->second.buffer->data());
+        auto itU8 = m_data->fieldsU8.find(name);
+        if (itU8 != m_data->fieldsU8.end() && itU8->second.buffer)
+            return reinterpret_cast<uintptr_t>(itU8->second.buffer->data());
+        return 0;
     }
 
     size_t _getBufferSizeImpl(const char* fieldName)
     {
-        auto it = m_data->fields.find(fieldName);
-        return it != m_data->fields.end() ? it->second.count : 0;
+        const std::string name(fieldName);
+        auto itF = m_data->fieldsF.find(name);
+        if (itF != m_data->fieldsF.end())
+            return itF->second.count;
+        auto itU8 = m_data->fieldsU8.find(name);
+        if (itU8 != m_data->fieldsU8.end())
+            return itU8->second.count;
+        return 0;
     }
 
     int _getBufferDeviceImpl()
@@ -216,17 +305,22 @@ protected:
 
     void _registerFieldCallbackImpl(const char* fieldName, std::function<void()> callback)
     {
-        auto it = m_data->fields.find(fieldName);
-        if (it != m_data->fields.end())
+        const std::string name(fieldName);
+        auto itF = m_data->fieldsF.find(name);
+        if (itF != m_data->fieldsF.end())
         {
-            it->second.callback = std::move(callback);
+            itF->second.callback = std::move(callback);
+            return;
         }
-        else
+        auto itU8 = m_data->fieldsU8.find(name);
+        if (itU8 != m_data->fieldsU8.end())
         {
-            FieldEntry entry;
-            entry.callback = std::move(callback);
-            m_data->fields.emplace(fieldName, std::move(entry));
+            itU8->second.callback = std::move(callback);
+            return;
         }
+        FieldEntry<float> entry;
+        entry.callback = std::move(callback);
+        m_data->fieldsF.emplace(name, std::move(entry));
     }
 };
 
@@ -279,9 +373,13 @@ protected:
     {                                                                                                                  \
         return _updateImpl();                                                                                          \
     }                                                                                                                  \
-    bool allocateBuffer(const char* fieldName, size_t count, size_t elementSize) override                              \
+    bool allocateBufferFloat(const char* fieldName, size_t count) override                                             \
     {                                                                                                                  \
-        return _allocateBufferImpl(fieldName, count, elementSize);                                                     \
+        return _allocateBufferImpl<float>(fieldName, count);                                                           \
+    }                                                                                                                  \
+    bool allocateBufferUint8(const char* fieldName, size_t count) override                                             \
+    {                                                                                                                  \
+        return _allocateBufferImpl<uint8_t>(fieldName, count);                                                         \
     }                                                                                                                  \
     uintptr_t getBufferPtr(const char* fieldName) override                                                             \
     {                                                                                                                  \
@@ -386,6 +484,10 @@ public:
     {
         return _fetchField("root_velocities", outCount);
     }
+    const uint8_t* getDofTypes(int* outCount) override
+    {
+        return _fetchFieldU8("dof_types", outCount);
+    }
 
     const float* getDofPositionsHost(int* outCount) override
     {
@@ -407,6 +509,10 @@ public:
     {
         return _fetchFieldHost("root_velocities", outCount);
     }
+    const uint8_t* getDofTypesHost(int* outCount) override
+    {
+        return _fetchFieldU8Host("dof_types", outCount);
+    }
 
     int getDofIndex(const char* dofPrimPath) override
     {
@@ -424,6 +530,17 @@ public:
                 return static_cast<int>(i);
         }
         return -1;
+    }
+
+    const char* const* getDofNames(int* outCount) override
+    {
+        if (outCount)
+            *outCount = 0;
+        if (!m_data || m_data->dofNamePtrs.empty())
+            return nullptr;
+        if (outCount)
+            *outCount = static_cast<int>(m_data->dofNamePtrs.size());
+        return m_data->dofNamePtrs.data();
     }
 
     IMPL_BUFFER_MANAGEMENT
@@ -567,6 +684,35 @@ public:
         m_viewData.erase(viewId);
     }
 
+    void setArticulationDofMetadata(
+        const char* viewId, const char** names, size_t numNames, const uint8_t* types, size_t numTypes) override
+    {
+        if (!viewId)
+            return;
+        auto dataIt = m_viewData.find(viewId);
+        if (dataIt == m_viewData.end() || dataIt->second.type != ViewType::eArticulation)
+            return;
+        ViewData& data = dataIt->second;
+        data.dofNames.clear();
+        data.dofNamePtrs.clear();
+        if (names && numNames > 0)
+        {
+            data.dofNames.reserve(numNames);
+            for (size_t i = 0; i < numNames; ++i)
+                data.dofNames.push_back(names[i] ? names[i] : std::string());
+            data.dofNamePtrs.resize(data.dofNames.size());
+            for (size_t i = 0; i < data.dofNames.size(); ++i)
+                data.dofNamePtrs[i] = data.dofNames[i].c_str();
+        }
+        if (types && numTypes > 0)
+        {
+            auto& dofTypesField = data.getOrCreateField<uint8_t>("dof_types", numTypes, -1);
+            dofTypesField.buffer->copyFrom(types, numTypes);
+            int64_t step = m_simulationManager ? static_cast<int64_t>(m_simulationManager->getNumPhysicsSteps()) : 0;
+            dofTypesField.lastStep = step;
+        }
+    }
+
     uint64_t getGeneration() const override
     {
         return m_generation;
@@ -624,8 +770,8 @@ private:
             return;
 
         size_t numPrims = data.primPaths.size();
-        auto& worldPositionsField = data.getOrCreateField("world_positions", numPrims * 3, -1);
-        auto& worldOrientationsField = data.getOrCreateField("world_orientations", numPrims * 4, -1);
+        auto& worldPositionsField = data.getOrCreateField<float>("world_positions", numPrims * 3, -1);
+        auto& worldOrientationsField = data.getOrCreateField<float>("world_orientations", numPrims * 4, -1);
 
         // Capture by value: copies of smart pointers and path list are safe across calls.
         pxr::UsdStageRefPtr usdStage = m_usdStage;
@@ -652,14 +798,19 @@ private:
      * @details The lambda fills the FieldEntry buffer directly via a TensorDesc
      * pointing to the buffer's data pointer.
      */
-    static std::function<void()> _makePhysxFieldCallback(FieldEntry& field,
-                                                         int device,
-                                                         std::function<void(TensorDesc*)> tensorGetter)
+    template <typename T>
+    static std::function<void()> _makePhysxFieldCallbackT(FieldEntry<T>& field,
+                                                          int device,
+                                                          std::function<void(TensorDesc*)> tensorGetter)
     {
         return [&field, device, tensorGetter = std::move(tensorGetter)]()
         {
             TensorDesc desc;
-            fillTensorDesc(desc, field.buffer->data(), static_cast<int>(field.count), TensorDataType::eFloat32, device);
+            if constexpr (std::is_same_v<T, float>)
+                fillTensorDesc(
+                    desc, field.buffer->data(), static_cast<int>(field.count), TensorDataType::eFloat32, device);
+            else if constexpr (std::is_same_v<T, uint8_t>)
+                fillTensorDesc(desc, field.buffer->data(), static_cast<int>(field.count), TensorDataType::eUint8, -1);
             tensorGetter(&desc);
         };
     }
@@ -679,36 +830,36 @@ private:
         uint32_t maxDofs = articulationView->getMaxDofs();
         uint32_t maxLinks = articulationView->getMaxLinks();
 
-        auto& dofPositions = data.getOrCreateField("dof_positions", count * maxDofs, device);
-        dofPositions.callback = _makePhysxFieldCallback(
+        auto& dofPositions = data.getOrCreateField<float>("dof_positions", count * maxDofs, device);
+        dofPositions.callback = _makePhysxFieldCallbackT<float>(
             dofPositions, device, [articulationView](TensorDesc* d) { articulationView->getDofPositions(d); });
 
-        auto& dofVelocities = data.getOrCreateField("dof_velocities", count * maxDofs, device);
-        dofVelocities.callback = _makePhysxFieldCallback(
+        auto& dofVelocities = data.getOrCreateField<float>("dof_velocities", count * maxDofs, device);
+        dofVelocities.callback = _makePhysxFieldCallbackT<float>(
             dofVelocities, device, [articulationView](TensorDesc* d) { articulationView->getDofVelocities(d); });
 
-        auto& dofEfforts = data.getOrCreateField("dof_efforts", count * maxDofs, device);
-        dofEfforts.callback = _makePhysxFieldCallback(
+        auto& dofEfforts = data.getOrCreateField<float>("dof_efforts", count * maxDofs, device);
+        dofEfforts.callback = _makePhysxFieldCallbackT<float>(
             dofEfforts, device, [articulationView](TensorDesc* d) { articulationView->getDofProjectedJointForces(d); });
 
-        auto& rootTransforms = data.getOrCreateField("root_transforms", count * 7, device);
-        rootTransforms.callback = _makePhysxFieldCallback(
+        auto& rootTransforms = data.getOrCreateField<float>("root_transforms", count * 7, device);
+        rootTransforms.callback = _makePhysxFieldCallbackT<float>(
             rootTransforms, device, [articulationView](TensorDesc* d) { articulationView->getRootTransforms(d); });
 
-        auto& rootVelocities = data.getOrCreateField("root_velocities", count * 6, device);
-        rootVelocities.callback = _makePhysxFieldCallback(
+        auto& rootVelocities = data.getOrCreateField<float>("root_velocities", count * 6, device);
+        rootVelocities.callback = _makePhysxFieldCallbackT<float>(
             rootVelocities, device, [articulationView](TensorDesc* d) { articulationView->getRootVelocities(d); });
 
-        auto& linkMasses = data.getOrCreateField("link_masses", count * maxLinks, device);
-        linkMasses.callback = _makePhysxFieldCallback(
+        auto& linkMasses = data.getOrCreateField<float>("link_masses", count * maxLinks, device);
+        linkMasses.callback = _makePhysxFieldCallbackT<float>(
             linkMasses, device, [articulationView](TensorDesc* d) { articulationView->getMasses(d); });
 
         uint32_t jacobianRows = 0;
         uint32_t jacobianColumns = 0;
         if (articulationView->getJacobianShape(&jacobianRows, &jacobianColumns))
         {
-            auto& jacobians = data.getOrCreateField("jacobians", count * jacobianRows * jacobianColumns, device);
-            jacobians.callback = _makePhysxFieldCallback(
+            auto& jacobians = data.getOrCreateField<float>("jacobians", count * jacobianRows * jacobianColumns, device);
+            jacobians.callback = _makePhysxFieldCallbackT<float>(
                 jacobians, device, [articulationView](TensorDesc* d) { articulationView->getJacobians(d); });
         }
 
@@ -717,10 +868,42 @@ private:
         if (articulationView->getGeneralizedMassMatrixShape(&massMatrixRows, &massMatrixColumns))
         {
             auto& massMatrices =
-                data.getOrCreateField("mass_matrices", count * massMatrixRows * massMatrixColumns, device);
-            massMatrices.callback = _makePhysxFieldCallback(massMatrices, device,
-                                                            [articulationView](TensorDesc* d)
-                                                            { articulationView->getGeneralizedMassMatrices(d); });
+                data.getOrCreateField<float>("mass_matrices", count * massMatrixRows * massMatrixColumns, device);
+            massMatrices.callback = _makePhysxFieldCallbackT<float>(
+                massMatrices, device,
+                [articulationView](TensorDesc* d) { articulationView->getGeneralizedMassMatrices(d); });
+        }
+
+        // DOF metadata: names from USD, types via field callback (same pattern as other getters).
+        data.dofNames.clear();
+        data.dofNamePtrs.clear();
+        if (m_usdStage)
+        {
+            for (uint32_t j = 0; j < maxDofs; ++j)
+            {
+                const char* path = articulationView->getUsdDofPath(0, j);
+                if (path)
+                {
+                    pxr::UsdPrim prim = m_usdStage->GetPrimAtPath(pxr::SdfPath(path));
+                    if (prim.IsValid())
+                        data.dofNames.push_back(prim.GetName());
+                    else
+                        data.dofNames.push_back(std::string());
+                }
+                else
+                {
+                    data.dofNames.push_back(std::string());
+                }
+            }
+            data.dofNamePtrs.resize(data.dofNames.size());
+            for (size_t i = 0; i < data.dofNames.size(); ++i)
+                data.dofNamePtrs[i] = data.dofNames[i].c_str();
+        }
+        if (maxDofs > 0)
+        {
+            auto& dofTypesField = data.getOrCreateField<uint8_t>("dof_types", maxDofs, -1);
+            dofTypesField.callback = _makePhysxFieldCallbackT<uint8_t>(
+                dofTypesField, -1, [articulationView](TensorDesc* d) { articulationView->getDofTypes(d); });
         }
     }
 
@@ -738,18 +921,18 @@ private:
         uint32_t count = rigidBody->getCount();
 
         // Transforms: float[N][7] -- split into separate velocity fields after fetch
-        auto& transforms = data.getOrCreateField("rigid_transforms_raw", count * 7, device);
-        transforms.callback =
-            _makePhysxFieldCallback(transforms, device, [rigidBody](TensorDesc* d) { rigidBody->getTransforms(d); });
+        auto& transforms = data.getOrCreateField<float>("rigid_transforms_raw", count * 7, device);
+        transforms.callback = _makePhysxFieldCallbackT<float>(
+            transforms, device, [rigidBody](TensorDesc* d) { rigidBody->getTransforms(d); });
 
         // Velocities: float[N][6]
-        auto& velocities = data.getOrCreateField("rigid_velocities_raw", count * 6, device);
-        velocities.callback =
-            _makePhysxFieldCallback(velocities, device, [rigidBody](TensorDesc* d) { rigidBody->getVelocities(d); });
+        auto& velocities = data.getOrCreateField<float>("rigid_velocities_raw", count * 6, device);
+        velocities.callback = _makePhysxFieldCallbackT<float>(
+            velocities, device, [rigidBody](TensorDesc* d) { rigidBody->getVelocities(d); });
 
         // Expose split linear/angular velocity fields by referencing the raw buffer
-        auto& linearVelocity = data.getOrCreateField("linear_velocities", count * 3, device);
-        auto& angularVelocity = data.getOrCreateField("angular_velocities", count * 3, device);
+        auto& linearVelocity = data.getOrCreateField<float>("linear_velocities", count * 3, device);
+        auto& angularVelocity = data.getOrCreateField<float>("angular_velocities", count * 3, device);
         linearVelocity.callback = [&velocities, &linearVelocity, &angularVelocity, count, device]()
         {
             if (velocities.callback)

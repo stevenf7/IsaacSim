@@ -19,6 +19,7 @@ import omni.kit.test
 import omni.timeline
 import omni.usd
 import warp as wp
+from isaacsim.core.experimental.prims import BufferDtype
 from pxr import UsdUtils
 
 
@@ -65,6 +66,10 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
             "get_root_velocities",
             "get_world_positions",
             "get_world_orientations",
+            "get_dof_index",
+            "get_dof_names",
+            "get_dof_types",
+            "get_dof_types_host",
             "update",
             "allocate_buffer",
             "get_buffer_ptr",
@@ -110,7 +115,7 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
     async def test_buffer_allocation_returns_valid_pointer(self):
         """allocate_buffer should produce a non-zero pointer and correct size/device."""
         view = self.reader.create_articulation_view("buf_test", ["/World/t"], "physx")
-        view.allocate_buffer("field_a", 100, 4)
+        view.allocate_buffer("field_a", 100, BufferDtype.FLOAT)
 
         ptr = view.get_buffer_ptr("field_a")
         self.assertIsInstance(ptr, int)
@@ -128,7 +133,7 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
     async def test_buffer_wrapping_as_warp_array(self):
         """C++ buffer should be wrappable as a wp.array via the ptr constructor."""
         view = self.reader.create_articulation_view("wp_wrap", ["/World/t"], "physx")
-        view.allocate_buffer("test_field", 30, 4)
+        view.allocate_buffer("test_field", 30, BufferDtype.FLOAT)
 
         ptr = view.get_buffer_ptr("test_field")
         device_ord = view.get_buffer_device()
@@ -145,12 +150,74 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
         self.assertEqual(arr.shape, (5, 6))
         self.assertEqual(arr.dtype, wp.float32)
 
+    async def test_allocate_buffer_uint8_via_dtype(self):
+        """allocate_buffer(field_name, count, dtype='uint8') creates uint8 buffer."""
+        view = self.reader.create_articulation_view("buf_u8", ["/World/t"], "physx")
+        self.assertTrue(view.allocate_buffer("dof_types", 5, BufferDtype.UINT8))
+        self.assertEqual(view.get_buffer_size("dof_types"), 5)
+        self.assertGreater(view.get_buffer_ptr("dof_types"), 0)
+
+    async def test_allocate_buffer_accepts_buffer_dtype_enum(self):
+        """allocate_buffer accepts BufferDtype enum as well as string."""
+        view = self.reader.create_articulation_view("buf_enum", ["/World/t"], "physx")
+        self.assertTrue(view.allocate_buffer("field_f", 10, BufferDtype.FLOAT))
+        self.assertEqual(view.get_buffer_size("field_f"), 10)
+        self.assertTrue(view.allocate_buffer("field_u8", 5, BufferDtype.UINT8))
+        self.assertEqual(view.get_buffer_size("field_u8"), 5)
+
+    async def test_allocate_buffer_invalid_dtype_raises(self):
+        """allocate_buffer with unsupported dtype string should raise."""
+        view = self.reader.create_articulation_view("buf_bad", ["/World/t"], "physx")
+        with self.assertRaises(ValueError):
+            view.allocate_buffer("x", 10, "int32")
+
+    # -- DOF names and types --
+
+    async def test_get_dof_names_returns_list(self):
+        """get_dof_names should return a list (may be empty if no articulation/DOFs)."""
+        view = self.reader.create_articulation_view("dof_meta_v", ["/World/test"], "physx")
+        self.assertIsNotNone(view)
+        names = view.get_dof_names()
+        self.assertIsInstance(names, list)
+
+    async def test_get_dof_types_returns_tuple_ptr_count(self):
+        """get_dof_types should return (ptr, count) like other buffer getters."""
+        view = self.reader.create_articulation_view("dof_types_v", ["/World/test"], "physx")
+        self.assertIsNotNone(view)
+        result = view.get_dof_types()
+        self.assertIsInstance(result, tuple)
+        self.assertEqual(len(result), 2)
+        ptr, count = result
+        self.assertIsInstance(ptr, int)
+        self.assertIsInstance(count, int)
+
+    async def test_reader_has_set_articulation_dof_metadata(self):
+        """Reader should expose set_articulation_dof_metadata for Newton backend."""
+        self.assertTrue(hasattr(self.reader, "set_articulation_dof_metadata"))
+
+    async def test_set_articulation_dof_metadata_then_get_dof_names_and_types(self):
+        """After set_articulation_dof_metadata, get_dof_names and get_dof_types return that data (Newton path)."""
+        import ctypes
+
+        view_id = "dof_newton_meta"
+        view = self.reader.create_articulation_view(view_id, ["/World/t"], "newton")
+        self.assertIsNotNone(view)
+        self.reader.set_articulation_dof_metadata(view_id, ["joint_a", "joint_b"], [0, 1])
+        names = view.get_dof_names()
+        ptr, count = view.get_dof_types()
+        self.assertEqual(names, ["joint_a", "joint_b"])
+        self.assertEqual(count, 2)
+        if ptr and count >= 2:
+            buf = (ctypes.c_uint8 * count).from_address(ptr)
+            self.assertEqual(buf[0], 0)
+            self.assertEqual(buf[1], 1)
+
     # -- Callback registration and invocation --
 
     async def test_callback_invoked_on_first_getter_call(self):
         """A registered callback should fire on the first getter call."""
         view = self.reader.create_articulation_view("cb_test", ["/World/t"], "newton")
-        view.allocate_buffer("dof_positions", 10, 4)
+        view.allocate_buffer("dof_positions", 10, BufferDtype.FLOAT)
 
         call_count = [0]
 
@@ -164,7 +231,7 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
     async def test_callback_not_invoked_twice_same_step(self):
         """Within the same physics step, the callback should fire at most once."""
         view = self.reader.create_articulation_view("cb_dedup", ["/World/t"], "newton")
-        view.allocate_buffer("dof_positions", 10, 4)
+        view.allocate_buffer("dof_positions", 10, BufferDtype.FLOAT)
 
         call_count = [0]
         view.register_field_callback("dof_positions", lambda: call_count.__setitem__(0, call_count[0] + 1))
@@ -176,8 +243,8 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
     async def test_update_batch_prefetch_triggers_all_callbacks(self):
         """update() should trigger callbacks for all stale fields."""
         view = self.reader.create_articulation_view("cb_batch", ["/World/t"], "newton")
-        view.allocate_buffer("dof_positions", 10, 4)
-        view.allocate_buffer("dof_velocities", 10, 4)
+        view.allocate_buffer("dof_positions", 10, BufferDtype.FLOAT)
+        view.allocate_buffer("dof_velocities", 10, BufferDtype.FLOAT)
 
         calls = {"pos": 0, "vel": 0}
         view.register_field_callback("dof_positions", lambda: calls.__setitem__("pos", calls["pos"] + 1))

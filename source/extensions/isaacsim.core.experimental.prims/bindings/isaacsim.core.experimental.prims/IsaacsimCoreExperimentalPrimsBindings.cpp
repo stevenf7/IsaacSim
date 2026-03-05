@@ -20,6 +20,9 @@
 #include <pybind11/functional.h>
 #include <pybind11/stl.h>
 
+#include <stdexcept>
+#include <string>
+
 CARB_BINDINGS("isaacsim.core.experimental.prims.python")
 
 namespace
@@ -106,8 +109,29 @@ PYBIND11_MODULE(_prims_reader, m)
                  return std::make_tuple(reinterpret_cast<uintptr_t>(ptr), count);
              })
         .def("update", &IXformDataView::update)
-        .def("allocate_buffer", &IXformDataView::allocateBuffer, py::arg("field_name"), py::arg("count"),
-             py::arg("element_size"))
+        .def(
+            "allocate_buffer",
+            [](IXformDataView& self, const std::string& field_name, size_t count, py::object dtype)
+            {
+                std::string key;
+                if (py::isinstance<py::str>(dtype))
+                    key = dtype.cast<std::string>();
+                else if (dtype.is_none())
+                    key = "float";
+                else if (py::hasattr(dtype, "value"))
+                    key = dtype.attr("value").cast<std::string>();
+                else
+                    throw std::invalid_argument("allocate_buffer dtype must be a string or BufferDtype enum");
+                if (key.empty())
+                    key = "float";
+                if (key == "float" || key == "float32")
+                    return self.allocateBufferFloat(field_name.c_str(), count);
+                if (key == "uint8" || key == "uint8_t")
+                    return self.allocateBufferUint8(field_name.c_str(), count);
+                throw std::invalid_argument(
+                    "allocate_buffer dtype must be 'float'/'float32' or 'uint8'/'uint8_t' (got '" + key + "')");
+            },
+            py::arg("field_name"), py::arg("count"), py::arg("dtype") = "float")
         .def("get_buffer_ptr", &IXformDataView::getBufferPtr, py::arg("field_name"))
         .def("get_buffer_size", &IXformDataView::getBufferSize, py::arg("field_name"))
         .def("get_buffer_device", &IXformDataView::getBufferDevice)
@@ -217,7 +241,34 @@ PYBIND11_MODULE(_prims_reader, m)
                  const float* ptr = self.getRootVelocitiesHost(&count);
                  return std::make_tuple(reinterpret_cast<uintptr_t>(ptr), count);
              })
-        .def("get_dof_index", &IArticulationDataView::getDofIndex, py::arg("dof_prim_path"));
+        .def("get_dof_index", &IArticulationDataView::getDofIndex, py::arg("dof_prim_path"))
+        .def("get_dof_names",
+             [](IArticulationDataView& self)
+             {
+                 int count = 0;
+                 const char* const* names = self.getDofNames(&count);
+                 py::list result;
+                 if (names && count > 0)
+                 {
+                     for (int i = 0; i < count; ++i)
+                         result.append(names[i] ? std::string(names[i]) : std::string());
+                 }
+                 return result;
+             })
+        .def("get_dof_types",
+             [](IArticulationDataView& self)
+             {
+                 int count = 0;
+                 const uint8_t* ptr = self.getDofTypes(&count);
+                 return std::make_tuple(reinterpret_cast<uintptr_t>(ptr), count);
+             })
+        .def("get_dof_types_host",
+             [](IArticulationDataView& self)
+             {
+                 int count = 0;
+                 const uint8_t* ptr = self.getDofTypesHost(&count);
+                 return std::make_tuple(reinterpret_cast<uintptr_t>(ptr), count);
+             });
 
     // Factory (Carbonite interface)
     carb::defineInterfaceClass<IPrimDataReader>(
@@ -261,6 +312,22 @@ PYBIND11_MODULE(_prims_reader, m)
             },
             py::arg("view_id"), py::arg("paths"), py::arg("engine_type"), py::return_value_policy::reference)
         .def("remove_view", &IPrimDataReader::removeView, py::arg("view_id"))
+        .def(
+            "set_articulation_dof_metadata",
+            [](IPrimDataReader& self, const std::string& viewId, const std::vector<std::string>& names,
+               const std::vector<int>& types)
+            {
+                std::vector<const char*> namePtrs;
+                namePtrs.reserve(names.size());
+                for (const auto& n : names)
+                    namePtrs.push_back(n.c_str());
+                std::vector<uint8_t> typeBytes(types.size());
+                for (size_t i = 0; i < types.size(); ++i)
+                    typeBytes[i] = static_cast<uint8_t>(types[i]);
+                self.setArticulationDofMetadata(
+                    viewId.c_str(), namePtrs.data(), namePtrs.size(), typeBytes.data(), typeBytes.size());
+            },
+            py::arg("view_id"), py::arg("names"), py::arg("types"))
         .def("get_generation", &IPrimDataReader::getGeneration)
         .def("get_stage_id", &IPrimDataReader::getStageId)
         .def("get_device_ordinal", &IPrimDataReader::getDeviceOrdinal);

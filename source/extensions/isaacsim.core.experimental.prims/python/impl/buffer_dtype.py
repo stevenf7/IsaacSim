@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .articulation import Articulation
-from .buffer_dtype import BufferDtype
-from .deformable_prim import DeformablePrim
-from .extension import Extension
-from .geom_prim import GeomPrim
-from .prim import Prim
-from .rigid_prim import RigidPrim
-from .xform_prim import XformPrim
+from enum import Enum
+
+
+class BufferDtype(str, Enum):
+    """Element type for allocate_buffer. Use instead of raw strings for discoverability and type safety."""
+
+    FLOAT = "float"
+    FLOAT32 = "float32"
+    UINT8 = "uint8"
+    UINT8_T = "uint8_t"
