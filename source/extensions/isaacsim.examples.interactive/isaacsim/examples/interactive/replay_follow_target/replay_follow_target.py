@@ -28,7 +28,27 @@ from isaacsim.storage.native import get_assets_root_path
 
 
 class ReplayFollowTarget(BaseSample):
-    def __init__(self) -> None:
+    """Interactive sample that demonstrates replaying recorded robot trajectories and scene data.
+
+    This class creates a simulation environment with a Franka robotic manipulator and a target cube,
+    and provides functionality to replay previously recorded trajectory data. It supports two replay modes:
+    trajectory-only replay (robot movements) and full scene replay (robot movements with target positions).
+
+    The simulation environment includes:
+    - A Franka robot manipulator positioned at /World/robot
+    - A red target cube positioned at /World/TargetCube
+    - A ground plane environment for physics simulation
+    - Distant lighting for visualization
+
+    During replay, the system loads data from a log file and steps through the recorded frames,
+    applying joint positions to the robot and optionally moving the target cube to match the recorded
+    scene state. The replay is synchronized with the physics simulation timeline.
+
+    The class inherits from BaseSample and follows the standard Isaac Sim sample lifecycle with
+    setup_scene, setup_post_load, setup_post_reset, and cleanup methods.
+    """
+
+    def __init__(self):
         super().__init__()
         self._robot = None
         self._target_cube = None
@@ -130,7 +150,11 @@ class ReplayFollowTarget(BaseSample):
             self._physics_callback_id = None
 
     async def _on_replay_trajectory_event_async(self, data_file):
-        """Load and replay trajectory data."""
+        """Load and replay trajectory data.
+
+        Args:
+            data_file: Path to the trajectory data file to load and replay.
+        """
         self._data_logger.load(log_path=data_file)
         self._current_time_step_index = 0
 
@@ -144,7 +168,11 @@ class ReplayFollowTarget(BaseSample):
         )
 
     async def _on_replay_scene_event_async(self, data_file):
-        """Load and replay scene data (robot + target)."""
+        """Load and replay scene data (robot + target).
+
+        Args:
+            data_file: Path to the scene data file to load and replay.
+        """
         self._data_logger.load(log_path=data_file)
         self._current_time_step_index = 0
 
@@ -158,7 +186,12 @@ class ReplayFollowTarget(BaseSample):
         )
 
     def _on_replay_trajectory_step(self, dt, context):
-        """Physics callback for replaying trajectory (robot only)."""
+        """Physics callback for replaying trajectory (robot only).
+
+        Args:
+            dt: Time delta for the physics step.
+            context: Physics context for the callback.
+        """
         if self._data_logger is None or self._robot is None:
             return
 
@@ -184,7 +217,12 @@ class ReplayFollowTarget(BaseSample):
                 self._physics_callback_id = None
 
     def _on_replay_scene_step(self, dt, context):
-        """Physics callback for replaying scene (robot + target)."""
+        """Physics callback for replaying scene (robot + target).
+
+        Args:
+            dt: Time delta for the physics step.
+            context: Physics context for the callback.
+        """
         if self._data_logger is None or self._robot is None or self._target_cube is None:
             return
 

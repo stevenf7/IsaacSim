@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Extension module for the RoboFactory interactive example that provides UI components and extension lifecycle management."""
+
+
 import asyncio
 import os
 
@@ -28,6 +31,14 @@ class RoboFactoryExtension(omni.ext.IExt):
     """Extension for RoboFactory interactive example."""
 
     def on_startup(self, ext_id: str):
+        """Called when the extension is starting up.
+
+        Initializes the RoboFactory extension by setting up the UI template and registering
+        the example with the browser.
+
+        Args:
+            ext_id: The extension identifier.
+        """
         self.example_name = "RoboFactory"
         self.category = "Multi-Robot"
 
@@ -49,11 +60,20 @@ class RoboFactoryExtension(omni.ext.IExt):
         )
 
     def on_shutdown(self):
+        """Called when the extension is shutting down.
+
+        Cleans up by deregistering the RoboFactory example from the browser.
+        """
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)
 
 
 class RoboFactoryUI(BaseSampleUITemplate):
-    """UI for the RoboFactory interactive example."""
+    """UI for the RoboFactory interactive example.
+
+    Args:
+        *args: Variable length argument list passed to the parent class.
+        **kwargs: Additional keyword arguments passed to the parent class.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
