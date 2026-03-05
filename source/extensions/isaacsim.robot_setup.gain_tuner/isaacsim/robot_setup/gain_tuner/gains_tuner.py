@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Module for tuning joint gains on articulated robots through test signal generation and inertia analysis."""
+
+
 import asyncio
 from dataclasses import dataclass
 from enum import IntEnum
@@ -33,16 +36,22 @@ class GainsTestMode(IntEnum):
     """Enumeration of available test signal modes for gain tuning."""
 
     SINUSOIDAL = 0
+    """Test mode that generates sinusoidal signals for gain tuning analysis."""
     STEP = 1
+    """Test mode that generates step response signals for gain tuning analysis."""
     USER_PROVIDED = 2
+    """Test mode that allows custom user-defined signals for gain tuning analysis."""
 
 
 class JointMode(IntEnum):
     """Enumeration of joint control modes."""
 
     POSITION = 0
+    """Position control mode where joints are commanded to specific position targets."""
     VELOCITY = 1
+    """Velocity control mode where joints are commanded to specific velocity targets."""
     NONE = 2
+    """No control mode active for the joint."""
 
 
 @dataclass
@@ -625,7 +634,7 @@ class GainTuner:
 
     @property
     def joint_range_maximum(self) -> float:
-        """Get the joint range maximum.
+        """Joint range maximum.
 
         Returns:
             Joint range maximum.
@@ -643,7 +652,7 @@ class GainTuner:
 
     @property
     def position_impulse(self) -> float:
-        """Get the position impulse.
+        """Position impulse.
 
         Returns:
             Position impulse.
@@ -661,7 +670,7 @@ class GainTuner:
 
     @property
     def velocity_impulse(self) -> float:
-        """Get the velocity impulse.
+        """Velocity impulse.
 
         Returns:
             Velocity impulse.
@@ -679,7 +688,7 @@ class GainTuner:
 
     @property
     def robot(self) -> pxr.Usd.Prim:
-        """Get the robot prim.
+        """Robot prim.
 
         Returns:
             The robot prim.
