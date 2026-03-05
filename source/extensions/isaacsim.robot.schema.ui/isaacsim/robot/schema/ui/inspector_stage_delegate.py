@@ -31,7 +31,7 @@ class InspectorContextMenu(ContextMenu):
     joint hierarchy tree.
     """
 
-    def on_mouse_event(self, event: Any) -> None:
+    def on_mouse_event(self, event: Any):
         """Handle mouse events to show the context menu.
 
         Args:
@@ -373,5 +373,5 @@ class InspectorStageDelegate(StageDelegate):
     Uses InspectorContextMenu for right-click functionality.
     """
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__(context_menu=InspectorContextMenu())

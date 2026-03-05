@@ -94,7 +94,12 @@ class FrankaPickPlaceInteractive(BaseSample):
         self._is_executing = False
 
     def _pick_place_physics_callback(self, dt, context):
-        """Physics callback to execute pick-and-place step by step."""
+        """Physics callback to execute pick-and-place step by step.
+
+        Args:
+            dt: Time delta since last physics step.
+            context: Physics simulation context.
+        """
         if not self._is_executing or self.controller is None:
             return
 
@@ -134,19 +139,31 @@ class FrankaPickPlaceInteractive(BaseSample):
                 self._physics_callback_id = None
 
     def get_controller_status(self) -> dict:
-        """Get current status of the controller."""
+        """Get current status of the controller.
+
+        Returns:
+            Current status information of the pick-and-place controller.
+        """
         if self.controller:
             return self.controller.get_current_status()
         else:
             return {"error": "Controller not initialized"}
 
     def is_executing(self) -> bool:
-        """Check if pick-and-place is currently executing."""
+        """Check if pick-and-place is currently executing.
+
+        Returns:
+            True if pick-and-place operation is in progress.
+        """
         return self._is_executing
 
     # Methods for UI integration
     async def execute_pick_place_async(self):
-        """Async wrapper for pick-and-place execution."""
+        """Async wrapper for pick-and-place execution.
+
+        Returns:
+            False if execution cannot start due to controller not being initialized or already running.
+        """
         if self.controller is None:
             print("ERROR: Controller not initialized")
             return False

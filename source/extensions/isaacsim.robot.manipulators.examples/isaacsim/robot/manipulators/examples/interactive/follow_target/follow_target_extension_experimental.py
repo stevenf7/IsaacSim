@@ -36,6 +36,14 @@ class UR10FollowTargetExtension(omni.ext.IExt):
     """Extension for UR10 follow target interactive example."""
 
     def on_startup(self, ext_id: str):
+        """Initialize the UR10 follow target extension.
+
+        Sets up the extension properties, creates the UI handle, and registers the example
+        with the browser instance for display in the examples collection.
+
+        Args:
+            ext_id: The extension identifier.
+        """
         self.example_name = "UR10 Follow Target"
         self.category = "Manipulation"
 
@@ -56,14 +64,25 @@ class UR10FollowTargetExtension(omni.ext.IExt):
         )
 
     def on_shutdown(self):
+        """Clean up the extension on shutdown.
+
+        Deregisters the example from the browser instance to remove it from the examples
+        collection.
+        """
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)
 
 
 class UR10FollowTargetUI(BaseSampleUITemplate):
-    """UI for the UR10 follow target interactive example."""
+    """UI for the UR10 follow target interactive example.
+
+    Args:
+        *args: Variable length argument list passed to the parent class.
+        **kwargs: Additional keyword arguments passed to the parent class.
+    """
 
     # Class constant for IK methods to avoid duplication
     IK_METHODS = ["damped-least-squares", "pseudoinverse", "transpose", "singular-value-decomposition"]
+    """Available inverse kinematics methods for the UR10 robot arm."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -252,7 +271,11 @@ class UR10FollowTargetUI(BaseSampleUITemplate):
             self.task_ui_elements["Update Status"] = btn_builder(**update_dict)
 
     def _on_follow_target_button_event(self, val):
-        """Handle follow target button toggle event."""
+        """Handle follow target button toggle event.
+
+        Args:
+            val: True if START pressed, False if STOP pressed.
+        """
         if val:  # START pressed
             asyncio.ensure_future(self.sample.start_following_async())
             self._update_status("Following target...")
@@ -261,7 +284,11 @@ class UR10FollowTargetUI(BaseSampleUITemplate):
             self._update_status("Stopped")
 
     def _on_ik_method_change(self, selection):
-        """Handle IK method selection change."""
+        """Handle IK method selection change.
+
+        Args:
+            selection: The selected IK method name or index.
+        """
         # Handle both string (method name) and integer (index) selection
         if isinstance(selection, str):
             selected_method = selection
@@ -301,13 +328,21 @@ class UR10FollowTargetUI(BaseSampleUITemplate):
             print(f"Error updating status: {e}")
 
     def _update_status(self, message: str):
-        """Update the status label."""
+        """Update the status label.
+
+        Args:
+            message: The status message to display.
+        """
         if "Status" in self.task_ui_elements:
             self.task_ui_elements["Status"].text = message
             print(f"Status: {message}")
 
     def _set_task_buttons_enabled(self, enabled: bool):
-        """Enable/disable task control buttons."""
+        """Enable/disable task control buttons.
+
+        Args:
+            enabled: Whether to enable the task control buttons.
+        """
         buttons_to_control = ["Follow Target", "Update Status"]
         for button_name in buttons_to_control:
             if button_name in self.task_ui_elements:

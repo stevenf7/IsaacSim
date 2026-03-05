@@ -12,4 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Isaac Sim Robot Schema UI extension for managing robot schema interfaces."""
+
+
 from .extension import SchemaUIExtension
+
+__all__ = []

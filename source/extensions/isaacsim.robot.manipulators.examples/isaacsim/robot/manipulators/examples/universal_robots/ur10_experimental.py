@@ -31,6 +31,15 @@ class UR10Experimental(Articulation):
     This class inherits from Articulation and provides high-level control commands for the UR10 robot,
     including inverse kinematics for end-effector positioning and gripper control.
     It can either use an existing robot path or create a new one from USD assets.
+
+    Args:
+        robot_path: USD path where the robot should be created or exists.
+        create_robot: Whether to create a new robot from USD assets.
+        end_effector_link: The end effector rigid body link. If None, creates from robot_path.
+        attach_gripper: Whether to attach a gripper to the robot.
+
+    Raises:
+        ValueError: If create_robot is False but no robot exists at robot_path.
     """
 
     def __init__(
@@ -189,10 +198,10 @@ class UR10Experimental(Articulation):
         """Get current robot state including DOF positions and end effector pose.
 
         Returns:
-            A tuple containing:
-                - current_dof_positions: Current joint positions [N, 6 or 7] (6 for arm, +1 if gripper)
-                - current_end_effector_position: Current end effector position [N, 3]
-                - current_end_effector_orientation: Current end effector orientation [N, 4] as quaternion
+            A tuple containing (current_dof_positions, current_end_effector_position, current_end_effector_orientation)
+            where current_dof_positions are current joint positions [N, 6 or 7] (6 for arm, +1 if gripper),
+            current_end_effector_position is current end effector position [N, 3], and
+            current_end_effector_orientation is current end effector orientation [N, 4] as quaternion.
         """
         current_dof_positions = self.get_dof_positions().numpy()
         current_end_effector_position, current_end_effector_orientation = self.end_effector_link.get_world_poses()
@@ -206,7 +215,7 @@ class UR10Experimental(Articulation):
         position: np.ndarray,
         orientation: np.ndarray,
         ik_method: str = "damped-least-squares",
-    ) -> None:
+    ):
         """Set the end effector to a specific pose (position and orientation).
 
         This method uses inverse kinematics to move the end effector to the target pose.

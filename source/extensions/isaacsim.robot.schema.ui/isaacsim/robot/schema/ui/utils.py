@@ -376,7 +376,7 @@ class PathMap:
         self.original_to_hierarchy = {}
         self.hierarchy_to_original = {}
 
-    def insert(self, original_path: Sdf.Path, hierarchy_path: Sdf.Path) -> None:
+    def insert(self, original_path: Sdf.Path, hierarchy_path: Sdf.Path):
         """Add a path mapping.
 
         Args:
@@ -426,7 +426,7 @@ class PathMap:
         """
         return self.hierarchy_to_original.get(hierarchy_path)
 
-    def clear(self) -> None:
+    def clear(self):
         """Clear all path mappings.
 
         Example:
@@ -644,7 +644,7 @@ def _create_hierarchy_node(
     robot_root_path: Sdf.Path,
     path_map: PathMap,
     joint_connections: list[Any],
-) -> None:
+):
     """Create a hierarchy node and its children recursively.
 
     Internal helper function for generate_robot_hierarchy_stage().

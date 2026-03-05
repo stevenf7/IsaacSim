@@ -27,7 +27,7 @@ class OverlayMenu:
     """
 
     @staticmethod
-    def show_menu(connection: Any) -> None:
+    def show_menu(connection: Any):
         """Display the overlay selection menu.
 
         Args:
@@ -89,7 +89,7 @@ class OverlayMenu:
             connection: The connection with overlay information.
 
         Returns:
-            Tuple of (joint_paths, joint_names) lists.
+            A tuple of (joint_paths, joint_names) lists.
         """
         joint_paths = [connection.joint_prim_path.pathString]
         joint_names = [connection.joint_prim_path.name]
@@ -123,7 +123,7 @@ class OverlayMenu:
         return menu_entries
 
     @staticmethod
-    def _select_joint(menu_context: dict[str, Any], index: int) -> None:
+    def _select_joint(menu_context: dict[str, Any], index: int):
         """Select a joint by index from the menu.
 
         Args:

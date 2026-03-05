@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.0] - 2026-03-04
+### Changed
+- Added Overview.md, python_api.md and updated docstrings
+
 ## [0.2.0] - 2026-02-23
 ### Added
 - Robot masking: deactivate, bypass, and anchor controls for joints and links via stage columns

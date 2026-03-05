@@ -51,7 +51,7 @@ class ConnectionManipulator(sc.Manipulator):
         **kwargs: Additional arguments passed to the parent manipulator class.
     """
 
-    def __init__(self, icon_scale: float = 1.0, **kwargs: Any) -> None:
+    def __init__(self, icon_scale: float = 1.0, **kwargs: Any):
         extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
         self._connection_arrow_path = str(Path(extension_path).joinpath("data/icons/LinkArrow.svg"))
         self._stage: Any | None = None
@@ -92,7 +92,7 @@ class ConnectionManipulator(sc.Manipulator):
         self._redraw_future = None
         self.invalidate()
 
-    def on_build(self) -> None:
+    def on_build(self):
         """Build the manipulator's scene graph structure.
 
         Called when the manipulator needs to construct its visual elements.
@@ -103,7 +103,7 @@ class ConnectionManipulator(sc.Manipulator):
         self._overlay_panel_map = {}
         self.rebuild_connections()
 
-    def _cache_camera_pose(self) -> None:
+    def _cache_camera_pose(self):
         """Cache camera pose at the start of a rebuild cycle.
 
         Stores camera position and forward direction to avoid redundant
@@ -126,7 +126,7 @@ class ConnectionManipulator(sc.Manipulator):
             return (self._cached_camera_position, self._cached_camera_forward)
         return None
 
-    def rebuild_connections(self, check_visibility: bool = True, connection_item: Any | None = None) -> None:
+    def rebuild_connections(self, check_visibility: bool = True, connection_item: Any | None = None):
         """Rebuild connection visualizations.
 
         Clears and redraws either a single connection or all connections
@@ -152,7 +152,7 @@ class ConnectionManipulator(sc.Manipulator):
         else:
             self._rebuild_all_connections(check_visibility)
 
-    def _rebuild_single_connection(self, connection_item: Any, check_visibility: bool) -> None:
+    def _rebuild_single_connection(self, connection_item: Any, check_visibility: bool):
         """Rebuild a single connection's visualization.
 
         Args:
@@ -169,7 +169,7 @@ class ConnectionManipulator(sc.Manipulator):
             overlay_panel.clear()
         self.build_overlay(connection_item)
 
-    def _rebuild_all_connections(self, check_visibility: bool) -> None:
+    def _rebuild_all_connections(self, check_visibility: bool):
         """Rebuild all connection visualizations.
 
         Args:
@@ -193,7 +193,7 @@ class ConnectionManipulator(sc.Manipulator):
             for joint_connection in joint_connections:
                 self.build_overlay(joint_connection)
 
-    def _clear_all_panels(self) -> None:
+    def _clear_all_panels(self):
         """Clear all connection and overlay panels."""
         for connection_panel in self._connection_panel_map.values():
             if connection_panel:
@@ -205,7 +205,7 @@ class ConnectionManipulator(sc.Manipulator):
                 overlay_panel.clear()
         self._overlay_panel_map = {}
 
-    def build_connection_line(self, connection: Any, check_visibility: bool) -> None:
+    def build_connection_line(self, connection: Any, check_visibility: bool):
         """Build the visual elements for a single connection line.
 
         Args:
@@ -245,7 +245,7 @@ class ConnectionManipulator(sc.Manipulator):
             self._draw_connection_line(start_position, end_position)
         transform.visible = connection.visible
 
-    def build_overlay(self, connection: Any) -> None:
+    def build_overlay(self, connection: Any):
         """Build the overlay indicator for joints with overlapping positions.
 
         Creates a clickable circle at the joint position that opens a menu
@@ -280,7 +280,7 @@ class ConnectionManipulator(sc.Manipulator):
         with transform:
             self._build_overlay_circle(joint_position, connection)
 
-    def _build_overlay_circle(self, joint_position: Gf.Vec3d, connection: Any) -> None:
+    def _build_overlay_circle(self, joint_position: Gf.Vec3d, connection: Any):
         """Build the clickable overlay circle at a joint position.
 
         Args:
@@ -310,7 +310,7 @@ class ConnectionManipulator(sc.Manipulator):
                 click_gesture.manager = PreventOthers()
                 hit_area.gestures = [click_gesture]
 
-    def update_connection_position(self, item: Any) -> None:
+    def update_connection_position(self, item: Any):
         """Update the position of an existing connection visualization.
 
         Args:
@@ -324,7 +324,7 @@ class ConnectionManipulator(sc.Manipulator):
         """
         self.rebuild_connections(check_visibility=True, connection_item=item)
 
-    def on_model_updated(self, item: Any | None) -> None:
+    def on_model_updated(self, item: Any | None):
         """Handle model update notifications.
 
         When the robot (or camera) changes, clears connection visuals and
@@ -360,7 +360,7 @@ class ConnectionManipulator(sc.Manipulator):
         self._clear_connections_visuals()
         self._redraw_future = asyncio.ensure_future(self._debounced_redraw())
 
-    def _draw_connection_line(self, start_position: Gf.Vec3d, end_position: Gf.Vec3d) -> None:
+    def _draw_connection_line(self, start_position: Gf.Vec3d, end_position: Gf.Vec3d):
         """Draw the complete connection line with arrow.
 
         Draws line segments from start to midpoint and midpoint to end,
@@ -411,7 +411,7 @@ class ConnectionManipulator(sc.Manipulator):
             sc.Line(start_floats, end_floats, color=LINE_COLOR, thickness=4)
         return sc.Line(start_floats, end_floats, color=LINE_BACKGROUND_COLOR, thickness=3)
 
-    def _draw_connection_arrow(self, arrow_position: Gf.Vec3d, direction_vector: Gf.Vec3d) -> None:
+    def _draw_connection_arrow(self, arrow_position: Gf.Vec3d, direction_vector: Gf.Vec3d):
         """Draw a directional arrow at the connection midpoint.
 
         Calculates arrow head vectors based on camera position and

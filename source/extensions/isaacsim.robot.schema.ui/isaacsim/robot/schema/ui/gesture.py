@@ -22,7 +22,7 @@ class PreventOthers(sc.GestureManager):
     that are in BEGAN or CHANGED states.
     """
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__()
 
     def can_be_prevented(self, gesture: Any) -> bool:
@@ -63,13 +63,13 @@ class OverlayMenuClick(sc.ClickGesture):
         **kwargs: Additional keyword arguments for the base click gesture.
     """
 
-    def __init__(self, connection: Any, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, connection: Any, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self._connection = connection
         self._context_menu_disabled = None
         self._viewport_disabled = None
 
-    def on_began(self) -> None:
+    def on_began(self):
         """Handle the start of a click gesture.
 
         Disables viewport context menu and selection to prevent
@@ -79,7 +79,7 @@ class OverlayMenuClick(sc.ClickGesture):
         self._context_menu_disabled = disable_context_menu(viewport_window)
         self._viewport_disabled = disable_selection(viewport_window)
 
-    def on_ended(self, *args: Any) -> None:
+    def on_ended(self, *args: Any):
         """Handle the end of a click gesture.
 
         Shows the overlay menu and re-enables viewport interactions.
@@ -90,7 +90,7 @@ class OverlayMenuClick(sc.ClickGesture):
         OverlayMenu.show_menu(self._connection)
         self._cleanup_disabled_states()
 
-    def _cleanup_disabled_states(self) -> None:
+    def _cleanup_disabled_states(self):
         """Re-enable viewport context menu and selection."""
         if self._context_menu_disabled:
             del self._context_menu_disabled

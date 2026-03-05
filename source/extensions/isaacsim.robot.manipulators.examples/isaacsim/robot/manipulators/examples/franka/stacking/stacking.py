@@ -25,11 +25,16 @@ from isaacsim.storage.native import get_assets_root_path
 
 
 class Stacking:
-    """Simplified stacking scene setup and controller using experimental APIs.
+    """Initialize the stacking scene setup and controller.
 
-    This class sets up a stacking scene with a robot and cubes for demonstration,
-    and provides control logic for stacking operations.
-    It uses experimental APIs and does not rely on old World/Scene/Tasks APIs.
+    Args:
+        robot_path: USD path where the robot should be created.
+        cube_positions: List of initial cube positions. If None, uses two default cubes.
+        cube_size: Size of each cube. If None, uses [0.05, 0.05, 0.05].
+        stack_target_position: Target position for stacking. If None, uses [0.5, 0.5, 0.12].
+        offset: Additional offset to apply to positions. If None, uses [0, 0, 0].
+        events_dt: List of step counts for each phase. If None, uses default values.
+        robot_name: Optional name/identifier for this robot (for logging purposes).
     """
 
     def __init__(
@@ -148,7 +153,7 @@ class Stacking:
             self.cubes.append(cube_rigid)
 
     def get_cube_names(self) -> List[str]:
-        """Get the list of cube names/paths.
+        """List of cube prim paths.
 
         Returns:
             List of cube prim paths.
@@ -156,7 +161,7 @@ class Stacking:
         return self.cube_paths
 
     def get_observations(self) -> dict:
-        """Get current task observations.
+        """Current task observations.
 
         Returns:
             Dictionary with cube observations including positions.
@@ -208,7 +213,7 @@ class Stacking:
         """Execute one step of the stacking operation using the specified IK method.
 
         Args:
-            ik_method: The inverse kinematics method to use. Defaults to "damped-least-squares".
+            ik_method: The inverse kinematics method to use.
 
         Returns:
             True if a step was executed, False if the sequence is complete.
@@ -344,7 +349,7 @@ class Stacking:
         return True
 
     def is_done(self) -> bool:
-        """Check if the stacking sequence is complete.
+        """Whether the stacking sequence is complete.
 
         Returns:
             True if all cubes have been stacked. Otherwise False.

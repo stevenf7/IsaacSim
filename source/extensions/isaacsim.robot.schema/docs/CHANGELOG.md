@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.1.0] - 2026-03-04
+### Changed
+- Added Overview.md, python_api.md and updated docstrings
+
 ## [5.0.0] - 2026-02-23
 ### Added
 - `KinematicChain` class for building and caching joint chains between arbitrary start/end prims on a robot
