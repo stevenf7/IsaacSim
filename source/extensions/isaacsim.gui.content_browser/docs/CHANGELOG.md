@@ -1,8 +1,11 @@
 # Changelog
+## [0.3.1] - 2026-03-04
+### Changed
+- Add SimReady folder
+
 ## [0.3.0] - 2026-03-04
 ### Changed
 - Add Overview.md, python_api.md, SETTINGS.md and update docstrings
-
 
 ## [0.2.1] - 2026-03-02
 ### Changed
