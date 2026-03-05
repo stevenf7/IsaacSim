@@ -95,7 +95,7 @@ def _collect_deprecated_dof_values(joint_prim: pxr.Usd.Prim) -> dict[str, int]:
     return deprecated_values
 
 
-def _remove_deprecated_dof_attrs(joint_prim: pxr.Usd.Prim, deprecated_tokens: set[str]) -> None:
+def _remove_deprecated_dof_attrs(joint_prim: pxr.Usd.Prim, deprecated_tokens: set[str]):
     """Remove deprecated DOF attributes from the edit layer.
 
     Args:
@@ -669,7 +669,7 @@ class RobotLinkNode:
 
     @property
     def children(self):
-        """Get the list of child nodes.
+        """List of child nodes.
 
         Returns:
             List of child link nodes.
@@ -684,7 +684,7 @@ class RobotLinkNode:
 
     @property
     def parent(self):
-        """Get the parent node.
+        """Parent node.
 
         Returns:
             The parent link node, or None if this is the root.
@@ -1270,7 +1270,7 @@ def AddSitesToRobotLinks(
     sites_by_parent: dict[str, list[pxr.Usd.Prim]] | None = None,
     *,
     sites_last: bool = False,
-) -> None:
+):
     """Add sites to the robot's robotLinks relationship.
 
     Args:
@@ -1366,7 +1366,7 @@ def RebuildRelationshipAsPrepend(
     prim: pxr.Usd.Prim,
     rel_name: str,
     targets: list[pxr.Sdf.Path],
-) -> None:
+):
     """Rebuild a relationship using prepend list operations.
 
     Args:
@@ -1388,7 +1388,7 @@ def RebuildRelationshipAsPrepend(
         rel.AddTarget(target, position=pxr.Usd.ListPositionFrontOfPrependList)
 
 
-def EnsurePrependListForRobotRelationships(robot_prim: pxr.Usd.Prim) -> None:
+def EnsurePrependListForRobotRelationships(robot_prim: pxr.Usd.Prim):
     """Ensure that robot links and joints relationships use prepend list.
 
     Args:

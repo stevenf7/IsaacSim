@@ -30,6 +30,14 @@ class FrankaPickPlaceExtension(omni.ext.IExt):
     """Extension for simple pick-and-place interactive example."""
 
     def on_startup(self, ext_id: str):
+        """Initialize the Franka Pick Place extension.
+
+        Sets up the extension with UI components and registers it with the example browser.
+        Creates the interactive pick-and-place example and builds the associated UI.
+
+        Args:
+            ext_id: The extension identifier.
+        """
         self.example_name = "Franka Pick Place"
         self.category = "Manipulation"
 
@@ -51,11 +59,20 @@ class FrankaPickPlaceExtension(omni.ext.IExt):
         )
 
     def on_shutdown(self):
+        """Clean up the extension on shutdown.
+
+        Deregisters the Franka Pick Place example from the example browser.
+        """
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)
 
 
 class FrankaPickPlaceUI(BaseSampleUITemplate):
-    """UI for the simple pick-place interactive example."""
+    """UI for the simple pick-place interactive example.
+
+    Args:
+        *args: Variable length argument list passed to the parent class.
+        **kwargs: Additional keyword arguments passed to the parent class.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -115,7 +132,11 @@ class FrankaPickPlaceUI(BaseSampleUITemplate):
         self.task_ui_elements["Start Pick Place"].enabled = False
 
     def _update_status(self, message: str):
-        """Update the status label."""
+        """Update the status label.
+
+        Args:
+            message: The status message to display.
+        """
         if "Status" in self.task_ui_elements:
             self.task_ui_elements["Status"].text = message
             print(f"Status: {message}")

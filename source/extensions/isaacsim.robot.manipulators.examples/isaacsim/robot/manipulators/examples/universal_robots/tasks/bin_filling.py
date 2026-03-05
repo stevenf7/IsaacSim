@@ -31,10 +31,10 @@ class BinFilling(BaseTask):
     """Task using UR10 robot to fill a bin with cubes and showcase the surface gripper torque/force limits.
 
     Args:
-        name (str, optional): Task name identifier. Should be unique if added to the World. Defaults to "bin_filling".
+        name: Task name identifier. Should be unique if added to the World.
     """
 
-    def __init__(self, name: str = "bin_filling") -> None:
+    def __init__(self, name: str = "bin_filling"):
         BaseTask.__init__(self, name=name, offset=None)
         self._ur10_robot = None
         self._packing_bin = None
@@ -55,17 +55,18 @@ class BinFilling(BaseTask):
         return
 
     def get_current_num_of_cubes_to_add(self) -> int:
-        """
+        """Number of cubes left to drop from the pipe.
+
         Returns:
-            int: Number of cubes left to drop from the pipe
+            Number of cubes left to drop from the pipe.
         """
         return self._cubes_to_add
 
-    def set_up_scene(self, scene: Scene) -> None:
+    def set_up_scene(self, scene: Scene):
         """Loads the stage USD and adds the robot and packing bin to the World's scene.
 
         Args:
-            scene (Scene): The world's scene.
+            scene: The world's scene.
         """
         super().set_up_scene(scene)
         add_reference_to_stage(usd_path=self._ur10_asset_path, prim_path="/World/Scene")
@@ -89,7 +90,7 @@ class BinFilling(BaseTask):
         self._create_cube_pool()
         return
 
-    def _create_cube_pool(self) -> None:
+    def _create_cube_pool(self):
         """Create the cube pool as dynamic cubes (hidden + rigid body physics disabled)."""
         if len(self._cubes) > 0:
             return
@@ -127,7 +128,7 @@ class BinFilling(BaseTask):
                 - end_effector_orientation
 
         Returns:
-            dict: Dictionary containing packing bin and robot observations.
+            Dictionary containing packing bin and robot observations.
         """
         joints_state = self._ur10_robot.get_joints_state()
         bin_position, bin_orientation = self._packing_bin.get_world_pose()
@@ -147,34 +148,35 @@ class BinFilling(BaseTask):
             },
         }
 
-    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
+    def pre_step(self, time_step_index: int, simulation_time: float):
         """Executed before the physics step.
 
         Args:
-            time_step_index (int): Current time step index
-            simulation_time (float): Current simulation time.
+            time_step_index: Current time step index
+            simulation_time: Current simulation time.
         """
         BaseTask.pre_step(self, time_step_index=time_step_index, simulation_time=simulation_time)
         if self._cubes_to_add > 0 and self._active_cubes < len(self._cubes) and time_step_index % 30 == 0:
             self._add_cube()
         return
 
-    def post_reset(self) -> None:
+    def post_reset(self):
         """Executed after reseting the scene"""
         self._cubes_to_add = 0
         self._active_cubes = 0
         return
 
-    def add_cubes(self, cubes_number: int = 10) -> None:
+    def add_cubes(self, cubes_number: int = 10):
         """Adds number of cubes to be added by the pipe.
 
         Args:
-            cubes_number (int, optional): number of cubes to be added by the pipe. Defaults to 10.
+            cubes_number: Number of cubes to be added by the pipe.
         """
         self._cubes_to_add += cubes_number
         return
 
     def _add_cube(self):
+        """Activates and spawns the next cube from the pool at the pipe position with random orientation."""
         if self._active_cubes >= len(self._cubes):
             self._cubes_to_add = 0
             return
@@ -188,7 +190,7 @@ class BinFilling(BaseTask):
         self._cubes_to_add -= 1
         return
 
-    def cleanup(self) -> None:
+    def cleanup(self):
         """Deactivate spawned cubes when resetting (hide + disable rigid bodies)."""
         count = self._active_cubes
         if count <= 0:
@@ -210,7 +212,7 @@ class BinFilling(BaseTask):
             - robot_name
 
         Returns:
-            dict: defined parameters of the task.
+            Defined parameters of the task.
         """
         params_representation = dict()
         params_representation["bin_name"] = {"value": self._packing_bin.name, "modifiable": False}

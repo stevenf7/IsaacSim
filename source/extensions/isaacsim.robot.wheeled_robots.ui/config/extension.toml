@@ -1,5 +1,5 @@
 [package]
-version = "2.1.25"
+version = "2.2.0"
 category = "Simulation"
 title = "Wheeled Robots UI"
 description = "This extension provides the UI elements for the wheeled_robots extension"
@@ -7,7 +7,7 @@ authors = ["hmazhar@nvidia.com", "ayushg@nvidia.com", "qwan@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.wheeled_robots"
 keywords = ["isaac", "physics", "analyze", "tune", "ui"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -94,3 +94,6 @@ args = [
 stdoutFailPatterns.exclude = [    
     '*The NumPy module was reloaded*',
 ]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

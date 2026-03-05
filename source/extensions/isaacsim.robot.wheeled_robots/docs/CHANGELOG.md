@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.1.0] - 2026-03-04
+### Changed
+- Added python_api.md and updated docstrings
+
 ## [5.0.4] - 2026-02-02
 ### Changed
 - Move pycoverage related test workarounds to isaacsim.test.utils extension

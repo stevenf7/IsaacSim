@@ -17,3 +17,5 @@
 
 from .pick_place_example import FrankaPickPlaceInteractive
 from .pick_place_example_extension import FrankaPickPlaceExtension
+
+__all__ = ["FrankaPickPlaceInteractive", "FrankaPickPlaceExtension"]

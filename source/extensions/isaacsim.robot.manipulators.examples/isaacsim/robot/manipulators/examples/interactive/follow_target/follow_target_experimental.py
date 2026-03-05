@@ -31,7 +31,7 @@ from isaacsim.robot.manipulators.examples.universal_robots import UR10FollowTarg
 class UR10FollowTargetInteractive(BaseSample):
     """Interactive sample for UR10 follow target demonstration."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__()
         self.controller: UR10FollowTarget = None
         self._is_following = False
@@ -100,7 +100,12 @@ class UR10FollowTargetInteractive(BaseSample):
         self._is_following = False
 
     def _follow_target_physics_callback(self, dt, context):
-        """Physics callback to execute follow target step by step."""
+        """Physics callback to execute follow target step by step.
+
+        Args:
+            dt: Time delta since last physics step.
+            context: Physics simulation context.
+        """
         if not self._is_following or self.controller is None:
             return
 
@@ -118,7 +123,12 @@ class UR10FollowTargetInteractive(BaseSample):
                 self._physics_callback_id = None
 
     def get_controller_status(self) -> dict:
-        """Get current status of the controller."""
+        """Get current status of the controller.
+
+        Returns:
+            Dictionary containing controller status information including target position, end effector position,
+            distance to target, target reached status, following status, and IK method.
+        """
         if self.controller:
             target_pos = self.controller.get_target_position()
             ee_pos = self.controller.get_robot_end_effector_position()
@@ -136,11 +146,20 @@ class UR10FollowTargetInteractive(BaseSample):
             return {"error": "Controller not initialized"}
 
     def is_following(self) -> bool:
-        """Check if the robot is currently following the target."""
+        """Check if the robot is currently following the target.
+
+        Returns:
+            True if the robot is following the target, False otherwise.
+        """
         return self._is_following
 
     def set_ik_method(self, method: str):
-        """Set the inverse kinematics method to use."""
+        """Set the inverse kinematics method to use.
+
+        Args:
+            method: The IK method name. Valid options are "damped-least-squares", "pseudoinverse",
+                "transpose", or "singular-value-decomposition".
+        """
         valid_methods = ["damped-least-squares", "pseudoinverse", "transpose", "singular-value-decomposition"]
         if method in valid_methods:
             self._ik_method = method
@@ -150,7 +169,11 @@ class UR10FollowTargetInteractive(BaseSample):
 
     # Methods for UI integration
     async def start_following_async(self):
-        """Start the follow target behavior."""
+        """Start the follow target behavior.
+
+        Returns:
+            True if following started successfully, False otherwise.
+        """
         if self.controller is None:
             print("ERROR: Controller not initialized")
             return False
@@ -179,7 +202,11 @@ class UR10FollowTargetInteractive(BaseSample):
         return True
 
     async def stop_following_async(self):
-        """Stop the follow target behavior."""
+        """Stop the follow target behavior.
+
+        Returns:
+            True if following stopped successfully, False otherwise.
+        """
         if not self._is_following:
             print("Not currently following target...")
             return False

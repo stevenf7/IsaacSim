@@ -33,10 +33,10 @@ class ConnectionScene:  # pragma: no cover
 
     Args:
         icon_scale: Scale factor for icons passed to the manipulator.
-        **kwargs: Additional arguments (unused).
+        **kwargs: Additional keyword arguments passed to the parent class.
     """
 
-    def __init__(self, icon_scale: float = 1.0, **kwargs: Any) -> None:
+    def __init__(self, icon_scale: float = 1.0, **kwargs: Any):
         self._manipulator: ConnectionManipulator | None = ConnectionManipulator(
             model=ConnectionInstance.get_instance().get_model(),
             aspect_ratio_policy=sc.AspectRatioPolicy.PRESERVE_ASPECT_HORIZONTAL,
@@ -54,11 +54,11 @@ class ConnectionScene:  # pragma: no cover
             self._on_timeline_event, name="timeline_subscription"
         )
 
-    def _on_timeline_event(self, event: carb.events.IEvent) -> None:
+    def _on_timeline_event(self, event: carb.events.IEvent):
         """Handle timeline events to control visibility during playback.
 
-        Hides joint connections during simulation playback and restores
-        visibility based on settings when stopped.
+            Hides joint connections during simulation playback and restores
+            visibility based on settings when stopped.
 
         Args:
             event: The timeline event.
@@ -72,7 +72,7 @@ class ConnectionScene:  # pragma: no cover
             if model:
                 model.force_rebuild()
 
-    def _on_settings_changed(self, *args: Any) -> None:
+    def _on_settings_changed(self, *args: Any):
         """Handle changes to the joint visualization setting.
 
         Args:
@@ -80,7 +80,7 @@ class ConnectionScene:  # pragma: no cover
         """
         self.visible = carb.settings.get_settings().get("/persistent/physics/visualizationDisplayJoints")
 
-    def set_joint_connections(self, joint_connections: list[Any]) -> None:
+    def set_joint_connections(self, joint_connections: list[Any]):
         """Set the joint connections to visualize.
 
         Args:
@@ -114,7 +114,7 @@ class ConnectionScene:  # pragma: no cover
         return self._manipulator.visible
 
     @visible.setter
-    def visible(self, value: bool) -> None:
+    def visible(self, value: bool):
         """Set the visibility state of the connection manipulator.
 
         Args:
@@ -130,10 +130,10 @@ class ConnectionScene:  # pragma: no cover
             return
         self._manipulator.visible = bool(value)
 
-    def destroy(self) -> None:
+    def destroy(self):
         """Clean up resources before destruction.
 
-        Clears all connections and releases references.
+            Clears all connections and releases references.
 
         Example:
 
@@ -143,7 +143,7 @@ class ConnectionScene:  # pragma: no cover
         """
         self.clear()
 
-    def clear(self) -> None:
+    def clear(self):
         """Clear all connection visualizations.
 
         Example:
@@ -156,7 +156,7 @@ class ConnectionScene:  # pragma: no cover
             return
         self._manipulator.clear()
 
-    def __del__(self) -> None:
+    def __del__(self):
         """Destructor ensuring cleanup."""
         self.destroy()
         self._manipulator = None
@@ -175,8 +175,9 @@ class ConnectionInstance:
     """
 
     _instance = None
+    """The singleton instance of the connection manager."""
 
-    def __init__(self, test: bool = False) -> None:
+    def __init__(self, test: bool = False):
         self.model: ConnectionModel | None = ConnectionModel()
 
     @staticmethod
@@ -196,7 +197,7 @@ class ConnectionInstance:
             ConnectionInstance._instance = ConnectionInstance()
         return ConnectionInstance._instance
 
-    def destroy(self) -> None:
+    def destroy(self):
         """Destroy the singleton instance and release resources.
 
         Example:
@@ -222,7 +223,7 @@ class ConnectionInstance:
         """
         return self.model
 
-    def set_joint_connections(self, joint_connections: list[Any]) -> None:
+    def set_joint_connections(self, joint_connections: list[Any]):
         """Set joint connections on the model.
 
         Args:

@@ -24,13 +24,21 @@ class Classes(Enum):
     """Enumeration of robot schema class tokens."""
 
     ROBOT_API = "IsaacRobotAPI"
+    """Token for the IsaacRobotAPI schema class."""
     LINK_API = "IsaacLinkAPI"
+    """Token for the IsaacLinkAPI schema class."""
     REFERENCE_POINT_API = "IsaacReferencePointAPI"
+    """Token for the IsaacReferencePointAPI schema class."""
     SITE_API = "IsaacSiteAPI"
+    """Token for the IsaacSiteAPI schema class."""
     JOINT_API = "IsaacJointAPI"
+    """Token for the IsaacJointAPI schema class."""
     SURFACE_GRIPPER = "IsaacSurfaceGripper"
+    """Token for the IsaacSurfaceGripper schema class."""
     ATTACHMENT_POINT_API = "IsaacAttachmentPointAPI"
+    """Token for the IsaacAttachmentPointAPI schema class."""
     NAMED_POSE = "IsaacNamedPose"
+    """Token for the IsaacNamedPose schema class."""
 
 
 _attr_prefix = "isaac"
@@ -40,55 +48,83 @@ class DofOffsetOpOrder(Enum):
     """Enumeration of DOF offset operation ordering tokens."""
 
     TRANS_X = "TransX"
+    """X-axis translation operation token."""
     TRANS_Y = "TransY"
+    """Y-axis translation operation token."""
     TRANS_Z = "TransZ"
+    """Z-axis translation operation token."""
     ROT_X = "RotX"
+    """X-axis rotation operation token."""
     ROT_Y = "RotY"
+    """Y-axis rotation operation token."""
     ROT_Z = "RotZ"
+    """Z-axis rotation operation token."""
 
 
 class Attributes(Enum):
     """Enumeration of custom robot schema attributes."""
 
     DESCRIPTION = (f"{_attr_prefix}:description", "Description", pxr.Sdf.ValueTypeNames.String)
+    """Description attribute for robots with string value type."""
     NAMESPACE = (f"{_attr_prefix}:namespace", "Namespace", pxr.Sdf.ValueTypeNames.String)
+    """Namespace attribute for robots with string value type."""
     ROBOT_TYPE = (f"{_attr_prefix}:robotType", "Robot Type", pxr.Sdf.ValueTypeNames.Token)
+    """Robot type attribute with token value type."""
     LICENSE = (f"{_attr_prefix}:license", "License", pxr.Sdf.ValueTypeNames.Token)
+    """License attribute with token value type."""
     VERSION = (f"{_attr_prefix}:version", "Version", pxr.Sdf.ValueTypeNames.String)
+    """Version attribute with string value type."""
     SOURCE = (f"{_attr_prefix}:source", "Source", pxr.Sdf.ValueTypeNames.String)
+    """Source attribute with string value type."""
     CHANGELOG = (f"{_attr_prefix}:changelog", "Changelog", pxr.Sdf.ValueTypeNames.StringArray)
+    """Changelog attribute with string array value type."""
     NAME_OVERRIDE = (f"{_attr_prefix}:nameOverride", "Name Override", pxr.Sdf.ValueTypeNames.String)
+    """Name override attribute with string value type."""
     REFERENCE_DESCRIPTION = (f"{_attr_prefix}:Description", "Reference Description", pxr.Sdf.ValueTypeNames.String)
+    """Reference description attribute with string value type."""
     FORWARD_AXIS = (f"{_attr_prefix}:forwardAxis", "Forward Axis", pxr.Sdf.ValueTypeNames.Token)
+    """Forward axis attribute with token value type."""
     JOINT_NAME_OVERRIDE = (f"{_attr_prefix}:NameOverride", "Joint Name Override", pxr.Sdf.ValueTypeNames.String)
+    """Joint name override attribute with string value type."""
     DOF_OFFSET_OP_ORDER = (
         f"{_attr_prefix}:physics:DofOffsetOpOrder",
         "Dof Offset Op Order",
         pxr.Sdf.ValueTypeNames.TokenArray,
     )
+    """DOF offset operation order attribute with token array value type."""
     ACTUATOR = (f"{_attr_prefix}:actuator", "Actuator", pxr.Sdf.ValueTypeNames.BoolArray)
+    """Actuator attribute with boolean array value type."""
     RETRY_INTERVAL = (f"{_attr_prefix}:retryInterval", "Retry Interval", pxr.Sdf.ValueTypeNames.Float)
+    """Retry interval attribute with float value type."""
     STATUS = (f"{_attr_prefix}:status", "Status", pxr.Sdf.ValueTypeNames.Token)
+    """Status attribute with token value type."""
     SHEAR_FORCE_LIMIT = (f"{_attr_prefix}:shearForceLimit", "Shear Force Limit", pxr.Sdf.ValueTypeNames.Float)
+    """Shear force limit attribute with float value type."""
     COAXIAL_FORCE_LIMIT = (f"{_attr_prefix}:coaxialForceLimit", "Coaxial Force Limit", pxr.Sdf.ValueTypeNames.Float)
+    """Coaxial force limit attribute with float value type."""
     MAX_GRIP_DISTANCE = (f"{_attr_prefix}:maxGripDistance", "Max Grip Distance", pxr.Sdf.ValueTypeNames.Float)
+    """Maximum grip distance attribute with float value type."""
     CLEARANCE_OFFSET = (f"{_attr_prefix}:clearanceOffset", "Clearance Offset", pxr.Sdf.ValueTypeNames.Float)
+    """Clearance offset attribute with float value type."""
     POSE_VALID = (f"{_attr_prefix}:robot:pose:valid", "Pose Valid", pxr.Sdf.ValueTypeNames.Bool)
+    """Pose valid attribute with boolean value type."""
     POSE_JOINT_VALUES = (
         f"{_attr_prefix}:robot:pose:jointValues",
         "Pose Joint Values",
         pxr.Sdf.ValueTypeNames.FloatArray,
     )
+    """Pose joint values attribute with float array value type."""
     POSE_JOINT_FIXED = (
         f"{_attr_prefix}:robot:pose:jointFixed",
         "Pose Joint Fixed",
         pxr.Sdf.ValueTypeNames.BoolArray,
     )
+    """Pose joint fixed attribute with boolean array value type."""
 
     # Custom properties for name and type
     @property
-    def name(self):
-        """Get the USD attribute name.
+    def name(self) -> str:
+        """USD attribute name.
 
         Returns:
             The USD attribute name string.
@@ -102,8 +138,8 @@ class Attributes(Enum):
         return self.value[0]
 
     @property
-    def display_name(self):
-        """Get the display name for the attribute.
+    def display_name(self) -> str:
+        """Display name for the attribute.
 
         Returns:
             The display name for UI presentation.
@@ -118,7 +154,7 @@ class Attributes(Enum):
 
     @property
     def type(self):
-        """Get the USD attribute type token.
+        """USD attribute type token.
 
         Returns:
             The USD attribute type token.
@@ -136,17 +172,25 @@ class Relations(Enum):
     """Enumeration of robot schema relationships."""
 
     ROBOT_LINKS = (f"{_attr_prefix}:physics:robotLinks", "Robot Links")
+    """Relationship token for connecting robot links in physics simulation."""
     ROBOT_JOINTS = (f"{_attr_prefix}:physics:robotJoints", "Robot Joints")
+    """Relationship token for connecting robot joints in physics simulation."""
     NAMED_POSES = (f"{_attr_prefix}:robot:namedPoses", "Named Poses")
+    """Relationship token for connecting named poses to a robot."""
     ATTACHMENT_POINTS = (f"{_attr_prefix}:attachmentPoints", "Attachment Points")
+    """Relationship token for connecting attachment points used by grippers."""
     GRIPPED_OBJECTS = (f"{_attr_prefix}:grippedObjects", "Gripped Objects")
+    """Relationship token for connecting objects currently gripped by a gripper."""
     POSE_START_LINK = (f"{_attr_prefix}:robot:pose:startLink", "Pose Start Link")
+    """Relationship token for connecting the start link of a named pose."""
     POSE_END_LINK = (f"{_attr_prefix}:robot:pose:endLink", "Pose End Link")
+    """Relationship token for connecting the end link of a named pose."""
     POSE_JOINTS = (f"{_attr_prefix}:robot:pose:joints", "Pose Joints")
+    """Relationship token for connecting the joints of a named pose."""
 
     @property
-    def name(self):
-        """Get the USD relationship name.
+    def name(self) -> str:
+        """USD relationship name.
 
         Returns:
             The USD relationship name string.
@@ -160,8 +204,8 @@ class Relations(Enum):
         return self.value[0]
 
     @property
-    def display_name(self):
-        """Get the display name for the relationship.
+    def display_name(self) -> str:
+        """Display name for the relationship.
 
         Returns:
             The display name for UI presentation.

@@ -49,9 +49,11 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
     """
 
     WINDOW_NAME = "Robot Inspector"
+    """The name of the Robot Inspector window."""
     MENU_GROUP = "Window"
+    """The menu group where the Robot Hierarchy window option is located."""
 
-    def on_startup(self, extension_id: str) -> None:
+    def on_startup(self, extension_id: str):
         """Initialize the extension when loaded.
 
         Registers the window, menu entry, viewport scene, deactivate column,
@@ -111,7 +113,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
             for event in (omni.usd.StageEventType.OPENED, omni.usd.StageEventType.CLOSING)
         ]
 
-    def _on_stage_cleared(self) -> None:
+    def _on_stage_cleared(self):
         """Clear the masking layer when a new stage is opened or the current one closes."""
         if self._masking_ops:
             self._masking_ops.clear_all()
@@ -139,7 +141,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
             return ""
         return str(Path(ext_path) / "data" / "icons")
 
-    def _register_icon_override(self) -> None:
+    def _register_icon_override(self):
         """Register a per-prim icon override callback with StageIcons.
 
         The callback checks the ``isaacsim:deactivated`` customData key on
@@ -174,7 +176,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
             return self._xform_disabled_icon
         return None
 
-    def _register_deactivate_column(self) -> None:
+    def _register_deactivate_column(self):
         """Register the Deactivate and Bypass column delegates.
 
         The subscription objects must be held alive; dropping them unregisters
@@ -192,7 +194,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
             "Anchor", partial(AnchorColumnDelegate, icons_dir=icons_dir)
         )
 
-    def on_shutdown(self) -> None:
+    def on_shutdown(self):
         """Clean up when the extension is unloaded.
 
         Cleans up the window, menu entry, viewport scene, column delegate,
@@ -222,7 +224,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
         self._bypass_column_delegate_sub = None
         self._anchor_column_delegate_sub = None
 
-    async def _destroy_window_async(self) -> None:
+    async def _destroy_window_async(self):
         """Destroy the window asynchronously.
 
         Waits one frame to handle window movement deferral.
@@ -232,7 +234,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
             self._window.destroy()
             self._window = None
 
-    def _on_visibility_changed(self, visible: bool) -> None:
+    def _on_visibility_changed(self, visible: bool):
         """Handle window visibility changes.
 
         Args:
@@ -242,7 +244,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
         if not visible:
             asyncio.ensure_future(self._destroy_window_async())
 
-    def show_window(self, value: bool) -> None:
+    def show_window(self, value: bool):
         """Show or hide the Robot Inspector window.
 
         Args:

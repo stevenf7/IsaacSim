@@ -17,3 +17,5 @@
 
 from .follow_target_experimental import UR10FollowTargetInteractive
 from .follow_target_extension_experimental import UR10FollowTargetExtension
+
+__all__ = ["UR10FollowTargetInteractive", "UR10FollowTargetExtension"]

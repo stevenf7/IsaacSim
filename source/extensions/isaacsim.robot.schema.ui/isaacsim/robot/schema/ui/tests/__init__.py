@@ -14,4 +14,7 @@
 # limitations under the License.
 
 
+"""Unit tests for the robot schema UI module."""
+
+
 scan_for_test_modules = True

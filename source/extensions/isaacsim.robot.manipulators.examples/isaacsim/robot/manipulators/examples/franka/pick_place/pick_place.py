@@ -29,6 +29,10 @@ class FrankaPickPlace:
 
     No complex inheritance, no RL concepts, no task wrappers.
     Just straightforward robot control that's easy to understand and modify.
+
+    Args:
+        events_dt: List of step counts for each phase. If None, uses default values.
+        robot_name: Optional name/identifier for this robot (e.g. "Robot 0"). Used in phase log messages.
     """
 
     def __init__(
@@ -73,20 +77,20 @@ class FrankaPickPlace:
         offset: Optional[np.ndarray] = None,
         robot_path: str = "/World/robot",
         cube_path: str = "/World/Cube",
-    ) -> None:
+    ):
         """Set up the scene with robot and cube.
 
         Creates and adds a Franka robot and a dynamic cube to the simulation world.
         Sets default values for positions and sizes if not provided.
 
         Args:
-            cube_initial_position: Initial cube position [x, y, z]. Defaults to [0.5, 0.0, 0.0258].
-            cube_initial_orientation: Initial cube orientation as quaternion [w, x, y, z]. Defaults to [1, 0, 0, 0].
-            cube_size: Cube dimensions [w, h, d]. Defaults to [0.0515, 0.0515, 0.0515].
-            target_position: Target position for placing [x, y, z]. Defaults to [-0.3, -0.3, cube_height/2].
-            offset: Additional offset to apply to target position and cube position [x, y, z]. Defaults to [0, 0, 0].
-            robot_path: USD path for the robot prim. Use unique paths for multiple robots. Defaults to "/World/robot".
-            cube_path: USD path for the cube prim. Use unique paths for multiple cubes. Defaults to "/World/Cube".
+            cube_initial_position: Initial cube position [x, y, z].
+            cube_initial_orientation: Initial cube orientation as quaternion [w, x, y, z].
+            cube_size: Cube dimensions [w, h, d].
+            target_position: Target position for placing [x, y, z].
+            offset: Additional offset to apply to target position and cube position [x, y, z].
+            robot_path: USD path for the robot prim. Use unique paths for multiple robots.
+            cube_path: USD path for the cube prim. Use unique paths for multiple cubes.
         """
         self.cube_initial_position = cube_initial_position
         self.cube_initial_orientation = cube_initial_orientation
@@ -145,7 +149,7 @@ class FrankaPickPlace:
         """Execute one step of the pick-and-place operation using the specified IK method.
 
         Args:
-            ik_method: The inverse kinematics method to use. Defaults to "damped-least-squares".
+            ik_method: The inverse kinematics method to use.
 
         Returns:
             True if a step was executed, False if the sequence is complete.
