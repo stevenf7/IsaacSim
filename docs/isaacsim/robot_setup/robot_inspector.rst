@@ -127,7 +127,7 @@ When the Robot Inspector window is active, joint connections are drawn as overla
 - Connection lines include directional arrows indicating the parent-to-child relationship.
 - When multiple joints overlap at the same screen position (common at dense joint clusters), an **overlay circle** is drawn. Clicking the circle opens a context menu listing all joints at that location, allowing selection of any individual joint.
 - Joint visualization is hidden during simulation playback and restored when playback stops.
-- Visibility is controlled by the **Physics > Visualization > Display Joints** setting.
+- Visibility is controlled by the **Visibility Menu (Eye Icon on viewport) > Show by Type > Physics > Joints** setting.
 
 
 .. _isaac_sim_robot_schema_ui_utilities:
