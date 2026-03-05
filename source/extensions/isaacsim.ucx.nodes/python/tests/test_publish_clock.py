@@ -106,6 +106,7 @@ class TestUCXPublishClock(UCXTestCase):
                     og.Controller.Keys.SET_VALUES: [
                         ("PublishClock.inputs:port", self.port),
                         ("PublishClock.inputs:tag", DEFAULT_TEST_TAG),
+                        ("PublishClock.inputs:timeoutMs", 5000),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnImpulse.outputs:execOut", "PublishClock.inputs:execIn"),
@@ -141,7 +142,7 @@ class TestUCXPublishClock(UCXTestCase):
         while time.time() - start_time < RECEIVE_TIMEOUT_SECONDS:
             if request.completed:
                 break
-            time.sleep(0.001)
+            await asyncio.sleep(0.001)
 
         self.assertTrue(request.completed, "Did not receive clock message")
         request.check_error()
