@@ -1,5 +1,5 @@
 [package]
-version = "0.3.0"
+version = "0.3.1"
 category = "other"
 title = "Content Browser"
 description = "Extends the Omniverse content browser with an Isaac Sim collection providing quick access to curated robot models, environments, materials, and sensor assets."
@@ -31,8 +31,9 @@ name = "isaacsim.gui.content_browser.tests"
 exts."isaacsim.gui.content_browser".timeout = 5
 # SimReady assets search locations list. Currently only the first entry is used.
 exts."omni.simready.content.browser".content_root_urls = [
-    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/SimReady/isaac_content"
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/SimReady"
 ]
+exts."omni.simready.content.browser".usd_search_endpoint = "https://search.dev.simready.omniverse.nvidia.com/"
 
 # define the folders to be shown in the content browser
 exts."isaacsim.gui.content_browser".folders = [
@@ -44,6 +45,7 @@ exts."isaacsim.gui.content_browser".folders = [
     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Props",
     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples",
     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Sensors",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/SimReady",
 ]
 
 [[test]]
