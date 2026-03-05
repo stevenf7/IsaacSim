@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0] - 2026-03-04
+### Added
+- Resolver-aware property visibility: Newton and Mujoco schema properties are hidden or disabled when the other resolver (Newton vs MuJoCo) provides the value. Preference is determined by first authored value, otherwise Newton.
+### Changed
+- Property builders in `mujoco_schemas` and `newton_schemas` use callbacks to hide scene, joint, shape, and material properties when the resolver mapping is provided by the other backend.
+
 ## [1.1.0] - 2026-03-04
 ### Changed
 - Add Overview.md, python_api.md and update docstrings
