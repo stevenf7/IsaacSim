@@ -57,7 +57,7 @@ class NewtonRigidContactView:
         frontend: Tensor framework frontend.
     """
 
-    def __init__(self, backend: "RigidContactSet", frontend: "NumpyFrontend | TorchFrontend | WarpFrontend") -> None:
+    def __init__(self, backend: "RigidContactSet", frontend: "NumpyFrontend | TorchFrontend | WarpFrontend"):
         self._backend = backend
         self._frontend = frontend
         self._newton_stage = backend.newton_stage
@@ -83,7 +83,7 @@ class NewtonRigidContactView:
         self._contact_counts = None
         self._contact_start_indices = None
 
-    def _create_filter_mappings(self) -> None:
+    def _create_filter_mappings(self):
         """Create filter mapping array for sensor-body-filter lookups."""
         if self._model is None:
             return
@@ -111,40 +111,68 @@ class NewtonRigidContactView:
 
     @property
     def count(self) -> int:
-        """Number of contact sensors in this view."""
+        """Number of contact sensors in this view.
+
+        Returns:
+            Number of contact sensors.
+        """
         return self._backend.count
 
     @property
     def sensor_count(self) -> int:
-        """Number of contact sensors."""
+        """Number of contact sensors.
+
+        Returns:
+            Number of contact sensors.
+        """
         return self._backend.sensor_count
 
     @property
     def filter_count(self) -> int:
-        """Maximum number of filter bodies per sensor."""
+        """Maximum number of filter bodies per sensor.
+
+        Returns:
+            Maximum number of filter bodies per sensor.
+        """
         return self._backend.filter_count
 
     @property
     def sensor_names(self) -> list[str]:
-        """List of sensor names."""
+        """List of sensor names.
+
+        Returns:
+            List of sensor names.
+        """
         return self._backend.sensor_names
 
     @property
     def sensor_paths(self) -> list[str]:
-        """List of USD paths for sensors."""
+        """List of USD paths for sensors.
+
+        Returns:
+            List of USD paths for sensors.
+        """
         return self._backend.sensor_paths
 
     @property
     def filter_paths(self) -> list[list[str]]:
-        """List of filter paths (list of lists, one list per sensor)."""
+        """List of filter paths (list of lists, one list per sensor).
+
+        Returns:
+            List of filter paths with nested lists for each sensor.
+        """
         return self._backend.filter_paths
 
     @property
     def filter_names(self) -> list[list[str]]:
-        """List of filter names."""
+        """List of filter names.
+
+        Returns:
+            List of filter names.
+        """
         return self._backend.filter_names
 
-    def update(self, dt: float) -> None:
+    def update(self, dt: float):
         """Update simulation timestamp.
 
         Args:
@@ -210,7 +238,7 @@ class NewtonRigidContactView:
 
         return self._net_forces
 
-    def get_contact_force_matrix(self, dt: float, copy: bool = copy_data):
+    def get_contact_force_matrix(self, dt: float, copy: bool = copy_data) -> wp.array:
         """Get contact force matrix (sensor x filter).
 
         Args:
@@ -438,7 +466,7 @@ class NewtonRigidContactView:
             indices_frontend,
         )
 
-    def _to_warp_array(self, tensor: "wp.array | np.ndarray") -> wp.array:
+    def _to_warp_array(self, tensor: wp.array | np.ndarray) -> wp.array:
         """Convert frontend tensor to Warp array for kernel launch.
 
         Args:

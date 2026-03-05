@@ -35,20 +35,20 @@ class NewtonPhysicsInterface:
         newtonStage: NewtonStage instance that manages the simulation.
     """
 
-    def __init__(self, newtonStage: NewtonStage) -> None:
+    def __init__(self, newtonStage: NewtonStage):
         self.newtonStage = newtonStage
         self.timeline = omni.timeline.get_timeline_interface()
 
     @carb.profiler.profile
-    def force_load_physics_from_usd(self, device: str | None = None) -> None:
+    def force_load_physics_from_usd(self, device: str | None = None):
         """Force load physics from USD.
 
         Args:
-            device: Device to use for simulation. Defaults to None (uses newton stage's current device).
+            device: Device to use for simulation.
         """
         self.newtonStage.initialize_newton(device)
 
-    def flush_changes(self) -> None:
+    def flush_changes(self):
         """Flush any pending changes to ensure Newton is fully initialized.
 
         This is called before creating simulation views to ensure Newton's state
@@ -58,12 +58,12 @@ class NewtonPhysicsInterface:
             carb.log_warn("[Newton] flush_changes called but Newton not initialized yet")
 
     @carb.profiler.profile
-    def start_simulation(self) -> None:
+    def start_simulation(self):
         """Start the physics simulation."""
         self.update_simulation(self.newtonStage.sim_dt, 0.0)
 
     @carb.profiler.profile
-    def update_simulation(self, elapsedStep: float, currentTime: float) -> None:
+    def update_simulation(self, elapsedStep: float, currentTime: float):
         """Update the simulation by stepping physics.
 
         Args:
@@ -79,18 +79,18 @@ class NewtonPhysicsInterface:
         updateToUsd: bool = False,
         updateVelocitiesToUsd: bool = True,
         outputVelocitiesLocalSpace: bool = False,
-    ) -> None:
+    ):
         """Update transformations from simulation to USD/Fabric.
 
         Args:
-            updateToFastCache: Update to fast cache. Defaults to True.
-            updateToUsd: Update to USD. Defaults to False.
-            updateVelocitiesToUsd: Update velocities to USD. Defaults to True.
-            outputVelocitiesLocalSpace: Output velocities in local space. Defaults to False.
+            updateToFastCache: Update to fast cache.
+            updateToUsd: Update to USD.
+            updateVelocitiesToUsd: Update velocities to USD.
+            outputVelocitiesLocalSpace: Output velocities in local space.
         """
 
     @carb.profiler.profile
-    def update(self, elapsedStep: float, currentTime: float) -> None:
+    def update(self, elapsedStep: float, currentTime: float):
         """Update callback for stage update events.
 
         Args:
@@ -99,11 +99,11 @@ class NewtonPhysicsInterface:
         """
 
     @carb.profiler.profile
-    def fetch_results(self) -> None:
+    def fetch_results(self):
         """Fetch simulation results after stepping."""
         return
 
-    def subscribe_physics_step_events(self, callback: Callable) -> None:
+    def subscribe_physics_step_events(self, callback: Callable):
         """Subscribe to physics step events.
 
         Args:
@@ -111,7 +111,7 @@ class NewtonPhysicsInterface:
         """
         self.newtonStage.physics_callbacks.append(callback)
 
-    def unsubscribe_physics_step_events(self, callback: Callable) -> None:
+    def unsubscribe_physics_step_events(self, callback: Callable):
         """Unsubscribe from physics step events.
 
         Args:
@@ -119,7 +119,7 @@ class NewtonPhysicsInterface:
         """
         self.newtonStage.physics_callbacks.remove(callback)
 
-    def simulate(self, dt: float, currentTime: float) -> None:
+    def simulate(self, dt: float, currentTime: float):
         """Step the simulation by the given time delta.
 
         Args:

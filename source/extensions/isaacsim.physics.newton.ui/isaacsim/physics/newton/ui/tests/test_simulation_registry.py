@@ -14,6 +14,9 @@
 # limitations under the License.
 
 
+"""Tests for Newton simulator registration and capability management."""
+
+
 from omni.kit.test.async_unittest import AsyncTestCase
 from omni.physics.core import get_physics_interface, get_physics_simulation_interface
 from omni.physics.isaacsimready import get_capability_manager, get_variant_switcher
@@ -32,6 +35,10 @@ class NewtonRegistryTests(AsyncTestCase):
         """Clean up after tests."""
 
     def test_capability(self):
+        """Test Newton simulation capability for different schema types.
+
+        Verifies that Newton simulation can handle NewtonSceneAPI and MjcActuator schemas but not PhysxSceneAPI.
+        """
         simulation_ids = get_physics_interface().get_simulation_ids()
         sim_found = False
 
@@ -51,9 +58,17 @@ class NewtonRegistryTests(AsyncTestCase):
         self.assertTrue(sim_found)
 
     def test_variant_switch_registry(self):
+        """Test variant switcher registration for Newton simulator.
+
+        Verifies that the variant switcher correctly returns 'mujoco' as the variant for the Newton simulator.
+        """
         variant_name = self._variant_switcher.get_variant_for_simulator("Newton")
         self.assertTrue(variant_name == "mujoco")
 
     def test_capablity_register(self):
+        """Test capability manager registration of schema types.
+
+        Verifies that MjcActuator schema type is properly registered with the capability manager.
+        """
         registered_types = self._capability_manager.get_registered_schema_type_names()
         self.assertTrue("MjcActuator" in registered_types)

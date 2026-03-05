@@ -104,10 +104,16 @@ class MujocoUiDefinitions:
     """UI definitions (widgets, property builders, ordering) for Mujoco schemas."""
 
     ignore = {}
+    """Dictionary of schema types to ignore in UI rendering."""
     extensions = {UsdPhysics.Joint: ["MjcJointAPI"]}
+    """Dictionary mapping USD schema types to their corresponding Mujoco API extensions."""
     extras = {}
+    """Dictionary of additional UI configurations for specific schema types."""
     widgets = {}
+    """Dictionary mapping schema properties to custom UI widget definitions."""
     property_builders = {
         "mjc:compiler:useThread": HIDE_PROPERTY,
     }
+    """Dictionary mapping property names to their corresponding UI builder classes."""
     property_order = {}
+    """Dictionary defining the display order of properties in the UI."""

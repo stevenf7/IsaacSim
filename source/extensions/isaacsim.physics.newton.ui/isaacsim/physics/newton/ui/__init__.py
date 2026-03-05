@@ -14,3 +14,10 @@
 # limitations under the License.
 
 from .extension import *
+
+__all__ = [
+    "MujocoUiDefinitions",
+    "get_mujoco_schema_names",
+    "NewtonUiDefinitions",
+    "get_newton_schema_names",
+]

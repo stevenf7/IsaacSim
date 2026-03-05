@@ -51,7 +51,7 @@ class NewtonRigidBodyView:
         frontend: Tensor framework frontend.
     """
 
-    def __init__(self, backend: Any, frontend: Any) -> None:
+    def __init__(self, backend: Any, frontend: Any):
         self._backend = backend
         self._frontend = frontend
         self._newton_stage = backend.newton_stage
@@ -104,26 +104,42 @@ class NewtonRigidBodyView:
         return convert_to_warp(tensor, self._frontend.device)
 
     @property
-    def count(self):
-        """Number of rigid bodies in this view."""
+    def count(self) -> int:
+        """Number of rigid bodies in this view.
+
+        Returns:
+            The count of rigid bodies.
+        """
         return self._backend.count
 
     @property
-    def max_shapes(self):
-        """Maximum number of shapes across all bodies."""
+    def max_shapes(self) -> int:
+        """Maximum number of shapes across all bodies.
+
+        Returns:
+            The maximum number of shapes.
+        """
         return self._backend.max_shapes
 
     @property
-    def body_paths(self):
-        """List of USD paths for the bodies."""
+    def body_paths(self) -> list[str]:
+        """List of USD paths for the bodies.
+
+        Returns:
+            The USD paths for the bodies.
+        """
         return self._backend.body_paths
 
     @property
-    def body_names(self):
-        """List of names for the bodies."""
+    def body_names(self) -> list[str]:
+        """List of names for the bodies.
+
+        Returns:
+            The names for the bodies.
+        """
         return self._backend.body_names
 
-    def update(self, dt: float) -> None:
+    def update(self, dt: float):
         """Update simulation timestamp.
 
         Args:
@@ -322,7 +338,7 @@ class NewtonRigidBodyView:
             return self._inv_inertias
 
     @carb.profiler.profile
-    def set_transforms(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_transforms(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set body transforms.
 
         For free rigid bodies, this also updates their FREE joint coordinates.
@@ -367,7 +383,7 @@ class NewtonRigidBodyView:
         )
 
     @carb.profiler.profile
-    def set_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set body velocities.
 
         Args:
@@ -390,7 +406,7 @@ class NewtonRigidBodyView:
         )
 
     @carb.profiler.profile
-    def set_masses(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_masses(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set body masses.
 
         Args:
@@ -425,7 +441,7 @@ class NewtonRigidBodyView:
         )
 
     @carb.profiler.profile
-    def set_coms(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_coms(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set body centers of mass.
 
         Position is written to Newton's body_com. Orientation is cached in _coms buffer
@@ -464,7 +480,7 @@ class NewtonRigidBodyView:
         )
 
     @carb.profiler.profile
-    def set_inertias(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_inertias(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set body inertias.
 
         Args:
@@ -512,7 +528,7 @@ class NewtonRigidBodyView:
         # Always return zeros (all bodies are enabled)
         return self._disable_simulations
 
-    def set_disable_simulations(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_disable_simulations(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set disable simulation flags for bodies.
 
         Newton doesn't support disabling individual bodies; this is a no-op.
@@ -542,7 +558,7 @@ class NewtonRigidBodyView:
         # Always return zeros (gravity enabled for all bodies)
         return self._disable_gravities
 
-    def set_disable_gravities(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
+    def set_disable_gravities(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set disable gravity flags for bodies.
 
         Newton doesn't support per-body gravity disabling; this is a no-op.
@@ -562,7 +578,7 @@ class NewtonRigidBodyView:
         indices: Any | None = None,
         is_global: bool = True,
         indices_mask: Any | None = None,
-    ) -> None:
+    ):
         """Apply forces to rigid bodies (deprecated, use apply_forces_and_torques_at_position).
 
         Args:
@@ -585,7 +601,7 @@ class NewtonRigidBodyView:
         indices: Any,
         is_global: bool = True,
         indices_mask: Any | None = None,
-    ) -> None:
+    ):
         """Apply forces and torques to rigid bodies at specified positions.
 
         This function provides flexible force application with the following capabilities:

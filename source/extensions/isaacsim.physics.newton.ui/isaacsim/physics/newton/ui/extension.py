@@ -29,7 +29,7 @@ class PhysicsNewtonUIExtension(omni.ext.IExt):
     def __init__(self):
         super().__init__()
 
-    def on_startup(self, _ext_id: str) -> None:
+    def on_startup(self, _ext_id: str):
         """Register Newton/Mujoco schema names, property widgets, and variant switcher.
 
         Args:

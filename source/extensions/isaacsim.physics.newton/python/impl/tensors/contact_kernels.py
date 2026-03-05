@@ -51,9 +51,6 @@ def count_contacts_per_pair_kernel(
         body_sensor_map: Body to sensor mapping.
         body_filter_map: Body filter mapping (2D).
         contact_counts: Output contact counts per sensor-filter pair.
-
-    Returns:
-        None. Results are written to contact_counts.
     """
     tid = wp.tid()
     count = contact_count_total[0]
@@ -122,9 +119,6 @@ def net_contact_forces_kernel(
         shape_body: Shape to body mapping.
         body_sensor_map: Body to sensor mapping.
         net_forces: Output net forces per sensor (sensor_count, 3).
-
-    Returns:
-        None. Results are written to net_forces.
     """
     tid = wp.tid()
     count = contact_count[0]
@@ -202,9 +196,6 @@ def contact_force_matrix_kernel(
         body_filter_map: Sensor-body to filter index mapping.
         filter_count: Number of filters.
         force_matrix: Output force matrix (sensor_count, filter_count, 3).
-
-    Returns:
-        None. Results are written to force_matrix.
     """
     tid = wp.tid()
     count = contact_count[0]
@@ -308,9 +299,6 @@ def contact_data_kernel(
         contact_separations: Output penetration depths (N, 1).
         contact_counts: Output contact counts per pair.
         contact_start_indices: Output start indices per pair.
-
-    Returns:
-        None. Results are written to output parameters.
     """
     tid = wp.tid()
     count = contact_count[0]

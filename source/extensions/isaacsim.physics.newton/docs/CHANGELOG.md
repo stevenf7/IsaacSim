@@ -1,4 +1,7 @@
 # Changelog
+## [0.5.0] - 2026-03-04
+### Changed
+- Add Overview.md, python_api.md, SETTINGS.md and update docstrings
 
 ## [0.5.0] - 2026-03-03
 ### Changed

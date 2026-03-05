@@ -73,7 +73,7 @@ class ArticulationSet:
         meta_types: list[ArticulationMetaType],
         count: int,
         max_dofs: int,
-    ) -> None:
+    ):
         self.newton_stage = newton_stage
         self.model = newton_stage.model
         self.articulation_indices = articulation_indices
@@ -94,17 +94,29 @@ class ArticulationSet:
 
     @property
     def shared_metatype(self) -> ArticulationMetaType:
-        """Get the shared metatype for homogeneous articulations."""
+        """Shared metatype for homogeneous articulations.
+
+        Returns:
+            The shared ArticulationMetaType instance.
+        """
         return self.meta_types[0]
 
     @property
     def max_links(self) -> int:
-        """Get the maximum number of links per articulation."""
+        """Maximum number of links per articulation.
+
+        Returns:
+            The maximum link count.
+        """
         return self.shared_metatype.link_count
 
     @property
     def link_paths(self) -> list[list[str]]:
-        """Get link paths for all articulations."""
+        """Link paths for all articulations.
+
+        Returns:
+            List of link paths for each articulation.
+        """
         link_paths = []
         for meta in self.meta_types:
             paths = meta.link_paths
@@ -113,7 +125,11 @@ class ArticulationSet:
 
     @property
     def max_shapes(self) -> int:
-        """Get the maximum number of shapes per articulation."""
+        """Maximum number of shapes per articulation.
+
+        Returns:
+            The maximum shape count.
+        """
         max_shapes = 0
         for i in range(self.count):
             max_shapes = max(max_shapes, len(self.meta_types[i].link_shapes))
@@ -152,7 +168,7 @@ class ArticulationMetaType:
         joint_dof_counts: list[int],
         dof_types: list[omni.physics.tensors.DofType],
         fixed_base: bool,
-    ) -> None:
+    ):
         self.link_count = len(link_paths)
         self.joint_count = len(joint_paths)
         self.dof_count = len(dof_paths)
@@ -171,17 +187,29 @@ class ArticulationMetaType:
 
     @property
     def link_names(self) -> list[str]:
-        """Derive link names from link paths by extracting the name after the last '/'."""
+        """Link names derived from link paths by extracting the name after the last '/'.
+
+        Returns:
+            List of link names.
+        """
         return [path.rsplit("/", 1)[-1] for path in self.link_paths]
 
     @property
     def joint_names(self) -> list[str]:
-        """Derive joint names from joint paths by extracting the name after the last '/'."""
+        """Joint names derived from joint paths by extracting the name after the last '/'.
+
+        Returns:
+            List of joint names.
+        """
         return [path.rsplit("/", 1)[-1] for path in self.joint_paths]
 
     @property
     def dof_names(self) -> list[str]:
-        """Derive DOF names from DOF paths by extracting the name after the last '/'."""
+        """DOF names derived from DOF paths by extracting the name after the last '/'.
+
+        Returns:
+            List of DOF names.
+        """
         return [path.rsplit("/", 1)[-1] for path in self.dof_paths]
 
 
@@ -201,7 +229,7 @@ class RigidBodySet:
         body_indices: wp.array,
         body_paths: list[str],
         body_names: list[str],
-    ) -> None:
+    ):
         self.newton_stage = newton_stage
         self.model = newton_stage.model
         self.body_indices = body_indices
@@ -246,7 +274,7 @@ class RigidContactSet:
         filter_names: list[list[str]],
         max_filters: int,
         body_sensor_map: wp.array,
-    ) -> None:
+    ):
         self.newton_stage = newton_stage
         self.model = newton_stage.model
         self.sensor_indices = sensor_indices
@@ -268,7 +296,7 @@ class NewtonSimView:
         newton_stage: The Newton stage instance.
     """
 
-    def __init__(self, newton_stage: NewtonStage) -> None:
+    def __init__(self, newton_stage: NewtonStage):
         self.newton_stage = newton_stage
         self.model = newton_stage.model
         self.is_valid_flag = True
@@ -299,7 +327,7 @@ class NewtonSimView:
         gravity[2] = newton_gravity[2]
         return True
 
-    def set_gravity(self, gravity: list[float]) -> None:
+    def set_gravity(self, gravity: list[float]):
         """Set the simulation gravity vector.
 
         Args:
@@ -315,10 +343,10 @@ class NewtonSimView:
         """
         return True
 
-    def initialize_kinematic_bodies(self) -> None:
+    def initialize_kinematic_bodies(self):
         """Initialize kinematic bodies."""
 
-    def invalidate(self) -> None:
+    def invalidate(self):
         """Invalidate the simulation view."""
         self.is_valid_flag = False
 

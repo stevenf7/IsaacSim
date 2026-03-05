@@ -1148,9 +1148,6 @@ def update_joint_coords_from_root(
         joint_type: Joint types.
         joint_q: Output joint coordinates.
         joint_X_p: Output joint parent transforms.
-
-    Returns:
-        None. Results are written to joint_q and joint_X_p.
     """
     tid = wp.tid()
     arti_id = arti_indices[tid]
@@ -1267,9 +1264,6 @@ def assign_articulation_root_states(
         joint_q: Output joint positions.
         joint_qd: Output joint velocities.
         joint_X_p: Output joint parent transforms.
-
-    Returns:
-        None. Results are written to output parameters.
     """
     tid = wp.tid()
     # if a mask array is provided then only apply the data for the indices that are True
@@ -1343,9 +1337,6 @@ def apply_body_forces_at_position(
         has_torque: Whether torque tensor is provided.
         has_position: Whether position tensor is provided.
         body_f: Output body forces (spatial vectors).
-
-    Returns:
-        None. Results are written to body_f.
     """
     tid = wp.tid()
 
@@ -1457,9 +1448,6 @@ def apply_link_forces_at_position(
         has_torque: Whether torque tensor is provided.
         has_position: Whether position tensor is provided.
         body_f: Output body forces (spatial vectors).
-
-    Returns:
-        None. Results are written to body_f.
     """
     ti, tj = wp.tid()
 
