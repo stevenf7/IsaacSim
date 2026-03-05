@@ -257,6 +257,11 @@ Here is an explanation of the configuration parameters:
     - **gravity_disabled_chance**: Probability of gravity being disabled.
     - **folders** and **files**: Sources for the distractor USD files.
 
+- **physics**:
+
+  - **gpu_collision_stack_size**: GPU collision stack size in bytes. The PhysX default of 64 MB is insufficient for complex Infinigen scenes with many colliders (environment meshes, distractors, labeled assets). Defaults to 300 MB (``314572800``). If PhysX reports a ``collisionStackSize buffer overflow`` error, increase this value to at least the size recommended in the error message.
+  - Additional GPU memory settings can be configured if needed: ``gpu_found_lost_pairs_capacity``, ``gpu_found_lost_aggregate_pairs_capacity``, ``gpu_total_aggregate_pairs_capacity``, ``gpu_max_rigid_contact_count``, ``gpu_max_rigid_patch_count``, ``gpu_heap_capacity``, ``gpu_temp_buffer_capacity``.
+
 - **debug_mode**: When set to `true`, certain elements like ceilings are hidden to provide a better view of the scene during development and debugging.
 
 Loading Infinigen Environments
@@ -562,6 +567,34 @@ To enhance the diversity of the dataset, we apply domain randomization to variou
 - **Light Randomization**: The ``randomize_lights`` utility function randomizes light properties (location, intensity, color) within specified ranges.
 - **Event-Based Triggering**: Randomizations are triggered using ``rep.utils.send_og_event`` which sends OmniGraph events to the registered randomizer graphs.
 
+Configuring Physics GPU Memory
+################################
+
+Complex Infinigen scenes with many colliders (environment meshes, distractors, labeled assets) can exceed the default PhysX GPU collision stack size (64 MB), causing ``PxGpuDynamicsMemoryConfig::collisionStackSize buffer overflow`` errors and dropped contacts. To prevent this, we configure the PhysX scene GPU memory settings before running any simulation.
+
+.. raw:: html
+
+    <details open>
+    <summary>Configuring Physics Scene GPU Memory</summary>
+
+.. code-block:: python
+
+    # Configure the PhysX scene GPU memory settings before running any simulation.
+    # This prevents PxGpuDynamicsMemoryConfig::collisionStackSize buffer overflow errors
+    # when simulating complex scenes with many colliders (distractors, assets, environment meshes).
+    physics_config = config.get("physics", {})
+    print("[SDG] Configuring physics scene GPU memory settings")
+    infinigen_utils.configure_physics_scene(physics_config)
+
+.. raw:: html
+
+    </details>
+
+**Explanation:**
+
+- The ``configure_physics_scene`` utility function retrieves or creates a PhysX scene prim and sets the ``gpuCollisionStackSize`` attribute (and optionally other GPU memory attributes) based on values from the configuration.
+- The default collision stack size is set to 300 MB (``314572800`` bytes), which provides a comfortable margin above the ~272 MB typically required by Infinigen scenes. This value can be overridden via the ``physics.gpu_collision_stack_size`` configuration parameter.
+
 Running Physics Simulation
 ############################
 
@@ -687,6 +720,10 @@ We capture data at specified intervals, ensuring that we have a diverse set of i
     <summary>Capturing Data Loop</summary>
 
 .. code-block:: python
+
+    # Configure PhysX GPU memory once before the loop (the /PhysicsScene prim persists across environments)
+    physics_config = config.get("physics", {})
+    infinigen_utils.configure_physics_scene(physics_config)
 
     # Start the SDG loop
     env_cycle = cycle(env_urls)
