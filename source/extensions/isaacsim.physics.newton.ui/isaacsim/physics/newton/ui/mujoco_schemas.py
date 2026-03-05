@@ -97,6 +97,9 @@ def get_mujoco_schema_names() -> tuple[set[str], set[str]]:
 from omni.kit.property.physics.builders import HideWidgetBuilder
 from pxr import UsdPhysics
 
+from .utils import DisableByCallbackBuilder, HideByCallbackBuilder, PrimType, make_hide_cb
+
+CallbackBuilder = DisableByCallbackBuilder
 HIDE_PROPERTY = [HideWidgetBuilder]
 
 
@@ -113,6 +116,46 @@ class MujocoUiDefinitions:
     """Dictionary mapping schema properties to custom UI widget definitions."""
     property_builders = {
         "mjc:compiler:useThread": HIDE_PROPERTY,
+        # Common Mjc/Newton properties - hidden when the Newton resolver provides the value.
+        # SCENE
+        "mjc:option:iterations": [CallbackBuilder, make_hide_cb("mjc", PrimType.SCENE, "max_solver_iterations", None)],
+        "mjc:option:timestep": [CallbackBuilder, make_hide_cb("mjc", PrimType.SCENE, "time_steps_per_second", 1000)],
+        "mjc:flag:gravity": [CallbackBuilder, make_hide_cb("mjc", PrimType.SCENE, "gravity_enabled", True)],
+        # JOINT
+        "mjc:armature": [CallbackBuilder, make_hide_cb("mjc", PrimType.JOINT, "armature", 0.0)],
+        "mjc:frictionloss": [CallbackBuilder, make_hide_cb("mjc", PrimType.JOINT, "friction", 0.0)],
+        "mjc:solref": [
+            CallbackBuilder,
+            make_hide_cb(
+                "mjc",
+                PrimType.JOINT,
+                [
+                    "limit_transX_ke",
+                    "limit_transY_ke",
+                    "limit_transZ_ke",
+                    "limit_transX_kd",
+                    "limit_transY_kd",
+                    "limit_transZ_kd",
+                    "limit_linear_ke",
+                    "limit_angular_ke",
+                    "limit_rotX_ke",
+                    "limit_rotY_ke",
+                    "limit_rotZ_ke",
+                    "limit_linear_kd",
+                    "limit_angular_kd",
+                    "limit_rotX_kd",
+                    "limit_rotY_kd",
+                    "limit_rotZ_kd",
+                ],
+            ),
+        ],
+        # SHAPE
+        "mjc:maxhullvert": [CallbackBuilder, make_hide_cb("mjc", PrimType.SHAPE, "max_hull_vertices", -1)],
+        "mjc:margin": [CallbackBuilder, make_hide_cb("mjc", PrimType.SHAPE, "margin", 0.0)],
+        "mjc:gap": [CallbackBuilder, make_hide_cb("mjc", PrimType.SHAPE, "gap", 0.0)],
+        # MATERIAL
+        "mjc:torsionalfriction": [CallbackBuilder, make_hide_cb("mjc", PrimType.MATERIAL, "mu_torsional", 0.005)],
+        "mjc:rollingfriction": [CallbackBuilder, make_hide_cb("mjc", PrimType.MATERIAL, "mu_rolling", 0.0001)],
     }
     """Dictionary mapping property names to their corresponding UI builder classes."""
     property_order = {}

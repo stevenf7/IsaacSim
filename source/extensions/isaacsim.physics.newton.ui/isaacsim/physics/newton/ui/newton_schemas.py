@@ -134,6 +134,10 @@ class ExtendedNewtonSceneWidget(ExtensionSchemaWidget):
 from omni.kit.property.physics.builders import PrettyPrintTokenComboBuilder
 from pxr import UsdPhysics
 
+from .utils import DisableByCallbackBuilder, HideByCallbackBuilder, PrimType, make_hide_cb
+
+CallbackBuilder = DisableByCallbackBuilder
+
 
 class NewtonUiDefinitions:
     """UI definitions (widgets, property builders, ordering) for Newton schemas."""
@@ -152,6 +156,79 @@ class NewtonUiDefinitions:
     """Maps schema names to their corresponding UI widget classes."""
     property_builders = {
         "newton:solver": [PrettyPrintTokenComboBuilder, [], [("mjcwarp", "MuJoCo Warp")]],
+        # Common Newton/Mjc properties - hidden when Mjc provides the value and Newton hasn't authored its version.
+        # SCENE
+        "newton:maxSolverIterations": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.SCENE, "max_solver_iterations", None),
+        ],
+        "newton:timeStepsPerSecond": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.SCENE, "time_steps_per_second", 1000),
+        ],
+        "newton:gravityEnabled": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.SCENE, "gravity_enabled", True),
+        ],
+        # JOINT
+        "newton:armature": [CallbackBuilder, make_hide_cb("newton", PrimType.JOINT, "armature", 0.0)],
+        "newton:friction": [CallbackBuilder, make_hide_cb("newton", PrimType.JOINT, "friction", 0.0)],
+        "newton:linear:limitStiffness": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.JOINT, "limit_linear_ke", 1e4),
+        ],
+        "newton:angular:limitStiffness": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.JOINT, "limit_angular_ke", 1e4),
+        ],
+        "newton:rotX:limitStiffness": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.JOINT, "limit_rotX_ke", 1e4),
+        ],
+        "newton:rotY:limitStiffness": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.JOINT, "limit_rotY_ke", 1e4),
+        ],
+        "newton:rotZ:limitStiffness": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.JOINT, "limit_rotZ_ke", 1e4),
+        ],
+        "newton:linear:limitDamping": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.JOINT, "limit_linear_kd", 1e1),
+        ],
+        "newton:angular:limitDamping": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.JOINT, "limit_angular_kd", 1e1),
+        ],
+        "newton:rotX:limitDamping": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.JOINT, "limit_rotX_kd", 1e1),
+        ],
+        "newton:rotY:limitDamping": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.JOINT, "limit_rotY_kd", 1e1),
+        ],
+        "newton:rotZ:limitDamping": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.JOINT, "limit_rotZ_kd", 1e1),
+        ],
+        # SHAPE
+        "newton:maxHullVertices": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.SHAPE, "max_hull_vertices", -1),
+        ],
+        "newton:contactMargin": [CallbackBuilder, make_hide_cb("newton", PrimType.SHAPE, "margin", 0.0)],
+        "newton:contactGap": [CallbackBuilder, make_hide_cb("newton", PrimType.SHAPE, "gap", 0.0)],
+        # MATERIAL
+        "newton:torsionalFriction": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.MATERIAL, "mu_torsional", 0.005),
+        ],
+        "newton:rollingFriction": [
+            CallbackBuilder,
+            make_hide_cb("newton", PrimType.MATERIAL, "mu_rolling", 0.0001),
+        ],
     }
     """Maps property names to their UI builder configuration including builder class and display options."""
     property_order = {}
