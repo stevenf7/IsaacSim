@@ -23,11 +23,7 @@ if [ $? -ne 0 ]; then
 fi
 
 
-# We depend on the file command so if it isn't installed, we'll install it
-if ! command -v file &> /dev/null; then
-    echo "file command could not be found, installing it"
-    apt install file
-fi
+# We no longer depend on the 'file' command; the Python script detects text files itself.
 echo "Starting banned word check"
 python3 tools/ci/check_github_staging/check_github_staging.py $1
 

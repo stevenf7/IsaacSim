@@ -2,16 +2,45 @@ import glob
 import json
 import mimetypes
 import os
-import subprocess
 import sys
 
 
 def is_text_file(filepath):
-    # Run the 'file' command and capture its output
-    result = subprocess.run(["file", "--mime", filepath], capture_output=True, text=True)
-    output = result.stdout
-    # Check if the output contains 'text/'
-    return "text/" in output
+    """Detect if a file is text (for banned-word scanning) without relying on the 'file' command."""
+    # Known text types by extension
+    guessed_type, _ = mimetypes.guess_type(filepath)
+    if guessed_type and guessed_type.startswith("text/"):
+        return True
+    # Common text extensions not always in mimetypes
+    text_extensions = {
+        ".py", ".pyi", ".pyx", ".sh", ".bash", ".bat", ".cmd",
+        ".c", ".h", ".cpp", ".hpp", ".cc", ".cxx", ".cs", ".java",
+        ".rs", ".go", ".js", ".ts", ".jsx", ".tsx", ".mjs", ".cjs",
+        ".json", ".yaml", ".yml", ".toml", ".ini", ".cfg", ".conf",
+        ".xml", ".html", ".htm", ".xhtml", ".css", ".scss", ".less",
+        ".md", ".rst", ".txt", ".log", ".cmake", ".make", ".mk",
+        ".rb", ".pl", ".pm", ".php", ".lua", ".r", ".sql",
+        ".glsl", ".vert", ".frag", ".comp", ".hlsl",
+        ".proto", ".thrift", ".graphql", ".gql", ".env",
+    }
+    ext = os.path.splitext(filepath)[1].lower()
+    if ext in text_extensions:
+        return True
+    # For unknown extensions, sample content: treat as text if decodable and not binary
+    try:
+        with open(filepath, "rb") as f:
+            chunk = f.read(8192)
+        if not chunk:
+            return True
+        # Reject if too many null bytes (binary)
+        if chunk.count(b"\x00") > len(chunk) // 100:
+            return False
+        # Must be valid UTF-8 and mostly printable/newline/tab
+        text = chunk.decode("utf-8")
+        printable = sum(1 for c in text if c.isprintable() or c in "\n\r\t")
+        return printable >= len(text) * 0.85
+    except (OSError, UnicodeDecodeError):
+        return False
 
 
 def check_path_for_banned_words(path: str):
