@@ -36,6 +36,7 @@ def main(args: argparse.Namespace):
     os.chdir("_isaaclab")
 
     os.environ["TERM"] = "linux"
+    os.environ["PIP_EXTRA_INDEX_URL"] = "https://pypi.nvidia.com"
 
     setup_command = ["./isaaclab.sh", "-i"]
     omni.repo.ci.launch(setup_command)
