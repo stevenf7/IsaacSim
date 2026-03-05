@@ -32,7 +32,7 @@ from isaacsim.robot.manipulators.examples.franka.stacking import Stacking
 class RoboFactory(BaseSample):
     """Interactive sample for multiple robots performing stacking tasks."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__()
         self._stackings = []
         self._robots = []
@@ -118,7 +118,12 @@ class RoboFactory(BaseSample):
         self._is_executing = False
 
     def _stacking_physics_callback(self, dt, context):
-        """Physics callback to execute stacking operations step by step."""
+        """Physics callback to execute stacking operations step by step.
+
+        Args:
+            dt: Time delta for the physics step.
+            context: Physics simulation context.
+        """
         if not self._is_executing:
             return
 

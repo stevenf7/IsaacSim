@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Extension that provides an interactive tutorial for getting started with Isaac Sim basics."""
+
+
 import os
 
 import omni.ext
@@ -24,7 +27,37 @@ from isaacsim.gui.components.ui_utils import btn_builder
 
 
 class GettingStartedExtension(omni.ext.IExt):
+    """Extension that provides an interactive tutorial for getting started with Isaac Sim basics.
+
+    This extension implements Part I of the Isaac Sim tutorials, offering a step-by-step guided experience
+    for learning fundamental concepts. It registers with the Examples Browser under the "Tutorials" category
+    and provides an interactive UI for hands-on learning.
+
+    The extension covers essential Isaac Sim operations including adding ground planes, light sources,
+    visual objects, physics-enabled objects, and applying physics and collision properties to existing
+    objects. Each tutorial step is presented as an interactive button that executes the corresponding
+    operation when clicked.
+
+    The tutorial follows a logical progression where users learn to:
+    - Add basic scene elements (ground plane and lighting)
+    - Create visual objects without physics
+    - Create physics-enabled objects
+    - Apply physics and collision properties to existing objects
+
+    The extension integrates with the Examples Browser system and provides documentation links to the
+    official Isaac Sim quickstart guide. It includes safety features such as disabling completed steps
+    to prevent duplication and enabling subsequent steps as prerequisites are met.
+    """
+
     def on_startup(self, ext_id: str):
+        """Called when the extension starts up.
+
+        Initializes the Getting Started tutorial extension by setting up the UI and registering
+        it with the examples browser.
+
+        Args:
+            ext_id: The extension identifier.
+        """
         self.example_name = "Part I: Basics"
         self.category = "Tutorials"
 
@@ -50,28 +83,64 @@ class GettingStartedExtension(omni.ext.IExt):
         return
 
     def on_shutdown(self):
+        """Called when the extension shuts down.
+
+        Cleans up by deregistering the Getting Started tutorial from the examples browser.
+        """
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)
 
         return
 
 
 class GettingStartedUI(BaseSampleUITemplate):
+    """UI interface for the Getting Started with Isaac Sim tutorial.
+
+    This class provides an interactive UI that guides users through fundamental Isaac Sim concepts including
+    adding ground planes, light sources, visual objects, and physics-enabled objects to a scene. The tutorial
+    follows the official Getting Started documentation and demonstrates basic scene construction and physics
+    setup through a series of interactive buttons.
+
+    The UI includes collapsible frames with buttons for:
+    - Adding ground plane to establish a base for the scene
+    - Adding light sources for proper scene illumination
+    - Creating visual cubes without physics properties
+    - Creating physics-enabled cubes with collision detection
+    - Adding physics and collision properties to existing objects
+
+    Buttons are intelligently enabled/disabled based on tutorial progression to guide users through the
+    proper sequence of operations. The interface integrates with the Isaac Sim examples browser system
+    for easy access and navigation.
+
+    Args:
+        *args: Variable length argument list passed to the parent BaseSampleUITemplate.
+        **kwargs: Additional keyword arguments passed to the parent BaseSampleUITemplate. Expected
+            arguments include ext_id, file_path, title, doc_link, overview, and sample instance.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def build_window(self):
+        """Builds the main window for the Getting Started tutorial."""
         pass
 
     def post_reset_button_event(self):
+        """Handles actions after the reset button is pressed."""
         pass
 
     def post_load_button_event(self):
+        """Handles actions after the load button is pressed."""
         pass
 
     def post_clear_button_event(self):
+        """Handles actions after the clear button is pressed."""
         pass
 
     def build_extra_frames(self):
+        """Builds additional UI frames for the Getting Started tutorial.
+
+        Creates a collapsible frame containing interactive tutorial elements for learning Isaac Sim basics.
+        """
         extra_stacks = self.get_extra_frames_handle()
         self.task_ui_elements = {}
         with extra_stacks:
@@ -88,6 +157,10 @@ class GettingStartedUI(BaseSampleUITemplate):
                 self.build_getting_started_ui()
 
     def build_getting_started_ui(self):
+        """Builds the main UI elements for the Getting Started tutorial.
+
+        Creates interactive buttons for adding ground plane, light source, visual cubes, and physics cubes to the scene. Each button demonstrates different aspects of Isaac Sim scene creation and physics properties.
+        """
         with ui.VStack(spacing=5):
             dict = {
                 "label": "Add Ground Plane",
@@ -147,6 +220,10 @@ class GettingStartedUI(BaseSampleUITemplate):
             self.task_ui_elements["Add Collision Properties"].enabled = False
 
     def _add_visual_cube(self):
+        """Adds visual cubes to the scene without physics properties.
+
+        Creates two visual cubes with different colors (yellow and green) positioned at different locations in the scene. Disables the visual cube button and enables the physics properties button.
+        """
         from isaacsim.core.experimental.objects import Cube
         from pxr import Gf
 
@@ -165,6 +242,10 @@ class GettingStartedUI(BaseSampleUITemplate):
         self.task_ui_elements["Add Physics Properties"].enabled = True
 
     def _add_physics_cube(self):
+        """Adds a cube with physics and collision properties to the scene.
+
+        Creates a cyan-colored cube with rigid body physics and collision APIs applied. The cube is positioned to demonstrate dynamic physics behavior when the simulation runs.
+        """
         from isaacsim.core.experimental.objects import Cube
         from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
         from pxr import Gf
@@ -183,12 +264,20 @@ class GettingStartedUI(BaseSampleUITemplate):
         self.task_ui_elements["Add Physics Cube"].enabled = False
 
     def _add_ground_plane(self):
+        """Adds a ground plane to the scene.
+
+        Creates a ground plane at the world origin to provide a surface for physics objects to interact with. Disables the ground plane button after creation.
+        """
         from isaacsim.core.experimental.objects import GroundPlane
 
         GroundPlane("/World/GroundPlane", positions=[[0, 0, 0]])
         self.task_ui_elements["Add Ground Plane"].enabled = False
 
     def _add_light_source(self):
+        """Adds a distant light source to the scene.
+
+        Creates a distant light with intensity of 300 to illuminate the scene. Disables the light source button after creation.
+        """
         from isaacsim.core.experimental.objects import DistantLight
 
         light = DistantLight("/DistantLight")
@@ -196,6 +285,10 @@ class GettingStartedUI(BaseSampleUITemplate):
         self.task_ui_elements["Add Light Source"].enabled = False
 
     def _add_physics_properties(self):
+        """Adds physics properties to an existing visual cube in the scene.
+
+        Applies rigid body physics to the '/visual_cube' prim and updates the UI button states to enable collision properties and disable physics properties buttons.
+        """
         from isaacsim.core.experimental.prims import RigidPrim
 
         # Add physics properties to existing object
@@ -204,6 +297,10 @@ class GettingStartedUI(BaseSampleUITemplate):
         self.task_ui_elements["Add Physics Properties"].enabled = False
 
     def _add_collision_properties(self):
+        """Adds collision properties to an existing visual cube in the scene.
+
+        Applies collision APIs to the '/visual_cube' prim using GeomPrim and disables the collision properties button in the UI.
+        """
         from isaacsim.core.experimental.prims import GeomPrim
 
         GeomPrim("/visual_cube", apply_collision_apis=True)

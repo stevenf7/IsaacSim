@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides a base template class for creating interactive Isaac Sim example user interfaces with standardized world controls and extensible UI frameworks."""
+
+
 import asyncio
 from abc import abstractmethod
 
@@ -27,6 +30,27 @@ from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_he
 
 
 class BaseSampleUITemplate:
+    """Base template class for creating interactive Isaac Sim example UIs.
+
+    This class provides a standardized UI framework for Isaac Sim examples, including world controls,
+    header information, and extensible frames for custom content. It manages the lifecycle of sample
+    execution including loading, resetting, and cleanup operations.
+
+    The template creates a default UI structure with:
+    - Header section displaying extension information, title, documentation link, and overview
+    - World Controls frame with Load World and Reset buttons
+    - Extensible frames area for custom UI components
+    - Event handling for stage and timeline events
+
+    Subclasses must implement the abstract methods to define custom UI frames and handle button events
+    specific to their example.
+
+    Args:
+        *args: Variable length argument list passed to the constructor.
+        **kwargs: Keyword arguments for configuring the UI template. Supported keys include ext_id,
+            file_path, title, doc_link, overview, and sample.
+    """
+
     def __init__(self, *args, **kwargs):
         self._ext_id = kwargs.get("ext_id")
         self._file_path = kwargs.get("file_path", "")
@@ -41,17 +65,28 @@ class BaseSampleUITemplate:
         self._timeline_event_sub = None
 
     @property
-    def sample(self):
+    def sample(self) -> BaseSample:
+        """The sample instance associated with this UI template.
+
+        Returns:
+            The BaseSample instance.
+        """
         return self._sample
 
     @sample.setter
     def sample(self, sample):
         self._sample = sample
 
-    def get_world(self):
+    def get_world(self) -> World:
+        """Gets the current World instance.
+
+        Returns:
+            The active World instance.
+        """
         return World.instance()
 
     def build_window(self):
+        """Builds the main window for the sample UI template."""
         # separating out building the window and building the UI, so that example browser can build_ui but not the window
         # self._window = omni.ui.Window(
         #     self.example_name, width=350, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
@@ -62,6 +97,7 @@ class BaseSampleUITemplate:
         pass
 
     def build_ui(self):
+        """Builds the complete user interface by constructing the default frame and extra frames."""
         # separating out building default frame and extra frames, so examples can override the extra frames function
 
         self.build_default_frame()
@@ -69,6 +105,11 @@ class BaseSampleUITemplate:
         return
 
     def build_default_frame(self):
+        """Builds the default UI frame containing world controls and basic buttons.
+
+        Creates the main vertical stack with headers, a collapsible frame for world controls,
+        and default Load World and Reset buttons.
+        """
         self._main_stack = ui.VStack(spacing=5, height=0)
         with self._main_stack:
             setup_ui_headers(
@@ -108,14 +149,29 @@ class BaseSampleUITemplate:
 
         return
 
-    def get_extra_frames_handle(self):
+    def get_extra_frames_handle(self) -> ui.VStack:
+        """Gets the handle to the extra frames container for adding custom UI elements.
+
+        Returns:
+            The VStack container for extra UI frames.
+        """
         return self.extra_stacks
 
     @abstractmethod
     def build_extra_frames(self):
+        """Builds additional custom frames for the sample UI.
+
+        This abstract method must be implemented by subclasses to define sample-specific UI elements.
+        """
         return
 
     def _on_load_world(self):
+        """Handles the Load World button click event.
+
+        Asynchronously loads the world, sets up event subscriptions for stage and timeline events,
+        and updates button states.
+        """
+
         async def _on_load_world_async():
             await self._sample.load_world_async()
             await omni.kit.app.get_app().next_update_async()
@@ -143,6 +199,11 @@ class BaseSampleUITemplate:
         return
 
     def _on_reset(self):
+        """Handles the Reset button click event.
+
+        Asynchronously resets the sample and triggers post-reset button event handling.
+        """
+
         async def _on_reset_async():
             await self._sample.reset_async()
             await omni.kit.app.get_app().next_update_async()
@@ -153,23 +214,45 @@ class BaseSampleUITemplate:
 
     @abstractmethod
     def post_reset_button_event(self):
+        """Handles actions to perform after the reset button is clicked.
+
+        This abstract method must be implemented by subclasses to define sample-specific
+        post-reset behavior.
+        """
         return
 
     @abstractmethod
     def post_load_button_event(self):
+        """Called after the Load World button is pressed and world loading is complete.
+
+        This method is executed after the sample world is loaded and UI buttons are enabled.
+        """
         return
 
     @abstractmethod
     def post_clear_button_event(self):
+        """Called after the timeline is stopped and UI state is reset.
+
+        This method is executed when the timeline stop event occurs and buttons are reconfigured.
+        """
         return
 
-    def _enable_all_buttons(self, flag):
+    def _enable_all_buttons(self, flag: bool):
+        """Enables or disables all UI buttons in the sample interface.
+
+        Args:
+            flag: Whether to enable or disable the buttons.
+        """
         for btn_name, btn in self._buttons.items():
             if isinstance(btn, omni.ui._ui.Button):
                 btn.enabled = flag
         return
 
     def on_shutdown(self):
+        """Cleans up resources when the sample UI is being shut down.
+
+        Resets event subscriptions, UI components, buttons, and sample references.
+        """
         self._stage_event_sub = None
         self._timeline_event_sub = None
         self.extra_stacks = None
@@ -181,6 +264,9 @@ class BaseSampleUITemplate:
         """Stage closed event callback.
 
         Note: With Events 2.0, this is called only for CLOSED events.
+
+        Args:
+            event: The stage event object containing event details.
         """
         if World.instance() is not None:
             self._sample._world_cleanup()
@@ -195,6 +281,9 @@ class BaseSampleUITemplate:
         """Timeline stop event callback.
 
         Note: With Events 2.0, this is called only for STOP events.
+
+        Args:
+            event: The timeline event object containing event details.
         """
         world = World.instance()
         if world is not None:

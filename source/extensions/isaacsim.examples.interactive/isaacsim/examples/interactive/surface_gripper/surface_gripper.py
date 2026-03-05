@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Interactive example demonstrating surface gripper simulation and control in Isaac Sim."""
+
+
 import asyncio
 import os
 import weakref
@@ -50,6 +53,33 @@ EXTENSION_NAME = "Surface Gripper"
 
 
 class Extension(omni.ext.IExt):
+    """Interactive example demonstrating surface gripper simulation in Isaac Sim.
+
+    This extension provides a complete interactive example for working with surface grippers (suction-cup grippers)
+    in Isaac Sim. It demonstrates how to create, configure, and control a surface gripper that can attach to objects
+    through simulated suction by creating joints between the gripper and target objects when they are in close proximity.
+
+    The extension creates a user interface that allows users to:
+    - Load a pre-configured scene with a gantry system containing a surface gripper and objects to manipulate
+    - Control the gripper state (open/close) interactively
+    - Monitor which objects are currently gripped by the surface gripper
+    - Visualize the gripper behavior in real-time during simulation
+
+    The surface gripper is implemented using USD prims with specific schema definitions and is managed through
+    the SurfaceGripperManager interface. The gripper behavior is controlled by configurable parameters such as
+    maximum grip distance, force limits, and retry intervals.
+
+    Key features:
+    - Interactive UI for gripper control and monitoring
+    - Real-time status updates showing gripped objects
+    - Configurable gripper parameters (grip distance, force limits)
+    - Integration with Isaac Sim's physics simulation
+    - Example scene with gantry system and pickable objects
+
+    The extension serves as both a functional tool for testing surface gripper behavior and an educational
+    resource demonstrating best practices for implementing custom gripper systems in Isaac Sim.
+    """
+
     def on_startup(self, ext_id: str):
         """Initialize extension and UI elements"""
 
@@ -250,7 +280,15 @@ class Extension(omni.ext.IExt):
         task = asyncio.ensure_future(load_gantry_scene())
         asyncio.ensure_future(self._create_scenario(task))
 
-    def _on_toggle_gripper_button_clicked(self, val=False):
+    def _on_toggle_gripper_button_clicked(self, val: bool = False):
+        """Toggles the surface gripper between open and closed states.
+
+        When the timeline is playing, checks the current gripper status and switches it to the opposite state.
+        If the gripper is open, it will be closed. If the gripper is closed, it will be opened.
+
+        Args:
+            val: Boolean value passed from the UI button click event.
+        """
         if self._timeline.is_playing():
             status = self.gripper_interface.get_gripper_status(self.gripper_prim_path)
             if status == surface_gripper.GripperStatus.Open:

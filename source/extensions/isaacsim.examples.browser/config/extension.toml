@@ -1,5 +1,5 @@
 [package]
-version = "0.2.2"
+version = "0.3.0"
 category = "GUI"
 title = "Isaac Sim Example Browser"
 description = "A browser for Isaac Sim assets"
@@ -7,7 +7,7 @@ authors = ["hmazhar@nvidia.com", "qwan@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.examples.browser"
 keywords = ["isaac", "browser", "examples"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 feature = true
@@ -26,3 +26,6 @@ feature = true
 
 [[python.module]]
 name = "isaacsim.examples.browser"
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]
