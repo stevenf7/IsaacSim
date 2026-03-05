@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.10.1] - 2026-03-04
+### Changed
+- Fix API errors
+
 ## [0.10.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings

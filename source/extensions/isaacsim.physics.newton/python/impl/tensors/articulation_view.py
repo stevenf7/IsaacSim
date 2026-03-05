@@ -272,7 +272,7 @@ class NewtonArticulationView:
 
     @property
     def jacobian_shape(self) -> tuple[int, int]:
-        """Jacobian matrix shape for articulations.
+        r"""Jacobian matrix shape for articulations.
 
         Returns:
             Tuple (rows, cols) where\:
@@ -300,7 +300,7 @@ class NewtonArticulationView:
 
     @property
     def generalized_mass_matrix_shape(self) -> tuple[int, int]:
-        """Generalized mass matrix shape for articulations.
+        r"""Generalized mass matrix shape for articulations.
 
         Returns:
             Tuple (n, n) where\:

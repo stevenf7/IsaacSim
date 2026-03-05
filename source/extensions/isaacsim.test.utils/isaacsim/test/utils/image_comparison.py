@@ -451,7 +451,7 @@ def compare_images_in_directories(
         >>> result = compare_images_in_directories(
         ...     golden_dir="/path/to/golden",
         ...     test_dir="/path/to/test",
-        ...     path_pattern=r"^rgb.*\.png$",
+        ...     path_pattern=r"^rgb.*\\.png$",
         ...     mean_tolerance=10.0,
         ... )
         ...

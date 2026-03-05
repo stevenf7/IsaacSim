@@ -7,7 +7,6 @@
 ### Changed
 - Add Overview.md, python_api.md, and update docstrings
 
-
 ## [1.4.0] - 2026-02-20
 ### Added
 - Introduced widget for applying IsaacSiteAPI to Xformable prims
