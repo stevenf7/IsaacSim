@@ -59,6 +59,7 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
         # test case
         await self.assertDocTests(GeomPrim)
 
+    @common.requires_engines(supported_engines=["physx"])
     async def test_rigid_prim_docstrings(self):
         # define prims
         for i in range(3):
@@ -67,6 +68,7 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
         # test case
         await self.assertDocTests(RigidPrim)
 
+    @common.requires_engines(supported_engines=["physx"])
     async def test_articulation_docstrings(self):
         # get assets root path
         assets_root_path = await get_assets_root_path_async()

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.0] - 2026-03-03
+### Changed
+- Upgraded Newton pip package from 1.0.0rc1 to 1.0.0rc2.
+- Enabled a set of Newton unit tests that are implemented and pass
+
 ## [0.4.1] - 2026-02-28
 ### Changed
 - Updated SimulationFns registration to match new omni.physics.core API (`initialize`/`close` replaces removed `attach_stage`/`detach_stage`)

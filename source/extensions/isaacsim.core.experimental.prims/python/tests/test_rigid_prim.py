@@ -40,6 +40,7 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
         xform_prim = stage_utils.define_prim(f"/World/A_{i}", "Xform")
         cube_prim = stage_utils.define_prim(f"/World/A_{i}/B", "Cube")
         # apply mass API with proper inertia to the xform
+        UsdPhysics.RigidBodyAPI.Apply(xform_prim)
         mass_api = UsdPhysics.MassAPI.Apply(xform_prim)
         mass_api.GetMassAttr().Set(1.0)
         # set diagonal inertia tensor (for a 1m cube with mass 1kg)
@@ -195,6 +196,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
     @parametrize(
         backends=["tensor", "usd"],
         operations=["wrap"],
+        supported_engines=["physx"],
         prim_class=RigidPrim,
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
@@ -215,6 +217,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
     @parametrize(
         backends=["tensor", "usd"],
         operations=["wrap"],
+        supported_engines=["physx"],
         prim_class=RigidPrim,
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
@@ -570,6 +573,7 @@ class TestRigidPrimContactTracking(omni.kit.test.AsyncTestCase):
         backends=["tensor"],
         operations=["wrap"],
         instances=["many"],
+        supported_engines=["physx"],
         prim_class=RigidPrim,
         prim_class_kwargs={
             "masses": [1.0],
@@ -659,6 +663,7 @@ class TestRigidPrimContactTracking(omni.kit.test.AsyncTestCase):
         backends=["tensor"],
         operations=["wrap"],
         instances=["one"],
+        supported_engines=["physx"],
         prim_class=RigidPrim,
         prim_class_kwargs={
             "masses": [1.0],

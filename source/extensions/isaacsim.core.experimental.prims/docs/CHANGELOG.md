@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2026-03-02
+### Changed
+- Enable a set of Newton unit tests that are implemented and pass
+
 ## [1.2.0] - 2026-02-27
 ### Changed
 - Add C++ interface to read xform, rigid body and articulation data
