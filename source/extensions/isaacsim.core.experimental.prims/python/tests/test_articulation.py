@@ -277,7 +277,13 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                 check_array(output, shape=(expected_count, 1), dtype=wp.int32, device=device)
                 check_allclose((expected_v0, expected_v1), output, given=(v0, v1))
 
-    @parametrize(backends=["tensor"], operations=["wrap"], prim_class=Articulation, populate_stage_func=populate_stage)
+    @parametrize(
+        backends=["tensor"],
+        operations=["wrap"],
+        supported_engines=["physx"],
+        prim_class=Articulation,
+        populate_stage_func=populate_stage,
+    )
     async def test_jacobians_and_mass_matrices(self, prim, num_prims, device, backend):
         # check backend
         self.check_backend(backend, prim)
@@ -379,7 +385,13 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                     )
                     check_allclose((expected_v0, expected_v1), output, given=(v0, v1))
 
-    @parametrize(backends=["tensor"], operations=["wrap"], prim_class=Articulation, populate_stage_func=populate_stage)
+    @parametrize(
+        backends=["tensor"],
+        operations=["wrap"],
+        supported_engines=["physx"],
+        prim_class=Articulation,
+        populate_stage_func=populate_stage,
+    )
     async def test_dof_compensation_forces(self, prim, num_prims, device, backend):
         # check backend
         self.check_backend(backend, prim)
@@ -403,7 +415,11 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                 check_array(forces, shape=(expected_count, expected_dof_count), dtype=wp.float32, device=device)
 
     @parametrize(
-        backends=["tensor", "usd"], operations=["wrap"], prim_class=Articulation, populate_stage_func=populate_stage
+        backends=["tensor", "usd"],
+        operations=["wrap"],
+        supported_engines=["physx"],
+        prim_class=Articulation,
+        populate_stage_func=populate_stage,
     )
     async def test_link_enabled_gravities(self, prim, num_prims, device, backend):
         # check backend
@@ -521,7 +537,13 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                     check_array(output, shape=(expected_count, expected_dof_count), dtype=wp.float32, device=device)
                     check_allclose(expected_v0, output, given=(v0,))
 
-    @parametrize(backends=["tensor"], operations=["wrap"], prim_class=Articulation, populate_stage_func=populate_stage)
+    @parametrize(
+        backends=["tensor"],
+        operations=["wrap"],
+        supported_engines=["physx"],
+        prim_class=Articulation,
+        populate_stage_func=populate_stage,
+    )
     async def test_dof_states(self, prim, num_prims, device, backend):
         # check backend
         self.check_backend(backend, prim)
@@ -573,7 +595,11 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                 check_array(output, shape=(expected_count, expected_link_count, 3), dtype=wp.float32, device=device)
 
     @parametrize(
-        backends=["tensor", "usd"], operations=["wrap"], prim_class=Articulation, populate_stage_func=populate_stage
+        backends=["tensor", "usd"],
+        operations=["wrap"],
+        supported_engines=["physx"],
+        prim_class=Articulation,
+        populate_stage_func=populate_stage,
     )
     async def test_dof_drive_types(self, prim, num_prims, device, backend):
         # check backend
@@ -591,7 +617,11 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                     check_lists(expected_v0, output)
 
     @parametrize(
-        backends=["tensor", "usd"], operations=["wrap"], prim_class=Articulation, populate_stage_func=populate_stage
+        backends=["tensor", "usd"],
+        operations=["wrap"],
+        supported_engines=["physx"],
+        prim_class=Articulation,
+        populate_stage_func=populate_stage,
     )
     async def test_dof_limits(self, prim, num_prims, device, backend):
         # check backend
@@ -618,7 +648,11 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                             check_allclose((expected_v0, expected_v1), output, given=(v0, v1))
 
     @parametrize(
-        backends=["tensor", "usd"], operations=["wrap"], prim_class=Articulation, populate_stage_func=populate_stage
+        backends=["tensor", "usd"],
+        operations=["wrap"],
+        supported_engines=["physx"],
+        prim_class=Articulation,
+        populate_stage_func=populate_stage,
     )
     async def test_dof_friction_properties(self, prim, num_prims, device, backend):
         # check backend
@@ -640,7 +674,11 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                     check_allclose((expected_v0, expected_v1, expected_v2), output, given=(v0, v1, v2))
 
     @parametrize(
-        backends=["tensor", "usd"], operations=["wrap"], prim_class=Articulation, populate_stage_func=populate_stage
+        backends=["tensor", "usd"],
+        operations=["wrap"],
+        supported_engines=["physx"],
+        prim_class=Articulation,
+        populate_stage_func=populate_stage,
     )
     async def test_dof_drive_model_properties(self, prim, num_prims, device, backend):
         # check backend
@@ -682,6 +720,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         backends=["tensor"],
         operations=["wrap"],
         instances=["many"],
+        supported_engines=["physx"],
         prim_class=Articulation,
         prim_class_kwargs={"positions": [[x, 0, 0] for x in range(5)], "reset_xform_op_properties": True},
         populate_stage_func=populate_stage,

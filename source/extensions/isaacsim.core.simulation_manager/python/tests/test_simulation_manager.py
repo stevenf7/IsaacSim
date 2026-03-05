@@ -277,7 +277,7 @@ class TestSimulationManagerPhysicsSceneSettings(omni.kit.test.AsyncTestCase):
                 SimulationManager.set_physics_dt(1.5)
 
         # PhysX-specific settings - only test assertions when PhysX is active
-        is_physx = SimulationManager._engine == "physx"
+        is_physx = SimulationManager.get_active_physics_engine() == "physx"
 
         if is_physx:
             # Test broadphase type (PhysX-specific)
@@ -347,6 +347,8 @@ class TestSimulationManagerPhysicsSceneSettings(omni.kit.test.AsyncTestCase):
 
     async def test_physics_scene_settings_with_scene(self):
         """Test all physics scene settings with a specific physics scene."""
+        if SimulationManager._engine != "physx":
+            self.skipTest(f"Skipping PhysX-specific test (active engine: {SimulationManager._engine})")
         await self._create_physics_scene()
 
         # Test set physics dt with physics scene
@@ -675,8 +677,10 @@ class TestSimulationManagerPhysicsEngines(omni.kit.test.AsyncTestCase):
     async def test_engine_query_and_switching(self):
         """Test engine query methods and switching to PhysX."""
         # This test is specific to PhysX - skip if another engine is active
-        if SimulationManager._engine != "physx":
-            self.skipTest(f"Skipping PhysX-specific test (active engine: {SimulationManager._engine})")
+        if SimulationManager.get_active_physics_engine() != "physx":
+            self.skipTest(
+                f"Skipping PhysX-specific test (active engine: {SimulationManager.get_active_physics_engine()})"
+            )
         # Test get_active_physics_engine returns PhysX by default
         engine = SimulationManager.get_active_physics_engine()
         self.assertEqual(engine, "physx")
@@ -695,8 +699,10 @@ class TestSimulationManagerPhysicsEngines(omni.kit.test.AsyncTestCase):
     async def test_invalid_switch_preserves_state(self):
         """Test that invalid engine switches preserve all state and PhysX continues working."""
         # This test is specific to PhysX - skip if another engine is active
-        if SimulationManager._engine != "physx":
-            self.skipTest(f"Skipping PhysX-specific test (active engine: {SimulationManager._engine})")
+        if SimulationManager.get_active_physics_engine() != "physx":
+            self.skipTest(
+                f"Skipping PhysX-specific test (active engine: {SimulationManager.get_active_physics_engine()})"
+            )
         # Capture state before invalid switches
         engine_before = SimulationManager.get_active_physics_engine()
         dt_before = SimulationManager.get_physics_dt()

@@ -227,7 +227,6 @@ class SimulationManager:
             cls._physics_sim_view__warp = None
         cls._simulation_view_created = False
 
-        cls._physics_stage_update_interface.force_load_physics_from_usd()
         cls._warmup_needed = True
 
     @classmethod

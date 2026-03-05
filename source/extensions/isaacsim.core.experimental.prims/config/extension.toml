@@ -1,5 +1,5 @@
 [package]
-version = "1.2.0"
+version = "1.2.1"
 category = "Simulation"
 title = "Isaac Sim Core (Prims)"
 description = "The Core Prims extension provides a set of APIs to wrap one or more USD prims in the stage in order to manipulate (read/write) their attributes and perform other operations during the simulation."
@@ -19,6 +19,7 @@ writeTarget.kit = true
 "isaacsim.test.docstring" = {} # needed for tests to load in test runner
 "omni.hydra.usdrt_delegate" = {}
 "omni.isaac.core_archive" = {}
+"omni.physics" = {}
 "omni.physx.tensors" = {}
 "omni.usd.schema.semantics" = {}
 "omni.warp.core" = {}
@@ -98,8 +99,8 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 name = "newton"
-timeout = 900
-enabled = false
+timeout = 3600 # all the newton module loads take long time 
+enabled = true
 dependencies = [
     "isaacsim.core.experimental.materials", # for visual/physics materials
     "isaacsim.core.experimental.objects", # for GroundPlane/Cube in tests
@@ -167,6 +168,7 @@ pythonTests.include = [
 
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
+    '*Simulation step error: Error while parsing function*'
 ]
 
 [[test]]

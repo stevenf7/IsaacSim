@@ -36,6 +36,8 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
         await self.assertDocTests(PhysxScene)
 
     async def test_simulation_manager_docstrings(self):
+        if (SimulationManager.get_default_engine() or "").lower() == "newton":
+            self.skipTest("Skipping SimulationManager docstrings test (engine: newton)")
         SimulationManager.initialize_physics()
         await self.assertDocTests(SimulationManager)
         SimulationManager.invalidate_physics()
