@@ -271,6 +271,7 @@ A list of sample ROS 2 packages created for |isaac-sim|:
     - **cmdvel_to_ackermann**: Contains a script file and launch file used to convert command velocity messages (Twist message type) to Ackermann Drive messages (``AckermannDriveStamped`` message type).
     - **custom_message**: Contains the required launch file and ROS 2 navigation parameters for the NVIDIA Carter robot.
     - **h1_fullbody_controller**: Contains the required launch files, parameters and scripts for running a full body controller for the H1 humanoid robot.
+    - **isaac_compressed_image_decoder**: Contains a decoder node for converting H.264 compressed images (``sensor_msgs/CompressedImage``) back to raw ``sensor_msgs/Image`` messages using `PyAV <https://pyav.org/>`_.
     - **isaac_moveit**: Contains the launch files and parameter to run |isaac-sim_short| with the MoveIt2 stack.
     - **isaac_ros_navigation_goal**: Used to automatically set random or user-defined goal poses in ROS 2 Navigation.
     - **isaac_ros2_messages**: A custom set of ROS 2 service interfaces for retrieving poses as well as listing prims and manipulate their attributes.
