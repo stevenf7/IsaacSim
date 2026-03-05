@@ -30,6 +30,11 @@ Getting Started
 - Completed :ref:`isaac_sim_app_tutorial_ros2_camera` so that you are familiar with how to set up camera publishers in |omnigraph_short|.
 - Completed :ref:`isaac_sim_app_install_ros`: installed ROS 2, enabled the ROS 2 extension, built the provided *Isaac Sim* ROS 2 workspace, and set up the necessary environment variables.
 - ROS 2 Bridge is enabled.
+- Install the ``python3-av`` package, which provides the `PyAV <https://pyav.org/>`_ (Python FFmpeg bindings) dependency required by the ``isaac_compressed_image_decoder`` decoder node:
+
+  .. code-block:: bash
+
+      sudo apt install python3-av
 
 
 Building the Graph for a Compressed Image Publisher
