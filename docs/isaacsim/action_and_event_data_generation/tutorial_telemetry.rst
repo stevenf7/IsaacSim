@@ -52,7 +52,7 @@ The telemetry system supports different operational modes:
 
 Note that different modes have different data collection and transmission policies. To disable transmission or structured logging, refer to :ref:`Configuring Telemetry <configuring-telemetry>` below.
 
-If you are running using headless mode, telemetry is disabled by default. To enable telemetry, pass ``--/telemetry/mode=dev`` using the application config:
+If you are running in headless mode, telemetry is disabled by default. To enable telemetry, pass ``--/telemetry/mode=dev`` using the application config:
 
 .. code-block:: python
 

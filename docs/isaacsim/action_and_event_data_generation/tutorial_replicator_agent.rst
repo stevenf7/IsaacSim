@@ -64,10 +64,10 @@ It is recommended to use UI for first-time users. Please refer to :ref:`Running 
 
 1. Follow the :ref:`Enable Extensions <actor_sim_getting_started>` and open the UI panel.
 
-2. The default minimal config is loaded by default. You can also load a seperate config file using the folder browser icon.
+2. The default minimal config is loaded by default. You can also load a separate config file using the folder browser icon.
 
     * All the sample config files are in ``[Isaac Sim App Path]/extscache/isaacsim.replicator.agent.core-[current-version]/data/sample_configs/``.
-    * THe minimal config file does not have actors and cameras. For a more comprehensive example, please use ``warehouse.yaml`` in the above folder. Note that this example can take up more loading time.
+    * The minimal config file does not have actors and cameras. For a more comprehensive example, please use ``warehouse.yaml`` in the above folder. Note that this example can take up more loading time.
 
 .. image:: /images/isim_6.0_full_tut_external_actor_sim_getting_started_config_panel.png
     :width: 600
@@ -81,7 +81,7 @@ It is recommended to use UI for first-time users. Please refer to :ref:`Running 
     * Use Save or Save As icon to save the changes in UI to config file.
     * Use Reload icon to reset changes in UI and load the original config file again.
 
-4. Click the **Set Up Simulation** button from the top of the UI and it will start loading simulation assets (scene, cameras, actors) according the UI.
+4. Click the **Set Up Simulation** button from the top of the UI and it will start loading simulation assets (scene, cameras, actors) according to the UI.
 
     * The scene requires a NavMesh to spawn assets and control them correctly. The scenes in the example config has NavMesh set up in advance. If you are using a external scene, please refer to :doc:`Navigation Mesh<extensions:ext_navigation-mesh>` for NavMesh set up.
     * You can also go to **Window > Navigation > NavMesh** and turn off **Auto-Bake** in the NavMesh settings. Turning it off can increase the performance.
@@ -91,7 +91,7 @@ It is recommended to use UI for first-time users. Please refer to :ref:`Running 
 
 5. Click the **Start Data Generation** button from the top of the UI and the simulation and data generation will start. It will run for the duration (in seconds) specified in the **Simulation Duration** in **Actor SDG Setup** panel.
 
-6. When data generation finsihes, the output data can be found from the **Output Directory** according to the output direcotry in  **Replicator** panel. 
+6. When data generation finishes, the output data can be found from the **Output Directory** according to the output directory in  **Replicator** panel. 
 
     * By default, it is in the User folder for Windows and the home folder for Linux.
 
@@ -201,14 +201,14 @@ After actors are loaded into scene by config file, the configurations are embedd
 For human character, it is the ``IRACharacterAPI`` attached on the SkelRoot prim. For animated robot, it is the ``AnimRobotAPI`` attached on the root prim of the robot payload. 
 Each behavior and trigger becomes individual USD Prims that actor USD API can have reference to, each actor trigger prim can also have reference to a list of behaviors.
 
-The actor USD API schema defines basic information of the actor: name, group, seed, a routine reference slot and a triger reference slot. 
+The actor USD API schema defines basic information of the actor: name, group, seed, a routine reference slot and a trigger reference slot. 
 At play, the name, group and seed will be combined and hashed into a single seed as ``actor global seed``. This seed will be used for all the "randomness" of the actor, including random routine picking for the actor itself and the picking within each behavior such as picking a speed from speed range.
 This also means the same ``actor global seed`` will display same result if other settings and the environment don't change.
 
 Each type of actor behavior is represented by a USD Prim type. It defines the configuration of the behavior: weight, repeat and behavior specific parameters.
 For human characters, the behavior prim types follows ``CharacterXXXBehavior`` naming pattern. For animated robots, they are ``RobotXXXBehavior``.
 
-Each actor trigger is also a USD Prim. It defines the trigger prioirty and has a refrence of behavior list to be executed sequentially when this trigger activates.
+Each actor trigger is also a USD Prim. It defines the trigger priority and has a reference of behavior list to be executed sequentially when this trigger activates.
 Human characters and anim robots share the same trigger types that's defined in OMP with naming ``MetroXXXTrigger``.
 
 In addition, actors leverage ``omni.behavior.behavior`` (Human characters) and ``isaacsim.anim.robot.core`` (Animated robots) as their animation implementation.
