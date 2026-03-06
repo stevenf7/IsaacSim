@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.2] - 2026-03-06
+### Changed
+- Upgraded Newton pip package from 1.0.0rc2 to 1.0.0rc3. 
+
 ## [1.2.1] - 2026-03-05
 ### Changed
 - Mujoco schema properties are now sorted alphabetically with the exception of properties that are common to Newton and Mujoco: those are put first in the list.

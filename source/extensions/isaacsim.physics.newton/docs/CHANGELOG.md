@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.5.3] - 2026-03-06
+### Changed
+- Upgraded Newton pip package from 1.0.0rc2 to 1.0.0rc3. 
+
 ## [0.5.2] - 2026-03-05
 ### Changed
 - Fix api and docs syntax issues
