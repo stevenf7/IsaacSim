@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.1.1] - 2026-03-04
+### Fixed
+- Fixed type annotation errors by adding `from __future__ import annotations` to files using union type syntax.
+
 ## [6.1.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings

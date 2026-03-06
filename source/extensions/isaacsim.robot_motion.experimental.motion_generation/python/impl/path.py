@@ -39,15 +39,6 @@ class Path:
     """
 
     def __init__(self, waypoints: Union[list, np.ndarray, wp.array]):
-        """Initialize a Path object.
-
-        Args:
-            waypoints: The waypoints of the path in joint-space. Can be a list, numpy array,
-                or warp array.
-
-        Raises:
-            ValueError: If waypoints is not a two-dimensional array.
-        """
         # internally represent all waypoints as a warp array.
         warp_waypoints = place(waypoints)
         self._waypoints = warp_waypoints
@@ -183,29 +174,6 @@ class MinimalTimeJointTrajectory(Trajectory):
         waypoint_relative_difference_tolerance: float,
         waypoint_absolute_difference_tolerance: float,
     ):
-        """Create a minimal time trajectory.
-
-        Args:
-            path: The Path object containing waypoints in joint-space.
-            max_velocities: The maximum joint velocities.
-            max_accelerations: The maximum joint accelerations.
-            robot_joint_space: The ordered list of joint names defining the joint space.
-            active_joints: The active joints.
-            waypoint_relative_difference_tolerance: Minimal relative difference required between waypoints.
-            waypoint_absolute_difference_tolerance: Minimal absolute difference required between waypoints.
-
-        Raises:
-            ValueError: If waypoints is not a two-dimensional array.
-            ValueError: If max_velocities or max_accelerations is not a one-dimensional array.
-            ValueError: If max_velocities length does not match the joint-dimensionality of waypoints.
-            ValueError: If max_accelerations length does not match the joint-dimensionality of waypoints.
-            ValueError: If active_joints length does not match the joint-dimensionality of waypoints.
-            ValueError: If any max_velocities value is not strictly greater than 0.
-            ValueError: If any max_accelerations value is not strictly greater than 0.
-            ValueError: If tolerance values are less than or equal to 0.
-            ValueError: If consecutive waypoints are equal within the allowed tolerances.
-            ValueError: If there are not at least two waypoints.
-        """
         self._robot_joint_space = robot_joint_space
         self._active_joints = active_joints
         self._waypoints = path.get_waypoints()

@@ -2,6 +2,9 @@
 **Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
 ```
 
+.. note::
+   For new development, consider using the newer experimental motion generation API in :ref:`isaacsim.robot_motion.experimental.motion_generation <isaacsim.robot_motion.experimental.motion_generation>` which provides improved interfaces and additional features.
+
 # Overview
 
 The isaacsim.robot_motion.motion_generation extension provides a comprehensive framework for generating collision-aware robot motion in Isaac Sim. This extension implements both real-time reactive motion policies and trajectory generation capabilities, with a primary focus on Lula-based motion algorithms that enable dynamic obstacle avoidance and smooth robot control.

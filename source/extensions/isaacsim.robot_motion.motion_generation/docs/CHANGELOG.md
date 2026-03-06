@@ -1,4 +1,9 @@
 # Changelog
+## [8.2.2] - 2026-03-05
+### Changed
+- Updated Overview.md with note about newer experimental motion generation API.
+- Updated path_planner_visualizer.py docstring to clarify it only does interpolation.
+
 ## [8.2.1] - 2026-03-04
 ### Changed
 - Fix api errors

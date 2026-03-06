@@ -15,6 +15,7 @@
 
 """Abstract interface for planning world implementations with collision obstacle management."""
 
+from __future__ import annotations
 
 from typing import Literal
 

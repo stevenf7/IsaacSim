@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A mirror implementation of the WorldInterface that stores collision objects in memory for testing and debugging motion generation systems."""
+"""A mirror implementation of the WorldInterface that stores collision objects in memory for testing motion generation systems."""
 
+from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Literal
@@ -211,7 +212,7 @@ class MirrorOrientedBoundingBox:
 
     Args:
         center: Center point of the bounding box.
-        rotation_matrix: Rotation matrix defining the orientation of the bounding box.
+        rotation: Quaternion (w, x, y, z) defining the orientation of the bounding box.
         half_side_length: Half the side length dimensions of the bounding box.
         scale: Scale factor applied to the bounding box.
         safety_tolerance: Safety tolerance margin for collision detection.
@@ -578,9 +579,9 @@ class MirrorWorldInterface(WorldInterface):
 
         Args:
             prim_paths: List of prim paths for the oriented bounding box objects.
-            centers: List of Warp arrays containing center points for each bounding box.
-            rotation_matrices: List of Warp arrays containing rotation matrices for each bounding box.
-            half_side_lengths: List of Warp arrays containing half side lengths for each bounding box.
+            centers: Warp array containing center points for each bounding box.
+            rotations: Warp array containing quaternions (w, x, y, z) for each bounding box.
+            half_side_lengths: Warp array containing half side lengths for each bounding box.
             scales: Warp array of scale factors for the bounding boxes.
             safety_tolerances: Warp array of safety tolerance values.
             poses: Tuple containing position and quaternion arrays for bounding box poses.

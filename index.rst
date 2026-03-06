@@ -146,6 +146,8 @@ Extensions
    :maxdepth: 1
    :caption: Extensions (Robot Motion & Setup)
 
+   isaacsim.robot_motion.cumotion <source/extensions/isaacsim.robot_motion.cumotion/docs/index>
+   isaacsim.robot_motion.experimental.motion_generation <source/extensions/isaacsim.robot_motion.experimental.motion_generation/docs/index>
    isaacsim.robot_motion.lula <source/extensions/isaacsim.robot_motion.lula/docs/index>
    isaacsim.robot_motion.lula_test_widget <source/extensions/isaacsim.robot_motion.lula_test_widget/docs/index>
    isaacsim.robot_motion.motion_generation <source/extensions/isaacsim.robot_motion.motion_generation/docs/index>

@@ -15,6 +15,7 @@
 
 """Interface for searching the USD world for objects with a given TrackableApi."""
 
+from __future__ import annotations
 
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils

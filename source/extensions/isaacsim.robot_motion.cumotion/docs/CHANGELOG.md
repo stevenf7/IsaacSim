@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] - 2026-03-04
+### Fixed
+- Fixed type annotation errors by adding `from __future__ import annotations` to files using union type syntax.
+
 ## [1.0.0] - 2026-03-03
 ### Changed
 - `CumotionWorldInterface.add_oriented_bounding_boxes` now accepts quaternions (w, x, y, z) instead of rotation matrices for the `rotations` parameter.
