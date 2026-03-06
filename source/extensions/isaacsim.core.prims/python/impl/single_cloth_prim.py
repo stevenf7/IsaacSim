@@ -83,6 +83,7 @@ class SingleClothPrim(_SinglePrimWrapper):
             spring_damping (Sequence[float], optional): damping on cloth spring constraints. Applies to all constraints
                                               parameterized by stiffness attributes, range: [0, inf),
                                               units: force * second / distance = mass / second
+
         Note:
             Particles / objects in different groups in the same system collide with each other. Within the same group in
             the same system, the collision behavior is controlled by the self_collision parameter.

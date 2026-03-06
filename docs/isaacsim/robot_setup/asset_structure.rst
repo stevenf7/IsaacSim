@@ -20,7 +20,8 @@ Each asset is broken down into multiple components, which can be categorized as 
     :alt: Asset Structure Diagram for the Inspire Hand asset
 
 
-.. For an example of an asset following these guidelines check Nova Carter at ``Robots/NVIDIA/Carter/nova_carter/`` in Isaac Sim assets. 
+.. For an example of an asset following these guidelines check Nova Carter at ``Robots/NVIDIA/Carter/nova_carter/`` in Isaac Sim assets.
+
 Asset Source
 ^^^^^^^^^^^^
 

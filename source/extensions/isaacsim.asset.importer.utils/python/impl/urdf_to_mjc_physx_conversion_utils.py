@@ -14,6 +14,8 @@
 
 """Utilities for converting URDF/PhysX joint data into MJCF-compatible data."""
 
+from __future__ import annotations
+
 import logging
 
 import usd.schema.newton

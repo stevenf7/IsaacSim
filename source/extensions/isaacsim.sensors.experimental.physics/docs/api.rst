@@ -6,7 +6,7 @@ Python API
 
 .. Summary
 
-.. currentmodule:: isaacsim.sensors.physics
+.. currentmodule:: isaacsim.sensors.experimental.physics
 
 .. rubric:: *Commands*
 .. autosummary::
@@ -32,21 +32,21 @@ Python API
 Commands
 ^^^^^^^^
 
-.. autoclass:: isaacsim.sensors.physics.IsaacSensorExperimentalCreatePrim
+.. autoclass:: isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreatePrim
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
     :exclude-members: do, undo
 
-.. autoclass:: isaacsim.sensors.physics.IsaacSensorExperimentalCreateContactSensor
+.. autoclass:: isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreateContactSensor
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
     :exclude-members: do, undo
 
-.. autoclass:: isaacsim.sensors.physics.IsaacSensorExperimentalCreateImuSensor
+.. autoclass:: isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreateImuSensor
     :members:
     :undoc-members:
     :inherited-members:
@@ -58,25 +58,25 @@ Commands
 Sensors
 ^^^^^^^
 
-.. autoclass:: isaacsim.sensors.physics.ContactSensor
+.. autoclass:: isaacsim.sensors.experimental.physics.ContactSensor
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
 
-.. autoclass:: isaacsim.sensors.physics.EffortSensorReading
+.. autoclass:: isaacsim.sensors.experimental.physics.EffortSensorReading
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
 
-.. autoclass:: isaacsim.sensors.physics.EffortSensor
+.. autoclass:: isaacsim.sensors.experimental.physics.EffortSensor
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
 
-.. autoclass:: isaacsim.sensors.physics.IMUSensor
+.. autoclass:: isaacsim.sensors.experimental.physics.IMUSensor
     :members:
     :undoc-members:
     :inherited-members:

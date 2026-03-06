@@ -693,7 +693,7 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
 
         # Set Articulation Root
         articulation_root_field = ui_test.find(root_widget_path + "/HStack[3]/StringField[0]")
-        articulation_root_field.model.set_value(art_root_path)
+        articulation_root_field.model.set_value(base_link_path)
 
         # Enable Publisher
         publisher_checkbox = ui_test.find(root_widget_path + "/HStack[4]/HStack[0]/VStack[0]/ToolButton[0]")
@@ -808,9 +808,9 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
 
         root_widget_path = f"{window_name}//Frame/VStack[0]"
 
-        # Set Articulation Root to the robot's root prim
+        # Set Articulation Root to the actual articulation root prim
         articulation_root_field = ui_test.find(root_widget_path + "/HStack[3]/StringField[0]")
-        articulation_root_field.model.set_value(art_root_path)
+        articulation_root_field.model.set_value(base_link_path)
 
         # Enable Publisher
         publisher_checkbox = ui_test.find(root_widget_path + "/HStack[4]/HStack[0]/VStack[0]/ToolButton[0]")
@@ -1270,13 +1270,13 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
         if publish_tf_checkbox:
             publish_tf_checkbox.model.set_value(True)
 
-        # Set Robot Articulation Root to the top-level robot prim
+        # Set Robot Articulation Root to the actual articulation root prim
         articulation_root_field = ui_test.find(odom_root_widget_path + "/HStack[4]/StringField[0]")
-        articulation_root_field.model.set_value(art_root_path)
+        articulation_root_field.model.set_value(base_link_path)
 
         # Set Chassis Link Prim
         chassis_link_prim_field = ui_test.find(odom_root_widget_path + "/HStack[5]/StringField[0]")
-        chassis_link_prim_field.model.set_value("/World/test_robot/chassis_link/base_link")
+        chassis_link_prim_field.model.set_value(art_root_path)
 
         await omni.kit.app.get_app().next_update_async()
 

@@ -14,6 +14,8 @@
 # limitations under the License.
 """Articulation view for Newton physics tensor interface."""
 
+from __future__ import annotations
+
 from typing import Any
 
 import carb

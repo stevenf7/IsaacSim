@@ -41,9 +41,9 @@ The tensor interface provides NumPy, PyTorch, and Warp frontends for physics dat
     :nosignatures:
 
     create_simulation_view
-    ArticulationView
-    RigidBodyView
-    RigidContactView
+    NewtonArticulationView
+    NewtonRigidBodyView
+    NewtonRigidContactView
 
 .. API Details
 
@@ -81,17 +81,17 @@ Tensor Views
 
 .. autofunction:: isaacsim.physics.newton.tensors.create_simulation_view
 
-.. autoclass:: isaacsim.physics.newton.tensors.ArticulationView
+.. autoclass:: isaacsim.physics.newton.tensors.NewtonArticulationView
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. autoclass:: isaacsim.physics.newton.tensors.RigidBodyView
+.. autoclass:: isaacsim.physics.newton.tensors.NewtonRigidBodyView
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. autoclass:: isaacsim.physics.newton.tensors.RigidContactView
+.. autoclass:: isaacsim.physics.newton.tensors.NewtonRigidContactView
     :members:
     :undoc-members:
     :show-inheritance:
