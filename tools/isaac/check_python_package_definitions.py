@@ -17,12 +17,14 @@ import argparse
 import fnmatch
 import logging
 import os
+import platform as platform_module
+import shutil
 import string
 import subprocess
 import sys
 import tempfile
 from collections import defaultdict
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, List, Optional
 from xml.etree import ElementTree
 
 import omni.repo.man
@@ -457,6 +459,82 @@ def _check_dependencies(
         sys.exit(1)
 
 
+VENV_DEPENDENCY_CHECK_DIR = "_env_dependency_check"
+
+
+def _get_current_platform(platforms: List[str]) -> str:
+    """Return the repo platform key for the current host. Exits with error if unsupported."""
+    sys_name = platform_module.system()
+    machine = platform_module.machine().lower()
+    if sys_name == "Linux":
+        if machine in ("x86_64", "amd64"):
+            key = "linux-x86_64"
+        elif machine in ("aarch64", "arm64"):
+            key = "linux-aarch64"
+        else:
+            key = None
+    elif sys_name == "Windows":
+        if machine in ("x86_64", "amd64"):
+            key = "windows-x86_64"
+        else:
+            key = None
+    else:
+        key = None
+    if key is None or key not in platforms:
+        omni.repo.man.print_log(
+            f"Unsupported or unknown platform for --validate: system={sys_name!r}, machine={machine!r}. Supported: {platforms}",
+            logging.ERROR,
+        )
+        sys.exit(1)
+    return key
+
+
+def _get_python312_executable(platform_key: str) -> str:
+    """Return the Python 3.12 executable path for the given platform key."""
+    if platform_key == "windows-x86_64":
+        return os.environ.get("PYTHON_3_12", "C:\\Python312\\python.exe")
+    return os.environ.get("PYTHON_3_12", "python3.12")
+
+
+def _run_validate(platform_key: str, requirements_path: str, python_exe: str) -> None:
+    """
+    Create a fresh venv, upgrade pip, and install from the generated requirements file.
+    Exits nonzero on any failure.
+    """
+    venv_dir = os.path.abspath(VENV_DEPENDENCY_CHECK_DIR)
+    if os.path.isdir(venv_dir):
+        omni.repo.man.print_log(f"Removing existing {venv_dir}", logging.INFO)
+        shutil.rmtree(venv_dir)
+
+    omni.repo.man.print_log(f"Creating virtual environment at {venv_dir}", logging.INFO)
+    subprocess.run(
+        [python_exe, "-m", "venv", venv_dir],
+        check=True,
+        capture_output=False,
+    )
+
+    if platform_key == "windows-x86_64":
+        venv_python = os.path.join(venv_dir, "Scripts", "python.exe")
+    else:
+        venv_python = os.path.join(venv_dir, "bin", "python")
+
+    # Use "python -m pip" instead of pip.exe to avoid Windows self-upgrade failures
+    omni.repo.man.print_log("Upgrading pip", logging.INFO)
+    subprocess.run(
+        [venv_python, "-m", "pip", "install", "--upgrade", "pip"],
+        check=True,
+        capture_output=False,
+    )
+
+    omni.repo.man.print_log(f"Installing dependencies from {requirements_path}", logging.INFO)
+    subprocess.run(
+        [venv_python, "-m", "pip", "install", "-r", requirements_path],
+        check=True,
+        capture_output=False,
+    )
+    omni.repo.man.print_log("Dependency validation passed", logging.INFO)
+
+
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     parser.description = "Check for the proper definition of the python packages"
     parser.add_argument(
@@ -472,6 +550,13 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         default=False,
         action="store_true",
         help="Enable GitLab CI mode: use kit version from upstream pipeline when CI_PIPELINE_SOURCE=pipeline and UPSTREAM_PIPELINE_ID set; ignore errors during dependabot kit-sdk updates",
+    )
+    parser.add_argument(
+        "--validate",
+        required=False,
+        default=False,
+        action="store_true",
+        help="For the current platform: run checks, generate python-package-requirements file, create _env_dependency_check venv with Python 3.12, install dependencies, and pass/fail",
     )
 
     def run_repo_tool(options: Dict, config: Dict):
@@ -529,5 +614,17 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             platforms,
             tokens_override=upstream_tokens,
         )
+
+        if options.validate:
+            platform_key = _get_current_platform(platforms)
+            requirements_path = os.path.abspath(f"python-package-requirements-{platform_key}.txt")
+            if not os.path.isfile(requirements_path):
+                omni.repo.man.print_log(
+                    f"Requirements file not found: {requirements_path}",
+                    logging.ERROR,
+                )
+                sys.exit(1)
+            python_exe = _get_python312_executable(platform_key)
+            _run_validate(platform_key, requirements_path, python_exe)
 
     return run_repo_tool
