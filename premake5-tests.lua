@@ -55,7 +55,7 @@ local function get_startup_tests()
         {
             name = "tests-startup.main",
             kit_file = "isaacsim.exp.full",
-            extra_args = "--/app/quitAfter=100 --/app/file/ignoreUnsavedStage=1",
+            extra_args = "--/app/quitAfter=1000 --/app/file/ignoreUnsavedStage=1",
         },
         {
             name = "tests-startup.streaming",
