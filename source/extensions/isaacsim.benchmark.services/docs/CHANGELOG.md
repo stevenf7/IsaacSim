@@ -1,4 +1,8 @@
 # Changelog
+## [4.1.3] - 2026-03-05
+### Changed
+- Fix api and docs syntax issues
+
 ## [4.1.2] - 2026-03-02
 ### Changed
 - Add Overview.md, add python_api.md, add SETTINGS.md and update docstrings

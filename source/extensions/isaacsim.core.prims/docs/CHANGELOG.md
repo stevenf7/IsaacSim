@@ -1,4 +1,8 @@
 # Changelog
+## [0.8.8] - 2026-03-05
+### Changed
+- Fix api and docs syntax issues
+
 
 ## [0.8.7] - 2026-01-20
 ### Removed

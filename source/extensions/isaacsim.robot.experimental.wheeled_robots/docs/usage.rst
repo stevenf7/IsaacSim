@@ -1,4 +1,4 @@
-.. _usage:
+.. _wheeled_robots_usage:
 
 Basic Usage
 ===========
@@ -13,7 +13,7 @@ Overview
 * **Stage**: Use the stage utilities (e.g. ``stage_utils.set_stage_up_axis``, ``set_stage_units``, ``add_reference_to_stage``) and add a ``PhysicsScene`` so physics can run.
 
 Differential drive (e.g. Jetbot)
--------------------------------
+--------------------------------
 
 Create the robot with ``WheeledRobot``, then a ``DifferentialController``. The controller takes a command ``[linear_speed, angular_speed]`` and returns a length-2 array of wheel velocities. Pass that array to ``apply_wheel_actions``.
 
@@ -91,7 +91,7 @@ For holonomic robots, use ``HolonomicRobotUsdSetup`` to read wheel geometry from
    my_kaya.apply_wheel_actions(velocities)
 
 Ackermann steering
------------------
+------------------
 
 ``AckermannController`` uses a bicycle model and returns steering angles and per-wheel rotation velocities. The command is a length-5 array: ``[steering_angle, steering_angle_velocity, speed, acceleration, dt]``. The return value is a tuple ``(joint_positions, joint_velocities)``. Use these to drive the robot's steering and wheel joints according to your robot's USD structure.
 

@@ -13,7 +13,10 @@ Given a pipeline ID, this script fetches jobs from the GitLab API and downloads:
   1) Job traces (stdout/stderr) as `job_trace.log`
   2) Log-like files from artifacts archives (`*.log`, `*.txt`)
 
-By default, only test-like stages are included to focus on crash analysis.
+By default, only test-like stages are included to focus on failure triage.
+The resulting `download_report.json` contains both pipeline-level metadata and
+per-job download results so downstream analyzers can explain what was selected,
+skipped, or blocked by auth/API errors.
 """
 
 from __future__ import annotations
@@ -31,6 +34,12 @@ import requests
 
 
 DEFAULT_TEST_STAGES = {"test", "nightly-test", "external-test", "prod-test", "deploy-test"}
+DEFAULT_TOKEN_ENV_CANDIDATES = (
+    "ISAAC_MAINTAINER_RO_TOKEN",
+    "CI_GITLAB_API_TOKEN",
+    "GITLAB_API_TOKEN",
+    "GITLAB_TOKEN",
+)
 
 
 def _sanitize_name(name: str) -> str:
@@ -64,8 +73,12 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--token-env",
-        default="GITLAB_TOKEN",
-        help="Environment variable holding PRIVATE-TOKEN",
+        default=None,
+        help=(
+            "Environment variable holding PRIVATE-TOKEN. "
+            "If omitted, checks ISAAC_MAINTAINER_RO_TOKEN, CI_GITLAB_API_TOKEN, "
+            "GITLAB_API_TOKEN, then GITLAB_TOKEN."
+        ),
     )
     parser.add_argument(
         "--all-jobs",
@@ -86,6 +99,11 @@ def _parse_args() -> argparse.Namespace:
         "--no-artifacts",
         action="store_true",
         help="Disable downloading and extracting artifacts",
+    )
+    parser.add_argument(
+        "--traces-only",
+        action="store_true",
+        help="Alias for --no-artifacts when only job traces are needed",
     )
     parser.add_argument(
         "--keep-artifact-zip",
@@ -117,6 +135,25 @@ def _request_json(url: str, headers: dict[str, str], params: dict[str, Any] | No
     response = requests.get(url, headers=headers, params=params, timeout=60)
     response.raise_for_status()
     return response.json()
+
+
+def _resolve_token(args: argparse.Namespace) -> tuple[str, str]:
+    if args.token_env:
+        token = os.getenv(args.token_env)
+        if token is None:
+            raise ValueError(f"{args.token_env} environment variable is not set")
+        return token, args.token_env
+
+    for env_name in DEFAULT_TOKEN_ENV_CANDIDATES:
+        token = os.getenv(env_name)
+        if token:
+            return token, env_name
+
+    searched = ", ".join(DEFAULT_TOKEN_ENV_CANDIDATES)
+    raise ValueError(
+        "GitLab token not found. Set --token-env or one of these environment variables: "
+        f"{searched}"
+    )
 
 
 def _list_pipeline_jobs(gitlab_url: str, project_id: int, pipeline_id: int, headers: dict[str, str]) -> list[dict[str, Any]]:
@@ -164,6 +201,26 @@ def _select_jobs(args: argparse.Namespace, jobs: list[dict[str, Any]]) -> list[d
     return selected
 
 
+def _selection_summary(args: argparse.Namespace, jobs: list[dict[str, Any]], selected_jobs: list[dict[str, Any]]) -> dict[str, Any]:
+    selected_ids = {job["id"] for job in selected_jobs}
+    skipped_jobs = [job for job in jobs if job["id"] not in selected_ids]
+    return {
+        "selected_count": len(selected_jobs),
+        "skipped_count": len(skipped_jobs),
+        "selected_stage_filter": sorted(DEFAULT_TEST_STAGES) if not args.all_jobs else "all",
+        "job_name_regex": args.job_name_regex,
+        "skipped_jobs": [
+            {
+                "job_id": job["id"],
+                "name": job.get("name", "unknown"),
+                "stage": job.get("stage"),
+                "status": job.get("status"),
+            }
+            for job in skipped_jobs
+        ],
+    }
+
+
 def _resolve_project_id(
     args: argparse.Namespace,
     headers: dict[str, str],
@@ -192,11 +249,10 @@ def _resolve_project_id(
 
 def main() -> None:
     args = _parse_args()
+    if args.traces_only:
+        args.no_artifacts = True
 
-    token = os.getenv(args.token_env)
-    if token is None:
-        raise ValueError(f"{args.token_env} environment variable is not set")
-
+    token, token_source = _resolve_token(args)
     headers = {"PRIVATE-TOKEN": token}
     gitlab_url, project_id, pipeline_id = _resolve_project_id(args, headers)
 
@@ -206,12 +262,18 @@ def main() -> None:
     pipeline_api_url = f"{gitlab_url}/api/v4/projects/{project_id}/pipelines/{pipeline_id}"
     pipeline = _request_json(pipeline_api_url, headers)
     print(f"Pipeline: {pipeline['web_url']} ({pipeline.get('status', 'unknown')})")
+    print(
+        "Download mode: "
+        f"traces={'enabled' if not args.no_traces else 'disabled'}, "
+        f"artifacts={'disabled' if args.no_artifacts else 'enabled'}"
+    )
+    print(f"Auth token source: {token_source}")
 
     jobs = _list_pipeline_jobs(gitlab_url, project_id, pipeline_id, headers)
     selected_jobs = _select_jobs(args, jobs)
     print(f"Found {len(jobs)} jobs; selected {len(selected_jobs)}")
 
-    report: list[dict[str, Any]] = []
+    report_jobs: list[dict[str, Any]] = []
     for job in selected_jobs:
         job_id = job["id"]
         job_name = job.get("name", "unknown")
@@ -228,6 +290,7 @@ def main() -> None:
             "artifacts_url": f"{gitlab_url}/api/v4/projects/{project_id}/jobs/{job_id}/artifacts",
             "downloaded_trace": False,
             "downloaded_artifacts": False,
+            "artifacts_available": bool(job.get("artifacts_file") and job["artifacts_file"].get("filename")),
             "extracted_log_files": [],
             "errors": [],
         }
@@ -242,8 +305,7 @@ def main() -> None:
             except requests.RequestException as exc:
                 job_record["errors"].append(f"trace download failed: {exc}")
 
-        has_artifacts = bool(job.get("artifacts_file") and job["artifacts_file"].get("filename"))
-        if has_artifacts and not args.no_artifacts:
+        if job_record["artifacts_available"] and not args.no_artifacts:
             artifact_zip = job_dir / "artifacts.zip"
             try:
                 _download_to_file(job_record["artifacts_url"], headers, artifact_zip, timeout=300)
@@ -256,13 +318,37 @@ def main() -> None:
                 job_record["errors"].append(f"artifact handling failed: {exc}")
 
         (job_dir / "job_metadata.json").write_text(json.dumps(job_record, indent=2), encoding="utf-8")
-        report.append(job_record)
+        report_jobs.append(job_record)
         print(
             f"Processed job {job_id} ({job_name}) - trace={job_record['downloaded_trace']} "
             f"artifacts={job_record['downloaded_artifacts']} logs={len(job_record['extracted_log_files'])}"
         )
 
     report_path = output_dir / "download_report.json"
+    report = {
+        "pipeline": {
+            "pipeline_id": pipeline_id,
+            "project_id": project_id,
+            "gitlab_url": gitlab_url,
+            "web_url": pipeline.get("web_url"),
+            "status": pipeline.get("status"),
+        },
+        "workflow": {
+            "token_source": token_source,
+            "traces_enabled": not args.no_traces,
+            "artifacts_enabled": not args.no_artifacts,
+            "keep_artifact_zip": args.keep_artifact_zip,
+        },
+        "selection": _selection_summary(args, jobs, selected_jobs),
+        "jobs": report_jobs,
+        "counts": {
+            "jobs_total": len(jobs),
+            "jobs_selected": len(selected_jobs),
+            "jobs_with_trace": sum(1 for job in report_jobs if job["downloaded_trace"]),
+            "jobs_with_artifacts": sum(1 for job in report_jobs if job["downloaded_artifacts"]),
+            "jobs_with_errors": sum(1 for job in report_jobs if job["errors"]),
+        },
+    }
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"Wrote report: {report_path}")
 

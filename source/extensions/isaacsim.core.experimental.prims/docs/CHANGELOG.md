@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.1] - 2026-03-05
+### Changed
+- Fix api and docs syntax issues
+
 
 ## [1.3.0] - 2026-03-03
 ### Added
