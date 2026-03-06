@@ -23,8 +23,8 @@ import weakref
 import carb
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.robot.surface_gripper._surface_gripper as surface_gripper
-import numpy as np
 import omni
 import omni.ext
 import omni.kit.app
@@ -86,7 +86,6 @@ class Extension(omni.ext.IExt):
         self._ext_id = ext_id
 
         # Loads interfaces
-        self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._stage_event_sub = None
         self._window = None
@@ -167,8 +166,8 @@ class Extension(omni.ext.IExt):
         get_browser_instance().deregister_example(name=EXTENSION_NAME, category="Manipulation")
 
     def _on_update_ui(self, widget):
-        self._models["create_button"].enabled = self._timeline.is_playing()
-        self._models["toggle_button"].enabled = self._timeline.is_playing()
+        self._models["create_button"].enabled = app_utils.is_playing()
+        self._models["toggle_button"].enabled = app_utils.is_playing()
         # If the scene has been reloaded, reset UI to create Scenario
         if self._usd_context.get_stage_id() != self._stage_id:
             self._models["create_button"].enabled = True
@@ -189,7 +188,7 @@ class Extension(omni.ext.IExt):
 
     def _on_simulation_step(self, step, context):
         # Checks if the simulation is playing, and if the stage has been loaded
-        if self._timeline.is_playing() and self._stage_id != -1:
+        if app_utils.is_playing() and self._stage_id != -1:
             self._toggle_gripper_button_ui()
             objects = self.gripper_interface.get_gripped_objects(self.gripper_prim_path)
             self._models["gripped_objects"].set_value("\n".join(objects))
@@ -207,7 +206,7 @@ class Extension(omni.ext.IExt):
             # Get Handle for stage and stage ID to check if stage was reloaded
             self._stage = self._usd_context.get_stage()
             self._stage_id = self._usd_context.get_stage_id()
-            self._timeline.stop()
+            app_utils.stop()
             self._models["create_button"].set_clicked_fn(self._on_reset_scenario_button_clicked)
 
             self.gripper_prim_path = "/World/SurfaceGripper"
@@ -261,7 +260,7 @@ class Extension(omni.ext.IExt):
                     pre_step=False, order=0, on_update=self._on_simulation_step
                 )
             )
-            self._timeline.play()
+            app_utils.play()
 
     def _on_create_scenario_button_clicked(self):
         # wait for new stage before creating scenario
@@ -289,7 +288,7 @@ class Extension(omni.ext.IExt):
         Args:
             val: Boolean value passed from the UI button click event.
         """
-        if self._timeline.is_playing():
+        if app_utils.is_playing():
             status = self.gripper_interface.get_gripper_status(self.gripper_prim_path)
             if status == surface_gripper.GripperStatus.Open:
                 self.gripper_interface.close_gripper(self.gripper_prim_path)

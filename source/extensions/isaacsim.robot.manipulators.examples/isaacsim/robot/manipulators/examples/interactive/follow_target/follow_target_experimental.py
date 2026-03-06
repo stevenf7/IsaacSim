@@ -21,9 +21,9 @@ without complex layers or RL concepts. Users can move the target cube and watch
 the robot follow it through the UI.
 """
 
+import isaacsim.core.experimental.utils.app as app_utils
 import numpy as np
-import omni.kit.app
-from isaacsim.core.simulation_manager import SimulationManager
+from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
 from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.robot.manipulators.examples.universal_robots import UR10FollowTarget
 
@@ -54,11 +54,7 @@ class UR10FollowTargetInteractive(BaseSample):
         """Called before world reset."""
         # Stop any ongoing following and remove callbacks
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception as e:
-                # Callback may have already been deregistered or doesn't exist
-                print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
         if self.controller:
@@ -75,11 +71,7 @@ class UR10FollowTargetInteractive(BaseSample):
         """Called after clearing the scene."""
         # Stop any ongoing following and remove callbacks
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception as e:
-                # Callback may have already been deregistered or doesn't exist
-                print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
         self.controller = None
@@ -89,11 +81,7 @@ class UR10FollowTargetInteractive(BaseSample):
         """Clean up world resources."""
         # Stop any ongoing following and remove callbacks
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception as e:
-                # Callback may have already been deregistered or doesn't exist
-                print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
         self.controller = None
@@ -116,10 +104,7 @@ class UR10FollowTargetInteractive(BaseSample):
             print(f"Error during follow target step: {e}")
             self._is_following = False
             if self._physics_callback_id is not None:
-                try:
-                    SimulationManager.deregister_callback(self._physics_callback_id)
-                except Exception as deregister_error:
-                    print(f"Note: Could not deregister callback {self._physics_callback_id}: {deregister_error}")
+                SimulationManager.deregister_callback(self._physics_callback_id)
                 self._physics_callback_id = None
 
     def get_controller_status(self) -> dict:
@@ -190,15 +175,13 @@ class UR10FollowTargetInteractive(BaseSample):
         print("Robot reset for clean start")
 
         # Register physics callback using SimulationManager
-        from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
-
         self._physics_callback_id = SimulationManager.register_callback(
-            self._follow_target_physics_callback, IsaacEvents.POST_PHYSICS_STEP
+            self._follow_target_physics_callback, event=SimulationEvent.PHYSICS_POST_STEP
         )
 
         # Start timeline playback
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        app_utils.play()
+        await app_utils.update_app_async()
         return True
 
     async def stop_following_async(self):
@@ -216,11 +199,7 @@ class UR10FollowTargetInteractive(BaseSample):
 
         # Remove the physics callback
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception as e:
-                # Callback may have already been deregistered or doesn't exist
-                print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
         print("Follow target execution stopped")

@@ -51,11 +51,7 @@ class FrankaPickPlaceInteractive(BaseSample):
         """Called before world reset."""
         # Stop any ongoing execution and remove callbacks
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception as e:
-                # Callback may have already been deregistered or doesn't exist
-                print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
         if self.controller:
@@ -72,10 +68,7 @@ class FrankaPickPlaceInteractive(BaseSample):
         """Called after clearing the scene."""
         # Stop any ongoing execution and remove callbacks
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception as e:
-                print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
         self.controller = None
         self._is_executing = False
@@ -84,10 +77,7 @@ class FrankaPickPlaceInteractive(BaseSample):
         """Clean up world resources."""
         # Stop any ongoing execution and remove callbacks
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception as e:
-                print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
         self.controller = None
@@ -109,10 +99,7 @@ class FrankaPickPlaceInteractive(BaseSample):
 
             # Remove the physics callback
             if self._physics_callback_id is not None:
-                try:
-                    SimulationManager.deregister_callback(self._physics_callback_id)
-                except Exception as deregister_error:
-                    print(f"Note: Could not deregister callback {self._physics_callback_id}: {deregister_error}")
+                SimulationManager.deregister_callback(self._physics_callback_id)
                 self._physics_callback_id = None
             return
 
@@ -123,19 +110,13 @@ class FrankaPickPlaceInteractive(BaseSample):
                 print("Forward step failed!")
                 self._is_executing = False
                 if self._physics_callback_id is not None:
-                    try:
-                        SimulationManager.deregister_callback(self._physics_callback_id)
-                    except Exception as deregister_error:
-                        print(f"Note: Could not deregister callback {self._physics_callback_id}: {deregister_error}")
+                    SimulationManager.deregister_callback(self._physics_callback_id)
                     self._physics_callback_id = None
         except Exception as e:
             print(f"Error during pick-and-place step: {e}")
             self._is_executing = False
             if self._physics_callback_id is not None:
-                try:
-                    SimulationManager.deregister_callback(self._physics_callback_id)
-                except Exception as deregister_error:
-                    print(f"Note: Could not deregister callback {self._physics_callback_id}: {deregister_error}")
+                SimulationManager.deregister_callback(self._physics_callback_id)
                 self._physics_callback_id = None
 
     def get_controller_status(self) -> dict:
@@ -180,12 +161,12 @@ class FrankaPickPlaceInteractive(BaseSample):
         print("Robot reset for clean start")
 
         # Register physics callback using SimulationManager
-        from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
+        from isaacsim.core.simulation_manager import SimulationEvent
 
         self._physics_callback_id = SimulationManager.register_callback(
-            self._pick_place_physics_callback, IsaacEvents.POST_PHYSICS_STEP
+            self._pick_place_physics_callback, event=SimulationEvent.PHYSICS_POST_STEP
         )
 
-        # Start timeline playback via app_utils (Rule 4: app/timeline; Rule 5: update loop)
+        # Start timeline playback via app_utils
         app_utils.play()
-        await app_utils.update_app_async(steps=1)
+        await app_utils.update_app_async()

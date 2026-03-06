@@ -228,12 +228,12 @@ class GettingStartedUI(BaseSampleUITemplate):
         from pxr import Gf
 
         # Create visual cube (no physics properties)
-        cube = Cube("/visual_cube", sizes=0.3, positions=[[0, 0.5, 1.0]])
+        cube = Cube("/visual_cube", sizes=0.3, positions=[0, 0.5, 1.0])
         # Set display color (yellow)
         cube.geoms[0].GetDisplayColorAttr().Set([Gf.Vec3f(1.0, 1.0, 0.0)])
 
         # Create static visual cube
-        cube_static = Cube("/visual_cube_static", sizes=0.3, positions=[[0.5, 0, 0.5]])
+        cube_static = Cube("/visual_cube_static", sizes=0.3, positions=[0.5, 0, 0.5])
         # Set display color (green)
         cube_static.geoms[0].GetDisplayColorAttr().Set([Gf.Vec3f(0.0, 1.0, 0.0)])
 
@@ -251,7 +251,7 @@ class GettingStartedUI(BaseSampleUITemplate):
         from pxr import Gf
 
         # Create cube with physics and collision properties
-        cube = Cube("/dynamic_cube", sizes=0.3, positions=[[0, -0.5, 1.5]])
+        cube = Cube("/dynamic_cube", sizes=0.3, positions=[0, -0.5, 1.5])
         # Set display color (cyan)
         cube.geoms[0].GetDisplayColorAttr().Set([Gf.Vec3f(0.0, 1.0, 1.0)])
 
@@ -270,7 +270,7 @@ class GettingStartedUI(BaseSampleUITemplate):
         """
         from isaacsim.core.experimental.objects import GroundPlane
 
-        GroundPlane("/World/GroundPlane", positions=[[0, 0, 0]])
+        GroundPlane("/World/GroundPlane", positions=[0, 0, 0])
         self.task_ui_elements["Add Ground Plane"].enabled = False
 
     def _add_light_source(self):
@@ -281,7 +281,7 @@ class GettingStartedUI(BaseSampleUITemplate):
         from isaacsim.core.experimental.objects import DistantLight
 
         light = DistantLight("/DistantLight")
-        light.set_intensities([300])
+        light.set_intensities(300)
         self.task_ui_elements["Add Light Source"].enabled = False
 
     def _add_physics_properties(self):

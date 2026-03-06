@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.15.1] - 2026-03-05
+### Changed
+- Experimental API alignment: app_utils for timeline control, SimulationEvent for physics callbacks.
+
 ## [4.15.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings

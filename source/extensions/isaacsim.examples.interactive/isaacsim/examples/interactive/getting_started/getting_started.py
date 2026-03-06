@@ -41,15 +41,6 @@ class GettingStarted(BaseSample):
     def __init__(self):
         super().__init__()
 
-    @property
-    def name(self) -> str:
-        """Name of the getting started sample.
-
-        Returns:
-            The sample name.
-        """
-        return "Getting Started"
-
     def setup_scene(self):
         """Sets up the scene for the getting started sample."""
         pass

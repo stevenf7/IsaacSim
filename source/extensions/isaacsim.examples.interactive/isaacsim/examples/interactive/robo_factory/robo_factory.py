@@ -23,8 +23,7 @@ in the same scene using experimental APIs.
 import isaacsim.core.experimental.utils.app as app_utils
 import numpy as np
 from isaacsim.core.rendering_manager import ViewportManager
-from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
+from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
 from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.robot.manipulators.examples.franka.stacking import Stacking
 
@@ -71,10 +70,7 @@ class RoboFactory(BaseSample):
         """Called before world reset."""
         # Stop any ongoing execution and remove callbacks
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception as e:
-                print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
         # Reset all stackings
@@ -93,10 +89,7 @@ class RoboFactory(BaseSample):
         """Called after clearing the scene."""
         # Stop any ongoing execution and remove callbacks
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception as e:
-                print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
         self._stackings = []
@@ -107,10 +100,7 @@ class RoboFactory(BaseSample):
         """Clean up world resources."""
         # Stop any ongoing execution and remove callbacks
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception as e:
-                print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
         self._stackings = []
@@ -138,10 +128,7 @@ class RoboFactory(BaseSample):
             print("All robots finished stacking!")
             self._is_executing = False
             if self._physics_callback_id is not None:
-                try:
-                    SimulationManager.deregister_callback(self._physics_callback_id)
-                except Exception as e:
-                    print(f"Note: Could not deregister callback {self._physics_callback_id}: {e}")
+                SimulationManager.deregister_callback(self._physics_callback_id)
                 self._physics_callback_id = None
 
     async def _on_start_stacking_event_async(self):
@@ -155,9 +142,9 @@ class RoboFactory(BaseSample):
 
         # Register physics callback using SimulationManager
         self._physics_callback_id = SimulationManager.register_callback(
-            self._stacking_physics_callback, IsaacEvents.POST_PHYSICS_STEP
+            self._stacking_physics_callback, event=SimulationEvent.PHYSICS_POST_STEP
         )
 
         # Start timeline playback
         app_utils.play()
-        await app_utils.update_app_async(steps=1)
+        await app_utils.update_app_async()
