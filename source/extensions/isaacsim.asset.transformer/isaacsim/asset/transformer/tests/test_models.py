@@ -14,7 +14,6 @@
 """Tests for transformer data model serialization."""
 
 import json
-import unittest
 
 import omni.kit.test
 from isaacsim.asset.transformer.models import (

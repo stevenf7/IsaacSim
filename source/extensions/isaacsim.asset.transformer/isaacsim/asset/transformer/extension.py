@@ -3,7 +3,6 @@
 
 """Extension entry point for asset transformer rules."""
 
-import carb
 import omni.ext
 
 from .manager import RuleRegistry

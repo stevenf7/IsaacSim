@@ -20,11 +20,8 @@ import tempfile
 import omni.kit.test
 from isaacsim.asset.transformer.rules.core.properties import (
     PropertyRoutingRule,
-    copy_property_to_layer,
-    remove_property_from_source_layers,
 )
-from isaacsim.asset.transformer.rules.utils import ensure_prim_spec_in_layer
-from pxr import Sdf, Usd
+from pxr import Usd
 
 from .common import _TEST_DATA_DIR
 

@@ -8,6 +8,7 @@ import shutil
 from collections.abc import Callable
 
 from isaacsim.asset.transformer import RuleConfigurationParam
+from isaacsim.asset.transformer.utils import make_explicit_relative
 from pxr import Sdf, Usd
 
 # USD file extensions (including zipped)
@@ -510,12 +511,15 @@ def create_prim_spec(
 def get_relative_layer_path(from_layer: Sdf.Layer, to_layer_path: str) -> str:
     """Compute relative path from one layer to another.
 
+    The result always starts with ``./`` or ``../`` so that USD tooling
+    treats it as a relative path rather than a search-path identifier.
+
     Args:
         from_layer: The layer to compute the path from.
         to_layer_path: Absolute path to the target layer.
 
     Returns:
-        Relative path string.
+        Relative path string with explicit ``./`` or ``../`` prefix.
 
     Example:
 
@@ -524,7 +528,7 @@ def get_relative_layer_path(from_layer: Sdf.Layer, to_layer_path: str) -> str:
         rel_path = get_relative_layer_path(layer, "/tmp/other.usda")
     """
     from_dir = os.path.dirname(from_layer.identifier)
-    return os.path.relpath(to_layer_path, from_dir)
+    return make_explicit_relative(os.path.relpath(to_layer_path, from_dir))
 
 
 def clear_instanceable_recursive(prim_spec: Sdf.PrimSpec) -> None:
@@ -1187,16 +1191,16 @@ def remap_asset_path(
     # Check variant file map first (try all path variations)
     for try_path in paths_to_try:
         if try_path in variant_file_map:
-            return os.path.relpath(variant_file_map[try_path], dest_dir)
+            return make_explicit_relative(os.path.relpath(variant_file_map[try_path], dest_dir))
 
     # Check collected deps (try all path variations)
     for try_path in paths_to_try:
         if try_path in collected_deps:
-            return os.path.relpath(collected_deps[try_path], dest_dir)
+            return make_explicit_relative(os.path.relpath(collected_deps[try_path], dest_dir))
 
     # For existing files not in maps, make relative to destination
     if os.path.isfile(abs_path):
-        return os.path.relpath(abs_path, dest_dir)
+        return make_explicit_relative(os.path.relpath(abs_path, dest_dir))
 
     return original_path
 

@@ -225,11 +225,11 @@ class TestLayerOperations(omni.kit.test.AsyncTestCase):
         base_layer = Sdf.Layer.CreateNew(os.path.join(self._tmpdir, "base.usda"))
 
         rel = utils.get_relative_layer_path(base_layer, os.path.join(self._tmpdir, "target.usda"))
-        if os.path.normpath(rel) != "target.usda":
+        if os.path.normpath(rel) != os.path.normpath("./target.usda"):
             failures.append(f"same-dir: {rel!r}")
 
         rel = utils.get_relative_layer_path(base_layer, os.path.join(self._tmpdir, "sub", "target.usda"))
-        if os.path.normpath(rel) != os.path.normpath("sub/target.usda"):
+        if os.path.normpath(rel) != os.path.normpath("./sub/target.usda"):
             failures.append(f"subdir: {rel!r}")
 
         subdir = os.path.join(self._tmpdir, "sub")

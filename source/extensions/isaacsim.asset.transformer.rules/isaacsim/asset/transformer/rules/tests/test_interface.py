@@ -19,7 +19,6 @@ import tempfile
 
 import omni.kit.test
 from isaacsim.asset.transformer.rules.structure.interface import (
-    CONNECTION_INHERIT,
     CONNECTION_PAYLOAD,
     CONNECTION_REFERENCE,
     CONNECTION_SUBLAYER,
@@ -440,8 +439,8 @@ class TestInterfaceConnectionRule(omni.kit.test.AsyncTestCase):
             errors.append(f"Failed to open physx layer: {physx_path}")
         else:
             physx_sublayers = list(physx_layer.subLayerPaths)
-            if "physics.usda" not in physx_sublayers:
-                errors.append(f"physx.usda missing 'physics.usda' sublayer, got: {physx_sublayers}")
+            if "./physics.usda" not in physx_sublayers:
+                errors.append(f"physx.usda missing './physics.usda' sublayer, got: {physx_sublayers}")
 
         # Validate base sublayer
         base_layer = Sdf.Layer.FindOrOpen(base_usd)
@@ -449,8 +448,8 @@ class TestInterfaceConnectionRule(omni.kit.test.AsyncTestCase):
             errors.append(f"Failed to open base layer: {base_usd}")
         else:
             base_sublayers = list(base_layer.subLayerPaths)
-            if "robot.usda" not in base_sublayers:
-                errors.append(f"base.usda missing 'robot.usda' sublayer, got: {base_sublayers}")
+            if "./robot.usda" not in base_sublayers:
+                errors.append(f"base.usda missing './robot.usda' sublayer, got: {base_sublayers}")
 
         # Validate mujoco was skipped (does not exist)
         mujoco_path = os.path.join(self._tmpdir, "payloads", "Physics", "mujoco.usda")
@@ -703,8 +702,8 @@ class TestInterfaceConnectionRule(omni.kit.test.AsyncTestCase):
         physx_layer = Sdf.Layer.FindOrOpen(physx_path)
         if physx_layer:
             sublayers = list(physx_layer.subLayerPaths)
-            if "physics.usda" in sublayers:
-                errors.append("physx.usda should not have physics.usda sublayer (invalid connection skipped)")
+            if "./physics.usda" in sublayers:
+                errors.append("physx.usda should not have './physics.usda' sublayer (invalid connection skipped)")
 
         if errors:
             self.fail("\n".join(errors))

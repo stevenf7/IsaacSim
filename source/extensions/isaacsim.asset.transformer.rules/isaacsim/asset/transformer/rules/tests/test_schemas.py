@@ -20,11 +20,7 @@ import tempfile
 import omni.kit.test
 from isaacsim.asset.transformer.rules.core.schemas import (
     SchemaRoutingRule,
-    get_schema_property_namespace,
-    move_applied_api_schemas,
-    props_from_applied_api_token,
 )
-from isaacsim.asset.transformer.rules.utils import ensure_prim_spec_in_layer
 from pxr import Sdf, Usd
 
 from .common import _TEST_DATA_DIR

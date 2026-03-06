@@ -118,8 +118,6 @@ class TestManager(omni.kit.test.AsyncTestCase):
         class NotARule:  # noqa: D401
             """Not a RuleInterface subclass."""
 
-            pass
-
         with self.assertRaises(TypeError):
             reg.register(NotARule)  # type: ignore[arg-type]
 

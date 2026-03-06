@@ -20,10 +20,6 @@ import tempfile
 import omni.kit.test
 from isaacsim.asset.transformer.rules.core.prims import (
     PrimRoutingRule,
-    copy_composed_prim_to_layer,
-    merge_list_op,
-    merge_path_list_op,
-    remove_prim_from_source_layers,
 )
 from pxr import Sdf, Usd
 

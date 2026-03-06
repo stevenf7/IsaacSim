@@ -19,7 +19,7 @@ import tempfile
 
 import omni.kit.test
 from isaacsim.asset.transformer.rules.structure.flatten import FlattenRule
-from pxr import Sdf, Usd, UsdPhysics
+from pxr import Usd, UsdPhysics
 
 from .common import _UR10E_USD
 
