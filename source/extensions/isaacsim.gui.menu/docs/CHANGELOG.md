@@ -1,8 +1,11 @@
+## [2.10.1] - 2026-03-05
+### Fixed
+- OMPE-84348: fixed flaky test
+
 # Changelog
 ## [2.10.0] - 2026-03-04
 ### Changed
 - Add Overview.md, python_api.md and update docstrings
-
 
 ## [2.9.0] - 2026-02-27
 ### Removed

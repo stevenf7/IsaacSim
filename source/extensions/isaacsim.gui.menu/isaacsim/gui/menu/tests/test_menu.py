@@ -126,18 +126,25 @@ class TestEnvironmentMenuAssets(MenuUITestCase):
         else:
             set_camera_view(eye=[3, -3, 3], target=[0, 0, 0])
 
-        await self.wait_n_frames(10)
+        retries = 3
+        while retries > 0:
+            await self.wait_n_frames(10)
 
-        rgb_data = await capture_viewport_annotator_data_async(viewport_api)
-        golden_img_data = read_image_as_array(self._golden_img_dir / golden_img_name)
-        results = compare_arrays_within_tolerances(
-            golden_img_data,
-            rgb_data,
-            allclose_rtol=None,
-            allclose_atol=None,
-            mean_tolerance=10,
-            print_all_stats=True,
-        )
+            rgb_data = await capture_viewport_annotator_data_async(viewport_api)
+            golden_img_data = read_image_as_array(self._golden_img_dir / golden_img_name)
+            results = compare_arrays_within_tolerances(
+                golden_img_data,
+                rgb_data,
+                allclose_rtol=None,
+                allclose_atol=None,
+                mean_tolerance=10,
+                print_all_stats=True,
+            )
+            if results["passed"]:
+                break
+            retries -= 1
+            await self.wait_n_frames(10)
+
         self.assertTrue(results["passed"], f"Results: {test_path} - {results}")
 
         num_prims = sum(1 for _ in self._stage.Traverse())

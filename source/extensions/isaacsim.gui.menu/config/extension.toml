@@ -1,5 +1,5 @@
 [package]
-version = "2.10.0"
+version = "2.10.1"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Provides Isaac Sim-specific menu bar functionality including File, Edit, Create, Window, Tools, Utilities, Layouts, and Help menus with robotics-focused operations."
