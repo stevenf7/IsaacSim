@@ -743,20 +743,20 @@ local function get_doc_snippets_tests()
         -- motion_generation/controllers (noise but no filtering)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example.noise",
-            "../../../docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py --noise",
-            "--test",
+            "../../../docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py",
+            "--noise --test",
         },
         -- motion_generation/controllers (filter but no noise)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example.filter",
-            "../../../docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py --filter",
-            "--test",
+            "../../../docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py",
+            "--filter --test",
         },
         -- motion_generation/controllers (filter and noise)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example.filter_and_noise",
-            "../../../docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py --filter --noise",
-            "--test",
+            "../../../docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py",
+            "--filter --noise --test",
         },
         -- motion_generation/scene_interaction
         {
@@ -773,8 +773,8 @@ local function get_doc_snippets_tests()
         -- motion_generation/trajectories (linear trajectory)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.trajectories.trajectory_example.linear",
-            "../../../docs/isaacsim/snippets/motion_generation/trajectories/trajectory_example.py --linear",
-            "--test",
+            "../../../docs/isaacsim/snippets/motion_generation/trajectories/trajectory_example.py",
+            "--linear --test",
         },
         -- cumotion/trajectory_optimizer
         {
