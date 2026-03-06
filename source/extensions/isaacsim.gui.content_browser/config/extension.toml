@@ -1,5 +1,5 @@
 [package]
-version = "0.3.1"
+version = "0.3.2"
 category = "other"
 title = "Content Browser"
 description = "Extends the Omniverse content browser with an Isaac Sim collection providing quick access to curated robot models, environments, materials, and sensor assets."
@@ -33,6 +33,10 @@ exts."isaacsim.gui.content_browser".timeout = 5
 exts."omni.simready.content.browser".content_root_urls = [
     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/SimReady"
 ]
+# default content root url index into the content_root_urls list above
+exts."omni.simready.content.browser".default_content_root_url_index = 0
+
+# USD search server endpoint
 exts."omni.simready.content.browser".usd_search_endpoint = "https://search.dev.simready.omniverse.nvidia.com/"
 
 # define the folders to be shown in the content browser
