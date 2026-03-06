@@ -1,39 +1,52 @@
+"""Create a scene with ground, Franka robot, and blue cube."""
+
+from isaacsim import SimulationApp
+
+simulation_app = SimulationApp({"headless": False})
+
+import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-import numpy as np
 from isaacsim.core.experimental.materials import PreviewSurfaceMaterial
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
-from isaacsim.examples.base.base_sample_experimental import BaseSample
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.robot.manipulators.examples.franka import FrankaExperimental
 from isaacsim.storage.native import get_assets_root_path
 
+DEVICE = "cpu"
 
-class HelloWorld(BaseSample):
-    def __init__(self) -> None:
-        super().__init__()
+assets_root_path = get_assets_root_path()
 
-    def setup_scene(self):
-        # Add ground plane
-        ground_plane = stage_utils.add_reference_to_stage(
-            usd_path=get_assets_root_path() + "/Isaac/Environments/Grid/default_environment.usd",
-            path="/World/ground",
-        )
+# Add ground plane
+stage_utils.add_reference_to_stage(
+    usd_path=assets_root_path + "/Isaac/Environments/Grid/default_environment.usd",
+    path="/World/ground",
+)
 
-        # Create the Franka robot - constructor spawns the robot when create_robot=True
-        self._robot = FrankaExperimental(robot_path="/World/robot", create_robot=True)
+# Create the Franka robot
+robot = FrankaExperimental(robot_path="/World/robot", create_robot=True)
 
-        # Create a blue cube for the robot to pick up
-        visual_material = PreviewSurfaceMaterial("/World/Materials/blue")
-        visual_material.set_input_values("diffuseColor", [0.0, 0.0, 1.0])
+# Create a blue cube for the robot to pick up
+visual_material = PreviewSurfaceMaterial("/World/Materials/blue")
+visual_material.set_input_values("diffuseColor", [0.0, 0.0, 1.0])
+cube_shape = Cube(
+    paths="/World/Cube",
+    positions=[0.5, 0.0, 0.0258],
+    sizes=1.0,
+    scales=[0.0515, 0.0515, 0.0515],
+)
+GeomPrim(paths=cube_shape.paths, apply_collision_apis=True)
+RigidPrim(paths=cube_shape.paths)
+cube_shape.apply_visual_materials(visual_material)
 
-        cube_shape = Cube(
-            paths="/World/Cube",
-            positions=np.array([[0.5, 0.0, 0.0258]]),
-            sizes=[1.0],
-            scales=np.array([[0.0515, 0.0515, 0.0515]]),
-            reset_xform_op_properties=True,
-        )
+SimulationManager.setup_simulation(dt=1.0 / 60.0, device=DEVICE)
+physics_scene = SimulationManager.get_physics_scenes()[0]
+physics_scene.set_enabled_gpu_dynamics(False)
+app_utils.play()
+app_utils.update_app(steps=20)
 
-        GeomPrim(paths=cube_shape.paths, apply_collision_apis=True)
-        RigidPrim(paths=cube_shape.paths)
-        cube_shape.apply_visual_materials(visual_material)
+while simulation_app.is_running():
+    simulation_app.update()
+
+app_utils.stop()
+simulation_app.close()
