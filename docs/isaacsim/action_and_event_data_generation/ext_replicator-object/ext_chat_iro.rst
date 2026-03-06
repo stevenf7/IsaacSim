@@ -382,7 +382,7 @@ You can also reference existing USD stages or assets in your prompts:
 
 **Create a warehouse stage**
 
-:::
+::
 
    Create a warehouse environment with the following settings:
 
