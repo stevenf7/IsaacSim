@@ -131,6 +131,12 @@ def main():
             raise RuntimeError("MJCF import failed.")
 
         print(f"MJCF import successful. Output USD file: {output_usd}")
+
+        simulation_app.update()
+        simulation_app.update()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            simulation_app.update()
+
         simulation_app.close()
     except Exception as e:
         print(f"Error: {e}")
