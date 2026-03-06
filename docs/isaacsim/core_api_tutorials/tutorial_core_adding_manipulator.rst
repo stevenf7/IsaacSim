@@ -31,11 +31,9 @@ Getting Started
 
 - Review :ref:`isaac_sim_app_tutorial_core_hello_robot` prior to beginning this tutorial.
 
-Begin with the source code open from the :ref:`isaac_sim_app_tutorial_core_hello_robot` tutorial,
-by clicking the **Open Source Code** button in the Hello World Example window.
 
-.. Note:: Pressing **STOP**, then **PLAY** in this workflow might not reset the world properly. Use
-          the **RESET** button instead.
+This tutorial uses **standalone Python scripts**. Run them with a Python environment where Isaac Sim is installed:
+
 
 Creating the Scene with a Franka Robot
 ======================================
@@ -49,9 +47,8 @@ spawns the Franka robot USD asset at the specified path.
 
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_manipulator/creating_the_scene.py
     :linenos:
-    :emphasize-lines: 5, 17-23
 
-Click the **LOAD** button to see the Franka robot and cube in the scene.
+Run the script. A window opens with the Franka robot and cube in the scene; the simulation runs until you close the window.
 
 The :code:`FrankaExperimental` class provides these key methods for robot control:
 
@@ -72,10 +69,8 @@ ground plane, and a cube to manipulate.
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_manipulator/using_the_pickandplace_controller.py
     :language: python
     :linenos:
-    :emphasize-lines: 4, 18-19, 34
 
-Click the **LOAD** button to start the pick-and-place operation. The robot will automatically
-execute all phases of picking up and placing the cube.
+Run the script. The robot automatically executes all phases of picking up and placing the cube.
 
 
 Customizing the FrankaPickPlace Scene
@@ -146,4 +141,3 @@ Next Steps
 
 Continue to the next tutorial in our Essential Tutorials series, :ref:`isaac_sim_app_tutorial_core_adding_multiple_robots`,
 to learn how to add multiple robots to the simulation.
-
