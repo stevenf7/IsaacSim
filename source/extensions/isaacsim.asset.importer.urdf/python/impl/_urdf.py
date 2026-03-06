@@ -15,7 +15,10 @@
 
 """Deprecated URDF importer configuration utilities."""
 
+from __future__ import annotations
+
 import logging
+from typing import NoReturn
 
 from .config import URDFImporterConfig
 from .converter import URDFImporter
@@ -101,43 +104,44 @@ class _urdf:  # noqa: N801
         )
         return self.config
 
-    def parse_string_urdf(self, urdf_string: str) -> str:
+    def parse_string_urdf(self, urdf_string: str) -> NoReturn:
         """Parse a URDF string and return the USD string.
 
         Args:
             urdf_string: The URDF string to parse.
 
-        Returns:
-            The USD string.
+        Raises:
+            ValueError: Parsing urdf strings is not supported.
         """
         self._logger.warning(
             "parse_string_urdf is deprecated and will be removed in a future version. Parsing urdf strings is not supported."
         )
         raise ValueError("Parsing urdf strings is not supported.")
 
-    def get_kinematic_chain(self, urdf: str) -> list[str]:
+    def get_kinematic_chain(self, urdf: str) -> NoReturn:
         """Get the kinematic chain of the robot. Mostly used for graphic display of the kinematic tree.
 
         Args:
             urdf: The parsed URDF, the output from :obj:`parse_urdf`
 
-        Returns:
-            The kinematic chain.
+        Raises:
+            ValueError: Getting the kinematic chain is not supported.
         """
         self._logger.warning(
             "get_kinematic_chain is deprecated and will be removed in a future version. Getting the kinematic chain is not supported."
         )
         raise ValueError("Getting the kinematic chain is not supported.")
 
-    def compute_natural_stiffness(self, urdf: str, joint_name: str, natural_frequency: float) -> float:
+    def compute_natural_stiffness(self, urdf: str, joint_name: str, natural_frequency: float) -> NoReturn:
         """Compute the natural stiffness of the robot.
 
         Args:
             urdf: The parsed URDF, the output from :obj:`parse_urdf`
-            joint_name: The name of the joint to compute the natural stiffness for
-            natural_frequency: The natural frequency to compute the natural stiffness for
-        Returns:
-            The natural stiffness.
+            joint_name: The name of the joint to compute the natural stiffness for.
+            natural_frequency: The natural frequency to compute the natural stiffness for.
+
+        Raises:
+            ValueError: Computing the natural stiffness is not supported.
         """
         self._logger.warning(
             "compute_natural_stiffness is deprecated and will be removed in a future version. Computing the natural stiffness is not supported. Please use the gains tuner extension instead."

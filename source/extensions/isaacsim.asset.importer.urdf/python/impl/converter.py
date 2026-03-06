@@ -14,10 +14,13 @@
 # limitations under the License.
 """URDF to USD conversion utilities."""
 
+from __future__ import annotations
+
 import gc
 import importlib
 import os
 import shutil
+from typing import Any
 
 import omni
 from isaacsim.asset.importer.utils.impl import (
@@ -50,7 +53,7 @@ class URDFImporter:
 
     def __init__(self, config: URDFImporterConfig | None = None) -> None:
         self._config = config if config else URDFImporterConfig()
-        self.converter = None
+        self.converter: Any = None
 
     @property
     def config(self) -> URDFImporterConfig:
@@ -75,8 +78,12 @@ class URDFImporter:
     def config(self, config: URDFImporterConfig) -> None:
         self._config = config
 
-    def import_urdf(self) -> str:
+    def import_urdf(self, config: URDFImporterConfig | None = None) -> str:
         """Import a URDF file and convert it to USD.
+
+        Args:
+            config: Optional configuration for the import operation.
+                If not provided, the stored importer configuration will be used.
 
         Returns:
             Path to the generated USD file.
@@ -95,6 +102,9 @@ class URDFImporter:
             >>> importer.config = config
             >>> # output_path = importer.import_urdf()
         """
+        if config is not None:
+            self.config = config
+
         if not self.config.urdf_path:
             raise ValueError("URDF path is not set in the importer configuration.")
 

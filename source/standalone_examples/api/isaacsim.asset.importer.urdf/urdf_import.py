@@ -33,7 +33,7 @@ _enable_scene_optimizer_extension()
 from isaacsim.asset.importer.urdf.impl import URDFImporter, URDFImporterConfig
 
 parser = argparse.ArgumentParser(description="Import a URDF file using Isaac Sim.")
-parser.add_argument("-u", "--urdf", required=False, default=None, help="Path to the URDF file (.urdf) to import.")
+parser.add_argument("--urdf", required=False, default=None, help="Path to the URDF file (.urdf) to import.")
 parser.add_argument(
     "--usd-path",
     required=False,

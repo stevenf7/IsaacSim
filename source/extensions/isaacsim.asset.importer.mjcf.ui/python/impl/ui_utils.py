@@ -16,25 +16,13 @@
 
 """UI helper builders for the MJCF importer UI."""
 
-#   str_builder
-
-import asyncio
-import os
-import subprocess
-import sys
-from cmath import inf
 from collections.abc import Callable
 
-import carb.settings
-import omni.appwindow
-import omni.ext
 import omni.ui as ui
-from omni.kit.window.extensions import SimpleCheckBox
 from omni.kit.window.filepicker import FilePickerDialog
-from omni.kit.window.property.templates import LABEL_HEIGHT, LABEL_WIDTH
+from omni.kit.window.property.templates import LABEL_WIDTH
 
-# from .callbacks import on_copy_to_clipboard, on_docs_link_clicked, on_open_folder_clicked, on_open_IDE_clicked
-from .style import BUTTON_WIDTH, COLOR_W, COLOR_X, COLOR_Y, COLOR_Z, get_option_style, get_style
+from .style import get_style
 
 
 def add_line_rect_flourish(draw_line: bool = True) -> None:

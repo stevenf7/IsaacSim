@@ -30,7 +30,6 @@ from isaacsim.asset.importer.urdf import URDFImporter, URDFImporterConfig
 from isaacsim.core.experimental.utils import stage as stage_utils
 from omni.kit.helper.file_utils import asset_types
 from omni.kit.notification_manager import NotificationStatus, post_notification
-from pxr import Usd
 
 from .option_widget import OptionWidget
 
@@ -223,10 +222,10 @@ class UrdfImporterDelegate(ai.AbstractImporterDelegate):
 
     def _on_import_complete(self, file_paths: list[str]) -> None:
         """Handle import completion callbacks.
+
         Args:
             file_paths: List of imported file paths.
         """
-        pass
 
     @property
     def name(self) -> str:

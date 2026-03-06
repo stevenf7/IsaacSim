@@ -34,13 +34,18 @@ _enable_scene_optimizer_extension()
 from isaacsim.asset.importer.mjcf import MJCFImporter, MJCFImporterConfig
 
 parser = argparse.ArgumentParser(description="Import an MJCF file using Isaac Sim.")
-parser.add_argument("-m", "--mjcf", required=False, default=None, help="Path to the MJCF file (.xml) to import.")
+parser.add_argument("--mjcf", required=False, default=None, help="Path to the MJCF file (.xml) to import.")
 parser.add_argument(
-    "-u",
     "--usd-path",
     required=False,
     default=None,
     help="Directory to write converted USD assets.",
+)
+parser.add_argument(
+    "--import-scene",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="Import the MJCF simulation settings along with the model.",
 )
 parser.add_argument(
     "--merge-mesh",
@@ -49,7 +54,6 @@ parser.add_argument(
     help="Merge meshes after conversion.",
 )
 parser.add_argument(
-    "-d",
     "--debug-mode",
     action=argparse.BooleanOptionalAction,
     default=None,
@@ -108,6 +112,8 @@ def main():
         if args.usd_path is not None:
             import_config.usd_path = os.path.abspath(args.usd_path)
 
+        if args.import_scene is not None:
+            import_config.import_scene = args.import_scene
         if args.merge_mesh is not None:
             import_config.merge_mesh = args.merge_mesh
         if args.debug_mode is not None:

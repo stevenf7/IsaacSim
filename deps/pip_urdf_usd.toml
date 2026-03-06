@@ -8,13 +8,13 @@
 # SWIPAT Dependencies List:
 # -------------------------
 # Package              | Version                  | License     | Source
-# urdf-usd-converter   | 0.1.0rc1                 | Apache-2.0  | PyPI
+# urdf-usd-converter   | 0.1.0rc2                 | Apache-2.0  | PyPI
 # pycollada            | 0.9.3                    | BSD-3       | PyPI
 
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "urdf-usd-converter==0.1.0rc1",  # Newton Physics URDF to USD converter
+    "urdf-usd-converter==0.1.0rc2",  # Newton Physics URDF to USD converter
     "pycollada==0.9.3",
 ]
 target = "../_build/target-deps/isaac_urdf_usd_prebundle"

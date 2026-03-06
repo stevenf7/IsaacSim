@@ -16,11 +16,13 @@
 
 """MJCF to USD conversion pipeline."""
 
+from __future__ import annotations
+
 import gc
 import importlib
-import logging
 import os
 import shutil
+from typing import Any
 
 import omni
 from isaacsim.asset.importer.utils.impl import (
@@ -53,7 +55,7 @@ class MJCFImporter:
 
     def __init__(self, config: MJCFImporterConfig | None = None) -> None:
         self._config = config if config else MJCFImporterConfig()
-        self.converter = None
+        self.converter: Any = None
 
     @property
     def config(self) -> MJCFImporterConfig:
@@ -78,14 +80,19 @@ class MJCFImporter:
     def config(self, config: MJCFImporterConfig) -> None:
         self._config = config
 
-    def import_mjcf(self) -> str:
+    def import_mjcf(self, config: MJCFImporterConfig | None = None) -> str:
         """Import an MJCF file and convert it to USD.
+
+        Args:
+            config: Optional configuration for the import operation.
+                If not provided, the stored importer configuration will be used.
 
         Returns:
             Path to the generated USD file.
 
         Raises:
             ValueError: If the MJCF path is not configured.
+            FileNotFoundError: If the MJCF file does not exist at the given path.
 
         Example:
 
@@ -98,6 +105,9 @@ class MJCFImporter:
             >>> importer.config = config
             >>> # output_path = importer.import_mjcf()
         """
+        if config is not None:
+            self.config = config
+
         if not self.config.mjcf_path:
             raise ValueError("MJCF path is not set in the importer configuration.")
 
@@ -117,7 +127,7 @@ class MJCFImporter:
 
         if self.converter is None:
             mujoco_usd_converter = importlib.import_module("mujoco_usd_converter")
-            self.converter = mujoco_usd_converter.Converter(layer_structure=False, scene=False)
+            self.converter = mujoco_usd_converter.Converter(layer_structure=False, scene=self.config.import_scene)
 
         asset: Sdf.AssetPath = self.converter.convert(mjcf_path, usdex_path)
 

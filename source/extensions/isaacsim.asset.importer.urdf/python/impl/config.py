@@ -29,7 +29,7 @@ class URDFImporterConfig:
         merge_mesh: If True, merges meshes where possible to optimize the model.
         debug_mode: If True, enables debug mode with additional logging and visualization.
         collision_from_visuals: If True, collision geometry is generated from visual geometries.
-        collision_type: Type of collision geometry to use.
+        collision_type: Type of collision geometry to use. Options: "Convex Hull", "Convex Decomposition", "Bounding Sphere", "Bounding Cube".
         allow_self_collision: If True, allows the model to collide with itself.
         ros_package_paths: List of ROS package name/path mappings for resolving package:// URLs.
 
@@ -53,6 +53,6 @@ class URDFImporterConfig:
     merge_mesh: bool = False
     debug_mode: bool = False
     collision_from_visuals: bool = False
-    collision_type: str = "default"
+    collision_type: str = "Convex Hull"
     allow_self_collision: bool = False
     ros_package_paths: list[dict[str, str]] = field(default_factory=list)

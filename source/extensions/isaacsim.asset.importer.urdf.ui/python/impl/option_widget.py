@@ -24,7 +24,6 @@ from .ui_utils import (
     RosPackageModel,
     checkbox_builder,
     dropdown_builder,
-    float_field_builder,
     string_filed_builder,
 )
 

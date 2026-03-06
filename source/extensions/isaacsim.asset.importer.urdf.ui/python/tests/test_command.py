@@ -104,7 +104,7 @@ class TestURDFCommands(omni.kit.test.AsyncTestCase):
         self.assertFalse(config.merge_mesh)
         self.assertFalse(config.debug_mode)
         self.assertFalse(config.collision_from_visuals)
-        self.assertEqual(config.collision_type, "default")
+        self.assertEqual(config.collision_type, "Convex Hull")
         self.assertFalse(config.allow_self_collision)
         self.assertEqual(config.ros_package_paths, [])
 

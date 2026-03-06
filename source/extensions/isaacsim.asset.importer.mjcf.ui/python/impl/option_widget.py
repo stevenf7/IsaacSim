@@ -247,6 +247,18 @@ class OptionWidget:
             """Build general option content."""
             with ui.VStack(spacing=4):
 
+                # Import Scene checkbox
+                def set_import_scene(value: bool) -> None:
+                    self._config.import_scene = value
+
+                self._models["import_scene"] = checkbox_builder(
+                    "Import Scene",
+                    tooltip="If True, imports the MJCF simulation settings along with the model",
+                    default_val=True,
+                    on_clicked_fn=set_import_scene,
+                    identifier="mjcf_import_scene",
+                )
+
                 # Merge Mesh checkbox
                 def set_merge_mesh(value: bool) -> None:
                     self._config.merge_mesh = value

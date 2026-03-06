@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.2.0] - 2026-03-04
+### Changed
+- Added scene import option for the MJCF importer
+- MJCF converter version bump to 0.1.0a8
+
 ## [3.1.0] - 2026-02-25
 ### Changed
 - Added mjc / newton to physx attribute conversion for multi-physics engine asset support

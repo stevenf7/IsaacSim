@@ -566,6 +566,7 @@ dependencies_files = [
   "${root}/deps/pip_compute.toml",  # omni.pip.compute
   "${root}/deps/pip_cloud.toml",  # omni.pip.cloud
   "${root}/deps/pip_newton.toml",  # isaacsim.pip.newton
+  "${root}/deps/pip_urdf_usd.toml",  # isaacsim.asset.importer.urdf
 ]
 
 # comment archive extension dependencies

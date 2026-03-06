@@ -213,6 +213,12 @@ class TestImporterUI(MenuUITestCase):
         await allow_self_collision_btn.click()
         await ui_test.human_delay()
 
+        import_scene_btn = await self.find_widget_with_retry(
+            "Select File//Frame/**/CheckBox[*].identifier=='mjcf_import_scene'"
+        )
+        await import_scene_btn.click()
+        await ui_test.human_delay()
+
         merge_mesh_btn = await self.find_widget_with_retry(
             "Select File//Frame/**/CheckBox[*].identifier=='mjcf_merge_mesh'"
         )
@@ -242,6 +248,7 @@ class TestImporterUI(MenuUITestCase):
             os.path.normpath(config.usd_path.lower()),
             os.path.normpath(os.path.join(self._extension_path, "data", "mjcf", "temp")).lower(),
         )
+        self.assertEqual(config.import_scene, False)
         self.assertEqual(config.merge_mesh, True)
         self.assertEqual(config.debug_mode, True)
         self.assertEqual(config.collision_from_visuals, True)
