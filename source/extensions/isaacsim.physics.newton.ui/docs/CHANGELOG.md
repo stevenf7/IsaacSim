@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2026-03-05
+### Changed
+- Mujoco schema properties are now sorted alphabetically with the exception of properties that are common to Newton and Mujoco: those are put first in the list.
+
 ## [1.2.0] - 2026-03-04
 ### Added
 - Resolver-aware property visibility: Newton and Mujoco schema properties are hidden or disabled when the other resolver (Newton vs MuJoCo) provides the value. Preference is determined by first authored value, otherwise Newton.
