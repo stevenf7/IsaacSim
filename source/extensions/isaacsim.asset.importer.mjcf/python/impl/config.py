@@ -28,10 +28,11 @@ class MJCFImporterConfig:
     Args:
         mjcf_path: Path to the MJCF (.xml) file to import.
         usd_path: Directory path where the USD file will be saved.
+        import_scene: If True, imports the MJCF simulation settings along with the model.
         merge_mesh: If True, merges meshes where possible to optimize the model.
         debug_mode: If True, enables debug mode with additional logging and visualization.
         collision_from_visuals: If True, collision geometry is generated from visual geometries.
-        collision_type: Type of collision geometry to use.
+        collision_type: Type of collision geometry to use. Options: "Convex Hull", "Convex Decomposition", "Bounding Sphere", "Bounding Cube".
         allow_self_collision: If True, allows the model to collide with itself.
 
     Example:
@@ -51,8 +52,9 @@ class MJCFImporterConfig:
 
     mjcf_path: str | None = None
     usd_path: str | None = None
+    import_scene: bool = True
     merge_mesh: bool = False
     debug_mode: bool = False
     collision_from_visuals: bool = False
-    collision_type: str = "default"
+    collision_type: str = "Convex Hull"
     allow_self_collision: bool = False

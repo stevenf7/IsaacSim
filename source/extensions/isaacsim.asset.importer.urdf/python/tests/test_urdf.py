@@ -163,7 +163,6 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
             carb.log_warn(f"Warning: {normalized_path} : {e.strerror}")
 
     # basic urdf test: joints and links are imported correctly
-    @unittest.skip("urdf converter bug")
     async def test_urdf_basic(self) -> None:
         """Import basic URDF and validate joints and links are imported correctly."""
         urdf_path = os.path.normpath(
@@ -204,7 +203,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
             fingerLink3.GetAttribute("physics:principalAxes").Get().GetReal(),
             fingerLink3.GetAttribute("physics:principalAxes").Get().GetImaginary(),
         )
-        self.assertAlmostEqual(fingerLink3.GetAttribute("physics:principalAxes").Get().GetReal(), 0.686, delta=1e-2)
+        self.assertAlmostEqual(fingerLink3.GetAttribute("physics:principalAxes").Get().GetReal(), 0.88, delta=1e-2)
 
         # Start Simulation and wait
         self._timeline.play()

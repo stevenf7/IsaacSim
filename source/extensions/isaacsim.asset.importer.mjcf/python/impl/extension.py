@@ -20,8 +20,6 @@ import gc
 
 import omni.ext
 
-from .converter import MJCFImporter, MJCFImporterConfig
-
 
 class Extension(omni.ext.IExt):
     """Core MJCF Importer extension.

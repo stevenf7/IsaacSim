@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.2.0] - 2026-03-04
+### Changed
+- urdf converter version bump to v0.1.0rc2
+
 ## [3.1.0] - 2026-02-26
 ### Changed
 - Added mjc / newton to physx attribute conversion for multi-physics engine asset support

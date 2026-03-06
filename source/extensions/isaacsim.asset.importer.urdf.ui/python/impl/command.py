@@ -15,15 +15,15 @@
 
 """Deprecated URDF importer command implementations."""
 
-import os
+from __future__ import annotations
+
+from typing import NoReturn
 
 import carb
 import omni.client
 import omni.kit.commands
 from isaacsim.asset.importer.urdf import URDFImporter, URDFImporterConfig
-from isaacsim.asset.importer.utils import stage_utils
 from omni.client import Result
-from pxr import UsdPhysics
 
 
 class URDFCreateImportConfig(omni.kit.commands.Command):
@@ -69,13 +69,12 @@ class URDFParseText(omni.kit.commands.Command):
         self.urdf_text = urdf_text
         self.import_config = import_config
 
-    def do(self) -> tuple[Result, object]:
+    def do(self) -> NoReturn:
         """Execute the command to parse the URDF string.
 
-        Returns:
-            Tuple of (Result, robot_model). Falls back to C++ command if available.
+        Raises:
+            RuntimeError: Parsing URDF strings is no longer supported.
         """
-
         raise RuntimeError("Parsing URDF strings is no longer supported.")
 
     def undo(self) -> None:
@@ -97,11 +96,11 @@ class URDFParseFile(omni.kit.commands.Command):
         self.urdf_path = urdf_path
         self.import_config = import_config
 
-    def do(self) -> tuple[Result, object]:
+    def do(self) -> NoReturn:
         """Execute the command to parse the URDF file.
 
-        Returns:
-            Tuple of (Result, robot_model). Falls back to C++ command if available.
+        Raises:
+            RuntimeError: Parsing URDF files is no longer supported.
         """
         raise RuntimeError("Parsing URDF files is no longer supported.")
 

@@ -14,15 +14,11 @@
 # limitations under the License.
 """UI utility helpers for the URDF importer."""
 
-import asyncio
 import os
 import subprocess
 import sys
-import types
 import typing
 from cmath import inf
-from dataclasses import dataclass
-from functools import partial
 
 import carb
 import carb.settings
@@ -2050,7 +2046,6 @@ class SearchListItemDelegate(ui.AbstractItemDelegate):
             level: Tree depth level.
             expanded: Whether the row is expanded.
         """
-        pass
 
     def build_widget(
         self,
@@ -2302,7 +2297,6 @@ class RosPackageDelegate(ui.AbstractItemDelegate):
             level: Tree depth level.
             expanded: Whether the row is expanded.
         """
-        pass
 
     def build_header(self, column_id: int) -> None:
         """Build the header cell for the given column.

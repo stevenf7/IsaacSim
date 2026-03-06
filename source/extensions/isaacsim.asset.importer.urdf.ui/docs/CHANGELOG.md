@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.3] - 2026-03-05
+### Changed
+- Linting
+
 ## [1.0.2] - 2026-03-05
 ### Fixed
 - Fixed incorrect type annotation for SearchWidget

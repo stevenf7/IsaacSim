@@ -15,17 +15,11 @@
 
 """Deprecated MJCF importer command implementations."""
 
-import os
-
 import carb
 import omni.client
 import omni.kit.commands
 from isaacsim.asset.importer.mjcf import MJCFImporter, MJCFImporterConfig
 from isaacsim.asset.importer.utils import stage_utils
-
-# import omni.kit.utils
-from omni.client import Result
-from pxr import Usd
 
 
 class MJCFCreateImportConfig(omni.kit.commands.Command):

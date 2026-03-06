@@ -96,6 +96,7 @@ class TestMJCFCommands(omni.kit.test.AsyncTestCase):
         self.assertIsInstance(config, MJCFImporterConfig)
         self.assertIsNone(config.mjcf_path)
         self.assertIsNone(config.usd_path)
+        self.assertTrue(config.import_scene)
         self.assertFalse(config.merge_mesh)
         self.assertFalse(config.debug_mode)
 

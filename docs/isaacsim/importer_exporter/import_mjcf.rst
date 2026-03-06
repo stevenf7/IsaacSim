@@ -75,10 +75,11 @@ Do the exact same thing with Python standalone instead.
         ./python.sh standalone_examples/api/isaacsim.asset.importer.mjcf/mjcf_import.py 
 
     **Args:**
-        - ``-m, --mjcf``: Path to the MJCF file (.xml) to import.
-        - ``-u, --usd-path``: Directory to write converted USD assets.
+        - ``--mjcf``: Path to the MJCF file (.xml) to import.
+        - ``--usd-path``: Directory to write converted USD assets.
         - ``--merge-mesh``: Merge meshes after conversion.
-        - ``-d, --debug-mode``: Enable debug mode and keep intermediate outputs.
+        - ``--debug-mode``: Enable debug mode and keep intermediate outputs.
+        - ``--import-scene``: Import the MJCF simulation settings along with the model (default True).
         - ``--collision-from-visuals``: Generate collision geometry from visuals.
         - ``--collision-type``: Collision geometry type (e.g. default, Convex Hull, Convex Decomposition).
         - ``--allow-self-collision``: Allow self-collision for the imported asset.

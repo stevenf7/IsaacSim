@@ -14,7 +14,7 @@
 # newton[sim]          | 1.0.0rc2                 | Apache-2.0  | PyPI
 # newton-actuators     | 0.1.0                    | Apache-2.0  | PyPI
 # newton-usd-schemas   | 0.1.0rc3                 | Apache-2.0  | PyPI
-# mujoco-usd-converter | 0.1.0a7                  | Apache-2.0  | PyPI
+# mujoco-usd-converter | 0.1.0a8                  | Apache-2.0  | PyPI
 # mujoco               | 3.5.0                    | Apache-2.0  | PyPI
 # mujoco-warp          | 3.5.0.2                  | Apache-2.0  | PyPI
 # cbor2                | 5.8.0                    | MIT         | PyPI
@@ -40,7 +40,7 @@ packages = [
     # Newton USD schemas for physics attributes
     "newton-usd-schemas==0.1.0rc3",
     # Newton Physics MJCF to USD converter
-    "mujoco-usd-converter==0.1.0a7",  
+    "mujoco-usd-converter==0.1.0a8",  
     # Newton sim dependencies (explicit for SWIPAT)
     "cbor2==5.8.0",
     # Visualization dependencies

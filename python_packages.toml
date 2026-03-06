@@ -311,7 +311,7 @@ pyproject.dependencies.all = [
     "newton[sim]==1.0.0rc2",
     "newton-actuators==0.1.0",
     "newton-usd-schemas==0.1.0rc3",
-    "mujoco-usd-converter==0.1.0a7",
+    "mujoco-usd-converter==0.1.0a8",
     "cbor2==5.8.0",
     "imgui-bundle==1.92.4",
     "PyOpenGL-accelerate==3.1.10",
@@ -321,6 +321,9 @@ pyproject.dependencies.all = [
     "numpy-stl",
     "python-utils",
     "tinyobjloader==2.0.0rc13",
+    # archives (isaacsim.asset.importer.urdf)
+    "urdf-usd-converter==0.1.0rc2",
+    "pycollada==0.9.3",
 ]
 pyproject.dependencies.linux-x86_64 = [
     # archives (omni.isaac.ml_archive)

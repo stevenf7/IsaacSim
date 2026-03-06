@@ -15,6 +15,6 @@
 
 """Internal URDF importer implementation exports."""
 
-from ._urdf import _urdf
-from .config import URDFImporterConfig
-from .converter import URDFImporter
+from ._urdf import _urdf as _urdf
+from .config import URDFImporterConfig as URDFImporterConfig
+from .converter import URDFImporter as URDFImporter

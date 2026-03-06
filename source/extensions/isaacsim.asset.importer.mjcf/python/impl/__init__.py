@@ -15,6 +15,6 @@
 
 """Internal MJCF importer implementation exports."""
 
-from ._mjcf import _mjcf
-from .config import MJCFImporterConfig
-from .converter import MJCFImporter
+from ._mjcf import _mjcf as _mjcf
+from .config import MJCFImporterConfig as MJCFImporterConfig
+from .converter import MJCFImporter as MJCFImporter

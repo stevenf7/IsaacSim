@@ -80,6 +80,7 @@ Import Options
         - **Bounding Cube**: Uses a simple bounding box approximation.
 
 **General Options**:
+    - **Import Scene**: When enabled, imports the MJCF simulation settings along with the model.
     - **Allow Self-Collision**: When enabled, allows the robot model to collide with itself. This can be useful for certain simulation
       scenarios but may cause instability if collision meshes between links are self-intersecting.
 

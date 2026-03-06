@@ -105,14 +105,14 @@ Getting Started
                 ./python.sh standalone_examples/api/isaacsim.asset.importer.urdf/urdf_import.py 
 
             **Args:**
-                - ``-u, --urdf``: Path to the URDF file (.urdf) to import.
+                - ``--urdf``: Path to the URDF file (.urdf) to import.
                 - ``--usd-path``: Directory to write converted USD assets.
                 - ``--merge-mesh``: Merge meshes after conversion.
-                - ``-d, --debug-mode``: Enable debug mode and keep intermediate outputs.
+                - ``--debug-mode``: Enable debug mode and keep intermediate outputs.
                 - ``--collision-from-visuals``: Generate collision geometry from visuals.
                 - ``--collision-type``: Collision geometry type (e.g. default, Convex Hull, Convex Decomposition).
                 - ``--allow-self-collision``: Allow self-collision for the imported asset.
-                - ``--test``: Run in test mode: uses nv_ant.xml test asset into a temp directory
+                - ``--test``: uses nv_ant.xml test asset into a temp directory
                 - ``--ros-package``: ROS package mapping in format 'name:path'. Can be specified multiple times for multiple packages.
 
         Example:

@@ -141,6 +141,7 @@ class Extension(omni.ext.IExt):
             >>> Extension().reset_config()  # doctest: +SKIP
         """
         self._config.usd_path = None
+        self._config.import_scene = True
         self._config.merge_mesh = False
         self._config.debug_mode = False
         self._config.collision_from_visuals = False
@@ -212,6 +213,7 @@ class Extension(omni.ext.IExt):
         """Log the current importer configuration."""
         carb.log_info(f"config mjcf path: {self._config.mjcf_path}")
         carb.log_info(f"config usd path: {self._config.usd_path}")
+        carb.log_info(f"config import scene: {self._config.import_scene}")
         carb.log_info(f"config merge mesh: {self._config.merge_mesh}")
         carb.log_info(f"config debug mode: {self._config.debug_mode}")
         carb.log_info(f"config collision from visuals: {self._config.collision_from_visuals}")
@@ -321,7 +323,6 @@ class MjcfImporterDelegate(ai.AbstractImporterDelegate):
         Args:
             file_paths: List of imported file paths.
         """
-        pass
 
     @property
     def name(self) -> str:
