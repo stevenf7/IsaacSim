@@ -283,6 +283,79 @@ The Windows script builds extension TOC, extension docs, and the user guide.
 
 See the [Asset Naming Best Practices](https://docs.google.com/document/d/1WmZo35smDxfjZPzuFBCLvsZu8bMQzy1bK_0J-13EUMM/edit?usp=sharing) guide for conventions on naming assets.
 
+## Pre-Merge Validation Tools
+
+The `tools/isaac/pre_merge/` directory contains scripts used to validate code quality before merging. These are the same checks that run in CI, but you can run them locally to catch issues early.
+
+### Quick Start
+
+Run all default validation checks (lint, format, changelog, TOML, structure, license headers) on extensions touched by your branch:
+
+```bash
+python tools/isaac/pre_merge/pre_merge_validate.py
+```
+
+Auto-fix what can be fixed automatically (ruff, formatting, extension.toml):
+
+```bash
+python tools/isaac/pre_merge/pre_merge_validate.py --fix
+```
+
+### Orchestrator (`pre_merge_validate.py`)
+
+This is the main entry point that runs one or more validation checks and optionally extension tests. By default it detects the base branch and only validates extensions with modified files.
+
+| Flag | Purpose |
+|---|---|
+| `--lint` | Run Python linting (ruff) |
+| `--format` | Run code format verification |
+| `--changelog` | Check changelog format and version bump |
+| `--toml` | Validate extension.toml structure and ordering |
+| `--structure` | Validate extension directory structure |
+| `--license` | Check SPDX license headers |
+| `--test` | Run validation checks plus extension tests |
+| `--test-only` | Skip validation, run only extension tests |
+| `--all` | Check every extension, not just modified ones |
+| `--fix` | Auto-fix issues where possible |
+| `--base-branch <ref>` | Explicit base branch instead of auto-detection |
+| `--log <path>` | Save ANSI-stripped output to a log file |
+| `--keep-going` / `-k` | Run all checks even if earlier ones fail |
+
+Examples:
+
+```bash
+# Run only lint and format checks
+python tools/isaac/pre_merge/pre_merge_validate.py --lint --format
+
+# Run validation + extension tests
+python tools/isaac/pre_merge/pre_merge_validate.py --test
+
+# Re-run tests for specific extensions that failed previously
+python tools/isaac/pre_merge/pre_merge_validate.py --retest isaacsim.robot.poser isaacsim.robot.schema
+```
+
+### Individual Tools
+
+Each check can also be run standalone:
+
+| Script | Description | Example |
+|---|---|---|
+| `run_python_linting.py` | Run mypy, darglint, interrogate, pydoclint, and ruff on extensions or arbitrary paths | `python tools/isaac/pre_merge/run_python_linting.py --path tools/isaac/pre_merge` |
+| `validate_changelog.py` | Check changelog formatting, version entries, and version bump vs base branch | `python tools/isaac/pre_merge/validate_changelog.py source/extensions/isaacsim.robot.poser` |
+| `validate_extension_toml.py` | Validate and auto-fix section order, field order, dependencies sort, and whitespace in extension.toml files | `python tools/isaac/pre_merge/validate_extension_toml.py --fix` |
+| `validate_extension_structure.py` | Validate extension directory layout (config, data, docs, bindings, etc.) | `python tools/isaac/pre_merge/validate_extension_structure.py source/extensions/isaacsim.robot.poser` |
+| `validate_license_headers.py` | Check or repair SPDX license headers in source files | `python tools/isaac/pre_merge/validate_license_headers.py --fix` |
+| `run_extension_tests.py` | Discover and run test scripts for specified extensions | `python tools/isaac/pre_merge/run_extension_tests.py isaacsim.robot.poser` |
+
+Some of these scripts are also accessible via `repo.sh` when the repo tool infrastructure is available (e.g. `./repo.sh run_python_linting`).
+
+### Shared Modules
+
+| Module | Purpose |
+|---|---|
+| `repo_helpers.py` | Repository layout constants (`REPO_ROOT`, `EXTENSION_ROOTS`), extension discovery, TOML loading, and git helpers |
+| `term_helpers.py` | ANSI color codes (`Colors`), `colorize()`, and status-line helpers (`log_pass`, `log_fail`, etc.) |
+
 # Troubleshooting
 
 ### Permission errors when on VPN on Windows

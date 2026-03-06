@@ -22,7 +22,6 @@ changelog validator, the extension test runner, and similar tooling scripts.
 from __future__ import annotations
 
 import platform
-import re
 import subprocess
 from pathlib import Path
 
@@ -68,8 +67,11 @@ def extension_for_file(file_path: Path) -> Path | None:
         except ValueError:
             continue
         ext_name = rel.parts[0] if rel.parts else None
-        if ext_name and ext_name.startswith("isaacsim."):
-            return root / ext_name
+        if not ext_name:
+            continue
+        ext_dir = root / ext_name
+        if (ext_dir / "config" / "extension.toml").exists():
+            return ext_dir
     return None
 
 
@@ -136,14 +138,87 @@ def has_apps_changes(files: list[Path]) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# TOML helpers
+# ---------------------------------------------------------------------------
+
+
+def _regex_parse_toml(text: str) -> dict[str, dict]:
+    """Minimal regex-based TOML parser for ``[section]`` / ``key = value`` files.
+
+    Only handles the subset of TOML used by ``extension.toml`` (flat sections
+    with simple string / number / boolean values).  Used as a last-resort
+    fallback when no proper TOML library is available.
+
+    Args:
+        text: Raw TOML file contents.
+
+    Returns:
+        Parsed TOML data as nested dictionaries.
+    """
+    result: dict = {}
+    current: dict = result
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if stripped.startswith("[") and stripped.endswith("]"):
+            section_name = stripped[1:-1].strip()
+            current = result
+            for part in section_name.split("."):
+                current = current.setdefault(part, {})
+            continue
+        if "=" in stripped:
+            key, raw = stripped.split("=", 1)
+            key = key.strip().strip('"')
+            raw = raw.strip()
+            if raw.startswith('"') and raw.endswith('"'):
+                current[key] = raw[1:-1]
+            elif raw.isdigit():
+                current[key] = int(raw)
+            elif raw.lower() == "true":
+                current[key] = True
+            elif raw.lower() == "false":
+                current[key] = False
+            else:
+                current[key] = raw
+    return result
+
+
+def load_toml(path: Path) -> dict:
+    """Load a TOML file using the best available library.
+
+    Tries ``tomli`` (fast, pure-Python) -> ``tomlkit`` (preserves style) ->
+    ``toml`` (popular) -> regex fallback.
+
+    Args:
+        path: Path to the TOML file.
+
+    Returns:
+        Parsed dict.
+
+    """
+    for loader_name in ("tomli", "tomlkit", "toml"):
+        try:
+            mod = __import__(loader_name)
+            if loader_name == "tomli":
+                with open(path, "rb") as fb:
+                    return mod.load(fb)
+            with open(path) as ft:
+                return mod.load(ft)
+        except ImportError:
+            continue
+        except Exception:
+            continue
+    return _regex_parse_toml(path.read_text())
+
+
+# ---------------------------------------------------------------------------
 # extension.toml helpers
 # ---------------------------------------------------------------------------
 
 
 def read_toml_version(ext_path: Path) -> str | None:
     """Read ``[package].version`` from an extension's ``config/extension.toml``.
-
-    Tries the ``toml`` module first; falls back to regex parsing.
 
     Args:
         ext_path: Path to the extension directory.
@@ -154,32 +229,12 @@ def read_toml_version(ext_path: Path) -> str | None:
     toml_path = ext_path / "config" / "extension.toml"
     if not toml_path.exists():
         return None
-
-    try:
-        import toml as toml_mod  # type: ignore[import-untyped]
-
-        data = toml_mod.load(str(toml_path))
-        return data.get("package", {}).get("version")
-    except Exception:
-        pass
-
-    in_package = False
-    for line in toml_path.read_text().splitlines():
-        stripped = line.strip()
-        if stripped.startswith("["):
-            in_package = stripped == "[package]"
-            continue
-        if in_package and stripped.startswith("version"):
-            match = re.search(r'"([^"]+)"', stripped)
-            if match:
-                return match.group(1)
-    return None
+    data = load_toml(toml_path)
+    return data.get("package", {}).get("version")
 
 
 def parse_extension_deps(ext_path: Path) -> list[str]:
     """Extract dependency names from an extension's ``config/extension.toml``.
-
-    Tries the ``toml`` module first; falls back to regex parsing.
 
     Args:
         ext_path: Path to the extension directory.
@@ -190,29 +245,8 @@ def parse_extension_deps(ext_path: Path) -> list[str]:
     toml_path = ext_path / "config" / "extension.toml"
     if not toml_path.exists():
         return []
-
-    try:
-        import toml as toml_mod  # type: ignore[import-untyped]
-
-        data = toml_mod.load(str(toml_path))
-        return list(data.get("dependencies", {}).keys())
-    except Exception:
-        pass
-
-    deps: list[str] = []
-    in_deps = False
-    for line in toml_path.read_text().splitlines():
-        stripped = line.strip()
-        if stripped == "[dependencies]":
-            in_deps = True
-            continue
-        if in_deps:
-            if stripped.startswith("["):
-                break
-            m = re.match(r'"([^"]+)"', stripped)
-            if m:
-                deps.append(m.group(1))
-    return deps
+    data = load_toml(toml_path)
+    return list(data.get("dependencies", {}).keys())
 
 
 def build_reverse_deps() -> dict[str, set[str]]:
@@ -264,6 +298,34 @@ def _uncommitted_files() -> set[Path]:
         Set of modified file paths.
     """
     return _git_diff_names([]) | _git_diff_names(["--staged"])
+
+
+def _untracked_files() -> set[Path]:
+    """Return new files that are not yet tracked by git.
+
+    Returns:
+        Set of untracked file paths.
+    """
+    cmd = ["git", "ls-files", "--others", "--exclude-standard"]
+    proc = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT)
+    paths: set[Path] = set()
+    if proc.returncode == 0 and proc.stdout.strip():
+        for line in proc.stdout.strip().splitlines():
+            if line.strip():
+                paths.add(REPO_ROOT / line.strip())
+    return paths
+
+
+def get_uncommitted_files() -> set[Path]:
+    """Return staged, unstaged, and untracked files in the working tree.
+
+    This is useful for ``--diff-only`` modes that need the full set of
+    locally-changed files (modified *and* newly created).
+
+    Returns:
+        Set of file paths.
+    """
+    return _uncommitted_files() | _untracked_files()
 
 
 def _ref_exists(ref: str) -> bool:

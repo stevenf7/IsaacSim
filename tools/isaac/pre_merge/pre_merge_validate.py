@@ -23,7 +23,8 @@ to a standalone script:
   3. Changelog and version bump     -> validate_changelog.py
   4. extension.toml validation      -> validate_extension_toml.py
   5. Extension structure validation  -> validate_extension_structure.py
-  6. Extension test discovery & run  -> run_extension_tests.py
+  6. License header validation       -> validate_license_headers.py
+  7. Extension test discovery & run  -> run_extension_tests.py
 
 Determines the full set of changed files by comparing against the merge-base
 of the current branch with its upstream (auto-detected, or set via --base-branch).
@@ -71,6 +72,7 @@ from typing import Any, TextIO
 
 from repo_helpers import (
     _IS_WINDOWS,
+    EXTENSION_ROOTS,
     REPO_ROOT,
     TOOLS_DIR,
     affected_extensions,
@@ -504,7 +506,84 @@ def check_extension_structure(extensions: list[Path], base_ref: str | None = Non
 
 
 # ---------------------------------------------------------------------------
-# Check 6: Extension tests — delegates to run_extension_tests.py
+# Check 6: License headers — delegates to validate_license_headers.py
+# ---------------------------------------------------------------------------
+
+
+def validate_license_headers(modified_files: list[Path], fix: bool = False, all_files: bool = False) -> int:
+    """Validate SPDX headers on changed source files.
+
+    Args:
+        modified_files: Full list of changed files discovered by pre-merge logic.
+        fix: Whether to auto-fix issues when possible.
+        all_files: If True, validate all supported files under the repo root.
+
+    Returns:
+        Exit code (0 if OK, 1 if issues).
+    """
+    script = TOOLS_DIR / "validate_license_headers.py"
+    if not script.exists():
+        log_warn("validate_license_headers.py not found; skipping license header check.")
+        return 0
+
+    if all_files:
+        failures = 0
+        for root in EXTENSION_ROOTS:
+            if not root.exists():
+                continue
+            log_info(f"Checking license headers under {root.relative_to(REPO_ROOT)}")
+            cmd = [sys.executable, str(script), "--root", str(root)]
+            if fix:
+                cmd.append("--fix")
+            proc = _run_teed(cmd, cwd=REPO_ROOT)
+            if proc.returncode != 0:
+                failures += 1
+        if failures > 0:
+            log_fail("License header validation reported issues.")
+            return 1
+        log_pass("License header validation clean.")
+        return 0
+
+    cmd = [sys.executable, str(script), "--root", str(REPO_ROOT)]
+    if not all_files:
+        supported_exts = {
+            ".py",
+            ".cpp",
+            ".cc",
+            ".cxx",
+            ".c",
+            ".h",
+            ".hpp",
+            ".hxx",
+            ".cu",
+            ".cuh",
+            ".yaml",
+            ".yml",
+            ".ipynb",
+            ".lua",
+            ".sh",
+            ".bat",
+        }
+        existing_files = [f for f in modified_files if f.exists() and f.suffix.lower() in supported_exts]
+        if not existing_files:
+            log_info("No modified source files requiring license checks.")
+            return 0
+        cmd.extend(["--files", *[str(f) for f in existing_files]])
+
+    if fix:
+        cmd.append("--fix")
+
+    proc = _run_teed(cmd, cwd=REPO_ROOT)
+    if proc.returncode != 0:
+        log_fail("License header validation reported issues.")
+        return 1
+
+    log_pass("License header validation clean.")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# Check 7: Extension tests — delegates to run_extension_tests.py
 # ---------------------------------------------------------------------------
 
 
@@ -565,7 +644,7 @@ def build_parser() -> argparse.ArgumentParser:
         Configured ArgumentParser instance.
     """
     parser = argparse.ArgumentParser(
-        description="Pre-commit validation for Isaac Sim: lint, format, changelog, toml, and structure checks.",
+        description="Pre-commit validation for Isaac Sim: lint, format, changelog, toml, structure, and license checks.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -575,6 +654,7 @@ def build_parser() -> argparse.ArgumentParser:
     checks.add_argument("--changelog", action="store_true", help="Check changelog and version bump")
     checks.add_argument("--toml", action="store_true", help="Validate extension.toml files")
     checks.add_argument("--structure", action="store_true", help="Validate extension directory structure")
+    checks.add_argument("--license", action="store_true", help="Validate SPDX license headers on changed files")
     checks.add_argument(
         "--test",
         action="store_true",
@@ -709,7 +789,7 @@ def _run(args: argparse.Namespace) -> int:
     if args.retest:
         args.test = True
 
-    check_flags = [args.lint, args.format, args.changelog, args.toml, args.structure, args.test]
+    check_flags = [args.lint, args.format, args.changelog, args.toml, args.structure, args.license, args.test]
     run_all_validation = not any(check_flags)
 
     if args.all_extensions:
@@ -768,6 +848,10 @@ def _run(args: argparse.Namespace) -> int:
         if run_all_validation or args.structure:
             header("Extension Structure")
             total_errors += check_extension_structure(extensions, base_ref=resolved_base)
+
+        if run_all_validation or args.license:
+            header("License Headers")
+            total_errors += validate_license_headers(modified, fix=args.fix, all_files=args.all_extensions)
 
     if args.test and not args.skip_tests:
         header("Extension Tests")
