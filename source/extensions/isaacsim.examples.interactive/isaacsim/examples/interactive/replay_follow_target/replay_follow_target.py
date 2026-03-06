@@ -20,8 +20,7 @@ from isaacsim.core.experimental.materials import PreviewSurfaceMaterial
 from isaacsim.core.experimental.objects import Cube, DistantLight
 from isaacsim.core.experimental.prims import GeomPrim
 from isaacsim.core.rendering_manager import ViewportManager
-from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
+from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
 from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.robot.manipulators.examples.franka.franka_experimental import FrankaExperimental
 from isaacsim.storage.native import get_assets_root_path
@@ -70,7 +69,7 @@ class ReplayFollowTarget(BaseSample):
         # Add distant light (only if it doesn't exist)
         if not stage.GetPrimAtPath("/World/DistantLight"):
             light = DistantLight("/World/DistantLight")
-            light.set_intensities([300])
+            light.set_intensities(300)
 
         # Create Franka robot (one line as requested)
         self._robot = FrankaExperimental(robot_path=self._robot_path, create_robot=True)
@@ -82,10 +81,9 @@ class ReplayFollowTarget(BaseSample):
 
         cube_shape = Cube(
             paths=self._target_path,
-            positions=[target_position],
+            positions=target_position,
             sizes=[1.0],
             scales=[0.03, 0.03, 0.03],
-            reset_xform_op_properties=True,
         )
         cube_shape.apply_visual_materials(visual_material)
         self._target_cube = GeomPrim(paths=cube_shape.paths)
@@ -107,10 +105,7 @@ class ReplayFollowTarget(BaseSample):
         """Called before world reset."""
         # Deregister physics callbacks
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception:
-                pass
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
         # Reset time step index
@@ -129,10 +124,7 @@ class ReplayFollowTarget(BaseSample):
         """Called after clearing the scene."""
         # Deregister physics callbacks
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception:
-                pass
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
         self._robot = None
@@ -143,10 +135,7 @@ class ReplayFollowTarget(BaseSample):
     def physics_cleanup(self):
         """Clean up physics resources."""
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception:
-                pass
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
     async def _on_replay_trajectory_event_async(self, data_file):
@@ -160,11 +149,11 @@ class ReplayFollowTarget(BaseSample):
 
         # Start timeline playback
         app_utils.play()
-        await app_utils.update_app_async(steps=1)
+        await app_utils.update_app_async()
 
         # Register physics callback
         self._physics_callback_id = SimulationManager.register_callback(
-            self._on_replay_trajectory_step, IsaacEvents.POST_PHYSICS_STEP
+            self._on_replay_trajectory_step, event=SimulationEvent.PHYSICS_POST_STEP
         )
 
     async def _on_replay_scene_event_async(self, data_file):
@@ -178,11 +167,11 @@ class ReplayFollowTarget(BaseSample):
 
         # Start timeline playback
         app_utils.play()
-        await app_utils.update_app_async(steps=1)
+        await app_utils.update_app_async()
 
         # Register physics callback
         self._physics_callback_id = SimulationManager.register_callback(
-            self._on_replay_scene_step, IsaacEvents.POST_PHYSICS_STEP
+            self._on_replay_scene_step, event=SimulationEvent.PHYSICS_POST_STEP
         )
 
     def _on_replay_trajectory_step(self, dt, context):
@@ -210,10 +199,7 @@ class ReplayFollowTarget(BaseSample):
         else:
             # Replay complete, deregister callback
             if self._physics_callback_id is not None:
-                try:
-                    SimulationManager.deregister_callback(self._physics_callback_id)
-                except Exception:
-                    pass
+                SimulationManager.deregister_callback(self._physics_callback_id)
                 self._physics_callback_id = None
 
     def _on_replay_scene_step(self, dt, context):
@@ -250,8 +236,5 @@ class ReplayFollowTarget(BaseSample):
         else:
             # Replay complete, deregister callback
             if self._physics_callback_id is not None:
-                try:
-                    SimulationManager.deregister_callback(self._physics_callback_id)
-                except Exception:
-                    pass
+                SimulationManager.deregister_callback(self._physics_callback_id)
                 self._physics_callback_id = None

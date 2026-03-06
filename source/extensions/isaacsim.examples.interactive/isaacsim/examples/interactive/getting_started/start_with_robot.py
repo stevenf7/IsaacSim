@@ -107,10 +107,7 @@ class GettingStartedRobot(BaseSample):
         """
         # Remove physics callback before reset
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception as e:
-                print(f"Note: Could not deregister callback: {e}")
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
     async def setup_post_reset(self):
@@ -128,17 +125,11 @@ class GettingStartedRobot(BaseSample):
         """Called after clearing the scene."""
         # Remove physics callback on clear
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception as e:
-                print(f"Note: Could not deregister callback: {e}")
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
     def physics_cleanup(self):
         """Clean up physics resources."""
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception as e:
-                print(f"Note: Could not deregister callback: {e}")
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None

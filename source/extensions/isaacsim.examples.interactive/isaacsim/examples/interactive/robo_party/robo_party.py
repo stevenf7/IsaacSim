@@ -175,10 +175,7 @@ class RoboParty(BaseSample):
 
     def _remove_physics_callback(self) -> None:
         if self._physics_callback_id is not None:
-            try:
-                SimulationManager.deregister_callback(self._physics_callback_id)
-            except Exception:
-                pass
+            SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
     def _party_physics_callback(self, dt, context) -> None:
@@ -229,4 +226,4 @@ class RoboParty(BaseSample):
             self._party_physics_callback, event=SimulationEvent.PHYSICS_POST_STEP
         )
         app_utils.play()
-        await app_utils.update_app_async(steps=1)
+        await app_utils.update_app_async()

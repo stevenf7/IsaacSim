@@ -21,10 +21,10 @@ from abc import abstractmethod
 
 import carb.eventdispatcher
 import omni.kit.app
-import omni.timeline
 import omni.ui as ui
 import omni.usd
 from isaacsim.core.api import World
+from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
 from isaacsim.examples.interactive.base_sample import BaseSample
 from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers
 
@@ -62,7 +62,7 @@ class BaseSampleUITemplate:
         self._buttons = dict()
         self.extra_stacks = None
         self._stage_event_sub = None
-        self._timeline_event_sub = None
+        self._timeline_stop_callback_id = None
 
     @property
     def sample(self) -> BaseSample:
@@ -184,11 +184,9 @@ class BaseSampleUITemplate:
                 observer_name="base_sample_extension.on_stage_event",
             )
 
-            # Subscribe to timeline stop events using Events 2.0
-            self._timeline_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
-                event_name=omni.timeline.GLOBAL_EVENT_STOP,
-                on_event=self._reset_on_stop_event,
-                observer_name="base_sample_extension._reset_on_stop_event",
+            # Subscribe to timeline stop events
+            self._timeline_stop_callback_id = SimulationManager.register_callback(
+                self._reset_on_stop_event, event=SimulationEvent.SIMULATION_STOPPED
             )
 
             self._enable_all_buttons(True)
@@ -254,7 +252,9 @@ class BaseSampleUITemplate:
         Resets event subscriptions, UI components, buttons, and sample references.
         """
         self._stage_event_sub = None
-        self._timeline_event_sub = None
+        if getattr(self, "_timeline_stop_callback_id", None) is not None:
+            SimulationManager.deregister_callback(self._timeline_stop_callback_id)
+            self._timeline_stop_callback_id = None
         self.extra_stacks = None
         self._buttons = {}
         self._sample = None
@@ -268,6 +268,9 @@ class BaseSampleUITemplate:
         Args:
             event: The stage event object containing event details.
         """
+        if self._timeline_stop_callback_id is not None:
+            SimulationManager.deregister_callback(self._timeline_stop_callback_id)
+            self._timeline_stop_callback_id = None
         if World.instance() is not None:
             self._sample._world_cleanup()
             self._sample._world.clear_instance()
