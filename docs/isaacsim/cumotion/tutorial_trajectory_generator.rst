@@ -62,7 +62,6 @@ The simplest approach is to generate trajectories directly from C-space waypoint
    :start-after: <start-generate-from-cspace-waypoints-snippet>
    :end-before: <end-generate-from-cspace-waypoints-snippet>
    :language: python
-   :lines: 91-106
 
 Generating from Path Specifications
 ====================================
@@ -107,6 +106,10 @@ Once you have a trajectory, you can execute it in two ways:
    :language: python
 
 The :class:`TrajectoryFollower` follows the standard controller interface (``reset`` and ``forward``) and can be composed with other controllers in the Motion Generation API. For more details on trajectory execution, see the :doc:`Trajectory Planning and Execution <../motion_generation/trajectory_planning>` tutorial.
+
+.. note::
+   The ``scenario.py`` example uses :meth:`Articulation.set_dof_positions` to directly set physics state for perfect demonstration of the planned trajectory. Real robots require controllers to follow joint targets instead,
+   and should use one of the aforementioned methods to execute the trajectory.
 
 Example Usage
 =============

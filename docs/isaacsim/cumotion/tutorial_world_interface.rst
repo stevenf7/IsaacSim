@@ -57,6 +57,11 @@ Obstacle geometries need to be approximated for collision checking. The :class:`
 * For ``Mesh`` objects, we use the ``OBB`` representation for faster collision checking, but you can also use the ``TRIANGULATED_MESH`` representation for more accurate collision checking.
 * The safety tolerance adds extra padding around obstacles to ensure safe clearance during planning.
 
+.. note::
+   Since :class:`ObstacleRepresentation` is a :class:`StrEnum`, you can use either the enum value (e.g., ``ObstacleRepresentation.OBB``) or the string directly (e.g., ``"obb"``) when creating :class:`ObstacleConfiguration` objects.
+   See :doc:`Scene Interaction <../motion_generation/scene_interaction>` for details on how to configure obstacle representations.
+
+
 .. literalinclude:: ../snippets/cumotion/world_interface_example.py
    :start-after: <start-configure-obstacle-strategy-snippet>
    :end-before: <end-configure-obstacle-strategy-snippet>

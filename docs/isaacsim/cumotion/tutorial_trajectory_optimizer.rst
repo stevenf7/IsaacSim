@@ -134,6 +134,10 @@ Once you have a trajectory, you can execute it in two ways:
 
 The :class:`TrajectoryFollower` follows the standard controller interface (``reset`` and ``forward``) and can be composed with other controllers in the Motion Generation API. For more details on trajectory execution, see the :doc:`Trajectory Planning and Execution <../motion_generation/trajectory_planning>` tutorial.
 
+.. note::
+   The ``scenario.py`` example uses :meth:`Articulation.set_dof_positions` to directly set physics state for perfect demonstration of the planned trajectory. Real robots require controllers to follow joint targets instead,
+   and should use one of the aforementioned methods to execute the trajectory.
+
 Example Usage
 =============
 
@@ -150,7 +154,7 @@ The first video shows trajectory optimization planning trajectories to configura
 
    Trajectory optimizer planning trajectories to configuration space and task space targets while avoiding obstacles
 
-The second video demonstrates adding a new obstacle to the scene, resetting the world state, and running the graph planner again. 
+The second video demonstrates adding a new obstacle to the scene, resetting the world state, and running the trajectory optimizer again. 
 Objects are added in the same way as described in the :ref:`World Interface tutorial <isaac_sim_cumotion_tutorial_world_interface>`.
 Inside the ``scenario.py`` file, a new ``CumotionWorldInterface`` is created for every plan. This is not generally necessary
 if objects are not being added or removed from the scene.
