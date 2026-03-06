@@ -147,6 +147,12 @@ local function get_core_tests()
             "tests-nativepython-isaacsim.core.cloner.clone_ants",
             "standalone_examples/api/isaacsim.core.cloner/clone_ants.py",
         },
+        -- Core Experimental API
+        {
+            "tests-nativepython-isaacsim.core.experimental.api.deformable_stress_visualization",
+            "standalone_examples/api/isaacsim.core.experimental.api/deformable_stress_visualization.py",
+            "--test",
+        },
         -- Core API
         { "tests-nativepython-isaacsim.core.api.add_cubes", "standalone_examples/api/isaacsim.core.api/add_cubes.py" },
         {
