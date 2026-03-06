@@ -92,6 +92,7 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    "--/UJITSO/geometry=true",
 ]
 
 [[test]]
@@ -154,6 +155,7 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    "--/UJITSO/geometry=true",
 ]
 
 [[test]]
@@ -216,6 +218,7 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    "--/UJITSO/geometry=true",
 ]
 
 [documentation]

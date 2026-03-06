@@ -98,6 +98,7 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    "--/UJITSO/geometry=true",
 ]
 stdoutFailPatterns.exclude = [
     "*Invalid Bundle object in Py_Bundle in getPrimPath*", # Per node tests won't have valid bundles

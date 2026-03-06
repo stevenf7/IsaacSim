@@ -102,6 +102,7 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    "--/UJITSO/geometry=true",
 ]
 cppTests.libraries = [
     "bin/${lib_prefix}isaacsim.sensors.experimental.physics.tests${lib_ext}",
@@ -168,4 +169,5 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    "--/UJITSO/geometry=true",
 ]
