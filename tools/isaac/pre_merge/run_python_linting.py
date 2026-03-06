@@ -85,6 +85,9 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from repo_helpers import EXTENSION_ROOTS, REPO_ROOT, all_extensions, get_uncommitted_files
+from term_helpers import Colors, colorize
+
 # =============================================================================
 # Tool Configurations (hardcoded defaults when config files not supported)
 # =============================================================================
@@ -271,40 +274,6 @@ class ExtensionResult:
 
 
 # =============================================================================
-# Terminal Colors
-# =============================================================================
-
-
-class Colors:
-    """ANSI color codes for terminal output."""
-
-    RESET = "\033[0m"
-    RED = "\033[91m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    BLUE = "\033[94m"
-    CYAN = "\033[96m"
-    BOLD = "\033[1m"
-    DIM = "\033[2m"
-
-
-def colorize(text: str, color: str, use_color: bool = True) -> str:
-    """Apply color to text if colors are enabled.
-
-    Args:
-        text: Text to colorize.
-        color: ANSI color code to apply.
-        use_color: Whether to apply colors (disabled for non-TTY output).
-
-    Returns:
-        Colored text if use_color and TTY, otherwise the original text.
-    """
-    if use_color and sys.stdout.isatty():
-        return f"{color}{text}{Colors.RESET}"
-    return text
-
-
-# =============================================================================
 # Tool Discovery
 # =============================================================================
 
@@ -433,58 +402,6 @@ def discover_tools(vendor_dir: str | None = None) -> dict[str, ToolInfo]:
 # =============================================================================
 
 
-def find_extensions(extensions_dir: Path) -> list[Path]:
-    """Find all extension directories in the given path.
-
-    Args:
-        extensions_dir: Directory to search for extensions (e.g., source/extensions).
-
-    Returns:
-        List of paths to extension directories (those starting with isaacsim.).
-    """
-    extensions: list[Path] = []
-    if not extensions_dir.exists():
-        return extensions
-
-    for item in sorted(extensions_dir.iterdir()):
-        if item.is_dir() and item.name.startswith("isaacsim."):
-            extensions.append(item)
-
-    return extensions
-
-
-def get_extension_roots(repo_root: Path) -> list[Path]:
-    """Get existing extension root directories under source.
-
-    Args:
-        repo_root: Root path of the repository.
-
-    Returns:
-        List of existing paths (extensions, internal_extensions, deprecated).
-    """
-    candidates = [
-        repo_root / "source" / "extensions",
-        repo_root / "source" / "internal_extensions",
-        repo_root / "source" / "deprecated",
-    ]
-    return [path for path in candidates if path.exists()]
-
-
-def find_extensions_in_roots(roots: list[Path]) -> list[Path]:
-    """Find all extensions across multiple roots.
-
-    Args:
-        roots: List of extension root directories to search.
-
-    Returns:
-        List of paths to all extension directories found.
-    """
-    extensions: list[Path] = []
-    for root in roots:
-        extensions.extend(find_extensions(root))
-    return extensions
-
-
 def find_python_dir(extension_path: Path) -> Path | None:
     """Find the Python source directory for an extension.
 
@@ -543,40 +460,6 @@ def count_python_files(directory: Path, exclude_patterns: list[str] | None = Non
         if not excluded:
             count += 1
     return count
-
-
-def get_changed_python_files(repo_root: Path) -> set[Path]:
-    """Get all changed Python files (staged, unstaged, and untracked).
-
-    Args:
-        repo_root: Root path of the repository.
-
-    Returns:
-        Set of paths to changed Python files.
-    """
-    changed_files: set[Path] = set()
-
-    diff_cmds = [
-        ["git", "diff", "--name-only", "--diff-filter=ACMR"],
-        ["git", "diff", "--name-only", "--staged", "--diff-filter=ACMR"],
-        ["git", "ls-files", "--others", "--exclude-standard"],
-    ]
-
-    for cmd in diff_cmds:
-        try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, cwd=repo_root)
-        except Exception:
-            continue
-
-        if proc.returncode != 0 or not proc.stdout:
-            continue
-
-        for line in proc.stdout.strip().split("\n"):
-            path_str = line.strip()
-            if path_str.endswith(".py"):
-                changed_files.add((repo_root / path_str).resolve())
-
-    return changed_files
 
 
 def filter_extensions_by_diff(extensions: list[Path], diff_files: set[Path]) -> list[Path]:
@@ -1629,35 +1512,27 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
 
         # ---- Extension mode (default) ----
 
-        # Find extension root directories
-        extension_roots = get_extension_roots(repo_root)
-        if not extension_roots:
-            print("Error: No extension roots found under source (extensions, internal_extensions, deprecated).")
-            return 1
-
-        # Find all extensions
-        all_extensions = find_extensions_in_roots(extension_roots)
-        if not all_extensions:
-            root_list = ", ".join(str(p) for p in extension_roots)
+        discovered_extensions = all_extensions()
+        if not discovered_extensions:
+            root_list = ", ".join(str(p) for p in EXTENSION_ROOTS)
             print(f"Error: No extensions found in {root_list}")
             return 1
 
-        # Filter extensions
-        extensions_to_check = all_extensions
+        extensions_to_check = discovered_extensions
         if args.extensions:
-            extensions_to_check = [e for e in all_extensions if e.name in args.extensions]
+            extensions_to_check = [e for e in discovered_extensions if e.name in args.extensions]
             if not extensions_to_check:
                 print(f"Error: No matching extensions found for: {args.extensions}")
                 return 1
         elif args.pattern:
-            extensions_to_check = [e for e in all_extensions if fnmatch.fnmatch(e.name, args.pattern)]
+            extensions_to_check = [e for e in discovered_extensions if fnmatch.fnmatch(e.name, args.pattern)]
             if not extensions_to_check:
                 print(f"Error: No extensions matching pattern: {args.pattern}")
                 return 1
 
         diff_files: set[Path] | None = None
         if args.diff_only:
-            diff_files = get_changed_python_files(repo_root)
+            diff_files = {p for p in get_uncommitted_files() if p.suffix == ".py"}
             if not diff_files:
                 print(colorize("\nNo changed Python files found.", Colors.YELLOW, use_color))
                 return 0
@@ -1739,9 +1614,7 @@ def main() -> int:
         epilog=__doc__,
     )
 
-    script_path = Path(__file__).resolve()
-    repo_root = script_path.parent.parent.parent.parent
-    config = {"root": str(repo_root)}
+    config = {"root": str(REPO_ROOT)}
 
     run_tool = setup_repo_tool(parser, config)
     args = parser.parse_args()

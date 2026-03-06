@@ -45,94 +45,9 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
 
-from repo_helpers import REPO_ROOT, read_toml_version
+from repo_helpers import REPO_ROOT, load_toml, read_toml_version
 from term_helpers import log_fail, log_info, log_pass, log_warn
-
-# ---------------------------------------------------------------------------
-# TOML reader fallback chain
-# ---------------------------------------------------------------------------
-
-
-def _parse_toml(toml_str: str) -> dict[str, Any]:
-    """Parse a TOML string into a dictionary.
-
-    Args:
-        toml_str: Raw TOML content as a string.
-
-    Returns:
-        Parsed key-value structure with nested sections.
-    """
-    result: dict[str, Any] = {}
-    current_section: dict[str, Any] = result
-
-    for line in toml_str.split("\n"):
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-
-        if line.startswith("[") and line.endswith("]"):
-            section_name = line[1:-1].strip()
-            current_section = result
-            if "." in section_name:
-                for part in section_name.split("."):
-                    if part not in current_section:
-                        current_section[part] = {}
-                    current_section = current_section[part]
-            else:
-                if section_name not in result:
-                    result[section_name] = {}
-                current_section = result[section_name]
-            continue
-
-        if "=" in line:
-            key, raw_value = line.split("=", 1)
-            key = key.strip()
-            raw_value = raw_value.strip()
-            parsed_value: str | int | bool
-            if raw_value.startswith('"') and raw_value.endswith('"'):
-                parsed_value = raw_value[1:-1]
-            elif raw_value.isdigit():
-                parsed_value = int(raw_value)
-            elif raw_value.lower() == "true":
-                parsed_value = True
-            elif raw_value.lower() == "false":
-                parsed_value = False
-            else:
-                parsed_value = raw_value
-            current_section[key] = parsed_value
-
-    return result
-
-
-class _TomliWrapper:
-    """Minimal TOML loader using the built-in ``_parse_toml`` fallback."""
-
-    @staticmethod
-    def load(file_obj: Any) -> dict[str, Any]:
-        """Load TOML from a file object.
-
-        Args:
-            file_obj: File-like object opened for reading.
-
-        Returns:
-            Parsed TOML dictionary.
-        """
-        data = file_obj.read()
-        if isinstance(data, bytes):
-            data = data.decode()
-        return _parse_toml(data)
-
-
-_toml_reader: Any
-try:
-    import tomli as _toml_reader  # type: ignore[no-redef]
-except ImportError:
-    try:
-        import tomlkit as _toml_reader  # type: ignore[no-redef]
-    except ImportError:
-        _toml_reader = _TomliWrapper()
 
 # ---------------------------------------------------------------------------
 # Version comparison helpers
@@ -429,8 +344,7 @@ class ChangelogValidator:
             return
 
         try:
-            with open(self.extension_toml_path, "rb") as f:
-                extension_data = _toml_reader.load(f)
+            extension_data = load_toml(Path(self.extension_toml_path))
 
             if "package" not in extension_data:
                 self.errors.append(f"No [package] section found in extension.toml")

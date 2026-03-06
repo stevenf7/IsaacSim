@@ -68,20 +68,10 @@ import difflib
 import os
 import sys
 from dataclasses import dataclass
-from enum import Enum
 from typing import Any, Optional
 
 import toml  # type: ignore[import-untyped]
-
-
-class Colors(str, Enum):
-    """ANSI color codes for terminal output."""
-
-    RESET = "\033[0m"
-    RED = "\033[91m"
-    GREEN = "\033[92m"
-    BLUE = "\033[94m"
-    BOLD = "\033[1m"
+from term_helpers import Colors
 
 
 @dataclass
@@ -2478,16 +2468,16 @@ class ExtensionTomlValidator:
         for line in diff_lines:
             if line.startswith("+"):
                 if line.startswith("+++"):  # File header
-                    colored_diff.append(f"{Colors.BOLD.value}{Colors.BLUE.value}{line}{Colors.RESET.value}")
+                    colored_diff.append(f"{Colors.BOLD}{Colors.BLUE}{line}{Colors.RESET}")
                 else:
-                    colored_diff.append(f"{Colors.GREEN.value}{line}{Colors.RESET.value}")
+                    colored_diff.append(f"{Colors.GREEN}{line}{Colors.RESET}")
             elif line.startswith("-"):
                 if line.startswith("---"):  # File header
-                    colored_diff.append(f"{Colors.BOLD.value}{Colors.BLUE.value}{line}{Colors.RESET.value}")
+                    colored_diff.append(f"{Colors.BOLD}{Colors.BLUE}{line}{Colors.RESET}")
                 else:
-                    colored_diff.append(f"{Colors.RED.value}{line}{Colors.RESET.value}")
+                    colored_diff.append(f"{Colors.RED}{line}{Colors.RESET}")
             elif line.startswith("@@"):
-                colored_diff.append(f"{Colors.BLUE.value}{line}{Colors.RESET.value}")
+                colored_diff.append(f"{Colors.BLUE}{line}{Colors.RESET}")
             else:
                 colored_diff.append(line)
         return "\n".join(colored_diff)

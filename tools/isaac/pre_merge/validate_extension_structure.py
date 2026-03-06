@@ -25,44 +25,7 @@ from pathlib import Path
 from typing import Any
 
 import toml  # type: ignore[import-untyped]
-
-
-class Colors:
-    """ANSI color codes for terminal output."""
-
-    RESET = "\033[0m"
-    RED = "\033[91m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    BLUE = "\033[94m"
-    MAGENTA = "\033[95m"
-    CYAN = "\033[96m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
-
-
-def should_disable_color() -> bool:
-    """Check if color output should be disabled based on environment variables or terminal type.
-
-    Returns:
-        True if color should be disabled, False otherwise.
-    """
-    return "NO_COLOR" in os.environ or (os.environ.get("TERM") == "dumb")
-
-
-def colorize(text: str, color_code: str) -> str:
-    """Apply color to text if color is enabled.
-
-    Args:
-        text: The text to colorize.
-        color_code: The ANSI color code to apply.
-
-    Returns:
-        Colored text if color is enabled, otherwise the original text.
-    """
-    if should_disable_color():
-        return text
-    return f"{color_code}{text}{Colors.RESET}"
+from term_helpers import Colors, colorize
 
 
 def print_messages(messages: list[str], color: str) -> None:
@@ -863,19 +826,11 @@ def run_tool(args: argparse.Namespace, config: dict[str, Any]) -> int:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Validate Isaac Sim extension structure")
-    parser.add_argument("extension_path", nargs="?", help="Path to the extension to validate")
-    parser.add_argument("--no-color", action="store_true", help="Disable colored output")
-
-    args = parser.parse_args()
-
-    # Set color mode based on arguments
-    if args.no_color:
-        os.environ["NO_COLOR"] = "1"
-
-    if not args.extension_path:
-        print(colorize("Usage: python validate_extension_structure.py <extension_path>", Colors.YELLOW))
-        sys.exit(1)
-
-    is_valid = validate_extension(args.extension_path)
-    sys.exit(0 if is_valid else 1)
+    _parser = argparse.ArgumentParser(
+        description="Validate Isaac Sim extension structure",
+    )
+    _repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    _config: dict[str, Any] = {"root": str(_repo_root)}
+    _run = setup_repo_tool(_parser, _config)
+    _args = _parser.parse_args()
+    sys.exit(_run(_args, _config))

@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 
 
@@ -27,22 +28,43 @@ class Colors:
     RED = "\033[91m"
     GREEN = "\033[92m"
     YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    MAGENTA = "\033[95m"
     CYAN = "\033[96m"
     BOLD = "\033[1m"
     DIM = "\033[2m"
+    UNDERLINE = "\033[4m"
 
 
-def colorize(text: str, color: str) -> str:
-    """Wrap *text* in ANSI color when stdout is a TTY.
+def _colors_enabled() -> bool:
+    """Return ``False`` when color output should be suppressed.
+
+    Respects the ``NO_COLOR`` env-var convention and the ``TERM=dumb``
+    indicator used by non-interactive terminals.
+
+    Returns:
+        ``True`` when ANSI colors should be emitted, otherwise ``False``.
+    """
+    if "NO_COLOR" in os.environ or os.environ.get("TERM") == "dumb":
+        return False
+    return sys.stdout.isatty()
+
+
+def colorize(text: str, color: str, use_color: bool | None = None) -> str:
+    """Wrap *text* in ANSI color when appropriate.
 
     Args:
         text: The string to colorize.
         color: ANSI escape sequence(s) to apply.
+        use_color: Explicit override.  ``True`` forces colors on,
+            ``False`` forces them off, and ``None`` (default) auto-detects
+            based on TTY / ``NO_COLOR`` / ``TERM``.
 
     Returns:
-        The wrapped string, or the original string when not on a TTY.
+        The wrapped string, or the original string when colors are off.
     """
-    if sys.stdout.isatty():
+    enabled = _colors_enabled() if use_color is None else use_color
+    if enabled:
         return f"{color}{text}{Colors.RESET}"
     return text
 
