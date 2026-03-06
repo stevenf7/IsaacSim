@@ -27,14 +27,21 @@ from isaacsim.replicator.agent.ui import (
     update_config,
 )
 
+# Skipping actual simulation setup and data generation by default for brevity
+RUN_SETUP = False
 
-def on_setup_done(_payload):
+
+def on_setup_done(payload=None):
+    """Callback for when simulation setup is done."""
     carb.log_info("Simulation setup done")
     start_data_generation()
+    handle_setup.reset()
 
 
-def on_data_done(_payload):
+def on_data_done(payload=None):
+    """Callback for when data generation is done."""
     carb.log_info("Data generation done")
+    handle_data.reset()
 
 
 # Set up callbacks for setup simulation and data generation
@@ -59,11 +66,17 @@ else:
 
 if target_config_path and load_config_file(target_config_path):
     temp_path = Path(tempfile.mkdtemp(prefix="IRA_Output_"))
-    update_config("simulation_duration", 0.5)
+    update_config("simulation_duration", 2.0)
     update_config("replicator.writers.IRABasicWriter.output_dir", str(temp_path))
 
-    # Skipping actual simulation setup and data generation for brevity
-    # setup_simulation()
+    if RUN_SETUP:
+        setup_simulation()
+        print(f"Generating data to: {temp_path}")
+        # When setup is done, SET_UP_SIMULATION_DONE_EVENT will fire
+        # calling our local on_setup_done(), which in turn calls start_data_generation()
 
-    # When setup is done, SET_UP_SIMULATION_DONE_EVENT will fire
-    # calling our local on_setup_done(), which in turn calls start_data_generation()
+# If setup_simulation() was not run, the event callbacks never fire; unsubscribe here.
+# When RUN_SETUP is True, on_setup_done/on_data_done reset the handles when events fire.
+if not RUN_SETUP:
+    handle_setup.reset()
+    handle_data.reset()
