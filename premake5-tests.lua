@@ -653,7 +653,7 @@ local function get_doc_snippets_tests()
         -- action_and_event_data_generation/tutorial_replicator_incident
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.action_and_event_data_generation.tutorial_replicator_incident.tutorial_replicator_incident",
-            "standalone_examples/testing/doc_snippets/snippets/action_and_event_data_generation/tutorial_replicator_incident.py",
+            "../../../docs/isaacsim/snippets/action_and_event_data_generation/tutorial_replicator_incident.py",
             "--test",
         },
         -- action_and_event_data_generation/tutorial_replicator_agent
