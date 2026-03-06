@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.2] - 2026-03-02
+### Fixed
+- Ensure all generated relative paths (references, payloads, sublayers) use explicit `./` or `../` prefixes
+
 ## [1.1.1] - 2026-02-26
 ### Changed
 - Updated isaacsim_structure.json to delete Newton Mimic api in physx to avoid conflict

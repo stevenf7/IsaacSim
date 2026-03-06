@@ -21,7 +21,7 @@ import omni.kit.test
 from isaacsim.asset.transformer.rules.perf.geometries import GeometriesRoutingRule
 from pxr import Gf, Sdf, Usd, UsdGeom
 
-from .common import _TEST_ADVANCED_USD, _TEST_COLLISION_FROM_VISUALS_USD, _UR10E_SHOULDER_USD, _UR10E_USD
+from .common import _TEST_ADVANCED_USD, _TEST_COLLISION_FROM_VISUALS_USD, _UR10E_SHOULDER_USD
 
 _TRANSFORM_TOLERANCE = 1e-6
 _DECOMPOSE_TOLERANCE = 1e-6

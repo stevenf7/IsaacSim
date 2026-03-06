@@ -879,11 +879,11 @@ class MaterialsRoutingRule(RuleInterface):
             if filename in used_filenames:
                 existing_src = used_filenames[filename]
                 if existing_src == src_path:
-                    rel_path = os.path.relpath(dst_path, materials_layer_dir)
+                    rel_path = utils.make_explicit_relative(os.path.relpath(dst_path, materials_layer_dir))
                     path_mapping[src_path] = rel_path
                     continue
                 elif not is_remote and os.path.exists(dst_path) and utils.files_are_identical(src_path, dst_path):
-                    rel_path = os.path.relpath(dst_path, materials_layer_dir)
+                    rel_path = utils.make_explicit_relative(os.path.relpath(dst_path, materials_layer_dir))
                     path_mapping[src_path] = rel_path
                     continue
                 else:
@@ -908,7 +908,7 @@ class MaterialsRoutingRule(RuleInterface):
                         continue
 
             used_filenames[filename] = src_path
-            rel_path = os.path.relpath(dst_path, materials_layer_dir)
+            rel_path = utils.make_explicit_relative(os.path.relpath(dst_path, materials_layer_dir))
             path_mapping[src_path] = rel_path
 
         return path_mapping
@@ -1000,7 +1000,7 @@ class MaterialsRoutingRule(RuleInterface):
             if not mapped_rel:
                 return match.group(0)
             mapped_abs = os.path.normpath(os.path.join(materials_layer_dir, mapped_rel))
-            new_rel = os.path.relpath(mapped_abs, mdl_dst_dir)
+            new_rel = utils.make_explicit_relative(os.path.relpath(mapped_abs, mdl_dst_dir))
             new_rel = new_rel.replace(os.sep, "/")
             return f'"{new_rel}"'
 

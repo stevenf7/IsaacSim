@@ -6,7 +6,7 @@ import os
 from typing import Any
 
 from isaacsim.asset.transformer import RuleConfigurationParam, RuleInterface
-from pxr import Sdf, Usd
+from pxr import Sdf
 
 from .. import utils
 

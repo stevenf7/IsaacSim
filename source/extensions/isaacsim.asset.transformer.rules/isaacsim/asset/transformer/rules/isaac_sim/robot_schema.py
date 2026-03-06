@@ -57,9 +57,10 @@ class RobotSchemaRule(RuleInterface):
             self.log_operation(f"Sublayer not found: {resolved_path}")
             return False
 
-        if resolved_path not in root_layer.subLayerPaths and sublayer_path not in root_layer.subLayerPaths:
-            root_layer.subLayerPaths.insert(0, sublayer_path)
-            self.log_operation(f"Inserted sublayer: {sublayer_path}")
+        explicit_path = sublayer_path if os.path.isabs(sublayer_path) else utils.make_explicit_relative(sublayer_path)
+        if resolved_path not in root_layer.subLayerPaths and explicit_path not in root_layer.subLayerPaths:
+            root_layer.subLayerPaths.insert(0, explicit_path)
+            self.log_operation(f"Inserted sublayer: {explicit_path}")
             return True
         return False
 
@@ -166,7 +167,9 @@ class RobotSchemaRule(RuleInterface):
 
         # Add destination layer as sublayer only if it's different from root layer
         if editing_separate_layer:
-            rel_path = os.path.relpath(edit_layer.realPath, os.path.dirname(root_layer.realPath)).replace("\\", "/")
+            rel_path = utils.make_explicit_relative(
+                os.path.relpath(edit_layer.realPath, os.path.dirname(root_layer.realPath))
+            ).replace("\\", "/")
             if rel_path not in root_layer.subLayerPaths and edit_layer.identifier not in root_layer.subLayerPaths:
                 root_layer.subLayerPaths.append(rel_path)
                 self.log_operation(f"Added robot schema layer as sublayer: {rel_path}")

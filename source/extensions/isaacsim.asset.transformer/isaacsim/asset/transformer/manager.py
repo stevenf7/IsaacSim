@@ -10,8 +10,9 @@ from typing import Any, TypeVar
 
 from pxr import Sdf, Usd, UsdUtils
 
-from .models import ExecutionReport, RuleExecutionResult, RuleProfile, RuleSpec
+from .models import ExecutionReport, RuleExecutionResult, RuleProfile
 from .rule_interface import RuleInterface
+from .utils import make_explicit_relative
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -71,7 +72,7 @@ def _collect_assets(layer: Sdf.Layer, package_root: str) -> None:
         else:
             resolved = os.path.normpath(os.path.join(layer_dir, original_path))
         if resolved in copied_assets:
-            return os.path.relpath(copied_assets[resolved], layer_dir)
+            return make_explicit_relative(os.path.relpath(copied_assets[resolved], layer_dir))
         return original_path
 
     UsdUtils.ModifyAssetPaths(layer, remap_path)
