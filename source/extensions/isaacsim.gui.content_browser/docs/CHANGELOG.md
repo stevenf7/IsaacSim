@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.2] - 2026-03-06
+### Changed
+- Update omni.simready.content.browser settings
+
 ## [0.3.1] - 2026-03-04
 ### Changed
 - Add SimReady folder
