@@ -97,7 +97,7 @@
    utilities/templates_index
    utilities/debugging/index
    utilities/updating_extensions
-
+   utilities/tutorial_search_extension
 
 
 .. toctree::
