@@ -2274,8 +2274,6 @@ check-python-packages-dependencies-linux-x86_64:
       when: always
     - !reference [.check-common, rules]
   script:
-    - ./repo.sh check_python_package_definitions --gitlab
-    # check for dependency conflicts
     - export TZ="America/Los_Angeles"
     - export DEBIAN_FRONTEND="noninteractive"
     - apt-get update
@@ -2283,10 +2281,7 @@ check-python-packages-dependencies-linux-x86_64:
     - add-apt-repository ppa:deadsnakes/ppa -y
     - apt-get update
     - apt-get install -y python3.12 python3.12-venv python3.12-dev
-    - python3.12 -m venv _env_dependency_check
-    - source _env_dependency_check/bin/activate
-    - pip install --upgrade pip
-    - pip install -r python-package-requirements-linux-x86_64.txt  # exported from check_python_package_definitions
+    - ./repo.sh check_python_package_definitions --gitlab --validate
 
 check-python-packages-dependencies-linux-aarch64:
   extends:
@@ -2303,8 +2298,6 @@ check-python-packages-dependencies-linux-aarch64:
       when: always
     - !reference [.check-common, rules]
   script:
-    - ./repo.sh check_python_package_definitions --gitlab
-    # check for dependency conflicts
     - export TZ="America/Los_Angeles"
     - export DEBIAN_FRONTEND="noninteractive"
     - apt-get update
@@ -2312,10 +2305,7 @@ check-python-packages-dependencies-linux-aarch64:
     - add-apt-repository ppa:deadsnakes/ppa -y
     - apt-get update
     - apt-get install -y python3.12 python3.12-venv python3.12-dev
-    - python3.12 -m venv _env_dependency_check
-    - source _env_dependency_check/bin/activate
-    - pip install --upgrade pip
-    - pip install -r python-package-requirements-linux-aarch64.txt  # exported from check_python_package_definitions
+    - ./repo.sh check_python_package_definitions --gitlab --validate
 
 check-python-packages-dependencies-windows-x86_64:
   extends:
@@ -2332,17 +2322,10 @@ check-python-packages-dependencies-windows-x86_64:
       when: always
     - !reference [.check-common, rules]
   script:
-    - ./repo.bat check_python_package_definitions --gitlab
-    # check for dependency conflicts
-    # - install Python 3.12
+    # install Python 3.12 for --validate
     - curl -o python-3.12.exe https://www.python.org/ftp/python/3.12.9/python-3.12.9-amd64.exe
     - cmd /c start /wait python-3.12.exe /quiet TargetDir=C:\Python312
-    # - create and source a virtual environment
-    - C:\Python312\python.exe -m venv C:\_env_dependency_check
-    - C:\_env_dependency_check\Scripts\python.exe -m pip install --upgrade pip
-    - C:\_env_dependency_check\Scripts\activate.ps1
-    # - install dependencies
-    - pip install -r python-package-requirements-windows-x86_64.txt  # exported from check_python_package_definitions
+    - ./repo.bat check_python_package_definitions --gitlab --validate
 
 # ==============================================================================================================
 stage-to-github:

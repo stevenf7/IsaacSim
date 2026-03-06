@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.1] - 2026-03-06
+### Changed
+- Update cryptography to 46.0.5
+- Update azure-core to 1.38.0
+- Update msal to 1.35.1
+
 ## [1.5.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings
