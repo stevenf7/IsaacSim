@@ -85,7 +85,10 @@ It is recommended to use UI for first-time users. Please refer to :ref:`Running 
 
     * The scene requires a NavMesh to spawn assets and control them correctly. The scenes in the example config has NavMesh set up in advance. If you are using a external scene, please refer to :doc:`Navigation Mesh<extensions:ext_navigation-mesh>` for NavMesh set up.
     * You can also go to **Window > Navigation > NavMesh** and turn off **Auto-Bake** in the NavMesh settings. Turning it off can increase the performance.
-    
+
+    .. note::
+        Clicking **Set Up Simulation** always fully reloads the scene from the current configuration. This includes reopening the base environment USD and re-creating all actors (characters and robots), sensors, and prop layers from scratch. Any manual edits made to the stage after a previous setup will be lost. If you want to iterate on the configuration, make your changes in the UI or config file first, then click **Set Up Simulation** to apply them.
+
 5. Click the **Start Data Generation** button from the top of the UI and the simulation and data generation will start. It will run for the duration (in seconds) specified in the **Simulation Duration** in **Actor SDG Setup** panel.
 
 6. When data generation finsihes, the output data can be found from the **Output Directory** according to the output direcotry in  **Replicator** panel. 
