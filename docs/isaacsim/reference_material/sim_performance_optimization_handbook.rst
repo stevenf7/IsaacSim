@@ -59,6 +59,10 @@ Physics Simulation Optimizations
 
 .. Note:: This applies to both the scene as a whole and individual physics objects. Complex colliders on highly-articulated robots as well as many complex collision meshes on walls, tables, etc. all add to the computational cost.
 
+5. **Adjusting PhysX Thread Count**: The number of threads used by PhysX can be adjusted to improve performance depending on the workload.
+
+.. Note:: This is specifically applicable for CPU-based physics simulation. Dropping thread count to 0 will run synchronously on the main thread which in some simple scenes can enable speedups. The default thread count is 8. Set the thread count using ``--/persistent/physics/numThreads=<value>``.
+
 Checkout the `Physics Simulation Performance <https://docs.omniverse.nvidia.com/kit/docs/omni_physics/latest/dev_guide/guides/physics-performance.html>`_ guide for more optimization tricks!
 
 .. _isaac_sim_performance_optimization_handbook_asset_optimization:
@@ -215,6 +219,10 @@ Asynchronous Rendering
 
 Asynchronous rendering is a feature that allows the rendering to run in a separate thread from the simulation thread. In |isaac-sim_short|, asynchronous rendering is enabled by default whenever |isaac-sim_short| is in a stoppped or paused state. This greatly improves UI responsiveness and viewport FPS, particularly for complex scenes. 
 
+Asynchronous Rendering Toggle (Default)
+Asynchronous Rendering Toggle (Default)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 This is set in the isaacsim.core.throttling extension. To disable this feature in the event of unexpected behavior, set the ``exts."isaacsim.core.throttling".enable_async`` setting to ``false`` when starting the application.
 
 .. code-block:: bash
@@ -225,8 +233,20 @@ This is set in the isaacsim.core.throttling extension. To disable this feature i
     This setting is only set true when running with ``isaacsim.exp.full.kit``, not when running via a Python-based workflow. It could be enabled manually using the above setting for other workflows if desired.
     In certain use cases, particularly with Replicator-based SDG workflows, it may be necessary to disable asynchronous rendering to ensure proper behavior.
 
-.. Warning::
-    Async rendering is NOT currently supported during runtime. Enabling asynchronous rendering during runtime will result in unexpected behavior and is not recommended.
+Runtime Asynchronous Rendering (Experimental)
+Runtime Asynchronous Rendering (Experimental)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Asynchronous rendering is experimentally supported during runtime. To enable asynchronous rendering for Python-based workflows, add the below arguments to the run command. For full Isaac Sim workflows, additionally disable the toggle in the *isaacsim.core.throttling* extension so that the application will always run asynchronously.
+
+.. code-block:: bash
+
+    ./isaac-sim.sh --exts."isaacsim.core.throttling".enable_async=false --/app/asyncRendering=true --/app/omni.usd/asyncHandshake=true --/omni/replicator/asyncRendering=true
+
+    ./python.sh script.py --/app/asyncRendering=true --/app/omni.usd/asyncHandshake=true --/omni/replicator/asyncRendering=true 
+
+.. Note::
+    This feature is experimental and may lead to unexpected behavior. Enabling this feature will not necessarily lead to performance improvements. Possible speedups will heavily vary based on the use case and hardware, but are more likely given heavily CPU-bound workflows.
 
 .. _mgpu_support:
 
