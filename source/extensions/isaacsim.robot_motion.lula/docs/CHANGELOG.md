@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.1] - 2026-03-04
+### Changed
+- Updated Overview.md with note about newer cumotion extension.
+
 ## [4.1.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings

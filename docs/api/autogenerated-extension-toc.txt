@@ -266,6 +266,12 @@ Extensions (Robot Motion & Setup)
     * - Extension
       - Title
       - Description
+    * - :doc:`isaacsim.robot_motion.cumotion <source/extensions/isaacsim.robot_motion.cumotion/docs/index>`
+      - cumotion
+      - Access to cuMotion planners under the isaacsim motion generation API.
+    * - :doc:`isaacsim.robot_motion.experimental.motion_generation <source/extensions/isaacsim.robot_motion.experimental.motion_generation/docs/index>`
+      - motion_generation
+      - Contains APIs for interfacing external motion generation code to isaacsim.
     * - :doc:`isaacsim.robot_motion.lula <source/extensions/isaacsim.robot_motion.lula/docs/index>`
       - Isaac Sim Lula
       - Extension that provides lula python interface

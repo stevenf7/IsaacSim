@@ -128,6 +128,7 @@ python_paths = [
   "${root}/_build/${platform}/${config}/extsInternal/*",
   "${root}/_build/${platform}/${config}/exts/isaacsim.asset.importer.urdf/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.lula/pip_prebundle",
+  "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.cumotion/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot.schema/plugins",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.numpy.common*",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.commands*",

@@ -15,6 +15,7 @@
 
 """Provides world binding functionality to synchronize USD prims with planning world interfaces for motion generation."""
 
+from __future__ import annotations
 
 from typing import Any, Generic, TypeVar
 
@@ -840,6 +841,9 @@ class WorldBinding(Generic[TWorldInterface]):
         obstacle_strategy: Strategy used to select obstacle representations per prim.
         tracked_prims: Prim paths to track in the USD stage.
         tracked_collision_api: Collision API which is tracked for enable/disable signal.
+
+    Raises:
+        ValueError: If tracked_collision_api is not a supported collision API.
 
     Example:
 

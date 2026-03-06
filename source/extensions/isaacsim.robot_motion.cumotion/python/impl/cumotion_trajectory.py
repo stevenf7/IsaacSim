@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 import cumotion
 import isaacsim.robot_motion.experimental.motion_generation as mg
 import warp as wp

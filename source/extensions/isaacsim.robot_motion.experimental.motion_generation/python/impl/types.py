@@ -15,6 +15,7 @@
 
 """Provides container classes for representing robot states including joints, spatial frames, and root links."""
 
+from __future__ import annotations
 
 from typing import Literal
 
@@ -1279,6 +1280,12 @@ class RobotState:
         root: The state of the robot's root link.
         links: The state of the robot's non-root rigid bodies.
         sites: The state of non-link reference frames (tools, sensors, etc.).
+
+    Raises:
+        ValueError: If joints is not None and not of type JointState.
+        ValueError: If root is not None and not of type RootState.
+        ValueError: If links is not None and not of type SpatialState.
+        ValueError: If sites is not None and not of type SpatialState.
     """
 
     def __init__(

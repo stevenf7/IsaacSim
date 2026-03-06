@@ -29,15 +29,15 @@
   - safety_tolerance: float
 
 - class ObstacleRepresentation(StrEnum)
-  - SPHERE: Unknown
-  - CONE: Unknown
-  - CUBE: Unknown
-  - PLANE: Unknown
-  - CAPSULE: Unknown
-  - CYLINDER: Unknown
-  - MESH: Unknown
-  - TRIANGULATED_MESH: Unknown
-  - OBB: Unknown
+  - SPHERE: str
+  - CONE: str
+  - CUBE: str
+  - PLANE: str
+  - CAPSULE: str
+  - CYLINDER: str
+  - MESH: str
+  - TRIANGULATED_MESH: str
+  - OBB: str
 
 - class ObstacleStrategy
   - def __init__(self)
@@ -61,6 +61,7 @@
 - class TrackableApi(StrEnum)
   - PHYSICS_COLLISION: str
   - PHYSICS_RIGID_BODY: str
+  - MOTION_GENERATION_COLLISION: str
 
 - class Trajectory(ABC)
   - [property] def duration(self) -> float
@@ -144,7 +145,7 @@
   - def add_cylinders(self, prim_paths: list[str], axes: list[Literal[X, Y, Z]], radii: wp.array, lengths: wp.array, scales: wp.array, safety_tolerances: wp.array, poses: tuple[wp.array, wp.array], enabled_array: wp.array)
   - def add_meshes(self, prim_paths: list[str], points: list[wp.array], face_vertex_indices: list[wp.array], face_vertex_counts: list[wp.array], normals: list[wp.array], scales: wp.array, safety_tolerances: wp.array, poses: tuple[wp.array, wp.array], enabled_array: wp.array)
   - def add_triangulated_meshes(self, prim_paths: list[str], points: list[wp.array], face_vertex_indices: list[wp.array], scales: wp.array, safety_tolerances: wp.array, poses: tuple[wp.array, wp.array], enabled_array: wp.array)
-  - def add_oriented_bounding_boxes(self, prim_paths: list[str], centers: list[wp.array], rotation_matrices: list[wp.array], half_side_lengths: list[wp.array], scales: wp.array, safety_tolerances: wp.array, poses: tuple[wp.array, wp.array], enabled_array: wp.array)
+  - def add_oriented_bounding_boxes(self, prim_paths: list[str], centers: wp.array, rotations: wp.array, half_side_lengths: wp.array, scales: wp.array, safety_tolerances: wp.array, poses: tuple[wp.array, wp.array], enabled_array: wp.array)
   - def update_obstacle_transforms(self, prim_paths: list[str], poses: tuple[wp.array, wp.array])
   - def update_obstacle_twists(self, prim_paths: list[str], poses: tuple[wp.array, wp.array])
   - def update_obstacle_enables(self, prim_paths: list[str], enabled_array: wp.array)
@@ -157,7 +158,7 @@
   - def update_cylinder_properties(self, prim_paths: list[str], axes: list[Literal['X', 'Y', 'Z']] | None, radii: wp.array | None, lengths: wp.array | None)
   - def update_mesh_properties(self, prim_paths: list[str], points: list[wp.array] | None, face_vertex_indices: list[wp.array] | None, face_vertex_counts: list[wp.array] | None, normals: list[wp.array] | None)
   - def update_triangulated_mesh_properties(self, prim_paths: list[str], points: list[wp.array] | None, face_vertex_indices: list[wp.array] | None)
-  - def update_oriented_bounding_box_properties(self, prim_paths: list[str], centers: list[wp.array] | None, rotation_matrices: list[wp.array] | None, half_side_lengths: list[wp.array] | None)
+  - def update_oriented_bounding_box_properties(self, prim_paths: list[str], centers: wp.array | None, rotations: wp.array | None, half_side_lengths: wp.array | None)
 
 ## Functions
 

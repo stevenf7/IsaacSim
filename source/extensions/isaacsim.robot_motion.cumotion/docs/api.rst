@@ -6,7 +6,7 @@ Python API
 
 .. Summary
 
-.. currentmodule:: isaacsim.robot_motion.experimental.cumotion
+.. currentmodule:: isaacsim.robot_motion.cumotion
 
 .. rubric:: *Configuration Loading*
 .. autosummary::
@@ -46,24 +46,25 @@ Python API
 .. autosummary::
     :nosignatures:
 
-    isaacsim.robot_motion.experimental.cumotion.impl.utils.isaac_sim_to_cumotion_pose
-    isaacsim.robot_motion.experimental.cumotion.impl.utils.isaac_sim_to_cumotion_translation
-    isaacsim.robot_motion.experimental.cumotion.impl.utils.isaac_sim_to_cumotion_rotation
-    isaacsim.robot_motion.experimental.cumotion.impl.utils.cumotion_to_isaac_sim_pose
-    isaacsim.robot_motion.experimental.cumotion.impl.utils.cumotion_to_isaac_sim_translation
-    isaacsim.robot_motion.experimental.cumotion.impl.utils.cumotion_to_isaac_sim_rotation
+    isaacsim.robot_motion.cumotion.impl.utils.isaac_sim_to_cumotion_pose
+    isaacsim.robot_motion.cumotion.impl.utils.isaac_sim_to_cumotion_translation
+    isaacsim.robot_motion.cumotion.impl.utils.isaac_sim_to_cumotion_rotation
+    isaacsim.robot_motion.cumotion.impl.utils.cumotion_to_isaac_sim_pose
+    isaacsim.robot_motion.cumotion.impl.utils.cumotion_to_isaac_sim_translation
+    isaacsim.robot_motion.cumotion.impl.utils.cumotion_to_isaac_sim_rotation
 
 |
+
 .. API
 
 Configuration Loading
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: isaacsim.robot_motion.experimental.cumotion.load_cumotion_robot
+.. autofunction:: isaacsim.robot_motion.cumotion.load_cumotion_robot
 
-.. autofunction:: isaacsim.robot_motion.experimental.cumotion.load_cumotion_supported_robot
+.. autofunction:: isaacsim.robot_motion.cumotion.load_cumotion_supported_robot
 
-.. autoclass:: isaacsim.robot_motion.experimental.cumotion.CumotionRobot
+.. autoclass:: isaacsim.robot_motion.cumotion.CumotionRobot
     :members:
     :undoc-members:
     :inherited-members:
@@ -73,7 +74,7 @@ Configuration Loading
 World Interface
 ^^^^^^^^^^^^^^
 
-.. autoclass:: isaacsim.robot_motion.experimental.cumotion.CumotionWorldInterface
+.. autoclass:: isaacsim.robot_motion.cumotion.CumotionWorldInterface
     :members:
     :undoc-members:
     :inherited-members:
@@ -83,7 +84,7 @@ World Interface
 Motion Policies
 ^^^^^^^^^^^^^^^
 
-.. autoclass:: isaacsim.robot_motion.experimental.cumotion.RmpFlowController
+.. autoclass:: isaacsim.robot_motion.cumotion.RmpFlowController
     :members:
     :undoc-members:
     :inherited-members:
@@ -93,7 +94,7 @@ Motion Policies
 Motion Planning
 ^^^^^^^^^^^^^^^
 
-.. autoclass:: isaacsim.robot_motion.experimental.cumotion.GraphBasedMotionPlanner
+.. autoclass:: isaacsim.robot_motion.cumotion.GraphBasedMotionPlanner
     :members:
     :undoc-members:
     :inherited-members:
@@ -103,7 +104,7 @@ Motion Planning
 Trajectory Generation
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: isaacsim.robot_motion.experimental.cumotion.TrajectoryGenerator
+.. autoclass:: isaacsim.robot_motion.cumotion.TrajectoryGenerator
     :members:
     :undoc-members:
     :inherited-members:
@@ -112,13 +113,13 @@ Trajectory Generation
 .. note::
    **Windows Support**: The :class:`TrajectoryOptimizer` is not currently available on Windows.
 
-.. autoclass:: isaacsim.robot_motion.experimental.cumotion.TrajectoryOptimizer
+.. autoclass:: isaacsim.robot_motion.cumotion.TrajectoryOptimizer
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
 
-.. autoclass:: isaacsim.robot_motion.experimental.cumotion.CumotionTrajectory
+.. autoclass:: isaacsim.robot_motion.cumotion.CumotionTrajectory
     :members:
     :undoc-members:
     :inherited-members:
@@ -130,14 +131,14 @@ Transform Utilities
 
 The transform utilities provide coordinate conversion between Isaac Sim world frame and cuMotion robot base frame.
 
-.. autofunction:: isaacsim.robot_motion.experimental.cumotion.impl.utils.isaac_sim_to_cumotion_pose
+.. autofunction:: isaacsim.robot_motion.cumotion.impl.utils.isaac_sim_to_cumotion_pose
 
-.. autofunction:: isaacsim.robot_motion.experimental.cumotion.impl.utils.isaac_sim_to_cumotion_translation
+.. autofunction:: isaacsim.robot_motion.cumotion.impl.utils.isaac_sim_to_cumotion_translation
 
-.. autofunction:: isaacsim.robot_motion.experimental.cumotion.impl.utils.isaac_sim_to_cumotion_rotation
+.. autofunction:: isaacsim.robot_motion.cumotion.impl.utils.isaac_sim_to_cumotion_rotation
 
-.. autofunction:: isaacsim.robot_motion.experimental.cumotion.impl.utils.cumotion_to_isaac_sim_pose
+.. autofunction:: isaacsim.robot_motion.cumotion.impl.utils.cumotion_to_isaac_sim_pose
 
-.. autofunction:: isaacsim.robot_motion.experimental.cumotion.impl.utils.cumotion_to_isaac_sim_translation
+.. autofunction:: isaacsim.robot_motion.cumotion.impl.utils.cumotion_to_isaac_sim_translation
 
-.. autofunction:: isaacsim.robot_motion.experimental.cumotion.impl.utils.cumotion_to_isaac_sim_rotation
+.. autofunction:: isaacsim.robot_motion.cumotion.impl.utils.cumotion_to_isaac_sim_rotation
