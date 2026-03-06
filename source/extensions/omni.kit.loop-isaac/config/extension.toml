@@ -94,6 +94,7 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    "--/UJITSO/geometry=true",
     ### Extension specific args
     "--/rtx/ecoMode/enabled=True"
 ]

@@ -143,6 +143,7 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    "--/UJITSO/geometry=true",
     ### Extension specific args
     '--/exts/isaacsim.ros2.bridge/# ROS distro and settings centrally managed',
     "--/exts/isaacsim.ros2.bridge/publish_without_verification=1",
@@ -212,6 +213,7 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    "--/UJITSO/geometry=true",
     ### Extension specific args
     '--/exts/isaacsim.ros2.bridge/# ROS distro and settings centrally managed',
     "--/exts/isaacsim.ros2.bridge/publish_without_verification=1",
