@@ -92,9 +92,6 @@ The core functionality is provided by a set of five application-level extensions
    * - Chat IRO
      - ``omni.ai.langchain.agent.chat_iro``
      - **Chat IRO** is an AI assistant that enables natural language scene authoring for the **Object Simulation (IRO)** extension. It allows users to describe scenes in plain English to automatically generate YAML configurations, providing immediate viewport previews and iterative editing capabilities.
-   * - Isaac Agent Planner
-     - ``isaacsim.agent.planner.core``, ``isaacsim.agent.planner.bridge``
-     - The **Isaac Agent Planner (IAP)** extension automatically generates behavior trees for actors (characters and cameras) from natural language scenario descriptions. It uses LLMs and RAG to transform plain English like *"Alice picks up the mug"* into executable behavior trees compatible with Omni Behavior Composer.
 
 Extension Tutorials
 -------------------
@@ -107,7 +104,6 @@ Extension Tutorials
    ./tutorial_replicator_caption
    ./tutorial_replicator_incident
    ./tutorial_sensors_rtx_placement
-   ./ext_agent_planner/ext_isaacsim_agent_planner
 
 
 Other Tools and Utilities
