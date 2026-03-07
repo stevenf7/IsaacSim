@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Minimal IRA example: SimulationApp setup, load config, setup simulation, generate data.
 """
@@ -17,17 +32,35 @@ from isaacsim.core.utils.extensions import enable_extension
 enable_extension("isaacsim.replicator.agent.core")
 simulation_app.update()
 
-DEFAULT_CONFIG = """
-isaacsim.replicator.agent:
-  version: 1.1.0
-  environment:
-    base_stage_asset_path: "Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
-"""
+# Default config (no version); version is injected at write time from current IRA support.
+DEFAULT_CONFIG = {
+    "isaacsim.replicator.agent": {
+        "environment": {
+            "base_stage_asset_path": "Isaac/Environments/Simple_Warehouse/full_warehouse.usd",
+        },
+    },
+}
+
+
+def _get_ira_config_version() -> str:
+    """Return the minimum supported IRA config version (injected before serialization)."""
+    try:
+        from omni.metropolis.utils.versioning_util import get_extension_version
+
+        return get_extension_version("isaacsim.replicator.agent.core")
+    except Exception:
+        return "1.2.0"
 
 
 def _get_config_path() -> str:
-    """Return config path; create a temp default config file if config_path is None."""
-    content = DEFAULT_CONFIG.strip()
+    """Return config path; create a temp default config file with current IRA version."""
+    import copy
+
+    import yaml
+
+    config = copy.deepcopy(DEFAULT_CONFIG)
+    config["isaacsim.replicator.agent"]["version"] = _get_ira_config_version()
+    content = yaml.dump(config, default_flow_style=False, sort_keys=False)
     fd, path = tempfile.mkstemp(suffix=".yaml", prefix="ira_default_config_")
     try:
         with os.fdopen(fd, "w") as f:
@@ -41,7 +74,7 @@ def _get_config_path() -> str:
 async def run_ira_data_generation(run_data_generation: bool = False):
     from isaacsim.replicator.agent.core import api as IRA
 
-    # IRA: load config
+    # IRA: load config. Specify the config file path.
     config_path = _get_config_path()
     result = IRA.load_config_file(config_path)
     if not result:

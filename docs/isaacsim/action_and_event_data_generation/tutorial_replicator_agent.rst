@@ -123,9 +123,11 @@ API Usage
 This extension also exposes a Python API which you can use to set up simulations and generate data from your own script.
 Ensure that ``isaacsim.replicator.agent.core`` is enabled, and use the API as in the following example.
 
+Note: The snippet below omits the helper function ``_get_config_path`` for brevity; the full script can be found at ``docs/isaacsim/snippets/action_and_event_data_generation/tutorial_replicator_agent.py``.
+
 .. literalinclude:: ../snippets/action_and_event_data_generation/tutorial_replicator_agent.py
     :language: python
-    :lines: 1-
+    :lines: 20-35, 73-
 
 
 .. _configuration_file:
