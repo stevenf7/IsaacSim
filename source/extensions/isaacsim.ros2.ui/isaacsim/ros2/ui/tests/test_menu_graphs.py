@@ -25,10 +25,10 @@ import rclpy
 import usdrt.Sdf
 from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.api.scenes.scene import Scene
-from isaacsim.core.prims import XFormPrim
+from isaacsim.core.experimental.prims import XformPrim
+from isaacsim.core.experimental.utils.stage import add_reference_to_stage, define_prim
 from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.prims import define_prim
-from isaacsim.core.utils.stage import add_reference_to_stage, update_stage_async
+from isaacsim.core.utils.stage import update_stage_async
 from isaacsim.test.utils import menu_click_with_retry
 from nav_msgs.msg import Odometry
 from rosgraph_msgs.msg import Clock
@@ -44,7 +44,6 @@ class ROS2MenuTestBase(ROS2TestCase):
 
     async def setUp(self):
         await super().setUp()
-        self._stage = omni.usd.get_context().get_stage()
         self.node = self.create_node("test_omnigraph_node")
 
     async def setup_test_environment(self, robot_path="/World/test_robot", add_test_cubes=False):
@@ -60,7 +59,8 @@ class ROS2MenuTestBase(ROS2TestCase):
 
         # Creating environment and Carter Robot
         dome_light_path = "/World/DomeLight"
-        dome_light = UsdLux.DomeLight.Define(self._stage, dome_light_path)
+        stage = omni.usd.get_context().get_stage()
+        dome_light = UsdLux.DomeLight.Define(stage, dome_light_path)
         dome_light.CreateIntensityAttr(1000)
 
         scene = Scene()
@@ -76,16 +76,16 @@ class ROS2MenuTestBase(ROS2TestCase):
         await update_stage_async()
 
         asset_path = self._assets_root_path + "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
-        robot = add_reference_to_stage(usd_path=asset_path, prim_path=robot_path)
-        robot.GetVariantSet("Physics").SetVariantSelection("Physics_Base")
+        robot = add_reference_to_stage(asset_path, robot_path)
+        robot.GetVariantSet("Physics").SetVariantSelection("physx")
         robot.GetVariantSet("Sensors").SetVariantSelection("All_Sensors")
 
-        # Create base_link in chassis_link using XFormPrim
+        # Create base_link in chassis_link using XformPrim
         articulation_root_path = f"{robot_path}/chassis_link"
         xform_path = f"{articulation_root_path}/base_link"
-        define_prim(prim_path=xform_path, prim_type="Xform")
+        define_prim(xform_path)
 
-        XFormPrim(xform_path, positions=np.array([[0.0, 0.0, 0.0]]))
+        XformPrim(xform_path, positions=np.array([[0.0, 0.0, 0.0]]), reset_xform_op_properties=True)
 
         await update_stage_async()
 
@@ -406,7 +406,8 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
 
         # Pre-check if this is a 3D lidar to help with setting up the right expectations
         lidar_path = "/World/test_robot/chassis_link/sensors/XT_32/PandarXT_32_10hz"
-        lidar_prim_obj = self._stage.GetPrimAtPath(Sdf.Path(lidar_path))
+        stage = omni.usd.get_context().get_stage()
+        lidar_prim_obj = stage.GetPrimAtPath(Sdf.Path(lidar_path))
         is_3d_lidar = False
 
         # Store actual message data for validation, not just counts
@@ -461,7 +462,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
         self.assertIsNotNone(graph, "Graph was not created")
 
         # Double-check 3D lidar detection - use the actual prim path that was configured
-        lidar_prim_obj = self._stage.GetPrimAtPath(Sdf.Path(lidar_path))
+        lidar_prim_obj = stage.GetPrimAtPath(Sdf.Path(lidar_path))
         is_3d_lidar = False
 
         if lidar_prim_obj:
@@ -808,9 +809,9 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
 
         root_widget_path = f"{window_name}//Frame/VStack[0]"
 
-        # Set Articulation Root to the actual articulation root prim
+        # Set Articulation Root to the actual articulation root prim (chassis_link)
         articulation_root_field = ui_test.find(root_widget_path + "/HStack[3]/StringField[0]")
-        articulation_root_field.model.set_value(base_link_path)
+        articulation_root_field.model.set_value(art_root_path)
 
         # Enable Publisher
         publisher_checkbox = ui_test.find(root_widget_path + "/HStack[4]/HStack[0]/VStack[0]/ToolButton[0]")
@@ -1266,17 +1267,17 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
         odom_root_widget_path = f"{window_name}//Frame/VStack[0]"
 
         # Enable "Publish Robot's TF?" checkbox (critical for TF publishing)
-        publish_tf_checkbox = ui_test.find(odom_root_widget_path + "/HStack[3]/ToolButton[0]")
+        publish_tf_checkbox = ui_test.find(odom_root_widget_path + "/HStack[3]/HStack[0]/VStack[0]/ToolButton[0]")
         if publish_tf_checkbox:
             publish_tf_checkbox.model.set_value(True)
 
-        # Set Robot Articulation Root to the actual articulation root prim
+        # Set Robot Articulation Root to the actual articulation root prim (chassis_link)
         articulation_root_field = ui_test.find(odom_root_widget_path + "/HStack[4]/StringField[0]")
-        articulation_root_field.model.set_value(base_link_path)
+        articulation_root_field.model.set_value(art_root_path)
 
         # Set Chassis Link Prim
         chassis_link_prim_field = ui_test.find(odom_root_widget_path + "/HStack[5]/StringField[0]")
-        chassis_link_prim_field.model.set_value(art_root_path)
+        chassis_link_prim_field.model.set_value(base_link_path)
 
         await omni.kit.app.get_app().next_update_async()
 
