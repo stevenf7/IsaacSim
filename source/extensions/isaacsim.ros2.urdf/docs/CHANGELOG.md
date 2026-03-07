@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1] - 2026-03-06
+### Changed
+- Use `find_widget_with_retry` and `find_enabled_widget_with_retry` from `isaacsim.test.utils` in tests instead of raw `ui_test.find` calls
+
 ## [2.0.0] - 2026-02-07
 ### Changed
 - Updated isaacssim.ros2.urdf to use URDF importer 3.x

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.11.0] - 2026-03-06
+### Added
+- Move `find_widget_with_retry` from `MenuUITestCase` to `menu_utils` as a standalone function
+- Add `find_enabled_widget_with_retry` to poll for a widget that is both found and enabled
+- Add `wait_for_widget_enabled` to poll until an already-found widget becomes enabled
+
 ## [0.10.1] - 2026-03-04
 ### Changed
 - Fix API errors
