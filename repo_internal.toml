@@ -68,6 +68,10 @@ output_path_template = "${project}/latest${dash_build}"
 breadcrumbs_home_url = "../../index.html"
 breadcrumbs_add_project = true
 
+# Empty to avoid Windows path-length limits (WinError 206) when building user guide only.
+# The user guide is RST-based and does not need extscache DLLs; API docs use [repo_docs.projects.api] library_paths.
+library_paths = []
+
 python_paths = [
     "${root}/docs",
     "${root}/docs/conf/ext",
