@@ -106,6 +106,13 @@ Simulation Control
     
     ./tutorial_ros2_simulation_control
 
+FAQ
+---------------
+.. toctree::
+    :maxdepth: 1
+
+    ./ros2_faq
+
 Troubleshooting
 ---------------
 .. toctree::

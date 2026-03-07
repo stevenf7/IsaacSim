@@ -165,6 +165,10 @@ Visualizing in RViz2
 
 #. Verify that the decoded camera view is displayed in the *Image* panel.
 
+.. note::
+
+    **WSL2 users**: Decoded image visualization may appear laggy or delayed on Windows WSL2. This is due to the software decoding overhead reducing the decoded image publish rate, combined with DDS packet loss over the WSL2 port-forwarded network. For details, see the :ref:`WSL2 FAQ entry <isaac_sim_ros2_faq_wsl2>`.
+
 
 Summary
 ===========
