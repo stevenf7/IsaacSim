@@ -8,7 +8,7 @@ import omni.kit.ui_test as ui_test
 import omni.usd
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
-from isaacsim.test.utils import menu_click_with_retry
+from isaacsim.test.utils import find_enabled_widget_with_retry, find_widget_with_retry, menu_click_with_retry
 from pxr import Sdf
 
 
@@ -86,31 +86,51 @@ class TestRos2UrdfNodeImporter(ROS2TestCase):
         self._server_thread = threading.Thread(target=_run_service, daemon=True)
         self._server_thread.start()
 
+        server_started = self._server_ready_event.wait(timeout=5.0)
+        self.assertTrue(server_started, f"ROS 2 node '{self._node_name}' failed to start within 5 seconds")
+
         await omni.kit.app.get_app().next_update_async()
 
         await menu_click_with_retry("File/Import from ROS2 URDF Node")
         await omni.kit.app.get_app().next_update_async()
 
-        string_field = ui_test.find(
+        string_field = await find_widget_with_retry(
             "Import from ROS2 URDF Node//Frame/**/StringField[*].identifier=='ros2_urdf_node_name'"
         )
         await string_field.input(self._node_name)
         await ui_test.human_delay()
         await omni.kit.app.get_app().next_update_async()
 
-        find_button = ui_test.find("Import from ROS2 URDF Node//Frame/**/Button[*].identifier=='ros2_urdf_find_node'")
+        find_button = await find_widget_with_retry(
+            "Import from ROS2 URDF Node//Frame/**/Button[*].identifier=='ros2_urdf_find_node'"
+        )
         await find_button.click()
         await ui_test.human_delay()
-        for _ in range(20):
-            await omni.kit.app.get_app().next_update_async()
 
-        import_button = ui_test.find("Import from ROS2 URDF Node//Frame/**/Button[*].identifier=='ros2_urdf_import'")
+        import_button = await find_enabled_widget_with_retry(
+            "Import from ROS2 URDF Node//Frame/**/Button[*].identifier=='ros2_urdf_import'"
+        )
+
         await import_button.click()
         await ui_test.human_delay()
 
-        for _ in range(20):
+        # Wait for the USD stage to finish loading after the import (up to ~3 seconds).
+        for _ in range(60):
             await omni.kit.app.get_app().next_update_async()
+            if omni.usd.get_context().get_stage_loading_status()[2] == 0:
+                break
 
         stage = stage_utils.get_current_stage()
+        self.assertIsNotNone(stage, "No USD stage is open after the URDF import")
+
         prim = stage.GetDefaultPrim()
-        self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
+        self.assertTrue(
+            prim.IsValid(),
+            f"Stage has no valid default prim after importing URDF from '{self._node_name}'. "
+            "The URDF importer may have failed or the resulting stage was not opened.",
+        )
+        self.assertNotEqual(
+            prim.GetPath(),
+            Sdf.Path.emptyPath,
+            f"Default prim path is empty after importing URDF from '{self._node_name}'.",
+        )

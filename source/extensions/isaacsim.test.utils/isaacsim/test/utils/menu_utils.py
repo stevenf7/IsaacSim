@@ -22,9 +22,91 @@ import omni.kit.ui_test as ui_test
 from omni import ui
 from omni.kit.ui_test import Vec2, emulate_mouse_move, get_menubar, wait_n_updates
 
-# Maximum number of frames to poll when waiting for a menu item to become
-# findable or for a submenu to become visible after clicking.
+# Maximum number of frames to poll when waiting for a widget to become
+# findable, enabled, or for a submenu to become visible after clicking.
 _DEFAULT_MAX_WAIT_FRAMES = 100
+
+
+async def find_widget_with_retry(query: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES, parent=None):
+    """Poll ``ui_test.find`` until the widget is found or *max_frames* is exceeded.
+
+    This is useful when a UI element may not be immediately available after a
+    menu click or navigation action.  Instead of a fixed ``human_delay``, this
+    function actively polls each frame so the test proceeds as soon as the
+    widget appears.
+
+    Args:
+        query: The widget query string (same syntax as ``omni.kit.ui_test.find``).
+        max_frames: Maximum number of app-update frames to wait before giving up.
+        parent: Optional parent widget to search within.  When provided,
+            ``parent.find(query)`` is used instead of ``ui_test.find(query)``.
+
+    Returns:
+        The found widget reference.
+
+    Raises:
+        TimeoutError: If the widget is not found within *max_frames*.
+    """
+    for frame in range(max_frames):
+        result = parent.find(query) if parent is not None else ui_test.find(query)
+        if result is not None:
+            if frame > 0:
+                carb.log_info(f"[find_widget_with_retry] find('{query}') succeeded after {frame} extra frame(s)")
+            return result
+        await omni.kit.app.get_app().next_update_async()
+
+    raise TimeoutError(f"Widget '{query}' not found after {max_frames} frames")
+
+
+async def wait_for_widget_enabled(widget, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES) -> bool:
+    """Poll until ``widget.widget.enabled`` becomes True.
+
+    Args:
+        widget: A ``WidgetRef`` returned by ``ui_test.find`` or
+            :func:`find_widget_with_retry`.
+        max_frames: Maximum number of app-update frames to wait.
+
+    Returns:
+        True if the widget became enabled within *max_frames*, False otherwise.
+    """
+    for frame in range(max_frames):
+        if widget.widget.enabled:
+            if frame > 0:
+                carb.log_info(f"[wait_for_widget_enabled] widget became enabled after {frame} extra frame(s)")
+            return True
+        await omni.kit.app.get_app().next_update_async()
+    return False
+
+
+async def find_enabled_widget_with_retry(query: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES, parent=None):
+    """Poll ``ui_test.find`` until the widget is found **and** enabled.
+
+    Combines :func:`find_widget_with_retry` with an enabled check in a single
+    polling loop.  This avoids the common two-step pattern of finding a widget
+    and then waiting for it to become enabled in a separate loop.
+
+    Args:
+        query: The widget query string (same syntax as ``omni.kit.ui_test.find``).
+        max_frames: Maximum number of app-update frames to wait before giving up.
+        parent: Optional parent widget to search within.
+
+    Returns:
+        The found and enabled widget reference.
+
+    Raises:
+        TimeoutError: If the widget is not found and enabled within *max_frames*.
+    """
+    for frame in range(max_frames):
+        result = parent.find(query) if parent is not None else ui_test.find(query)
+        if result is not None and result.widget.enabled:
+            if frame > 0:
+                carb.log_info(
+                    f"[find_enabled_widget_with_retry] find('{query}') succeeded after {frame} extra frame(s)"
+                )
+            return result
+        await omni.kit.app.get_app().next_update_async()
+
+    raise TimeoutError(f"Widget '{query}' not found or not enabled after {max_frames} frames")
 
 
 async def _wait_for_menu_item(parent_widget, menu_name: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES):
