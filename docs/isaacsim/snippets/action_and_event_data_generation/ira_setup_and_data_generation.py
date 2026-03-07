@@ -31,14 +31,14 @@ from isaacsim.replicator.agent.ui import (
 RUN_SETUP = False
 
 
-def on_setup_done(payload=None):
+def on_setup_done(event):
     """Callback for when simulation setup is done."""
     carb.log_info("Simulation setup done")
     start_data_generation()
     handle_setup.reset()
 
 
-def on_data_done(payload=None):
+def on_data_done(event):
     """Callback for when data generation is done."""
     carb.log_info("Data generation done")
     handle_data.reset()
