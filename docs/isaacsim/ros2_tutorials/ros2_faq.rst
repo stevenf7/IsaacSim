@@ -153,15 +153,13 @@ ROS 2 Topics are Slow or Dropping Messages on WSL2
 
 **Q: ROS 2 topics appear laggy, delayed, or are dropping messages when running Isaac Sim on WSL2.**
 
-.. note::
+When running Isaac Sim on **Windows via WSL2**, ROS 2 topic throughput may be noticeably lower than on native Linux. This is caused by:
 
-    When running Isaac Sim on **Windows via WSL2**, ROS 2 topic throughput may be noticeably lower than on native Linux. This is caused by:
+1. **WSL2 port-forwarded networking**: On Windows, Isaac Sim communicates with ROS 2 nodes in WSL2 via DDS over port-forwarded UDP connections (see the :ref:`Windows ROS 2 installation <isaac_sim_app_install_ros_options_other_platforms>`). This cross-boundary networking adds latency compared to shared-memory transport on native Linux, and large UDP payloads are more prone to packet loss over this bridge.
 
-    1. **WSL2 port-forwarded networking**: On Windows, Isaac Sim communicates with ROS 2 nodes in WSL2 via DDS over port-forwarded UDP connections (see the :ref:`Windows ROS 2 installation <isaac_sim_app_install_ros_options_other_platforms>`). This cross-boundary networking adds latency compared to shared-memory transport on native Linux, and large UDP payloads are more prone to packet loss over this bridge.
+2. **Bandwidth-heavy topics**: Topics publishing large payloads (e.g., raw images, point clouds, compressed images) are most affected. For compressed images specifically, the additional software decoding overhead on the subscriber side can further reduce the effective visualization rate.
 
-    2. **Bandwidth-heavy topics**: Topics publishing large payloads (e.g., raw images, point clouds, compressed images) are most affected. For compressed images specifically, the additional software decoding overhead on the subscriber side can further reduce the effective visualization rate.
-
-    These are WSL2 platform limitations and not specific to Isaac Sim. For the best experience with high-throughput ROS 2 workflows, consider running natively on Linux.
+These are WSL2 platform limitations and not specific to Isaac Sim. For the best experience with high-throughput ROS 2 workflows, consider running natively on Linux.
 
 
 Additional Resources

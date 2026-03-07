@@ -381,58 +381,13 @@ Setup ROS 2 Workspaces
 .. config-content::
    :show-when: platform=Ubuntu 22.04,ros_distro=Jazzy
 
-   To run the ROS 2 tutorials and examples, it's necessary to source your ROS 2 installation workspace in the terminal you plan to work in.
+   Since ROS 2 Jazzy is not natively supported on Ubuntu 22.04, Docker is required to build the ROS 2 workspaces.
 
-   #. To build the |isaac-sim_short| ROS workspaces, ensure you have followed :ref:`isaac_sim_app_install_ros_options_other_platforms`. 
-
-      .. important:: You are also able to build the workspaces using a ROS Docker container, as described in :ref:`isaac_ros_docker_other_platforms`. Return to this step after setting up your Docker container.
-      
    #. Clone the |isaac-sim_short| ROS Workspace Repository from `<https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_.
 
       A few ROS packages are necessary for the |isaac-sim_short| ROS 2 tutorial series. The entire ROS 2 workspaces are included with the necessary packages.
-               
-   #. To build the ROS 2 workspace, you might need to install additional packages:
 
-      .. important:: If you have built ROS 2 from source, replace the ``source /opt/ros/<ros_distro>/setup.bash`` command with ``source <path_ros2_ws>/install/setup.bash`` for all the following steps.
-
-
-      .. code-block:: bash
-
-         # For rosdep install command
-         sudo apt install python3-rosdep build-essential
-         # For colcon build command
-         sudo apt install python3-colcon-common-extensions
-
-   #. Ensure that your native ROS 2 install or source build of ROS 2 has been sourced:
-   
-      .. code-block:: bash
-
-         source /opt/ros/jazzy/setup.bash
-
-   #. Resolve any package dependencies from the root of the ROS 2 workspace by running the following command:
-
-      .. code-block:: bash
-
-         cd jazzy_ws
-         git submodule update --init --recursive # If using docker, perform this step outside the container and relaunch the container
-         rosdep install -i --from-path src --rosdistro jazzy -y
-
-   #. Build the workspace:
-
-      .. code-block:: bash
-
-         colcon build
-
-      Under the root directory, new ``build``, ``install``, and ``log`` directories are created.
-
-   #. To start using the ROS 2 packages built within this workspace, open a new terminal and source the workspace with the following commands:
-
-      .. code-block:: bash
-
-         source /opt/ros/jazzy/setup.bash
-
-         cd jazzy_ws
-         source install/local_setup.bash
+   #. Follow the instructions in :ref:`isaac_ros_docker_other_platforms` to build and source the workspace using a ROS Docker container.
 
    .. config-content:: 
       :show-when: package_type=Custom ROS Interfaces
@@ -441,8 +396,7 @@ Setup ROS 2 Workspaces
       
       If you want to use ``rclpy`` and custom ROS 2 packages with |isaac-sim_short|, your ROS 2 workspace must also be built with Python 3.12 which Isaac Sim will interface. Dockerfiles are included with the `Isaac Sim ROS Workspaces repository <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ that build minimal dependencies of ROS 2 with Python 3.12.
 
-
-      Additionally, Dockerfiles are included to build the ROS 2 workspace with Python 3.12. Packages built using this Dockerfile can be used directly with ``rclpy`` and can be sourced to run the |isaac-sim_short| ROS 2 Bridge. 
+      Packages built using this Dockerfile can be used directly with ``rclpy`` and can be sourced to run the |isaac-sim_short| ROS 2 Bridge.
 
       #. To use the Dockerfile to build ROS 2 and the workspace with Python 3.12:
 
@@ -466,11 +420,9 @@ Setup ROS 2 Workspaces
 
                source build_ws/jazzy/isaac_sim_ros_ws/install/local_setup.bash 
 
-
       #. Run |isaac-sim_short| from the same terminal. The sourced workspace contains the minimal ROS 2 Jazzy dependencies needed to enable the ROS 2 bridge.
 
-
-      #. To run external nodes, use a different terminal and source the Python 3.10 build of the workspace in the default ROS distro as explained at the beginning of this section. 
+      #. To run external nodes, use the Docker container as described in :ref:`isaac_ros_docker_other_platforms`.
 
 .. config-content::
    :show-when: platform=Windows,ros_distro=Humble
@@ -1041,14 +993,17 @@ Enabling the ROS 2 Bridge using Zenoh (ROS 2 Jazzy, Linux Only)
       The built workspace including Zenoh is under ``build_ws/jazzy/jazzy_ws``.
 
 
-   #. In a **separate terminal**, source the Python 3.12 build and start the Zenoh router. The router must be running before any ROS 2 nodes can discover each other:
+   #. In a **separate terminal**, start the Zenoh router using the official ROS 2 Jazzy Docker container. The router must be running before any ROS 2 nodes can discover each other:
 
       .. code-block:: bash
 
-         # Terminal 1: Start the Zenoh router
-         cd IsaacSim-ros_workspaces
-         source build_ws/jazzy/jazzy_ws/install/local_setup.bash
-         ros2 run rmw_zenoh_cpp rmw_zenohd
+         # Terminal 1: Start the Zenoh router in a Jazzy container
+         docker run -it --rm --net=host --name zenoh_router ros:jazzy bash -c \
+           "apt-get update && apt-get install -y ros-jazzy-rmw-zenoh-cpp && \
+            source /opt/ros/jazzy/setup.bash && \
+            ros2 run rmw_zenoh_cpp rmw_zenohd"
+
+      The ``--net=host`` flag ensures the Zenoh router is accessible from the host machine without extra port mapping.
 
       .. note:: Without the Zenoh router, nodes will not be able to discover each other because multicast discovery is disabled by default in the node's session config. Instead, nodes receive discovery information about other peers through the Zenoh router's gossip functionality.
 
@@ -1064,16 +1019,17 @@ Enabling the ROS 2 Bridge using Zenoh (ROS 2 Jazzy, Linux Only)
 
          cd IsaacSim-ros_workspaces
          source build_ws/jazzy/jazzy_ws/install/local_setup.bash
+         cd ~/isaacsim
          ./isaac-sim.sh
 
-   #. For any additional terminals running ROS 2 nodes that need to communicate with |isaac-sim_short|, ensure the same environment variable is set:
+   #. For any additional terminals running ROS 2 nodes that need to communicate with |isaac-sim_short|, exec into the running Zenoh container:
 
       .. code-block:: bash
 
-         export RMW_IMPLEMENTATION=rmw_zenoh_cpp
-         cd IsaacSim-ros_workspaces
-         source build_ws/jazzy/jazzy_ws/install/local_setup.bash
-         # Run your ROS 2 commands
+         docker exec -it zenoh_router bash -c \
+           "source /opt/ros/jazzy/setup.bash && \
+            export RMW_IMPLEMENTATION=rmw_zenoh_cpp && \
+            bash"
 
 .. _isaac_sim_app_disable_ros_other_platforms:
 
@@ -1126,7 +1082,7 @@ Running ROS in Docker Containers
 
             xhost +
 
-            docker run -it --rm --net=host --env="DISPLAY" --env="ROS_DOMAIN_ID" -v ~/IsaacSim-ros_workspaces/humble_ws:/humble_ws --name ros_ws_docker osrf/ros:humble-desktop /bin/bash
+            docker run -it --net=host --env="DISPLAY" --env="ROS_DOMAIN_ID" -v ~/IsaacSim-ros_workspaces/humble_ws:/humble_ws --name ros_ws_docker osrf/ros:humble-desktop /bin/bash
 
       .. config-content::
          :show-when: ros_distro=Jazzy
@@ -1135,7 +1091,7 @@ Running ROS in Docker Containers
 
             xhost +
 
-            docker run -it --rm --net=host --env="DISPLAY" --env="ROS_DOMAIN_ID" -v ~/IsaacSim-ros_workspaces/jazzy_ws:/jazzy_ws --name ros_ws_docker osrf/ros:jazzy-desktop /bin/bash
+            docker run -it --net=host --env="DISPLAY" --env="ROS_DOMAIN_ID" -v ~/IsaacSim-ros_workspaces/jazzy_ws:/jazzy_ws --name ros_ws_docker osrf/ros:jazzy-desktop /bin/bash
 
       Here ``--net=host`` allows communication between |isaac-sim_short| and ROS Docker containers, while ``xhost +`` and ``--env="DISPLAY"`` facilitate passing through the DISPLAY environment variable, which enables GUI applications, such as ``rviz``, to open from the Docker container. ``--name <container name>`` allows you to refer to the container with a fixed name.
 
@@ -1173,7 +1129,50 @@ Running ROS in Docker Containers
       #. Source ROS 2. 
       #. Verify that ``ros2 topic echo /clock`` prints the timestamps coming from |isaac-sim_short|.
 
+      .. figure:: /images/isaac_main_installation_ros2_docker.png
+         :align: center
+         :width: 300
 
-   .. figure:: /images/isaac_main_installation_ros2_docker.png
-      :align: center
-      :width: 300
+
+   #. (Optional) To save the container with all installed dependencies and built workspaces as a new Docker image for future use:
+
+      #. Open a new terminal on the host and commit the container to an image:
+
+         .. code-block:: bash
+
+            docker commit ros_ws_docker isaac_sim_ros_ws:latest
+
+      #. Remove the old container before starting a new one with the same name:
+
+         .. code-block:: bash
+
+            docker rm ros_ws_docker
+
+      #. To reuse the saved image in a future session, start a new container from it:
+
+         .. config-content::
+            :show-when: ros_distro=Humble
+
+            .. code-block:: bash
+
+               xhost +
+
+               docker run -it --net=host --env="DISPLAY" --env="ROS_DOMAIN_ID" -v ~/IsaacSim-ros_workspaces/humble_ws:/humble_ws --name ros_ws_docker isaac_sim_ros_ws:latest /bin/bash
+
+         .. config-content::
+            :show-when: ros_distro=Jazzy
+
+            .. code-block:: bash
+
+               xhost +
+
+               docker run -it --net=host --env="DISPLAY" --env="ROS_DOMAIN_ID" -v ~/IsaacSim-ros_workspaces/jazzy_ws:/jazzy_ws --name ros_ws_docker isaac_sim_ros_ws:latest /bin/bash
+
+      #. Inside the container, source the workspace and it is ready to use without rebuilding:
+
+         .. code-block:: bash
+
+            source /opt/ros/$ROS_DISTRO/setup.bash
+            cd /${ROS_DISTRO}_ws
+            source install/local_setup.bash
+
