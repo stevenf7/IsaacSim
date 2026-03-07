@@ -29,7 +29,7 @@ name = "isaacsim.benchmark.services.tests"
 # Default test suite name.
 exts."isaacsim.benchmark.services".metrics.nvdataflow_default_test_suite_name = "Isaac Sim Benchmarks"
 
-# uncomment and set this to output metrics to a specific folder
+# Uncomment and set this to output metrics to a specific folder.
 # exts."isaacsim.benchmark.services".metrics.metrics_output_folder=""
 
 # Whether to add a randomly generated string as a prefix to the output filename to distinguish runs.

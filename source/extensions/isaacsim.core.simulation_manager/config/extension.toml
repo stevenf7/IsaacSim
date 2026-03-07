@@ -37,7 +37,7 @@ path = "bin/*.plugin"
 recursive = false
 
 [settings]
-# Default physics engine to use (physx or newton)
+# Default physics engine to use (`physx` or `newton`).
 exts."isaacsim.core.simulation_manager".default_engine = "physx"
 
 [[test]]

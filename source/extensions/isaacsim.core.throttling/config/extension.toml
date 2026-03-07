@@ -23,9 +23,9 @@ name = "isaacsim.core.throttling"
 name = "isaacsim.core.throttling.tests"
 
 [settings]
-# Whether to enable runtime toggle of async rendering
+# Whether to enable runtime toggling of async rendering.
 exts."isaacsim.core.throttling".enable_async = false
-# Whether to enable runtime toggle of manual mode 
+# Whether to enable runtime toggling of manual mode.
 exts."isaacsim.core.throttling".enable_manualmode = false
 
 [[test]]

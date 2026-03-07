@@ -4,12 +4,28 @@
 
 # Settings
 
+### app.sensors.nv.lidar.profileBaseFolder
+- **Default Value**: [
+    "${omni.sensors.nv.common}/data/lidar/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/HESAI/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/NVIDIA/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/Ouster/OS0/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/Ouster/OS1/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/Ouster/OS2/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/SICK/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/SLAMTEC/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/Velodyne/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/ZVISION/",
+    "${isaacsim.sensors.rtx}/data/lidar_configs/"
+]
+- **Description**: List of directories which renderer will search to find Lidar profile for (deprecated) camera-based Lidar.
+
 ### app.sensors.nv.lidar.outputBufferOnGPU
-- **Default Value**: true
+- **Default Value**: false
 - **Description**: Keeps Lidar return buffer on GPU for post-processing operations.
 
 ### app.sensors.nv.radar.outputBufferOnGPU
-- **Default Value**: true
+- **Default Value**: false
 - **Description**: Keeps Radar return buffer on GPU for post-processing operations.
 
 ### rtx.materialDb.nonVisualMaterialCSV.enabled

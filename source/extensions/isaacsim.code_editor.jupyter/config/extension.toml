@@ -34,7 +34,7 @@ exts."isaacsim.code_editor.jupyter".port = 8227
 # Disable this option if you want to launch multiple applications with this extension enabled.
 exts."isaacsim.code_editor.jupyter".kill_processes_with_port_in_use = false
 
-# jupyter notebook settings
+# Jupyter notebook settings.
 
 # IP address where the Jupyter server is being started.
 exts."isaacsim.code_editor.jupyter".notebook_ip = "127.0.0.1"

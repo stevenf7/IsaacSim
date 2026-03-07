@@ -21,7 +21,7 @@ writeTarget.platform = true
 name = "isaacsim.ucx.bridge"
 
 [settings]
-# All UCX Bridge settings are centrally defined in the ucx.core extension
+# All UCX Bridge settings are centrally defined in the `ucx.core` extension.
 
 [[test]]
 name = "startup"

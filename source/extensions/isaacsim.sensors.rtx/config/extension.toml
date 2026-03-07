@@ -55,7 +55,7 @@ path = "bin/*.plugin"
 recursive = false
 
 [settings]
-# List of directories which renderer will search to find Lidar profile for (deprecated) camera-based Lidar
+# List of directories that the renderer searches for lidar profiles used by the deprecated camera-based lidar.
 app.sensors.nv.lidar.profileBaseFolder=[
     "${omni.sensors.nv.common}/data/lidar/",
     "${isaacsim.sensors.rtx}/data/lidar_configs/HESAI/",
@@ -74,11 +74,11 @@ app.sensors.nv.lidar.profileBaseFolder=[
 app.sensors.nv.lidar.outputBufferOnGPU = false
 # Renderer keeps Radar return buffer on GPU for post-processing.
 app.sensors.nv.radar.outputBufferOnGPU = false
-# Enable non-visual materials using USD attributes
+# Enable non-visual materials using USD attributes.
 rtx.materialDb.nonVisualMaterialCSV.enabled=false
-# Specify non-visual material USD attribute prefix
+# Specify the non-visual material USD attribute prefix.
 rtx.materialDb.nonVisualMaterialSemantics.prefix="omni:simready:nonvisual"
-# Use Hydra time (omni.timeline) in RTX Sensor models
+# Use Hydra time (`omni.timeline`) in RTX sensor models.
 rtx.rtxsensor.useHydraTimeAlways = true
 
 [[test]]

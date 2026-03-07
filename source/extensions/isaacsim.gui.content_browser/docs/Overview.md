@@ -35,9 +35,9 @@ The extension uses specific settings to define which asset folders appear in the
 ```toml
 [settings]
 exts."isaacsim.gui.content_browser".folders = [
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Environments",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Materials",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Robots",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Environments",
+    "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Materials",
     # Additional configured folders...
 ]
 ```

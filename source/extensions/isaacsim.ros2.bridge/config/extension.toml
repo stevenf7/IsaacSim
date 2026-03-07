@@ -23,7 +23,7 @@ writeTarget.platform = true
 name = "isaacsim.ros2.bridge"
 
 [settings]
-# All ROS 2 Bridge settings are centrally defined in the ros2.core extension
+# All ROS 2 Bridge settings are centrally defined in the `ros2.core` extension.
 
 [[test]]
 name = "startup"

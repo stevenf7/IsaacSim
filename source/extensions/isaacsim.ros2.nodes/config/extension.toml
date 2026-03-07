@@ -45,9 +45,9 @@ public = false
 # name = "isaacsim.ros2.ui.og_shortcut_menu"
 
 [settings]
-# Node-specific settings - inherit ROS distro and core settings from ros2.bridge (defined in ros2.core extension)
-# All ROS 2 Bridge settings are centrally defined in the ros2.core extension under /exts/isaacsim.ros2.bridge/*
-# The nodes extension reads these settings at runtime
+# Node-specific settings inherit the ROS distro and core settings from `ros2.bridge`, which are defined in the `ros2.core` extension.
+# All ROS 2 Bridge settings are centrally defined in the `ros2.core` extension under `/exts/isaacsim.ros2.bridge/*`.
+# The nodes extension reads these settings at runtime.
 
 [fswatcher.patterns]
 include = ["*.ogn", "*.py", "*.toml"]
