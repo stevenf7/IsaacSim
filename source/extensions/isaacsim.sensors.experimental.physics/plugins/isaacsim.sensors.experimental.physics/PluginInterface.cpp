@@ -20,6 +20,7 @@
 #include "ContactSensorImpl.h"
 #include "EffortSensorImpl.h"
 #include "ImuSensorImpl.h"
+#include "JointStateSensorImpl.h"
 
 #include <carb/PluginUtils.h>
 
@@ -37,7 +38,8 @@ CARB_EXPORT void carbOnPluginShutdown()
 CARB_PLUGIN_IMPL(g_kPluginDesc,
                  isaacsim::sensors::experimental::physics::ImuSensorImpl,
                  isaacsim::sensors::experimental::physics::ContactSensorImpl,
-                 isaacsim::sensors::experimental::physics::EffortSensorImpl)
+                 isaacsim::sensors::experimental::physics::EffortSensorImpl,
+                 isaacsim::sensors::experimental::physics::JointStateSensorImpl)
 
 void fillInterface(isaacsim::sensors::experimental::physics::ImuSensorImpl& iface)
 {
@@ -50,6 +52,11 @@ void fillInterface(isaacsim::sensors::experimental::physics::ContactSensorImpl& 
 }
 
 void fillInterface(isaacsim::sensors::experimental::physics::EffortSensorImpl& iface)
+{
+    (void)iface;
+}
+
+void fillInterface(isaacsim::sensors::experimental::physics::JointStateSensorImpl& iface)
 {
     (void)iface;
 }

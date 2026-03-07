@@ -18,7 +18,11 @@
 #include <isaacsim/sensors/experimental/physics/IContactSensor.h>
 #include <isaacsim/sensors/experimental/physics/IEffortSensor.h>
 #include <isaacsim/sensors/experimental/physics/IImuSensor.h>
+#include <isaacsim/sensors/experimental/physics/IJointStateSensor.h>
+#include <pybind11/numpy.h>
 #include <pybind11/stl.h>
+
+#include <algorithm>
 
 CARB_BINDINGS("isaacsim.sensors.experimental.physics.python")
 
@@ -119,6 +123,72 @@ PYBIND11_MODULE(_physics_sensors, m)
             py::arg("joint_prim_path"))
         .def("remove_sensor", &IEffortSensor::removeSensor, py::arg("sensor_id"))
         .def("get_sensor_reading", &IEffortSensor::getSensorReading, py::arg("sensor_id"));
+
+    // --- Joint state sensor ---
+    // positions / velocities / efforts: one copy from C into numpy arrays (no list intermediate).
+    // dof_names: list of strings (small). Data is copied so Python sees value semantics.
+    py::class_<JointStateSensorReading>(m, "JointStateSensorReading")
+        .def(py::init<>())
+        .def_readwrite("time", &JointStateSensorReading::time)
+        .def_readwrite("is_valid", &JointStateSensorReading::isValid)
+        .def_readwrite("dof_count", &JointStateSensorReading::dofCount)
+        .def_property_readonly("dof_names",
+                               [](const JointStateSensorReading& r) -> py::list
+                               {
+                                   py::list result;
+                                   if (r.dofNames)
+                                       for (int32_t i = 0; i < r.dofCount; i++)
+                                           result.append(py::str(r.dofNames[i]));
+                                   return result;
+                               })
+        .def_property_readonly("positions",
+                               [](const JointStateSensorReading& r) -> py::array_t<float>
+                               {
+                                   if (!r.positions || r.dofCount <= 0)
+                                       return py::array_t<float>({ 0 });
+                                   py::array_t<float> arr({ static_cast<py::ssize_t>(r.dofCount) });
+                                   std::copy(r.positions, r.positions + r.dofCount, arr.mutable_data());
+                                   return arr;
+                               })
+        .def_property_readonly("velocities",
+                               [](const JointStateSensorReading& r) -> py::array_t<float>
+                               {
+                                   if (!r.velocities || r.dofCount <= 0)
+                                       return py::array_t<float>({ 0 });
+                                   py::array_t<float> arr({ static_cast<py::ssize_t>(r.dofCount) });
+                                   std::copy(r.velocities, r.velocities + r.dofCount, arr.mutable_data());
+                                   return arr;
+                               })
+        .def_property_readonly("efforts",
+                               [](const JointStateSensorReading& r) -> py::array_t<float>
+                               {
+                                   if (!r.efforts || r.dofCount <= 0)
+                                       return py::array_t<float>({ 0 });
+                                   py::array_t<float> arr({ static_cast<py::ssize_t>(r.dofCount) });
+                                   std::copy(r.efforts, r.efforts + r.dofCount, arr.mutable_data());
+                                   return arr;
+                               })
+        .def_property_readonly("dof_types",
+                               [](const JointStateSensorReading& r) -> py::array_t<uint8_t>
+                               {
+                                   if (!r.dofTypes || r.dofCount <= 0)
+                                       return py::array_t<uint8_t>({ 0 });
+                                   py::array_t<uint8_t> arr({ static_cast<py::ssize_t>(r.dofCount) });
+                                   std::copy(r.dofTypes, r.dofTypes + r.dofCount, arr.mutable_data());
+                                   return arr;
+                               })
+        .def_readwrite("stage_meters_per_unit", &JointStateSensorReading::stageMetersPerUnit);
+
+    carb::defineInterfaceClass<IJointStateSensor>(
+        m, "IJointStateSensor", "acquire_joint_state_sensor_interface", "release_joint_state_sensor_interface")
+        .def("shutdown", &IJointStateSensor::shutdown)
+        .def(
+            "create_sensor",
+            [](IJointStateSensor& self, const std::string& articulationRootPath)
+            { return self.createSensor(articulationRootPath.c_str()); },
+            py::arg("articulation_root_path"))
+        .def("remove_sensor", &IJointStateSensor::removeSensor, py::arg("sensor_id"))
+        .def("get_sensor_reading", &IJointStateSensor::getSensorReading, py::arg("sensor_id"));
 }
 
 } // anonymous namespace

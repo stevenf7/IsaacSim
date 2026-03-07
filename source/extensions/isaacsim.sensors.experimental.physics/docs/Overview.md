@@ -4,7 +4,7 @@
 
 # Overview
 
-The isaacsim.sensors.experimental.physics extension provides experimental physics-based sensors for Isaac Sim robotics applications. It offers three types of sensors - contact sensors for detecting collisions and forces, effort sensors for measuring joint torque and force, and IMU sensors for capturing inertial measurements - each with high-level wrapper classes and programmatic creation commands.
+The isaacsim.sensors.experimental.physics extension provides experimental physics-based sensors for Isaac Sim robotics applications. It offers four types of sensors - contact sensors for detecting collisions and forces, effort sensors for measuring joint torque and force, IMU sensors for capturing inertial measurements, and joint state sensors for reading full articulation DOF state - each with high-level wrapper classes and programmatic creation commands.
 
 ```{image} ../../../../source/extensions/isaacsim.sensors.experimental.physics/data/preview.png
 ---
@@ -77,6 +77,25 @@ print(f"Orientation: {frame['orientation']}")
 ```
 
 The sensor returns structured frame data with filtered measurements and supports gravity inclusion control for acceleration readings.
+
+### Joint State Sensor
+
+[JointStateSensor](isaacsim.sensors.experimental.physics/isaacsim.sensors.experimental.physics.JointStateSensor) reads positions, velocities, and efforts for every degree of freedom in an articulation in a single call, analogous to a ROS2 JointState message. It is backed by the C++ IJointStateSensor plugin and requires a valid articulation root prim.
+
+```python
+from isaacsim.sensors.experimental.physics import JointStateSensor
+
+# Create sensor for an articulation
+sensor = JointStateSensor("/World/Robot")
+
+# After playing the simulation, get full joint state
+reading = sensor.get_sensor_reading()
+if reading.is_valid:
+    for name, pos in zip(reading.dof_names, reading.positions):
+        print(f"{name}: {pos:.4f} rad")
+```
+
+The sensor returns [JointStateSensorReading](isaacsim.sensors.experimental.physics/isaacsim.sensors.experimental.physics.JointStateSensorReading) objects with validity, simulation time, DOF names, and arrays for positions (rad or m), velocities (rad/s or m/s), efforts (Nm or N), and per-DOF joint types. It supports pause/resume via the `enabled` property.
 
 ## Functionality
 

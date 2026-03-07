@@ -1,8 +1,12 @@
 # Changelog
+
+## [2.2.0] - 2026-03-05
+### Added
+- Add joint state sensor that reads all DOF positions, velocities, and efforts per articulation
+
 ## [2.1.1] - 2026-03-05
 ### Changed
 - Fix api and docs syntax issues
-
 
 ## [2.1.0] - 2026-03-04
 ### Changed
@@ -21,7 +25,7 @@
 - Rebuilt physics sensors on core experimental APIs with Python-first implementations
 - Added Python backends for contact and IMU sensors plus legacy interface shims for compatibility
 - Added new command-based prim creation and expanded Python tests for sensors and OmniGraph nodes
-- Removed sensor period and frequecy parameters, all sensors use the physics frequency by default
+- Removed sensor period and frequency parameters, all sensors use the physics frequency by default
 
 ## [0.7.0] - 2026-01-28
 ### Added
