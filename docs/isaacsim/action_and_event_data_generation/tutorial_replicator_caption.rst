@@ -51,6 +51,52 @@ bridging the gap between visual and linguistic comprehension.
    :align: center
 
 
+Python API
+##########
+
+IRC provides a Python API (``CaptionAPI``) for programmatic model configuration and caption generation:
+
+.. code-block:: python
+   :caption: Setting up the IRC model
+
+   import os
+   from isaacsim.replicator.caption.core.api import CaptionAPI
+
+   def setup_irc_model():
+       CaptionAPI.set_model_params(
+           url="https://integrate.api.nvidia.com/v1",
+           name="meta/llama3-8b-instruct",
+           key=os.environ.get("NVIDIA_API_KEY", "your_key"),
+       )
+       print("IRC model params set successfully.")
+
+   setup_irc_model()
+
+After setting up the model, you can generate captions programmatically:
+
+.. code-block:: python
+   :caption: Generating captions via the API
+
+   import asyncio
+   from isaacsim.replicator.caption.core.api import CaptionAPI
+
+   def on_done(future):
+       captions = future.result()
+       print(f"Generated captions: {captions}")
+
+   task = asyncio.ensure_future(CaptionAPI.get_captions())
+   task.add_done_callback(on_done)
+
+You can also load an IRC configuration file before generating captions:
+
+.. code-block:: python
+   :caption: Loading an IRC configuration file
+
+   from isaacsim.replicator.caption.core.api import CaptionAPI
+
+   CaptionAPI.load_config_file("/path/to/irc_config.yaml")
+
+
 .. _concept_scene_graph:
 
 Workflow
