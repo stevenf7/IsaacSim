@@ -15,8 +15,6 @@
 
 """Omni UI stylesheet for robot schema UI (bypass column, etc.). Colors in 0xAABBGGRR."""
 
-from pathlib import Path
-
 # 0xAABBGGRR
 _RADIO_LABEL_COLOR = 0xFFD8D8D8
 _BYPASS_HEADER_COLOR = 0xFFFFFFFF  # white

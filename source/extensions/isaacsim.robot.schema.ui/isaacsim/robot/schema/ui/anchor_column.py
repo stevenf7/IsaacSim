@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 from .column_base import MaskingToggleColumnDelegate
-from .masking_state import MaskingState, get_selected_anchorable_link_paths, is_anchorable_link
+from .masking_state import get_selected_anchorable_link_paths, is_anchorable_link
 from .style import ANCHOR_IMAGE_STYLE, ANCHOR_IMAGE_TYPE
 
 

@@ -16,7 +16,6 @@
 
 __all__ = ["SchemaUIExtension"]
 
-import asyncio
 from functools import partial
 from pathlib import Path
 from typing import Any
@@ -29,7 +28,7 @@ import omni.ui as ui
 import omni.usd
 from omni.kit.menu.utils import MenuHelperExtension
 from omni.kit.viewport.registry import RegisterScene
-from omni.kit.widget.stage import StageColumnDelegateRegistry, StageIcons
+from omni.kit.widget.stage import StageColumnDelegateRegistry
 
 from .anchor_column import AnchorColumnDelegate
 from .bypass_column import BypassColumnDelegate
@@ -147,6 +146,9 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
         The callback checks the ``isaacsim:deactivated`` customData key on
         each prim and returns the appropriate disabled icon when set.
         The subscription is held alive in ``self._icon_override_sub``.
+
+        Returns:
+            None.
         """
         return
         # icons = StageIcons()
@@ -197,8 +199,8 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
     def on_shutdown(self):
         """Clean up when the extension is unloaded.
 
-        Cleans up the window, menu entry, viewport scene, column delegate,
-        and deactivated icons.
+        Cleans up the window, menu entry, viewport scene, connection singleton
+        (and its USD listener), column delegate, and deactivated icons.
         """
         self.menu_shutdown()
         if self._window:
@@ -209,6 +211,13 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
         if self._viewport_scene:
             self._viewport_scene.destroy()
             self._viewport_scene = None
+
+        from .scene import ConnectionInstance
+
+        try:
+            ConnectionInstance.get_instance().destroy()
+        except Exception:
+            pass
 
         # Remove masking layer and detach from state singleton
         if self._masking_ops:
@@ -224,31 +233,28 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
         self._bypass_column_delegate_sub = None
         self._anchor_column_delegate_sub = None
 
-    async def _destroy_window_async(self):
-        """Destroy the window asynchronously.
-
-        Waits one frame to handle window movement deferral.
-        """
-        await omni.kit.app.get_app().next_update_async()
-        if self._window:
-            self._window.destroy()
-            self._window = None
-
     def _on_visibility_changed(self, visible: bool):
         """Handle window visibility changes.
+
+        Keeps the window instance when hidden so it can be reused with cached
+        state when shown again, avoiding full rebuild on tab switch.
 
         Args:
             visible: True if visible, False if hidden.
         """
         self.menu_refresh()
-        if not visible:
-            asyncio.ensure_future(self._destroy_window_async())
 
     def show_window(self, value: bool):
         """Show or hide the Robot Inspector window.
 
+        Reuses the existing window when showing again so cached hierarchy
+        and path map are preserved instead of rebuilding.
+
         Args:
             value: True to show, False to hide.
+
+        Returns:
+            None.
 
         Example:
 
@@ -257,6 +263,9 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
             extension.show_window(True)
         """
         if value:
+            if self._window is not None:
+                self._window.visible = True
+                return
             window = RobotInspectorWindow()
             window.set_visibility_changed_listener(self._on_visibility_changed)
             self._window = window

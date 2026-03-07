@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the robot schema UI extension."""
-import asyncio
+
 from unittest import mock
 
+import carb
 import carb.settings
 import omni.kit.app
 import omni.kit.test
@@ -41,7 +42,7 @@ class TestSchemaUI(OmniUiTest):
     async def tearDown(self) -> None:
         """Wait for stage loads to finish and clean up."""
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
+            carb.log_info("tearDown, assets still loading, waiting to finish...")
             await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 

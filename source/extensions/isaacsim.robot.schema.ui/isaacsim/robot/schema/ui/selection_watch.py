@@ -102,6 +102,10 @@ class SelectionWatch:
     def set_tree_view(self, tree_view: Any | None):
         """Set or replace the tree view for selection synchronization.
 
+        Always re-registers callbacks even when the tree view widget is
+        the same object, because ``open_stage`` may clear the widget's
+        internal callback registrations while reusing the same instance.
+
         Args:
             tree_view: The tree view widget to synchronize with.
 
@@ -111,14 +115,13 @@ class SelectionWatch:
 
             watch.set_tree_view(tree_view)
         """
-        if self._tree_view != tree_view:
-            if self._tree_view is not None:
-                self._tree_view.set_selection_changed_fn(None)
-                self._tree_view.set_mouse_pressed_fn(None)
-            self._tree_view = tree_view
-            if self._tree_view is not None:
-                self._tree_view.set_selection_changed_fn(self._on_widget_selection_changed)
-                self._tree_view.set_mouse_pressed_fn(self._on_tree_mouse_pressed)
+        if self._tree_view is not None:
+            self._tree_view.set_selection_changed_fn(None)
+            self._tree_view.set_mouse_pressed_fn(None)
+        self._tree_view = tree_view
+        if self._tree_view is not None:
+            self._tree_view.set_selection_changed_fn(self._on_widget_selection_changed)
+            self._tree_view.set_mouse_pressed_fn(self._on_tree_mouse_pressed)
 
         if self._tree_view:
             self._on_stage_items_selection_changed()
@@ -136,6 +139,9 @@ class SelectionWatch:
 
         Args:
             event: Event payload (unused).
+
+        Returns:
+            None.
         """
         if self._is_in_selection or self._is_setting_usd_selection:
             return
@@ -145,8 +151,17 @@ class SelectionWatch:
         """Process a selection change from the USD stage.
 
         Translates stage paths to hierarchy paths and updates the tree view.
+        Skips when the tree view model is not yet a stage model (e.g. during
+        open_stage transitions where the model is a bare AbstractItemModel).
+
+        Returns:
+            None.
         """
         if not self._path_map or not self._tree_view:
+            return
+
+        model = self._tree_view.model
+        if not hasattr(model, "update_dirty"):
             return
 
         selection_paths = self._usd_context.get_selection().get_selected_prim_paths()
@@ -155,7 +170,7 @@ class SelectionWatch:
         if selected_items != self._selected_items:
             self._update_selected_items(selected_items)
 
-        self._tree_view.model.update_dirty()
+        model.update_dirty()
         self._expand_to_selected_items(selected_items)
         self._apply_tree_view_selection(selected_items)
 
@@ -186,6 +201,9 @@ class SelectionWatch:
 
         Args:
             selected_items: Set of selected items to expand to.
+
+        Returns:
+            None.
         """
         if self._tree_view is None:
             return
@@ -203,6 +221,9 @@ class SelectionWatch:
 
         Args:
             selected_items: Set of selected items to select.
+
+        Returns:
+            None.
         """
         if self._tree_view is None:
             return
@@ -247,6 +268,9 @@ class SelectionWatch:
         """Handle selection changes from the stage model.
 
         Currently disabled; reserved for future bidirectional sync.
+
+        Returns:
+            None.
         """
         return
 
@@ -306,10 +330,17 @@ class SelectionWatch:
         they live under a different parent scope are merged back so that
         mixed link+joint selections work.
 
+        Also suppressed while ``_is_setting_usd_selection`` is active
+        so that deferred tree-view normalization callbacks do not push
+        a reduced selection back to USD.
+
         Args:
             selection: List of selected items.
+
+        Returns:
+            None.
         """
-        if self._is_in_selection or not self._tree_view or not self._path_map:
+        if self._is_in_selection or self._is_setting_usd_selection or not self._tree_view or not self._path_map:
             return
 
         self._is_in_selection = True
@@ -332,14 +363,9 @@ class SelectionWatch:
         The tree view may not support Ctrl+click across different parent
         scopes (e.g. Links/ vs Joints/ in flat mode).  When that happens
         the tree replaces the old selection instead of extending it.  This
-        method detects the situation — new items appeared AND old items
-        vanished while a multi-select modifier is pressed — and unions
+        method detects the situation -- new items appeared AND old items
+        vanished while a multi-select modifier is pressed -- and unions
         both sets so the combined selection reaches USD.
-
-        The merged list is also pushed back into the tree view so that
-        both types appear highlighted.  The ``_is_in_selection`` guard
-        is already True at this point, so the resulting callback is a
-        no-op.
 
         Args:
             selection: Items reported by the tree view.
@@ -356,8 +382,6 @@ class SelectionWatch:
 
         if added and lost:
             merged = list(new_set | lost)
-            if self._tree_view is not None:
-                self._tree_view.selection = merged
             return merged
 
         return selection
@@ -417,6 +441,9 @@ class SelectionWatch:
             selections: List of selected items to select.
             enable_undo: If True, the selection change can be undone.
 
+        Returns:
+            None.
+
         Example:
 
         .. code-block:: python
@@ -448,7 +475,7 @@ class SelectionWatch:
                         "SelectPrims",
                         old_selected_paths=old_paths,
                         new_selected_paths=new_paths,
-                        expand_in_stage=True,
+                        expand_in_stage=False,
                     )
                 self._schedule_selection_guard_reset()
             self._update_selected_items(all_items)
@@ -471,13 +498,13 @@ class SelectionWatch:
 
         async def _reset():
             await omni.kit.app.get_app().next_update_async()
-            self._is_setting_usd_selection = False
             if not (self._usd_context and self._path_map and self._tree_view):
+                self._is_setting_usd_selection = False
                 return
             expected = self._expected_selection_paths
             current = set(self._usd_context.get_selection().get_selected_prim_paths())
             if expected and current != expected:
                 self._selection.set_selected_prim_paths(list(expected), True)
-            self.sync_from_stage()
+            self._is_setting_usd_selection = False
 
         asyncio.ensure_future(_reset())

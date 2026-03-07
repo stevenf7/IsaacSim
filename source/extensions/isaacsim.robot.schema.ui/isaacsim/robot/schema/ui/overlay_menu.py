@@ -33,6 +33,9 @@ class OverlayMenu:
         Args:
             connection: Overlay connection group to display.
 
+        Returns:
+            None.
+
         Example:
 
         .. code-block:: python

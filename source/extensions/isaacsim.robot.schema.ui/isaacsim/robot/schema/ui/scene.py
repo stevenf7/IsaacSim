@@ -57,8 +57,8 @@ class ConnectionScene:  # pragma: no cover
     def _on_timeline_event(self, event: carb.events.IEvent):
         """Handle timeline events to control visibility during playback.
 
-            Hides joint connections during simulation playback and restores
-            visibility based on settings when stopped.
+        Hides joint connections during simulation playback and restores
+        visibility based on settings when stopped.
 
         Args:
             event: The timeline event.
@@ -85,6 +85,9 @@ class ConnectionScene:  # pragma: no cover
 
         Args:
             joint_connections: List of connection items.
+
+        Returns:
+            None.
 
         Example:
 
@@ -120,6 +123,9 @@ class ConnectionScene:  # pragma: no cover
         Args:
             value: True to show, False to hide.
 
+        Returns:
+            None.
+
         Example:
 
         .. code-block:: python
@@ -133,18 +139,28 @@ class ConnectionScene:  # pragma: no cover
     def destroy(self):
         """Clean up resources before destruction.
 
-            Clears all connections and releases references.
-
-        Example:
-
-        .. code-block:: python
-
-            scene.destroy()
+        Unsubscribes from timeline and settings, clears connections and releases references.
         """
+        if self._settings_subscription is not None:
+            try:
+                self._settings_subscription.unsubscribe()
+            except Exception:
+                pass
+            self._settings_subscription = None
+        if self._timeline_subscription is not None:
+            try:
+                self._timeline_subscription.unsubscribe()
+            except Exception:
+                pass
+            self._timeline_subscription = None
         self.clear()
+        self._manipulator = None
 
     def clear(self):
         """Clear all connection visualizations.
+
+        Returns:
+            None.
 
         Example:
 
@@ -200,13 +216,11 @@ class ConnectionInstance:
     def destroy(self):
         """Destroy the singleton instance and release resources.
 
-        Example:
-
-        .. code-block:: python
-
-            ConnectionInstance.get_instance().destroy()
+        Revokes the connection model's USD listener so no stage callbacks persist.
         """
-        self.model = None
+        if self.model is not None:
+            self.model.destroy()
+            self.model = None
         ConnectionInstance._instance = None
 
     def get_model(self) -> ConnectionModel | None:
@@ -228,6 +242,9 @@ class ConnectionInstance:
 
         Args:
             joint_connections: List of connection items.
+
+        Returns:
+            None.
 
         Example:
 

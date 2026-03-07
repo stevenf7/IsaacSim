@@ -36,6 +36,9 @@ class InspectorContextMenu(ContextMenu):
 
         Args:
             event: Mouse event with payload containing stage and prim info.
+
+        Returns:
+            None.
         """
         import omni.kit.menu.core
 

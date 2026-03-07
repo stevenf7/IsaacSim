@@ -859,6 +859,8 @@ def _create_hierarchy_node_mujoco(
 
 def generate_robot_hierarchy_stage(
     mode: HierarchyMode = HierarchyMode.LINKED,
+    stage: Usd.Stage | None = None,
+    masking_layer_id: str | None = None,
 ) -> tuple[Usd.Stage | None, PathMap, list[Any]]:
     """Generate an in-memory USD stage representing the robot joint hierarchy.
 
@@ -872,6 +874,11 @@ def generate_robot_hierarchy_stage(
             links under a ``Links`` scope and all joints under a ``Joints``
             scope in schema order.  ``MUJOCO`` roots the tree at the primary
             link and appends the joint-to-parent as the last child of each link.
+        stage: Optional stage to use. If None, the stage from the default
+            USD context is used. When provided (e.g. in a background worker),
+            masking_layer_id should also be provided.
+        masking_layer_id: Optional masking layer to mute while building. If None
+            and stage is from context, MaskingState is used.
 
     Returns:
         A tuple of (hierarchy_stage, path_map, joint_connections).
@@ -889,16 +896,16 @@ def generate_robot_hierarchy_stage(
     """
     from .masking_state import MaskingState
 
-    stage = get_stage_safe()
+    if stage is None:
+        stage = get_stage_safe()
+        masking_layer_id = MaskingState.get_instance().get_masking_layer_id()
+
     path_map = PathMap()
     joint_connections: list[Any] = []
 
     if not stage:
         return None, path_map, joint_connections
 
-    # Mute the masking sublayer so the tree is built from the unmodified
-    # robot structure, ignoring any deactivation / bypass edits.
-    masking_layer_id = MaskingState.get_instance().get_masking_layer_id()
     if masking_layer_id:
         stage.MuteLayer(masking_layer_id)
 
@@ -907,6 +914,108 @@ def generate_robot_hierarchy_stage(
     finally:
         if masking_layer_id:
             stage.UnmuteLayer(masking_layer_id)
+
+
+def generate_robot_hierarchy_stage_in_background(
+    root_layer_identifier: str,
+    masking_layer_id: str | None,
+    mode: HierarchyMode,
+) -> dict[str, Any] | None:
+    """Run hierarchy generation in a background thread; returns serializable result.
+
+    Opens a stage from root_layer_identifier, mutes the masking layer, runs
+    hierarchy generation, and returns a dict that can be passed to
+    deserialize_hierarchy_result on the main thread to rebuild the hierarchy
+    stage and path map and to build ConnectionItems from path data.
+
+    Args:
+        root_layer_identifier: Identifier of the root layer (e.g. from
+            context stage's GetRootLayer().identifier).
+        masking_layer_id: Masking layer id to mute, or None.
+        mode: Hierarchy display mode.
+
+    Returns:
+        Serializable dict with "layer_str", "path_map_list", "connections", or
+        None if generation failed or no robots found.
+    """
+    try:
+        stage = Usd.Stage.Open(root_layer_identifier)
+    except Exception:
+        return None
+    if not stage:
+        return None
+    hierarchy_stage, path_map, joint_connections = generate_robot_hierarchy_stage(
+        mode=mode, stage=stage, masking_layer_id=masking_layer_id
+    )
+    if hierarchy_stage is None:
+        return None
+    layer = hierarchy_stage.GetRootLayer()
+    layer_str = layer.ExportToString()
+
+    path_map_list = [(str(orig), str(hier)) for orig, hier in path_map.original_to_hierarchy.items()]
+    connections = []
+    for c in joint_connections:
+        jp = c._joint_prim_path
+        pjp = c._parent_joint_path
+        plp = c._parent_link_path
+        rrp = c._robot_root_path
+        jpos = c._joint_position
+        ppos = c._parent_joint_position
+        connections.append(
+            (
+                str(jp) if jp else None,
+                str(pjp) if pjp else None,
+                str(plp) if plp else None,
+                str(rrp) if rrp else None,
+                (float(jpos[0]), float(jpos[1]), float(jpos[2])) if jpos else None,
+                (float(ppos[0]), float(ppos[1]), float(ppos[2])) if ppos else None,
+            )
+        )
+    return {"layer_str": layer_str, "path_map_list": path_map_list, "connections": connections}
+
+
+def deserialize_hierarchy_result(
+    data: dict[str, Any] | None,
+) -> tuple[Usd.Stage | None, PathMap, list[tuple[Any, ...]]]:
+    """Rebuild hierarchy stage and path map from a background worker result.
+
+    Must be called on the main thread. Build ConnectionItems from the returned
+    connection_tuples using ConnectionItem.from_paths.
+
+    Args:
+        data: Dict returned by generate_robot_hierarchy_stage_in_background.
+
+    Returns:
+        (hierarchy_stage, path_map, connection_tuples). connection_tuples is
+        a list of (joint_prim_path, parent_joint_path, parent_link_path,
+        robot_root_path, joint_pos, parent_joint_pos) for ConnectionItem.from_paths.
+    """
+    if not data:
+        return None, PathMap(), []
+    path_map = PathMap()
+    for orig_s, hier_s in data.get("path_map_list", []):
+        path_map.insert(Sdf.Path(orig_s), Sdf.Path(hier_s))
+    layer_str = data.get("layer_str")
+    if not layer_str:
+        return None, path_map, []
+    layer = Sdf.Layer.CreateAnonymous()
+    layer.ImportFromString(layer_str)
+    stage = Usd.Stage.Open(layer)
+    if not stage:
+        return None, path_map, []
+    connection_tuples = []
+    for t in data.get("connections", []):
+        connection_tuples.append(
+            (
+                Sdf.Path(t[0]) if t[0] else None,
+                Sdf.Path(t[1]) if t[1] else None,
+                Sdf.Path(t[2]) if t[2] else None,
+                Sdf.Path(t[3]) if t[3] else None,
+                Gf.Vec3d(*t[4]) if t[4] else None,
+                Gf.Vec3d(*t[5]) if t[5] else None,
+            )
+        )
+    return stage, path_map, connection_tuples
 
 
 def _generate_robot_hierarchy_stage_inner(
