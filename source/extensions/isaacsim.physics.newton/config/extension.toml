@@ -27,9 +27,9 @@ name = "isaacsim.physics.newton"
 name = "isaacsim.physics.newton.tests"
 
 [settings]
-# Enable CUDA graph capture for physics stepping to improve performance on GPU
+# Enable CUDA graph capture for physics stepping to improve GPU performance.
 exts."isaacsim.physics.newton".capture_graph_physics_step = true
-# Automatically switch to Newton physics engine when the extension starts up
+# Automatically switch to the Newton physics engine when the extension starts.
 exts."isaacsim.physics.newton".auto_switch_on_startup = true
 
 # Main python module this extension provides

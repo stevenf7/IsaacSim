@@ -5,7 +5,7 @@
 # Settings
 
 ### persistent.isaac.asset_root.default
-   - **Default Value**: "omniverse://isaac-dev.ov.nvidia.com"
+   - **Default Value**: "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0"
    - **Description**: Default asset root path for Isaac Sim.
 
 ### persistent.isaac.asset_root.timeout

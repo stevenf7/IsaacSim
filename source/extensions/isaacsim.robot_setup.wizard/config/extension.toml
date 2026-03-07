@@ -21,10 +21,10 @@ writeTarget.kit = true
 name = "isaacsim.robot_setup.wizard"
 
 [settings]
-# time out for resolving the robot wizard settings
+# Timeout for resolving the robot wizard settings.
 exts."isaacsim.robot_setup.wizard".timeout = 5
 
-# launch on startup
+# Launch on startup.
 persistent.exts."isaacsim.robot_setup.wizard".launch_on_startup = false
 
 [[test]]

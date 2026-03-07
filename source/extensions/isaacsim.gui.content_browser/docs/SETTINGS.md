@@ -6,17 +6,32 @@
 
 ### exts."isaacsim.gui.content_browser".timeout
    - **Default Value**: 5
-   - **Description**: The timeout duration in seconds for resolving the content browser settings.
+   - **Description**: Time out for resolving the content browser settings
+
+### exts."omni.simready.content.browser".content_root_urls
+   - **Default Value**: [
+     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/SimReady"
+   ]
+   - **Description**: SimReady assets search locations list. Currently only the first entry is used.
+
+### exts."omni.simready.content.browser".default_content_root_url_index
+   - **Default Value**: 0
+   - **Description**: Default content root url index into the content_root_urls list above
+
+### exts."omni.simready.content.browser".usd_search_endpoint
+   - **Default Value**: "https://search.dev.simready.omniverse.nvidia.com/"
+   - **Description**: USD search server endpoint
 
 ### exts."isaacsim.gui.content_browser".folders
    - **Default Value**: [
-     "omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots",
-     "omniverse://isaac-dev.ov.nvidia.com/Isaac/Environments", 
-     "omniverse://isaac-dev.ov.nvidia.com/Isaac/IsaacLab",
-     "omniverse://isaac-dev.ov.nvidia.com/Isaac/Materials",
-     "omniverse://isaac-dev.ov.nvidia.com/Isaac/People",
-     "omniverse://isaac-dev.ov.nvidia.com/Isaac/Props",
-     "omniverse://isaac-dev.ov.nvidia.com/Isaac/Samples",
-     "omniverse://isaac-dev.ov.nvidia.com/Isaac/Sensors"
+     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Robots",
+     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Environments",
+     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab",
+     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Materials",
+     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/People",
+     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Props",
+     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples",
+     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Sensors",
+     "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/SimReady"
    ]
-   - **Description**: Defines the list of Omniverse folders to be displayed in the content browser.
+   - **Description**: define the folders to be shown in the content browser

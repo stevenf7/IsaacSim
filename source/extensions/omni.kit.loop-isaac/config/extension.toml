@@ -24,25 +24,25 @@ path = "bin/*.plugin"
 recursive = false
 
 [settings]
-# Don't sync threads to the present thread
+# Do not sync threads to the present thread.
 app.runLoopsGlobal.syncToPresent = false
-# Set to true to enable rate limiting for the main run loop
+# Set to `true` to enable rate limiting for the main run loop.
 app.runLoops.main.rateLimitEnabled = true
-# Rate limit frequency in Hz for the main run loop
+# Rate-limit frequency in Hz for the main run loop.
 app.runLoops.main.rateLimitFrequency = 120
-# Set to true to use a busy loop for the main run loop
+# Set to `true` to use a busy loop for the main run loop.
 app.runLoops.main.rateLimitUseBusyLoop = false
-# Set to true to enable rate limiting for the present run loop
+# Set to `true` to enable rate limiting for the present run loop.
 app.runLoops.present.rateLimitEnabled = true
-# Rate limit frequency in Hz for the present run loop
+# Rate-limit frequency in Hz for the present run loop.
 app.runLoops.present.rateLimitFrequency = 60
-# Set to true to use a busy loop for the present run loop
+# Set to `true` to use a busy loop for the present run loop.
 app.runLoops.present.rateLimitUseBusyLoop = false
-# Set to true to enable rate limiting for the rendering run loop
+# Set to `true` to enable rate limiting for the rendering run loop.
 app.runLoops.rendering_0.rateLimitEnabled = true
-# Rate limit frequency in Hz for the rendering run loop
+# Rate-limit frequency in Hz for the rendering run loop.
 app.runLoops.rendering_0.rateLimitFrequency = 120
-# Set to true to use a busy loop for the rendering run loop
+# Set to `true` to use a busy loop for the rendering run loop.
 app.runLoops.rendering_0.rateLimitUseBusyLoop = false
 
 [[test]]

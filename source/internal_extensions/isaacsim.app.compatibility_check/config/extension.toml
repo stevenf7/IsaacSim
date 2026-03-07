@@ -30,27 +30,27 @@ name = "isaacsim.app.compatibility_check.tests"
 path = "bin/*.plugin"
 
 [settings]
-# GPU: supported driver version
+# GPU: Supported driver versions.
 exts."isaacsim.app.compatibility_check".gpu_driver = [
     { platform = "linux", minimum = "535.161", unsupported = [] },
     { platform = "win32", minimum = "537.58", unsupported = [] },
 ]
-# GPU: VRAM requirements (GB)
+# GPU: VRAM requirements (GB).
 exts."isaacsim.app.compatibility_check".gpu_vram = { minimum = 10, good = 16, ideal = 48 }
-# CPU: cores requirements
+# CPU: Core requirements.
 exts."isaacsim.app.compatibility_check".cpu_cores = { minimum = 4, good = 8, ideal = 16 }
-# RAM requirements (GB)
+# RAM requirements (GB).
 exts."isaacsim.app.compatibility_check".ram = { minimum = 32, good = 64, ideal = 128 }
-# Available storage requirements (GB)
+# Available storage requirements (GB).
 exts."isaacsim.app.compatibility_check".storage = { minimum = 50, good = 500, ideal = 1000 }
-# Supported Operating Systems
+# Supported operating systems.
 exts."isaacsim.app.compatibility_check".operating_system = [
     { name = "ubuntu", versions = ["22.04", "24.04"] },
     { name = "windows", versions = ["10", "11"] },
 ]
-# Test case: Kit app (relative to ``kit`` folder)
+# Test case: Kit app relative to the `kit` folder.
 exts."isaacsim.app.compatibility_check".test_kit_app = "omni.app.mini"
-# Test case: Kit app arguments
+# Test case: Kit app arguments.
 exts."isaacsim.app.compatibility_check".test_kit_args = [
     "--/app/quitAfter=100",
     "--no-window",

@@ -22,9 +22,10 @@ to a standalone script:
   2. Code formatting verification   -> repo.sh format --verify
   3. Changelog and version bump     -> validate_changelog.py
   4. extension.toml validation      -> validate_extension_toml.py
-  5. Extension structure validation  -> validate_extension_structure.py
-  6. License header validation       -> validate_license_headers.py
-  7. Extension test discovery & run  -> run_extension_tests.py
+  5. Settings docs validation       -> validate_settings.py
+  6. Extension structure validation  -> validate_extension_structure.py
+  7. License header validation       -> validate_license_headers.py
+  8. Extension test discovery & run  -> run_extension_tests.py
 
 Determines the full set of changed files by comparing against the merge-base
 of the current branch with its upstream (auto-detected, or set via --base-branch).
@@ -44,7 +45,7 @@ Usage:
     # Run only tests for modified extensions
     python tools/isaac/pre_merge/pre_merge_validate.py --test-only
 
-    # Auto-fix what can be fixed (ruff, extension.toml)
+    # Auto-fix what can be fixed (ruff, extension.toml, settings docs)
     python tools/isaac/pre_merge/pre_merge_validate.py --fix
 
     # Fast format check for pre-commit hooks (uncommitted files only)
@@ -377,7 +378,52 @@ def check_extension_toml(extensions: list[Path], fix: bool = False) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Check 5: Extension structure — delegates to validate_extension_structure.py
+# Check 5: Settings docs validation — delegates to validate_settings.py
+# ---------------------------------------------------------------------------
+
+
+def check_settings(extensions: list[Path], fix: bool = False) -> int:
+    """Validate settings docs for each modified extension.
+
+    Args:
+        extensions: List of extension paths to validate.
+        fix: Whether to auto-fix `docs/SETTINGS.md`.
+
+    Returns:
+        Number of extensions with validation errors.
+    """
+    if not extensions:
+        log_info("No modified extensions to validate settings docs.")
+        return 0
+
+    script = TOOLS_DIR / "validate_settings.py"
+    if not script.exists():
+        log_warn("validate_settings.py not found; skipping.")
+        return 0
+
+    errors = 0
+    for ext in extensions:
+        cmd = [sys.executable, str(script), str(ext)]
+        if fix:
+            cmd.append("--fix")
+
+        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT)
+        if proc.returncode != 0:
+            output_lines = (proc.stdout or "").strip().splitlines()
+            if proc.stderr:
+                output_lines.extend((proc.stderr or "").strip().splitlines())
+            for line in output_lines[-10:]:
+                print(f"    {line}", flush=True)
+            log_fail(f"{ext.name}: settings docs validation failed.")
+            errors += 1
+        else:
+            log_pass(f"{ext.name}: settings docs OK.")
+
+    return errors
+
+
+# ---------------------------------------------------------------------------
+# Check 6: Extension structure — delegates to validate_extension_structure.py
 # ---------------------------------------------------------------------------
 
 
@@ -506,7 +552,7 @@ def check_extension_structure(extensions: list[Path], base_ref: str | None = Non
 
 
 # ---------------------------------------------------------------------------
-# Check 6: License headers — delegates to validate_license_headers.py
+# Check 7: License headers — delegates to validate_license_headers.py
 # ---------------------------------------------------------------------------
 
 
@@ -583,7 +629,7 @@ def validate_license_headers(modified_files: list[Path], fix: bool = False, all_
 
 
 # ---------------------------------------------------------------------------
-# Check 7: Extension tests — delegates to run_extension_tests.py
+# Check 8: Extension tests — delegates to run_extension_tests.py
 # ---------------------------------------------------------------------------
 
 
@@ -644,7 +690,7 @@ def build_parser() -> argparse.ArgumentParser:
         Configured ArgumentParser instance.
     """
     parser = argparse.ArgumentParser(
-        description="Pre-commit validation for Isaac Sim: lint, format, changelog, toml, structure, and license checks.",
+        description="Pre-commit validation for Isaac Sim: lint, format, changelog, toml, settings docs, structure, and license checks.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -653,6 +699,7 @@ def build_parser() -> argparse.ArgumentParser:
     checks.add_argument("--format", action="store_true", help="Run code format verification")
     checks.add_argument("--changelog", action="store_true", help="Check changelog and version bump")
     checks.add_argument("--toml", action="store_true", help="Validate extension.toml files")
+    checks.add_argument("--settings", action="store_true", help="Validate settings docs against extension.toml")
     checks.add_argument("--structure", action="store_true", help="Validate extension directory structure")
     checks.add_argument("--license", action="store_true", help="Validate SPDX license headers on changed files")
     checks.add_argument(
@@ -721,7 +768,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--fix",
         action="store_true",
-        help="Auto-fix issues where possible (ruff, code formatting, extension.toml)",
+        help="Auto-fix issues where possible (ruff, code formatting, extension.toml, settings docs)",
     )
     parser.add_argument(
         "--base-branch",
@@ -789,7 +836,16 @@ def _run(args: argparse.Namespace) -> int:
     if args.retest:
         args.test = True
 
-    check_flags = [args.lint, args.format, args.changelog, args.toml, args.structure, args.license, args.test]
+    check_flags = [
+        args.lint,
+        args.format,
+        args.changelog,
+        args.toml,
+        args.settings,
+        args.structure,
+        args.license,
+        args.test,
+    ]
     run_all_validation = not any(check_flags)
 
     if args.all_extensions:
@@ -844,6 +900,10 @@ def _run(args: argparse.Namespace) -> int:
         if run_all_validation or args.toml:
             header("extension.toml Validation")
             total_errors += check_extension_toml(extensions, fix=args.fix)
+
+        if run_all_validation or args.settings:
+            header("Settings Docs Validation")
+            total_errors += check_settings(extensions, fix=args.fix)
 
         if run_all_validation or args.structure:
             header("Extension Structure")

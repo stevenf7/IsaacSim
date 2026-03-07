@@ -32,13 +32,13 @@ name = "isaacsim.gui.sensors.icon"
 name = "isaacsim.gui.sensors.icon.tests"
 
 [settings]
-# timeout for resolving sensor icon 
+# Timeout for resolving sensor icon settings.
 exts."isaacsim.gui.sensors.icon".timeout = 5
 
-# show prim name with the sensor icon, default to false
+# Show the prim name with the sensor icon. Defaults to `false`.
 exts."omni.kit.prim.sensor".showTitle = false
 
-# show sensor icon in viewport, default to false
+# Show the sensor icon in the viewport. Defaults to `false`.
 persistent.exts."isaacsim.gui.sensors.icon".visible_on_startup=false
 
 [[test]]
