@@ -98,6 +98,12 @@ Ensure your system is set up with the following before building Isaac Sim:
   > sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 200
   > ```
 
+  > **(Linux aarch64) ⚠️**
+  > On aarch64 hosts (e.g. DGX Spark), X11 development headers are required to build Python packages that lack pre-built wheels:
+  > ```bash
+  > sudo apt-get install -y libx11-dev xorg-dev
+  > ```
+
   > **Compiler Version Check ⚠️**
   > We have added a version checker to our build process. If you do not have the default versions you are still able to execute a build, add  `--skip-compiler-version-check` to `build.[sh/bat]` when building.  Proceed at your own risk, unsupported build environments may encounter build and runtime issues.
 

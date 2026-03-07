@@ -5,6 +5,9 @@ This directory contains scripts for building Docker images of Isaac Sim. The bui
 ## Contents
 
 - [Prerequisites](#prerequisites)
+  - [Installing Prerequisites](#installing-prerequisites)
+  - [Clone the Repository](#clone-the-repository)
+  - [Verify Compiler Version](#verify-compiler-version)
 - [Build Process](#build-process)
 - [Example Usage](#example-usage)
 - [Environment Variables for `docker run`](#environment-variables-for-docker-run)
@@ -23,10 +26,17 @@ This directory contains scripts for building Docker images of Isaac Sim. The bui
 
 Before running these scripts, ensure you have the following installed on your host machine:
 
+- **Git** - For version control and repository management
+- **Git LFS** - For managing large files within the repository
+- **build-essential** - Includes `make` and other essential build tools
+- **GCC/G++ 11** - Required compiler version (GCC/G++ 12+ is not supported)
 - **rsync** - Required for file synchronization during the preparation phase
 - **python3** - Required for running the preparation scripts and installing dependencies
 - **Docker** - Required for building the final image
 - **NVIDIA Container Toolkit** - Required for GPU access inside the container when running the image
+- **GPU** - See [NVIDIA GPU Requirements](https://docs.omniverse.nvidia.com/dev-guide/latest/common/technical-requirements.html)
+- **Driver** - See [NVIDIA Driver Requirements](https://docs.omniverse.nvidia.com/dev-guide/latest/common/technical-requirements.html)
+- **Internet Access** - Required for downloading the Omniverse Kit SDK, extensions, and tools
 
 See also: [Container Setup](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_container.html#container-setup) in the Isaac Sim documentation.
 
@@ -36,7 +46,24 @@ On Ubuntu/Debian:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y rsync python3 docker.io
+sudo apt-get install -y git git-lfs build-essential rsync python3 docker.io
+```
+
+**GCC/G++ 11** (required — higher versions are not supported):
+
+```bash
+sudo apt-get install -y gcc-11 g++-11
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 200
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 200
+```
+
+> **Ubuntu 24.04 ⚠️**
+> Ubuntu 24.04 ships with GCC/G++ 12+ by default. You must install and select GCC/G++ 11 using the commands above.
+
+**Additional packages for aarch64 hosts** (e.g. DGX Spark): Some Python packages such as `imgui-bundle` do not publish pre-built wheels for `linux_aarch64`, so pip builds them from source. This requires X11 development headers:
+
+```bash
+sudo apt-get install -y libx11-dev xorg-dev
 ```
 
 **NVIDIA Container Toolkit** (required for running the built image with GPU support):
@@ -49,8 +76,11 @@ curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dear
   sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
   && sudo apt-get update
 
-# Install and configure
+# Install the NVIDIA Container Toolkit packages
 sudo apt-get install -y nvidia-container-toolkit
+sudo systemctl restart docker
+
+# Configure the container runtime
 sudo nvidia-ctk runtime configure --runtime=docker
 sudo systemctl restart docker
 
@@ -59,6 +89,24 @@ docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
 ```
 
 On other systems, install these packages using your system's package manager. For full details and alternatives, see [Container Setup](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_container.html#container-setup).
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/isaac-sim/IsaacSim.git isaacsim
+cd isaacsim
+git lfs install
+git lfs pull
+```
+
+### Verify Compiler Version
+
+Confirm that GCC/G++ 11 is being used before building:
+
+```bash
+gcc --version
+g++ --version
+```
 
 ## Build Process
 
@@ -77,7 +125,7 @@ Use `prep_docker_build.sh` to prepare the Docker build context:
 - `--x86_64` - Build x86_64 container (default)
 - `--aarch64` - Build aarch64 container
 - `--skip-dedupe` - Skip the file deduplication process (faster but larger image)
-- `--help, -h` - Show help message
+- `-h, --help` - Show help message
 
 #### What this script does:
 
@@ -99,8 +147,8 @@ Use `build_docker.sh` to build the actual Docker image:
 #### Options:
 
 - `--tag TAG` - Specify the Docker image tag (default: `isaac-sim-docker:latest`)
-- `--x86_64` - Specify the Platform tag (default: x86_64)
-- `--aarch64` - Specify the Platform tag (default: x86_64)
+- `--x86_64` - Build for x86_64 platform (default)
+- `--aarch64` - Build for arm64 platform
 - `--push` - Push docker image tag
 - `-h, --help` - Show help message
 
@@ -237,10 +285,10 @@ sudo chown -R 1234:1234 ~/docker
 ./tools/docker/build_docker.sh --x86_64
 
 # 2. Launch both services (logs stream to the terminal; Ctrl+C stops everything)
-docker compose -p isim -f tools/docker/docker-compose.yml up
+docker compose -p isim -f tools/docker/docker-compose.yml up --build
 
 # Or, launch in detached mode (runs in the background)
-docker compose -p isim -f tools/docker/docker-compose.yml up -d
+docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 ```
 
 > **Note:** On DGX Spark, use `--aarch64` instead of `--x86_64` in the build commands above.
@@ -249,15 +297,17 @@ Running without `-d` (foreground) streams combined logs from both containers to 
 
 On first run, Docker Compose will build the `web-viewer` image automatically. The web viewer waits for the Isaac Sim healthcheck (`AppReady` in logs) before starting.
 
+> **Single browser connection:** Only one browser tab/window can be connected to Isaac Sim at a time. If a browser is already connected to the streaming session, other browsers or tabs will not be able to connect until that session is closed.
+
 ### Using a prebuilt Isaac Sim image
 
 By default the compose file uses the locally built `isaac-sim-docker:latest` image. To use a prebuilt NGC image instead, set `ISAAC_SIM_IMAGE`:
 
 ```bash
-ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 docker compose -p isim -f tools/docker/docker-compose.yml up -d
+ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 ```
 
-This skips the local build steps (`prep_docker_build.sh` and `build_docker.sh`).
+This skips the local Isaac Sim build steps (`prep_docker_build.sh` and `build_docker.sh`).
 
 ### Checking status and endpoints
 
@@ -282,7 +332,7 @@ Override any variable via the shell or a `.env` file next to `docker-compose.yml
 
 ### Rebuilding the web viewer
 
-The web viewer bakes `ISAACSIM_HOST`, `ISAACSIM_SIGNAL_PORT`, and `ISAACSIM_STREAM_PORT` into the JavaScript bundle at build time. If you change any of these values, add `--build` to rebuild the image:
+The web viewer bakes `ISAACSIM_HOST`, `ISAACSIM_SIGNAL_PORT`, and `ISAACSIM_STREAM_PORT` into the JavaScript bundle at build time. If you change any of these values (e.g. in a `.env` file), add `--build` when bringing the stack up so the web viewer image is rebuilt and the browser receives the updated values:
 
 ```bash
 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
@@ -373,9 +423,26 @@ docker compose -p isim2 -f tools/docker/docker-compose.yml down
 ## Troubleshooting
 
 - **Cannot connect to livestream**: (1) Ensure you are using `--network=host` (required for WebRTC streaming). (2) Set `ISAACSIM_HOST` to the IP address the client uses to reach the host (e.g. LAN IP). (3) Allow ports 8210/tcp, 49100/tcp, and 47998/udp in the host firewall (e.g. UFW).
+- **Second browser or tab cannot connect**: Only one browser connection to Isaac Sim is supported at a time. Close the existing browser tab or window that is connected to the web viewer, then open the URL again in a single tab.
 - **Clipboard (Ctrl+C/V) not working in the web viewer**: The browser Clipboard API requires a secure context. When accessing the web viewer over HTTP from a non-localhost address, clipboard forwarding to Isaac Sim is blocked. To enable it, open `chrome://flags/#unsafely-treat-insecure-origin-as-secure` in Chrome, add your web viewer URL (e.g. `http://192.168.1.100:8210`), and relaunch the browser.
 - **Error: "_build/$CONTAINER_PLATFORM/release does not exist"**: Run the script with `--build` option to build Isaac Sim first.
 - **rsync not found**: Install rsync using your system's package manager.
 - **Python requirements installation fails**: Ensure python3 and pip are properly installed.
 - **Docker build fails**: Check that Docker daemon is running and you have sufficient disk space.
+- **ERROR: This host's buildx builder does NOT support linux/arm64**: The current Docker buildx builder does not list `linux/arm64`. On DGX Spark (native aarch64), use the default builder so it uses the host platform:
+
+  ```bash
+  docker buildx use default
+  docker buildx inspect --bootstrap
+  ./tools/docker/build_docker.sh --aarch64
+  ```
+
+  If you are on an x86_64 host and cross-building for arm64, enable QEMU and create a multi-platform builder:
+
+  ```bash
+  docker run --privileged --rm tonistiigi/binfmt --install all
+  docker buildx create --name multiarch --driver docker-container --use
+  docker buildx inspect --bootstrap
+  ./tools/docker/build_docker.sh --aarch64
+  ```
 
