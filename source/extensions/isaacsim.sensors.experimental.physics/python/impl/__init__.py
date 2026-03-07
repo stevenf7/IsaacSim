@@ -28,3 +28,6 @@ from .effort_sensor_backend import EffortSensorBackend as EffortSensorBackend
 from .extension import *
 from .imu_sensor import IMUSensor as IMUSensor
 from .imu_sensor_backend import ImuSensorBackend as ImuSensorBackend
+from .joint_state_sensor import JointStateSensor as JointStateSensor
+from .joint_state_sensor import JointStateSensorReading as JointStateSensorReading
+from .joint_state_sensor_backend import JointStateSensorBackend as JointStateSensorBackend
