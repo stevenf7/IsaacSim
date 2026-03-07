@@ -10,6 +10,7 @@
 __all__ = ["RobotInspectorWindow"]
 
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
@@ -24,9 +25,16 @@ from usd.schema.isaac import robot_schema
 
 from .inspector_stage_delegate import InspectorStageDelegate
 from .masking_state import MaskingState
+from .model import ConnectionItem
 from .scene import ConnectionInstance
 from .selection_watch import SelectionWatch
-from .utils import HierarchyMode, PathMap, generate_robot_hierarchy_stage
+from .utils import (
+    HierarchyMode,
+    PathMap,
+    deserialize_hierarchy_result,
+    generate_robot_hierarchy_stage,
+    generate_robot_hierarchy_stage_in_background,
+)
 
 
 class RobotInspectorWindow(ui.Window):
@@ -67,6 +75,11 @@ class RobotInspectorWindow(ui.Window):
         self._current_hierarchy_mode: HierarchyMode | None = None
         self._tracked_robot_prim_paths: set[str] = set()
         self._stage_listener: Any | None = None
+        self._refresh_ui_pending: bool = False
+        self._refresh_ui_task: asyncio.Task[Any] | None = None
+        self._tabbed_out: bool = False
+        self._joint_connections_full: list[Any] = []
+        self._hierarchy_executor: ThreadPoolExecutor | None = None
         self._hierarchy_stage: Usd.Stage | None = None
         self._path_map: PathMap | None = None
         self._hierarchy_mode: HierarchyMode = self._load_mode_preference()
@@ -83,6 +96,7 @@ class RobotInspectorWindow(ui.Window):
         )
 
         self.set_visibility_changed_fn(self._on_visibility_changed)
+        self.set_selected_in_dock_changed_fn(self._on_selected_in_dock_changed)
         self.deferred_dock_in("Stage", ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
         self.dock_order = 0
 
@@ -312,25 +326,102 @@ class RobotInspectorWindow(ui.Window):
             for event, handler in (
                 (omni.usd.StageEventType.OPENED, lambda _: self._on_stage_opened()),
                 (omni.usd.StageEventType.CLOSING, lambda _: self._on_stage_closing()),
+                (omni.usd.StageEventType.SELECTION_CHANGED, lambda _: self._on_stage_selection_changed()),
             )
         ]
 
+    def _is_effectively_visible(self) -> bool:
+        """True if the window is visible and not tabbed out (we only set tabbed-out when the dock callback fires False).
+
+        Returns:
+            True if visible and not tabbed out, False otherwise.
+        """
+        return bool(self.visible and not self._tabbed_out)
+
+    def _get_robot_roots_with_selection(self) -> set[str]:
+        """Return robot root path strings that have at least one selected prim (prim or descendant has ancestor with RobotAPI).
+
+        Returns:
+            Set of robot root path strings.
+        """
+        stage = self._usd_context.get_stage()
+        if not stage:
+            return set()
+        selection = self._usd_context.get_selection()
+        selected_paths = list(selection.get_selected_prim_paths() or [])
+        roots = set()
+        for path in selected_paths:
+            prim_path = Sdf.Path(str(path)) if not isinstance(path, Sdf.Path) else path
+            prim = stage.GetPrimAtPath(prim_path)
+            while prim and prim.IsValid():
+                if prim.HasAPI(robot_schema.Classes.ROBOT_API.value):
+                    roots.add(prim.GetPath().pathString)
+                    break
+                prim = prim.GetParent()
+        return roots
+
+    def _update_viewport_connections_for_selection(self) -> None:
+        """Set viewport joint lines to only the robot(s) that have selection; no lines if none selected."""
+        if not self._is_effectively_visible():
+            return
+        if not self._joint_connections_full:
+            ConnectionInstance.get_instance().set_joint_connections([])
+            return
+        robot_root_strs = self._get_robot_roots_with_selection()
+        filtered = [c for c in self._joint_connections_full if c._robot_root_path.pathString in robot_root_strs]
+        ConnectionInstance.get_instance().set_joint_connections(filtered)
+
+    def _on_stage_selection_changed(self) -> None:
+        """Update viewport lines to show only the selected robot(s)."""
+        self._update_viewport_connections_for_selection()
+
+    def _apply_effective_visibility(self) -> None:
+        """Apply teardown or setup based on effective visibility (visible and selected in dock)."""
+        if self._is_effectively_visible():
+            self._destroy_selection_watch()
+            self._selection_watch = SelectionWatch(usd_context=self._usd_context)
+            if self._path_map:
+                self._selection_watch.update_path_map(self._path_map)
+            stage = self._usd_context.get_stage()
+            self._tracked_robot_prim_paths = self._collect_robot_prim_paths(stage)
+            self._create_stage_listener(stage)
+            self.refresh_ui()
+            if self._stage_widget:
+                self._stage_widget.set_selection_watch(self._selection_watch)
+            self._update_viewport_connections_for_selection()
+        else:
+            self._destroy_stage_listener()
+            if self._refresh_ui_task is not None:
+                self._refresh_ui_task.cancel()
+                self._refresh_ui_task = None
+            self._refresh_ui_pending = False
+            self._destroy_selection_watch()
+            ConnectionInstance.get_instance().set_joint_connections([])
+            if self._stage_widget:
+                self._stage_widget.set_selection_watch(self._selection_watch)
+
     def _on_visibility_changed(self, visible: bool) -> None:
         """Handle window visibility changes.
+
+        When not effectively visible (closed or tabbed out), the stage listener
+        is removed and viewport lines cleared. When effectively visible again,
+        the listener is reattached and UI refreshed.
 
         Args:
             visible: True if window became visible, False if hidden.
         """
         if self._visibility_changed_listener:
             self._visibility_changed_listener(visible)
+        self._apply_effective_visibility()
 
-        if not visible:
-            self._destroy_selection_watch()
-        else:
-            self._selection_watch = SelectionWatch(usd_context=self._usd_context)
+    def _on_selected_in_dock_changed(self, selected: bool) -> None:
+        """Handle tab selection in dock: only treat as tabbed-out when the callback explicitly reports False.
 
-        if self._stage_widget:
-            self._stage_widget.set_selection_watch(self._selection_watch)
+        Args:
+            selected: True if the window is selected in the dock, False if tabbed out.
+        """
+        self._tabbed_out = not selected
+        self._apply_effective_visibility()
 
     def _destroy_selection_watch(self) -> None:
         """Destroy the selection watch and clean up references."""
@@ -357,11 +448,13 @@ class RobotInspectorWindow(ui.Window):
     def _on_objects_changed(self, notice: Any, stage: Any) -> None:
         """Handle USD stage objects changed notice.
 
-        Triggers a refresh when:
+        Triggers a deferred refresh when:
         - Prims are added or removed (resync)
         - Robot relationships change (links/joints)
 
-        Does NOT trigger on camera, selection, or transform changes.
+        Refresh is deferred to the next frame so multiple prim additions
+        in a single app.update() coalesce into one refresh. Does NOT trigger
+        on camera, selection, or transform changes.
 
         Args:
             notice: The USD change notice.
@@ -372,7 +465,7 @@ class RobotInspectorWindow(ui.Window):
             current_robot_paths = self._collect_robot_prim_paths(stage)
             if current_robot_paths != self._tracked_robot_prim_paths:
                 self._tracked_robot_prim_paths = current_robot_paths
-                self.refresh_ui()
+                self._schedule_refresh_ui()
                 return
 
         changed_paths = notice.GetChangedInfoOnlyPaths()
@@ -381,8 +474,58 @@ class RobotInspectorWindow(ui.Window):
 
         for changed_path in changed_paths:
             if self._is_robot_structure_change(changed_path):
-                self.refresh_ui()
+                self._schedule_refresh_ui()
                 return
+
+    def _schedule_refresh_ui(self) -> None:
+        """Schedule a single refresh_ui on the next frame.
+
+        Multiple calls before the next frame coalesce into one refresh.
+        """
+        if self._refresh_ui_pending:
+            return
+        self._refresh_ui_pending = True
+        self._refresh_ui_task = asyncio.ensure_future(self._deferred_refresh_ui())
+
+    async def _deferred_refresh_ui(self) -> None:
+        """Run hierarchy generation in a background task, then update UI on the main thread."""
+        try:
+            await omni.kit.app.get_app().next_update_async()
+        except asyncio.CancelledError:
+            return
+        finally:
+            self._refresh_ui_task = None
+            self._refresh_ui_pending = False
+        if self._stage_widget is None:
+            return
+        stage = self._usd_context.get_stage()
+        if not stage:
+            return
+        root_layer = stage.GetRootLayer()
+        if not root_layer:
+            return
+        root_layer_identifier = root_layer.identifier
+        masking_layer_id = None
+        if self._masking_state:
+            masking_layer_id = self._masking_state.get_masking_layer_id()
+        if self._hierarchy_executor is None:
+            self._hierarchy_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="robot_hierarchy")
+        loop = asyncio.get_event_loop()
+        try:
+            data = await loop.run_in_executor(
+                self._hierarchy_executor,
+                generate_robot_hierarchy_stage_in_background,
+                root_layer_identifier,
+                masking_layer_id,
+                self._hierarchy_mode,
+            )
+        except asyncio.CancelledError:
+            return
+        hierarchy_stage, path_map, connection_tuples = deserialize_hierarchy_result(data)
+        if hierarchy_stage is None:
+            return
+        joint_connections = [ConnectionItem.from_paths(*t) for t in connection_tuples if t[0] is not None]
+        self._apply_hierarchy_result(hierarchy_stage, path_map, joint_connections)
 
     def _is_robot_structure_change(self, changed_path: Any) -> bool:
         """Check if a USD change affects robot structure (links/joints).
@@ -464,6 +607,13 @@ class RobotInspectorWindow(ui.Window):
         self._option_hovered = []
         self._option_frames = []
         self._option_hover_overlays = []
+        if self._refresh_ui_task is not None:
+            self._refresh_ui_task.cancel()
+            self._refresh_ui_task = None
+        self._refresh_ui_pending = False
+        if self._hierarchy_executor is not None:
+            self._hierarchy_executor.shutdown(wait=False)
+            self._hierarchy_executor = None
         self._destroy_stage_listener()
         if self._masking_state:
             self._masking_state.unsubscribe_changed(self._on_masking_changed)
@@ -485,11 +635,11 @@ class RobotInspectorWindow(ui.Window):
         super().destroy()
 
     def refresh_ui(self) -> None:
-        """Refresh the inspector view from the current stage.
+        """Refresh the inspector view from the current stage (synchronous path).
 
-        Regenerates the hierarchy stage and updates the widget.
-        Skips update if joints haven't changed to avoid redundant work.
-        Re-applies masking icons after regeneration.
+        Regenerates the hierarchy stage and updates the widget. For deferred
+        updates from USD changes, hierarchy generation runs in a background
+        thread and the result is applied via callback.
 
         Example:
 
@@ -498,7 +648,24 @@ class RobotInspectorWindow(ui.Window):
             window.refresh_ui()
         """
         hierarchy_stage, path_map, joint_connections = generate_robot_hierarchy_stage(self._hierarchy_mode)
+        self._apply_hierarchy_result(hierarchy_stage, path_map, joint_connections)
 
+    def _apply_hierarchy_result(
+        self,
+        hierarchy_stage: Usd.Stage | None,
+        path_map: PathMap,
+        joint_connections: list[Any],
+    ) -> None:
+        """Apply a precomputed hierarchy result to the UI (main thread only).
+
+        Args:
+            hierarchy_stage: USD stage for the hierarchy view, or None to clear.
+            path_map: Path mapping between hierarchy and original stage.
+            joint_connections: List of connection items for viewport visualization.
+
+        Returns:
+            None.
+        """
         current_joints = self._extract_joint_paths(joint_connections)
         mode_unchanged = self._hierarchy_mode == self._current_hierarchy_mode
         if current_joints and self._current_joints == current_joints and mode_unchanged:
@@ -514,26 +681,33 @@ class RobotInspectorWindow(ui.Window):
         if self._stage_widget is None:
             return
 
-        # Preserve current selection before opening new stage; open_stage clears the tree
-        # and the widget pushes empty selection to USD, wiping the selection.
         usd_context = omni.usd.get_context()
         preserved_paths = list(usd_context.get_selection().get_selected_prim_paths())
 
         self._apply_masking_icons()
         self._stage_widget.open_stage(hierarchy_stage)
-
         if self._selection_watch:
             self._selection_watch.update_path_map(path_map)
 
             async def _deferred_sync() -> None:
                 await omni.kit.app.get_app().next_update_async()
+                if self._selection_watch and self._stage_widget:
+                    tree_view = getattr(self._stage_widget, "_tree_view", None)
+                    if tree_view is None:
+                        getter = getattr(self._stage_widget, "get_treeview", None)
+                        if callable(getter):
+                            tree_view = getter()
+                    if tree_view is not None:
+                        self._selection_watch.set_tree_view(tree_view)
                 if preserved_paths and usd_context:
                     usd_context.get_selection().set_selected_prim_paths(preserved_paths, True)
                 if self._selection_watch:
                     self._selection_watch.sync_from_stage()
+                self._update_viewport_connections_for_selection()
 
             asyncio.ensure_future(_deferred_sync())
-        ConnectionInstance.get_instance().set_joint_connections(joint_connections)
+        self._joint_connections_full = joint_connections
+        self._update_viewport_connections_for_selection()
 
     def _extract_joint_paths(self, joint_connections: list[Any]) -> set[str]:
         """Extract joint paths as a set for comparison.
@@ -544,7 +718,7 @@ class RobotInspectorWindow(ui.Window):
         Returns:
             Set of joint prim path strings.
         """
-        return {joint.joint_prim.GetPath().pathString for joint in joint_connections}
+        return {joint.joint_prim_path.pathString for joint in joint_connections}
 
     def _apply_masking_icons(self) -> None:
         """Set customData on hierarchy prims to signal deactivation state.
@@ -616,6 +790,7 @@ class RobotInspectorWindow(ui.Window):
         self._destroy_stage_listener()
         self._tracked_robot_prim_paths.clear()
         self._current_joints.clear()
+        self._joint_connections_full.clear()
         self._hierarchy_stage = None
         self._path_map = None
         if self._masking_state:

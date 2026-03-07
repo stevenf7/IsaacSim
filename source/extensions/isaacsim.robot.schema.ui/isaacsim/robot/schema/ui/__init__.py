@@ -18,4 +18,4 @@
 
 from .extension import SchemaUIExtension
 
-__all__ = []
+__all__ = ["SchemaUIExtension"]

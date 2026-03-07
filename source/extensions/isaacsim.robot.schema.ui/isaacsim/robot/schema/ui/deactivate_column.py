@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 from .column_base import MaskingToggleColumnDelegate
-from .masking_state import MaskingState, get_selected_maskable_paths, is_maskable_type
+from .masking_state import get_selected_maskable_paths, is_maskable_type
 from .style import CANCEL_IMAGE_STYLE, CANCEL_IMAGE_TYPE
 
 

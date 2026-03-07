@@ -19,7 +19,6 @@ from pathlib import Path
 from typing import Any
 
 import omni.kit.app
-from omni.ui import color as cl
 from omni.ui import scene as sc
 from pxr import Gf
 
@@ -174,6 +173,9 @@ class ConnectionManipulator(sc.Manipulator):
 
         Args:
             check_visibility: Whether to check viewport visibility.
+
+        Returns:
+            None.
         """
         self._clear_all_panels()
 
@@ -211,6 +213,9 @@ class ConnectionManipulator(sc.Manipulator):
         Args:
             connection: The connection item to visualize.
             check_visibility: Whether to check if endpoints are in the viewport.
+
+        Returns:
+            None.
 
         Example:
 
@@ -253,6 +258,9 @@ class ConnectionManipulator(sc.Manipulator):
 
         Args:
             connection: The connection item to create an overlay for.
+
+        Returns:
+            None.
 
         Example:
 
@@ -338,6 +346,9 @@ class ConnectionManipulator(sc.Manipulator):
 
         Args:
             item: Changed item, or None for a full rebuild.
+
+        Returns:
+            None.
         """
         if getattr(self.model, "_force_redraw_requested", False):
             self.model._force_redraw_requested = False
@@ -369,6 +380,9 @@ class ConnectionManipulator(sc.Manipulator):
         Args:
             start_position: The starting world position.
             end_position: The ending world position.
+
+        Returns:
+            None.
         """
         direction_vector = end_position - start_position
         if direction_vector.GetLength() == 0:
@@ -420,6 +434,9 @@ class ConnectionManipulator(sc.Manipulator):
         Args:
             arrow_position: The position for the arrow center.
             direction_vector: The direction vector of the connection.
+
+        Returns:
+            None.
         """
         camera_pose = self._get_cached_camera_pose()
         if not camera_pose:

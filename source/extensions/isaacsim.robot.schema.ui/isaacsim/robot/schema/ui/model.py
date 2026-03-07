@@ -20,20 +20,17 @@ from collections import defaultdict
 from enum import Enum, auto
 from typing import Any
 
-import carb
 import omni.kit.app
 import omni.kit.viewport.utility as viewport_utility
 from omni.ui import scene as sc
 from pxr import Gf, Sdf, Tf, Usd, UsdGeom, UsdPhysics
 
 from .utils import (
-    CONNECTION_COLOR,
     get_active_viewport,
     get_joint_position,
     get_link_position,
     get_prim_safe,
     get_stage_safe,
-    is_in_front_of_camera,
     world_to_screen_position,
 )
 
@@ -89,6 +86,45 @@ class ConnectionItem(sc.AbstractManipulatorItem):
         self._robot_root_path = robot_root_path
         self._needs_position_refresh = False
         super().__init__()
+
+    @classmethod
+    def from_paths(
+        cls,
+        joint_prim_path: Sdf.Path,
+        parent_joint_path: Sdf.Path | None,
+        parent_link_path: Sdf.Path | None,
+        robot_root_path: Sdf.Path,
+        joint_pos: Gf.Vec3d | None,
+        parent_joint_pos: Gf.Vec3d | None,
+    ) -> "ConnectionItem":
+        """Construct a ConnectionItem from paths and positions (e.g. from a background worker).
+
+        Prims are resolved from the default USD context when joint_prim etc. are accessed.
+
+        Args:
+            joint_prim_path: Path of the joint prim.
+            parent_joint_path: Path of the parent joint, or None.
+            parent_link_path: Path of the parent link for root joints, or None.
+            robot_root_path: Path to the robot root prim.
+            joint_pos: World position of the joint.
+            parent_joint_pos: World position of the parent joint.
+
+        Returns:
+            A ConnectionItem that resolves prims via get_prim_safe when accessed.
+        """
+        self = cls.__new__(cls)
+        self._joint_position = joint_pos
+        self._parent_joint_position = parent_joint_pos
+        self._visible = True
+        self._overlay_paths = []
+        self._overlay_names = []
+        self._joint_prim_path = joint_prim_path
+        self._parent_joint_path = parent_joint_path
+        self._parent_link_path = parent_link_path
+        self._robot_root_path = robot_root_path
+        self._needs_position_refresh = False
+        super(ConnectionItem, self).__init__()
+        return self
 
     @property
     def needs_position_refresh(self) -> bool:
@@ -437,29 +473,41 @@ class ConnectionModel(sc.AbstractManipulatorModel):
         self._pending_connections: set[ConnectionItem] = set()
         self._pending_rebuild_type = RebuildType.NONE
         self._last_overlay_refresh_ms: float | None = None
+        self._last_camera_rebuild_ms: float | None = None
         self._force_redraw_requested: bool = False
         self._refresh_stage()
 
-    def _refresh_stage(self):
+    def _revoke_usd_listener(self) -> None:
+        """Revoke the USD change listener so no more stage change callbacks fire."""
+        if self._usd_listener:
+            self._usd_listener.Revoke()
+            self._usd_listener = None
+
+    def _refresh_stage(self) -> None:
         """Refresh the stage reference and USD listener.
 
         Re-establishes the connection to the current stage and sets up
-        the USD notice listener for change tracking.
+        the USD notice listener for change tracking. Registers a listener
+        only when there are joint connections to visualize.
         """
+        self._revoke_usd_listener()
         self._stage = get_stage_safe()
         self._world_unit = 0.0
-        self._usd_listener = None
         if self._stage:
             self._world_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
         if self._world_unit == 0.0:
             self._world_unit = 0.1
-        self._usd_listener = Tf.Notice.Register(Usd.Notice.ObjectsChanged, self._on_usd_changed, self._stage)
+        if self._stage and self._joint_connections_map:
+            self._usd_listener = Tf.Notice.Register(Usd.Notice.ObjectsChanged, self._on_usd_changed, self._stage)
 
     def set_joint_connections(self, joint_connections: list[ConnectionItem]):
         """Set the list of joint connections to visualize and trigger rebuild.
 
         Args:
             joint_connections: List of connection items.
+
+        Returns:
+            None.
 
         Example:
 
@@ -469,6 +517,15 @@ class ConnectionModel(sc.AbstractManipulatorModel):
         """
         self._joint_connections = joint_connections
         self._joint_connections_map = {connection.joint_prim_path: connection for connection in joint_connections}
+        if not joint_connections:
+            self._joint_connections_by_prefix = defaultdict(set)
+            self._refresh_overlay_groups()
+            self._revoke_usd_listener()
+            self._pending_rebuild = False
+            self._pending_connections.clear()
+            self._pending_rebuild_type = RebuildType.NONE
+            self._item_changed(None)
+            return
         self._build_connection_prefix_map()
         self._refresh_overlay_groups()
         self.rebuild_connections()
@@ -508,6 +565,9 @@ class ConnectionModel(sc.AbstractManipulatorModel):
         Args:
             notice: USD change notice.
             stage: USD stage that changed.
+
+        Returns:
+            None.
         """
         if self._is_self_editing:
             return
@@ -555,7 +615,21 @@ class ConnectionModel(sc.AbstractManipulatorModel):
             else:
                 self._queue_rebuild(None, RebuildType.FULL)
         elif camera_changed:
-            self._queue_rebuild(None, RebuildType.CAMERA_ONLY)
+            now_ms = omni.kit.app.get_app().get_time_since_start_ms()
+            if self._last_camera_rebuild_ms is None or (now_ms - self._last_camera_rebuild_ms) >= 300.0:
+                self._last_camera_rebuild_ms = now_ms
+                self._queue_rebuild(None, RebuildType.CAMERA_ONLY)
+
+    def destroy(self) -> None:
+        """Revoke the USD listener and clear state. Call before dropping the model."""
+        self._revoke_usd_listener()
+        self._stage = None
+        self._joint_connections = []
+        self._joint_connections_map = {}
+        self._joint_connections_by_prefix = defaultdict(set)
+        self._pending_rebuild = False
+        self._pending_connections.clear()
+        self._pending_rebuild_type = RebuildType.NONE
 
     def get_joint_connections(self) -> list[ConnectionItem]:
         """Return the list of all joint connections.
@@ -622,6 +696,9 @@ class ConnectionModel(sc.AbstractManipulatorModel):
         Args:
             connection: Optional specific connection for targeted rebuild.
             rebuild_type: Type of rebuild requested.
+
+        Returns:
+            None.
         """
         if connection:
             self._pending_connections.add(connection)
