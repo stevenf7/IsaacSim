@@ -60,6 +60,14 @@ URDF Import and Export
     ./../importer_exporter/ext_omni_exporter_urdf
 
 
+ROS 2 FAQ
+----------------------------
+
+.. toctree::
+    :maxdepth: 1
+
+    ./ros2_faq
+
 ROS 2 Troubleshooting
 ----------------------------
 
