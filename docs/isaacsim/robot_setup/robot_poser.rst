@@ -187,9 +187,9 @@ Example: Authoring Named Poses
 ===============================
 
 This walkthrough creates three named poses on a robot arm -- a home position, a pick-ready stance, and a place target -- using the Robot Poser window and IK tracking. Start with a stage that contains at least one robot prim with ``IsaacRobotAPI`` applied.
-In This Example, we will use the ``UR10`` robot from ``UniversalRobots``, with the Robotiq 2F-85 gripper.
-1. Find the ``UR10`` robot in the ``UniversalRobots`` folder in the assets browser.
-2. Add the ``UR10`` robot to the stage by dragging it onto the stage.
+In This Example, we will use the ``UR10e`` robot from ``UniversalRobots``, with the Robotiq 2F-85 gripper.
+1. Find the ``UR10e`` robot in the ``UniversalRobots`` folder in the assets browser.
+2. Add the ``UR10e`` robot to the stage by dragging it onto the stage.
 3. Select the Robotiq 2F-85 gripper in Gripper Variants on the property panel.
 
 .. image:: ../images/isim_6.0_base_ref_gui_robot_poser_example_add_robot.png
@@ -207,7 +207,7 @@ Open the Robot Poser window via **Window > Robot Poser**. In the **Active Robot*
 2. Add a "Home" Pose
 ---------------------
 
-With the robot in its default joint configuration, Select the start link as ```base_link``` and the end link as ```grip_frame```. Notice there are two ```base_link``` items on the dropdown. Hover over the name to verify it is the base_link for the ur10, and not for the gripper. Click **Add** in the Robot Poser window. A new row appears in the Named Poses table. Rename it to ``Home`` by double-clicking the name cell. Select the desired **Start Site** and **End Site** for the kinematic chain.
+With the robot in its default joint configuration, Select the start link as ```base_link``` and the end link as ```grip_frame```. Notice there are two ```base_link``` items on the dropdown. Hover over the name to verify it is the base_link for the ur10e, and not for the gripper. Click **Add** in the Robot Poser window. A new row appears in the Named Poses table. Rename it to ``Home`` by double-clicking the name cell. Select the desired **Start Site** and **End Site** for the kinematic chain.
 
 This pose captures the robot's current joint state and serves as a known-good reset position.
 
