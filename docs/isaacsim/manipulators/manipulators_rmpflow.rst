@@ -93,7 +93,7 @@ The following change shows how loading configs for supported robots can be simpl
 A supported set of robots can have their RMPflow configs loaded by name.
 Line 34 prints the names of every supported robot with a provided RMPflow config (at the time of writing this tutorial):
 
-    ['Franka', 'UR3', 'UR3e', 'UR5', 'UR5e', 'UR10', 'UR10e', 'UR16e', 'Rizon4', 'Cobotta_Pro_900', 'Cobotta_Pro_1300', 'RS007L', 'RS007N', 'RS013N', 'RS025N', 'RS080N', 'FestoCobot', 'Techman_TM12', 'Kuka_KR210', 'Fanuc_CRX10IAL']
+    ['Franka', 'UR3', 'UR3e', 'UR5', 'UR5e', 'UR10', 'UR10e', 'UR16e', 'Rizon4', 'Cobotta_Pro_900', 'Cobotta_Pro_1300', 'RS007L', 'RS007N', 'RS013N', 'RS025N', 'RS080N', 'Techman_TM12', 'Kuka_KR210', 'Fanuc_CRX10IAL']
 
 On lines 35,38, the RmpFlow class initializer is simplified to unpacking a dictionary of loaded keyword arguments.  
 The ``load_supported_motion_policy_config()`` function is  the simplest way to load supported robots.

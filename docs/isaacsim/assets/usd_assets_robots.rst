@@ -3005,46 +3005,6 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing- FlexIV.pdf>`
-
-        | **Festo**
-
-        .. tab-set::
-
-            .. tab-item:: FestoCobot
-
-
-                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_Festo_FestoCobot_festo_cobot.usd.png
-                  :align: center
-                  :alt: FestoCobot Robot
-                  :width: 80%
-
-                  **USD Path:** Festo/FestoCobot/festo_cobot.usd
-
-                .. dropdown:: Properties
-                    :animate: fade-in
-                    :color: light
-
-                    .. list-table::
-                        :align: center
-                        :widths: 40 40
-
-                        * - Number of Joints
-                          - 7
-                        * - Number of Links
-                          - 8
-                        * - Number of DOFs
-                          - 6
-
-                    **Physics APIs:**
-
-                    - PhysX RigidBodyAPI
-
-                    - PhysX ArticulationAPI
-
-                    - PhysX SceneAPI
-
-                    - PhysX JointAPI
-
         | **Fanuc**
 
         .. tab-set::
