@@ -1,5 +1,5 @@
 [package]
-version = "2.5.0"
+version = "2.5.1"
 category = "Simulation"
 title = "Isaac Sim Tests"
 description = "Collection of tests for isaac sim that are not tied to a specific extension"
@@ -55,6 +55,7 @@ timeout = 900
 dependencies = [
     "isaacsim.ros2.bridge",
     "omni.isaac.ml_archive",
+    "omni.kit.material.library",
     "omni.kit.window.toolbar",
 ]
 

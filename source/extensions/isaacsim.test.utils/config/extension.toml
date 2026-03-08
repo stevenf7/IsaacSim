@@ -1,5 +1,5 @@
 [package]
-version = "0.11.0"
+version = "0.11.1"
 category = "Internal"
 title = "Isaac Sim Test Utils"
 description = "Provides testing utilities including image capture, comparison, and validation functions along with file validation helpers for automated test workflows."
@@ -15,6 +15,7 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.core.experimental.utils" = {}
 "isaacsim.storage.native" = {}
+"omni.kit.material.library" = {}
 "omni.kit.test" = {}
 "omni.kit.ui_test" = {}
 "omni.replicator.core" = {} # needed for image capture utils
