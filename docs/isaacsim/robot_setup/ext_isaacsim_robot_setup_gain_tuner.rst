@@ -149,6 +149,11 @@ The tests send only Position commands for Position drives, and velocity commands
 
 .. image:: /images/isim_5.0_full_ref_gui_gains_tuner_test_settings.png
 
+.. note::
+
+    If you do not see all available columns in the Gains Tuner table, try expanding the Gain Tuner panel or increasing the overall width of the Isaac Sim application window. Some columns may be hidden if the window is too narrow.
+
+
 Further Learning
 =================
 - The :ref:`isaac_sim_app_tutorial_advanced_joint_tuning` tutorial for detailed instructions on how to use the Gain Tuner.
