@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.11.1] - 2026-03-07
+### Fixed
+- Add `omni.kit.material.library` as a dependency
+
 ## [0.11.0] - 2026-03-06
 ### Added
 - Move `find_widget_with_retry` from `MenuUITestCase` to `menu_utils` as a standalone function

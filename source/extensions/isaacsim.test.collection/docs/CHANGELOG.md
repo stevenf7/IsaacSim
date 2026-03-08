@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.1] - 2026-03-07
+### Fixed
+- Add `omni.kit.material.library` as a test dependency so `CreateAndBindMdlMaterialFromLibrary` is available for material tests
+
 ## [2.5.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings
