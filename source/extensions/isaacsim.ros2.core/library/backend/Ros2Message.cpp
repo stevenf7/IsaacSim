@@ -24,6 +24,7 @@
 #include <rcl/rcl.h>
 #include <sensor_msgs/msg/camera_info.h>
 
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <cuda_runtime.h>
@@ -1214,6 +1215,66 @@ void Ros2JointStateMessageImpl::writeData(const double& timeStamp,
                 jointStateMsg->effort.data[j] = isaacsim::core::includes::math::roundNearest(
                     jointEfforts[j] * stageUnits * stageUnits, 10000.0); // N*m
             }
+        }
+    }
+}
+
+void Ros2JointStateMessageImpl::writeData(const double& timeStamp,
+                                          const std::vector<std::string>& jointNames,
+                                          const std::vector<double>& jointPositions,
+                                          const std::vector<double>& jointVelocities,
+                                          const std::vector<double>& jointEfforts,
+                                          const std::vector<uint8_t>& dofTypes,
+                                          double stageMetersPerUnit)
+{
+    if (!m_msg)
+    {
+        return;
+    }
+    const size_t numDofs = jointNames.size();
+    if (numDofs == 0 || jointPositions.size() != numDofs || jointVelocities.size() != numDofs ||
+        jointEfforts.size() != numDofs || dofTypes.size() != numDofs)
+    {
+        return;
+    }
+    if (stageMetersPerUnit <= 0.0 || !std::isfinite(stageMetersPerUnit))
+    {
+        return;
+    }
+
+    sensor_msgs__msg__JointState* jointStateMsg = static_cast<sensor_msgs__msg__JointState*>(m_msg);
+    Ros2MessageInterfaceImpl::writeRosHeader("", static_cast<int64_t>(timeStamp * 1e9), jointStateMsg->header);
+
+    const double stageUnits = 1.0 / stageMetersPerUnit;
+
+    if (!ensureSeqSize(jointStateMsg->name, numDofs) || !ensureSeqSize(jointStateMsg->position, numDofs) ||
+        !ensureSeqSize(jointStateMsg->velocity, numDofs) || !ensureSeqSize(jointStateMsg->effort, numDofs))
+    {
+        fprintf(stderr, "[Ros2JointStateMessage] Failed to ensure sequence capacities\n");
+        return;
+    }
+
+    for (size_t j = 0; j < numDofs; j++)
+    {
+        Ros2MessageInterfaceImpl::writeRosString(jointNames[j], jointStateMsg->name.data[j]);
+        const bool isTranslation = (dofTypes[j] == 1); // 1 = prismatic (translation)
+        if (isTranslation)
+        {
+            jointStateMsg->position.data[j] =
+                isaacsim::core::includes::math::roundNearest(jointPositions[j] * stageUnits, 10000.0); // m
+            jointStateMsg->velocity.data[j] =
+                isaacsim::core::includes::math::roundNearest(jointVelocities[j] * stageUnits, 10000.0); // m/s
+            jointStateMsg->effort.data[j] =
+                isaacsim::core::includes::math::roundNearest(jointEfforts[j] * stageUnits, 10000.0); // N
+        }
+        else
+        {
+            jointStateMsg->position.data[j] =
+                isaacsim::core::includes::math::roundNearest(jointPositions[j], 10000.0); // rad
+            jointStateMsg->velocity.data[j] =
+                isaacsim::core::includes::math::roundNearest(jointVelocities[j], 10000.0); // rad/s
+            jointStateMsg->effort.data[j] =
+                isaacsim::core::includes::math::roundNearest(jointEfforts[j] * stageUnits * stageUnits, 10000.0); // N*m
         }
     }
 }
