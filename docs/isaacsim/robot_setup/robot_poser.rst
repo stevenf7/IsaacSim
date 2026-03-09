@@ -36,7 +36,7 @@ The functionality is split across two extensions:
 Robot Poser Window
 ==================
 
-The Robot Poser window is accessible via **Window > Robot Poser**.
+The Robot Poser window is accessible via **Tools > Robotics > Robot Poser**.
 
 .. image:: ../images/isim_6.0_base_ref_gui_robot_poser_window.png
    :width: 500px

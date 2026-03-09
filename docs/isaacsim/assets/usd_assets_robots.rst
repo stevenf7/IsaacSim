@@ -1623,7 +1623,7 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :alt: Dex5 Robot
                   :width: 80%
 
-                  **USD Path:** Unitree/Dex5/Dex5-URDF-R.usd
+                  **USD Path:** Unitree/Dex5/Dex5-URDF-R.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
