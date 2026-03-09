@@ -211,6 +211,20 @@ Articulation Root API
 The MJCF importer will create ``UsdPhysics ArticulationRootAPI``, ``Newton ArticulationRootAPI`` and ``PhysxArticulationAPI`` on the root link of the MJCF file.
 ``Newton ArticulationRootAPI`` is disabled in the PhysX layer, to avoid conflicts with the ``PhysxArticulationRootAPI``.
 
+Known Issues
+=======================
+
+In USD, a joint is defined as a kinematics constraint between two rigid bodies. When a joint is created, the DOF is limited only to the axis of the joint.
+For example, a revolute joint has only one DOF, and removes the other five DOFs. 
+
+In mujoco, a joint is defined as a degree of freedom, enabling multiple joints to be combined together to create more degrees of freedoms. For example, 
+an x-axis revolute joint and a y-axis revolute joint can be combined together to create a 2D x-y axis revolute joint.
+This is not supported in USD, if two revolute joints between two bodies are defined, the system would form a kinematic loop, and become overconstrained.
+
+The current solution is to place a dummy link between the two bodies, and create a joint between the dummy link and the other body in the MJCF file.
+For example, if two revolute joints are defined between the body and the ground, a dummy link can be placed between the body and the ground, and a joint 
+can be created between the dummy link and the ground and a joint between the dummy link and the body. This will create a 2D x-y axis revolute joint.
+
 References
 ==========
 
