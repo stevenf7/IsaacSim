@@ -203,7 +203,7 @@ or the ``config_file_name`` parameter of the ``LidarRtx`` constructor. The ``con
 * The exact name of a Lidar model USD file as noted above, omitting the vendor name and replacing underscores with spaces (for example, ``XT32 SD10``). This option matches the name of the Lidar in the **Create** > **Isaac** > **Sensors** menu.
 
 The optional ``variant`` will select the specific variant of the provided Lidar configuration, as noted in the model's documentation. For example,
-the snippet below will load a SICK picoScan150 Lidar with the ``Normal_11`` variant selected.
+the snippet below will load a SICK picoScan150 Lidar with the ``Profile_11`` variant selected.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/rtx_lidar_asset_library.py
     :language: python

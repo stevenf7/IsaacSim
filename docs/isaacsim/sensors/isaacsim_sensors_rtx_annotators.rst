@@ -194,7 +194,7 @@ as a Python ``dict`` mapping 128-bit unsigned integers to prim paths.
 
 Second, ``LidarRtx.get_object_ids`` resolves the object ID array output from ``GenericModelOutput`` or ``IsaacCreateRTXLidarScanBuffer`` as 128-bit unsigned integers.
 
-Refer to ``standalone_examples/api/isaacsim.sensors.rtx/resolve_object_ids_from_gmo.py`` for an example of using these functions to resolve object IDs as prim paths.
+Refer to ``standalone_examples/api/isaacsim.sensors.rtx/resolve_lidar_object_ids.py`` for an example of using these functions to resolve object IDs as prim paths.
 
 .. _rtx_sensor_deprecated_annotators:
 
@@ -216,5 +216,5 @@ the table below describes affected annotators and how to replace them.
     "``RtxSensorGpuIsaacComputeRTXLidarPointCloud``", "``IsaacExtractRTXSensorPointCloudNoAccumulator``", "See above."
     "``RtxSensorCpuIsaacComputeRTXRadarPointCloud``", "``IsaacExtractRTXSensorPointCloudNoAccumulator``", "See above."
     "``RtxSensorGpuIsaacComputeRTXRadarPointCloud``", "``IsaacExtractRTXSensorPointCloudNoAccumulator``", "See above."
-    "``IsaacReadRTXLidarData``", "``isaacsim.sensors.rtx.read_gmo_data`` utility.", "See :ref:`rtx_sensor_reading_gmo_buffer` for details."
+    "``IsaacReadRTXLidarData``", "``isaacsim.sensors.rtx.get_gmo_data`` utility.", "See :ref:`rtx_sensor_reading_gmo_buffer` for details."
 
