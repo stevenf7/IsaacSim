@@ -110,7 +110,7 @@ Getting Started
                 - ``--merge-mesh``: Merge meshes after conversion.
                 - ``--debug-mode``: Enable debug mode and keep intermediate outputs.
                 - ``--collision-from-visuals``: Generate collision geometry from visuals.
-                - ``--collision-type``: Collision geometry type (e.g. default, Convex Hull, Convex Decomposition).
+                - ``--collision-type``: Collision geometry type (e.g. "Convex Hull", "Convex Decomposition", "Bounding Sphere", "Bounding Cube").
                 - ``--allow-self-collision``: Allow self-collision for the imported asset.
                 - ``--test``: uses nv_ant.xml test asset into a temp directory
                 - ``--ros-package``: ROS package mapping in format 'name:path'. Can be specified multiple times for multiple packages.
@@ -119,7 +119,7 @@ Getting Started
 
         .. code-block:: bash
 
-            ./python.sh standalone_examples/api/isaacsim.asset.importer.urdf/urdf_import.py -u /path/to/ur10.urdf --usd-path /path/to/output --merge-mesh
+            ./python.sh standalone_examples/api/isaacsim.asset.importer.urdf/urdf_import.py --urdf /path/to/ur10.urdf --usd-path /path/to/output --merge-mesh
             
     .. tab-item:: Import from ROS 2 Node
 

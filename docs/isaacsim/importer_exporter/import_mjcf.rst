@@ -81,16 +81,29 @@ Do the exact same thing with Python standalone instead.
         - ``--debug-mode``: Enable debug mode and keep intermediate outputs.
         - ``--import-scene``: Import the MJCF simulation settings along with the model (default True).
         - ``--collision-from-visuals``: Generate collision geometry from visuals.
-        - ``--collision-type``: Collision geometry type (e.g. default, Convex Hull, Convex Decomposition).
+        - ``--collision-type``: Collision geometry type (e.g. "Convex Hull", "Convex Decomposition", "Bounding Sphere", "Bounding Cube").
         - ``--allow-self-collision``: Allow self-collision for the imported asset.
-        - ``--test``: Run in test mode: uses nv_ant.xml test asset into a temp directory
+        - ``--test``: uses nv_ant.xml test asset into a temp directory
 
     Example:
 
     .. code-block:: bash
 
-        ./python.sh standalone_examples/api/isaacsim.asset.importer.mjcf/mjcf_import.py -m /path/to/nv_ant.xml -u /path/to/output --merge-mesh
+        ./python.sh standalone_examples/api/isaacsim.asset.importer.mjcf/mjcf_import.py --mjcf /path/to/nv_ant.xml --usd-path /path/to/output --merge-mesh
 
+Known Issues
+=======================
+
+In USD, a joint is defined as a kinematics constraint between two rigid bodies. When a joint is created, the DOF is limited only to the axis of the joint.
+For example, a revolute joint has only one DOF, and removes the other five DOFs. 
+
+In MuJoCo, a joint is defined as a degree of freedom, enabling multiple joints to be combined together to create more degrees of freedoms. For example, 
+an x-axis revolute joint and a y-axis revolute joint can be combined together to create a 2D x-y axis revolute joint.
+This is not supported in USD, if two revolute joints between two bodies are defined, the system would form a kinematic loop, and become overconstrained.
+
+The current solution is to place a dummy link between the two bodies, and create a joint between the dummy link and the other body in the MJCF file.
+For example, if two revolute joints are defined between the body and the ground, a dummy link can be placed between the body and the ground, and a joint 
+can be created between the dummy link and the ground and a joint between the dummy link and the body. This will create a 2D x-y axis revolute joint.
 
 Summary
 =======================
