@@ -1243,6 +1243,7 @@ pages:
       - mv pipeline_test_chart_heatmap.png .public/heatmap.png || true
       - mv .public public
     artifacts:
+        expire_in: never
         paths:
           - public
     pages:
