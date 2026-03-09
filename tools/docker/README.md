@@ -423,6 +423,13 @@ docker compose -p isim2 -f tools/docker/docker-compose.yml down
 ## Troubleshooting
 
 - **Cannot connect to livestream**: (1) Ensure you are using `--network=host` (required for WebRTC streaming). (2) Set `ISAACSIM_HOST` to the IP address the client uses to reach the host (e.g. LAN IP). (3) Allow ports 8210/tcp, 49100/tcp, and 47998/udp in the host firewall (e.g. UFW).
+- **Stale volume mounts causing issues (e.g. crashes, config errors, or livestream failures)**: Old cached data in the Docker volume mount directories can cause unexpected behavior. Remove the existing mounts and recreate them:
+
+  ```bash
+  sudo rm -rf ~/docker
+  mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
+  sudo chown -R 1234:1234 ~/docker
+  ```
 - **Second browser or tab cannot connect**: Only one browser connection to Isaac Sim is supported at a time. Close the existing browser tab or window that is connected to the web viewer, then open the URL again in a single tab.
 - **Clipboard (Ctrl+C/V) not working in the web viewer**: The browser Clipboard API requires a secure context. When accessing the web viewer over HTTP from a non-localhost address, clipboard forwarding to Isaac Sim is blocked. To enable it, open `chrome://flags/#unsafely-treat-insecure-origin-as-secure` in Chrome, add your web viewer URL (e.g. `http://192.168.1.100:8210`), and relaunch the browser.
 - **Error: "_build/$CONTAINER_PLATFORM/release does not exist"**: Run the script with `--build` option to build Isaac Sim first.
