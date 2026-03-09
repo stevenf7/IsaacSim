@@ -294,6 +294,60 @@ def compress_tracy_file(update_bin: Path, raw_path: Path, compressed_path: Path,
 
 
 # ---------------------------------------------------------------------------
+# CSV export
+# ---------------------------------------------------------------------------
+def export_tracy_to_csv(
+    csvexport_bin: Path,
+    tracy_path: Path,
+    csv_path: Path,
+    env: dict[str, str],
+    *,
+    filter_name: str = "",
+    self_times: bool = False,
+    unwrap: bool = False,
+    messages: bool = False,
+) -> bool:
+    """Export a ``.tracy`` profile to CSV using the Tracy ``csvexport`` tool.
+
+    Args:
+        csvexport_bin: Path to the ``csvexport`` executable.
+        tracy_path: Path to the ``.tracy`` file to export.
+        csv_path: Destination path for the CSV output.
+        env: Environment variables.
+        filter_name: Zone name filter (passed via ``-f``).
+        self_times: If True, report self times (``-e``).
+        unwrap: If True, report each zone event (``-u``).
+        messages: If True, report only messages (``-m``).
+
+    Returns:
+        True if the CSV file was written successfully.
+    """
+    cmd: list[str] = [str(csvexport_bin)]
+    if filter_name:
+        cmd.extend(["-f", filter_name])
+    if self_times:
+        cmd.append("-e")
+    if unwrap:
+        cmd.append("-u")
+    if messages:
+        cmd.append("-m")
+    cmd.append(str(tracy_path))
+
+    logger.info("Exporting Tracy profile to CSV: %s", " ".join(cmd))
+    result = subprocess.run(cmd, capture_output=True, text=True, env=env)
+    if result.stderr:
+        logger.warning("csvexport stderr: %s", result.stderr.strip())
+
+    if result.returncode != 0:
+        logger.error("csvexport exited with code %d", result.returncode)
+        return False
+
+    csv_path.write_text(result.stdout)
+    logger.info("CSV export written to %s", csv_path)
+    return True
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -345,6 +399,31 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--no-compress",
         action="store_true",
         help="Skip compressing the .tracy file (compression requires the 'update' binary).",
+    )
+    parser.add_argument(
+        "--csv",
+        action="store_true",
+        help="Export the captured .tracy profile to a CSV file using the 'csvexport' binary.",
+    )
+    parser.add_argument(
+        "--csv-filter",
+        default="",
+        help="Zone name filter passed to csvexport (default: no filter).",
+    )
+    parser.add_argument(
+        "--csv-self",
+        action="store_true",
+        help="Report self times instead of inclusive times in the CSV export.",
+    )
+    parser.add_argument(
+        "--csv-unwrap",
+        action="store_true",
+        help="Report each individual zone event in the CSV export.",
+    )
+    parser.add_argument(
+        "--csv-messages",
+        action="store_true",
+        help="Report only messages in the CSV export.",
     )
 
     return parse_common_args(parser, argv)
@@ -400,6 +479,10 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     update_bin = find_tracy_binary(tracy_ext, "update", required=False)
+    csvexport_bin = find_tracy_binary(tracy_ext, "csvexport", required=False) if args.csv else None
+    if args.csv and csvexport_bin is None:
+        logger.error("--csv was requested but 'csvexport' binary not found in %s/bin", tracy_ext)
+        return 1
     env = build_env(release_dir, extra_env=TRACY_ENV_DEFAULTS, enable_python_profiling=args.enable_python_profiling)
 
     # Build benchmark command.
@@ -439,16 +522,32 @@ def main(argv: list[str] | None = None) -> int:
     logger.info("Tracy capture file: %s (%.1f MB)", tracy_output, file_size_mb)
 
     # Optional compression.
+    final_tracy = tracy_output
     if not args.no_compress:
         if update_bin is not None:
             compressed_output = output_dir / f"{base_name}.compressed.tracy"
-            compress_tracy_file(update_bin, tracy_output, compressed_output, env)
+            if compress_tracy_file(update_bin, tracy_output, compressed_output, env):
+                final_tracy = compressed_output
         else:
             logger.info(
                 "Skipping compression — 'update' binary not found in %s/bin. "
                 "The uncompressed .tracy file is still available.",
                 tracy_ext,
             )
+
+    # Optional CSV export.
+    if csvexport_bin is not None:
+        csv_output = output_dir / f"{base_name}.csv"
+        export_tracy_to_csv(
+            csvexport_bin,
+            final_tracy,
+            csv_output,
+            env,
+            filter_name=args.csv_filter,
+            self_times=args.csv_self,
+            unwrap=args.csv_unwrap,
+            messages=args.csv_messages,
+        )
 
     return exit_code
 
