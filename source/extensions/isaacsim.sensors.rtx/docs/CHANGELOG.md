@@ -1,4 +1,8 @@
 # Changelog
+## [15.14.1] - 2026-03-09
+### Fixed
+- Fixed occasional segfault when running with many lidars doing full-scan processing at the same time by copying GenericModelOutput buffers into local copies rather than manipulating AOV
+
 ## [15.14.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md, and SETTINGS.md and updated docstrings
