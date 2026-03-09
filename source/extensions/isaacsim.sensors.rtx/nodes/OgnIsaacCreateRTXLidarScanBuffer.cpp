@@ -42,6 +42,133 @@ namespace sensors
 namespace rtx
 {
 
+// Rebase GMO element pointers into a caller-owned struct without writing to
+// the renderer's buffer.  Mirrors the offset arithmetic in
+// getBaseGMOPtrFromBuffer() from GenericModelOutput.h but avoids mutating the
+// shared input buffer, which is unsafe when other components read it concurrently.
+static bool rebaseGMOReadOnly(void* buffer, omni::sensors::GenericModelOutput& out)
+{
+    auto* raw = reinterpret_cast<omni::sensors::GenericModelOutput*>(buffer);
+    if (raw->magicNumber != omni::sensors::MAGIC_NUMBER_GMO)
+        return false;
+
+    memcpy(&out, raw, sizeof(omni::sensors::GenericModelOutput));
+
+    uint8_t* data = reinterpret_cast<uint8_t*>(buffer);
+    size_t offset = omni::sensors::sizeBasics();
+    out.elements.timeOffsetNs = reinterpret_cast<int32_t*>(data + offset);
+    offset += sizeof(int32_t) * out.numElements;
+    out.elements.x = reinterpret_cast<float*>(data + offset);
+    offset += sizeof(float) * out.numElements;
+    out.elements.y = reinterpret_cast<float*>(data + offset);
+    offset += sizeof(float) * out.numElements;
+    out.elements.z = reinterpret_cast<float*>(data + offset);
+    offset += sizeof(float) * out.numElements;
+    out.elements.scalar = reinterpret_cast<float*>(data + offset);
+    offset += sizeof(float) * out.numElements;
+    out.elements.flags = reinterpret_cast<uint8_t*>(data + offset);
+    offset += sizeof(uint8_t) * out.numElements;
+    if (offset % 8 != 0)
+        offset += 8 - (offset % 8);
+    out.auxiliaryData = out.auxType == omni::sensors::AuxType::NONE ? nullptr : reinterpret_cast<void*>(data + offset);
+
+    return true;
+}
+
+// Rebase LidarAuxiliaryData pointers into a caller-owned struct.
+// Mirrors setLidarAuxiliaryDataToPC() from GMOAuxiliaryData.h.
+static void rebaseLidarAuxReadOnly(const omni::sensors::GenericModelOutput& gmo, omni::sensors::LidarAuxiliaryData& out)
+{
+    memcpy(&out, gmo.auxiliaryData, sizeof(omni::sensors::LidarAuxiliaryData));
+
+    uint8_t* data = reinterpret_cast<uint8_t*>(gmo.auxiliaryData);
+    size_t offset = sizeof(omni::sensors::LidarAuxiliaryData);
+    auto filled = out.filledAuxMembers;
+
+    if ((filled & omni::sensors::LidarAuxHas::EMITTER_ID) == omni::sensors::LidarAuxHas::EMITTER_ID)
+    {
+        out.emitterId = reinterpret_cast<uint32_t*>(data + offset);
+        offset += sizeof(uint32_t) * gmo.numElements;
+    }
+    else
+        out.emitterId = nullptr;
+
+    if ((filled & omni::sensors::LidarAuxHas::CHANNEL_ID) == omni::sensors::LidarAuxHas::CHANNEL_ID)
+    {
+        out.channelId = reinterpret_cast<uint32_t*>(data + offset);
+        offset += sizeof(uint32_t) * gmo.numElements;
+    }
+    else
+        out.channelId = nullptr;
+
+    if ((filled & omni::sensors::LidarAuxHas::MAT_ID) == omni::sensors::LidarAuxHas::MAT_ID)
+    {
+        out.matId = reinterpret_cast<uint32_t*>(data + offset);
+        offset += sizeof(uint32_t) * gmo.numElements;
+    }
+    else
+        out.matId = nullptr;
+
+    if ((filled & omni::sensors::LidarAuxHas::TICK_ID) == omni::sensors::LidarAuxHas::TICK_ID)
+    {
+        out.tickId = reinterpret_cast<uint32_t*>(data + offset);
+        offset += sizeof(uint32_t) * gmo.numElements;
+    }
+    else
+        out.tickId = nullptr;
+
+    if ((filled & omni::sensors::LidarAuxHas::HIT_NORMALS) == omni::sensors::LidarAuxHas::HIT_NORMALS)
+    {
+        out.hitNormals = reinterpret_cast<float*>(data + offset);
+        offset += sizeof(float) * 3 * gmo.numElements;
+    }
+    else
+        out.hitNormals = nullptr;
+
+    if ((filled & omni::sensors::LidarAuxHas::VELOCITIES) == omni::sensors::LidarAuxHas::VELOCITIES)
+    {
+        out.velocities = reinterpret_cast<float*>(data + offset);
+        offset += sizeof(float) * gmo.numElements * 3;
+    }
+    else
+        out.velocities = nullptr;
+
+    if ((filled & omni::sensors::LidarAuxHas::OBJ_ID) == omni::sensors::LidarAuxHas::OBJ_ID)
+    {
+        out.objId = reinterpret_cast<uint8_t*>(data + offset);
+        offset += sizeof(uint8_t) * gmo.numElements * 16;
+    }
+    else
+        out.objId = nullptr;
+
+    if ((filled & omni::sensors::LidarAuxHas::ECHO_ID) == omni::sensors::LidarAuxHas::ECHO_ID)
+    {
+        out.echoId = reinterpret_cast<uint8_t*>(data + offset);
+        offset += sizeof(uint8_t) * gmo.numElements;
+    }
+    else
+        out.echoId = nullptr;
+
+    if ((filled & omni::sensors::LidarAuxHas::TICK_STATES) == omni::sensors::LidarAuxHas::TICK_STATES)
+    {
+        out.tickStates = reinterpret_cast<uint8_t*>(data + offset);
+        offset += sizeof(uint8_t) * gmo.numElements;
+    }
+    else
+        out.tickStates = nullptr;
+}
+
+// Rebase RadarAuxiliaryData pointers into a caller-owned struct.
+// Mirrors setRadarAuxiliaryDataToPC() from GMOAuxiliaryData.h.
+static void rebaseRadarAuxReadOnly(const omni::sensors::GenericModelOutput& gmo, omni::sensors::RadarAuxiliaryData& out)
+{
+    memcpy(&out, gmo.auxiliaryData, sizeof(omni::sensors::RadarAuxiliaryData));
+
+    uint8_t* data = reinterpret_cast<uint8_t*>(gmo.auxiliaryData);
+    size_t offset = sizeof(omni::sensors::RadarAuxiliaryData);
+    out.rv_ms = reinterpret_cast<float*>(data + offset);
+}
+
 class OgnIsaacCreateRTXLidarScanBuffer : public isaacsim::core::includes::BaseResetNode
 {
 private:
@@ -346,17 +473,31 @@ public:
             }
         }
 
-        // Set up GMO and aux structure access
+        // Set up GMO and aux structure access.
+        // The host path rebases element pointers into local structs rather than
+        // calling getModelOutputPtrFromBuffer(), which mutates the renderer's
+        // shared buffer and causes crashes when other components read it
+        // concurrently.  The locals are never stored into member pointers so
+        // there is no risk of dangling references after this function returns.
+        omni::sensors::AuxType auxType;
+        omni::sensors::Modality modality;
+        omni::sensors::GenericModelOutput localInitGMO{};
+        omni::sensors::LidarAuxiliaryData localInitLidarAux{};
+        omni::sensors::RadarAuxiliaryData localInitRadarAux{};
         if (m_dataOnHost)
         {
-            hostGMO = omni::sensors::getModelOutputPtrFromBuffer(reinterpret_cast<void*>(db.inputs.dataPtr()));
-            // If the buffer contains no returns, do not complete initialization.
-            auto numElements = hostGMO->numElements;
-            if (numElements == 0)
+            if (!rebaseGMOReadOnly(reinterpret_cast<void*>(db.inputs.dataPtr()), localInitGMO))
+            {
+                CARB_LOG_ERROR("IsaacCreateRTXLidarScanBuffer: GMO buffer validation failed during initialization.");
+                return false;
+            }
+            if (localInitGMO.numElements == 0)
             {
                 CARB_LOG_INFO("IsaacCreateRTXLidarScanBuffer: No returns in the input buffer. Skipping execution.");
                 return false;
             }
+            auxType = localInitGMO.auxType;
+            modality = localInitGMO.modality;
         }
         else
         {
@@ -370,9 +511,9 @@ public:
             // Get auxiliary data structure to set output flags
             CUDA_CHECK(cudaMemcpy(hostGMO, reinterpret_cast<void*>(db.inputs.dataPtr()),
                                   sizeof(omni::sensors::GenericModelOutput), cudaMemcpyDeviceToHost));
+            auxType = hostGMO->auxType;
+            modality = hostGMO->modality;
         }
-        const auto auxType = hostGMO->auxType;
-        const auto modality = hostGMO->modality;
         const std::string renderProductPath = std::string(db.tokenToString(db.inputs.renderProductPath()));
         const pxr::UsdPrim sensorPrim = isaacsim::core::includes::getCameraPrimFromRenderProduct(renderProductPath);
         const std::string sensorPrimPath = sensorPrim.GetPath().GetString();
@@ -382,8 +523,7 @@ public:
             {
                 if (m_dataOnHost)
                 {
-                    // Renderer's auxiliaryData pointer is valid on host — borrow directly
-                    hostLidarAuxPoints = reinterpret_cast<omni::sensors::LidarAuxiliaryData*>(hostGMO->auxiliaryData);
+                    rebaseLidarAuxReadOnly(localInitGMO, localInitLidarAux);
                 }
                 else
                 {
@@ -434,8 +574,7 @@ public:
             {
                 if (m_dataOnHost)
                 {
-                    // Renderer's auxiliaryData pointer is valid on host — borrow directly
-                    hostRadarAuxPoints = reinterpret_cast<omni::sensors::RadarAuxiliaryData*>(hostGMO->auxiliaryData);
+                    rebaseRadarAuxReadOnly(localInitGMO, localInitRadarAux);
                 }
                 else
                 {
@@ -455,6 +594,8 @@ public:
         m_outputAzimuth = db.inputs.outputAzimuth();
         m_outputElevation = db.inputs.outputElevation();
         m_outputDistance = db.inputs.outputDistance();
+
+        const omni::sensors::LidarAuxiliaryData* initLidarAux = m_dataOnHost ? &localInitLidarAux : hostLidarAuxPoints;
 
         // Lambda to validate output flags and check aux type/modality requirements
         auto validateOutput = [&](bool inputEnabled, omni::sensors::AuxType requiredAuxType,
@@ -496,7 +637,7 @@ public:
 
             if (requiredModality == omni::sensors::Modality::LIDAR && auxType > omni::sensors::AuxType::NONE)
             {
-                bool auxMemberFilled = (hostLidarAuxPoints->filledAuxMembers & auxMember) == auxMember;
+                bool auxMemberFilled = (initLidarAux->filledAuxMembers & auxMember) == auxMember;
                 if (!auxMemberFilled)
                 {
                     CARB_LOG_WARN(
@@ -1108,6 +1249,16 @@ public:
         omni::sensors::AuxType auxType;
         omni::sensors::Modality modality;
 
+        // The host path rebases element pointers into local structs (localGMO,
+        // localLidarAux, localRadarAux) rather than calling
+        // getModelOutputPtrFromBuffer(), which mutates the renderer's shared
+        // buffer and causes crashes when other components read it concurrently.
+        // The GPU path uses the persistent cudaMallocHost-backed member
+        // pointers (state.hostGMO, etc.) instead.
+        omni::sensors::GenericModelOutput localGMO{};
+        omni::sensors::LidarAuxiliaryData localLidarAux{};
+        omni::sensors::RadarAuxiliaryData localRadarAux{};
+
         if (state.m_dataOnHost)
         {
             // Host path: read scalar fields first via simple cast (no pointer rebasing yet)
@@ -1137,9 +1288,11 @@ public:
         // Now that numElements > 0, rebase element + aux pointers for the host path
         if (state.m_dataOnHost)
         {
-            // getModelOutputPtrFromBuffer computes correct host offsets for element arrays and
-            // auxiliary data based on numElements (only valid when numElements > 0)
-            state.hostGMO = omni::sensors::getModelOutputPtrFromBuffer(reinterpret_cast<void*>(db.inputs.dataPtr()));
+            if (!rebaseGMOReadOnly(reinterpret_cast<void*>(db.inputs.dataPtr()), localGMO))
+            {
+                CARB_LOG_ERROR("IsaacCreateRTXLidarScanBuffer: GMO buffer validation failed.");
+                return false;
+            }
         }
 
         // Read auxiliary data
@@ -1147,13 +1300,10 @@ public:
         {
             if (state.m_dataOnHost)
             {
-                // getModelOutputPtrFromBuffer already rebased auxiliaryData and its internal pointers
                 if (modality == omni::sensors::Modality::LIDAR)
-                    state.hostLidarAuxPoints =
-                        reinterpret_cast<omni::sensors::LidarAuxiliaryData*>(state.hostGMO->auxiliaryData);
+                    rebaseLidarAuxReadOnly(localGMO, localLidarAux);
                 else if (modality == omni::sensors::Modality::RADAR)
-                    state.hostRadarAuxPoints =
-                        reinterpret_cast<omni::sensors::RadarAuxiliaryData*>(state.hostGMO->auxiliaryData);
+                    rebaseRadarAuxReadOnly(localGMO, localRadarAux);
             }
             else
             {
@@ -1212,41 +1362,40 @@ public:
                                  [&]()
                                  {
                                      memcpy(state.h_azimuthBuffers[state.m_currentBuffer].data() + startIndex,
-                                            state.hostGMO->elements.x, numElementsToCopyToCurrentBuffer * sizeof(float));
+                                            localGMO.elements.x, numElementsToCopyToCurrentBuffer * sizeof(float));
                                      if (numElementsToCopyToNextBuffer > 0)
                                          memcpy(state.h_azimuthBuffers[state.m_nextBuffer].data(),
-                                                state.hostGMO->elements.x + numElementsToCopyToCurrentBuffer,
+                                                localGMO.elements.x + numElementsToCopyToCurrentBuffer,
                                                 numElementsToCopyToNextBuffer * sizeof(float));
                                  });
                 tasking->addTask(carb::tasking::Priority::eHigh, copyTasks,
                                  [&]()
                                  {
                                      memcpy(state.h_elevationBuffers[state.m_currentBuffer].data() + startIndex,
-                                            state.hostGMO->elements.y, numElementsToCopyToCurrentBuffer * sizeof(float));
+                                            localGMO.elements.y, numElementsToCopyToCurrentBuffer * sizeof(float));
                                      if (numElementsToCopyToNextBuffer > 0)
                                          memcpy(state.h_elevationBuffers[state.m_nextBuffer].data(),
-                                                state.hostGMO->elements.y + numElementsToCopyToCurrentBuffer,
+                                                localGMO.elements.y + numElementsToCopyToCurrentBuffer,
                                                 numElementsToCopyToNextBuffer * sizeof(float));
                                  });
                 tasking->addTask(carb::tasking::Priority::eHigh, copyTasks,
                                  [&]()
                                  {
                                      memcpy(state.h_distanceBuffers[state.m_currentBuffer].data() + startIndex,
-                                            state.hostGMO->elements.z, numElementsToCopyToCurrentBuffer * sizeof(float));
+                                            localGMO.elements.z, numElementsToCopyToCurrentBuffer * sizeof(float));
                                      if (numElementsToCopyToNextBuffer > 0)
                                          memcpy(state.h_distanceBuffers[state.m_nextBuffer].data(),
-                                                state.hostGMO->elements.z + numElementsToCopyToCurrentBuffer,
+                                                localGMO.elements.z + numElementsToCopyToCurrentBuffer,
                                                 numElementsToCopyToNextBuffer * sizeof(float));
                                  });
                 tasking->addTask(carb::tasking::Priority::eHigh, copyTasks,
                                  [&]()
                                  {
                                      memcpy(state.h_flagsBuffers[state.m_currentBuffer].data() + startIndex,
-                                            state.hostGMO->elements.flags,
-                                            numElementsToCopyToCurrentBuffer * sizeof(uint8_t));
+                                            localGMO.elements.flags, numElementsToCopyToCurrentBuffer * sizeof(uint8_t));
                                      if (numElementsToCopyToNextBuffer > 0)
                                          memcpy(state.h_flagsBuffers[state.m_nextBuffer].data(),
-                                                state.hostGMO->elements.flags + numElementsToCopyToCurrentBuffer,
+                                                localGMO.elements.flags + numElementsToCopyToCurrentBuffer,
                                                 numElementsToCopyToNextBuffer * sizeof(uint8_t));
                                  });
 
@@ -1257,11 +1406,11 @@ public:
                                      [&]()
                                      {
                                          memcpy(state.h_intensityBuffers[state.m_currentBuffer].data() + startIndex,
-                                                state.hostGMO->elements.scalar,
+                                                localGMO.elements.scalar,
                                                 numElementsToCopyToCurrentBuffer * sizeof(float));
                                          if (numElementsToCopyToNextBuffer > 0)
                                              memcpy(state.h_intensityBuffers[state.m_nextBuffer].data(),
-                                                    state.hostGMO->elements.scalar + numElementsToCopyToCurrentBuffer,
+                                                    localGMO.elements.scalar + numElementsToCopyToCurrentBuffer,
                                                     numElementsToCopyToNextBuffer * sizeof(float));
                                      });
                 }
@@ -1273,8 +1422,8 @@ public:
                                      [&]()
                                      {
                                          auto* dst = state.h_timestampBuffers[state.m_currentBuffer].data() + startIndex;
-                                         auto* offsets = state.hostGMO->elements.timeOffsetNs;
-                                         uint64_t baseNs = state.hostGMO->timestampNs;
+                                         auto* offsets = localGMO.elements.timeOffsetNs;
+                                         uint64_t baseNs = localGMO.timestampNs;
                                          for (size_t i = 0; i < numElementsToCopyToCurrentBuffer; ++i)
                                              dst[i] = baseNs + static_cast<uint64_t>(offsets[i]);
                                          if (numElementsToCopyToNextBuffer > 0)
@@ -1306,34 +1455,30 @@ public:
                     }
                 };
 
-                // Copy lidar auxiliary data (guard pointer dereference — hostLidarAuxPoints is nullptr for RADAR)
-                if (state.hostLidarAuxPoints)
+                if (modality == omni::sensors::Modality::LIDAR && auxType > omni::sensors::AuxType::NONE)
                 {
-                    copyHostAuxData(state.m_outputEmitterId, state.h_emitterIdBuffers,
-                                    state.hostLidarAuxPoints->emitterId, sizeof(uint32_t));
-                    copyHostAuxData(state.m_outputChannelId, state.h_channelIdBuffers,
-                                    state.hostLidarAuxPoints->channelId, sizeof(uint32_t));
-                    copyHostAuxData(state.m_outputMaterialId, state.h_materialIdBuffers,
-                                    state.hostLidarAuxPoints->matId, sizeof(uint32_t));
-                    copyHostAuxData(state.m_outputTickId, state.h_tickIdBuffers, state.hostLidarAuxPoints->tickId,
-                                    sizeof(uint32_t));
-                    copyHostAuxData(state.m_outputHitNormal, state.h_normalBuffers,
-                                    state.hostLidarAuxPoints->hitNormals, sizeof(float3));
-                    copyHostAuxData(state.m_outputVelocity, state.h_velocityBuffers,
-                                    state.hostLidarAuxPoints->velocities, sizeof(float3));
-                    copyHostAuxData(state.m_outputObjectId, state.h_objectIdBuffers, state.hostLidarAuxPoints->objId,
-                                    sizeof(uint8_t), 16);
                     copyHostAuxData(
-                        state.m_outputEchoId, state.h_echoIdBuffers, state.hostLidarAuxPoints->echoId, sizeof(uint8_t));
-                    copyHostAuxData(state.m_outputTickState, state.h_tickStateBuffers,
-                                    state.hostLidarAuxPoints->tickStates, sizeof(uint8_t));
+                        state.m_outputEmitterId, state.h_emitterIdBuffers, localLidarAux.emitterId, sizeof(uint32_t));
+                    copyHostAuxData(
+                        state.m_outputChannelId, state.h_channelIdBuffers, localLidarAux.channelId, sizeof(uint32_t));
+                    copyHostAuxData(
+                        state.m_outputMaterialId, state.h_materialIdBuffers, localLidarAux.matId, sizeof(uint32_t));
+                    copyHostAuxData(state.m_outputTickId, state.h_tickIdBuffers, localLidarAux.tickId, sizeof(uint32_t));
+                    copyHostAuxData(
+                        state.m_outputHitNormal, state.h_normalBuffers, localLidarAux.hitNormals, sizeof(float3));
+                    copyHostAuxData(
+                        state.m_outputVelocity, state.h_velocityBuffers, localLidarAux.velocities, sizeof(float3));
+                    copyHostAuxData(
+                        state.m_outputObjectId, state.h_objectIdBuffers, localLidarAux.objId, sizeof(uint8_t), 16);
+                    copyHostAuxData(state.m_outputEchoId, state.h_echoIdBuffers, localLidarAux.echoId, sizeof(uint8_t));
+                    copyHostAuxData(
+                        state.m_outputTickState, state.h_tickStateBuffers, localLidarAux.tickStates, sizeof(uint8_t));
                 }
 
-                // Copy radar auxiliary data (guard pointer dereference — hostRadarAuxPoints is nullptr for LIDAR)
-                if (state.hostRadarAuxPoints)
+                if (modality == omni::sensors::Modality::RADAR && auxType > omni::sensors::AuxType::NONE)
                 {
                     copyHostAuxData(state.m_outputRadialVelocityMS, state.h_radialVelocityMSBuffers,
-                                    state.hostRadarAuxPoints->rv_ms, sizeof(float));
+                                    localRadarAux.rv_ms, sizeof(float));
                 }
 
                 // Wait for ALL copy tasks to complete before processing
@@ -1350,7 +1495,7 @@ public:
                 // 1. Find valid indices — parallel two-pass filter
                 // In per-frame mode, read flags directly from GMO data.
                 const uint8_t* flags =
-                    perFrameOutput ? state.hostGMO->elements.flags : state.h_flagsBuffers[state.m_currentBuffer].data();
+                    perFrameOutput ? localGMO.elements.flags : state.h_flagsBuffers[state.m_currentBuffer].data();
                 constexpr size_t kFilterChunkSize = 4096;
                 const size_t numChunks = (numPointsToCheck + kFilterChunkSize - 1) / kFilterChunkSize;
                 std::vector<size_t> chunkCounts(numChunks);
@@ -1409,12 +1554,9 @@ public:
                     // In per-frame mode, source pointers read directly from GMO/aux
                     // data, skipping the intermediate double buffers entirely.
                     const auto curBuf = state.m_currentBuffer;
-                    const float* azData =
-                        perFrameOutput ? state.hostGMO->elements.x : state.h_azimuthBuffers[curBuf].data();
-                    const float* elData =
-                        perFrameOutput ? state.hostGMO->elements.y : state.h_elevationBuffers[curBuf].data();
-                    const float* distData =
-                        perFrameOutput ? state.hostGMO->elements.z : state.h_distanceBuffers[curBuf].data();
+                    const float* azData = perFrameOutput ? localGMO.elements.x : state.h_azimuthBuffers[curBuf].data();
+                    const float* elData = perFrameOutput ? localGMO.elements.y : state.h_elevationBuffers[curBuf].data();
+                    const float* distData = perFrameOutput ? localGMO.elements.z : state.h_distanceBuffers[curBuf].data();
                     float3* pcOut = state.h_pcBufferValid.data();
                     const float degToRad = static_cast<float>(M_PI) / 180.0f;
 
@@ -1423,7 +1565,7 @@ public:
                     float* distDst = state.m_outputDistance ? state.h_distanceBufferValid.data() : nullptr;
                     const float* intSrc =
                         state.m_outputIntensity ?
-                            (perFrameOutput ? state.hostGMO->elements.scalar : state.h_intensityBuffers[curBuf].data()) :
+                            (perFrameOutput ? localGMO.elements.scalar : state.h_intensityBuffers[curBuf].data()) :
                             nullptr;
                     float* intDst = state.m_outputIntensity ? state.h_intensityBufferValid.data() : nullptr;
 
@@ -1433,60 +1575,60 @@ public:
                         (!perFrameOutput && state.m_outputTimestamp) ? state.h_timestampBuffers[curBuf].data() : nullptr;
                     uint64_t* tsDst = state.m_outputTimestamp ? state.h_timestampBufferValid.data() : nullptr;
                     const int32_t* tsOffsets =
-                        (perFrameOutput && state.m_outputTimestamp) ? state.hostGMO->elements.timeOffsetNs : nullptr;
-                    const uint64_t tsBaseNs = state.hostGMO->timestampNs;
+                        (perFrameOutput && state.m_outputTimestamp) ? localGMO.elements.timeOffsetNs : nullptr;
+                    const uint64_t tsBaseNs = localGMO.timestampNs;
 
-                    const uint32_t* emSrc = state.m_outputEmitterId ?
-                                                (perFrameOutput ? state.hostLidarAuxPoints->emitterId :
-                                                                  state.h_emitterIdBuffers[curBuf].data()) :
-                                                nullptr;
+                    const uint32_t* emSrc =
+                        state.m_outputEmitterId ?
+                            (perFrameOutput ? localLidarAux.emitterId : state.h_emitterIdBuffers[curBuf].data()) :
+                            nullptr;
                     uint32_t* emDst = state.m_outputEmitterId ? state.h_emitterIdBufferValid.data() : nullptr;
-                    const uint32_t* chSrc = state.m_outputChannelId ?
-                                                (perFrameOutput ? state.hostLidarAuxPoints->channelId :
-                                                                  state.h_channelIdBuffers[curBuf].data()) :
-                                                nullptr;
+                    const uint32_t* chSrc =
+                        state.m_outputChannelId ?
+                            (perFrameOutput ? localLidarAux.channelId : state.h_channelIdBuffers[curBuf].data()) :
+                            nullptr;
                     uint32_t* chDst = state.m_outputChannelId ? state.h_channelIdBufferValid.data() : nullptr;
-                    const uint32_t* matSrc = state.m_outputMaterialId ?
-                                                 (perFrameOutput ? state.hostLidarAuxPoints->matId :
-                                                                   state.h_materialIdBuffers[curBuf].data()) :
-                                                 nullptr;
+                    const uint32_t* matSrc =
+                        state.m_outputMaterialId ?
+                            (perFrameOutput ? localLidarAux.matId : state.h_materialIdBuffers[curBuf].data()) :
+                            nullptr;
                     uint32_t* matDst = state.m_outputMaterialId ? state.h_materialIdBufferValid.data() : nullptr;
                     const uint32_t* tkSrc =
                         state.m_outputTickId ?
-                            (perFrameOutput ? state.hostLidarAuxPoints->tickId : state.h_tickIdBuffers[curBuf].data()) :
+                            (perFrameOutput ? localLidarAux.tickId : state.h_tickIdBuffers[curBuf].data()) :
                             nullptr;
                     uint32_t* tkDst = state.m_outputTickId ? state.h_tickIdBufferValid.data() : nullptr;
                     const float3* nrmSrc =
                         state.m_outputHitNormal ?
-                            (perFrameOutput ? reinterpret_cast<const float3*>(state.hostLidarAuxPoints->hitNormals) :
+                            (perFrameOutput ? reinterpret_cast<const float3*>(localLidarAux.hitNormals) :
                                               state.h_normalBuffers[curBuf].data()) :
                             nullptr;
                     float3* nrmDst = state.m_outputHitNormal ? state.h_normalBufferValid.data() : nullptr;
                     const float3* velSrc =
                         state.m_outputVelocity ?
-                            (perFrameOutput ? reinterpret_cast<const float3*>(state.hostLidarAuxPoints->velocities) :
+                            (perFrameOutput ? reinterpret_cast<const float3*>(localLidarAux.velocities) :
                                               state.h_velocityBuffers[curBuf].data()) :
                             nullptr;
                     float3* velDst = state.m_outputVelocity ? state.h_velocityBufferValid.data() : nullptr;
                     const uint8_t* objSrc =
                         state.m_outputObjectId ?
-                            (perFrameOutput ? state.hostLidarAuxPoints->objId : state.h_objectIdBuffers[curBuf].data()) :
+                            (perFrameOutput ? localLidarAux.objId : state.h_objectIdBuffers[curBuf].data()) :
                             nullptr;
                     uint8_t* objDst = state.m_outputObjectId ? state.h_objectIdBufferValid.data() : nullptr;
                     const uint8_t* echoSrc =
                         state.m_outputEchoId ?
-                            (perFrameOutput ? state.hostLidarAuxPoints->echoId : state.h_echoIdBuffers[curBuf].data()) :
+                            (perFrameOutput ? localLidarAux.echoId : state.h_echoIdBuffers[curBuf].data()) :
                             nullptr;
                     uint8_t* echoDst = state.m_outputEchoId ? state.h_echoIdBufferValid.data() : nullptr;
-                    const uint8_t* tickStSrc = state.m_outputTickState ?
-                                                   (perFrameOutput ? state.hostLidarAuxPoints->tickStates :
-                                                                     state.h_tickStateBuffers[curBuf].data()) :
-                                                   nullptr;
+                    const uint8_t* tickStSrc =
+                        state.m_outputTickState ?
+                            (perFrameOutput ? localLidarAux.tickStates : state.h_tickStateBuffers[curBuf].data()) :
+                            nullptr;
                     uint8_t* tickStDst = state.m_outputTickState ? state.h_tickStateBufferValid.data() : nullptr;
-                    const float* rvSrc = state.m_outputRadialVelocityMS ?
-                                             (perFrameOutput ? state.hostRadarAuxPoints->rv_ms :
-                                                               state.h_radialVelocityMSBuffers[curBuf].data()) :
-                                             nullptr;
+                    const float* rvSrc =
+                        state.m_outputRadialVelocityMS ?
+                            (perFrameOutput ? localRadarAux.rv_ms : state.h_radialVelocityMSBuffers[curBuf].data()) :
+                            nullptr;
                     float* rvDst = state.m_outputRadialVelocityMS ? state.h_radialVelocityMSBufferValid.data() : nullptr;
 
                     // Fused parallel loop: cartesian computation + all output gathering
@@ -1621,7 +1763,7 @@ public:
                     }
                 }
 
-                auto frameEnd = state.hostGMO->frameEnd;
+                auto frameEnd = localGMO.frameEnd;
                 getTransformFromSensorPose(frameEnd, matrixOutput);
 
                 // Swap the current and next buffers
