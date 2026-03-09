@@ -68,7 +68,7 @@ How to Create an RTX Radar
 --------------------------
 
 The ``isaacsim.sensors.rtx`` extension provides one API for creating RTX Radars. In addition, the ``omni.replicator.core``
-extension provides even lower-level APIs for creating ``OmnRadar`` prims (including batch creation) and attaching render
+extension provides even lower-level APIs for creating ``OmniRadar`` prims (including batch creation) and attaching render
 products to them.
 
 Create an RTX Radar Using Command
@@ -83,7 +83,7 @@ to support deprecated workflows.
 
 The example command above creates an ``OmniRadar`` prim in the stage at the
 specified ``translation`` with the specified ``orientation``, at path ``/radar``. The prim is set to be invisible
-in the stage. The prim's ``omni:sensor:Core:tickRate`` attribute is set to 10 Hz from 20 Hz (default).
+in the stage. The prim's ``omni:sensor:tickRate`` attribute is set to 10 Hz from 20 Hz (default).
 
 Review the `OmniSensorGenericRadarWpmDmatAPI <https://docs.omniverse.nvidia.com/kit/docs/omni.usd.schema.omni_sensors/107.3.1/omni_sensors_schema.html#omnisensorgenericradarwpmdmatapi>`_
 schema in the ``omni.usd.schema.omni_sensors`` extension to learn which attributes can be set on the ``OmniRadar`` prim.

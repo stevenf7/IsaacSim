@@ -55,7 +55,7 @@ demonstrates how to use these APIs. Examine the source code to learn more.
 
     ./python.sh standalone_examples/api/isaacsim.sensors.rtx/apply_nonvisual_materials.py
 
-After running this example, verify that you recieve the following:
+After running this example, verify that you receive the following:
 
 .. figure:: /images/isim_5.1_full_tut_viewport_apply_nonvisual_materials_base.png
     :align: center
@@ -70,7 +70,7 @@ shows the menu selection:
     :width: 800
     :alt: Selecting the Non-Visual Material ID Debug View.
 
-After selecting the Debug View, verify that you recieve the following:
+After selecting the Debug View, verify that you receive the following:
 
 .. figure:: /images/isim_5.1_full_tut_viewport_apply_nonvisual_materials_debug_view.png
     :align: center
