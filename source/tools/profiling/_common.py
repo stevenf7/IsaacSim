@@ -391,5 +391,6 @@ def parse_common_args(parser: argparse.ArgumentParser, argv: list[str] | None = 
         Parsed namespace with ``extra_benchmark_args`` attached.
     """
     args, extra = parser.parse_known_args(argv)
-    args.extra_benchmark_args = extra
+    # Strip the -- separator from the extra arguments so downstream scripts get clean arguments.
+    args.extra_benchmark_args = [arg for arg in extra if arg != "--"]
     return args
