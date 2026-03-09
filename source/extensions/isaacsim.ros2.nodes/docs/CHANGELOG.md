@@ -1,4 +1,8 @@
 # Changelog
+## [1.10.0] - 2026-03-05
+### Changed
+- ROS2PublishJointState node now publishes from sensor inputs (e.g. IsaacReadJointState) for joint state data
+
 ## [1.9.0] - 2026-03-02
 ### Changed
 - Shifted RTX sensor scan accumulation and post-processing back to host by default to reduce GPU resource contention and improve frametime & frametime consistency. Post-processing-on-device still available as option by setting app.sensors.nv.[modality].outputBufferOnGPU=true.

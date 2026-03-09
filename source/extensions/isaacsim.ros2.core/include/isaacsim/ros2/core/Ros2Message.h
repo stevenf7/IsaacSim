@@ -487,6 +487,28 @@ public:
                            const double& stageUnits) = 0;
 
     /**
+     * @brief Write the message from joint state arrays (e.g. from Isaac Read Joint State node).
+     * @details
+     * Sets the joint names, positions, velocities, efforts, and timestamp from the given arrays.
+     * Does not use articulation or stage. Use when publishing from OmniGraph inputs.
+     *
+     * @param[in] timeStamp Time (seconds).
+     * @param[in] jointNames Joint name strings (size n).
+     * @param[in] jointPositions Joint positions (rad or m), size n.
+     * @param[in] jointVelocities Joint velocities (rad/s or m/s), size n.
+     * @param[in] jointEfforts Joint efforts (Nm or N), size n.
+     * @param[in] dofTypes Per-DOF type: 0 = revolute, 1 = prismatic; size n.
+     * @param[in] stageMetersPerUnit Stage meters per USD unit (e.g. 0.01 for cm).
+     */
+    virtual void writeData(const double& timeStamp,
+                           const std::vector<std::string>& jointNames,
+                           const std::vector<double>& jointPositions,
+                           const std::vector<double>& jointVelocities,
+                           const std::vector<double>& jointEfforts,
+                           const std::vector<uint8_t>& dofTypes,
+                           double stageMetersPerUnit) = 0;
+
+    /**
      * @brief Read the message field values.
      * @details
      * Extracts joint names, positions, velocities, efforts, and timestamp

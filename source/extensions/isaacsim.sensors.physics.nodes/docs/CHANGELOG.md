@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.0] - 2026-03-05
+### Added
+- Add Isaac Read Joint State node that reads full joint state (names, positions, velocities, efforts, DOF types, stage units) from an articulation prim
+
 ## [1.2.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings

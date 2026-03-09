@@ -503,6 +503,17 @@ public:
                            const double& stageUnits);
 
     /**
+     * @brief Sets the joint state data from arrays (no articulation/stage).
+     */
+    virtual void writeData(const double& timeStamp,
+                           const std::vector<std::string>& jointNames,
+                           const std::vector<double>& jointPositions,
+                           const std::vector<double>& jointVelocities,
+                           const std::vector<double>& jointEfforts,
+                           const std::vector<uint8_t>& dofTypes,
+                           double stageMetersPerUnit);
+
+    /**
      * @brief Reads the joint state data
      * @param[out] jointNames Vector of joint names
      * @param[out] jointPositions Array of joint positions

@@ -4,7 +4,7 @@
 
 # Overview
 
-The isaacsim.sensors.physics.nodes extension provides OmniGraph nodes for reading physics-based sensor data in Isaac Sim. The extension offers three specialized sensor reader nodes that integrate with Isaac Sim's physics simulation to output real-time sensor measurements for robotics applications.
+The isaacsim.sensors.physics.nodes extension provides OmniGraph nodes for reading physics-based sensor data in Isaac Sim. The extension offers four specialized sensor reader nodes that integrate with Isaac Sim's physics simulation to output real-time sensor measurements for robotics applications.
 
 ## Key Components
 
@@ -54,6 +54,24 @@ The IsaacReadEffortSensor node measures joint effort (torque/force) from articul
 **Outputs:**
 - `value`: Joint effort measurements
 - `sensorTime`: Timestamp of sensor reading
+- `execOut`: Execution signal
+
+### IsaacReadJointState Node
+
+The IsaacReadJointState node reads full joint state from an articulation: joint names, positions, velocities, efforts, per-DOF types, and stage units. It uses the joint state sensor backend from isaacsim.sensors.experimental.physics.
+
+**Inputs:**
+- `prim`: Path to the articulation root prim
+- `execIn`: Execution trigger
+
+**Outputs:**
+- `jointNames`: Joint names in articulation order
+- `jointPositions`: Joint positions (rad or m)
+- `jointVelocities`: Joint velocities (rad/s or m/s)
+- `jointEfforts`: Joint efforts (Nm or N)
+- `jointDofTypes`: Per-DOF type (0 = revolute, 1 = prismatic)
+- `stageMetersPerUnit`: Stage meters per USD unit for SI conversion
+- `sensorTime`: Timestamp of the sensor reading
 - `execOut`: Execution signal
 
 ## Functionality
