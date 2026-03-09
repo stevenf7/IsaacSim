@@ -112,14 +112,14 @@ When a collision pair row is selected, the two rigid bodies are highlighted in t
 Example Usage: Unitree Dex5 Hand
 ===================================
 
-This walkthrough uses the **Isaac/Robots/Unitree/Dex5/Dex5-URDF-R.usd** asset from the Isaac Sim asset library.
+This walkthrough uses the **Isaac/Robots/Unitree/Dex5/Dex5-URDF-R.usda** asset from the Isaac Sim asset library.
 
 1. Open the Robot Asset
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 Open or reference the Dex5 hand asset onto your stage:
 
-**File > Open** or drag it from the Content Browser at ``Isaac/Robots/Unitree/Dex5/Dex5-URDF-R.usd``.
+**File > Open** or drag it from the Content Browser at ``Isaac/Robots/Unitree/Dex5/Dex5-URDF-R.usda``.
 
 
 
