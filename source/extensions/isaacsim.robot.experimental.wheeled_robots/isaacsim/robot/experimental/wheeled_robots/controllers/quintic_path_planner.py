@@ -190,11 +190,17 @@ def quintic_polynomials_planner(
     axg = ga * math.cos(gyaw)
     ayg = ga * math.sin(gyaw)
 
-    time, rx, ry, ryaw, rv, ra, rj = [], [], [], [], [], [], []
+    time: list[float] = []
+    rx: list[float] = []
+    ry: list[float] = []
+    ryaw: list[float] = []
+    rv: list[float] = []
+    ra: list[float] = []
+    rj: list[float] = []
 
     for T in np.arange(MIN_T, MAX_T, MIN_T):
-        xqp = QuinticPolynomial(sx, vxs, axs, gx, vxg, axg, T)
-        yqp = QuinticPolynomial(sy, vys, ays, gy, vyg, ayg, T)
+        xqp = QuinticPolynomial(sx, vxs, axs, gx, vxg, axg, float(T))
+        yqp = QuinticPolynomial(sy, vys, ays, gy, vyg, ayg, float(T))
 
         time, rx, ry, ryaw, rv, ra, rj = [], [], [], [], [], [], []
 

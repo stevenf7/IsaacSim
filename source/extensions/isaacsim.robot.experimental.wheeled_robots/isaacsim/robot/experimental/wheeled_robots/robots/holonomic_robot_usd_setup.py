@@ -37,7 +37,15 @@ class HolonomicRobotUsdSetup:
         self._from_usd(robot_prim_path, com_prim_path)
 
     def _from_usd(self, robot_prim_path: str, com_prim_path: str) -> None:
-        """Parse mecanum wheel joint data from the USD stage."""
+        """Parse mecanum wheel joint data from the USD stage.
+
+        Args:
+            robot_prim_path: Path to the robot prim on the USD stage.
+            com_prim_path: Path to the center-of-mass prim (or empty to use robot prim).
+
+        Raises:
+            ValueError: If robot_prim_path is invalid.
+        """
         stage = stage_utils.get_current_stage(backend="usd")
         robot_prim = stage.GetPrimAtPath(robot_prim_path)
         if not robot_prim.IsValid():

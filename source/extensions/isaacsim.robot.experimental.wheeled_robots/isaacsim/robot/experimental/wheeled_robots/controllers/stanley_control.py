@@ -201,4 +201,4 @@ def calc_target_index(state: State, cx: list[float], cy: list[float]) -> tuple[i
     front_axle_vec = [-np.cos(state.yaw + np.pi / 2), -np.sin(state.yaw + np.pi / 2)]
     error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
 
-    return target_idx, error_front_axle
+    return int(target_idx), float(error_front_axle)

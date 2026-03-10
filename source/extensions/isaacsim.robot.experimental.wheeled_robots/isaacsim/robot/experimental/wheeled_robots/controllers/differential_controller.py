@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Differential drive controller for wheeled robots."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -64,6 +66,9 @@ class DifferentialController:
 
         Returns:
             Shape (2,) — [left wheel velocity, right wheel velocity].
+
+        Raises:
+            ValueError: If command does not have length 2.
         """
         if isinstance(command, list):
             command = np.array(command, dtype=np.float64)
