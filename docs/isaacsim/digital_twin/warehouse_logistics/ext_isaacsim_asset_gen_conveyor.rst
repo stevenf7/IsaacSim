@@ -112,8 +112,8 @@ The dataset is a collection of USD files used for the system creation. Each USD 
 
 Accompanying the assets dataset, there is a JSON file that contains the metadata needed to the UI workflow, and to configure the conveyor physics, if the original assets don't have the conveyor physics already embedded.
 
-    .. literalinclude:: ../../snippets/digital_twin/warehouse_logistics/ext_isaacsim_asset_gen_conveyor/dataset.py
-        :language: python
+    .. literalinclude:: ../../snippets/digital_twin/warehouse_logistics/ext_isaacsim_asset_gen_conveyor/dataset.json
+        :language: json
 
 .. note::
     Strict JSON types do not have comments, the snippet above have them included to explain the data. If you copy it, remember to remove the comments otherwise it will fail the extension.

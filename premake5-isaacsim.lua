@@ -466,7 +466,7 @@ SAMPLE_DIR=$SCRIPT_DIR/%s
             for _, dir in ipairs(pythonpath_dirs) do
                 -- Convert forward slashes to backslashes for Windows
                 local win_dir = dir:gsub("/", "\\")
-                table.insert(pythonpath_parts, '%%~dp0' .. rel_path .. win_dir)
+                table.insert(pythonpath_parts, '%~dp0' .. rel_path .. win_dir)
             end
             pythonpath_set = 'set PYTHONPATH=' .. table.concat(pythonpath_parts, ';') .. ';%PYTHONPATH%\n'
         end

@@ -20,6 +20,7 @@ from __future__ import annotations  # This allows us to hint types that do not y
 
 import argparse
 import asyncio
+import atexit
 import builtins
 import faulthandler
 import os
@@ -380,6 +381,8 @@ class SimulationApp:
         self.update()  # This app update triggers app ready status.
         builtins.ISAACSIM_APP_LAUNCHED = True
 
+        atexit.register(self._atexit_close)
+
     def _apply_renderer_defaults(self, launch_config: dict | None):
         """Apply renderer-specific defaults when values are not provided in the launch config.
 
@@ -404,9 +407,15 @@ class SimulationApp:
         if self._exiting is False and sys.meta_path is None:
             print(
                 "\033[91m"
-                + "ERROR: Python exiting while SimulationApp was still running, Please call close() on the SimulationApp object to exit cleanly"
+                + "WARNING: Python exiting while SimulationApp was still running without an explicit call to close()"
                 + "\033[0m"
             )
+
+    def _atexit_close(self):
+        """Automatically close the application during interpreter shutdown if close() was not called."""
+        if not self._exiting:
+            carb.log_warn("SimulationApp.close() was not called explicitly. Shutting down automatically")
+            self.close()
 
     ### Private methods
 

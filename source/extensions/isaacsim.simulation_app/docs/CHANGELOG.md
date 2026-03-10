@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.16.1] - 2026-03-07
+### Changed
+- Automatically close the application during interpreter shutdown if close() was not called
+
 ## [2.16.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings
