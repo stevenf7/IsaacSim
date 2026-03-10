@@ -76,7 +76,6 @@ The Windows build process will check a handful of versions before starting.  It 
  * VS 2026
  * MSVC v145
  * MSBuild 18.*
- * WinSDK 10.0.26100.0
 
 If you do not have these versions you can still start a build, run `build.bat --skip-compiler-version-check`
 
@@ -95,7 +94,7 @@ Install using Winget by running the following command in PowerShell:
    Ensure that the following versions are installed:
 
      - MSVC v145
-     - WinSDK 10.0.26100.7175
+     - WinSDK 10.0.26100.*
 
 #### Installing Visual Studio 2022 Community (Also Supported)
 
@@ -108,7 +107,7 @@ Install using Winget by running the following command in PowerShell:
    Ensure that the following versions are installed:
 
      - MSVC v145
-     - WinSDK 10.0.26100.7175
+     - WinSDK 10.0.26100.*
 
 #### Installing Windows SDK (as needed)
 
