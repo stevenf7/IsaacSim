@@ -23,11 +23,17 @@ Usage:
     # Skip download (reuse previously downloaded packages)
     python scan_packages.py --version 6.0.0-rc.19 --skip-download
 
+    # Skip download and unzip (reuse already-unpacked directories)
+    python scan_packages.py --version 6.0.0-rc.19 --skip-download --skip-unzip
+
     # Scan only linux release packages
     python scan_packages.py --version 6.0.0-rc.19 --filter linux --filter release
 
-    # Use custom URL patterns file
-    python scan_packages.py --version 6.0.0-rc.19 --urls-file my_urls.txt
+    # Use custom banned words file
+    python scan_packages.py --version 6.0.0-rc.19 --banned-words my_banned_words.json
+
+    # Skip scanning certain subdirectories
+    python scan_packages.py --version 6.0.0-rc.19 --exclude-dir kit --exclude-dir extscache
 
 Zip files are downloaded to --packages-dir/ (default: _build/packages/).
 In CI, zips are already present as artifact dependencies so --skip-download can be used.
@@ -52,18 +58,18 @@ REPO_ROOT = SCRIPT_DIR.parents[2]
 PACKMAN_LIST_API = "http://omnipackages.nvidia.com/api/v1/list/cloudfront/isaac-sim-standalone"
 CLOUDFRONT_BASE = "https://d4i3qtqj3r0z5.cloudfront.net"
 PACKAGE_NAME = "isaac-sim-standalone"
-DEFAULT_URLS_FILE = SCRIPT_DIR / "internal_urls.json"
+DEFAULT_BANNED_WORDS_FILE = SCRIPT_DIR / "banned_words.json"
 DEFAULT_PACKAGES_DIR = REPO_ROOT / "_build" / "packages"
 
 
-def load_url_patterns(urls_file: Path) -> tuple[list[str], list[str]]:
+def load_banned_words(banned_words_file: Path) -> tuple[list[str], list[str]]:
     """Load banned words and allowed patterns from a JSON file."""
-    with open(urls_file, "r") as f:
+    with open(banned_words_file, "r") as f:
         data = json.load(f)
     banned = data.get("banned_words", [])
     allowed = data.get("allowed_patterns", [])
     if not banned:
-        print(f"ERROR: No banned_words found in {urls_file}", file=sys.stderr)
+        print(f"ERROR: No banned_words found in {banned_words_file}", file=sys.stderr)
         sys.exit(1)
     return banned, allowed
 
@@ -79,7 +85,6 @@ def list_packages(version_prefix: str) -> dict:
         print(f"ERROR: Failed to query packman API: {e}", file=sys.stderr)
         sys.exit(1)
 
-    # Filter: match version prefix, exclude kit-tot / nightly variants
     matches = {}
     for filename, info in data.items():
         if "kit-tot" in filename:
@@ -149,13 +154,21 @@ def unzip_package(zip_path: Path, output_dir: Path, dir_name: str = None) -> Pat
     return extract_dir
 
 
-def scan_directory(scan_dir: Path, patterns: list[str], allowed: list[str]) -> list[dict]:
+def scan_directory(scan_dir: Path, patterns: list[str], allowed: list[str],
+                   exclude_dirs: list[str] = None) -> list[dict]:
     """Search for internal URL patterns using grep. Returns list of findings."""
     findings = []
     grep_pattern = "|".join(patterns)
+
+    grep_cmd = ["grep", "-rn", "--binary-files=text", "-E", grep_pattern]
+    for ed in (exclude_dirs or []):
+        grep_cmd.extend(["--exclude-dir", ed])
+    grep_cmd.extend(["--exclude-dir", "PACKAGE-LICENSES"])
+    grep_cmd.append(".")
+
     try:
         result = subprocess.run(
-            ["grep", "-rn", "--binary-files=text", "-E", grep_pattern, "."],
+            grep_cmd,
             cwd=scan_dir,
             capture_output=True,
             timeout=600,
@@ -175,6 +188,9 @@ def scan_directory(scan_dir: Path, patterns: list[str], allowed: list[str]) -> l
         filepath = parts[0].lstrip("./")
         line_num = parts[1]
         matched_line = parts[2].strip()
+
+        if not line_num.isdigit() or "\x00" in filepath or "\ufffd" in filepath:
+            continue
 
         if any(ap in matched_line for ap in allowed):
             continue
@@ -294,12 +310,18 @@ def main():
              "Can be specified multiple times (all must match).",
     )
     parser.add_argument(
-        "--urls-file", type=Path, default=DEFAULT_URLS_FILE,
-        help=f"File with internal URL patterns (default: {DEFAULT_URLS_FILE.name})",
+        "--banned-words", type=Path, default=DEFAULT_BANNED_WORDS_FILE,
+        dest="banned_words_file",
+        help=f"JSON file with banned_words and allowed_patterns (default: {DEFAULT_BANNED_WORDS_FILE.name})",
     )
     parser.add_argument(
         "--packages-dir", type=Path, default=DEFAULT_PACKAGES_DIR,
         help=f"Directory containing (or to download) zip packages (default: {DEFAULT_PACKAGES_DIR})",
+    )
+    parser.add_argument(
+        "--exclude-dir", action="append", default=[], dest="exclude_dirs",
+        help="Subdirectory name to skip during scanning (e.g. kit, extscache). "
+             "Can be specified multiple times.",
     )
     parser.add_argument(
         "--scan-nested", action="store_true",
@@ -331,7 +353,7 @@ def main():
         return
 
     # --- Load patterns ---
-    patterns, allowed = load_url_patterns(args.urls_file)
+    patterns, allowed = load_banned_words(args.banned_words_file)
     print(f"\nBanned patterns ({len(patterns)}):")
     for p in patterns:
         print(f"  - {p}")
@@ -339,6 +361,8 @@ def main():
         print(f"\nAllowed exceptions ({len(allowed)}):")
         for a in allowed:
             print(f"  + {a}")
+    if args.exclude_dirs:
+        print(f"\nExcluded directories: {', '.join(args.exclude_dirs)}")
 
     # --- Download ---
     pkg_dir = args.packages_dir
@@ -382,7 +406,7 @@ def main():
     all_findings = []
     for scan_dir in unpack_dirs:
         print(f"\n  Scanning: {scan_dir.name}")
-        findings = scan_directory(scan_dir, patterns, allowed)
+        findings = scan_directory(scan_dir, patterns, allowed, args.exclude_dirs)
         print(f"    Found {len(findings)} match(es) in flat files")
         all_findings.extend(findings)
 
