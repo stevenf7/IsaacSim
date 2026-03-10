@@ -66,9 +66,7 @@ def on_open_ide_clicked(ext_path: str, file_path: str) -> None:
             )
     else:
         try:
-            cmd_string = "code " + ext_path + " " + file_path
-            subprocess.run([cmd_string], shell=True, check=True)
-            # os.system("code " + ext_path + " " + file_path)
+            subprocess.run(["code", ext_path, file_path], check=True)
         except Exception:
             carb.log_warn(
                 "Could not open in VSCode. See Troubleshooting help here: https://code.visualstudio.com/docs/editor/command-line#_common-questions"

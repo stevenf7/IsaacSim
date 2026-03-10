@@ -1,4 +1,8 @@
 # Changelog
+## [1.7.2] - 2026-03-09
+### Fixed
+- Hardened subprocess calls to avoid shell=True with string concatenation
+
 ## [1.7.1] - 2026-03-05
 ### Fixed
 - Fixed incorrect type annotation for SearchWidget
