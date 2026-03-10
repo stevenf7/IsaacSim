@@ -55,6 +55,7 @@ isaacsim.core.experimental.api
 * ``control_robot_numpy.py``
 * ``control_robot_torch.py``
 * ``control_robot_warp.py``
+* ``deformable_stress_visualization.py``
 * ``omnigraph_triggers.py``
 * ``simulation_callbacks.py``
 * ``visual_materials.py``

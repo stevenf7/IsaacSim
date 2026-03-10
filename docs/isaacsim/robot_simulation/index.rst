@@ -15,6 +15,12 @@
 Robot Simulation 
 ============================
 
+.. note::
+   We are introducing a new :doc:`Motion Generation (Experimental) <../motion_generation/index>` API which aims to package all Isaac Sim control algorithms 
+   (wheeled robots, manipulators, humanoids) under a single framework. This new API provides a flexible controller composition 
+   system and simplifies building collision world models from your USD stage. This extension is documented under 
+   the :doc:`Robot Motion (Experimental) <../robot_motion_experimental/index>` section.
+
 The `Robot Simulation` section provides information on tools that you will need to move a robot. The lowest level of control is joint control. For the next level up, we separated the controllers by the robot types, for they represent the three types of controllers we provide in |isaac-sim_short|:
 
 - **Wheeled Robots**: use controllers that are based on universal formulas and require very few robot-specific parameters as inputs. 
@@ -68,4 +74,3 @@ Tips and Deep Dives
 
    ./robot_simulation_tips
    ./robot_simulation_core_concepts
-

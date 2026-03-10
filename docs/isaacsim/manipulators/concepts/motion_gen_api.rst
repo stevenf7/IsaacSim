@@ -13,6 +13,9 @@
 Motion Generation Extension API Documentation
 ==============================================
 
+.. note::
+   For new development, consider using the newer experimental motion generation API in :doc:`Motion Generation (Experimental) <../../motion_generation/index>`, which provides improved interfaces and additional features.
+
 .. _isaac_sim_motion_generation_about_rmp:
 
 See the |isaac-sim_short| Motion Generation Extension |link_ext| for usage information. This API content is part of the broader |omni| API documentation.

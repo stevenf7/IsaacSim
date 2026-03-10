@@ -11,6 +11,9 @@
 Path Planner Algorithm
 +++++++++++++++++++++++
 
+.. note::
+   For new development, consider using the newer experimental motion generation API in :doc:`Motion Generation (Experimental) <../../motion_generation/index>` and :doc:`cuMotion Integration <../../cumotion/index>`, which provide improved interfaces and additional features.
+
 A :ref:`isaac_sim_path_planner` is an algorithm that outputs a series of configuration space waypoints, which
 when linearly interpolated, produce a collision-free path from a starting c-space pose to a c-space or task-space target pose.
 The `PathPlanner` class provides an interface that specifies the necessary functions that must be fulfilled to specify a path planning algorithm that can interface with |isaac-sim|.

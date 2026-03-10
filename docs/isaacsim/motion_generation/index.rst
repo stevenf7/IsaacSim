@@ -1,7 +1,7 @@
 
-=====================
-Motion Generation API
-=====================
+=================================
+Motion Generation (Experimental)
+=================================
 
 The Motion Generation API provides a unified framework for real-time motion generation in |isaac-sim_short|. 
 The framework includes a flexible, composable system for controlling robots, supporting both simple single-controller setups 
