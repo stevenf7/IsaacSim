@@ -20,7 +20,7 @@ Newton Physics Backend
 
 |isaac-sim_short| supports multiple physics backends. In addition to the default |physx| backend, you can now use Newton as the simulation backend.
 
-`Newton <https://newton-physics.github.io/newton/>`_ is a GPU-accelerated, extensible, and differentiable physics simulation engine designed for robotics and research. Built on `NVIDIA Warp <https://nvidia.github.io/warp/>`_ and integrating `MuJoCo Warp <https://github.com/google-deepmind/mujoco_warp>`_, Newton provides high-performance simulation with multiple solver implementations including XPBD, MuJoCo, Featherstone, and SemiImplicit. Newton is an open-source project maintained by Disney Research, Google DeepMind, and NVIDIA.
+`Newton <https://newton-physics.github.io/newton/>`_ is a GPU-accelerated, extensible, and differentiable physics simulation engine designed for robotics and research. Built on `NVIDIA Warp <https://nvidia.github.io/warp/>`_ and integrating `MuJoCo Warp <https://github.com/google-deepmind/mujoco_warp>`_. Newton provides high-performance simulation with multiple solver implementations including XPBD, MuJoCo, Featherstone, and SemiImplicit. Newton is an open-source project maintained by Disney Research, Google DeepMind, and NVIDIA.
 
 .. note::
     Newton integration in |isaac-sim_short| is experimental. The API and features may change in future releases.
@@ -47,7 +47,7 @@ When Newton is active, it replaces PhysX as the simulation backend while maintai
 Using the Experimental Core API
 -------------------------------
 
-The ``isaacsim.core.experimental`` extension provides engine-agnostic building blocks that ensure compatibility across different physics backends. User extensions and applications are highly recommended to use ``isaacsim.core.experimental`` to write simulation code that works with all physics backends (PhysX, Newton). See the `Core Experimental API documentation <../py/docs/overview/experimental.html>`_ for more details.
+The ``isaacsim.core.experimental`` extension provides engine-agnostic building blocks that ensure compatibility across different physics backends. User extensions and applications are highly recommended to use ``isaacsim.core.experimental`` to write simulation code that works with all physics backends (PhysX, Newton). Refer to `Core Experimental API documentation <../py/docs/overview/experimental.html>`_ for more details.
 
 
 Launching Isaac Sim with Newton
@@ -146,16 +146,22 @@ The following example loads a Franka robot and simulates it with Newton:
 
     The physics engine selector in the viewport menu.
 
-To compare simulation results between Newton and PhysX: stop the simulation, switch the physics engine from "newton" to "physx" using the menu shown above, and play the simulation again.
+For more on the physics umbrella UI (engine selector, scene settings, and related controls), see the `Omni Physics UI documentation <http://omniverse-docs.s3-website-us-east-1.amazonaws.com/omni_physics/110.0/dev_guide/physics_umbrella/physics_umbrella_ui.html>`_.
+
+To compare simulation results between Newton and PhysX: 
+
+* stop the simulation
+* switch the physics engine from "newton" to "physx" using the menu shown above
+* play the simulation again
 
 
 Asset Compatibility
 ===================
 
-Existing PhysX-based assets in |isaac-sim_short| are compatible with Newton. However, these assets are tuned for PhysX and may not produce optimal results with Newton/MuJoCo out of the box. Users may need to adjust physics parameters (including: contact settings, solver iterations, timestep) to achieve desired simulation behavior with Newton/MuJoCo.
+
+Existing PhysX-based assets in |isaac-sim_short| are compatible with Newton. However, these assets are tuned for PhysX and may not produce optimal results with Newton/MuJoCo out of the box. You might need to adjust physics parameters (including: contact settings, solver iterations, timestep) to achieve desired simulation behavior with Newton/MuJoCo.
 
 With the new asset structure and MJCF/URDF importers, we are working toward converting each asset to both PhysX schemas and MJC USD schemas. This will enable consistent simulation behavior between the original MJCF asset (using MuJoCo) and the converted MJC USD asset (using Newton).
-
 
 Additional Resources
 ====================
@@ -164,3 +170,4 @@ Additional Resources
 * `Newton USD Schemas <https://github.com/newton-physics/newton-usd-schemas>`_
 * `NVIDIA Warp Documentation <https://nvidia.github.io/warp/>`_
 * `MuJoCo Warp <https://github.com/google-deepmind/mujoco_warp>`_
+* `Omni Physics UI documentation <http://omniverse-docs.s3-website-us-east-1.amazonaws.com/omni_physics/110.0/dev_guide/physics_umbrella/physics_umbrella_ui.html>`_ (physics umbrella UI, engine selector, scene settings)

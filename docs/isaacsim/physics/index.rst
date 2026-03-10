@@ -30,6 +30,7 @@ On a high-level, simulations with |omni_physics| work as follows:
     :maxdepth: 3
 
     simulation_fundamentals
+    new_physics_engine
     newton_physics
     physics_resources
 
