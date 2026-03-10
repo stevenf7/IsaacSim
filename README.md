@@ -220,7 +220,33 @@ Isaac Sim uses a custom build system with the following key options:
 ## Usage
 Congratulations on installing Isaac Sim! To get started with using Isaac Sim, follow these [Quick Tutorials](https://docs.isaacsim.omniverse.nvidia.com/latest/introduction/quickstart_index.html). For more information, visit our full [documentation](https://docs.isaacsim.omniverse.nvidia.com/latest/index.html).
 
-For Docker deployment (building a container image, running with Docker Compose, and web-based streaming), see [tools/docker/README.md](tools/docker/README.md).
+## Additional Build Tools
+
+Beyond building and running from source (see [Quick Start](#quick-start)), Isaac Sim can also be packaged as a standalone binary archive or deployed as a Docker container.
+
+### Binary Package
+
+Build a standalone redistributable binary package from source. A successful [build](#quick-start) is required before packaging.
+
+**Linux:**
+
+```bash
+./repo.sh package --config release -m isaac-sim-standalone
+```
+
+> **Note:** The same command works on both x86_64 and aarch64 hosts. The build system detects the platform automatically.
+
+**Windows:**
+
+```powershell
+.\repo.bat package --config release -m isaac-sim-standalone
+```
+
+The packaged archive is written to the `_build/packages/` directory.
+
+### Container (Docker)
+
+For building a Docker image, running with Docker Compose, and web-based streaming, see [tools/docker/README.md](tools/docker/README.md).
 
 
 ## Troubleshooting
