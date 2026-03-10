@@ -1,7 +1,8 @@
+import omni.usd
 from pxr import Gf, Usd, UsdGeom
 
 
-def convert_ops_from_transform(prim: pxr.UsdPrim):
+def convert_ops_from_transform(prim: Usd.Prim):
 
     # Get the Xformable from prim
     xform = UsdGeom.Xformable(prim)

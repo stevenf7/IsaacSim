@@ -1,0 +1,30 @@
+{
+    "assets": {
+        "ConveyorBelt_A01": {  // File name of the asset, without the extension.
+            "style": "DUAL",  // Conveyor style, can be ROLLER, BELT, or DUAL
+            "start_level": 0,  // Conveyor level for the track, can be any positive number
+            "angle": "HALF",  // Conveyor turn type, can be NONE, HALF, FULL"
+            "curvature": "SMALL",  // Conveyor radius of curvature, can be NONE, SMALL, MEDIUM, LARGE. Currently not used by the filter.
+            "ramp": "FLAT",  // Ramp level. How many levels it increases or decreases start level, can be FLAT, ONE, TWO, THREE, FOUR.
+            "type": "STRAIGHT",  // Track Type, can be START, STRAIGHT (used for all single track types, including curves and ramps), Y_MERGE, T_MERGE, FORK_MERGE, END.
+            "anchors": [  // All Prim children paths that correspond to  endpoints on the asset.
+                "",  // This is the root of the conveyor, which is also an endpoint.
+                "/Anchorpoint"  // For all the other anchors, keep the trailing / on the child prim name
+            ],
+            "conveyor_nodes": {  // All Child Prims to be configured as conveyors using the OmniGraph node. Each track should have its own configuration (in the case of merge and splits), even if it's of the same style
+                "Rollers": {
+                    "animate_scale": 0.01,
+                    "animate_direction": [0.0, 1.0],
+                    "direction": [1.0, 0.0, -37.0],
+                    "curved": true
+                },
+                "Belt": {
+                    "animate_scale": 0.5,
+                    "animate_direction": [1.0, 0.0],
+                    "direction": [0, 0.0, -37.0],
+                    "curved": true
+                }
+            }
+        }
+    }
+}

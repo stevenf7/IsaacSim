@@ -22,7 +22,7 @@ import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
 from isaacsim.storage.native import get_assets_root_path
-from pxr import PhysxSchema, UsdPhysics
+from pxr import PhysxSchema, Sdf, UsdPhysics
 
 # Paths to the animated and physics-ready assets
 PHYSICS_ASSET_URL = "/Isaac/Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd"
@@ -155,7 +155,7 @@ async def run_motion_blur_example_async(
 
     # Create or get the physics scene
     rep.functional.physics.create_physics_scene(path="/PhysicsScene")
-    physx_scene = PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/PhysicsScene"))
+    physx_scene = PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath(Sdf.Path("/PhysicsScene")))
 
     # Check the target physics depending on the delta time and the render mode
     target_physics_fps = stage.GetTimeCodesPerSecond() if delta_time is None else 1 / delta_time

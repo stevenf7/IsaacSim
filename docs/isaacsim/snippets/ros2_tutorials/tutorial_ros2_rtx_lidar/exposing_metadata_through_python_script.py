@@ -1,5 +1,6 @@
 import omni
 import omni.replicator.core as rep
+from pxr import Gf
 
 kwargs = {
     "omni:sensor:Core:auxOutputType": "FULL",

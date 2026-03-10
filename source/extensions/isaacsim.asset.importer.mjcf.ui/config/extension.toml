@@ -86,6 +86,9 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
     "--/UJITSO/geometry=true",
+    ### Extension specific args
+    "--/app/window/dpiScaleOverride=1.0",
+    "--/app/window/scaleToMonitor=false",
 ]
 
 [documentation]

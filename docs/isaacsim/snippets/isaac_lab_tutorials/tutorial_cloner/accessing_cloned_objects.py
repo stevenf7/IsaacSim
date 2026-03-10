@@ -1,8 +1,8 @@
-# import the XFormPrimView interface from isaacsim.core.api for APIs for XForm prims
-from isaacsim.core.prims import XFormPrimView
+# import the XFormPrim interface from isaacsim.core.prims for APIs for XForm prims
+from isaacsim.core.prims import XFormPrim
 
 # retrieve a View containing all 4 boxes by using a wildcard expression that matches the prim paths for all boxes
-boxes = XFormPrimView("/World/Cube_*")
+boxes = XFormPrim(prim_paths_expr="/World/Cube_*")
 
 # retrieve the global transforms of all boxes
 #   - positions will be a vector of shape (4, 3) for X, Y, Z axes of translation

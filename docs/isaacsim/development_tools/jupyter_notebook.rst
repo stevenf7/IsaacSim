@@ -67,22 +67,22 @@ Configuration Files
 In order for |isaac-sim_short| to work inside of a Jupyter Notebook we provide a custom Jupyter kernel that is installed the first time you run ``./jupyter_notebook.sh``. 
 The kernel.json itself is fairly simple:
 
-.. literalinclude:: ../snippets/development_tools/jupyter_notebook/configuration_files.py
-    :language: python
+.. literalinclude:: ../snippets/development_tools/jupyter_notebook/configuration_files.json
+    :language: json
 
 The important part is that ``AUTOMATICALLY_REPLACED`` gets replaced by ``jupyter_notebook.sh`` with the absolute path to the Python executable that is located in the kit/python directory at runtime. Once the variable is replaced, the kernel is installed and the notebook is started. There is an extra variable ``ISAAC_JUPYTER_KERNEL`` that is used inside of |isaac-sim_short| to setup for notebook usage properly.
 
 Because notebooks require asyncio support, and |isaac-sim_short| itself uses asyncio internally, we automatically execute the following two lines when loading the ``isaacsim`` module (or the ``isaacsim.simulation_app`` extension) which provides the ``SimulationApp`` class:
 
-.. literalinclude:: ../snippets/development_tools/jupyter_notebook/configuration_files.py
-    :language: python
+.. literalinclude:: ../snippets/development_tools/jupyter_notebook/configuration_files.json
+    :language: json
 
 This ensures that asyncio calls can be nested inside of the Jupyter Notebook properly.
 
 When writing code in notebooks, it is necessary to first instantiate the ``SimulationApp`` class (from ``isaacsim`` or ``isaacsim.simulation_app``) after perform any Isaac Sim / Omniverse imports:
 
-.. literalinclude:: ../snippets/development_tools/jupyter_notebook/configuration_files.py
-    :language: python
+.. literalinclude:: ../snippets/development_tools/jupyter_notebook/configuration_files.json
+    :language: json
 
 Then, to run the notebook just execute the following commands and play the notebook cells:
 

@@ -60,17 +60,17 @@ local function get_startup_tests()
         {
             name = "tests-startup.streaming",
             kit_file = "isaacsim.exp.full.streaming",
-            extra_args = "--no-window --/app/quitAfter=100 --/app/file/ignoreUnsavedStage=1",
+            extra_args = "--no-window --/app/quitAfter=1000 --/app/file/ignoreUnsavedStage=1",
         },
         {
             name = "tests-startup.extscache",
             kit_file = "isaacsim.exp.full",
-            extra_args = "--no-window --/app/quitAfter=100 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedStage=1",
+            extra_args = "--no-window --/app/quitAfter=1000 --/app/extensions/registryEnabled=0 --/app/file/ignoreUnsavedStage=1",
         },
         {
             name = "tests-startup.xr.vr",
             kit_file = "isaacsim.exp.base.xr.vr",
-            extra_args = "--no-window --/app/quitAfter=100 --/app/file/ignoreUnsavedStage=1",
+            extra_args = "--no-window --/app/quitAfter=1000 --/app/file/ignoreUnsavedStage=1",
         },
     }
 end
@@ -584,13 +584,13 @@ end
 
 local function get_doc_snippets_tests()
     -- PYTHONPATH directories for robot_setup_tutorials/tutorial_pickplace_example tests
-    local pickplace_pythonpath = { "standalone_examples/api/isaacsim.robot.manipulators/ur10e" }
+    local pickplace_pythonpath = { "../../../source/standalone_examples/api/isaacsim.robot.manipulators/ur10e" }
 
     return {
         -- assets
         {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.assets.usd_assets_nurec.run_the_simulation_for_the_given_number_of_steps",
-            "../../../docs/isaacsim/snippets/assets/usd_assets_nurec/run_the_simulation_for_the_given_number_of_steps.py",
+            "doc_snippets/tests-nativepython-testing-doc_snippets.assets.usd_assets_nurec.nurec_carter",
+            "../../../docs/isaacsim/snippets/assets/usd_assets_nurec/nurec_carter.py",
             "--test",
         },
         -- core_api_tutorials

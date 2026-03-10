@@ -17,6 +17,7 @@ import os
 import re
 import sys
 import traceback
+import unittest
 from collections import defaultdict
 from pathlib import Path
 
@@ -103,17 +104,22 @@ def group_files_by_experience(files, experience_map):
     return groups
 
 
-def parse_expected_failures_csv(csv_path, base_dir):
+def parse_expected_failures_csv(csv_path, base_dir, snippets_root=None):
     """Parse expected failures CSV and return a list of (abs_path, compiled_pattern|None) tuples.
 
     Args:
         csv_path: Path to the CSV file (relative to base_dir or absolute).
-        base_dir: Base directory for resolving relative paths.
+        base_dir: Base directory for resolving the CSV file path itself.
+        snippets_root: Base directory for resolving snippet paths within the CSV.
+            If None, defaults to base_dir.
 
     Returns:
         List of (absolute_path_str, compiled_regex_or_None) tuples.
     """
+    if snippets_root is None:
+        snippets_root = base_dir
     entries = []
+    resolve_dir = snippets_dir if snippets_dir is not None else base_dir
     csv_file = Path(csv_path)
     if not csv_file.is_absolute():
         csv_file = base_dir / csv_file
@@ -128,7 +134,7 @@ def parse_expected_failures_csv(csv_path, base_dir):
                 continue
             snippet_path = row[0].strip()
             pattern_str = row[1].strip() if len(row) >= 2 and row[1].strip() else None
-            abs_path = str((base_dir / snippet_path).resolve())
+            abs_path = str((snippets_root / snippet_path).resolve())
             compiled = re.compile(pattern_str) if pattern_str else None
             entries.append((abs_path, compiled))
 
@@ -368,13 +374,22 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app):
 args, _ = parse_args()
 
 # Get the snippets directory (canonical location: docs/isaacsim/snippets)
-script_dir = Path(__file__).parent
-repo_root = script_dir.parents[3]
-snippets_dir = repo_root / "docs" / "isaacsim" / "snippets"
+# Walk upward from the script location to find the repo root, so the script
+# works regardless of whether it is invoked from source or from a build tree.
+script_dir = Path(__file__).resolve().parent
+snippets_rel = Path("docs") / "isaacsim" / "snippets"
 
-if not snippets_dir.exists():
-    print(f"Error: Snippets directory not found: {snippets_dir}")
+repo_root = None
+for _candidate in [script_dir, *script_dir.parents]:
+    if (_candidate / snippets_rel).is_dir():
+        repo_root = _candidate
+        break
+
+if repo_root is None:
+    print(f"Error: Could not locate {snippets_rel} in any ancestor of {script_dir}")
     sys.exit(1)
+
+snippets_dir = repo_root / snippets_rel
 
 # Find all Python files
 print(f"Scanning for Python files in {snippets_dir}...")
@@ -409,84 +424,150 @@ print(f"Files grouped into {len(experience_names)} experience group(s): {experie
 # Parse expected failures
 expected_failures = []
 if args.expected_failures_csv:
-    expected_failures = parse_expected_failures_csv(args.expected_failures_csv, script_dir)
+    expected_failures = parse_expected_failures_csv(args.expected_failures_csv, script_dir, snippets_dir)
     print(f"Loaded {len(expected_failures)} expected failure rules from CSV")
 
-# Collect all exceptions across all experience groups
-all_exceptions = []
-global_index = 0
+# ---------------------------------------------------------------------------
+# Dynamic unittest generation -- one test method per snippet file
+# ---------------------------------------------------------------------------
 
-# Process each experience group
-for _exp_idx, experience in enumerate(experience_names):
-    from isaacsim import SimulationApp
+_total_snippets = len(files_to_test)
 
-    group_files = files_by_experience[experience]
-    experience_display = experience if experience else "(default)"
-    print(f"\n{'=' * 80}")
-    print(f"Processing experience group: {experience_display} ({len(group_files)} files)")
-    print("=" * 80)
 
-    # Load SimulationApp with the appropriate experience
-    launch_config = {"headless": True}
-    if experience:
-        launch_config["experience"] = os.environ["EXP_PATH"] + "/" + experience
+def is_in_expected_failures(file_path, expected_failures):
+    """Return True if this snippet path appears in the expected-failure list (regardless of pattern)."""
+    if not expected_failures:
+        return False
+    file_path_str = str(Path(file_path).resolve())
+    for expected_path, _pattern in expected_failures:
+        if file_path_str == expected_path:
+            return True
+    return False
 
-    simulation_app = SimulationApp(launch_config=launch_config)
 
-    # Load each snippet and collect exceptions
-    for file_path in group_files:
-        print(f"[{global_index + 1}/{len(files_to_test)}] Testing: {file_path}")
+def _make_snippet_test(file_path, snippets_root, snippet_index, total_count, expected_failures_list):
+    """Create a test method for a single doc snippet."""
 
-        result_file_path, exception = load_snippet_module(file_path, snippets_dir, global_index, simulation_app)
-        if exception is not None:
-            all_exceptions.append((result_file_path, exception, experience_display))
-        global_index += 1
+    def test_snippet(self):
+        result_path, exception = load_snippet_module(
+            file_path, snippets_root, snippet_index, self.__class__._simulation_app
+        )
+        if exception is None:
+            if is_in_expected_failures(result_path, expected_failures_list):
+                self.fail(
+                    f"Snippet was expected to fail but passed. "
+                    f"Remove it from the expected-failures CSV: {result_path}"
+                )
+            return
+        if is_expected_failure(result_path, exception, expected_failures_list):
+            return
+        if hasattr(exception, "__traceback__") and exception.__traceback__:
+            msg = "".join(traceback.format_exception(type(exception), exception, exception.__traceback__))
+        else:
+            msg = f"{type(exception).__name__}: {exception}"
+        self.fail(msg)
 
-    # Print the report before closing the last SimulationApp (close may exit the process).
-    is_last_group = _exp_idx == len(experience_names) - 1
-    if is_last_group:
-        unexpected_exceptions = [
-            (f, e, exp) for f, e, exp in all_exceptions if not is_expected_failure(f, e, expected_failures)
-        ]
-        expected_exception_items = [
-            (f, e, exp) for f, e, exp in all_exceptions if is_expected_failure(f, e, expected_failures)
-        ]
+    return test_snippet
 
-        if expected_exception_items:
+
+_test_classes = []
+_snippet_counter = 0
+
+for _exp_idx, _experience in enumerate(experience_names):
+    _group = files_by_experience[_experience]
+    _exp_display = _experience if _experience else "(default)"
+    _safe_exp = re.sub(r"[^a-zA-Z0-9]", "_", _exp_display)
+    _class_name = f"TestSnippets_{_safe_exp}"
+
+    _base_name = _class_name
+    _dedup = 2
+    while _class_name in globals():
+        _class_name = f"{_base_name}_{_dedup}"
+        _dedup += 1
+
+    _is_last_group = _exp_idx == len(experience_names) - 1
+
+    def _make_class_methods(exp_value, group_files, defer_close):
+        @classmethod
+        def setUpClass(cls):
+            from isaacsim import SimulationApp
+
+            exp_disp = exp_value if exp_value else "(default)"
             print(f"\n{'=' * 80}")
-            print(f"Expected failures ({len(expected_exception_items)} files):")
+            print(f"Processing experience group: {exp_disp} ({len(group_files)} files)")
             print("=" * 80)
-            for file_path, exception, exp_disp in expected_exception_items:
-                print(f"  {file_path}: {type(exception).__name__}: {exception}")
 
-        if unexpected_exceptions:
-            print(f"\n{'=' * 80}")
-            print(f"UNEXPECTED failures ({len(unexpected_exceptions)} files):")
-            print("=" * 80)
-            for file_path, exception, exp_disp in unexpected_exceptions:
-                print(f"\nFile: {file_path}")
-                print(f"Experience: {exp_disp}")
-                print(f"Exception: {type(exception).__name__}: {exception}")
-                print("Traceback:")
-                if hasattr(exception, "__traceback__") and exception.__traceback__:
-                    tb_lines = traceback.format_exception(type(exception), exception, exception.__traceback__)
-                    print("".join(tb_lines), end="")
-                else:
-                    print(f"  {exception}")
-                print("-" * 80)
+            launch_config = {"headless": True}
+            if exp_value:
+                launch_config["experience"] = os.environ["EXP_PATH"] + "/" + exp_value
+            cls._simulation_app = SimulationApp(launch_config=launch_config)
 
-        if not unexpected_exceptions:
-            if expected_exception_items:
-                print(f"\nAll files tested successfully ({len(expected_exception_items)} expected failures)!")
-            else:
-                print("\nAll files tested successfully!")
+        @classmethod
+        def tearDownClass(cls):
+            if defer_close:
+                return
+            if hasattr(cls, "_simulation_app") and cls._simulation_app is not None:
+                sys.stdout.flush()
+                cls._simulation_app.close()
+                exp_disp = exp_value if exp_value else "(default)"
+                print(f"Closed SimulationApp for experience: {exp_disp}")
 
-        sys.stdout.flush()
+        return setUpClass, tearDownClass
 
-    # Close SimulationApp for this experience group
-    simulation_app.close()
-    print(f"Closed SimulationApp for experience: {experience_display}")
+    _setup, _teardown = _make_class_methods(_experience, _group, _is_last_group)
 
-# Exit with error if there are unexpected failures.
-if any(not is_expected_failure(f, e, expected_failures) for f, e, _ in all_exceptions):
+    _TestClass = type(
+        _class_name,
+        (unittest.TestCase,),
+        {
+            "maxDiff": None,
+            "setUpClass": _setup,
+            "tearDownClass": _teardown,
+        },
+    )
+
+    for _file_path in _group:
+        _rel = _file_path.relative_to(snippets_dir)
+        _safe_name = re.sub(r"[^a-zA-Z0-9]", "_", str(_rel))
+        _test_name = f"test_{_snippet_counter:04d}_{_safe_name}"
+
+        _func = _make_snippet_test(_file_path, snippets_dir, _snippet_counter, _total_snippets, expected_failures)
+        _func.__name__ = _test_name
+        _func.__doc__ = str(_rel)
+        setattr(_TestClass, _test_name, _func)
+        _snippet_counter += 1
+
+    globals()[_class_name] = _TestClass
+    _test_classes.append(_TestClass)
+
+# Build and run the test suite in deterministic order
+_suite = unittest.TestSuite()
+for _cls in _test_classes:
+    _suite.addTests(unittest.TestLoader().loadTestsFromTestCase(_cls))
+
+_test_count = _suite.countTestCases()
+print(f"\n{'=' * 40}")
+print(f"Running Tests (count: {_test_count}):")
+print("=" * 40)
+
+_runner = unittest.TextTestRunner(stream=sys.stdout, verbosity=2)
+_result = _runner.run(_suite)
+
+# Print summary before closing the last SimulationApp (close may exit the process).
+print("=" * 40)
+if _result.wasSuccessful():
+    print("[ ok ] Test passed.")
+else:
+    _fail_count = len(_result.failures) + len(_result.errors)
+    print(f"[ FAIL ] Test failed. ({_fail_count} failure(s))")
+
+sys.stdout.flush()
+
+# Now close the last SimulationApp whose tearDownClass was deferred.
+if _test_classes:
+    _last_cls = _test_classes[-1]
+    if hasattr(_last_cls, "_simulation_app") and _last_cls._simulation_app is not None:
+        _last_cls._simulation_app.close()
+
+if not _result.wasSuccessful():
     sys.exit(1)
