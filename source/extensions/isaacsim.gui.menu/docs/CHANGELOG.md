@@ -1,3 +1,9 @@
+
+
+## [2.10.2] - 2026-03-10
+### Fixed
+- OMPE-84348: rewrote `_test_environment_menu_option` to not use golden images
+
 ## [2.10.1] - 2026-03-05
 ### Fixed
 - OMPE-84348: fixed flaky test
