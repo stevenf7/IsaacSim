@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for holonomic (mecanum) controller."""
 
 import numpy as np
 import omni.kit.test
@@ -20,16 +21,19 @@ from isaacsim.robot.experimental.wheeled_robots.controllers.holonomic_controller
 
 
 class TestHolonomicController(omni.kit.test.AsyncTestCase):
+    """Tests for HolonomicController kinematics."""
+
     async def setUp(self):
-        pass
+        """Set up test fixtures."""
 
     # ----------------------------------------------------------------------
     async def tearDown(self):
-        pass
+        """Tear down test fixtures."""
 
     # ----------------------------------------------------------------------
 
     async def test_holonomic_drive(self):
+        """Test holonomic forward() output length and finite values."""
         wheel_radius = [0.04, 0.04, 0.04]
         wheel_orientations = [[0, 0, 0, 1], [0.866, 0, 0, -0.5], [0.866, 0, 0, 0.5]]
         wheel_positions = [

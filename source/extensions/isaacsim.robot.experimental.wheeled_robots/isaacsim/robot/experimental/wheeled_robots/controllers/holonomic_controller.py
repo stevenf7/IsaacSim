@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Holonomic (e.g. mecanum) controller for wheeled robots."""
+
 from __future__ import annotations
 
 import carb
@@ -139,6 +141,9 @@ class HolonomicController:
 
         Returns:
             Shape (num_wheels,) — wheel joint velocities.
+
+        Raises:
+            ValueError: If command does not have length 3.
         """
         if isinstance(command, list):
             command = np.array(command, dtype=np.float64)

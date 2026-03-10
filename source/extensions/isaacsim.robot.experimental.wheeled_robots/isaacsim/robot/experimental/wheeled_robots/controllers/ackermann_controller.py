@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Ackermann steering controller for wheeled robots."""
+
 from __future__ import annotations
 
 import numpy as np

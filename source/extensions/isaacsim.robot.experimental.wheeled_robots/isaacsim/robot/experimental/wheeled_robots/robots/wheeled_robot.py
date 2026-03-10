@@ -63,7 +63,11 @@ class WheeledRobot(Articulation):
         )
 
     def _resolve_wheel_dof_indices(self) -> list[int]:
-        """Resolve and cache the DOF indices for the wheel joints."""
+        """Resolve and cache the DOF indices for the wheel joints.
+
+        Returns:
+            List of DOF indices for the wheel joints.
+        """
         if self._wheel_dof_indices_resolved is not None:
             return self._wheel_dof_indices_resolved
         if self._wheel_dof_indices_input is not None:

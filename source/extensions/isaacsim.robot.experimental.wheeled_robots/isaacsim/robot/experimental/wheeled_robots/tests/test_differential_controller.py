@@ -13,22 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for differential drive controller."""
 
 import omni.kit.test
 from isaacsim.robot.experimental.wheeled_robots.controllers.differential_controller import DifferentialController
 
 
 class TestDifferentialController(omni.kit.test.AsyncTestCase):
+    """Tests for DifferentialController kinematics."""
+
     async def setUp(self):
-        pass
+        """Set up test fixtures."""
 
     # ----------------------------------------------------------------------
     async def tearDown(self):
-        pass
+        """Tear down test fixtures."""
 
     # ----------------------------------------------------------------------
 
     async def test_differential_drive(self):
+        """Test differential drive forward() output for a given command."""
         # test the actual calculation of differential drive
         wheel_radius = 0.03
         wheel_base = 0.1125

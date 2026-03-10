@@ -1,4 +1,9 @@
 # Changelog
+## [0.2.3] - 2026-03-05
+### Changed
+- Linting: `__all__` re-exports, docstrings, and type/doc fixes for ruff, mypy, darglint, pydoclint.
+
+
 ## [0.2.2] - 2026-03-05
 ### Changed
 - Fix api and docs syntax issues
