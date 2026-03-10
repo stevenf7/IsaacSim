@@ -33,6 +33,8 @@ Windows 11      Humble
 
 For the ROS 2 bridge, |isaac-sim_short| is compatible with **ROS 2 Jazzy** and **ROS 2 Humble**.
 
+.. attention:: **Experimental: Native ROS 2 Distro Support** -- |isaac-sim_short| now experimentally supports loading any ROS 2 distro that is natively installed on your platform (Ubuntu 22.04 or Ubuntu 24.04). To use this, source your locally installed ROS 2 distro and launch |isaac-sim_short| from the same terminal. While Humble and Jazzy remain the officially tested and recommended distros, other natively supported distros may work with this workflow.
+
 ROS 2 Jazzy on Ubuntu 24.04 is recommended. If you wish to proceed with any other configuration, refer to the ROS 2 installation guide for your platform, :ref:`isaac_sim_app_install_ros_other_platforms`.
 
 All steps moving forward assume you are using **Ubuntu 24.04 and ROS 2 Jazzy**.
