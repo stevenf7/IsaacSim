@@ -2447,16 +2447,22 @@ scan-packages-internal-urls:
     needs:
       - job: build-linux-x86_64-release
         artifacts: true
+        optional: true
       - job: build-linux-x86_64-debug
         artifacts: true
+        optional: true
       - job: build-linux-aarch64-release
         artifacts: true
+        optional: true
       - job: build-linux-aarch64-debug
         artifacts: true
+        optional: true
       - job: build-windows-x86_64-release
         artifacts: true
+        optional: true
       - job: build-windows-x86_64-debug
         artifacts: true
+        optional: true
     script:
       - python3 tools/ci/package_scanner/scan_packages.py
           --version $(cat VERSION | head -1)
