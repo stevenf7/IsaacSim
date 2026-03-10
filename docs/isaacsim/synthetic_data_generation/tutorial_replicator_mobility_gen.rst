@@ -323,11 +323,6 @@ When defining your robot, you may find the following list of common parameters a
    * - ``path_following_target_point_offset_meters``
      - The offset distance used to generate the 'target point' that the robot will follow in the path following scenario. A larger offset results in smoother motion, but too large may cause the robot to cut corners during turns.
 
-Visualize Trajectory with Gradio
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-python scripts/gradio_visualization.py --log_dir ~/MobilityGenData/replays/<your_recording_folder>
-
 Next Steps
 ----------
 
