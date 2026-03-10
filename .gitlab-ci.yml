@@ -2437,6 +2437,45 @@ verify-stage-to-gitlab:
 
 
 # ==============================================================================================================
+scan-packages-internal-urls:
+    stage: security
+    timeout: 2 hours
+    interruptible: true
+    allow_failure: true
+    extends:
+      - .ipp_lnx_x86_64_cpu_medium
+    needs:
+      - job: build-linux-x86_64-release
+        artifacts: true
+      - job: build-linux-x86_64-debug
+        artifacts: true
+      - job: build-linux-aarch64-release
+        artifacts: true
+      - job: build-linux-aarch64-debug
+        artifacts: true
+      - job: build-windows-x86_64-release
+        artifacts: true
+      - job: build-windows-x86_64-debug
+        artifacts: true
+    script:
+      - python3 tools/ci/package_scanner/scan_packages.py
+          --version $(cat VERSION | head -1)
+          --skip-download
+    rules:
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
+      - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+        when: manual
+      - !reference [.rules-push-manual, rules]
+      - !reference [.rules-version-changed, rules]
+    artifacts:
+      expire_in: 2 weeks
+      when: always
+      paths:
+        - _build/packages/internal_url_report.csv
+
+
+# ==============================================================================================================
 .test-linux-x86_64-isaaclab-integration-base:
   stage: test
   needs:
