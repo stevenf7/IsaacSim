@@ -241,12 +241,15 @@ Robot Group Parameters
 -   ``config_file_path`` (required): Path to the robot agent YAML configuration file for this robot type. Supports absolute paths or paths relative to the built-in sample config folder (``data/sample_configs/`` within the ``isaacsim.anim.robot.core`` extension).
 -   ``spawn_areas`` (optional): NavMesh areas for spawning.
 -   ``agent_radius`` (optional): Radius in meters used for NavMesh queries. Must be > 0 when set. If omitted, defaults to ``0.3`` at runtime.
--   ``write_data`` (optional): If ``true``, enables data collection from the robot's onboard cameras. *Not available in Isaac Sim 6.0 EA yet. (Coming in 6.0 GA)*
+-   ``write_data`` (optional): If ``true``, enables data collection from the robot's onboard cameras.
 -   ``camera_prim_paths`` (optional): List of specific camera prims on the robot to use. If empty and ``write_data`` is true, *all* cameras on the robot are used. Requires ``write_data`` to be ``true``. *Not available in Isaac Sim 6.0 EA yet. (Coming in 6.0 GA)*
 -   ``semantic_labels`` (optional): Default ``[["class", "robot"]]``.
 -   ``semantic_label_path`` (optional): Relative path under the robot prim to apply semantics.
 -   ``routines`` (optional): List of robot behaviors. Default: ``[{ wander: {} }]``.
 -   ``triggers`` (optional): List of triggers that interrupt routines. Robots support ``event_trigger`` and ``time_trigger``.
+
+.. note::
+    ``write_data`` has a behavior regression (comparing to Isaac Sim 6.0 EA) and enabling it may lead to program hang. It is recommended to disable it until next release.
 
 Robot Behaviors
 ^^^^^^^^^^^^^^^
