@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.4] - 2026-03-09
+### Fixed
+- Hardened subprocess calls to avoid shell=True with string concatenation
+
 ## [1.0.3] - 2026-03-05
 ### Changed
 - Linting

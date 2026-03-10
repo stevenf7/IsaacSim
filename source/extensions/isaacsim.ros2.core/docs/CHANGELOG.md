@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.1] - 2026-03-09
+### Fixed
+- Hardened subprocess call to avoid shell=True with string concatenation
+
 ## [1.5.0] - 2026-02-26
 ### Added
 - CompressedImage message backend

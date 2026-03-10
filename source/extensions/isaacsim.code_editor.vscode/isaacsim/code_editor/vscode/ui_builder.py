@@ -81,10 +81,8 @@ class UIBuilder:
             **kwargs: Additional keyword arguments.
         """
         command = ["code", "-n", self._app_folder]
-        if sys.platform.startswith("linux"):
-            command = [" ".join(command)]
         carb.log_info(f"Launching VS Code: {command}")
-        result = subprocess.run(command, shell=True, close_fds=True)
+        result = subprocess.run(command, shell=(sys.platform == "win32"), close_fds=True)
         # check process execution
         notification = f"Serving at {self._host}:{self._port}"
         if result.returncode:

@@ -166,14 +166,12 @@ class ROS2CoreExtension(omni.ext.IExt):
             ros_lib_path = os.path.join(os.path.abspath(f"{self._extension_path}/{distro}/lib"), "")
         else:
             ros_lib_path = ""
-
-        command = [f'./isaacsim.ros2.core.check "{ros_lib_path}"']
+        command = ["./isaacsim.ros2.core.check", ros_lib_path]
         if sys.platform == "win32":
-
-            command = [f"isaacsim.ros2.core.check.exe", f"{ros_lib_path}"]
+            command = ["isaacsim.ros2.core.check.exe", ros_lib_path]
 
         try:
-            output = subprocess.check_output(command, shell=True, cwd=f"{path}")
+            output = subprocess.check_output(command, cwd=path)
             return True
         except subprocess.CalledProcessError as grepexc:
             print(grepexc.output.decode("utf-8"))
