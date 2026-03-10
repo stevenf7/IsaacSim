@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.10.1] - 2026-03-10
+### Changed
+- Updated test_spinning_camera_golden_images unit test with new golden USD
+
 ## [1.10.0] - 2026-03-05
 ### Changed
 - ROS2PublishJointState node now publishes from sensor inputs (e.g. IsaacReadJointState) for joint state data
