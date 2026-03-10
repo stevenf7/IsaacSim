@@ -967,10 +967,16 @@ class TestRos2Camera(ROS2TestCase):
 
         golden_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "golden", "spinning_camera")
 
-        # Open the pre-built scene USD (contains grid environment, physics scene, and scattered objects).
+        # Open the pre-built scene USD (contains physics scene and scattered objects).
         scene_usd_path = os.path.join(golden_dir, "spinning_camera_scene.usd")
         await open_stage_async(scene_usd_path)
         await omni.kit.app.get_app().next_update_async()
+
+        # Add the grid environment as a reference.
+        stage_utils.add_reference_to_stage(
+            usd_path=get_assets_root_path() + "/Isaac/Environments/Grid/default_environment.usd",
+            path="/World/EnvGrid",
+        )
 
         width, height = 640, 360
 
