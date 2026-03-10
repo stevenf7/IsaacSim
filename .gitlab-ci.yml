@@ -2461,6 +2461,11 @@ scan-packages-internal-urls:
       - python3 tools/ci/package_scanner/scan_packages.py
           --version $(cat VERSION | head -1)
           --skip-download
+          --exclude-dir kit
+          --exclude-dir extscache
+          --exclude-dir tests
+          --exclude-dir docs
+          --exclude-dir extsInternal
     rules:
       - if: $RUN_BUMP_VERSION == "true"
         when: never

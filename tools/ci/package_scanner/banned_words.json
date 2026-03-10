@@ -23,9 +23,5 @@
         "omniverse-license-questions@nvidia.com",
         "oss-requests@nvidia.com",
         "warp-python@nvidia.com"
-    ],
-    "whitelisted_files": [
-        "tools/internal-licenses/omniverse-LICENSE.txt",
-        "SECURITY.md"
     ]
 }
