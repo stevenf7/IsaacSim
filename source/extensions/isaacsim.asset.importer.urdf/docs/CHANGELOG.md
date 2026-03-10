@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.2.1] - 2026-03-09
+### Changed
+- update urdf-usd-converter to v0.1.0
+
 ## [3.2.0] - 2026-03-04
 ### Changed
 - urdf converter version bump to v0.1.0rc2
