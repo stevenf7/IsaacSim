@@ -22,6 +22,7 @@ def is_text_file(filepath):
         ".rb", ".pl", ".pm", ".php", ".lua", ".r", ".sql",
         ".glsl", ".vert", ".frag", ".comp", ".hlsl",
         ".proto", ".thrift", ".graphql", ".gql", ".env",
+        ".usd", ".usda", ".usdc",
     }
     ext = os.path.splitext(filepath)[1].lower()
     if ext in text_extensions:
@@ -50,15 +51,20 @@ def check_path_for_banned_words(path: str):
     # Initialize results structures
     results_by_word = {word: {} for word in BANNED_WORDS["banned_words"]}
     results_by_file = {}
+    allowed_patterns = BANNED_WORDS.get("allowed_patterns", [])
 
     for file in glob.glob(path + "**/**", recursive=True):
         if os.path.isfile(file) and is_text_file(file):
             file_path = file.removeprefix(path).removeprefix("/")
             if file_path not in BANNED_WORDS["whitelisted_files"]:
-                with open(file, "r") as f:
+                try:
+                    f = open(file, "r", errors="replace")
+                except OSError:
+                    continue
+                with f:
                     for line_num, line in enumerate(f, 1):
                         for banned_word in BANNED_WORDS["banned_words"]:
-                            if banned_word in line:
+                            if banned_word in line and not any(ap in line for ap in allowed_patterns):
                                 # Add to word-based results with nested structure
                                 if file_path not in results_by_word[banned_word]:
                                     results_by_word[banned_word][file_path] = []
