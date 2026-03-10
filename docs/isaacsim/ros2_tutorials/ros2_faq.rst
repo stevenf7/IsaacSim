@@ -64,6 +64,8 @@ The **Real-Time Factor (RTF)** describes the ratio between these two: ``RTF = si
 
 You can monitor the RTF using the :ref:`RTF publisher tutorial <isaac_sim_app_tutorial_ros2_rtf>`.
 
+.. important:: ``ros2 topic hz`` measures message frequency against **wall time**, not simulation time. This means the reported rate reflects the real-world throughput, which is usually closer to the rendering FPS than the configured simulation rate. For example, if your physics runs at 120 Hz but the simulation only achieves RTF = 0.5, ``ros2 topic hz`` will report approximately 60 Hz. This is expected behavior and does not indicate a configuration problem.
+
 Using the Correct Trigger Node
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -170,3 +172,11 @@ Additional Resources
 - :ref:`ROS 2 Real Time Factor <isaac_sim_app_tutorial_ros2_rtf>`
 - :ref:`Setting Publish Rates <isaac_sim_app_tutorial_ros2_publish_rate>`
 - :ref:`ROS 2 Troubleshooting <isaac_sim_ros2_troubleshooting>`
+
+ROS 2 Community Resources
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For questions that are not specific to the |isaac-sim_short| ROS2 Bridge (e.g., general ROS 2 usage, DDS configuration, or ROS 2 tooling), the ROS 2 community is the best place to get help:
+
+- `ROS 2 Documentation <https://docs.ros.org/en/jazzy/index.html>`_ -- Official guides, tutorials, and API references for ROS 2.
+- `ROS 2 Community Support <https://www.ros.org/blog/getting-started/#support>`_ -- Links to Robotics Stack Exchange, ROS Discourse forums, and other community channels for troubleshooting and discussion.

@@ -39,6 +39,8 @@ Windows 11      Humble, Jazzy (Beta)     Use default installation in WSL. Custom
 
 For the ROS 2 bridge, |isaac-sim_short| is compatible with **ROS 2 Humble** and **ROS 2 Jazzy**.
 
+.. attention:: **Experimental: Native ROS 2 Distro Support** -- |isaac-sim_short| now experimentally supports loading any ROS 2 distro that is natively installed on your platform (Ubuntu 22.04 or Ubuntu 24.04). To use this, source your locally installed ROS 2 distro and launch |isaac-sim_short| from the same terminal. While Humble and Jazzy remain the officially tested and recommended distros, other natively supported distros may work with this workflow.
+
 ROS 2 Jazzy on Ubuntu 24.04 is recommended. Refer to :ref:`isaac_sim_app_install_ros`, if that is your mode of installation. Otherwise, verify or choose your configuration to continue:
 
 .. config-selector::
@@ -993,17 +995,17 @@ Enabling the ROS 2 Bridge using Zenoh (ROS 2 Jazzy, Linux Only)
       The built workspace including Zenoh is under ``build_ws/jazzy/jazzy_ws``.
 
 
-   #. In a **separate terminal**, start the Zenoh router using the official ROS 2 Jazzy Docker container. The router must be running before any ROS 2 nodes can discover each other:
+   #. In a **separate terminal**, start the Zenoh router. The router must be running before any ROS 2 nodes can discover each other.
+
+      Use the Docker container from the :ref:`isaac_ros_docker_other_platforms` section. If you have not already started the ``ros_ws_docker`` container, follow the steps there first. Then, inside the container, install ``ros-jazzy-rmw-zenoh-cpp`` and start the router:
 
       .. code-block:: bash
 
-         # Terminal 1: Start the Zenoh router in a Jazzy container
-         docker run -it --rm --net=host --name zenoh_router ros:jazzy bash -c \
-           "apt-get update && apt-get install -y ros-jazzy-rmw-zenoh-cpp && \
-            source /opt/ros/jazzy/setup.bash && \
-            ros2 run rmw_zenoh_cpp rmw_zenohd"
-
-      The ``--net=host`` flag ensures the Zenoh router is accessible from the host machine without extra port mapping.
+         # Inside the ros_ws_docker container
+         apt-get update && apt-get install -y ros-jazzy-rmw-zenoh-cpp
+         source /opt/ros/jazzy/setup.bash
+         export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+         ros2 run rmw_zenoh_cpp rmw_zenohd
 
       .. note:: Without the Zenoh router, nodes will not be able to discover each other because multicast discovery is disabled by default in the node's session config. Instead, nodes receive discovery information about other peers through the Zenoh router's gossip functionality.
 
@@ -1013,22 +1015,24 @@ Enabling the ROS 2 Bridge using Zenoh (ROS 2 Jazzy, Linux Only)
 
          export RMW_IMPLEMENTATION=rmw_zenoh_cpp
 
-   #. Source the Python 3.12 build and run |isaac-sim_short|:
+   #. Source the Python 3.12 build of both ``jazzy_ws`` and ``isaac_sim_ros_ws``, then run |isaac-sim_short|:
 
       .. code-block:: bash
 
          cd IsaacSim-ros_workspaces
          source build_ws/jazzy/jazzy_ws/install/local_setup.bash
+         source build_ws/jazzy/isaac_sim_ros_ws/install/local_setup.bash
          cd ~/isaacsim
          ./isaac-sim.sh
 
-   #. For any additional terminals running ROS 2 nodes that need to communicate with |isaac-sim_short|, exec into the running Zenoh container:
+   #. For any additional terminals running ROS 2 nodes that need to communicate with |isaac-sim_short|, open a new terminal in the same Docker container:
 
       .. code-block:: bash
 
-         docker exec -it zenoh_router bash -c \
+         docker exec -it ros_ws_docker /bin/bash -c \
            "source /opt/ros/jazzy/setup.bash && \
             export RMW_IMPLEMENTATION=rmw_zenoh_cpp && \
+            cd /jazzy_ws && source install/local_setup.bash && \
             bash"
 
 .. _isaac_sim_app_disable_ros_other_platforms:
