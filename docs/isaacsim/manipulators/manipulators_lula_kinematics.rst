@@ -4,6 +4,8 @@
 Lula Kinematics Solver
 =======================
 
+.. note::
+   For new development, consider using the newer :doc:`cuMotion Integration <../../cumotion/index>`, which is built on the new experimental motion generation API and provides improved interfaces and additional features over Lula.
 
 This tutorial shows how the :ref:`isaac_sim_lula_kinematics_solver` class is used to compute forward and inverse kinematics on a robot in |isaac-sim|.
 

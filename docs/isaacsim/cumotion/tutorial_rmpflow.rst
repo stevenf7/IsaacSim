@@ -176,3 +176,6 @@ Next Steps
 * :ref:`Trajectory Generator tutorial <isaac_sim_cumotion_tutorial_trajectory_generator>` - Trajectory-based motion
 * :ref:`Trajectory Optimizer tutorial <isaac_sim_cumotion_tutorial_trajectory_optimizer>` - Optimization-based trajectory planning
 * |cumotion| library documentation - Advanced parameter configuration
+
+.. note::
+   The :ref:`RMPflow Tuning Guide <isaac_sim_motion_generation_rmpflow_tuning_guide>` is still a valid documentation for tuning RMPflow in |cumotion|.

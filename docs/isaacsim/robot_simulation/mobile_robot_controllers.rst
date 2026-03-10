@@ -12,6 +12,9 @@
 Mobile Robot Controllers
 ==========================
 
+.. note::
+   For new controller development, consider using the newer experimental motion generation API in :doc:`Motion Generation (Experimental) <../motion_generation/index>`, which provides improved interfaces and additional features.
+
 .. _isaac_sim_mobile_robot_controller_differential:
 
 Differential controller

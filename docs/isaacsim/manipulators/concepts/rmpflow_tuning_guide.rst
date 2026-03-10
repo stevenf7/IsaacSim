@@ -11,6 +11,9 @@
 RMPflow Tuning Guide
 ====================
 
+.. note::
+   For new development, consider using the newer :doc:`cuMotion Integration <../../cumotion/index>`, which provides improved interfaces and additional features over Lula. This
+   page is still a valid tuning guide for RMPflow in |cumotion|.
 
 Given the number of parameters involved in fully specifying a complete set of RMPs,
 tuning an RMPflow-based motion policy for a new robot or task can be intimidating.

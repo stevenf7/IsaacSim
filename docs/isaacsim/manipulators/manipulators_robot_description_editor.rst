@@ -4,6 +4,9 @@
 Lula Robot Description and XRDF Editor
 ======================================
 
+.. note::
+   For new development, consider using the newer :doc:`cuMotion Integration <../../cumotion/index>`, which is built on the new experimental motion generation API and provides improved interfaces and additional features over Lula.
+
 Learning Objectives
 ===================
 
@@ -11,7 +14,7 @@ This tutorial shows how to use the **Robot Description Editor** UI tool to gener
 the information available about a robot in its URDF. Two motion generation packages leverage the
 **Robot Description Editor** to specify necessary configuration information:
 
-* `cuMotion <https://nvidia-isaac-ros.github.io/concepts/manipulation/index.html#nvidia-cumotion>`_ 
+* |cumotion|
 * Lula
 
 This tutorial describes the motivation for needing specific config files for ``Lula`` and ``cuMotion`` algorithms, and goes over the minimal set of data that needs to be written into a robot description file for each available Lula algorithm.
