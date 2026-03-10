@@ -23,7 +23,8 @@ from isaacsim.test.utils.image_comparison import compare_images_in_directories
 
 class TestSDGDeformables(omni.kit.test.AsyncTestCase):
 
-    MEAN_DIFF_TOLERANCE = 25
+    RGB_MEAN_DIFF_TOLERANCE = 5
+    SEMANTIC_MEAN_DIFF_TOLERANCE = 1
 
     async def setUp(self):
         await omni.kit.app.get_app().next_update_async()
@@ -235,8 +236,8 @@ class TestSDGDeformables(omni.kit.test.AsyncTestCase):
 
         # Test setup
         test_assets_config = [
-            ("banana", 1, "/Isaac/Props/YCB/Axis_Aligned/011_banana.usd", 500_000, 0.45),
-            ("large_marker", 1, "/Isaac/Props/YCB/Axis_Aligned/040_large_marker.usd", 9_000_000, 0.5),
+            ("banana", 2, "/Isaac/Props/YCB/Axis_Aligned/011_banana.usd", 500_000, 0.45),
+            ("large_marker", 2, "/Isaac/Props/YCB/Axis_Aligned/040_large_marker.usd", 9_000_000, 0.5),
         ]
         await run_example_async(test_assets_config)
         num_assets = sum(count for _, count, _, _, _ in test_assets_config)
@@ -254,10 +255,23 @@ class TestSDGDeformables(omni.kit.test.AsyncTestCase):
         result = compare_images_in_directories(
             golden_dir=golden_dir,
             test_dir=out_dir,
-            path_pattern=r"\.png$",
+            path_pattern=r"rgb_.*\.png$",
             allclose_rtol=None,
             allclose_atol=None,
-            mean_tolerance=self.MEAN_DIFF_TOLERANCE,
+            mean_tolerance=self.RGB_MEAN_DIFF_TOLERANCE,
             print_all_stats=False,
         )
-        self.assertTrue(result["all_passed"], f"Image comparison failed for output directory: {out_dir}")
+        self.assertTrue(result["all_passed"], f"RGB image comparison failed for output directory: {out_dir}")
+
+        result = compare_images_in_directories(
+            golden_dir=golden_dir,
+            test_dir=out_dir,
+            path_pattern=r"semantic_segmentation_.*\.png$",
+            allclose_rtol=None,
+            allclose_atol=None,
+            mean_tolerance=self.SEMANTIC_MEAN_DIFF_TOLERANCE,
+            print_all_stats=False,
+        )
+        self.assertTrue(
+            result["all_passed"], f"Semantic segmentation comparison failed for output directory: {out_dir}"
+        )
