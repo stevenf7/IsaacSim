@@ -65,7 +65,7 @@ To use the custom ROS 2 |omnigraph_short| nodes, you must build your own extensi
 
 
 
-#. Clone `Omniverse Kit Extension Template C++ <https://github.com/NVIDIA-Omniverse/kit-extension-template-cpp>`_ and switch to the ``release/109.0.0`` branch (in the root folder: ``git checkout release/109.0.0``).
+#. Clone `Omniverse Kit Extension Template C++ <https://github.com/NVIDIA-Omniverse/kit-extension-template-cpp>`_ and switch to the ``release/110.0.0`` branch (in the root folder: ``git checkout release/110.0.0``).
 
 #. Run ``./build.sh`` inside the directory to build the sample extensions.
 
