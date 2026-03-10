@@ -5,15 +5,14 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git curl ca-certificates \
-    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && curl -fsSL --proto '=https' https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Scope the NVIDIA npm registry for @nvidia packages
-RUN echo '@nvidia:registry=https://edge.urm.nvidia.com/artifactory/api/npm/omniverse-client-npm/' >> /root/.npmrc
-
-# Scaffold a local-streaming sample with the public create-ov-web-rtc-app CLI
-RUN npx @nvidia/create-ov-web-rtc-app@1.14.2 --name web-viewer --sample local-sample --outputDir /app
+# Scope the NVIDIA npm registry, scaffold the app, then clean up the credential
+RUN echo '@nvidia:registry=https://edge.urm.nvidia.com/artifactory/api/npm/omniverse-client-npm/' >> /root/.npmrc \
+    && npx @nvidia/create-ov-web-rtc-app@1.14.2 --name web-viewer --sample local-sample --outputDir /app \
+    && rm -f /root/.npmrc
 
 WORKDIR /app/web-viewer
 
@@ -53,18 +52,25 @@ FROM nvcr.io/nvidia/base/ubuntu:noble-20251013
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl ca-certificates \
-    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && curl -fsSL --proto '=https' https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
+RUN groupadd -r appuser --gid 1234 && useradd --no-log-init -r -g appuser --uid 1234 -d /app -s /usr/sbin/nologin appuser
+
 WORKDIR /app
 
-COPY --from=builder /app/web-viewer/package.json ./
+COPY --from=builder --chown=appuser:appuser /app/web-viewer/package.json ./
 
 RUN echo '@nvidia:registry=https://edge.urm.nvidia.com/artifactory/api/npm/omniverse-client-npm/' >> /root/.npmrc \
-    && npm install --ignore-scripts
+    && npm install --ignore-scripts \
+    && npm cache clean --force \
+    && rm -f /root/.npmrc \
+    && chown -R appuser:appuser node_modules
 
-COPY --from=builder /app/web-viewer/dist ./dist
+COPY --from=builder --chown=appuser:appuser /app/web-viewer/dist ./dist
+
+USER appuser
 
 EXPOSE 8210
 
