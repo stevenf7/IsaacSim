@@ -18,7 +18,6 @@ Minimal IRA example: SimulationApp setup, load config, setup simulation, generat
 """
 
 import os
-import tempfile
 
 from isaacsim import SimulationApp
 
@@ -32,46 +31,21 @@ from isaacsim.core.utils.extensions import enable_extension
 enable_extension("isaacsim.replicator.agent.core")
 simulation_app.update()
 
-# Default config (no version); version is injected at write time from current IRA support.
-DEFAULT_CONFIG = {
-    "isaacsim.replicator.agent": {
-        "environment": {
-            "base_stage_asset_path": "Isaac/Environments/Simple_Warehouse/full_warehouse.usd",
-        },
-    },
-}
-
-
-def _get_ira_config_version() -> str:
-    """Return the minimum supported IRA config version (injected before serialization)."""
-    try:
-        from omni.metropolis.utils.versioning_util import get_extension_version
-
-        return get_extension_version("isaacsim.replicator.agent.core")
-    except Exception:
-        return "1.2.0"
-
 
 def _get_config_path() -> str:
-    """Return config path; create a temp default config file with current IRA version."""
-    import copy
+    """Return path to the minimal IRA config bundled with the extension."""
+    import omni.kit.app
 
-    import yaml
-
-    config = copy.deepcopy(DEFAULT_CONFIG)
-    config["isaacsim.replicator.agent"]["version"] = _get_ira_config_version()
-    content = yaml.dump(config, default_flow_style=False, sort_keys=False)
-    fd, path = tempfile.mkstemp(suffix=".yaml", prefix="ira_default_config_")
-    try:
-        with os.fdopen(fd, "w") as f:
-            f.write(content)
-        return path
-    except Exception:
-        os.close(fd)
-        raise
+    core_ext_path = (
+        omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module("isaacsim.replicator.agent.core")
+    )
+    default_config_file_path = os.path.join(core_ext_path, "data", "sample_configs", "minimal.yaml")
+    if not os.path.isfile(default_config_file_path):
+        raise FileNotFoundError(f"IRA config not found: {default_config_file_path}")
+    return default_config_file_path
 
 
-async def run_ira_data_generation(run_data_generation: bool = False):
+async def run_ira_data_generation(setup_simulation: bool = False, run_data_generation: bool = False):
     from isaacsim.replicator.agent.core import api as IRA
 
     # IRA: load config. Specify the config file path.
@@ -84,23 +58,24 @@ async def run_ira_data_generation(run_data_generation: bool = False):
     config = IRA.get_config_file()
     IRA.set_config(config)
 
-    # IRA: setup simulation
-    await IRA.setup_simulation()
+    # IRA: setup simulation (only when setup_simulation is True)
+    if setup_simulation:
+        await IRA.setup_simulation()
 
-    # Allow a few frames for scene to settle
-    import omni.kit.app
+        # Allow a few frames for scene to settle
+        import omni.kit.app
 
-    app = omni.kit.app.get_app()
-    for _ in range(10):
-        await app.next_update_async()
+        app = omni.kit.app.get_app()
+        for _ in range(10):
+            await app.next_update_async()
 
-    # IRA: generate data (only when run_data_generation is True)
-    if run_data_generation:
-        await IRA.start_data_generation_async(will_wait_until_complete=True)
+        # IRA: generate data (only when run_data_generation is True)
+        if run_data_generation:
+            await IRA.start_data_generation_async(will_wait_until_complete=True)
 
 
 from omni.kit.async_engine import run_coroutine
 
-task = run_coroutine(run_ira_data_generation(run_data_generation=False))
+task = run_coroutine(run_ira_data_generation(setup_simulation=False, run_data_generation=False))
 while not task.done():
     simulation_app.update()
