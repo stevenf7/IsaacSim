@@ -85,6 +85,11 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+# Ensure this script's directory is on sys.path so repo_helpers and term_helpers (same dir) can be imported
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
 from repo_helpers import EXTENSION_ROOTS, REPO_ROOT, all_extensions, get_uncommitted_files
 from term_helpers import Colors, colorize
 

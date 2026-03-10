@@ -25,6 +25,12 @@ from pathlib import Path
 from typing import Any
 
 import toml  # type: ignore[import-untyped]
+
+# Ensure this script's directory is on sys.path so term_helpers (same dir) can be imported
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
 from term_helpers import Colors, colorize
 
 
