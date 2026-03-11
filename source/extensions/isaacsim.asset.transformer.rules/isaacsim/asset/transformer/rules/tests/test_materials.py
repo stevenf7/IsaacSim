@@ -1,10 +1,12 @@
-# SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
+#
 # http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +22,7 @@ import tempfile
 
 import omni.kit.test
 from isaacsim.asset.transformer.rules.perf.materials import MaterialsRoutingRule
-from pxr import Sdf, Usd
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 from .common import _INSPIRE_HAND_DIR, _INSPIRE_HAND_MATERIALS_USDA, _TEST_DATA_DIR, _UR10E_USD
 
@@ -318,5 +320,79 @@ class TestMaterialsRoutingRule(omni.kit.test.AsyncTestCase):
         self.assertGreaterEqual(len(texture_refs), 3)
         for ref in texture_refs:
             self.assertFalse(os.path.isabs(ref))
+
+        self._success = True
+
+    async def test_process_rule_skips_physics_materials(self):
+        """Verify materials with PhysicsMaterialAPI are excluded from routing."""
+        stage_path = os.path.join(self._tmpdir, "physics_mat_test.usda")
+        stage = Usd.Stage.CreateNew(stage_path)
+        stage.SetMetadata("metersPerUnit", 1.0)
+        stage.SetMetadata("upAxis", "Z")
+
+        root = UsdGeom.Xform.Define(stage, "/root")
+        stage.SetDefaultPrim(root.GetPrim())
+
+        # Visual material with a shader
+        vis_mat = UsdShade.Material.Define(stage, "/root/Materials/VisualMat")
+        shader = UsdShade.Shader.Define(stage, "/root/Materials/VisualMat/PreviewSurface")
+        shader.CreateIdAttr("UsdPreviewSurface")
+        shader.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(1, 0, 0))
+        vis_mat.CreateSurfaceOutput().ConnectToSource(shader.ConnectableAPI(), "surface")
+
+        # Physics material (has PhysicsMaterialAPI, no visual shader)
+        phys_mat_prim = stage.DefinePrim("/root/Physics/PhysicsMaterial", "Material")
+        UsdPhysics.MaterialAPI.Apply(phys_mat_prim)
+        phys_mat_prim.CreateAttribute("physics:staticFriction", Sdf.ValueTypeNames.Float).Set(0.5)
+        phys_mat_prim.CreateAttribute("physics:dynamicFriction", Sdf.ValueTypeNames.Float).Set(0.5)
+
+        # Mesh bound to the visual material
+        mesh = UsdGeom.Mesh.Define(stage, "/root/body/Mesh")
+        mesh.GetPointsAttr().Set([Gf.Vec3f(0, 0, 0), Gf.Vec3f(1, 0, 0), Gf.Vec3f(0, 1, 0)])
+        mesh.GetFaceVertexCountsAttr().Set([3])
+        mesh.GetFaceVertexIndicesAttr().Set([0, 1, 2])
+        UsdShade.MaterialBindingAPI.Apply(mesh.GetPrim())
+        UsdShade.MaterialBindingAPI(mesh.GetPrim()).Bind(vis_mat)
+
+        # Capsule bound to the physics material
+        capsule = UsdGeom.Capsule.Define(stage, "/root/body/Collision")
+        capsule.GetRadiusAttr().Set(0.05)
+        capsule.GetHeightAttr().Set(0.2)
+        binding_api = UsdShade.MaterialBindingAPI.Apply(capsule.GetPrim())
+        binding_api.Bind(
+            UsdShade.Material(phys_mat_prim),
+            materialPurpose="physics",
+        )
+
+        stage.Export(stage_path)
+        stage = Usd.Stage.Open(stage_path)
+
+        os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
+        rule = MaterialsRoutingRule(
+            source_stage=stage,
+            package_root=self._tmpdir,
+            destination_path="payloads",
+            args={"params": {"materials_layer": "materials.usda"}},
+        )
+
+        rule.process_rule()
+
+        log = rule.get_operation_log()
+        self.assertTrue(
+            any("Skipping physics material" in msg for msg in log),
+            "Expected log entry for skipping physics material",
+        )
+
+        materials_path = os.path.join(self._tmpdir, "payloads", "materials.usda")
+        if os.path.exists(materials_path):
+            mat_layer = Sdf.Layer.FindOrOpen(materials_path)
+            mat_text = mat_layer.ExportToString()
+            self.assertIn("VisualMat", mat_text, "Visual material should be in materials layer")
+            self.assertNotIn("PhysicsMaterial", mat_text, "Physics material must NOT be in materials layer")
+
+        # Physics material must still exist in the source stage
+        phys_prim = stage.GetPrimAtPath("/root/Physics/PhysicsMaterial")
+        self.assertTrue(phys_prim.IsValid(), "Physics material must remain in source stage")
+        self.assertIn("PhysicsMaterialAPI", phys_prim.GetAppliedSchemas())
 
         self._success = True

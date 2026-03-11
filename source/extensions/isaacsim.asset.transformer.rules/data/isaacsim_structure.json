@@ -76,6 +76,13 @@
       "enabled": true
     },
     {
+      "name": "Fix Physics Joint Poses",
+      "type": "isaacsim.asset.transformer.rules.isaac_sim.physics_joint_pose_fix.PhysicsJointPoseFixRule",
+      "destination": "payloads",
+      "params": {},
+      "enabled": true
+    },
+    {
       "name": "Route Materials",
       "type": "isaacsim.asset.transformer.rules.perf.materials.MaterialsRoutingRule",
       "destination": "payloads",

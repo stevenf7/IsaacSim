@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Interface composition rule for USD asset transformation."""
 
 from __future__ import annotations
@@ -211,6 +226,11 @@ class InterfaceConnectionRule(RuleInterface):
         # Apply custom connections
         if custom_connections:
             self._apply_custom_connections(interface_layer, custom_connections)
+
+        # Move extraneous root-level prims from the base layer into the
+        # interface layer so they survive the reference round-trip.
+        if base_layer_exists:
+            self._recover_extraneous_root_prims(interface_layer, base_layer_abs_path)
 
         # Save the interface layer
         interface_layer.Save()
@@ -531,3 +551,44 @@ class InterfaceConnectionRule(RuleInterface):
                 self.add_affected_stage(asset_layer_abs)
 
             self.log_operation(f"Added connection: {target_path} -> {layer_display_name} via {connection_type}")
+
+    def _recover_extraneous_root_prims(
+        self,
+        interface_layer: Sdf.Layer,
+        base_layer_path: str,
+    ) -> None:
+        """Move root-level prims outside ``defaultPrim`` from the base layer into the interface layer.
+
+        Prims such as ``/Render`` or ``/PhysicsScene`` may exist at the root
+        of the base layer after flattening.  Because the interface layer
+        connects to the base layer via a *reference* on the default prim,
+        root-level siblings are not composed and would be lost on a
+        subsequent re-transform.  Copying them into the interface layer at the
+        same root level and removing them from the base layer keeps them
+        reachable and makes the pipeline idempotent.
+
+        Args:
+            interface_layer: The interface layer to copy prims into.
+            base_layer_path: Absolute path to the base layer on disk.
+        """
+        base_layer = Sdf.Layer.FindOrOpen(base_layer_path)
+        if not base_layer or not base_layer.pseudoRoot:
+            return
+
+        default_prim_name = base_layer.defaultPrim
+        if not default_prim_name:
+            return
+
+        extra_names = [child.name for child in base_layer.pseudoRoot.nameChildren if child.name != default_prim_name]
+        if not extra_names:
+            return
+
+        for name in extra_names:
+            src_path = Sdf.Path.absoluteRootPath.AppendChild(name)
+            Sdf.CopySpec(base_layer, src_path, interface_layer, src_path)
+            del base_layer.pseudoRoot.nameChildren[name]
+
+        base_layer.Save()
+        self.log_operation(
+            f"Recovered {len(extra_names)} root-level prim(s) from base layer " f"into interface: {extra_names}"
+        )

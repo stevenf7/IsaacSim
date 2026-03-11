@@ -28,7 +28,7 @@ Rules are organized into four packages based on their function:
      - Rules
      - Purpose
    * - **Core Routing**
-     - SchemaRoutingRule, PropertyRoutingRule, PrimRoutingRule
+     - SchemaRoutingRule, PropertyRoutingRule, PrimRoutingRule, RemoveSchemaRule
      - Route USD opinions to dedicated layers
    * - **Performance**
      - MaterialsRoutingRule, GeometriesRoutingRule
@@ -37,7 +37,7 @@ Rules are organized into four packages based on their function:
      - FlattenRule, VariantRoutingRule, InterfaceConnectionRule
      - Reorganize USD composition structure
    * - **Isaac Sim**
-     - RobotSchemaRule, MakeListsNonExplicitRule
+     - RobotSchemaRule, MakeListsNonExplicitRule, PhysicsJointPoseFixRule
      - Apply Isaac Sim-specific transformations
 
 Available Rules
@@ -176,6 +176,42 @@ Select a category tab to view available rules. Expand each rule for detailed par
          3. **Complete Removal**: Removes the prim spec from all source layers, including explicitly deleting all property specs (to handle override properties authored by other rules like ``SchemaRoutingRule``), clearing ``apiSchemas`` metadata, and deleting the prim spec from parent namespaces.
          4. **Layer Management**: Exports the destination layer and saves modified source layers.
 
+      .. dropdown:: RemoveSchemaRule
+         :color: primary
+
+         Removes specific applied API schemas (and optionally their associated properties) from a target layer. Useful for stripping simulator-specific schemas when preparing an asset for a different physics backend.
+
+         **Fully Qualified Type**: ``isaacsim.asset.transformer.rules.core.remove_schema.RemoveSchemaRule``
+
+         **Parameters**:
+
+         .. list-table::
+            :header-rows: 1
+            :widths: 20 15 65
+
+            * - Parameter
+              - Type
+              - Description
+            * - ``stage_name``
+              - str
+              - Target USD filename to edit (for example, ``mujoco.usda``)
+            * - ``schema_patterns``
+              - list
+              - Wildcard patterns matching API schema names to remove (for example, ``PhysicsDriveAPI.*``)
+            * - ``prim_path_patterns``
+              - list
+              - Regex patterns limiting which prim paths are affected (default: ``[".*"]``)
+            * - ``clear_properties``
+              - bool
+              - Also remove properties belonging to the matched schema namespaces (default: ``False``)
+
+         **Execution Logic**:
+
+         1. **Pattern Matching**: Iterates over all prims in the target layer, matching applied API schemas against the specified wildcard patterns.
+         2. **Schema Removal**: Removes matching schema tokens from each prim's ``apiSchemas`` metadata using ``TokenListOp`` manipulation.
+         3. **Property Cleanup**: If ``clear_properties`` is enabled, removes all properties in the matched schema namespace from the prim spec.
+         4. **Layer Save**: Saves the modified layer.
+
    .. tab-item:: Performance
 
       These rules optimize assets for better simulation and rendering performance through deduplication and instancing.
@@ -214,7 +250,7 @@ Select a category tab to view available rules. Expand each rule for detailed par
 
          **Execution Logic**:
 
-         1. **Material Discovery**: Finds all material prims (``UsdShade.Material``) within the scope, tracking which layer defines each material.
+         1. **Material Discovery**: Finds all material prims (``UsdShade.Material``) within the scope, tracking which layer defines each material. Materials with ``PhysicsMaterialAPI`` applied are skipped — these physics-specific materials remain in the base layer at their original paths so that ``material:binding:physics`` relationships continue to resolve.
          2. **Asset Collection**: Resolves all texture and MDL file paths referenced by materials, handling both local and remote (Nucleus) assets. Parses MDL files to discover embedded texture references.
          3. **Content Hashing**: Computes SHA-256 hashes of each material's content (type, attributes, connections, relationships) using resolved asset paths for consistent deduplication.
          4. **Asset Transfer**: Copies all unique assets to the textures folder with global deduplication. Handles filename collisions by appending numeric suffixes. Updates MDL files to point to transferred textures.
@@ -262,7 +298,7 @@ Select a category tab to view available rules. Expand each rule for detailed par
 
          1. **Geometry Discovery**: Identifies all geometry prims (Mesh, Gprim types) within the scope.
          2. **Content Hashing**: Computes geometry hashes based on mesh data (points, face counts, indices), transforms, and intrinsic properties (type-specific attributes like ``subdivisionScheme``, ``orientation``).
-         3. **Intrinsic vs Instance Properties**: Separates intrinsic geometry properties (mesh data, UVs, normals, tangents) from instance-specific properties (material bindings, applied schemas like CollisionAPI, custom attributes).
+         3. **Intrinsic vs Instance Properties**: Separates intrinsic geometry properties (mesh data, UVs, normals, tangents) from instance-specific properties (visual material bindings, applied schemas like CollisionAPI, custom attributes). Physics-purpose material bindings (``material:binding:physics``) are preserved as-is in the instance delta, pointing to their original target paths in the base layer rather than being rerouted through ``VisualMaterials``.
          4. **Geometry Layer Creation**: Creates geometry definitions under ``/Geometries/{name}/{name}`` in the geometries layer. Identical geometries share the same definition.
          5. **Instance Layer Creation**: Creates instance entries capturing per-instance deltas: material bindings, applied API schemas, transform overrides, and custom properties.
          6. **Base Stage Update**: Updates the base stage to reference the geometry definitions, replacing original geometry prims with instanceable references.
@@ -391,7 +427,8 @@ Select a category tab to view available rules. Expand each rule for detailed par
          3. **Base Connection**: Connects the base layer to the default prim using the specified connection type (prepends Reference or Payload to the prim's list, or inserts Sublayer).
          4. **Folder Variant Generation**: If enabled, scans the payloads folder for subfolders containing USD files. Each subfolder becomes a variant set, with a ``none`` variant (no payload) and variants for each USD file (payloaded).
          5. **Custom Connections**: Applies custom connection specifications. For Sublayer connections, adds to the layer's sublayer paths. For Reference/Payload connections, adds to the default prim. Can modify the interface layer or any specified asset layer.
-         6. **Variant Selection Defaults**: Sets default variant selections on the interface layer's default prim.
+         6. **Extraneous Prim Recovery**: Scans the base layer for root-level prims outside ``defaultPrim`` (e.g. ``/Render``, ``/PhysicsScene``). Copies each into the interface layer at the same root level using ``Sdf.CopySpec``, then removes them from the base layer and saves it. This keeps those prims reachable in the composed stage and makes the pipeline idempotent — prims that would not survive a reference-based round-trip are promoted to the interface layer where they persist across re-transforms.
+         7. **Variant Selection Defaults**: Sets default variant selections on the interface layer's default prim.
 
    .. tab-item:: Isaac Sim
 
@@ -490,6 +527,56 @@ Select a category tab to view available rules. Expand each rule for detailed par
 
          5. **Layer Management**: Saves all modified layers.
 
+      .. dropdown:: PhysicsJointPoseFixRule
+         :color: primary
+
+         Corrects physics joint local poses after upstream rules (such as GeometriesRoutingRule) change body world transforms. Compares joint world poses computed from the original input asset against the current working stage and updates ``localPos0/1`` and ``localRot0/1`` attributes on any joint whose world pose has drifted.
+
+         **Fully Qualified Type**: ``isaacsim.asset.transformer.rules.isaac_sim.physics_joint_pose_fix.PhysicsJointPoseFixRule``
+
+         **Parameters**:
+
+         .. list-table::
+            :header-rows: 1
+            :widths: 20 15 65
+
+            * - Parameter
+              - Type
+              - Description
+            * - ``original_composition_path``
+              - str
+              - Optional explicit path to the original composition stage. Defaults to the ``input_stage_path`` passed by the transformer manager (the unmodified source asset).
+            * - ``tolerance_position``
+              - float
+              - Maximum allowed position difference (Euclidean distance) when comparing joint world poses (default: ``1e-6``)
+            * - ``tolerance_orientation``
+              - float
+              - Minimum quaternion dot-product deviation from 1.0 when comparing joint world poses (default: ``1e-6``)
+
+         **Execution Logic**:
+
+         1. **Original Stage**: Opens the original input asset (before any transformer rules ran) via ``input_stage_path``.
+         2. **Joint Discovery**: Traverses the working stage for all ``UsdPhysics.Joint`` prims.
+         3. **World Pose Comparison**: For each joint, computes the joint world pose from both ``body0`` and ``body1`` on the original stage and on the working stage using ``local_pose * body_world_transform``.
+         4. **Drift Detection**: If the working stage's joint world pose differs from the original beyond the configured tolerance, the affected body side is flagged for correction.
+         5. **Local Pose Fix**: Computes the corrective local pose as ``joint_world_orig * inverse(body_world_entry)`` and writes the resulting translation and rotation back to the joint's ``localPos`` and ``localRot`` attributes.
+         6. **Layer Save**: Saves the modified edit layer if any corrections were applied.
+
+
+Idempotency Requirement
+-----------------------
+
+All transformation rules **must** be idempotent: running the full profile twice on the same asset (once on the original, then on the first run's output) must produce identical USD layers, with the sole exception of the ``doc`` metadata field which embeds absolute paths. The extension includes an idempotency test (``test_profile_idempotency.py``) that enforces this requirement.
+
+Common sources of non-idempotency to watch for when developing new rules:
+
+- **Floating-point drift** -- Matrix composition/decomposition round-trips introduce noise. Quantize values to a fixed number of significant digits, or read canonical xformOp values directly when possible.
+- **Stale composition arcs** -- Extracting content from variant specs can leave behind self-referencing payloads or references on the destination prim. Strip any arcs that were not present in the source.
+- **Inconsistent defaultPrim** -- Use ``self.source_stage.GetDefaultPrim()`` (composed stage) rather than ``self.source_stage.GetRootLayer().defaultPrim`` (root layer only) to reliably resolve the default prim across re-transforms.
+- **Non-deterministic merge decisions** -- When deciding whether to merge a child into its parent, account for scaffolding prims (e.g. ``VisualMaterials`` scopes, empty overs) left behind by previous runs.
+- **Extraneous root-level prims** -- After flattening, root-level prims outside the ``defaultPrim`` hierarchy (e.g. viewport/render artifacts) do not survive a reference-based round-trip. The ``InterfaceConnectionRule`` handles this automatically by moving such prims from the base layer into the interface layer, but custom rules that introduce root-level prims should be aware of this composition constraint.
+
+
 Rule Type Quick Reference
 -------------------------
 
@@ -501,6 +588,7 @@ Use these fully qualified type names in rule profiles:
    isaacsim.asset.transformer.rules.core.schemas.SchemaRoutingRule
    isaacsim.asset.transformer.rules.core.properties.PropertyRoutingRule
    isaacsim.asset.transformer.rules.core.prims.PrimRoutingRule
+   isaacsim.asset.transformer.rules.core.remove_schema.RemoveSchemaRule
 
    # Performance
    isaacsim.asset.transformer.rules.perf.materials.MaterialsRoutingRule
@@ -514,4 +602,5 @@ Use these fully qualified type names in rule profiles:
    # Isaac Sim
    isaacsim.asset.transformer.rules.isaac_sim.robot_schema.RobotSchemaRule
    isaacsim.asset.transformer.rules.isaac_sim.make_lists_non_explicit.MakeListsNonExplicitRule
+   isaacsim.asset.transformer.rules.isaac_sim.physics_joint_pose_fix.PhysicsJointPoseFixRule
 
