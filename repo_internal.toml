@@ -627,17 +627,52 @@ ignored_extensions = [
 # Tool to promote extensions to the public registry pipeline
 ########################################################################################################################
 
-[repo_deploy_exts.pipeline_repo.branch.prod-110]
+[repo_deploy_exts]
+run_if_app_version_regex = '.*'
+pipeline_repo.user_name = "Hammad Mazhar"
+pipeline_repo.user_email = "hmazhar@nvidia.com"
+
+[repo_deploy_exts.pipeline_repo.branch.integ-110]
 enabled = true
 skip_if_build_is_mr = true
 fail_if_exts_are_missing = false
 create_mr = true
 auto_merge_mr = false
+exts_exclude = [
+  "isaacsim.*",
+  "omni.isaac.core_archive",
+  "omni.isaac.ml_archive",
+  "omni.kit.loop-isaac",
+  "omni.pip.cloud",
+  "omni.pip.compute",
+  "omni.usd.schema.mujoco",
+  "omni.usd.schema.newton",
+  "omni.cuopt.*",
+]
 
-[repo_deploy_exts]
-run_if_app_version_regex = '.*'
-pipeline_repo.user_name = "Hammad Mazhar"
-pipeline_repo.user_email = "hmazhar@nvidia.com"
+[repo_deploy_exts.pipeline_repo.branch."isaacsim-integ-6.0"]
+enabled = true
+skip_if_build_is_mr = true
+fail_if_exts_are_missing = false
+create_mr = true
+auto_merge_mr = false
+exts_include = [
+  "isaacsim.*",
+  "omni.isaac.core_archive",
+  "omni.isaac.ml_archive",
+  "omni.kit.loop-isaac",
+  "omni.pip.cloud",
+  "omni.pip.compute",
+  "omni.usd.schema.mujoco",
+  "omni.usd.schema.newton",
+  "omni.cuopt.*",
+]
+
+[repo_deploy_exts.pipeline_repo.branch.prod]
+enabled = false
+
+[repo_deploy_exts.pipeline_repo.branch.integ]
+enabled = false
 
 ########################################################################################################################
 # Lua formatting

@@ -4,7 +4,7 @@
     <package name="repo_nv" version="0.2.8"/>
   </dependency>
   <dependency name="repo_kit_tools_internal" linkPath="../_repo/deps/repo_kit_tools_internal">
-    <package name="repo_kit_tools_internal" version="0.1.4" />
+    <package name="repo_kit_tools_internal" version="0.2.1" />
   </dependency>
 
 <!-- Public packages that are optional in OSS repo -->
