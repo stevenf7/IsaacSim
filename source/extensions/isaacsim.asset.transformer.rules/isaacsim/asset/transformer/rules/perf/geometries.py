@@ -1,9 +1,25 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Geometry routing rule for deduplicated assets."""
 
 from __future__ import annotations
 
 import gc
 import hashlib
+import math
 import os
 from collections import defaultdict
 from collections.abc import Iterable
@@ -386,8 +402,10 @@ class GeometriesRoutingRule(RuleInterface):
     ) -> tuple[Gf.Vec3d, Gf.Quatd, Gf.Vec3d] | None:
         """Get the local transform of a mesh prim decomposed into TOS.
 
-        Computes the mesh's local transform (relative to its parent) and decomposes
-        it into translate, orient (quaternion), and scale components.
+        When the prim already carries TOS xformOps the values are read
+        directly — this avoids a matrix compose/decompose round-trip that
+        would introduce floating-point drift across serialization cycles.
+        For any other xformOp layout the matrix path is used as a fallback.
 
         Args:
             prim_path: Path to the mesh prim.
@@ -404,12 +422,16 @@ class GeometriesRoutingRule(RuleInterface):
         if not mesh_xformable:
             return None
 
-        # Log xformOps before getting composed transform (verbose only)
         if getattr(self, "_verbose", False):
             self.log_operation(f"_get_mesh_local_transform_decomposed: prim={prim_path}")
             self._log_xform_ops(mesh_xformable, "mesh xformOps")
 
-        # Get the local transform at default time
+        # Fast path: if xformOps are already in canonical TOS order,
+        # read the authored values directly to avoid decomposition noise.
+        tos = self._try_read_tos_directly(mesh_prim)
+        if tos is not None:
+            return tos
+
         local_transform = mesh_xformable.GetLocalTransformation()
 
         if getattr(self, "_verbose", False):
@@ -421,6 +443,38 @@ class GeometriesRoutingRule(RuleInterface):
             return None
 
         return self._decompose_transform(local_transform, log_context=f"mesh_local: {prim_path}")
+
+    @staticmethod
+    def _try_read_tos_directly(
+        prim: Usd.Prim,
+    ) -> tuple[Gf.Vec3d, Gf.Quatd, Gf.Vec3d] | None:
+        """Read TOS values directly from a prim's xformOps, bypassing matrix decomposition.
+
+        Returns None if the prim doesn't use canonical TOS ordering.
+        """
+        xformable = UsdGeom.Xformable(prim)
+        if not xformable:
+            return None
+        ordered = xformable.GetOrderedXformOps()
+        if len(ordered) != 3:
+            return None
+        names = [op.GetOpName() for op in ordered]
+        if names != ["xformOp:translate", "xformOp:orient", "xformOp:scale"]:
+            return None
+        translate = ordered[0].Get()
+        orient = ordered[1].Get()
+        scale = ordered[2].Get()
+        if translate is None or orient is None or scale is None:
+            return None
+        if not isinstance(translate, (Gf.Vec3d, Gf.Vec3f)):
+            return None
+        translate = Gf.Vec3d(translate)
+        scale = Gf.Vec3d(scale) if not isinstance(scale, Gf.Vec3d) else scale
+        if isinstance(orient, Gf.Quatf):
+            orient = Gf.Quatd(orient)
+        if isinstance(orient, Gf.Quath):
+            orient = Gf.Quatd(float(orient.GetReal()), Gf.Vec3d(*[float(x) for x in orient.GetImaginary()]))
+        return translate, orient, scale
 
     def _is_identity_transform(self, transform: Gf.Matrix4d) -> bool:
         """Check if a transform matrix is approximately identity.
@@ -442,15 +496,17 @@ class GeometriesRoutingRule(RuleInterface):
     def _should_merge_with_parent(self, prim_path: str) -> bool:
         """Check if a prim should be merged with its parent.
 
-        A prim should be merged with its parent if the parent has no other children
-        besides this prim. This allows the reference to be placed directly on the
-        parent with combined transforms.
+        A prim should be merged with its parent if, after extracting the
+        geometry at *prim_path*, all remaining siblings would be effectively
+        empty.  This covers the first-run case (parent has a single child)
+        and re-runs where previous geometry routing left behind
+        ``VisualMaterials`` scopes or other empty scaffolding.
 
         Args:
             prim_path: Path to the prim to check.
 
         Returns:
-            True if the parent has only this prim as its child.
+            True if the parent can absorb the geometry reference directly.
         """
         prim = self.source_stage.GetPrimAtPath(prim_path)
         if not prim.IsValid():
@@ -465,9 +521,24 @@ class GeometriesRoutingRule(RuleInterface):
         if parent_path == "/" or parent == self.source_stage.GetDefaultPrim():
             return False
 
-        # Check if parent has exactly one child
-        children = parent.GetChildren()
-        return len(children) == 1
+        for child in parent.GetChildren():
+            if child.GetPath() == prim.GetPath():
+                continue
+            # VisualMaterials scopes are created by this rule and will be
+            # recreated in the instances layer; they never block merging.
+            if child.GetName() == _VISUAL_MATERIALS_SCOPE_NAME:
+                continue
+            # Any other sibling with substantive content blocks merging.
+            if not self._is_subtree_empty(child):
+                return False
+        return True
+
+    @staticmethod
+    def _is_subtree_empty(prim: Usd.Prim) -> bool:
+        """True when *prim* and all its descendants have no authored properties."""
+        if prim.GetAuthoredProperties():
+            return False
+        return all(GeometriesRoutingRule._is_subtree_empty(c) for c in prim.GetChildren())
 
     def _get_combined_parent_child_transform(
         self,
@@ -542,6 +613,43 @@ class GeometriesRoutingRule(RuleInterface):
 
         return self._decompose_transform(combined_transform, log_context=f"combined: {parent_path} + {prim_path}")
 
+    @staticmethod
+    def _quantize_double(v: float, sig: int = 10) -> float:
+        """Round *v* to *sig* significant digits to remove matrix-decomposition noise."""
+        if v == 0.0:
+            return 0.0
+        d = sig - 1 - int(math.floor(math.log10(abs(v))))
+        return round(v, d)
+
+    @staticmethod
+    def _canonicalize_quat(orient: Gf.Quatd, zero_thresh: float = 1e-7) -> Gf.Quatd:
+        """Return a canonical form of the quaternion for idempotent round-trip.
+
+        Near-zero components (< *zero_thresh*) are clamped to 0 so matrix
+        decomposition noise does not survive serialization.  The sign is
+        then normalized so that q and -q always produce the same result:
+        prefer real > 0; when real == 0, prefer the first non-zero imaginary
+        component positive.
+        """
+
+        def _z(v: float) -> float:
+            return 0.0 if abs(v) < zero_thresh else v
+
+        real = _z(orient.GetReal())
+        imag = orient.GetImaginary()
+        i0, i1, i2 = _z(imag[0]), _z(imag[1]), _z(imag[2])
+        negate = False
+        if real < 0:
+            negate = True
+        elif real == 0:
+            for c in (i0, i1, i2):
+                if c != 0:
+                    negate = c < 0
+                    break
+        if negate:
+            real, i0, i1, i2 = -real, -i0, -i1, -i2
+        return Gf.Quatd(real, i0, i1, i2)
+
     def _apply_transform_to_prim_spec(
         self,
         prim_spec: Sdf.PrimSpec,
@@ -552,7 +660,10 @@ class GeometriesRoutingRule(RuleInterface):
         """Apply a TOS transform to a prim spec.
 
         Creates xformOp:translate, xformOp:orient, xformOp:scale attributes
-        and sets the xformOpOrder.
+        and sets the xformOpOrder.  All values are quantized to 14
+        significant digits so that matrix-decomposition noise does not
+        drift across consecutive serialization round-trips.  Orient is
+        canonicalized (real >= 0) so round-trip output is stable.
 
         Args:
             prim_spec: The prim spec to apply transform to.
@@ -560,20 +671,24 @@ class GeometriesRoutingRule(RuleInterface):
             orient: Orientation quaternion.
             scale: Scale vector.
         """
+        q = self._quantize_double
+        orient = self._canonicalize_quat(orient)
+
         # Create translate op
         translate_attr = Sdf.AttributeSpec(prim_spec, "xformOp:translate", Sdf.ValueTypeNames.Double3)
         if translate_attr:
-            translate_attr.default = translate
+            translate_attr.default = Gf.Vec3d(q(translate[0]), q(translate[1]), q(translate[2]))
 
         # Create orient op (quaternion)
         orient_attr = Sdf.AttributeSpec(prim_spec, "xformOp:orient", Sdf.ValueTypeNames.Quatd)
         if orient_attr:
-            orient_attr.default = orient
+            imag = orient.GetImaginary()
+            orient_attr.default = Gf.Quatd(q(orient.GetReal()), q(imag[0]), q(imag[1]), q(imag[2]))
 
         # Create scale op
         scale_attr = Sdf.AttributeSpec(prim_spec, "xformOp:scale", Sdf.ValueTypeNames.Double3)
         if scale_attr:
-            scale_attr.default = scale
+            scale_attr.default = Gf.Vec3d(q(scale[0]), q(scale[1]), q(scale[2]))
 
         # Set xformOpOrder (uniform variability)
         xform_op_order_attr = Sdf.AttributeSpec(
@@ -1946,12 +2061,15 @@ class GeometriesRoutingRule(RuleInterface):
             except Exception:
                 pass
 
-        # Copy relationships (but not material bindings or intrinsic relationships)
+        # Copy relationships (but not visual material bindings or intrinsic relationships).
+        # Physics material bindings (material:binding:physics) are kept as-is so they
+        # continue to point at the original physics material in the base layer.
         for rel in src_prim.GetRelationships():
             rel_name = rel.GetName()
 
-            # Skip material bindings - they're handled by _create_material_references
-            if rel_name.startswith("material:binding"):
+            # Skip visual material bindings — handled by _create_material_references.
+            # Physics bindings pass through to preserve the original target path.
+            if rel_name.startswith("material:binding") and not rel_name.startswith("material:binding:physics"):
                 continue
 
             # Skip intrinsic relationships (like proxyPrim from Imageable)
@@ -2433,7 +2551,12 @@ class GeometriesRoutingRule(RuleInterface):
         all_materials: dict[str, str],
         prim_bindings: dict[str, list[tuple[str, str]]],
     ) -> None:
-        """Recursively collect material bindings from a prim and its children.
+        """Recursively collect *visual* material bindings from a prim and its children.
+
+        Physics-purpose bindings (``material:binding:physics``) are skipped
+        here and instead preserved as regular relationships by
+        ``_write_instance_delta_to_layer`` so they keep pointing at the
+        original physics material prim in the base layer.
 
         Args:
             src_prim: The source prim to process.
@@ -2449,6 +2572,9 @@ class GeometriesRoutingRule(RuleInterface):
         # Just create the binding API and query for bindings directly.
         binding_api = UsdShade.MaterialBindingAPI(src_prim)
         for purpose in _MATERIAL_PURPOSES:
+            if purpose == "physics":
+                continue
+
             if purpose == "":
                 binding = binding_api.GetDirectBinding()
             else:
@@ -2591,9 +2717,13 @@ class GeometriesRoutingRule(RuleInterface):
                             )
                         self._apply_transform_to_prim_spec(parent_prim_spec, translate, orient, scale)
 
-                    # Remove the child prim from parent
-                    if child_name in parent_prim_spec.nameChildren:
-                        del parent_prim_spec.nameChildren[child_name]
+                    # Remove ALL children from the parent.  The parent is
+                    # becoming instanceable so its composed subtree will come
+                    # entirely from the instance prototype reference — any
+                    # locally-authored children (the geometry def, stale overs,
+                    # VisualMaterials scopes, etc.) are dead data.
+                    for sib_name in list(parent_prim_spec.nameChildren.keys()):
+                        del parent_prim_spec.nameChildren[sib_name]
 
                     # Add reference to the deduplicated instance on the parent
                     reference = Sdf.Reference(instance_layer_rel_path, dedup_instance_path)

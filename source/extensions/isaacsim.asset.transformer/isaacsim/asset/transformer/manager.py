@@ -8,7 +8,7 @@ import shutil
 from collections.abc import Callable
 from typing import Any, TypeVar
 
-from pxr import Sdf, Usd, UsdUtils
+from pxr import Gf, Sdf, Usd, UsdUtils
 
 from .models import ExecutionReport, RuleExecutionResult, RuleProfile
 from .rule_interface import RuleInterface
@@ -77,6 +77,44 @@ def _collect_assets(layer: Sdf.Layer, package_root: str) -> None:
 
     UsdUtils.ModifyAssetPaths(layer, remap_path)
     layer.Save()
+
+
+_QUAT_ZERO_THRESH: float = 1e-7
+
+
+def _canonicalize_orient_quats(layer: Sdf.Layer) -> None:
+    """Canonicalize every xformOp:orient (Quatd) in the layer for idempotent round-trip.
+
+    Near-zero components are clamped to 0 and the sign is normalized (real >= 0).
+    """
+    for prim_spec in layer.rootPrims.values():
+        _canonicalize_orient_quats_recursive(prim_spec)
+
+
+def _canonicalize_orient_quats_recursive(prim_spec: Sdf.PrimSpec) -> None:
+    if "xformOp:orient" in prim_spec.attributes:
+        attr = prim_spec.attributes["xformOp:orient"]
+        if attr.typeName == Sdf.ValueTypeNames.Quatd and attr.default:
+            q = attr.default
+            real = q.GetReal()
+            imag = q.GetImaginary()
+            real = 0.0 if abs(real) < _QUAT_ZERO_THRESH else real
+            i0 = 0.0 if abs(imag[0]) < _QUAT_ZERO_THRESH else imag[0]
+            i1 = 0.0 if abs(imag[1]) < _QUAT_ZERO_THRESH else imag[1]
+            i2 = 0.0 if abs(imag[2]) < _QUAT_ZERO_THRESH else imag[2]
+            negate = False
+            if real < 0:
+                negate = True
+            elif real == 0:
+                for c in (i0, i1, i2):
+                    if c != 0:
+                        negate = c < 0
+                        break
+            if negate:
+                real, i0, i1, i2 = -real, -i0, -i1, -i2
+            attr.default = Gf.Quatd(real, i0, i1, i2)
+    for child in prim_spec.nameChildren.values():
+        _canonicalize_orient_quats_recursive(child)
 
 
 T = TypeVar("T")
@@ -278,6 +316,8 @@ class AssetTransformerManager:
         base_layer = Sdf.Layer.FindOrOpen(base_usda_path)
         if base_layer:
             _collect_assets(base_layer, package_root_final)
+            _canonicalize_orient_quats(base_layer)
+            base_layer.Save()
 
         working_stage = Usd.Stage.Open(base_usda_path)
         if working_stage is None:

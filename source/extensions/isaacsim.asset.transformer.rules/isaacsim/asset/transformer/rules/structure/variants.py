@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Variant routing rule for extracting variant assets."""
 
 from __future__ import annotations
@@ -794,6 +809,13 @@ class VariantRoutingRule(RuleInterface):
             self._apply_variant_deltas(
                 variant_spec, variant_layer, dest_prim_path, source_layer_dir, variant_file_map, all_collected_deps
             )
+            # Strip stale composition arcs (see note in the primary-source path below)
+            dest_prim_spec = variant_layer.GetPrimAtPath(dest_prim_path)
+            if dest_prim_spec:
+                if dest_prim_spec.hasPayloads:
+                    dest_prim_spec.payloadList.ClearEdits()
+                if dest_prim_spec.hasReferences:
+                    dest_prim_spec.referenceList.ClearEdits()
             variant_layer.Save()
             return variant_file_path
 
@@ -821,11 +843,29 @@ class VariantRoutingRule(RuleInterface):
         default_prim_name = Sdf.Path(default_prim_path).name
         dest_prim_path = f"/{default_prim_name}"
 
+        # Snapshot payload/reference state from the source copy before applying deltas
+        dest_prim_spec = variant_layer.GetPrimAtPath(dest_prim_path)
+        had_payloads = bool(dest_prim_spec and dest_prim_spec.hasPayloads)
+        had_references = bool(dest_prim_spec and dest_prim_spec.hasReferences)
+
         # Apply variant deltas as strongest opinion
         self._apply_variant_deltas(
             variant_spec, variant_layer, dest_prim_path, source_layer_dir, variant_file_map, all_collected_deps
         )
         self.log_operation("Applied variant deltas as strongest opinion")
+
+        # If applying deltas introduced payload/reference arcs that were not in
+        # the source file, strip them.  These are the composition arcs from the
+        # variant spec that route INTO this content — they must not remain on
+        # the output prim or they create invalid / self-referencing arcs.
+        dest_prim_spec = variant_layer.GetPrimAtPath(dest_prim_path)
+        if dest_prim_spec:
+            if dest_prim_spec.hasPayloads and not had_payloads:
+                dest_prim_spec.payloadList.ClearEdits()
+                self.log_operation(f"Cleared stale payload arc(s) from {dest_prim_path}")
+            if dest_prim_spec.hasReferences and not had_references:
+                dest_prim_spec.referenceList.ClearEdits()
+                self.log_operation(f"Cleared stale reference arc(s) from {dest_prim_path}")
 
         variant_layer.defaultPrim = default_prim_name
         variant_layer.Save()

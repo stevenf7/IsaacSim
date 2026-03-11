@@ -377,24 +377,27 @@ The profile executes the following transformation pipeline:
 
 5. **Route Geometries**: Deduplicate geometries and create instanceable references in ``geometries.usd`` and ``instances.usda``.
 
-6. **Route Materials**: Deduplicate materials, download textures, and create ``materials.usda``.
+6. **Fix Physics Joint Poses**: Correct physics joint local poses (``localPos0/1``, ``localRot0/1``) that may have been invalidated by the geometry routing step combining parent/child transforms.
 
-7. **Route PhysX Schemas**: Move PhysX schemas to ``Physics/physx.usda``.
+7. **Route Materials**: Deduplicate visual materials, download textures, and create ``materials.usda``. Physics materials (those with ``PhysicsMaterialAPI``) are left in the base layer.
 
-8. **Route MuJoCo Schemas/Prims/Properties**: Move MuJoCo-related opinions to ``Physics/mujoco.usda``.
+8. **Route PhysX Schemas**: Move PhysX schemas to ``Physics/physx.usda``.
 
-9. **Route Physics Schemas/Prims**: Move general physics schemas and prims to ``Physics/physics.usda``.
+9. **Route MuJoCo Schemas/Prims/Properties**: Move MuJoCo-related opinions to ``Physics/mujoco.usda``.
 
-10. **Make Robot Schema**: Apply Isaac Sim robot schema and populate robot relationships.
+10. **Route Physics Schemas/Prims**: Move general physics schemas and prims to ``Physics/physics.usda``.
 
-11. **Make API Schemas Non-Explicit**: Convert explicit apiSchemas lists to prepended list ops.
+11. **Make Robot Schema**: Apply Isaac Sim robot schema and populate robot relationships.
 
-12. **Generate Interface**: Create the final interface layer with:
+12. **Make API Schemas Non-Explicit**: Convert explicit apiSchemas lists to prepended list ops.
+
+13. **Generate Interface**: Create the final interface layer with:
 
     - Reference to the base layer
     - Variant sets generated from folder structure
     - Sublayer connections for physics engines (PhysX, MuJoCo)
     - Default variant selections
+    - Recovery of extraneous root-level prims (e.g. ``Render``, camera definitions) from the base layer into the interface layer so they remain reachable in the composed stage
 
 **Output Structure**:
 

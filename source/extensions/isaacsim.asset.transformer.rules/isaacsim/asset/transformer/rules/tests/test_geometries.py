@@ -1,10 +1,12 @@
-# SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
+#
 # http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +21,7 @@ import tempfile
 
 import omni.kit.test
 from isaacsim.asset.transformer.rules.perf.geometries import GeometriesRoutingRule
-from pxr import Gf, Sdf, Usd, UsdGeom
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 from .common import _TEST_ADVANCED_USD, _TEST_COLLISION_FROM_VISUALS_USD, _UR10E_SHOULDER_USD
 
@@ -1075,5 +1077,111 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
         capsule = converted_stage.GetPrimAtPath("/root/body/leg_geom")
         self.assertTrue(capsule.IsValid())
         self.assertTrue(capsule.IsA(UsdGeom.Capsule))
+
+        self._success = True
+
+    async def test_process_rule_preserves_physics_material_bindings(self):
+        """Verify physics material bindings survive geometry routing unchanged.
+
+        A mesh with both a visual ``material:binding`` and a physics-purpose
+        ``material:binding:physics`` must have the physics binding preserved
+        in the instance delta with its original target path, while the visual
+        binding is routed through VisualMaterials as usual.
+        """
+        os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
+        input_path = os.path.join(self._tmpdir, "phys_binding.usda")
+
+        stage = Usd.Stage.CreateNew(input_path)
+        stage.SetMetadata("metersPerUnit", 1.0)
+        stage.SetMetadata("upAxis", "Z")
+
+        root = UsdGeom.Xform.Define(stage, "/root")
+        stage.SetDefaultPrim(root.GetPrim())
+
+        # Visual material
+        vis_mat = UsdShade.Material.Define(stage, "/root/Materials/VisualMat")
+        shader = UsdShade.Shader.Define(stage, "/root/Materials/VisualMat/PreviewSurface")
+        shader.CreateIdAttr("UsdPreviewSurface")
+        shader.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(0.8, 0.2, 0.1))
+        vis_mat.CreateSurfaceOutput().ConnectToSource(shader.ConnectableAPI(), "surface")
+
+        # Physics material
+        phys_mat_prim = stage.DefinePrim("/root/Physics/PhysicsMat", "Material")
+        UsdPhysics.MaterialAPI.Apply(phys_mat_prim)
+        phys_mat_prim.CreateAttribute("physics:staticFriction", Sdf.ValueTypeNames.Float).Set(0.8)
+
+        # Xform parent with a single mesh child (will merge-up)
+        UsdGeom.Xform.Define(stage, "/root/body")
+        mesh = UsdGeom.Mesh.Define(stage, "/root/body/Mesh")
+        mesh.GetPointsAttr().Set([Gf.Vec3f(0, 0, 0), Gf.Vec3f(1, 0, 0), Gf.Vec3f(0, 1, 0)])
+        mesh.GetFaceVertexCountsAttr().Set([3])
+        mesh.GetFaceVertexIndicesAttr().Set([0, 1, 2])
+
+        # Bind both visual and physics materials
+        binding_api = UsdShade.MaterialBindingAPI.Apply(mesh.GetPrim())
+        binding_api.Bind(vis_mat)
+        binding_api.Bind(
+            UsdShade.Material(phys_mat_prim),
+            materialPurpose="physics",
+        )
+
+        stage.Export(input_path)
+        stage = Usd.Stage.Open(input_path)
+
+        rule = GeometriesRoutingRule(
+            source_stage=stage,
+            package_root=self._tmpdir,
+            destination_path="payloads",
+            args={
+                "params": {
+                    "geometries_layer": "geometries.usd",
+                    "instance_layer": "instances.usda",
+                }
+            },
+        )
+
+        updated_path = rule.process_rule()
+        self.assertIsNotNone(updated_path)
+
+        # Open the instances layer and find the instance prim
+        instances_path = os.path.join(self._tmpdir, "payloads", "instances.usda")
+        instances_stage = Usd.Stage.Open(instances_path)
+        instances_root = instances_stage.GetPrimAtPath("/Instances")
+        self.assertTrue(instances_root.IsValid())
+
+        # Walk instance children to find a prim with material:binding:physics
+        phys_binding_found = False
+        for inst_child in Usd.PrimRange(instances_root):
+            rel = inst_child.GetRelationship("material:binding:physics")
+            if rel and rel.HasAuthoredTargets():
+                targets = rel.GetTargets()
+                self.assertEqual(len(targets), 1)
+                self.assertEqual(
+                    targets[0].pathString,
+                    "/root/Physics/PhysicsMat",
+                    "Physics material binding must point to the original path",
+                )
+                phys_binding_found = True
+                break
+
+        self.assertTrue(phys_binding_found, "No material:binding:physics found in instances layer")
+
+        # Visual material binding must NOT point to the original material path
+        # (it should go through VisualMaterials instead)
+        vis_binding_found = False
+        for inst_child in Usd.PrimRange(instances_root):
+            rel = inst_child.GetRelationship("material:binding")
+            if rel and rel.HasAuthoredTargets():
+                targets = rel.GetTargets()
+                for t in targets:
+                    self.assertNotEqual(
+                        t.pathString,
+                        "/root/Materials/VisualMat",
+                        "Visual material binding should be rerouted through VisualMaterials",
+                    )
+                vis_binding_found = True
+                break
+
+        self.assertTrue(vis_binding_found, "No visual material:binding found in instances layer")
 
         self._success = True
