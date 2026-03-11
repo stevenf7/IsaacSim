@@ -60,7 +60,7 @@ RUN groupadd -r appuser --gid 1234 && useradd --no-log-init -r -g appuser --uid 
 
 WORKDIR /app
 
-COPY --from=builder --chown=appuser:appuser /app/web-viewer/package.json ./
+COPY --from=builder --chmod=755 /app/web-viewer/package.json ./
 
 RUN echo '@nvidia:registry=https://edge.urm.nvidia.com/artifactory/api/npm/omniverse-client-npm/' >> /root/.npmrc \
     && npm install --ignore-scripts \
@@ -68,7 +68,7 @@ RUN echo '@nvidia:registry=https://edge.urm.nvidia.com/artifactory/api/npm/omniv
     && rm -f /root/.npmrc \
     && chown -R appuser:appuser node_modules
 
-COPY --from=builder --chown=appuser:appuser /app/web-viewer/dist ./dist
+COPY --from=builder --chmod=755 /app/web-viewer/dist ./dist
 
 USER appuser
 

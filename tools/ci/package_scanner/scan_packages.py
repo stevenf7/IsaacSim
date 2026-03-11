@@ -101,12 +101,15 @@ def short_name(filename: str) -> str:
     """Extract short platform.config name from a full packman filename.
 
     e.g. 'isaac-sim-standalone@6.0.0-rc.19+...gl.manylinux_2_35_x86_64.release.zip'
-      -> 'manylinux_2_35_x86_64.release.zip'
+      -> 'manylinux_2_35_x86_64.release'
     """
-    parts = filename.split(".gl.")
+    name = filename
+    for ext in (".zip", ".7z"):
+        name = name.removesuffix(ext)
+    parts = name.split(".gl.")
     if len(parts) == 2:
         return parts[1]
-    return filename
+    return name
 
 
 def download_package(filename: str, output_dir: Path) -> Path:
@@ -135,21 +138,51 @@ def download_package(filename: str, output_dir: Path) -> Path:
     return dest
 
 
-def unzip_package(zip_path: Path, output_dir: Path, dir_name: str = None) -> Path:
-    """Unzip a package to a named directory under output_dir."""
-    extract_dir = output_dir / (dir_name or zip_path.stem)
+def discover_local_packages(pkg_dir: Path, version: str, filters: list[str]) -> list[Path]:
+    """Find isaac-sim-standalone archives (.zip or .7z) already present in pkg_dir."""
+    archives = [
+        p for p in pkg_dir.iterdir()
+        if p.is_file()
+        and p.name.startswith("isaac-sim-standalone")
+        and p.suffix in (".zip", ".7z")
+        and version in p.name
+    ]
+    if filters:
+        archives = [a for a in archives if all(f in a.name for f in filters)]
+    return sorted(archives)
+
+
+def unpack_package(archive_path: Path, output_dir: Path, dir_name: str = None) -> Path:
+    """Unpack a .zip or .7z archive to a named directory under output_dir."""
+    extract_dir = output_dir / (dir_name or archive_path.stem)
     if extract_dir.exists() and any(extract_dir.iterdir()):
         print(f"  Already unpacked: {extract_dir.name}")
         return extract_dir
 
-    print(f"  Unpacking: {zip_path.name}")
+    print(f"  Unpacking: {archive_path.name}")
     extract_dir.mkdir(parents=True, exist_ok=True)
-    try:
-        with zipfile.ZipFile(zip_path, "r") as zf:
-            zf.extractall(extract_dir)
-    except zipfile.BadZipFile:
-        print(f"  ERROR: {zip_path.name} is not a valid zip file", file=sys.stderr)
-        raise
+
+    if archive_path.suffix == ".7z":
+        for cmd in (["7z", "x", "-y", f"-o{extract_dir}", str(archive_path)],
+                    ["bsdtar", "xf", str(archive_path), "-C", str(extract_dir)]):
+            try:
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                if result.returncode == 0:
+                    break
+                print(f"  WARNING: {cmd[0]} failed: {result.stderr.strip()}", file=sys.stderr)
+            except FileNotFoundError:
+                continue
+        else:
+            print(f"  ERROR: No 7z extractor found. Install 7z or bsdtar.", file=sys.stderr)
+            raise RuntimeError(f"Cannot extract {archive_path.name}")
+    else:
+        try:
+            with zipfile.ZipFile(archive_path, "r") as zf:
+                zf.extractall(extract_dir)
+        except zipfile.BadZipFile:
+            print(f"  ERROR: {archive_path.name} is not a valid zip file", file=sys.stderr)
+            raise
+
     print(f"    Unpacked to {extract_dir.name}")
     return extract_dir
 
@@ -329,25 +362,44 @@ def main():
     )
     args = parser.parse_args()
 
-    # --- List packages ---
-    packages = list_packages(args.version)
-    if not packages:
-        print(f"No packages found matching version '{args.version}'.")
-        sys.exit(1)
+    # --- Resolve packages ---
+    pkg_dir = args.packages_dir
+    pkg_dir.mkdir(parents=True, exist_ok=True)
 
-    if args.filter:
-        packages = {
-            k: v for k, v in packages.items()
-            if all(f in k for f in args.filter)
-        }
+    if args.skip_download:
+        local_archives = discover_local_packages(pkg_dir, args.version, args.filter)
+        if local_archives:
+            print(f"\nFound {len(local_archives)} local archive(s) in {pkg_dir}:")
+            for a in local_archives:
+                size_gb = a.stat().st_size / (1024**3)
+                print(f"  {a.name}  ({size_gb:.2f} GB)")
+        else:
+            print(f"\nNo local archives found for version '{args.version}' in {pkg_dir}.")
+            print("Falling back to packman API to discover package names...")
+    else:
+        local_archives = []
+
+    if not local_archives:
+        packages = list_packages(args.version)
         if not packages:
-            print(f"No packages left after applying filters: {args.filter}")
+            print(f"No packages found matching version '{args.version}'.")
             sys.exit(1)
+        if args.filter:
+            packages = {
+                k: v for k, v in packages.items()
+                if all(f in k for f in args.filter)
+            }
+            if not packages:
+                print(f"No packages left after applying filters: {args.filter}")
+                sys.exit(1)
 
-    print(f"\nFound {len(packages)} package(s):")
-    for filename, info in sorted(packages.items()):
-        size_gb = info["size"] / (1024**3)
-        print(f"  {filename}  ({size_gb:.2f} GB)")
+        print(f"\nFound {len(packages)} package(s) on packman:")
+        for filename, info in sorted(packages.items()):
+            size_gb = info["size"] / (1024**3)
+            print(f"  {filename}  ({size_gb:.2f} GB)")
+
+        if args.list_only:
+            return
 
     if args.list_only:
         return
@@ -364,9 +416,7 @@ def main():
     if args.exclude_dirs:
         print(f"\nExcluded directories: {', '.join(args.exclude_dirs)}")
 
-    # --- Download ---
-    pkg_dir = args.packages_dir
-    pkg_dir.mkdir(parents=True, exist_ok=True)
+    # --- Download (only when not using local archives) ---
     unpack_dir_root = pkg_dir / args.version
     unpack_dir_root.mkdir(parents=True, exist_ok=True)
 
@@ -374,25 +424,23 @@ def main():
         print(f"\nDownloading to: {pkg_dir}")
         for filename in sorted(packages):
             download_package(filename, pkg_dir)
-    else:
-        print("\nSkipping download (--skip-download).")
+        local_archives = [pkg_dir / f for f in sorted(packages)]
 
     # --- Unzip ---
     unpack_dirs = []
     if not args.skip_unzip:
         print(f"\nUnpacking archives to: {unpack_dir_root}")
-        for filename in sorted(packages):
-            zip_path = pkg_dir / filename
-            if not zip_path.exists():
-                print(f"  WARNING: {filename} not found, skipping.", file=sys.stderr)
+        for archive_path in local_archives:
+            if not archive_path.exists():
+                print(f"  WARNING: {archive_path.name} not found, skipping.", file=sys.stderr)
                 continue
-            sname = short_name(filename).removesuffix(".zip")
-            udir = unzip_package(zip_path, unpack_dir_root, dir_name=sname)
+            sname = short_name(archive_path.name)
+            udir = unpack_package(archive_path, unpack_dir_root, dir_name=sname)
             unpack_dirs.append(udir)
     else:
         print("\nSkipping unzip (--skip-unzip).")
-        for filename in sorted(packages):
-            sname = short_name(filename).removesuffix(".zip")
+        for archive_path in local_archives:
+            sname = short_name(archive_path.name)
             d = unpack_dir_root / sname
             if d.is_dir():
                 unpack_dirs.append(d)

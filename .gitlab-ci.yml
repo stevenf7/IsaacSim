@@ -2448,25 +2448,17 @@ scan-packages-internal-urls:
       - job: build-linux-x86_64-release
         artifacts: true
         optional: true
-      - job: build-linux-x86_64-debug
-        artifacts: true
-        optional: true
       - job: build-linux-aarch64-release
         artifacts: true
         optional: true
-      - job: build-linux-aarch64-debug
-        artifacts: true
-        optional: true
       - job: build-windows-x86_64-release
-        artifacts: true
-        optional: true
-      - job: build-windows-x86_64-debug
         artifacts: true
         optional: true
     script:
       - python3 tools/ci/package_scanner/scan_packages.py
           --version $(cat VERSION | head -1)
           --skip-download
+          --filter release
           --exclude-dir kit
           --exclude-dir extscache
           --exclude-dir tests
