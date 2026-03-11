@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2026-03-10
+### Changed
+- Compatible with isaacsim.physics.newton 0.6.0 (Newton 1.0.0).
+
 ## [1.2.2] - 2026-03-06
 ### Changed
 - Upgraded Newton pip package from 1.0.0rc2 to 1.0.0rc3. 

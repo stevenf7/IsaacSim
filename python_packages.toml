@@ -308,10 +308,10 @@ pyproject.dependencies.all = [
     # archives (isaacsim.pip.newton)
     "mujoco==3.5.0",
     "mujoco-warp==3.5.0.2",
-    "newton[sim]==1.0.0rc3",
+    "newton[sim]==1.0.0",
     "newton-actuators==0.1.0",
-    "newton-usd-schemas==0.1.0rc3",
-    "mujoco-usd-converter==0.1.0a8",
+    "newton-usd-schemas==0.1.0",
+    "mujoco-usd-converter==0.1.0",
     "cbor2==5.8.0",
     "imgui-bundle==1.92.4",
     "PyOpenGL-accelerate==3.1.10",
