@@ -29,6 +29,10 @@ The following example demonstrates how to load a NuRec scene into |isaac-sim_sho
 
 The example script can be run directly from the :ref:`Script Editor <script-editor>` or as a :ref:`Standalone Application <standalone-application>`.
 
+.. note::
+
+   For correct rendering of NuRec scenes, launch |isaac-sim_short| with ``./isaac-sim.sh --/UJITSO/geometry=true`` or ``./python.sh --/UJITSO/geometry=true``. This option is currently disabled by default.
+
 Prerequisites
 ##############
 
