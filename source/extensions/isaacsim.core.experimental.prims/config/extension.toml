@@ -87,7 +87,6 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-    "--/UJITSO/geometry=true",
     ### Extension specific args
     "--/persistent/omnihydra/useFastSceneDelegate=true",
     "--/persistent/omnihydra/useSceneGraphInstancing=true",
@@ -153,7 +152,6 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-    "--/UJITSO/geometry=true",
     ### Extension specific args
     "--/persistent/omnihydra/useFastSceneDelegate=true",
     "--/persistent/omnihydra/useSceneGraphInstancing=true",
@@ -224,7 +222,6 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-    "--/UJITSO/geometry=true",
     ### Extension specific args
     "--/persistent/omnihydra/useFastSceneDelegate=true",
     "--/persistent/omnihydra/useSceneGraphInstancing=true",

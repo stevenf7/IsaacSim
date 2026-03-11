@@ -63,7 +63,6 @@ STANDARD_TEST_ARGS = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-    "--/UJITSO/geometry=true",
 ]
 
 # Fixed: removed spaces around = to match STANDARD_TEST_ARGS format
