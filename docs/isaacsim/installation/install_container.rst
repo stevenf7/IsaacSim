@@ -24,7 +24,7 @@
 
 .. _Unix Driver Archive: https://www.nvidia.com/en-us/drivers/unix/
 .. _NVIDIA GPU Driver Archive: https://www.nvidia.com/en-us/drivers/unix/linux-amd64-display-archive/
-.. _Isaac Sim Dockerfiles: https://github.com/isaac-sim/IsaacSim/tree/main/tools/docker
+.. _Isaac Sim Dockerfiles: https://github.com/isaac-sim/IsaacSim/tree/develop/tools/docker
 
 
 .. _isaac_sim_app_install_container:
@@ -116,7 +116,7 @@ This section describes how to run the |isaac-sim| container in headless mode wit
 
 .. code-block:: console
 
-    $ docker pull nvcr.io/nvidia/isaac-sim:5.1.0
+    $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0-dev2
 
 4. Create the cached volume mounts on host:
 
@@ -145,7 +145,7 @@ This section describes how to run the |isaac-sim| container in headless mode wit
         -v ~/docker/isaac-sim/data:/isaac-sim/.local/share/ov/data:rw \
         -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
         -u 1234:1234 \
-        nvcr.io/nvidia/isaac-sim:5.1.0
+        nvcr.io/nvidia/isaac-sim:6.0.0-dev2
 
 .. note::
 
@@ -177,7 +177,7 @@ This section describes how to run the |isaac-sim| container in headless mode wit
     .. code-block:: console
 
         $ docker run --entrypoint bash -it --gpus all --rm --network=host \
-            nvcr.io/nvidia/isaac-sim:5.1.0 ./isaac-sim.compatibility_check.sh --/app/quitAfter=10 --no-window
+            nvcr.io/nvidia/isaac-sim:6.0.0-dev2 ./isaac-sim.compatibility_check.sh --/app/quitAfter=10 --no-window
 
     * You should see the text "System checking result: PASSED" if your system is compaitble.
 
@@ -234,7 +234,7 @@ Docker Compose Deployment (Isaac Sim + Web Viewer)
 
 Docker Compose can deploy |isaac-sim_short| and a web-based WebRTC streaming client together. This is a simpler alternative to the manual ``docker run`` workflow above, and does not require downloading a native streaming client.
 
-For full details on Docker Compose configuration, multi-instance deployment, and environment variables, see the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_.
+For full details on Docker Compose configuration, multi-instance deployment, and environment variables, see the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_.
 
 The ``docker-compose.yml`` in ``tools/docker/`` handles volume mounts, GPU assignment, networking, and health checks automatically. The web viewer is built from the `NVIDIA Omniverse Web SDK <https://docs.omniverse.nvidia.com/ov-web-sdk/latest/web-sample/overview.html>`_.
 
@@ -270,7 +270,7 @@ To use a prebuilt NGC image instead of building locally:
 
 .. code-block:: console
 
-    $ ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+    $ ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0-dev2 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 
 To stop:
 
@@ -281,7 +281,7 @@ To stop:
 .. note::
 
     * The web viewer bakes the signaling host and ports at build time. Use ``--build`` when changing ``ISAACSIM_HOST`` or port variables.
-    * Docker Compose supports multi-instance deployment with dedicated GPUs, custom signal/stream ports, and more. See the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_ for full configuration details.
+    * Docker Compose supports multi-instance deployment with dedicated GPUs, custom signal/stream ports, and more. See the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_ for full configuration details.
 
 
 .. _isaac_sim_setup_local_gui_container:
@@ -305,7 +305,7 @@ This section describes how to run the |isaac-sim| container with GUI.
 
 .. code-block:: console
 
-    $ docker pull nvcr.io/nvidia/isaac-sim:5.1.0
+    $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0-dev2
 
 4. Create the cached volume mounts on host:
 
@@ -337,7 +337,7 @@ This section describes how to run the |isaac-sim| container with GUI.
         -v ~/docker/isaac-sim/data:/isaac-sim/.local/share/ov/data:rw \
         -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
         -u 1234:1234 \
-        nvcr.io/nvidia/isaac-sim:5.1.0
+        nvcr.io/nvidia/isaac-sim:6.0.0-dev2
 
 6. Check if your system is compatible with |isaac-sim_short|:
 

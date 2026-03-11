@@ -93,7 +93,7 @@ On other systems, install these packages using your system's package manager. Fo
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/isaac-sim/IsaacSim.git isaacsim
+git clone -b develop https://github.com/isaac-sim/IsaacSim.git isaacsim
 cd isaacsim
 git lfs install
 git lfs pull
@@ -304,7 +304,7 @@ On first run, Docker Compose will build the `web-viewer` image automatically. Th
 By default the compose file uses the locally built `isaac-sim-docker:latest` image. To use a prebuilt NGC image instead, set `ISAAC_SIM_IMAGE`:
 
 ```bash
-ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0-dev2 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 ```
 
 This skips the local Isaac Sim build steps (`prep_docker_build.sh` and `build_docker.sh`).

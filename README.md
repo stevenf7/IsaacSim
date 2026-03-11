@@ -123,7 +123,7 @@ This section guides you through building Isaac Sim from source code.
 
 
 ```bash
-git clone https://github.com/isaac-sim/IsaacSim.git isaacsim
+git clone -b develop https://github.com/isaac-sim/IsaacSim.git isaacsim
 cd isaacsim
 git lfs install
 git lfs pull
