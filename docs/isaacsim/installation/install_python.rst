@@ -24,7 +24,7 @@ Install Isaac Sim using PIP
 
 .. note::
 
-    * |isaac-sim_short| requires **Python 3.11**. Visit the `Python download page <https://www.python.org/downloads/>`_ to get a suitable version.
+    * |isaac-sim_short| requires **Python 3.12**. Visit the `Python download page <https://www.python.org/downloads/>`_ to get a suitable version.
     * On Linux, GLIBC 2.35+ (``manylinux_2_35_x86_64``) version compatibility is required for pip to discover and install the Python packages. Check the GLIBC version using the command ``ldd --version``.
     * On Windows, it may be necessary to `enable long path <https://pip.pypa.io/warnings/enable-long-paths>`_ support to avoid installation errors due to OS limitations.
 
@@ -114,7 +114,7 @@ Installation Using PIP
 
                     .. code-block:: text
 
-                        python3.11 -m venv env_isaacsim
+                        python3.12 -m venv env_isaacsim
                         source env_isaacsim/bin/activate
 
                 .. tab-item:: Windows
@@ -122,7 +122,7 @@ Installation Using PIP
 
                     .. code-block:: batch
 
-                        python3.11 -m venv env_isaacsim
+                        python3.12 -m venv env_isaacsim
                         env_isaacsim\Scripts\activate
 
         .. tab-item:: Conda
@@ -130,10 +130,25 @@ Installation Using PIP
 
             .. code-block:: text
 
-                conda create -n env_isaacsim python=3.11
+                conda create -n env_isaacsim python=3.12
                 conda activate env_isaacsim
 
     Make sure pip is updated (``pip install --upgrade pip``) after activating the environment and before proceeding with installation.
+
+#. Install PyTorch compiled with CUDA enabled:
+
+    .. tab-set::
+        .. tab-item:: CUDA 12
+
+            .. code-block:: text
+
+                pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cu128
+
+        .. tab-item:: CUDA 13
+
+            .. code-block:: text
+
+                pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cu130
 
 #. Install *Isaac Sim - Python packages*:
 
@@ -147,14 +162,14 @@ Installation Using PIP
 
                     .. code-block:: text
 
-                        pip install isaacsim[all,extscache]==5.1.0 --extra-index-url https://pypi.nvidia.com
+                        pip install isaacsim[all,extscache]==6.0.0 --extra-index-url https://pypi.nvidia.com
 
                 .. tab-item:: Isaac Sim Bundle
                     :sync: package_bundle
 
                     .. code-block:: text
 
-                        pip install isaacsim[BUNDLE]==5.1.0 --extra-index-url https://pypi.nvidia.com
+                        pip install isaacsim[BUNDLE]==6.0.0 --extra-index-url https://pypi.nvidia.com
 
                     .. list-table:: Available Bundles
                         :widths: auto
@@ -176,7 +191,7 @@ Installation Using PIP
 
                     .. code-block:: text
 
-                        pip install isaacsim-PACKAGE_SUBNAME==5.1.0 --extra-index-url https://pypi.nvidia.com
+                        pip install isaacsim-PACKAGE_SUBNAME==6.0.0 --extra-index-url https://pypi.nvidia.com
 
         .. tab-item:: Notebook (for example: Jupyter, Colab)
             :sync: env_notebook
@@ -187,14 +202,14 @@ Installation Using PIP
 
                     .. code-block:: text
 
-                        !pip install isaacsim[all,extscache]==5.1.0 --extra-index-url https://pypi.nvidia.com
+                        !pip install isaacsim[all,extscache]==6.0.0 --extra-index-url https://pypi.nvidia.com
 
                 .. tab-item:: Isaac Sim Bundle
                     :sync: package_bundle
 
                     .. code-block:: text
 
-                        !pip install isaacsim[BUNDLE]==5.1.0 --extra-index-url https://pypi.nvidia.com
+                        !pip install isaacsim[BUNDLE]==6.0.0 --extra-index-url https://pypi.nvidia.com
 
                     .. list-table:: Available Bundles
                         :widths: auto
@@ -216,7 +231,7 @@ Installation Using PIP
 
                     .. code-block:: text
 
-                        !pip install isaacsim-PACKAGE_SUBNAME==5.1.0 --extra-index-url https://pypi.nvidia.com
+                        !pip install isaacsim-PACKAGE_SUBNAME==6.0.0 --extra-index-url https://pypi.nvidia.com
 
     The installation path can be queried with the command ``pip show isaacsim``.
 
@@ -365,7 +380,7 @@ Default Python Environment
 
 It is possible to run |isaac-sim_short| natively from Python rather than as a standalone executable.
 This provides more low-level control over how to initialize, setup, and manage an |omni| application.
-|isaac-sim_short| provides a built-in Python 3.11 environment that packages can use, similar to a
+|isaac-sim_short| provides a built-in Python 3.12 environment that packages can use, similar to a
 system-level Python install. We recommend using this Python environment when running the Python
 scripts.
 
