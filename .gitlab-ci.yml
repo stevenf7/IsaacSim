@@ -2467,6 +2467,9 @@ scan-packages-internal-urls:
     rules:
       - if: $RUN_BUMP_VERSION == "true"
         when: never
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
+        when: never
+      - !reference [.disable_on_downstream_of_mr, rules]
       - if: $CI_PIPELINE_SOURCE == "merge_request_event"
         when: manual
       - !reference [.rules-push-manual, rules]

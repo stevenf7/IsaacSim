@@ -89,7 +89,7 @@ Follow the instructions below on a terminal:
 
 .. code-block:: console
 
-    $ docker pull nvcr.io/nvidia/isaac-sim:5.1.0
+    $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0-dev2
 
 3. Create the cached volume mounts on host:
 
@@ -118,7 +118,7 @@ Follow the instructions below on a terminal:
         -v ~/docker/isaac-sim/data:/isaac-sim/.local/share/ov/data:rw \
         -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
         -u 1234:1234 \
-        nvcr.io/nvidia/isaac-sim:5.1.0
+        nvcr.io/nvidia/isaac-sim:6.0.0-dev2
 
 .. note::
 

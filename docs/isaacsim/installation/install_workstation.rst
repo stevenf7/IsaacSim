@@ -70,7 +70,7 @@ The application can be run either from a binary installation (Workstation, Conta
     .. code-block:: console
 
         $ docker run --entrypoint bash -it --gpus all --rm --network=host \
-            nvcr.io/nvidia/isaac-sim:5.1.0 ./isaac-sim.compatibility_check.sh --/app/quitAfter=10 --no-window
+            nvcr.io/nvidia/isaac-sim:6.0.0-dev2 ./isaac-sim.compatibility_check.sh --/app/quitAfter=10 --no-window
 
     * Run as GUI:
 
@@ -81,7 +81,7 @@ The application can be run either from a binary installation (Workstation, Conta
             -e "PRIVACY_CONSENT=Y" \
             -v $HOME/.Xauthority:/isaac-sim/.Xauthority \
             -e DISPLAY \
-            nvcr.io/nvidia/isaac-sim:5.1.0 ./isaac-sim.compatibility_check.sh
+            nvcr.io/nvidia/isaac-sim:6.0.0-dev2 ./isaac-sim.compatibility_check.sh
 
 Verifying Compatibility
 ^^^^^^^^^^^^^^^^^^^^^^^^
