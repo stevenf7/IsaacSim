@@ -167,7 +167,12 @@ def _parse_kit_version(kit_sdk_packman, template, exit_on_error=True):
     for dependency in tree.getroot().iter("dependency"):
         for package in dependency.iter("package"):
             if package.get("name").lower() in ["kit-sdk", "kit-kernel"]:
-                build_number = package.get("version").replace(r".${platform}", "").replace(r".${config}", "")
+                build_number = (
+                    package.get("version")
+                    .replace(r".${platform}", "")
+                    .replace(r".${platform_target_abi}", "")
+                    .replace(r".${config}", "")
+                )
     if not build_number:
         omni.repo.man.print_log(f"Unable to identify kit sdk/kernel version in {kit_sdk_packman}", logging.ERROR)
         if exit_on_error:
@@ -310,6 +315,66 @@ def _check_extensions(package_definitions, extension_folder, excluded_extensions
         sys.exit(1)
 
 
+_PLATFORM_TARGET_TO_ABI = {
+    "linux-x86_64": "manylinux_2_35_x86_64",
+    "linux-aarch64": "manylinux_2_35_aarch64",
+    "windows-x86_64": "windows-x86_64",
+}
+
+
+def _pull_kit_sdk(kit_sdk_packman):
+    """Pull the kit-sdk packman dependency so that its files are available locally."""
+    try:
+        import packmanapi
+
+        host_platform = omni.repo.man.get_host_platform()
+        platform_target_abi = _PLATFORM_TARGET_TO_ABI.get(host_platform, host_platform)
+        omni.repo.man.print_log(
+            f"Pulling kit-sdk packman dependency ({host_platform}/release) from {kit_sdk_packman}",
+            logging.INFO,
+        )
+        packmanapi.pull(
+            project_path=kit_sdk_packman,
+            platform=platform_target_abi,
+            include_tags=["release"],
+            tokens={
+                "config": "release",
+                "platform_target": host_platform,
+                "platform_target_abi": platform_target_abi,
+            },
+        )
+    except Exception as e:
+        omni.repo.man.print_log(f"Failed to pull kit-sdk via packman: {e}", logging.WARNING)
+
+
+def _find_local_kit_dep(repo_root, platforms, filename, kit_sdk_packman=""):
+    """Look for a Kit dependency file in the local kit build directory.
+
+    The kit-kernel packman package is linked into _build/<platform>/<config>/kit/
+    and ships pip dependency specs under dev/deps/.  If not found and kit_sdk_packman
+    is provided, pulls the kit-sdk dependency via packman first.
+    """
+
+    def _search():
+        for p in platforms:
+            for cfg in ("release", "debug"):
+                candidate = os.path.join(repo_root, "_build", p, cfg, "kit", "dev", "deps", filename)
+                if os.path.isfile(candidate):
+                    omni.repo.man.print_log(f"Using local kit dependency file: {candidate}", logging.INFO)
+                    return candidate
+        return None
+
+    result = _search()
+    if result:
+        return result
+
+    if kit_sdk_packman:
+        _pull_kit_sdk(kit_sdk_packman)
+        return _search()
+
+    return None
+
+
 def _check_dependencies(
     package_definitions,
     kit_sdk_packman,
@@ -386,23 +451,51 @@ def _check_dependencies(
         if os.path.isfile(dependencies_file):
             path = dependencies_file
         else:
-            if tokens_override is not None:
-                url = string.Template(dependencies_file).substitute(tokens_override)
+            # Try to find the file locally in the kit build directory before downloading.
+            # The kit-kernel packman package is linked into _build/<platform>/<config>/kit/
+            # and ships the pip dependency files under dev/deps/.
+            repo_root = os.path.dirname(os.path.dirname(kit_sdk_packman))
+            filename = os.path.basename(dependencies_file)
+            local_path = _find_local_kit_dep(repo_root, platforms, filename, kit_sdk_packman=kit_sdk_packman)
+            if local_path:
+                path = local_path
             else:
-                url = _parse_kit_version(kit_sdk_packman, dependencies_file, exit_on_error=False)
-            if not url:
-                omni.repo.man.print_log(f"Unable to parse kit version from {dependencies_file}", logging.ERROR)
-                sys.exit(1)
-            # get file name from url using python built-in libraries and store it in a temp file
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".toml") as file:
-                omni.repo.man.print_log(f"Downloading {url} to {file.name}", logging.INFO)
-                file.write(requests.get(url).content)
-                path = file.name
+                if tokens_override is not None:
+                    url = string.Template(dependencies_file).substitute(tokens_override)
+                else:
+                    url = _parse_kit_version(kit_sdk_packman, dependencies_file, exit_on_error=False)
+                if not url:
+                    omni.repo.man.print_log(
+                        f"Skipping dependency file {dependencies_file}: unable to parse kit version "
+                        "(kit-sdk may not be built or the version may lack a valid git hash)",
+                        logging.WARNING,
+                    )
+                    continue
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".toml") as file:
+                    omni.repo.man.print_log(f"Downloading {url} to {file.name}", logging.INFO)
+                    response = requests.get(url)
+                    if response.status_code != 200:
+                        omni.repo.man.print_log(
+                            f"Skipping dependency file: failed to download {url} (HTTP {response.status_code}). "
+                            "The kit-sdk version may not contain a valid git hash for resolving remote dependencies.",
+                            logging.WARNING,
+                        )
+                        continue
+                    file.write(response.content)
+                    path = file.name
         # read dependencies file content
         target_dependencies = {platform: [] for platform in defined_platforms}
         omni.repo.man.print_log(f"Reading {path}", logging.INFO)
         with open(path, "rb") as file:
-            content = tomli.load(file)
+            try:
+                content = tomli.load(file)
+            except tomli.TOMLDecodeError as e:
+                omni.repo.man.print_log(
+                    f"Failed to parse {path} as TOML: {e}. "
+                    "The downloaded file may not be valid TOML (e.g. an HTML error page). Skipping this dependencies file.",
+                    logging.WARNING,
+                )
+                continue
             for dependency in content.get("dependency", []):
                 # skip untargeted dependencies
                 skip_target_deps = False
