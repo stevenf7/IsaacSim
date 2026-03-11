@@ -22,9 +22,6 @@ Newton Physics Backend
 
 `Newton <https://newton-physics.github.io/newton/>`_ is a GPU-accelerated, extensible, and differentiable physics simulation engine designed for robotics and research. Built on `NVIDIA Warp <https://nvidia.github.io/warp/>`_ and integrating `MuJoCo Warp <https://github.com/google-deepmind/mujoco_warp>`_. Newton provides high-performance simulation with multiple solver implementations including XPBD, MuJoCo, Featherstone, and SemiImplicit. Newton is an open-source project maintained by Disney Research, Google DeepMind, and NVIDIA.
 
-.. note::
-    Newton integration in |isaac-sim_short| is experimental. The API and features may change in future releases.
-
 
 Overview
 ========
@@ -162,6 +159,13 @@ Asset Compatibility
 Existing PhysX-based assets in |isaac-sim_short| are compatible with Newton. However, these assets are tuned for PhysX and may not produce optimal results with Newton/MuJoCo out of the box. You might need to adjust physics parameters (including: contact settings, solver iterations, timestep) to achieve desired simulation behavior with Newton/MuJoCo.
 
 With the new asset structure and MJCF/URDF importers, we are working toward converting each asset to both PhysX schemas and MJC USD schemas. This will enable consistent simulation behavior between the original MJCF asset (using MuJoCo) and the converted MJC USD asset (using Newton).
+
+
+.. note::
+    Newton integration in |isaac-sim_short| is experimental. The API and features may change in future releases.
+    Many |isaac-sim_short| features and workflows that do not use the experimental core API are not yet supported with the Newton backend; support is being actively developed for the next release.
+    The Newton backend in |isaac-sim_short| has been tested only with a limited set of robots, including G1, H1, T1, UR5e, Wonik Allegro, and Shadow Hand. 
+
 
 Additional Resources
 ====================
