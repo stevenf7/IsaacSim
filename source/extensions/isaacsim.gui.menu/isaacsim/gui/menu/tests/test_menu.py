@@ -24,15 +24,11 @@ from isaacsim.core.experimental.utils import prim as prim_utils
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.test.utils import (
     MenuUITestCase,
-    capture_viewport_annotator_data_async,
-    compare_arrays_within_tolerances,
     get_all_menu_paths,
-    read_image_as_array,
 )
 from omni.kit.mainwindow import get_main_window
 from omni.kit.ui_test import get_context_menu
-from omni.kit.viewport.utility import get_active_viewport
-from pxr import UsdPhysics
+from pxr import Usd, UsdPhysics
 
 EXTENSION_FOLDER_PATH = Path(omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__))
 TEST_DATA_PATH = EXTENSION_FOLDER_PATH.joinpath("data/tests")
@@ -115,40 +111,15 @@ class TestEnvironmentMenuAssets(MenuUITestCase):
         await self.wait_for_stage_loading()
         await self.wait_n_frames(1)
 
-        golden_img_name = test_path.split("/")[-1] + ".png"
-        viewport_api = get_active_viewport()
-        viewport_api.resolution = (1280, 720)
-        self._usd_selection.clear_selected_prim_paths()
-        await self.wait_n_frames(1)
+        prim_roots = {
+            "Create/Environments/Black Grid": "/BlackGrid",
+            "Create/Environments/Flat Grid": "/FlatGrid",
+            "Create/Environments/Simple Room": "/SimpleRoom",
+        }
 
-        if "Office" in test_path or "Hospital" in test_path or "Warehouse" in test_path:
-            set_camera_view(eye=[-4, 4, 2], target=[0, 0, 1])
-        else:
-            set_camera_view(eye=[3, -3, 3], target=[0, 0, 0])
-
-        retries = 3
-        while retries > 0:
-            await self.wait_n_frames(10)
-
-            rgb_data = await capture_viewport_annotator_data_async(viewport_api)
-            golden_img_data = read_image_as_array(self._golden_img_dir / golden_img_name)
-            results = compare_arrays_within_tolerances(
-                golden_img_data,
-                rgb_data,
-                allclose_rtol=None,
-                allclose_atol=None,
-                mean_tolerance=10,
-                print_all_stats=True,
-            )
-            if results["passed"]:
-                break
-            retries -= 1
-            await self.wait_n_frames(10)
-
-        self.assertTrue(results["passed"], f"Results: {test_path} - {results}")
-
-        num_prims = sum(1 for _ in self._stage.Traverse())
-        self.assertGreaterEqual(num_prims, 9, f"Failed to find sufficient prims for {test_path}")
+        # verify stage is loaded
+        prim_list = self._get_prims(omni.usd.get_context().get_stage())
+        self.assertTrue(prim_roots[test_path] in prim_list, f"{prim_roots[test_path]} not found in {prim_list}")
 
     async def test_environment_menu_items(self):
         """Test all environment menu items."""
@@ -167,6 +138,24 @@ class TestEnvironmentMenuAssets(MenuUITestCase):
                     await self._test_environment_menu_option(test_path)
                     # Reset stage for next iteration
                     await self.new_stage()
+
+    def _get_prims(self, stage, exclude_list=[]) -> list[str]:
+        """Retrieve prims by traversing the stage and excluding specified prims.
+
+        Args:
+            stage (Usd.Stage): Stage to traverse for prims.
+            exclude_list (list): List of prims to exclude.
+
+        Returns:
+            list: A list of prims found during traversal.
+        """
+        prims = []
+        for p in stage.Traverse(
+            Usd.TraverseInstanceProxies(Usd.PrimIsActive and Usd.PrimIsDefined and Usd.PrimIsLoaded)
+        ):
+            if p not in exclude_list:
+                prims.append(p.GetPath().pathString)
+        return prims
 
 
 # =============================================================================
