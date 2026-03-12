@@ -81,6 +81,8 @@ The ``Non-Visual Material ID`` Debug View shows the material ID for each non-vis
 Observe each cube's color changes compared to the default view to reflect the material ID, which is computed from the combination of non-visual material attributes applied to the visual material
 applied to the cube.
 
+.. note:: If you modify non-visual material attributes on a material prim, you must save and reload the stage for the changes to take effect.
+
 Mapping Visual Materials to RTX Sensor Non-Visual Materials (Deprecated)
 -------------------------------------------------------------------------
 
