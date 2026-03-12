@@ -1,5 +1,5 @@
 [package]
-version = "1.11.2"
+version = "1.12.0"
 category = "Simulation"
 title = "Isaac Sim Core Simulation Manager"
 description = "The Core Simulation Manager extension provides a set of APIs to control and query the simulation's state and the different callbacks available."
@@ -26,10 +26,6 @@ name = "isaacsim.core.simulation_manager"
 # define the Python module for tests
 [[python.module]]
 name = "isaacsim.core.simulation_manager.tests"
-
-# Newton pip packages (newton_usd_schemas, mujoco_usd_converter)
-[[python.module]]
-path = "pip_prebundle"
 
 # define the C++ plugins that the extension provides
 [[native.plugin]]

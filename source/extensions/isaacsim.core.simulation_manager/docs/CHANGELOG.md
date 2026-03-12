@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.12.0] - 2026-03-12
+### Changed
+- Remove Newton pip prebundle dependency
+
 ## [1.11.2] - 2026-03-02
 ### Changed
 - Newton tests enabled; PhysX-specific tests skip when active engine is not PhysX.

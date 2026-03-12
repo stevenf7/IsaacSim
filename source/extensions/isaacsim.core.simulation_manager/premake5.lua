@@ -122,7 +122,6 @@ repo_build.prebuild_link {
     { "python/impl", ext.target_dir .. "/isaacsim/core/simulation_manager/impl" },
     { "python/tests", ext.target_dir .. "/isaacsim/core/simulation_manager/tests" },
     { "include", ext.target_dir .. "/include" },
-    { "$root/_build/target-deps/isaac_newton_prebundle", ext.target_dir .. "/pip_prebundle" },
 }
 
 repo_build.prebuild_copy {
