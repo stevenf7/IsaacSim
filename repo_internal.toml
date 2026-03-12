@@ -819,6 +819,7 @@ exclude = [
     "tools/thumbnail_generator",
     "tools/update.sh",
     "source/internal_extensions",
+    "tools/docker/.env",
 ]
 
 [[repo_stage_for_github.trim]]
