@@ -141,9 +141,9 @@ entry_point = "${config_root}/tools/isaac/comment_archive_deps.py:setup_repo_too
 # Check for the proper definition of the python packages
 ########################################################################################################################
 
-[check_python_package_definitions]
-command = "check_python_package_definitions"
-entry_point = "${config_root}/tools/isaac/check_python_package_definitions.py:setup_repo_tool"
+[validate_python_packages]
+command = "validate_python_packages"
+entry_point = "${config_root}/tools/isaac/pre_merge/validate_python_packages.py:setup_repo_tool"
 
 ########################################################################################################################
 # Unzip (.7z|.zip|.tar) files

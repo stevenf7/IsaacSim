@@ -653,7 +653,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     )
 
     def run_repo_tool(options: Dict, config: Dict):
-        tool_config = config["repo_check_python_package_definitions"]
+        tool_config = config["repo_validate_python_packages"]
         python_package_tool_config = config.get("repo_python_package", {})
 
         # Only when we are in a downstream pipeline do we use upstream kit version; otherwise behavior is unchanged.

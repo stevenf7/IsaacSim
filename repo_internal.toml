@@ -545,8 +545,8 @@ pypi.password = "${env:ISAACSIM_ARTIFACTORY_PASSWORD}"
 pypi.repository_url = "https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local"
 pypi.user = "${env:ISAACSIM_ARTIFACTORY_USERNAME}"
 
-# check python package definitions
-[repo_check_python_package_definitions]
+# validate python packages
+[repo_validate_python_packages]
 # extensions
 excluded_extensions = [
   # archives
