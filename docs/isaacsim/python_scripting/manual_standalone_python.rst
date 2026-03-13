@@ -100,7 +100,7 @@ Here the environment variables (e.g.: ``CARB_APP_PATH``, ``ISAAC_PATH`` and ``EX
 
 After loading the framework, it is possible to configure the start arguments before loading the application. For example:
 
-.. literalinclude:: ../snippets/python_scripting/manual_standalone_python/details_how_simulationapp_works.py
+.. literalinclude:: ../snippets/python_scripting/manual_standalone_python/details_how_simulationapp_works_1.py
     :language: python
 
 And then start the application.
@@ -110,7 +110,7 @@ And then start the application.
 
 Shutting down a running application is done by calling ``shutdown`` and then unloading the framework:
 
-.. literalinclude:: ../snippets/python_scripting/manual_standalone_python/run_headless.py
+.. literalinclude:: ../snippets/python_scripting/manual_standalone_python/run_headless_1.py
     :language: python
 
 .. _isaac_sim_python_additional_extensions:

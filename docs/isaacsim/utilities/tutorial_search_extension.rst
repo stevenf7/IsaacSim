@@ -26,7 +26,7 @@ The Content Browser Search Extension will be automatically installed in all futu
 
 1. Open the Extensions menu by selecting **Window > Extensions** in the toolbar.
 2. Search for the **omni.simready.content_browser.search** extension.
-3. Click **Install** to install it.\ |Installing the extension|
+3. Click **Install** to install it.
 
 When the AssetSearch Extension is enabled, the Content Browser adds **Assets Search** to the Search dropdown menu. (If AssetSearch is not enabled, your only option is **File Search**.)
 
@@ -42,6 +42,7 @@ Configuring Content Browser Search Extension
 The SimReady content location URL that the extension uses to search for assets can be configured using these settings:
 
 .. code-block:: toml
+
    [settings]
    # define the IsaacReady assets URL that the content browser can use advanced asset search in.
    exts."omni.simready.content_browser.search".content_root_urls = [

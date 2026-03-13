@@ -108,5 +108,5 @@ To change the example to run in non-streaming mode, set variable ``self._streami
 
 When the sensor processes each batch of ``[azimuth, zenith]`` pairs, just before it is about to run out of data, it will set the variable ``send_next_batch()`` to ``True``, at which point, you can send the next batch through ``set_next_batch_rays(prim_path, sensor_pattern)``, plus ``set_next_batch_offsets(prim_path, sensor_pattern)`` if there are any origin offsets. Like shown below.
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_generic/import_data_from_file.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_generic/import_data_from_file_1.py
     :language: python

@@ -236,7 +236,7 @@ Add the following code
 
 Then modify the creation of the decider network to use this context object.
 
-.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_2_decider_networks/add_an_end_effector_monitor.py
+.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_2_decider_networks/add_an_end_effector_monitor_1.py
     :language: python
 
 Run the example again, and you'll see ``is_target_reached: <val>`` printed out where ``<val>`` is

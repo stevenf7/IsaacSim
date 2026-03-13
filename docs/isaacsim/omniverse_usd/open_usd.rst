@@ -80,7 +80,7 @@ USD offers polymorphism. If you review both lists you can see the common attribu
 
 To update these attributes, you can append the following to the code above:
 
-.. literalinclude:: ../snippets/omniverse_usd/open_usd/inspecting_and_authoring_properties.py
+.. literalinclude:: ../snippets/omniverse_usd/open_usd/inspecting_and_authoring_properties_1.py
     :language: python
 
 Because the stage was still open from the previous sample, you'll see the sphere reducing from radius 1.0 to 0.5, but it also prints these values in the console.
@@ -92,12 +92,12 @@ To move the sphere to a new position use :code:`xformOpOrder`, which is common t
 
 Our sphere doesn't have its own, so to create a new one:
 
-.. literalinclude:: ../snippets/omniverse_usd/open_usd/inspecting_and_authoring_properties.py
+.. literalinclude:: ../snippets/omniverse_usd/open_usd/inspecting_and_authoring_properties_2.py
     :language: python
 
 Notice that the sphere has jumped to a new position along the X-axis. Alternatively, you could apply the translation to the parent :code:`xform` instead.
 
-.. literalinclude:: ../snippets/omniverse_usd/open_usd/inspecting_and_authoring_properties.py
+.. literalinclude:: ../snippets/omniverse_usd/open_usd/inspecting_and_authoring_properties_3.py
     :language: python
 
 Verify that you see the sphere jump to a new location, which is the composition of both the parent and child transforms.
@@ -106,7 +106,7 @@ A consequence of the universal nature of USD is that when you fetch a prim by pa
 
 To create and bind a material to the prim to change its color, first create it:
 
-.. literalinclude:: ../snippets/omniverse_usd/open_usd/inspecting_and_authoring_properties.py
+.. literalinclude:: ../snippets/omniverse_usd/open_usd/inspecting_and_authoring_properties_4.py
     :language: python
 
 Material color shading is complicated. After creating the prim and appropriate attributes, you must link those attributes and properties together to form a ``shader graph`` that is processed to produce the desired material effect.  After it's created, the material can then be bound to the prim, thus changing its apparent color in the viewport.
@@ -160,12 +160,12 @@ If you save the stage and examine the USDA file, you can see the material.
 
 and specifically, the ``diffuse_color_constant`` attribute type.  To directly modify this attribute to change the color of our sphere:
 
-.. literalinclude:: ../snippets/omniverse_usd/open_usd/usda_10.py
+.. literalinclude:: ../snippets/omniverse_usd/open_usd/usda_10_1.py
     :language: python
 
 Of course, this level of direct manipulation of USD can become tedious. For situations like this, there are a set of predefined commands through the kit API, which dramatically simplifies working with USD in code.  For example, you could have done the following instead:
 
-.. literalinclude:: ../snippets/omniverse_usd/open_usd/usda_10.py
+.. literalinclude:: ../snippets/omniverse_usd/open_usd/usda_10_2.py
     :language: python
 
 Further Reading

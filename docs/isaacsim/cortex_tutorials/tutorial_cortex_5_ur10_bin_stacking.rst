@@ -91,9 +91,9 @@ context object that will be available as a member within every decider/state nod
 
 The context object gives each node access to the robot's command API as well as any logical state
 extracted by its monitors. The ``Dispatch`` node's ``decide()`` logic is pretty simple given the
-logical state. 
+logical state.
 
-.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_5_ur10_bin_stacking/top_level_dispatch.py
+.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_5_ur10_bin_stacking/top_level_dispatch_1.py
     :language: python
 
 The logical state includes:
@@ -161,7 +161,7 @@ and added in the ``BinStackingContext`` constructor:
 
 Both monitors have simple logic:
 
-.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_5_ur10_bin_stacking/navigation_obstacle_monitors.py
+.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_5_ur10_bin_stacking/navigation_obstacle_monitors_1.py
     :language: python
 
 The ``FlipStationObstacleMonitor`` monitors the ``flip_station_sphere`` which is a spherical
@@ -172,7 +172,7 @@ and moving to pick it from the top. It's activated on entry to the ``ReachToPick
 time the bin needs to be picked, independent of whether the bin is on the flip station) and
 deactivated on exit.
 
-.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_5_ur10_bin_stacking/navigation_obstacle_monitors.py
+.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_5_ur10_bin_stacking/navigation_obstacle_monitors_2.py
     :language: python
 
 Similarly, the ``NavigationObstacleMonitor`` monitors a collection of obstacles which shape the

@@ -1,5 +1,3 @@
-.. _wheeled_robots_usage:
-
 Basic Usage
 ===========
 

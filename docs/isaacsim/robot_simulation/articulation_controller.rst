@@ -69,7 +69,7 @@ After the simulation is started, the robot articulation must be initialized befo
 
          For example, the code snippet below creates an articulation view with the Franka robot and initializes the articulation controller.
 
-         .. literalinclude:: ../snippets/robot_simulation/articulation_controller/initialize_the_controller.py
+         .. literalinclude:: ../snippets/robot_simulation/articulation_controller/initialize_the_controller_1.py
              :language: python
 
 Articulation Action
@@ -86,7 +86,7 @@ For example, the snippet below creates the command that closes the franka robot 
 
 This snippet creates the command that moves all the robot joints to the indicated position
 
-.. literalinclude:: ../snippets/robot_simulation/articulation_controller/articulation_action.py
+.. literalinclude:: ../snippets/robot_simulation/articulation_controller/articulation_action_1.py
     :language: python
 
 .. important:: Make sure the joint commands matches the order and the number of joint indices passed in to the articulation action. If joint indice is not passed in, make sure the command matches the number of joints in the robot.
@@ -109,7 +109,7 @@ The ``apply_action`` function in both ``SingleArticulation`` and ``ArticulationC
     .. tab-item:: Articulation Controller
          :sync: articulation_controller
 
-            .. literalinclude:: ../snippets/robot_simulation/articulation_controller/apply_action.py
+            .. literalinclude:: ../snippets/robot_simulation/articulation_controller/apply_action_1.py
                 :language: python
 
 Script Editor Example

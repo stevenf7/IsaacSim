@@ -4,6 +4,8 @@
 
 # Settings
 
+## Settings Provided by the Extension
+
 ### exts."isaacsim.physics.newton".capture_graph_physics_step
 - **Default Value**: true
 - **Description**: Enable CUDA graph capture for physics stepping to improve performance on GPU.

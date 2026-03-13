@@ -4,6 +4,8 @@
 
 # Settings
 
+## Settings Provided by the Extension
+
 ### exts."isaacsim.gui.content_browser".timeout
    - **Default Value**: 5
    - **Description**: Time out for resolving the content browser settings

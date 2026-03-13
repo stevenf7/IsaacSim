@@ -62,9 +62,6 @@ The main area of the window displays a table of the robot's named poses. Each ro
    * - **Named Pose**
      - Editable name of the pose. Renaming updates the underlying ``IsaacNamedPose`` prim.
    * - **Start Site**
-     - The start link of the kinematic chain. Can be a Link or a site. Tipically the base of the robot.
-   * - **End Site**
-   * - **Start Site**
      - The start link of the kinematic chain. Can be a Link or a site. Typically the base of the robot.
    * - **End Site**
      - The end link or site of the kinematic chain. Can be a Link or a site. Typically the end-effector frame or tool mount.

@@ -4,6 +4,8 @@
 
 # Settings
 
+## Settings Provided by the Extension
+
 ### exts."isaacsim.code_editor.vscode".host
 - **Default Value**: "127.0.0.1"
 - **Description**: IP address where the extension server will listen for connections.

@@ -141,7 +141,7 @@ The following can be added to set specific settings, in this case use CPU physic
 Adding a ground plane to a stage can be done via the following code:
 It creates a Z up plane with a size of 100 cm at a Z coordinate of -100
 
-.. literalinclude:: ../snippets/python_scripting/environment_setup/set_gravity_vector.py
+.. literalinclude:: ../snippets/python_scripting/environment_setup/set_gravity_vector_1.py
     :language: python
 
 .. _isaac_sim_python_snippet_enable_physics_collision:

@@ -4,6 +4,8 @@
 
 # Settings
 
+## Settings Provided by the Extension
+
 ### exts."isaacsim.benchmark.services".metrics.nvdataflow_default_test_suite_name
 - **Default Value**: "Isaac Sim Benchmarks"
 - **Description**: Sets the default test suite name for Isaac Sim benchmarks.

@@ -155,7 +155,7 @@ Scene and Rendering Optimizations
 
     - When not using SimulationApp, users can also disable viewport updates with the following code snippet:
 
-        .. literalinclude:: ../snippets/reference_material/sim_performance_optimization_handbook/scene_and_rendering_optimizations.py
+        .. literalinclude:: ../snippets/reference_material/sim_performance_optimization_handbook/scene_and_rendering_optimizations_1.py
             :language: python
 
 .. Note:: Setting ``disable_viewport_updates`` in SimulationApp is only supported if running in headless mode. For streaming usecases, this option should not be used.

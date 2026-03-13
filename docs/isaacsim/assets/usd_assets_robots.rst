@@ -3005,6 +3005,7 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing- FlexIV.pdf>`
+
         | **Fanuc**
 
         .. tab-set::

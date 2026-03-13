@@ -123,7 +123,7 @@ To add profiler zones in your Python script, you can use the ``@carb.profiler.pr
 
 More fine-grained control can be achieved by encapsulating the required code in a pair of ``carb.profiler.begin`` and ``carb.profiler.end`` calls to manually start and stop a zone as follows:
 
-    .. literalinclude:: ../../snippets/utilities/debugging/profiling_performance/python.py
+    .. literalinclude:: ../../snippets/utilities/debugging/profiling_performance/function_code_here.py
         :language: python
 
 Python profiles can be enabled by adding the ``export CARB_PROFILING_PYTHON=1`` environment variable before launching the |isaac-sim_short| application. This will enable capture of Python code at the cost of increased overhead.

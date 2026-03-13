@@ -74,15 +74,15 @@ The important part is that ``AUTOMATICALLY_REPLACED`` gets replaced by ``jupyter
 
 Because notebooks require asyncio support, and |isaac-sim_short| itself uses asyncio internally, we automatically execute the following two lines when loading the ``isaacsim`` module (or the ``isaacsim.simulation_app`` extension) which provides the ``SimulationApp`` class:
 
-.. literalinclude:: ../snippets/development_tools/jupyter_notebook/configuration_files.json
-    :language: json
+.. literalinclude:: ../snippets/development_tools/jupyter_notebook/configuration_files_1.py
+    :language: python
 
 This ensures that asyncio calls can be nested inside of the Jupyter Notebook properly.
 
 When writing code in notebooks, it is necessary to first instantiate the ``SimulationApp`` class (from ``isaacsim`` or ``isaacsim.simulation_app``) after perform any Isaac Sim / Omniverse imports:
 
-.. literalinclude:: ../snippets/development_tools/jupyter_notebook/configuration_files.json
-    :language: json
+.. literalinclude:: ../snippets/development_tools/jupyter_notebook/configuration_files_2.py
+    :language: python
 
 Then, to run the notebook just execute the following commands and play the notebook cells:
 
