@@ -522,6 +522,14 @@ Default rules enforced:
   - D107: Missing docstring in `__init__` (constructor Args go in class docstring for Sphinx)
   - D412: No blank lines between section header and content (our Example sections use
     `.. code-block:: python` RST directive which requires a blank line)
+- **ANN001**: Missing type annotation for function argument
+- **ANN002**: Missing type annotation for `*args`
+- **ANN003**: Missing type annotation for `**kwargs`
+- **ANN201**: Missing return type annotation for public function (including `-> None`)
+- **ANN202**: Missing return type annotation for private function
+- **ANN204**: Missing return type annotation for special method (dunder)
+- **ANN205**: Missing return type annotation for staticmethod
+- **ANN206**: Missing return type annotation for classmethod
 - **UP006**: `List[X]` → `list[X]`, `Dict[K, V]` → `dict[K, V]`, `Set[X]` → `set[X]`
 - **UP007**: `Union[X, Y]` → `X | Y`
 - **UP008**: `super(__class__, self)` → `super()`

@@ -27,9 +27,10 @@ Tools:
     - interrogate: Docstring coverage metrics
     - pydoclint: Docstring validation (enforces no types in docstrings)
     - ruff: Fast linter with code quality checks:
-        - Default: docstring style (D, Google convention), modern annotations and
-          f-strings (UP), pycodestyle (E711/E712/E722), bugbear (B006), naming (N),
-          comprehensions (C4), return hygiene (RET), simplify (SIM)
+        - Default: docstring style (D, Google convention), type annotations (ANN),
+          modern annotations and f-strings (UP), pycodestyle (E711/E712/E722),
+          bugbear (B006), naming (N), comprehensions (C4), return hygiene (RET),
+          simplify (SIM)
         - Also enabled by default: unused imports (F401), unnecessary pass (PIE790)
           (disable with --no-ruff-clean)
 
@@ -131,6 +132,7 @@ PYDOCLINT_CONFIG: dict[str, Any] = {
 
 # ruff configuration (enforces docstring style, modern Python, naming, and code quality)
 # D   = pydocstyle rules for docstring style (replaces standalone pydocstyle tool)
+# ANN = flake8-annotations rules for enforcing type annotations
 # UP  = pyupgrade rules for modernizing type annotations and syntax
 # E   = pycodestyle error rules
 # B   = flake8-bugbear rules for common pitfalls
@@ -154,6 +156,15 @@ RUFF_CONFIG: dict[str, Any] = {
         "UP034",  # extraneous-parentheses: Extraneous parentheses
         "UP035",  # deprecated-import: deprecated typing module imports
         "UP039",  # unnecessary-class-parentheses: Unnecessary parentheses after class definition
+        # flake8-annotations: enforce type annotations on all functions and methods
+        "ANN001",  # missing-type-function-argument: Missing type annotation for function argument
+        "ANN002",  # missing-type-args: Missing type annotation for *args
+        "ANN003",  # missing-type-kwargs: Missing type annotation for **kwargs
+        "ANN201",  # missing-return-type-public-function: Missing return type annotation for public function
+        "ANN202",  # missing-return-type-private-function: Missing return type annotation for private function
+        "ANN204",  # missing-return-type-special-method: Missing return type annotation for special method
+        "ANN205",  # missing-return-type-static-method: Missing return type annotation for staticmethod
+        "ANN206",  # missing-return-type-class-method: Missing return type annotation for classmethod
         # pycodestyle: basic error detection
         "E711",  # comparison-to-none: Use `is` / `is not` for None comparisons
         "E712",  # comparison-to-true-false: Use `if x:` / `if not x:` for booleans
@@ -818,6 +829,7 @@ def run_ruff(
 
     ruff checks for docstring style, type annotations, naming, and code quality:
     - D: pydocstyle rules for docstring style (Google convention)
+    - ANN: flake8-annotations rules (require type annotations on all functions/methods)
     - UP: pyupgrade rules for modern annotations, syntax, and f-strings
     - E: pycodestyle error rules (None comparisons, bare except)
     - B: flake8-bugbear rules (mutable defaults)
@@ -1281,8 +1293,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
     parser.description = (
         "Run Python linting tools on extensions under source/extensions, source/internal_extensions, "
         "and source/deprecated (mypy, darglint, interrogate, pydoclint, ruff). "
-        "Ruff enforces docstring style (Google convention), modern annotations, naming, pycodestyle, "
-        "bugbear, comprehensions, return hygiene, and simplify rules by default. "
+        "Ruff enforces docstring style (Google convention), type annotations (ANN), modern annotations, "
+        "naming, pycodestyle, bugbear, comprehensions, return hygiene, and simplify rules by default. "
         "Ruff cleanup rules for unused imports/pass removal are enabled by default; "
         "use --no-ruff-clean to disable."
     )
