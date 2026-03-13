@@ -16,56 +16,55 @@ The Content Browser Search extension offers a preview of upcoming enhancements t
 Overview
 ========
 
-The release includes the **omni.simready.content_browser.search** UI extension and predefined filters such as *name*, *profile*, and *feature*. The UI extension provides added search tools that let you locate SimReady assets using the provided filters and conditions. Upcoming versions will expand this functionality to include natural‑language, phrase‑based USD search.
+This release includes the **omni.simready.content.browser** UI extension and predefined filters for *name*, *profile*, and *feature*. The extension adds search tools that help you locate SimReady assets using these filters. Upcoming versions will extend this capability with natural‑language, phrase‑based USD search.
 
+Installing SimReady Search Extension 
+====================================
 
-Installing Content Browser Search Extension 
-===========================================
+The SimReady Search extension will be automatically installed in all future builds. If it is not included in your build, you can manually install it using this procedure:
 
-The Content Browser Search Extension will be automatically installed in all future builds. If it is not included in your build, you can manually install it using this procedure:
-
-1. Open the Extensions menu by selecting **Window > Extensions** in the toolbar.
-2. Search for the **omni.simready.content_browser.search** extension.
+1. Open the Windows Extensions menu.
+2. Search for the **omni.simready.content.browser** extension.
 3. Click **Install** to install it.
-
-When the AssetSearch Extension is enabled, the Content Browser adds **Assets Search** to the Search dropdown menu. (If AssetSearch is not enabled, your only option is **File Search**.)
 
    .. image:: ../images/isaac_asset_search_0.png
       :alt: Assets Search Menu
       :align: center
 
+When the SimReady Search extension is installed, the Content Browser adds **Assets Search** to the Search dropdown menu. (If is not installed, your only option is **File Search**.)
 
 
-Configuring Content Browser Search Extension 
-============================================
+Configuring SimReady Search Extension 
+=====================================
 
-The SimReady content location URL that the extension uses to search for assets can be configured using these settings:
+You can configure the SimReady content location URL that the extension uses to search for assets using the following settings:
 
 .. code-block:: toml
 
    [settings]
    # define the IsaacReady assets URL that the content browser can use advanced asset search in.
-   exts."omni.simready.content_browser.search".content_root_urls = [
+   exts."omni.simready.content.browser".content_root_urls = [
        "https://omniverse-content-production.s3-us-west-2.amazonaws.com/SimReady",
        "omniverse://isaac-dev.ov.nvidia.com/Isaac/SimReady"
    ]
    # default content root url index into the content_root_urls list above
-   exts."omni.simready.content_browser.search".default_content_root_url_index = 0
+   exts."omni.simready.content.browser".default_content_root_url_index = 0
 
 
-Using Content Browser Search Extension
-======================================
+
+Using SimReady Search Extension
+===============================
 
 To Initiate an Asset Search
 ---------------------------
 
-Open the Search dropdown menu in the Content Browser, and select **AssetSearch**. This opens an **Asset Search Wizard** on the right.
+Open the Search dropdown menu in the Content Browser and select **Assets Search**. This opens an **Asset Search Wizard** on the right.
 
    .. image:: ../images/isaac_asset_search_1.png
       :alt: Assets Search Wizard
       :align: center
 
-The wizard has input fields for several filter classes, each providing auto-complete or menu-like behavior when selected. All allow multiple items to be entered. You can use **Match Any** or **Match All** to specify any combination of filters and match conditions.
+The wizard has input fields for several filter classes, each providing auto-complete or menu-like behavior when selected. All allow multiple items to be entered. You can use **Match Any** or **Match All** to specify different combinations of filters and match conditions.
 
 * **Match Any** lists all assets that match one or more of the filters. Assets that do not match any of the filters are not listed.
 * **Match All** lists all assets that match all of the filters. Assets that do not match every filter are not listed.
@@ -83,8 +82,7 @@ To illustrate, if you were interested in assets that contain "food" in their nam
       :alt: Assets Search Results
       :align: center
 
-The Content Browser would list only those assets that satisfied both of these conditions.
-
+The Content Browser would list only those assets that satisfy both of these conditions.
 
 Additional References
 =====================
