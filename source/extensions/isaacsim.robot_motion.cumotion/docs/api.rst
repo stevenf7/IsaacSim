@@ -71,8 +71,9 @@ Configuration Loading
     :show-inheritance:
 
 |
+
 World Interface
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 .. autoclass:: isaacsim.robot_motion.cumotion.CumotionWorldInterface
     :members:
@@ -81,6 +82,7 @@ World Interface
     :show-inheritance:
 
 |
+
 Motion Policies
 ^^^^^^^^^^^^^^^
 
@@ -91,6 +93,7 @@ Motion Policies
     :show-inheritance:
 
 |
+
 Motion Planning
 ^^^^^^^^^^^^^^^
 
@@ -101,6 +104,7 @@ Motion Planning
     :show-inheritance:
 
 |
+
 Trajectory Generation
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -126,6 +130,7 @@ Trajectory Generation
     :show-inheritance:
 
 |
+
 Transform Utilities
 ^^^^^^^^^^^^^^^^^^^
 

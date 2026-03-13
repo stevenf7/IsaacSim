@@ -163,7 +163,8 @@ To filter multiple pairs at once, select the desired rows (hold :kbd:`Ctrl` or :
    :align: center
    :alt: Filtered pairs checked for Dex5-URDF-R
 
-.. note:: Other ways to resolve for the collision pairs are to adjust the collision geometry, or modify the robot starting pose using the :ref:`isaac_sim_robot_poser` extension. Filtered pairs are displayed in the self-collision detector, so you can easily see which pairs are being ignored, but whenever a pair is not filtered nor is detected by the collision engine, it will not be displayed in the self-collision detector. When the robot has the selg-collision disabled in the articulation root, no collision pairs will be detected by the collision engine, and a message will be displayed on the table.
+.. note:: Other ways to resolve for the collision pairs are to adjust the collision geometry, or modify the robot starting pose using the :ref:`isaac_sim_robot_poser` extension. Filtered pairs are displayed in the self-collision detector, so you can easily see which pairs are being ignored, but whenever a pair is not filtered nor is detected by the collision engine, it will not be displayed in the self-collision detector. When the robot has the self-collision disabled in the articulation root, no collision pairs will be detected by the collision engine, and a message will be displayed on the table.
+
    .. image:: /images/isim_6.0_full_ext-isaacsim.robot_setup.collision_detector-0.1.0_gui_ex_filtered_no_collisions.png
       :align: center
       :alt: No collisions detected for Dex5-URDF-R when the self-collision is disabled in the articulation root (and no filtered pairs are applied)

@@ -397,7 +397,7 @@ Extensions (Sensors)
       - Isaac Sim Physics Sensor Simulation Examples extension provides example usage and snippets for Isaac Sim physics-based sensors.
     * - :doc:`isaacsim.sensors.physics.nodes <source/extensions/isaacsim.sensors.physics.nodes/docs/index>`
       - Isaac Sim Physics Sensor OmniGraph Nodes
-      - OmniGraph nodes for Isaac Sim physics-based sensors (Contact, Effort, IMU). Depends on isaacsim.sensors.experimental.physics for sensor backends.
+      - OmniGraph nodes for Isaac Sim physics-based sensors (Contact, Effort, IMU, Joint State). Depends on isaacsim.sensors.experimental.physics for sensor backends.
     * - :doc:`isaacsim.sensors.physics.ui <source/extensions/isaacsim.sensors.physics.ui/docs/index>`
       - Isaac Sim Physics Sensor Simulation UI Components
       - Isaac Sim Physics Sensor Simulation UI Components extension provides UI components for Isaac Sim physics-based sensor simulation, eg. menu options.

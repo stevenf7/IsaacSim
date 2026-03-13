@@ -93,5 +93,5 @@ For applications that need the rendered data to correspond to the latest simulat
 
 Alternatively, if you would like to use the specific settings instead, you can set them with `extra_args` as well:
 
-.. literalinclude:: ../snippets/python_scripting/util_snippets/rendering_frame_delay.py
+.. literalinclude:: ../snippets/python_scripting/util_snippets/rendering_frame_delay_1.py
     :language: python

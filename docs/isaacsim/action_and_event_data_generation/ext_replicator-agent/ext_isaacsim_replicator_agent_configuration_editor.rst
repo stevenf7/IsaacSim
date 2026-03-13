@@ -41,7 +41,7 @@ Functions are grouped as follows in ``isaacsim.replicator.agent.ui``:
 For ``get_config``, ``update_config``, ``add_config_item``, and ``delete_config_item``, use dot-separated paths and numeric indices for lists (see :ref:`ira_config_path_syntax`).
 
 Config File and Path
-===================
+====================
 
 - **get_config_file_path()** — Returns the path of the config file currently associated with the in-memory config, or ``None`` if none is set.
 - **load_config_file(file_path, set_config=True)** — Loads a YAML config from disk. Returns ``True`` on success. If ``set_config`` is ``True``, the loaded config becomes the current in-memory config. You can subscribe to ``isaacsim.replicator.agent.core.events.IRAEvents.CONFIG_FILE_LOADED_EVENT`` to be notified when loading has finished.
@@ -81,10 +81,10 @@ Simulation Control
    :caption: Setup and data generation with event observers
    :start-after: # Example: Setup and data generation
 
+.. _ira_config_path_syntax:
+
 Path Syntax
 ===========
-
-.. _ira_config_path_syntax:
 
 Config paths use dot-separated segments that correspond to the YAML structure in the :ref:`Configuration File Guide <ira_configuration_file>`:
 

@@ -39,7 +39,7 @@ def del_temp_portal():
 
 
 def build_internal(build_script):
-    subprocess.call(f"{build_script} --target {TMP_PORTAL}", shell=True)
+    subprocess.call([build_script, "--target", TMP_PORTAL])
 
 
 def is_absolute_path(path):

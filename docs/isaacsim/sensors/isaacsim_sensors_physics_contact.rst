@@ -151,7 +151,7 @@ The contact sensor can also be created using the ``isaacsim.sensors.physics.Cont
 
 Creating a contact sensor can only be done on a prim with a collider API, and it depends on a Contact Report API. Both the command and the wrapper class automatically add a Contact Report API to the parent prim. You can also manually add a Contact Report API to a prim through:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/using_python_wrapper.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/using_python_wrapper_1.py
     :language: python
 
 To modify sensor parameters, you can use built-in class API calls such as ``set_frequency``, ``set_dt``, or USD attribute API calls.
@@ -186,14 +186,14 @@ The ``get_current_frame()`` function uses the default parameters of ``get_sensor
 
 Sample usage:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/reading_sensor_output.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/reading_sensor_output_1.py
     :language: python
 
 **get_contact_sensor_raw_data()**
 
 The contact sensor raw data will output a list of raw contact API data ``CsRawData``, which contains ``time``, ``dt``, ``body0``, ``body1``, ``position``, ``normal``, and ``impulse``. The raw data disregards sensor thresholds. Contacts with the parent body below the force threshold appear here even though they are discarded in the processed sensor reading ``CsSensorReading``.
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/reading_sensor_output.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/reading_sensor_output_2.py
     :language: python
 
 .. warning::

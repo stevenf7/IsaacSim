@@ -4,6 +4,8 @@
 
 # Settings
 
+## Settings Provided by the Extension
+
 ### exts."isaacsim.ros2.bridge".ros_distro
 - **Default Value**: "system_default"
 - **Description**: ROS 2 Bridge settings are centralized in the core extension. ROS 2 distributions to fall back to if none were sourced.

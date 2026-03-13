@@ -4,6 +4,8 @@
 
 # Settings
 
+## Settings Provided by the Extension
+
 ### exts."isaacsim.gui.sensors.icon".timeout
 - **Default Value**: 5
 - **Description**: Timeout for resolving sensor icon display.

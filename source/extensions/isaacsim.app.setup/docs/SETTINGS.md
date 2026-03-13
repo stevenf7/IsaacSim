@@ -4,6 +4,8 @@
 
 # Settings
 
+## Settings Provided by the Extension
+
 ### isaac.startup.create_new_stage
 - **Default Value**: true
 - **Description**: Creates a new stage when this extension is enabled so there is something visible in the viewport.

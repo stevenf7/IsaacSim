@@ -4,6 +4,8 @@
 
 # Settings
 
+## Settings Provided by the Extension
+
 ### app.sensors.nv.lidar.profileBaseFolder
 - **Default Value**: [
     "${omni.sensors.nv.common}/data/lidar/",

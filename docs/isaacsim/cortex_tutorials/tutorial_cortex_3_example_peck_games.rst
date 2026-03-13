@@ -163,7 +163,7 @@ deciding whether the robot needs to lift away from the block before moving to it
 Given the logical state monitored by the context object, the main logic can be concisely written as
 the following ``Dispatch`` decider node:
 
-.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_3_example_peck_games/designing_logical_state_contexts.py
+.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_3_example_peck_games/designing_logical_state_contexts_1.py
     :language: python
 
 In words, it reasons according to the following rules: If the end-effector is close to an inactive

@@ -147,7 +147,7 @@ Let's use the **Script Editor** and Python API to retrieve the data from the LID
 
 3. Grab the Stage, Simulation Timeline, and LIDAR interface:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_lidar/script_editor.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_lidar/script_editor_1.py
     :language: python
 
 4. Create an obstacle for the LIDAR:
@@ -162,7 +162,7 @@ Let's use the **Script Editor** and Python API to retrieve the data from the LID
     Because the simulation is running asynchronously with our script, use ``asyncio`` and ``ensure_future`` to wait for our script to complete
     calling ``timeline.pause()`` is optional, data from the sensor can be gathered anytime while simulating.
 
-    .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_lidar/these_commands_are_the_python_equivalent_of_the_fi.py
+    .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_lidar/these_commands_are_the_python_equivalent_of_the_fi_1.py
         :language: python
 
 #. Run the full script:

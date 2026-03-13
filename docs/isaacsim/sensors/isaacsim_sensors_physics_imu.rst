@@ -191,7 +191,7 @@ Sample usage to get the reading from the current physics step with gravitational
 
 Sample usage with custom interpolation function without gravitational effects:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/reading_sensor_output.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/reading_sensor_output_1.py
     :language: python
 
 .. note::

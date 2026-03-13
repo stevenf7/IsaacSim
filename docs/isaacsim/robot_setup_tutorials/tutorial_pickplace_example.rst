@@ -212,7 +212,7 @@ The ``follow_target_example_rmpflow.py`` script initializes the ``FollowTarget``
 
 .. dropdown:: follow_target_example_rmpflow.py
 
-    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/follow_target_example_using_rmp_flow.py
+    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/follow_target_example_using_rmp_flow_1.py
         :language: python
 
 Basic Pick and Place Task using RMP Flow
@@ -242,7 +242,7 @@ The ``tasks/pick_place.py`` script creates a ``PickPlace`` task that sets up the
 
 .. dropdown:: tasks/pick_place.py
 
-    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/basic_pick_and_place_task_using_rmp_flow.py
+    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/basic_pick_and_place_task_using_rmp_flow_1.py
         :language: python
 
 The ``pick_place_example.py`` script puts everything together and runs the simulation. 
@@ -251,7 +251,7 @@ The ``pick_place_example.py`` script puts everything together and runs the simul
 
 .. dropdown:: pick_place_example.py
 
-    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/define_the_manipulator.py
+    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/define_the_manipulator_1.py
         :language: python
 
 Advanced Pick and Place Task using RMPFlow and Foundation Pose

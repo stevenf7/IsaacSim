@@ -257,10 +257,9 @@ Robot Behaviors
 -   **wander**:
     -   ``move``: { ``distance_range``: [min, max] (default [10.0, 15.0]), ``navigation_areas``: list of allowed NavMesh area tags (default []) }
     -   ``idle``: { ``time_range``: [min, max] (default [2.0, 5.0]) }
--   **patrol**:
-    -   One of (exactly one must be provided):
-        -   ``path_points``: List of 3D points ``[[x,y,z], [x,y,z], ...]``.
-        -   ``target_prims``: List of prim paths to visit.
+-   **patrol** (exactly one must be provided):
+    -   ``path_points``: List of 3D points ``[[x,y,z], [x,y,z], ...]``.
+    -   ``target_prims``: List of prim paths to visit.
 
     .. note::
         Both ``path_points`` and ``target_prims`` must be on the :doc:`NavMesh <extensions:ext_navigation-mesh>` and reachable by the robots.

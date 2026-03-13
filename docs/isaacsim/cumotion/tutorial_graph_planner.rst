@@ -1,8 +1,8 @@
 .. _isaac_sim_cumotion_tutorial_graph_planner:
 
-============================
+===================================
 Graph-Based Motion Planner Tutorial
-============================
+===================================
 
 This tutorial demonstrates how to use the :class:`GraphBasedMotionPlanner` class in the |cumotion| integration to find collision-free paths using sampling-based algorithms (RRT variants).
 

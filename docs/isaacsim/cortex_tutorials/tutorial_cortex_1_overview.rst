@@ -280,7 +280,7 @@ axes using using:
 And we can compute the rotation matrix (target) that has the z-axis pointing down and maintains the
 most similar y-axis using:
 
-.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_1_overview/note_on_rotation_matrix_calculations.py
+.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_1_overview/note_on_rotation_matrix_calculations_1.py
     :language: python
 
 This type of math is common and can be understood as basic geometric manipulations to an

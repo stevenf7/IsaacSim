@@ -140,24 +140,24 @@ Here ``Example_Rotary`` defines the configuration for the 3D Lidar sensor. To sw
 
 Create a render product and attach this sensor to it:
 
-.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample.py
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample_1.py
     :language: python
 
 Create the post process pipeline that takes the rendered RTX Lidar point cloud data and publishes it to ROS:
 
-.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample.py
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample_2.py
     :language: python
 
 Create the 2D RTX Lidar Sensor:
 
-.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample.py
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample_3.py
     :language: python
 
 Here ``Example_Rotary_2D`` defines the configuration for the 2D Lidar sensor.
 
 Similar to the 3D Lidar sensor, create a render product and the post process pipeline that publishes the rendered RTX Lidar laser scan data to ROS:
 
-.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample.py
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample_4.py
     :language: python
 
 .. note::

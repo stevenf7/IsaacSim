@@ -4,6 +4,8 @@
 
 # Settings
 
+## Settings Provided by the Extension
+
 ### exts."isaacsim.robot_setup.wizard".timeout
 - **Default Value**: 5
 - **Description**: The timeout duration in seconds for resolving the robot wizard settings.

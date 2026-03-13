@@ -96,7 +96,7 @@ The behavior is constructed as a decider network:
 with top-level dispatch decider node ``BlockPickAndPlaceDispatch``. The dispatch decider node's
 implementation is simple, directly modeling the logic shown in the above diagram:
 
-.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_4_franka_block_stacking/top_level_dispatch.py
+.. literalinclude:: ../snippets/cortex_tutorials/tutorial_cortex_4_franka_block_stacking/top_level_dispatch_1.py
     :language: python
 
 If the tower's complete, then go home. Otherwise, there's more to do with the tower. If there's

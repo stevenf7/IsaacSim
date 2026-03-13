@@ -791,7 +791,7 @@ IMU Sensors
 STMicroelectronics
 ------------------
 
-STMicroelectronics provides an Isaac Sim extension for simulating their MEMS-based IMU sensors. The doc link is available `here <https://github.com/STMicroelectronics/st-mems-isaac-sim2real>`_.
+STMicroelectronics provides an Isaac Sim extension for simulating their MEMS-based IMU sensors. The doc link is available `here <https://github.com/STMicroelectronics/st-mems-isaac-sim2real>`__.
 
 Please follow the instructions in the link to install the extension and create the sensor.
 
@@ -800,14 +800,14 @@ ASM330LHH
 
 `STMicroelectronics ASM330LHH <https://www.st.com/resource/en/datasheet/asm330lhh.pdf>`_ is a automotive 6 axis inertial module with 3D accelerometer and 3D gyroscope.
 
-.. Note:: Datasheet is available for download `here <https://www.st.com/resource/en/datasheet/asm330lhh.pdf>`_ 
+.. Note:: Datasheet is available for download `here <https://www.st.com/resource/en/datasheet/asm330lhh.pdf>`__
 
 LSM6DSV
 #########
 
 `STMicroelectronics LSM6DSV <https://www.st.com/resource/en/datasheet/lsm6dsv.pdf>`_ is a automotive 6 axis inertial module with 3 axis digital accelerometer and 3 axis digital gyroscope.
 
-.. Note:: Datasheet is available for download `here <https://www.st.com/resource/en/datasheet/lsm6dsv.pdf>`_ 
+.. Note:: Datasheet is available for download `here <https://www.st.com/resource/en/datasheet/lsm6dsv.pdf>`__
 
 Sensor Gizmo in Viewport
 =========================

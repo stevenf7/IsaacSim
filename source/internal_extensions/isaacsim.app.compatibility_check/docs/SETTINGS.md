@@ -4,6 +4,8 @@
 
 # Settings
 
+## Settings Provided by the Extension
+
 ### exts."isaacsim.app.compatibility_check".gpu_driver
 - **Default Value**: [
   {'platform': 'linux', 'minimum': '535.161', 'unsupported': []},

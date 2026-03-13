@@ -321,7 +321,7 @@ new extensions, eg.
 
 would become
 
-.. literalinclude:: ../snippets/overview/extensions_renaming/renaming_extension_apis.py
+.. literalinclude:: ../snippets/overview/extensions_renaming/renaming_extension_apis_1.py
     :language: python
 
 .. _extension_renaming_deprecated_to_new:
