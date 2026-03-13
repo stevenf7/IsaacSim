@@ -451,15 +451,17 @@ def _check_dependencies(
         if os.path.isfile(dependencies_file):
             path = dependencies_file
         else:
-            # Try to find the file locally in the kit build directory before downloading.
+            path = None
+            # Try to find the file locally in the kit build directory before downloading (skip when tokens_override is set, e.g. downstream pipeline).
             # The kit-kernel packman package is linked into _build/<platform>/<config>/kit/
             # and ships the pip dependency files under dev/deps/.
-            repo_root = os.path.dirname(os.path.dirname(kit_sdk_packman))
-            filename = os.path.basename(dependencies_file)
-            local_path = _find_local_kit_dep(repo_root, platforms, filename, kit_sdk_packman=kit_sdk_packman)
-            if local_path:
-                path = local_path
-            else:
+            if tokens_override is None:
+                repo_root = os.path.dirname(os.path.dirname(kit_sdk_packman))
+                filename = os.path.basename(dependencies_file)
+                local_path = _find_local_kit_dep(repo_root, platforms, filename, kit_sdk_packman=kit_sdk_packman)
+                if local_path:
+                    path = local_path
+            if path is None:
                 if tokens_override is not None:
                     url = string.Template(dependencies_file).substitute(tokens_override)
                 else:
