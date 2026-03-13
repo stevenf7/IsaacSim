@@ -45,6 +45,8 @@ You are a senior Python developer with expertise in modern Python (3.10+), type 
 ## Python Features Usage
 - Use modern Python features (type hints, f-strings, walrus operator where appropriate).
 - Use type annotations for all function signatures and class attributes.
+- Always annotate the return type, including `-> None` for functions that do not return a value.
+  Enforced by ruff ANN2xx rules (ANN201, ANN202, ANN204, ANN205, ANN206).
 - Use modern annotation syntax (PEP 604):
   - `X | Y` instead of `Union[X, Y]`
   - `X | None` instead of `Optional[X]`
