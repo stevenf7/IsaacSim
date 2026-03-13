@@ -18,6 +18,10 @@ This directory contains scripts for building Docker images of Isaac Sim. The bui
   - [Checking status and endpoints](#checking-status-and-endpoints)
   - [Rebuilding the web viewer](#rebuilding-the-web-viewer)
   - [Multiple instances with dedicated GPUs](#multiple-instances-with-dedicated-gpus)
+- [Cloud Deployment (AWS, GCP, Azure)](#cloud-deployment-aws-gcp-azure)
+  - [Retrieving the VM's public IP](#retrieving-the-vms-public-ip)
+  - [Launching with the public IP](#launching-with-the-public-ip)
+  - [Restricting access with firewall rules](#restricting-access-with-firewall-rules)
 - [Important Notes](#important-notes)
 - [Keyboard Shortcuts (Web Viewer)](#keyboard-shortcuts-web-viewer)
 - [Troubleshooting](#troubleshooting)
@@ -193,7 +197,7 @@ You can pass these environment variables when running the container (e.g. `docke
 | ------------------------ | --------- | --------------------------------------------------------------------------------------------------------------------------- |
 | **ACCEPT_EULA**          | **Yes**   | Accept the license agreement (required to run; set e.g. to `Y`).                                                            |
 | **OMNI_SERVER**          | No        | Override the default asset root (passed as `--/persistent/isaac/asset_root/default`).                                       |
-| **ISAACSIM_HOST**        | No        | Public or private IP of the host running Isaac Sim (for livestream; passed as livestream `publicIp`). Default: `127.0.0.1`. |
+| **ISAACSIM_HOST**        | No        | Public or private IP of the host for livestream (passed as livestream `publicIp`). Default: `127.0.0.1`. See [Cloud Deployment](#cloud-deployment-aws-gcp-azure) for cloud VMs. |
 | **ISAACSIM_SIGNAL_PORT** | No        | Signal port for WebRTC streaming. Default: `49100`.                                                                         |
 | **ISAACSIM_STREAM_PORT** | No        | Streaming port for WebRTC. Default: `47998`.                                                                                |
 
@@ -271,7 +275,7 @@ If you override ports via `ISAACSIM_SIGNAL_PORT`, `ISAACSIM_STREAM_PORT` or `WEB
 
 A `docker-compose.yml` is provided that launches both Isaac Sim (headless streaming) and a WebRTC web-viewer container side by side. The web viewer is built from `@nvidia/create-ov-web-rtc-app` in local streaming mode and connects the browser directly to the Isaac Sim WebRTC endpoints.
 
-> **Security notice:** Isaac Sim and the web viewer are designed for use on private/trusted networks. They do not include authentication or encryption. If you need to expose them over the Internet, add a reverse proxy with HTTPS/TLS and authentication (e.g. nginx with SSL certificates and basic auth). Users are responsible for securing any public-facing deployments.
+> **Security notice:** Isaac Sim and the web viewer are designed for use on private/trusted networks. They do not include authentication or encryption. Do **not** expose them on the public Internet without additional safeguards. If you need remote access, restrict the ports with firewall rules or add a reverse proxy with HTTPS/TLS and authentication (e.g. nginx with SSL certificates and basic auth). See [Cloud Deployment](#cloud-deployment-aws-gcp-azure) for cloud-specific guidance. Users are responsible for securing any public-facing deployments.
 
 ### Quick start
 
@@ -323,11 +327,15 @@ docker compose -p isim logs -f           # follow live logs (Ctrl+C to stop)
 Override any variable via the shell or a `.env` file next to `docker-compose.yml`:
 
 
-| Variable                 | Default     | Description                                          |
-| ------------------------ | ----------- | ---------------------------------------------------- |
-| **ISAACSIM_HOST**        | `127.0.0.1` | Host IP for WebRTC streaming (used by both services) |
-| **ISAACSIM_SIGNAL_PORT** | `49100`     | WebRTC signaling port                                |
-| **ISAACSIM_STREAM_PORT** | `47998`     | WebRTC media port                                    |
+| Variable                 | Default                      | Description                                                              |
+| ------------------------ | ---------------------------- | ------------------------------------------------------------------------ |
+| **ISAAC_SIM_IMAGE**      | `isaac-sim-docker:latest`    | Docker image to run. Set to a prebuilt NGC image (e.g. `nvcr.io/nvidia/isaac-sim:6.0.0-dev2`) to skip local build steps. |
+| **ISAACSIM_HOST**        | `127.0.0.1`                  | Host IP for WebRTC streaming (used by both services). See [Cloud Deployment](#cloud-deployment-aws-gcp-azure) for cloud VMs. |
+| **ISAACSIM_SIGNAL_PORT** | `49100`                      | WebRTC signaling port (TCP)                                              |
+| **ISAACSIM_STREAM_PORT** | `47998`                      | WebRTC media port (UDP)                                                  |
+| **WEB_VIEWER_PORT**      | `8210`                       | Host port for the web viewer                                             |
+| **GPU_DEVICE**           | `all`                        | GPU index to pin the Isaac Sim container to (e.g. `0`, `1`)             |
+| **ISAAC_SIM_DATA**       | `~/docker/isaac-sim`         | Host path for persistent cache, config, logs, and data. Use a full absolute path in `.env` files (`~` is not expanded by Docker Compose). |
 
 
 ### Rebuilding the web viewer
@@ -392,13 +400,67 @@ docker compose -p isim1 -f tools/docker/docker-compose.yml down
 docker compose -p isim2 -f tools/docker/docker-compose.yml down
 ```
 
+## Cloud Deployment (AWS, GCP, Azure)
 
-| Variable            | Description                                                   |
-| ------------------- | ------------------------------------------------------------- |
-| **GPU_DEVICE**      | GPU index to pin the Isaac Sim container to (default: `all`)  |
-| **WEB_VIEWER_PORT** | Host port for the web viewer (default: `8210`)                |
-| **ISAAC_SIM_DATA**  | Host path for persistent data (default: `~/docker/isaac-sim`) |
+When running Isaac Sim on a cloud VM (e.g. AWS EC2, GCP Compute Engine, Azure VM), you must set `ISAACSIM_HOST` to the VM's public IP so the WebRTC stream is reachable from your browser, and restrict the ports with firewall rules so the unauthenticated stream is not exposed to the open Internet.
 
+### Retrieving the VM's public IP
+
+Cloud VMs do not have their public IP assigned to a local network interface — commands like `hostname -I` only show the private IP. You must retrieve the public IP yourself and pass it explicitly via `ISAACSIM_HOST`.
+
+```bash
+# AWS EC2 (IMDSv2)
+PUBLIC_IP=$(TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600") && \
+  curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
+  http://169.254.169.254/latest/meta-data/public-ipv4)
+echo "$PUBLIC_IP"
+
+# GCP
+PUBLIC_IP=$(curl -s -H "Metadata-Flavor: Google" \
+  http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)
+
+# Azure
+PUBLIC_IP=$(curl -s -H Metadata:true \
+  "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2021-02-01&format=text")
+
+# Or simply check the cloud console for the instance's public IP.
+```
+
+### Launching with the public IP
+
+```bash
+ISAACSIM_HOST=$PUBLIC_IP docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+```
+
+Then open `http://<PUBLIC_IP>:8210` in your browser (the same IP you set in `ISAACSIM_HOST`).
+
+### Restricting access with firewall rules
+
+Before launching, lock down the Isaac Sim ports so only your client IP can reach them.
+
+**AWS Security Group** — allow inbound only from your IP:
+
+
+| Port      | Protocol | Source         |
+| --------- | -------- | -------------- |
+| **8210**  | TCP      | `<your-ip>/32` |
+| **49100** | TCP      | `<your-ip>/32` |
+| **47998** | UDP      | `<your-ip>/32` |
+
+
+**GCP Firewall Rule:**
+
+```bash
+gcloud compute firewall-rules create allow-isaacsim \
+  --allow tcp:8210,tcp:49100,udp:47998 \
+  --source-ranges <your-ip>/32 \
+  --target-tags isaacsim
+```
+
+**Azure NSG:** Create inbound rules for the same ports restricted to your client IP.
+
+> **Never** use `0.0.0.0/0` (all traffic) for these ports in production. Doing so exposes an unauthenticated stream to anyone on the Internet.
 
 ## Important Notes
 
@@ -424,7 +486,6 @@ docker compose -p isim2 -f tools/docker/docker-compose.yml down
 
 - **Cannot connect to livestream**: (1) Ensure you are using `--network=host` (required for WebRTC streaming). (2) Set `ISAACSIM_HOST` to the IP address the client uses to reach the host (e.g. LAN IP). (3) Allow ports 8210/tcp, 49100/tcp, and 47998/udp in the host firewall (e.g. UFW).
 - **Stale volume mounts causing issues (e.g. crashes, config errors, or livestream failures)**: Old cached data in the Docker volume mount directories can cause unexpected behavior. Remove the existing mounts and recreate them:
-
   ```bash
   sudo rm -rf ~/docker
   mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
@@ -437,15 +498,12 @@ docker compose -p isim2 -f tools/docker/docker-compose.yml down
 - **Python requirements installation fails**: Ensure python3 and pip are properly installed.
 - **Docker build fails**: Check that Docker daemon is running and you have sufficient disk space.
 - **ERROR: This host's buildx builder does NOT support linux/arm64**: The current Docker buildx builder does not list `linux/arm64`. On DGX Spark (native aarch64), use the default builder so it uses the host platform:
-
   ```bash
   docker buildx use default
   docker buildx inspect --bootstrap
   ./tools/docker/build_docker.sh --aarch64
   ```
-
   If you are on an x86_64 host and cross-building for arm64, enable QEMU and create a multi-platform builder:
-
   ```bash
   docker run --privileged --rm tonistiigi/binfmt --install all
   docker buildx create --name multiarch --driver docker-container --use

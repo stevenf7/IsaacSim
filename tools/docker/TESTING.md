@@ -47,15 +47,7 @@ ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0-dev2 docker compose -p isim -f do
 docker compose -p isim logs web-viewer
 ```
 
-Open the URL shown in the logs (e.g. `http://<host-ip>:8210`) in a Chromium-based browser.
-
-If connecting from a remote machine and the host IP is not directly reachable, use an SSH tunnel:
-
-```bash
-ssh -L 8210:127.0.0.1:8210 user@remote-host
-```
-
-Then open `http://localhost:8210` in your browser.
+Open the URL shown in the logs (e.g. `http://<host-ip>:8210`) in a Chromium-based browser. For cloud VMs, see [Cloud Deployment](README.md#cloud-deployment-aws-gcp-azure) in the README.
 
 ## 3. Verify streaming
 
