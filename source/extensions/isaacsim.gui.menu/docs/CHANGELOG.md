@@ -1,4 +1,7 @@
-
+# Changelog
+## [2.10.3] - 2026-03-12
+### Changed
+- Remove unused golden images
 
 ## [2.10.2] - 2026-03-10
 ### Fixed
@@ -8,7 +11,6 @@
 ### Fixed
 - OMPE-84348: fixed flaky test
 
-# Changelog
 ## [2.10.0] - 2026-03-04
 ### Changed
 - Add Overview.md, python_api.md and update docstrings

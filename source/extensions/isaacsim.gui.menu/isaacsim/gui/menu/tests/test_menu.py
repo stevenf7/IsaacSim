@@ -14,14 +14,11 @@
 # limitations under the License.
 """Menu-driven asset creation tests for Isaac Sim."""
 
-from pathlib import Path
-
 import omni.kit.app
 import omni.kit.commands
 import omni.kit.test
 import omni.usd
 from isaacsim.core.experimental.utils import prim as prim_utils
-from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.test.utils import (
     MenuUITestCase,
     get_all_menu_paths,
@@ -29,9 +26,6 @@ from isaacsim.test.utils import (
 from omni.kit.mainwindow import get_main_window
 from omni.kit.ui_test import get_context_menu
 from pxr import Usd, UsdPhysics
-
-EXTENSION_FOLDER_PATH = Path(omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__))
-TEST_DATA_PATH = EXTENSION_FOLDER_PATH.joinpath("data/tests")
 
 # =============================================================================
 # Robot Menu Tests
@@ -97,8 +91,6 @@ class TestEnvironmentMenuAssets(MenuUITestCase):
     async def setUp(self):
         """Set up test environment before each test method."""
         await super().setUp()
-        self._golden_img_dir = TEST_DATA_PATH.absolute().joinpath("golden_img").absolute()
-        self._usd_selection = omni.usd.get_context().get_selection()
 
     async def _test_environment_menu_option(self, test_path: str) -> None:
         """Test a specific environment menu option.
