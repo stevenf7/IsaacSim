@@ -20,7 +20,7 @@ import omni.timeline
 import omni.usd
 import warp as wp
 from isaacsim.core.experimental.prims import BufferDtype
-from pxr import UsdUtils
+from pxr import UsdGeom, UsdPhysics, UsdUtils
 
 
 class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
@@ -29,6 +29,8 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         """Acquire a fresh reader and initialize it for CPU."""
         self.reader = None
+        self.timeline = omni.timeline.get_timeline_interface()
+        self._stage_id = 0
         from isaacsim.core.experimental.prims.impl.extension import get_prim_data_reader
 
         self.reader = get_prim_data_reader()
@@ -39,6 +41,17 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
         """Shut down the reader to clean up all views."""
         if self.reader is not None:
             self.reader.shutdown()
+        if self.timeline.is_playing():
+            self.timeline.stop()
+            await omni.kit.app.get_app().next_update_async()
+
+    async def _setup_stage(self):
+        """Create a fresh USD stage and (re-)initialize the reader against it."""
+        await stage_utils.create_new_stage_async()
+        stage = omni.usd.get_context().get_stage()
+        self._stage_id = UsdUtils.StageCache.Get().GetId(stage).ToLongInt()
+        self.reader.initialize(self._stage_id, -1)
+        return stage
 
     async def test_acquire_interface(self):
         """Verify the Carbonite interface can be acquired and released."""
@@ -70,6 +83,7 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
             "get_dof_names",
             "get_dof_types",
             "get_dof_types_host",
+            "get_articulation_links",
             "update",
             "allocate_buffer",
             "get_buffer_ptr",
@@ -105,6 +119,8 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
             "get_local_scales",
             "update",
             "allocate_buffer",
+            "get_prim_frame_name",
+            "get_prim_world_transform",
         ]:
             self.assertTrue(hasattr(view, method), f"Missing method: {method}")
         self.assertFalse(hasattr(view, "get_linear_velocities"))
@@ -333,3 +349,161 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
             _prims_reader.release_prim_data_reader_manager_interface(manager_a)
             timeline.stop()
             await omni.kit.app.get_app().next_update_async()
+
+    # -- getArticulationLinks / getPrimFrameName / getPrimWorldTransform (on view interfaces) --
+
+    async def test_xform_view_has_get_prim_frame_name(self):
+        """IXformDataView should expose get_prim_frame_name."""
+        view = self.reader.create_xform_view("v_framename", ["/World/t"], "physx")
+        self.assertTrue(hasattr(view, "get_prim_frame_name"))
+
+    async def test_xform_view_has_get_prim_world_transform(self):
+        """IXformDataView should expose get_prim_world_transform."""
+        view = self.reader.create_xform_view("v_worldxform", ["/World/t"], "physx")
+        self.assertTrue(hasattr(view, "get_prim_world_transform"))
+
+    async def test_articulation_view_has_get_articulation_links(self):
+        """IArticulationDataView should expose get_articulation_links."""
+        view = self.reader.create_articulation_view("v_artlinks", ["/World/t"], "physx")
+        self.assertTrue(hasattr(view, "get_articulation_links"))
+
+    # -- Behavior without a valid stage (stageId == 0) --
+
+    async def test_get_prim_frame_name_without_stage_returns_none(self):
+        """get_prim_frame_name should return None when no stage is loaded."""
+        view = self.reader.create_xform_view("v_noframe", ["/World/t"], "physx")
+        result = view.get_prim_frame_name("/World/Prim")
+        self.assertIsNone(result)
+
+    async def test_get_articulation_links_without_stage_returns_empty(self):
+        """get_articulation_links should return an empty list when no stage is loaded."""
+        view = self.reader.create_articulation_view("v_nolinks", ["/World/t"], "physx")
+        result = view.get_articulation_links("/World/Robot")
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 0)
+
+    async def test_get_prim_world_transform_without_stage_returns_none(self):
+        """get_prim_world_transform should return None when no stage is loaded."""
+        view = self.reader.create_xform_view("v_noworldxf", ["/World/t"], "physx")
+        result = view.get_prim_world_transform("/World/Prim")
+        self.assertIsNone(result)
+
+    # -- getPrimFrameName functional tests --
+
+    async def test_get_prim_frame_name_returns_prim_name(self):
+        """get_prim_frame_name returns the prim's name for a valid prim path."""
+        stage = await self._setup_stage()
+        UsdGeom.Xform.Define(stage, "/World/MyRobot")
+        view = self.reader.create_xform_view("v_framename2", ["/World/MyRobot"], "physx")
+        result = view.get_prim_frame_name("/World/MyRobot")
+        self.assertEqual(result, "MyRobot")
+
+    async def test_get_prim_frame_name_on_missing_prim_returns_none(self):
+        """get_prim_frame_name returns None for a path that does not exist in the stage."""
+        stage = await self._setup_stage()
+        UsdGeom.Xform.Define(stage, "/World/Exists")
+        view = self.reader.create_xform_view("v_missingprim", ["/World/Exists"], "physx")
+        result = view.get_prim_frame_name("/World/DoesNotExist")
+        self.assertIsNone(result)
+
+    async def test_get_prim_frame_name_respects_isaac_name_override(self):
+        """get_prim_frame_name should return the isaac:nameOverride value when set."""
+        from pxr import Sdf
+
+        stage = await self._setup_stage()
+        prim = UsdGeom.Xform.Define(stage, "/World/Link0").GetPrim()
+        prim.CreateAttribute("isaac:nameOverride", Sdf.ValueTypeNames.String).Set("base_link")
+        view = self.reader.create_xform_view("v_override", ["/World/Link0"], "physx")
+        result = view.get_prim_frame_name("/World/Link0")
+        self.assertEqual(result, "base_link")
+
+    # -- getArticulationLinks functional tests --
+
+    async def test_get_articulation_links_on_non_articulation_returns_empty(self):
+        """get_articulation_links returns an empty list for a prim without ArticulationRootAPI."""
+        stage = await self._setup_stage()
+        UsdGeom.Xform.Define(stage, "/World/NotAnArticulation")
+        view = self.reader.create_articulation_view("v_noart", ["/World/NotAnArticulation"], "physx")
+        result = view.get_articulation_links("/World/NotAnArticulation")
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 0)
+
+    async def test_get_articulation_links_returns_links_and_parent_hierarchy(self):
+        """get_articulation_links enumerates links and resolves parent-child relationships."""
+        stage = await self._setup_stage()
+
+        # Two-link articulation: Robot (root) -> Link0 -> Link1
+        root = UsdGeom.Xform.Define(stage, "/World/Robot").GetPrim()
+        UsdPhysics.ArticulationRootAPI.Apply(root)
+
+        link0 = UsdGeom.Xform.Define(stage, "/World/Robot/Link0").GetPrim()
+        UsdPhysics.RigidBodyAPI.Apply(link0)
+
+        link1 = UsdGeom.Xform.Define(stage, "/World/Robot/Link0/Link1").GetPrim()
+        UsdPhysics.RigidBodyAPI.Apply(link1)
+
+        view = self.reader.create_articulation_view("v_artlinks2", ["/World/Robot"], "physx")
+        links = view.get_articulation_links("/World/Robot")
+        self.assertIsInstance(links, list)
+        self.assertEqual(len(links), 2)
+
+        paths = {e["path"] for e in links}
+        self.assertIn("/World/Robot/Link0", paths)
+        self.assertIn("/World/Robot/Link0/Link1", paths)
+
+        link0_entry = next(e for e in links if e["path"] == "/World/Robot/Link0")
+        link1_entry = next(e for e in links if e["path"] == "/World/Robot/Link0/Link1")
+
+        # Root link has no articulation-link ancestor → empty parent path
+        self.assertEqual(link0_entry["parent_path"], "")
+        # Link1's closest link ancestor is Link0
+        self.assertEqual(link1_entry["parent_path"], "/World/Robot/Link0")
+
+    async def test_get_articulation_links_on_missing_prim_returns_empty(self):
+        """get_articulation_links returns an empty list for a path that does not exist."""
+        await self._setup_stage()
+        view = self.reader.create_articulation_view("v_noartprim", ["/World/t"], "physx")
+        result = view.get_articulation_links("/World/NoSuchPrim")
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 0)
+
+    # -- getPrimWorldTransform functional tests --
+
+    async def test_get_prim_world_transform_returns_origin_for_default_xform(self):
+        """A default Xform at the origin should report (0,0,0) position and identity orientation."""
+        stage = await self._setup_stage()
+        self.timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        # Re-initialize to pick up the Fabric (usdrt) stage after timeline start
+        self.reader.initialize(self._stage_id, -1)
+
+        UsdGeom.Xform.Define(stage, "/World/Origin")
+        view = self.reader.create_xform_view("v_origin", ["/World/Origin"], "physx")
+        result = view.get_prim_world_transform("/World/Origin")
+        self.assertIsNotNone(result)
+
+        pos, ori = result
+        self.assertEqual(len(pos), 3)
+        self.assertEqual(len(ori), 4)
+
+        self.assertAlmostEqual(pos[0], 0.0, places=5)
+        self.assertAlmostEqual(pos[1], 0.0, places=5)
+        self.assertAlmostEqual(pos[2], 0.0, places=5)
+
+        # Identity quaternion: qw=1, qx=qy=qz=0
+        self.assertAlmostEqual(abs(ori[0]), 1.0, places=5)
+        self.assertAlmostEqual(ori[1], 0.0, places=5)
+        self.assertAlmostEqual(ori[2], 0.0, places=5)
+        self.assertAlmostEqual(ori[3], 0.0, places=5)
+
+    async def test_get_prim_world_transform_on_missing_prim_returns_none(self):
+        """get_prim_world_transform returns None for a path that does not exist."""
+        stage = await self._setup_stage()
+        UsdGeom.Xform.Define(stage, "/World/Exists")
+        self.timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        self.reader.initialize(self._stage_id, -1)
+
+        view = self.reader.create_xform_view("v_missingxf", ["/World/Exists"], "physx")
+        result = view.get_prim_world_transform("/World/DoesNotExist")
+        self.assertIsNone(result)

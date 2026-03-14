@@ -17,8 +17,6 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include <carb/Defines.h>
-#include <carb/Types.h>
 #include <carb/logging/Log.h>
 
 #include <isaacsim/core/experimental/prims/IPrimDataReader.h>

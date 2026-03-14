@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.0] - 2026-03-09
+### Changed
+- ROS2PublishTransformTree accepts optional parentFrames, childFrames, translations, and orientations inputs to receive pre-computed transform data from IsaacComputeTransformTree, deprecating direct use of targetPrims
+
 ## [1.10.1] - 2026-03-10
 ### Changed
 - Updated test_spinning_camera_golden_images unit test with new golden USD

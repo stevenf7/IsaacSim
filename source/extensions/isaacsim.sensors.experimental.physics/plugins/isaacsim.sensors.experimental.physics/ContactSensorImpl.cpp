@@ -24,7 +24,8 @@
 #include <carb/settings/ISettings.h>
 
 #include <isaacSensorSchema/isaacContactSensor.h>
-#include <isaacsim/core/includes/Pose.h>
+#include <isaacsim/core/experimental/prims/IPrimDataReader.h>
+#include <isaacsim/core/experimental/prims/IPrimDataReaderManager.h>
 #include <isaacsim/core/includes/UsdUtilities.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
 #include <omni/fabric/FabricUSD.h>
@@ -65,6 +66,9 @@ namespace physics
 namespace
 {
 
+using core::experimental::prims::IPrimDataReader;
+using core::experimental::prims::IPrimDataReaderManager;
+using core::experimental::prims::IXformDataView;
 using core::simulation_manager::ISimulationManager;
 
 static std::string findParentRigidBody(pxr::UsdStageRefPtr stage, const pxr::SdfPath& sensorPath)
@@ -154,6 +158,8 @@ class SensorData
 public:
     std::string sensorPrimPath;
     std::string parentRigidBodyPath;
+    std::string viewId;
+    IXformDataView* xformView = nullptr;
     uint64_t parentToken = 0;
 
     float radius = -1.0f;
@@ -205,8 +211,11 @@ struct ContactSensorImpl::ImplData
     int64_t nextSensorId = 0;
     float lastDt = 0.0f;
     int stepCount = 0;
+    uint64_t readerGeneration = 0;
 
     ISimulationManager* simManager = nullptr;
+    IPrimDataReaderManager* readerManager = nullptr;
+    IPrimDataReader* reader = nullptr;
     omni::physics::IPhysicsSimulation* physicsSimulation = nullptr;
     omni::physics::SubscriptionId physicsStepSub = omni::physics::kInvalidSubscriptionId;
     carb::events::ISubscriptionPtr physicsEventSub;
@@ -220,6 +229,8 @@ struct ContactSensorImpl::ImplData
 ContactSensorImpl::ContactSensorImpl() : m_impl(std::make_unique<ImplData>())
 {
     m_impl->simManager = carb::getCachedInterface<ISimulationManager>();
+    m_impl->readerManager = carb::getCachedInterface<IPrimDataReaderManager>();
+    m_impl->reader = m_impl->readerManager ? m_impl->readerManager->getReader() : nullptr;
     _subscribeToPhysicsStepEvents();
     _subscribeToPhysicsEvents();
 }
@@ -234,6 +245,8 @@ void ContactSensorImpl::shutdown()
     _unsubscribeFromPhysicsStepEvents();
     m_impl->physicsEventSub.reset();
     _clearSensors();
+    m_impl->readerManager = nullptr;
+    m_impl->reader = nullptr;
     m_impl->simManager = nullptr;
     m_impl->physicsSimulation = nullptr;
     m_impl->usdStage = nullptr;
@@ -241,6 +254,7 @@ void ContactSensorImpl::shutdown()
     m_impl->stageId = 0;
     m_impl->stepCount = 0;
     m_impl->lastDt = 0.0f;
+    m_impl->readerGeneration = 0;
     m_impl->contactStore.clear();
 }
 
@@ -277,6 +291,16 @@ void ContactSensorImpl::_initializeStage(long stageId)
     m_impl->contactStore.clear();
 
     m_impl->simManager = carb::getCachedInterface<ISimulationManager>();
+    m_impl->readerManager = carb::getCachedInterface<IPrimDataReaderManager>();
+    if (m_impl->readerManager)
+    {
+        m_impl->readerManager->ensureInitialized(stageId, -1);
+        m_impl->reader = m_impl->readerManager->getReader();
+    }
+    else
+    {
+        m_impl->reader = nullptr;
+    }
 
     pxr::UsdStageCache& cache = pxr::UsdUtilsStageCache::Get();
     m_impl->usdStage = cache.Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
@@ -359,6 +383,15 @@ int64_t ContactSensorImpl::createSensor(const char* primPath)
     sensor.sensorPrimPath = primPath;
     sensor.parentRigidBodyPath = parentPath;
     sensor.parentToken = sdfPathToToken(pxr::SdfPath(parentPath));
+    sensor.viewId = "contact_xform_" + std::to_string(sensorId);
+
+    if (m_impl->reader)
+    {
+        const char* sensorPathPtr = primPath;
+        sensor.xformView = m_impl->reader->createXformView(sensor.viewId.c_str(), &sensorPathPtr, 1, "physx");
+        m_impl->readerGeneration = m_impl->reader->getGeneration();
+    }
+
     sensor.refreshConfig(m_impl->usdStage);
 
     return sensorId;
@@ -366,7 +399,12 @@ int64_t ContactSensorImpl::createSensor(const char* primPath)
 
 void ContactSensorImpl::removeSensor(int64_t sensorId)
 {
-    m_impl->sensors.erase(sensorId);
+    auto it = m_impl->sensors.find(sensorId);
+    if (it == m_impl->sensors.end())
+        return;
+    if (m_impl->reader && !it->second.viewId.empty())
+        m_impl->reader->removeView(it->second.viewId.c_str());
+    m_impl->sensors.erase(it);
 }
 
 ContactSensorReading ContactSensorImpl::getSensorReading(int64_t sensorId)
@@ -416,8 +454,31 @@ void ContactSensorImpl::_discoverSensorsFromStage()
 
 void ContactSensorImpl::_clearSensors()
 {
+    for (auto& [id, sensor] : m_impl->sensors)
+    {
+        (void)id;
+        if (m_impl->reader && !sensor.viewId.empty())
+            m_impl->reader->removeView(sensor.viewId.c_str());
+    }
     m_impl->sensors.clear();
     m_impl->contactStore.clear();
+}
+
+void ContactSensorImpl::_recreateSensorViews()
+{
+    if (!m_impl->reader)
+        return;
+
+    for (auto& [id, sensor] : m_impl->sensors)
+    {
+        sensor.xformView = nullptr;
+        if (sensor.viewId.empty() || sensor.sensorPrimPath.empty())
+            continue;
+
+        const char* sensorPathPtr = sensor.sensorPrimPath.c_str();
+        sensor.xformView = m_impl->reader->createXformView(sensor.viewId.c_str(), &sensorPathPtr, 1, "physx");
+    }
+    m_impl->readerGeneration = m_impl->reader->getGeneration();
 }
 
 void ContactSensorImpl::_subscribeToPhysicsEvents()
@@ -543,6 +604,9 @@ void ContactSensorImpl::_stepSensors(float dt)
     if (!m_impl->simManager || !m_impl->usdStage)
         return;
 
+    if (m_impl->reader && m_impl->reader->getGeneration() != m_impl->readerGeneration)
+        _recreateSensorViews();
+
     _pullContactData(dt);
 
     if (m_impl->sensors.empty())
@@ -593,9 +657,10 @@ void ContactSensorImpl::_processSensor(ImplData& impl, int64_t sensorId, float d
         return;
     }
 
-    usdrt::GfMatrix4d sensorXform = core::includes::pose::computeWorldXformNoCache(
-        impl.usdStage, impl.usdrtStage, pxr::SdfPath(sensor.sensorPrimPath));
-    usdrt::GfVec3d sensorPos = sensorXform.ExtractTranslation();
+    float sensorPos[3] = {};
+    float sensorOri[4] = {};
+    if (sensor.xformView)
+        sensor.xformView->getPrimWorldTransform(sensor.sensorPrimPath.c_str(), sensorPos, sensorOri);
 
     double totalImpulseX = 0.0, totalImpulseY = 0.0, totalImpulseZ = 0.0;
     float contactDt = dt;

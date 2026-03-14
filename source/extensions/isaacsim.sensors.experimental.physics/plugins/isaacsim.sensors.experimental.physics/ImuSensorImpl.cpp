@@ -25,7 +25,6 @@
 #include <isaacSensorSchema/isaacImuSensor.h>
 #include <isaacsim/core/experimental/prims/IPrimDataReader.h>
 #include <isaacsim/core/experimental/prims/IPrimDataReaderManager.h>
-#include <isaacsim/core/includes/Pose.h>
 #include <isaacsim/core/includes/UsdUtilities.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
 #include <omni/fabric/FabricUSD.h>
@@ -35,7 +34,7 @@
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 #include <pxr/usd/usdPhysics/scene.h>
-
+#include <usdrt/scenegraph/usd/rt/xformable.h>
 #if defined(_WIN32)
 #    include <usdrt/scenegraph/usd/usd/stage.h>
 #else
@@ -622,9 +621,17 @@ void ImuSensorImpl::_processSensor(ImplData& impl, int64_t sensorId, float dt, d
     if (angularVelocityPointer && angularCount >= 3)
         wW.Set(angularVelocityPointer[0], angularVelocityPointer[1], angularVelocityPointer[2]);
 
-    usdrt::GfMatrix4d rBw = core::includes::pose::computeWorldXformNoCache(
-                                impl.usdStage, impl.usdrtStage, pxr::SdfPath(sensor.sensorPrimPath))
-                                .GetOrthonormalized();
+    float sensorPos[3] = {};
+    float sensorOri[4] = {}; // [qw, qx, qy, qz]
+    if (!sensor.rigidBodyView->getPrimWorldTransform(sensor.sensorPrimPath.c_str(), sensorPos, sensorOri))
+    {
+        sensor.lastProcessedStep = stepIndex;
+        return;
+    }
+    // Build rotation matrix from quaternion (already orthonormal, no scale needed).
+    usdrt::GfMatrix4d rBw(1.0);
+    rBw.SetRotate(usdrt::GfQuatd(static_cast<double>(sensorOri[0]), static_cast<double>(sensorOri[1]),
+                                 static_cast<double>(sensorOri[2]), static_cast<double>(sensorOri[3])));
     usdrt::GfMatrix4d rWb = rBw.GetInverse();
     usdrt::GfMatrix3d rotMatrix = rBw.ExtractRotationMatrix();
     omni::math::linalg::quatd qWb = rotMatrix.ExtractRotation();
