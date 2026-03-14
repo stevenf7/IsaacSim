@@ -2326,6 +2326,311 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                             **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/NVIDIA - Robotiq 3D Content Sharing.docx.pdf>`
 
+        | **Psyonic**
+
+        .. tab-set::
+
+            .. tab-item:: ability_hand_left_large
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Psyonic_ability_hand_left_large_ability_hand_left_large.usd.png
+                  :align: center
+                  :alt: ability_hand_left_large Robot
+                  :width: 80%
+
+                  **USD Path:** Psyonic/ability_hand_left_large/ability_hand_left_large.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 12
+                        * - Number of Links
+                          - 13
+                        * - Number of DOFs
+                          - 11
+
+                    **Physics APIs:**
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_Psyonic Inc.pdf>`
+
+            .. tab-item:: ability_hand_left_small
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Psyonic_ability_hand_left_small_ability_hand_left_small.usd.png
+                  :align: center
+                  :alt: ability_hand_left_small Robot
+                  :width: 80%
+
+                  **USD Path:** Psyonic/ability_hand_left_small/ability_hand_left_small.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 12
+                        * - Number of Links
+                          - 13
+                        * - Number of DOFs
+                          - 11
+
+                    **Physics APIs:**
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_Psyonic Inc.pdf>`
+
+            .. tab-item:: ability_hand_right_large
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Psyonic_ability_hand_right_large_ability_hand_right_large.usd.png
+                  :align: center
+                  :alt: ability_hand_right_large Robot
+                  :width: 80%
+
+                  **USD Path:** Psyonic/ability_hand_right_large/ability_hand_right_large.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 12
+                        * - Number of Links
+                          - 13
+                        * - Number of DOFs
+                          - 11
+
+                    **Physics APIs:**
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_Psyonic Inc.pdf>`
+
+            .. tab-item:: ability_hand_right_small
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Psyonic_ability_hand_right_small_ability_hand_right_small.usd.png
+                  :align: center
+                  :alt: ability_hand_right_small Robot
+                  :width: 80%
+
+                  **USD Path:** Psyonic/ability_hand_right_small/ability_hand_right_small.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 12
+                        * - Number of Links
+                          - 13
+                        * - Number of DOFs
+                          - 11
+
+                    **Physics APIs:**
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_Psyonic Inc.pdf>`
+
+        | **Schunk**
+
+        .. tab-set::
+
+            .. tab-item:: egk_25
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Schunk_egk_25_schunk_egk_25.usd.png
+                  :align: center
+                  :alt: egk_25 Robot
+                  :width: 80%
+
+                  **USD Path:** Schunk/egk_25/schunk_egk_25.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 2
+                        * - Number of Links
+                          - 3
+                        * - Number of DOFs
+                          - 2
+
+                    **Physics APIs:**
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_SCHUNK SE & Co KG.pdf>`
+
+            .. tab-item:: egu_50
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Schunk_egu_50_schunk_egu_50.usd.png
+                  :align: center
+                  :alt: egu_50 Robot
+                  :width: 80%
+
+                  **USD Path:** Schunk/egu_50/schunk_egu_50.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 2
+                        * - Number of Links
+                          - 3
+                        * - Number of DOFs
+                          - 2
+
+                    **Physics APIs:**
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_SCHUNK SE & Co KG.pdf>`
+
+            .. tab-item:: ezu_35
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Schunk_ezu_35_schunk_ezu_35.usd.png
+                  :align: center
+                  :alt: ezu_35 Robot
+                  :width: 80%
+
+                  **USD Path:** Schunk/ezu_35/schunk_ezu_35.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 2
+                        * - Number of Links
+                          - 3
+                        * - Number of DOFs
+                          - 2
+
+                    **Physics APIs:**
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_SCHUNK SE & Co KG.pdf>`
+
+            .. tab-item:: svh-flat-l
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Schunk_svh_flat_l_svh_flat_l_v2.usd.png
+                  :align: center
+                  :alt: svh-flat-l Robot
+                  :width: 80%
+
+                  **USD Path:** Schunk/svh-flat-l/svh-flat-l_v2.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 24
+                        * - Number of Links
+                          - 25
+                        * - Number of DOFs
+                          - 24
+
+                    **Physics APIs:**
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_SCHUNK SE & Co KG.pdf>`
+
+            .. tab-item:: svh-flat-r
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Schunk_svh_flat_r_svh_flat_r_v2.usd.png
+                  :align: center
+                  :alt: svh-flat-r Robot
+                  :width: 80%
+
+                  **USD Path:** Schunk/svh-flat-r/svh-flat-r_v2.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 24
+                        * - Number of Links
+                          - 25
+                        * - Number of DOFs
+                          - 24
+
+                    **Physics APIs:**
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_SCHUNK SE & Co KG.pdf>`
+
         | **RobotStudio**
 
         .. tab-set::
@@ -3045,6 +3350,328 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_FANUC.pdf>`
 
+            .. tab-item:: cr_50f_16b
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Fanuc_cr_50f_16b_cr_50f_16b.usd.png
+                  :align: center
+                  :alt: cr_50f_16b Robot
+                  :width: 80%
+
+                  **USD Path:** Fanuc/cr_50f_16b/cr_50f_16b.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 7
+                        * - Number of Links
+                          - 8
+                        * - Number of DOFs
+                          - 6
+
+                    **Physics APIs:**
+
+                    - PhysX SceneAPI
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_FANUC.pdf>`
+
+            .. tab-item:: crx10ia
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Fanuc_crx10ia_crx10ia.usd.png
+                  :align: center
+                  :alt: crx10ia Robot
+                  :width: 80%
+
+                  **USD Path:** Fanuc/crx10ia/crx10ia.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 7
+                        * - Number of Links
+                          - 8
+                        * - Number of DOFs
+                          - 6
+
+                    **Physics APIs:**
+
+                    - PhysX SceneAPI
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_FANUC.pdf>`
+
+            .. tab-item:: crx5ia
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Fanuc_crx5ia_crx5ia.usd.png
+                  :align: center
+                  :alt: crx5ia Robot
+                  :width: 80%
+
+                  **USD Path:** Fanuc/crx5ia/crx5ia.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 7
+                        * - Number of Links
+                          - 8
+                        * - Number of DOFs
+                          - 6
+
+                    **Physics APIs:**
+
+                    - PhysX SceneAPI
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_FANUC.pdf>`
+
+            .. tab-item:: lrmate200id
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Fanuc_lrmate200id_lrmate200id.usd.png
+                  :align: center
+                  :alt: lrmate200id Robot
+                  :width: 80%
+
+                  **USD Path:** Fanuc/lrmate200id/lrmate200id.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 7
+                        * - Number of Links
+                          - 8
+                        * - Number of DOFs
+                          - 6
+
+                    **Physics APIs:**
+
+                    - PhysX SceneAPI
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_FANUC.pdf>`
+
+            .. tab-item:: m710ic_50
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Fanuc_m710ic_50_m710ic_50.usd.png
+                  :align: center
+                  :alt: m710ic_50 Robot
+                  :width: 80%
+
+                  **USD Path:** Fanuc/m710ic_50/m710ic_50.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 7
+                        * - Number of Links
+                          - 8
+                        * - Number of DOFs
+                          - 6
+
+                    **Physics APIs:**
+
+                    - PhysX SceneAPI
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_FANUC.pdf>`
+
+            .. tab-item:: r2000ic_165f
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Fanuc_r2000ic_165f_r2000ic_165f.usd.png
+                  :align: center
+                  :alt: r2000ic_165f Robot
+                  :width: 80%
+
+                  **USD Path:** Fanuc/r2000ic_165f/r2000ic_165f.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 7
+                        * - Number of Links
+                          - 8
+                        * - Number of DOFs
+                          - 6
+
+                    **Physics APIs:**
+
+                    - PhysX SceneAPI
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_FANUC.pdf>`
+
+            .. tab-item:: sr12ia
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Fanuc_sr12ia_sr12ia.usd.png
+                  :align: center
+                  :alt: sr12ia Robot
+                  :width: 80%
+
+                  **USD Path:** Fanuc/sr12ia/sr12ia.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 7
+                        * - Number of Links
+                          - 8
+                        * - Number of DOFs
+                          - 6
+
+                    **Physics APIs:**
+
+                    - PhysX SceneAPI
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_FANUC.pdf>`
+
+            .. tab-item:: sr3ia
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Fanuc_sr3ia_sr3ia.usd.png
+                  :align: center
+                  :alt: sr3ia Robot
+                  :width: 80%
+
+                  **USD Path:** Fanuc/sr3ia/sr3ia.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 7
+                        * - Number of Links
+                          - 8
+                        * - Number of DOFs
+                          - 6
+
+                    **Physics APIs:**
+
+                    - PhysX SceneAPI
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_FANUC.pdf>`
+
+            .. tab-item:: m900ib280
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Fanuc_m900ib280_m900ib280.usd.png
+                  :align: center
+                  :alt: m900ib280 Robot
+                  :width: 80%
+
+                  **USD Path:** Fanuc/m900ib280/m900ib280.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 7
+                        * - Number of Links
+                          - 8
+                        * - Number of DOFs
+                          - 6
+
+                    **Physics APIs:**
+
+                    - PhysX SceneAPI
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement_FANUC.pdf>`
+
+            .. tab-item:: More
+
+
+                .. note::
+
+                    Additional FANUC robot assets (84+ models) can be found in the Content Browser at ``IsaacSim/Robots/Fanuc``.
+
         | **Denso**
 
         .. tab-set::
@@ -3122,6 +3749,43 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing- Denso.pdf>`
+
+        | **Comau**
+
+        .. tab-set::
+
+            .. tab-item:: n-220-27
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_comau_n_220_27_n_220_27.usd.png
+                  :align: center
+                  :alt: n-220-27 Robot
+                  :width: 80%
+
+                  **USD Path:** comau/n-220-27/n-220-27.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 7
+                        * - Number of Links
+                          - 8
+                        * - Number of DOFs
+                          - 6
+
+                    **Physics APIs:**
+
+                    - PhysX SceneAPI
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
 
         | **OpenArm**
 
@@ -4802,6 +5466,45 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     * This robot is in Isaac Lab
 
                     **License:** `MIT <https://github.com/bitcraze/crazyflie-simulation/blob/main/LICENSE>`__  
+
+        | **NTNU**
+
+        .. tab-set::
+
+            .. tab-item:: ARL-Robot-1
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_NTNU_ARL_Robot_1_arl_robot_1.usd.png
+                  :align: center
+                  :alt: ARL-Robot-1 Robot
+                  :width: 80%
+
+                  **USD Path:** NTNU/ARL-Robot-1/arl_robot_1.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 4
+                        * - Number of Links
+                          - 5
+                        * - Number of DOFs
+                          - 4
+
+                    **Physics APIs:**
+
+                    - PhysX SceneAPI
+
+                    - PhysX ArticulationAPI
+
+                    - PhysX JointAPI
+
+                    **License:** `BSD-3 <https://github.com/ntnu-arl/robot_model>`__
 
     .. tab-item:: Isaac Sim Simple
 
