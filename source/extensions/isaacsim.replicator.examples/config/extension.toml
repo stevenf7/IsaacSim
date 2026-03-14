@@ -1,5 +1,5 @@
 [package]
-version = "1.9.0"
+version = "1.9.1"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Examples"
 description="The extension provides various replicator snippets and examples for Synthetic Data Generation (SDG) workflows."

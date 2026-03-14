@@ -1,4 +1,8 @@
 # Changelog
+## [1.9.1] - 2026-03-10
+### Changed
+- Added stricter test tolerances for SDG deformables example test
+
 ## [1.9.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings
