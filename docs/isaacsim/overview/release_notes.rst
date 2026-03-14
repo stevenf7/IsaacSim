@@ -9,8 +9,6 @@
 
 
 
-
-
 =============
 Release Notes
 =============
@@ -18,1260 +16,980 @@ Release Notes
 6.0.0 Early Developer Release
 =============================
 
-- Updated to Kit SDK 109.0.2
-- Updated to Python 3.12
-- Updated to use RT 2.0 rendering mode by default
-- In the early developer release, Neural Reconstruction (NuRec) scenes which include a matte object will not render correctly. To avoid this, you may disable the matte object by making it invisible, or you can force the older RT 1.0 rendering mode using these command-line settings:
-  
-  ``--/persistent/rtx/modes/rt/enabled=true``
-  ``--/rtx/rendermode=RaytracedLighting``
-
 Kit SDK Version
----------------
+===============
 
-Changed: 107.3.3+isaac.229672.69cbf6ad.gl -> 109.0.2+production.256123.dc36eb6f.gl
+Changed: 109.0.2 -> 110.0.0
+
+Extensions Changelog Summary
+============================
 
 Dependencies
 ------------
 
 Added
 ^^^^^
-- isaacsim.replicator.agent.schema: 0.0.1
-- isaacsim.replicator.incident.core: 0.11.2
-- isaacsim.replicator.incident.ui: 0.6.0
-- isaacsim.replicator.object.core: 0.11.3
-- isaacsim.replicator.object.ui: 0.11.1
-- isaacsim.sensors.rtx.calibration: 0.3.2
-- omni.ai.langchain.agent.chat_iro: 2.2.5
-- omni.ai.langchain.core: 2.2.0
-- omni.ai.langchain.widget.core: 3.0.0
-- omni.anim.behavior.asset: 109.0.6
-- omni.anim.behavior.bundle: 109.0.6
-- omni.anim.behavior.core: 109.0.7
-- omni.anim.behavior.ui: 109.0.6
-- omni.behavior.composer: 0.5.3
-- omni.behavior.composer.schema: 0.4.0
-- omni.behavior.composer.ui: 0.5.2
-- omni.kit.livestream.app: 9.0.0
-- omni.mesh_tools.libs: 109.0.8
-- omni.replicator.nv: 1.0.0
-- omni.scene.optimizer.analysis: 109.0.2
-- omni.scene.optimizer.validators: 109.0.2
+- isaacsim.anim.robot.core: 1.2.2
+- isaacsim.anim.robot.schema: 0.1.0
+- omni.behavior.scripting.core: 110.0.4
+- omni.behavior.tree.core: 110.0.4
+- omni.behavior.tree.schema: 110.0.1
+- omni.kit.property.physics: 110.0.7
+- omni.metropolis.pipeline: 0.0.5
+- omni.metropolis.schema: 0.0.1
+- omni.physics.isaacsimready: 110.0.7
+- omni.physics.physx.ui: 110.0.7
+- omni.physics.ui: 110.0.7
+- omni.simready.configuration: 1.0.1
+- omni.simready.content.browser: 0.2.4
+- omni.simready.content.search: 1.0.5
+- omni.simready.paths: 0.1.0
 
 Removed
 ^^^^^^^
-- isaacsim.replicator.incident: 0.1.28
-- isaacsim.replicator.object: 0.4.13
-- isaacsim.xr.input_devices: 1.0.2
-- isaacsim.xr.openxr: 1.0.0
-- omni.anim.people: 0.7.9
-- omni.cuopt.examples: 1.3.0
-- omni.kit.streamsdk.plugins: 7.6.3
-- omni.kit.window.modifier.titlebar: 105.2.16
-- omni.kit.xr.advertise: 107.3.109
-- omni.kit.xr.profile.ar: 107.3.109
-- omni.kit.xr.profile.common: 107.3.109
-- omni.kit.xr.profile.tabletar: 107.3.109
-- omni.kit.xr.profile.vr: 107.3.109
-- omni.kit.xr.scene_view.core: 107.3.109
-- omni.kit.xr.scene_view.utils: 107.3.109
-- omni.services.livestream.nvcf: 7.2.0
+- isaacsim.anim.robot: 1.0.3
+- omni.anim.behavior.asset: 109.0.6
+- omni.anim.behavior.bundle: 109.0.6
+- omni.anim.behavior.ui: 109.0.6
+- omni.behavior.composer: 0.5.4
+- omni.behavior.composer.schema: 0.4.0
+- omni.behavior.composer.ui: 0.5.2
+- omni.graph.io: 1.30.1
+- omni.kit.profiler.window: 2.3.7
+- omni.kit.property.physx: 109.0.10
+- omni.kit.scripting: 109.0.5
+- omni.kvdb: 109.0.10
+- omni.localcache: 109.0.10
+- omni.physx.telemetry: 109.0.10
+- omni.warp: 1.10.1
 
 Changed
 ^^^^^^^
-- isaacsim.action_and_event_data_generation.setup: 0.0.9 -> 0.6.0
-- isaacsim.anim.robot: 0.0.15 -> 1.0.3
-- isaacsim.exp.full: 5.1.0 -> 6.0.0
-- isaacsim.replicator.agent.core: 0.7.28 -> 1.0.11
-- isaacsim.replicator.agent.ui: 0.7.11 -> 1.0.7
-- isaacsim.replicator.caption.core: 0.0.32 -> 0.6.6
-- isaacsim.sensors.rtx.placement: 0.6.14 -> 0.16.4
-- isaacsim.util.debug_draw: 3.1.0 -> 3.2.0
-- omni.anim.asset: 107.3.0 -> 109.0.6
-- omni.anim.behavior.schema: 107.3.0 -> 109.0.6
-- omni.anim.curve.bundle: 1.2.3 -> 1.3.0
-- omni.anim.curve.core: 1.3.1 -> 1.5.3
-- omni.anim.curve.ui: 1.4.1 -> 1.6.1
-- omni.anim.curve_editor: 106.4.1 -> 109.0.0
-- omni.anim.graph.bundle: 107.3.3 -> 109.0.6
-- omni.anim.graph.core: 107.3.4 -> 109.0.6
-- omni.anim.graph.schema: 107.3.3 -> 109.0.6
-- omni.anim.graph.ui: 107.3.3 -> 109.0.6
-- omni.anim.navigation.bundle: 107.3.3 -> 109.0.6
-- omni.anim.navigation.core: 107.3.8 -> 109.0.6
-- omni.anim.navigation.schema: 107.3.3 -> 109.0.6
-- omni.anim.navigation.ui: 107.3.6 -> 109.0.6
-- omni.anim.retarget.bundle: 107.3.3 -> 109.0.6
-- omni.anim.retarget.core: 107.3.3 -> 109.0.6
-- omni.anim.retarget.preview: 107.3.3 -> 109.0.6
-- omni.anim.retarget.ui: 107.3.3 -> 109.0.6
-- omni.anim.shared.core: 107.0.1 -> 109.0.2
-- omni.anim.skelJoint: 107.3.3 -> 109.0.6
-- omni.anim.timeline: 107.0.0 -> 109.0.1
-- omni.anim.widget.timeline: 0.1.14 -> 0.3.0
-- omni.anim.window.timeline: 106.5.0 -> 109.0.2
-- omni.asset_validator.core: 1.1.6 -> 1.8.0
-- omni.asset_validator.ui: 1.1.6 -> 1.8.0
-- omni.convexdecomposition: 107.3.26 -> 109.0.10
-- omni.cuopt.service: 1.3.0 -> 1.3.1
-- omni.cuopt.visualization: 1.3.0 -> 1.3.2
-- omni.curve.manipulator: 107.0.4 -> 108.2.0
-- omni.flowusd: 107.1.8 -> 109.0.2
-- omni.genproc.core: 107.0.3 -> 109.0.0
-- omni.graph.action: 1.130.0 -> 2.0.0
-- omni.graph.action_nodes: 1.50.4 -> 2.0.2
-- omni.graph.action_nodes_core: 1.2.0 -> 2.0.1
-- omni.graph.bundle.action: 2.30.0 -> 3.0.1
-- omni.graph.examples.cpp: 1.50.2 -> 2.0.1
-- omni.graph.nodes: 1.170.10 -> 2.1.5
-- omni.graph.nodes_core: 1.1.0 -> 2.0.3
-- omni.graph.scriptnode: 1.50.0 -> 2.1.2
-- omni.graph.telemetry: 2.40.2 -> 3.1.3
-- omni.graph.ui: 1.101.6 -> 2.1.5
-- omni.graph.ui_nodes: 1.50.5 -> 2.0.3
-- omni.graph.visualization.nodes: 2.1.3 -> 2.1.4
-- omni.graph.window.action: 1.50.2 -> 2.2.1
-- omni.graph.window.core: 2.0.0 -> 3.1.0
-- omni.graph.window.generic: 1.50.2 -> 2.2.1
-- omni.importer.onshape: 1.0.1 -> 2.0.1
-- omni.kit.asset_converter: 5.0.17 -> 5.0.22
-- omni.kit.browser.asset: 1.3.12 -> 1.3.15
-- omni.kit.browser.core: 2.3.13 -> 2.3.17
-- omni.kit.browser.folder.core: 1.10.9 -> 1.12.1
-- omni.kit.browser.material: 1.6.2 -> 1.6.5
-- omni.kit.converter.cad: 205.0.0 -> ~207.0
-- omni.kit.converter.common: 507.1.2 -> 508.0.1
-- omni.kit.converter.dgn: 509.1.0 -> 509.3.0
-- omni.kit.converter.dgn_core: 510.1.0 -> 511.2.0
-- omni.kit.converter.hoops: 509.1.0 -> 509.2.4
-- omni.kit.converter.hoops_core: 509.1.0 -> 510.1.3
-- omni.kit.converter.jt: 508.1.0 -> 508.2.5
-- omni.kit.converter.jt_core: 508.1.0 -> 508.2.7
-- omni.kit.core.collection: 0.2.3 -> 0.2.4
-- omni.kit.data2ui.core: 1.1.2 -> 1.1.4
-- omni.kit.data2ui.usd: 1.1.2 -> 1.1.4
-- omni.kit.environment.core: 1.3.24 -> 1.4.1
-- omni.kit.gfn: 107.0.4 -> 108.0.0
-- omni.kit.graph.delegate.default: 1.2.3 -> 1.2.5
-- omni.kit.graph.delegate.modern: 1.10.9 -> 1.10.11
-- omni.kit.graph.editor.core: 1.5.3 -> 1.5.4
-- omni.kit.graph.usd.commands: 1.3.1 -> 1.3.2
-- omni.kit.graph.widget.variables: 2.1.0 -> 2.1.1
-- omni.kit.livestream.core: 7.5.0 -> 9.0.0
-- omni.kit.livestream.webrtc: 7.0.0 -> 9.0.2
-- omni.kit.mesh.raycast: 107.0.1 -> 108.0.0
-- omni.kit.playlist.core: 1.3.5 -> 1.3.7
-- omni.kit.pointclouds: 1.5.14 -> 1.6.5
-- omni.kit.preferences.animation: 1.2.0 -> 1.4.0
-- omni.kit.prim.icon: 1.0.15 -> 1.1.0
-- omni.kit.profiler.window: 2.3.5 -> 2.3.7
-- omni.kit.property.collection: 0.2.3 -> 0.2.4
-- omni.kit.property.environment: 1.2.2 -> 1.2.3
-- omni.kit.property.physx: 107.3.26 -> 109.0.10
-- omni.kit.scripting: 107.3.2 -> 109.0.4
-- omni.kit.sequencer.core: 108.0.2 -> 108.1.1
-- omni.kit.sequencer.usd: 108.0.2 -> 108.1.1
-- omni.kit.stage_column.payload: 2.0.3 -> 2.0.5
-- omni.kit.stage_column.variant: 1.0.17 -> 1.0.20
-- omni.kit.stagerecorder.bundle: 105.0.2 -> 109.0.0
-- omni.kit.stagerecorder.core: 107.0.3 -> 109.0.0
-- omni.kit.stagerecorder.ui: 107.0.1 -> 109.0.0
-- omni.kit.thumbnails.mdl: 1.0.27 -> 1.0.28
-- omni.kit.timeline.minibar: 1.2.11 -> 1.2.13
-- omni.kit.tool.asset_importer: 4.3.2 -> 5.1.3
-- omni.kit.tool.measure: 107.0.2 -> 200.0.4
-- omni.kit.tool.remove_unused.controller: 0.1.4 -> 0.2.0
-- omni.kit.tool.remove_unused.core: 0.1.3 -> 0.1.4
-- omni.kit.variant.editor: 107.5.3 -> 107.5.6
-- omni.kit.variant.presenter: 107.0.0 -> 107.1.1
-- omni.kit.viewport.menubar.lighting: 107.3.1 -> 107.3.2
-- omni.kit.waypoint.core: 1.4.62 -> 1.6.3
-- omni.kit.waypoint.playlist: 1.0.9 -> 1.1.1
-- omni.kit.widget.collection: 0.3.1 -> 0.3.3
-- omni.kit.widget.material_preview: 1.0.16 -> 1.1.2
-- omni.kit.widget.schema_api: 1.0.3 -> 1.0.4
-- omni.kit.widget.sliderbar: 1.0.13 -> 1.1.0
-- omni.kit.widget.timeline: 107.0.1 -> 107.0.2
-- omni.kit.widget.zoombar: 1.0.6 -> 1.0.7
-- omni.kit.widgets.custom: 1.0.13 -> 1.1.2
-- omni.kit.window.collection: 0.3.1 -> 0.3.4
-- omni.kit.window.material: 1.7.2 -> 1.8.0
-- omni.kit.window.material_graph: 1.9.1 -> 1.9.5
-- omni.kit.window.movie_capture: 2.5.6 -> 2.7.3
-- omni.kit.window.section: 107.0.3 -> 107.1.2
-- omni.kit.window.usddebug: 1.1.2 -> 1.1.4
-- omni.kit.xr.core: 107.3.109 -> 109.0.0
-- omni.kit.xr.system.openxr: 107.3.109 -> 109.0.0
-- omni.kit.xr.system.simulatedxr: 107.3.109 -> 109.0.0
-- omni.kit.xr.ui.stage: 107.3.109 -> 109.0.0
-- omni.kit.xr.ui.window.profile: 107.3.109 -> 109.0.0
-- omni.kit.xr.ui.window.viewport: 107.3.109 -> 109.0.0
-- omni.kvdb: 107.3.26 -> 109.0.10
-- omni.localcache: 107.3.26 -> 109.0.10
-- omni.metropolis.utils: 0.1.20 -> 0.14.7
-- omni.no_code_ui.bundle: 1.1.2 -> 1.1.4
-- omni.physics: 107.3.26 -> 109.0.10
-- omni.physics.physx: 107.3.26 -> 109.0.10
-- omni.physics.stageupdate: 107.3.26 -> 109.0.10
-- omni.physics.tensors: 107.3.26 -> 109.0.10
-- omni.physx: 107.3.26 -> 109.0.10
-- omni.physx.asset_validator: 107.3.26 -> 109.0.10
-- omni.physx.bundle: 107.3.26 -> 109.0.10
-- omni.physx.camera: 107.3.26 -> 109.0.10
-- omni.physx.cct: 107.3.26 -> 109.0.10
-- omni.physx.commands: 107.3.26 -> 109.0.10
-- omni.physx.cooking: 107.3.26 -> 109.0.10
-- omni.physx.demos: 107.3.26 -> 109.0.10
-- omni.physx.fabric: 107.3.26 -> 109.0.10
-- omni.physx.foundation: 107.3.26 -> 109.0.10
-- omni.physx.graph: 107.3.26 -> 109.0.10
-- omni.physx.pvd: 107.3.26 -> 109.0.10
-- omni.physx.supportui: 107.3.26 -> 109.0.10
-- omni.physx.telemetry: 107.3.26 -> 109.0.10
-- omni.physx.tensors: 107.3.26 -> 109.0.10
-- omni.physx.tests: 107.3.26 -> 109.0.10
-- omni.physx.tests.visual: 107.3.26 -> 109.0.10
-- omni.physx.ui: 107.3.26 -> 109.0.10
-- omni.physx.vehicle: 107.3.26 -> 109.0.10
-- omni.ramp: 107.0.1 -> 107.0.2
-- omni.replicator.core: 1.12.27 -> 1.12.34
-- omni.scene.optimizer.bundle: 107.3.12 -> 109.0.2
-- omni.scene.optimizer.core: 107.3.12 -> 109.0.2
-- omni.scene.optimizer.ui: 107.3.12 -> 109.0.2
-- omni.scene.visualization.core: 107.0.2 -> 109.0.1
-- omni.services.client: 0.5.3 -> 0.5.4
-- omni.services.convert.asset: 508.0.2 -> 509.0.0
-- omni.services.convert.cad: 507.0.2 -> 507.1.5
-- omni.services.core: 1.9.0 -> 1.9.3
-- omni.services.facilities.base: 1.0.4 -> 1.0.5
-- omni.services.facilities.monitoring.metrics: 0.3.0 -> 0.3.1
-- omni.services.pip_archive: 0.16.0 -> 0.18.3
-- omni.services.starfleet.auth: 0.1.5 -> 0.1.6
-- omni.services.transport.client.base: 1.2.4 -> 1.2.5
-- omni.services.transport.client.http_async: 1.4.0 -> 1.4.2
-- omni.services.transport.server.base: 1.1.1 -> 1.1.2
-- omni.services.transport.server.http: 1.3.1 -> 1.3.2
-- omni.services.transport.server.zeroconf: 1.0.9 -> 1.0.10
-- omni.services.usd: 1.1.0 -> 1.1.1
-- omni.simready.explorer: 1.1.3 -> 1.1.4
-- omni.tools.array: 107.0.0 -> 108.0.0
-- omni.usd.fileformat.e57: 1.4.3 -> 1.7.0
-- omni.usd.fileformat.pts: 107.1.1 -> 108.0.0
-- omni.usd.metrics.assembler: 107.3.1 -> 109.0.0
-- omni.usd.metrics.assembler.physics: 107.3.26 -> 109.0.10
-- omni.usd.metrics.assembler.ui: 107.3.1 -> 109.0.0
-- omni.usd.schema.flow: 107.1.1 -> 109.0.1
-- omni.usd.schema.metrics.assembler: 107.3.1 -> 109.0.0
-- omni.usd.schema.physx: 107.3.26 -> 109.0.10
-- omni.usd.schema.sequence: 3.0.1 -> 3.1.2
-- omni.usdex.libs: 1.2.2 -> 2.1.2
-- omni.usdphysics: 107.3.26 -> 109.0.10
-- omni.usdphysics.ui: 107.3.26 -> 109.0.10
-- omni.vdb_timesample_editor: 0.2.0 -> 0.2.3
-- omni.warp: 1.8.2 -> 1.10.0
-- omni.warp.core: 1.8.2 -> 1.10.0
+- isaacsim.replicator.agent.core: 1.0.12 -> 1.2.6
+- isaacsim.replicator.agent.schema: 0.0.1 -> 0.1.0
+- isaacsim.replicator.agent.ui: 1.0.8 -> 1.0.20
+- isaacsim.replicator.caption.core: 0.6.6 -> 0.7.5
+- isaacsim.replicator.incident.core: 0.11.2 -> 0.11.7
+- isaacsim.replicator.incident.ui: 0.6.0 -> 0.6.3
+- isaacsim.replicator.object.core: 0.11.3 -> 0.11.8
+- isaacsim.replicator.object.ui: 0.11.1 -> 0.11.3
+- isaacsim.sensors.rtx.calibration: 0.3.2 -> 0.3.9
+- isaacsim.sensors.rtx.placement: 0.16.4 -> 0.16.9
+- isaacsim.util.debug_draw: 3.2.0 -> 3.2.1
+- omni.ai.langchain.agent.chat_iro: 2.2.5 -> 2.2.8
+- omni.ai.langchain.core: 2.2.0 -> 2.2.5
+- omni.anim.asset: 109.0.6 -> 110.0.0
+- omni.anim.behavior.core: 109.0.7 -> 110.0.8
+- omni.anim.behavior.schema: 109.0.6 -> 110.0.1
+- omni.anim.curve.bundle: 1.3.0 -> 1.4.0
+- omni.anim.curve.core: 1.5.3 -> 1.6.0
+- omni.anim.curve.ui: 1.6.1 -> 1.7.0
+- omni.anim.curve_editor: 109.0.0 -> 110.0.0
+- omni.anim.graph.bundle: 109.0.6 -> 110.0.0
+- omni.anim.graph.core: 109.0.6 -> 110.0.3
+- omni.anim.graph.schema: 109.0.6 -> 110.0.0
+- omni.anim.graph.ui: 109.0.6 -> 110.0.1
+- omni.anim.navigation.bundle: 109.0.6 -> 110.0.0
+- omni.anim.navigation.core: 109.0.6 -> 110.0.3
+- omni.anim.navigation.schema: 109.0.6 -> 110.0.0
+- omni.anim.navigation.ui: 109.0.6 -> 110.0.2
+- omni.anim.retarget.bundle: 109.0.6 -> 110.0.0
+- omni.anim.retarget.core: 109.0.6 -> 110.0.3
+- omni.anim.retarget.preview: 109.0.6 -> 110.0.5
+- omni.anim.retarget.ui: 109.0.6 -> 110.0.1
+- omni.anim.shared.core: 109.0.2 -> 110.0.0
+- omni.anim.skelJoint: 109.0.6 -> 110.0.3
+- omni.anim.timeline: 109.0.1 -> 110.0.0
+- omni.anim.widget.timeline: 0.3.0 -> 0.4.0
+- omni.anim.window.timeline: 109.0.2 -> 110.0.0
+- omni.asset_validator.core: 1.9.2 -> 1.11.2
+- omni.asset_validator.ui: 1.9.2 -> 1.11.2
+- omni.convexdecomposition: 109.0.10 -> 110.0.7
+- omni.cuopt.examples: 1.3.2 -> 1.4.1
+- omni.cuopt.service: 1.3.1 -> 1.3.2
+- omni.cuopt.visualization: 1.3.2 -> 1.4.0
+- omni.curve.creator: 107.0.1 -> 110.0.0
+- omni.curve.manipulator: 108.2.0 -> 110.0.0
+- omni.flowusd: 109.0.2 -> 110.0.0
+- omni.genproc.core: 109.0.0 -> 110.0.0
+- omni.graph.action: 2.0.0 -> 2.10.2
+- omni.graph.action_nodes: 2.0.3 -> 2.10.2
+- omni.graph.action_nodes_core: 2.0.1 -> 2.10.2
+- omni.graph.bundle.action: 3.0.1 -> 3.10.2
+- omni.graph.examples.cpp: 2.0.1 -> 2.10.2
+- omni.graph.nodes: 2.1.6 -> 2.10.2
+- omni.graph.nodes_core: 2.0.3 -> 2.10.2
+- omni.graph.scriptnode: 2.1.2 -> 2.10.2
+- omni.graph.telemetry: 3.1.3 -> 3.10.2
+- omni.graph.ui: 2.1.6 -> 2.10.2
+- omni.graph.ui_nodes: 2.0.4 -> 2.10.5
+- omni.graph.window.action: 2.2.1 -> 2.10.2
+- omni.graph.window.core: 3.1.2 -> 3.10.2
+- omni.graph.window.generic: 2.2.1 -> 2.10.2
+- omni.kit.asset_converter: 5.0.25 -> 5.1.1
+- omni.kit.converter.cad: ~207.0 -> ~209.0
+- omni.kit.converter.common: 508.0.1 -> 510.0.0
+- omni.kit.converter.dgn: 509.3.1 -> 510.0.0
+- omni.kit.converter.dgn_core: 511.3.1 -> 512.0.0
+- omni.kit.converter.hoops: 509.2.4 -> 510.0.0
+- omni.kit.converter.hoops_core: 510.1.3 -> 511.0.0
+- omni.kit.converter.jt: 508.2.6 -> 509.0.0
+- omni.kit.converter.jt_core: 508.2.8 -> 509.0.0
+- omni.kit.environment.core: 1.4.1 -> 1.4.2
+- omni.kit.livestream.app: 9.0.0 -> 10.1.0
+- omni.kit.livestream.core: 9.0.0 -> 10.0.0
+- omni.kit.livestream.webrtc: 9.0.2 -> 10.1.2
+- omni.kit.mesh.raycast: 108.0.0 -> 110.0.0
+- omni.kit.pointclouds: 1.6.6 -> 1.6.7
+- omni.kit.preferences.animation: 1.4.0 -> 1.5.0
+- omni.kit.profiler.tracy: 1.2.0 -> 1.2.1
+- omni.kit.sequencer.core: 108.1.1 -> 110.0.0
+- omni.kit.sequencer.usd: 108.1.1 -> 110.0.0
+- omni.kit.stagerecorder.bundle: 109.0.0 -> 110.0.0
+- omni.kit.stagerecorder.core: 109.0.0 -> 110.0.2
+- omni.kit.stagerecorder.ui: 109.0.0 -> 110.0.0
+- omni.kit.timeline.minibar: 1.2.13 -> 1.2.14
+- omni.kit.tool.measure: 200.0.4 -> 200.0.7
+- omni.kit.variant.editor: 107.5.6 -> 107.5.8
+- omni.kit.variant.presenter: 107.1.2 -> 107.1.3
+- omni.kit.waypoint.core: 1.6.3 -> 1.6.4
+- omni.kit.window.material_graph: 1.9.5 -> 1.9.6
+- omni.kit.window.section: 107.1.3 -> 107.1.4
+- omni.mesh_tools.libs: 109.0.8 -> 110.0.1
+- omni.metropolis.utils: 0.14.7 -> 1.0.5
+- omni.physics: 109.0.10 -> 110.0.7
+- omni.physics.physx: 109.0.10 -> 110.0.7
+- omni.physics.stageupdate: 109.0.10 -> 110.0.7
+- omni.physics.tensors: 109.0.10 -> 110.0.7
+- omni.physx: 109.0.10 -> 110.0.7
+- omni.physx.asset_validator: 109.0.10 -> 110.0.7
+- omni.physx.bundle: 109.0.10 -> 110.0.7
+- omni.physx.camera: 109.0.10 -> 110.0.7
+- omni.physx.cct: 109.0.10 -> 110.0.7
+- omni.physx.commands: 109.0.10 -> 110.0.7
+- omni.physx.cooking: 109.0.10 -> 110.0.7
+- omni.physx.demos: 109.0.10 -> 110.0.7
+- omni.physx.fabric: 109.0.10 -> 110.0.7
+- omni.physx.foundation: 109.0.10 -> 110.0.7
+- omni.physx.graph: 109.0.10 -> 110.0.7
+- omni.physx.pvd: 109.0.10 -> 110.0.7
+- omni.physx.supportui: 109.0.10 -> 110.0.7
+- omni.physx.tensors: 109.0.10 -> 110.0.7
+- omni.physx.tests: 109.0.10 -> 110.0.7
+- omni.physx.tests.visual: 109.0.10 -> 110.0.7
+- omni.physx.ui: 109.0.10 -> 110.0.7
+- omni.physx.vehicle: 109.0.10 -> 110.0.7
+- omni.ramp: 107.0.2 -> 110.0.0
+- omni.replicator.core: 1.12.34 -> 1.13.4
+- omni.replicator.nv: 1.0.0 -> 1.1.0
+- omni.replicator.replicator_yaml: 2.0.11 -> 2.0.12
+- omni.scene.optimizer.analysis: 109.0.2 -> 110.0.4
+- omni.scene.optimizer.bundle: 109.0.2 -> 110.0.4
+- omni.scene.optimizer.core: 109.0.2 -> 110.0.4
+- omni.scene.optimizer.ui: 109.0.2 -> 110.0.4
+- omni.scene.optimizer.validators: 109.0.2 -> 110.0.4
+- omni.scene.visualization.core: 109.0.1 -> 110.0.0
+- omni.services.convert.asset: 509.0.0 -> 510.0.0
+- omni.services.convert.cad: 507.1.5 -> 508.0.0
+- omni.services.pip_archive: 0.18.3 -> 0.18.6
+- omni.usd.metrics.assembler: 109.0.0 -> 110.0.0
+- omni.usd.metrics.assembler.physics: 109.0.10 -> 110.0.7
+- omni.usd.metrics.assembler.ui: 109.0.0 -> 110.0.0
+- omni.usd.schema.flow: 109.0.1 -> 110.0.0
+- omni.usd.schema.metrics.assembler: 109.0.0 -> 110.0.0
+- omni.usd.schema.physx: 109.0.10 -> 110.0.7
+- omni.usd.schema.sequence: 3.1.2 -> 3.2.0
+- omni.usdex.libs: 2.1.2 -> 2.2.1
+- omni.usdphysics: 109.0.10 -> 110.0.7
+- omni.usdphysics.ui: 109.0.10 -> 110.0.7
+- omni.warp.core: 1.10.1 -> 1.12.0
 
-Extensions
-==========
+Extensions Changelog Summary
+============================
 
-- **isaacsim.app.about**
+Please refer to the individual extension changelogs for more detailed information.
 
-    - Changed
-
-      - Update description
+- Common updates across many extensions include refreshed `Overview.md`, `python_api.md`, `SETTINGS.md`, and docstrings.
+- Several extensions were modernized for `Events 2.0`, deprecated callback/API replacements, and current Warp/core API usage.
+- Shared UI/menu cleanup also landed across multiple extensions, including menu action and content browser integration updates.
 
 - **isaacsim.app.setup**
 
     - Changed
 
-      - Add wait for viewport to be ready before printing app ready status
-      - Change startup behavior so that app ready status is delayed until after the app has started
-      - Remove unused imports
-      - Remove unused omni.pip.cloud from test dependencies
-      - Remove extra omni.rtx.settings.core from test dependencies
-      - Make omni.isaac.ml_archive an explicit test dependency
-
-- **isaacsim.asset.browser**
-
-    - Changed
-
-      - Update assets path
-      - Migrate extension implementation to core experimental API
-      - Remove omni.pip.cloud from extension.toml
-      - Remove requests dependency, use urllib instead
+      - Add logging to await_viewport to help debug viewport handle not being available
+      - Add missing dependency for Robot Hierarchy window
+      - Added dock info for Robot Hierarchy window
+      - Refactor enable_ros_extensions to properly wait for viewport to be ready before enabling ROS2 extensions
+      - Restructured extension into modular components
 
     - Fixed
 
-      - Update unit tests for kit 109.0
-      - Add missing documentation for the asset browser extension
-      - Replaced deprecated `onclick_fn` with `onclick_action` in "Isaac Sim Assets" menu item to eliminate deprecation warnings
-      - Registered proper toggle action for the asset browser
-      - Fix issue where cache json file could not be created if the cache directory did not exist
+      - Rename "Robot Hierarchy" window to "Robot Inspector" in default and sdg layouts
 
 - **isaacsim.asset.exporter.urdf**
 
     - Changed
 
-      - Update lxml==6.0.2
-      - Migrate extension implementation to core experimental API
-      - Make omni.isaac.ml_archive an explicit test dependency
-
-- **isaacsim.asset.gen.conveyor**
-
-    - Changed
-
-      - Update to Kit 109 and Python 3.12
-
-- **isaacsim.asset.gen.conveyor.ui**
-
-    - Changed
-
-      - Migrate to Events 2.0.
-
-- **isaacsim.asset.gen.omap**
-
-    - Changed
-
-      - Update to use new debug draw plugin interface
-      - Improve docstrings and cleanup codebase
-      - Update to Kit 109 and Python 3.12
-      - Migrate extension implementation to core experimental API
-      - Add omni.physics.stageupdate to extension.toml
+      - Add explicit omni.physics.physx dependency
 
 - **isaacsim.asset.gen.omap.ui**
 
+    - Added
+
+      - Save YAML button in the visualization window to save the ROS occupancy map parameters file directly, alongside the existing Save Image button
+      - Image File Name field in the visualization window to set the image filename used in the YAML; defaults to the stage name
+      - Update YAML button to rebuild the YAML content with the new filename without regenerating the image
+      - Save Image dialog now pre-fills the filename from the Image File Name field
+
     - Changed
 
-      - Migrate to Events 2.0.
-      - Refactor codebase and improve docstrings
-      - Migrate extension implementation to core experimental API
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Added dock info for Robot Hierarchy window
 
 - **isaacsim.asset.importer.heightmap**
 
     - Changed
 
-      - Renamed Block World Generator to Heightmap Importer
-      - Refactored to separate importer logic from extension UI
-      - Standardized terminology from "block world" to "heightmap" throughout codebase
-      - Updated all documentation, comments, and test names to use heightmap terminology
-      - Migrate extension implementation to core experimental API
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Add isaacsim.core.experimental.objects dependency, remove omni.physics.physx dependency for groundplane creation
 
 - **isaacsim.asset.importer.mjcf**
 
     - Changed
 
-      - Update description
-      - Update to Kit 109 and Python 3.12
+      - Added scene import option for the MJCF importer
+      - MJCF converter version bump to 0.1.0a8
+      - Added mjc / newton to physx attribute conversion for multi-physics engine asset support
+      - Changed dep from pip prebundle to isaacsim.pip.newton
+      - Switched to lazy import for mjcf-usd-converter to fix docs build issue
+      - USD exchange backend
+      - New import format
+      - New UI design and interface
 
 - **isaacsim.asset.importer.urdf**
 
+    - Removed
+
+      - Removed UI elements from the URDF importer, moved to isaacsim.asset.importer.urdf.ui extension
+
     - Changed
 
-      - Update description
-      - Migrate to Events 2.0.
-      - Add missing docstrings
-      - Restore deprecated behavior of merging bodies with inertia; issue warning
-      - Update to Kit 109 and Python 3.12
+      - update urdf-usd-converter to v0.1.0
+      - urdf converter version bump to v0.1.0rc2
+      - Added mjc / newton to physx attribute conversion for multi-physics engine asset support
+      - USD exchange based backend
+      - Unified UI
+      - Asset structure 3
 
     - Fixed
 
-      - Fixed issue that caused crash of Isaac sim on failed mesh conversion
+      - Updated configuring of mimic joints to be processed after all joints are created to avoid issues with lexicographical order of siblings
 
 - **isaacsim.asset.validation**
 
     - Changed
 
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
-
-- **isaacsim.benchmark.examples**
-
-    - Changed
-
-      - Update description
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Updated physics_rules to use new omni.physics.core API (`IPhysicsSimulation.initialize`/`close` replaces removed `attach_stage`/`detach_stage`)
 
 - **isaacsim.benchmark.services**
 
     - Added
 
-      - Add error handling if set_phase() is called without a matching store_measurements()
+      - Public API properties for frametime recorders: `sample_count` and `samples` for direct recorder access
+      - Decorator-based plug-in system for recorders using `@MeasurementDataRecorderRegistry.register()`
+      - `DEFAULT_RECORDERS` constant exported for customization in benchmark scripts
+      - Process-specific CPU tracking
+      - Main thread CPU tracking via single-core usage metrics (Mean/Min/Max)
+      - Support for selecting recorders via `recorders` list passed into `BaseIsaacBenchmark` instance
+      - Added "Num App Updates" metric to report the number of app update events per phase
 
     - Removed
 
-      - Removed stop_recording_runtime arg to benchmark.store_measurements()
+      - Legacy collector classes (`IsaacUpdateFrametimeCollector`)
+      - Wrapper layer between collectors and recorders
+      - Unused profiling, settings, and execution modules
+      - Removed support for passing in `gpu_frametime=True` into `BaseIsaacBenchmark` instance
 
     - Changed
 
-      - Converted log statements to use logger for independent visibility control
-      - Update description
-      - Migrate to Events 2.0.
-      - Get the CUDA device names using Warp API
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
+      - Merged `BaseIsaacBenchmark` and `BaseIsaacBenchmarkAsync` into unified core with shared logic
+      - Refactored data architecture: eliminated collector layer, one recorder per metric
+      - Report formatting: metrics ordered by category (Performance, Custom, Memory, CPU table, Frametime table)
+      - Recorder lifecycle: stop/collect from recorders that were started in a given phase
 
     - Fixed
 
-      - Write privacy.toml file to temporary directory
+      - Fixed validation tooling to correctly build the render product map
 
-- **isaacsim.code_editor.jupyter**
+- **isaacsim.code_editor.vscode**
 
-    - Changed
+    - Fixed
 
-      - Migrate to Events 2.0.
+      - Hardened subprocess call to avoid shell=True with string concatenation
 
 - **isaacsim.core.api**
 
-    - Changed
-
-      - Migrate to Events 2.0.
-      - Add missing docstrings
-      - Update to Kit 109 and Python 3.12
-      - Remove unused omni.pip.cloud from dependencies
-      - Replace import statements with the deprecation function when importing PyTorch
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Remove extra carb settings from tests
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
-
-- **isaacsim.core.cloner**
-
-    - Changed
-
-      - Fix clang tidy issues in cpp code
-      - Add missing docstrings
-      - Update to Kit 109 and Python 3.12
-      - Convert input arguments to NumPy without explicitly import PyTorch
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
-
-- **isaacsim.core.deprecation_manager**
-
-    - Added
-
-      - Expose function to import a deprecated/removed module safely
-
-    - Changed
-
-      - Removed code to enable the `omni.isaac.ml_archive` extension when importing PyTorch via `import_module`
-      - Enable the `omni.isaac.ml_archive` extension when importing PyTorch via `import_module`
-
-- **isaacsim.core.experimental.materials**
-
     - Removed
 
-      - Remove checking for the deformable beta feature, as it is now active by default
-
-    - Changed
-
-      - Define ranges for visual material inputs and clip them accordingly
-      - Standardize test args in extension.toml
-
-- **isaacsim.core.experimental.objects**
-
-    - Changed
-
-      - Define the `reset_xform_op_properties` parameter to True by default for all objects
-
-- **isaacsim.core.experimental.prims**
-
-    - Removed
-
-      - Remove checking for the deformable beta feature, as it is now active by default
-
-    - Changed
-
-      - Migrate to Events 2.0
-      - Update check condition on DOF to ensure it checks if it's a valid DOF before checking limits
-      - Update implementation to Warp 1.10.0
-      - Update array output in docstrings example due to changes in the NumPy representation
-      - Make isaacsim.storage.native an explicit test dependency
-      - Replace the use of deprecated core utils functions within implementations
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
+      - Remove deprecated PhysX residual reporting APIs (`enable_residual_reporting`, `get_solver_velocity_residual`, `get_solver_position_residual`) from `PhysicsContext`.
 
     - Fixed
 
-      - Fix physics setup when a prim instance is created while the simulation is running
+      - Fix issues with incorrect API usage in ArticulationSubset
+
+- **isaacsim.core.deprecation_manager**
+
+    - Changed
+
+      - Remove deprecated asset browser settings
+
+- **isaacsim.core.experimental.objects**
+
+    - Added
+
+      - Add USD `Camera`
+      - Add the `colors` parameter to shape classes to set display colors
+
+- **isaacsim.core.experimental.prims**
+
+    - Added
+
+      - `getDofNames()` and `getDofTypes()` on `IArticulationDataView` for articulation DOF metadata (names and types in articulation order)
+      - `setArticulationDofMetadata()` on `IPrimDataReader` for Newton backend to supply DOF names and types from Python
+      - `XformPrim` now creates `FabricHierarchyLocalMatrix` and `FabricHierarchyWorldMatrix` if they don't exist.
+      - Add Newton physics engine support for articulations and rigid bodies
+      - Add contact tracking functionality to RigidPrim: `set_enabled_contact_tracking()`, `get_enabled_contact_tracking()`, `get_net_contact_forces()`, `get_contact_force_matrix()`, `get_contact_force_data()`, `get_friction_data()`
+
+    - Removed
+
+      - Remove deprecated PhysX residual reporting APIs (`enable_residual_reports`, `get_solver_residual_reports`) from `Articulation`
+
+    - Changed
+
+      - Add C++ interface to read xform, rigid body and articulation data
+      - Slight modification to show how a new physics engine can be added in the future
+
+    - Fixed
+
+      - Fixed Warp 1.12 compatibility for deformable prims (wp.mat33 row-vector constructor replaced with wp.matrix_from_rows)
+      - Only return values for DOFs that have applied the `PhysxDrivePerformanceEnvelopeAPI` when querying drive model properties
 
 - **isaacsim.core.experimental.utils**
 
     - Added
 
-      - Add timeline-related functions to app utils
-      - Add xform utils
-      - Support USD schemas when getting a prim or prim path
-      - Add app utils
-      - Add semantics utils
-      - Add stage utils functions to:
-      - Check whether the stage is loading
-      - Generate a string representation of the stage
-      - Move a prim to a different location on the stage hierarchy
-      - Delete a prim from the stage
-      - Add prim utils functions to:
-      - Find all the prim paths in the stage that match the given (regex) path
-      - Check whether a prim corresponds to a non-root link in an articulation
-
-    - Changed
-
-      - Update app module docstrings example and add module summaries for docs purposes
-      - Return the input as it is when getting a prim or prim path, provided that the input is of the expected return type
-
-- **isaacsim.core.includes**
-
-    - Changed
-
-      - Run clang tidy
-      - Migrate BaseResetNode to Events 2.0.
-      - Update to Kit 109 and Python 3.12
-
-- **isaacsim.core.nodes**
-
-    - Changed
-
-      - Migrate OgnOnPhysicsStep to Events 2.0.
-      - Update description
-      - Migrate to Events 2.0.
-      - Set ResetOnStop to True for all Simulation Time OG nodes
-      - Moved handle interface to isaacsim.ros2.nodes extension where it was used.
-      - Update to Kit 109 and Python 3.12
-      - Update deprecated python unittest methods
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Remove deprecated dependencies
-      - Remove deprecated time related APIs from CoreNodes interface
-      - Remove extra carb settings from tests
-
-- **isaacsim.core.prims**
-
-    - Changed
-
-      - Migrate to Events 2.0.
-      - Replace import statements with the deprecation function when importing PyTorch
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
+      - Add `get_prim_attribute_names()` to prim utils for listing authored attribute names
+      - Add `get_prim_attribute_value()` to prim utils for getting attribute values
+      - Add `quaternion_to_euler_angles()` function to transform utils for converting quaternions to euler angles
+      - Add `parse_device()` function to ops utils for parsing Warp device specifications
+      - Add `ensure_api()` function to prim utils for ensuring API schemas are applied to prims
 
     - Fixed
 
-      - Fix the `PhysxCollisionAPI` schema when checking for collision properties
+      - Fix NaN issue in euler to quaternion conversion utils
+      - Fix inconsistency in euler to quaternion conversion utils
+
+- **isaacsim.core.includes**
+
+    - Added
+
+      - Add `Defines.h` header with `ISAACSIM_EXPORT` and `ISAACSIM_IMPORT` macros for DLL visibility
+
+    - Changed
+
+      - Optimize GenericBuffer to re-use memory without allocation if requested size fits within existing capacity.
+
+- **isaacsim.core.nodes**
+
+    - Added
+
+      - IsaacAttachHydraTexture node allows user to add HydraTextures and RenderVars on demand to RenderProduct prims already in the stage
+
+    - Changed
+
+      - Migrate Odometry and joint name resolved nodes to use core experimental prims APIs
+
+- **isaacsim.core.prims**
+
+    - Removed
+
+      - Remove deprecated PhysX residual reporting APIs (`enable_residual_reports`, `get_position_residuals`, `get_velocity_residuals`) from `Articulation` and `SingleArticulation`.
+
+    - Fixed
+
+      - Fixed missing argument `context` in `_reset_fabric_selection` method.
+      - Fixed incorrect method call `set_wind` to `set_winds` in `ParticleSystem` constructor.
+      - Fixed incorrect attribute name `solverPositionIteration` to `solverPositionIterationCount` in `ParticleSystem.get_solver_position_iteration_counts`.
+
+- **isaacsim.core.rendering_manager**
+
+    - Changed
+
+      - Move import of kit loop runner to a try-except block to handle import exceptions if omni.kit.loop-isaac is not enabled
 
 - **isaacsim.core.simulation_manager**
 
     - Added
 
-      - Add the `SimulationEvent` enum
-      - Allow to perform a fabric update when stepping physics
+      - Add Newton physics engine support with `switch_physics_engine()` method
+      - Add `NewtonMjcScene` and `NewtonXpbdScene` classes for Newton solver-specific scene configuration
+      - Add `PhysicsScene` base class for common physics scene operations
+      - When `/rtx/hydra/supportMultiTickRate` is enabled, simulation time is propagated to the run loop
+      - Add `cleanupInvalidPhysicsScenes()` method to C++ `ISimulationManager` interface to remove tracked physics scenes with invalid prims
+      - Add `isValid()` method to C++ `PhysicsScene` class to check if the underlying prim is still valid
+      - Add Python binding for `cleanup_invalid_physics_scenes()` method
+      - Add supporting APIs for changing physics engines through the omniphysics interfaces
+      - Add `PhysicsScene` and `PhysxScene` Python class wrappers for high-level physics scene manipulation
+      - Add `PhysicsScene` C++ class and header for USD Physics Scene prim operations
+      - Add `get_physics_scene_paths()` function to get all physics scene paths in a stage
 
     - Changed
 
-      - Run clang tidy
-      - Raise a RuntimeError if the physics dt is being set while simulation is running/playing
-      - Mark as deprecated the `IsaacEvents` enum and the backend-related methods
-      - Make set_physics_dt a classmethod
-      - Add unit tests for SimulationManager
-      - Update to Kit 109 and Python 3.12
-      - Replace the use of deprecated core utils functions by the core experimental implementations
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
-
-- **isaacsim.core.throttling**
-
-    - Changed
-
-      - Migrate to Events 2.0.
-      - Remove extra carb settings from tests
-
-- **isaacsim.core.utils**
-
-    - Removed
-
-      - Removed deprecated `nucleus` module (use `isaacsim.storage.native` instead):
-      - `get_url_root`, `create_folder`, `delete_folder`, `_list_files`, `download_assets_async`
-      - `check_server`, `check_server_async`, `build_server_list`, `find_nucleus_server`
-      - `get_server_path`, `get_server_path_async`, `verify_asset_root_path`
-      - `get_full_asset_path`, `get_full_asset_path_async`
-      - `get_nvidia_asset_root_path`, `get_isaac_asset_root_path`
-      - `get_assets_root_path`, `get_assets_root_path_async`, `get_assets_server`
-      - `_collect_files`, `is_dir_async`, `is_file_async`, `is_file`
-      - `recursive_list_folder`, `list_folder`
-      - Removed deprecated `create_hydra_texture` from `render_product` (use `omni.replicator.core.create.render_product` instead)
-      - Removed deprecated semantics functions using old SemanticsAPI (use new LabelsAPI equivalents):
-      - `add_update_semantics` -> use `add_labels`
-      - `remove_all_semantics` -> use `remove_labels`
-      - `get_semantics` -> use `get_labels`
-      - `check_missing_semantics` -> use `check_missing_labels`
-      - `check_incorrect_semantics` -> use `check_incorrect_labels`
-      - `count_semantics_in_scene` -> use `count_labels_in_scene`
-
-    - Changed
-
-      - set_camera_prim_path now also applies the OmniRtxCameraExposureAPI_1 schema to the camera prim
-      - set_camera_prim_path now also sets the exposure:time attribute to 0.02
-      - Add missing docstrings
-      - Update to Kit 109 and Python 3.12
-      - Fix invalid escape sequences
-      - Update deprecated python unittest methods
-      - Replace import statements with the deprecation function when importing PyTorch
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Remove deprecated dependencies
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
-
-- **isaacsim.cortex.behaviors**
-
-    - Changed
-
-      - Make omni.isaac.ml_archive an explicit test dependency
-
-- **isaacsim.examples.browser**
+      - Replaced omni.physx start_simulation with omni.physics start_simulation
+      - Replaced omni.physx simulation event stream with omni.physics simulation event stream
+      - Change log level of no adjacent samples found for interpolation warning to INFO
 
     - Fixed
 
-      - Replaced deprecated `onclick_fn` with `onclick_action` in "Robotics Examples" menu item to eliminate deprecation warnings
-      - Registered proper toggle action for the examples browser
+      - Rebuild with new physics package
+      - Fix `RuntimeError: Accessed invalid expired 'PhysicsScene' prim` error when physics scene prims become invalid without triggering USD notices (e.g., layer removal operations, session sublayer changes)
+      - Add stage and root layer validation in `_on_play()` to prevent physics initialization on expired/invalid stages
+      - Add error handling in `_create_physics_scene()` to gracefully handle physics scene creation failures
+
+- **isaacsim.core.utils**
+
+    - Changed
+
+      - Fix quaternion order issue in torch transformation utils
+
+- **isaacsim.examples.base**
+
+    - Changed
+
+      - Replaced timeline API with app utils for simulation control
+      - Add functionality to allow setting rendering_dt.
 
 - **isaacsim.examples.extension**
 
     - Changed
 
-      - Fix event name usage.
-      - Migrate to Events 2.0.
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
+      - Add ticked=True to Extension Generator menu item
 
 - **isaacsim.examples.interactive**
 
-    - Removed
-
-      - base_sample_experimental.py
-      - base_sample_extension_experimental.py
-      - Build window function use
-      - The Simple Stack example
-      - The Franka Pick-and-Place and UR10 Follow Target examples have been removed from this extension and moved to a new location
-
     - Changed
 
-      - Update description
-      - Migrate to Events 2.0.
-      - Updated inference examples to use GPU physics and the new experimental APIs
-      - Moved policy based examples to isaacsim.robot.policy.examples
-      - Add missing docstrings
-      - Update imports from isaacsim.base_samples to isaacsim.examples.base
-      - The Start with Robot, Kaya Gamepad, Omnigraph Keyboard, and Hello World examples now depend on the new Warp-based APIs
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Remove deprecated dependencies
-      - Remove extra carb settings from tests
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
-
-    - Fixed
-
-      - Fix Kaya Gamepad example test
-
-- **isaacsim.examples.ui**
-
-    - Changed
-
-      - Rename startup.py to test_startup.py
+      - Experimental API alignment: app_utils for timeline control, SimulationEvent for physics callbacks.
+      - Replaced timeline API with app utils for simulation control.
+      - Converted Robo Party to Experimental APIs.
+      - The Getting Started, Replay Follow Target, Robo Factory, and Surface Gripper examples now depend on the new Warp-based APIs
+      - Simplified bin filling example to improve stability, replaced dropped parts with dropped cubes
 
 - **isaacsim.gui.components**
 
-    - Changed
+    - Added
 
-      - Add missing docstrings
-      - Migrate extension implementation to core experimental API
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
-
-- **isaacsim.gui.content_browser**
+      - Add menu.create_submenu to recursively build MenuItemDescription lists from dicts describing submenus
 
     - Changed
 
-      - Fix missing icon error in Isaac content browser
-      - Update description
-      - Revert the protocol to match the current Isaac Sim version
-      - Fix navigation issue caused by incorrect protocol
-      - Update assets path
-      - Update to Kit 109 and Python 3.12
+      - Remove unused dependencies
+      - Add menu.open_content_browser_to_path to open the Content Browser to a specific path
 
     - Fixed
 
-      - Fix getting Carb settings API for protocol designation
+      - Hardened subprocess calls to avoid shell=True with string concatenation
+      - Fixed incorrect type annotation for SearchWidget
 
-- **isaacsim.gui.menu**
+- **isaacsim.gui.content_browser**
+
+    - Added
+
+      - New `omni.simready.content.browser` extension for Simready asset search
 
     - Changed
 
-      - Update golden image for environment test
-      - Update description
-      - Renamed Block World Generator to Heightmap Importer
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Update omni.simready.content.browser settings
+      - Add SimReady folder
+      - Update assets path to 6.0 staging
+      - Update assets path to development
+
+- **isaacsim.gui.menu**
+
+    - Added
+
+      - Robot Self-Collision Detector to Tools > Asset Editors menu
+
+    - Removed
+
+      - Removed Warp Sample Scenes menu item from Help menu (omni.warp dependency removed)
+
+    - Changed
+
+      - Add ticked=True to Asset Check menu item
+      - Remove Asset Browser from menu and context menu
+      - Use menu.open_content_browser_to_path to open the Content Browser to a specific path as a replacement
+      - Add Utility menu item to check Isaac Sim assets root path
+      - Fix broken Isaac Sim documentation links
 
 - **isaacsim.gui.property**
 
     - Added
 
-      - Introduced widgets for the Robot Schema
+      - Introduced widget for applying IsaacSiteAPI to Xformable prims
+      - Introduced new widget for setting the IsaacMotionPlanningAPI collisionEnabled attribute
 
-    - Changed
+    - Fixed
 
-      - Add missing license headers
-
-- **isaacsim.gui.sensors.icon**
-
-    - Removed
-
-      - Remove the deprecated and unused isaacsim.core.utils dependency
-
-    - Changed
-
-      - Update description
-      - Migrate to Events 2.0.
-      - Update test module import
+      - Fixed incorrect type annotation (List to list)
 
 - **isaacsim.replicator.behavior**
 
     - Changed
 
-      - Added explicit seed to randomizers to make them deterministic
-      - Updated sdg pipeline golden images
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
-
-- **isaacsim.replicator.behavior.ui**
-
-    - Changed
-
-      - Update test module import
-
-- **isaacsim.replicator.domain_randomization**
-
-    - Changed
-
-      - Replace import statements with the deprecation function when importing PyTorch
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Migrated behavior scripting dependency from omni.kit.scripting to omni.behavior.scripting.core
+      - Updated SDG physics based volume filling behavior script to use the omni.physx api
 
 - **isaacsim.replicator.examples**
 
     - Changed
 
-      - Improved simready assets SDG example output results
-      - Fixed sequential sphere scan randomizer example to work in script editor in sync with docs
-      - Added explicit `.reset()` to events 2.0 subscribers in sync with docs examples
-      - Migrate to Events 2.0.
-      - Added an app update after switching to pathtracing in the palletizing example test
-      - Fixed scatter plane parent path in scene based SDG example test
-      - Fixed SDG box stacking randomizer example test by waiting for the data to be written to disk
-      - Make consistent use of SimulationManager
-      - Added scene based SDG example test
-      - Added object based SDG example test
-      - Added AMR navigation example test
-      - Switched to RealtimePathTracing in the motion blur example
-      - Updated replicator examples to use replicator functional api where applicable
-      - Writers use explicit backends to write data to disk
-      - Changed data augmentation tests to use a fixed seed in the kernel functions as well, updated golden images
-      - UR10 palletizing example uses realtime pathtracing and backend for its writer
-      - Switched to core.experimental rigid prims where applicable
-      - Switched to SimulationManager instead of World
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
+      - Synched snippets with docs, typos and print statements fixes
+      - Augmentation examples use basic empty stage (dome light + ground plane) by default, with optional env_url for custom stages
 
 - **isaacsim.replicator.mobility_gen**
 
-    - Changed
+    - Added
 
-      - Fix clang tidy issues in cpp code
-      - Update to Kit 109 and Python 3.12
-      - Update deprecated python unittest methods
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Support loading usdz asset
 
 - **isaacsim.replicator.mobility_gen.examples**
 
     - Changed
 
-      - Fix USD path for placement of front camera on Carter with latest USD asset
-      - Fix issue where H1 and Spot policies command must be provided as torch tensor
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Change occupancy map radius for Carter Robot
 
 - **isaacsim.replicator.mobility_gen.ui**
 
-    - Changed
+    - Added
 
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Support loading usdz asset
 
 - **isaacsim.replicator.synthetic_recorder**
 
     - Changed
 
-      - Migrate to Events 2.0.
-      - Separated recorder and UI configuration
-      - Refactored to use explicit `backend_type` and `backend_params` for custom backend support
-      - Added file validation to tests and reorganized them by specific test cases for clarity and speed
-      - Renamed test files (`test_recorder_outputs.py`, `test_recorder_timeline.py`)
-      - Added `colorize_depth` parameter for depth visualization
+      - Updated UI to use width and height for checkboxes to fix click issues
 
 - **isaacsim.replicator.writers**
 
     - Changed
 
-      - Deprecate DOPEWriter and YCBVideoWriter writers
-      - Deprecate OgnPose and OgnDope nodes
-      - Updated pose writer to support explicit backends
-      - Updated pose writer tests to use golden images and functional API
-      - Replace import statements with the deprecation function when importing PyTorch
-      - Make omni.isaac.ml_archive an explicit test dependency
-
-- **isaacsim.robot.manipulators**
-
-    - Changed
-
-      - Update description
-      - Add missing docstrings
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Added pinholeOpenCV and fisheyePolynomial projection support to pose writer
+      - Moved DOPE utils to DOPEWriter class
 
 - **isaacsim.robot.manipulators.examples**
 
     - Added
 
-      - Franka Pick-and-Place and UR10 Follow Target interactive examples
-
-    - Removed
-
-      - Build window function use
+      - UR (Universal Robots) stacking example
+      - A simplified stacking class based on core_experimental (NVIDIA Warp APIs)
 
     - Changed
 
-      - Updated description
-      - Add missing docstrings
-      - Update imports from isaacsim.base_samples to isaacsim.examples.base
-      - Make omni.isaac.ml_archive an explicit test dependency
-
-- **isaacsim.robot.manipulators.ui**
-
-    - Changed
-
-      - Update description
-      - Make omni.isaac.ml_archive an explicit test dependency
-
-- **isaacsim.robot.policy.examples**
-
-    - Changed
-
-      - Removed rendering manager test time dependency (moved to base sample)
-      - Removed unnecessary dependencies
-      - Removed remaining experimental api references
-      - Changed the backend to experimental API using warp and torch
-      - Enabled GPU physics to inference policies
-      - Moved policy based interactive examples to the isaacsim.robot.policy.examples folder
-      - Replace import statements with the deprecation function when importing PyTorch
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
+      - Experimental API alignment: app_utils for timeline control and SimulationEvent for physics callbacks in follow-target and pick-place examples.
+      - Supported multiple Franka robots for pick and place task
+      - Updated the folder structure of the extension
+      - Simplify bin filling example and improve stability, example cubes instead of various parts
 
 - **isaacsim.robot.schema**
 
+    - Added
+
+      - `KinematicChain` class for building and caching joint chains between arbitrary start/end prims on a robot
+      - Forward Kinematics computation (`compute_fk`) with per-joint intermediate transforms
+      - Fused FK + spatial Jacobian computation (`compute_fk_and_jacobian`) in a single pass
+      - `IKSolver` abstract interface and `IKSolverRegistry` for pluggable IK solver implementations
+      - Levenberg-Marquardt IK solver (`IKSolverLM`) registered as the default solver, with adaptive damping, null-space bias toward joint centers, step clamping, and joint-limit clipping
+      - `pose_error` function computing 6-DOF orientation + position error between two transforms
+      - Math module (`math.py`): `Transform` (SE(3) composition and inversion), `Joint` (screw-axis exponential map for revolute and prismatic joints), quaternion operations (`quat_mul`, `quat_conj`, `quat_rotate`, `axis_angle_to_quat`, `quat_to_matrix`), `skew`, and `adjoint`
+      - Teleport functionality on `KinematicChain`: `teleport` propagates FK through the kinematic tree and writes USD body transforms; `teleport_anchored` applies joints while keeping a specified link fixed via rigid correction
+      - Zero-configuration pose computation (`_compute_zero_config_poses`) using static joint local frames
+      - Joint chain path finding via LCA algorithm (`_collect_chain_joints`) returning ordered joints with forward/backward traversal direction
+      - Named pose query utilities: `GetAllNamedPoses`, `GetNamedPoseStartLink`, `GetNamedPoseEndLink`, `GetNamedPoseJoints`, `GetNamedPoseJointValues`, `GetNamedPoseJointFixed`, `GetNamedPoseValid`
+      - `CreateNamedPose` for creating `IsaacNamedPose` prims with relationships and attributes
+      - Loop detection in articulation traversal (`_discover_articulation_prims`, `PopulateRobotSchemaFromArticulation`, `RecalculateRobotSchema`) using visited-set guards to prevent infinite loops in cyclic joint graphs
+      - `DetectAndApplySites` and `AddSitesToRobotLinks` for automatic site detection on link child Xforms and registration in the robot schema
+      - `ApplySiteAPI` function; `ApplyReferencePointAPI` deprecated and redirected to `ApplySiteAPI`
+      - `ValidateRobotSchemaRelationships` returning valid/invalid link and joint lists
+      - `RecalculateRobotSchema` that preserves existing relationship order while appending newly discovered items and removing invalid ones
+      - `RebuildRelationshipAsPrepend` and `EnsurePrependListForRobotRelationships` for proper USD layering of robot relationships
+      - Schema diagram generation script
+      - Loop detector on parsing of joints
+      - Missing SiteAPI functions
+      - Verify if all found links and joints are added to the schema
+      - Detect and Create SiteAPIs when applying robot schema
+      - Update Robot Schema relationships with missing links and joints
+
     - Changed
 
-      - Add missing docstrings
-      - Fixed parsing of robot tree to ignore bodies in joints that are not rigid bodies
-      - Updated Robot Schema definitions:
-      - Removed Attributes for DofOrder
-      - Created DofOrderOP list to be used with DofType tokens
-      - Updated Add RobotAPI util such that it automatically scans the robot prim for Links and joints and populates it in the traversal order
-      - Update to Kit 109 and Python 3.12
-      - Fixed issue in `__init__.py` with running with `coverage.py`
-
-- **isaacsim.robot.surface_gripper**
-
-    - Changed
-
-      - Fix clang tidy issues in cpp code
-      - Update to Kit 109 and Python 3.12
-      - Performance Updates
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Update test cases to use Python's compliant regex when instantiating the view class
-
-- **isaacsim.robot.surface_gripper.ui**
-
-    - Changed
-
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - `UpdateDeprecatedSchemas` migrates `ReferencePointAPI` to `SiteAPI` and deprecated DOF offset attributes to `DofOffsetOpOrder` token array
+      - `UpdateDeprecatedJointDofOrder` collects deprecated per-axis attributes, builds token array, and removes old attributes
+      - Updated deprecated schema checker and fixer
 
 - **isaacsim.robot.wheeled_robots**
 
     - Changed
 
-      - Add missing docstrings
-      - Update to Kit 109 and Python 3.12
-      - Delete deprecated AckermannControllerDeprecated node
-      - Delete deprecated ackermann_controller_deprecated.py file
-      - Fix invalid escape sequences
-      - Update deprecated python unittest methods
-      - Replace import statements with the deprecation function when importing PyTorch
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Remove deprecated dependencies
-
-- **isaacsim.robot.wheeled_robots.ui**
-
-    - Changed
-
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Update to new osqp version and fix OSQP.setup() positional argument issue
 
 - **isaacsim.robot_motion.lula**
 
     - Changed
 
-      - Update fix build issues with py 3.12 lula package
-
-    - Fixed
-
-      - Issue with python bindings for lula working with numpy 2.x
-
-- **isaacsim.robot_motion.lula_test_widget**
-
-    - Changed
-
-      - Migrate to Events 2.0.
-      - Add missing docstrings
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
+      - Updated Overview.md with note about newer cumotion extension.
 
 - **isaacsim.robot_motion.motion_generation**
 
     - Changed
 
-      - Increased tolerances on flaky tests in `tests/test_trajectory_generator.py`.
-      - Update to Kit 109 and Python 3.12
-      - Fix invalid escape sequences
-      - Replace import statements with the deprecation function when importing PyTorch
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Remove extra carb settings from tests
+      - Updated Overview.md with note about newer experimental motion generation API.
+      - Updated path_planner_visualizer.py docstring to clarify it only does interpolation.
 
-- **isaacsim.robot_setup.assembler**
+- **isaacsim.robot_motion.motion_generation.tutorials**
 
     - Changed
 
-      - Fix event name usage.
-      - Migrate to Events 2.0.
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Remove extra carb settings from tests
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
+      - Update license headers
 
 - **isaacsim.robot_setup.gain_tuner**
 
-    - Removed
-
-      - Remove unused import statement and commented code
-
     - Changed
 
-      - Migrate to Events 2.0.
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
+      - Migrate mass property queries from PhysX property query interface to Articulation tensor API (`isaacsim.core.experimental.prims.Articulation`).
+      - Remove `omni.physics.physx` dependency; mass, COM, and inertia are now queried via `get_link_masses()`, `get_link_coms()`, and `get_link_inertias()`.
 
     - Fixed
 
-      - Fixed consumption of events downstream on UI builder
-
-- **isaacsim.robot_setup.grasp_editor**
-
-    - Changed
-
-      - Migrate to Events 2.0.
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
-
-    - Fixed
-
-      - Fixed Events 2.0 assets loaded and timeline play / stop events
+      - Fixed incorrect type annotations
+      - Fix Vec3f/Vec3d type mismatch in inertia accumulation caused by robot schema double-precision change
 
 - **isaacsim.robot_setup.xrdf_editor**
 
-    - Changed
+    - Added
 
-      - Considers visual mesh scaling when generating collision spheres.
-      - No longer deletes portions of the robot prim when generating collision spheres.
-      - Migrate to Events 2.0.
-      - Add missing docstrings
-      - Update deprecated numpy in1d to np.isin
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
+      - Can load and export XRDF version 2.0
 
-- **isaacsim.ros2.bridge**
+    - Fixed
 
-    - Changed
+      - Removed incorrect type annotation for SimulationContext
 
-      - Split extension into multiple extensions.
-      - isaacsim.ros2.core: Core ROS 2 libraries and backend functionality
-      - isaacsim.ros2.examples: ROS 2 examples
-      - isaacsim.ros2.nodes: ROS 2 OmniGraph nodes and components
-      - isaacsim.ros2.ui: ROS 2 UI components
-      - Replace import statements with the deprecation function when importing PyTorch in tests
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Remove deprecated dependencies
+- **isaacsim.ros2.core**
 
-- **isaacsim.ros2.sim_control**
+    - Added
+
+      - CompressedImage message backend
+      - Added ros2 image buffer utils
 
     - Changed
 
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Removed hardcoded ROS 2 distribution checks. Added experimental support for any ROS 2 distribution beyond Jazzy to be sourced and used with Isaac Sim.
+      - Fixed ROS 2 service request polling so `takeRequest()` can receive a pending request on its first poll call.
+      - Removed isaacsim.sensors.experimental.physics dependency
+      - Set publish_with_queue_thread extension setting to true
+      - Added a `simulate_until_condition` method
 
-- **isaacsim.ros2.tf_viewer**
+    - Fixed
+
+      - Hardened subprocess call to avoid shell=True with string concatenation
+
+- **isaacsim.ros2.examples**
 
     - Changed
 
-      - Added CUDA build dependencies
-      - Update to Kit 109 and Python 3.12
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Update waypoint follower action graph to use ReadPrimLocalTransform node
+
+- **isaacsim.ros2.nodes**
+
+    - Added
+
+      - ROS 2 H.264 Compressed Image support with H.264 RGB handling
+      - omni.replicator.nv extension automatically enabled by omni.replicator.core and implictily used for HW H.264 encoding
+
+    - Removed
+
+      - Moved test_menu_graphs to isaacsim.ros2.ui
+      - Replaced fields_to_dtype with sensors_msgs_py.point_cloud2.read_points where applicable
+
+    - Changed
+
+      - ROS2PublishJointState node now publishes from sensor inputs (e.g. IsaacReadJointState) for joint state data
+      - Shifted RTX sensor scan accumulation and post-processing back to host by default to reduce GPU resource contention and improve frametime & frametime consistency. Post-processing-on-device still available as option by setting app.sensors.nv.[modality].outputBufferOnGPU=true.
+      - Converted OgnROS2QoSProfile node from Python to C++ for improved performance and consistency with other C++ OG nodes
+      - Add missing dependency for isaacsim.sensors.physics.nodes
+      - Update isaacsim.sensors.physics dependency to isaacsim.sensors.experimental.physics
+      - Update waypoint follower action graph to use ReadPrimLocalTransform node
+
+    - Fixed
+
+      - Fix `eFloat` and `eUnknown` cases in `writeNodeAttributeFromMessage` incorrectly hardcoding `"outputs:"` prefix instead of using `inputOutput(isOutput)` and `prependStr`
+
+- **isaacsim.ros2.ui**
+
+    - Added
+
+      - Added PointCloud2 metadata options to RTX Lidar OG tool
+      - Added test_menu_graphs
+
+    - Changed
+
+      - Migrated test_menu_graphs imports to use experimental prims and stage utilities (XformPrim, define_prim, add_reference_to_stage)
+      - Fixed articulation root path in test_joint_states_data_flow and test_odometry_data_flow to use chassis_link
+      - Fixed SimpleCheckBox widget path for "Publish Robot's TF?" in test_odometry_data_flow
+      - Remove Asset Browser from menu
+      - Use menu.open_content_browser_to_path to open the Content Browser to a specific path as a replacement
 
 - **isaacsim.ros2.urdf**
 
     - Changed
 
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Updated isaacssim.ros2.urdf to use URDF importer 3.x
+      - Make isaacsim.asset.importer.urdf.ui a dependency since this extension heavily depends on and modifies the default urdf importer ui
 
 - **isaacsim.sensors.camera**
 
-    - Added
-
-      - Unit test for get_view_matrix_ros
-
     - Changed
 
-      - Added validation checks and warmup warnings to camera sensor data methods to handle unavailable data
-      - Added warmup tests for camera sensor checking for warnings and data availability
-      - Migrate to Events 2.0.
-      - Replace import statements with the deprecation function when importing PyTorch
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Remove deprecated time related APIs from CoreNodes interface
+      - omni:rtx:post:depthSensor:outlierRemovalEnabled is now a bool
+      - Camera sensor: switched to use "_fast" version of the annotators where available ("bounding_box_2d_tight_fast", "bounding_box_2d_loose_fast", "instance_segmentation_fast", "instance_id_segmentation_fast")
 
     - Fixed
 
-      - Removed `do_array_copy=True` workaround in tiled sensor (fixed upstream in replicator.core 1.12.32 by changing strides type from int32 to int64 to avoid warp array arithmetic when getting annotator data)
-      - Fixed issue with tiled sensor data slicing by copying the data from the annotator (do_array_copy=True)
+      - TestSingleViewDepthSensor.test_getter_setter_methods uses correct initial value for confidenceThreshold.
+      - Cleanup annotators and state properly when the camera is destroyed
+      - Fixed camera_view.get_data() resolution order issue (height, width) -> (width, height)
 
 - **isaacsim.sensors.camera.ui**
 
+    - Fixed
+
+      - Registered proper actions for all camera and depth sensor creation menu items
+
+- **isaacsim.sensors.experimental.physics**
+
     - Added
 
-      - New Realsense category, with D455, D457, and D55 models.
-
-    - Removed
-
-      - Intel as category
+      - Add joint state sensor that reads all DOF positions, velocities, and efforts per articulation
 
     - Changed
 
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Rewrite sensor implementations to use C++ core experimental prims APIs
+      - IMU and Contact sensor creation commands renamed to include Experimental in their name to avoid name collision with deprecated sensor commands
+      - Rebuilt physics sensors on core experimental APIs with Python-first implementations
+      - Added Python backends for contact and IMU sensors plus legacy interface shims for compatibility
+      - Added new command-based prim creation for sensors and OmniGraph nodes
+      - Removed sensor period and frequency parameters, all sensors use the physics frequency by default
 
 - **isaacsim.sensors.physics**
 
-    - Added
-
-      - Add dedicated GPU codepath for IMU to use separate stream and pinned memory buffer
-
     - Changed
 
-      - Fix clang tidy issues in cpp code
-      - Migrate to Events 2.0.
-      - Update to Kit 109 and Python 3.12
-      - Update deprecated python unittest methods
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Remove deprecated time related APIs from CoreNodes interface
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
+      - Deprecated this extension in favor of isaacsim.sensors.experimental.physics extension
+      - Moved omnigraph nodes from this extension to isaacsim.sensors.nodes extension. The nodes use the new api from isaacsim.sensors.experimental.physics extension.
+
+    - Fixed
+
+      - Fix crash issue when IPhysxSimulation interface is not available
 
 - **isaacsim.sensors.physics.examples**
 
+    - Added
+
+      - Updated to use interfaces from isaacsim.sensors.experimental.physics extension
+      - Updated contact and IMU examples to use the new sensor command APIs and legacy Python interfaces
+      - Improved example UI lifecycle handling with typed callbacks, stage-close cleanup, and richer docstrings
+
     - Changed
 
-      - Migrate to Events 2.0.
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
+      - IMU and Contact sensor creation commands renamed to include Experimental in their name to avoid name collision with deprecated sensor commands
 
 - **isaacsim.sensors.physics.ui**
 
-    - Changed
+    - Added
 
-      - Make omni.isaac.ml_archive an explicit test dependency
-
-- **isaacsim.sensors.physx**
-
-    - Changed
-
-      - Migrate to Events 2.0.
-      - Update to Kit 109 and Python 3.12
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Remove extra carb settings from tests
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
-
-- **isaacsim.sensors.physx.examples**
+      - Updated to use interfaces from isaacsim.sensors.experimental.physics extension
+      - Updated menu actions to use new sensor creation commands and experimental prim helpers
+      - Improved context menu handling and visibility control for created sensor prims
 
     - Changed
 
-      - Migrate to Events 2.0.
-      - Fix invalid escape sequences
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Migrate PhysX subscription and simulation control interfaces to Omni Physics
+      - IMU and Contact sensor creation commands renamed to include Experimental in their name to avoid name collision with deprecated sensor commands
+
+    - Fixed
+
+      - Registered proper actions for Contact Sensor and IMU Sensor creation menu items
 
 - **isaacsim.sensors.physx.ui**
 
-    - Changed
+    - Fixed
 
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Registered proper actions for PhysX Lidar and LightBeam sensor creation menu items
 
 - **isaacsim.sensors.rtx**
 
     - Added
 
-      - IsaacCreateRTXRadarPointCloud annotator to explicitly support RTX Radar
-      - Link sensor_checker utility as Python module
-      - Add sensor_checker to unit tests to verify supported Lidar configs
+      - Use Hydra time (omni.timeline) in RTX Sensor models
 
     - Removed
 
-      - No longer dependent on RtxSensorMetadata AOV
+      - Tools for manipulating deprecated JSONs
 
     - Changed
 
-      - RtxLidar.get_object_ids correctly handles GenericModelOutput.objId
-      - Migrate to Events 2.0.
-      - OgnIsaacCreateRTXLidarScanBuffer uses lambda function to initialize and allocate buffers
-      - OgnIsaacCreateRTXLidarScanBuffer includes support for RTX Radar metadata
-      - Fix tests after updating to kit 109.0.1.
-      - Compute maximum points per Lidar scan from Lidar configuration
-      - Update to Kit 109 and Python 3.12
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Exclude Simple Example Solid State config from tests
+      - Shifted RTX sensor scan accumulation and post-processing back to host by default to reduce GPU resource contention and improve frametime & frametime consistency. Post-processing-on-device still available as option by setting app.sensors.nv.[modality].outputBufferOnGPU=true.
+      - IsaacSensorCreateRtxSensor commands accept usd_path argument to enable adding arbitrary RTX Sensor USDs to the stage
+      - IsaacSensorCreateRtxRadar command validates if user has enabled Motion BVH before creating prim
+
+    - Fixed
+
+      - Fixed occasional segfault when running with many lidars doing full-scan processing at the same time by copying GenericModelOutput buffers into local copies rather than manipulating AOV
+      - IsaacCreateRTXLidarScanBuffer.transform output no longer resets frame-to-frame
+      - Only reset outputs in IsaacCreateRTXLidarScanBuffer if enablePerFrameOutput == True, preventing output "flickering"
+      - Prevent USD path warnings when using IsaacSensorCreateRtxSensor commands
 
 - **isaacsim.sensors.rtx.ui**
 
-    - Changed
+    - Fixed
 
-      - Change test to use RealTimePathTracing render mode
-      - Make omni.isaac.ml_archive an explicit test dependency
+      - Registered proper actions for all RTX Lidar and RTX Radar sensor creation menu items
 
 - **isaacsim.simulation_app**
 
     - Added
 
-      - Add carb settings for RealTimePathTracing mode
-      - Fix create_new_stage not working correctly
+      - Added separate default render settings for PathTracing and RealTimePathTracing modes
 
     - Changed
 
-      - Increased MAX_FRAMES in _wait_for_viewport for Windows so NEW_FRAME event fires when expected (again)
-      - Change startup behavior so that app ready status is delayed until after the app has started
-      - Increased MAX_FRAMES in _wait_for_viewport for Windows so NEW_FRAME event fires when expected
-      - Add missing docstrings
-      - Change default renderer to RealTimePathTracing
+      - Automatically close the application during interpreter shutdown if close() was not called
+      - Close stage in simulation app close() method to avoid errors
+      - Update error message when application fails to start and exit before proceeding to make debugging easier.
+      - Fix issue where simulation app close() method would hang if the app was already stopped
+      - Skip explicit stage close in simulation app close() method to avoid crashes
+      - is_running method does not require an active USD stage
+      - Use close_stage_async method when closing stage to avoid blocking the main thread if available
+      - Simulation app close() method now waits for replicator workflows to complete even when using replicator step()
 
 - **isaacsim.storage.native**
 
-    - Added
-
-      - Added `resolve_asset_path` function to synchronously resolve asset paths with the same logic as the async variant.
-
     - Changed
 
-      - Update description
-      - Add missing docstrings
-      - Add docstring tests
-      - Update assets path
-
-    - Fixed
-
-      - Update assets path
+      - Update assets path to 6.0 staging
+      - Add retry attempts and retry base delay settings for asset root connectivity checks
+      - Update assets path to development
 
 - **isaacsim.test.collection**
 
-    - Removed
-
-      - Remove commented code
-
     - Changed
 
-      - Updated deprecated imports to isaacsim.storage.native
-      - Update deprecated python unittest methods
-      - Make omni.isaac.ml_archive an explicit test dependency
-      - Remove extra carb settings from tests
-
-- **isaacsim.test.docstring**
-
-    - Changed
-
-      - Update description
-      - Add API documentation
-      - Add missing docstrings
-      - Add more example usage to documentation
+      - Exclude NumPy module reload errors
+      - Update dependencies to use new experimental extensions
 
 - **isaacsim.test.utils**
 
     - Added
 
-      - Specify --/app/settings/fabricDefaultStageFrameHistoryCount=3 for startup test
-      - Added `compare_images_in_directories()` function to compare images in two directories
-
-    - Removed
-
-      - Remove omni.replicator.core as an explicit test dependency
+      - Move `find_widget_with_retry` from `MenuUITestCase` to `menu_utils` as a standalone function
+      - Add `find_enabled_widget_with_retry` to poll for a widget that is both found and enabled
+      - Add `wait_for_widget_enabled` to poll until an already-found widget becomes enabled
+      - Add new utility functions (`get_all_menu_paths`, `count_menu_items`) and `MenuUITestCase` base class for menu UI tests.
 
     - Changed
 
-      - Update description
-      - Add omni.replicator.core as an explicit dependency for image capture utils
-      - Fix invalid escape sequence
+      - Add `omni.kit.material.library.get_mdl_list_async` and `omni.kit.menu.utils.rebuild_menus` to `MenuUITestCase.wait_for_stage_loading` to fix menu rebuild issues
+      - Add `find_widget_with_retry` to `MenuUITestCase` to find a widget with retry
+      - Replace `omni.kit.ui_test.menu_click` with custom step-by-step menu navigation that polls for each submenu to become findable and visible before proceeding, avoiding the `carb.log_error` and `AttributeError` that `menu_click` produces when submenus are slow to appear
+      - Add `carb.log_info` diagnostics throughout `menu_click_with_retry` for log debugging
+      - Suppress transient error logs from `omni.kit.ui_test.query` during intermediate retries in `menu_click_with_retry`; errors are only surfaced on the final retry attempt
+      - Add pycoverage patch for numpy `_CopyMode.__bool__` to prevent `ValueError` when scipy imports trigger `_CopyMode.IF_NEEDED` evaluation under coverage
+      - Fix pycoverage compatibility issue with numpy sum and prod functions
+      - Add a pycoverage compatible amin and amax implementation that is monkeypatched into numpy on extension startup. Removed from image_comparison.py as it is no longer needed.
+      - This is only used if --/exts/omni.kit.test/pyCoverageEnabled=1 is set
+      - Refactor menu_click_with_retry into a separate function
+      - Add new_stage to MenuUITestCase
 
-- **isaacsim.ucx.core**
+    - Fixed
 
-    - Added
-
-      - Add UCXListenerRegistry::tryRemoveListener for reference-counted listener cleanup
-      - Added `UCXListener::tagSendWithRequest` for better monitoring of send requests.
-      - Added `UcxUtils.h`.
-      - Added UCX Python dependencies.
-
-    - Changed
-
-      - Fix issues found by clang tidy
-      - Regenerate pip prebundle
-      - Refactored UCXListener's tag messaging functions.
-
-- **isaacsim.util.camera_inspector**
-
-    - Changed
-
-      - Make omni.isaac.ml_archive an explicit test dependency
-
-- **isaacsim.util.physics**
-
-    - Changed
-
-      - Update description
-      - Add missing docstrings
+      - Add `omni.kit.material.library` as a dependency
 
 - **omni.isaac.core_archive**
 
     - Changed
 
-      - Update to kiwisolver-1.4.5
-      - Removed numba and gunicorn from dependencies
-      - Remove omni.pip.cloud from dependencies, users should explicitly enable if needed
-      - Remove unused tornado and pint packages
-      - Remove markupsafe from dependencies, its in omni.kit.pip_archive
+      - Update to llvmlite==0.46.0, nest_asyncio==1.6.0, matplotlib==3.10.8, contourpy==1.3.3, fonttools==4.61.1, pyparsing==3.3.2, cycler==0.12.1, kiwisolver==1.4.9, packaging==26.0, osqp==1.0.5, pyperclip==1.8.0, pyperclip==1.11.0
+
+- **omni.isaac.ml_archive**
+
+    - Changed
+
+      - Update to pytorch 2.10.0+cu128, torchaudio 2.10.0+cu128, torchvision 0.25.0+cu128 and update dependencies
 
 - **omni.kit.loop-isaac**
 
-    - Fixed
+    - Added
 
-      - Issue where setting manual mode to false in the carb settings did not work if set before app startup completed
+      - Added `set_next_simulation_time` function and Python binding to support multi-tick rendering mode
+      - When `/rtx/hydra/supportMultiTickRate` is enabled, `SWHExternalSimulationTime` is passed to the run loop
 
 - **omni.pip.cloud**
 
     - Changed
 
-      - Update to aioboto3==15.2.0
-      - Update to aiobotocore==2.24.2
-      - Update to boto3==1.40.18
-      - Update to botocore==1.40.18
-      - Update to msal==1.29.0
+      - Update cryptography to 46.0.5
+      - Update azure-core to 1.38.0
+      - Update msal to 1.35.1
+      - Downgrage boto3 to 1.40.61
+      - Downgrage botocore to 1.40.61
+      - Downgrage s3transfer to 0.14.0
+      - Update aioboto3 to 15.5.0
 
 - **omni.pip.compute**
 
+    - Added
+
+      - Added "pynvvideocodec==2.1.0"
+
     - Changed
 
-      - Update opencv-python-headless==4.12.0.88
+      - Update imageio==2.37.2, scipy==1.17.0, pyyaml==6.0.3, opencv-python-headless==4.13.0.90, trimesh==4.11.1, rtree==1.4.1
+
+Isaac Sim ROS Workspaces Changelog Summary
+============================================
+
+The `Isaac Sim ROS Workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ companion repository for Isaac Sim ROS Bridge has the following changes for Isaac Sim 6.0.0:
+
+Added
+-----
+- ``isaac_compressed_image_decoder`` package for decoding ROS 2 compressed images [Humble, Jazzy]
+- ``ros2_object_id_subscriber`` tutorial example in ``isaac_tutorials`` [Humble, Jazzy]
+- ``topic_based_ros2_control`` ROS 2 package added as a submodule [Jazzy]
+- Multi-humanoid namespace support in ``h1_fullbody_controller`` launch [Humble, Jazzy]
+- Ubuntu 24.04 / ROS 2 Jazzy Python 3.12 Docker build support and dockerfile [Jazzy]
+- ``rmw_zenoh`` support for Jazzy 22.04 Docker build [Jazzy]
+- ``--no-cache`` (``-n``) flag for ``build_ros.sh`` to allow cache-free Docker rebuilds [Humble, Jazzy]
+
+Changed
+-------
+- Bumped all package versions to Isaac Sim 6.0.0
+- Improved Humble MoveIt integration with custom ``panda_isaac.urdf.xacro`` and ``gripper_to_isaac.py`` bridge [Humble]
+- Updated MoveIt configs to mitigate timeout issues [Jazzy]
+- Cleaned up occupancy map parameters in Navigation packages [Humble, Jazzy]
+- Updated internal libraries path to ``isaacsim.ros2.core`` in ``isaacsim`` ROS package [Humble, Jazzy]
+- Switched ``h1_fullbody_controller`` topics to relative names for namespaced multi-humanoid setups [Humble, Jazzy]
+
+Removed
+-------
+- Legacy references to older Ubuntu / Python / ROS mentions from launch files, parameters, and build scripts
 
 
 .. toctree::
