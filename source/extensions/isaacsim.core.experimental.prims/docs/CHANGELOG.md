@@ -1,4 +1,11 @@
 # Changelog
+## [1.4.0] - 2026-03-09
+### Added
+- `LinkInfo` struct in `IPrimDataReader.h`: per-link descriptor (path, parentPath) returned by articulation traversal
+- `getArticulationLinks()` on `IArticulationDataView`: enumerates `UsdPhysicsRigidBodyAPI` descendants of an articulation root, returning parent-child link relationships
+- `getPrimFrameName()` on `IXformDataView`: resolves a prim's frame name, checking `isaac:nameOverride` before falling back to prim name; inherited by all three view types
+- `getPrimWorldTransform()` on `IXformDataView`: computes world transform of an arbitrary prim via Fabric, returning position (float[3]) and orientation (float[4], wxyz); inherited by all three view types
+
 ## [1.3.1] - 2026-03-05
 ### Changed
 - Fix api and docs syntax issues

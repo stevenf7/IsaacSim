@@ -136,7 +136,32 @@ PYBIND11_MODULE(_prims_reader, m)
         .def("get_buffer_size", &IXformDataView::getBufferSize, py::arg("field_name"))
         .def("get_buffer_device", &IXformDataView::getBufferDevice)
         .def("register_field_callback", &IXformDataView::registerFieldCallback, py::arg("field_name"),
-             py::arg("callback"));
+             py::arg("callback"))
+        .def(
+            "get_prim_frame_name",
+            [](IXformDataView& self, const std::string& primPath) -> py::object
+            {
+                char buf[512] = {};
+                if (self.getPrimFrameName(primPath.c_str(), buf, sizeof(buf)))
+                    return py::str(buf);
+                return py::none();
+            },
+            py::arg("prim_path"),
+            "Resolve the frame name for a prim (checks isaac:nameOverride, falls back to prim name).\n"
+            "Returns the name string, or None if the prim is not found or stage is unavailable.")
+        .def(
+            "get_prim_world_transform",
+            [](IXformDataView& self, const std::string& primPath) -> py::object
+            {
+                float pos[3] = {}, ori[4] = {};
+                if (self.getPrimWorldTransform(primPath.c_str(), pos, ori))
+                    return py::make_tuple(
+                        py::make_tuple(pos[0], pos[1], pos[2]), py::make_tuple(ori[0], ori[1], ori[2], ori[3]));
+                return py::none();
+            },
+            py::arg("prim_path"),
+            "World transform of an arbitrary prim via Fabric.\n"
+            "Returns ((x, y, z), (qw, qx, qy, qz)), or None if unavailable.");
 
     // RigidBody view (inherits IXformDataView bindings)
     py::class_<IRigidBodyDataView, IXformDataView>(m, "IRigidBodyDataView")
@@ -268,7 +293,30 @@ PYBIND11_MODULE(_prims_reader, m)
                  int count = 0;
                  const uint8_t* ptr = self.getDofTypesHost(&count);
                  return std::make_tuple(reinterpret_cast<uintptr_t>(ptr), count);
-             });
+             })
+        .def(
+            "get_articulation_links",
+            [](IArticulationDataView& self, const std::string& rootPath) -> py::list
+            {
+                const LinkInfo* links = nullptr;
+                size_t count = 0;
+                py::list result;
+                if (self.getArticulationLinks(rootPath.c_str(), &links, &count) && links && count > 0)
+                {
+                    for (size_t i = 0; i < count; ++i)
+                    {
+                        py::dict entry;
+                        entry["path"] = links[i].path ? std::string(links[i].path) : std::string();
+                        entry["parent_path"] = links[i].parentPath ? std::string(links[i].parentPath) : std::string();
+                        result.append(entry);
+                    }
+                }
+                return result;
+            },
+            py::arg("root_path"),
+            "Enumerate UsdPhysicsRigidBodyAPI descendants of an articulation root.\n"
+            "Returns a list of dicts with 'path' and 'parent_path' keys.\n"
+            "Returns an empty list if root_path is not an articulation or stage is unavailable.");
 
     // Factory (Carbonite interface)
     carb::defineInterfaceClass<IPrimDataReader>(

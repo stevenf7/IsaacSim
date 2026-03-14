@@ -48,6 +48,7 @@ private:
     void _initializeStage(long stageId);
     void _discoverSensorsFromStage();
     void _clearSensors();
+    void _recreateSensorViews();
     void _subscribeToPhysicsEvents();
     void _subscribeToPhysicsStepEvents();
     void _unsubscribeFromPhysicsStepEvents();

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.1] - 2026-03-12
+### Changed
+- Migrate ContactSensor and ImuSensor world-transform reads from computeWorldXformNoCache to IXformDataView (IPrimDataReader)
+
 ## [2.2.0] - 2026-03-05
 ### Added
 - Add joint state sensor that reads all DOF positions, velocities, and efforts per articulation

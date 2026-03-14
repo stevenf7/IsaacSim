@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.5.0] - 2026-03-04
+### Added
+- IsaacComputeTransformTree node that computes parent/child frame names, translations, and orientations for a prim hierarchy using IXformDataView (no physics tensors required)
+
+### Changed
+- Remove unused carb/Defines.h and carb/Types.h includes from OgnIsaacComputeOdometry
+
 ## [5.4.0] - 2026-02-27
 ### Changed
 - Migrate Odometry and joint name resolved nodes to use core experimental prims APIs

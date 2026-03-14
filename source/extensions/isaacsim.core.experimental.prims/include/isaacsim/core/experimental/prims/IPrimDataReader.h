@@ -66,6 +66,15 @@ struct IXformDataView
     virtual size_t getBufferSize(const char* fieldName) = 0;
     virtual int getBufferDevice() = 0;
     virtual void registerFieldCallback(const char* fieldName, std::function<void()> callback) = 0;
+
+    /// Resolve frame name for any prim in the stage: checks isaac:nameOverride, falls back to prim name.
+    /// outName: caller buffer of maxLen bytes. Returns false if prim not found or stage unavailable.
+    virtual bool getPrimFrameName(const char* primPath, char* outName, size_t maxLen) = 0;
+
+    /// World transform of any prim in the stage via Fabric (no physics required).
+    /// outPos3: float[3] (x,y,z). outOri4: float[4] (qw,qx,qy,qz).
+    /// Returns false if prim not found or stage unavailable.
+    virtual bool getPrimWorldTransform(const char* primPath, float* outPos3, float* outOri4) = 0;
 };
 
 /**
@@ -80,6 +89,17 @@ struct IRigidBodyDataView : public IXformDataView
     // Host variants
     virtual const float* getLinearVelocitiesHost(int* outCount) = 0;
     virtual const float* getAngularVelocitiesHost(int* outCount) = 0;
+};
+
+/**
+ * @struct LinkInfo
+ * @brief Per-link descriptor returned by IArticulationDataView::getArticulationLinks().
+ * @details Pointers are owned by the view; valid until the next call to getArticulationLinks() or view removal.
+ */
+struct LinkInfo
+{
+    const char* path; ///< USD path of this link
+    const char* parentPath; ///< USD path of parent link, or "" for root (world parent)
 };
 
 /**
@@ -116,6 +136,11 @@ struct IArticulationDataView : public IXformDataView
      * @return Pointer to array of C-strings, or nullptr if none. Valid until view is removed or reader re-initialized.
      */
     virtual const char* const* getDofNames(int* outCount) = 0;
+
+    /// Enumerate UsdPhysicsRigidBodyAPI descendants of rootPath (must have ArticulationRootAPI).
+    /// outLinks owned by the view; valid until next call or view removal.
+    /// Returns false if rootPath is not an articulation or stage unavailable.
+    virtual bool getArticulationLinks(const char* rootPath, const LinkInfo** outLinks, size_t* outCount) = 0;
 };
 
 /**

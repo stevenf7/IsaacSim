@@ -24,6 +24,7 @@
 #include <isaacsim/core/experimental/prims/IPrimDataReader.h>
 #include <isaacsim/core/experimental/prims/IPrimDataReaderManager.h>
 #include <isaacsim/core/includes/Pose.h>
+#include <isaacsim/core/includes/UsdUtilities.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
 #include <omni/ext/IExt.h>
 #include <omni/fabric/FabricUSD.h>
@@ -34,6 +35,8 @@
 #include <omni/physics/tensors/ISimulationView.h>
 #include <omni/physics/tensors/TensorApi.h>
 #include <omni/usd/UsdContext.h>
+#include <pxr/usd/usdPhysics/articulationRootAPI.h>
+#include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 
 #if defined(_WIN32)
 #    include <usdrt/scenegraph/usd/usd/stage.h>
@@ -45,10 +48,13 @@
 #    pragma GCC diagnostic pop
 #endif
 
+#include <cstring>
 #include <memory>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.core.experimental.prims.plugin",
                                                     "C++ read-only prim data reader", "NVIDIA",
@@ -129,6 +135,8 @@ class BaseDataView
 protected:
     ViewData* m_data = nullptr;
     ISimulationManager* m_simulationManager = nullptr;
+    pxr::UsdStageRefPtr m_usdStage;
+    usdrt::UsdStageRefPtr m_usdrtStage;
 
     /**
      * @brief Look up a field by name, run its callback if stale, and return the device buffer pointer.
@@ -325,46 +333,70 @@ protected:
 };
 
 // Macro to avoid duplicating the IXformDataView boilerplate across three classes.
-#define IMPL_XFORM_DATA_VIEW                                                                                           \
-    const float* getWorldPositions(int* outCount) override                                                             \
-    {                                                                                                                  \
-        return _fetchField("world_positions", outCount);                                                               \
-    }                                                                                                                  \
-    const float* getWorldOrientations(int* outCount) override                                                          \
-    {                                                                                                                  \
-        return _fetchField("world_orientations", outCount);                                                            \
-    }                                                                                                                  \
-    const float* getLocalTranslations(int* outCount) override                                                          \
-    {                                                                                                                  \
-        return _fetchField("local_translations", outCount);                                                            \
-    }                                                                                                                  \
-    const float* getLocalOrientations(int* outCount) override                                                          \
-    {                                                                                                                  \
-        return _fetchField("local_orientations", outCount);                                                            \
-    }                                                                                                                  \
-    const float* getLocalScales(int* outCount) override                                                                \
-    {                                                                                                                  \
-        return _fetchField("local_scales", outCount);                                                                  \
-    }                                                                                                                  \
-    const float* getWorldPositionsHost(int* outCount) override                                                         \
-    {                                                                                                                  \
-        return _fetchFieldHost("world_positions", outCount);                                                           \
-    }                                                                                                                  \
-    const float* getWorldOrientationsHost(int* outCount) override                                                      \
-    {                                                                                                                  \
-        return _fetchFieldHost("world_orientations", outCount);                                                        \
-    }                                                                                                                  \
-    const float* getLocalTranslationsHost(int* outCount) override                                                      \
-    {                                                                                                                  \
-        return _fetchFieldHost("local_translations", outCount);                                                        \
-    }                                                                                                                  \
-    const float* getLocalOrientationsHost(int* outCount) override                                                      \
-    {                                                                                                                  \
-        return _fetchFieldHost("local_orientations", outCount);                                                        \
-    }                                                                                                                  \
-    const float* getLocalScalesHost(int* outCount) override                                                            \
-    {                                                                                                                  \
-        return _fetchFieldHost("local_scales", outCount);                                                              \
+#define IMPL_XFORM_DATA_VIEW                                                                                            \
+    const float* getWorldPositions(int* outCount) override                                                              \
+    {                                                                                                                   \
+        return _fetchField("world_positions", outCount);                                                                \
+    }                                                                                                                   \
+    const float* getWorldOrientations(int* outCount) override                                                           \
+    {                                                                                                                   \
+        return _fetchField("world_orientations", outCount);                                                             \
+    }                                                                                                                   \
+    const float* getLocalTranslations(int* outCount) override                                                           \
+    {                                                                                                                   \
+        return _fetchField("local_translations", outCount);                                                             \
+    }                                                                                                                   \
+    const float* getLocalOrientations(int* outCount) override                                                           \
+    {                                                                                                                   \
+        return _fetchField("local_orientations", outCount);                                                             \
+    }                                                                                                                   \
+    const float* getLocalScales(int* outCount) override                                                                 \
+    {                                                                                                                   \
+        return _fetchField("local_scales", outCount);                                                                   \
+    }                                                                                                                   \
+    const float* getWorldPositionsHost(int* outCount) override                                                          \
+    {                                                                                                                   \
+        return _fetchFieldHost("world_positions", outCount);                                                            \
+    }                                                                                                                   \
+    const float* getWorldOrientationsHost(int* outCount) override                                                       \
+    {                                                                                                                   \
+        return _fetchFieldHost("world_orientations", outCount);                                                         \
+    }                                                                                                                   \
+    const float* getLocalTranslationsHost(int* outCount) override                                                       \
+    {                                                                                                                   \
+        return _fetchFieldHost("local_translations", outCount);                                                         \
+    }                                                                                                                   \
+    const float* getLocalOrientationsHost(int* outCount) override                                                       \
+    {                                                                                                                   \
+        return _fetchFieldHost("local_orientations", outCount);                                                         \
+    }                                                                                                                   \
+    const float* getLocalScalesHost(int* outCount) override                                                             \
+    {                                                                                                                   \
+        return _fetchFieldHost("local_scales", outCount);                                                               \
+    }                                                                                                                   \
+    bool getPrimFrameName(const char* primPath, char* outName, size_t maxLen) override                                  \
+    {                                                                                                                   \
+        if (!m_usdStage || !primPath || !outName || maxLen == 0)                                                        \
+            return false;                                                                                               \
+        pxr::UsdPrim prim = m_usdStage->GetPrimAtPath(pxr::SdfPath(primPath));                                          \
+        if (!prim)                                                                                                      \
+            return false;                                                                                               \
+        std::string name = isaacsim::core::includes::getName(prim);                                                     \
+        std::strncpy(outName, name.c_str(), maxLen - 1);                                                                \
+        outName[maxLen - 1] = '\0';                                                                                     \
+        return true;                                                                                                    \
+    }                                                                                                                   \
+    bool getPrimWorldTransform(const char* primPath, float* outPos3, float* outOri4) override                           \
+    {                                                                                                                   \
+        if (!m_usdStage || !m_usdrtStage || !primPath || !outPos3 || !outOri4)                                          \
+            return false;                                                                                               \
+        pxr::UsdPrim prim = m_usdStage->GetPrimAtPath(pxr::SdfPath(primPath));                                          \
+        if (!prim)                                                                                                      \
+            return false;                                                                                               \
+        usdrt::GfMatrix4d xform =                                                                                       \
+            isaacsim::core::includes::pose::computeWorldXformNoCache(m_usdStage, m_usdrtStage, pxr::SdfPath(primPath)); \
+        decomposeMatrix(xform, outPos3, outOri4);                                                                       \
+        return true;                                                                                                    \
     }
 
 // Macro for the buffer/callback management methods shared by all view types.
@@ -406,10 +438,15 @@ protected:
 class XformDataView final : public IXformDataView, public BaseDataView
 {
 public:
-    XformDataView(ViewData* data, ISimulationManager* simulationManager)
+    XformDataView(ViewData* data,
+                  ISimulationManager* simulationManager,
+                  pxr::UsdStageRefPtr usdStage,
+                  usdrt::UsdStageRefPtr usdrtStage)
     {
         m_data = data;
         m_simulationManager = simulationManager;
+        m_usdStage = std::move(usdStage);
+        m_usdrtStage = std::move(usdrtStage);
     }
     IMPL_XFORM_DATA_VIEW
     IMPL_BUFFER_MANAGEMENT
@@ -422,10 +459,15 @@ public:
 class RigidBodyDataView final : public IRigidBodyDataView, public BaseDataView
 {
 public:
-    RigidBodyDataView(ViewData* data, ISimulationManager* simulationManager)
+    RigidBodyDataView(ViewData* data,
+                      ISimulationManager* simulationManager,
+                      pxr::UsdStageRefPtr usdStage,
+                      usdrt::UsdStageRefPtr usdrtStage)
     {
         m_data = data;
         m_simulationManager = simulationManager;
+        m_usdStage = std::move(usdStage);
+        m_usdrtStage = std::move(usdrtStage);
     }
     IMPL_XFORM_DATA_VIEW
 
@@ -457,10 +499,15 @@ public:
 class ArticulationDataView final : public IArticulationDataView, public BaseDataView
 {
 public:
-    ArticulationDataView(ViewData* data, ISimulationManager* simulationManager)
+    ArticulationDataView(ViewData* data,
+                         ISimulationManager* simulationManager,
+                         pxr::UsdStageRefPtr usdStage,
+                         usdrt::UsdStageRefPtr usdrtStage)
     {
         m_data = data;
         m_simulationManager = simulationManager;
+        m_usdStage = std::move(usdStage);
+        m_usdrtStage = std::move(usdrtStage);
     }
     IMPL_XFORM_DATA_VIEW
 
@@ -543,7 +590,81 @@ public:
         return m_data->dofNamePtrs.data();
     }
 
+    bool getArticulationLinks(const char* rootPath, const LinkInfo** outLinks, size_t* outCount) override
+    {
+        *outLinks = nullptr;
+        *outCount = 0;
+
+        if (!m_usdStage || !rootPath)
+            return false;
+
+        pxr::SdfPath sdfRoot(rootPath);
+        pxr::UsdPrim rootPrim = m_usdStage->GetPrimAtPath(sdfRoot);
+        if (!rootPrim || !rootPrim.HasAPI<pxr::UsdPhysicsArticulationRootAPI>())
+            return false;
+
+        // Collect all descendant link paths (prims with UsdPhysicsRigidBodyAPI).
+        std::vector<std::string> linkPaths;
+        for (const pxr::UsdPrim& p : pxr::UsdPrimRange(rootPrim))
+        {
+            if (p.HasAPI<pxr::UsdPhysicsRigidBodyAPI>())
+                linkPaths.push_back(p.GetPath().GetString());
+        }
+
+        // For each link, find the closest ancestor that is also a link.
+        m_linkInfoStrings.clear();
+        m_linkInfoStrings.reserve(linkPaths.size() * 2);
+
+        struct LinkEntry
+        {
+            size_t pathIdx;
+            size_t parentPathIdx;
+        };
+        std::vector<LinkEntry> entries;
+        entries.reserve(linkPaths.size());
+
+        std::unordered_set<std::string> linkSet(linkPaths.begin(), linkPaths.end());
+
+        for (const std::string& linkPathStr : linkPaths)
+        {
+            pxr::SdfPath linkSdfPath(linkPathStr);
+            pxr::SdfPath ancestor = linkSdfPath.GetParentPath();
+            std::string parentStr;
+            while (ancestor != pxr::SdfPath::AbsoluteRootPath())
+            {
+                if (linkSet.count(ancestor.GetString()))
+                {
+                    parentStr = ancestor.GetString();
+                    break;
+                }
+                ancestor = ancestor.GetParentPath();
+            }
+
+            size_t pathIdx = m_linkInfoStrings.size();
+            m_linkInfoStrings.push_back(linkPathStr);
+            size_t parentIdx = m_linkInfoStrings.size();
+            m_linkInfoStrings.push_back(parentStr);
+
+            entries.push_back({ pathIdx, parentIdx });
+        }
+
+        m_linkInfoCache.resize(entries.size());
+        for (size_t i = 0; i < entries.size(); ++i)
+        {
+            m_linkInfoCache[i].path = m_linkInfoStrings[entries[i].pathIdx].c_str();
+            m_linkInfoCache[i].parentPath = m_linkInfoStrings[entries[i].parentPathIdx].c_str();
+        }
+
+        *outLinks = m_linkInfoCache.empty() ? nullptr : m_linkInfoCache.data();
+        *outCount = m_linkInfoCache.size();
+        return true;
+    }
+
     IMPL_BUFFER_MANAGEMENT
+
+private:
+    std::vector<std::string> m_linkInfoStrings;
+    std::vector<LinkInfo> m_linkInfoCache;
 };
 
 #undef IMPL_XFORM_DATA_VIEW
@@ -633,7 +754,7 @@ public:
         auto& data = _setupViewData(viewId, paths, numPaths, engineType, ViewType::eXform);
         _setupTransformCallbacks(data);
 
-        auto view = std::make_unique<XformDataView>(&data, m_simulationManager);
+        auto view = std::make_unique<XformDataView>(&data, m_simulationManager, m_usdStage, m_usdrtStage);
         auto* ptr = view.get();
         m_views[viewId] = std::move(view);
         return ptr;
@@ -650,7 +771,7 @@ public:
         if (data.engine == EngineType::ePhysX)
             _setupPhysxRigidBodyCallbacks(data);
 
-        auto view = std::make_unique<RigidBodyDataView>(&data, m_simulationManager);
+        auto view = std::make_unique<RigidBodyDataView>(&data, m_simulationManager, m_usdStage, m_usdrtStage);
         auto* ptr = view.get();
         m_views[viewId] = std::move(view);
         return ptr;
@@ -667,7 +788,7 @@ public:
         if (data.engine == EngineType::ePhysX)
             _setupPhysxArticulationCallbacks(data);
 
-        auto view = std::make_unique<ArticulationDataView>(&data, m_simulationManager);
+        auto view = std::make_unique<ArticulationDataView>(&data, m_simulationManager, m_usdStage, m_usdrtStage);
         auto* ptr = view.get();
         m_views[viewId] = std::move(view);
         return ptr;

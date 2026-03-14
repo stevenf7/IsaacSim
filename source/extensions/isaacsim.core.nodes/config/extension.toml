@@ -1,5 +1,5 @@
 [package]
-version = "5.4.0"
+version = "5.5.0"
 category = "Simulation"
 title = "Isaac Sim Core OmniGraph Nodes"
 description = "Provides OmniGraph nodes for Isaac Sim workflows including articulation control, simulation timing, camera info reading, viewport management, and physics step event handling."
@@ -110,8 +110,11 @@ stdoutFailPatterns.exclude = [
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacArticulationState: [/TestGraph] OmniGraph Error: No robot prim found for the articulation state*',
     '*[Error] [isaacsim.core.nodes] Physics OnSimulationStep node detected in a non on-demand Graph. Node will only trigger events if the parent Graph is set to compute on-demand*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacReadWorldPose: [/TestGraph] Omnigraph Error: no input prim*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacComputeTransformTree: [/TestGraph] Omnigraph Error: Please specify at least one valid target prim*',
+    '*[Error] [omni.graph.core.plugin] *ComputeTransformTree*Please specify at least one valid target prim*',
     "*[Error] [omni.physx.tensors.plugin] Articulation is not in a scene!*",
     "*[Error] [omni.physx.tensors.plugin] Pattern '/panda' did not match any rigid bodies*",
+    "*[Error] [omni.physx.tensors.plugin] Pattern * did not match any rigid bodies*",
     "*[Error] [omni.physx.tensors.plugin] Provided pattern list did not match any articulations*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacJointNameResolver: [/TestGraph] OmniGraph Error: no articulation root prim found*",
     "*Invalid RationalTime - zero denominator*",
