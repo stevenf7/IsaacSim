@@ -25,7 +25,8 @@ to a standalone script:
   5. Settings docs validation       -> validate_settings.py
   6. Extension structure validation  -> validate_extension_structure.py
   7. License header validation       -> validate_license_headers.py
-  8. Extension test discovery & run  -> run_extension_tests.py
+  8. Python package definitions      -> repo.sh validate_python_packages
+  9. Extension test discovery & run  -> run_extension_tests.py
 
 Determines the full set of changed files by comparing against the merge-base
 of the current branch with its upstream (auto-detected, or set via --base-branch).
@@ -634,7 +635,39 @@ def validate_license_headers(modified_files: list[Path], fix: bool = False, all_
 
 
 # ---------------------------------------------------------------------------
-# Check 8: Extension tests — delegates to run_extension_tests.py
+# Check 8: Python package definitions — delegates to repo.sh validate_python_packages
+# ---------------------------------------------------------------------------
+
+
+def check_python_packages() -> int:
+    """Validate Python package definitions via ``repo.sh validate_python_packages``.
+
+    Returns:
+        Exit code (0 if OK, 1 if issues).
+    """
+    if _IS_WINDOWS:
+        repo_script = REPO_ROOT / "repo.bat"
+        if not repo_script.exists():
+            log_warn("repo.bat not found; skipping python packages check.")
+            return 0
+        cmd = ["cmd.exe", "/c", str(repo_script), "validate_python_packages"]
+    else:
+        repo_script = REPO_ROOT / "repo.sh"
+        if not repo_script.exists():
+            log_warn("repo.sh not found; skipping python packages check.")
+            return 0
+        cmd = ["bash", str(repo_script), "validate_python_packages"]
+
+    proc = _run_teed(cmd, cwd=REPO_ROOT)
+    if proc.returncode != 0:
+        log_fail("Python package definitions check failed.")
+        return 1
+    log_pass("Python package definitions OK.")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# Check 9: Extension tests — delegates to run_extension_tests.py
 # ---------------------------------------------------------------------------
 
 
@@ -707,6 +740,7 @@ def build_parser() -> argparse.ArgumentParser:
     checks.add_argument("--settings", action="store_true", help="Validate settings docs against extension.toml")
     checks.add_argument("--structure", action="store_true", help="Validate extension directory structure")
     checks.add_argument("--license", action="store_true", help="Validate SPDX license headers on changed files")
+    checks.add_argument("--packages", action="store_true", help="Validate Python package definitions")
     checks.add_argument(
         "--test",
         action="store_true",
@@ -849,6 +883,7 @@ def _run(args: argparse.Namespace) -> int:
         args.settings,
         args.structure,
         args.license,
+        args.packages,
         args.test,
     ]
     run_all_validation = not any(check_flags)
@@ -917,6 +952,10 @@ def _run(args: argparse.Namespace) -> int:
         if run_all_validation or args.license:
             header("License Headers")
             total_errors += validate_license_headers(modified, fix=args.fix, all_files=args.all_extensions)
+
+        if run_all_validation or args.packages:
+            header("Python Package Definitions")
+            total_errors += check_python_packages()
 
     if args.test and not args.skip_tests:
         header("Extension Tests")

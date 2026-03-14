@@ -51,7 +51,7 @@ update_kit() {
     echo "Updating kit components..."
     pushd ../
     ./repo.sh update kit-kernel --patch
-    ./repo.sh check_python_package_definitions --update-omniverse-kit
+    ./repo.sh validate_python_packages --update-omniverse-kit
     # update GMO package and other dep versions
     python3 tools/isaac/update_isaac_sim_deps.py
     popd
