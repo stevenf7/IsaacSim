@@ -52,6 +52,7 @@ Tutorials
    :maxdepth: 1
 
    ../robot_setup_tutorials/index
+   ../openusd_tuning_tutorials/index
 
 
 Troubleshooting
