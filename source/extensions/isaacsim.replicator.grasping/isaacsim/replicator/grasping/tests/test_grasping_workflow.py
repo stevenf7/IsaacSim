@@ -17,7 +17,7 @@ import os
 
 import omni.kit.app
 import omni.usd
-from isaacsim.core.utils.extensions import get_extension_path_from_name
+from isaacsim.core.experimental.utils.app import get_extension_path
 from isaacsim.replicator.grasping.grasping_manager import GraspingManager
 from isaacsim.storage.native import get_assets_root_path_async
 
@@ -136,7 +136,7 @@ class TestGraspingWorkflow((omni.kit.test.AsyncTestCase)):
 
         stage_path = "/Isaac/Samples/Replicator/Stage/sdg_grasping_xarm.usd"
 
-        ext_path = get_extension_path_from_name("isaacsim.replicator.grasping")
+        ext_path = get_extension_path("isaacsim.replicator.grasping")
         config_path = os.path.join(ext_path, "data/gripper_configs/xarm_antipodal_soup_can.yaml")
         output_dir = os.path.join(os.getcwd(), "xarm_antipodal")
 
