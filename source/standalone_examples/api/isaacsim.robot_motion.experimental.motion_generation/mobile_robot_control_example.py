@@ -35,13 +35,14 @@ from typing import Optional
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.robot_motion.experimental.motion_generation as mg
 import numpy as np
+import omni.kit.app
 import omni.timeline
 import warp as wp
 from isaacsim.core.experimental.objects import Cylinder
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.viewports import set_camera_view
-from isaacsim.storage.native import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path_async
 
 
 # ============================================================================
@@ -483,23 +484,22 @@ def differential_drive_control(
 # ============================================================================
 # 6. Main Function
 # ============================================================================
-
-
-def setup_scene() -> tuple[Articulation, list[str]]:
+async def setup_scene() -> tuple[Articulation, list[str]]:
     """Setup the simulation scene and return the robot and joint space.
 
     Returns:
         Tuple of (robot articulation, robot_joint_space)
     """
     # Setup scene
-    stage_utils.create_new_stage(template="default stage")
+    await stage_utils.create_new_stage_async(template="default stage")
 
     # Add ground plane
-    assets_root_path = get_assets_root_path()
+    assets_root_path = await get_assets_root_path_async()
 
     # Add Jetbot robot
     jetbot_path = assets_root_path + "/Isaac/Robots/NVIDIA/Jetbot/jetbot.usd"
     stage_utils.add_reference_to_stage(usd_path=jetbot_path, path="/World/Jetbot")
+    await omni.kit.app.get_app().next_update_async()
 
     # Set camera view
     set_camera_view(eye=[0.0, 0.1, 1.5], target=[0.0, 0.1, 0.0], camera_prim_path="/OmniverseKit_Persp")
@@ -516,6 +516,7 @@ def setup_scene() -> tuple[Articulation, list[str]]:
 
     # Create articulation wrapper
     robot = Articulation("/World/Jetbot")
+    await omni.kit.app.get_app().next_update_async()
 
     # Initialize physics
     SimulationManager.set_physics_dt(1.0 / 60.0)
@@ -530,6 +531,7 @@ def setup_scene() -> tuple[Articulation, list[str]]:
 
 def main():
     """Run the complete robot control workflow."""
+
     # Parse command-line arguments
     parser = argparse.ArgumentParser(
         description="Differential drive controller example with optional noise and filtering"
@@ -562,8 +564,9 @@ def main():
     print(f"  Filter: {args.filter}")
     print("=" * 60)
 
-    # Setup scene
-    robot, robot_joint_space = setup_scene()
+    # Setup scene asynchronously - this keeps the app responsive during asset loading
+    print("Setting up scene (this may take a moment)...")
+    robot, robot_joint_space = simulation_app.run_coroutine(setup_scene())
 
     # Run differential drive example with optional noise and filter
     differential_drive_control(robot, robot_joint_space, add_noise=args.noise, use_filter=args.filter)
