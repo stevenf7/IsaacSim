@@ -40,12 +40,13 @@ from typing import Optional
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.robot_motion.experimental.motion_generation as mg
 import numpy as np
+import omni.kit.app
 import omni.timeline
 import warp as wp
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.viewports import set_camera_view
-from isaacsim.storage.native import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path_async
 
 
 # ============================================================================
@@ -201,19 +202,22 @@ def apply_desired_state_to_robot(robot: Articulation, desired_state: mg.RobotSta
 # ============================================================================
 
 
-def setup_scene() -> tuple[Articulation, list[str]]:
+async def setup_scene() -> tuple[Articulation, list[str]]:
     """Setup the simulation scene and return the robot and joint space.
 
     Returns:
         Tuple of (robot articulation, robot_joint_space)
     """
     # Setup scene
-    stage_utils.create_new_stage(template="default stage")
+    await stage_utils.create_new_stage_async(template="default stage")
 
     # Add Franka robot
-    assets_root_path = get_assets_root_path()
+    assets_root_path = await get_assets_root_path_async()
     franka_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
     robot_prim = stage_utils.add_reference_to_stage(usd_path=franka_path, path="/World/Franka")
+
+    # await the next kit step:
+    await omni.kit.app.get_app().next_update_async()
 
     # Set gripper variant (AlternateFinger is a common choice)
     robot_prim.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
@@ -224,6 +228,7 @@ def setup_scene() -> tuple[Articulation, list[str]]:
 
     # Create articulation wrapper
     robot = Articulation("/World/Franka")
+    await omni.kit.app.get_app().next_update_async()
 
     # Initialize physics
     SimulationManager.set_physics_dt(1.0 / 60.0)
@@ -236,7 +241,7 @@ def setup_scene() -> tuple[Articulation, list[str]]:
     # Start timeline
     timeline = omni.timeline.get_timeline_interface()
     timeline.play()
-    simulation_app.update()  # Allow physics to initialize
+    await omni.kit.app.get_app().next_update_async()
 
     # Force the robot to an initial default position
     # Default positions: [panda_joint1-7, panda_finger_joint1-2]
@@ -428,8 +433,9 @@ def main():
     print(f"  Linear: {args.linear}")
     print("=" * 60)
 
-    # Setup scene
-    robot, robot_joint_space = setup_scene()
+    # Setup scene asynchronously - this keeps the app responsive during asset loading
+    print("Setting up scene (this may take a moment)...")
+    robot, robot_joint_space = simulation_app.run_coroutine(setup_scene())
 
     # Run trajectory following example
     run_trajectory_following_example(robot, robot_joint_space, use_linear=args.linear)
