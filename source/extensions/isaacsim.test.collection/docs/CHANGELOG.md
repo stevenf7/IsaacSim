@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.0] - 2026-03-12
+### Changed
+- Add test for environment golden images
+
 ## [2.5.1] - 2026-03-07
 ### Fixed
 - Add `omni.kit.material.library` as a test dependency so `CreateAndBindMdlMaterialFromLibrary` is available for material tests

@@ -1,5 +1,5 @@
 [package]
-version = "2.5.1"
+version = "2.6.0"
 category = "Simulation"
 title = "Isaac Sim Tests"
 description = "Collection of tests for isaac sim that are not tied to a specific extension"
@@ -57,6 +57,7 @@ dependencies = [
     "omni.isaac.ml_archive",
     "omni.kit.material.library",
     "omni.kit.window.toolbar",
+    "isaacsim.test.utils",
 ]
 
 stdoutFailPatterns.exclude = [
