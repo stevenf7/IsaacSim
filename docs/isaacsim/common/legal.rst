@@ -13,3 +13,4 @@ Licenses
    Licensing Disclaimer </common/licensing-notices-disclaimers>
    Other Licenses </common/licenses>
    Redistributable Omniverse Software </common/redistributable-ov-software>
+   License FAQ </common/license-faq>
