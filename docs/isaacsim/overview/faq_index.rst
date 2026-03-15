@@ -48,6 +48,7 @@ FAQ
    Many sections have dedicated FAQ and troubleshooting pages, check them for more targeted information.
 
    - :ref:`Installation FAQ<isaac_sim_setup_faq>`
+   - :ref:`License FAQ<isaac_sim_license_faq>`
    - :ref:`isaac_sim_troubleshooting`
    - :ref:`isaac_sim_robot_simulation_tips`
 
