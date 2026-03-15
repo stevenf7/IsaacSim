@@ -28,7 +28,7 @@ License FAQ
    Yes. Isaac Sim is free to use for internal R&D and development purposes. The only exception is if you are
    redistributing Isaac Sim (with Omniverse Kit) as part of an application to third parties, or delivering
    Isaac Sim (with Omniverse Kit) as a service to third parties. In those cases, an
-   `NVIDIA Omniverse Enterprise (OVE) license <https://www.nvidia.com/en-us/omniverse/enterprise/>`__
+   `NVIDIA Omniverse Enterprise (OVE) license <https://docs.nvidia.com/ai-enterprise/planning-resource/licensing-guide/latest/licensing.html>`__
    is required for the underlying usage of Omniverse Kit.
 
 .. dropdown:: Do I need a license if I only sell simulation outputs (videos, reports, data)?
@@ -46,7 +46,7 @@ License FAQ
 
    Yes. If you provide a turn-key service where you install and configure the entire Isaac Sim (with Omniverse Kit)
    environment on a client's hardware, an
-   `NVIDIA Omniverse Enterprise (OVE) license <https://www.nvidia.com/en-us/omniverse/enterprise/>`__
+   `NVIDIA Omniverse Enterprise (OVE) license <https://docs.nvidia.com/ai-enterprise/planning-resource/licensing-guide/latest/licensing.html>`__
    **is** required because Isaac Sim (with Omniverse Kit) is being redistributed as part of an application
    or service to a third party.
 
@@ -57,7 +57,7 @@ License FAQ
 
    The additional NVIDIA-licensed components (Omniverse Kit SDK, assets, etc.) may not be modified or redistributed
    except as expressly permitted by their license terms. Redistribution of Isaac Sim (with Omniverse Kit) to third
-   parties requires an `NVIDIA Omniverse Enterprise license <https://www.nvidia.com/en-us/omniverse/enterprise/>`__.
+   parties requires an :doc:`NVIDIA Omniverse Enterprise license </common/NVIDIA_Omniverse_License_Agreement>`.
    See :doc:`/common/license-isaac-sim-additional` for specifics.
 
 .. dropdown:: What is the difference between the Isaac Sim open source license and the additional components license?
@@ -73,7 +73,8 @@ License FAQ
      which has separate terms regarding use, modification, and redistribution.
 
    When considering redistribution or service delivery to third parties, it is the additional components (specifically
-   Omniverse Kit) that trigger the requirement for an Omniverse Enterprise license — not the Apache 2.0 source code.
+   Omniverse Kit) that trigger the requirement for an :doc:`Omniverse Enterprise license </common/NVIDIA_Omniverse_License_Agreement>`
+   — not the Apache 2.0 source code.
 
 .. dropdown:: Is there a per-user or per-seat limit for using Isaac Sim?
 
@@ -84,7 +85,7 @@ License FAQ
    The :doc:`NVIDIA Isaac Sim Additional Software and Materials License </common/license-isaac-sim-additional>` for the
    additional components (Omniverse Kit SDK, assets, etc.) also does not define per-user limits for internal use.
    Redistribution or service delivery to third parties requires an
-   `NVIDIA Omniverse Enterprise license <https://www.nvidia.com/en-us/omniverse/enterprise/>`__.
+   :doc:`NVIDIA Omniverse Enterprise license </common/NVIDIA_Omniverse_License_Agreement>`.
 
 .. dropdown:: Where can I find Omniverse Enterprise pricing?
 
@@ -108,7 +109,7 @@ License FAQ
 
 .. dropdown:: Does Isaac Sim include third-party open source software?
 
-   Yes. Isaac Sim includes components licensed under various open source licenses. A full list of these
+   Yes. Isaac Sim includes components licensed under various open source licenses. A list of these
    third-party licenses is available at :doc:`/common/licenses`.
 
 .. dropdown:: Can I use Isaac Sim in an air-gapped or offline environment?
