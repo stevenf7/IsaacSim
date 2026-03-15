@@ -394,9 +394,9 @@ Setup Tips
 
                 sudo apt install aria2
                 cd ~/Downloads
-                aria2c "https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.001"
-                aria2c "https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.002"
-                aria2c "https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.003"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.001"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.002"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.003"
 
         .. tab-item:: Windows
 
@@ -404,9 +404,9 @@ Setup Tips
 
                 winget install --id=aria2.aria2 -e
                 cd %USERPROFILE%/Downloads
-                aria2c "https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.001"
-                aria2c "https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.002"
-                aria2c "https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.003"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.001"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.002"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.003"
 
     2. Unzip packages to a folder.
 
