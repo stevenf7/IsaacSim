@@ -22,8 +22,6 @@ The requirements for running |isaac-sim| on NVIDIA Brev are:
 
 1. An NVIDIA Brev account.
 
-2. The :ref:`isaac_sim_setup_livestream_webrtc` app.
-
 Setup
 ---------------------------
 
@@ -55,7 +53,7 @@ Follow these steps to launch a GPU instance in VM Mode on NVIDIA Brev:
     :align: center
     :alt: Instance creation
 
-7. Expose ports **49100** and **47998** only to your IP for security and access to WebRTC live streaming.
+7. Expose ports **49100**, **47998**, and **8210** only to your IP for security and access to WebRTC live streaming. Port 8210 is used by the web viewer when using Docker Compose.
 
 .. figure:: /images/isim_5.0_full_ref_external_brev_expose_ports.png
     :align: center
@@ -77,65 +75,31 @@ Follow these steps to launch a GPU instance in VM Mode on NVIDIA Brev:
 Running Isaac Sim Container
 ------------------------------------------------------------------------------------------------
 
-Follow the instructions below on a terminal:
+For container deployment and livestreaming, see :ref:`isaac_sim_setup_remote_headless_container` for full setup instructions.
 
-1. Get the public IP address of the instance:
-
-.. code-block:: console
-
-    $ curl -s ifconfig.me
-
-2. Pull the `Isaac Sim Container`_:
+The recommended approach for streaming on a cloud VM is to use **Docker Compose**, which handles volume mounts,
+GPU assignment, networking, and health checks automatically. Retrieve the public IP and launch with:
 
 .. code-block:: console
 
-    $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0-dev2
+    $ PUBLIC_IP=$(curl -s ifconfig.me)
+    $ mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
+    $ sudo chown -R 1234:1234 ~/docker
+    $ ISAACSIM_HOST=$PUBLIC_IP ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0-dev2 \
+        docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 
-3. Create the cached volume mounts on host:
+Then open ``http://<PUBLIC_IP>:8210`` in a Chromium-based browser.
 
-.. code-block:: console
+.. warning::
 
-    $ mkdir -p ~/docker/isaac-sim/cache/main/ov
-    $ mkdir -p ~/docker/isaac-sim/cache/main/warp
-    $ mkdir -p ~/docker/isaac-sim/cache/computecache
-    $ mkdir -p ~/docker/isaac-sim/config
-    $ mkdir -p ~/docker/isaac-sim/data/documents
-    $ mkdir -p ~/docker/isaac-sim/data/Kit
-    $ mkdir -p ~/docker/isaac-sim/logs
-    $ mkdir -p ~/docker/isaac-sim/pkg
-    $ sudo chown -R 1234:1234 ~/docker/isaac-sim
-
-4. Run the |isaac-sim_short| container with an interactive Bash session:
-
-.. code-block:: console
-
-    $ docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
-        -e "PRIVACY_CONSENT=Y" \
-        -v ~/docker/isaac-sim/cache/main:/isaac-sim/.cache:rw \
-        -v ~/docker/isaac-sim/cache/computecache:/isaac-sim/.nv/ComputeCache:rw \
-        -v ~/docker/isaac-sim/logs:/isaac-sim/.nvidia-omniverse/logs:rw \
-        -v ~/docker/isaac-sim/config:/isaac-sim/.nvidia-omniverse/config:rw \
-        -v ~/docker/isaac-sim/data:/isaac-sim/.local/share/ov/data:rw \
-        -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
-        -u 1234:1234 \
-        nvcr.io/nvidia/isaac-sim:6.0.0-dev2
-
-.. note::
-
-    * By using the ``-e "ACCEPT_EULA=Y"`` flag, you accept the license agreement of the image found at :doc:`NVIDIA Omniverse License Agreement</common/NVIDIA_Omniverse_License_Agreement>`.
-    * By using the ``-e "PRIVACY_CONSENT=Y"`` flag, you opt-in to the data collection agreement found at :doc:`../common/data-collection`. You may opt-out by not setting this flag.
-    * The ``-e "PRIVACY_USERID=<email>"`` flag can optionally be set for tagging the session logs.
-    * Add the ``--runtime=nvidia`` flag if there are issues detecting the GPU in the container.
-
-5. Start |isaac-sim_short| with native livestream mode:
-
-.. code-block:: console
-
-    $ PUBLIC_IP=$(curl -s ifconfig.me) && ./runheadless.sh --/exts/omni.kit.livestream.app/primaryStream/publicIp=$PUBLIC_IP --/exts/omni.kit.livestream.app/primaryStream/signalPort=49100 --/exts/omni.kit.livestream.app/primaryStream/streamPort=47998
-
-6. Connect to the same public IP address of the instance using the :ref:`isaac_sim_setup_livestream_webrtc` app.
+    |isaac-sim_short| livestreaming is designed for use on private or trusted networks. The streaming
+    endpoints do not include authentication or encryption. Make sure the exposed ports are restricted
+    to your client IP. If you need broader access, add a reverse proxy with HTTPS/TLS and authentication.
+    Users are responsible for securing any public-facing deployments.
 
 .. seealso::
 
-    - :ref:`isaac_sim_setup_remote_headless_container`
-    - :ref:`isaac_sim_manual_livestream_client`
+    - :ref:`isaac_sim_setup_remote_headless_container` for manual ``docker run`` instructions
+    - :ref:`isaac_sim_docker_compose_deployment` for Docker Compose configuration details
+    - :ref:`isaac_sim_manual_livestream_client` for streaming client options
+    - `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_ for advanced Docker options and multi-instance deployment

@@ -190,6 +190,14 @@ Running Isaac Sim
 Running Isaac Sim Container
 ------------------------------------------------------------------------------------------------
 
+.. warning::
+
+    |isaac-sim_short| livestreaming is designed for use on private or trusted networks. The streaming
+    endpoints do not include authentication or encryption. When deploying on cloud VMs, restrict the
+    streaming ports (49100/tcp, 47998/udp, 8210/tcp) to your client IP in the EC2 Security Group rather
+    than allowing all traffic. If you need broader access, add a reverse proxy with HTTPS/TLS and
+    authentication. Users are responsible for securing any public-facing deployments.
+
 1. Follow the instructions below on a Linux EC2 instance:
 
 .. tab-set::
@@ -200,8 +208,31 @@ Running Isaac Sim Container
 
         .. code-block:: console
 
-            sudo ufw allow 49100/tcp
-            sudo ufw allow 47998/udp
+            sudo ufw allow 49100/tcp comment 'Isaac Sim WebRTC signal'
+            sudo ufw allow 47998/udp comment 'Isaac Sim WebRTC stream'
+            sudo ufw allow 8210/tcp  comment 'Isaac Sim web viewer (Docker Compose)'
+            sudo ufw reload
+
+        Also add corresponding inbound rules to the EC2 **Security Group**:
+
+        .. list-table::
+            :widths: 15 15 70
+            :header-rows: 1
+
+            * - Port
+              - Protocol
+              - Purpose
+            * - ``49100``
+              - TCP
+              - WebRTC signaling
+            * - ``47998``
+              - UDP
+              - WebRTC media stream
+            * - ``8210``
+              - TCP
+              - Web viewer (Docker Compose only)
+
+        Restrict the **Source** to your client IP (e.g. ``<your-ip>/32``) rather than ``0.0.0.0/0`` to avoid exposing the unauthenticated stream to the public Internet.
 
         2. Install the |nv| Container Toolkit:
 
@@ -275,6 +306,15 @@ Running Isaac Sim Container
             $ PUBLIC_IP=$(curl -s ifconfig.me) && ./runheadless.sh --/exts/omni.kit.livestream.app/primaryStream/publicIp=$PUBLIC_IP --/exts/omni.kit.livestream.app/primaryStream/signalPort=49100 --/exts/omni.kit.livestream.app/primaryStream/streamPort=47998
 
         7. Connect to the same public IP address of the instance using the :ref:`isaac_sim_setup_livestream_webrtc` app.
+
+        Alternatively, use Docker Compose to deploy |isaac-sim_short| with a browser-based web viewer instead of the native streaming client:
+
+        .. code-block:: console
+
+            $ ISAACSIM_HOST=$PUBLIC_IP ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0-dev2 \
+                docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+
+        Then open ``http://<PUBLIC_IP>:8210`` in a Chromium-based browser. See :ref:`isaac_sim_docker_compose_deployment` or the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_ for full details.
 
 .. seealso::
 

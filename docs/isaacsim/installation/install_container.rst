@@ -147,6 +147,13 @@ This section describes how to run the |isaac-sim| container in headless mode wit
         -u 1234:1234 \
         nvcr.io/nvidia/isaac-sim:6.0.0-dev2
 
+.. important::
+
+    ``--network=host`` is required for WebRTC livestreaming. The NVIDIA streaming SDK binds its UDP media
+    socket to the ``ISAACSIM_HOST`` address, which must be a real network interface inside the container.
+    Docker bridge networking (``-p`` port publishing) does not work because the host IP is not available
+    inside the container's network namespace — signaling may connect, but the video stream will not.
+
 .. note::
 
     * The Isaac Sim container now runs as a rootless user.
@@ -163,6 +170,38 @@ This section describes how to run the |isaac-sim| container in headless mode wit
         * See :ref:`isaac_sim_setup_net_host` to expose all ports of the container and connect to an external Nucleus server.
         * See :ref:`isaac_sim_setup_set_omni_server` to set the default Nucleus server.
         * See :ref:`isaac_sim_setup_set_omni_user` to set the default credentials for any Nucleus server.
+
+.. _isaac_sim_container_env_vars:
+
+**Environment Variables**
+
+The following environment variables can be passed to ``docker run`` with ``-e`` to control container behavior:
+
+.. list-table::
+    :widths: 25 10 65
+    :header-rows: 1
+
+    * - Variable
+      - Required
+      - Description
+    * - ``ACCEPT_EULA``
+      - Yes
+      - Accept the license agreement (set to ``Y``).
+    * - ``PRIVACY_CONSENT``
+      - No
+      - Opt-in to data collection (set to ``Y``). See :doc:`../common/data-collection`.
+    * - ``OMNI_SERVER``
+      - No
+      - Override the default asset root (passed as ``--/persistent/isaac/asset_root/default``).
+    * - ``ISAACSIM_HOST``
+      - No
+      - Public or private IP of the host for livestream. Default: ``127.0.0.1``.
+    * - ``ISAACSIM_SIGNAL_PORT``
+      - No
+      - WebRTC signaling port. Default: ``49100``.
+    * - ``ISAACSIM_STREAM_PORT``
+      - No
+      - WebRTC media streaming port. Default: ``47998``.
 
 6. Check if your system is compatible with |isaac-sim_short|:
 
@@ -182,11 +221,36 @@ This section describes how to run the |isaac-sim| container in headless mode wit
     * You should see the text "System checking result: PASSED" if your system is compaitble.
 
 
+.. _isaac_sim_container_streaming_ports:
+
 7. Start |isaac-sim_short| with native livestream mode:
 
 .. code-block:: console
 
     $ ./runheadless.sh -v
+
+**Streaming Ports**
+
+If the host firewall is active (e.g. UFW), allow the following ports:
+
+.. list-table::
+    :widths: 15 15 70
+    :header-rows: 1
+
+    * - Port
+      - Protocol
+      - Purpose
+    * - ``8210``
+      - TCP
+      - Web viewer (Docker Compose only)
+    * - ``49100``
+      - TCP
+      - WebRTC signaling
+    * - ``47998``
+      - UDP
+      - WebRTC media stream
+
+If you override ports via ``ISAACSIM_SIGNAL_PORT``, ``ISAACSIM_STREAM_PORT``, or ``WEB_VIEWER_PORT``, open those ports instead.
 
 .. warning::
 
@@ -210,10 +274,12 @@ This section describes how to run the |isaac-sim| container in headless mode wit
 
     * See :ref:`isaac_sim_setup_keep_configs` to make |isaac-sim_short| configs and cache persistent when using containers.
 
-8. Connect a streaming client to view |isaac-sim_short|. There are two options:
+8. Connect the native :ref:`isaac_sim_setup_livestream_webrtc` to view |isaac-sim_short|.
+   Download it from the :ref:`isaac_sim_latest_release` section, enter the IP address of the host, and click **Connect**.
 
-    * **Desktop client**: Download and run the :ref:`isaac_sim_setup_livestream_webrtc` from the :ref:`isaac_sim_latest_release` section. Enter the IP address of the host and click **Connect**.
-    * **Web-based client**: Use Docker Compose to deploy a browser-based viewer alongside |isaac-sim_short|. See :ref:`isaac_sim_web_streaming_client` or :ref:`isaac_sim_docker_compose_deployment` below.
+   Alternatively, if you prefer a browser-based viewer with no client installation, use the
+   :ref:`Docker Compose deployment <isaac_sim_docker_compose_deployment>` below instead of the manual
+   ``docker run`` workflow above.
 
 9. Proceed to :ref:`isaac_sim_intro_quickstart_series` to begin your first tutorial.
 
@@ -225,6 +291,33 @@ This section describes how to run the |isaac-sim| container in headless mode wit
     * The latest NVIDIA drivers may not be fully supported for some features like livestreaming. See :doc:`Technical Requirements<dev-guide:common/technical-requirements>` for recommended drivers.
     * See also `Isaac Sim Dockerfiles`_ to build your own custom |isaac-sim_short| container.
     * You can debug :ref:`isaac_sim_app_tutorial_advanced_python_debugging_docker`.
+    * **Stale volume mounts**: Old cached data in Docker volume mount directories can cause crashes, config errors,
+      or livestream failures. Remove the existing mounts and recreate them:
+
+      .. code-block:: console
+
+          $ sudo rm -rf ~/docker/isaac-sim
+          $ mkdir -p ~/docker/isaac-sim/cache/main/ov
+          $ mkdir -p ~/docker/isaac-sim/cache/main/warp
+          $ mkdir -p ~/docker/isaac-sim/cache/computecache
+          $ mkdir -p ~/docker/isaac-sim/config
+          $ mkdir -p ~/docker/isaac-sim/data/documents
+          $ mkdir -p ~/docker/isaac-sim/data/Kit
+          $ mkdir -p ~/docker/isaac-sim/logs
+          $ mkdir -p ~/docker/isaac-sim/pkg
+          $ sudo chown -R 1234:1234 ~/docker/isaac-sim
+
+    * **Second browser cannot connect**: Only one browser tab or window can be connected to |isaac-sim_short|
+      at a time. Close the existing browser session before opening a new one.
+    * **Clipboard not working in web viewer**: The browser Clipboard API requires a secure context. When
+      accessing the web viewer over HTTP from a non-localhost address, clipboard forwarding is blocked.
+      In Chrome, open ``chrome://flags/#unsafely-treat-insecure-origin-as-secure``, add the web viewer
+      URL (e.g. ``http://192.168.1.100:8210``), and relaunch the browser.
+
+.. tip::
+
+    To build a Docker image from source instead of pulling from NGC, see the `Docker Build Tools README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_.
+    The README also covers multi-instance deployment with dedicated GPUs, cloud VM configuration (AWS, GCP, Azure), and advanced Docker options.
 
 
 .. _isaac_sim_docker_compose_deployment:

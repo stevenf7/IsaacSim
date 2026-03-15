@@ -35,7 +35,8 @@ Setup Tips
     .. rubric:: |isaac-sim_short| Full Streaming App (using |isaac-sim_short| WebRTC Streaming Client)
 
     This is a headless version of |isaac-sim_short|. It can be run remotely on a workstation with an RTX GPU
-    and accessed from the :ref:`isaac_sim_setup_livestream_webrtc` app available for Linux, Windows and macOS.
+    and accessed from the :ref:`isaac_sim_setup_livestream_webrtc` app available for Linux, Windows and macOS,
+    or from a :ref:`web-based viewer <isaac_sim_web_streaming_client>` deployed via Docker Compose.
 
     This mode includes all Isaac Sim extensions and most of them are enabled by default.
 
@@ -393,9 +394,9 @@ Setup Tips
 
                 sudo apt install aria2
                 cd ~/Downloads
-                aria2c "https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.001"
-                aria2c "https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.002"
-                aria2c "https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.003"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.001"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.002"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.003"
 
         .. tab-item:: Windows
 
@@ -403,9 +404,9 @@ Setup Tips
 
                 winget install --id=aria2.aria2 -e
                 cd %USERPROFILE%/Downloads
-                aria2c "https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.001"
-                aria2c "https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.002"
-                aria2c "https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.003"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.001"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.002"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.003"
 
     2. Unzip packages to a folder.
 
@@ -653,7 +654,8 @@ Setup Tips
         $ sudo docker run -it --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm --network=host nvcr.io/nvidia/isaac-sim:6.0.0-dev2
         $ ./runheadless.sh
 
-    2. Proceed to :ref:`isaac_sim_setup_livestream_webrtc` to live stream |isaac-sim| remotely.
+    2. Proceed to :ref:`isaac_sim_setup_livestream_webrtc` to connect the native streaming client and
+       view |isaac-sim| remotely. See :ref:`isaac_sim_manual_livestream_client` for all streaming options.
 
     3. When you need to exit, in a separate terminal start an interactive bash session inside the same
     container that's running the headless server and kill the |isaac-sim| related processes.

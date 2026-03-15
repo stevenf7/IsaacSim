@@ -17,9 +17,9 @@ For a quick install on Linux or Windows:
 
 #. Download one of the following:
 
-    * `Linux (x86_64) <https://download.isaacsim.omniverse.nvidia.com/isaac-sim-standalone-5.1.0-linux-x86_64.zip>`__.
-    * `Linux (aarch64) <https://download.isaacsim.omniverse.nvidia.com/isaac-sim-standalone-5.1.0-linux-aarch64.zip>`__.
-    * `Windows <https://download.isaacsim.omniverse.nvidia.com/isaac-sim-standalone-5.1.0-windows-x86_64.zip>`__.
+    * `Linux (x86_64) <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-5.1.0-linux-x86_64.zip>`__.
+    * `Linux (aarch64) <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-5.1.0-linux-aarch64.zip>`__.
+    * `Windows <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-5.1.0-windows-x86_64.zip>`__.
 
 #. From the terminal or command line, execute the following commands:
 

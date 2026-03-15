@@ -93,7 +93,9 @@ To launch the Alibaba ECS Instance, use the following steps:
     .. note::
 
         * Pay special attention here to ensure that all the ports required by |isaac-sim_short| are opened and secure.
-        * For details, see :ref:`isaac_sim_setup_livestream_webrtc`.
+          Open TCP port **49100** (WebRTC signaling), UDP port **47998** (WebRTC media stream), and TCP port **8210** (web viewer, Docker Compose only).
+          Restrict access to your client IP for security.
+        * For streaming client options (native desktop app or web-based viewer via Docker Compose), see :ref:`isaac_sim_manual_livestream_client`.
 
     .. figure:: /images/isaac_cloud_alibaba_6.jpg
         :align: center

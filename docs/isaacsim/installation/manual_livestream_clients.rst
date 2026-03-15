@@ -19,6 +19,15 @@ Livestream Clients
 
 This section shows you the methods of livestreaming a headless instance of |isaac-sim_short|.
 
+.. warning::
+
+    |isaac-sim_short| livestreaming (both the native desktop client and the web-based viewer) is designed
+    for use on private or trusted networks. The streaming endpoints do not include authentication or
+    encryption. Do **not** expose them on the public Internet without additional safeguards such as a
+    reverse proxy with HTTPS/TLS and authentication (e.g. nginx with SSL certificates and basic auth).
+    When deploying on cloud VMs, restrict the streaming ports to your client IP using firewall rules.
+    Users are responsible for securing any public-facing deployments.
+
 .. note::
 
     * Only one method of streaming can be used at a time for each |isaac-sim_short| instance.
@@ -28,6 +37,14 @@ This section shows you the methods of livestreaming a headless instance of |isaa
     * See `Video Encode and Decode Support Matrix`_ for supported GPU with NVENC.
     * By downloading or using the NVIDIA Isaac Sim WebRTC Streaming Client, you agree to the :doc:`NVIDIA Isaac Sim WebRTC Streaming Client License Agreement </common/license-isaac-sim-webrtc-streaming-client>`.
     * |isaac-sim_short| WebRTC Streaming Client is not yet supported on aarch64. See: :ref:`aarch64 Limitations<isaac_sim_requirements_aarch64_limitations>`.
+
+    There are two ways to connect to a livestreaming |isaac-sim_short| instance:
+
+    * **Isaac Sim WebRTC Streaming Client** — A native desktop application available for Windows, macOS, and Linux.
+      Download it from the :ref:`isaac_sim_latest_release` section. Best suited for local or same-network connections.
+    * **Web-based viewer (Docker Compose)** — A browser-based client deployed alongside |isaac-sim_short| using Docker Compose.
+      Runs in any Chromium-based browser with no installation required. Recommended for cloud
+      and remote deployments. See :ref:`isaac_sim_web_streaming_client` below.
 
 
 .. _isaac_sim_setup_livestream_webrtc:
@@ -67,7 +84,13 @@ This section shows you the methods of livestreaming a headless instance of |isaa
             cd /isaac-sim
             ./runheadless.sh
 
-        Alternatively, use Docker Compose to deploy |isaac-sim_short| with a web-based streaming client. See :ref:`isaac_sim_web_streaming_client` below or the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_ for details.
+        .. important::
+
+            The container must be started with ``--network=host`` for livestreaming to work.
+            Docker bridge networking (``-p`` port mapping) does not work with WebRTC because
+            the host IP is not reachable from inside the container's network namespace.
+
+        For a simpler setup, Docker Compose is recommended for containerized streaming. It handles volume mounts, GPU assignment, networking, and health checks automatically. See :ref:`isaac_sim_web_streaming_client` below or the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_ for details.
 
     .. tab-item:: PIP
 
@@ -99,8 +122,22 @@ This section shows you the methods of livestreaming a headless instance of |isaa
 
     * The following ports must be opened on the host running Isaac Sim:
 
-        * ``UDP port 47998``
-        * ``TCP port 49100``
+      .. list-table::
+          :widths: 15 15 70
+          :header-rows: 1
+
+          * - Port
+            - Protocol
+            - Purpose
+          * - ``49100``
+            - TCP
+            - WebRTC signaling
+          * - ``47998``
+            - UDP
+            - WebRTC media stream
+          * - ``8210``
+            - TCP
+            - Web viewer (Docker Compose only)
 
 
 2. Make sure that the |isaac-sim_short| app is loaded and ready. It can take a few minutes for |isaac-sim_short| to be completely loaded the first time.
@@ -158,10 +195,6 @@ As an alternative to the native desktop client, you can stream |isaac-sim_short|
 For full details on Docker Compose configuration, multi-instance deployment, and environment variables, see the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_.
 
 This method does not require downloading or installing a native application. The web viewer is built from the `NVIDIA Omniverse Web SDK <https://docs.omniverse.nvidia.com/ov-web-sdk/latest/web-sample/overview.html>`_ (``@nvidia/create-ov-web-rtc-app``) and connects to |isaac-sim_short| over WebRTC.
-
-.. warning::
-
-    |isaac-sim_short| and the web viewer are designed for use on private/trusted networks. They do not include authentication or encryption. If you need to expose them over the Internet, add a reverse proxy with HTTPS/TLS and authentication (e.g. nginx with SSL certificates and basic auth). Users are responsible for securing any public-facing deployments.
 
 **Quick Start:**
 
