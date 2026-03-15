@@ -44,6 +44,10 @@ Download |isaac-sim_short|
 
     * By downloading or using the NVIDIA Isaac Sim WebRTC Streaming Client, you agree to the :doc:`NVIDIA Isaac Sim WebRTC Streaming Client License Agreement </common/license-isaac-sim-webrtc-streaming-client>`.
 
+    * The Isaac Sim WebRTC Streaming Client is a native desktop application for connecting to a headless |isaac-sim_short| instance.
+      As an alternative, a :ref:`web-based viewer <isaac_sim_web_streaming_client>` can be deployed via Docker Compose
+      with no client installation required. See :ref:`isaac_sim_manual_livestream_client` for a comparison of both options.
+
 .. _isaac_sim_latest_release:
 
 Latest Release

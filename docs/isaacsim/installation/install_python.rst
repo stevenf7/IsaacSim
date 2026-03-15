@@ -323,7 +323,7 @@ The following table lists the most common *Isaac Sim - Python packages* commands
     * - ``isaacsim isaacsim.exp.full``
       - Standard |isaac-sim_short| app, as it is executed from binary. It is the default experience if no experience file is specified (for example: ``isaacsim``).
     * - ``isaacsim isaacsim.exp.full.streaming --no-window``
-      - Headless livestreaming |isaac-sim_short| (WebRTC protocol). See :ref:`isaac_sim_setup_livestream_webrtc` for more details.
+      - Headless livestreaming |isaac-sim_short| (WebRTC protocol). Connect using the native :ref:`WebRTC Streaming Client <isaac_sim_setup_livestream_webrtc>`. See :ref:`isaac_sim_manual_livestream_client` for all streaming options.
 
 
 Running Python Scripts
