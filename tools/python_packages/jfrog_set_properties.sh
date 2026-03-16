@@ -58,9 +58,9 @@ for artifactory_package in $ARTIFACTORY_PYTHON_PACKAGES; do
     common_properties="component_name=$component_name;version=$component_version;branch=$component_branch;release_approver=$component_release_approver;release_status=$component_release_status"
 
     # linux (x86_64)
-    curl -u $ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD -X PUT "$ARTIFACTORY_URL/$artifactory_package/$1/$wheel_name-$1-cp311-none-manylinux_2_35_x86_64.whl?properties=os=linux;arch=x86_64;$common_properties&recursive=0"
+    curl -u $ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD -X PUT "$ARTIFACTORY_URL/$artifactory_package/$1/$wheel_name-$1-cp312-none-manylinux_2_35_x86_64.whl?properties=os=linux;arch=x86_64;$common_properties&recursive=0"
     # linux (aarch64)
-    curl -u $ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD -X PUT "$ARTIFACTORY_URL/$artifactory_package/$1/$wheel_name-$1-cp311-none-manylinux_2_35_aarch64.whl?properties=os=linux;arch=aarch64;$common_properties&recursive=0"
+    curl -u $ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD -X PUT "$ARTIFACTORY_URL/$artifactory_package/$1/$wheel_name-$1-cp312-none-manylinux_2_35_aarch64.whl?properties=os=linux;arch=aarch64;$common_properties&recursive=0"
     # windows (x86_64)
-    curl -u $ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD -X PUT "$ARTIFACTORY_URL/$artifactory_package/$1/$wheel_name-$1-cp311-none-win_amd64.whl?properties=os=windows;arch=x86_64;$common_properties&recursive=0"
+    curl -u $ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD -X PUT "$ARTIFACTORY_URL/$artifactory_package/$1/$wheel_name-$1-cp312-none-win_amd64.whl?properties=os=windows;arch=x86_64;$common_properties&recursive=0"
 done
