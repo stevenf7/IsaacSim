@@ -21,9 +21,9 @@
 .. |isassets1_510_zip| replace:: `Robots & Sensors <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-robots_and_sensors-5.1.0.zip>`__
 .. |isassets2_510_zip| replace:: `Materials & Props <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-materials_and_props-5.1.0.zip>`__
 .. |isassets3_510_zip| replace:: `Environments <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-environments-5.1.0.zip>`__
-.. |isassets_c1_510_zip| replace:: `Complete (Part 1 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.001>`__
-.. |isassets_c2_510_zip| replace:: `Complete (Part 2 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.002>`__
-.. |isassets_c3_510_zip| replace:: `Complete (Part 3 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.003>`__
+.. |isassets_c1_510_zip| replace:: `Complete (Part 1 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.001.zip>`__
+.. |isassets_c2_510_zip| replace:: `Complete (Part 2 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.002.zip>`__
+.. |isassets_c3_510_zip| replace:: `Complete (Part 3 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.003.zip>`__
 
 
 .. _isaac_sim_download:

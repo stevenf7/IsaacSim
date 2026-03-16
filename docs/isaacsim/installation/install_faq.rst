@@ -394,9 +394,9 @@ Setup Tips
 
                 sudo apt install aria2
                 cd ~/Downloads
-                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.001"
-                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.002"
-                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.003"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.001.zip"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.002.zip"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.003.zip"
 
         .. tab-item:: Windows
 
@@ -404,9 +404,9 @@ Setup Tips
 
                 winget install --id=aria2.aria2 -e
                 cd %USERPROFILE%/Downloads
-                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.001"
-                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.002"
-                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.zip.003"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.001.zip"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.002.zip"
+                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.003.zip"
 
     2. Unzip packages to a folder.
 
@@ -417,7 +417,7 @@ Setup Tips
 
                 mkdir ~/isaacsim_assets
                 cd ~/Downloads
-                cat isaac-sim-assets-complete-5.1.0.zip.001 isaac-sim-assets-complete-5.1.0.zip.002 isaac-sim-assets-complete-5.1.0.zip.003 > isaac-sim-assets-complete-5.1.0.zip
+                cat isaac-sim-assets-complete-5.1.0.001.zip isaac-sim-assets-complete-5.1.0.002.zip isaac-sim-assets-complete-5.1.0.003.zip > isaac-sim-assets-complete-5.1.0.zip
                 unzip "isaac-sim-assets-complete-5.1.0.zip" -d ~/isaacsim_assets
 
         .. tab-item:: Windows
@@ -426,7 +426,7 @@ Setup Tips
 
                 mkdir C:\isaacsim_assets
                 cd %USERPROFILE%/Downloads
-                copy /b isaac-sim-assets-complete-5.1.0.zip.001 + isaac-sim-assets-complete-5.1.0.zip.002 + isaac-sim-assets-complete-5.1.0.zip.003 isaac-sim-assets-complete-5.1.0.zip
+                copy /b isaac-sim-assets-complete-5.1.0.001.zip + isaac-sim-assets-complete-5.1.0.002.zip + isaac-sim-assets-complete-5.1.0.003.zip isaac-sim-assets-complete-5.1.0.zip
                 tar -xvzf "isaac-sim-assets-complete-5.1.0.zip" -C C:\isaacsim_assets
 
     .. note::
