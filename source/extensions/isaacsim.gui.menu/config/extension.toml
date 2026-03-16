@@ -1,5 +1,5 @@
 [package]
-version = "2.10.3"
+version = "2.10.4"
 category = "Simulation"
 title = "Isaac Sim Menus"
 description = "Provides Isaac Sim-specific menu bar functionality including File, Edit, Create, Window, Tools, Utilities, Layouts, and Help menus with robotics-focused operations."
@@ -13,8 +13,7 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"isaacsim.core.api" = {}
-"isaacsim.core.utils" = {}
+"isaacsim.core.rendering_manager" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.robot.schema" = {}
 "isaacsim.storage.native" = {}
@@ -31,9 +30,6 @@ name = "isaacsim.gui.menu.tests"
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -42,7 +38,6 @@ args = [
 timeout = 900
 dependencies = [
     "isaacsim.test.utils",
-    "omni.isaac.ml_archive",
 ]
 args = [
     "--enable",

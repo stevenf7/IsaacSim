@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.10.4] - 2026-03-16
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [2.10.3] - 2026-03-12
 ### Changed
 - Remove unused golden images
