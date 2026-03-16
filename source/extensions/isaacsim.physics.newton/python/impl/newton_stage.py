@@ -161,11 +161,13 @@ class NewtonStage:
         if self.cfg.time_step_app:
             # Use half of sim_dt as tolerance to avoid floating point precision issues
             eps = self.sim_dt * 0.5
+            substep_count = 0
             while self.sim_time + eps < final_time:
                 if hasattr(self, "simulation_functions") and self.simulation_functions:
                     self.simulation_functions.simulate(self.sim_dt, self.sim_time)
                 else:
                     self.step_sim(self.sim_dt)
+                substep_count += 1
 
         self.update_fabric()
 

@@ -192,14 +192,11 @@ class FrankaOpenDrawerPolicy(PolicyController):
 
         self._policy_counter += 1
 
-    def initialize(self, physics_sim_view=None):
+    def initialize(self):
         """Initializes the Franka arm articulation with position control mode and configures solver parameters.
         Sets up drawer link indices and specific physics solver settings for stable manipulation.
-
-        Args:
-            physics_sim_view: The physics simulation view
         """
-        super().initialize(physics_sim_view=physics_sim_view, control_mode="position", set_articulation_props=False)
+        super().initialize(control_mode="position", set_articulation_props=False)
 
         self.drawer_link_idx = self.cabinet.get_dof_indices("drawer_top_joint")
 

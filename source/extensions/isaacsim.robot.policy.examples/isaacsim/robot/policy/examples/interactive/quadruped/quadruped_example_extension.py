@@ -60,8 +60,9 @@ class QuadrupedExampleExtension(omni.ext.IExt):
         self.example_name = "Quadruped"
         self.category = "Policy"
 
-        overview = "This Example shows an Boston Dynamics Spot running a flat terrain policy trained in Isaac Lab"
-        overview += "\n\tKeybord Input:"
+        overview = "This Example shows a Boston Dynamics Spot running a flat terrain policy trained in Isaac Lab. "
+        overview += "Use the Physics Engine menu in the viewport to switch between PhysX and Newton before loading. "
+        overview += "\n\n\tKeyboard Input:"
         overview += "\n\t\tup arrow / numpad 8: Move Forward"
         overview += "\n\t\tdown arrow/ numpad 2: Move Reverse"
         overview += "\n\t\tleft arrow/ numpad 4: Move Left"

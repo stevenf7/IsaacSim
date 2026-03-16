@@ -51,7 +51,9 @@ class AnymalFlatTerrainPolicy(PolicyController):
         usd_path: str | None = None,
         position: list[float] | None = None,
         orientation: list[float] | None = None,
-    ):
+        policy_path: str | None = None,
+        env_config_path: str | None = None,
+    ) -> None:
         """
         Initialize anymal robot, import policy and actuator network.
 
@@ -61,17 +63,21 @@ class AnymalFlatTerrainPolicy(PolicyController):
             usd_path: The robot usd filepath in the directory
             position: The position of the robot
             orientation: The orientation of the robot
+            policy_path: Path to the policy file. If None, uses default policy.
+            env_config_path: Path to the environment config file. If None, uses default config.
         """
         assets_root_path = get_assets_root_path()
-        if usd_path == None:
-            usd_path = assets_root_path + "/Isaac/Robots/ANYbotics/anymal_c/anymal_c.usd"
+        if usd_path is None:
+            usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/anybotics_anymal_c/anymal_c/anymal_c.usda"
 
         super().__init__(prim_path, root_path, usd_path, position, orientation)
 
-        self.load_policy(
-            assets_root_path + "/Isaac/Samples/Policies/Anymal_Policies/anymal_policy.pt",
-            assets_root_path + "/Isaac/Samples/Policies/Anymal_Policies/anymal_env.yaml",
-        )
+        if policy_path is None:
+            policy_path = assets_root_path + "/Isaac/Samples/Policies/Anymal_Policies/anymal_policy.pt"
+        if env_config_path is None:
+            env_config_path = assets_root_path + "/Isaac/Samples/Policies/Anymal_Policies/anymal_env.yaml"
+
+        self.load_policy(policy_path, env_config_path)
         self._action_scale = 0.5
         self._previous_action = torch.zeros(12)
         self._policy_counter = 0
@@ -151,13 +157,9 @@ class AnymalFlatTerrainPolicy(PolicyController):
         self.robot.set_dof_efforts(wp.from_torch(joint_torques))
         self._policy_counter += 1
 
-    def initialize(self, physics_sim_view=None):
-        """Initialize the articulation interface and set up drive mode.
-
-        Args:
-            physics_sim_view: The physics simulation view
-        """
-        super().initialize(physics_sim_view=physics_sim_view, control_mode="effort")
+    def initialize(self):
+        """Initialize the articulation interface and set up drive mode."""
+        super().initialize(control_mode="effort")
 
         import warnings
 

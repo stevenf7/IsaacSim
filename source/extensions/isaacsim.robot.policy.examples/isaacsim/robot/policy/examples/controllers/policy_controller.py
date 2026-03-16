@@ -26,6 +26,7 @@ from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.experimental.utils.prim import get_prim_at_path
 from isaacsim.core.experimental.utils.stage import define_prim
+from isaacsim.core.simulation_manager import SimulationManager
 from omni.physics.core import get_physics_simulation_interface
 
 from .config_loader import get_articulation_props, get_physics_properties, get_robot_joint_properties, parse_env_config
@@ -66,6 +67,25 @@ class PolicyController(ABC):
         else:
             self.robot = Articulation(paths=root_path, positions=position, orientations=orientation)
 
+        self._set_physics_variant(prim_path)
+
+    _ENGINE_TO_VARIANT = {"physx": "physx", "newton": "mujoco"}
+
+    def _set_physics_variant(self, prim_path: str) -> None:
+        """Set the Physics variant on the multi-physics asset to match the active engine."""
+        stage = omni.usd.get_context().get_stage()
+        prim = stage.GetPrimAtPath(prim_path)
+        if not prim.IsValid():
+            return
+        variant_sets = prim.GetVariantSets()
+        if "Physics" not in variant_sets.GetNames():
+            return
+        engine = (SimulationManager.get_default_engine() or "").lower()
+        if engine not in ("physx", "newton"):
+            engine = SimulationManager.get_active_physics_engine()
+        variant = self._ENGINE_TO_VARIANT.get(engine, engine)
+        variant_sets.GetVariantSet("Physics").SetVariantSelection(variant)
+
     def load_policy(self, policy_file_path, policy_env_path):
         """Loads a policy from a file.
 
@@ -82,7 +102,6 @@ class PolicyController(ABC):
 
     def initialize(
         self,
-        physics_sim_view: omni.physics.tensors.SimulationView | None = None,
         effort_modes: Literal["force", "acceleration"] = "force",
         control_mode: Literal["position", "velocity", "effort"] = "position",
         set_gains: bool = True,
@@ -92,23 +111,27 @@ class PolicyController(ABC):
         """Initializes the robot and sets up the controller.
 
         Args:
-            physics_sim_view: The physics simulation view
             effort_modes: The effort modes ("force" or "acceleration")
             control_mode: The control mode ("position", "velocity", or "effort")
             set_gains: Whether to set the joint gains
             set_limits: Whether to set the limits
             set_articulation_props: Whether to set the articulation properties
         """
-        self.robot.set_dof_drive_types(effort_modes)
+        active_engine = SimulationManager.get_active_physics_engine()
+        is_newton = active_engine == "newton"
 
+        # Skip set_dof_drive_types for Newton
+        if not is_newton:
+            self.robot.set_dof_drive_types(effort_modes)
         get_physics_simulation_interface().flush_changes()
 
         self.robot.switch_dof_control_mode(control_mode)
-        max_effort, max_vel, stiffness, damping, default_pos, default_vel = get_robot_joint_properties(
+        max_effort, max_vel, stiffness, damping, armature, default_pos, default_vel = get_robot_joint_properties(
             self.policy_env_params, self.robot.dof_names
         )
         self.robot.set_dof_positions(default_pos)
         self.robot.set_dof_velocities(default_vel)
+        self.robot.set_dof_armatures(armature)
 
         self.robot.set_default_state(
             dof_positions=default_pos,
@@ -120,13 +143,11 @@ class PolicyController(ABC):
 
         if set_gains:
             self.robot.set_dof_gains(stiffness, damping)
-        if set_limits:
+        if set_limits and not is_newton:
             self.robot.set_dof_max_efforts(max_effort)
-
             get_physics_simulation_interface().flush_changes()
-
             self.robot.set_dof_max_velocities(max_vel)
-        if set_articulation_props:
+        if set_articulation_props and not is_newton:
             self._set_articulation_props()
 
     def _set_articulation_props(self):
