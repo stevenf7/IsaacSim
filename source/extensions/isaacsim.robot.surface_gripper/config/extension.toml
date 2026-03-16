@@ -1,5 +1,5 @@
 [package]
-version = "3.4.0"
+version = "3.4.1"
 category = "Simulation"
 title = "Isaac Sim Surface Gripper"
 description = "Helper to model Suction and Distance based grippers"
@@ -14,7 +14,6 @@ writeTarget.kit = true
 writeTarget.platform = true
 
 [dependencies]
-"isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.experimental.prims" = {}
 "isaacsim.core.experimental.utils" = {}
@@ -38,9 +37,6 @@ exclude = ["Ogn*Database.py"]
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -49,9 +45,6 @@ stdoutFailPatterns.exclude = [
 ]
 
 [[test]]
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 stdoutFailPatterns.exclude = [
     "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
     '*The NumPy module was reloaded*',
