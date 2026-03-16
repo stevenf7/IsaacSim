@@ -21,7 +21,10 @@ using Warp's GPU acceleration.
 from typing import Any
 
 import newton
+import numpy as np
 import warp as wp
+
+vec10 = wp.types.vector(length=10, dtype=float)
 
 
 @wp.kernel(enable_backward=False)
@@ -1527,3 +1530,139 @@ def apply_link_forces_at_position(
 # Overload to support both int32 and int64
 wp.overload(apply_link_forces_at_position, {"tensor_idx": wp.array(dtype=wp.int32)})
 wp.overload(apply_link_forces_at_position, {"tensor_idx": wp.array(dtype=wp.int64)})
+
+
+@wp.kernel(enable_backward=False)
+def sync_ctrl_direct_targets(
+    dof_to_act: wp.array(dtype=wp.int32),
+    joint_target_pos: wp.array(dtype=wp.float32),
+    dofs_per_world: wp.int32,
+    ctrls_per_world: wp.int32,
+    # output
+    mujoco_ctrl: wp.array(dtype=wp.float32),
+):
+    """Sync joint_target_pos to control.mujoco.ctrl for CTRL_DIRECT joint actuators.
+
+    Args:
+        dof_to_act: Template DOF -> mujoco:actuator index mapping (-1 = no mapping).
+        joint_target_pos: Per-DOF position targets (flat, all worlds).
+        dofs_per_world: Number of DOFs per world.
+        ctrls_per_world: Number of ctrl entries per world.
+        mujoco_ctrl: Output control.mujoco.ctrl array (flat, all worlds).
+    """
+    world, dof = wp.tid()
+    act_idx = dof_to_act[dof]
+    if act_idx < 0:
+        return
+    src = world * dofs_per_world + dof
+    dst = world * ctrls_per_world + act_idx
+    mujoco_ctrl[dst] = joint_target_pos[src]
+
+
+@wp.kernel(enable_backward=False)
+def sync_ctrl_direct_gains(
+    dof_to_act: wp.array(dtype=wp.int32),
+    joint_target_ke: wp.array(dtype=wp.float32),
+    joint_target_kd: wp.array(dtype=wp.float32),
+    # output
+    actuator_gainprm: wp.array(dtype=vec10),
+    actuator_biasprm: wp.array(dtype=vec10),
+):
+    """Sync joint_target_ke/kd to actuator gainprm/biasprm for CTRL_DIRECT joint actuators.
+
+    Reads from template DOF (world 0). Only updates when kp > 0 or kd > 0.
+
+    Args:
+        dof_to_act: Template DOF -> mujoco:actuator index mapping (-1 = no mapping).
+        joint_target_ke: Per-DOF position gains (flat, all worlds). Reads world 0.
+        joint_target_kd: Per-DOF damping gains (flat, all worlds). Reads world 0.
+        actuator_gainprm: Model mujoco actuator gain params (template-level).
+        actuator_biasprm: Model mujoco actuator bias params (template-level).
+    """
+    dof = wp.tid()
+    act_idx = dof_to_act[dof]
+    if act_idx < 0:
+        return
+    kp = joint_target_ke[dof]
+    kd = joint_target_kd[dof]
+    if kp > 0.0 or kd > 0.0:
+        actuator_gainprm[act_idx][0] = kp
+        actuator_biasprm[act_idx][1] = -kp
+        actuator_biasprm[act_idx][2] = -kd
+
+
+def build_ctrl_direct_dof_mapping(model: newton.Model) -> wp.array | None:
+    """Build a DOF-to-CTRL_DIRECT-actuator mapping from model custom attributes.
+
+    For each template DOF that has a CTRL_DIRECT joint actuator, stores the
+    mujoco:actuator index. Returns None if no CTRL_DIRECT joint actuators exist.
+
+    Args:
+        model: Newton model with mujoco custom attributes.
+
+    Returns:
+        wp.array of shape (dofs_per_world,) with dtype int32, or None.
+    """
+    mujoco_attrs = getattr(model, "mujoco", None)
+    if mujoco_attrs is None:
+        return None
+
+    actuator_count = model.custom_frequency_counts.get("mujoco:actuator", 0)
+    if actuator_count == 0:
+        return None
+
+    has_trnid = hasattr(mujoco_attrs, "actuator_trnid")
+    has_ctrl_source = hasattr(mujoco_attrs, "ctrl_source")
+    has_trntype = hasattr(mujoco_attrs, "actuator_trntype")
+
+    if not has_trnid:
+        return None
+
+    trnid = mujoco_attrs.actuator_trnid.numpy()
+    ctrl_source = mujoco_attrs.ctrl_source.numpy() if has_ctrl_source else None
+    trntype = mujoco_attrs.actuator_trntype.numpy() if has_trntype else None
+
+    # Build label-based lookup for deferred target resolution (trnid=-1).
+    # The model builder may defer resolution, storing -1 in trnid and setting
+    # actuator_target_label instead. The solver resolves these at init time
+    # via joint_dof_label; we replicate that logic here.
+    target_labels = getattr(mujoco_attrs, "actuator_target_label", None)
+    joint_dof_labels = getattr(mujoco_attrs, "joint_dof_label", None)
+    dof_label_to_idx: dict[str, int] = {}
+    if isinstance(joint_dof_labels, list):
+        for i, label in enumerate(joint_dof_labels):
+            if label:
+                dof_label_to_idx[label] = i
+
+    nworlds = model.world_count if hasattr(model, "world_count") else 1
+    dofs_per_world = model.joint_dof_count // nworlds if nworlds > 0 else model.joint_dof_count
+
+    if dofs_per_world == 0:
+        return None
+
+    dof_to_act = np.full(dofs_per_world, -1, dtype=np.int32)
+    found_any = False
+
+    for act_idx in range(actuator_count):
+        is_ctrl_direct = ctrl_source is None or int(ctrl_source[act_idx]) == 1
+        is_joint = trntype is None or int(trntype[act_idx]) == 0
+        if not (is_ctrl_direct and is_joint):
+            continue
+
+        dof_idx = int(trnid[act_idx, 0]) if trnid.ndim > 1 else int(trnid[act_idx])
+
+        # Deferred resolution: trnid=-1 means the model builder didn't resolve
+        # the target. Use actuator_target_label + joint_dof_label to resolve.
+        if dof_idx < 0 and isinstance(target_labels, list) and act_idx < len(target_labels):
+            label = target_labels[act_idx]
+            if label in dof_label_to_idx:
+                dof_idx = dof_label_to_idx[label]
+
+        if 0 <= dof_idx < dofs_per_world:
+            dof_to_act[dof_idx] = act_idx
+            found_any = True
+
+    if not found_any:
+        return None
+
+    return wp.array(dof_to_act, dtype=wp.int32, device=model.device)

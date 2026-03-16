@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Spot quadruped robot policy controller for flat terrain locomotion."""
-
-
 import isaacsim.core.experimental.utils.transform as transform_utils
 import omni.usd
 import warp as wp
@@ -27,21 +24,11 @@ from isaacsim.storage.native import get_assets_root_path
 torch = import_module("torch")
 
 
-class SpotFlatTerrainPolicy(PolicyController):
-    """Policy controller for the Spot quadruped robot executing flat terrain locomotion.
+class Go2FlatTerrainPolicy(PolicyController):
+    """Policy controller for the Unitree Go2 quadruped robot executing flat terrain locomotion.
 
     This controller implements a learned policy for stable walking on flat terrain,
-    handling velocity commands for forward/backward motion, lateral motion, and turning.
-
-    Args:
-        prim_path: The prim path of the robot on the stage.
-        root_path: The path to the articulation root of the robot.
-        usd_path: The robot usd filepath in the directory.
-        position: The position of the robot.
-        orientation: The orientation of the robot.
-        policy_path: Path to the policy file. If None, auto-detected from active engine.
-        env_config_path: Path to the environment config file. If None, auto-detected from active engine.
-    """
+    handling velocity commands for forward/backward motion, lateral motion, and turning."""
 
     def __init__(
         self,
@@ -52,43 +39,43 @@ class SpotFlatTerrainPolicy(PolicyController):
         orientation: list[float] | None = None,
         policy_path: str | None = None,
         env_config_path: str | None = None,
-    ):
+    ) -> None:
+        """
+        Initialize robot and load RL policy.
+
+        Args:
+            prim_path: The prim path of the robot on the stage
+            root_path: The path to the articulation root of the robot
+            usd_path: The robot usd filepath in the directory
+            position: The position of the robot
+            orientation: The orientation of the robot
+            policy_path: Path to the policy file. If None, auto-detected from active engine.
+            env_config_path: Path to the environment config file. If None, auto-detected from active engine.
+        """
         assets_root_path = get_assets_root_path()
         if usd_path is None:
-            usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/boston_dynamics_spot/spot.usda"
+            usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/unitree_go2/go2.usda"
 
         super().__init__(prim_path, root_path, usd_path, position, orientation)
 
-        self._set_physics_variant(prim_path)
-
         if policy_path is None or env_config_path is None:
-            policy_dir = assets_root_path + "/Isaac/Samples/Policies/Spot_Policies"
-            is_newton = SimulationManager.get_active_physics_engine() == "newton"
+            policy_dir = assets_root_path + "/Isaac/Samples/Policies/go2"
+            active_engine = SimulationManager.get_active_physics_engine()
+            is_newton = active_engine == "newton"
             if policy_path is None:
-                policy_path = f"{policy_dir}/newton_policy.pt" if is_newton else f"{policy_dir}/spot_policy.pt"
+                policy_path = f"{policy_dir}/newton_policy.pt" if is_newton else f"{policy_dir}/physx_policy.pt"
             if env_config_path is None:
-                env_config_path = f"{policy_dir}/newton_env.yaml" if is_newton else f"{policy_dir}/spot_env.yaml"
+                env_config_path = f"{policy_dir}/newton_env.yaml" if is_newton else f"{policy_dir}/physx_env.yaml"
 
         self.load_policy(policy_path, env_config_path)
-        self._action_scale = self.policy_env_params.get("action_scale", 0.2)
+        self._action_scale = self.policy_env_params.get("action_scale", 0.25)
         self._previous_action = None
         self._current_action = None
         self._policy_counter = 0
 
-    def _set_physics_variant(self, prim_path: str) -> None:
-        """Set the Physics variant on the multi-physics asset to match the active engine."""
-        stage = omni.usd.get_context().get_stage()
-        prim = stage.GetPrimAtPath(prim_path)
-        if not prim.IsValid():
-            return
-        variant_sets = prim.GetVariantSets()
-        if "Physics" not in variant_sets.GetNames():
-            return
-        engine = SimulationManager.get_active_physics_engine()
-        variant_sets.GetVariantSet("Physics").SetVariantSelection(engine)
-
     def _compute_observation(self, command):
-        """Compute the observation vector for the policy.
+        """
+        Compute the observation vector for the policy.
 
         The observation includes base linear/angular velocities, gravity direction,
         command velocities, joint positions/velocities, and previous actions.
@@ -117,6 +104,7 @@ class SpotFlatTerrainPolicy(PolicyController):
 
         device = torch.device(str(self.robot._device))
         obs = torch.zeros(48, device=device)
+
         # Base lin vel
         obs[:3] = lin_vel_b.squeeze()
         # Base ang vel
@@ -130,13 +118,14 @@ class SpotFlatTerrainPolicy(PolicyController):
         current_joint_vel = wp.to_torch(self.robot.get_dof_velocities())
         obs[12:24] = current_joint_pos - self.default_pos
         obs[24:36] = current_joint_vel - self.default_vel
-        # Previous Action
+        # Previous Action (use zeros if not initialized yet)
         if self._previous_action is not None:
             obs[36:48] = self._previous_action
         return obs
 
     def forward(self, dt, command):
-        """Compute the desired joint positions and apply them to the articulation.
+        """
+        Compute the desired joint positions and apply them to the articulation.
 
         Policy runs at decimated rate, but control commands are applied every physics step.
 
@@ -151,12 +140,14 @@ class SpotFlatTerrainPolicy(PolicyController):
             self._previous_action = torch.zeros(12, device=device)
             self._current_action = torch.zeros(12, device=device)
 
+        # Compute new action at decimated rate
         if self._policy_counter % self._decimation == 0:
             obs = self._compute_observation(command)
             self._current_action = self._compute_action(obs)
             self._previous_action = self._current_action.clone()
 
             target_pos = self.default_pos + (self._current_action * self._action_scale)
+
             self.robot.set_dof_position_targets(positions=wp.from_torch(target_pos))
 
         self._policy_counter += 1

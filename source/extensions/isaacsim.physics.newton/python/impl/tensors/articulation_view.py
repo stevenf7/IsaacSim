@@ -25,8 +25,11 @@ import warp as wp
 from .kernels import *
 from .kernels import (
     apply_link_forces_at_position,
+    build_ctrl_direct_dof_mapping,
     cache_link_com,
     get_link_com_position_only,
+    sync_ctrl_direct_gains,
+    sync_ctrl_direct_targets,
     update_inv_mass,
 )
 from .tensor_utils import convert_to_warp, wrap_input_tensor
@@ -61,6 +64,9 @@ class NewtonArticulationView:
         self._model = backend.model
         self._sim_timestamp = 0
         self.ik_timestamp = 0
+        self._ctrl_direct_dof_map: wp.array | None = None
+        self._ctrl_direct_map_initialized = False
+        self._ctrl_direct_biastype_set = False
 
     def _wrap_input_tensor(self, tensor: Any, dtype: "wp.dtype | None" = None) -> "wp.array | None":
         """Helper to wrap an input tensor as a warp array for kernel input.
@@ -103,6 +109,144 @@ class NewtonArticulationView:
         if self._newton_stage.solver is not None:
             try:
                 self._newton_stage.solver.notify_model_changed(newton.solvers.SolverNotifyFlags.JOINT_DOF_PROPERTIES)
+            except AttributeError:
+                pass
+
+    def _get_ctrl_direct_dof_map(self) -> wp.array | None:
+        """Lazily build the DOF-to-CTRL_DIRECT-actuator mapping.
+
+        Returns:
+            Warp array mapping template DOF to mujoco:actuator index, or None.
+        """
+        if not self._ctrl_direct_map_initialized:
+            self._ctrl_direct_map_initialized = True
+            try:
+                self._ctrl_direct_dof_map = build_ctrl_direct_dof_mapping(self._model)
+            except Exception as e:
+                carb.log_warn(f"Failed to build CTRL_DIRECT DOF mapping: {e}")
+                self._ctrl_direct_dof_map = None
+        return self._ctrl_direct_dof_map
+
+    def _set_ctrl_direct_biastype_affine(self):
+        """Set biastype=AFFINE (1) for CTRL_DIRECT joint actuators in the solver's MuJoCo model.
+
+        Without this, MuJoCo ignores biasprm values (biastype=NONE means bias=0),
+        making PD position control impossible through gainprm/biasprm writes.
+        """
+        BIAS_AFFINE = 1
+
+        # Update model.mujoco custom attribute
+        dof_map = self._ctrl_direct_dof_map
+        if dof_map is not None:
+            dof_map_np = dof_map.numpy()
+            newton_act_indices = sorted(set(int(a) for a in dof_map_np if a >= 0))
+            mujoco_attrs = getattr(self._model, "mujoco", None)
+            if mujoco_attrs is not None:
+                bt = getattr(mujoco_attrs, "actuator_biastype", None)
+                if bt is not None:
+                    bt_np = bt.numpy()
+                    for act_idx in newton_act_indices:
+                        if act_idx < len(bt_np):
+                            bt_np[act_idx] = BIAS_AFFINE
+                    wp.copy(bt, wp.array(bt_np, dtype=bt.dtype, device=bt.device))
+
+        solver = getattr(self._newton_stage, "solver", None)
+        if solver is None:
+            return
+
+        # Find MuJoCo-model actuator indices for CTRL_DIRECT actuators
+        ctrl_source = getattr(solver, "mjc_actuator_ctrl_source", None)
+        if ctrl_source is None:
+            return
+        ctrl_np = ctrl_source.numpy()
+        mjc_act_indices = [i for i in range(len(ctrl_np)) if int(ctrl_np[i]) == 1]
+        if not mjc_act_indices:
+            return
+
+        # Update mj_model
+        mj_model = getattr(solver, "mj_model", None)
+        if mj_model is not None and hasattr(mj_model, "actuator_biastype"):
+            for act_idx in mjc_act_indices:
+                if act_idx < len(mj_model.actuator_biastype):
+                    mj_model.actuator_biastype[act_idx] = BIAS_AFFINE
+
+        # Update mjw_model (GPU Warp MuJoCo model) for simulation
+        mjw_model = getattr(solver, "mjw_model", None)
+        if mjw_model is not None:
+            bt_warp = getattr(mjw_model, "actuator_biastype", None)
+            if bt_warp is not None:
+                bt_np = bt_warp.numpy()
+                if bt_np.ndim == 2:
+                    for act_idx in mjc_act_indices:
+                        if act_idx < bt_np.shape[1]:
+                            bt_np[:, act_idx] = BIAS_AFFINE
+                elif bt_np.ndim == 1:
+                    for act_idx in mjc_act_indices:
+                        if act_idx < len(bt_np):
+                            bt_np[act_idx] = BIAS_AFFINE
+                wp.copy(bt_warp, wp.array(bt_np, dtype=bt_warp.dtype, device=bt_warp.device))
+
+    def _sync_ctrl_direct_position_targets(self):
+        """Sync joint_target_pos to control.mujoco.ctrl for CTRL_DIRECT joint actuators.
+
+        On the first call, also sets biastype=AFFINE to enable PD control. This is
+        deferred until position targets are available so the PD controller doesn't
+        produce large forces against uninitialized (zero) ctrl values.
+        """
+        dof_map = self._get_ctrl_direct_dof_map()
+        if dof_map is None:
+            return
+        model = self._model
+        control = self._newton_stage.control
+        mujoco_ctrl = getattr(getattr(control, "mujoco", None), "ctrl", None)
+        if mujoco_ctrl is None:
+            return
+        nworlds = model.world_count if hasattr(model, "world_count") else 1
+        dofs_per_world = model.joint_dof_count // max(nworlds, 1)
+        ctrls_per_world = mujoco_ctrl.shape[0] // max(nworlds, 1)
+        wp.launch(
+            sync_ctrl_direct_targets,
+            dim=(nworlds, dofs_per_world),
+            inputs=[dof_map, control.joint_target_pos, dofs_per_world, ctrls_per_world],
+            outputs=[mujoco_ctrl],
+            device=model.device,
+        )
+
+        if not self._ctrl_direct_biastype_set:
+            self._ctrl_direct_biastype_set = True
+            self._set_ctrl_direct_biastype_affine()
+
+    def _sync_ctrl_direct_actuator_gains(self):
+        """Sync joint_target_ke/kd to actuator gainprm/biasprm for CTRL_DIRECT joint actuators.
+
+        Writes to model.mujoco arrays and notifies the solver. Does NOT activate PD
+        control (biastype stays NONE until the first position target is synced).
+        """
+        dof_map = self._get_ctrl_direct_dof_map()
+        if dof_map is None:
+            return
+        model = self._model
+        mujoco_attrs = getattr(model, "mujoco", None)
+        if mujoco_attrs is None:
+            return
+        gainprm = getattr(mujoco_attrs, "actuator_gainprm", None)
+        biasprm = getattr(mujoco_attrs, "actuator_biasprm", None)
+        if gainprm is None or biasprm is None:
+            return
+        nworlds = model.world_count if hasattr(model, "world_count") else 1
+        dofs_per_world = model.joint_dof_count // max(nworlds, 1)
+
+        wp.launch(
+            sync_ctrl_direct_gains,
+            dim=(dofs_per_world,),
+            inputs=[dof_map, model.joint_target_ke, model.joint_target_kd],
+            outputs=[gainprm, biasprm],
+            device=model.device,
+        )
+
+        if self._newton_stage.solver is not None:
+            try:
+                self._newton_stage.solver.notify_model_changed(newton.solvers.SolverNotifyFlags.ACTUATOR_PROPERTIES)
             except AttributeError:
                 pass
 
@@ -1032,8 +1176,8 @@ class NewtonArticulationView:
             outputs=[self._model.joint_target_ke],
             device=str(self._frontend.device),
         )
-        # Notify solver so MuJoCo updates its actuator parameters
         self._notify_joint_dof_properties_changed()
+        self._sync_ctrl_direct_actuator_gains()
 
     @carb.profiler.profile
     def set_dof_dampings(self, data: Any, indices: Any, indices_mask: Any | None = None):
@@ -1057,8 +1201,8 @@ class NewtonArticulationView:
             outputs=[self._model.joint_target_kd],
             device=str(self._frontend.device),
         )
-        # Notify solver so MuJoCo updates its actuator parameters
         self._notify_joint_dof_properties_changed()
+        self._sync_ctrl_direct_actuator_gains()
 
     @carb.profiler.profile
     def set_dof_armatures(self, data: Any, indices: Any, indices_mask: Any | None = None):
@@ -1109,6 +1253,7 @@ class NewtonArticulationView:
             outputs=[control.joint_target_pos],
             device=str(self._frontend.device),
         )
+        self._sync_ctrl_direct_position_targets()
 
     @carb.profiler.profile
     def set_dof_velocity_targets(self, data: Any, indices: Any, indices_mask: Any | None = None):
