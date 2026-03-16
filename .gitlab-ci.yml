@@ -777,26 +777,32 @@ build-windows-x86_64-debug:
 # Set REPORT_TIMING to "after_script" for pythontests/nativepythontests, "inline" otherwise. Reference at start of script in matrix test jobs.
 .determine_report_generation_timing_linux:
   script:
-    - if [ "$SUITE" == "pythontests" ] || [ "$SUITE" == "nativepythontests" ]; then export REPORT_TIMING="after_script"; else export REPORT_TIMING="inline"; fi
+    - if [ "$SUITE" == "pythontests" ] || [ "$SUITE" == "nativepythontests" ] || [ "$SUITE" == "doc_snippets" ] || [ "$SUITE" == "doc_snippets_async" ]; then export REPORT_TIMING="after_script"; else export REPORT_TIMING="inline"; fi
 
 .determine_report_generation_timing_windows:
   script:
-    - if ($env:SUITE -eq "pythontests" -or $env:SUITE -eq "nativepythontests") { $env:REPORT_TIMING = "after_script" } else { $env:REPORT_TIMING = "inline" }
+    - if ($env:SUITE -eq "pythontests" -or $env:SUITE -eq "nativepythontests" -or $env:SUITE -eq "doc_snippets" -or $env:SUITE -eq "doc_snippets_async") { $env:REPORT_TIMING = "after_script" } else { $env:REPORT_TIMING = "inline" }
 
 .test-linux-common:
     after_script:
       - !reference [.datadog-test-visibility-linux-x86_64, script]
       - !reference [.determine_report_generation_timing_linux, script]
       - mkdir -p _build/intermediate/${CI_JOB_ID}
-      - mv _build/intermediate/linux-x86_64 _build/intermediate/${CI_JOB_ID}/
+      - if [ -d _build/intermediate/linux-x86_64 ]; then
+      -   mv _build/intermediate/linux-x86_64 _build/intermediate/${CI_JOB_ID}/
+      - fi
       - INTERMEDIATE_FOLDER=$(find _build/packages/ -type d -iname 'intermediate')
-      - cp -r ${INTERMEDIATE_FOLDER}/* _build/intermediate/${CI_JOB_ID}
+      - if [ -d ${INTERMEDIATE_FOLDER} ]; then
+      -   cp -r ${INTERMEDIATE_FOLDER}/* _build/intermediate/${CI_JOB_ID}
+      - fi
       - if [ "$REPORT_TIMING" == "after_script" ]; then
       -   ./repo.sh ci test -- --generate-report
       - fi
       - TESTOUTPUT_FOLDER=$(find _build/packages -type d -iname '_testoutput')
       - mkdir -p ${TESTOUTPUT_FOLDER}/${CI_JOB_ID}
-      - cp -r ${TESTOUTPUT_FOLDER}/* ${TESTOUTPUT_FOLDER}/${CI_JOB_ID}
+      - if [ -d ${TESTOUTPUT_FOLDER} ]; then
+      -   cp -r ${TESTOUTPUT_FOLDER}/* _build/intermediate/${CI_JOB_ID}
+      - fi
     needs:
       - job: build-linux-x86_64-c++-coverage
         artifacts: true
@@ -1002,7 +1008,8 @@ test-windows-x86_64-internalpythontests-1:
 
 test-windows-x86_64-nativepythontests:
     extends:
-      - .test-nightly
+      # - .test-nightly
+      - .test-common # TESTING PURPOSES ONLY REMOVE LATER PLEASE
       - .test-windows-common
       - .kit-runner-test-windows-x86_64-1x-gpu
     parallel:
