@@ -28,25 +28,25 @@ License FAQ
    Yes. Isaac Sim is free to use for internal R&D and development purposes. The only exception is if you are
    redistributing Isaac Sim (with Omniverse Kit) as part of an application to third parties, or delivering
    Isaac Sim (with Omniverse Kit) as a service to third parties. In those cases, an
-   `NVIDIA Omniverse Enterprise (OVE) license <https://docs.nvidia.com/ai-enterprise/planning-resource/licensing-guide/latest/licensing.html>`__
+   `NVIDIA AI Enterprise license <https://docs.nvidia.com/ai-enterprise/planning-resource/licensing-guide/latest/licensing.html>`__
    is required for the underlying usage of Omniverse Kit.
 
 .. dropdown:: Do I need a license if I only sell simulation outputs (videos, reports, data)?
 
    No. If you run the simulation internally and only sell the outputs (for example, simulation videos, analytic
-   reports, or datasets) to clients, an Omniverse Enterprise license is **not** required.
+   reports, or datasets) to clients, an NVIDIA AI Enterprise license is **not** required.
 
 .. dropdown:: Do I need a license to sell custom code or USD assets that work with Isaac Sim?
 
    No. If you sell only your custom Python code and ``.usd`` assets to a client, and the client runs them on
-   their own Isaac Sim environment, no redistribution fees or royalties to NVIDIA are required. An Omniverse
-   Enterprise license is **not** required in this case.
+   their own Isaac Sim environment, no redistribution fees or royalties to NVIDIA are required. An NVIDIA AI Enterprise 
+   license is **not** required in this case.
 
 .. dropdown:: Do I need a license to deliver a turn-key Isaac Sim solution to a client?
 
    Yes. If you provide a turn-key service where you install and configure the entire Isaac Sim (with Omniverse Kit)
    environment on a client's hardware, an
-   `NVIDIA Omniverse Enterprise (OVE) license <https://docs.nvidia.com/ai-enterprise/planning-resource/licensing-guide/latest/licensing.html>`__
+   `NVIDIA AI Enterprise license <https://docs.nvidia.com/ai-enterprise/planning-resource/licensing-guide/latest/licensing.html>`__
    **is** required because Isaac Sim (with Omniverse Kit) is being redistributed as part of an application
    or service to a third party.
 
@@ -57,7 +57,7 @@ License FAQ
 
    The additional NVIDIA-licensed components (Omniverse Kit SDK, assets, etc.) may not be modified or redistributed
    except as expressly permitted by their license terms. Redistribution of Isaac Sim (with Omniverse Kit) to third
-   parties requires an :doc:`NVIDIA Omniverse Enterprise license </common/NVIDIA_Omniverse_License_Agreement>`.
+   parties requires an `NVIDIA AI Enterprise license <https://docs.nvidia.com/ai-enterprise/planning-resource/licensing-guide/latest/licensing.html>`__.
    See :doc:`/common/license-isaac-sim-additional` for specifics.
 
 .. dropdown:: What is the difference between the Isaac Sim open source license and the additional components license?
@@ -73,7 +73,7 @@ License FAQ
      which has separate terms regarding use, modification, and redistribution.
 
    When considering redistribution or service delivery to third parties, it is the additional components (specifically
-   Omniverse Kit) that trigger the requirement for an :doc:`Omniverse Enterprise license </common/NVIDIA_Omniverse_License_Agreement>`
+   Omniverse Kit) that trigger the requirement for an :doc:`NVIDIA AI Enterprise license </common/NVIDIA_Omniverse_License_Agreement>`
    — not the Apache 2.0 source code.
 
 .. dropdown:: Is there a per-user or per-seat limit for using Isaac Sim?
@@ -85,12 +85,12 @@ License FAQ
    The :doc:`NVIDIA Isaac Sim Additional Software and Materials License </common/license-isaac-sim-additional>` for the
    additional components (Omniverse Kit SDK, assets, etc.) also does not define per-user limits for internal use.
    Redistribution or service delivery to third parties requires an
-   :doc:`NVIDIA Omniverse Enterprise license </common/NVIDIA_Omniverse_License_Agreement>`.
+   :doc:`NVIDIA AI Enterprise license </common/NVIDIA_Omniverse_License_Agreement>`.
 
-.. dropdown:: Where can I find Omniverse Enterprise pricing?
+.. dropdown:: Where can I find NVIDIA AI Enterprise pricing?
 
-   Omniverse Enterprise licensing and pricing information is available on the
-   `NVIDIA Enterprise Licensing pricing page <https://docs.nvidia.com/ai-enterprise/planning-resource/licensing-guide/latest/pricing.html>`__.
+   NVIDIA AI Enterprise licensing and pricing information is available on the
+   `NVIDIA AI Enterprise Licensing pricing page <https://docs.nvidia.com/ai-enterprise/planning-resource/licensing-guide/latest/pricing.html>`__.
 
 .. dropdown:: What license applies to NVIDIA-provided assets (3D models, textures, etc.)?
 
