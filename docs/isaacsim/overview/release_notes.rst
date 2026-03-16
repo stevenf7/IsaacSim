@@ -16,16 +16,111 @@ Release Notes
 6.0.0 Early Developer Release
 =============================
 
+Release Highlights
+------------------
+
+General
+^^^^^^^
+
+- Updated to `Kit 110.0 <https://docs.omniverse.nvidia.com/dev-guide/latest/release-notes/110_0_highlights.html>`__
+
+  - Support for 3D Gaussian Splatting with Fabric Scene Delegate integration, multi-GPU rendering, light interaction with mesh scenes, and MaterialX support.
+  - CAD and DGN Converter enhancements with ACIS solid modeling support, BSplineSurface translation, and enhanced tessellation controls.
+  - Nested rigid body physics with GPU acceleration, and significant RTX rendering improvements enhance both visual fidelity and simulation accuracy.
+  - Expanded XR support, improved Scene Optimizer tools, and Fabric Scene Delegate performance enhancements.
+
+- Extend the integration/usage of the Core Experimental API into the source code.
+- New extensions based on the Core Experimental API with updated interfaces.
+
+PhysX and Newton
+^^^^^^^^^^^^^^^^
+
+- Experimental support for the Newton physics engine
+
+  - Newton/MuJoCo-Warp solver can be used as a physics simulation backend.
+  - ``isaacsim.core.experimental.prims`` APIs can be used with both PhysX and Newton.
+
+Synthetic Data Generation
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- **Perception Data Generation (Replicator)**
+
+  - Getting started example using various optimized randomizations using write to fabric (``enableWriteToFabric``) and skip syncing with stage (``wait_for_render``).
+  - Useful snippet example using deformable assets with the Core Experimental API to generate synthetic data.
+
+- **Action and Event Data Generation**
+
+  - *AgentSim (isaacsim.replicator.agent)*: IRA introduces a character USD schema stored within USD files for cross-scene portability, and a config-driven method to spawn characters and issue character behaviors. IRA features a new UI for configuring agent simulations. IRA and scene captioning (IRC) now work together in a single pipeline, producing both annotated sensor data and VLM captions from one simulation run.
+  - *Object Simulation and Physics (isaacsim.replicator.object)*: IRO now supports randomization of physics attributes (mass, friction, restitution) across scene objects for domain-randomized synthetic data generation. New placement strategies (pyramid stacking, world/local-space force application) to enable a variety of physical scenes.
+  - *Incident Simulation (isaacsim.replicator.incident)*: Extended toppling events now apply to a broader set of objects. A new FlowUSD fire and smoke writer captures volumetric fire and smoke data from NVIDIA Flow alongside standard SDG outputs (RGB, depth, semantic segmentation).
+  - *Sensors (isaacsim.sensor.rtx.placement, isaacsim.sensor.rtx.calibration)*: Maximum coverage based camera placement now supports placement randomization. A new Omniverse-native API for sensor calibration provides direct access to camera intrinsics, extrinsics, and field-of-view coverage visualization.
+
+Robots
+^^^^^^
+
+- **Isaac Sim URDF Importer 3.0**: Exports to Asset Structure 3.0, multi-engine backend support with MuJoCo to PhysX conversion, Newton schema support, new UI and API, standalone Python interface, and joint tuning moved to gains tuner. New UI for ROS robot state based imports (``isaacsim.ros2.urdf``).
+- **Isaac Sim MJCF Importer 3.0**: Asset Structure 3.0, multi-engine backend support with URDF to MuJoCo and PhysX conversion, Newton schema support, new UI and API, standalone Python interface, and joint tuning moved to gains tuner.
+- **Asset Structure 3.0**: USDC (binary) for geometry; Material, Instances, Base, Physics defined in USDA (ascii) for easier version control and readability. Separated physics, MuJoCo, and PhysX definitions for different tuning values.
+- **Asset Transformer**: Rule-based USD tool for performing USD operations on assets. Comes with profile to convert robot assets to Asset Structure 3.0. Available rules include: generate robot schema, make schemas non-explicit, prim/schema/attribute routing, variant composition, geometry deduplication, shared materials between geometries.
+- **Gains Tuner**: Migrated to use ``core.experimental.prims``, enabling Newton backend.
+- **Robot Poser**: Create robot named poses to change robot pose configuration, and manipulate robot based on a given link position on task space.
+- **Robot Self Collision Detector**: Visually detecting overlapping colliders in a robot.
+- **Robot Inspector**: Robot inspector window to enable viewing robot links and prims as flattened or nested. Interactively fix or disable robot joints for debugging.
+
+Sensors
+^^^^^^^
+
+- **Cameras and Depth Sensors**: ``isaacsim.sensors.camera`` deprecated in favor of ``isaacsim.sensors.experimental.camera``. Camera sensor now uses ``_fast`` annotator variants for improved performance. Fixed tiled sensor data slicing.
+- **RTX Non-Visual Sensors**: Added explicit RTX Radar support via new Annotator. RTX Sensor models now use Hydra time (``omni.timeline``) for accurate simulation time tracking. Scan accumulation and post-processing moved to host by default, reducing GPU resource contention. Fixed point cloud "flickering" and broken scans when using RTX Lidar. New and updated standalone examples.
+- **Physics Sensors**: ``isaacsim.sensors.physics`` deprecated in favor of ``isaacsim.sensors.experimental.physics``. Added dedicated GPU codepath for IMU sensor using a separate CUDA stream and pinned memory buffer for improved performance.
+
+ROS
+^^^
+
+- **Architecture and Modularization**: The monolithic ``isaacsim.ros2.bridge`` extension was split into focused extensions: ``isaacsim.ros2.core`` (core libraries and message backends), ``isaacsim.ros2.nodes`` (OmniGraph nodes), ``isaacsim.ros2.ui`` (UI components), and ``isaacsim.ros2.examples`` (sample code and demos).
+- **ROS 2 Jazzy**: System level installations can now be sourced directly with Isaac Sim, enabled by full Python 3.12 support.
+- ROS 2 H.264 compressed RGB image support with hardware-accelerated encoding.
+- RTX Lidar metadata (e.g., intensity) can now be included in ROS 2 PointCloud2 messages.
+- Experimental support for any ROS 2 distribution built with Python 3.12.
+- Added ``rclpy`` MultiThreadedExecutor-based async spinning to the ROS 2 test case base class.
+
+Docker
+^^^^^^
+
+- Added Docker Compose deployment for Isaac Sim + WebRTC web-viewer as a single stack.
+- Support for running multiple Isaac Sim instances in parallel on a single machine.
+- Full Docker container support for DGX Spark.
+
+Live-streaming
+^^^^^^^^^^^^^^
+
+- Added web-based livestreaming via WebRTC client accessible through Docker Compose.
+- Configurable signal port and stream port via environment variables.
+- Full DGX Spark livestreaming support.
+
+Motion Generation
+^^^^^^^^^^^^^^^^^
+
+- **New Experimental Motion Generation API**: Includes new tools to easily populate and synchronize a planning scene to the USD stage with independent collision geometry representation. Includes a new controller composition framework that allows simple controllers to be combined to build more complex controllers.
+- **New cuMotion Integration**: Added full integration with NVIDIA's cuMotion library, built on the new experimental motion generation API. Includes a centralized collision world state which can be passed to any collision-aware algorithm. Includes bindings to several trajectory and real-time planning algorithms, including minimal-time collision-aware trajectory planning with very flexible end-effector constraints.
+
+SimReady Content
+^^^^^^^^^^^^^^^^
+
+- Experimental search functions that extend the content browser with "Assets Search" mode: search SimReady Profiles, Features, natural language search, and tags.
+- A new curated collection of SimReady assets is available in the Content Browser, including robot models from FANUC. These assets have passed both USD validation and runtime tests for improved out-of-the-box reliability.
+
+  - 85 Fanuc Robots
+  - 1 Comau
+  - 1000 SimReady Props
+
 Kit SDK Version
-===============
+---------------
 
 Changed: 109.0.2 -> 110.0.0
 
-Extensions Changelog Summary
-============================
-
-Dependencies
-------------
+Kit SDK Dependency Version Changes
+----------------------------------
 
 Added
 ^^^^^
@@ -205,7 +300,7 @@ Changed
 - omni.warp.core: 1.10.1 -> 1.12.0
 
 Extensions Changelog Summary
-============================
+----------------------------
 
 Please refer to the individual extension changelogs for more detailed information.
 
@@ -964,12 +1059,12 @@ Please refer to the individual extension changelogs for more detailed informatio
       - Update imageio==2.37.2, scipy==1.17.0, pyyaml==6.0.3, opencv-python-headless==4.13.0.90, trimesh==4.11.1, rtree==1.4.1
 
 Isaac Sim ROS Workspaces Changelog Summary
-============================================
+-------------------------------------------
 
 The `Isaac Sim ROS Workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ companion repository for Isaac Sim ROS Bridge has the following changes for Isaac Sim 6.0.0:
 
 Added
------
+^^^^^
 - ``isaac_compressed_image_decoder`` package for decoding ROS 2 compressed images [Humble, Jazzy]
 - ``ros2_object_id_subscriber`` tutorial example in ``isaac_tutorials`` [Humble, Jazzy]
 - ``topic_based_ros2_control`` ROS 2 package added as a submodule [Jazzy]
@@ -979,7 +1074,7 @@ Added
 - ``--no-cache`` (``-n``) flag for ``build_ros.sh`` to allow cache-free Docker rebuilds [Humble, Jazzy]
 
 Changed
--------
+^^^^^^^
 - Bumped all package versions to Isaac Sim 6.0.0
 - Improved Humble MoveIt integration with custom ``panda_isaac.urdf.xacro`` and ``gripper_to_isaac.py`` bridge [Humble]
 - Updated MoveIt configs to mitigate timeout issues [Jazzy]
@@ -988,7 +1083,7 @@ Changed
 - Switched ``h1_fullbody_controller`` topics to relative names for namespaced multi-humanoid setups [Humble, Jazzy]
 
 Removed
--------
+^^^^^^^
 - Legacy references to older Ubuntu / Python / ROS mentions from launch files, parameters, and build scripts
 
 
