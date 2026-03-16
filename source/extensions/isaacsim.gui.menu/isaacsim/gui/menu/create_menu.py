@@ -23,7 +23,7 @@ import carb
 import omni.ext
 import omni.kit.actions.core
 import omni.kit.menu.utils
-from isaacsim.core.utils.viewports import set_camera_view
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.gui.components.menu import create_submenu, open_content_browser_to_path
 from isaacsim.storage.native.nucleus import get_assets_root_path
 from omni.kit.menu.utils import MenuItemDescription, MenuLayout, add_menu_items, remove_menu_items
@@ -67,7 +67,7 @@ def create_asset(
     carb.log_info(f"Added reference to {stage_path} at {path_to}")
 
     if camera_position is not None and camera_target is not None:
-        set_camera_view(camera_position, camera_target)
+        ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=camera_position, target=camera_target)
 
 
 # -----------------------------------------------------------------------------
