@@ -15,8 +15,9 @@
 
 """Tests for Robot Poser UI extension startup and UIBuilder construction."""
 
+import isaacsim.core.experimental.utils.app as app_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
-from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 
 
 class TestRobotPoserStartup(omni.kit.test.AsyncTestCase):
@@ -24,8 +25,8 @@ class TestRobotPoserStartup(omni.kit.test.AsyncTestCase):
 
     async def setUp(self) -> None:
         """Create a fresh USD stage for each test."""
-        await create_new_stage_async()
-        await update_stage_async()
+        await stage_utils.create_new_stage_async()
+        await app_utils.update_app_async()
 
     async def test_import_and_construct(self) -> None:
         """Verify the package imports and the UIBuilder can be constructed."""

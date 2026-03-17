@@ -25,7 +25,7 @@ import omni.kit.app
 import omni.kit.test
 import omni.usd
 import usd.schema.isaac as isaac_schema
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 from usd.schema.isaac import robot_schema
 from usd.schema.isaac.robot_schema import utils as robot_utils
 

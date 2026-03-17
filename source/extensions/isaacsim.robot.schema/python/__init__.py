@@ -90,4 +90,4 @@ ext_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.pa
 _register_plugins(ext_path)
 
 
-from . import robot_schema  # type: ignore[attr-defined]
+from . import robot_schema as robot_schema  # type: ignore[attr-defined]
