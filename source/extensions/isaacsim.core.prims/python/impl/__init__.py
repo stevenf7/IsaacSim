@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Implementation module for various prim classes including geometry, physics, articulation, and transformation primitives."""
+
+
 from .articulation import Articulation
 from .cloth_prim import ClothPrim
 from .deformable_prim import DeformablePrim

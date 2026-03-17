@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level wrapper for manipulating USD prims with Articulation Root API applied and their properties."""
+
+
 from __future__ import annotations
 
 import weakref
@@ -100,7 +103,7 @@ class Articulation(XformPrim):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = False,
-    ) -> None:
+    ):
         paths = Articulation.fetch_articulation_root_api_prim_paths(paths)
         # define properties
         # - default state properties
@@ -227,7 +230,7 @@ class Articulation(XformPrim):
         Backends: :guilabel:`usd`, :guilabel:`tensor`.
 
         Returns:
-            Ordered list of DOF names.
+            Ordered list of DOF paths.
 
         Example:
 
@@ -3316,7 +3319,7 @@ class Articulation(XformPrim):
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
 
         Returns:
-            Two-element tuple: 1) Position iteration counts (shape ``(N, 1)``).
+            Two-element tuple with 1) Position iteration counts (shape ``(N, 1)``) and
             2) Velocity iteration counts (shape ``(N, 1)``).
 
         Example:
@@ -3543,7 +3546,7 @@ class Articulation(XformPrim):
 
         Backends: :guilabel:`usd`.
 
-        Search for *Articulations and Sleeping* in |physx_docs| for more details
+        Search for *Articulations and Sleeping* in |physx_docs| for more details.
 
         Args:
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
@@ -4196,6 +4199,7 @@ class Articulation(XformPrim):
 
         Args:
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
+            tendon_indices: Indices of tendons to process (shape ``(T,)``). If not defined, all tendons are processed.
 
         Returns:
             The stiffnesses of the fixed tendons (shape ``(N, T)``).
@@ -4226,6 +4230,7 @@ class Articulation(XformPrim):
 
         Args:
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
+            tendon_indices: Indices of tendons to process (shape ``(T,)``). If not defined, all tendons are processed.
 
         Returns:
             The dampings of the fixed tendons (shape ``(N, T)``).
@@ -4256,6 +4261,7 @@ class Articulation(XformPrim):
 
         Args:
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
+            tendon_indices: Indices of tendons to process (shape ``(T,)``). If not defined, all tendons are processed.
 
         Returns:
             The limit stiffnesses of the fixed tendons (shape ``(N, T)``).
@@ -4286,6 +4292,7 @@ class Articulation(XformPrim):
 
         Args:
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
+            tendon_indices: Indices of tendons to process (shape ``(T,)``). If not defined, all tendons are processed.
 
         Returns:
             Two-elements tuple. 1) The lower limits of the fixed tendons (shape ``(N, T)``).
@@ -4326,6 +4333,7 @@ class Articulation(XformPrim):
 
         Args:
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
+            tendon_indices: Indices of tendons to process (shape ``(T,)``). If not defined, all tendons are processed.
 
         Returns:
             The rest lengths of the fixed tendons (shape ``(N, T)``).
@@ -4356,6 +4364,7 @@ class Articulation(XformPrim):
 
         Args:
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
+            tendon_indices: Indices of tendons to process (shape ``(T,)``). If not defined, all tendons are processed.
 
         Returns:
             The offsets of the fixed tendons (shape ``(N, T)``).
@@ -4480,7 +4489,15 @@ class Articulation(XformPrim):
     """
 
     def _check_for_tensor_backend(self, backend: str, *, fallback_backend: str = "usd") -> str:
-        """Check if the tensor backend is valid."""
+        """Check if the tensor backend is valid.
+
+        Args:
+            backend: The backend to check.
+            fallback_backend: The fallback backend to use if tensor backend is not valid.
+
+        Returns:
+            The validated backend name.
+        """
         if backend == "tensor" and not self.is_physics_tensor_entity_valid():
             if backend_utils.is_backend_set():
                 if backend_utils.should_raise_on_fallback():
@@ -4601,8 +4618,15 @@ class Articulation(XformPrim):
     Internal callbacks.
     """
 
-    def _on_physics_ready(self, event) -> None:
-        """Handle physics ready event."""
+    def _on_physics_ready(self, event):
+        """Handle physics ready event.
+
+        Initializes the physics articulation view and sets up internal physics tensor entity properties
+        when the physics simulation becomes ready.
+
+        Args:
+            event: The physics ready event.
+        """
         super()._on_physics_ready(event)
         physics_simulation_view = SimulationManager._physics_sim_view__warp
         if physics_simulation_view is None or not physics_simulation_view.is_valid:
@@ -4750,7 +4774,11 @@ class Articulation(XformPrim):
             self._setup_newton_articulation_callbacks(art_view)
 
     def _setup_newton_articulation_callbacks(self, art_view):
-        """Register Python fill callbacks for Newton-backed articulation fields."""
+        """Register Python fill callbacks for Newton-backed articulation fields.
+
+        Args:
+            art_view: The articulation view.
+        """
         from ._cpp_buffers import wrap_cpp_buffer
 
         count = art_view.count
@@ -4817,7 +4845,13 @@ class Articulation(XformPrim):
             self._cpp_data_view_id = None
 
     def _on_timeline_stop(self, event):
-        """Handle timeline stop event."""
+        """Handle timeline stop event.
+
+        Invalidates the physics articulation view when the timeline stops to clean up physics resources.
+
+        Args:
+            event: The timeline stop event.
+        """
         self._teardown_cpp_data_view()
         # invalidate articulation view
         self._physics_articulation_view = None

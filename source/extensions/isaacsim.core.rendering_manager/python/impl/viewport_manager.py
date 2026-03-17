@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Core class that provides APIs for managing viewports."""
+
+
 from __future__ import annotations
 
 import asyncio
@@ -587,7 +590,7 @@ class ViewportManager:
         target: list | np.ndarray | wp.array | None = None,
         relative_tracking: bool = False,
     ) -> None:
-        r"""Set the camera view.
+        """Set the camera view.
 
         This method sets the camera view by adjusting its position and orientation, while taking into account
         the camera's center of interest (COI) attribute: ``omni:kit:centerOfInterest``, if it exists.

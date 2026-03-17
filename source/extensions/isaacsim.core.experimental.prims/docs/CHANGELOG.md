@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.5.0] - 2026-03-12
+### Changed
+- Added Overview.md, python_api.md and updated docstrings
+
 ## [1.4.0] - 2026-03-09
 ### Added
 - `LinkInfo` struct in `IPrimDataReader.h`: per-link descriptor (path, parentPath) returned by articulation traversal
@@ -9,7 +14,6 @@
 ## [1.3.1] - 2026-03-05
 ### Changed
 - Fix api and docs syntax issues
-
 
 ## [1.3.0] - 2026-03-03
 ### Added

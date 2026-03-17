@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Warp-based coordinate transformation utilities for pose manipulation and coordinate space conversions."""
+
 
 from typing import Any
 
@@ -35,6 +38,19 @@ def _local_to_world(
     world_pos: wp.array(dtype=float, ndim=2),
     world_rot: wp.array(dtype=float, ndim=2),
 ):
+    """Warp kernel that transforms local poses to world coordinates.
+
+    Applies parent transformations to convert local positions and orientations into world space.
+    Uses quaternion rotation and translation to compute the world-space pose.
+
+    Args:
+        parent_translations: Parent translation vectors in world coordinates.
+        parent_rotations: Parent rotation quaternions in [qx, qy, qz, qw] format.
+        positions: Local position data to transform.
+        orientations: Local orientation data in [qw, qx, qy, qz] format.
+        world_pos: Output array for world-space positions.
+        world_rot: Output array for world-space rotations in [qw, qx, qy, qz] format.
+    """
     tid = wp.tid()
     parent_rot = wp.quat(
         parent_rotations[tid, 0], parent_rotations[tid, 1], parent_rotations[tid, 2], parent_rotations[tid, 3]
@@ -63,6 +79,20 @@ wp.overload(
 
 
 def get_local_from_world(parent_transforms, positions, orientations, device):
+    """Converts world-space poses to local coordinates relative to parent transforms.
+
+    Transforms world positions and orientations to local space using parent transformation matrices.
+    Temporarily moves computation to CUDA for Warp kernel execution.
+
+    Args:
+        parent_transforms: Parent transformation matrices for coordinate conversion.
+        positions: World-space position data to transform.
+        orientations: World-space orientation data to transform.
+        device: Target device for the returned data.
+
+    Returns:
+        Tuple of (local_positions, local_orientations) in parent coordinate space.
+    """
     # TODO: warp kernels not working on cpu
     ret_device = device
     positions = positions.to(device="cuda:0")
@@ -99,6 +129,20 @@ def get_local_from_world(parent_transforms, positions, orientations, device):
 
 
 def get_world_from_local(parent_transforms, translations, orientations, device):
+    """Transforms local poses to world coordinates using parent transformations.
+
+    Converts local translations and orientations to world space by applying parent transformation
+    matrices. Supports both Warp arrays and PyTorch tensors as input.
+
+    Args:
+        parent_transforms: Parent transformation matrices for coordinate conversion.
+        translations: Local translation data to transform.
+        orientations: Local orientation data to transform.
+        device: Target device for computation and returned data.
+
+    Returns:
+        Tuple of (world_translations, world_orientations) as Warp arrays.
+    """
     calculated_translations = torch.zeros(size=(translations.shape[0], 3), dtype=torch.float32, device=device)
     calculated_orientations = torch.zeros(size=(translations.shape[0], 4), dtype=torch.float32, device=device)
 
@@ -133,6 +177,16 @@ def get_world_from_local(parent_transforms, translations, orientations, device):
 
 @wp.kernel
 def _assign_pose(pose: wp.array(dtype=float, ndim=2), positions: Any, orientations: Any):
+    """Warp kernel that assigns position and orientation data to a pose array.
+
+    Combines position and orientation arrays into a unified pose format.
+    The pose array stores data as [x, y, z, qw, qx, qy, qz] per row.
+
+    Args:
+        pose: Output pose array to populate.
+        positions: Position data array with [x, y, z] coordinates.
+        orientations: Orientation data array with [qw, qx, qy, qz] quaternion values.
+    """
     i = wp.tid()
     pose[i, 0] = positions[i, 0]
     pose[i, 1] = positions[i, 1]
@@ -151,6 +205,19 @@ wp.overload(
 
 
 def get_pose(positions, orientations, device):
+    """Combines position and orientation arrays into a unified pose representation.
+
+    Creates a pose array containing both position and orientation data in a single structure.
+    Temporarily moves computation to CUDA for Warp kernel execution.
+
+    Args:
+        positions: Position data array.
+        orientations: Orientation data array.
+        device: Target device for the returned pose array.
+
+    Returns:
+        Combined pose array with position and orientation data.
+    """
     # TODO: warp kernels not working on cpu
     device = positions.device
     positions = positions.to("cuda:0")
@@ -163,6 +230,16 @@ def get_pose(positions, orientations, device):
 
 @wp.kernel
 def _assign_current_pose(pose: wp.array(dtype=wp.float32, ndim=2), current_positions: Any, current_orientations: Any):
+    """Warp kernel that assigns current pose values to a pose array.
+
+    Copies position and orientation data from current arrays into the pose array format.
+    The pose array stores data as [x, y, z, qx, qy, qz, qw] per row.
+
+    Args:
+        pose: Output pose array to populate.
+        current_positions: Current position data array.
+        current_orientations: Current orientation data array in [qw, qx, qy, qz] format.
+    """
     i = wp.tid()
     pose[i, 0] = current_positions[i, 0]
     pose[i, 1] = current_positions[i, 1]
@@ -198,6 +275,19 @@ def _assign_new_pose(
     has_positions: int,
     has_orientations: int,
 ):
+    """Warp kernel that selectively assigns new pose values to specific indices in a pose array.
+
+    Updates pose data at specified indices based on availability flags.
+    Only updates positions if has_positions is 1, and orientations if has_orientations is 1.
+
+    Args:
+        pose: Pose array to update.
+        positions: New position data to assign.
+        orientations: New orientation data to assign in [qw, qx, qy, qz] format.
+        indices: Target indices in the pose array to update.
+        has_positions: Flag indicating whether to update positions (1) or not (0).
+        has_orientations: Flag indicating whether to update orientations (1) or not (0).
+    """
     i = wp.tid()
     idx = indices[i]
     if has_positions == 1:
@@ -222,6 +312,23 @@ wp.overload(
 
 
 def assign_pose(current_positions, current_orientations, positions, orientations, indices, device, pose):
+    """Assigns pose data by combining current poses with selective updates.
+
+    First populates the pose array with current position and orientation data, then selectively
+    updates specific indices with new pose values. Handles device management for CPU/CUDA operations.
+
+    Args:
+        current_positions: Current position data for all poses.
+        current_orientations: Current orientation data for all poses.
+        positions: New position data to assign at specific indices.
+        orientations: New orientation data to assign at specific indices.
+        indices: Target indices for applying new pose data.
+        device: Target device for computation ("cpu" or "cuda:0").
+        pose: Pose array to populate and update.
+
+    Returns:
+        Updated pose array with combined current and new pose data.
+    """
     to_cpu = False
     if device == "cpu":
         to_cpu = True

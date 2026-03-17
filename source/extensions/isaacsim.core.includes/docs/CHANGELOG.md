@@ -1,4 +1,8 @@
 # Changelog
+## [2.7.0] - 2026-03-04
+### Changed
+- Added Overview.md
+
 ## [2.6.1] - 2026-02-06
 ### Changed
 - Optimize GenericBuffer to re-use memory without allocation if requested size fits within existing capacity.

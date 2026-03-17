@@ -31,7 +31,7 @@ class DataFrame(object):
         data: Dictionary containing the simulation data.
     """
 
-    def __init__(self, current_time_step: int, current_time: float, data: dict) -> None:
+    def __init__(self, current_time_step: int, current_time: float, data: dict):
         self.current_time_step = current_time_step
         self.current_time = current_time
         self.data = data
@@ -45,6 +45,11 @@ class DataFrame(object):
         return {"current_time": self.current_time, "current_time_step": self.current_time_step, "data": self.data}
 
     def __str__(self) -> str:
+        """String representation of the DataFrame.
+
+        Returns:
+            Dictionary representation of the DataFrame as a string.
+        """
         return str(self.get_dict())
 
     @classmethod
@@ -74,7 +79,7 @@ class DOFInfo(object):
         index: The index of this DOF in the articulation.
     """
 
-    def __init__(self, prim_path: str, handle: int, prim: Usd.Prim, index: int) -> None:
+    def __init__(self, prim_path: str, handle: int, prim: Usd.Prim, index: int):
         self.prim_path = prim_path
         self.handle = handle
         self.prim = prim
@@ -90,7 +95,7 @@ class XFormPrimState(object):
         orientation: The orientation quaternion (w, x, y, z) as a numpy array of shape (4,).
     """
 
-    def __init__(self, position: np.ndarray, orientation: np.ndarray) -> None:
+    def __init__(self, position: np.ndarray, orientation: np.ndarray):
         self.position = position
         self.orientation = orientation
 
@@ -103,9 +108,7 @@ class XFormPrimViewState(object):
         orientations: Quaternion orientations (scalar first) with shape (N, 4).
     """
 
-    def __init__(
-        self, positions: Union[np.ndarray, torch.Tensor], orientations: Union[np.ndarray, torch.Tensor]
-    ) -> None:
+    def __init__(self, positions: Union[np.ndarray, torch.Tensor], orientations: Union[np.ndarray, torch.Tensor]):
         self.positions = positions
         self.orientations = orientations
 
@@ -122,7 +125,7 @@ class DynamicState(object):
 
     def __init__(
         self, position: np.ndarray, orientation: np.ndarray, linear_velocity: np.ndarray, angular_velocity: np.ndarray
-    ) -> None:
+    ):
         self.position = position
         self.orientation = orientation
         self.linear_velocity = linear_velocity
@@ -145,7 +148,7 @@ class DynamicsViewState(object):
         orientations: Union[np.ndarray, torch.Tensor],
         linear_velocities: Union[np.ndarray, torch.Tensor],
         angular_velocities: Union[np.ndarray, torch.Tensor],
-    ) -> None:
+    ):
         self.positions = positions
         self.orientations = orientations
         self.linear_velocities = linear_velocities
@@ -161,7 +164,7 @@ class JointsState(object):
         efforts: Joint efforts (torques/forces) array.
     """
 
-    def __init__(self, positions: np.ndarray, velocities: np.ndarray, efforts: np.ndarray) -> None:
+    def __init__(self, positions: np.ndarray, velocities: np.ndarray, efforts: np.ndarray):
         self.positions = positions
         self.velocities = velocities
         self.efforts = efforts
@@ -171,9 +174,10 @@ class ArticulationAction(object):
     """Action to apply to an articulation's joints.
 
     Args:
-        joint_positions: Target joint positions. Defaults to None.
-        joint_velocities: Target joint velocities. Defaults to None.
-        joint_efforts: Target joint efforts (torques/forces). Defaults to None.
+        joint_positions: Target joint positions.
+        joint_velocities: Target joint velocities.
+        joint_efforts: Target joint efforts (torques/forces).
+        joint_indices: Joint indices to specify which joints to manipulate.
     """
 
     def __init__(
@@ -182,7 +186,7 @@ class ArticulationAction(object):
         joint_velocities: Optional[Union[List, np.ndarray]] = None,
         joint_efforts: Optional[Union[List, np.ndarray]] = None,
         joint_indices: Optional[Union[List, np.ndarray]] = None,
-    ) -> None:
+    ):
         self.joint_positions = joint_positions
         self.joint_velocities = joint_velocities
         self.joint_efforts = joint_efforts
@@ -238,6 +242,11 @@ class ArticulationAction(object):
         return result
 
     def __str__(self) -> str:
+        """String representation of the ArticulationAction.
+
+        Returns:
+            String representation of the action's dictionary.
+        """
         return str(self.get_dict())
 
     def get_length(self) -> Optional[int]:
@@ -275,14 +284,14 @@ class ArticulationActions(object):
     """Actions to apply to multiple articulations' joints.
 
     Args:
-        joint_positions: Target joint positions. Defaults to None.
-        joint_velocities: Target joint velocities. Defaults to None.
-        joint_efforts: Target joint efforts (torques/forces). Defaults to None.
+        joint_positions: Target joint positions.
+        joint_velocities: Target joint velocities.
+        joint_efforts: Target joint efforts (torques/forces).
         joint_indices: Joint indices to specify which joints to manipulate. Shape (K,).
-            Where K <= num of dofs. Defaults to None (i.e: all dofs).
+            Where K <= num of dofs.
         joint_names: Joint names to specify which joints to manipulate
             (cannot be specified together with joint_indices). Shape (K,).
-            Where K <= num of dofs. Defaults to None (i.e: all dofs).
+            Where K <= num of dofs.
     """
 
     def __init__(
@@ -292,7 +301,7 @@ class ArticulationActions(object):
         joint_efforts: Optional[Union[List, np.ndarray]] = None,
         joint_indices: Optional[Union[List, np.ndarray]] = None,
         joint_names: Optional[List[str]] = None,
-    ) -> None:
+    ):
         if joint_names is not None and joint_indices is not None:
             raise Exception("joint indices and joint names can't be both specified")
         self.joint_positions = joint_positions

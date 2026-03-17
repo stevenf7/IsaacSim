@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides PyTorch-based utilities for 3D rotations, quaternions, and coordinate transformations."""
+
+
 import typing
+from typing import Union
 
 import numpy as np
 from isaacsim.core.deprecation_manager import import_module
@@ -28,10 +32,11 @@ def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternio
     """Converts a pxr Quaternion type to a torch array (scalar first).
 
     Args:
-        orientation (typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion]): Input quaternion from USD.
+        orientation: Input quaternion from USD.
+        device: Device to place the tensor on.
 
     Returns:
-       torch.Tensor: Quaternion as torch tensor in [w, x, y, z] format.
+        Quaternion as torch tensor in [w, x, y, z] format.
     """
     quat = torch.zeros(4, dtype=torch.float32, device=device)
     quat[1:] = torch.tensor(orientation.GetImaginary(), dtype=torch.float32, device=device)
@@ -45,15 +50,15 @@ def euler_angles_to_quats(
     """Vectorized version of converting euler angles to quaternion (scalar first)
 
     Args:
-        euler_angles (typing.Union[np.ndarray, torch.Tensor]): euler angles with shape (N, 3)
-        degrees (bool, optional): True if degrees, False if radians. Defaults to False.
-        extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
-                   the intrinsic angles conventions (equivalent to XYZ ordering).
-                   Defaults to True.
+        euler_angles: euler angles with shape (N, 3)
+        degrees: True if degrees, False if radians.
+        extrinsic: True if the euler angles follows the extrinsic angles
+            convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
+            the intrinsic angles conventions (equivalent to XYZ ordering).
+        device: Device to place the tensor on.
 
     Returns:
-        typing.Union[np.ndarray, torch.Tensor]: quaternions representation of the angles (N, 4) - scalar first.
+        quaternions representation of the angles (N, 4) - scalar first.
     """
     if extrinsic:
         order = "xyz"
@@ -74,10 +79,11 @@ def rot_matrices_to_quats(rotation_matrices: torch.Tensor, device=None) -> torch
     """Vectorized version of converting rotation matrices to quaternions
 
     Args:
-        rotation_matrices (torch.Tensor): N Rotation matrices with shape (N, 3, 3) or (3, 3)
+        rotation_matrices: N Rotation matrices with shape (N, 3, 3) or (3, 3)
+        device: Device to place the tensor on.
 
     Returns:
-        torch.Tensor: quaternion representation of the rotation matrices (N, 4) or (4,) - scalar first
+        quaternion representation of the rotation matrices (N, 4) or (4,) - scalar first
     """
     rot = Rotation.from_matrix(rotation_matrices.cpu().numpy())
     result = rot.as_quat()
@@ -90,27 +96,27 @@ def rot_matrices_to_quats(rotation_matrices: torch.Tensor, device=None) -> torch
 
 
 def rad2deg(radian_value: torch.Tensor, device=None) -> torch.Tensor:
-    """_summary_
+    """Converts radians to degrees.
 
     Args:
-        radian_value (torch.Tensor): _description_
-        device (_type_, optional): _description_. Defaults to None.
+        radian_value: Angle value in radians.
+        device: Device to place the tensor on.
 
     Returns:
-        torch.Tensor: _description_
+        Angle value in degrees.
     """
     return torch.rad2deg(radian_value).float().to(device)
 
 
 def deg2rad(degree_value: float, device=None) -> torch.Tensor:
-    """_summary_
+    """Converts degrees to radians.
 
     Args:
-        degree_value (torch.Tensor): _description_
-        device (_type_, optional): _description_. Defaults to None.
+        degree_value: Angle value in degrees.
+        device: Device to place the tensor on.
 
     Returns:
-        torch.Tensor: _description_
+        Angle value in radians.
     """
     return torch.deg2rad(degree_value).float().to(device)
 
@@ -353,6 +359,7 @@ def normalise_quat_in_pose(pose):
 
     Args:
         pose: shape N, 7
+
     Returns:
         Pose with normalised quat. Shape N, 7
     """
@@ -391,8 +398,24 @@ def compute_rot(torso_quat, velocity, ang_velocity, targets, torso_positions, ex
 
 
 def xyzw2wxyz(q):
+    """Converts quaternion from [x, y, z, w] to [w, x, y, z] format.
+
+    Args:
+        q: Quaternion tensor in [x, y, z, w] format.
+
+    Returns:
+        Quaternion tensor in [w, x, y, z] format.
+    """
     return torch.roll(q, 1, -1)
 
 
 def wxyz2xyzw(q):
+    """Converts quaternion from [w, x, y, z] to [x, y, z, w] format.
+
+    Args:
+        q: Quaternion tensor in [w, x, y, z] format.
+
+    Returns:
+        Quaternion tensor in [x, y, z, w] format.
+    """
     return torch.roll(q, -1, -1)

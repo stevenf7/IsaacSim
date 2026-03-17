@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Abstract task implementation for robot end effector target following scenarios."""
+
 
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -33,11 +36,11 @@ class FollowTarget(ABC, BaseTask):
 
     Args:
         name: Task name identifier.
-        target_prim_path: USD path for the target prim. Defaults to None.
-        target_name: Name for the target object. Defaults to None.
-        target_position: Initial target position. Defaults to None.
-        target_orientation: Initial target orientation. Defaults to None.
-        offset: Offset for all task objects. Defaults to None.
+        target_prim_path: USD path for the target prim.
+        target_name: Name for the target object.
+        target_position: Initial target position.
+        target_orientation: Initial target orientation.
+        offset: Offset for all task objects.
     """
 
     def __init__(
@@ -48,7 +51,7 @@ class FollowTarget(ABC, BaseTask):
         target_position: Optional[np.ndarray] = None,
         target_orientation: Optional[np.ndarray] = None,
         offset: Optional[np.ndarray] = None,
-    ) -> None:
+    ):
         BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
         self._target_name = target_name
@@ -62,7 +65,7 @@ class FollowTarget(ABC, BaseTask):
             self._target_position = np.array([0, 0.1, 0.7]) / get_stage_units()
         return
 
-    def set_up_scene(self, scene: Scene) -> None:
+    def set_up_scene(self, scene: Scene):
         """Set up the scene with target and robot.
 
         Args:
@@ -93,7 +96,7 @@ class FollowTarget(ABC, BaseTask):
         return
 
     @abstractmethod
-    def set_robot(self) -> None:
+    def set_robot(self):
         """Create and return the robot for this task.
 
         Raises:
@@ -107,14 +110,14 @@ class FollowTarget(ABC, BaseTask):
         target_name: Optional[str] = None,
         target_position: Optional[np.ndarray] = None,
         target_orientation: Optional[np.ndarray] = None,
-    ) -> None:
+    ):
         """Set task parameters including target pose.
 
         Args:
-            target_prim_path: USD path for target. Defaults to None.
-            target_name: Name for target object. Defaults to None.
-            target_position: Target position. Defaults to None.
-            target_orientation: Target orientation. Defaults to None.
+            target_prim_path: USD path for target.
+            target_name: Name for target object.
+            target_position: Target position.
+            target_orientation: Target orientation.
         """
         if target_prim_path is not None:
             if self._target is not None:
@@ -186,11 +189,19 @@ class FollowTarget(ABC, BaseTask):
         }
 
     def calculate_metrics(self) -> dict:
-        """Calculate task metrics."""
+        """Calculate task metrics.
+
+        Raises:
+            NotImplementedError: Must be implemented by subclass.
+        """
         raise NotImplementedError
 
     def is_done(self) -> bool:
-        """Check if task is complete."""
+        """Check if task is complete.
+
+        Raises:
+            NotImplementedError: Must be implemented by subclass.
+        """
         raise NotImplementedError
 
     def target_reached(self) -> bool:
@@ -206,7 +217,7 @@ class FollowTarget(ABC, BaseTask):
         else:
             return False
 
-    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
+    def pre_step(self, time_step_index: int, simulation_time: float):
         """Called before each physics step to update target visual.
 
         Args:
@@ -222,7 +233,7 @@ class FollowTarget(ABC, BaseTask):
 
         return
 
-    def post_reset(self) -> None:
+    def post_reset(self):
         """Called after world reset."""
         return
 
@@ -230,7 +241,10 @@ class FollowTarget(ABC, BaseTask):
         """Add an obstacle cube to the scene.
 
         Args:
-            position: Position for the obstacle. Defaults to None.
+            position: Position for the obstacle.
+
+        Returns:
+            The created obstacle cube object.
         """
         # TODO: move to task frame if there is one
         cube_prim_path = find_unique_string_name(
@@ -251,7 +265,7 @@ class FollowTarget(ABC, BaseTask):
         self._obstacle_cubes[cube.name] = cube
         return cube
 
-    def remove_obstacle(self, name: Optional[str] = None) -> None:
+    def remove_obstacle(self, name: Optional[str] = None):
         """Remove an obstacle from the scene.
 
         Args:
@@ -266,7 +280,7 @@ class FollowTarget(ABC, BaseTask):
             del self._obstacle_cubes[obstacle_to_delete]
         return
 
-    def get_obstacle_to_delete(self) -> None:
+    def get_obstacle_to_delete(self):
         """Get the last obstacle that would be deleted.
 
         Returns:
@@ -286,7 +300,7 @@ class FollowTarget(ABC, BaseTask):
         else:
             return False
 
-    def cleanup(self) -> None:
+    def cleanup(self):
         """Remove all obstacles from the scene."""
         obstacles_to_delete = list(self._obstacle_cubes.keys())
         for obstacle_to_delete in obstacles_to_delete:

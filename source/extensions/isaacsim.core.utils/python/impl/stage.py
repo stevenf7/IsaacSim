@@ -19,6 +19,7 @@ import threading
 
 # python
 import typing
+from typing import Callable, Optional, Tuple, Union
 
 # omniverse
 import carb
@@ -78,10 +79,10 @@ def get_current_stage(fabric: bool = False) -> typing.Union[Usd.Stage, usdrt.Usd
     """Get the current open USD or Fabric stage
 
     Args:
-        fabric (bool, optional): True to get the fabric stage. False to get the USD stage. Defaults to False.
+        fabric: True to get the fabric stage. False to get the USD stage.
 
     Returns:
-        typing.Union[Usd.Stage, usdrt.Usd._Usd.Stage]: The USD or Fabric stage as specified by the input arg fabric.
+        The USD or Fabric stage as specified by the input arg fabric.
 
     Example:
 
@@ -108,7 +109,7 @@ def get_current_stage_id() -> int:
     """Get the current open stage id
 
     Returns:
-        int: The stage id.
+        The stage id.
 
     Example:
 
@@ -161,11 +162,11 @@ async def update_stage_async() -> None:
 
 
 # TODO: make a generic util for setting all layer properties
-def set_stage_up_axis(axis: str = "z") -> None:
+def set_stage_up_axis(axis: str = "z"):
     """Change the up axis of the current stage
 
     Args:
-        axis (UsdGeom.Tokens, optional): valid values are ``"x"``, ``"y"`` and ``"z"``
+        axis: valid values are ``"x"``, ``"y"`` and ``"z"
 
     Example:
 
@@ -189,7 +190,7 @@ def get_stage_up_axis() -> str:
     """Get the current up-axis of USD stage.
 
     Returns:
-        str: The up-axis of the stage.
+        The up-axis of the stage.
 
     Example:
 
@@ -204,12 +205,11 @@ def get_stage_up_axis() -> str:
     return UsdGeom.GetStageUpAxis(stage)
 
 
-def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None) -> None:
+def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None):
     """Deletes all prims in the stage without populating the undo command buffer
 
     Args:
-        predicate (typing.Optional[typing.Callable[[str], bool]], optional):
-            user defined function that takes a prim_path (str) as input and returns True/False if the prim
+        predicate: user defined function that takes a prim_path (str) as input and returns True/False if the prim
             should/shouldn't be deleted. If predicate is None, a default is used that deletes all prims
 
     Example:
@@ -263,8 +263,11 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
         omni.kit.app.get_app_interface().update()
 
 
-def print_stage_prim_paths(fabric: bool = False) -> None:
+def print_stage_prim_paths(fabric: bool = False):
     """Traverses the stage and prints all prim (hidden or not) paths.
+
+    Args:
+        fabric: True to get the fabric stage. False to get the USD stage.
 
     Example:
 
@@ -302,7 +305,7 @@ def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xfor
     Args:
         usd_path: The path to USD file to reference.
         prim_path: The prim path where the reference will be attached.
-        prim_type: The type of prim to create if it doesn't exist. Defaults to "Xform".
+        prim_type: The type of prim to create if it doesn't exist.
 
     Returns:
         The USD prim at the specified prim path.
@@ -363,7 +366,7 @@ def create_new_stage() -> Usd.Stage:
     """Create a new stage attached to the USD context.
 
     Returns:
-        Usd.Stage: The created USD stage.
+        The created USD stage.
 
     Example:
 
@@ -383,7 +386,7 @@ def create_new_stage_in_memory() -> Usd.Stage:
     """Create a new stage in memory.
 
     Returns:
-        Usd.Stage: The created USD stage.
+        The created USD stage.
 
     Example:
 
@@ -399,7 +402,7 @@ def create_new_stage_in_memory() -> Usd.Stage:
     return Usd.Stage.CreateInMemory()
 
 
-async def create_new_stage_async() -> None:
+async def create_new_stage_async():
     """Create a new stage (asynchronous version).
 
     Example:
@@ -423,13 +426,13 @@ def open_stage(usd_path: str) -> bool:
     """Open the given usd file and replace currently opened stage.
 
     Args:
-        usd_path (str): Path to the USD file to open.
+        usd_path: Path to the USD file to open.
 
     Raises:
         ValueError: When input path is not a supported file type by USD.
 
     Returns:
-        bool: True if operation is successful, otherwise false.
+        True if operation is successful, otherwise false.
 
     Example:
 
@@ -453,13 +456,13 @@ async def open_stage_async(usd_path: str) -> typing.Tuple[bool, int]:
     """Open the given usd file and replace currently opened stage (asynchronous version).
 
     Args:
-        usd_path (str): Path to the USD file to open.
+        usd_path: Path to the USD file to open.
 
     Raises:
         ValueError: When input path is not a supported file type by USD.
 
     Returns:
-        bool: True if operation is successful, otherwise false.
+        A tuple containing (success status, error code).
 
     Example:
 
@@ -487,14 +490,14 @@ def save_stage(usd_path: str, save_and_reload_in_place=True) -> bool:
     """Save usd file to path, it will be overwritten with the current stage
 
     Args:
-        usd_path (str): File path to save the current stage to
-        save_and_reload_in_place (bool, optional): use ``save_as_stage`` to save and reload the root layer in place. Defaults to True.
+        usd_path: File path to save the current stage to
+        save_and_reload_in_place: use ``save_as_stage`` to save and reload the root layer in place.
 
     Raises:
         ValueError: When input path is not a supported file type by USD.
 
     Returns:
-        bool: True if operation is successful, otherwise false.
+        True if operation is successful, otherwise false.
 
     Example:
 
@@ -527,10 +530,10 @@ def close_stage(callback_fn: typing.Callable = None) -> bool:
         Once the stage is closed, it is necessary to open a new stage or create a new one in order to work on it.
 
     Args:
-        callback_fn (typing.Callable, optional): Callback function to call while closing. Defaults to None.
+        callback_fn: Callback function to call while closing.
 
     Returns:
-        bool: True if operation is successful, otherwise false.
+        True if operation is successful, otherwise false.
 
     Example:
 
@@ -565,11 +568,11 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
     """Save the stage and set the Live Sync mode for real-time live editing of shared files on a Nucleus server
 
     Args:
-        usd_path (str): path to enable live sync for, it will be overwritten with the current stage
-        enable (bool): True to enable livesync, false to disable livesync
+        usd_path: path to enable live sync for, it will be overwritten with the current stage
+        enable: True to enable livesync, false to disable livesync
 
     Returns:
-        bool: True if operation is successful, otherwise false.
+        True if operation is successful, otherwise false.
 
     Example:
 
@@ -632,7 +635,7 @@ def is_stage_loading() -> bool:
     """Convenience function to see if any files are being loaded.
 
     Returns:
-        bool: True if loading, False otherwise
+        True if loading, False otherwise
 
     Example:
 
@@ -651,7 +654,7 @@ def is_stage_loading() -> bool:
         return loading > 0
 
 
-def set_stage_units(stage_units_in_meters: float) -> None:
+def set_stage_units(stage_units_in_meters: float):
     """Set the stage meters per unit
 
     The most common units and their values are listed in the following table:
@@ -671,7 +674,7 @@ def set_stage_units(stage_units_in_meters: float) -> None:
     +------------------+--------+
 
     Args:
-        stage_units_in_meters (float): units for stage
+        stage_units_in_meters: units for stage
 
     Example:
 
@@ -707,7 +710,7 @@ def get_stage_units() -> float:
     +------------------+--------+
 
     Returns:
-        float: current stage meters per unit
+        current stage meters per unit
 
     Example:
 
@@ -725,11 +728,11 @@ def get_next_free_path(path: str, parent: str = None) -> str:
     """Returns the next free usd path for the current stage
 
     Args:
-        path (str): path we want to check
-        parent (str, optional): Parent prim for the given path. Defaults to None.
+        path: path we want to check
+        parent: Parent prim for the given path.
 
     Returns:
-        str: a new path that is guaranteed to not exist on the current stage
+        a new path that is guaranteed to not exist on the current stage
 
     Example:
 

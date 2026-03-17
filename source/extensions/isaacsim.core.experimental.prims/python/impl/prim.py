@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Base wrapper class for managing USD prims with support for regex path matching and batch operations."""
+
+
 from __future__ import annotations
 
 import re
@@ -63,7 +66,7 @@ class Prim(ABC):
         >>> prims = Prim("/World/prim_.*")  # doctest: +NO_CHECK
     """
 
-    def __init__(self, paths: str | list[str], *, resolve_paths: bool = True) -> None:
+    def __init__(self, paths: str | list[str], *, resolve_paths: bool = True):
         self._is_valid = True
         self._device = wp.get_device(SimulationManager.get_physics_sim_device())
         # get prim paths
@@ -286,7 +289,11 @@ class Prim(ABC):
     """
 
     def _on_physics_ready(self, event) -> None:
-        """Handle physics ready event."""
+        """Handle physics ready event.
+
+        Args:
+            event: The physics ready event.
+        """
         self._device = wp.get_device(SimulationManager.get_physics_sim_device())
 
     def _on_prim_deletion(self, prim_path: str) -> None:

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provide utilities for importing Python modules with deprecation-aware error handling."""
+"""Functions for importing Python packages and modules with enhanced error handling and deprecation notices."""
 
 from __future__ import annotations
 
@@ -35,6 +35,9 @@ def import_module(name: str) -> ModuleType:
 
     Args:
         name: The name of the package/module to import.
+
+    Returns:
+        The imported module.
 
     Example:
 

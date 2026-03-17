@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Base class for creating and managing simulation tasks in Isaac Sim environments."""
+
 
 from typing import Optional
 
@@ -28,11 +31,11 @@ class BaseTask(object):
     Checkout the required tutorials at https://docs.isaacsim.omniverse.nvidia.com/latest/index.html
 
     Args:
-        name (str): needs to be unique if added to the World.
-        offset (Optional[np.ndarray], optional): offset applied to all assets of the task.
+        name: needs to be unique if added to the World.
+        offset: offset applied to all assets of the task.
     """
 
-    def __init__(self, name: str, offset: Optional[np.ndarray] = None) -> None:
+    def __init__(self, name: str, offset: Optional[np.ndarray] = None):
         self._scene = None
         self._name = name
         self._offset = offset
@@ -46,20 +49,25 @@ class BaseTask(object):
 
     @property
     def device(self):
+        """Device used for simulation computations.
+
+        Returns:
+            The simulation device instance.
+        """
         return self._device
 
     @property
     def scene(self) -> Scene:
-        """Scene of the world
+        """Scene instance associated with this task.
 
         Returns:
-            Scene: The scene instance associated with this task.
+            The scene instance associated with this task.
         """
         return self._scene
 
     @property
     def name(self) -> str:
-        """Get the name of the task.
+        """Name of the task.
 
         Returns:
             The task name.
@@ -68,15 +76,16 @@ class BaseTask(object):
 
     def set_up_scene(self, scene: Scene) -> None:
         """Adding assets to the stage as well as adding the encapsulated objects such as SingleXFormPrim..etc
-           to the task_objects happens here.
+               to the task_objects happens here.
 
         Args:
-            scene (Scene): The scene to set up with task assets.
+            scene: The scene to set up with task assets.
         """
         self._scene = scene
         return
 
     def _move_task_objects_to_their_frame(self):
+        """Move all registered task objects to their final position using the task offset."""
 
         # if self._task_path:
         # TODO: assumption all task objects are under the same parent
@@ -107,7 +116,7 @@ class BaseTask(object):
             NotImplementedError: Must be implemented by subclass.
 
         Returns:
-            dict: Dictionary containing task-specific observations.
+            Dictionary containing task-specific observations.
         """
         raise NotImplementedError
 
@@ -116,6 +125,9 @@ class BaseTask(object):
 
         Raises:
             NotImplementedError: Must be implemented by subclass.
+
+        Returns:
+            Dictionary containing calculated task metrics.
         """
         raise NotImplementedError
 
@@ -124,6 +136,9 @@ class BaseTask(object):
 
         Raises:
             NotImplementedError: Must be implemented by subclass.
+
+        Returns:
+            True if the task is complete, False otherwise.
         """
         raise NotImplementedError
 
@@ -131,12 +146,12 @@ class BaseTask(object):
         """called before stepping the physics simulation.
 
         Args:
-            time_step_index (int): Current physics step index.
-            simulation_time (float): Current simulation time in seconds.
+            time_step_index: Current physics step index.
+            simulation_time: Current simulation time in seconds.
         """
         return
 
-    def post_reset(self) -> None:
+    def post_reset(self):
         """Calls while doing a .reset() on the world."""
         return
 
@@ -148,14 +163,18 @@ class BaseTask(object):
         """
         return ""
 
-    def cleanup(self) -> None:
+    def cleanup(self):
         """Called before calling a reset() on the world to removed temporary objects that were added during
         simulation for instance.
         """
         return
 
-    def set_params(self, *args, **kwargs) -> None:
+    def set_params(self, *args, **kwargs):
         """Changes the modifiable parameters of the task
+
+        Args:
+            *args: Variable length argument list.
+            **kwargs: Additional keyword arguments for task parameters.
 
         Raises:
             NotImplementedError: Must be implemented by subclass.
@@ -164,15 +183,15 @@ class BaseTask(object):
 
     def get_params(self) -> dict:
         """Gets the parameters of the task.
-           This is defined differently for each task in order to access the task's objects and values.
-           Note that this is different from get_observations.
-           Things like the robot name, block name..etc can be defined here for faster retrieval.
-           should have the form of params_representation["param_name"] = {"value": param_value, "modifiable": bool}
+               This is defined differently for each task in order to access the task's objects and values.
+               Note that this is different from get_observations.
+               Things like the robot name, block name..etc can be defined here for faster retrieval.
+               should have the form of params_representation["param_name"] = {"value": param_value, "modifiable": bool}
 
         Raises:
             NotImplementedError: Must be implemented by subclass.
 
         Returns:
-            dict: defined parameters of the task.
+            Defined parameters of the task.
         """
         raise NotImplementedError

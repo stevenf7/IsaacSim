@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.0] - 2026-03-04
+### Changed
+- Added Overview.md, python_api.md and updated docstrings
+
 ## [0.2.3] - 2025-12-20
 ### Changed
 - Move import of kit loop runner to a try-except block to handle import exceptions if omni.kit.loop-isaac is not enabled

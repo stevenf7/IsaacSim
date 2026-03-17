@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
+"""High level wrapper for creating/configuring position-based-dynamics (PBD) particle materials for simulating fluids, cloth and inflatables."""
+
 
 from typing import Optional
 
@@ -60,25 +64,22 @@ class ParticleMaterial:
             If a prim does not exist at specified path, then a new UsdShade.Material prim is created.
 
         Args:
-            prim_path (str): The prim path to create/apply PBD material properties.
-            friction (float, optional): The friction coefficient.
-            particle_friction_scale (float, optional): The coefficient that scales friction for
-                solid particle-particle interactions.
-            damping (float, optional): The global velocity damping coefficient
-            viscosity (float, optional): The viscosity of fluid particles.
-            vorticity_confinement (float, optional): The vorticity confinement for fluid particles.
-            surface_tension (float, optional): The surface tension.
-            cohesion (float, optional): The cohesion for interaction between fluid particles.
-            adhesion (float, optional): The adhesion for interaction between particles (solid or fluid),
-                and rigid or deformable objects.
-            particle_adhesion_scale (float, optional): The coefficient that scales adhesion for solid
-                particle-particle iterations.
-            adhesion_offset_scale (float, optional): The offset scale defines at which adhesion ceases
-                to take effect.
-            gravity_scale (float, optional): The gravitational acceleration scaling factor. It can be used
-                to approximate lighter-than-air inflatables.
-            lift (float, optional): The lift coefficient for cloth and inflatable particle objects.
-            drag (float, optional): The drag coefficient for cloth and inflatable particle objects.
+            prim_path: The prim path to create/apply PBD material properties.
+            name: Name given to the prim when instantiating it.
+            friction: The friction coefficient.
+            particle_friction_scale: The coefficient that scales friction for solid particle-particle interactions.
+            damping: The global velocity damping coefficient.
+            viscosity: The viscosity of fluid particles.
+            vorticity_confinement: The vorticity confinement for fluid particles.
+            surface_tension: The surface tension.
+            cohesion: The cohesion for interaction between fluid particles.
+            adhesion: The adhesion for interaction between particles (solid or fluid), and rigid or deformable objects.
+            particle_adhesion_scale: The coefficient that scales adhesion for solid particle-particle iterations.
+            adhesion_offset_scale: The offset scale defines at which adhesion ceases to take effect.
+            gravity_scale: The gravitational acceleration scaling factor. It can be used to approximate
+                lighter-than-air inflatables.
+            lift: The lift coefficient for cloth and inflatable particle objects.
+            drag: The drag coefficient for cloth and inflatable particle objects.
         """
         stage = stage_utils.get_current_stage()
         self._name = name
@@ -165,48 +166,58 @@ class ParticleMaterial:
 
     @property
     def prim_path(self) -> str:
-        """
+        """Stage path to the material.
+
         Returns:
-            str: The stage path to the material.
+            The stage path to the material.
         """
         return self._prim_path
 
     @property
     def prim(self) -> Usd.Prim:
-        """
+        """USD prim present.
+
         Returns:
-            Usd.Prim: The USD prim present.
+            The USD prim present.
         """
         return self._prim
 
     @property
     def material(self) -> UsdShade.Material:
-        """
+        """USD Material object.
+
         Returns:
-            UsdShade.Material: The USD Material object.
+            The USD Material object.
         """
         return self._material
 
     @property
     def name(self) -> Optional[str]:
-        """
+        """Name given to the prim when instantiating it.
+
         Returns:
-            str: name given to the prim when instantiating it. Otherwise None.
+            Name given to the prim when instantiating it. Otherwise None.
         """
         return self._name
 
-    def initialize(self, physics_sim_view=None) -> None:
+    def initialize(self, physics_sim_view=None):
+        """Initializes the particle material.
+
+        Args:
+            physics_sim_view: Physics simulation view to use for initialization.
+        """
         self._particle_material_view.initialize(physics_sim_view=physics_sim_view)
         return
 
     def is_valid(self) -> bool:
-        """
+        """Whether the current prim path corresponds to a valid prim in stage.
+
         Returns:
-            bool: True is the current prim path corresponds to a valid prim in stage. False otherwise.
+            True is the current prim path corresponds to a valid prim in stage. False otherwise.
         """
         return self._particle_material_view.is_valid()
 
-    def post_reset(self) -> None:
+    def post_reset(self):
         """Resets the prim to its default state."""
         self._particle_material_view.post_reset()
         return
@@ -215,14 +226,14 @@ class ParticleMaterial:
     Operations - Setters.
     """
 
-    def set_friction(self, value: float) -> None:
+    def set_friction(self, value: float):
         """Sets the friction coefficient.
 
         The friction takes effect in all interactions between particles and rigids or deformables.
         For solid particle-particle interactions it is multiplied by the particle friction scale.
 
         Args:
-            value (float): The friction coefficient.
+            value: The friction coefficient.
                 Range: [0, inf), Units: dimensionless
         """
         if value < 0:
@@ -231,13 +242,13 @@ class ParticleMaterial:
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_particle_friction_scale(self, value: float) -> None:
+    def set_particle_friction_scale(self, value: float):
         """Sets the particle friction scale.
 
         The coefficient that scales friction for solid particle-particle interaction.
 
         Args:
-            value (float): The particle friction scale.
+            value: The particle friction scale.
                 Range: [0, inf), Units: dimensionless
         """
         if value < 0:
@@ -246,22 +257,22 @@ class ParticleMaterial:
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_damping(self, value: float) -> None:
+    def set_damping(self, value: float):
         """Sets the global velocity damping coefficient.
 
         Args:
-            value (float): The damping coefficient.
+            value: The damping coefficient.
                 Range: [0, inf), Units: dimensionless
         """
         if value < 0:
             carb.log_error("The valid range of damping coefficient is [0. inf).")
         self._particle_material_view.set_dampings(self._backend_utils.create_tensor_from_list([value], dtype="float32"))
 
-    def set_viscosity(self, value: float) -> None:
+    def set_viscosity(self, value: float):
         """Sets the viscosity for fluid particles.
 
         Args:
-            value (float): The viscosity.
+            value: The viscosity.
                 Range: [0, inf), Units: dimensionless
         """
         if value < 0:
@@ -270,14 +281,14 @@ class ParticleMaterial:
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_vorticity_confinement(self, value: float) -> None:
+    def set_vorticity_confinement(self, value: float):
         """Sets the vorticity confinement for fluid particles.
 
         This helps prevent energy loss due to numerical solver by adding vortex-like
         accelerations to the particles.
 
         Args:
-            value (float): The vorticity confinement.
+            value: The vorticity confinement.
                 Range: [0, inf), Units: dimensionless
         """
         if value < 0:
@@ -286,11 +297,11 @@ class ParticleMaterial:
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_surface_tension(self, value: float) -> None:
+    def set_surface_tension(self, value: float):
         """Sets the surface tension for fluid particles.
 
         Args:
-            value (float): The surface tension.
+            value: The surface tension.
                 Range: [0, inf), Units: 1 / (distance * distance * distance)
         """
         if value < 0:
@@ -299,13 +310,12 @@ class ParticleMaterial:
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_cohesion(self, value: float) -> None:
+    def set_cohesion(self, value: float):
         """Sets the cohesion for interaction between fluid particles.
 
         Args:
-            value (float): The cohesion.
+            value: The cohesion.
                 Range: [0, inf), Units: dimensionless
-
         """
         if value < 0:
             carb.log_error("The valid range of adhesion is [0. inf).")
@@ -313,7 +323,7 @@ class ParticleMaterial:
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_adhesion(self, value: float) -> None:
+    def set_adhesion(self, value: float):
         """Sets the adhesion for interaction between particles (solid or fluid), and rigid or deformable objects.
 
         Note:
@@ -321,9 +331,8 @@ class ParticleMaterial:
             particle adhesion scale.
 
         Args:
-            value (float): The adhesion.
+            value: The adhesion.
                 Range: [0, inf), Units: dimensionless
-
         """
         if value < 0:
             carb.log_error("The valid range of adhesion is [0. inf).")
@@ -331,13 +340,13 @@ class ParticleMaterial:
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_particle_adhesion_scale(self, value: float) -> None:
+    def set_particle_adhesion_scale(self, value: float):
         """Sets the particle adhesion scale.
 
         This coefficient scales the adhesion for solid particle-particle interaction.
 
         Args:
-            value (float): The adhesion scale.
+            value: The adhesion scale.
                 Range: [0, inf), Units: dimensionless
         """
         if value < 0:
@@ -346,7 +355,7 @@ class ParticleMaterial:
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_adhesion_offset_scale(self, value: float) -> None:
+    def set_adhesion_offset_scale(self, value: float):
         """Sets the adhesion offset scale.
 
         It defines the offset at which adhesion ceases to take effect. For interactions between
@@ -355,7 +364,7 @@ class ParticleMaterial:
         offset is defined relative to the solid rest offset.
 
         Args:
-            value (float): The adhesion offset scale.
+            value: The adhesion offset scale.
                 Range: [0, inf), Units: dimensionless
         """
         if value < 0:
@@ -364,40 +373,40 @@ class ParticleMaterial:
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_gravity_scale(self, value: float) -> None:
+    def set_gravity_scale(self, value: float):
         """Sets the gravitational acceleration scaling factor.
 
         It can be used to approximate lighter-than-air inflatable.
         For example (-1.0 would invert gravity).
 
         Args:
-            value (float): The gravity scale.
+            value: The gravity scale.
                 Range: (-inf , inf), Units: dimensionless
         """
         self._particle_material_view.set_gravity_scales(
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_lift(self, value: float) -> None:
+    def set_lift(self, value: float):
         """Sets the lift coefficient, i.e. basic aerodynamic lift model coefficient.
 
         It is useful for cloth and inflatable particle objects.
 
         Args:
-            value (float): The lift coefficient.
+            value: The lift coefficient.
                 Range: [0, inf), Units: dimensionless
         """
         if value < 0:
             carb.log_error("The valid range of lift coefficient is [0. inf).")
         self._particle_material_view.set_lifts(self._backend_utils.create_tensor_from_list([value], dtype="float32"))
 
-    def set_drag(self, value: float) -> None:
+    def set_drag(self, value: float):
         """Sets the drag coefficient, i.e. basic aerodynamic drag model coefficient.
 
         It is useful for cloth and inflatable particle objects.
 
         Args:
-            value (float): The drag coefficient.
+            value: The drag coefficient.
                 Range: [0, inf), Units: dimensionless
         """
         if value < 0:
@@ -409,92 +418,105 @@ class ParticleMaterial:
     """
 
     def get_friction(self) -> float:
-        """
+        """Friction coefficient.
+
         Returns:
-            float: The friction coefficient.
+            The friction coefficient.
         """
         return self._particle_material_view.get_frictions()[0]
 
     def get_particle_friction_scale(self) -> float:
-        """
+        """Particle friction scale.
+
         Returns:
-            float: The particle friction scale.
+            The particle friction scale.
         """
         return self._particle_material_view.get_particle_friction_scales()[0]
 
     def get_damping(self) -> float:
-        """
+        """Global velocity damping coefficient.
+
         Returns:
-            float: The global velocity damping coefficient.
+            The global velocity damping coefficient.
         """
         return self._particle_material_view.get_dampings()[0]
 
     def get_viscosity(self) -> float:
-        """
+        """Viscosity for fluid particles.
+
         Returns:
-            float: The viscosity.
+            The viscosity.
         """
         return self._particle_material_view.get_viscosities()[0]
 
     def get_vorticity_confinement(self) -> float:
-        """
+        """Vorticity confinement for fluid particles.
+
         Returns:
-            float: The vorticity confinement for fluid particles.
+            The vorticity confinement for fluid particles.
         """
         return self._particle_material_view.get_vorticity_confinements()[0]
 
     def get_surface_tension(self) -> float:
-        """
+        """Surface tension for fluid particles.
+
         Returns:
-            float: The surface tension for fluid particles.
+            The surface tension for fluid particles.
         """
         return self._particle_material_view.get_surface_tensions()[0]
 
     def get_cohesion(self) -> float:
-        """
+        """Cohesion for interaction between fluid particles.
+
         Returns:
-            float: The cohesion for interaction between fluid particles.
+            The cohesion for interaction between fluid particles.
         """
         return self._particle_material_view.get_cohesions()[0]
 
     def get_adhesion(self) -> float:
-        """
+        """Adhesion for interaction between particles and rigid or deformable objects.
+
         Returns:
-            float: The adhesion for interaction between particles (solid or fluid), and rigids or deformables.
+            The adhesion for interaction between particles (solid or fluid), and rigids or deformables.
         """
         return self._particle_material_view.get_adhesions()[0]
 
     def get_particle_adhesion_scale(self) -> float:
-        """
+        """Particle adhesion scale.
+
         Returns:
-            float: The particle adhesion scale.
+            The particle adhesion scale.
         """
         return self._particle_material_view.get_particle_adhesion_scales()[0]
 
     def get_adhesion_offset_scale(self) -> float:
-        """
+        """Adhesion offset scale.
+
         Returns:
-            float: The adhesion offset scale.
+            The adhesion offset scale.
         """
         return self._particle_material_view.get_adhesion_offset_scales()[0]
 
     def get_gravity_scale(self) -> float:
-        """
+        """Gravitational acceleration scaling factor.
+
         Returns:
-            float: The gravitational acceleration scaling factor.
+            The gravitational acceleration scaling factor.
         """
         return self._particle_material_view.get_gravity_scales()[0]
 
     def get_lift(self) -> float:
-        """
+        """Lift coefficient for the basic aerodynamic lift model.
+
         Returns:
-            float: The lift coefficient, basic aerodynamic lift model coefficient.
+            The lift coefficient, basic aerodynamic lift model coefficient.
         """
         return self._particle_material_view.get_lifts()[0]
 
     def get_drag(self) -> float:
-        """
+        """Drag coefficient for the basic aerodynamic drag model.
+
         Returns:
-            float: The drag coefficient, basic aerodynamic drag model coefficient.
+            The drag coefficient, basic aerodynamic drag model coefficient.
         """
         return self._particle_material_view.get_drags()[0]

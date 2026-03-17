@@ -12,5 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Classes for creating and managing robots and robot views in Isaac Sim."""
+
+
 from isaacsim.core.api.robots.robot import Robot
 from isaacsim.core.api.robots.robot_view import RobotView

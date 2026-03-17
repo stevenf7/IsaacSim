@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.0] - 2026-03-04
+### Changed
+- Added Overview.md, python_api.md, SETTINGS.md and updated docstrings
+
 ## [0.3.3] - 2026-02-07
 ### Changed
 - Remove deprecated asset browser settings

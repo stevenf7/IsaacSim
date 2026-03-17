@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level wrapper for manipulating prims with Rigid Body API applied and their rigid body properties."""
+
+
 from __future__ import annotations
 
 import weakref
@@ -112,7 +115,7 @@ class RigidPrim(XformPrim):
         densities: float | list | np.ndarray | wp.array | None = None,
         contact_filter_paths: str | list[str] | None = None,
         max_contact_count: int = 0,
-    ) -> None:
+    ):
         # define properties
         # - default state properties
         self._default_linear_velocities = None
@@ -169,6 +172,7 @@ class RigidPrim(XformPrim):
             self._on_physics_ready(None)
 
     def __del__(self):
+        """Clean up rigid body physics views and subscriptions."""
         super().__del__()
         self._subscription_to_timeline_stop_event = None
         if hasattr(self, "_physics_rigid_body_view"):
@@ -1761,7 +1765,15 @@ class RigidPrim(XformPrim):
     """
 
     def _check_for_tensor_backend(self, backend: str, *, fallback_backend: str = "usd") -> str:
-        """Check if the tensor backend is valid."""
+        """Check if the tensor backend is valid.
+
+        Args:
+            backend: The backend to check.
+            fallback_backend: The fallback backend to use if tensor backend is invalid.
+
+        Returns:
+            The validated backend name.
+        """
         if backend == "tensor" and not self.is_physics_tensor_entity_valid():
             if backend_utils.is_backend_set():
                 if backend_utils.should_raise_on_fallback():
@@ -1778,8 +1790,12 @@ class RigidPrim(XformPrim):
     Internal callbacks.
     """
 
-    def _on_physics_ready(self, event) -> None:
-        """Handle physics ready event."""
+    def _on_physics_ready(self, event):
+        """Handle physics ready event.
+
+        Args:
+            event: The physics ready event.
+        """
         super()._on_physics_ready(event)
         # get physics simulation view
         physics_simulation_view = SimulationManager._physics_sim_view__warp
@@ -1860,7 +1876,11 @@ class RigidPrim(XformPrim):
             self._setup_newton_rigid_body_callbacks(rb_view)
 
     def _setup_newton_rigid_body_callbacks(self, rb_view):
-        """Register Python fill callbacks for Newton-backed rigid body fields."""
+        """Register Python fill callbacks for Newton-backed rigid body fields.
+
+        Args:
+            rb_view: The rigid body view.
+        """
         from ._cpp_buffers import wrap_cpp_buffer
 
         count = rb_view.count
@@ -1907,7 +1927,11 @@ class RigidPrim(XformPrim):
             self._cpp_data_view_id = None
 
     def _on_timeline_stop(self, event) -> None:
-        """Handle timeline stop event."""
+        """Handle timeline stop event.
+
+        Args:
+            event: The timeline stop event.
+        """
         self._teardown_cpp_data_view()
         # invalidate rigid body view
         self._physics_rigid_body_view = None

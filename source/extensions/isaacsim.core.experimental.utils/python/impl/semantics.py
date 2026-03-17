@@ -26,7 +26,7 @@ from pxr import Usd, UsdSemantics
 from . import stage as stage_utils
 
 
-def add_labels(prim: str | Usd.Prim, *, labels: str | list[str], taxonomy: str = "class") -> None:
+def add_labels(prim: str | Usd.Prim, *, labels: str | list[str], taxonomy: str = "class"):
     """Add semantic labels, given a taxonomy (instance name), to a prim.
 
     Backends: :guilabel:`usd`.
@@ -114,7 +114,7 @@ def get_labels(prim: str | Usd.Prim, *, include_descendants: bool = False) -> di
 
 def remove_labels(
     prim: str | Usd.Prim, *, labels: str | list[str], taxonomy: str | None = None, include_descendants: bool = False
-) -> None:
+):
     """Remove semantic labels from a prim.
 
     Backends: :guilabel:`usd`.
@@ -166,9 +166,7 @@ def remove_labels(
         _remove_labels(prim)
 
 
-def remove_all_labels(
-    prim: str | Usd.Prim, *, remove_taxonomies: bool = False, include_descendants: bool = False
-) -> None:
+def remove_all_labels(prim: str | Usd.Prim, *, remove_taxonomies: bool = False, include_descendants: bool = False):
     """Remove all semantic labels from a prim.
 
     Backends: :guilabel:`usd`.

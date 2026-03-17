@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Module for creating and managing ground plane objects in Isaac Sim."""
+
 
 from typing import Optional, Sequence, Tuple
 
@@ -37,22 +40,18 @@ class GroundPlane(object):
     """High level wrapper to create/encapsulate a ground plane
 
     Args:
-        prim_path (str): prim path of the Prim to encapsulate or create
-        name (str, optional): shortname to be used as a key by Scene class.
-                                Note: needs to be unique if the object is added to the Scene.
-                                Defaults to "ground_plane".
-        size (Optional[float], optional): length of each edge. Defaults to 5000.0.
-        z_position (float, optional): ground plane position in the z-axis. Defaults to 0.
-        scale (Optional[np.ndarray], optional): local scale to be applied to the prim's dimensions. Defaults to None.
-        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-        color (Optional[np.ndarray], optional): color of the visual plane. Defaults to None.
-        physics_material_path (Optional[PhysicsMaterial], optional): path of the physics material to be applied to the held prim.
-                                                            Defaults to None. If not specified, a default physics material will be added.
-        visual_material (Optional[VisualMaterial], optional): visual material to be applied to the held prim.
-                                Defaults to None. If not specified, a default visual material will be added.
-        static_friction (float, optional): static friction coefficient. Defaults to 0.5.
-        dynamic_friction (float, optional): dynamic friction coefficient. Defaults to 0.5.
-        restitution (float, optional): restitution coefficient. Defaults to 0.8.
+        prim_path: Prim path of the Prim to encapsulate or create.
+        name: Shortname to be used as a key by Scene class.
+            Note: needs to be unique if the object is added to the Scene.
+        size: Length of each edge.
+        z_position: Ground plane position in the z-axis.
+        scale: Local scale to be applied to the prim's dimensions.
+        visible: Set to false for an invisible prim in the stage while rendering.
+        color: Color of the visual plane.
+        physics_material: Physics material to be applied to the held prim.
+            If not specified, a default physics material will be added.
+        visual_material: Visual material to be applied to the held prim.
+            If not specified, a default visual material will be added.
 
     Example:
 
@@ -78,7 +77,7 @@ class GroundPlane(object):
         color: Optional[np.ndarray] = None,
         physics_material: Optional[PhysicsMaterial] = None,
         visual_material: Optional[VisualMaterial] = None,
-    ) -> None:
+    ):
         # wrap two object the xform and the collision plane
         if not is_prim_path_valid(prim_path):
             carb.log_info("Creating a new Ground Plane prim at path {}".format(prim_path))
@@ -146,9 +145,10 @@ class GroundPlane(object):
 
     @property
     def prim_path(self) -> str:
-        """
+        """Prim path in the stage.
+
         Returns:
-            str: prim path in the stage.
+            Prim path in the stage.
 
         Example:
 
@@ -161,9 +161,10 @@ class GroundPlane(object):
 
     @property
     def name(self) -> Optional[str]:
-        """
+        """Name given to the prim when instantiating it.
+
         Returns:
-            str: name given to the prim when instantiating it. Otherwise None.
+            Name given to the prim when instantiating it. Otherwise None.
 
         Example:
 
@@ -176,9 +177,10 @@ class GroundPlane(object):
 
     @property
     def prim(self) -> Usd.Prim:
-        """
+        """USD Prim object that this object holds.
+
         Returns:
-            Usd.Prim: USD Prim object that this object holds.
+            USD Prim object that this object holds.
 
         Example:
 
@@ -191,9 +193,10 @@ class GroundPlane(object):
 
     @property
     def xform_prim(self) -> SingleXFormPrim:
-        """
+        """Wrapped object as a SingleXFormPrim.
+
         Returns:
-            SingleXFormPrim: wrapped object as a SingleXFormPrim
+            Wrapped object as a SingleXFormPrim.
 
         Example:
 
@@ -206,9 +209,10 @@ class GroundPlane(object):
 
     @property
     def collision_geometry_prim(self) -> SingleGeometryPrim:
-        """
+        """Wrapped object as a SingleGeometryPrim.
+
         Returns:
-            SingleGeometryPrim: wrapped object as a SingleGeometryPrim
+            Wrapped object as a SingleGeometryPrim.
 
         Example:
 
@@ -219,7 +223,7 @@ class GroundPlane(object):
         """
         return self._collision_prim
 
-    def initialize(self, physics_sim_view=None) -> None:
+    def initialize(self, physics_sim_view=None):
         """Create a physics simulation view if not passed and using PhysX tensor API
 
         .. note::
@@ -228,7 +232,7 @@ class GroundPlane(object):
             it will be automatically initialized when the world is reset (e.g., ``world.reset()``).
 
         Args:
-            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
+            physics_sim_view: Current physics simulation view.
 
         Example:
 
@@ -240,7 +244,7 @@ class GroundPlane(object):
         self._collision_prim.initialize(physics_sim_view=physics_sim_view)
         return
 
-    def post_reset(self) -> None:
+    def post_reset(self):
         """Reset the prim to its default state (position and orientation).
 
         Example:
@@ -257,7 +261,7 @@ class GroundPlane(object):
         """Check if the prim path has a valid USD Prim at it
 
         Returns:
-            bool: True is the current prim path corresponds to a valid prim in stage. False otherwise.
+            True is the current prim path corresponds to a valid prim in stage. False otherwise.
 
         Example:
 
@@ -273,11 +277,11 @@ class GroundPlane(object):
         """Used to apply physics material to the held prim and optionally its descendants.
 
         Args:
-            physics_material (PhysicsMaterial): physics material to be applied to the held prim. This where you want to
-                                                define friction, restitution..etc. Note: if a physics material is not
-                                                defined, the defaults will be used from PhysX.
-            weaker_than_descendants (bool, optional): True if the material shouldn't override the descendants
-                                                      materials, otherwise False. Defaults to False.
+            physics_material: Physics material to be applied to the held prim. This where you want to
+                define friction, restitution..etc. Note: if a physics material is not
+                defined, the defaults will be used from PhysX.
+            weaker_than_descendants: True if the material shouldn't override the descendants
+                materials, otherwise False.
 
         Example:
 
@@ -303,7 +307,7 @@ class GroundPlane(object):
         """Returns the current applied physics material in case it was applied using apply_physics_material or not.
 
         Returns:
-            PhysicsMaterial: the current applied physics material.
+            The current applied physics material.
 
         Example:
 
@@ -314,21 +318,17 @@ class GroundPlane(object):
         """
         return self._collision_prim.get_applied_physics_material()
 
-    def set_world_pose(
-        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
-    ) -> None:
-        """Ses prim's pose with respect to the world's frame
+    def set_world_pose(self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None):
+        """Sets prim's pose with respect to the world's frame
 
         .. warning::
 
             This method will change (teleport) the prim pose immediately to the indicated value
 
         Args:
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                       Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim.
-                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                          Defaults to None, which means left unchanged.
+            position: Position in the world frame of the prim. Shape is (3, ).
+            orientation: Quaternion orientation in the world frame of the prim.
+                Quaternion is scalar-first (w, x, y, z). Shape is (4, ).
 
         .. hint::
 
@@ -348,7 +348,7 @@ class GroundPlane(object):
         """Get prim's pose with respect to the world's frame
 
         Returns:
-            Tuple[np.ndarray, np.ndarray]: first index is the position in the world frame (with shape (3, )).
+            First index is the position in the world frame (with shape (3, )).
             Second index is quaternion orientation (with shape (4, )) in the world frame
 
         Example:
@@ -368,7 +368,7 @@ class GroundPlane(object):
         """Get the default prim states (spatial position and orientation).
 
         Returns:
-            XFormPrimState: an object that contains the default state of the prim (position and orientation)
+            An object that contains the default state of the prim (position and orientation)
 
         Example:
 
@@ -387,15 +387,13 @@ class GroundPlane(object):
 
     def set_default_state(
         self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
-    ) -> None:
+    ):
         """Sets the default state of the prim (position and orientation), that will be used after each reset.
 
         Args:
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                       Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim.
-                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                          Defaults to None, which means left unchanged.
+            position: Position in the world frame of the prim. Shape is (3, ).
+            orientation: Quaternion orientation in the world frame of the prim.
+                Quaternion is scalar-first (w, x, y, z). Shape is (4, ).
 
         Example:
 

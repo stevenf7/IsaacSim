@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2022-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2022-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,24 +13,68 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Mathematical utility functions for matrix operations and trigonometric computations."""
+
+
 import numpy as np
 
 
 def matmul(matrix_a, matrix_b):
+    """Perform matrix multiplication between two matrices.
+
+    Args:
+        matrix_a: First input matrix.
+        matrix_b: Second input matrix.
+
+    Returns:
+        The result of matrix multiplication.
+    """
     return np.matmul(matrix_a, matrix_b)
 
 
 def sin(data):
+    """Compute the sine of the input data.
+
+    Args:
+        data: Input array or scalar value.
+
+    Returns:
+        The sine values of the input data.
+    """
     return np.sin(data)
 
 
 def cos(data):
+    """Compute the cosine of the input data.
+
+    Args:
+        data: Input array or scalar value.
+
+    Returns:
+        The cosine values of the input data.
+    """
     return np.cos(data)
 
 
 def transpose_2d(data):
+    """Transpose the input 2D array.
+
+    Args:
+        data: Input 2D array to transpose.
+
+    Returns:
+        The transposed array.
+    """
     return np.transpose(data)
 
 
 def inverse(data):
+    """Compute the matrix inverse of the input data.
+
+    Args:
+        data: Input matrix to invert.
+
+    Returns:
+        The inverse of the input matrix.
+    """
     return np.linalg.inv(data)

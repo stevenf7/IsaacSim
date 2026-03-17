@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Experimental shape objects for Isaac Sim including basic geometric primitives like capsules, cones, cubes, cylinders, planes, and spheres."""
+
+
 from .capsule import Capsule
 from .cone import Cone
 from .cube import Cube

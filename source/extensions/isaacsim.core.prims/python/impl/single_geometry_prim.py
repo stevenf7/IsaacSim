@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level wrapper to manage a single geometry prim and its attributes/properties."""
+
+
 from typing import List, Optional, Sequence, Union
 
 import numpy as np
@@ -42,34 +45,25 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         parameter to True to apply the collision API.
 
     Args:
-        prim_path (str): prim path of the Prim to encapsulate or create.
-        name (str, optional): shortname to be used as a key by Scene class.
-                                Note: needs to be unique if the object is added to the Scene.
-                                Defaults to "xform_prim".
-        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                    Defaults to None, which means left unchanged.
-        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                        (with respect to its parent prim). shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
-        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
-                                                        (depends if translation or position is specified).
-                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                        Defaults to None, which means left unchanged.
-        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
-                                                Defaults to None, which means left unchanged.
-        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-        reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties
-                                                (i.e: translate, orient and scale) ONLY and in that order.
-                                                Set this parameter to False if the object were cloned using using
-                                                the cloner api in isaacsim.core.cloner. Defaults to True.
-        collision (bool, optional): Set to True if the geometry should have a collider (i.e not only a visual geometry).
-                                    Defaults to False.
-        track_contact_forces (bool, Optional) : if enabled, the view will track the net contact forces on each geometry prim in the view.
-                                                Note that the collision flag should be set to True to report contact forces. Defaults to False.
-        prepare_contact_sensors (bool, Optional): applies contact reporter API to the prim if it already does not have one. Defaults to False.
-        disable_stablization (bool, optional): disables the contact stabilization parameter in the physics context. Defaults to True.
-        contact_filter_prim_paths_expr (Optional[List[str]], Optional): a list of filter expressions which allows for tracking contact forces
-                                                                between the geometry prim and this subset through get_contact_force_matrix().
+        prim_path: Prim path of the Prim to encapsulate or create.
+        name: Shortname to be used as a key by Scene class.
+            Note: needs to be unique if the object is added to the Scene.
+        position: Position in the world frame of the prim. Shape is (3, ).
+        translation: Translation in the local frame of the prim (with respect to its parent prim). Shape is (3, ).
+        orientation: Quaternion orientation in the world/ local frame of the prim
+            (depends if translation or position is specified). Quaternion is scalar-first (w, x, y, z). Shape is (4, ).
+        scale: Local scale to be applied to the prim's dimensions. Shape is (3, ).
+        visible: Set to false for an invisible prim in the stage while rendering.
+        reset_xform_properties: True if the prims don't have the right set of xform properties
+            (i.e: translate, orient and scale) ONLY and in that order.
+            Set this parameter to False if the object were cloned using the cloner api in isaacsim.core.cloner.
+        collision: Set to True if the geometry should have a collider (i.e not only a visual geometry).
+        track_contact_forces: If enabled, the view will track the net contact forces on each geometry prim in the view.
+            Note that the collision flag should be set to True to report contact forces.
+        prepare_contact_sensor: Applies contact reporter API to the prim if it already does not have one.
+        disable_stablization: Disables the contact stabilization parameter in the physics context.
+        contact_filter_prim_paths_expr: A list of filter expressions which allows for tracking contact forces
+            between the geometry prim and this subset through get_contact_force_matrix().
 
     Example:
 
@@ -103,7 +97,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         prepare_contact_sensor: bool = False,
         disable_stablization: bool = True,
         contact_filter_prim_paths_expr: Optional[List[str]] = [],
-    ) -> None:
+    ):
         from isaacsim.core.simulation_manager import SimulationManager
 
         self._backend = SimulationManager.get_backend()
@@ -143,7 +137,8 @@ class SingleGeometryPrim(_SinglePrimWrapper):
 
     @property
     def geom(self) -> UsdGeom.Gprim:
-        """
+        """USD geometry object encapsulated.
+
         Returns:
             UsdGeom.Gprim: USD geometry object encapsulated.
         """
@@ -161,8 +156,8 @@ class SingleGeometryPrim(_SinglePrimWrapper):
             The contact offset must be positive and greater than the rest offset
 
         Args:
-            offset (float): Contact offset of a collision shape. Allowed range [maximum(0, rest_offset), 0].
-                            Default value is -inf, means default is picked by simulation based on the shape extent.
+            offset: Contact offset of a collision shape. Allowed range [maximum(0, rest_offset), 0].
+                Default value is -inf, means default is picked by simulation based on the shape extent.
 
         Example:
 
@@ -182,7 +177,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         Search for *Advanced Collision Detection* in |physx_docs| for more details
 
         Returns:
-            float: contact offset of the collision shape. Default value is -inf, means default is picked by simulation.
+            Contact offset of the collision shape. Default value is -inf, means default is picked by simulation.
 
         Example:
 
@@ -206,8 +201,8 @@ class SingleGeometryPrim(_SinglePrimWrapper):
             The contact offset must be positive and greater than the rest offset
 
         Args:
-            offset (float): Rest offset of a collision shape. Allowed range [-max_float, contact_offset.
-                            Default value is -inf, means default is picked by simulation. For rigid bodies its zero.
+            offset: Rest offset of a collision shape. Allowed range [-max_float, contact_offset.
+                Default value is -inf, means default is picked by simulation. For rigid bodies its zero.
 
         Example:
 
@@ -228,7 +223,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         Search for *Advanced Collision Detection* in |physx_docs| for more details
 
         Returns:
-            float: rest offset of the collision shape.
+            Rest offset of the collision shape.
 
         Example:
 
@@ -245,7 +240,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         Search for *"Torsional Patch Radius"* in |physx_docs| for more details
 
         Args:
-            radius (float): radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
+            radius: Radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
 
         Example:
 
@@ -263,7 +258,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         Search for *"Torsional Patch Radius"* in |physx_docs| for more details
 
         Returns:
-            float: radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
+            Radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
 
         Example:
 
@@ -280,7 +275,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         Search for *"Torsional Patch Radius"* in |physx_docs| for more details
 
         Args:
-            radius (float): minimum radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
+            radius: Minimum radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
 
         Example:
 
@@ -298,7 +293,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         Search for *"Torsional Patch Radius"* in |physx_docs| for more details
 
         Returns:
-            float: minimum radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
+            Minimum radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
 
         Example:
 
@@ -353,7 +348,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
             impact due to higher computational cost
 
         Args:
-            approximation_type (str): approximation used for collision
+            approximation_type: Approximation used for collision
 
         Example:
 
@@ -399,7 +394,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
               - A sphere mesh decomposition is performed. This results in a set of sphere colliders
 
         Returns:
-            str: approximation used for collision
+            Approximation used for collision
 
         Example:
 
@@ -414,7 +409,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         """Enable/disable the Collision API
 
         Args:
-            enabled (bool): Whether to enable or disable the Collision API
+            enabled: Whether to enable or disable the Collision API
 
         Example:
 
@@ -433,7 +428,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         """Check if the Collision API is enabled
 
         Returns:
-            bool: True if the Collision API is enabled. Otherwise False
+            True if the Collision API is enabled. Otherwise False
 
         Example:
 
@@ -448,11 +443,11 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         """Used to apply physics material to the held prim and optionally its descendants.
 
         Args:
-            physics_material (PhysicsMaterial): physics material to be applied to the held prim. This where you want to
-                                                define friction, restitution..etc. Note: if a physics material is not
-                                                defined, the defaults will be used from PhysX.
-            weaker_than_descendants (bool, optional): True if the material shouldn't override the descendants
-                                                      materials, otherwise False. Defaults to False.
+            physics_material: physics material to be applied to the held prim. This where you want to
+                              define friction, restitution..etc. Note: if a physics material is not
+                              defined, the defaults will be used from PhysX.
+            weaker_than_descendants: True if the material shouldn't override the descendants
+                                     materials, otherwise False.
 
         Example:
 
@@ -478,7 +473,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         """Return the current applied physics material in case it was applied using apply_physics_material or not.
 
         Returns:
-            PhysicsMaterial: the current applied physics material.
+            The current applied physics material.
 
         Example:
 
@@ -491,67 +486,65 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return self._geometry_prim_view.get_applied_physics_materials()[0]
 
     def get_net_contact_forces(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
-        """
-        If contact forces of the prims in the view are tracked, this method returns the net contact forces on prims.
+        """Return the net contact forces on the prim if contact forces are tracked.
         i.e., a matrix of dimension (1, 3)
 
         Args:
-            dt (float): time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
+            dt: Time step multiplier to convert the underlying impulses to forces.
+                If the default value is used then the forces are in fact contact impulses
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: Net contact forces of the prims with shape (3).
+            Net contact forces of the prim with shape (3).
         """
         return self._geometry_prim_view.get_net_contact_forces(dt=dt)[0]
 
     def get_contact_force_matrix(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
-        """
-        If the object is initialized with filter_paths_expr list, this method returns the contact forces between the prims
-        in the view and the filter prims. i.e., a matrix of dimension (self._contact_view.num_filters, 3)
-        where num_filters is the determined according to the filter_paths_expr parameter.
+        """Return contact forces between the prim and filter prims if the object is initialized with filter_paths_expr.
+        i.e., a matrix of dimension (self._contact_view.num_filters, 3) where num_filters is determined according to
+        the filter_paths_expr parameter.
 
         Args:
-            dt (float): time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
+            dt: Time step multiplier to convert the underlying impulses to forces.
+                If the default value is used then the forces are in fact contact impulses
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: Net contact forces of the prims with shape (self._geometry_prim_view._contact_view.num_filters, 3).
+            Net contact forces of the prim with shape (self._geometry_prim_view._contact_view.num_filters, 3).
         """
         return self._geometry_prim_view._contact_view.get_contact_force_matrix(dt=dt)[0]
 
     def get_contact_force_data(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
-        """
-        If the object is initialized with filter_paths_expr list, this method returns the detailed contact forces between the prims
-        in the view and the filter prims including the normal contact forces, normal directions, contact points, separations.
-        The number of contacts per pair is determined from a static tensor of dimension (self._contact_view.num_filters) while
-        the starting index of the associated contact in the above tensors is determined from another static tensor of dimension (self._contact_view.num_filters).
+        """Return detailed contact forces between the prim and filter prims if the object is initialized with
+        filter_paths_expr. This includes normal contact forces, normal directions, contact points, separations.
+        The number of contacts per pair is determined from a static tensor of dimension (self._contact_view.num_filters)
+        while the starting index of the associated contact in the above tensors is determined from another static tensor
+        of dimension (self._contact_view.num_filters).
 
         Args:
-            dt (float): time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
+            dt: Time step multiplier to convert the underlying impulses to forces.
+                If the default value is used then the forces are in fact contact impulses
 
         Returns:
-            Tuple[Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray],
-            Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray],
-            Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray]]:
-            A set of buffers for normal forces with shape (max_contact_count, 1), points with shape (max_contact_count, 3), normals with shape (max_contact_count, 3),
+            A set of buffers for normal forces with shape (max_contact_count, 1), points with shape
+            (max_contact_count, 3), normals with shape (max_contact_count, 3),
             and distances with shape (max_contact_count, 1), as well as two tensors with shape (self.num_filters)
             to indicate the starting index and the number of contact data points per pair in the aforementioned buffers.
         """
         return self._geometry_prim_view._contact_view.get_contact_force_data(dt=dt)[0]
 
     def get_friction_data(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
-        """
-        If the object is initialized with filter_paths_expr list, this method returns the detailed friction forces between the prims
-        in the view and the filter prims including the tangential forces, and points.
-        The number of points per pair is determined from a static tensor of dimension (self._contact_view.num_filters) while
-        the starting index of the associated contact in the above tensors is determined from another static tensor of dimension (self._contact_view.num_filters).
+        """Return detailed friction forces between the prim and filter prims if the object is initialized with
+        filter_paths_expr. This includes tangential forces and points.
+        The number of points per pair is determined from a static tensor of dimension (self._contact_view.num_filters)
+        while the starting index of the associated contact in the above tensors is determined from another static tensor
+        of dimension (self._contact_view.num_filters).
 
         Args:
-            dt (float): time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
+            dt: Time step multiplier to convert the underlying impulses to forces.
+                If the default value is used then the forces are in fact contact impulses
 
         Returns:
-            Tuple[Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray],
-            Union[np.ndarray, torch.Tensor, wp.indexedarray], Union[np.ndarray, torch.Tensor, wp.indexedarray]]:
-            A set of buffers for normal forces with shape (max_contact_count, 1), points with shape (max_contact_count, 3),
-            as well as two tensors with shape (self.num_filters) to indicate the starting index and the number of
-            contact data points per pair in the aforementioned buffers.
+            A set of buffers for normal forces with shape (max_contact_count, 1), points with shape
+            (max_contact_count, 3), as well as two tensors with shape (self.num_filters) to indicate the starting
+            index and the number of contact data points per pair in the aforementioned buffers.
         """
         return self._geometry_prim_view._contact_view.get_friction_data(dt=dt)[0]

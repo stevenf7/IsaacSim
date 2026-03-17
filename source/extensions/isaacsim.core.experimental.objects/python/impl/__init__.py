@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Implementation module providing concrete object classes for ground planes, lights, meshes, and geometric shapes."""
+
+
 from .camera import Camera
 from .ground_plane import GroundPlane
 from .lights import CylinderLight, DiskLight, DistantLight, DomeLight, Light, RectLight, SphereLight

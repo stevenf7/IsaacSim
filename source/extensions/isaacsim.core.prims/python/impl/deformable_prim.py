@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Union
+"""Provides the DeformablePrim view class for managing deformable bodies with physics properties and mesh operations."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List, Optional, Union
 
 import carb
 import carb.eventdispatcher
@@ -22,6 +26,9 @@ import omni.kit.app
 import omni.timeline
 from isaacsim.core.deprecation_manager import import_module
 from pxr import PhysxSchema, UsdShade
+
+if TYPE_CHECKING:
+    from isaacsim.core.api.materials.deformable_material import DeformableMaterial
 
 from .xform_prim import XFormPrim
 
@@ -57,23 +64,31 @@ class DeformablePrim(XFormPrim):
         Note: - if the underlying UsdGeom.Mesh.Get does not already have appropriate USD deformable body apis applied to it before init, this class will apply it.
 
         Args:
-            prim_paths_expr (str): Prim paths regex to encapsulate all prims that match it.
-            name (str): Shortname to be used as a key by Scene class.
-            positions (Union[np.ndarray, torch.Tensor], optional): Default positions in the world frame of the prim. shape is (N, 3).
-            translations (Union[np.ndarray, torch.Tensor], optional): Default translations in the local frame of the
-                                                                        prims (with respect to its parent prims). shape is (N, 3).
-            orientations (Union[np.ndarray, torch.Tensor], optional): Default quaternion orientations in the world/
-                                                                        local frame of the prim (depends if translation or position is specified).
-                                                                        quaternion is scalar-first (w, x, y, z). shape is (N, 4).
-            scales (Union[np.ndarray, torch.Tensor], optional): Local scales to be applied to the prim's dimensions. shape is (N, 3).
-            visibilities (Union[np.ndarray, torch.Tensor], optional): Set to false for an invisible prim in the stage while rendering. shape is (N,).
-            vertex_velocity_dampings (Union[np.ndarray, torch.Tensor], optional): Velocity damping parameter controlling how much after every time step the nodal velocity is reduced
-            sleep_dampings (Union[np.ndarray, torch.Tensor], optional): Damping value that damps the motion of bodies that move slow enough to be candidates for sleeping (see sleep_threshold)
-            sleep_thresholds (Union[np.ndarray, torch.Tensor], optional): Threshold that defines the maximal magnitude of the linear motion a soft body can move in one second such that it can go to sleep in the next frame
-            settling_thresholds (Union[np.ndarray, torch.Tensor], optional): Threshold that defines the maximal magnitude of the linear motion a fem body can move in one second before it becomes a candidate for sleeping
-            self_collisions (Union[np.ndarray, torch.Tensor], optional): Enables the self collision for the deformable body based on the rest position distances.
-            self_collision_filter_distances (Union[np.ndarray, torch.Tensor], optional): Penetration value that needs to get exceeded before contacts for self collision are generated. Will only have an effect if self collisions are enabled based on the rest position distances.
-            solver_position_iteration_counts (Union[np.ndarray, torch.Tensor], optional): Number of the solver's positional iteration counts
+            prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
+            deformable_materials: Deformable materials to be applied to prims in the view.
+            name: Shortname to be used as a key by Scene class.
+            reset_xform_properties: Whether to reset the transformation operation attributes of the prims to a standard
+                set.
+            positions: Default positions in the world frame of the prim. shape is (N, 3).
+            translations: Default translations in the local frame of the prims (with respect to its parent prims).
+                shape is (N, 3).
+            orientations: Default quaternion orientations in the world/ local frame of the prim (depends if translation
+                or position is specified). quaternion is scalar-first (w, x, y, z). shape is (N, 4).
+            scales: Local scales to be applied to the prim's dimensions. shape is (N, 3).
+            visibilities: Set to false for an invisible prim in the stage while rendering. shape is (N,).
+            vertex_velocity_dampings: Velocity damping parameter controlling how much after every time step the nodal
+                velocity is reduced.
+            sleep_dampings: Damping value that damps the motion of bodies that move slow enough to be candidates for
+                sleeping (see sleep_threshold).
+            sleep_thresholds: Threshold that defines the maximal magnitude of the linear motion a soft body can move
+                in one second such that it can go to sleep in the next frame.
+            settling_thresholds: Threshold that defines the maximal magnitude of the linear motion a fem body can move
+                in one second before it becomes a candidate for sleeping.
+            self_collisions: Enables the self collision for the deformable body based on the rest position distances.
+            self_collision_filter_distances: Penetration value that needs to get exceeded before contacts for self
+                collision are generated. Will only have an effect if self collisions are enabled based on the rest
+                position distances.
+            solver_position_iteration_counts: Number of the solver's positional iteration counts.
         """
 
         self._physics_view = None
@@ -122,6 +137,7 @@ class DeformablePrim(XFormPrim):
         )
 
     def __del__(self):
+        """Cleans up resources when the DeformablePrim instance is destroyed."""
         XFormPrim.__del__(self)
         if hasattr(self, "_physics_view"):
             del self._physics_view
@@ -134,48 +150,54 @@ class DeformablePrim(XFormPrim):
 
     @property
     def count(self) -> int:
-        """
+        """Number of deformable bodies in the view.
+
         Returns:
-            int: deformable counts.
+            Number of deformable bodies.
         """
         return self._count
 
     @property
     def max_simulation_mesh_elements_per_body(self) -> int:
-        """
+        """Maximum number of simulation mesh elements per deformable body.
+
         Returns:
-            int: maximum number of simulation mesh elements per deformable body.
+            Maximum number of simulation mesh elements per deformable body.
         """
         return self._max_simulation_mesh_elements_per_body
 
     @property
     def max_simulation_mesh_vertices_per_body(self) -> int:
-        """
+        """Maximum number of simulation mesh vertices per deformable body.
+
         Returns:
-            int: maximum number of simulation mesh vertices per deformable body.
+            Maximum number of simulation mesh vertices per deformable body.
         """
         return self._max_simulation_mesh_vertices_per_body
 
     @property
     def max_collision_mesh_elements_per_body(self) -> int:
-        """
+        """Maximum number of collision mesh elements per deformable body.
+
         Returns:
-            int: maximum number of collision mesh elements per deformable body.
+            Maximum number of collision mesh elements per deformable body.
         """
         return self._max_collision_mesh_elements_per_body
 
     @property
     def max_collision_mesh_vertices_per_body(self) -> int:
-        """
+        """Maximum number of collision mesh vertices per deformable body.
+
         Returns:
-            int: maximum number of collision mesh vertices per deformable body.
+            Maximum number of collision mesh vertices per deformable body.
         """
         return self._max_collision_mesh_vertices_per_body
 
     def is_physics_handle_valid(self) -> bool:
-        """
+        """Checks if the physics handle of the view is valid.
+
         Returns:
-            bool: True if the physics handle of the view is valid (i.e physics is initialized for the view). Otherwise False.
+            True if the physics handle of the view is valid (i.e physics is initialized for the view). Otherwise False.
         """
         return self._physics_view is not None
 
@@ -183,7 +205,7 @@ class DeformablePrim(XFormPrim):
         """Create a physics simulation view if not passed and creates a deformable body view in physX.
 
         Args:
-            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
+            physics_sim_view: Current physics simulation view.
         """
 
         if physics_sim_view is None:
@@ -205,10 +227,20 @@ class DeformablePrim(XFormPrim):
         return
 
     def _invalidate_physics_handle_callback(self, event):
+        """Callback to invalidate the physics handle when timeline stops.
+
+        Args:
+            event: The event that triggered the callback.
+        """
         self._physics_view = None
         return
 
     def _apply_deformable_body_api(self, index):
+        """Applies the PhysxDeformableBodyAPI to the prim at the specified index.
+
+        Args:
+            index: Index of the prim to apply the API to.
+        """
         if self._deformable_body_apis[index] is None:
             if self._prims[index].HasAPI(PhysxSchema.PhysxDeformableBodyAPI):
                 api = PhysxSchema.PhysxDeformableBodyAPI(self._prims[index])
@@ -216,7 +248,12 @@ class DeformablePrim(XFormPrim):
                 api = PhysxSchema.PhysxDeformableBodyAPI.Apply(self._prims[index])
             self._deformable_body_apis[index] = api
 
-    def _apply_deformable_api(self, index):
+    def _apply_deformable_api(self, index: int):
+        """Applies the PhysX deformable API to the prim at the specified index.
+
+        Args:
+            index: Index of the prim to apply the API to.
+        """
         self._apply_deformable_body_api(index)
         if self._deformable_apis[index] is None:
             if self._prims[index].HasAPI(PhysxSchema.PhysxDeformableAPI):
@@ -225,7 +262,12 @@ class DeformablePrim(XFormPrim):
                 api = PhysxSchema.PhysxDeformableAPI.Apply(self._deformable_body_apis[index])
             self._deformable_apis[index] = api
 
-    def _apply_material_binding_api(self, index):
+    def _apply_material_binding_api(self, index: int):
+        """Applies the USD material binding API to the prim at the specified index.
+
+        Args:
+            index: Index of the prim to apply the API to.
+        """
         if self._binding_apis[index] is None:
             if self._prims[index].HasAPI(UsdShade.MaterialBindingAPI):
                 self._binding_apis[index] = UsdShade.MaterialBindingAPI(self._prims[index])
@@ -234,22 +276,19 @@ class DeformablePrim(XFormPrim):
 
     def apply_deformable_materials(
         self,
-        deformable_materials: Union["DeformableMaterial", List["DeformableMaterial"]],
+        deformable_materials: Union[DeformableMaterial, List[DeformableMaterial]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
         """Used to apply deformable material to prims in the view.
 
         Args:
-            deformable_materials (Union[DeformableMaterial, List[DeformableMaterial]]): deformable materials to be applied to prims in the view.
-                                                                                Note: if a physics material is not defined,
-                                                                                the defaults will be used from PhysX.
-                                                                                If a list is provided then its size has to be equal
-                                                                                the view's size or indices size.
-                                                                                If one material is provided it will be applied to all prims in the view.
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which prims
-                                                                                to manipulate. Shape (M,).
-                                                                                Where M <= size of the encapsulated prims in the view.
-                                                                                Defaults to None (i.e: all prims in the view).
+            deformable_materials: deformable materials to be applied to prims in the view.
+                Note: if a physics material is not defined, the defaults will be used from PhysX.
+                If a list is provided then its size has to be equal the view's size or indices size.
+                If one material is provided it will be applied to all prims in the view.
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+
         Raises:
             Exception: length of physics materials != length of prims indexed
         """
@@ -271,17 +310,15 @@ class DeformablePrim(XFormPrim):
 
     def get_applied_deformable_materials(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> List["DeformableMaterial"]:
+    ) -> List[DeformableMaterial]:
         """Gets the applied deformable material to prims in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which prims
-                                                                                to query. Shape (M,).
-                                                                                Where M <= size of the encapsulated prims in the view.
-                                                                                Defaults to None (i.e: all prims in the view).
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
 
         Returns:
-            List[DeformableMaterial]: the current applied deformable materials for prims in the view.
+            The current applied deformable materials for prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = [None] * indices.shape[0]
@@ -312,10 +349,9 @@ class DeformablePrim(XFormPrim):
         """Sets the nodal positions of the simulation mesh for the deformable bodies indicated by the indices.
 
         Args:
-            positions (Union[np.ndarray, torch.Tensor]): nodal positions with the shape (M, max_simulation_mesh_vertices_per_body, 3).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            positions: nodal positions with the shape (M, max_simulation_mesh_vertices_per_body, 3).
+            indices: indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -347,11 +383,9 @@ class DeformablePrim(XFormPrim):
         """Sets the vertex velocities for the deformable bodies indicated by the indices.
 
         Args:
-            velocities (Union[np.ndarray, torch.Tensor]): vertex velocities with the shape
-                                                                                (M, max_simulation_mesh_vertices_per_body, 3).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            velocities: vertex velocities with the shape (M, max_simulation_mesh_vertices_per_body, 3).
+            indices: indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -382,10 +416,9 @@ class DeformablePrim(XFormPrim):
         """Sets the kinematic targets of the simulation mesh for the deformable bodies indicated by the indices.
 
         Args:
-            positions (Union[np.ndarray, torch.Tensor]): kinematic targets with the shape (M, max_simulation_mesh_vertices_per_body, 4).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            positions: kinematic targets with the shape (M, max_simulation_mesh_vertices_per_body, 4).
+            indices: indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -407,10 +440,9 @@ class DeformablePrim(XFormPrim):
         """Sets the simulation mesh element indices of the deformable bodies indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): element indices with the shape  (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: element indices with the shape  (M, ).
+            indices: indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -432,10 +464,9 @@ class DeformablePrim(XFormPrim):
         """Sets the collision mesh element indices of the deformable bodies indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): element indices with the shape  (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: element indices with the shape  (M, ).
+            indices: indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -457,10 +488,9 @@ class DeformablePrim(XFormPrim):
         """Sets the collision mesh vertices rest positions of the deformable bodies indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): vertices rest positions values with the shape  (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: vertices rest positions values with the shape  (M, ).
+            indices: indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -476,16 +506,15 @@ class DeformablePrim(XFormPrim):
 
     def set_simulation_mesh_rest_points(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the simulation mesh vertices rest positions of the deformable bodies indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): vertices rest positions values with the shape  (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Vertices rest positions values with the shape (M, ).
+            indices: Indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -503,16 +532,15 @@ class DeformablePrim(XFormPrim):
 
     def set_sleep_dampings(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the sleep dampings values for deformable bodies indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): solver position iteration counts values with the shape  (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Sleep damping values with the shape (M, ).
+            indices: Indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -530,16 +558,15 @@ class DeformablePrim(XFormPrim):
 
     def set_sleep_thresholds(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the sleep threshold values for deformable bodies indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): solver position iteration counts values with the shape  (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Sleep threshold values with the shape (M, ).
+            indices: Indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -557,16 +584,15 @@ class DeformablePrim(XFormPrim):
 
     def set_settling_thresholds(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the settling threshold values for deformable bodies indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): solver position iteration counts values with the shape  (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Settling threshold values with the shape (M, ).
+            indices: Indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -584,16 +610,15 @@ class DeformablePrim(XFormPrim):
 
     def set_self_collision_filter_distances(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the self collisions filter distance values for deformable bodies indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): solver position iteration counts values with the shape  (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Self collision filter distance values with the shape (M, ).
+            indices: Indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -617,16 +642,15 @@ class DeformablePrim(XFormPrim):
 
     def set_self_collisions(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the self collisions values for deformable bodies indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): solver position iteration counts values with the shape  (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Self collision values with the shape (M, ).
+            indices: Indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -642,16 +666,15 @@ class DeformablePrim(XFormPrim):
 
     def set_vertex_velocity_dampings(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets values of the vertex velocity damping values to deformable bodies indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): solver position iteration counts values with the shape  (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Vertex velocity damping values with the shape (M, ).
+            indices: Indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -673,16 +696,15 @@ class DeformablePrim(XFormPrim):
 
     def set_solver_position_iteration_counts(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets values of the solver position iteration counts to deformable bodies indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): solver position iteration counts values with the shape  (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Solver position iteration counts values with the shape (M, ).
+            indices: Indices to specify which deformable prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -705,18 +727,17 @@ class DeformablePrim(XFormPrim):
             idx_count += 1
 
     def get_sleep_dampings(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the sleep damping for the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (float, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: the sleep damping tensor with shape (M, )
+            The sleep damping tensor with shape (M, ).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         results = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -732,18 +753,17 @@ class DeformablePrim(XFormPrim):
         return results
 
     def get_sleep_thresholds(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the sleep threshold for the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (float, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: the sleep threshold tensor with shape (M, )
+            The sleep threshold tensor with shape (M, ).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         results = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -759,18 +779,17 @@ class DeformablePrim(XFormPrim):
         return results
 
     def get_settling_thresholds(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the settling threshold for the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (float, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: the settling threshold tensor with shape (M, )
+            The settling threshold tensor with shape (M, ).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         results = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -786,18 +805,17 @@ class DeformablePrim(XFormPrim):
         return results
 
     def get_self_collision_filter_distances(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the self collision filter distance for the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (float, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: the self collision filter distance tensor with shape (M, )
+            The self collision filter distance tensor with shape (M, ).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         results = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -815,18 +833,17 @@ class DeformablePrim(XFormPrim):
         return results
 
     def get_self_collisions(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the self collision parameters for the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: the self collision tensor with shape (M, )
+            The self collision tensor with shape (M, ).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         self_collisions = self._backend_utils.create_zeros_tensor(
@@ -844,18 +861,17 @@ class DeformablePrim(XFormPrim):
         return self_collisions
 
     def get_vertex_velocity_dampings(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the vertex velocity dampings of the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (float, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: deformable bodies vertex velocity dampings with shape (M, ).
+            Deformable bodies vertex velocity dampings with shape (M, ).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         results = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -873,18 +889,17 @@ class DeformablePrim(XFormPrim):
         return results
 
     def get_solver_position_iteration_counts(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the solver's positional iteration counts of the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (int, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: solver's positional iteration counts with shape (M, ).
+            Solver's positional iteration counts with shape (M, ).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="int32", device=self._device)
@@ -902,18 +917,17 @@ class DeformablePrim(XFormPrim):
         return result
 
     def get_simulation_mesh_nodal_positions(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the nodal positions of the simulation mesh for the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: position tensor with shape (M, max_simulation_mesh_vertices_per_body, 3)
+            Position tensor with shape (M, max_simulation_mesh_vertices_per_body, 3).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -941,18 +955,17 @@ class DeformablePrim(XFormPrim):
             return positions
 
     def get_simulation_mesh_nodal_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the vertex velocities for the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: velocity tensor with shape (M, max_simulation_mesh_vertices_per_body, 3)
+            Velocity tensor with shape (M, max_simulation_mesh_vertices_per_body, 3).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -980,21 +993,20 @@ class DeformablePrim(XFormPrim):
             return velocities
 
     def get_simulation_mesh_kinematic_targets(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the nodal kinematic targets of the simulation mesh for the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: kinematic targets tensor,
-                                                                                    with shape (M, max_simulation_mesh_vertices_per_body, 4)
-                                                                                    the first three components are the position targets and the last value (0 or 1)
-                                                                                    indicate whether the node is kinematically driven or not.
+            Kinematic targets tensor,
+            with shape (M, max_simulation_mesh_vertices_per_body, 4)
+            the first three components are the position targets and the last value (0 or 1)
+            indicate whether the node is kinematically driven or not.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -1012,18 +1024,17 @@ class DeformablePrim(XFormPrim):
             return None
 
     def get_collision_mesh_nodal_positions(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the nodal positions of the collision mesh for the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: position tensor with shape (M, max_collision_mesh_vertices_per_body, 3)
+            Position tensor with shape (M, max_collision_mesh_vertices_per_body, 3).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -1051,19 +1062,18 @@ class DeformablePrim(XFormPrim):
             return positions
 
     def get_simulation_mesh_indices(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the simulation mesh element indices of the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (float, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: deformable bodies simulation mesh element indices
-                                                                         with shape (M, self.max_simulation_mesh_elements_per_body, 4).
+            Deformable bodies simulation mesh element indices
+            with shape (M, self.max_simulation_mesh_elements_per_body, 4).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -1096,19 +1106,17 @@ class DeformablePrim(XFormPrim):
             return results
 
     def get_collision_mesh_indices(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the collision mesh element indices of the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (float, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: deformable bodies collision mesh element indices
-                                                                        with shape (M,  self.max_collision_mesh_elements_per_body, 4).
+            Deformable bodies collision mesh element indices with shape (M, self.max_collision_mesh_elements_per_body, 4).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -1140,21 +1148,19 @@ class DeformablePrim(XFormPrim):
             # return results
 
     def get_simulation_mesh_rest_points(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the simulation mesh rest points of the deformable bodies indicated by the indices.
-            rest point are the nodal positions with respect to the local prim transform, while the values returned by get_simulation_mesh_nodal_positions
-            are the nodal positions with respect to the origin
+        rest point are the nodal positions with respect to the local prim transform, while the values returned by get_simulation_mesh_nodal_positions
+        are the nodal positions with respect to the origin
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (float, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: deformable bodies simulation mesh rest points
-                                                                                    with shape (M, self.max_simulation_mesh_vertices_per_body, 3).
+            Deformable bodies simulation mesh rest points with shape (M, self.max_simulation_mesh_vertices_per_body, 3).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         results = self._backend_utils.create_zeros_tensor(
@@ -1208,20 +1214,18 @@ class DeformablePrim(XFormPrim):
     #     return results
 
     def get_simulation_mesh_element_rest_poses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the simulation mesh rest poses for the deformable bodies indicated by the indices.
         This method will return the 3x3 matrix inv([x1-x0, x2-x0, x3-x0]) where x0, x1, x2, x3 are the rest points of the simulation mesh elements
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: simulation mesh rest poses with
-                                                                                    shape (M, max_simulation_mesh_elements_per_body, 3, 3)
+            Simulation mesh rest poses with shape (M, max_simulation_mesh_elements_per_body, 3, 3).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -1239,19 +1243,18 @@ class DeformablePrim(XFormPrim):
             return None
 
     def get_collision_mesh_element_rest_poses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the collision mesh rest poses for the deformable bodies indicated by the indices.
         This method will return the 3x3 matrix inv([x1-x0, x2-x0, x3-x0]) where x0, x1, x2, x3 are the rest points of collision mesh elements
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: collision mesh rest poses with shape (M, max_collision_mesh_elements_per_body, 3, 3)
+            Collision mesh rest poses with shape (M, max_collision_mesh_elements_per_body, 3, 3).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -1269,18 +1272,17 @@ class DeformablePrim(XFormPrim):
             return None
 
     def get_simulation_mesh_element_rotations(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the simulation mesh element-wise rotations as quaternions for the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:  simulation mesh element-wise rotations with shape (M, max_simulation_mesh_elements_per_body, 4)
+            Simulation mesh element-wise rotations with shape (M, max_simulation_mesh_elements_per_body, 4).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -1296,18 +1298,17 @@ class DeformablePrim(XFormPrim):
             return None
 
     def get_collision_mesh_element_rotations(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the collision mesh element-wise rotations as quaternions for the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: collision mesh rotations with shape (M, max_collision_mesh_elements_per_body, 4)
+            Collision mesh rotations with shape (M, max_collision_mesh_elements_per_body, 4).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -1325,19 +1326,18 @@ class DeformablePrim(XFormPrim):
             return None
 
     def get_simulation_mesh_element_deformation_gradients(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the simulation mesh element-wise second-order deformation gradient tensors for the deformable bodies indicated by the indices.
         This method will return the simulation mesh element-wise deformation gradient of the deformable bodies
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: simulation mesh element-wise deformation gradients with shape (M, max_simulation_mesh_elements_per_body, 3, 3)
+            Simulation mesh element-wise deformation gradients with shape (M, max_simulation_mesh_elements_per_body, 3, 3).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -1355,18 +1355,17 @@ class DeformablePrim(XFormPrim):
             return None
 
     def get_collision_mesh_element_deformation_gradients(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the collision mesh element-wise second-order deformation gradient tensors for the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: collision mesh deformation gradients with shape (M, max_collision_mesh_elements_per_body, 3, 3)
+            Collision mesh deformation gradients with shape (M, max_collision_mesh_elements_per_body, 3, 3).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -1384,19 +1383,17 @@ class DeformablePrim(XFormPrim):
             return None
 
     def get_simulation_mesh_element_stresses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the simulation mesh element-wise second-order stress tensors for the deformable bodies indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
-            simulation mesh element-wise stresses with shape (M, max_simulation_mesh_elements_per_body, 3, 3)
+            Simulation mesh element-wise stresses with shape (M, max_simulation_mesh_elements_per_body, 3, 3).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -1414,19 +1411,18 @@ class DeformablePrim(XFormPrim):
             return None
 
     def get_collision_mesh_element_stresses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the collision mesh element-wise second-order stress tensors for bodies indicated by the indices.
         This method will return the collision mesh element-wise stresses of the deformable bodies
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which deformable prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which deformable prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: collision mesh stresses with shape (M, max_collision_mesh_elements_per_body, 3, 3)
+            Collision mesh stresses with shape (M, max_collision_mesh_elements_per_body, 3, 3).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:

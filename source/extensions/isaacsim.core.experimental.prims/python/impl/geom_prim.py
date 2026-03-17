@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level wrapper for manipulating geometric prims and their collision properties."""
+
+
 from __future__ import annotations
 
 import carb
@@ -79,7 +82,7 @@ class GeomPrim(XformPrim):
         reset_xform_op_properties: bool = False,
         # GeomPrim
         apply_collision_apis: bool = False,
-    ) -> None:
+    ):
         # define properties
         self._geoms = []
         # initialize base class

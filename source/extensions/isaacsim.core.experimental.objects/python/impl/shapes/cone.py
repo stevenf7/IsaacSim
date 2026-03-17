@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level class for creating and wrapping USD Cone prims with methods to manipulate cone properties."""
+
+
 from __future__ import annotations
 
 from typing import Literal
@@ -93,7 +96,7 @@ class Cone(Shape):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
-    ) -> None:
+    ):
         self._geoms = []
         stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = Shape.resolve_paths(paths)

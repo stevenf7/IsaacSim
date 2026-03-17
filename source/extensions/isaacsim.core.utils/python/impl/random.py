@@ -32,13 +32,13 @@ def get_random_values_in_range(min_range: np.ndarray, max_range: np.ndarray) -> 
     """Get an array of random values where each element is between the corresponding min_range and max_range element.
 
     Args:
-        min_range (np.ndarray): minimum values for each corresponding element of the array of random values. Shape is
-                                (num_values, ).
-        max_range (np.ndarray): maximum values for each corresponding element of the array of random values. Shape is
-                                (num_values, ).
+        min_range: Minimum values for each corresponding element of the array of random values. Shape is
+            (num_values, ).
+        max_range: Maximum values for each corresponding element of the array of random values. Shape is
+            (num_values, ).
 
     Returns:
-        np.ndarray: array of random values. Shape is (num_values, ).
+        Array of random values. Shape is (num_values, ).
     """
 
     return np.array([random.uniform(min_val, max_val) for min_val, max_val in zip(min_range, max_range)])
@@ -50,21 +50,21 @@ def get_random_translation_from_camera(
     """Get a random translation from the camera, in the camera's frame, that's in view of the camera.
 
     Args:
-        min_distance (float): minimum distance away from the camera (along the optical axis) of the random
-                                translation.
-        max_distance (float): maximum distance away from the camera (along the optical axis) of the random
-                                translation.
-        fov_x (float): field of view of the camera in the x-direction in radians.
-        fov_y (float): field of view of the camera in the y-direction in radians.
-        fraction_to_screen_edge (float): maximum allowed fraction to the edge of the screen the translated point may
-                                            appear when viewed from the camera. A value of 0 corresponds to the
-                                            translated point being centered in the camera's view (on the optical axis),
-                                            whereas a value of 1 corresponds to the translated point being on the edge
-                                            of the screen in the camera's view.
+        min_distance: Minimum distance away from the camera (along the optical axis) of the random
+            translation.
+        max_distance: Maximum distance away from the camera (along the optical axis) of the random
+            translation.
+        fov_x: Field of view of the camera in the x-direction in radians.
+        fov_y: Field of view of the camera in the y-direction in radians.
+        fraction_to_screen_edge: Maximum allowed fraction to the edge of the screen the translated point may
+            appear when viewed from the camera. A value of 0 corresponds to the
+            translated point being centered in the camera's view (on the optical axis),
+            whereas a value of 1 corresponds to the translated point being on the edge
+            of the screen in the camera's view.
 
     Returns:
-        np.ndarray: random translation from the camera, in the camera's frame, that's in view of the camera. Shape
-                    is (3, ).
+        Random translation from the camera, in the camera's frame, that's in view of the camera. Shape
+            is (3, ).
     """
 
     # Randomly select distance away from camera (along the optical axis)
@@ -100,28 +100,28 @@ def get_random_world_pose_in_view(
     """Get a pose defined in the world frame that's in view of the camera.
 
     Args:
-        camera_prim (Usd.Prim): prim path of the camera.
-        min_distance (float): minimum distance away from the camera (along the optical axis) of the random
-                                translation.
-        max_distance (float): maximum distance away from the camera (along the optical axis) of the random
-                                translation.
-        fov_x (float): field of view of the camera in the x-direction in radians.
-        fov_y (float): field of view of the camera in the y-direction in radians.
-        fraction_to_screen_edge (float): maximum allowed fraction to the edge of the screen the translated point may
-                                            appear when viewed from the camera. A value of 0 corresponds to the
-                                            translated point being centered in the camera's view (on the optical axis),
-                                            whereas a value of 1 corresponds to the translated point being on the edge
-                                            of the screen in the camera's view.
-        coord_prim (Usd.Prim): prim whose frame the orientation is defined with respect to.
-        min_rotation_range (np.ndarray): minimum XYZ Euler angles of the random pose, defined with respect to the
-                                            frame of the prim at coord_prim. Shape is (3, ).
-        max_rotation_range (np.ndarray): maximum XYZ Euler angles of the random pose, defined with respect to the
-                                            frame of the prim at coord_prim.
+        camera_prim: Prim path of the camera.
+        min_distance: Minimum distance away from the camera (along the optical axis) of the random
+            translation.
+        max_distance: Maximum distance away from the camera (along the optical axis) of the random
+            translation.
+        fov_x: Field of view of the camera in the x-direction in radians.
+        fov_y: Field of view of the camera in the y-direction in radians.
+        fraction_to_screen_edge: Maximum allowed fraction to the edge of the screen the translated point may
+            appear when viewed from the camera. A value of 0 corresponds to the
+            translated point being centered in the camera's view (on the optical axis),
+            whereas a value of 1 corresponds to the translated point being on the edge
+            of the screen in the camera's view.
+        coord_prim: Prim whose frame the orientation is defined with respect to.
+        min_rotation_range: Minimum XYZ Euler angles of the random pose, defined with respect to the
+            frame of the prim at coord_prim. Shape is (3, ).
+        max_rotation_range: Maximum XYZ Euler angles of the random pose, defined with respect to the
+            frame of the prim at coord_prim.
 
     Returns:
-        Tuple[np.ndarray, np.ndarray]: first index is position in the world frame. Shape is (3, ). Second index is
-                                        quaternion orientation in the world frame. Quaternion is scalar-first
-                                        (w, x, y, z). Shape is (4, ).
+        First index is position in the world frame. Shape is (3, ). Second index is
+            quaternion orientation in the world frame. Quaternion is scalar-first
+            (w, x, y, z). Shape is (4, ).
     """
 
     random_translation_from_camera = get_random_translation_from_camera(

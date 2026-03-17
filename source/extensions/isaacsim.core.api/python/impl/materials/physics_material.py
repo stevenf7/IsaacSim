@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Module for creating and managing physics materials with friction and restitution properties."""
+
+
 from typing import Optional
 
 import carb
@@ -26,10 +29,10 @@ class PhysicsMaterial(object):
 
     Args:
         prim_path: USD prim path for the material.
-        name: Name identifier. Defaults to "physics_material".
-        static_friction: Static friction coefficient. Defaults to None.
-        dynamic_friction: Dynamic friction coefficient. Defaults to None.
-        restitution: Restitution (bounciness) coefficient. Defaults to None.
+        name: Name identifier.
+        static_friction: Static friction coefficient.
+        dynamic_friction: Dynamic friction coefficient.
+        restitution: Restitution (bounciness) coefficient.
     """
 
     def __init__(
@@ -39,7 +42,7 @@ class PhysicsMaterial(object):
         static_friction: Optional[float] = None,
         dynamic_friction: Optional[float] = None,
         restitution: Optional[float] = None,
-    ) -> None:
+    ):
         self._name = name
         self._prim_path = prim_path
 
@@ -64,7 +67,7 @@ class PhysicsMaterial(object):
 
     @property
     def prim_path(self) -> str:
-        """Get the USD prim path.
+        """USD prim path for the material.
 
         Returns:
             The prim path string.
@@ -73,7 +76,7 @@ class PhysicsMaterial(object):
 
     @property
     def prim(self) -> Usd.Prim:
-        """Get the USD prim object.
+        """USD prim object for the material.
 
         Returns:
             The Usd.Prim object.
@@ -82,7 +85,7 @@ class PhysicsMaterial(object):
 
     @property
     def name(self) -> str:
-        """Get the material name.
+        """Material name identifier.
 
         Returns:
             The material name.
@@ -91,14 +94,14 @@ class PhysicsMaterial(object):
 
     @property
     def material(self) -> UsdShade.Material:
-        """Get the USD material object.
+        """USD material object for the physics material.
 
         Returns:
             The UsdShade.Material object.
         """
         return self._material
 
-    def set_dynamic_friction(self, friction: float) -> None:
+    def set_dynamic_friction(self, friction: float):
         """Set the dynamic friction coefficient.
 
         Args:
@@ -122,7 +125,7 @@ class PhysicsMaterial(object):
         else:
             return self._material_api.GetDynamicFrictionAttr().Get()
 
-    def set_static_friction(self, friction: float) -> None:
+    def set_static_friction(self, friction: float):
         """Set the static friction coefficient.
 
         Args:
@@ -146,7 +149,7 @@ class PhysicsMaterial(object):
         else:
             return self._material_api.GetStaticFrictionAttr().Get()
 
-    def set_restitution(self, restitution: float) -> None:
+    def set_restitution(self, restitution: float):
         """Set the restitution (bounciness) coefficient.
 
         Args:

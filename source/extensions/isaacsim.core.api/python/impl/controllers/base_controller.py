@@ -25,25 +25,26 @@ class BaseController(ABC):
         name: Name identifier for the controller.
     """
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str):
         self._name = name
 
     @abstractmethod
     def forward(self, *args, **kwargs) -> ArticulationAction:
         """A controller should take inputs and returns an ArticulationAction to be then passed to the
-           ArticulationController.
+        ArticulationController.
 
         Args:
-            observations (dict): Dictionary containing controller-specific observations.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
 
         Raises:
             NotImplementedError: Must be implemented by subclass.
 
         Returns:
-            ArticulationAction: Action containing joint positions, velocities, or efforts to apply.
+            Action containing joint positions, velocities, or efforts to apply.
         """
         raise NotImplementedError
 
-    def reset(self) -> None:
+    def reset(self):
         """Resets state of the controller."""
         return

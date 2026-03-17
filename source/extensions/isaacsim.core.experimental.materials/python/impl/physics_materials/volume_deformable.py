@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level wrapper for creating/encapsulating Volume Deformable material prims."""
+
+
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils
@@ -77,7 +80,7 @@ class VolumeDeformableMaterial(PhysicsMaterial):
         youngs_moduli: float | list | np.ndarray | wp.array | None = None,
         poissons_ratios: float | list | np.ndarray | wp.array | None = None,
         densities: float | list | np.ndarray | wp.array | None = None,
-    ) -> None:
+    ):
         # get or create prims
         self._materials = []
         stage = stage_utils.get_current_stage(backend="usd")

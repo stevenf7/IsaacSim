@@ -24,7 +24,18 @@ from pxr import Gf, PhysxSchema, Sdf, Tf, Usd, UsdGeom, UsdPhysics, Vt
 
 
 # TODO: The functionality here should be replaced with appropriate omni.physics public extension
-def loadTetFile(path):
+def loadTetFile(path) -> tuple:
+    """Loads tetrahedral mesh data from a .tet file format.
+
+    Parses vertex positions (v lines) and tetrahedron connectivity (t lines) from a text-based .tet file,
+    scaling vertex positions by 500 units.
+
+    Args:
+        path: Relative path to the .tet file from the Kit installation directory.
+
+    Returns:
+        A tuple of (points, indices) containing the loaded tetrahedral mesh data.
+    """
     points = []
     indices = []
 
@@ -52,13 +63,36 @@ def loadTetFile(path):
     return (points, indices)
 
 
-def calculateTetraVolume(a, b, c, d):
+def calculateTetraVolume(a, b, c, d) -> float:
+    """Calculate the signed volume of a tetrahedron defined by four vertices.
+
+    Args:
+        a: First vertex position.
+        b: Second vertex position.
+        c: Third vertex position.
+        d: Fourth vertex position.
+
+    Returns:
+        The signed volume of the tetrahedron.
+    """
     a, b, c = a - d, b - d, c - d
     volume = (-1.0 / 6.0) * Gf.Dot(Gf.Cross(a, b), c)
     return volume
 
 
-def fixupTetraMeshVolumes(points, indices):
+def fixupTetraMeshVolumes(points, indices) -> list:
+    """Fixes tetrahedron orientation to ensure positive volumes.
+
+    Corrects tetrahedral mesh topology by reordering vertex indices of tetrahedra with negative or zero
+    volumes to ensure all tetrahedra have positive orientation.
+
+    Args:
+        points: Vertex positions of the tetrahedral mesh.
+        indices: Tetrahedron indices in groups of 4.
+
+    Returns:
+        Fixed indices with corrected tetrahedron orientation.
+    """
     fixed_indices = []
 
     for t in range(0, len(indices) // 4):
@@ -73,6 +107,15 @@ def fixupTetraMeshVolumes(points, indices):
 
 
 def verifyTetraMesh(points, indices):
+    """Validates tetrahedral mesh integrity and logs warnings for issues.
+
+    Checks for proper index count (multiple of 4), valid vertex references, and positive tetrahedron
+    volumes. Logs warnings for any detected problems.
+
+    Args:
+        points: Vertex positions of the tetrahedral mesh.
+        indices: Tetrahedron indices in groups of 4.
+    """
 
     # print("verifyTetraMesh:")
     # print("num points: " + str(len(points)))
@@ -95,7 +138,12 @@ def verifyTetraMesh(points, indices):
             return
 
 
-def cubeTetrahedra():
+def cubeTetrahedra() -> list:
+    """Generate the standard tetrahedralization pattern for a unit cube.
+
+    Returns:
+        List of tetrahedra, where each tetrahedron is defined by four corner coordinates of the unit cube.
+    """
     tetra = []
     tetra.append([(0, 0, 0), (1, 0, 0), (1, 1, 0), (1, 0, 1)])
     tetra.append([(0, 0, 0), (1, 0, 1), (1, 1, 0), (0, 1, 1)])
@@ -105,7 +153,16 @@ def cubeTetrahedra():
     return tetra
 
 
-def createTetraVoxels(voxel_dim, occupancy_filter_func):
+def createTetraVoxels(voxel_dim, occupancy_filter_func) -> tuple:
+    """Create a tetrahedral mesh from voxels using a custom occupancy filter function.
+
+    Args:
+        voxel_dim: Dimension of the cubic voxel grid.
+        occupancy_filter_func: Function that determines which voxels are occupied based on coordinates.
+
+    Returns:
+        A tuple of (points, indices) representing the tetrahedral voxel mesh.
+    """
     dimx, dimy, dimz = voxel_dim, voxel_dim, voxel_dim
 
     grid = numpy.zeros((dimx, dimy, dimz), dtype="bool")
@@ -164,18 +221,58 @@ def createTetraVoxels(voxel_dim, occupancy_filter_func):
     return points, indices
 
 
-def voxel_sphere_test(x, y, z, dimx, dimy, dimz):
+def voxel_sphere_test(x, y, z, dimx, dimy, dimz) -> bool:
+    """Voxel occupancy test for spherical shapes.
+
+    Determines if a voxel position falls within a sphere centered in the grid. Used as an occupancy
+    filter function for generating spherical tetrahedral meshes.
+
+    Args:
+        x: X coordinate in the voxel grid.
+        y: Y coordinate in the voxel grid.
+        z: Z coordinate in the voxel grid.
+        dimx: Grid dimension in X direction.
+        dimy: Grid dimension in Y direction.
+        dimz: Grid dimension in Z direction.
+
+    Returns:
+        True if the voxel is within the sphere.
+    """
     c = Gf.Vec3f(dimx / 2.0, dimy / 2.0, dimz / 2.0)
     r = dimx / 2.0
     v = Gf.Vec3f(x + 0.5, y + 0.5, z + 0.5)
     return (v - c).GetLength() < r
 
 
-def voxel_pass_all_test(x, y, z, dimx, dimy, dimz):
+def voxel_pass_all_test(x, y, z, dimx, dimy, dimz) -> bool:
+    """Voxel occupancy test that includes all voxels.
+
+    Always returns True, effectively including every voxel position in the grid when used as an
+    occupancy filter function.
+
+    Args:
+        x: X coordinate in the voxel grid.
+        y: Y coordinate in the voxel grid.
+        z: Z coordinate in the voxel grid.
+        dimx: Grid dimension in X direction.
+        dimy: Grid dimension in Y direction.
+        dimz: Grid dimension in Z direction.
+
+    Returns:
+        Always True.
+    """
     return True
 
 
-def createTetraVoxelBox(voxel_dim):
+def createTetraVoxelBox(voxel_dim) -> tuple:
+    """Create a tetrahedral mesh representing a box using voxel-based tetrahedralization.
+
+    Args:
+        voxel_dim: Dimension of the voxel grid used for tetrahedralization.
+
+    Returns:
+        A tuple of (points, indices) representing the tetrahedral box mesh.
+    """
     points, indices = createTetraVoxels(voxel_dim, voxel_pass_all_test)
     voxel_dim_inv = 1.0 / voxel_dim
     for i in range(len(points)):
@@ -183,7 +280,15 @@ def createTetraVoxelBox(voxel_dim):
     return points, indices
 
 
-def createTetraVoxelSphere(voxel_dim):
+def createTetraVoxelSphere(voxel_dim) -> tuple:
+    """Create a tetrahedral mesh representing a sphere using voxel-based tetrahedralization.
+
+    Args:
+        voxel_dim: Dimension of the voxel grid used for tetrahedralization.
+
+    Returns:
+        A tuple of (points, indices) representing the tetrahedral sphere mesh.
+    """
     points, indices = createTetraVoxels(voxel_dim, voxel_sphere_test)
     voxel_dim_inv = 1.0 / voxel_dim
     for i in range(len(points)):
@@ -192,18 +297,46 @@ def createTetraVoxelSphere(voxel_dim):
 
 
 def addTriangle(points, indices, p0, p1, p2):
+    """Add a triangle to the mesh by appending three vertices and their indices.
+
+    Args:
+        points: List of vertex positions to append to.
+        indices: List of vertex indices to append to.
+        p0: First vertex position of the triangle.
+        p1: Second vertex position of the triangle.
+        p2: Third vertex position of the triangle.
+    """
     o = len(points)
     indices.extend([o + 0, o + 1, o + 2])
     points.extend([p0, p1, p2])
 
 
 def addTetra(points, indices, p0, p1, p2, p3):
+    """Add a tetrahedron to the mesh by appending four vertices and their indices.
+
+    Args:
+        points: List of vertex positions to append to.
+        indices: List of vertex indices to append to.
+        p0: First vertex position of the tetrahedron.
+        p1: Second vertex position of the tetrahedron.
+        p2: Third vertex position of the tetrahedron.
+        p3: Fourth vertex position of the tetrahedron.
+    """
     o = len(points)
     indices.extend([o + 0, o + 1, o + 2, o + 3])
     points.extend([p0, p1, p2, p3])
 
 
-def convertTetraToTriangleSoup(points_in, indices_in):
+def convertTetraToTriangleSoup(points_in, indices_in) -> tuple:
+    """Convert a tetrahedral mesh to a triangle soup by creating triangular faces for each tetrahedron.
+
+    Args:
+        points_in: Input vertex positions of the tetrahedral mesh.
+        indices_in: Input vertex indices of the tetrahedral mesh.
+
+    Returns:
+        A tuple of (points, indices) representing the triangle soup.
+    """
     points = []
     indices = []
     for t in range(0, len(indices_in) // 4):
@@ -217,7 +350,20 @@ def convertTetraToTriangleSoup(points_in, indices_in):
     return (points, indices)
 
 
-def explodeTriangleMesh(points_in, indices_in, factor):
+def explodeTriangleMesh(points_in, indices_in, factor) -> tuple:
+    """Explodes a triangle mesh by scaling each triangle away from its centroid.
+
+    Creates a new triangle mesh where each triangle is displaced from its center point by the specified
+    scaling factor, resulting in a visual "explosion" effect with gaps between triangles.
+
+    Args:
+        points_in: Input vertex positions.
+        indices_in: Triangle indices referencing vertices in groups of 3.
+        factor: Scaling factor for the explosion effect.
+
+    Returns:
+        A tuple of (points, indices) containing the exploded triangle mesh data.
+    """
     points = []
     indices = []
     for t in range(0, len(indices_in) // 3):
@@ -231,7 +377,17 @@ def explodeTriangleMesh(points_in, indices_in, factor):
     return (points, indices)
 
 
-def explodeTetraMesh(points_in, indices_in, factor):
+def explodeTetraMesh(points_in, indices_in, factor) -> tuple:
+    """Create an exploded view of a tetrahedral mesh by scaling tetrahedra around their centroids.
+
+    Args:
+        points_in: Input vertex positions of the tetrahedral mesh.
+        indices_in: Input vertex indices of the tetrahedral mesh.
+        factor: Scale factor for the explosion effect.
+
+    Returns:
+        A tuple of (points, indices) representing the exploded tetrahedral mesh.
+    """
     points = []
     indices = []
     for t in range(0, len(indices_in) // 4):
@@ -245,7 +401,15 @@ def explodeTetraMesh(points_in, indices_in, factor):
     return (points, indices)
 
 
-def createTriangleMeshCube(dim: int):
+def createTriangleMeshCube(dim: int) -> tuple:
+    """Create a triangle surface mesh of a cube using tetrahedral voxelization and surface extraction.
+
+    Args:
+        dim: Dimension of the voxel grid used for cube generation.
+
+    Returns:
+        A tuple of (points, indices) representing the triangle surface mesh of the cube.
+    """
     points, indices = createTetraVoxelBox(dim)
     tri_points, tri_indices = deformableUtils.extractTriangleSurfaceFromTetra(points, indices)
     return tri_points, tri_indices

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2023-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2023-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Warp-based utilities for rotation operations and quaternion conversions."""
+
+
 import typing
-from typing import Any
+from typing import Any, Union
 
 import numpy as np
 import warp as wp
@@ -29,10 +32,11 @@ def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternio
     """Converts a pxr Quaternion type to a torch array (scalar first).
 
     Args:
-        orientation (typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion]): Input quaternion from USD.
+        orientation: Input quaternion from USD.
+        device: Target device for the output array.
 
     Returns:
-       wp.array: quaternion tensor
+        Quaternion tensor.
     """
 
     quat = torch.zeros(4, dtype=torch.float32, device=device)
@@ -49,15 +53,15 @@ def euler_angles_to_quats(
     """Vectorized version of converting euler angles to quaternion (scalar first)
 
     Args:
-        euler_angles (wp.array): euler angles with shape (N, 3)
-        extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
-                   convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
-                   the intrinsic angles conventions (equivalent to XYZ ordering).
-                   Defaults to True.
-        degrees (bool, optional): True if degrees, False if radians. Defaults to False.
+        euler_angles: Euler angles with shape (N, 3).
+        degrees: True if degrees, False if radians.
+        extrinsic: True if the euler angles follows the extrinsic angles
+            convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
+            the intrinsic angles conventions (equivalent to XYZ ordering).
+        device: Target device for the output array.
 
     Returns:
-        wp.array: quaternions representation of the angles (N, 4) - scalar first.
+        Quaternions representation of the angles (N, 4) - scalar first.
     """
     if extrinsic:
         order = "xyz"
@@ -72,14 +76,14 @@ def euler_angles_to_quats(
 
 
 def rad2deg(radian_value: wp.array, device=None) -> wp.array:
-    """_summary_
+    """Converts radian values to degrees.
 
     Args:
-        radian_value (wp.array): _description_
-        device (_type_, optional): _description_. Defaults to None.
+        radian_value: Input array containing radian values to convert.
+        device: Target device for the output array.
 
     Returns:
-        wp.array: _description_
+        Array containing the converted degree values.
     """
 
     rad_torch = wp.to_torch(radian_value)
@@ -88,14 +92,14 @@ def rad2deg(radian_value: wp.array, device=None) -> wp.array:
 
 
 def deg2rad(degree_value: wp.array, device=None) -> wp.array:
-    """_summary_
+    """Converts degree values to radians.
 
     Args:
-        degree_value (torch.Tensor): _description_
-        device (_type_, optional): _description_. Defaults to None.
+        degree_value: Input array containing degree values to convert.
+        device: Target device for the output array.
 
     Returns:
-        wp.array: _description_
+        Array containing the converted radian values.
     """
 
     degree_torch = wp.to_torch(degree_value)
@@ -105,6 +109,13 @@ def deg2rad(degree_value: wp.array, device=None) -> wp.array:
 
 @wp.kernel
 def _xyzw2wxyz1(q: Any):
+    """Warp kernel to convert quaternion from XYZW to WXYZ format for 1D arrays.
+
+    Reorders quaternion components from (x, y, z, w) to (w, x, y, z) format in-place.
+
+    Args:
+        q: Input quaternion array in XYZW format to be converted to WXYZ format.
+    """
     qx = q[0]
     qy = q[1]
     qz = q[2]
@@ -121,6 +132,14 @@ wp.overload(_xyzw2wxyz1, {"q": wp.indexedarray(dtype=float)})
 
 @wp.kernel
 def _xyzw2wxyz2(q: Any):
+    """Warp kernel to convert quaternion from XYZW to WXYZ format for 2D arrays.
+
+    Reorders quaternion components from (x, y, z, w) to (w, x, y, z) format in-place for each quaternion
+    in the array.
+
+    Args:
+        q: Input 2D quaternion array in XYZW format to be converted to WXYZ format.
+    """
     tid = wp.tid()
     qx = q[tid, 0]
     qy = q[tid, 1]
@@ -138,6 +157,14 @@ wp.overload(_xyzw2wxyz2, {"q": wp.indexedarray(dtype=float, ndim=2)})
 
 @wp.kernel
 def _xyzw2wxyz3(q: Any):
+    """Warp kernel to convert quaternion from XYZW to WXYZ format for 3D arrays.
+
+    Reorders quaternion components from (x, y, z, w) to (w, x, y, z) format in-place for each quaternion
+    in the 3D array.
+
+    Args:
+        q: Input 3D quaternion array in XYZW format to be converted to WXYZ format.
+    """
     i, j = wp.tid()
     qx = q[i, j, 0]
     qy = q[i, j, 1]
@@ -155,6 +182,13 @@ wp.overload(_xyzw2wxyz3, {"q": wp.indexedarray(dtype=float, ndim=3)})
 
 @wp.kernel
 def _wxyz2xyzw1(q: Any):
+    """Warp kernel to convert quaternion from WXYZ to XYZW format for 1D arrays.
+
+    Reorders quaternion components from (w, x, y, z) to (x, y, z, w) format in-place.
+
+    Args:
+        q: Input quaternion array in WXYZ format to be converted to XYZW format.
+    """
     qw = q[0]
     qx = q[1]
     qy = q[2]
@@ -171,6 +205,14 @@ wp.overload(_wxyz2xyzw1, {"q": wp.indexedarray(dtype=float)})
 
 @wp.kernel
 def _wxyz2xyzw2(q: Any):
+    """Warp kernel to convert quaternion from WXYZ to XYZW format for 2D arrays.
+
+    Reorders quaternion components from (w, x, y, z) to (x, y, z, w) format in-place for each quaternion
+    in the array.
+
+    Args:
+        q: Input 2D quaternion array in WXYZ format to be converted to XYZW format.
+    """
     tid = wp.tid()
     qw = q[tid, 0]
     qx = q[tid, 1]
@@ -188,6 +230,14 @@ wp.overload(_wxyz2xyzw2, {"q": wp.indexedarray(dtype=float, ndim=2)})
 
 @wp.kernel
 def _wxyz2xyzw3(q: Any):
+    """Warp kernel to convert quaternion from WXYZ to XYZW format for 3D arrays.
+
+    Reorders quaternion components from (w, x, y, z) to (x, y, z, w) format in-place for each quaternion
+    in the 3D array.
+
+    Args:
+        q: Input 3D quaternion array in WXYZ format to be converted to XYZW format.
+    """
     i, j = wp.tid()
     qw = q[i, j, 0]
     qx = q[i, j, 1]
@@ -203,7 +253,18 @@ wp.overload(_wxyz2xyzw3, {"q": wp.array(dtype=float, ndim=3)})
 wp.overload(_wxyz2xyzw3, {"q": wp.indexedarray(dtype=float, ndim=3)})
 
 
-def xyzw2wxyz(q):
+def xyzw2wxyz(q: wp.array) -> wp.array:
+    """Converts quaternion from XYZW (scalar last) to WXYZ (scalar first) format.
+
+    Supports Warp arrays with 1D, 2D, or 3D shapes. The conversion is performed using CUDA kernels
+    for optimal performance.
+
+    Args:
+        q: Quaternion array in XYZW format to convert to WXYZ format.
+
+    Returns:
+        The input array with quaternion components reordered to WXYZ format.
+    """
     # TODO: warp kernels not working on cpu
     from . import move_data
 
@@ -223,7 +284,18 @@ def xyzw2wxyz(q):
     return q
 
 
-def wxyz2xyzw(q):
+def wxyz2xyzw(q: wp.array) -> wp.array:
+    """Converts quaternion from WXYZ (scalar first) to XYZW (scalar last) format.
+
+    Supports Warp arrays with 1D, 2D, or 3D shapes. The conversion is performed using CUDA kernels
+    for optimal performance.
+
+    Args:
+        q: Quaternion array in WXYZ format to convert to XYZW format.
+
+    Returns:
+        The input array with quaternion components reordered to XYZW format.
+    """
     # TODO: warp kernels not working on cpu
     from . import move_data
 

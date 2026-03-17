@@ -20,10 +20,10 @@ def get_extension_id(extension_name: str) -> str:
     """Get extension id for a loaded extension
 
     Args:
-        extension_name (str): name of the extension
+        extension_name: name of the extension
 
     Returns:
-        str: Full extension id
+        Full extension id
 
     Example:
 
@@ -42,10 +42,10 @@ def get_extension_path(ext_id: str) -> str:
     """Get extension path for a loaded extension by its full id
 
     Args:
-        ext_id (str): full id of extension
+        ext_id: full id of extension
 
     Returns:
-        str: Path to loaded extension root directory
+        Path to loaded extension root directory
 
     Example:
 
@@ -65,10 +65,10 @@ def get_extension_path_from_name(extension_name: str) -> str:
     """Get extension path for a loaded extension by its name
 
     Args:
-        extension_name (str): name of the extension
+        extension_name: name of the extension
 
     Returns:
-        str: Path to loaded extension root directory
+        Path to loaded extension root directory
 
     Example:
 
@@ -87,10 +87,10 @@ def enable_extension(extension_name: str) -> bool:
     """Load an extension from the extension manager.
 
     Args:
-        extension_name (str): name of the extension
+        extension_name: name of the extension
 
     Returns:
-        bool: True if extension could be loaded, False otherwise
+        True if extension could be loaded, False otherwise
 
     Example:
 
@@ -109,10 +109,10 @@ def disable_extension(extension_name: str) -> bool:
     """Unload an extension.
 
     Args:
-        extension_name (str): name of the extension
+        extension_name: name of the extension
 
     Returns:
-        bool: True if extension could be unloaded, False otherwise
+        True if extension could be unloaded, False otherwise
 
     Example:
 

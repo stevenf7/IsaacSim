@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Base classes for implementing gripper controllers that can open and close grippers in Isaac Sim."""
+
+
 from abc import abstractmethod
 
 import numpy as np
@@ -27,22 +30,22 @@ class BaseGripperController(BaseController):
         name: Name identifier for the controller.
     """
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str):
         self._name = name
         return
 
     def forward(self, action: str, current_joint_positions: np.ndarray) -> ArticulationAction:
-        """Action has be "open" or "close"
+        """Routes gripper actions to appropriate open or close methods.
 
         Args:
-            action (str): "open" or "close"
-            current_joint_positions (np.ndarray): Current positions of the gripper joints.
+            action: "open" or "close".
+            current_joint_positions: Current positions of the gripper joints.
 
         Raises:
             Exception: If action is not "open" or "close".
 
         Returns:
-            ArticulationAction: Action to apply to the gripper joints.
+            Action to apply to the gripper joints.
         """
         if action == "open":
             return self.open(current_joint_positions)
@@ -81,6 +84,6 @@ class BaseGripperController(BaseController):
         """
         raise NotImplementedError
 
-    def reset(self) -> None:
+    def reset(self):
         """Reset the gripper controller state."""
         return

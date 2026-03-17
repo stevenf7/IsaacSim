@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Handles multiple robot (articulation) prims efficiently through regex-based selection for batch operations."""
+
 
 from typing import Optional, Union
 
@@ -33,29 +36,23 @@ class RobotView(Articulation):
         See the ``initialize`` method for more details.
 
     Args:
-        prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
-                                example: "/World/Env[1-5]/Franka" will match /World/Env1/Franka,
-                                /World/Env2/Franka, etc.
-                                (a non regex prim path can also be used to encapsulate one rigid prim).
-        name (str, optional): shortname to be used as a key by Scene class.
-                                Note: needs to be unique if the object is added to the Scene.
-                                Defaults to "rigid_prim_view".
-        positions (Optional[Union[np.ndarray, torch.Tensor]], optional): default positions in the world frame of the prims.
-                                                        shape is (N, 3). Defaults to None, which means left unchanged.
-        translations (Optional[Union[np.ndarray, torch.Tensor]], optional):
-                                                        default translations in the local frame of the prims
-                                                        (with respect to its parent prims). shape is (N, 3).
-                                                        Defaults to None, which means left unchanged.
-        orientations (Optional[Union[np.ndarray, torch.Tensor]], optional):
-                                                        default quaternion orientations in the world/ local frame of the prims
-                                                        (depends if translation or position is specified).
-                                                        quaternion is scalar-first (w, x, y, z). shape is (N, 4).
-        scales (Optional[Union[np.ndarray, torch.Tensor]], optional): local scales to be applied to
-                                                        the prim's dimensions in the view. shape is (N, 3).
-                                                        Defaults to None, which means left unchanged.
-        visibilities (Optional[Union[np.ndarray, torch.Tensor]], optional): set to false for an invisible prim in
-                                                                            the stage while rendering. shape is (N,).
-                                                                            Defaults to None.
+        prim_paths_expr: prim paths regex to encapsulate all prims that match it.
+            example: "/World/Env[1-5]/Franka" will match /World/Env1/Franka,
+            /World/Env2/Franka, etc.
+            (a non regex prim path can also be used to encapsulate one rigid prim).
+        name: shortname to be used as a key by Scene class.
+            Note: needs to be unique if the object is added to the Scene.
+        positions: default positions in the world frame of the prims.
+            shape is (N, 3).
+        translations: default translations in the local frame of the prims
+            (with respect to its parent prims). shape is (N, 3).
+        orientations: default quaternion orientations in the world/ local frame of the prims
+            (depends if translation or position is specified).
+            quaternion is scalar-first (w, x, y, z). shape is (N, 4).
+        scales: local scales to be applied to
+            the prim's dimensions in the view. shape is (N, 3).
+        visibilities: set to false for an invisible prim in
+            the stage while rendering. shape is (N,).
 
     Example:
 
@@ -94,7 +91,7 @@ class RobotView(Articulation):
         orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
         scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
         visibilities: Optional[Union[np.ndarray, torch.Tensor]] = None,
-    ) -> None:
+    ):
         Articulation.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
@@ -108,7 +105,7 @@ class RobotView(Articulation):
         self._sensors = list()
         return
 
-    def post_reset(self) -> None:
+    def post_reset(self):
         """Reset the robots to their default states
 
         .. note::

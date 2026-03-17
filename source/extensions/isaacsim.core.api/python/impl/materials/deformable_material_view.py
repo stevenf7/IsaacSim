@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides a view class for managing deformable material prims and their physical properties."""
+
+
 from typing import Optional, Tuple, Union
 
 # omniverse
@@ -48,13 +51,13 @@ class DeformableMaterialView:
     ):
         """
         Args:
-            prim_paths_expr(str): Prim paths regex to encapsulate all prims that match it.
-            name(str): Shortname to be used as a key by Scene class.
-            dynamic_frictions (Union[np.ndarray, torch.Tensor], optional): The dynamic friction coefficient tensor, shape is (N, ).
-            youngs_moduli (Union[np.ndarray, torch.Tensor], optional): The Young's modulus coefficient tensor, shape is (N, ).
-            poissons_ratios (Union[np.ndarray, torch.Tensor], optional): The Possion ratio coefficient tensor, shape is (N, ).
-            elasticity_dampings (Union[np.ndarray, torch.Tensor], optional): Material damping parameter tensor, shape is (N, ).
-            damping_scales (Union[np.ndarray, torch.Tensor], optional): The damping scale coefficient tensor, shape is (N, ).
+            prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
+            name: Shortname to be used as a key by Scene class.
+            dynamic_frictions: The dynamic friction coefficient tensor, shape is (N, ).
+            youngs_moduli: The Young's modulus coefficient tensor, shape is (N, ).
+            poissons_ratios: The Poisson ratio coefficient tensor, shape is (N, ).
+            elasticity_dampings: Material damping parameter tensor, shape is (N, ).
+            damping_scales: The damping scale coefficient tensor, shape is (N, ).
         """
         self._name = name
         self._physics_view = None
@@ -102,21 +105,28 @@ class DeformableMaterialView:
 
     @property
     def count(self) -> int:
-        """
+        """Number of deformable material prims in the view.
+
         Returns:
-            int: number of rigid shapes for the prims in the view.
+            Number of deformable material prims for the prims in the view.
         """
         return self._count
 
     @property
     def name(self) -> str:
-        """
+        """Name given to the view when instantiating it.
+
         Returns:
-            str: name given to the view when instantiating it.
+            Name given to the view when instantiating it.
         """
         return self._name
 
     def _apply_material_api(self, index):
+        """Applies PhysxDeformableBodyMaterialAPI to the material prim at the specified index.
+
+        Args:
+            index: Index of the material prim to apply the API to.
+        """
         if self._material_apis[index] is None:
             if self._prims[index].HasAPI(PhysxSchema.PhysxDeformableBodyMaterialAPI):
                 material_api = PhysxSchema.PhysxDeformableBodyMaterialAPI(self._prims[index])
@@ -125,22 +135,23 @@ class DeformableMaterialView:
             self._material_apis[index] = material_api
 
     def is_physics_handle_valid(self) -> bool:
-        """
+        """Checks if the physics handle of the view is valid.
+
         Returns:
-            bool: True if the physics handle of the view is valid (i.e physics is initialized for the view). Otherwise False.
+            True if the physics handle of the view is valid (i.e physics is initialized for the view). Otherwise False.
         """
         return self._physics_view is not None
 
     def is_valid(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> bool:
-        """
+        """Checks if all prim paths specified in the view correspond to valid prims in stage.
+
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            indices: indices to specify which prims
+                to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
 
         Returns:
-            bool: True if all prim paths specified in the view correspond to a valid prim in stage. False otherwise.
+            True if all prim paths specified in the view correspond to a valid prim in stage. False otherwise.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -149,15 +160,15 @@ class DeformableMaterialView:
             result = result and is_prim_path_valid(self._prim_paths[index.tolist()])
         return result
 
-    def post_reset(self) -> None:
+    def post_reset(self):
         """Resets the deformables to their initial states."""
         return
 
-    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None):
         """Create a physics simulation view if not passed and creates a rigid body view in physX.
 
         Args:
-            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
+            physics_sim_view: current physics simulation view.
         """
         if physics_sim_view is None:
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
@@ -175,14 +186,13 @@ class DeformableMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ) -> None:
+    ):
         """Sets the dynamic friction for the material prims indicated by the indices.
 
         Args:
-            values (Optional[Union[np.ndarray, torch.Tensor]], optional): material dynamic friction tensor with the shape (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which material prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: material dynamic friction tensor with the shape (M, ).
+            indices: indices to specify which material prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -207,13 +217,12 @@ class DeformableMaterialView:
         """Gets the dynamic friction of materials indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which material prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which material prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-           Union[np.ndarray, torch.Tensor]: dynamic friction tensor with shape (M, )
+            dynamic friction tensor with shape (M, )
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -238,14 +247,13 @@ class DeformableMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ) -> None:
+    ):
         """Sets the elasticity_dampings for the material prims indicated by the indices.
 
         Args:
-            values (Optional[Union[np.ndarray, torch.Tensor]], optional): material damping tensor with the shape (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which material prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: material damping tensor with the shape (M, ).
+            indices: indices to specify which material prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -270,13 +278,12 @@ class DeformableMaterialView:
         """Gets the elasticity dampings of materials indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which material prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which material prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: elasticity dampings tensor with shape (M, )
+            elasticity dampings tensor with shape (M, )
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -301,14 +308,13 @@ class DeformableMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ) -> None:
+    ):
         """Sets the damping scale for the material prims indicated by the indices.
 
         Args:
-            values (Optional[Union[np.ndarray, torch.Tensor]], optional): material damping scale tensor with the shape (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which material prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: material damping scale tensor with the shape (M, ).
+            indices: indices to specify which material prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -332,13 +338,12 @@ class DeformableMaterialView:
         """Gets the damping scale of materials indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which material prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which material prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: damping scale tensor with shape (M, )
+            damping scale tensor with shape (M, )
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -363,14 +368,13 @@ class DeformableMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ) -> None:
+    ):
         """Sets the poissons ratios for the material prims indicated by the indices.
 
         Args:
-            values (Optional[Union[np.ndarray, torch.Tensor]], optional): material poissons ratio tensor with the shape (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which material prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: material poissons ratio tensor with the shape (M, ).
+            indices: indices to specify which material prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -394,13 +398,12 @@ class DeformableMaterialView:
         """Gets the poissons ratios of materials indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which material prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which material prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: poissons ratio tensor with shape (M, )
+            poissons ratio tensor with shape (M, )
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -425,14 +428,13 @@ class DeformableMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ) -> None:
+    ):
         """Sets the youngs moduli for the material prims indicated by the indices.
 
         Args:
-            values (Optional[Union[np.ndarray, torch.Tensor]], optional): material drag tensor with the shape (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which material prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: material youngs moduli tensor with the shape (M, ).
+            indices: indices to specify which material prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -456,13 +458,12 @@ class DeformableMaterialView:
         """Gets the Youngs moduli of materials indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which material prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which material prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: Youngs moduli tensor with shape (M, )
+            Youngs moduli tensor with shape (M, )
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:

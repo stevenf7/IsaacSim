@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""High level wrapper to deal with a rigid body prim (only one rigid body prim) and its attributes/properties."""
+
 
 from typing import Optional, Sequence
 
@@ -35,30 +38,25 @@ class SingleRigidPrim(_SinglePrimWrapper):
         If the prim does not already have the Rigid Body API applied to it before init, it will apply it.
 
     Args:
-        prim_path (str): prim path of the Prim to encapsulate or create.
-        name (str, optional): shortname to be used as a key by Scene class.
-                              Note: needs to be unique if the object is added to the Scene.
-                              Defaults to "rigid_prim".
-        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                   Defaults to None, which means left unchanged.
-        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                      (with respect to its parent prim). shape is (3, ).
-                                                      Defaults to None, which means left unchanged.
-        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
-                                                      (depends if translation or position is specified).
-                                                      quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                      Defaults to None, which means left unchanged.
-        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
-                                                Defaults to None, which means left unchanged.
-        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-        reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties
-                                                (i.e: translate, orient and scale) ONLY and in that order.
-                                                Set this parameter to False if the object were cloned using using
-                                                the cloner api in isaacsim.core.cloner. Defaults to True.
-        mass (Optional[float], optional): mass in kg. Defaults to None.
-        density (Optional[float], optional): density. Defaults to None.
-        linear_velocity (Optional[np.ndarray], optional): linear velocity in the world frame. Defaults to None.
-        angular_velocity (Optional[np.ndarray], optional): angular velocity in the world frame. Defaults to None.
+        prim_path: prim path of the Prim to encapsulate or create.
+        name: shortname to be used as a key by Scene class.
+            Note: needs to be unique if the object is added to the Scene.
+        position: position in the world frame of the prim. shape is (3, ).
+        translation: translation in the local frame of the prim
+            (with respect to its parent prim). shape is (3, ).
+        orientation: quaternion orientation in the world/ local frame of the prim
+            (depends if translation or position is specified).
+            quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        scale: local scale to be applied to the prim's dimensions. shape is (3, ).
+        visible: set to false for an invisible prim in the stage while rendering.
+        reset_xform_properties: True if the prims don't have the right set of xform properties
+            (i.e: translate, orient and scale) ONLY and in that order.
+            Set this parameter to False if the object were cloned using using
+            the cloner api in isaacsim.core.cloner.
+        mass: mass in kg.
+        density: density.
+        linear_velocity: linear velocity in the world frame.
+        angular_velocity: angular velocity in the world frame.
 
     Example:
 
@@ -91,7 +89,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         density: Optional[float] = None,
         linear_velocity: Optional[np.ndarray] = None,
         angular_velocity: Optional[np.ndarray] = None,
-    ) -> None:
+    ):
         from isaacsim.core.simulation_manager import SimulationManager
 
         self._backend = SimulationManager.get_backend()
@@ -144,7 +142,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
             This method will immediately set the rigid prim state
 
         Args:
-            velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
+            velocity: linear velocity to set the rigid prim to. Shape (3,).
         """
         velocity = self._backend_utils.expand_dims(velocity, 0)
         self._rigid_prim_view.set_linear_velocities(velocities=velocity)
@@ -154,7 +152,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         """Get the linear velocity of the rigid body
 
         Returns:
-            np.ndarray: current linear velocity of the the rigid prim. Shape (3,).
+            current linear velocity of the the rigid prim. Shape (3,).
 
         Example:
 
@@ -174,19 +172,17 @@ class SingleRigidPrim(_SinglePrimWrapper):
             This method will immediately set the articulation state
 
         Args:
-            velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
-
+            velocity: angular velocity to set the rigid prim to. Shape (3,).
         """
         velocity = self._backend_utils.expand_dims(velocity, 0)
         self._rigid_prim_view.set_angular_velocities(velocities=velocity)
         return
 
-    def get_angular_velocity(self):
+    def get_angular_velocity(self) -> np.ndarray:
         """Get the angular velocity of the rigid body
 
         Returns:
-            np.ndarray: current angular velocity of the the rigid prim. Shape (3,).
-
+            current angular velocity of the the rigid prim. Shape (3,).
         """
         velocities = self._rigid_prim_view.get_angular_velocities()
         return velocities[0]
@@ -195,22 +191,19 @@ class SingleRigidPrim(_SinglePrimWrapper):
         """Set the center of mass pose of the rigid body
 
         Args:
-            position (np.ndarray): center of mass position. Shape (3,).
-            orientation (np.ndarray): center of mass orientation. Shape (4,).
-
+            position: center of mass position. Shape (3,).
+            orientation: center of mass orientation. Shape (4,).
         """
         position = self._backend_utils.expand_dims(position, 0)
         orientation = self._backend_utils.expand_dims(orientation, 0)
         self._rigid_prim_view.set_coms(positions=position, orientations=orientation)
         return
 
-    def get_com(self) -> float:
+    def get_com(self) -> tuple[np.ndarray, np.ndarray]:
         """Get the center of mass pose of the rigid body
 
         Returns:
-            np.ndarray: position of the center of mass of the rigid body.
-            np.ndarray: orientation of the center of mass of the rigid body.
-
+            A tuple of (position, orientation) where position is the center of mass position and orientation is the center of mass orientation.
         """
         positions, orientations = self._rigid_prim_view.get_coms()
         return positions[0], orientations[0]
@@ -219,7 +212,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         """Set the mass of the rigid body
 
         Args:
-            mass (float): mass of the rigid body in kg.
+            mass: mass of the rigid body in kg.
 
         Example:
 
@@ -235,7 +228,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         """Get the mass of the rigid body
 
         Returns:
-            float: mass of the rigid body in kg.
+            mass of the rigid body in kg.
 
         Example:
 
@@ -251,7 +244,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         """Set the density of the rigid body
 
         Args:
-            mass (float): density of the rigid body.
+            density: density of the rigid body.
 
         Example:
 
@@ -267,7 +260,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         """Get the density of the rigid body
 
         Returns:
-            float: density of the rigid body.
+            density of the rigid body.
 
         Example:
 
@@ -284,10 +277,10 @@ class SingleRigidPrim(_SinglePrimWrapper):
         Search for *Rigid Body Dynamics* > *Sleeping* in |physx_docs| for more details
 
         Args:
-            threshold (float): Mass-normalized kinetic energy threshold below which
-                                an actor may go to sleep. Range: [0, inf)
-                                Defaults: 0.00005 * tolerancesSpeed* tolerancesSpeed
-                                Units: distance^2 / second^2.
+            threshold: Mass-normalized kinetic energy threshold below which
+                an actor may go to sleep. Range: [0, inf)
+                Defaults: 0.00005 * tolerancesSpeed* tolerancesSpeed
+                Units: distance^2 / second^2.
 
         Example:
 
@@ -305,10 +298,10 @@ class SingleRigidPrim(_SinglePrimWrapper):
         Search for *Rigid Body Dynamics* > *Sleeping* in |physx_docs| for more details
 
         Returns:
-            float: Mass-normalized kinetic energy threshold below which
-                    an actor may go to sleep. Range: [0, inf)
-                    Defaults: 0.00005 * tolerancesSpeed* tolerancesSpeed
-                    Units: distance^2 / second^2.
+            Mass-normalized kinetic energy threshold below which
+            an actor may go to sleep. Range: [0, inf)
+            Defaults: 0.00005 * tolerancesSpeed* tolerancesSpeed
+            Units: distance^2 / second^2.
 
         Example:
 
@@ -362,13 +355,13 @@ class SingleRigidPrim(_SinglePrimWrapper):
             The default states will be set during post-reset (e.g., calling ``.post_reset()`` or ``world.reset()`` methods)
 
         Args:
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim.
-                                    quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                    Defaults to None, which means left unchanged.
-            linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
-            angular_velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
+            position: position in the world frame of the prim. shape is (3, ).
+                Defaults to None, which means left unchanged.
+            orientation: quaternion orientation in the world frame of the prim.
+                quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                Defaults to None, which means left unchanged.
+            linear_velocity: linear velocity to set the rigid prim to. Shape (3,).
+            angular_velocity: angular velocity to set the rigid prim to. Shape (3,).
 
         Example:
 
@@ -407,7 +400,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         """Get the default rigid body state (position, orientation and linear and angular velocities)
 
         Returns:
-            DynamicState: returns the default state of the prim that is used after each reset
+            returns the default state of the prim that is used after each reset
 
         Example:
 
@@ -433,7 +426,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         """Get the current rigid body state (position, orientation and linear and angular velocities)
 
         Returns:
-            DynamicState: the dynamic state of the rigid body prim
+            the dynamic state of the rigid body prim
 
         Example:
 
@@ -456,6 +449,14 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return self._dynamics_view_state_conversion(view_default_state)
 
     def _dynamics_view_state_conversion(self, view_state):
+        """Convert view state from the rigid prim view to a DynamicState object.
+
+        Args:
+            view_state: The view state object from the rigid prim view.
+
+        Returns:
+            A DynamicState object containing position, orientation, linear velocity, and angular velocity.
+        """
         # TODO: a temp function
         position = None
         orientation = None

@@ -15,17 +15,18 @@
 
 import typing
 from copy import copy
+from typing import List
 
 from isaacsim.core.utils.stage import get_current_stage
 from omni.usd import get_context
 from pxr import PhysxSchema, Usd, UsdPhysics
 
 
-def remove_articulation_root(prim: Usd.Prim) -> None:
+def remove_articulation_root(prim: Usd.Prim):
     """Remove the Articulation Root from `prim` if one exists.
 
     Args:
-        prim (Usd.Prim): A prim whose Articulation Root will be removed.
+        prim: A prim whose Articulation Root will be removed.
     """
     if prim.HasAPI(UsdPhysics.ArticulationRootAPI):
         prim.RemoveAPI(UsdPhysics.ArticulationRootAPI)
@@ -33,23 +34,23 @@ def remove_articulation_root(prim: Usd.Prim) -> None:
             prim.RemoveAPI(PhysxSchema.PhysxArticulationAPI)
 
 
-def add_articulation_root(prim: Usd.Prim) -> None:
+def add_articulation_root(prim: Usd.Prim):
     """Add an Articulation Root to `prim`.
 
     Args:
-        prim (Usd.Prim): A prim to which an Articulation Root will be added.
+        prim: A prim to which an Articulation Root will be added.
     """
     prim.ApplyAPI(UsdPhysics.ArticulationRootAPI)
     prim.ApplyAPI(PhysxSchema.PhysxArticulationAPI)
 
 
-def move_articulation_root(src_prim: Usd.Prim, dst_prim: Usd.Prim) -> None:
-    """Move the Articulation Root from `src_prim` to `dst_prim`.  If `src_prim` is not an
+def move_articulation_root(src_prim: Usd.Prim, dst_prim: Usd.Prim):
+    """Move the Articulation Root from `src_prim` to `dst_prim`. If `src_prim` is not an
     Articulation Root, nothing will happen.
 
     Args:
-        src_prim (Usd.Prim): A prim from which an Articulation Root will be removed.
-        dst_prim (Usd.Prim): A prim to which an Articulation Root will be added.
+        src_prim: A prim from which an Articulation Root will be removed.
+        dst_prim: A prim to which an Articulation Root will be added.
     """
     if src_prim.HasAPI(UsdPhysics.ArticulationRootAPI):
         remove_articulation_root(src_prim)
@@ -70,7 +71,7 @@ def find_all_articulation_base_paths() -> typing.List:
     On a stage with nested articulation roots, only the inner-most root will be listed.
 
     Returns:
-        typing.List: A list of every Articulation base path on the stage.
+        A list of every Articulation base path on the stage.
     """
     articulation_root_paths = []
     articulation_candidates = set()

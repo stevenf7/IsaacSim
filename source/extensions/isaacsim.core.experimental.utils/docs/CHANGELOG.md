@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.12.0] - 2026-03-04
+### Changed
+- Added Overview.md, python_api.md and updated docstrings
+
 ## [0.11.4] - 2026-02-06
 ### Changed
 - Update deprecated Warp API calls to their updated names

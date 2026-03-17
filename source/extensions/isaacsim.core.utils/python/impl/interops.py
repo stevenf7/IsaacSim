@@ -73,10 +73,10 @@ def warp2torch(array: "warp.array") -> "torch.Tensor":
     """Convert Warp array to PyTorch tensor
 
     Args:
-        array (warp.array): Warp array
+        array: Warp array
 
     Returns:
-        torch.Tensor: PyTorch tensor
+        PyTorch tensor
 
     Example:
 
@@ -121,10 +121,10 @@ def warp2jax(array: "warp.array") -> "jax.Array":
     """Convert Warp array to JAX array
 
     Args:
-        array (warp.array): Warp array
+        array: Warp array
 
     Returns:
-        jax.Array: JAX array
+        JAX array
 
     Example:
 
@@ -159,10 +159,10 @@ def warp2tensorflow(array: "warp.array") -> "tensorflow.Tensor":
     """Convert Warp array to TensorFlow tensor
 
     Args:
-        array (warp.array): Warp array
+        array: Warp array
 
     Returns:
-        tensorflow.Tensor: TensorFlow tensor
+        TensorFlow tensor
 
     Example:
 
@@ -197,10 +197,10 @@ def warp2numpy(array: "warp.array") -> "numpy.ndarray":
     """Convert Warp array to NumPy array
 
     Args:
-        array (warp.array): Warp array
+        array: Warp array
 
     Returns:
-        numpy.ndarray: NumPy array
+        NumPy array
 
     Example:
 
@@ -227,10 +227,10 @@ def torch2warp(tensor: "torch.Tensor") -> "warp.array":
     """Convert PyTorch tensor to Warp array
 
     Args:
-        tensor (torch.Tensor): PyTorch tensor
+        tensor: PyTorch tensor
 
     Returns:
-        warp.array: Warp array
+        Warp array
 
     Example:
 
@@ -275,10 +275,10 @@ def torch2jax(tensor: "torch.Tensor") -> "jax.Array":
     """Convert PyTorch tensor to JAX array
 
     Args:
-        tensor (torch.Tensor): PyTorch tensor
+        tensor: PyTorch tensor
 
     Returns:
-        jax.Array: JAX array
+        JAX array
 
     Example:
 
@@ -312,10 +312,10 @@ def torch2tensorflow(tensor: "torch.Tensor") -> "tensorflow.Tensor":
     """Convert PyTorch tensor to TensorFlow tensor
 
     Args:
-        tensor (torch.Tensor): PyTorch tensor
+        tensor: PyTorch tensor
 
     Returns:
-        tensorflow.Tensor: TensorFlow tensor
+        TensorFlow tensor
 
     Example:
 
@@ -349,10 +349,10 @@ def torch2numpy(tensor: "torch.Tensor") -> "numpy.ndarray":
     """Convert PyTorch tensor to NumPy array
 
     Args:
-        tensor (torch.Tensor): PyTorch tensor
+        tensor: PyTorch tensor
 
     Returns:
-        numpy.ndarray: NumPy array
+        NumPy array
 
     Example:
 
@@ -378,10 +378,10 @@ def jax2warp(array: "jax.Array") -> "warp.array":
     """Convert JAX array to Warp array
 
     Args:
-        array (jax.Array): JAX array
+        array: JAX array
 
     Returns:
-        warp.array: Warp array
+        Warp array
 
     Example:
 
@@ -418,10 +418,10 @@ def jax2torch(array: "jax.Array") -> "torch.Tensor":
     """Convert JAX array to PyTorch tensor
 
     Args:
-        array (jax.Array): JAX array
+        array: JAX array
 
     Returns:
-        torch.Tensor: PyTorch tensor
+        PyTorch tensor
 
     Example:
 
@@ -458,10 +458,10 @@ def jax2tensorflow(array: "jax.Array") -> "tensorflow.Tensor":
     """Convert JAX array to TensorFlow tensor
 
     Args:
-        array (jax.Array): JAX array
+        array: JAX array
 
     Returns:
-        tensorflow.Tensor: TensorFlow tensor
+        TensorFlow tensor
 
     Example:
 
@@ -498,10 +498,10 @@ def jax2numpy(array: "jax.Array") -> "numpy.ndarray":
     """Convert JAX array to NumPy array
 
     Args:
-        array (jax.Array): JAX array
+        array: JAX array
 
     Returns:
-        numpy.ndarray: NumPy array
+        NumPy array
 
     Example:
 
@@ -530,10 +530,10 @@ def tensorflow2warp(tensor: "tensorflow.Tensor") -> "warp.array":
     """Convert TensorFlow tensor to Warp array
 
     Args:
-        tensor (tensorflow.Tensor): TensorFlow tensor
+        tensor: TensorFlow tensor
 
     Returns:
-        warp.array: Warp array
+        Warp array
 
     .. warning::
 
@@ -574,10 +574,10 @@ def tensorflow2torch(tensor: "tensorflow.Tensor") -> "torch.Tensor":
     """Convert TensorFlow tensor to PyTorch tensor
 
     Args:
-        tensor (tensorflow.Tensor): TensorFlow tensor
+        tensor: TensorFlow tensor
 
     Returns:
-        torch.Tensor: PyTorch tensor
+        PyTorch tensor
 
     .. warning::
 
@@ -618,10 +618,10 @@ def tensorflow2jax(tensor: "tensorflow.Tensor") -> "jax.Array":
     """Convert TensorFlow tensor to JAX array
 
     Args:
-        tensor (tensorflow.Tensor): TensorFlow tensor
+        tensor: TensorFlow tensor
 
     Returns:
-        jax.Array: JAX array
+        JAX array
 
     .. warning::
 
@@ -662,10 +662,10 @@ def tensorflow2numpy(tensor: "tensorflow.Tensor") -> "numpy.ndarray":
     """Convert TensorFlow tensor to NumPy array
 
     Args:
-        tensor (tensorflow.Tensor): TensorFlow tensor
+        tensor: TensorFlow tensor
 
     Returns:
-        numpy.ndarray: NumPy array
+        NumPy array
 
     Example:
 
@@ -710,10 +710,10 @@ def numpy2warp(array: "numpy.ndarray") -> "warp.array":
     """Convert NumPy array to Warp array
 
     Args:
-        array (numpy.ndarray): NumPy array
+        array: NumPy array
 
     Returns:
-        warp.array: Warp array
+        Warp array
 
     Example:
 
@@ -743,10 +743,10 @@ def numpy2torch(array: "numpy.ndarray") -> "torch.Tensor":
     """Convert NumPy array to PyTorch tensor
 
     Args:
-        array (numpy.ndarray): NumPy array
+        array: NumPy array
 
     Returns:
-        torch.Tensor: PyTorch tensor
+        PyTorch tensor
 
     Example:
 
@@ -775,10 +775,10 @@ def numpy2jax(array: "numpy.ndarray") -> "jax.Array":
     """Convert NumPy array to JAX array
 
     Args:
-        array (numpy.ndarray): NumPy array
+        array: NumPy array
 
     Returns:
-        jax.Array: JAX array
+        JAX array
 
     Example:
 
@@ -813,10 +813,10 @@ def numpy2tensorflow(array: "numpy.ndarray") -> "tensorflow.Tensor":
     """Convert NumPy array to TensorFlow tensor
 
     Args:
-        array (numpy.ndarray): NumPy array
+        array: NumPy array
 
     Returns:
-        tensorflow.Tensor: TensorFlow tensor
+        TensorFlow tensor
 
     Example:
 

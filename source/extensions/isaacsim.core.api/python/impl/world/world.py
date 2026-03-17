@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides a comprehensive physics simulation world environment with scene management, task orchestration, and data logging capabilities."""
+
+
 import gc
 
 # python
@@ -51,30 +54,28 @@ class World(SimulationContext):
     Checkout the required tutorials at https://docs.isaacsim.omniverse.nvidia.com/latest/index.html
 
     Args:
-        physics_dt (Optional[float], optional): dt between physics steps. Defaults to None.
-        rendering_dt (Optional[float], optional): dt between rendering steps. Note: rendering means
-                                                   rendering a frame of the current application and not
-                                                   only rendering a frame to the viewports/ cameras. So UI
-                                                   elements of Isaac Sim will be refreshed with this dt
-                                                   as well if running non-headless.
-                                                   Defaults to None.
-        stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
-                                                   Defaults to None.
-        physics_prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at,
-                                             only in the case where no PhysicsScene already defined.
-                                             Defaults to "/physicsScene".
-        set_defaults (bool, optional): set to True to use the defaults settings
-                                        [physics_dt = 1.0/ 60.0,
-                                        stage units in meters = 0.01 (i.e in cms),
-                                        rendering_dt = 1.0 / 60.0,
-                                        gravity = -9.81 m / s
-                                        ccd_enabled,
-                                        stabilization_enabled,
-                                        gpu dynamics turned off,
-                                        broadcast type is MBP,
-                                        solver type is TGS]. Defaults to True.
-        backend (str, optional): specifies the backend to be used (numpy or torch or warp). Defaults to numpy.
-        device (Optional[str], optional): specifies the device to be used if running on the gpu with torch or warp backends.
+        physics_dt: dt between physics steps.
+        rendering_dt: dt between rendering steps. Note: rendering means
+            rendering a frame of the current application and not
+            only rendering a frame to the viewports/ cameras. So UI
+            elements of Isaac Sim will be refreshed with this dt
+            as well if running non-headless.
+        stage_units_in_meters: The metric units of assets. This will affect gravity value..etc.
+        physics_prim_path: specifies the prim path to create a PhysicsScene at,
+            only in the case where no PhysicsScene already defined.
+        sim_params: simulation parameters.
+        set_defaults: set to True to use the defaults settings
+            [physics_dt = 1.0/ 60.0,
+            stage units in meters = 0.01 (i.e in cms),
+            rendering_dt = 1.0 / 60.0,
+            gravity = -9.81 m / s
+            ccd_enabled,
+            stabilization_enabled,
+            gpu dynamics turned off,
+            broadcast type is MBP,
+            solver type is TGS].
+        backend: specifies the backend to be used (numpy or torch or warp).
+        device: specifies the device to be used if running on the gpu with torch or warp backends.
 
     Example:
 
@@ -88,6 +89,7 @@ class World(SimulationContext):
     """
 
     _world_initialized = False
+    """Class-level flag indicating whether a World instance has been created and initialized."""
 
     def __init__(
         self,
@@ -99,7 +101,7 @@ class World(SimulationContext):
         set_defaults: bool = True,
         backend: str = "numpy",
         device: Optional[str] = None,
-    ) -> None:
+    ):
         SimulationContext.__init__(
             self,
             physics_dt=physics_dt,
@@ -148,9 +150,7 @@ class World(SimulationContext):
 
     @property
     def scene(self) -> Scene:
-        """
-        Returns:
-            Scene: Scene instance
+        """Scene instance
 
         Example:
 
@@ -165,7 +165,7 @@ class World(SimulationContext):
     Operations - Tasks management.
     """
 
-    def add_task(self, task: BaseTask) -> None:
+    def add_task(self, task: BaseTask):
         """Add a task to the task registry
 
         .. note::
@@ -173,7 +173,7 @@ class World(SimulationContext):
             Tasks should have a unique name
 
         Args:
-            task (BaseTask): task object
+            task: task object
 
         Example:
 
@@ -202,6 +202,9 @@ class World(SimulationContext):
     def is_tasks_scene_built(self) -> bool:
         """Check if the ``set_up_scene`` method was called for each registered task
 
+        Returns:
+            Whether the ``set_up_scene`` method was called for each registered task.
+
         Example:
 
         .. code-block:: python
@@ -216,7 +219,7 @@ class World(SimulationContext):
         """Get a dictionary of the registered tasks where keys are task names
 
         Returns:
-            List[BaseTask]: registered tasks
+            Registered tasks.
 
         Example:
 
@@ -229,6 +232,12 @@ class World(SimulationContext):
 
     def get_task(self, name: str) -> BaseTask:
         """Get a task by its name
+
+        Args:
+            name: Task name to retrieve.
+
+        Returns:
+            The task with the specified name.
 
         Example:
 
@@ -249,10 +258,10 @@ class World(SimulationContext):
         """Get observations from all the tasks that were added
 
         Args:
-            task_name (Optional[str], optional): task name to ask for. Defaults to None, which means all the tasks
+            task_name: task name to ask for. If None, returns observations from all tasks.
 
         Returns:
-            dict: the task (or all tasks) observations
+            The task (or all tasks) observations.
 
         Example:
 
@@ -269,14 +278,14 @@ class World(SimulationContext):
                 observations.update(task.get_observations())
             return observations
 
-    def calculate_metrics(self, task_name: Optional[str] = None) -> None:
+    def calculate_metrics(self, task_name: Optional[str] = None) -> dict:
         """Get metrics from all the tasks that were added
 
         Args:
-            task_name (Optional[str], optional): task name to ask for. Defaults to None, which means all the tasks
+            task_name: task name to ask for. If None, returns metrics from all tasks.
 
         Returns:
-            dict: the computed task (or all tasks) metric
+            The computed task (or all tasks) metric.
 
         Example:
 
@@ -297,10 +306,10 @@ class World(SimulationContext):
         """Get done from all the tasks that were added
 
         Args:
-            task_name (Optional[str], optional): task name to ask for. Defaults to None, which means all the tasks
+            task_name: task name to ask for. If None, checks if all tasks are done.
 
         Returns:
-            bool: whether the task (or all tasks) is done
+            Whether the task (or all tasks) is done.
 
         Example:
 
@@ -323,7 +332,7 @@ class World(SimulationContext):
         """Return the data logger of the world.
 
         Returns:
-            DataLogger: data logger instance
+            Data logger instance.
 
         Example:
 
@@ -338,7 +347,7 @@ class World(SimulationContext):
     Operations.
     """
 
-    def initialize_physics(self) -> None:
+    def initialize_physics(self):
         """Initialize the physics simulation view and each added object to the Scene
 
         Example:
@@ -351,7 +360,7 @@ class World(SimulationContext):
         self._scene._finalize(self.physics_sim_view)
         return
 
-    def reset(self, soft: bool = False) -> None:
+    def reset(self, soft: bool = False):
         """Reset the stage to its initial state and each object included in the Scene to its default state
             as specified by the ``set_default_state`` and ``__init__`` methods
 
@@ -373,7 +382,7 @@ class World(SimulationContext):
             has the control over the rendering steps. For the Extensions workflow use the ``reset_async`` method instead
 
         Args:
-            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
+            soft: If set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
 
         Example:
 
@@ -395,7 +404,7 @@ class World(SimulationContext):
         for task in self._current_tasks.values():
             task.post_reset()
 
-    async def reset_async_set_up_scene(self, soft: bool = False) -> None:
+    async def reset_async_set_up_scene(self, soft: bool = False):
         """Reset the stage to its initial state and each object included in the Scene to its default state
             as specified by the ``set_default_state`` and ``__init__`` methods
 
@@ -412,7 +421,7 @@ class World(SimulationContext):
             the defaults are restored after ``stop`` method is called.
 
         Args:
-            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
+            soft: If set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
 
         Example:
 
@@ -428,7 +437,7 @@ class World(SimulationContext):
         for task in self._current_tasks.values():
             task.set_up_scene(self.scene)
 
-    async def reset_async_no_set_up_scene(self, soft: bool = False) -> None:
+    async def reset_async_no_set_up_scene(self, soft: bool = False):
         """Reset the stage to its initial state and each object included in the Scene to its default state
             as specified by the ``set_default_state`` and ``__init__`` methods
 
@@ -445,7 +454,7 @@ class World(SimulationContext):
             the defaults are restored after ``stop`` method is called.
 
         Args:
-            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
+            soft: If set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
 
         Example:
 
@@ -470,7 +479,7 @@ class World(SimulationContext):
             task.post_reset()
         return
 
-    async def reset_async(self, soft: bool = False) -> None:
+    async def reset_async(self, soft: bool = False):
         """Reset the stage to its initial state and each object included in the Scene to its default state
             as specified by the ``set_default_state`` and ``__init__`` methods
 
@@ -487,7 +496,7 @@ class World(SimulationContext):
             the defaults are restored after ``stop`` method is called.
 
         Args:
-            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
+            soft: If set to True simulation won't be stopped and start again. It only calls the reset on the scene objects.
 
         Example:
 
@@ -506,7 +515,7 @@ class World(SimulationContext):
         await self.reset_async_no_set_up_scene(soft=soft)
         return
 
-    def step(self, render: bool = True, step_sim: bool = True, update_fabric: bool = False) -> None:
+    def step(self, render: bool = True, step_sim: bool = True, update_fabric: bool = False):
         """Step the physics simulation while rendering or without.
 
         .. note::
@@ -520,11 +529,10 @@ class World(SimulationContext):
             in the Isaac Sim's Extensions workflow since the Kit application has the control over the rendering steps
 
         Args:
-            render (bool, optional): Set to False to only do a physics simulation without rendering. Note:
-                                     app UI will be frozen (since its not rendering) in this case.
-                                     Defaults to True.
-            step_sim (bool): True to step simulation (physics and/or rendering)
-            update_fabric (bool): Whether to force the update of the physics data to fabric when performing a physics-only
+            render: Set to False to only do a physics simulation without rendering. Note:
+                                 app UI will be frozen (since its not rendering) in this case.
+            step_sim: True to step simulation (physics and/or rendering)
+            update_fabric: Whether to force the update of the physics data to fabric when performing a physics-only
                                   step (without rendering). This flag should be enabled when it is desired to read updated
                                   data using the fabric interface after performing a physics-only step
                                   (e.g., XFormPrim's world transform).
@@ -552,7 +560,7 @@ class World(SimulationContext):
             )
         return
 
-    def step_async(self, step_size: Optional[float] = None) -> None:
+    def step_async(self, step_size: Optional[float] = None):
         """Call all functions that should be called pre stepping the physics
 
         .. note::
@@ -561,7 +569,7 @@ class World(SimulationContext):
             time for computing bounding box if enabled
 
         Args:
-            step_size (float): step size
+            step_size: Step size
 
         Example:
 
@@ -588,7 +596,7 @@ class World(SimulationContext):
             )
         return
 
-    def clear(self) -> None:
+    def clear(self):
         """Clear the current stage leaving the PhysicsScene and /World
 
         Example:

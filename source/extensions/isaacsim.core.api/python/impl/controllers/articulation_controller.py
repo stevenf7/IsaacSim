@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""PD controller implementation for articulated bodies with position, velocity, and effort control capabilities."""
+
+
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
@@ -25,14 +28,14 @@ class ArticulationController(object):
     Checkout the required tutorials at https://docs.isaacsim.omniverse.nvidia.com/latest/index.html
     """
 
-    def __init__(self) -> None:
+    def __init__(self):
         self._dof_controllers = list()
         self._articulation_view = None
         self._default_kps = None
         self._default_kds = None
         return
 
-    def initialize(self, articulation_view) -> None:
+    def initialize(self, articulation_view):
         """Initialize the controller with an articulation view.
 
         Args:
@@ -41,7 +44,7 @@ class ArticulationController(object):
         self._articulation_view = articulation_view
         return
 
-    def apply_action(self, control_actions: ArticulationAction) -> None:
+    def apply_action(self, control_actions: ArticulationAction):
         """Apply control actions to the articulation for the next physics step.
 
         Args:
@@ -97,14 +100,13 @@ class ArticulationController(object):
         )
         return
 
-    def set_gains(
-        self, kps: Optional[np.ndarray] = None, kds: Optional[np.ndarray] = None, save_to_usd: bool = False
-    ) -> None:
+    def set_gains(self, kps: Optional[np.ndarray] = None, kds: Optional[np.ndarray] = None, save_to_usd: bool = False):
         """Set the PD controller gains.
 
         Args:
-            kps: Proportional gains for each DOF. Defaults to None.
-            kds: Derivative gains for each DOF. Defaults to None.
+            kps: Proportional gains for each DOF.
+            kds: Derivative gains for each DOF.
+            save_to_usd: Whether to save the gains to USD.
 
         Raises:
             Exception: If the articulation view is not initialized.
@@ -128,7 +130,7 @@ class ArticulationController(object):
         kps, kds = self._articulation_view.get_gains()
         return kps[0], kds[0]
 
-    def switch_control_mode(self, mode: str) -> None:
+    def switch_control_mode(self, mode: str):
         """Switch the control mode for all DOFs.
 
         Args:
@@ -140,7 +142,7 @@ class ArticulationController(object):
         self._articulation_view.switch_control_mode(mode=mode)
         return
 
-    def switch_dof_control_mode(self, dof_index: int, mode: str) -> None:
+    def switch_dof_control_mode(self, dof_index: int, mode: str):
         """Switch the control mode for a specific DOF.
 
         Args:
@@ -152,12 +154,12 @@ class ArticulationController(object):
         """
         self._articulation_view.switch_dof_control_mode(dof_index=dof_index, mode=mode)
 
-    def set_max_efforts(self, values: np.ndarray, joint_indices: Optional[Union[np.ndarray, list]] = None) -> None:
+    def set_max_efforts(self, values: np.ndarray, joint_indices: Optional[Union[np.ndarray, list]] = None):
         """Set maximum efforts for specified joints.
 
         Args:
             values: Maximum effort values to set.
-            joint_indices: Indices of joints to set. Defaults to all joints.
+            joint_indices: Indices of joints to set.
 
         Raises:
             Exception: If the articulation view is not initialized.
@@ -183,15 +185,18 @@ class ArticulationController(object):
         else:
             return None
 
-    def set_effort_modes(self, mode: str, joint_indices: Optional[Union[np.ndarray, list]] = None) -> None:
+    def set_effort_modes(self, mode: str, joint_indices: Optional[Union[np.ndarray, list]] = None):
         """Set effort modes for specified joints.
 
         Args:
             mode: The effort mode to set.
-            joint_indices: Indices of joints to set. Defaults to all joints.
+            joint_indices: Indices of joints to set.
 
         Raises:
             Exception: If the articulation view is not initialized.
+
+        Returns:
+            The result from the underlying articulation view's set_effort_modes method.
         """
         return self._articulation_view.set_effort_modes(mode=mode, joint_indices=joint_indices)
 
@@ -232,7 +237,7 @@ class ArticulationController(object):
             Exception: If the articulation view is not initialized.
 
         Returns:
-            ArticulationAction: Gets last applied action.
+            Last applied action.
         """
         applied_actions = self._articulation_view.get_applied_actions()
 

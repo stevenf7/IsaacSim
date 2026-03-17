@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.0] - 2026-03-04
+### Changed
+- Added Overview.md, python_api.md and updated docstrings
+
 ## [4.0.4] - 2026-02-28
 ### Changed
 - Updated test to use new omni.physics.core API (`IPhysicsStageUpdate.on_attach` replaces removed `IPhysicsSimulation.attach_stage`)

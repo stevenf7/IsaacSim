@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level wrapper for manipulating ``Xform`` prims and their transformation attributes."""
+
+
 from __future__ import annotations
 
 import carb
@@ -83,7 +86,7 @@ class XformPrim(Prim):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = False,
-    ) -> None:
+    ):
         # define properties
         # - default state properties
         self._default_positions = None
@@ -322,7 +325,7 @@ class XformPrim(Prim):
         Backends: :guilabel:`usd`.
 
         Args:
-            visual_materials: Visual materials to be applied to the prims (shape ``(N,)``).
+            materials: Visual materials to be applied to the prims (shape ``(N,)``).
                 If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
             weaker_than_descendants: Boolean flags to indicate whether descendant materials should be overridden (shape ``(N, 1)``).
                 If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
@@ -1123,7 +1126,11 @@ class XformPrim(Prim):
     """
 
     def _get_fabric_hierarchy(self) -> usdrt.hierarchy.IFabricHierarchy:
-        """Get the IFabricHierarchy interface."""
+        """Get the IFabricHierarchy interface.
+
+        Returns:
+            The fabric hierarchy interface for accessing world and local transformations.
+        """
         if self._fabric_hierarchy is None:
             self._fabric_stage = stage_utils.get_current_stage(backend="fabric")
             self._fabric_hierarchy = usdrt.hierarchy.IFabricHierarchy().get_fabric_hierarchy(
@@ -1132,7 +1139,14 @@ class XformPrim(Prim):
         return self._fabric_hierarchy
 
     def _ensure_fabric_data(self, key: str) -> dict:
-        """Ensure fabric-related data is initialized."""
+        """Ensure fabric-related data is initialized.
+
+        Args:
+            key: The fabric data key to initialize.
+
+        Returns:
+            Dictionary containing fabric data for the specified key.
+        """
         if self._fabric_view_index_attr is None:
             self._fabric_stage = stage_utils.get_current_stage(backend="fabric")
             # create fabric's view indices attribute

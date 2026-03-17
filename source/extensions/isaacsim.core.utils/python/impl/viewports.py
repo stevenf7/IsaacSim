@@ -29,15 +29,14 @@ from isaacsim.core.utils.stage import get_current_stage
 from pxr import Gf, Sdf, Usd, UsdGeom
 
 
-def set_camera_view(
-    eye: np.array, target: np.array, camera_prim_path: str = "/OmniverseKit_Persp", viewport_api=None
-) -> None:
-    """Set the location and target for a camera prim in the stage given its path
+def set_camera_view(eye: np.array, target: np.array, camera_prim_path: str = "/OmniverseKit_Persp", viewport_api=None):
+    """Set the location and target for a camera prim in the stage given its path.
 
     Args:
-        eye (np.ndarray): Location of camera.
-        target (np.ndarray,): Location of camera target.
-        camera_prim_path (str, optional): Path to camera prim being set. Defaults to "/OmniverseKit_Persp".
+        eye: Location of camera.
+        target: Location of camera target.
+        camera_prim_path: Path to camera prim being set.
+        viewport_api: Viewport API instance. If None, uses the active viewport.
     """
     try:
         from omni.kit.viewport.utility import get_active_viewport
@@ -175,10 +174,10 @@ def get_viewport_names(usd_context_name: str = None) -> List[str]:
     """Get list of all viewport names
 
     Args:
-        usd_context_name (str, optional):  usd context to use. Defaults to None.
+        usd_context_name:  usd context to use.
 
     Returns:
-        List[str]: List of viewport names
+        List of viewport names
     """
     viewport_names = []
     try:
@@ -212,7 +211,7 @@ def get_id_from_index(index):
     This function was added for backwards compatibility for VP2 as viewport IDs are not the same as the viewport index
 
     Args:
-        index (_type_): viewport index to retrieve ID for
+        index: viewport index to retrieve ID for
 
     Returns:
         viewport id : Returns None if window index was not found
@@ -250,8 +249,8 @@ def get_window_from_id(id, usd_context_name: str = None):
     """Find window that matches a given viewport id
 
     Args:
-        id (_type_): Viewport ID to get window for
-        usd_context_name (str, optional): usd context to use. Defaults to None.
+        id: Viewport ID to get window for
+        usd_context_name: usd context to use.
 
     Returns:
         Window : Returns None if window with matching ID was not found
@@ -291,8 +290,8 @@ def destroy_all_viewports(usd_context_name: str = None, destroy_main_viewport=Tr
     """Destroys all viewport windows
 
     Args:
-        usd_context_name (str, optional): usd context to use. Defaults to None.
-        destroy_main_viewport (bool, optional): set to true to not destroy the default viewport. Defaults to False.
+        usd_context_name: usd context to use.
+        destroy_main_viewport: set to true to not destroy the default viewport.
     """
     from omni.kit.viewport.window import get_viewport_window_instances
 
@@ -303,7 +302,19 @@ def destroy_all_viewports(usd_context_name: str = None, destroy_main_viewport=Tr
             window.destroy()
 
 
-def add_aov_to_viewport(viewport_api, aov_name: str):
+def add_aov_to_viewport(viewport_api, aov_name: str) -> bool:
+    """Add an arbitrary output variable (AOV) to the specified viewport for rendering.
+
+    Args:
+        viewport_api: Handle to viewport API.
+        aov_name: Name of the AOV to add to the viewport.
+
+    Returns:
+        True if successful.
+
+    Raises:
+        RuntimeError: If the render product is invalid or render variable cannot be created.
+    """
     if hasattr(viewport_api, "legacy_window"):
         return viewport_api.legacy_window.add_aov(aov_name)
 
@@ -339,10 +350,10 @@ def get_intrinsics_matrix(viewport_api: Any) -> np.ndarray:
     """Get intrinsic matrix for the camera attached to a specific viewport
 
     Args:
-        viewport (Any): Handle to viewport api
+        viewport_api: Handle to viewport api
 
     Returns:
-        np.ndarray: the intrinsic matrix associated with the specified viewport
+        the intrinsic matrix associated with the specified viewport
                 The following image convention is assumed:
                     +x should point to the right in the image
                     +y should point down in the image
@@ -360,17 +371,17 @@ def get_intrinsics_matrix(viewport_api: Any) -> np.ndarray:
     return np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
 
 
-def set_intrinsics_matrix(viewport_api: Any, intrinsics_matrix: np.ndarray, focal_length: float = 1.0) -> None:
-    """Set intrinsic matrix for the camera attached to a specific viewport
+def set_intrinsics_matrix(viewport_api: Any, intrinsics_matrix: np.ndarray, focal_length: float = 1.0):
+    """Set intrinsic matrix for the camera attached to a specific viewport.
 
     Note:
         We assume cx and cy are centered in the camera
         horizontal_aperture_offset and vertical_aperture_offset are computed and set on the camera prim but are not used
 
     Args:
-        viewport (Any): Handle to viewport api
-        intrinsics_matrix (np.ndarray): A 3x3 intrinsic matrix
-        focal_length (float, optional): Default focal length to use when computing aperture values. Defaults to 1.0.
+        viewport_api: Handle to viewport api
+        intrinsics_matrix: A 3x3 intrinsic matrix
+        focal_length: Default focal length to use when computing aperture values.
 
     Raises:
         ValueError: If intrinsic matrix is not a 3x3 matrix.
@@ -410,12 +421,12 @@ def backproject_depth(depth_image: np.array, viewport_api: Any, max_clip_depth: 
     """Backproject depth image to image space
 
     Args:
-        depth_image (np.array): Depth image buffer
-        viewport_api (Any): Handle to viewport api
-        max_clip_depth (float): Depth values larger than this will be clipped
+        depth_image: Depth image buffer
+        viewport_api: Handle to viewport api
+        max_clip_depth: Depth values larger than this will be clipped
 
     Returns:
-        np.array: 3D point cloud with shape (height * width, 3) in camera space.
+        3D point cloud with shape (height * width, 3) in camera space.
     """
 
     intrinsics_matrix = get_intrinsics_matrix(viewport_api)
@@ -442,12 +453,12 @@ def project_depth_to_worldspace(depth_image: np.array, viewport_api: Any, max_cl
     """Project depth image to world space
 
     Args:
-        depth_image (np.array): Depth image buffer
-        viewport_api (Any): Handle to viewport api
-        max_clip_depth (float): Depth values larger than this will be clipped
+        depth_image: Depth image buffer
+        viewport_api: Handle to viewport api
+        max_clip_depth: Depth values larger than this will be clipped
 
     Returns:
-        List[carb.Float3]: List of points from depth in world space
+        List of points from depth in world space
     """
     stage = get_current_stage()
     prim = stage.GetPrimAtPath(viewport_api.get_active_camera())
@@ -477,12 +488,18 @@ def create_viewport_for_camera(
     """Create a new viewport and peg it to a specific camera specified by camera_prim_path. If the viewport already exists with the specified viewport_name, that viewport will be replaced with the new camera view.
 
     Args:
-        viewport_name (str): name of the viewport. If not provided, it will default to camera name.
-        camera_prim_path (str): name of the prim path of the camera
-        width (int): width of the viewport window, in pixels.
-        height (int): height of the viewport window, in pixels.
-        position_x (int): location x of the viewport window.
-        position_y (int): location y of the viewport window.
+        viewport_name: name of the viewport. If not provided, it will default to camera name.
+        camera_prim_path: name of the prim path of the camera
+        width: width of the viewport window, in pixels.
+        height: height of the viewport window, in pixels.
+        position_x: location x of the viewport window.
+        position_y: location y of the viewport window.
+
+    Returns:
+        The created viewport window.
+
+    Raises:
+        ValueError: If the provided camera_prim_path is an invalid prim in the scene.
     """
     import omni.kit.viewport.utility as kit_viewport_utils
 
@@ -512,7 +529,7 @@ def set_active_viewport_camera(camera_prim_path: str):
     This method sets the active viewport to display the camera at the specified prim path.
 
     Args:
-        camera_prim_path (str): name of the prim path of the camera
+        camera_prim_path: name of the prim path of the camera
     """
     try:
         from omni.kit.viewport.utility import get_active_viewport

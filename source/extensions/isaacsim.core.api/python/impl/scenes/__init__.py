@@ -12,5 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Provides the Scene API for managing and registering simulation scenes in Isaac Sim."""
+
+
 from isaacsim.core.api.scenes.scene import Scene
 from isaacsim.core.api.scenes.scene_registry import SceneRegistry

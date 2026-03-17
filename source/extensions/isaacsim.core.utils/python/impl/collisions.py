@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import typing
+from typing import Tuple, Union
 
 # python
 import numpy as np
@@ -29,19 +30,19 @@ from pxr import Gf, PhysicsSchemaTools, UsdGeom
 def ray_cast(
     position: np.array, orientation: np.array, offset: np.array, max_dist: float = 100.0
 ) -> typing.Tuple[typing.Union[None, str], float]:
-    """Projects a raycast forward along x axis with specified offset
+    """Projects a raycast forward along x axis with specified offset.
 
     If a hit is found within the maximum distance, then the object's prim path and distance to it is returned.
     Otherwise, a None and 10000 is returned.
 
     Args:
-        position (np.array): origin's position for ray cast
-        orientation (np.array): origin's orientation for ray cast
-        offset (np.array): offset for ray cast
-        max_dist (float, optional): maximum distance to test for collisions in stage units. Defaults to 100.0.
+        position: Origin's position for ray cast.
+        orientation: Origin's orientation for ray cast.
+        offset: Offset for ray cast.
+        max_dist: Maximum distance to test for collisions in stage units.
 
     Returns:
-        typing.Tuple[typing.Union[None, str], float]: path to geometry that was hit and hit distance, returns None, 10000 if no hit occurred
+        Path to geometry that was hit and hit distance, returns None, 10000 if no hit occurred.
     """
     input_tr = Gf.Matrix4f()
     input_tr.SetTranslate(Gf.Vec3f(*position.tolist()))

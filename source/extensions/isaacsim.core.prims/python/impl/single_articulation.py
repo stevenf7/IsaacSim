@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Sequence, Union
+"""High level wrapper for dealing with a single articulation prim and its attributes/properties."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List, Optional, Sequence, Union
 
 import carb
 import numpy as np
 import omni.kit.app
 from isaacsim.core.utils.types import ArticulationAction, JointsState
+
+if TYPE_CHECKING:
+    from isaacsim.core.api.controllers.articulation_controller import ArticulationController
 
 from .articulation import Articulation
 from .single_prim_wrapper import _SinglePrimWrapper
@@ -33,29 +40,24 @@ class SingleArticulation(_SinglePrimWrapper):
         See the ``initialize`` method for more details.
 
     Args:
-        prim_path (str): prim path of the Prim to encapsulate or create.
-        name (str, optional): shortname to be used as a key by Scene class.
-                                Note: needs to be unique if the object is added to the Scene.
-                                Defaults to "articulation".
-        position (Optional[Sequence[float]], optional): position in the world frame of the prim. Shape is (3, ).
-                                                    Defaults to None, which means left unchanged.
-        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                        (with respect to its parent prim). Shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
-        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
-                                                        (depends if translation or position is specified).
-                                                        quaternion is scalar-first (w, x, y, z). Shape is (4, ).
-                                                        Defaults to None, which means left unchanged.
-        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. Shape is (3, ).
-                                                Defaults to None, which means left unchanged.
-        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-        reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties
-                                                (i.e: translate, orient and scale) ONLY and in that order.
-                                                Set this parameter to False if the object were cloned using using
-                                                the cloner api in isaacsim.core.cloner. Defaults to True.
-        articulation_controller (Optional[ArticulationController], optional): a custom ArticulationController which
-                                                                              inherits from it. Defaults to creating the
-                                                                              basic ArticulationController.
+        prim_path: prim path of the Prim to encapsulate or create.
+        name: shortname to be used as a key by Scene class.
+            Note: needs to be unique if the object is added to the Scene.
+        position: position in the world frame of the prim. Shape is (3, ).
+        translation: translation in the local frame of the prim
+            (with respect to its parent prim). Shape is (3, ).
+        orientation: quaternion orientation in the world/ local frame of the prim
+            (depends if translation or position is specified).
+            quaternion is scalar-first (w, x, y, z). Shape is (4, ).
+        scale: local scale to be applied to the prim's dimensions. Shape is (3, ).
+        visible: set to false for an invisible prim in the stage while rendering.
+        reset_xform_properties: True if the prims don't have the right set of xform properties
+            (i.e: translate, orient and scale) ONLY and in that order.
+            Set this parameter to False if the object were cloned using using
+            the cloner api in isaacsim.core.cloner.
+        articulation_controller: a custom ArticulationController which
+            inherits from it. Defaults to creating the
+            basic ArticulationController.
 
     Example:
 
@@ -87,7 +89,7 @@ class SingleArticulation(_SinglePrimWrapper):
         visible: Optional[bool] = None,
         reset_xform_properties: bool = True,
         articulation_controller: Optional["ArticulationController"] = None,
-    ) -> None:
+    ):
         from isaacsim.core.simulation_manager import SimulationManager
 
         self._backend = SimulationManager.get_backend()
@@ -127,10 +129,10 @@ class SingleArticulation(_SinglePrimWrapper):
 
     @property
     def handles_initialized(self) -> bool:
-        """Check if articulation handler is initialized
+        """Whether the articulation handler is initialized.
 
         Returns:
-            bool: whether the handler was initialized
+            Whether the handler was initialized.
 
         Example:
 
@@ -146,10 +148,10 @@ class SingleArticulation(_SinglePrimWrapper):
 
     @property
     def num_dof(self) -> int:
-        """Number of DOF of the articulation
+        """Number of degrees of freedom of the articulation.
 
         Returns:
-            int: amount of DOFs
+            Amount of DOFs.
 
         Example:
 
@@ -162,10 +164,10 @@ class SingleArticulation(_SinglePrimWrapper):
 
     @property
     def num_bodies(self) -> int:
-        """Number of articulation links
+        """Number of articulation links.
 
         Returns:
-            int: number of links
+            Number of links.
 
         Example:
 
@@ -178,7 +180,7 @@ class SingleArticulation(_SinglePrimWrapper):
 
     @property
     def dof_properties(self) -> np.ndarray:
-        """Articulation DOF properties
+        """Articulation DOF properties.
 
         .. list-table:: DOF properties
             :header-rows: 1
@@ -215,7 +217,7 @@ class SingleArticulation(_SinglePrimWrapper):
               - DOF damping
 
         Returns:
-            np.ndarray: named NumPy array of shape (num_dof, 9)
+            Named NumPy array of shape (num_dof, 9).
 
         Example:
 
@@ -276,11 +278,11 @@ class SingleArticulation(_SinglePrimWrapper):
         return properties
 
     @property
-    def dof_names(self) -> List[str]:
-        """List of prim names for each DOF.
+    def dof_names(self) -> list[str]:
+        """Prim names for each DOF.
 
         Returns:
-            list(string): prim names
+            Prim names.
 
         Example:
 
@@ -292,8 +294,8 @@ class SingleArticulation(_SinglePrimWrapper):
         """
         return self._articulation_view.dof_names
 
-    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
-        """Create a physics simulation view if not passed and an articulation view using PhysX tensor API
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None):
+        """Create a physics simulation view if not passed and an articulation view using PhysX tensor API.
 
         .. note::
 
@@ -306,7 +308,7 @@ class SingleArticulation(_SinglePrimWrapper):
             before interacting with any other class method.
 
         Args:
-            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
+            physics_sim_view: Current physics simulation view.
 
         Example:
 
@@ -320,13 +322,13 @@ class SingleArticulation(_SinglePrimWrapper):
         return
 
     def get_dof_index(self, dof_name: str) -> int:
-        """Get a DOF index given its name
+        """Get a DOF index given its name.
 
         Args:
-            dof_name (str): name of the DOF
+            dof_name: Name of the DOF.
 
         Returns:
-            int: DOF index
+            DOF index.
 
         Example:
 
@@ -338,10 +340,10 @@ class SingleArticulation(_SinglePrimWrapper):
         return self._articulation_view.get_dof_index(dof_name=dof_name)
 
     def get_articulation_body_count(self) -> int:
-        """Get the number of bodies (links) that make up the articulation
+        """Get the number of bodies (links) that make up the articulation.
 
         Returns:
-            int: amount of bodies
+            Amount of bodies.
 
         Example:
 
@@ -352,8 +354,8 @@ class SingleArticulation(_SinglePrimWrapper):
         """
         return self._articulation_view.get_articulation_body_count()
 
-    def disable_gravity(self) -> None:
-        """Keep gravity from affecting the robot
+    def disable_gravity(self):
+        """Keep gravity from affecting the robot.
 
         Example:
 
@@ -367,8 +369,8 @@ class SingleArticulation(_SinglePrimWrapper):
         )
         return
 
-    def enable_gravity(self) -> None:
-        """Gravity will affect the robot
+    def enable_gravity(self):
+        """Allow gravity to affect the robot.
 
         Example:
 
@@ -385,8 +387,7 @@ class SingleArticulation(_SinglePrimWrapper):
         """Set the articulation root velocity
 
         Args:
-            velocity (np.ndarray): linear and angular velocity to set the root prim to. Shape (6,).
-
+            velocity: linear and angular velocity to set the root prim to. Shape (6,).
         """
         velocity = self._backend_utils.expand_dims(velocity, 0)
         self._articulation_view.set_velocities(velocities=velocity)
@@ -396,15 +397,12 @@ class SingleArticulation(_SinglePrimWrapper):
         """Get the articulation root velocity
 
         Returns:
-            np.ndarray: current velocity of the the root prim. Shape (3,).
-
+            current velocity of the the root prim. Shape (6,).
         """
         velocities = self._articulation_view.get_velocities()
         return velocities[0]
 
-    def set_joint_positions(
-        self, positions: np.ndarray, joint_indices: Optional[Union[List, np.ndarray]] = None
-    ) -> None:
+    def set_joint_positions(self, positions: np.ndarray, joint_indices: list | np.ndarray | None = None) -> None:
         """Set the articulation joint positions
 
         .. warning::
@@ -413,9 +411,9 @@ class SingleArticulation(_SinglePrimWrapper):
             Use the ``apply_action`` method to control robot joints.
 
         Args:
-            positions (np.ndarray): articulation joint positions
-            joint_indices (Optional[Union[list, np.ndarray]], optional): indices to specify which joints to manipulate.
-                                                                         Defaults to None (all joints)
+            positions: articulation joint positions
+            joint_indices: indices to specify which joints to manipulate.
+                Defaults to None (all joints)
 
         .. hint::
 
@@ -440,15 +438,15 @@ class SingleArticulation(_SinglePrimWrapper):
         self._articulation_view.set_joint_positions(positions=positions, joint_indices=joint_indices)
         return
 
-    def get_joint_positions(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
+    def get_joint_positions(self, joint_indices: list | np.ndarray | None = None) -> np.ndarray:
         """Get the articulation joint positions
 
         Args:
-            joint_indices (Optional[Union[List, np.ndarray]], optional): indices to specify which joints to read.
-                                                                         Defaults to None (all joints)
+            joint_indices: indices to specify which joints to read.
+                Defaults to None (all joints)
 
         Returns:
-            np.ndarray: all or selected articulation joint positions
+            all or selected articulation joint positions
 
         Example:
 
@@ -470,9 +468,7 @@ class SingleArticulation(_SinglePrimWrapper):
             result = result[0]
         return result
 
-    def set_joint_velocities(
-        self, velocities: np.ndarray, joint_indices: Optional[Union[List, np.ndarray]] = None
-    ) -> None:
+    def set_joint_velocities(self, velocities: np.ndarray, joint_indices: list | np.ndarray | None = None) -> None:
         """Set the articulation joint velocities
 
         .. warning::
@@ -481,9 +477,9 @@ class SingleArticulation(_SinglePrimWrapper):
             Use the ``apply_action`` method to control robot joints.
 
         Args:
-            velocities (np.ndarray): articulation joint velocities
-            joint_indices (Optional[Union[list, np.ndarray]], optional): indices to specify which joints to manipulate.
-                                                                         Defaults to None (all joints)
+            velocities: articulation joint velocities
+            joint_indices: indices to specify which joints to manipulate.
+                Defaults to None (all joints)
 
         .. hint::
 
@@ -508,7 +504,7 @@ class SingleArticulation(_SinglePrimWrapper):
         self._articulation_view.set_joint_velocities(velocities=velocities, joint_indices=joint_indices)
         return
 
-    def set_joint_efforts(self, efforts: np.ndarray, joint_indices: Optional[Union[List, np.ndarray]] = None) -> None:
+    def set_joint_efforts(self, efforts: np.ndarray, joint_indices: list | np.ndarray | None = None) -> None:
         """Set the articulation joint efforts
 
         .. note::
@@ -517,9 +513,9 @@ class SingleArticulation(_SinglePrimWrapper):
             or the stiffness and damping must be set to zero.
 
         Args:
-            efforts (np.ndarray): articulation joint efforts
-            joint_indices (Optional[Union[list, np.ndarray]], optional): indices to specify which joints to manipulate.
-                                                                         Defaults to None (all joints)
+            efforts: articulation joint efforts
+            joint_indices: indices to specify which joints to manipulate.
+                Defaults to None (all joints)
 
         .. hint::
 
@@ -544,15 +540,15 @@ class SingleArticulation(_SinglePrimWrapper):
         self._articulation_view.set_joint_efforts(efforts=efforts, joint_indices=joint_indices)
         return
 
-    def get_joint_velocities(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
+    def get_joint_velocities(self, joint_indices: list | np.ndarray | None = None) -> np.ndarray:
         """Get the articulation joint velocities
 
         Args:
-            joint_indices (Optional[Union[List, np.ndarray]], optional): indices to specify which joints to read.
-                                                                         Defaults to None (all joints)
+            joint_indices: indices to specify which joints to read.
+                Defaults to None (all joints)
 
         Returns:
-            np.ndarray: all or selected articulation joint velocities
+            all or selected articulation joint velocities
 
         Example:
 
@@ -574,18 +570,18 @@ class SingleArticulation(_SinglePrimWrapper):
             result = result[0]
         return result
 
-    def get_measured_joint_efforts(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
+    def get_measured_joint_efforts(self, joint_indices: list | np.ndarray | None = None) -> np.ndarray:
         """Returns the efforts computed/measured by the physics solver of the joint forces in the DOF motion direction
 
         Args:
-            joint_indices (Optional[Union[List, np.ndarray]], optional): indices to specify which joints to read.
-                                                                         Defaults to None (all joints)
+            joint_indices: indices to specify which joints to read.
+                Defaults to None (all joints)
 
         Raises:
             Exception: If the handlers are not initialized
 
         Returns:
-            np.ndarray: all or selected articulation joint measured efforts
+            all or selected articulation joint measured efforts
 
         Example:
 
@@ -609,18 +605,18 @@ class SingleArticulation(_SinglePrimWrapper):
             result = result[0]
         return result
 
-    def get_applied_joint_efforts(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
+    def get_applied_joint_efforts(self, joint_indices: list | np.ndarray | None = None) -> np.ndarray:
         """Get the efforts applied to the joints set by the ``set_joint_efforts`` method
 
         Args:
-            joint_indices (Optional[Union[List, np.ndarray]], optional): indices to specify which joints to read.
-                                                                         Defaults to None (all joints)
+            joint_indices: indices to specify which joints to read.
+                Defaults to None (all joints)
 
         Raises:
             Exception: If the handlers are not initialized
 
         Returns:
-            np.ndarray: all or selected articulation joint applied efforts
+            all or selected articulation joint applied efforts
 
         Example:
 
@@ -643,7 +639,7 @@ class SingleArticulation(_SinglePrimWrapper):
             result = result[0]
         return result
 
-    def get_measured_joint_forces(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
+    def get_measured_joint_forces(self, joint_indices: list | np.ndarray | None = None) -> np.ndarray:
         """Get the measured joint reaction forces and torques (link incoming joint forces and torques) to external loads.
 
         Forces and torques are reported in the local body reference frame (child joint frame of the link's incoming joint).
@@ -661,14 +657,14 @@ class SingleArticulation(_SinglePrimWrapper):
             To retrieve a specific row for the link incoming joint force/torque use ``joint_index + 1``
 
         Args:
-            joint_indices (Optional[Union[List, np.ndarray]], optional): indices to specify which joints to read.
-                                                                         Defaults to None (all joints)
+            joint_indices: indices to specify which joints to read.
+                Defaults to None (all joints)
 
         Raises:
             Exception: If the handlers are not initialized
 
         Returns:
-            np.ndarray: measured joint forces and torques. Shape is (num_joint + 1, 6). Row index 0 is the incoming
+            measured joint forces and torques. Shape is (num_joint + 1, 6). Row index 0 is the incoming
             joint of the base link. For the last dimension the first 3 values are for forces and the last 3 for torques
 
         Example:
@@ -712,10 +708,10 @@ class SingleArticulation(_SinglePrimWrapper):
         return result
 
     def get_joints_default_state(self) -> JointsState:
-        """Get the default joint states (positions and velocities).
+        """Default joint states (positions and velocities).
 
         Returns:
-            JointsState: an object that contains the default joint positions and velocities
+            An object that contains the default joint positions and velocities.
 
         Example:
 
@@ -737,9 +733,9 @@ class SingleArticulation(_SinglePrimWrapper):
 
     def set_joints_default_state(
         self,
-        positions: Optional[np.ndarray] = None,
-        velocities: Optional[np.ndarray] = None,
-        efforts: Optional[np.ndarray] = None,
+        positions: np.ndarray | None = None,
+        velocities: np.ndarray | None = None,
+        efforts: np.ndarray | None = None,
     ) -> None:
         """Set the joint default states (positions, velocities and/or efforts) to be applied after each reset.
 
@@ -748,9 +744,9 @@ class SingleArticulation(_SinglePrimWrapper):
             The default states will be set during post-reset (e.g., calling ``.post_reset()`` or ``world.reset()`` methods)
 
         Args:
-            positions (Optional[np.ndarray], optional): joint positions. Defaults to None.
-            velocities (Optional[np.ndarray], optional): joint velocities. Defaults to None.
-            efforts (Optional[np.ndarray], optional): joint efforts. Defaults to None.
+            positions: Joint positions.
+            velocities: Joint velocities.
+            efforts: Joint efforts.
 
         Example:
 
@@ -776,10 +772,10 @@ class SingleArticulation(_SinglePrimWrapper):
         return
 
     def get_joints_state(self) -> JointsState:
-        """Get the current joint states (positions and velocities)
+        """Current joint states (positions and velocities).
 
         Returns:
-            JointsState: an object that contains the current joint positions and velocities
+            An object that contains the current joint positions and velocities.
 
         Example:
 
@@ -801,7 +797,7 @@ class SingleArticulation(_SinglePrimWrapper):
             return None
         return JointsState(positions=joints_state.positions[0], velocities=joints_state.velocities[0], efforts=None)
 
-    def get_articulation_controller(self) -> "ArticulationController":
+    def get_articulation_controller(self) -> ArticulationController:
         """Get the articulation controller
 
         .. note::
@@ -811,7 +807,7 @@ class SingleArticulation(_SinglePrimWrapper):
             velocity targets and efforts) will be used
 
         Returns:
-            ArticulationController: articulation controller
+            Articulation controller.
 
         Example:
 
@@ -830,7 +826,7 @@ class SingleArticulation(_SinglePrimWrapper):
             This method will immediately set the articulation state
 
         Args:
-            velocity (np.ndarray): 3D linear velocity vector. Shape (3,).
+            velocity: 3D linear velocity vector. Shape (3,).
 
         .. hint::
 
@@ -850,10 +846,10 @@ class SingleArticulation(_SinglePrimWrapper):
         return self._articulation_view.set_linear_velocities(velocities=velocity)
 
     def get_linear_velocity(self) -> np.ndarray:
-        """Get the linear velocity of the root articulation prim
+        """Linear velocity of the root articulation prim.
 
         Returns:
-            np.ndarray:  3D linear velocity vector. Shape (3,)
+            3D linear velocity vector. Shape (3,).
 
         Example:
 
@@ -875,7 +871,7 @@ class SingleArticulation(_SinglePrimWrapper):
             This method will immediately set the articulation state
 
         Args:
-            velocity (np.ndarray): 3D angular velocity vector. Shape (3,)
+            velocity: 3D angular velocity vector. Shape (3,).
 
         .. hint::
 
@@ -895,10 +891,10 @@ class SingleArticulation(_SinglePrimWrapper):
         self._articulation_view.set_angular_velocities(velocities=velocity)
 
     def get_angular_velocity(self) -> np.ndarray:
-        """Get the angular velocity of the root articulation prim
+        """Angular velocity of the root articulation prim.
 
         Returns:
-            np.ndarray: 3D angular velocity vector. Shape (3,)
+            3D angular velocity vector. Shape (3,).
 
         Example:
 
@@ -916,9 +912,7 @@ class SingleArticulation(_SinglePrimWrapper):
         """Apply joint positions, velocities and/or efforts to control an articulation
 
         Args:
-            control_actions (ArticulationAction): actions to be applied for next physics step.
-            indices (Optional[Union[list, np.ndarray]], optional): degree of freedom indices to apply actions to.
-                                                                   Defaults to all degrees of freedom.
+            control_actions: Actions to be applied for next physics step.
 
         .. hint::
 
@@ -947,10 +941,10 @@ class SingleArticulation(_SinglePrimWrapper):
         return
 
     def get_applied_action(self) -> ArticulationAction:
-        """Get the last applied action
+        """Last applied action.
 
         Returns:
-            ArticulationAction: last applied action. Note: a dictionary is used as the object's string representation
+            Last applied action. Note that a dictionary is used as the object's string representation.
 
         Example:
 
@@ -976,7 +970,7 @@ class SingleArticulation(_SinglePrimWrapper):
             Setting a higher number of iterations may improve the fidelity of the simulation, although it may affect its performance.
 
         Args:
-            count (int): position iteration count
+            count: position iteration count
 
         Example:
 
@@ -995,7 +989,7 @@ class SingleArticulation(_SinglePrimWrapper):
         Search for *Solver Iteration Count* in |physx_docs| for more details.
 
         Returns:
-            int: position iteration count
+            position iteration count
 
         Example:
 
@@ -1017,7 +1011,7 @@ class SingleArticulation(_SinglePrimWrapper):
             Setting a higher number of iterations may improve the fidelity of the simulation, although it may affect its performance.
 
         Args:
-            count (int): velocity iteration count
+            count: velocity iteration count
 
         Example:
 
@@ -1036,7 +1030,7 @@ class SingleArticulation(_SinglePrimWrapper):
         Search for *Solver Iteration Count* in |physx_docs| for more details.
 
         Returns:
-            int: velocity iteration count
+            velocity iteration count
 
         Example:
 
@@ -1053,7 +1047,7 @@ class SingleArticulation(_SinglePrimWrapper):
         Search for *Stabilization Threshold* in |physx_docs| for more details
 
         Args:
-            threshold (float): stabilization threshold
+            threshold: stabilization threshold
 
         Example:
 
@@ -1071,7 +1065,7 @@ class SingleArticulation(_SinglePrimWrapper):
         Search for *Stabilization Threshold* in |physx_docs| for more details
 
         Returns:
-            float: stabilization threshold
+            stabilization threshold
 
         Example:
 
@@ -1086,7 +1080,7 @@ class SingleArticulation(_SinglePrimWrapper):
         """Set the enable self collisions flag (``physxArticulation:enabledSelfCollisions``)
 
         Args:
-            flag (bool): whether to enable self collisions
+            flag: whether to enable self collisions
 
         Example:
 
@@ -1102,7 +1096,7 @@ class SingleArticulation(_SinglePrimWrapper):
         """Get the enable self collisions flag (``physxArticulation:enabledSelfCollisions``)
 
         Returns:
-            int: self collisions flag (boolean interpreted as int)
+            self collisions flag (boolean interpreted as int)
 
         Example:
 
@@ -1119,7 +1113,7 @@ class SingleArticulation(_SinglePrimWrapper):
         Search for *Articulations and Sleeping* in |physx_docs| for more details
 
         Args:
-            threshold (float): sleep threshold
+            threshold: sleep threshold
 
         Example:
 
@@ -1137,7 +1131,7 @@ class SingleArticulation(_SinglePrimWrapper):
         Search for *Articulations and Sleeping* in |physx_docs| for more details
 
         Returns:
-            float: sleep threshold
+            sleep threshold
 
         Example:
 

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""High-level API for creating and controlling robots as articulations in Isaac Sim."""
+
 
 from typing import Optional, Sequence
 
@@ -28,24 +31,19 @@ class Robot(SingleArticulation):
         See the ``initialize`` method for more details.
 
     Args:
-        prim_path (str): prim path of the Prim to encapsulate or create.
-        name (str, optional): shortname to be used as a key by Scene class.
-                              Note: needs to be unique if the object is added to the Scene. Defaults to "robot".
-        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                    Defaults to None, which means left unchanged.
-        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                        (with respect to its parent prim). shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
-        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
-                                                        (depends if translation or position is specified).
-                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                        Defaults to None, which means left unchanged.
-        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
-                                                Defaults to None, which means left unchanged.
-        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-        articulation_controller (Optional[ArticulationController], optional): a custom ArticulationController which
-                                                                              inherits from it. Defaults to creating the
-                                                                              basic ArticulationController.
+        prim_path: Prim path of the Prim to encapsulate or create.
+        name: Shortname to be used as a key by Scene class.
+            Note: needs to be unique if the object is added to the Scene.
+        position: Position in the world frame of the prim. shape is (3, ).
+        translation: Translation in the local frame of the prim
+            (with respect to its parent prim). shape is (3, ).
+        orientation: Quaternion orientation in the world/ local frame of the prim
+            (depends if translation or position is specified).
+            quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        scale: Local scale to be applied to the prim's dimensions. shape is (3, ).
+        visible: Set to false for an invisible prim in the stage while rendering.
+        articulation_controller: A custom ArticulationController which
+            inherits from it.
 
     Example:
 
@@ -76,7 +74,7 @@ class Robot(SingleArticulation):
         scale: Optional[Sequence[float]] = None,
         visible: bool = True,
         articulation_controller: Optional[ArticulationController] = None,
-    ) -> None:
+    ):
         SingleArticulation.__init__(
             self,
             prim_path=prim_path,
@@ -91,7 +89,7 @@ class Robot(SingleArticulation):
         self._sensors = list()
         return
 
-    def post_reset(self) -> None:
+    def post_reset(self):
         """Reset the robot to its default state
 
         .. note::

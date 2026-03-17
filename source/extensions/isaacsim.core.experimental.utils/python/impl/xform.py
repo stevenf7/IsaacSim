@@ -89,7 +89,7 @@ def set_local_pose(
     *,
     translation: list | np.ndarray | wp.array | None = None,
     orientation: list | np.ndarray | wp.array | None = None,
-) -> None:
+):
     """Set the local pose of a prim.
 
     Backends: :guilabel:`usd`, :guilabel:`usdrt`, :guilabel:`fabric`.
@@ -202,7 +202,7 @@ def set_world_pose(
     *,
     position: list | np.ndarray | wp.array | None = None,
     orientation: list | np.ndarray | wp.array | None = None,
-) -> None:
+):
     """Set the world pose of a prim.
 
     Backends: :guilabel:`usd`, :guilabel:`usdrt`, :guilabel:`fabric`.

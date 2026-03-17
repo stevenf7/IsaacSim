@@ -30,10 +30,10 @@ def get_rigid_body_enabled(prim_path: str) -> Union[bool, None]:
     """Get the ``physics:rigidBodyEnabled`` attribute from the USD Prim at the given path
 
     Args:
-        prim_path (str): The path to the USD Prim
+        prim_path: The path to the USD Prim
 
     Returns:
-        Any: The value of ``physics:rigidBodyEnabled`` attribute if it exists, and None if it does not exist.
+        The value of ``physics:rigidBodyEnabled`` attribute if it exists, and None if it does not exist.
 
     Example:
 
@@ -52,7 +52,7 @@ def get_rigid_body_enabled(prim_path: str) -> Union[bool, None]:
     return stage.GetPrimAtPath(prim_path).GetAttribute("physics:rigidBodyEnabled").Get()
 
 
-def set_rigid_body_enabled(_value, prim_path):
+def set_rigid_body_enabled(_value: bool, prim_path: str):
     """If it exists, set the ``physics:rigidBodyEnabled`` attribute on the USD Prim at the given path
 
     .. note::
@@ -60,8 +60,8 @@ def set_rigid_body_enabled(_value, prim_path):
         If the prim does not have the physics Rigid Body property added, calling this function will have no effect
 
     Args:
-        _value (Any): Value to set ``physics:rigidBodyEnabled`` attribute to
-        prim_path (str): The path to the USD Prim
+        _value: Value to set ``physics:rigidBodyEnabled`` attribute to
+        prim_path: The path to the USD Prim
 
     Example:
 
@@ -76,13 +76,13 @@ def set_rigid_body_enabled(_value, prim_path):
     )
 
 
-async def simulate_async(seconds: float, steps_per_sec: int = 60, callback: Callable = None) -> None:
+async def simulate_async(seconds: float, steps_per_sec: int = 60, callback: Callable = None):
     """Helper function to simulate async for ``seconds * steps_per_sec frames``.
 
     Args:
-        seconds (float): time in seconds to simulate for
-        steps_per_sec (int, optional): steps per second. Defaults to 60.
-        callback (Callable, optional): optional function to run every step. Defaults to None.
+        seconds: time in seconds to simulate for
+        steps_per_sec: steps per second
+        callback: optional function to run every step
 
     Example:
 

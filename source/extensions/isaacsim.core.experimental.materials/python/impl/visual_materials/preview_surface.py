@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level wrapper for creating/encapsulating USD Preview Surface material prims."""
+
+
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils
@@ -132,7 +135,7 @@ class PreviewSurfaceMaterial(VisualMaterial):
         >>> prims = PreviewSurfaceMaterial(paths)  # doctest: +NO_CHECK
     """
 
-    def __init__(self, paths: str | list[str]) -> None:
+    def __init__(self, paths: str | list[str]):
         # get or create prims
         self._shaders = []
         self._materials = []

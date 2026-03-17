@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Module providing PhysX-specific scene management with GPU configuration and solver settings."""
+
+
 from __future__ import annotations
 
 import dataclasses
@@ -34,17 +37,29 @@ class PhysxGpuCfg:
     """
 
     gpu_collision_stack_size: int | None = None
+    """Size of the GPU collision stack in bytes."""
     gpu_found_lost_aggregate_pairs_capacity: int | None = None
+    """Capacity for GPU found/lost aggregate pairs."""
     gpu_found_lost_pairs_capacity: int | None = None
+    """Capacity for GPU found/lost pairs."""
     gpu_heap_capacity: int | None = None
+    """Size of the GPU heap in bytes."""
     gpu_max_deformable_surface_contacts: int | None = None
+    """Maximum number of deformable surface contacts on GPU."""
     gpu_max_num_partitions: int | None = None
+    """Maximum number of GPU partitions."""
     gpu_max_particle_contacts: int | None = None
+    """Maximum number of particle contacts on GPU."""
     gpu_max_rigid_contact_count: int | None = None
+    """Maximum number of rigid body contacts on GPU."""
     gpu_max_rigid_patch_count: int | None = None
+    """Maximum number of rigid patches on GPU."""
     gpu_max_soft_body_contacts: int | None = None
+    """Maximum number of soft body contacts on GPU."""
     gpu_temp_buffer_capacity: int | None = None
+    """Size of the GPU temporary buffer in bytes."""
     gpu_total_aggregate_pairs_capacity: int | None = None
+    """Total capacity for GPU aggregate pairs."""
 
 
 class PhysxScene(PhysicsScene):

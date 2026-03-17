@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2022-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2022-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+"""Version parsing and retrieval utilities for Isaac Sim extensions."""
+
+
 import os
 import typing
+from typing import Tuple
 
 import carb.settings
 import carb.tokens
 
 
 class Version:
+    """A data structure for storing parsed version information.
+
+    This class represents a structured version object that holds the different components of a version string
+    after parsing. It provides separate attributes for major, minor, and patch version numbers, as well as
+    prerelease and build metadata.
+
+    The version components are initially empty strings and are populated by parsing functions like
+    :py:func:`parse_version`. This allows for easy access to individual version parts for comparison,
+    display, or other version-related operations.
+
+    Version strings typically follow semantic versioning patterns like "1.2.3-alpha.1+build123", which
+    get broken down into their constituent parts and stored in the respective attributes of this class.
+    """
+
     def __init__(self):
         self.core = ""
         self.prerelease = ""
@@ -36,10 +55,10 @@ def parse_version(full_version: str) -> Version:
     """Parse a version string into a version object
 
     Args:
-        full_version (str): full version string read from a VERSION file
+        full_version: Full version string read from a VERSION file
 
     Returns:
-        Version: Parsed version object
+        Parsed version object
     """
     parsed_version = Version()
     if "+" in full_version:
@@ -58,7 +77,7 @@ def get_version() -> typing.Tuple[str, str, str, str, str, str, str, str]:
     """Retrieve version from the App VERSION file
 
     Returns:
-        typing.Tuple[str, str, str, str, str, str, str, str]: [Core version, Pre-release tag and build number, Major version, Minor version, Patch version, Pre-release tag, Build number, Build tag]
+        [Core version, Pre-release tag and build number, Major version, Minor version, Patch version, Pre-release tag, Build number, Build tag]
     """
 
     app_folder = carb.settings.get_settings().get_as_string("/app/folder")

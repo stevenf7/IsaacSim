@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""High level wrappers for creating and manipulating capsule geometry prims with visual, collision, and physics properties."""
+
 
 from typing import Optional, Sequence
 
@@ -34,27 +37,22 @@ class VisualCapsule(SingleGeometryPrim):
         Visual capsules (Capsule shape) have no collisions (Collider API) or rigid body dynamics (Rigid Body API)
 
     Args:
-        prim_path (str): prim path of the Prim to encapsulate or create
-        name (str, optional): shortname to be used as a key by Scene class.
-                                Note: needs to be unique if the object is added to the Scene.
-                                Defaults to "visual_capsule".
-        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
-        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                        (with respect to its parent prim). shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
-        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
-                                                        (depends if translation or position is specified).
-                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                        Defaults to None, which means left unchanged.
-        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
-                                                Defaults to None, which means left unchanged.
-        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-        color (Optional[np.ndarray], optional): color of the visual shape. Defaults to None, which means 50% gray
-        radius (Optional[float], optional): capsule radius. Defaults to None.
-        height (Optional[float], optional): capsule height. Defaults to None.
-        visual_material (Optional[VisualMaterial], optional): visual material to be applied to the held prim.
-                                Defaults to None. If not specified, a default visual material will be added.
+        prim_path: prim path of the Prim to encapsulate or create
+        name: shortname to be used as a key by Scene class.
+            Note: needs to be unique if the object is added to the Scene.
+        position: position in the world frame of the prim. shape is (3, ).
+        translation: translation in the local frame of the prim
+            (with respect to its parent prim). shape is (3, ).
+        orientation: quaternion orientation in the world/ local frame of the prim
+            (depends if translation or position is specified).
+            quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        scale: local scale to be applied to the prim's dimensions. shape is (3, ).
+        visible: set to false for an invisible prim in the stage while rendering.
+        color: color of the visual shape.
+        radius: capsule radius.
+        height: capsule height.
+        visual_material: visual material to be applied to the held prim.
+            If not specified, a default visual material will be added.
 
     Example:
 
@@ -87,7 +85,7 @@ class VisualCapsule(SingleGeometryPrim):
         radius: Optional[float] = None,
         height: Optional[float] = None,
         visual_material: Optional[VisualMaterial] = None,
-    ) -> None:
+    ):
 
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
@@ -133,11 +131,11 @@ class VisualCapsule(SingleGeometryPrim):
         )
         return
 
-    def set_radius(self, radius: float) -> None:
+    def set_radius(self, radius: float):
         """Set the capsule radius
 
         Args:
-            radius (float): capsule radius
+            radius: capsule radius
 
         Example:
 
@@ -149,10 +147,10 @@ class VisualCapsule(SingleGeometryPrim):
         return
 
     def get_radius(self) -> float:
-        """Get the capsule radius
+        """Capsule radius
 
         Returns:
-            float: capsule radius
+            Capsule radius.
 
         Example:
 
@@ -163,11 +161,11 @@ class VisualCapsule(SingleGeometryPrim):
         """
         return self.geom.GetRadiusAttr().Get()
 
-    def set_height(self, height: float) -> None:
+    def set_height(self, height: float):
         """Set the capsule height
 
         Args:
-            height (float): capsule height
+            height: capsule height
 
         Example:
 
@@ -179,10 +177,10 @@ class VisualCapsule(SingleGeometryPrim):
         return
 
     def get_height(self) -> float:
-        """Get the capsule height
+        """Capsule height
 
         Returns:
-            float: capsule height
+            Capsule height.
 
         Example:
 
@@ -202,29 +200,24 @@ class FixedCapsule(VisualCapsule):
         Fixed capsules (Capsule shape) have collisions (Collider API) but no rigid body dynamics (Rigid Body API)
 
     Args:
-        prim_path (str): prim path of the Prim to encapsulate or create
-        name (str, optional): shortname to be used as a key by Scene class.
-                                Note: needs to be unique if the object is added to the Scene.
-                                Defaults to "fixed_capsule".
-        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
-        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                        (with respect to its parent prim). shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
-        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
-                                                        (depends if translation or position is specified).
-                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                        Defaults to None, which means left unchanged.
-        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
-                                                Defaults to None, which means left unchanged.
-        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-        color (Optional[np.ndarray], optional): color of the visual shape. Defaults to None, which means 50% gray
-        radius (Optional[float], optional): capsule radius. Defaults to None.
-        height (Optional[float], optional): capsule height. Defaults to None.
-        visual_material (Optional[VisualMaterial], optional): visual material to be applied to the held prim.
-                                Defaults to None. If not specified, a default visual material will be added.
-        physics_material (Optional[PhysicsMaterial], optional): physics material to be applied to the held prim.
-                                Defaults to None. If not specified, a default physics material will be added.
+        prim_path: prim path of the Prim to encapsulate or create
+        name: shortname to be used as a key by Scene class.
+            Note: needs to be unique if the object is added to the Scene.
+        position: position in the world frame of the prim. shape is (3, ).
+        translation: translation in the local frame of the prim
+            (with respect to its parent prim). shape is (3, ).
+        orientation: quaternion orientation in the world/ local frame of the prim
+            (depends if translation or position is specified).
+            quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        scale: local scale to be applied to the prim's dimensions. shape is (3, ).
+        visible: set to false for an invisible prim in the stage while rendering.
+        color: color of the visual shape.
+        radius: capsule radius.
+        height: capsule height.
+        visual_material: visual material to be applied to the held prim.
+            If not specified, a default visual material will be added.
+        physics_material: physics material to be applied to the held prim.
+            If not specified, a default physics material will be added.
 
     Example:
 
@@ -258,7 +251,7 @@ class FixedCapsule(VisualCapsule):
         height: Optional[float] = None,
         visual_material: Optional[VisualMaterial] = None,
         physics_material: Optional[PhysicsMaterial] = None,
-    ) -> None:
+    ):
         if not is_prim_path_valid(prim_path):
             # set default values if no physics material given
             if physics_material is None:
@@ -303,33 +296,26 @@ class DynamicCapsule(SingleRigidPrim, FixedCapsule):
         Dynamic capsules (Capsule shape) have collisions (Collider API) and rigid body dynamics (Rigid Body API)
 
     Args:
-        prim_path (str): prim path of the Prim to encapsulate or create
-        name (str, optional): shortname to be used as a key by Scene class.
-                                Note: needs to be unique if the object is added to the Scene.
-                                Defaults to "dynamic_capsule".
-        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
-        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                        (with respect to its parent prim). shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
-        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
-                                                        (depends if translation or position is specified).
-                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                        Defaults to None, which means left unchanged.
-        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
-                                                Defaults to None, which means left unchanged.
-        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-        color (Optional[np.ndarray], optional): color of the visual shape. Defaults to None, which means 50% gray
-        radius (Optional[float], optional): capsule radius. Defaults to None.
-        height (Optional[float], optional): capsule height. Defaults to None.
-        visual_material (Optional[VisualMaterial], optional): visual material to be applied to the held prim.
-                                Defaults to None. If not specified, a default visual material will be added.
-        physics_material (Optional[PhysicsMaterial], optional): physics material to be applied to the held prim.
-                                Defaults to None. If not specified, a default physics material will be added.
-        mass (Optional[float], optional): mass in kg. Defaults to None.
-        density (Optional[float], optional): density. Defaults to None.
-        linear_velocity (Optional[np.ndarray], optional): linear velocity in the world frame. Defaults to None.
-        angular_velocity (Optional[np.ndarray], optional): angular velocity in the world frame. Defaults to None.
+        prim_path: prim path of the Prim to encapsulate or create
+        name: shortname to be used as a key by Scene class.
+            Note: needs to be unique if the object is added to the Scene.
+        position: position in the world frame of the prim. shape is (3, ).
+        translation: translation in the local frame of the prim (with respect to its parent prim). shape is (3, ).
+        orientation: quaternion orientation in the world/ local frame of the prim
+            (depends if translation or position is specified). quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        scale: local scale to be applied to the prim's dimensions. shape is (3, ).
+        visible: set to false for an invisible prim in the stage while rendering.
+        color: color of the visual shape.
+        radius: capsule radius.
+        height: capsule height.
+        visual_material: visual material to be applied to the held prim.
+            If not specified, a default visual material will be added.
+        physics_material: physics material to be applied to the held prim.
+            If not specified, a default physics material will be added.
+        mass: mass in kg.
+        density: density.
+        linear_velocity: linear velocity in the world frame.
+        angular_velocity: angular velocity in the world frame.
 
     Example:
 
@@ -338,7 +324,7 @@ class DynamicCapsule(SingleRigidPrim, FixedCapsule):
         >>> from isaacsim.core.api.objects import DynamicCapsule
         >>> import numpy as np
         >>>
-        >>> # create a red fixed capsule of mass 1kg at the given path
+        >>> # create a red dynamic capsule of mass 1kg at the given path
         >>> prim = DynamicCapsule(
         ...     prim_path="/World/Xform/Capsule",
         ...     radius=0.5,
@@ -368,7 +354,7 @@ class DynamicCapsule(SingleRigidPrim, FixedCapsule):
         density: Optional[float] = None,
         linear_velocity: Optional[Sequence[float]] = None,
         angular_velocity: Optional[Sequence[float]] = None,
-    ) -> None:
+    ):
         if not is_prim_path_valid(prim_path):
             if mass is None:
                 mass = 0.02

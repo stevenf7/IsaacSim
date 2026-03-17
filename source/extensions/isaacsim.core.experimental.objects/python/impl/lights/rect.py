@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level class for creating/wrapping USD Rect Light prims that emit light from one side of a rectangle."""
+
+
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils
@@ -89,7 +92,7 @@ class RectLight(Light):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
-    ) -> None:
+    ):
         self._lights = []
         stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = Light.resolve_paths(paths)
@@ -135,7 +138,7 @@ class RectLight(Light):
         Backends: :guilabel:`usd`.
 
         Args:
-            lengths: Lengths (shape ``(N, 1)``).
+            widths: Widths (shape ``(N, 1)``).
                 If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
             indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
 
