@@ -27,10 +27,14 @@ exts."isaacsim.core.deprecation_manager".settings = [
     { deprecated = "/exts/omni.isaac.benchmark.services/metrics/metrics_output_folder", new = "/exts/isaacsim.benchmark.services/metrics/metrics_output_folder", update = true },
     { deprecated = "/exts/omni.isaac.benchmark.services/metrics/nvdataflow_default_test_suite_name", new = "/exts/isaacsim.benchmark.services/metrics/nvdataflow_default_test_suite_name", update = true },
     { deprecated = "/exts/omni.isaac.benchmark.services/metrics/randomize_filename_prefix", new = "/exts/isaacsim.benchmark.services/metrics/randomize_filename_prefix", update = true },
-    # omni.isaac.vscode -> isaacsim.code_editor.vscode
-    { deprecated = "/exts/omni.isaac.vscode/host", new = "/exts/isaacsim.code_editor.vscode/host", update = true },
-    { deprecated = "/exts/omni.isaac.vscode/port", new = "/exts/isaacsim.code_editor.vscode/port", update = true },
-    { deprecated = "/exts/omni.isaac.vscode/carb_logs", new = "/exts/isaacsim.code_editor.vscode/carb_logs", update = true },
+    # omni.isaac.vscode -> isaacsim.code_editor.python_server
+    { deprecated = "/exts/omni.isaac.vscode/host", new = "/exts/isaacsim.code_editor.python_server/host", update = true },
+    { deprecated = "/exts/omni.isaac.vscode/port", new = "/exts/isaacsim.code_editor.python_server/port", update = true },
+    { deprecated = "/exts/omni.isaac.vscode/carb_logs", new = "/exts/isaacsim.code_editor.python_server/carb_logs", update = true },
+    # isaacsim.code_editor.vscode -> isaacsim.code_editor.python_server
+    { deprecated = "/exts/isaacsim.code_editor.vscode/host", new = "/exts/isaacsim.code_editor.python_server/host", update = true },
+    { deprecated = "/exts/isaacsim.code_editor.vscode/port", new = "/exts/isaacsim.code_editor.python_server/port", update = true },
+    { deprecated = "/exts/isaacsim.code_editor.vscode/carb_logs", new = "/exts/isaacsim.code_editor.python_server/carb_logs", update = true },
     # omni.isaac.jupyter_notebook -> isaacsim.code_editor.jupyter
     { deprecated = "/exts/omni.isaac.jupyter_notebook/host", new = "/exts/isaacsim.code_editor.jupyter/host", update = true },
     { deprecated = "/exts/omni.isaac.jupyter_notebook/port", new = "/exts/isaacsim.code_editor.jupyter/port", update = true },

@@ -70,6 +70,7 @@ Extensions
    :caption: Extensions (Code Editor)
 
    isaacsim.code_editor.jupyter <source/extensions/isaacsim.code_editor.jupyter/docs/index>
+   isaacsim.code_editor.python_server <source/extensions/isaacsim.code_editor.python_server/docs/index>
    isaacsim.code_editor.vscode <source/extensions/isaacsim.code_editor.vscode/docs/index>
 
 .. toctree::

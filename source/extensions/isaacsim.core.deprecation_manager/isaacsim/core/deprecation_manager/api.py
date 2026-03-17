@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provide utilities for importing Python modules with deprecation-aware error handling."""
+
+from __future__ import annotations
+
 import importlib
 import sys
 from types import ModuleType
@@ -41,7 +45,7 @@ def import_module(name: str) -> ModuleType:
         >>> numpy = import_module("numpy")
     """
 
-    def exit_app():
+    def exit_app() -> None:
         # test mode
         if carb.settings.get_settings().get_as_bool("/exts/omni.kit.test/runTestsAndQuit"):
             sys.exit(1)

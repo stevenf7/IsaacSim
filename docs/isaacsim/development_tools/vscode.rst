@@ -1,4 +1,4 @@
-﻿
+
 .. _Isaac Sim VS Code Edition: https://marketplace.visualstudio.com/items?itemName=NVIDIA.isaacsim-vscode-edition
 
 .. _isaac_sim_app_vscode:
@@ -30,8 +30,11 @@ Key Features:
 Interactive Scripting
 -----------------------
 
-The ``isaacsim.code_editor.vscode`` extension allows you to edit and execute Python code interactively from the VS Code editor.
-It can be enabled or disabled using the :doc:`Extension Manager <extensions:ext_core/ext_extension-manager>` by searching for ``isaacsim.code_editor.vscode``.
+The ``isaacsim.code_editor.vscode`` extension adds VS Code launcher and menu integration to Isaac Sim.
+It depends on the ``isaacsim.code_editor.python_server`` extension which provides the TCP server for remote Python code execution (see :ref:`isaac_sim_app_python_server` for full protocol details and usage examples).
+
+Both extensions can be enabled or disabled using the :doc:`Extension Manager <extensions:ext_core/ext_extension-manager>` by searching for ``isaacsim.code_editor.vscode``.
+Enabling the VS Code extension automatically enables the Python server.
 
     .. note::
 
@@ -43,6 +46,11 @@ It can be enabled or disabled using the :doc:`Extension Manager <extensions:ext_
 #. From the VS Code editor, click on the *Isaac Sim VS Code Edition* container in the Activity Bar (the one with the Isaac Sim logo) to open it.
    Then, click on *Run* (or *Run selected text* if you have selected code statements), in the *Commands* tree view, to execute it.
 #. Inspect the execution output, if any, in the *Isaac Sim VS Code Edition* output panel.
+
+.. tip::
+
+   The Python server can also be used independently of VS Code, for example by LLM agents or custom scripts.
+   See :ref:`isaac_sim_app_python_server` for details on the wire protocol and programmatic usage.
 
 |br| |hr|
 

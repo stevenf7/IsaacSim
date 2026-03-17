@@ -253,6 +253,7 @@ inventory.includes.all = [
     "LICENSE.txt",
     # extensions
     "exts/isaacsim.code_editor.jupyter",
+    "exts/isaacsim.code_editor.python_server",
     "exts/isaacsim.code_editor.vscode",
 ]
 
