@@ -1,4 +1,8 @@
 # Changelog
+## [5.2.0] - 2026-03-17
+### Added
+- Newton can be used as a physics backend
+
 ## [5.1.1] - 2026-03-04
 ### Changed
 - Fix api errors

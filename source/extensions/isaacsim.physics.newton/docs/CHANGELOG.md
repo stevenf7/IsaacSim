@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.1] - 2026-03-17
+### Added
+- CTRL_DIRECT actuator PD control via tensor API: bridge `set_dof_stiffnesses`, `set_dof_dampings`, and `set_dof_position_targets` to MuJoCo actuator parameters (gainprm, biasprm, ctrl) and set biastype=AFFINE so robot policies (e.g. Go2) work with Newton when USD uses `mujoco:actuator` rather than `physics:driveAPI`.
+
+
 ## [0.6.0] - 2026-03-10
 ### Changed
 - Upgraded Newton pip package from 1.0.0rc3 to 1.0.0.
