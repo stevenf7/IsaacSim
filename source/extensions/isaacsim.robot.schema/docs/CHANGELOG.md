@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.1.1] - 2026-03-05
+### Removed
+- Remove the `omni.isaac.ml_archive` dependency
+
 ## [5.1.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings
