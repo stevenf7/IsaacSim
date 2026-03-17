@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Contains an example class demonstrating trajectory generation with cuMotion for robot motion planning."""
+
+
 import carb
 import cumotion
 import numpy as np
-import warp as wp
 from isaacsim.core.experimental.prims import Articulation, XformPrim
 from isaacsim.core.experimental.utils import prim as prim_utils
 from isaacsim.core.experimental.utils import stage as stage_utils
@@ -41,7 +43,7 @@ class UR10TrajectoryGeneratorExample:
     - Execute trajectories on a robot
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._articulation = None
         self._trajectory = None
         self._trajectory_time = 0.0
@@ -50,7 +52,7 @@ class UR10TrajectoryGeneratorExample:
         self._robot_config = None
         self._generator = None
 
-    def load_example_assets(self):
+    def load_example_assets(self) -> None:
         """Load robot assets to the stage."""
         robot_prim_path = "/ur10"
         path_to_robot_usd = get_assets_root_path() + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
@@ -58,9 +60,7 @@ class UR10TrajectoryGeneratorExample:
         add_reference_to_stage(path_to_robot_usd, robot_prim_path)
         self._articulation = Articulation(robot_prim_path)
 
-        return self._articulation
-
-    def setup(self):
+    def setup(self) -> None:
         """Set up the trajectory generator (called on initialization)."""
         # Load robot configuration
         robot_config = load_cumotion_supported_robot("ur10")
@@ -78,7 +78,7 @@ class UR10TrajectoryGeneratorExample:
 
         self._tool_frame_name = "ee_link"
 
-    def setup_cspace_trajectory(self):
+    def setup_cspace_trajectory(self) -> None:
         """Set up C-space trajectory from waypoints."""
         c_space_points = np.array(
             [
@@ -116,7 +116,7 @@ class UR10TrajectoryGeneratorExample:
         self._trajectory = self._generator.generate_trajectory_from_cspace_waypoints(waypoints=c_space_points)
         self._trajectory_time = 0.0
 
-    def setup_taskspace_trajectory(self):
+    def setup_taskspace_trajectory(self) -> None:
         """Set up task-space trajectory from path specification."""
         # Get robot base transform directly from articulation
         robot_base_positions, robot_base_orientations = self._articulation.get_world_poses()
@@ -162,7 +162,7 @@ class UR10TrajectoryGeneratorExample:
         )
         self._trajectory_time = 0.0
 
-    def setup_hybrid_trajectory(self):
+    def setup_hybrid_trajectory(self) -> None:
         """Set up hybrid trajectory combining C-space and task-space paths."""
         # Get tool frame name
         initial_c_space_robot_pose = np.array([0, 0, 0, 0, 0, 0])
@@ -248,7 +248,7 @@ class UR10TrajectoryGeneratorExample:
             )
         self._trajectory_time = 0.0
 
-    def update(self, step: float):
+    def update(self, step: float) -> None:
         """Update trajectory execution on each physics step."""
         if self._trajectory is None:
             return
@@ -270,7 +270,7 @@ class UR10TrajectoryGeneratorExample:
         if self._trajectory_time >= self._trajectory.duration:
             self._trajectory_time = 0.0
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the example."""
         # Delete any visualized frames
         prim = prim_utils.get_prim_at_path("/visualized_frames")

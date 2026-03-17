@@ -13,11 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrates trajectory optimization using cuMotion for robotic motion planning."""
+
+
 import os
+from typing import Any
 
 import cumotion
 import numpy as np
-from isaacsim.core.experimental.objects import Cone, Cube, Cylinder, Mesh
+from isaacsim.core.experimental.objects import Cone, Cylinder, Mesh
 from isaacsim.core.experimental.utils import prim as prim_utils
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.robot_motion.cumotion import (
@@ -48,7 +52,7 @@ class FrankaTrajectoryOptimizerExample:
     - :meth:`update`: Execute the planned trajectory over time
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._articulation = None
         self._trajectory = None
         self._trajectory_time = 0.0
@@ -59,7 +63,8 @@ class FrankaTrajectoryOptimizerExample:
         self._q_initial = None
         self._first_trajectory = True
 
-    def _fetch_initial_position(self):
+    def _fetch_initial_position(self) -> None:
+        """Fetch the initial position of the robot."""
         if self._first_trajectory:
             self._first_trajectory = False
         else:
@@ -70,7 +75,7 @@ class FrankaTrajectoryOptimizerExample:
                 .astype(np.float64)
             )
 
-    def _cleanup_debug_prims(self):
+    def _cleanup_debug_prims(self) -> None:
         """Delete all prims under 'CumotionDebug' to clean up old debug visualization."""
         # Find all prims that have "CumotionDebug" in their path
         debug_prim_paths = prim_utils.find_matching_prim_paths(".*CumotionDebug.*", traverse=True)
@@ -91,7 +96,7 @@ class FrankaTrajectoryOptimizerExample:
                 # Prim may have already been deleted or doesn't exist, skip
                 pass
 
-    def setup_world_and_optimizer(self):
+    def setup_world_and_optimizer(self) -> tuple[Any, Any, Any]:
         """Set up world binding and trajectory optimizer (shared by both target types)."""
         # Load robot configuration
         robot_config = load_cumotion_supported_robot("franka")
@@ -149,7 +154,7 @@ class FrankaTrajectoryOptimizerExample:
 
         return robot_config, world_binding, optimizer
 
-    def plan_to_cspace_target(self, q_target=None):
+    def plan_to_cspace_target(self, q_target: Any = None) -> str | None:
         """Plan a trajectory to a C-space target.
 
         Args:
@@ -211,11 +216,11 @@ class FrankaTrajectoryOptimizerExample:
         self._trajectory_time = 0.0
         return None
 
-    def plan_to_task_space_target(self):
+    def plan_to_task_space_target(self) -> str | None:
         """Plan a trajectory to a task-space target (from target cube position).
 
         Returns:
-            str: Error message if planning failed, None if successful.
+            Error message if planning failed, None if successful.
         """
         # Clean up old debug prims before planning
         self._cleanup_debug_prims()
@@ -272,7 +277,7 @@ class FrankaTrajectoryOptimizerExample:
         self._trajectory_time = 0.0
         return None
 
-    def update(self, step: float):
+    def update(self, step: float) -> None:
         """Update trajectory execution on each physics step."""
         if self._trajectory is None:
             return

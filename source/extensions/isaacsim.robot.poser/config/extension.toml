@@ -1,5 +1,5 @@
 [package]
-version = "1.0.0"
+version = "1.1.0"
 category = "Simulation"
 title = "Isaac Sim Robot Poser"
 description = "Provides Functionality to author robot named poses through Inverse Kinematics, and execute them into a robot"
@@ -7,7 +7,7 @@ authors = ["rgasoto@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.poser"
 keywords = ["isaac", "manipulators", "inverse kinematics", "IK"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -83,3 +83,6 @@ args = [
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides examples for using CumotionWorldInterface for robot motion planning with obstacle discovery and world synchronization."""
+
+
 from typing import Literal
 
 from isaacsim.core.experimental.objects import Cone, Cube, Cylinder, Mesh
@@ -39,28 +42,38 @@ class CumotionWorldInterfaceExample:
     - Synchronize world state
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._world_binding = None
         self._update_style: Literal["synchronize_transforms", "synchronize_properties", "synchronize"] = (
             "synchronize_transforms"  # default to transforms only
         )
         self._tracked_collision_api: Literal["physics", "motion_generation"] = "physics"  # default to physics
 
-    def set_update_style(self, style: Literal["synchronize_transforms", "synchronize_properties", "synchronize"]):
-        """Set the update style for world binding synchronization."""
+    def set_update_style(
+        self, style: Literal["synchronize_transforms", "synchronize_properties", "synchronize"]
+    ) -> None:
+        """Set the update style for world binding synchronization.
+
+        Args:
+            style: The update style.
+        """
         if style not in ["synchronize_transforms", "synchronize_properties", "synchronize"]:
             raise ValueError(
                 f"Invalid update style: {style}. Must be one of: synchronize_transforms, synchronize_properties, synchronize"
             )
         self._update_style = style
 
-    def set_tracked_collision_api(self, api: Literal["physics", "motion_generation"]):
-        """Set the tracked collision API."""
+    def set_tracked_collision_api(self, api: Literal["physics", "motion_generation"]) -> None:
+        """Set the tracked collision API.
+
+        Args:
+            api: The tracked collision API.
+        """
         if api not in ["physics", "motion_generation"]:
             raise ValueError(f"Invalid collision API: {api}. Must be one of: physics, motion_generation")
         self._tracked_collision_api = api
 
-    def load_example_assets(self):
+    def load_example_assets(self) -> None:
         """Load robot assets to the stage."""
         obstacle_path = "/World/obstacle"
 
@@ -72,7 +85,7 @@ class CumotionWorldInterfaceExample:
         RigidPrim(obstacle_path, masses=[1.0])
         return cube
 
-    def _cleanup_debug_prims(self):
+    def _cleanup_debug_prims(self) -> None:
         """Delete all prims under 'CumotionDebug' to clean up old debug visualization."""
         # Find all prims that have "CumotionDebug" in their path
         debug_prim_paths = prim_utils.find_matching_prim_paths(".*CumotionDebug.*", traverse=True)
@@ -93,7 +106,7 @@ class CumotionWorldInterfaceExample:
                 # Prim may have already been deleted or doesn't exist, skip
                 pass
 
-    def setup(self):
+    def setup(self) -> None:
         """Set up the world interface."""
         # Clean up old world binding and debug prims before setting up
         # Set old world binding to None to allow garbage collection
@@ -135,11 +148,12 @@ class CumotionWorldInterfaceExample:
         # initialize the objects into the cumotion world:
         self._world_binding.initialize()
 
-    def reset(self):
+    def reset(self) -> None:
+        """Reset the world interface."""
         self.setup()
 
-    def update(self, dt: float):
-        """Use different styles of updating the world binding"""
+    def update(self, dt: float) -> None:
+        """Use different styles of updating the world binding."""
         if self._world_binding is None:
             return
 

@@ -27,7 +27,7 @@ class TestRobotPoserStartup(omni.kit.test.AsyncTestCase):
         await create_new_stage_async()
         await update_stage_async()
 
-    async def test_import_and_construct(self):
+    async def test_import_and_construct(self) -> None:
         """Verify the package imports and the UIBuilder can be constructed."""
         from isaacsim.robot.poser.ui.ui.ui_builder import UIBuilder
 

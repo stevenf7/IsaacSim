@@ -24,17 +24,17 @@ import warp as wp
 class TestBatchColliderTransforms(omni.kit.test.AsyncTestCase):
     """Test suite for batch collider transform computation."""
 
-    async def setUp(self):
-        pass
+    async def setUp(self) -> None:
+        """Sets up the test environment before each test method."""
 
-    async def tearDown(self):
-        pass
+    async def tearDown(self) -> None:
+        """Cleans up the test environment after each test method."""
 
     # ============================================================================
     # Test batch_compute_collider_transforms
     # ============================================================================
 
-    async def test_batch_compute_collider_transforms_identity(self):
+    async def test_batch_compute_collider_transforms_identity(self) -> None:
         """Test batch collider transform computation with identity transforms."""
         # Identity transforms everywhere - output should equal input
         position_base_to_world = wp.array([[0.0, 0.0, 0.0]], dtype=wp.float32)
@@ -101,7 +101,7 @@ class TestBatchColliderTransforms(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(output.quaternions_base_to_collider.numpy()[:, 0], 1.0, atol=1e-5))  # w component
         self.assertTrue(np.allclose(output.quaternions_world_to_collider.numpy()[:, 0], 1.0, atol=1e-5))  # w component
 
-    async def test_batch_compute_collider_transforms_with_base_translation(self):
+    async def test_batch_compute_collider_transforms_with_base_translation(self) -> None:
         """Test with translated base frame."""
         # Base frame translated by [-1, 0, 0]
         position_base_to_world = wp.array([[-1.0, 0.0, 0.0]], dtype=wp.float32)
@@ -135,7 +135,7 @@ class TestBatchColliderTransforms(omni.kit.test.AsyncTestCase):
         expected_position_base = np.array([[0.0, 0.0, 0.0]])
         self.assertTrue(np.allclose(output.positions_base_to_collider.numpy(), expected_position_base, atol=1e-5))
 
-    async def test_batch_compute_collider_transforms_with_rotation(self):
+    async def test_batch_compute_collider_transforms_with_rotation(self) -> None:
         """Test with 90-degree rotation about Z-axis."""
         # Base frame rotated 90 degrees about Z-axis
         position_base_to_world = wp.array([[0.0, 0.0, 0.0]], dtype=wp.float32)
@@ -175,7 +175,7 @@ class TestBatchColliderTransforms(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(output.positions_base_to_collider.numpy(), expected_position_base, atol=1e-5))
         self.assertTrue(np.allclose(output.quaternions_base_to_collider.numpy(), expected_quaternion_base, atol=1e-5))
 
-    async def test_batch_compute_collider_transforms_complex_scenario(self):
+    async def test_batch_compute_collider_transforms_complex_scenario(self) -> None:
         """Test with multiple objects, colliders, and complex transforms."""
         # Base frame: translated and rotated
         position_base_to_world = wp.array([[-1.0, 0.0, 0.0]], dtype=wp.float32)
@@ -235,7 +235,7 @@ class TestBatchColliderTransforms(omni.kit.test.AsyncTestCase):
             quat_world_norm = np.linalg.norm(quat_world)
             self.assertTrue(np.isclose(quat_world_norm, 1.0, atol=1e-5))
 
-    async def test_batch_compute_collider_transforms_single_collider(self):
+    async def test_batch_compute_collider_transforms_single_collider(self) -> None:
         """Test edge case with single object and single collider."""
         position_base_to_world = wp.array([[0.0, 0.0, 0.0]], dtype=wp.float32)
         quaternion_base_to_world = wp.array([[1.0, 0.0, 0.0, 0.0]], dtype=wp.float32)

@@ -13,8 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Graph planner extension for cuMotion robot motion planning with Isaac Sim integration."""
+
+
 import asyncio
 import gc
+from typing import Any
 
 import carb.eventdispatcher
 import omni
@@ -27,12 +31,19 @@ from isaacsim.gui.components.element_wrappers import ScrollingWindow
 from isaacsim.gui.components.menu import MenuItemDescription
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 
-from .global_variables import EXTENSION_DESCRIPTION, EXTENSION_TITLE
+from .global_variables import EXTENSION_TITLE
 from .ui_builder import UIBuilder
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self, ext_id: str):
+    """Isaac Sim extension providing graph-based cuMotion motion planning examples with interactive UI."""
+
+    def on_startup(self, ext_id: str) -> None:
+        """Initialize the extension and register UI elements.
+
+        Args:
+            ext_id: The extension ID.
+        """
         self.ext_id = ext_id
         self._usd_context = omni.usd.get_context()
 
@@ -62,7 +73,8 @@ class Extension(omni.ext.IExt):
         self._physics_subscription = None
         self._timeline = omni.timeline.get_timeline_interface()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
+        """Clean up the extension and deregister UI elements."""
         self._models = {}
         remove_menu_items(self._menu_items, "cuMotion Examples")
 
@@ -74,7 +86,7 @@ class Extension(omni.ext.IExt):
         self.ui_builder.cleanup()
         gc.collect()
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: bool) -> None:
         if self._window.visible:
             self._usd_context = omni.usd.get_context()
             self._stage_event_sub_opened = carb.eventdispatcher.get_eventdispatcher().observe_event(
@@ -107,15 +119,15 @@ class Extension(omni.ext.IExt):
             self._timeline_event_sub_stop = None
             self.ui_builder.cleanup()
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
                 self._build_extension_ui()
 
-        async def dock_window():
+        async def dock_window() -> None:
             await omni.kit.app.get_app().next_update_async()
 
-            def dock(space, name, location, pos=0.5):
+            def dock(space: Any, name: str, location: Any, pos: float = 0.5) -> Any:
                 window = omni.ui.Workspace.get_window(name)
                 if window and space:
                     window.dock_in(space, location, pos)
@@ -127,31 +139,31 @@ class Extension(omni.ext.IExt):
 
         self._task = asyncio.ensure_future(dock_window())
 
-    def _menu_callback(self):
+    def _menu_callback(self) -> None:
         self._window.visible = not self._window.visible
         self.ui_builder.on_menu_callback()
 
-    def _on_timeline_play(self, event):
+    def _on_timeline_play(self, event: Any) -> None:
         if not self._physics_subscription:
             self._physics_subscription = self._physics_simulation_interface.subscribe_physics_on_step_events(
                 pre_step=False, order=0, on_update=self._on_physics_step
             )
 
-    def _on_timeline_stop(self, event):
+    def _on_timeline_stop(self, event: Any) -> None:
         self._physics_subscription = None
         self.ui_builder.on_timeline_event(event)
 
-    def _on_physics_step(self, step, context):
+    def _on_physics_step(self, step: float, context: Any) -> None:
         self.ui_builder.on_physics_step(step)
 
-    def _on_stage_opened(self, event):
+    def _on_stage_opened(self, event: Any) -> None:
         self._physics_subscription = None
         self.ui_builder.cleanup()
         self.ui_builder.on_stage_event(event)
 
-    def _on_stage_closed(self, event):
+    def _on_stage_closed(self, event: Any) -> None:
         self._physics_subscription = None
         self.ui_builder.cleanup()
 
-    def _build_extension_ui(self):
+    def _build_extension_ui(self) -> None:
         self.ui_builder.build_ui()

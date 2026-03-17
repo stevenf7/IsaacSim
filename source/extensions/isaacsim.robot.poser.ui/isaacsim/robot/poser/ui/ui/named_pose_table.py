@@ -24,7 +24,6 @@ import omni.ui as ui
 from omni.kit.widget.searchfield import SearchField
 
 from ..utils.treeview_delegate import (
-    AddNamedPoseItem,
     SearchableItem,
     TreeViewIDColumn,
     TreeViewWithPlacerHolderDelegate,

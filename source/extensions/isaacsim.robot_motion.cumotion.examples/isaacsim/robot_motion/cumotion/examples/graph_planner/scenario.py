@@ -13,10 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""A cuMotion graph-based motion planning example for Franka robot with configuration and task space targets."""
+
+
+from typing import Any
+
 import numpy as np
-import warp as wp
-from isaacsim.core.experimental.objects import Cone, Cube, Cylinder, Mesh
-from isaacsim.core.experimental.prims import Articulation, GeomPrim
+from isaacsim.core.experimental.objects import Cone, Cylinder, Mesh
 from isaacsim.core.experimental.utils import prim as prim_utils
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.robot_motion.cumotion import (
@@ -43,7 +46,8 @@ class FrankaGraphPlannerExample:
     - :meth:`update`: Execute the planned trajectory over time
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize the FrankaGraphPlannerExample with default attribute values."""
         self._articulation = None
         self._trajectory = None
         self._trajectory_time = 0.0
@@ -54,7 +58,7 @@ class FrankaGraphPlannerExample:
         self._q_initial = None
         self._first_trajectory = True
 
-    def _fetch_initial_position(self):
+    def _fetch_initial_position(self) -> None:
         if self._first_trajectory:
             self._first_trajectory = False
         else:
@@ -65,7 +69,7 @@ class FrankaGraphPlannerExample:
                 .astype(np.float64)
             )
 
-    def _cleanup_debug_prims(self):
+    def _cleanup_debug_prims(self) -> None:
         """Delete all prims under 'CumotionDebug' to clean up old debug visualization."""
         # Find all prims that have "CumotionDebug" in their path
         debug_prim_paths = prim_utils.find_matching_prim_paths(".*CumotionDebug.*", traverse=True)
@@ -86,7 +90,7 @@ class FrankaGraphPlannerExample:
                 # Prim may have already been deleted or doesn't exist, skip
                 pass
 
-    def setup_world_and_planner(self):
+    def setup_world_and_planner(self) -> tuple:
         """Set up world binding and graph-based motion planner (shared by both target types)."""
         # Load robot configuration
         robot_config = load_cumotion_supported_robot("franka")
@@ -141,7 +145,7 @@ class FrankaGraphPlannerExample:
 
         return robot_config, world_binding, planner
 
-    def plan_to_cspace_target(self, q_target=None):
+    def plan_to_cspace_target(self, q_target: Any = None) -> str | None:
         """Plan a path to a C-space target.
 
         Args:
@@ -149,6 +153,7 @@ class FrankaGraphPlannerExample:
 
         Returns:
             str: Error message if planning failed, None if successful.
+
         """
         # Clean up old debug prims before planning
         self._cleanup_debug_prims()
@@ -192,11 +197,12 @@ class FrankaGraphPlannerExample:
         self._trajectory_time = 0.0
         return None
 
-    def plan_to_task_space_target(self):
+    def plan_to_task_space_target(self) -> str | None:
         """Plan a path to a task-space target (from target cube position).
 
         Returns:
             str: Error message if planning failed, None if successful.
+
         """
         # Clean up old debug prims before planning
         self._cleanup_debug_prims()
@@ -239,7 +245,7 @@ class FrankaGraphPlannerExample:
         self._trajectory_time = 0.0
         return None
 
-    def update(self, step: float):
+    def update(self, step: float) -> None:
         """Update trajectory execution on each physics step."""
         if self._trajectory is None:
             return

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Common utilities and specifications for experimental camera sensor implementations."""
+
+
 import warp as wp
 
 ANNOTATOR_SPEC = {

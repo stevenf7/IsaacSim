@@ -29,10 +29,8 @@ class Extension(omni.ext.IExt):
         """Run when the extension is loaded.
 
         Args:
-            ext_id: Extension identifier from the application.
+            ext_id (str): Extension identifier from the application.
         """
-        pass
 
     def on_shutdown(self) -> None:
         """Run when the extension is unloaded."""
-        pass

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tiled camera sensor implementation for batch processing multiple cameras with shared annotators."""
+
+
 from __future__ import annotations
 
 from typing import Any, Literal, get_args
@@ -78,7 +81,7 @@ class TiledCameraSensor:
         # TiledCameraSensor
         resolution: tuple[int, int],
         annotators: ANNOTATOR | list[ANNOTATOR],
-    ):
+    ) -> None:
         # define properties
         self._resolution = resolution
         self._tiled_resolution = None
@@ -131,7 +134,7 @@ class TiledCameraSensor:
             >>> tiled_camera_sensor.annotators
             ['distance_to_image_plane', 'rgb']
         """
-        return sorted(list(self._annotators.keys()))
+        return sorted(self._annotators.keys())
 
     @property
     def camera(self) -> Camera:
@@ -353,7 +356,7 @@ class TiledCameraSensor:
     Internal methods.
     """
 
-    def _invalidate_sensor(self):
+    def _invalidate_sensor(self) -> None:
         """Invalidate sensor by detaching annotators and destroying the hydra texture."""
         # detach annotators and destroy the hydra texture
         if self._hydra_texture is not None:
@@ -363,7 +366,7 @@ class TiledCameraSensor:
         self._annotators = {}
         self._hydra_texture = None
 
-    def _initialize_sensor(self, annotators: str | list[str]):
+    def _initialize_sensor(self, annotators: str | list[str]) -> None:
         """Initialize sensor by creating the hydra texture and attaching annotators."""
         # compute tiled resolution
         num_rows = round(len(self._camera) ** 0.5)
@@ -412,9 +415,10 @@ def _wk_reshape_tiled_image(
     num_tiles_x: int,
     offset: int,
     batched_frames: Any,
-):
-    """Reshape a tiled data with shape ``(height * width * num_channels * num_cameras)`` to a batch of images
-    with shape ``(num_cameras, height, width, num_channels)``.
+) -> None:
+    """Reshape a tiled data with shape ``(height * width * num_channels * num_cameras)`` to a batch of images.
+
+    The output has shape ``(num_cameras, height, width, num_channels)``.
 
     Args:
         tiled_data: Tiled data with shape ``(height * width * num_channels * num_cameras)``.

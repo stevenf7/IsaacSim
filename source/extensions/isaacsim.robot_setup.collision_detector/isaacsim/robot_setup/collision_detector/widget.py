@@ -218,7 +218,7 @@ class CollisionListModel(ui.AbstractItemModel):
             column_id: Column index to sort by.
         """
 
-        def sort_val(item: RigidBodyPairItem):
+        def sort_val(item: RigidBodyPairItem) -> str | int:
             if column_id == 0:
                 return item.data.body_a_name.lower()
             elif column_id == 1:

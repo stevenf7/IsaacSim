@@ -12,23 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Motion generation extension: defines interfaces to work with IsaacSim.
-"""
+"""Motion generation extension: defines interfaces to work with IsaacSim."""
 
 import os
 
-from .configuration_loader import (
-    CumotionRobot,
-    load_cumotion_robot,
-    load_cumotion_supported_robot,
-)
-from .cumotion_trajectory import CumotionTrajectory
-from .cumotion_world_interface import CumotionWorldInterface
-from .graph_based_motion_planner import GraphBasedMotionPlanner
-from .rmp_flow_controller import RmpFlowController
-from .trajectory_generator import TrajectoryGenerator
+from .configuration_loader import CumotionRobot as CumotionRobot
+from .configuration_loader import load_cumotion_robot as load_cumotion_robot
+from .configuration_loader import load_cumotion_supported_robot as load_cumotion_supported_robot
+from .cumotion_trajectory import CumotionTrajectory as CumotionTrajectory
+from .cumotion_world_interface import CumotionWorldInterface as CumotionWorldInterface
+from .graph_based_motion_planner import GraphBasedMotionPlanner as GraphBasedMotionPlanner
+from .rmp_flow_controller import RmpFlowController as RmpFlowController
+from .trajectory_generator import TrajectoryGenerator as TrajectoryGenerator
 
 # temporary: TrajectoryOptimizer does not work on Windows.
 if os.name != "nt":
-    from .trajectory_optimizer import TrajectoryOptimizer
+    from .trajectory_optimizer import TrajectoryOptimizer as TrajectoryOptimizer

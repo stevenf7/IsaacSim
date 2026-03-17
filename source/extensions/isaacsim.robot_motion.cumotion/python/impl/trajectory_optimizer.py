@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides trajectory optimization capabilities using cuMotion's Trajectory Optimizer algorithm for generating smooth, collision-free robot trajectories."""
+
 from __future__ import annotations
 
 import os
@@ -37,6 +39,7 @@ class TrajectoryOptimizer:
 
     Args:
         cumotion_robot: Robot configuration containing kinematics and joint information.
+        robot_joint_space: List of joint names defining the robot's joint space.
         cumotion_world_interface: World interface providing collision geometry.
         tool_frame: Name of the tool frame for task space planning. Defaults to None,
             which uses the first tool frame defined in the robot description.
@@ -51,6 +54,7 @@ class TrajectoryOptimizer:
 
             optimizer = TrajectoryOptimizer(
                 cumotion_robot=robot_config,
+                robot_joint_space=joint_names,
                 cumotion_world_interface=world_interface,
             )
             # See cuMotion documentation for creating target specifications
@@ -64,7 +68,7 @@ class TrajectoryOptimizer:
         cumotion_world_interface: CumotionWorldInterface,
         tool_frame: str | None = None,
         trajectory_optimizer_config_filename: pathlib.Path | str | None = None,
-    ):
+    ) -> None:
         if os.name == "nt":
             raise AssertionError("Trajectory Optimizer is not supported on Windows.")
 

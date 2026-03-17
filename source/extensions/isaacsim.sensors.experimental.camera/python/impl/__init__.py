@@ -14,7 +14,10 @@
 # limitations under the License.
 
 
-from .camera_sensor import CameraSensor
-from .single_view_depth_camera_sensor import SingleViewDepthCameraSensor
-from .tiled_camera_sensor import TiledCameraSensor
-from .utils import draw_annotator_data_to_image
+"""Implementation module for experimental camera sensors providing depth, tiled, and standard camera sensor classes with annotation utilities."""
+
+
+from .camera_sensor import CameraSensor as CameraSensor
+from .single_view_depth_camera_sensor import SingleViewDepthCameraSensor as SingleViewDepthCameraSensor
+from .tiled_camera_sensor import TiledCameraSensor as TiledCameraSensor
+from .utils import draw_annotator_data_to_image as draw_annotator_data_to_image

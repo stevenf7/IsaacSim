@@ -1,5 +1,5 @@
 [package]
-version = "0.1.0"
+version = "0.2.0"
 category = "Simulation"
 title = "Robot Self Collision Detector"
 description = "UI panel for detecting and managing self-collision pairs between rigid body links of a robot articulation"
@@ -7,7 +7,7 @@ authors = ["rgasoto@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_setup.collision_detector"
 keywords = ["isaac", "robot", "collision", "self-collision", "physics"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -153,3 +153,6 @@ args = [
 stdoutFailPatterns.exclude = [
     "*omni.syntheticdata.scripts.extension*stageFrameHistoryCount*",
 ]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

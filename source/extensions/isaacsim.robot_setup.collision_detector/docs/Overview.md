@@ -41,3 +41,10 @@ and managing collision filters.
   Deselecting clears all overlays.
 * **Stage awareness** – resets state on stage open/close; clears viewport
   overlays when the panel is hidden.
+
+
+```{image} ../../../../source/extensions/isaacsim.robot_setup.collision_detector/data/preview.png
+---
+align: center
+---
+```

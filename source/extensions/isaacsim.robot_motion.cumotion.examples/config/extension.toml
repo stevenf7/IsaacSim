@@ -4,14 +4,14 @@
 #
 
 [package]
-version = "0.1.1"
+version = "0.2.0"
 category = "Simulation"
 title = "cuMotion Examples"
 description = "Examples for using the cuMotion planning library under motion generation."
 authors = ["hmazhar@nvidia.com", "jhough@nvidia.com"]
 keywords = ["cumotion","motion","generation","rmp","rmpflow","rrt","trajectory"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
@@ -58,3 +58,6 @@ dependencies = []
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

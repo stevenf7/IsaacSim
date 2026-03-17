@@ -27,7 +27,6 @@ from isaacsim.robot.poser.robot_poser import (
     NAMED_POSES_SCOPE,
     PoseResult,
     _sanitize_name,
-    apply_pose_by_name,
     delete_named_pose,
     export_poses,
     get_named_pose,

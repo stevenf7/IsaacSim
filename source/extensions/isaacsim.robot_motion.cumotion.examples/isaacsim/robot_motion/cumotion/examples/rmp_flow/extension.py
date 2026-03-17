@@ -13,8 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Isaac Sim extension providing RMPflow motion planning examples with interactive UI demonstrations."""
+
+
 import asyncio
 import gc
+from typing import Any
 
 import carb.eventdispatcher
 import omni
@@ -27,7 +31,7 @@ from isaacsim.gui.components.element_wrappers import ScrollingWindow
 from isaacsim.gui.components.menu import MenuItemDescription
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 
-from .global_variables import EXTENSION_DESCRIPTION, EXTENSION_TITLE
+from .global_variables import EXTENSION_TITLE
 from .ui_builder import UIBuilder
 
 """
@@ -50,9 +54,29 @@ This class sets up standard useful callback functions in UIBuilder:
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self, ext_id: str):
-        """Initialize extension and UI elements"""
+    """Extension for the isaacsim.robot_motion.cumotion.examples package that provides RMPflow motion planning examples.
 
+    This extension creates a UI window for demonstrating RMPflow (Riemannian Motion Policy flow) motion planning
+    capabilities within Isaac Sim. It registers itself under the "cuMotion Examples" menu as "RMPflow" and provides
+    a scrolling window interface for users to interact with motion planning demonstrations.
+
+    The extension manages the lifecycle of UI components, event subscriptions, and physics simulation callbacks.
+    It automatically subscribes to stage events (opened/closed) and timeline events (play/stop) to properly
+    manage resources and update the UI accordingly. When the timeline is playing, it subscribes to physics step
+    events to enable real-time motion planning updates.
+
+    The extension delegates UI construction and event handling to a UIBuilder instance, which contains the
+    specific implementation for the RMPflow examples. The window is automatically docked to the left side of
+    the viewport when opened.
+    """
+
+    def on_startup(self, ext_id: str) -> None:
+        """Initialize extension and UI elements.
+
+        Args:
+            ext_id: The extension ID.
+
+        """
         self.ext_id = ext_id
         self._usd_context = omni.usd.get_context()
 
@@ -86,7 +110,8 @@ class Extension(omni.ext.IExt):
         self._physics_subscription = None
         self._timeline = omni.timeline.get_timeline_interface()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
+        """Clean up the extension and deregister UI elements."""
         self._models = {}
         remove_menu_items(self._menu_items, "cuMotion Examples")
 
@@ -98,7 +123,7 @@ class Extension(omni.ext.IExt):
         self.ui_builder.cleanup()
         gc.collect()
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: bool) -> None:
         if self._window.visible:
             # Subscribe to Stage and Timeline Events
             self._usd_context = omni.usd.get_context()
@@ -132,15 +157,15 @@ class Extension(omni.ext.IExt):
             self._timeline_event_sub_stop = None
             self.ui_builder.cleanup()
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
                 self._build_extension_ui()
 
-        async def dock_window():
+        async def dock_window() -> None:
             await omni.kit.app.get_app().next_update_async()
 
-            def dock(space, name, location, pos=0.5):
+            def dock(space: Any, name: str, location: Any, pos: float = 0.5) -> Any:
                 window = omni.ui.Workspace.get_window(name)
                 if window and space:
                     window.dock_in(space, location, pos)
@@ -156,36 +181,42 @@ class Extension(omni.ext.IExt):
     # Functions below this point call user functions
     #################################################################
 
-    def _menu_callback(self):
+    def _menu_callback(self) -> None:
         self._window.visible = not self._window.visible
         self.ui_builder.on_menu_callback()
 
-    def _on_timeline_play(self, event):
-        """Timeline play event callback."""
+    def _on_timeline_play(self, event: Any) -> None:
+        """Handle timeline play event callback."""
         if not self._physics_subscription:
             self._physics_subscription = self._physics_simulation_interface.subscribe_physics_on_step_events(
                 pre_step=False, order=0, on_update=self._on_physics_step
             )
 
-    def _on_timeline_stop(self, event):
-        """Timeline stop event callback."""
+    def _on_timeline_stop(self, event: Any) -> None:
+        """Handle timeline stop event callback."""
         self._physics_subscription = None
         self.ui_builder.on_timeline_event(event)
 
-    def _on_physics_step(self, step, context):
+    def _on_physics_step(self, step: float, context: Any) -> None:
         self.ui_builder.on_physics_step(step)
 
-    def _on_stage_opened(self, event):
-        """Stage opened event callback."""
+    def _on_stage_opened(self, event: Any) -> None:
+        """Handle stage opened event callback."""
         self._physics_subscription = None
         self.ui_builder.cleanup()
         self.ui_builder.on_stage_event(event)
 
-    def _on_stage_closed(self, event):
-        """Stage closed event callback."""
+    def _on_stage_closed(self, event: Any) -> None:
+        """Handle stage closed event callback."""
         self._physics_subscription = None
         self.ui_builder.cleanup()
 
-    def _build_extension_ui(self):
+    def _build_extension_ui(self) -> None:
+        """Build the extension UI by calling the user-defined UI builder.
+
+        This method serves as the main UI construction entry point, delegating the actual UI creation to the
+        UIBuilder's build_ui method. It is called when the extension window becomes visible to populate the
+        interface with user-defined components.
+        """
         # Call user function for building UI
         self.ui_builder.build_ui()

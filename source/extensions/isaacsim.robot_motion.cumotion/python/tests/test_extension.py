@@ -27,15 +27,24 @@ import omni.kit.test
 
 
 class TestExtension(omni.kit.test.AsyncTestCase):
-    async def setUp(self):
-        """Method called to prepare the test fixture"""
+    """Test class for the isaacsim.robot_motion.cumotion extension.
+
+    This class provides automated testing for the cumotion extension functionality using the Omniverse Kit
+    testing framework. It inherits from omni.kit.test.AsyncTestCase to support asynchronous test methods and
+    auto-discovery by the Kit extension system.
+
+    The test verifies basic functionality of the cumotion module, including world creation capabilities.
+    """
+
+    async def setUp(self) -> None:
+        """Method called to prepare the test fixture."""
         super().setUp()
         # ---------------
         # Do custom setUp
         # ---------------
 
-    async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+    async def tearDown(self) -> None:
+        """Method called immediately after the test method has been called."""
         # ------------------
         # Do custom tearDown
         # ------------------
@@ -43,7 +52,8 @@ class TestExtension(omni.kit.test.AsyncTestCase):
 
     # --------------------------------------------------------------------
 
-    async def test_extension(self):
+    async def test_extension(self) -> None:
+        """Tests the cumotion extension by creating a world instance and verifying it is not None."""
         # Kit extension system test for Python is based on the unittest module.
         # Visit https://docs.python.org/3/library/unittest.html to see the
         # available assert methods to check for and report failures.
