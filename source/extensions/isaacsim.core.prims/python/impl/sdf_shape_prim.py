@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Provides high-level functionality for handling geometry prims that provide their Signed Distance Field (SDF)."""
+
 
 from typing import List, Optional, Union
 
@@ -34,53 +37,37 @@ class SdfShapePrim(GeometryPrim):
     This object wraps all matching mesh geometry prims found at the regex provided at the prim_paths_expr.
 
     Args:
-
-        prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
-                                example: "/World/Env[1-5]/Microwave" will match /World/Env1/Microwave,
-                                /World/Env2/Microwave..etc.
-                                (a non regex prim path can also be used to encapsulate one XForm).
-        num_query_points (int): number of points queried by this view object
-        prepare_sdf_schemas (bool, optional): apply PhysxSDFMeshCollisionAPI to prims in prim_paths_expr. Defaults to True.
-        name (str, optional): shortname to be used as a key by Scene class.
-                                Note: needs to be unique if the object is added to the Scene.
-                                Defaults to "sdf_shape_view".
-        positions (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional):
-                                                        default positions in the world frame of the prim.
-                                                        shape is (N, 3).
-                                                        Defaults to None, which means left unchanged.
-        translations (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional):
-                                                        default translations in the local frame of the prims
-                                                        (with respect to its parent prims). shape is (N, 3).
-                                                        Defaults to None, which means left unchanged.
-        orientations (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional):
-                                                        default quaternion orientations in the world/ local frame of the prim
-                                                        (depends if translation or position is specified).
-                                                        quaternion is scalar-first (w, x, y, z). shape is (N, 4).
-                                                        Defaults to None, which means left unchanged.
-        scales (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): local scales to be applied to
-                                                        the prim's dimensions. shape is (N, 3).
-                                                        Defaults to None, which means left unchanged.
-        visibilities (Optional[Union[np.ndarray, torch.Tensor, wp.array], optional): set to false for an invisible prim in
-                                                                            the stage while rendering. shape is (N,).
-                                                                            Defaults to None.
-        reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties
-                                                (i.e: translate, orient and scale) ONLY and in that order.
-                                                Set this parameter to False if the object were cloned using using
-                                                the cloner api in isaacsim.core.cloner. Defaults to True.
-        collisions (Optional[Union[np.ndarray, torch.Tensor, wp.array]], optional): Set to True if the geometry already have/
-                                                    should have a collider (i.e not only a visual geometry). shape is (N,).
-                                                    Defaults to None.
-        track_contact_forces (bool, Optional) : if enabled, the view will track the net contact forces on each geometry prim
-                                                in the view. Note that the collision flag should be set to True to report
-                                                contact forces. Defaults to False.
-        prepare_contact_sensors (bool, Optional): applies contact reporter API to the prim if it already does not have one.
-                                                    Defaults to False.
-        disable_stablization (bool, optional): disables the contact stabilization parameter in the physics context.
-                                                Defaults to True.
-        contact_filter_prim_paths_expr (Optional[List[str]], Optional): a list of filter expressions which allows for tracking
-                                                                        contact forces between the geometry prim and this subset
-                                                                        through get_contact_force_matrix().
-
+        prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
+            Example: "/World/Env[1-5]/Microwave" will match /World/Env1/Microwave,
+            /World/Env2/Microwave..etc.
+            (a non regex prim path can also be used to encapsulate one XForm).
+        num_query_points: Number of points queried by this view object.
+        prepare_sdf_schemas: Apply PhysxSDFMeshCollisionAPI to prims in prim_paths_expr.
+        name: Shortname to be used as a key by Scene class.
+            Note: needs to be unique if the object is added to the Scene.
+        positions: Default positions in the world frame of the prim.
+            Shape is (N, 3).
+        translations: Default translations in the local frame of the prims
+            (with respect to its parent prims). Shape is (N, 3).
+        orientations: Default quaternion orientations in the world/ local frame of the prim
+            (depends if translation or position is specified).
+            Quaternion is scalar-first (w, x, y, z). Shape is (N, 4).
+        scales: Local scales to be applied to the prim's dimensions. Shape is (N, 3).
+        visibilities: Set to false for an invisible prim in the stage while rendering. Shape is (N,).
+        reset_xform_properties: True if the prims don't have the right set of xform properties
+            (i.e: translate, orient and scale) ONLY and in that order.
+            Set this parameter to False if the object were cloned using using
+            the cloner api in isaacsim.core.cloner.
+        collisions: Set to True if the geometry already have/
+            should have a collider (i.e not only a visual geometry). Shape is (N,).
+        track_contact_forces: If enabled, the view will track the net contact forces on each geometry prim
+            in the view. Note that the collision flag should be set to True to report
+            contact forces.
+        prepare_contact_sensors: Applies contact reporter API to the prim if it already does not have one.
+        disable_stablization: Disables the contact stabilization parameter in the physics context.
+        contact_filter_prim_paths_expr: A list of filter expressions which allows for tracking
+            contact forces between the geometry prim and this subset
+            through get_contact_force_matrix().
     """
 
     def __init__(
@@ -100,7 +87,7 @@ class SdfShapePrim(GeometryPrim):
         prepare_contact_sensors: bool = False,
         disable_stablization: bool = True,
         contact_filter_prim_paths_expr: Optional[List[str]] = [],
-    ) -> None:
+    ):
         GeometryPrim.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
@@ -137,14 +124,19 @@ class SdfShapePrim(GeometryPrim):
 
     @property
     def num_query_points(self) -> int:
-        """
+        """Number of points queried by this view object.
+
         Returns:
-            int: number of points queried by this view object.
+            Number of points queried by this view object.
         """
         return self._num_query_points
 
     def _apply_sdf_schema(self, prim_at_path):
-        """apply appropriate sdf schemas to prims."""
+        """Apply appropriate sdf schemas to prims.
+
+        Args:
+            prim_at_path: The prim to apply SDF schema to.
+        """
 
         if not prim_at_path.HasAPI(UsdPhysics.CollisionAPI):
             UsdPhysics.CollisionAPI.Apply(prim_at_path)
@@ -156,9 +148,11 @@ class SdfShapePrim(GeometryPrim):
             PhysxSchema.PhysxSDFMeshCollisionAPI.Apply(prim_at_path)
 
     def is_physics_handle_valid(self) -> bool:
-        """
+        """Whether the physics handle of the view is valid.
+
         Returns:
-            bool: True if the physics handle of the view is valid (i.e physics is initialized for the view). Otherwise False.
+            True if the physics handle of the view is valid (i.e physics is initialized for the view).
+            Otherwise False.
         """
         return self._physics_view is not None
 
@@ -166,7 +160,7 @@ class SdfShapePrim(GeometryPrim):
         """Create a physics simulation view if not passed and creates a sdf shape view in physX.
 
         Args:
-            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
+            physics_sim_view: Current physics simulation view.
         """
         if physics_sim_view is None:
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
@@ -192,16 +186,14 @@ class SdfShapePrim(GeometryPrim):
         """Get the SDF values and gradients of the query points
 
         Args:
-            points ([Union[np.ndarray, torch.Tensor]]): points (represented in the local frames of meshes) to be queried for sdf and gradients.
-                                                                          shape is (self.num_shapes, self.num_query_points, 3).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            points: Points (represented in the local frames of meshes) to be queried for sdf and gradients.
+                Shape is (self.num_shapes, self.num_query_points, 3).
+            indices: Indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: SDF values and gradients of points for prims with shape (self.num_shapes, self.num_query_points, 4).
+            SDF values and gradients of points for prims with shape (self.num_shapes, self.num_query_points, 4).
             The first component is the SDF value while the last three represent the gradient
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -222,14 +214,12 @@ class SdfShapePrim(GeometryPrim):
         """Gets sdf margin values.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: margins of the sdf collision apis for prims in the view. shape is (M,).
+            Margins of the sdf collision apis for prims in the view. shape is (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         values = np.zeros(indices.shape[0], dtype="float32")
@@ -253,14 +243,12 @@ class SdfShapePrim(GeometryPrim):
         """Gets sdf collision narrow band thickness values.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: narrow band thickness of the sdf collision apis for prims in the view. shape is (M,).
+            Narrow band thickness of the sdf collision apis for prims in the view. shape is (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         values = np.zeros(indices.shape[0], dtype="float32")
@@ -284,14 +272,12 @@ class SdfShapePrim(GeometryPrim):
         """Gets sdf collision subgrid resolution values.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: subgrid resolutions of the sdf collision apis for prims in the view. shape is (M,).
+            Subgrid resolutions of the sdf collision apis for prims in the view. shape is (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         values = np.zeros(indices.shape[0], dtype="int32")
@@ -315,14 +301,12 @@ class SdfShapePrim(GeometryPrim):
         """Gets sdf collision resolution values.
 
         Args:
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: resolutions of the sdf collision apis for prims in the view. shape is (M,).
+            Resolutions of the sdf collision apis for prims in the view. shape is (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         values = np.zeros(indices.shape[0], dtype="float32")
@@ -346,11 +330,9 @@ class SdfShapePrim(GeometryPrim):
         """Sets signed distance field margins for prims in the view.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): sdf margins to be set. shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Sdf margins to be set. shape (M,).
+            indices: Indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -366,16 +348,14 @@ class SdfShapePrim(GeometryPrim):
             read_idx += 1
 
     def set_sdf_narrow_band_thickness(
-        self, values: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None
     ) -> None:
         """Sets signed distance field narrow band thicknesses for prims in the view.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): sdf margins to be set. shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Sdf narrow band thicknesses to be set. shape (M,).
+            indices: Indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -391,16 +371,14 @@ class SdfShapePrim(GeometryPrim):
             read_idx += 1
 
     def set_sdf_subgrid_resolution(
-        self, values: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None
     ) -> None:
         """Sets signed distance field subgrid resolutions for prims in the view.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): sdf margins to be set. shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Sdf subgrid resolutions to be set. shape (M,).
+            indices: Indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -416,16 +394,14 @@ class SdfShapePrim(GeometryPrim):
             read_idx += 1
 
     def set_sdf_resolution(
-        self, values: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None
     ) -> None:
-        """Sets signed distance field subgrid resolutions for prims in the view.
+        """Sets signed distance field resolutions for prims in the view.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): sdf margins to be set. shape (M,).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Sdf resolutions to be set. shape (M,).
+            indices: Indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)

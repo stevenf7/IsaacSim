@@ -31,7 +31,7 @@ def clear_xform_ops(prim: Usd.Prim):
     """Remove all xform ops from input prim.
 
     Args:
-        prim (Usd.Prim): The input USD prim.
+        prim: The input USD prim.
     """
     xformable = UsdGeom.Xformable(prim)
     xformable.ClearXformOpOrder()
@@ -48,10 +48,10 @@ def reset_and_set_xform_ops(
     """Reset xform ops to isaac sim defaults, and set their values
 
     Args:
-        prim (Usd.Prim): Prim to reset
-        translation (Gf.Vec3d): translation to set
-        orientation (Gf.Quatd): orientation to set
-        scale (Gf.Vec3d, optional): scale to set. Defaults to Gf.Vec3d([1.0, 1.0, 1.0]).
+        prim: Prim to reset
+        translation: translation to set
+        orientation: orientation to set
+        scale: scale to set
     """
     xformable = UsdGeom.Xformable(prim)
     clear_xform_ops(prim)
@@ -69,10 +69,10 @@ def reset_and_set_xform_ops(
 
 
 def reset_xform_ops(prim: Usd.Prim):
-    """Reset xform ops for a prim to isaac sim defaults,
+    """Reset xform ops for a prim to isaac sim defaults.
 
     Args:
-        prim (Usd.Prim): Prim to reset xform ops on
+        prim: Prim to reset xform ops on
     """
     properties = prim.GetPropertyNames()
     xformable = UsdGeom.Xformable(prim)
@@ -88,6 +88,15 @@ def reset_xform_ops(prim: Usd.Prim):
 
 
 def _get_world_pose_transform_w_scale(prim_path, fabric=False):
+    """Get the world transformation matrix including scale for a prim.
+
+    Args:
+        prim_path: Path to the prim.
+        fabric: Whether to use fabric API for retrieving the transformation.
+
+    Raises:
+        Exception: If the prim path is not valid.
+    """
     # This will return a transformation matrix with translation as the last row and scale included
     if not is_prim_path_valid(prim_path, fabric=False):
         raise Exception("Prim path is not valid")
@@ -141,6 +150,17 @@ def _get_world_pose_transform_w_scale(prim_path, fabric=False):
 
 
 def get_local_pose(prim_path):
+    """Get the local pose of a prim relative to its parent.
+
+    Args:
+        prim_path: Path to the prim.
+
+    Returns:
+        A tuple containing the local translation (as numpy array) and orientation (as quaternion in w,x,y,z format).
+
+    Raises:
+        Exception: If the prim path is not valid.
+    """
     if not is_prim_path_valid(prim_path, fabric=False):
         raise Exception("Prim path is not valid")
     fabric_prim = get_prim_at_path(prim_path=prim_path, fabric=True)
@@ -180,6 +200,15 @@ def get_local_pose(prim_path):
 
 
 def get_world_pose(prim_path, fabric=False):
+    """Get the world pose of a prim.
+
+    Args:
+        prim_path: Path to the prim.
+        fabric: Whether to use fabric API for retrieving the pose.
+
+    Returns:
+        A tuple containing the world translation (as numpy array) and orientation (as quaternion in w,x,y,z format).
+    """
     result_transform = _get_world_pose_transform_w_scale(prim_path, fabric)
     result_transform.Orthonormalize()
     result_transform = np.transpose(result_transform)

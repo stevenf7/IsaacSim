@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Tensor-based transformation utilities for 3D poses, coordinate frame conversions, and spatial operations."""
+
 
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.utils.torch.rotations import (
@@ -35,6 +38,7 @@ def tf_matrices_from_poses(translations: torch.Tensor, orientations: torch.Tenso
     Args:
         translations: Translations with shape (N, 3).
         orientations: Quaternion orientations (scalar first) with shape (N, 4).
+        device: Device for tensor operations.
 
     Returns:
         Transformation matrices with shape (N, 4, 4).
@@ -48,6 +52,17 @@ def tf_matrices_from_poses(translations: torch.Tensor, orientations: torch.Tenso
 
 
 def get_local_from_world(parent_transforms, positions, orientations, device):
+    """Converts world-space positions and orientations to local-space relative to parent transforms.
+
+    Args:
+        parent_transforms: Transformation matrices of parent objects.
+        positions: World-space positions to convert.
+        orientations: World-space orientations to convert.
+        device: Device for tensor operations.
+
+    Returns:
+        Tuple of (local_translations, local_orientations) in parent coordinate frames.
+    """
     calculated_translations = create_zeros_tensor(shape=[positions.shape[0], 3], dtype="float32", device=device)
     calculated_orientations = create_zeros_tensor(shape=[positions.shape[0], 4], dtype="float32", device=device)
     my_world_transforms = tf_matrices_from_poses(translations=positions, orientations=orientations, device=device)
@@ -64,6 +79,17 @@ def get_local_from_world(parent_transforms, positions, orientations, device):
 
 
 def get_world_from_local(parent_transforms, translations, orientations, device):
+    """Converts local-space translations and orientations to world-space using parent transforms.
+
+    Args:
+        parent_transforms: Transformation matrices of parent objects.
+        translations: Local-space translations to convert.
+        orientations: Local-space orientations to convert.
+        device: Device for tensor operations.
+
+    Returns:
+        Tuple of (world_positions, world_orientations) in global coordinate frame.
+    """
     calculated_positions = create_zeros_tensor(shape=[translations.shape[0], 3], dtype="float32", device=device)
     calculated_orientations = create_zeros_tensor(shape=[translations.shape[0], 4], dtype="float32", device=device)
     my_local_transforms = tf_matrices_from_poses(translations=translations, orientations=orientations, device=device)
@@ -78,6 +104,16 @@ def get_world_from_local(parent_transforms, translations, orientations, device):
 
 
 def get_pose(positions, orientations, device):
+    """Combines position and orientation arrays into a single pose tensor.
+
+    Args:
+        positions: Position values (shape N, 3).
+        orientations: Orientation quaternions (shape N, 4).
+        device: Device for tensor operations.
+
+    Returns:
+        Combined pose tensor with shape (N, 7) containing positions and orientations.
+    """
     if type(positions) != torch.Tensor:
         positions = torch.tensor(positions, device=device, dtype=torch.float)
     if type(orientations) != torch.Tensor:
@@ -112,6 +148,7 @@ def normalise_quat_in_pose(pose):
 
     Args:
         pose: shape N, 7
+
     Returns:
         Pose with normalised quat. Shape N, 7
     """
@@ -143,6 +180,20 @@ def tf_combine(q1, t1, q2, t2):
 
 
 def assign_pose(current_positions, current_orientations, positions, orientations, indices, device, pose=None):
+    """Assigns new pose values to specific indices in current pose arrays.
+
+    Args:
+        current_positions: Current position values for all objects.
+        current_orientations: Current orientation values for all objects.
+        positions: New position values to assign. If None, uses current positions at indices.
+        orientations: New orientation values to assign. If None, uses current orientations at indices.
+        indices: Array indices where new pose values should be assigned.
+        device: Device for tensor operations.
+        pose: Unused parameter for compatibility.
+
+    Returns:
+        Updated pose array with new values assigned at specified indices.
+    """
     if positions is None:
         positions = current_positions[indices]
     if orientations is None:

@@ -552,7 +552,7 @@ def get_stage_units() -> tuple[float, float]:
     return UsdGeom.GetStageMetersPerUnit(stage), UsdPhysics.GetStageKilogramsPerUnit(stage)
 
 
-def set_stage_units(*, meters_per_unit: float | None = None, kilograms_per_unit: float | None = None) -> None:
+def set_stage_units(*, meters_per_unit: float | None = None, kilograms_per_unit: float | None = None):
     """Set the stage meters per unit and kilograms per unit.
 
     Backends: :guilabel:`usd`.
@@ -633,7 +633,7 @@ def get_stage_up_axis() -> Literal["Y", "Z"]:
     return UsdGeom.GetStageUpAxis(get_current_stage(backend="usd"))
 
 
-def set_stage_up_axis(up_axis: Literal["Y", "Z"]) -> None:
+def set_stage_up_axis(up_axis: Literal["Y", "Z"]):
     """Set the stage up axis.
 
     Backends: :guilabel:`usd`.
@@ -687,7 +687,7 @@ def set_stage_time_code(
     start_time_code: float | None = None,
     end_time_code: float | None = None,
     time_codes_per_second: float | None = None,
-) -> None:
+):
     """Set the stage time code (start, end, and time codes per second).
 
     Backends: :guilabel:`usd`.

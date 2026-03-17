@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Implementation module for various light types including cylinder, disk, distant, dome, rectangle, and sphere lights."""
+
+
 from .cylinder import CylinderLight
 from .disk import DiskLight
 from .distant import DistantLight

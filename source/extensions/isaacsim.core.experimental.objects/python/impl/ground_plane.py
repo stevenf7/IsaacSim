@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level class for creating and wrapping ground plane prims with collision and rendering components."""
+
+
 from __future__ import annotations
 
 from typing import Literal
@@ -30,6 +33,22 @@ from .shapes import Plane
 
 
 def _check_and_get_composite_prims(stage: Usd.Stage, path: str) -> tuple[str, str]:
+    """Check and retrieve the Plane and Mesh child prim paths from a ground plane prim.
+
+    Validates that the ground plane prim has exactly 2 children (one Plane and one Mesh) and returns their paths.
+
+    Args:
+        stage: The USD stage containing the ground plane prim.
+        path: Path to the ground plane prim to check.
+
+    Returns:
+        A tuple containing (plane_path, mesh_path) as strings.
+
+    Raises:
+        AssertionError: If the ground plane prim doesn't have exactly 2 children.
+        AssertionError: If no Plane child prim is found.
+        AssertionError: If no Mesh child prim is found.
+    """
     prim = stage.GetPrimAtPath(path)
     children = prim.GetChildren()
     assert (
@@ -117,7 +136,7 @@ class GroundPlane(XformPrim):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
-    ) -> None:
+    ):
         planes = []
         meshes = []
         stage = stage_utils.get_current_stage(backend="usd")

@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""API for creating and managing primitive geometric objects in Isaac Sim."""
+
+
 from isaacsim.core.api.objects.capsule import DynamicCapsule, FixedCapsule, VisualCapsule
 from isaacsim.core.api.objects.cone import DynamicCone, FixedCone, VisualCone
 from isaacsim.core.api.objects.cuboid import DynamicCuboid, FixedCuboid, VisualCuboid

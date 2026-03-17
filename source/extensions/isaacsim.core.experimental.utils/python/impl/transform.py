@@ -103,10 +103,10 @@ def euler_angles_to_rotation_matrix(
 
     Args:
         euler_angles: Euler angles or batch of Euler angles with shape (..., 3).
-        degrees: Whether passed angles are in degrees. Defaults to False.
+        degrees: Whether passed angles are in degrees.
         extrinsic: True if the euler angles follows the extrinsic angles
             convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
-            the intrinsic angles conventions (equivalent to XYZ ordering). Defaults to True.
+            the intrinsic angles conventions (equivalent to XYZ ordering).
         dtype: Data type of the output array. If ``None``, the data type of the input is used.
         device: Device to place the output array on. If ``None``, the default device is used,
             unless the input is a Warp array (in which case the input device is used).
@@ -181,11 +181,11 @@ def euler_angles_to_quaternion(
 
     Args:
         euler_angles: Euler angles or batch of Euler angles with shape (..., 3).
-        degrees: Whether input angles are in degrees. Defaults to False.
+        degrees: Whether input angles are in degrees.
         extrinsic: True if the euler angles follows the extrinsic angles
             convention (equivalent to ZYX ordering but returned in the reverse). In this case the input
             order is [Z, Y, X] = [yaw, pitch, roll]. If False, it follows the intrinsic angles convention
-            (equivalent to XYZ ordering) with input order [X, Y, Z] = [roll, pitch, yaw]. Defaults to True.
+            (equivalent to XYZ ordering) with input order [X, Y, Z] = [roll, pitch, yaw].
         dtype: Data type of the output array. If ``None``, the data type of the input is used.
         device: Device to place the output array on. If ``None``, the default device is used,
             unless the input is a Warp array (in which case the input device is used).
@@ -446,10 +446,10 @@ def quaternion_to_euler_angles(
 
     Args:
         quaternion: Quaternion or batch of quaternions with shape (..., 4) in [w, x, y, z] format.
-        degrees: Whether to return angles in degrees. Defaults to False (radians).
+        degrees: Whether to return angles in degrees.
         extrinsic: True if the euler angles follows the extrinsic angles
             convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
-            the intrinsic angles conventions (equivalent to XYZ ordering). Defaults to True.
+            the intrinsic angles conventions (equivalent to XYZ ordering).
         dtype: Data type of the output array. If ``None``, the data type of the input is used.
         device: Device to place the output array on. If ``None``, the default device is used,
             unless the input is a Warp array (in which case the input device is used).
@@ -518,7 +518,12 @@ Custom Warp kernels for transform operations.
 
 @wp.kernel(enable_backward=False)
 def _wk_rotation_matrix_to_quaternion(rotation_matrix: wp.array(ndim=3), output: wp.array(ndim=2)):
-    """Convert rotation matrix to quaternion using Warp kernel."""
+    """Convert rotation matrix to quaternion using Warp kernel.
+
+    Args:
+        rotation_matrix: Input rotation matrix array with shape (batch_size, 3, 3).
+        output: Output array for quaternions with shape (batch_size, 4) in [w, x, y, z] format.
+    """
     i = wp.tid()
 
     # Extract matrix elements
@@ -577,7 +582,14 @@ def _wk_euler_angles_to_rotation_matrix(
     degrees: bool,
     extrinsic: bool,
 ):
-    """Convert Euler angles to rotation matrix using Warp kernel."""
+    """Convert Euler angles to rotation matrix using Warp kernel.
+
+    Args:
+        euler_angles: Euler angles or batch of Euler angles with shape (batch_size, 3).
+        output: Output array for rotation matrices with shape (batch_size, 3, 3).
+        degrees: Whether input angles are in degrees.
+        extrinsic: Whether to use extrinsic convention (ZYX) or intrinsic convention (XYZ).
+    """
     i = wp.tid()
 
     # Extract angles and ensure they are floating point for trigonometric functions
@@ -646,7 +658,13 @@ def _wk_euler_angles_to_rotation_matrix(
 
 @wp.kernel(enable_backward=False)
 def _wk_quaternion_multiplication(a: wp.array(ndim=2), b: wp.array(ndim=2), output: wp.array(ndim=2)):
-    """Multiply two quaternions using Hamilton product."""
+    """Multiply two quaternions using Hamilton product.
+
+    Args:
+        a: First quaternion array with shape (batch_size, 4) in [w, x, y, z] format.
+        b: Second quaternion array with shape (batch_size, 4) in [w, x, y, z] format.
+        output: Output array for quaternion multiplication result with shape (batch_size, 4).
+    """
     i = wp.tid()
 
     # Extract quaternion components [w, x, y, z]
@@ -677,7 +695,12 @@ def _wk_quaternion_multiplication(a: wp.array(ndim=2), b: wp.array(ndim=2), outp
 
 @wp.kernel(enable_backward=False)
 def _wk_quaternion_conjugate(q: wp.array(ndim=2), output: wp.array(ndim=2)):
-    """Compute quaternion conjugate by negating the vector part."""
+    """Compute quaternion conjugate by negating the vector part.
+
+    Args:
+        q: Input quaternion array with shape (batch_size, 4) in [w, x, y, z] format.
+        output: Output array for conjugate quaternions with shape (batch_size, 4).
+    """
     i = wp.tid()
 
     # Quaternion conjugate: [w, -x, -y, -z]
@@ -689,7 +712,12 @@ def _wk_quaternion_conjugate(q: wp.array(ndim=2), output: wp.array(ndim=2)):
 
 @wp.kernel(enable_backward=False)
 def _wk_quaternion_to_rotation_matrix(quaternion: wp.array(ndim=2), output: wp.array(ndim=3)):
-    """Convert quaternion to rotation matrix using standard formula."""
+    """Convert quaternion to rotation matrix using standard formula.
+
+    Args:
+        quaternion: Input quaternion array with shape (batch_size, 4) in [w, x, y, z] format.
+        output: Output array for rotation matrices with shape (batch_size, 3, 3).
+    """
     i = wp.tid()
 
     # Extract quaternion components [w, x, y, z]
@@ -735,6 +763,12 @@ def _wk_quaternion_to_euler_angles(
 
     For extrinsic convention, output order is [X, Y, Z] = [roll, pitch, yaw].
     For intrinsic convention, output order is [X, Y, Z] = [roll, pitch, yaw].
+
+    Args:
+        quaternion: Input quaternion array with shape (batch_size, 4) in [w, x, y, z] format.
+        output: Output array for Euler angles with shape (batch_size, 3).
+        degrees: Whether to return angles in degrees.
+        extrinsic: Whether to use extrinsic convention (ZYX) or intrinsic convention (XYZ).
     """
     i = wp.tid()
 

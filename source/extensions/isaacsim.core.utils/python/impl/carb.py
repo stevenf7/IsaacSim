@@ -20,13 +20,13 @@ from typing import Any
 import carb
 
 
-def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value: Any) -> None:
+def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value: Any):
     """Convenience to set the carb settings.
 
     Args:
-        carb_settings (carb.settings.ISettings): The interface to carb settings.
-        setting (str): Name of setting to change.
-        value (Any): New value for the setting.
+        carb_settings: The interface to carb settings.
+        setting: Name of setting to change.
+        value: New value for the setting.
 
     Raises:
         TypeError: If the type of value does not match setting type.
@@ -57,11 +57,11 @@ def get_carb_setting(carb_settings: carb.settings.ISettings, setting: str) -> An
     """Convenience function to get settings.
 
     Args:
-        carb_settings (carb.settings.ISettings): The interface to carb settings.
-        setting (str): Name of setting to change.
+        carb_settings: The interface to carb settings.
+        setting: Name of setting to change.
 
     Returns:
-        Any: Value for the setting.
+        Value for the setting.
 
     Example:
 

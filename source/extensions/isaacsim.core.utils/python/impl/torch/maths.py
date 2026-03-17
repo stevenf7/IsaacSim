@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Utility functions for mathematical operations and tensor manipulations using PyTorch."""
+
 
 import os
 import random
@@ -106,11 +109,33 @@ def unscale(x, lower, upper):
 
 
 def unscale_np(x, lower, upper):
+    """Denormalizes values from [-1, 1] range back to original [lower, upper] range using NumPy operations.
+
+    Args:
+        x: Input values to denormalize.
+        lower: Lower bound of the target range.
+        upper: Upper bound of the target range.
+
+    Returns:
+        Denormalized values in the original range.
+    """
     return (2.0 * x - upper - lower) / (upper - lower)
 
 
 def set_seed(seed, torch_deterministic=False):
-    """set seed across modules"""
+    """Set seed across modules.
+
+    Sets random seeds for Python, NumPy, PyTorch, Warp, and environment variables to ensure
+    reproducibility across different libraries. Optionally enables deterministic algorithms
+    for PyTorch operations.
+
+    Args:
+        seed: Random seed value. If -1, generates a random seed or uses 42 if torch_deterministic is True.
+        torch_deterministic: Whether to enable deterministic algorithms in PyTorch.
+
+    Returns:
+        The actual seed value that was set.
+    """
     if seed == -1 and torch_deterministic:
         seed = 42
     elif seed == -1:
@@ -139,20 +164,61 @@ def set_seed(seed, torch_deterministic=False):
 
 
 def matmul(matrix_a, matrix_b):
+    """Performs matrix multiplication between two tensors.
+
+    Args:
+        matrix_a: First input matrix.
+        matrix_b: Second input matrix.
+
+    Returns:
+        Result of matrix multiplication.
+    """
     return torch.matmul(matrix_a, matrix_b)
 
 
 def sin(data):
+    """Computes the sine of the input tensor.
+
+    Args:
+        data: Input tensor.
+
+    Returns:
+        Tensor with sine values computed element-wise.
+    """
     return torch.sin(data)
 
 
 def cos(data):
+    """Computes the cosine of the input tensor.
+
+    Args:
+        data: Input tensor.
+
+    Returns:
+        Tensor with cosine values computed element-wise.
+    """
     return torch.cos(data)
 
 
 def transpose_2d(data):
+    """Transposes a 2D tensor by swapping dimensions 0 and 1.
+
+    Args:
+        data: Input 2D tensor to transpose.
+
+    Returns:
+        Transposed tensor with dimensions swapped.
+    """
     return torch.transpose(data, 1, 0)
 
 
 def inverse(data):
+    """Computes the matrix inverse of the input tensor.
+
+    Args:
+        data: Input tensor representing matrices to invert.
+
+    Returns:
+        Tensor containing the matrix inverses.
+    """
     return torch.linalg.inv(data)

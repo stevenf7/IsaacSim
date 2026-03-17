@@ -24,14 +24,13 @@ def add_aov(render_product_path: str, aov_name: str):
     """Adds an AOV/Render Var to an existing render product
 
     Args:
-        render_product_path (str): path to the render product prim
-        aov_name (str): Name of the render var we want to add to this render product
+        render_product_path: Path to the render product prim.
+        aov_name: Name of the render var we want to add to this render product.
 
     Raises:
-        RuntimeError: If the render product path is invalid
-        RuntimeError: If the renderVar could not be created
-        RuntimeError: If the renderVar could not be added to the render product
-
+        RuntimeError: If the render product path is invalid.
+        RuntimeError: If the renderVar could not be created.
+        RuntimeError: If the renderVar could not be added to the render product.
     """
     stage = get_current_stage()
     with Usd.EditContext(stage, stage.GetSessionLayer()):
@@ -56,17 +55,17 @@ def add_aov(render_product_path: str, aov_name: str):
         set_prim_no_delete(render_var_prim, True)
 
 
-def get_camera_prim_path(render_product_path: str):
+def get_camera_prim_path(render_product_path: str) -> str:
     """Get the current camera for a render product
 
     Args:
-        render_product_path (str): path to the render product prim
-
-    Raises:
-        RuntimeError: If the render product path is invalid
+        render_product_path: Path to the render product prim.
 
     Returns:
-        str : Path to the camera prim attached to this render product
+        Path to the camera prim attached to this render product.
+
+    Raises:
+        RuntimeError: If the render product path is invalid.
     """
     stage = get_current_stage()
     with Usd.EditContext(stage, stage.GetSessionLayer()):
@@ -82,8 +81,8 @@ def set_camera_prim_path(render_product_path: str, camera_prim_path: str):
     Also applies the OmniRtxCameraExposureAPI_1 schema to the camera prim and sets the exposure:time attribute to 0.02.
 
     Args:
-        render_product_path (str):  path to the render product prim
-        camera_prim_path (str):  path to the camera prim
+        render_product_path: Path to the render product prim.
+        camera_prim_path: Path to the camera prim.
 
     Raises:
         RuntimeError: If the render product path is invalid.
@@ -102,17 +101,17 @@ def set_camera_prim_path(render_product_path: str, camera_prim_path: str):
     camera_prim.CreateAttribute("exposure:time", Sdf.ValueTypeNames.Float).Set(0.02)
 
 
-def get_resolution(render_product_path: str):
+def get_resolution(render_product_path: str) -> Tuple[int]:
     """Get resolution for a render product
 
     Args:
-        render_product_path (str): path to the render product prim
-
-    Raises:
-        RuntimeError: If the render product path is invalid
+        render_product_path: Path to the render product prim.
 
     Returns:
-        Tuple[int]: (width,height)
+        A tuple containing (width, height).
+
+    Raises:
+        RuntimeError: If the render product path is invalid.
     """
     stage = get_current_stage()
     with Usd.EditContext(stage, stage.GetSessionLayer()):
@@ -126,11 +125,11 @@ def set_resolution(render_product_path: str, resolution: Tuple[int]):
     """Set resolution for a render product
 
     Args:
-        render_product_path (str): path to the render product prim
-        resolution (Tuple[float]): width,height for render product
+        render_product_path: Path to the render product prim.
+        resolution: Width and height for render product.
 
     Raises:
-        RuntimeError: If the render product path is invalid
+        RuntimeError: If the render product path is invalid.
     """
     stage = get_current_stage()
     with Usd.EditContext(stage, stage.GetSessionLayer()):

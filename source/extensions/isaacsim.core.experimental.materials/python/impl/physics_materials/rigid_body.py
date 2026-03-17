@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level wrapper for creating/encapsulating Rigid Body material prims."""
+
+
 from __future__ import annotations
 
 from typing import Literal
@@ -72,7 +75,7 @@ class RigidBodyMaterial(PhysicsMaterial):
         dynamic_frictions: float | list | np.ndarray | wp.array | None = None,
         restitutions: float | list | np.ndarray | wp.array | None = None,
         densities: float | list | np.ndarray | wp.array | None = None,
-    ) -> None:
+    ):
         # get or create prims
         self._materials = []
         stage = stage_utils.get_current_stage(backend="usd")

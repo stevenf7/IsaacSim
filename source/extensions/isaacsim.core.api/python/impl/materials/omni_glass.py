@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level wrapper for creating/encapsulating Omniverse Glass (``OmniGlass``) material prims."""
+
+
 from typing import Optional
 
 import carb
@@ -25,16 +28,16 @@ from pxr import Gf, Sdf, UsdShade
 
 
 class OmniGlass(VisualMaterial):
-    """OmniGlass transparent material for glass-like surfaces.
+    """High level wrapper for creating/encapsulating Omniverse Glass (``OmniGlass``) material prims.
 
     Args:
         prim_path: USD prim path for the material.
-        name: Name identifier. Defaults to "omni_glass".
-        shader: Existing shader to use. Defaults to None.
-        color: Glass tint color RGB. Defaults to None.
-        ior: Index of refraction. Defaults to None.
-        depth: Glass depth/thickness. Defaults to None.
-        thin_walled: Whether to use thin-walled mode. Defaults to None.
+        name: Name identifier.
+        shader: Existing shader to use.
+        color: Glass tint color RGB.
+        ior: Index of refraction.
+        depth: Glass depth/thickness.
+        thin_walled: Whether to use thin-walled mode.
 
     Raises:
         Exception: If omni.kit.material.library extension is not enabled.
@@ -49,7 +52,7 @@ class OmniGlass(VisualMaterial):
         ior: Optional[float] = None,
         depth: Optional[float] = None,
         thin_walled: Optional[bool] = None,
-    ) -> None:
+    ):
         stage = stage_utils.get_current_stage()
         if is_prim_path_valid(prim_path=prim_path):
             material = UsdShade.Material(get_prim_at_path(prim_path))
@@ -98,7 +101,7 @@ class OmniGlass(VisualMaterial):
 
         return
 
-    def set_color(self, color: np.ndarray) -> None:
+    def set_color(self, color: np.ndarray):
         """Set the glass tint color.
 
         Args:
@@ -122,7 +125,12 @@ class OmniGlass(VisualMaterial):
         else:
             return np.array(self.shaders_list[0].GetInput("glass_color").Get())
 
-    def set_ior(self, ior: float) -> None:
+    def set_ior(self, ior: float):
+        """Set the index of refraction for the glass material.
+
+        Args:
+            ior: Index of refraction value.
+        """
         if self.shaders_list[0].GetInput("glass_ior").Get() is None:
             self.shaders_list[0].CreateInput("glass_ior", Sdf.ValueTypeNames.Float).Set(ior)
         else:
@@ -130,13 +138,23 @@ class OmniGlass(VisualMaterial):
         return
 
     def get_ior(self) -> Optional[float]:
+        """Index of refraction for the glass material.
+
+        Returns:
+            Index of refraction value or None if not set.
+        """
         if self.shaders_list[0].GetInput("glass_ior").Get() is None:
             carb.log_warn("A glass_ior attribute is not set yet")
             return None
         else:
             return self.shaders_list[0].GetInput("glass_ior").Get()
 
-    def set_depth(self, depth: float) -> None:
+    def set_depth(self, depth: float):
+        """Set the glass depth/thickness.
+
+        Args:
+            depth: Glass depth/thickness value.
+        """
         if self.shaders_list[0].GetInput("depth").Get() is None:
             self.shaders_list[0].CreateInput("depth", Sdf.ValueTypeNames.Float).Set(depth)
         else:
@@ -144,13 +162,23 @@ class OmniGlass(VisualMaterial):
         return
 
     def get_depth(self) -> Optional[float]:
+        """Glass depth/thickness.
+
+        Returns:
+            Glass depth/thickness value or None if not set.
+        """
         if self.shaders_list[0].GetInput("depth").Get() is None:
             carb.log_warn("A depth attribute is not set yet")
             return None
         else:
             return self.shaders_list[0].GetInput("depth").Get()
 
-    def set_thin_walled(self, thin_walled: float) -> None:
+    def set_thin_walled(self, thin_walled: float):
+        """Set the thin-walled mode for the glass material.
+
+        Args:
+            thin_walled: Thin-walled mode value.
+        """
         if self.shaders_list[0].GetInput("thin_walled").Get() is None:
             self.shaders_list[0].CreateInput("thin_walled", Sdf.ValueTypeNames.Float).Set(thin_walled)
         else:
@@ -158,6 +186,11 @@ class OmniGlass(VisualMaterial):
         return
 
     def get_thin_walled(self) -> Optional[float]:
+        """Thin-walled mode for the glass material.
+
+        Returns:
+            Thin-walled mode value or None if not set.
+        """
         if self.shaders_list[0].GetInput("thin_walled").Get() is None:
             carb.log_warn("A thin_walled attribute is not set yet")
             return None

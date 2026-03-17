@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides functionalities to create and control deformable objects."""
+
+
 from typing import Optional, Sequence, Union
 
 import carb
@@ -31,7 +34,7 @@ torch = import_module("torch")
 
 
 class SingleDeformablePrim(_SinglePrimWrapper):
-    """Deformable primitive object provide functionalities to create and control deformable objects"""
+    """Deformable primitive object provides functionalities to create and control deformable objects."""
 
     def __init__(
         self,
@@ -61,37 +64,57 @@ class SingleDeformablePrim(_SinglePrimWrapper):
         collision_simplification_target_triangle_count: Optional[int] = 0,
         collision_simplification_force_conforming: Optional[bool] = False,
         embedding: Optional[Sequence[int]] = None,
-    ) -> None:
+    ):
         """Creates a deformable body at prim_path given the deformable parameters.
         Note that although this class provide methods for retrieving the rest points and element indices of the underlying mesh, using the constructor of the class is the only way to set the rest points and element indices of the underlying mesh. This is to ensure the compatibility of the relevant input parameters and to avoid corrupting the mesh.
         Note also that this class does not provide methods to change USD attributes related to meshing, because once those are used for constructing the mesh, changing the parameters at runtime does not have any effect. Using the constructor of the class is the only way to set desired values for such parameters.
         TODO: indicated the range and dimensions of the input parameters
         Args:
-            prim_path (str): The absolute path that the prim is supposed to be registered in.
-            name (str, optional): Name given to the prim, this can be different than the prim path. Defaults to None.
-            position (Sequence[float], optional): The position of the center of the deformable.
-            orientation (Sequence[float], optional): The initial orientation of the deformable, assuming deformable is flat.
-            scale (Sequence[float], optional): The scale of the deformable.
-            visible (bool, optional): True if the deformable is supposed to be visible, False otherwise.
-            vertex_velocity_damping (float, optional): Velocity damping parameter controlling how much after every time step the nodal velocity is reduced
-            sleep_damping (float, optional): Damping value that damps the motion of bodies that move slow enough to be candidates for sleeping (see sleep_threshold)
-            sleep_threshold (float, optional): Threshold that defines the maximal magnitude of the linear motion a soft body can move in one second such that it can go to sleep in the next frame
-            settling_threshold (float, optional): Threshold that defines the maximal magnitude of the linear motion a fem body can move in one second before it becomes a candidate for sleeping
-            self_collision (bool, optional): Enables the self collision for the deformable body based on the rest position distances.
-            self_collision_filter_distance (float, optional): Penetration value that needs to get exceeded before contacts for self collision are generated. Will only have an effect if self collisions are enabled based on the rest position distances.
-            solver_position_iteration_count (int, optional): Number of the solver's positional iteration counts
-            kinematic_enabled (bool, optional): Enables kinematic body.
-            simulation_rest_points (Sequence[float], optional): List of vertices of the simulation tetrahedral mesh at rest. If a simulation mesh is provided, the collision mesh needs to be provided too. If no simulation mesh is provided it will be computed implicitly based on simulation_hexahedral_resolution
-            simulation_indices (Sequence[int], optional): List of indices of the simulation tetrahedral mesh. It is mandatory to provide this list if simulation_rest_points is specified as well.
-            simulation_hexahedral_resolution (int, optional): The parameter controlling the resolution of the soft body simulation mesh
-            collision_rest_points (Sequence[float], optional): List of vertices of the collision tetrahedral mesh at rest. If a simulation mesh is provided, the collision mesh needs to be provided too.
-            collision_indices (Sequence[int], optional): List of indices of the simulation tetrahedral mesh. It is mandatory to provide this list if collision_rest_points is specified as well.
-            collision_simplification (bool, optional): Flag indicating if simplification should be applied to the mesh before creating a soft body out of it. This is ignored if simulation mesh has been provided.
-            collision_simplification_remeshing (bool, optional): Flag indicating if the simplification should be based on remeshing. This is ignored if collision_simplification is False.
-            collision_simplification_remeshing_resolution (int, optional): The resolution used for remeshing. A value of 0 indicates that a heuristic is used to determine the resolution. Ignored if collision_simplification_remeshing is False.
-            collision_simplification_target_triangle_count (int, optional): The target triangle count used for the simplification. A value of 0 indicates that a heuristic based on the simulation_hexahedral_resolution is to determine the target count. This is ignored if collision_simplification equals False.
-            collision_simplification_force_conforming (bool, optional): Flag indicating that the tretrahedralizer used to generate the collision mesh should produce tetrahedra that conform to the triangle mesh. If False the implementation chooses the tretrahedralizer used.
-            embedding (Sequence[int], optional):embedding information mapping collision points to the containing simulation tetrahedra.
+            prim_path: The absolute path that the prim is supposed to be registered in.
+            deformable_material: The deformable material to apply to the prim.
+            name: Name given to the prim, this can be different than the prim path.
+            position: The position of the center of the deformable.
+            orientation: The initial orientation of the deformable, assuming deformable is flat.
+            scale: The scale of the deformable.
+            visible: True if the deformable is supposed to be visible, False otherwise.
+            vertex_velocity_damping: Velocity damping parameter controlling how much after every time step the nodal
+                velocity is reduced.
+            sleep_damping: Damping value that damps the motion of bodies that move slow enough to be candidates for
+                sleeping (see sleep_threshold).
+            sleep_threshold: Threshold that defines the maximal magnitude of the linear motion a soft body can move in
+                one second such that it can go to sleep in the next frame.
+            settling_threshold: Threshold that defines the maximal magnitude of the linear motion a fem body can move
+                in one second before it becomes a candidate for sleeping.
+            self_collision: Enables the self collision for the deformable body based on the rest position distances.
+            self_collision_filter_distance: Penetration value that needs to get exceeded before contacts for self
+                collision are generated. Will only have an effect if self collisions are enabled based on the rest
+                position distances.
+            solver_position_iteration_count: Number of the solver's positional iteration counts.
+            kinematic_enabled: Enables kinematic body.
+            simulation_rest_points: List of vertices of the simulation tetrahedral mesh at rest. If a simulation mesh
+                is provided, the collision mesh needs to be provided too. If no simulation mesh is provided it will be
+                computed implicitly based on simulation_hexahedral_resolution.
+            simulation_indices: List of indices of the simulation tetrahedral mesh. It is mandatory to provide this
+                list if simulation_rest_points is specified as well.
+            simulation_hexahedral_resolution: The parameter controlling the resolution of the soft body simulation mesh.
+            collision_rest_points: List of vertices of the collision tetrahedral mesh at rest. If a simulation mesh is
+                provided, the collision mesh needs to be provided too.
+            collision_indices: List of indices of the simulation tetrahedral mesh. It is mandatory to provide this
+                list if collision_rest_points is specified as well.
+            collision_simplification: Flag indicating if simplification should be applied to the mesh before creating
+                a soft body out of it. This is ignored if simulation mesh has been provided.
+            collision_simplification_remeshing: Flag indicating if the simplification should be based on remeshing.
+                This is ignored if collision_simplification is False.
+            collision_simplification_remeshing_resolution: The resolution used for remeshing. A value of 0 indicates
+                that a heuristic is used to determine the resolution. Ignored if collision_simplification_remeshing is
+                False.
+            collision_simplification_target_triangle_count: The target triangle count used for the simplification.
+                A value of 0 indicates that a heuristic based on the simulation_hexahedral_resolution is to determine
+                the target count. This is ignored if collision_simplification equals False.
+            collision_simplification_force_conforming: Flag indicating that the tetrahedralizer used to generate the
+                collision mesh should produce tetrahedra that conform to the triangle mesh. If False the implementation
+                chooses the tetrahedralizer used.
+            embedding: Embedding information mapping collision points to the containing simulation tetrahedra.
         """
         self._stage = get_current_stage()
         self._prim = self._stage.GetPrimAtPath(prim_path)
@@ -197,9 +220,10 @@ class SingleDeformablePrim(_SinglePrimWrapper):
 
     @property
     def mesh(self) -> UsdGeom.Mesh:
-        """
+        """USD Geometry Mesh object that this deformable prim tracks.
+
         Returns:
-            Usd.Prim: USD Prim object that this object tracks.
+            The underlying USD Geometry Mesh object.
         """
         return self._mesh
 
@@ -237,9 +261,19 @@ class SingleDeformablePrim(_SinglePrimWrapper):
         )
 
     def apply_deformable_material(self, deformable_materials: "DeformableMaterial") -> None:
+        """Applies a deformable material to this prim.
+
+        Args:
+            deformable_materials: The deformable material to apply to this prim.
+        """
         self._deformable_prim_view.apply_deformable_materials(deformable_materials)
 
     def get_applied_deformable_material(self) -> "DeformableMaterial":
+        """Retrieves the applied deformable material.
+
+        Returns:
+            The deformable material applied to this prim.
+        """
         return self._deformable_prim_view.get_applied_deformable_materials()[0]
 
     """
@@ -247,63 +281,70 @@ class SingleDeformablePrim(_SinglePrimWrapper):
     """
 
     def set_vertex_velocity_damping(self, vertex_velocity_damping: float) -> None:
-        """
+        """Sets the deformable body vertex velocity damping parameter.
+
         Args:
-            vertex_velocity_damping(float): deformable body vertex velocity damping parameter.
+            vertex_velocity_damping: Deformable body vertex velocity damping parameter.
         """
         self._deformable_prim_view.set_vertex_velocity_dampings(
             self._backend_utils.create_tensor_from_list([vertex_velocity_damping], dtype="float32")
         )
 
     def set_sleep_damping(self, sleep_damping: float) -> None:
-        """
+        """Sets the deformable body sleep damping parameter.
+
         Args:
-            sleep_damping(float): deformable body sleep damping parameter.
+            sleep_damping: Deformable body sleep damping parameter.
         """
         self._deformable_prim_view.set_sleep_dampings(
             self._backend_utils.create_tensor_from_list([sleep_damping], dtype="float32")
         )
 
     def set_sleep_threshold(self, sleep_threshold: float) -> None:
-        """
+        """Sets the deformable body sleep threshold parameter.
+
         Args:
-            sleep_threshold(float): deformable body sleep threshold parameter.
+            sleep_threshold: Deformable body sleep threshold parameter.
         """
         self._deformable_prim_view.set_sleep_thresholds(
             self._backend_utils.create_tensor_from_list([sleep_threshold], dtype="float32")
         )
 
     def set_settling_threshold(self, settling_threshold: float) -> None:
-        """
+        """Sets the deformable body settling threshold parameter.
+
         Args:
-            settling_threshold(float): deformable body settling threshold parameter.
+            settling_threshold: Deformable body settling threshold parameter.
         """
         self._deformable_prim_view.set_settling_thresholds(
             self._backend_utils.create_tensor_from_list([settling_threshold], dtype="float32")
         )
 
     def set_self_collision_filter_distance(self, self_collision_filter_distance: float) -> None:
-        """
+        """Sets the deformable body self collision filter distance parameter.
+
         Args:
-            self_collision_filter_distance(float): deformable body self collision filter distance parameter.
+            self_collision_filter_distance: Deformable body self collision filter distance parameter.
         """
         self._deformable_prim_view.set_self_collision_filter_distances(
             self._backend_utils.create_tensor_from_list([self_collision_filter_distance], dtype="float32")
         )
 
     def set_self_collision(self, self_collision: bool) -> None:
-        """
+        """Sets the deformable body self collision parameter.
+
         Args:
-            self_collision(bool): deformable body self collision parameter.
+            self_collision: Deformable body self collision parameter.
         """
         self._deformable_prim_view.set_self_collisions(
             self._backend_utils.create_tensor_from_list([self_collision], dtype="bool")
         )
 
     def set_solver_position_iteration_count(self, iterations: int) -> None:
-        """
+        """Sets the solver position iteration count.
+
         Args:
-            iterations(float): solver position iteration count
+            iterations: Solver position iteration count.
         """
         self._deformable_prim_view.set_solver_position_iteration_counts(
             self._backend_utils.create_tensor_from_list([iterations], dtype="int32")
@@ -314,20 +355,18 @@ class SingleDeformablePrim(_SinglePrimWrapper):
     """
 
     def get_simulation_mesh_rest_points(self) -> Union[np.ndarray, torch.Tensor]:
-        """
-        Gets the simulation mesh rest positions
+        """Simulation mesh vertices rest positions.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: simulation mesh vertices rest positions
+            Simulation mesh vertices rest positions.
         """
         return self._deformable_prim_view.get_simulation_mesh_rest_points()[0]
 
     def get_simulation_mesh_indices(self) -> Union[np.ndarray, torch.Tensor]:
-        """
-        Gets the simulation mesh element indices
+        """Simulation mesh element indices.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: simulation mesh element indices
+            Simulation mesh element indices.
         """
         return self._deformable_prim_view.get_simulation_mesh_indices()[0]
 
@@ -341,73 +380,65 @@ class SingleDeformablePrim(_SinglePrimWrapper):
     #     return self._deformable_prim_view.get_collision_mesh_rest_points()[0]
 
     def get_collision_mesh_indices(self) -> Union[np.ndarray, torch.Tensor]:
-        """
-        Gets the collision mesh element indices
+        """Collision mesh element indices.
 
         Returns:
-            Union[np.ndarray, torch.Tensor]: collision mesh element indices
+            Collision mesh element indices.
         """
         return self._deformable_prim_view.get_collision_mesh_indices()[0]
 
     def get_solver_position_iteration_count(self) -> int:
-        """
-        Gets the solver's positional iteration count
+        """Solver's positional iteration count.
 
         Returns:
-            int: positional iteration count
+            Positional iteration count.
         """
         return self._deformable_prim_view.get_solver_position_iteration_counts()[0]
 
     def get_vertex_velocity_damping(self) -> float:
-        """
-        Gets the deformable body vertex velocity damping parameter
+        """Deformable body vertex velocity damping parameter.
 
         Returns:
-            float: vertex velocity damping
+            Vertex velocity damping.
         """
         return self._deformable_prim_view.get_vertex_velocity_dampings()[0]
 
     def get_sleep_damping(self) -> float:
-        """
-        Gets the deformable body sleep damping parameter
+        """Deformable body sleep damping parameter.
 
         Returns:
-            float: sleep damping
+            Sleep damping.
         """
         return self._deformable_prim_view.get_sleep_dampings()[0]
 
     def get_sleep_threshold(self) -> float:
-        """
-        Gets the deformable body sleep threshold
+        """Deformable body sleep threshold.
 
         Returns:
-            float: sleep threshold
+            Sleep threshold.
         """
         return self._deformable_prim_view.get_sleep_thresholds()[0]
 
     def get_settling_threshold(self) -> float:
-        """
-        Gets the deformable body settling threshold
+        """Deformable body settling threshold.
 
         Returns:
-            float: settling threshold
+            Settling threshold.
         """
         return self._deformable_prim_view.get_settling_thresholds()[0]
 
     def get_self_collision_filter_distance(self) -> float:
-        """
-        Gets the deformable body self collision filter distance
+        """Deformable body self collision filter distance.
 
         Returns:
-            float: self collision filter distance
+            Self collision filter distance.
         """
         return self._deformable_prim_view.get_self_collision_filter_distances()[0]
 
     def get_self_collision(self) -> bool:
-        """
-        Gets the deformable body self collision
+        """Deformable body self collision setting.
 
         Returns:
-            float: self collision
+            Whether self collision is enabled.
         """
         return self._deformable_prim_view.get_self_collisions()[0]

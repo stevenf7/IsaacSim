@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.0] - 2026-03-12
+### Changed
+- Added Overview.md, python_api.md and updated docstrings
+
 ## [1.12.0] - 2026-03-12
 ### Changed
 - Remove Newton pip prebundle dependency

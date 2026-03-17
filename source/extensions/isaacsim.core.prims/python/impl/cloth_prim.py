@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides high-level cloth prim management functionality for cloth simulation objects in Isaac Sim."""
+
+
 from typing import Optional, Union
 
 import carb
@@ -34,24 +37,24 @@ class ClothPrim(XFormPrim):
     def __init__(
         self,
         prim_paths_expr: str,
-        particle_systems: Union[np.ndarray, torch.Tensor] = None,
-        particle_materials: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        particle_systems: np.ndarray | torch.Tensor = None,
+        particle_materials: np.ndarray | torch.Tensor | None = None,
         name: str = "cloth_prim_view",
         reset_xform_properties: bool = True,
-        positions: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        translations: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        visibilities: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        particle_masses: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        pressures: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        particle_groups: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        self_collisions: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        self_collision_filters: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        stretch_stiffnesses: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        bend_stiffnesses: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        shear_stiffnesses: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        spring_dampings: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        positions: np.ndarray | torch.Tensor | None = None,
+        translations: np.ndarray | torch.Tensor | None = None,
+        orientations: np.ndarray | torch.Tensor | None = None,
+        scales: np.ndarray | torch.Tensor | None = None,
+        visibilities: np.ndarray | torch.Tensor | None = None,
+        particle_masses: np.ndarray | torch.Tensor | None = None,
+        pressures: np.ndarray | torch.Tensor | None = None,
+        particle_groups: np.ndarray | torch.Tensor | None = None,
+        self_collisions: np.ndarray | torch.Tensor | None = None,
+        self_collision_filters: np.ndarray | torch.Tensor | None = None,
+        stretch_stiffnesses: np.ndarray | torch.Tensor | None = None,
+        bend_stiffnesses: np.ndarray | torch.Tensor | None = None,
+        shear_stiffnesses: np.ndarray | torch.Tensor | None = None,
+        spring_dampings: np.ndarray | torch.Tensor | None = None,
     ):
         """
         Provides high level functions to deal with cloths (1 or more cloths)
@@ -61,41 +64,37 @@ class ClothPrim(XFormPrim):
         Note: - if the prim does not already have a rigid body api applied to it before init, it will apply it.
 
         Args:
-            prim_paths_expr(str): Prim paths regex to encapsulate all prims that match it.
-            name(str): Shortname to be used as a key by Scene class.
-            positions: (Union[np.ndarray, torch.Tensor], optional): Default positions in the world frame of the prim. shape is (N, 3).
-            translations: (Union[np.ndarray, torch.Tensor], optional): Default translations in the local frame of the
-                                                                        prims (with respect to its parent prims). shape is (N, 3).
-            orientations: (Union[np.ndarray, torch.Tensor], optional): Default quaternion orientations in the world/
-                                                                        local frame of the prim (depends if translation or position is specified).
-                                                                        quaternion is scalar-first (w, x, y, z). shape is (N, 4).
-            scales: (Union[np.ndarray, torch.Tensor], optional): Local scales to be applied to the prim's dimensions. shape is (N, 3).
-            visibilities: (Union[np.ndarray, torch.Tensor], optional): Set to false for an invisible prim in the stage while rendering. shape is (N,).
-            particle_masses (Union[np.ndarray, torch.Tensor], optional): particle masses to be applied to each prim.
-            pressures (Union[np.ndarray, torch.Tensor], optional): pressures to be applied to each prim. if > 0, a particle
-                                                                cloth has an additional pressure constraint that provides
-                                                                inflatable (i.e. balloon-like) dynamics. The pressure
-                                                                times the rest volume defines the volume the inflatable
-                                                                tries to match. Pressure only works well for closed or
-                                                                approximately closed meshes, range: [0, inf), units: dimensionless
-            particle_groups (Union[np.ndarray, torch.Tensor], optional): group Id of the particles of each prim, range: [0, 2^20)
-            self_collisions (Union[np.ndarray, torch.Tensor], optional): enable self collision of the particles of each prim.
-            self_collision_filters (Union[np.ndarray, torch.Tensor], optional): whether the simulation should filter
-                                                                                particle-particle collisions based on the
-                                                                                rest position distances of each prim. shape is (N,).
-            stretch_stiffnesses (Union[np.ndarray, torch.Tensor], optional): represents the stretch spring stiffnesses for
-                                                                            linear springs placed between particles to counteract
-                                                                            stretching, shape is (N,). range: [0, inf), units:
-                                                                            force / distance = mass / second / second
-            bend_stiffnesses (Union[np.ndarray, torch.Tensor], optional): represents the spring bend stiffnesses for linear
-                                                                         springs placed in a way to counteract bending,  shape is (N,).
-                                                                         range: [0, inf), units: force / distance = mass / second / second
-            shear_stiffnesses (Union[np.ndarray, torch.Tensor], optional): represents the shear stiffnesses for linear
-                                                                            springs placed in a way to counteract shear,  shape is (N,).
-                                                                            range: [0, inf), units: force / distance = mass / second / second
-            spring_dampings (Union[np.ndarray, torch.Tensor], optional): damping on cloth spring constraints. Applies to all constraints
-                                                                        parameterized by stiffness attributes, range: [0, inf),  shape is (N,).
-                                                                        units: force * second / distance = mass / second
+            prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
+            particle_systems: Particle systems to be applied to each prim.
+            particle_materials: Particle materials to be applied to each prim.
+            name: Shortname to be used as a key by Scene class.
+            reset_xform_properties: Whether to reset the transformation operation attributes of the prims to a standard
+                set.
+            positions: Default positions in the world frame of the prim. Shape is (N, 3).
+            translations: Default translations in the local frame of the prims (with respect to its parent prims).
+                Shape is (N, 3).
+            orientations: Default quaternion orientations in the world/local frame of the prim (depends if translation
+                or position is specified). Quaternion is scalar-first (w, x, y, z). Shape is (N, 4).
+            scales: Local scales to be applied to the prim's dimensions. Shape is (N, 3).
+            visibilities: Set to false for an invisible prim in the stage while rendering. Shape is (N,).
+            particle_masses: Particle masses to be applied to each prim.
+            pressures: Pressures to be applied to each prim. If > 0, a particle cloth has an additional pressure
+                constraint that provides inflatable (i.e. balloon-like) dynamics. The pressure times the rest volume
+                defines the volume the inflatable tries to match. Pressure only works well for closed or approximately
+                closed meshes, range: [0, inf), units: dimensionless.
+            particle_groups: Group Id of the particles of each prim, range: [0, 2^20).
+            self_collisions: Enable self collision of the particles of each prim.
+            self_collision_filters: Whether the simulation should filter particle-particle collisions based on the
+                rest position distances of each prim. Shape is (N,).
+            stretch_stiffnesses: Represents the stretch spring stiffnesses for linear springs placed between particles
+                to counteract stretching, shape is (N,). Range: [0, inf), units: force / distance = mass / second /
+                second.
+            bend_stiffnesses: Represents the spring bend stiffnesses for linear springs placed in a way to counteract
+                bending, shape is (N,). Range: [0, inf), units: force / distance = mass / second / second.
+            shear_stiffnesses: Represents the shear stiffnesses for linear springs placed in a way to counteract shear,
+                shape is (N,). Range: [0, inf), units: force / distance = mass / second / second.
+            spring_dampings: Damping on cloth spring constraints. Applies to all constraints parameterized by stiffness
+                attributes, range: [0, inf), shape is (N,). Units: force * second / distance = mass / second.
         """
         carb.log_warn(
             "Please note that support for particle cloth and related APIs is now deprecated. These features will be removed in future releases."
@@ -159,6 +158,7 @@ class ClothPrim(XFormPrim):
         )
 
     def __del__(self):
+        """Clean up the ClothPrim instance by calling the parent destructor and releasing physics resources."""
         XFormPrim.__del__(self)
         if hasattr(self, "_physics_view"):
             del self._physics_view
@@ -171,32 +171,36 @@ class ClothPrim(XFormPrim):
 
     @property
     def count(self) -> int:
-        """
+        """Number of cloth prims in the view.
+
         Returns:
-            int: cloth counts.
+            The count of cloth prims.
         """
         return self._count
 
     @property
     def max_springs_per_cloth(self) -> int:
-        """
+        """Maximum number of springs per cloth in the view.
+
         Returns:
-            int: maximum number of springs per cloth.
+            The maximum number of springs per cloth.
         """
         return self._max_springs_per_cloth
 
     @property
     def max_particles_per_cloth(self) -> int:
-        """
+        """Maximum number of particles per cloth in the view.
+
         Returns:
-            int: maximum number of particles per cloth.
+            The maximum number of particles per cloth.
         """
         return self._max_particles_per_cloth
 
     def is_physics_handle_valid(self) -> bool:
-        """
+        """Checks whether the physics handle of the view is valid.
+
         Returns:
-            bool: True if the physics handle of the view is valid (i.e physics is initialized for the view). Otherwise False.
+            True if the physics handle of the view is valid (i.e physics is initialized for the view). Otherwise False.
         """
         return self._physics_view is not None
 
@@ -204,7 +208,7 @@ class ClothPrim(XFormPrim):
         """Create a physics simulation view if not passed and creates a rigid body view in physX.
 
         Args:
-            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
+            physics_sim_view: Current physics simulation view.
         """
 
         if physics_sim_view is None:
@@ -224,10 +228,20 @@ class ClothPrim(XFormPrim):
         return
 
     def _invalidate_physics_handle_callback(self, event):
+        """Callback to invalidate the physics handle when timeline stops.
+
+        Args:
+            event: The timeline event that triggered the callback.
+        """
         self._physics_view = None
         return
 
     def _apply_cloth_auto_api(self, index):
+        """Apply PhysxAutoParticleClothAPI to the cloth prim at the specified index.
+
+        Args:
+            index: Index of the cloth prim to apply the API to.
+        """
         if self._cloth_auto_apis[index] is None:
             if self._prims[index].HasAPI(PhysxSchema.PhysxAutoParticleClothAPI):
                 cloth_api = PhysxSchema.PhysxAutoParticleClothAPI(self._prims[index])
@@ -236,6 +250,11 @@ class ClothPrim(XFormPrim):
             self._cloth_auto_apis[index] = cloth_api
 
     def _apply_cloth_api(self, index):
+        """Apply PhysxParticleClothAPI to the cloth prim at the specified index.
+
+        Args:
+            index: Index of the cloth prim to apply the API to.
+        """
         if self._cloth_apis[index] is None:
             if self._prims[index].HasAPI(PhysxSchema.PhysxParticleClothAPI):
                 cloth_api = PhysxSchema.PhysxParticleClothAPI(self._prims[index])
@@ -244,6 +263,11 @@ class ClothPrim(XFormPrim):
             self._cloth_apis[index] = cloth_api
 
     def _apply_particle_api(self, index):
+        """Apply PhysxParticleAPI to the cloth prim at the specified index.
+
+        Args:
+            index: Index of the cloth prim to apply the API to.
+        """
         if self._cloth_apis[index] is None:
             if self._prims[index].HasAPI(PhysxSchema.PhysxParticleAPI):
                 particle_api = PhysxSchema.PhysxParticleAPI(self._prims[index])
@@ -253,17 +277,15 @@ class ClothPrim(XFormPrim):
 
     def set_world_positions(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        positions: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the particle world positions for the cloths indicated by the indices.
 
         Args:
-            positions (Union[np.ndarray, torch.Tensor]): particle positions with the shape
-                                                                                (M, max_particles_per_cloth, 3).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            positions: particle positions with the shape (M, max_particles_per_cloth, 3).
+            indices: indices to specify which cloth prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -283,18 +305,17 @@ class ClothPrim(XFormPrim):
         return
 
     def get_world_positions(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the particle world positions for the cloths indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which cloth prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: position tensor with shape (M, max_particles_per_cloth, 3)
+            position tensor with shape (M, max_particles_per_cloth, 3)
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -323,17 +344,15 @@ class ClothPrim(XFormPrim):
 
     def set_velocities(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        velocities: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the particle velocities for the cloths indicated by the indices.
 
         Args:
-            velocities (Union[np.ndarray, torch.Tensor]): particle velocities with the shape
-                                                                                (M, max_particles_per_cloth, 3).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            velocities: particle velocities with the shape (M, max_particles_per_cloth, 3).
+            indices: indices to specify which cloth prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -352,18 +371,17 @@ class ClothPrim(XFormPrim):
                 idx_count += 1
 
     def get_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the particle velocities for the cloths indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which cloth prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: velocity tensor with shape (M, max_particles_per_cloth, 3)
+            velocity tensor with shape (M, max_particles_per_cloth, 3)
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -392,17 +410,15 @@ class ClothPrim(XFormPrim):
 
     def set_particle_masses(
         self,
-        masses: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        masses: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the particle masses for the cloths indicated by the indices.
 
         Args:
-            masses (Union[np.ndarray, torch.Tensor]): cloth particle masses with the shape
-                                                                                (M, max_particles_per_cloth, 3).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            masses: cloth particle masses with the shape (M, max_particles_per_cloth, 3).
+            indices: indices to specify which cloth prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -423,18 +439,17 @@ class ClothPrim(XFormPrim):
                 idx_count += 1
 
     def get_particle_masses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the particle masses for the cloths indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which cloth prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: mass tensor with shape (M, max_particles_per_cloth)
+            mass tensor with shape (M, max_particles_per_cloth)
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -465,16 +480,15 @@ class ClothPrim(XFormPrim):
 
     def set_stretch_stiffnesses(
         self,
-        stiffness: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        stiffness: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the spring stretch stiffness values for springs within the cloths indicated by the indices.
 
         Args:
-            stiffness (Union[np.ndarray, torch.Tensor]): cloth spring stiffness with the shape  (M, max_springs_per_cloth).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            stiffness: cloth spring stiffness with the shape  (M, max_springs_per_cloth).
+            indices: indices to specify which cloth prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -499,18 +513,17 @@ class ClothPrim(XFormPrim):
                 idx_count += 1
 
     def get_stretch_stiffnesses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the spring stretch stiffness for the cloths indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which cloth prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: stiffness tensor with shape (M, max_springs_per_cloth)
+            stiffness tensor with shape (M, max_springs_per_cloth)
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -542,17 +555,15 @@ class ClothPrim(XFormPrim):
 
     def set_spring_dampings(
         self,
-        damping: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        damping: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the spring damping for the cloths indicated by the indices.
 
         Args:
-            damping (Union[np.ndarray, torch.Tensor]): cloth spring damping with the shape
-                                                                            (M, max_springs_per_cloth).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            damping: cloth spring damping with the shape (M, max_springs_per_cloth).
+            indices: indices to specify which cloth prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -575,18 +586,17 @@ class ClothPrim(XFormPrim):
                 idx_count += 1
 
     def get_spring_dampings(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the spring damping for the cloths indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which cloth prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: damping tensor with shape (M, max_springs_per_cloth)
+            damping tensor with shape (M, max_springs_per_cloth)
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -618,16 +628,16 @@ class ClothPrim(XFormPrim):
 
     def set_pressures(
         self,
-        pressures: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        pressures: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the pressures of the cloths indicated by the indices.
 
         Args:
-            pressures (Union[np.ndarray, torch.Tensor]): cloths pressure with shape (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            pressures: Cloths pressure with shape ``(M, )``.
+            indices: Indices to specify which cloth prims to manipulate. Shape ``(M,)``.
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -641,16 +651,16 @@ class ClothPrim(XFormPrim):
 
     def set_self_collision_filters(
         self,
-        self_collision_filters: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        self_collision_filters: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the self collision filters for the cloths indicated by the indices.
 
         Args:
-            self_collision_filters (Union[np.ndarray, torch.Tensor]): self collision filters with the shape (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            self_collision_filters: Self collision filters with the shape ``(M, )``.
+            indices: Indices to specify which cloth prims to manipulate. Shape ``(M,)``.
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -668,16 +678,16 @@ class ClothPrim(XFormPrim):
 
     def set_self_collisions(
         self,
-        self_collisions: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        self_collisions: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the self collision flags for the cloths indicated by the indices.
 
         Args:
-            self_collisions (Union[np.ndarray, torch.Tensor]): self collision flag with the shape  (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            self_collisions: Self collision flag with the shape ``(M, )``.
+            indices: Indices to specify which cloth prims to manipulate. Shape ``(M,)``.
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -691,16 +701,16 @@ class ClothPrim(XFormPrim):
 
     def set_particle_groups(
         self,
-        particle_groups: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        particle_groups: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the particle group of the cloths indicated by the indices.
 
         Args:
-            particle_groups (Union[np.ndarray, torch.Tensor]): particle group with shape (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            particle_groups: Particle group with shape ``(M, )``.
+            indices: Indices to specify which cloth prims to manipulate. Shape ``(M,)``.
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -714,16 +724,16 @@ class ClothPrim(XFormPrim):
 
     def set_cloths_dampings(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets a single value of damping to all the springs within cloths indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): cloth spring damping with the shape (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Cloth spring damping with the shape ``(M, )``.
+            indices: Indices to specify which cloth prims to manipulate. Shape ``(M,)``.
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -739,16 +749,16 @@ class ClothPrim(XFormPrim):
 
     def set_cloths_stretch_stiffnesses(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets a single value of stretch stiffnesses to all the springs within cloths indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): cloth spring stretch stiffness values with the shape (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Cloth spring stretch stiffness values with the shape ``(M, )``.
+            indices: Indices to specify which cloth prims to manipulate. Shape ``(M,)``.
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -765,16 +775,16 @@ class ClothPrim(XFormPrim):
 
     def set_cloths_bend_stiffnesses(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets a single value of bend stiffnesses to all the springs within cloths indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): cloth spring bend stiffness values with the shape (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Cloth spring bend stiffness values with the shape ``(M, )``.
+            indices: Indices to specify which cloth prims to manipulate. Shape ``(M,)``.
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -791,16 +801,16 @@ class ClothPrim(XFormPrim):
 
     def set_cloths_shear_stiffnesses(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets a single value of shear stiffnesses to all the springs within cloths indicated by the indices.
 
         Args:
-            values (Union[np.ndarray, torch.Tensor]): cloth spring shear stiffness values with the shape  (M, ).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            values: Cloth spring shear stiffness values with the shape ``(M, )``.
+            indices: Indices to specify which cloth prims to manipulate. Shape ``(M,)``.
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -816,18 +826,18 @@ class ClothPrim(XFormPrim):
             idx_count += 1
 
     def get_cloths_dampings(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the value of damping set for all the springs within cloths indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which cloth prims to query. Shape ``(M,)``.
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: damping tensor with shape (M, )
+            Damping tensor with shape ``(M, )``.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         values = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -843,18 +853,18 @@ class ClothPrim(XFormPrim):
         return values
 
     def get_cloths_stretch_stiffnesses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the value of stretch stiffness set to all the springs within cloths indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: Indices to specify which cloth prims to query. Shape ``(M,)``.
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: stretch stiffness tensor with shape (M, )
+            Stretch stiffness tensor with shape ``(M, )``.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         values = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -872,18 +882,18 @@ class ClothPrim(XFormPrim):
         return values
 
     def get_cloths_bend_stiffnesses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the value of bend stiffness set to all the springs within cloths indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which cloth prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: bend stiffness tensor with shape (M, )
+            bend stiffness tensor with shape (M, )
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         values = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -899,18 +909,18 @@ class ClothPrim(XFormPrim):
         return values
 
     def get_cloths_shear_stiffnesses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the value of shear stiffness set to all the springs within cloths indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which cloth prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: shear stiffness tensor with shape (M, )
+            shear stiffness tensor with shape (M, )
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         values = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -928,18 +938,18 @@ class ClothPrim(XFormPrim):
         return values
 
     def get_self_collision_filters(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the self collision filters for the cloths indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which cloth prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: the self collision filters tensor with shape (M, )
+            the self collision filters tensor with shape (M, )
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         self_collision_filters = self._backend_utils.create_zeros_tensor(
@@ -959,18 +969,18 @@ class ClothPrim(XFormPrim):
         return self_collision_filters
 
     def get_self_collisions(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the self collision for the cloths indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which cloth prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: the self collision tensor with shape (M, )
+            the self collision tensor with shape (M, )
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         self_collisions = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="bool", device=self._device)
@@ -986,18 +996,18 @@ class ClothPrim(XFormPrim):
         return self_collisions
 
     def get_pressures(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the pressures of the cloths indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which cloth prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: cloths pressure with shape (M, ).
+            cloths pressure with shape (M, ).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         pressures = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -1013,18 +1023,18 @@ class ClothPrim(XFormPrim):
         return pressures
 
     def get_particle_groups(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the particle groups of the cloths indicated by the indices.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            indices: indices to specify which cloth prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
+            clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: particle groups with shape (M, ).
+            particle groups with shape (M, ).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         particle_groups = self._backend_utils.create_zeros_tensor(

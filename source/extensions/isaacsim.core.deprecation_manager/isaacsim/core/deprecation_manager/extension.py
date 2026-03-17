@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Manage deprecated settings and OmniGraph nodes for Isaac Sim extensions."""
+"""Extension for managing deprecated settings and OmniGraph nodes in Isaac Sim."""
 
 from __future__ import annotations
 
@@ -25,14 +25,39 @@ import omni.usd
 
 
 class Extension(omni.ext.IExt):
-    """Update deprecated settings and OmniGraph node types on startup and stage open."""
+    """Extension for managing deprecated settings and OmniGraph nodes in Isaac Sim.
+
+    This extension automatically handles the migration of deprecated configuration settings and OmniGraph node types
+    to their updated equivalents. It monitors for deprecated settings during startup and updates OmniGraph nodes
+    when a stage is opened.
+
+    The extension performs two main functions:
+
+    1. **Settings Migration**: On startup, it checks for deprecated settings entries and automatically migrates
+       them to their new counterparts. Deprecation warnings are logged to inform users of the changes.
+
+    2. **OmniGraph Node Updates**: When a USD stage is opened, it traverses all prims to identify deprecated
+       OmniGraph node types and updates them to their current equivalents. The extension provides detailed
+       logging and notifications about the changes, including information about referenced assets that may
+       need manual handling.
+
+    The extension uses configuration entries from the extension settings to determine which deprecated items
+    to migrate. For OmniGraph nodes, it also attempts to reload all graphs after making changes to ensure
+    proper functionality.
+
+    Deprecation warnings and notifications help users understand what changes have been made and provide
+    guidance on preserving changes in referenced USD assets.
+    """
 
     def on_startup(self, ext_id: str) -> None:
-        """Initialize the deprecation manager and subscribe to stage events.
+        """Initializes the deprecation manager extension.
+
+        Loads deprecation settings, updates deprecated settings, and subscribes to stage events for OmniGraph node updates.
 
         Args:
-            ext_id: Extension identifier provided by the extension manager.
+            ext_id: The extension identifier.
         """
+        # get extension settings
         settings = carb.settings.get_settings()
         self._settings_entries = settings.get("/exts/isaacsim.core.deprecation_manager/settings")
         self._omnigraph_entries = settings.get("/exts/isaacsim.core.deprecation_manager/omnigraph")
@@ -50,11 +75,18 @@ class Extension(omni.ext.IExt):
             )
 
     def on_shutdown(self) -> None:
-        """Clean up the stage event subscription."""
+        """Cleans up the extension resources.
+
+        Removes stage event subscriptions and releases associated resources.
+        """
+        # delete stage event subscription
         self._stage_event_subscription = None
 
-    def _update_deprecated_settings(self) -> None:
-        """Migrate deprecated Carbonite settings to their new paths."""
+    def _update_deprecated_settings(self):
+        """Updates deprecated settings with their new equivalents.
+
+        Iterates through configured deprecated settings, transfers values to new settings, and logs deprecation warnings.
+        """
         settings = carb.settings.get_settings()
         for entry in self._settings_entries:
             deprecated_setting = entry.get("deprecated", "")
@@ -70,10 +102,12 @@ class Extension(omni.ext.IExt):
                 carb.log_warn(deprecation_message)
 
     def _on_stage_event(self, event: Any) -> None:
-        """Rename deprecated OmniGraph node types when a stage is opened.
+        """Handles stage opening events to update deprecated OmniGraph nodes.
+
+        Traverses the stage to find deprecated OmniGraph node types, updates them to new types, tracks referenced assets, and displays deprecation warnings with notifications.
 
         Args:
-            event: The stage event dispatched by the event system.
+            event: The stage event that triggered this handler.
         """
         usd_reference_paths = set()
         deprecation_changes = []

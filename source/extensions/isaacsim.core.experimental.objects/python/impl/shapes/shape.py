@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Base class for creating and wrapping USD geometry shape primitives."""
+
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -70,7 +73,7 @@ class Shape(XformPrim, ABC):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
-    ) -> None:
+    ):
         super().__init__(
             paths,
             resolve_paths=resolve_paths,

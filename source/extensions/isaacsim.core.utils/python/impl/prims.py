@@ -17,6 +17,7 @@ import re
 
 # python
 import typing
+from typing import Any, Callable, List, Optional, Sequence, Union
 
 import numpy as np
 import omni.kit
@@ -39,11 +40,11 @@ def get_prim_at_path(prim_path: str, fabric: bool = False) -> typing.Union[Usd.P
     """Get the USD or Fabric Prim at a given path string
 
     Args:
-        prim_path (str): path of the prim in the stage.
-        fabric (bool, optional): True for fabric stage and False for USD stage. Defaults to False.
+        prim_path: path of the prim in the stage.
+        fabric: True for fabric stage and False for USD stage.
 
     Returns:
-        typing.Union[Usd.Prim, usdrt.Usd._Usd.Prim]: USD or Fabric Prim object at the given path in the current stage.
+        USD or Fabric Prim object at the given path in the current stage.
 
     Example:
 
@@ -66,11 +67,11 @@ def is_prim_path_valid(prim_path: str, fabric: bool = False) -> bool:
     """Check if a path has a valid USD Prim at it
 
     Args:
-        prim_path (str): path of the prim in the stage
-        fabric (bool, optional): True for fabric stage and False for USD stage. Defaults to False.
+        prim_path: path of the prim in the stage
+        fabric: True for fabric stage and False for USD stage.
 
     Returns:
-        bool: True if the path points to a valid prim
+        True if the path points to a valid prim
 
     Example:
 
@@ -97,14 +98,14 @@ def get_prim_attribute_names(prim_path: str, fabric: bool = False) -> typing.Lis
     """Get all the attribute names of a prim at the path
 
     Args:
-        prim_path (str): path of the prim in the stage
-        fabric (bool, optional): True for fabric stage and False for USD stage. Defaults to False.
+        prim_path: path of the prim in the stage
+        fabric: True for fabric stage and False for USD stage.
 
     Raises:
         Exception: If there is not a valid prim at the given path
 
     Returns:
-        typing.List[str]: List of the prim attribute names
+        List of the prim attribute names
 
     Example:
 
@@ -123,15 +124,15 @@ def get_prim_attribute_value(prim_path: str, attribute_name: str, fabric: bool =
     """Get a prim attribute value
 
     Args:
-        prim_path (str): path of the prim in the stage
-        attribute_name (str): name of the attribute to get
-        fabric (bool, optional): True for fabric stage and False for USD stage. Defaults to False.
+        prim_path: path of the prim in the stage
+        attribute_name: name of the attribute to get
+        fabric: True for fabric stage and False for USD stage.
 
     Raises:
         Exception: If there is not a valid prim at the given path
 
     Returns:
-        typing.Any: Prim attribute value
+        Prim attribute value
 
     Example:
 
@@ -157,10 +158,10 @@ def set_prim_attribute_value(prim_path: str, attribute_name: str, value: typing.
     """Set a prim attribute value
 
     Args:
-        prim_path (str): path of the prim in the stage
-        attribute_name (str): name of the attribute to set
-        value (typing.Any): value to set the attribute to
-        fabric (bool, optional): True for fabric stage and False for USD stage. Defaults to False.
+        prim_path: path of the prim in the stage
+        attribute_name: name of the attribute to set
+        value: value to set the attribute to
+        fabric: True for fabric stage and False for USD stage.
 
     Example:
 
@@ -198,15 +199,15 @@ def define_prim(prim_path: str, prim_type: str = "Xform", fabric: bool = False) 
         load an USD file while creating the prim use the ``create_prim`` function.
 
     Args:
-        prim_path (str): path of the prim in the stage
-        prim_type (str, optional): The type of the prim to create. Defaults to "Xform".
-        fabric (bool, optional): True for fabric stage and False for USD stage. Defaults to False.
+        prim_path: path of the prim in the stage
+        prim_type: The type of the prim to create.
+        fabric: True for fabric stage and False for USD stage.
 
     Raises:
         Exception: If there is already a prim at the prim_path
 
     Returns:
-        Usd.Prim: The created USD prim.
+        The created USD prim.
 
     Example:
 
@@ -226,14 +227,14 @@ def get_prim_type_name(prim_path: str, fabric: bool = False) -> str:
     """Get the TypeName of the USD Prim at the path if it is valid
 
     Args:
-        prim_path (str): path of the prim in the stage
-        fabric (bool, optional): True for fabric stage and False for USD stage. Defaults to False.
+        prim_path: path of the prim in the stage
+        fabric: True for fabric stage and False for USD stage.
 
     Raises:
         Exception: If there is not a valid prim at the given path
 
     Returns:
-        str: The TypeName of the USD Prim at the path string
+        The TypeName of the USD Prim at the path string
 
     Example:
 
@@ -253,12 +254,12 @@ def get_prim_type_name(prim_path: str, fabric: bool = False) -> str:
         return prim.GetPrimTypeInfo().GetTypeName()
 
 
-def move_prim(path_from: str, path_to: str) -> None:
+def move_prim(path_from: str, path_to: str):
     """Run the Move command to change a prims USD Path in the stage
 
     Args:
-        path_from (str): Path of the USD Prim you wish to move
-        path_to (str): Final destination of the prim
+        path_from: Path of the USD Prim you wish to move
+        path_to: Final destination of the prim
 
     Example:
 
@@ -278,12 +279,12 @@ def get_first_matching_child_prim(
     """Recursively get the first USD Prim at the path string that passes the predicate function
 
     Args:
-        prim_path (str): path of the prim in the stage
-        predicate (typing.Callable[[str], bool]): Function to test the prims against
-        fabric (bool, optional): True for fabric stage and False for USD stage. Defaults to False.
+        prim_path: path of the prim in the stage
+        predicate: Function to test the prims against
+        fabric: True for fabric stage and False for USD stage.
 
     Returns:
-         Usd.Prim: The first prim or child of the prim, as defined by GetChildren, that passes the predicate
+         The first prim or child of the prim, as defined by GetChildren, that passes the predicate
 
     Example:
 
@@ -314,11 +315,11 @@ def get_first_matching_parent_prim(prim_path: str, predicate: typing.Callable[[s
     """Recursively get the first USD Prim at the parent path string that passes the predicate function
 
     Args:
-        prim_path (str): path of the prim in the stage
-        predicate (typing.Callable[[str], bool]): Function to test the prims against
+        prim_path: path of the prim in the stage
+        predicate: Function to test the prims against
 
     Returns:
-        str: The first prim on the parent path, as defined by GetParent, that passes the predicate
+        The first prim on the parent path, as defined by GetParent, that passes the predicate
 
     Example:
 
@@ -345,13 +346,13 @@ def get_all_matching_child_prims(
     """Performs a breadth-first search starting from the root and returns all the prims matching the predicate.
 
     Args:
-        prim_path (str): root prim path to start traversal from.
-        predicate (typing.Callable[[str], bool]): predicate that checks the prim path of a prim and returns a boolean.
-        depth (typing.Optional[int]): maximum depth for traversal, should be bigger than zero if specified.
-                                      Defaults to None (i.e: traversal till the end of the tree).
+        prim_path: root prim path to start traversal from.
+        predicate: predicate that checks the prim path of a prim and returns a boolean.
+        depth: maximum depth for traversal, should be bigger than zero if specified.
+            Defaults to None (i.e: traversal till the end of the tree).
 
     Returns:
-        typing.List[Usd.Prim]: A list containing the root and children prims matching specified predicate.
+        A list containing the root and children prims matching specified predicate.
 
     Example:
 
@@ -386,11 +387,11 @@ def find_matching_prim_paths(prim_path_regex: str, prim_type: typing.Optional[st
     """Find all the matching prim paths in the stage based on Regex expression.
 
     Args:
-        prim_path_regex (str): The Regex expression for prim path.
-        prim_type (typing.Optional[str]): The type of the prims to filter, only supports articulation and rigid_body currently. Defaults to None.
+        prim_path_regex: The Regex expression for prim path.
+        prim_type: The type of the prims to filter, only supports articulation and rigid_body currently.
 
     Returns:
-        typing.List[str]: List of prim paths that match input expression.
+        List of prim paths that match input expression.
 
     Example:
 
@@ -413,10 +414,10 @@ def get_prim_children(prim: Usd.Prim) -> typing.List[Usd.Prim]:
     """Return the call of the USD Prim's GetChildren member function
 
     Args:
-        prim (Usd.Prim): The parent USD Prim
+        prim: The parent USD Prim
 
     Returns:
-        typing.List[Usd.Prim]: A list of the prim's children.
+        A list of the prim's children.
 
     Example:
 
@@ -434,13 +435,13 @@ def get_prim_children(prim: Usd.Prim) -> typing.List[Usd.Prim]:
 
 
 def get_prim_parent(prim: Usd.Prim) -> Usd.Prim:
-    """Return the call of the USD Prim's GetChildren member function
+    """Return the call of the USD Prim's GetParent member function
 
     Args:
-        prim (Usd.Prim): The USD Prim to call GetParent on
+        prim: The USD Prim to call GetParent on
 
     Returns:
-        Usd.Prim: The prim's parent returned from GetParent
+        The prim's parent returned from GetParent
 
     Example:
 
@@ -460,11 +461,11 @@ def query_parent_path(prim_path: str, predicate: typing.Callable[[str], bool]) -
     """Check if one of the ancestors of the prim at the prim_path can pass the predicate
 
     Args:
-        prim_path (str): path to the USD Prim for which to check the ancestors
-        predicate (typing.Callable[[str], bool]): The condition that must be True about the ancestors
+        prim_path: path to the USD Prim for which to check the ancestors
+        predicate: The condition that must be True about the ancestors
 
     Returns:
-        bool: True if there is an ancestor that can pass the predicate, False otherwise
+        True if there is an ancestor that can pass the predicate, False otherwise
 
     Example:
 
@@ -489,7 +490,7 @@ def is_prim_ancestral(prim_path: str) -> bool:
     """Check if any of the prims ancestors were brought in as a reference
 
     Args:
-        prim_path (str): The path to the USD prim.
+        prim_path: The path to the USD prim.
 
     Returns:
         True if prim is part of a referenced prim, false otherwise.
@@ -516,7 +517,7 @@ def is_prim_root_path(prim_path: str) -> bool:
     """Checks if the input prim path is root or not.
 
     Args:
-        prim_path (str): The path to the USD prim.
+        prim_path: The path to the USD prim.
 
     Returns:
         True if the prim path is "/", False otherwise
@@ -551,7 +552,7 @@ def is_prim_no_delete(prim_path: str) -> bool:
         or by calling the ``delete_prim`` function, for example.
 
     Args:
-        prim_path (str): The path to the USD prim.
+        prim_path: The path to the USD prim.
 
     Returns:
         True if prim cannot be deleted, False if it can
@@ -573,7 +574,7 @@ def is_prim_no_delete(prim_path: str) -> bool:
 
 
 def is_prim_hidden_in_stage(prim_path: str) -> bool:
-    """Checks if the prim is hidden in the USd stage or not.
+    """Checks if the prim is hidden in the USD stage or not.
 
     .. warning ::
 
@@ -581,7 +582,7 @@ def is_prim_hidden_in_stage(prim_path: str) -> bool:
         This metadata is not related to the visibility of the prim.
 
     Args:
-        prim_path (str): The path to the USD prim.
+        prim_path: The path to the USD prim.
 
     Returns:
         True if prim is hidden from stage window, False if not hidden.
@@ -606,10 +607,10 @@ def get_prim_path(prim: Usd.Prim) -> str:
     """Get the path of a given USD prim.
 
     Args:
-        prim (Usd.Prim): The input USD prim.
+        prim: The input USD prim.
 
     Returns:
-        str: The path to the input prim.
+        The path to the input prim.
 
     Example:
 
@@ -630,7 +631,7 @@ def get_prim_path(prim: Usd.Prim) -> str:
         return None
 
 
-def set_prim_visibility(prim: Usd.Prim, visible: bool) -> None:
+def set_prim_visibility(prim: Usd.Prim, visible: bool):
     """Sets the visibility of the prim in the opened stage.
 
     .. note::
@@ -638,8 +639,8 @@ def set_prim_visibility(prim: Usd.Prim, visible: bool) -> None:
         The method does this through the USD API.
 
     Args:
-        prim (Usd.Prim): the USD prim
-        visible (bool): flag to set the visibility of the usd prim in stage.
+        prim: the USD prim
+        visible: flag to set the visibility of the usd prim in stage.
 
     Example:
 
@@ -675,22 +676,22 @@ def create_prim(
     The method applies specified transforms, the semantic label and set specified attributes.
 
     Args:
-        prim_path (str): The path of the new prim.
-        prim_type (str): Prim type name
-        position (typing.Sequence[float], optional): prim position (applied last)
-        translation (typing.Sequence[float], optional): prim translation (applied last)
-        orientation (typing.Sequence[float], optional): prim rotation as quaternion
-        scale (np.ndarray (3), optional): scaling factor in x, y, z.
-        usd_path (str, optional): Path to the USD that this prim will reference.
-        semantic_label (str, optional): Semantic label.
-        semantic_type (str, optional): set to "class" unless otherwise specified.
-        attributes (dict, optional): Key-value pairs of prim attributes to set.
+        prim_path: The path of the new prim.
+        prim_type: Prim type name
+        position: prim position (applied last)
+        translation: prim translation (applied last)
+        orientation: prim rotation as quaternion
+        scale: scaling factor in x, y, z.
+        usd_path: Path to the USD that this prim will reference.
+        semantic_label: Semantic label.
+        semantic_type: set to "class" unless otherwise specified.
+        attributes: Key-value pairs of prim attributes to set.
 
     Raises:
         Exception: If there is already a prim at the prim_path
 
     Returns:
-        Usd.Prim: The created USD prim.
+        The created USD prim.
 
     Example:
 
@@ -760,11 +761,11 @@ def create_prim(
     return prim
 
 
-def delete_prim(prim_path: str) -> None:
+def delete_prim(prim_path: str):
     """Remove the USD Prim and its descendants from the scene if able
 
     Args:
-        prim_path (str): path of the prim in the stage
+        prim_path: path of the prim in the stage
 
     Example:
 
@@ -781,11 +782,11 @@ def get_prim_property(prim_path: str, property_name: str) -> typing.Any:
     """Get the attribute of the USD Prim at the given path
 
     Args:
-        prim_path (str): path of the prim in the stage
-        property_name (str): name of the attribute to get
+        prim_path: path of the prim in the stage
+        property_name: name of the attribute to get
 
     Returns:
-        typing.Any: The attribute if it exists, None otherwise
+        The attribute if it exists, None otherwise
 
     Example:
 
@@ -800,13 +801,13 @@ def get_prim_property(prim_path: str, property_name: str) -> typing.Any:
     return prim.GetAttribute(property_name).Get()
 
 
-def set_prim_property(prim_path: str, property_name: str, property_value: typing.Any) -> None:
+def set_prim_property(prim_path: str, property_name: str, property_value: typing.Any):
     """Set the attribute of the USD Prim at the path
 
     Args:
-        prim_path (str): path of the prim in the stage
-        property_name (str): name of the attribute to set
-        property_value (typing.Any): value to set the attribute to
+        prim_path: path of the prim in the stage
+        property_name: name of the attribute to set
+        property_value: value to set the attribute to
 
     Example:
 
@@ -829,13 +830,13 @@ def get_prim_object_type(prim_path: str) -> typing.Union[str, None]:
     is returned.
 
     Args:
-        prim_path (str): path of the prim in the stage
+        prim_path: path of the prim in the stage
 
     Raises:
         Exception: If the USD Prim is not a supported type.
 
     Returns:
-        str: String corresponding to the object type.
+        String corresponding to the object type.
 
     Example:
 
@@ -867,11 +868,11 @@ def is_prim_non_root_articulation_link(prim_path: str) -> bool:
     """Used to query if the prim_path corresponds to a link in an articulation which is a non root link.
 
     Args:
-        prim_path (str): prim_path to query
+        prim_path: prim_path to query
 
     Returns:
-        bool: True if the prim path corresponds to a link in an articulation which is a non root link
-              and can't have a transformation applied to it.
+        True if the prim path corresponds to a link in an articulation which is a non root link
+        and can't have a transformation applied to it.
 
     Example:
 
@@ -921,8 +922,8 @@ def set_prim_hide_in_stage_window(prim: Usd.Prim, hide: bool):
         Use the ``set_prim_visibility`` function for the latter purpose
 
     Args:
-        prim (Usd.Prim): Prim to set
-        hide (bool): True to hide in stage window, false to show
+        prim: Prim to set
+        hide: True to hide in stage window, false to show
 
     Example:
 
@@ -945,8 +946,8 @@ def set_prim_no_delete(prim: Usd.Prim, no_delete: bool):
         the context menu, or by calling the ``delete_prim`` function, for example.
 
     Args:
-        prim (Usd.Prim): Prim to set
-        no_delete (bool):True to make prim undeletable in stage window, false to allow deletion
+        prim: Prim to set
+        no_delete: True to make prim undeletable in stage window, false to allow deletion
 
     Example:
 
@@ -961,12 +962,12 @@ def set_prim_no_delete(prim: Usd.Prim, no_delete: bool):
 
 
 def set_targets(prim: Usd.Prim, attribute: str, target_prim_paths: list):
-    """Set targets for a prim relationship attribute
+    """Set targets for a prim relationship attribute.
 
     Args:
-        prim (Usd.Prim): Prim to create and set attribute on
-        attribute (str): Relationship attribute to create
-        target_prim_paths (list): list of targets to set
+        prim: Prim to create and set attribute on.
+        attribute: Relationship attribute to create.
+        target_prim_paths: List of targets to set.
 
     Example:
 
@@ -987,7 +988,7 @@ def set_targets(prim: Usd.Prim, attribute: str, target_prim_paths: list):
         print(e, prim.GetPath())
 
 
-def get_articulation_root_api_prim_path(prim_path):
+def get_articulation_root_api_prim_path(prim_path) -> str:
     """Get the prim path that has the Articulation Root API
 
     .. note::
@@ -995,10 +996,10 @@ def get_articulation_root_api_prim_path(prim_path):
         This function assumes that all prims defined by a regular expression correspond to the same articulation type
 
     Args:
-        prim_path (str): path or regex of the prim(s) on which to search for the prim containing the API
+        prim_path: path or regex of the prim(s) on which to search for the prim containing the API
 
     Returns:
-        str: path or regex of the prim(s) that has the Articulation Root API.
+        path or regex of the prim(s) that has the Articulation Root API.
              If no prim has been found, the same input value is returned
 
     Example:

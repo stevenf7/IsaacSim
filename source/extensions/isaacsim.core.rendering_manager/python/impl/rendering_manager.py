@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Core rendering management APIs for controlling rendering operations and frame updates."""
+
+
 from __future__ import annotations
 
 import weakref
@@ -42,11 +45,17 @@ class RenderingManager:
     """Core class that provides APIs for controlling rendering."""
 
     _app = omni.kit.app.get_app()
+    """The Omniverse Kit application instance used for rendering operations."""
     _callbacks = dict()
+    """Dictionary storing registered callback functions mapped by their unique identifiers."""
     _callback_registry = 0
+    """Counter for generating unique identifiers for callback registrations."""
     _carb_settings = carb.settings.get_settings()
+    """Carbonite settings interface for accessing and modifying application configuration."""
     _event_dispatcher = carb.eventdispatcher.get_eventdispatcher()
+    """Carbonite event dispatcher for managing event subscriptions and notifications."""
     _timeline = omni.timeline.get_timeline_interface()
+    """Timeline interface for controlling time-related operations and frame rate settings."""
     try:
         import omni.kit.loop._loop as kit_loop
 
@@ -170,6 +179,10 @@ class RenderingManager:
 
         Returns:
             The unique identifier of the callback subscription.
+
+        Raises:
+            ValueError: If the rendering event is not supported.
+            RuntimeError: If unable to register the callback.
 
         Example:
 

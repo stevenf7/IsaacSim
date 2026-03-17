@@ -12,5 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Provides high-level API classes for managing articulations and their components in Isaac Sim."""
+
+
 from isaacsim.core.api.articulations.articulation_gripper import ArticulationGripper
 from isaacsim.core.api.articulations.articulation_subset import ArticulationSubset

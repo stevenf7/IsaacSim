@@ -24,7 +24,7 @@ from pxr import Sdf
 
 
 class IsaacSimSpawnPrim(omni.kit.commands.Command):
-    """Command to spawn a new prim in the stage and set its transform. This uses dynamic_control to properly handle physics objects and articulation
+    """Command to spawn a new prim in the stage and set its transform. This uses dynamic_control to properly handle physics objects and articulation.
 
     Typical usage example:
 
@@ -33,10 +33,16 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
         omni.kit.commands.execute(
             "IsaacSimSpawnPrim",
             usd_path="/path/to/file.usd",
-            prim_path="/World/Prim,
+            prim_path="/World/Prim",
             translation=(0, 0, 0),
             rotation=(0, 0, 0, 1),
         )
+
+    Args:
+        usd_path: Path to the USD file to reference.
+        prim_path: Path where the prim will be created in the stage.
+        translation: Translation vector for the prim's position.
+        rotation: Rotation quaternion for the prim's orientation.
     """
 
     def __init__(
@@ -53,6 +59,14 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
         pass
 
     def do(self) -> bool:
+        """Spawns a new prim in the stage with the specified USD reference and transform.
+
+        Defines an Xform prim at the given path, adds the USD file as a reference, and applies the specified
+        transformation using dynamic control for proper physics handling.
+
+        Returns:
+            True when the spawn operation completes successfully.
+        """
         self._prim = self._stage.DefinePrim(self._prim_path, "Xform")
         self._prim.GetReferences().AddReference(self._usd_path)
         if self._translation is not None and self._rotation is not None:
@@ -67,6 +81,10 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
         pass
 
     def undo(self):
+        """Undoes the prim spawn operation.
+
+        Currently not implemented - the spawned prim remains in the stage.
+        """
         pass
 
 
@@ -79,10 +97,15 @@ class IsaacSimTeleportPrim(omni.kit.commands.Command):
 
         omni.kit.commands.execute(
             "IsaacSimTeleportPrim",
-            prim_path="/World/Prim,
+            prim_path="/World/Prim",
             translation=(0, 0, 0),
             rotation=(0, 0, 0, 1),
         )
+
+    Args:
+        prim_path: Path to the prim to teleport.
+        translation: Translation vector as (x, y, z).
+        rotation: Rotation quaternion as (x, y, z, w).
     """
 
     def __init__(self, prim_path: str, translation: carb.Float3 = (0, 0, 0), rotation: carb.Float4 = (0, 0, 0, 1)):
@@ -95,12 +118,22 @@ class IsaacSimTeleportPrim(omni.kit.commands.Command):
         pass
 
     def do(self) -> bool:
+        """Executes the teleport operation by setting the prim's transform.
+
+        Returns:
+            True when the teleport operation completes successfully.
+        """
         if self._translation is not None and self._rotation is not None:
             transforms.set_transform(self._stage_id, str(self._prim_path), self._translation, self._rotation)
         return True
         pass
 
     def undo(self):
+        """Undoes the teleport operation.
+
+        Note:
+            This method currently has no implementation and does not restore the prim's previous transform.
+        """
         pass
 
 
@@ -113,9 +146,13 @@ class IsaacSimScalePrim(omni.kit.commands.Command):
 
         omni.kit.commands.execute(
             "IsaacSimScalePrim",
-            prim_path="/World/Prim,
+            prim_path="/World/Prim",
             scale=(1.5, 1.5, 1.5),
         )
+
+    Args:
+        prim_path: Path to the prim to scale.
+        scale: Scale values for x, y, and z axes.
     """
 
     def __init__(self, prim_path: str, scale: carb.Float3 = (0, 0, 0)):
@@ -128,17 +165,23 @@ class IsaacSimScalePrim(omni.kit.commands.Command):
         pass
 
     def do(self) -> bool:
+        """Executes the prim scaling operation by applying the specified scale values.
+
+        Returns:
+            True if the scaling operation was successful.
+        """
         if self._scale is not None:
             transforms.set_scale(self._stage_id, str(self._prim_path), self._scale)
         return True
         pass
 
     def undo(self):
+        """Reverts the prim scaling operation."""
         pass
 
 
 class IsaacSimDestroyPrim(omni.kit.commands.Command):
-    """Command to set a delete a prim. This variant has less overhead than other commands as it doesn't store an undo operation
+    """Command to delete a prim. This variant has less overhead than other commands as it doesn't store an undo operation.
 
     Typical usage example:
 
@@ -146,8 +189,11 @@ class IsaacSimDestroyPrim(omni.kit.commands.Command):
 
         omni.kit.commands.execute(
             "IsaacSimDestroyPrim",
-            prim_path="/World/Prim,
+            prim_path="/World/Prim",
         )
+
+    Args:
+        prim_path: Path to the prim to delete.
     """
 
     def __init__(self, prim_path: str):
@@ -157,11 +203,17 @@ class IsaacSimDestroyPrim(omni.kit.commands.Command):
         pass
 
     def do(self) -> bool:
+        """Deletes the prim from the stage.
+
+        Returns:
+            True if the deletion command was executed.
+        """
         delete_cmd = omni.usd.commands.DeletePrimsCommand([self._prim_path])
         delete_cmd.do()
         pass
 
     def undo(self):
+        """No-op undo operation as this command doesn't support undo functionality."""
         pass
 
 

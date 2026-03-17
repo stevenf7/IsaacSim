@@ -19,6 +19,24 @@ from pxr import Gf, Usd, UsdGeom
 
 
 class SpringDamperFollower:
+    """A spring-damper system for smooth interpolation between current and target positions.
+
+    This class implements a mass-spring-damper system that provides smooth, physics-based transitions
+    between a current position and a target position. It is commonly used for camera movement,
+    object tracking, and other scenarios requiring smooth motion interpolation.
+
+    The system uses the equation: acceleration = (k * displacement - c * velocity) / m,
+    where displacement is the difference between target and current positions.
+
+    Args:
+        mass: Mass of the system, affecting inertia and response time.
+        stiffness: Spring stiffness coefficient, controlling how strongly the system pulls toward the target.
+        damping: Damping coefficient, controlling oscillation reduction and settling behavior.
+        current: Current position as a 3D vector.
+        target: Target position as a 3D vector.
+        vel: Current velocity as a 3D vector.
+    """
+
     def __init__(
         self, mass, stiffness, damping, current=Gf.Vec3d(0, 0, 0), target=Gf.Vec3d(0, 0, 0), vel=Gf.Vec3d(0, 0, 0)
     ):
@@ -29,7 +47,12 @@ class SpringDamperFollower:
         self.target = target
         self.v = vel
 
-    def update(self, step):
+    def update(self, step: float):
+        """Updates the spring-damper system position and velocity for one simulation step.
+
+        Args:
+            step: Time step for the simulation update.
+        """
         d = self.target - self.current
         a = (self.k * d - self.c * self.v) / self.m
         self.v = self.v + a * step
@@ -37,7 +60,26 @@ class SpringDamperFollower:
 
 
 class DynamicCamera:
-    def __init__(self, stage, base_path, camera_name, focal_length=24, f_stop=5, focus_distance=0):
+    """A dynamic camera system that provides smooth camera movements using spring-damper physics.
+
+    This class creates a USD camera with physically-based motion control using spring-damper systems
+    for position, look target, and focus distance. The camera movements are smooth and natural,
+    with configurable mass, stiffness, and damping parameters for different motion characteristics.
+
+    The camera is created as a proxy transform with the actual camera as a child prim, allowing
+    for flexible positioning and orientation control. The system supports automatic focus adjustment
+    based on the distance to the look target.
+
+    Args:
+        stage: The USD stage where the camera will be created.
+        base_path: The USD path where the camera proxy will be created.
+        camera_name: Name for the camera prim and proxy.
+        focal_length: Camera focal length in millimeters.
+        f_stop: Camera f-stop value for depth of field.
+        focus_distance: Initial focus distance for the camera.
+    """
+
+    def __init__(self, stage, base_path: str, camera_name: str, focal_length=24, f_stop=5, focus_distance=0):
         self._stage = stage
         self.target_follower = SpringDamperFollower(mass=5, stiffness=5, damping=10)
         self.position_follower = SpringDamperFollower(mass=20, stiffness=5, damping=20)
@@ -59,11 +101,22 @@ class DynamicCamera:
         self.focus = False
 
     def reset(self):
+        """Resets the camera to its target positions immediately.
+
+        Sets both position and look target followers to their current target values,
+        effectively eliminating any spring motion and placing the camera at its intended position.
+        """
         self.position_follower.current = self.position_follower.target
         self.target_follower.current = self.target_follower.target
         self.update(1.0 / 60.0)
 
-    def update(self, step, timecode=Usd.TimeCode.Default()):
+    def update(self, step: float, timecode=Usd.TimeCode.Default()):
+        """Updates the camera position, orientation, and focus based on spring-damper physics.
+
+        Args:
+            step: Time step for the physics simulation.
+            timecode: USD time code for setting animated attributes.
+        """
         self.target_follower.update(step)
         self.position_follower.update(step)
 
@@ -85,21 +138,50 @@ class DynamicCamera:
         # print("focal", self.focus_follower.current)
         self.prim.GetAttribute("focusDistance").Set(float(self.focus_follower.current), timecode)
 
-    def set_look_target(self, pos):
+    def set_look_target(self, pos: Gf.Vec3d):
+        """Sets the target position for the camera to look at.
+
+        Args:
+            pos: Target position in 3D space for the camera to look towards.
+        """
         self.target_follower.target = pos
 
-    def set_pos_target(self, pos):
+    def set_pos_target(self, pos: Gf.Vec3d):
+        """Sets the target position for the camera location.
+
+        Args:
+            pos: Target position in 3D space for the camera to move towards.
+        """
         self.position_follower.target = pos
 
-    def set_autofocus_target(self, focus):
+    def set_autofocus_target(self, focus: bool):
+        """Enables or disables automatic focus based on distance to look target.
+
+        Args:
+            focus: Whether to automatically adjust focus distance based on the distance to the look target.
+        """
         self.focus = focus
 
-    def set_pos_settings(self, mass, stiffness, damping):
+    def set_pos_settings(self, mass: float, stiffness: float, damping: float):
+        """Configures the spring-damper parameters for camera position movement.
+
+        Args:
+            mass: Mass parameter for the position spring-damper system.
+            stiffness: Stiffness parameter for the position spring-damper system.
+            damping: Damping parameter for the position spring-damper system.
+        """
         self.position_follower.m = mass
         self.position_follower.k = stiffness
         self.position_follower.c = damping
 
-    def set_target_settings(self, mass, stiffness, damping):
+    def set_target_settings(self, mass: float, stiffness: float, damping: float):
+        """Configures the spring-damper parameters for camera look target movement.
+
+        Args:
+            mass: Mass parameter for the look target spring-damper system.
+            stiffness: Stiffness parameter for the look target spring-damper system.
+            damping: Damping parameter for the look target spring-damper system.
+        """
         self.target_follower.m = mass
         self.target_follower.k = stiffness
         self.target_follower.c = damping

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2022-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2022-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides NumPy-based functions for 3D rotation conversions between quaternions, Euler angles, rotation matrices, and rotation vectors."""
+
+
 import typing
+from typing import Union
 
 import numpy as np
 from pxr import Gf
@@ -24,10 +28,11 @@ def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternio
     """Converts a pxr Quaternion type to a numpy array following [w, x, y, z] convention.
 
     Args:
-        orientation (typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion]): Input quaternion from USD.
+        orientation: Input quaternion from USD.
+        device: Device parameter (unused, maintained for compatibility).
 
     Returns:
-        np.ndarray: Quaternion as numpy array in [w, x, y, z] format.
+        Quaternion as numpy array in [w, x, y, z] format.
     """
     quat = np.zeros(4)
     quat[1:] = orientation.GetImaginary()
@@ -41,15 +46,15 @@ def euler_angles_to_quats(
     """Vectorized version of converting euler angles to quaternion (scalar first)
 
     Args:
-        euler_angles np.ndarray: euler angles with shape (N, 3) or (3,) representation XYZ in extrinsic coordinates
-        extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
+        euler_angles: euler angles with shape (N, 3) or (3,) representation XYZ in extrinsic coordinates
+        degrees: True if degrees, False if radians.
+        extrinsic: True if the euler angles follows the extrinsic angles
                    convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
                    the intrinsic angles conventions (equivalent to XYZ ordering).
-                   Defaults to True.
-        degrees (bool, optional): True if degrees, False if radians. Defaults to False.
+        device: Device parameter (unused, maintained for compatibility).
 
     Returns:
-        np.ndarray: quaternions representation of the angles (N, 4) or (4,) - scalar first.
+        quaternions representation of the angles (N, 4) or (4,) - scalar first.
     """
     if extrinsic:
         order = "xyz"
@@ -70,15 +75,15 @@ def quats_to_euler_angles(
     """Vectorized version of converting quaternions (scalar first) to euler angles
 
     Args:
-        quaternions (np.ndarray): quaternions with shape (N, 4) or (4,) - scalar first
-        degrees (bool, optional): Return euler angles in degrees if True, radians if False. Defaults to False.
-        extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
+        quaternions: quaternions with shape (N, 4) or (4,) - scalar first
+        degrees: Return euler angles in degrees if True, radians if False.
+        extrinsic: True if the euler angles follows the extrinsic angles
                    convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
                    the intrinsic angles conventions (equivalent to XYZ ordering).
-                   Defaults to True.
+        device: Device parameter (unused, maintained for compatibility).
 
     Returns:
-        np.ndarray: Euler angles in extrinsic or intrinsic coordinates XYZ order with shape (N, 3) or (3,) corresponding to the quaternion rotations
+        Euler angles in extrinsic or intrinsic coordinates XYZ order with shape (N, 3) or (3,) corresponding to the quaternion rotations
     """
     if extrinsic:
         order = "xyz"
@@ -97,10 +102,11 @@ def rot_matrices_to_quats(rotation_matrices: np.ndarray, device=None) -> np.ndar
     """Vectorized version of converting rotation matrices to quaternions
 
     Args:
-        rotation_matrices (np.ndarray): N Rotation matrices with shape (N, 3, 3) or (3, 3)
+        rotation_matrices: N Rotation matrices with shape (N, 3, 3) or (3, 3)
+        device: Device parameter (unused, maintained for compatibility).
 
     Returns:
-        np.ndarray: quaternion representation of the rotation matrices (N, 4) or (4,) - scalar first
+        quaternion representation of the rotation matrices (N, 4) or (4,) - scalar first
     """
     rot = Rotation.from_matrix(rotation_matrices)
     result = rot.as_quat()
@@ -115,10 +121,11 @@ def quats_to_rot_matrices(quaternions: np.ndarray, device=None) -> np.ndarray:
     """Vectorized version of converting quaternions to rotation matrices
 
     Args:
-        quaternions (np.ndarray): quaternions with shape (N, 4) or (4,) and scalar first
+        quaternions: quaternions with shape (N, 4) or (4,) and scalar first
+        device: Device parameter (unused, maintained for compatibility).
 
     Returns:
-        np.ndarray: N Rotation matrices with shape (N, 3, 3) or (3, 3)
+        N Rotation matrices with shape (N, 3, 3) or (3, 3)
     """
     if len(quaternions.shape) == 1:
         q = quaternions[[1, 2, 3, 0]]
@@ -133,12 +140,13 @@ def rotvecs_to_quats(rotation_vectors: np.ndarray, degrees: bool = False, device
     """Vectorized version of converting rotation vectors to quaternions
 
     Args:
-        rotation_vectors (np.ndarray): N rotation vectors with shape (N, 3) or (3,).  The magnitude of the rotation vector describes the magnitude of the rotation.
+        rotation_vectors: N rotation vectors with shape (N, 3) or (3,).  The magnitude of the rotation vector describes the magnitude of the rotation.
             The normalized rotation vector represents the axis of rotation.
-        degrees (bool): The magnitude of the rotation vector will be interpreted as degrees if True, and radians if False.  Defaults to False.
+        degrees: The magnitude of the rotation vector will be interpreted as degrees if True, and radians if False.
+        device: Device parameter (unused, maintained for compatibility).
 
     Returns:
-        np.ndarray: quaternion representation of the rotation matrices (N, 4) or (4,) - scalar first
+        quaternion representation of the rotation matrices (N, 4) or (4,) - scalar first
     """
     rot = Rotation.from_rotvec(rotation_vectors, degrees)
     result = rot.as_quat()
@@ -153,10 +161,11 @@ def quats_to_rotvecs(quaternions: np.ndarray, device=None) -> np.ndarray:
     """Vectorized version of converting quaternions to rotation vectors
 
     Args:
-        quaternions (np.ndarray): quaternions with shape (N, 4) or (4,) and scalar first
+        quaternions: quaternions with shape (N, 4) or (4,) and scalar first
+        device: Device parameter (unused, maintained for compatibility).
 
     Returns:
-        np.ndarray: N rotation vectors with shape (N,3) or (3,).  The magnitude of the rotation vector describes the magnitude of the rotation.
+        N rotation vectors with shape (N,3) or (3,).  The magnitude of the rotation vector describes the magnitude of the rotation.
             The normalized rotation vector represents the axis of rotation.
     """
     if len(quaternions.shape) == 1:
@@ -169,34 +178,52 @@ def quats_to_rotvecs(quaternions: np.ndarray, device=None) -> np.ndarray:
 
 
 def rad2deg(radian_value: np.ndarray, device=None) -> np.ndarray:
-    """_summary_
+    """Converts angles from radians to degrees.
 
     Args:
-        radian_value (np.ndarray): _description_
-        device (_type_, optional): _description_. Defaults to None.
+        radian_value: Angle values in radians.
+        device: Device parameter (unused, maintained for compatibility).
 
     Returns:
-        np.ndarray: _description_
+        Angle values converted to degrees.
     """
     return np.rad2deg(radian_value)
 
 
 def deg2rad(degree_value: np.ndarray, device=None) -> np.ndarray:
-    """_summary_
+    """Converts angles from degrees to radians.
 
     Args:
-        degree_value (np.ndarray): _description_
-        device (_type_, optional): _description_. Defaults to None.
+        degree_value: Angle values in degrees.
+        device: Device parameter (unused, maintained for compatibility).
 
     Returns:
-        np.ndarray: _description_
+        Angle values converted to radians.
     """
     return np.deg2rad(degree_value)
 
 
-def xyzw2wxyz(q, ret_torch=False):
+def xyzw2wxyz(q: np.ndarray, ret_torch: bool = False) -> np.ndarray:
+    """Converts quaternion from XYZW format to WXYZ format.
+
+    Args:
+        q: Quaternion array in XYZW format (x, y, z, w).
+        ret_torch: Currently unused parameter for potential torch tensor output.
+
+    Returns:
+        Quaternion array in WXYZ format (w, x, y, z).
+    """
     return np.roll(q, 1, -1)
 
 
-def wxyz2xyzw(q, ret_torch=False):
+def wxyz2xyzw(q, ret_torch=False) -> np.ndarray:
+    """Converts quaternion from WXYZ order to XYZW order.
+
+    Args:
+        q: Quaternion in WXYZ order.
+        ret_torch: Return format parameter (unused, maintained for compatibility).
+
+    Returns:
+        Quaternion in XYZW order.
+    """
     return np.roll(q, -1, -1)

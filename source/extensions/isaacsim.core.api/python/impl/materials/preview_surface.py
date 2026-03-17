@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""High level wrapper for creating/encapsulating USD PreviewSurface material prims for basic rendering."""
+
 
 from typing import Optional
 
@@ -28,11 +31,11 @@ class PreviewSurface(VisualMaterial):
 
     Args:
         prim_path: USD prim path for the material.
-        name: Name identifier. Defaults to "preview_surface".
-        shader: Existing shader to use. Defaults to None.
-        color: Diffuse color RGB. Defaults to None.
-        roughness: Surface roughness (0-1). Defaults to None.
-        metallic: Metallic value (0-1). Defaults to None.
+        name: Name identifier.
+        shader: Existing shader to use.
+        color: Diffuse color RGB.
+        roughness: Surface roughness (0-1).
+        metallic: Metallic value (0-1).
     """
 
     def __init__(
@@ -43,7 +46,7 @@ class PreviewSurface(VisualMaterial):
         color: Optional[np.ndarray] = None,
         roughness: Optional[float] = None,
         metallic: Optional[float] = None,
-    ) -> None:
+    ):
         stage = stage_utils.get_current_stage()
         if stage.GetPrimAtPath(prim_path).IsValid():
             carb.log_info("Material Prim already defined at path: {}".format(prim_path))
@@ -78,7 +81,7 @@ class PreviewSurface(VisualMaterial):
         material.CreateSurfaceOutput().ConnectToSource(shader.ConnectableAPI(), "surface")
         return
 
-    def set_color(self, color: np.ndarray) -> None:
+    def set_color(self, color: np.ndarray):
         """Set the diffuse color.
 
         Args:
@@ -102,7 +105,7 @@ class PreviewSurface(VisualMaterial):
         else:
             return np.array(self.shaders_list[0].GetInput("diffuseColor").Get())
 
-    def set_roughness(self, roughness: float) -> None:
+    def set_roughness(self, roughness: float):
         """Set the surface roughness.
 
         Args:
@@ -126,7 +129,7 @@ class PreviewSurface(VisualMaterial):
         else:
             return self.shaders_list[0].GetInput("roughness").Get()
 
-    def set_metallic(self, metallic: float) -> None:
+    def set_metallic(self, metallic: float):
         """Set the metallic value.
 
         Args:

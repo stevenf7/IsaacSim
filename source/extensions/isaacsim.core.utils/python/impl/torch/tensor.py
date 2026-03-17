@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2022-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2022-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utility functions for PyTorch tensor operations, data type conversion, and device management."""
+
+
 from isaacsim.core.deprecation_manager import import_module
 
 torch = import_module("torch")
 
 
 def as_type(data, dtype):
+    """Convert tensor data to the specified data type.
+
+    Args:
+        data: The tensor data to convert.
+        dtype: Target data type string ("float32", "bool", "int32", "int64", "long", "uint8").
+
+    Returns:
+        The tensor converted to the specified data type, or None if the data type is not supported.
+    """
     if dtype == "float32":
         return data.to(torch.float32)
     elif dtype == "bool":
@@ -36,6 +48,17 @@ def as_type(data, dtype):
 
 
 def convert(data, device, dtype="float32", indexed=None):
+    """Convert data to tensor format with specified device and data type.
+
+    Args:
+        data: Input data to convert. Can be tensor or array-like data.
+        device: Target device for the tensor.
+        dtype: Target data type for the tensor.
+        indexed: Additional indexing parameter (currently unused).
+
+    Returns:
+        The converted tensor on the specified device with the specified data type.
+    """
     if not isinstance(data, torch.Tensor):
         return as_type(torch.tensor(data, device=device), dtype)
     else:
@@ -43,19 +66,58 @@ def convert(data, device, dtype="float32", indexed=None):
 
 
 def create_zeros_tensor(shape, dtype, device=None):
+    """Create a tensor filled with zeros of the specified shape and data type.
+
+    Args:
+        shape: Shape of the tensor to create.
+        dtype: Data type for the tensor elements.
+        device: Target device for the tensor.
+
+    Returns:
+        A zero-filled tensor with the specified shape, data type, and device.
+    """
     return as_type(torch.zeros(shape, device=device), dtype)
 
 
 def create_tensor_from_list(data, dtype, device=None):
+    """Create a tensor from list data with specified data type and device.
+
+    Args:
+        data: List data to convert to tensor.
+        dtype: Target data type for the tensor.
+        device: Target device for the tensor.
+
+    Returns:
+        A tensor created from the list data with the specified data type and device.
+    """
     return as_type(torch.tensor(data, device=device), dtype=dtype)
 
 
 def clone_tensor(data, device):
+    """Clone tensor data to the specified device.
+
+    Args:
+        data: The tensor data to clone.
+        device: Target device for the cloned tensor.
+
+    Returns:
+        A cloned copy of the tensor on the specified device.
+    """
     data = data.to(device=device)
     return torch.clone(data)
 
 
 def resolve_indices(indices, count, device):
+    """Resolve and convert indices to a proper tensor format.
+
+    Args:
+        indices: Input indices. Can be a list, tensor, or None. If None, creates a range from 0 to count-1.
+        count: Total count for creating default indices when indices is None.
+        device: Target device for the indices tensor.
+
+    Returns:
+        A long tensor containing the resolved indices on the specified device.
+    """
     result = indices
     if isinstance(indices, list):
         result = torch.tensor(indices, dtype=torch.long, device=device)
@@ -65,40 +127,114 @@ def resolve_indices(indices, count, device):
 
 
 def move_data(data, device):
+    """Move tensor data to the specified device.
+
+    Args:
+        data: The tensor data to move.
+        device: Target device for the tensor.
+
+    Returns:
+        The tensor moved to the specified device.
+    """
     return data.to(device=device)
 
 
 def tensor_cat(data, device=None, dim=-1):
+    """Concatenates tensors along a specified dimension.
+
+    Args:
+        data: Sequence of tensors to concatenate.
+        device: Target device for the operation.
+        dim: Dimension along which to concatenate tensors.
+
+    Returns:
+        Concatenated tensor.
+    """
     return torch.cat(data, dim=dim)
 
 
 def expand_dims(data, axis):
+    """Add a new dimension to the tensor at the specified axis.
+
+    Args:
+        data: Input tensor data.
+        axis: Axis position where to insert the new dimension.
+
+    Returns:
+        The tensor with an additional dimension at the specified axis.
+    """
     return torch.unsqueeze(data, axis)
 
 
 def pad(data, pad_width, mode="constant", value=None):
+    """Add padding to tensor data.
+
+    Args:
+        data: Input tensor data to pad.
+        pad_width: Padding specification. Can be a tuple or list of tuples specifying padding for each dimension.
+        mode: Padding mode to use.
+        value: Fill value for constant padding mode.
+
+    Returns:
+        The padded tensor.
+    """
     if len(pad_width) == 2 and isinstance(pad_width[0], tuple):
         pad_width = pad_width[1] + pad_width[0]
     return torch.nn.functional.pad(data, pad_width, mode, value)
 
 
 def tensor_stack(data, dim=0):
+    """Stacks tensors along a new dimension.
+
+    Args:
+        data: Sequence of tensors to stack.
+        dim: Dimension along which to stack tensors.
+
+    Returns:
+        Stacked tensor.
+    """
     return torch.stack(data, dim=dim)
 
 
 def to_list(data):
+    """Converts tensor data to a Python list.
+
+    Args:
+        data: Data to convert. If already a list, returns as-is.
+
+    Returns:
+        Python list representation of the data.
+    """
     if not isinstance(data, list):
         return data.cpu().numpy().tolist()
     return data
 
 
 def to_numpy(data):
+    """Converts tensor data to a NumPy array.
+
+    Args:
+        data: Data to convert. If not a tensor, returns as-is.
+
+    Returns:
+        NumPy array representation of the data.
+    """
     if isinstance(data, torch.Tensor):
         return data.cpu().numpy()
     return data
 
 
 def assign(src, dst, indices):
+    """Assign source values to destination tensor at specified indices.
+
+    Args:
+        src: Source values to assign.
+        dst: Destination tensor to modify.
+        indices: Indices where to assign the values. Can be a list of coordinates or tensor indices.
+
+    Returns:
+        The modified destination tensor.
+    """
     if isinstance(indices, list):
         dst[tuple(indices)] = src
     else:

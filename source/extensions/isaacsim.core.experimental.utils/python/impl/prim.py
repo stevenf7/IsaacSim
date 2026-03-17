@@ -29,7 +29,7 @@ from . import foundation as foundation_utils
 from . import stage as stage_utils
 
 
-def set_prim_variants(prim: str | Usd.Prim, *, variants: list[tuple[str, str]]) -> None:
+def set_prim_variants(prim: str | Usd.Prim, *, variants: list[tuple[str, str]]):
     """Set/author variants (variant sets and selections) on a USD prim.
 
     Backends: :guilabel:`usd`.

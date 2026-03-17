@@ -13,4 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Defines configuration for test module scanning in Isaac Sim core experimental utilities."""
+
+
 scan_for_test_modules = True

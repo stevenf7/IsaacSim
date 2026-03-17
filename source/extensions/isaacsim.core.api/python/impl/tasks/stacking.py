@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Provides an abstract base class for stacking multiple cubes with a robot."""
+
 
 from abc import ABC, abstractmethod
 from typing import List, Optional
@@ -31,10 +34,10 @@ class Stacking(ABC, BaseTask):
     Args:
         name: Task name identifier.
         cube_initial_positions: Initial positions for all cubes.
-        cube_initial_orientations: Initial orientations for cubes. Defaults to None.
-        stack_target_position: Position to stack cubes at. Defaults to None.
-        cube_size: Size of each cube. Defaults to None.
-        offset: Offset for all task objects. Defaults to None.
+        cube_initial_orientations: Initial orientations for cubes.
+        stack_target_position: Position to stack cubes at.
+        cube_size: Size of each cube.
+        offset: Offset for all task objects.
     """
 
     def __init__(
@@ -45,7 +48,7 @@ class Stacking(ABC, BaseTask):
         stack_target_position: Optional[np.ndarray] = None,
         cube_size: Optional[np.ndarray] = None,
         offset: Optional[np.ndarray] = None,
-    ) -> None:
+    ):
         BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
         self._num_of_cubes = cube_initial_positions.shape[0]
@@ -63,7 +66,7 @@ class Stacking(ABC, BaseTask):
         self._cubes = []
         return
 
-    def set_up_scene(self, scene: Scene) -> None:
+    def set_up_scene(self, scene: Scene):
         """Set up the scene with cubes and robot.
 
         Args:
@@ -100,7 +103,7 @@ class Stacking(ABC, BaseTask):
         return
 
     @abstractmethod
-    def set_robot(self) -> None:
+    def set_robot(self):
         """Create and return the robot for this task.
 
         Raises:
@@ -114,14 +117,14 @@ class Stacking(ABC, BaseTask):
         cube_position: Optional[str] = None,
         cube_orientation: Optional[str] = None,
         stack_target_position: Optional[str] = None,
-    ) -> None:
+    ):
         """Set task parameters.
 
         Args:
-            cube_name: Name of cube to modify. Defaults to None.
-            cube_position: New position for cube. Defaults to None.
-            cube_orientation: New orientation for cube. Defaults to None.
-            stack_target_position: New stack target position. Defaults to None.
+            cube_name: Name of cube to modify.
+            cube_position: New position for cube.
+            cube_orientation: New orientation for cube.
+            stack_target_position: New stack target position.
         """
         if stack_target_position is not None:
             self._stack_target_position = stack_target_position
@@ -169,7 +172,7 @@ class Stacking(ABC, BaseTask):
             }
         return observations
 
-    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
+    def pre_step(self, time_step_index: int, simulation_time: float):
         """Called before each physics step.
 
         Args:
@@ -178,7 +181,7 @@ class Stacking(ABC, BaseTask):
         """
         return
 
-    def post_reset(self) -> None:
+    def post_reset(self):
         """Called after world reset to open gripper."""
         from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 

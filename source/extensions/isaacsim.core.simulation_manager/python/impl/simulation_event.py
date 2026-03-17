@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Defines simulation event types as an enumeration for tracking various stages of simulation lifecycle and physics steps."""
+
+
 from enum import Enum
 
 

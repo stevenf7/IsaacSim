@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Base class for physics materials."""
+
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -31,7 +34,7 @@ class PhysicsMaterial(Prim, ABC):
         resolve_paths: Whether to resolve the given paths (true) or use them as is (false).
     """
 
-    def __init__(self, paths: str | list[str], *, resolve_paths: bool = True) -> None:
+    def __init__(self, paths: str | list[str], *, resolve_paths: bool = True):
         super().__init__(paths, resolve_paths=resolve_paths)
         if not hasattr(self, "_materials"):
             self._materials = []
@@ -129,7 +132,15 @@ class PhysicsMaterial(Prim, ABC):
 
     @staticmethod
     def _get_material(stage: Usd.Stage, path: str) -> UsdShade.Material | None:
-        """Get the material for a given material path."""
+        """Get the material for a given material path.
+
+        Args:
+            stage: The USD stage to get the material from.
+            path: Path to the material prim.
+
+        Returns:
+            The UsdShade.Material if valid, None otherwise.
+        """
         prim = stage.GetPrimAtPath(path)
         if prim.IsValid() and prim.IsA(UsdShade.Material):
             return UsdShade.Material(prim)

@@ -1,11 +1,11 @@
 [package]
-version = "0.2.3"
+version = "0.3.0"
 category = "rendering"
 title = "Isaac Sim Core Rendering Manager"
 description = "Core class that provides APIs for managing viewports and controlling rendering."
 authors = ["hmazhar@nvidia.com", "aserranomuno@nvidia.com"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -186,3 +186,6 @@ args = [
 ]
 enabled = true
 pythonTests.include = ["isaacsim.core.rendering_manager.tests.test_docstrings.*"]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

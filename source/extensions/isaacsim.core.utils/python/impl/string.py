@@ -23,11 +23,11 @@ def find_unique_string_name(initial_name: str, is_unique_fn: Callable[[str], boo
     is unique.
 
     Args:
-        initial_name (str): The initial string name.
-        is_unique_fn (Callable[[str], bool]): The predicate function to validate against.
+        initial_name: The initial string name.
+        is_unique_fn: The predicate function to validate against.
 
     Returns:
-        str: A unique string based on input function.
+        A unique string based on input function.
     """
     if is_unique_fn(initial_name):
         return initial_name
@@ -43,12 +43,11 @@ def find_root_prim_path_from_regex(prim_path_regex: str) -> Tuple[str, int]:
     """Find the first prim above the regex pattern prim and its position.
 
     Args:
-        prim_path_regex (str): full prim path including the regex pattern prim.
+        prim_path_regex: Full prim path including the regex pattern prim.
 
     Returns:
-        Tuple[str, int]: First position is the prim path to the parent of the regex prim.
-                    Second position represents the level of the regex prim in the USD stage tree representation.
-
+        A tuple where the first element is the prim path to the parent of the regex prim
+        and the second element represents the level of the regex prim in the USD stage tree representation.
     """
     prim_paths_list = str(prim_path_regex).split("/")
     root_idx = None

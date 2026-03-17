@@ -12,5 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Extension for managing deprecated settings and OmniGraph nodes in Isaac Sim."""
+
 from .api import import_module as import_module
 from .extension import *
+
+__all__ = ["import_module"]

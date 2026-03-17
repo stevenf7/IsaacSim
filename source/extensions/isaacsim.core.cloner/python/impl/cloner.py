@@ -98,7 +98,7 @@ class Cloner:
         UsdGeom.Scope.Define(self._stage, base_env_path)
         self._base_env_path = base_env_path
 
-    def generate_paths(self, root_path: str, num_paths: int):
+    def generate_paths(self, root_path: str, num_paths: int) -> list[str]:
         """Generate a list of paths under the root path specified.
 
         Args:

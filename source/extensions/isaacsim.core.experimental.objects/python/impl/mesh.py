@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level wrapper for creating/encapsulating USD Mesh (points that are connected into edges and faces) prims."""
+
+
 from __future__ import annotations
 
 from typing import Literal
@@ -106,7 +109,7 @@ class Mesh(XformPrim):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
-    ) -> None:
+    ):
         self._geoms = []
         stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = XformPrim.resolve_paths(paths)

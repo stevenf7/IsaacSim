@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Abstract base class for pick and place tasks involving cube manipulation with a robot."""
+
 
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -30,11 +33,11 @@ class PickPlace(ABC, BaseTask):
 
     Args:
         name: Task name identifier.
-        cube_initial_position: Initial cube position. Defaults to None.
-        cube_initial_orientation: Initial cube orientation. Defaults to None.
-        target_position: Target position for placing. Defaults to None.
-        cube_size: Size of the cube. Defaults to None.
-        offset: Offset for all task objects. Defaults to None.
+        cube_initial_position: Initial cube position.
+        cube_initial_orientation: Initial cube orientation.
+        target_position: Target position for placing.
+        cube_size: Size of the cube.
+        offset: Offset for all task objects.
     """
 
     def __init__(
@@ -45,7 +48,7 @@ class PickPlace(ABC, BaseTask):
         target_position: Optional[np.ndarray] = None,
         cube_size: Optional[np.ndarray] = None,
         offset: Optional[np.ndarray] = None,
-    ) -> None:
+    ):
         BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
         self._target_cube = None
@@ -66,7 +69,7 @@ class PickPlace(ABC, BaseTask):
         self._target_position = self._target_position + self._offset
         return
 
-    def set_up_scene(self, scene: Scene) -> None:
+    def set_up_scene(self, scene: Scene):
         """Set up the scene with cube and robot.
 
         Args:
@@ -97,7 +100,8 @@ class PickPlace(ABC, BaseTask):
         return
 
     @abstractmethod
-    def set_robot(self) -> None:
+    def set_robot(self):
+        """Create and configure the robot for the task."""
         raise NotImplementedError
 
     def set_params(
@@ -105,7 +109,14 @@ class PickPlace(ABC, BaseTask):
         cube_position: Optional[np.ndarray] = None,
         cube_orientation: Optional[np.ndarray] = None,
         target_position: Optional[np.ndarray] = None,
-    ) -> None:
+    ):
+        """Set task parameters for cube position, orientation, and target position.
+
+        Args:
+            cube_position: New position for the cube.
+            cube_orientation: New orientation for the cube.
+            target_position: New target position for placing.
+        """
         if target_position is not None:
             self._target_position = target_position
         if cube_position is not None or cube_orientation is not None:
@@ -113,6 +124,11 @@ class PickPlace(ABC, BaseTask):
         return
 
     def get_params(self) -> dict:
+        """Get current task parameters including cube and robot states.
+
+        Returns:
+            Dictionary containing task parameters with values and modifiability flags.
+        """
         params_representation = dict()
         position, orientation = self._cube.get_local_pose()
         params_representation["cube_position"] = {"value": position, "modifiable": True}
@@ -143,7 +159,7 @@ class PickPlace(ABC, BaseTask):
             },
         }
 
-    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
+    def pre_step(self, time_step_index: int, simulation_time: float):
         """Called before each physics step.
 
         Args:
@@ -152,7 +168,8 @@ class PickPlace(ABC, BaseTask):
         """
         return
 
-    def post_reset(self) -> None:
+    def post_reset(self):
+        """Reset the robot gripper to open position after task reset."""
         from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 
         if isinstance(self._robot.gripper, ParallelGripper):

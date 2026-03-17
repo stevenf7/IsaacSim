@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Scene management system for Isaac Sim environments that provides methods to add, manage, and interact with objects in the USD stage."""
+
 
 import builtins
 import gc
@@ -76,22 +79,24 @@ class Scene(object):
         <isaacsim.core.api.scenes.scene.Scene object at 0x...>
     """
 
-    def __init__(self) -> None:
+    def __init__(self):
         self._scene_registry = SceneRegistry()
         self._enable_bounding_box_computations = False
         self._bbox_cache = None
         return
 
     def __del__(self):
+        """Clean up the scene registry and trigger garbage collection."""
         self.clear(registry_only=True)
         gc.collect()
         return
 
     @property
     def stage(self) -> Usd.Stage:
-        """
+        """Current USD stage.
+
         Returns:
-            Usd.Stage: current USD stage
+            Current USD stage.
 
         Example:
 
@@ -105,16 +110,16 @@ class Scene(object):
         return get_current_stage()
 
     def add(self, obj: SingleXFormPrim) -> SingleXFormPrim:
-        """Add an object to the scene registry
+        """Add an object to the scene registry.
 
         Args:
-            obj (SingleXFormPrim): object to be added
+            obj: Object to be added.
 
         Raises:
-            Exception: The object type is not supported yet
+            Exception: The object type is not supported yet.
 
         Returns:
-            SingleXFormPrim: object
+            Object.
 
         Example:
 
@@ -189,22 +194,21 @@ class Scene(object):
         restitution: float = 0.8,
         color: Optional[np.ndarray] = None,
     ) -> GroundPlane:
-        """Create a ground plane and add it to the scene registry
+        """Create a ground plane and add it to the scene registry.
 
         Args:
-            size (Optional[float], optional): length of each edge. Defaults to 5000.0.
-            z_position (float, optional): ground plane position in the z-axis. Defaults to 0.
-            name (str, optional): shortname to be used as a key by Scene class.
-                                Note: needs to be unique if the object is added to the Scene.
-                                Defaults to "ground_plane".
-            prim_path (str, optional): prim path of the prim to create. Defaults to "/World/groundPlane".
-            static_friction (float, optional): static friction coefficient. Defaults to 0.5.
-            dynamic_friction (float, optional): dynamic friction coefficient. Defaults to 0.5.
-            restitution (float, optional): restitution coefficient. Defaults to 0.8.
-            color (Optional[np.ndarray], optional): color of the visual plane. Defaults to None, which means 50% gray
+            size: Length of each edge.
+            z_position: Ground plane position in the z-axis.
+            name: Shortname to be used as a key by Scene class.
+                Note: needs to be unique if the object is added to the Scene.
+            prim_path: Prim path of the prim to create.
+            static_friction: Static friction coefficient.
+            dynamic_friction: Dynamic friction coefficient.
+            restitution: Restitution coefficient.
+            color: Color of the visual plane. None means 50% gray.
 
         Returns:
-            GroundPlane: ground plane instance
+            Ground plane instance.
 
         Example:
 
@@ -245,20 +249,19 @@ class Scene(object):
         dynamic_friction: float = 0.5,
         restitution: float = 0.8,
     ) -> GroundPlane:
-        """Create a ground plane (using the default asset for Isaac Sim environments) and add it to the scene registry
+        """Create a ground plane (using the default asset for Isaac Sim environments) and add it to the scene registry.
 
         Args:
-            z_position (float, optional): ground plane position in the z-axis. Defaults to 0.
-            name (str, optional): shortname to be used as a key by Scene class.
-                                Note: needs to be unique if the object is added to the Scene.
-                                Defaults to "default_ground_plane".
-            prim_path (str, optional): prim path of the prim to create. Defaults to "/World/defaultGroundPlane".
-            static_friction (float, optional): static friction coefficient. Defaults to 0.5.
-            dynamic_friction (float, optional): dynamic friction coefficient. Defaults to 0.5.
-            restitution (float, optional): restitution coefficient. Defaults to 0.8.
+            z_position: Ground plane position in the z-axis.
+            name: Shortname to be used as a key by Scene class.
+                Note: needs to be unique if the object is added to the Scene.
+            prim_path: Prim path of the prim to create.
+            static_friction: Static friction coefficient.
+            dynamic_friction: Dynamic friction coefficient.
+            restitution: Restitution coefficient.
 
         Returns:
-            GroundPlane: ground plane instance
+            Ground plane instance.
 
         Example:
 
@@ -289,8 +292,8 @@ class Scene(object):
         Scene.add(self, plane)
         return plane
 
-    def post_reset(self) -> None:
-        """Call the ``post_reset`` method on all added objects to the scene registry
+    def post_reset(self):
+        """Call the ``post_reset`` method on all added objects to the scene registry.
 
         Example:
 
@@ -333,7 +336,12 @@ class Scene(object):
         gc.collect()
         return
 
-    def _finalize(self, physics_sim_view) -> None:
+    def _finalize(self, physics_sim_view):
+        """Initialize all registered objects with the physics simulation view.
+
+        Args:
+            physics_sim_view: Physics simulation view to initialize objects with.
+        """
         for xform_name, xform_object in self._scene_registry.xforms.items():
             xform_object.initialize(physics_sim_view)
         for deformable_name, deformable_object in self._scene_registry.deformable_prims.items():
@@ -377,12 +385,12 @@ class Scene(object):
             rigid_contact_view.initialize(physics_sim_view)
         return
 
-    def remove_object(self, name: str, registry_only: bool = False) -> None:
-        """Remove and object from the scene registry and the USD stage if specified (enable by default)
+    def remove_object(self, name: str, registry_only: bool = False):
+        """Remove and object from the scene registry and the USD stage if specified (enable by default).
 
         Args:
-            name (str): Name of the prim to be removed.
-            registry_only (bool, optional): True to remove the object from the scene registry only and not the USD. Defaults to False.
+            name: Name of the prim to be removed.
+            registry_only: True to remove the object from the scene registry only and not the USD.
 
         Example:
 
@@ -424,17 +432,17 @@ class Scene(object):
         return
 
     def get_object(self, name: str) -> SingleXFormPrim:
-        """Get a registered object by its name if exists otherwise None
+        """Get a registered object by its name if exists otherwise None.
 
         .. note::
 
             Object can be registered via the ``add`` method
 
         Args:
-            name str: object name
+            name: Object name.
 
         Returns:
-            SingleXFormPrim: object if it exists otherwise None
+            Object if it exists otherwise None.
 
         Example:
 
@@ -447,13 +455,13 @@ class Scene(object):
         return self._scene_registry.get_object(name=name)
 
     def object_exists(self, name: str) -> bool:
-        """Check if an object exists in the scene registry
+        """Check if an object exists in the scene registry.
 
         Args:
-            name (str): object name
+            name: Object name.
 
         Returns:
-            bool: whether the object exists in the scene registry or not
+            Whether the object exists in the scene registry or not.
 
         Example:
 
@@ -468,11 +476,11 @@ class Scene(object):
         else:
             return False
 
-    def clear(self, registry_only: bool = False) -> None:
+    def clear(self, registry_only: bool = False):
         """Clear the stage from all added objects to the scene registry.
 
         Args:
-            registry_only (bool, optional): True to remove the object from the scene registry only and not the USD. Defaults to False.
+            registry_only: True to remove the object from the scene registry only and not the USD.
 
         Example:
 
@@ -539,13 +547,13 @@ class Scene(object):
             before querying the Axis-Aligned Bounding Box (AABB) of an object
 
         Args:
-            name (str): object name
+            name: object name
 
         Raises:
             Exception: If the bounding box computation is not enabled
 
         Returns:
-            Tuple[np.ndarray, np.ndarray]: bounding box points (minimum and maximum)
+            bounding box points (minimum and maximum)
 
         Example:
 
@@ -569,7 +577,7 @@ class Scene(object):
         prim_range = bounds.ComputeAlignedRange()
         return np.array([np.array(prim_range.GetMin()), np.array(prim_range.GetMax())])
 
-    def enable_bounding_boxes_computations(self) -> None:
+    def enable_bounding_boxes_computations(self):
         """Enable the bounding boxes computations
 
         Example:
@@ -584,7 +592,7 @@ class Scene(object):
         self._enable_bounding_box_computations = True
         return
 
-    def disable_bounding_boxes_computations(self) -> None:
+    def disable_bounding_boxes_computations(self):
         """Disable the bounding boxes computations
 
         Example:

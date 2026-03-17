@@ -27,11 +27,11 @@ def get_mesh_vertices_relative_to(mesh_prim: UsdGeom.Mesh, coord_prim: Usd.Prim)
     """Get vertices of the mesh prim in the coordinate system of the given prim.
 
     Args:
-        mesh_prim (UsdGeom.Mesh): mesh prim to get the vertice points.
-        coord_prim (Usd.Prim): prim used as relative coordinate.
+        mesh_prim: Mesh prim to get the vertice points.
+        coord_prim: Prim used as relative coordinate.
 
     Returns:
-        np.ndarray: vertices of the mesh in the coordinate system of the given prim. Shape is (N, 3).
+        Vertices of the mesh in the coordinate system of the given prim. Shape is (N, 3).
 
     Example:
 

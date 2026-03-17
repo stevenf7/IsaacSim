@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Extension module for Isaac Sim core rendering management capabilities including rendering events and viewport management."""
+
+
 import omni.ext
 
 from .rendering_manager import RenderingEvent, RenderingManager
@@ -20,8 +23,25 @@ from .viewport_manager import ViewportManager
 
 
 class Extension(omni.ext.IExt):
+    """Extension class for the isaacsim.core.rendering_manager extension.
+
+    This extension provides core rendering management capabilities for Isaac Sim, including
+    rendering event handling and viewport management functionality. It makes the RenderingManager,
+    ViewportManager, and RenderingEvent classes available for managing rendering operations and
+    viewport interactions in Isaac Sim applications.
+    """
+
     def on_startup(self, ext_id):
+        """Called when the extension starts up.
+
+        Args:
+            ext_id: The extension identifier.
+        """
         pass
 
     def on_shutdown(self):
+        """Called when the extension shuts down.
+
+        Deregisters all rendering callbacks to clean up resources.
+        """
         RenderingManager.deregister_all_callbacks()

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level class for creating/wrapping USD Cube (primitive rectilinear cube centered at the origin) prims."""
+
+
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils
@@ -84,7 +87,7 @@ class Cube(Shape):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
-    ) -> None:
+    ):
         self._geoms = []
         stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = Shape.resolve_paths(paths)

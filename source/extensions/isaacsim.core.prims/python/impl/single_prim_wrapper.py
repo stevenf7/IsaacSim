@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Single prim wrapper that provides a simplified interface for manipulating individual USD prims."""
+
+
 from typing import Optional, Sequence, Tuple
 
 import numpy as np
@@ -21,7 +24,17 @@ from pxr import Usd
 
 
 class _SinglePrimWrapper(object):
-    def __init__(self, view) -> None:
+    """A single prim wrapper that provides a simplified interface for manipulating individual USD prims.
+
+    This class wraps a prim view to offer convenient methods for working with a single prim,
+    including pose manipulation, visual material application, visibility control, and state management.
+    It serves as a bridge between the multi-prim view interface and single-prim operations.
+
+    Args:
+        view: The prim view to wrap for single prim operations.
+    """
+
+    def __init__(self, view):
         self._prim_view = view
         self._prim_view._remove_callbacks()
         return
@@ -35,7 +48,7 @@ class _SinglePrimWrapper(object):
             it will be automatically initialized when the world is reset (e.g., ``world.reset()``).
 
         Args:
-            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
+            physics_sim_view: Current physics simulation view.
 
         Example:
 
@@ -48,25 +61,28 @@ class _SinglePrimWrapper(object):
 
     @property
     def prim_path(self) -> str:
-        """
+        """Prim path in the stage.
+
         Returns:
-            str: prim path in the stage
+            Prim path in the stage.
         """
         return self._prim_view.prim_paths[0]
 
     @property
-    def name(self) -> Optional[str]:
-        """
+    def name(self) -> str | None:
+        """Name given to the prim when instantiating it.
+
         Returns:
-            str: name given to the prim when instantiating it. Otherwise None.
+            Name given to the prim when instantiating it. Otherwise None.
         """
         return self._prim_view.name
 
     @property
     def prim(self) -> Usd.Prim:
-        """
+        """USD Prim object that this object holds.
+
         Returns:
-            Usd.Prim: USD Prim object that this object holds.
+            USD Prim object that this object holds.
         """
         return self._prim_view.prims[0]
 
@@ -75,7 +91,7 @@ class _SinglePrimWrapper(object):
         """Used to query if the prim is a non root articulation link
 
         Returns:
-            bool: True if the prim itself is a non root link
+            True if the prim itself is a non root link
 
         Example:
 
@@ -91,7 +107,7 @@ class _SinglePrimWrapper(object):
         """Set the visibility of the prim in stage
 
         Args:
-            visible (bool): flag to set the visibility of the usd prim in stage.
+            visible: Flag to set the visibility of the usd prim in stage.
 
         Example:
 
@@ -106,9 +122,10 @@ class _SinglePrimWrapper(object):
         return
 
     def get_visibility(self) -> bool:
-        """
+        """Get the visibility of the prim in stage.
+
         Returns:
-            bool: true if the prim is visible in stage. false otherwise.
+            True if the prim is visible in stage. False otherwise.
 
         Example:
 
@@ -142,7 +159,7 @@ class _SinglePrimWrapper(object):
         """Get the default prim states (spatial position and orientation).
 
         Returns:
-            XFormPrimState: an object that contains the default state of the prim (position and orientation)
+            An object that contains the default state of the prim (position and orientation)
 
         Example:
 
@@ -162,16 +179,16 @@ class _SinglePrimWrapper(object):
         return default_state
 
     def set_default_state(
-        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+        self, position: Sequence[float] | None = None, orientation: Sequence[float] | None = None
     ) -> None:
         """Set the default state of the prim (position and orientation), that will be used after each reset.
 
         Args:
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                       Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim.
-                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                          Defaults to None, which means left unchanged.
+            position: Position in the world frame of the prim. shape is (3, ).
+                Which means left unchanged.
+            orientation: Quaternion orientation in the world frame of the prim.
+                Quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                Which means left unchanged.
 
         Example:
 
@@ -196,10 +213,10 @@ class _SinglePrimWrapper(object):
         """Apply visual material to the held prim and optionally its descendants.
 
         Args:
-            visual_material (VisualMaterial): visual material to be applied to the held prim. Currently supports
-                                              PreviewSurface, OmniPBR and OmniGlass.
-            weaker_than_descendants (bool, optional): True if the material shouldn't override the descendants
-                                                      materials, otherwise False. Defaults to False.
+            visual_material: Visual material to be applied to the held prim. Currently supports
+                PreviewSurface, OmniPBR and OmniGlass.
+            weaker_than_descendants: True if the material shouldn't override the descendants
+                materials, otherwise False.
 
         Example:
 
@@ -227,7 +244,7 @@ class _SinglePrimWrapper(object):
         or it's one of the following materials that was already applied before: PreviewSurface, OmniPBR and OmniGlass.
 
         Returns:
-            VisualMaterial: the current applied visual material if its type is currently supported.
+            The current applied visual material if its type is currently supported.
 
         Example:
 
@@ -243,7 +260,7 @@ class _SinglePrimWrapper(object):
         """Check if there is a visual material applied
 
         Returns:
-            bool: True if there is a visual material applied. False otherwise.
+            True if there is a visual material applied. False otherwise.
 
         Example:
 
@@ -258,18 +275,16 @@ class _SinglePrimWrapper(object):
     def set_world_pose(
         self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
     ) -> None:
-        """Ses prim's pose with respect to the world's frame
+        """Set prim's pose with respect to the world's frame
 
         .. warning::
 
             This method will change (teleport) the prim pose immediately to the indicated value
 
         Args:
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                       Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim.
-                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                          Defaults to None, which means left unchanged.
+            position: Position in the world frame of the prim. shape is (3, ).
+            orientation: Quaternion orientation in the world frame of the prim.
+                quaternion is scalar-first (w, x, y, z). shape is (4, ).
 
         .. hint::
 
@@ -294,7 +309,7 @@ class _SinglePrimWrapper(object):
         """Get prim's pose with respect to the world's frame
 
         Returns:
-            Tuple[np.ndarray, np.ndarray]: first index is the position in the world frame (with shape (3, )).
+            First index is the position in the world frame (with shape (3, )).
             Second index is quaternion orientation (with shape (4, )) in the world frame
 
         Example:
@@ -318,7 +333,7 @@ class _SinglePrimWrapper(object):
         """Get prim's pose with respect to the local frame (the prim's parent frame)
 
         Returns:
-            Tuple[np.ndarray, np.ndarray]: first index is the position in the local frame (with shape (3, )).
+            First index is the position in the local frame (with shape (3, )).
             Second index is quaternion orientation (with shape (4, )) in the local frame
 
         Example:
@@ -348,12 +363,10 @@ class _SinglePrimWrapper(object):
             This method will change (teleport) the prim pose immediately to the indicated value
 
         Args:
-            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                          (with respect to its parent prim). shape is (3, ).
-                                                          Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the local frame of the prim.
-                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                          Defaults to None, which means left unchanged.
+            translation: Translation in the local frame of the prim
+                (with respect to its parent prim). shape is (3, ).
+            orientation: Quaternion orientation in the local frame of the prim.
+                quaternion is scalar-first (w, x, y, z). shape is (4, ).
         .. hint::
 
             This method belongs to the methods used to set the prim state
@@ -377,7 +390,7 @@ class _SinglePrimWrapper(object):
         """Get prim's scale with respect to the world's frame
 
         Returns:
-            np.ndarray: scale applied to the prim's dimensions in the world frame. shape is (3, ).
+            Scale applied to the prim's dimensions in the world frame. shape is (3, ).
 
         Example:
 
@@ -392,8 +405,7 @@ class _SinglePrimWrapper(object):
         """Set prim's scale with respect to the local frame (the prim's parent frame).
 
         Args:
-            scale (Optional[Sequence[float]]): scale to be applied to the prim's dimensions. shape is (3, ).
-                                          Defaults to None, which means left unchanged.
+            scale: Scale to be applied to the prim's dimensions. shape is (3, ).
 
         Example:
 
@@ -411,7 +423,7 @@ class _SinglePrimWrapper(object):
         """Get prim's scale with respect to the local frame (the parent's frame)
 
         Returns:
-            np.ndarray: scale applied to the prim's dimensions in the local frame. shape is (3, ).
+            Scale applied to the prim's dimensions in the local frame. shape is (3, ).
 
         Example:
 
@@ -429,7 +441,7 @@ class _SinglePrimWrapper(object):
         """Check if the prim path has a valid USD Prim at it
 
         Returns:
-            bool: True is the current prim path corresponds to a valid prim in stage. False otherwise.
+            True is the current prim path corresponds to a valid prim in stage. False otherwise.
 
         Example:
 
@@ -442,6 +454,14 @@ class _SinglePrimWrapper(object):
         return self._prim_view.is_valid()
 
     def _view_state_conversion(self, view_state):
+        """Convert view state to XFormPrimState format.
+
+        Args:
+            view_state: View state object containing positions and orientations arrays.
+
+        Returns:
+            XFormPrimState object with position and orientation from the first element of the view state arrays.
+        """
         # TODO: a temp function
         position = None
         orientation = None

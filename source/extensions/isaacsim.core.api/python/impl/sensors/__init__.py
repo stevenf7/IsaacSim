@@ -12,5 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Sensor API module providing base sensor functionality and rigid contact views for Isaac Sim."""
+
+
 from isaacsim.core.api.sensors.base_sensor import BaseSensor
 from isaacsim.core.api.sensors.rigid_contact_view import RigidContactView

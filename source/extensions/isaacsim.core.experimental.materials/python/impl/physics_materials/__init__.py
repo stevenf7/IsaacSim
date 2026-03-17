@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Physics materials implementations for rigid body, surface deformable, and volume deformable materials."""
+
+
 from .physics_material import PhysicsMaterial
 from .rigid_body import RigidBodyMaterial
 from .surface_deformable import SurfaceDeformableMaterial

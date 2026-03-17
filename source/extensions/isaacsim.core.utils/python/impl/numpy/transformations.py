@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utilities for 3D transformation operations including coordinate frame conversions and pose manipulations using NumPy arrays."""
+
+
 import numpy as np
 from isaacsim.core.utils.numpy.rotations import gf_quat_to_tensor, wxyz2xyzw, xyzw2wxyz
 from isaacsim.core.utils.numpy.tensor import create_zeros_tensor
@@ -26,6 +29,7 @@ def tf_matrices_from_poses(translations: np.ndarray, orientations: np.ndarray, d
     Args:
         translations: Translations with shape (N, 3).
         orientations: Quaternion orientations (scalar first) with shape (N, 4).
+        device: Device for tensor operations.
 
     Returns:
         Transformation matrices with shape (N, 4, 4).
@@ -40,6 +44,17 @@ def tf_matrices_from_poses(translations: np.ndarray, orientations: np.ndarray, d
 
 
 def get_local_from_world(parent_transforms, positions, orientations, device=None):
+    """Convert world space poses to local space relative to parent transformations.
+
+    Args:
+        parent_transforms: Parent transformation matrices.
+        positions: World space positions with shape (N, 3).
+        orientations: World space quaternion orientations with shape (N, 4).
+        device: Device for tensor operations.
+
+    Returns:
+        Tuple of (local_translations, local_orientations) in parent coordinate frame.
+    """
     calculated_translations = create_zeros_tensor(shape=[positions.shape[0], 3], dtype="float32", device=device)
     calculated_orientations = create_zeros_tensor(shape=[positions.shape[0], 4], dtype="float32", device=device)
     my_world_transforms = tf_matrices_from_poses(translations=positions, orientations=orientations)
@@ -54,6 +69,17 @@ def get_local_from_world(parent_transforms, positions, orientations, device=None
 
 
 def get_world_from_local(parent_transforms, translations, orientations, device=None):
+    """Convert local space poses to world space using parent transformations.
+
+    Args:
+        parent_transforms: Parent transformation matrices.
+        translations: Local space translations with shape (N, 3).
+        orientations: Local space quaternion orientations with shape (N, 4).
+        device: Device for tensor operations.
+
+    Returns:
+        Tuple of (world_positions, world_orientations) in world coordinate frame.
+    """
     calculated_positions = create_zeros_tensor(shape=[translations.shape[0], 3], dtype="float32", device=device)
     calculated_orientations = create_zeros_tensor(shape=[translations.shape[0], 4], dtype="float32", device=device)
     my_local_transforms = tf_matrices_from_poses(translations=translations, orientations=orientations)
@@ -68,11 +94,35 @@ def get_world_from_local(parent_transforms, translations, orientations, device=N
 
 
 def get_pose(positions, orientations, device=None):
+    """Concatenate position and orientation arrays into a single pose array.
+
+    Args:
+        positions: Position array with shape (N, 3).
+        orientations: Orientation array with shape (N, 4).
+        device: Device for tensor operations.
+
+    Returns:
+        Combined pose array with shape (N, 7) containing positions and orientations.
+    """
     pose = np.concatenate([positions, orientations], axis=-1)
     return pose
 
 
 def assign_pose(current_positions, current_orientations, positions, orientations, indices, device=None, pose=None):
+    """Update pose arrays by assigning new positions and orientations at specified indices.
+
+    Args:
+        current_positions: Current position array with shape (N, 3).
+        current_orientations: Current orientation array with shape (N, 4).
+        positions: New positions to assign. If None, uses current positions at indices.
+        orientations: New orientations to assign. If None, uses current orientations at indices.
+        indices: Indices where new poses should be assigned.
+        device: Device for tensor operations.
+        pose: Optional pose parameter.
+
+    Returns:
+        Updated pose array with new positions and orientations assigned at specified indices.
+    """
     if positions is None:
         positions = current_positions[indices]
     if orientations is None:

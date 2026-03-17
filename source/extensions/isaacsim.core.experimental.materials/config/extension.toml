@@ -1,5 +1,5 @@
 [package]
-version = "0.5.1"
+version = "0.6.0"
 category = "Simulation"
 title = "Isaac Sim Core (Materials)"
 description = "The Core Materials extension provides a set of APIs to create and/or wrap one or more USD materials in the stage..."
@@ -7,7 +7,7 @@ authors = ["hmazhar@nvidia.com","aserranomuno@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.materials"
 keywords = ["isaacsim", "core", "materials"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -83,3 +83,6 @@ pythonTests.include = ["isaacsim.core.experimental.materials.tests.*"]
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]
