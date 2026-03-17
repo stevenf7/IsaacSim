@@ -1,4 +1,12 @@
 # Changelog
+
+## [1.2.0] - 2026-03-09
+### Changed
+- Extract TCP socket server and Python executor into isaacsim.code_editor.python_server
+- Extension now depends on isaacsim.code_editor.python_server for code execution
+- Retain only VS Code launcher and menu integration
+- Settings moved to isaacsim.code_editor.python_server extension
+
 ## [1.1.2] - 2026-03-09
 ### Fixed
 - Hardened subprocess call to avoid shell=True with string concatenation
@@ -6,7 +14,6 @@
 ## [1.1.1] - 2026-03-02
 ### Changed
 - Add Overview.md, add python_api.md, add SETTINGS.md and update docstrings
-
 
 ## [1.1.0] - 2025-06-10
 ### Changed

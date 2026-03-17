@@ -1,0 +1,42 @@
+[package]
+version = "1.0.0"
+category = "Utility"
+title = "Python Server"
+description = "TCP socket server for remote Python code execution in Isaac Sim"
+authors = ["hmazhar@nvidia.com", "aserranomuno@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.code_editor.python_server"
+keywords = ["isaac", "python", "server", "remote", "execution", "llm"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"isaacsim.core.deprecation_manager" = {}
+
+[[python.module]]
+name = "isaacsim.code_editor.python_server"
+
+[settings]
+# IP address where the extension server will listen for connections.
+exts."isaacsim.code_editor.python_server".host = "127.0.0.1"
+# Port number where the extension server will listen for connections.
+exts."isaacsim.code_editor.python_server".port = 8226
+# Whether to publish incoming carb logging messages.
+# Warning: enabling this feature may cause the application to freeze in certain circumstances.
+exts."isaacsim.code_editor.python_server".carb_logs = false
+
+[[test]]
+timeout = 300
+dependencies = [
+    "isaacsim.core.experimental.objects",
+    "isaacsim.core.experimental.prims",
+    "isaacsim.core.experimental.utils",
+]
+args = [
+    "--/exts/isaacsim.code_editor.python_server/port=8227",
+]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/SETTINGS.md", "docs/CHANGELOG.md"]

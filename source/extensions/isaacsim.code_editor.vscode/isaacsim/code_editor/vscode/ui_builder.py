@@ -15,6 +15,7 @@
 
 """UI builder for Visual Studio Code integration extension."""
 
+from __future__ import annotations
 
 import os
 import subprocess
@@ -25,31 +26,29 @@ import carb
 
 
 class UIBuilder:
-    """Manage extension UI.
+    """Manage the VS Code menu item and launcher.
 
     Args:
         menu_name: Name of the menu where the item will be added.
         menu_item_name: Display name for the menu item.
-        host: Host address for the server.
-        port: Port number for the server.
+        host: Host address for the Python server.
+        port: Port number for the Python server.
     """
 
-    def __init__(self, menu_name, menu_item_name, host, port):
-        self._menu_items = []
-
+    def __init__(self, menu_name: str, menu_item_name: str, host: str, port: int) -> None:
+        self._menu_items: list = []
         self._host = host
         self._port = port
         self._menu_name = menu_name
         self._menu_item_name = menu_item_name
 
-        # get application folder
-        self._app_folder = carb.settings.get_settings().get_as_string("/app/folder")
-        if not self._app_folder:
-            self._app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
-        self._app_folder = os.path.normpath(os.path.join(self._app_folder, os.pardir))
+        app_folder = carb.settings.get_settings().get_as_string("/app/folder")
+        if not app_folder:
+            app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
+        self._app_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
 
-    def startup(self):
-        """Create menu item"""
+    def startup(self) -> None:
+        """Create the menu item for launching VS Code."""
         try:
             from omni.kit.menu.utils import MenuItemDescription, add_menu_items
 
@@ -63,8 +62,8 @@ class UIBuilder:
         except ImportError:
             pass
 
-    def shutdown(self):
-        """Clean up menu item"""
+    def shutdown(self) -> None:
+        """Remove the menu item."""
         try:
             from omni.kit.menu.utils import remove_menu_items
 
@@ -73,12 +72,12 @@ class UIBuilder:
             pass
         self._menu_items = []
 
-    def _launch(self, *args, **kwargs):
-        """Launch a new VS Code window on the application path
+    def _launch(self, *args: object, **kwargs: object) -> None:
+        """Launch a new VS Code window pointed at the application directory.
 
         Args:
-            *args: Variable length argument list.
-            **kwargs: Additional keyword arguments.
+            *args: Variable length argument list (unused).
+            **kwargs: Additional keyword arguments (unused).
         """
         command = ["code", "-n", self._app_folder]
         carb.log_info(f"Launching VS Code: {command}")
@@ -87,10 +86,10 @@ class UIBuilder:
         notification = f"Serving at {self._host}:{self._port}"
         if result.returncode:
             notification += f"\n\nUnable to launch VS Code (error code: {result.returncode})"
-            if result.returncode == 1 or result.returncode == 127:
+            if result.returncode in (1, 127):
                 notification += ".\nMake sure VS Code is installed and accessible on the system via the command 'code'"
             carb.log_warn(notification)
-        # show notification in Kit window
+
         try:
             import omni.kit.notification_manager as notification_manager
         except ImportError:

@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module for Visual Studio Code integration with the Isaac Sim code editor."""
-
+"""VS Code launcher and menu integration for Isaac Sim."""
 
 from .extension import *
 
-__all__ = []
+__all__: list[str] = []

@@ -221,7 +221,7 @@ def check_file_header(file_path: Path) -> tuple[bool, list[str]]:
 
     for idx, line in enumerate(lines[:60], start=1):
         content = _normalize_content(line, comment_symbol)
-        if _LEGACY_COPYRIGHT_RE.search(content):
+        if _LEGACY_COPYRIGHT_RE.search(content) and not COPYRIGHT_RE.search(content):
             issues.append(f"Line {idx}: Legacy proprietary NVIDIA copyright header found")
             break
 

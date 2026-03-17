@@ -86,9 +86,12 @@ Extensions (Code Editor)
     * - :doc:`isaacsim.code_editor.jupyter <source/extensions/isaacsim.code_editor.jupyter/docs/index>`
       - Jupyter notebook integration
       - Jupyter notebook version of Omniverse's script editor
+    * - :doc:`isaacsim.code_editor.python_server <source/extensions/isaacsim.code_editor.python_server/docs/index>`
+      - Python Server
+      - TCP socket server for remote Python code execution in Isaac Sim
     * - :doc:`isaacsim.code_editor.vscode <source/extensions/isaacsim.code_editor.vscode/docs/index>`
       - VS Code integration
-      - VS Code version of Omniverse's script editor
+      - VS Code launcher and menu integration for Isaac Sim
 
 Extensions (Core)
 ~~~~~~~~~~~~~~~~~

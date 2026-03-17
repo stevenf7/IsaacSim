@@ -25,6 +25,7 @@ Tools
    :maxdepth: 1
 
    vscode
+   python_server
    jupyter_notebook
    omniverse_script_editor
 
