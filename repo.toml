@@ -1229,3 +1229,23 @@ python_analysis_extra_mapping = [
 [repo_edit_sysconfig]
 "platform:linux-x86_64".sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.12/_sysconfigdata__linux_x86_64-linux-gnu.py"
 "platform:linux-aarch64".sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.12/_sysconfigdata__linux_aarch64-linux-gnu.py"
+
+########################################################################################################################
+# API Check tool
+########################################################################################################################
+
+[repo_checkapi]
+enabled = true
+
+[repo_checkapi.python]
+
+exts.folders = [
+    "${root}/_build/${platform}/${config}/exts",
+    "${root}/_build/${platform}/${config}/extsInternal"
+]
+
+exts.extra_folders = [
+]
+
+# Check and fail on CI when API changed. That encourages to update and commit the python_api.md files.
+fail_on_changed_api = true

@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Example demonstrating RMPflow controller with cuMotion integration for robot motion planning."""
+
+
 import isaacsim.robot_motion.experimental.motion_generation as mg
 import numpy as np
-import warp as wp
 from isaacsim.core.experimental.objects import Cone, Cube, Cylinder, Mesh
-from isaacsim.core.experimental.prims import Articulation, GeomPrim, XformPrim
+from isaacsim.core.experimental.prims import Articulation, GeomPrim
 from isaacsim.core.experimental.utils import prim as prim_utils
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.experimental.utils import transform as transform_utils
@@ -46,14 +48,15 @@ class FrankaRmpFlowExample:
     - Use the controller to follow a target while avoiding obstacles
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize the FrankaRmpFlowExample with default attribute values."""
         self._controller = None
         self._articulation = None
         self._target = None
         self._world_binding = None
         self._controlled_joint_names = None
 
-    def load_example_assets(self):
+    def load_example_assets(self) -> tuple:
         """Load robot, target, and obstacle assets to the stage."""
         self._robot_prim_path = "/panda"
         path_to_robot_usd = get_assets_root_path() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
@@ -76,7 +79,7 @@ class FrankaRmpFlowExample:
 
         return self._articulation, self._target, cube
 
-    def _cleanup_debug_prims(self):
+    def _cleanup_debug_prims(self) -> None:
         """Delete all prims under 'CumotionDebug' to clean up old debug visualization."""
         # Find all prims that have "CumotionDebug" in their path
         debug_prim_paths = prim_utils.find_matching_prim_paths(".*CumotionDebug.*", traverse=True)
@@ -97,7 +100,7 @@ class FrankaRmpFlowExample:
                 # Prim may have already been deleted or doesn't exist, skip
                 pass
 
-    def setup(self):
+    def setup(self) -> None:
         """Set up the RMPflow controller and world interface."""
         # Clean up old world binding and debug prims before setting up
         if self._world_binding is not None:
@@ -177,7 +180,7 @@ class FrankaRmpFlowExample:
         self._sim_time = 0.0
         self._controller_reset = False
 
-    def update(self, step: float):
+    def update(self, step: float) -> None:
         """Update controller on each physics step."""
         if self._controller is None or self._world_binding is None:
             return
@@ -228,6 +231,6 @@ class FrankaRmpFlowExample:
 
         self._sim_time += step
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the example."""
         self.setup()

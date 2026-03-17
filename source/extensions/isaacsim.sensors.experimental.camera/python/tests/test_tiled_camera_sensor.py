@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the TiledCameraSensor class."""
+
 import os
-from typing import Callable, Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
 import cv2
 import isaacsim.core.experimental.utils.app as app_utils
@@ -46,16 +49,39 @@ EXPECTED_ANNOTATOR_SPEC = {
 
 def parametrize(
     *,
-    instances: list[Literal["one", "many"]] = ["one", "many"],
-    operations: list[Literal["wrap", "create"]] = ["wrap", "create"],
+    instances: list[Literal["one", "many"]] = None,
+    operations: list[Literal["wrap", "create"]] = None,
     prim_class: type,
-    prim_class_kwargs: dict = {},
+    prim_class_kwargs: dict = None,
     populate_stage_func: Callable[[int, Literal["wrap", "create"]], None],
-    populate_stage_func_kwargs: dict = {},
+    populate_stage_func_kwargs: dict = None,
     max_num_prims: int = MAX_NUM_PRIMS,
-):
-    def decorator(func):
-        async def wrapper(self):
+) -> Callable:
+    """Parametrize a test method with instance and operation combinations.
+
+    Args:
+        instances: List of instance types to test (e.g., ``["one", "many"]``).
+        operations: List of operations to test (e.g., ``["wrap", "create"]``).
+        prim_class: The prim class to instantiate.
+        prim_class_kwargs: Additional keyword arguments for the prim class constructor.
+        populate_stage_func: Function to populate the USD stage before each test.
+        populate_stage_func_kwargs: Additional keyword arguments for the populate stage function.
+        max_num_prims: Maximum number of prims to create.
+
+    Returns:
+        A decorator that wraps the test method with parametrized execution.
+    """
+    if populate_stage_func_kwargs is None:
+        populate_stage_func_kwargs = {}
+    if prim_class_kwargs is None:
+        prim_class_kwargs = {}
+    if operations is None:
+        operations = ["wrap", "create"]
+    if instances is None:
+        instances = ["one", "many"]
+
+    def decorator(func: Callable) -> Callable:
+        async def wrapper(self: Any) -> None:
             for instance in instances:
                 for operation in operations:
                     assert instance in ["one", "many"], f"Invalid instance: {instance}"
@@ -83,7 +109,14 @@ def parametrize(
     return decorator
 
 
-async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
+async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
+    """Populate the USD stage with test prims for tiled camera sensor tests.
+
+    Args:
+        max_num_prims: Maximum number of camera prims to create.
+        operation: The operation type, either ``"wrap"`` or ``"create"``.
+        **kwargs: Additional keyword arguments (unused).
+    """
     # create new stage
     await stage_utils.create_new_stage_async()
     # wait for the viewport to be ready
@@ -113,15 +146,17 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
 
 
 class TestTiledCameraSensor(omni.kit.test.AsyncTestCase):
-    async def setUp(self):
-        """Method called to prepare the test fixture"""
+    """Test case class for the TiledCameraSensor class."""
+
+    async def setUp(self) -> None:
+        """Method called to prepare the test fixture."""
         super().setUp()
         self.maxDiff = None  # show all diffs
         self.frame = None  # frame used as a background for rendering data
         self.save_images = False  # whether to save images
 
-    async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+    async def tearDown(self) -> None:
+        """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------
@@ -131,7 +166,8 @@ class TestTiledCameraSensor(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
         populate_stage_func=populate_stage,
     )
-    async def test_len(self, prim, num_prims, operation):
+    async def test_len(self, prim: Any, num_prims: int, operation: str) -> None:
+        """Test that the number of cameras in the tiled sensor matches the expected count."""
         self.assertEqual(len(prim), num_prims, f"Invalid len ({num_prims} prims)")
 
     @parametrize(
@@ -139,11 +175,12 @@ class TestTiledCameraSensor(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
         populate_stage_func=populate_stage,
     )
-    async def test_data(self, prim, num_prims, operation):
+    async def test_data(self, prim: Any, num_prims: int, operation: str) -> None:
+        """Test that tiled camera sensor data is correctly retrieved for all annotators."""
         for i, path in enumerate(prim.camera.paths):
             ViewportManager.set_camera_view(path, eye=[3.0, 1.25, 0.25 + i], target=[0.0, 0.0, 0.25])
         # test cases
-        for annotator in sorted(list(EXPECTED_ANNOTATOR_SPEC.keys())):
+        for annotator in sorted(EXPECTED_ANNOTATOR_SPEC.keys()):
             cprint(f"  |    |-- annotator: {annotator} (number of cameras: {num_prims})")
             spec = EXPECTED_ANNOTATOR_SPEC[annotator]
             data, info = None, {}
@@ -212,11 +249,9 @@ class TestTiledCameraSensor(omni.kit.test.AsyncTestCase):
                     {"shape": "cone"},
                 ]
                 cprint(f"  |    |    |-- {info}")
+                self.assertEqual(sorted(info.keys()), ["idToLabels"], msg=f"Annotator info mismatch for '{annotator}'")
                 self.assertEqual(
-                    sorted(list(info.keys())), ["idToLabels"], msg=f"Annotator info mismatch for '{annotator}'"
-                )
-                self.assertEqual(
-                    sorted(list(info["idToLabels"].keys())),
+                    sorted(info["idToLabels"].keys()),
                     ["0", "1", "2", "3", "4"],
                     msg=f"Annotator info mismatch for '{annotator}'",
                 )
@@ -230,7 +265,8 @@ class TestTiledCameraSensor(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
         populate_stage_func=populate_stage,
     )
-    async def test_tiled_data(self, prim, num_prims, operation):
+    async def test_tiled_data(self, prim: Any, num_prims: int, operation: str) -> None:
+        """Test that tiled camera sensor data is correctly retrieved in tiled format for all annotators."""
         for i, path in enumerate(prim.camera.paths):
             ViewportManager.set_camera_view(path, eye=[3.0, 1.25, 0.25 + i], target=[0.0, 0.0, 0.25])
         # get frame
@@ -242,7 +278,7 @@ class TestTiledCameraSensor(omni.kit.test.AsyncTestCase):
         await app_utils.update_app_async(steps=3)
         self.frame = prim.get_data("rgb", tiled=True)[0]  # get next available frames to avoid rendering artifacts
         # test cases
-        for annotator in sorted(list(EXPECTED_ANNOTATOR_SPEC.keys())):
+        for annotator in sorted(EXPECTED_ANNOTATOR_SPEC.keys()):
             cprint(f"  |    |-- annotator: {annotator} (number of cameras: {num_prims})")
             spec = EXPECTED_ANNOTATOR_SPEC[annotator]
             data, info = None, {}
@@ -312,11 +348,9 @@ class TestTiledCameraSensor(omni.kit.test.AsyncTestCase):
                     {"shape": "cone"},
                 ]
                 cprint(f"  |    |    |-- {info}")
+                self.assertEqual(sorted(info.keys()), ["idToLabels"], msg=f"Annotator info mismatch for '{annotator}'")
                 self.assertEqual(
-                    sorted(list(info.keys())), ["idToLabels"], msg=f"Annotator info mismatch for '{annotator}'"
-                )
-                self.assertEqual(
-                    sorted(list(info["idToLabels"].keys())),
+                    sorted(info["idToLabels"].keys()),
                     ["0", "1", "2", "3", "4"],
                     msg=f"Annotator info mismatch for '{annotator}'",
                 )

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides functionality for loading and configuring cuMotion robots from URDF and XRDF files."""
+
+
 import pathlib
 from dataclasses import dataclass
 
@@ -28,7 +31,7 @@ class CumotionRobot:
     to be used with cuMotion, including the robot description, kinematics solver,
     and controlled joint names.
 
-    Attributes:
+    Args:
         directory: Path to the robot configuration directory containing URDF/XRDF files.
         robot_description: cuMotion robot description loaded from URDF/XRDF files.
         kinematics: cuMotion kinematics solver for the robot.
@@ -61,6 +64,7 @@ def load_cumotion_robot(
         Robot object containing all necessary data for cuMotion.
 
     Raises:
+        FileNotFoundError: If the URDF/XRDF files cannot be found.
         Exception: If the URDF/XRDF files cannot be loaded or parsed.
 
     Example:
@@ -73,7 +77,6 @@ def load_cumotion_robot(
                 xrdf_filename="robot.xrdf"
             )
     """
-
     if isinstance(directory, str):
         directory = pathlib.Path(directory)
 
@@ -120,7 +123,7 @@ def load_cumotion_supported_robot(robot_name: str) -> CumotionRobot:
         Robot object for the specified robot.
 
     Raises:
-        Exception: If the robot cannot be found or loaded.
+        FileNotFoundError: If the robot cannot be found or loaded.
 
     Example:
 

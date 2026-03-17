@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utility functions for drawing annotator data to images for visualization and debugging purposes."""
+
+
 from __future__ import annotations
 
 import io

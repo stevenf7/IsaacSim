@@ -32,6 +32,7 @@ class CollisionDetectorExtension(omni.ext.IExt, MenuHelperExtensionFull):
     """
 
     WINDOW_NAME = "Robot Self-Collision Detector"
+    """Display title used for both the window and the menu entry."""
     #: Display title used for both the window and the menu entry.
 
     def on_startup(self, ext_id: str) -> None:

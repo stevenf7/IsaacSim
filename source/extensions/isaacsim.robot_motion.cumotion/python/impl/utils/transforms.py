@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides utilities for transforming poses, positions, and orientations between Isaac Sim world frame and cuMotion robot base frame."""
+
 from __future__ import annotations
 
 import cumotion
@@ -26,19 +28,16 @@ import warp as wp
 
 @wp.struct
 class ColliderBatchTransformOutput:
-    """Output structure for batch collider transform computation.
-
-    Attributes:
-        positions_base_to_collider: Collider positions in base frame, shape (M, 3).
-        quaternions_base_to_collider: Collider quaternions in base frame (w, x, y, z), shape (M, 4).
-        positions_world_to_collider: Collider positions in world frame, shape (M, 3).
-        quaternions_world_to_collider: Collider quaternions in world frame (w, x, y, z), shape (M, 4).
-    """
+    """Output structure for batch collider transform computation."""
 
     positions_base_to_collider: wp.array(ndim=2, dtype=wp.float32)
+    """Collider positions in base frame, shape (M, 3)."""
     quaternions_base_to_collider: wp.array(ndim=2, dtype=wp.float32)
+    """Collider quaternions in base frame (w, x, y, z), shape (M, 4)."""
     positions_world_to_collider: wp.array(ndim=2, dtype=wp.float32)
+    """Collider positions in world frame, shape (M, 3)."""
     quaternions_world_to_collider: wp.array(ndim=2, dtype=wp.float32)
+    """Collider quaternions in world frame (w, x, y, z), shape (M, 4)."""
 
 
 @wp.kernel
@@ -56,7 +55,7 @@ def compute_collider_transforms_kernel(
     collider_to_object_indices: wp.array(dtype=wp.int32),  # Shape: (M,)
     # Outputs: collider transforms in world frame
     output_transforms: ColliderBatchTransformOutput,
-):
+) -> None:
     """Compute transforms for all colliders: T_base_collider = T_base_world * T_world_object * T_object_collider.
 
     Each thread handles one collider and computes its transform in the base frame
@@ -64,6 +63,16 @@ def compute_collider_transforms_kernel(
     1. Base-to-world transform (constant for all)
     2. World-to-object transform (varies per object)
     3. Object-to-collider transform (varies per collider, several colliders per object)
+
+    Args:
+        position_base_to_world: Shape (1, 3).
+        quaternion_base_to_world: Shape (1, 4) - (w, x, y, z).
+        positions_world_to_object: Shape (N, 3).
+        quaternions_world_to_object: Shape (N, 4) - (w, x, y, z).
+        positions_object_to_collider: Shape (M, 3).
+        quaternions_object_to_collider: Shape (M, 4) - (w, x, y, z).
+        collider_to_object_indices: Shape (M,).
+        output_transforms: Collider transforms in world frame.
     """
     collider_idx = wp.tid()
 
@@ -199,7 +208,6 @@ def batch_compute_collider_transforms(
                 [0.5, 0.0, 0.0],  # Object 1, collider 2
             ], dtype=wp.float32)
     """
-
     # Ensure inputs are 2D
     if position_base_to_world.ndim == 1:
         position_base_to_world = position_base_to_world.reshape((1, 3))
@@ -246,7 +254,7 @@ def batch_compute_collider_transforms(
 def _position_quaternion_to_cumotion_pose(
     position: np.ndarray,
     quaternion: np.ndarray,
-):
+) -> cumotion.Pose3:
     """Convert position and quaternion arrays to a cuMotion Pose3 object.
 
     Args:
@@ -260,7 +268,6 @@ def _position_quaternion_to_cumotion_pose(
         ValueError: If position size is not 3.
         ValueError: If quaternion size is not 4.
     """
-
     if position.size != 3:
         raise ValueError("Position must be of size 3.")
 
@@ -273,7 +280,7 @@ def _position_quaternion_to_cumotion_pose(
     return cumotion.Pose3(translation=position, rotation=cumotion.Rotation3(*quaternion))
 
 
-def _to_numpy(input_array: list[float] | wp.array | np.ndarray):
+def _to_numpy(input_array: list[float] | wp.array | np.ndarray) -> np.ndarray:
     """Convert input to numpy array.
 
     Args:
@@ -301,9 +308,8 @@ def isaac_sim_to_cumotion_pose(
     Args:
         position_world_to_target: Target position in world frame [x, y, z].
         orientation_world_to_target: Target orientation in world frame as quaternion [w, x, y, z].
-        position_world_to_base: Robot base position in world frame. Defaults to None (origin).
+        position_world_to_base: Robot base position in world frame.
         orientation_world_to_base: Robot base orientation in world frame as quaternion [w, x, y, z].
-            Defaults to None (identity).
 
     Returns:
         cuMotion Pose3 object representing the target pose in robot base frame.
@@ -363,13 +369,12 @@ def cumotion_to_isaac_sim_pose(
 
     Args:
         pose_base_to_target: Target pose in robot base frame.
-        position_world_to_base: Robot base position in world frame. Defaults to None (origin).
+        position_world_to_base: Robot base position in world frame.
         orientation_world_to_base: Robot base orientation in world frame as quaternion [w, x, y, z].
-            Defaults to None (identity).
 
     Returns:
         Tuple of (position, quaternion) as warp arrays where position has shape (3,)
-        and quaternion has shape (4,) in (w, x, y, z) format.
+            and quaternion has shape (4,) in (w, x, y, z) format.
 
     Example:
 
@@ -425,9 +430,8 @@ def isaac_sim_to_cumotion_translation(
 
     Args:
         position_world_to_target: Target position in world frame [x, y, z].
-        position_world_to_base: Robot base position in world frame. Defaults to None (origin).
+        position_world_to_base: Robot base position in world frame.
         orientation_world_to_base: Robot base orientation in world frame as quaternion [w, x, y, z].
-            Defaults to None (identity).
 
     Returns:
         Position vector in robot base frame as numpy array of shape (3,).
@@ -488,9 +492,8 @@ def cumotion_to_isaac_sim_translation(
 
     Args:
         position_base_to_target: Target position in robot base frame [x, y, z].
-        position_world_to_base: Robot base position in world frame. Defaults to None (origin).
+        position_world_to_base: Robot base position in world frame.
         orientation_world_to_base: Robot base orientation in world frame as quaternion [w, x, y, z].
-            Defaults to None (identity).
 
     Returns:
         Position vector in world frame as warp array of shape (3,).
@@ -508,7 +511,6 @@ def cumotion_to_isaac_sim_translation(
                 orientation_world_to_base=[1.0, 0.0, 0.0, 0.0]
             )
     """
-
     if position_world_to_base is not None:
         position_world_to_base = _to_numpy(position_world_to_base)
     else:
@@ -548,7 +550,6 @@ def isaac_sim_to_cumotion_rotation(
     Args:
         orientation_world_to_target: Target orientation in world frame as quaternion [w, x, y, z].
         orientation_world_to_base: Robot base orientation in world frame as quaternion [w, x, y, z].
-            Defaults to None (identity).
 
     Returns:
         cuMotion Rotation3 object representing the orientation in robot base frame.
@@ -565,7 +566,6 @@ def isaac_sim_to_cumotion_rotation(
                 orientation_world_to_base=[1.0, 0.0, 0.0, 0.0]
             )
     """
-
     if orientation_world_to_base is not None:
         orientation_world_to_base = _to_numpy(orientation_world_to_base)
     else:
@@ -595,9 +595,7 @@ def cumotion_to_isaac_sim_rotation(
     Args:
         orientation_base_to_target: Target orientation in robot base frame.
         position_world_to_base: Robot base position in world frame (unused, kept for consistency).
-            Defaults to None.
         orientation_world_to_base: Robot base orientation in world frame as quaternion [w, x, y, z].
-            Defaults to None (identity).
 
     Returns:
         Orientation as warp array quaternion [w, x, y, z] of shape (4,).
@@ -611,7 +609,6 @@ def cumotion_to_isaac_sim_rotation(
                 orientation_world_to_base=[1.0, 0.0, 0.0, 0.0]
             )
     """
-
     if orientation_world_to_base is not None:
         orientation_world_to_base = _to_numpy(orientation_world_to_base)
     else:

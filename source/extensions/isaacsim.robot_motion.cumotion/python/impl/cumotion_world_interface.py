@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""cuMotion world interface for collision checking and motion planning in Isaac Sim environments."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
 
 import cumotion
 import isaacsim.robot_motion.experimental.motion_generation as mg
@@ -106,7 +108,7 @@ class CollisionData:
         transform_world_to_object_index: int,
         obstacle_handle_starting_index: int,
         n_colliders: int,
-    ):
+    ) -> None:
         # Store the indices of where the data for this object begins:
         self.transform_world_to_object_index = transform_world_to_object_index
         self.obstacle_handle_starting_index = obstacle_handle_starting_index
@@ -152,7 +154,7 @@ class CumotionWorldInterface(mg.WorldInterface):
         visual_debug_enabled_prim_rgb: list[float] | None = None,
         visual_debug_disabled_prim_rgb: list[float] | None = None,
         visual_debug_prim_alpha: float = 0.3,
-    ):
+    ) -> None:
 
         self._world: cumotion.World = cumotion.create_world()
         self.__world_view = self._world.add_world_view()
@@ -222,7 +224,7 @@ class CumotionWorldInterface(mg.WorldInterface):
         self._visual_debug_enabled_prim_material.set_input_values("enable_opacity", [True])
         self._visual_debug_enabled_prim_material.set_input_values("opacity_constant", [visual_debug_prim_alpha])
 
-    def _set_debug_material(self, debug_visual, enabled):
+    def _set_debug_material(self, debug_visual: Any, enabled: bool) -> None:
         """Set the debug material for a visual prim based on enabled state.
 
         Args:
@@ -235,8 +237,8 @@ class CumotionWorldInterface(mg.WorldInterface):
         debug_visual.apply_visual_materials(self._visual_debug_disabled_prim_material)
 
     @property
-    def world_view(self):
-        """Get the world_view associated with the cumotion.World object"""
+    def world_view(self) -> cumotion.WorldView:
+        """Get the world_view associated with the cumotion.World object."""
         return self.__world_view
 
     def add_spheres(
@@ -247,7 +249,8 @@ class CumotionWorldInterface(mg.WorldInterface):
         safety_tolerances: wp.array,
         poses: tuple[wp.array, wp.array],
         enabled_array: wp.array,
-    ):
+    ) -> None:
+        """Add sphere collision obstacles to the cuMotion world."""
         positions, quaternions = poses
         positions_np = positions.numpy()
         quaternions_np = quaternions.numpy()
@@ -344,7 +347,8 @@ class CumotionWorldInterface(mg.WorldInterface):
         safety_tolerances: wp.array,
         poses: tuple[wp.array, wp.array],
         enabled_array: wp.array,
-    ):
+    ) -> None:
+        """Add cuboid collision obstacles to the cuMotion world."""
         positions, quaternions = poses
         positions_np = positions.numpy()
         quaternions_np = quaternions.numpy()
@@ -453,8 +457,12 @@ class CumotionWorldInterface(mg.WorldInterface):
         safety_tolerances: wp.array,
         poses: tuple[wp.array, wp.array],
         enabled_array: wp.array,
-    ):
-        def _to_cumotion_sphere_collider(prim_name, i_sphere, sphere, enabled):
+    ) -> None:
+        """Add triangulated mesh collision obstacles to the cuMotion world using sphere decomposition."""
+
+        def _to_cumotion_sphere_collider(
+            prim_name: str, i_sphere: int, sphere: Any, enabled: bool
+        ) -> _CumotionCollider:
             """Convert a collision sphere to a _CumotionCollider object.
 
             Args:
@@ -587,7 +595,8 @@ class CumotionWorldInterface(mg.WorldInterface):
         safety_tolerances: wp.array,
         poses: tuple[wp.array, wp.array],
         enabled_array: wp.array,
-    ):
+    ) -> None:
+        """Add plane collision obstacles to the cuMotion world as thin cuboids."""
         positions, quaternions = poses
         positions_np = positions.numpy()
         quaternions_np = quaternions.numpy()
@@ -704,7 +713,8 @@ class CumotionWorldInterface(mg.WorldInterface):
         safety_tolerances: wp.array,
         poses: tuple[wp.array, wp.array],
         enabled_array: wp.array,
-    ):
+    ) -> None:
+        """Add capsule collision obstacles to the cuMotion world."""
         positions, quaternions = poses
         positions_np = positions.numpy()
         quaternions_np = quaternions.numpy()
@@ -845,7 +855,8 @@ class CumotionWorldInterface(mg.WorldInterface):
         safety_tolerances: wp.array,
         poses: tuple[wp.array, wp.array],
         enabled_array: wp.array,
-    ):
+    ) -> None:
+        """Add oriented bounding box collision obstacles to the cuMotion world as cuboids."""
         positions, quaternions = poses
         positions_np = positions.numpy()
         quaternions_np = quaternions.numpy()
@@ -957,7 +968,7 @@ class CumotionWorldInterface(mg.WorldInterface):
             poses=(positions, quaternions),
         )
 
-    def update_obstacle_transforms(self, prim_paths: list[str], poses: tuple[wp.array, wp.array]):
+    def update_obstacle_transforms(self, prim_paths: list[str], poses: tuple[wp.array, wp.array]) -> None:
         """Update the world-to-object transforms for tracked obstacles.
 
         Updates the poses of obstacles that have already been added to the world.
@@ -983,7 +994,7 @@ class CumotionWorldInterface(mg.WorldInterface):
 
         self._update_prim_world_to_object_transforms(prim_paths, poses)
 
-    def update_obstacle_enables(self, prim_paths: list[str], enabled_array: wp.array):
+    def update_obstacle_enables(self, prim_paths: list[str], enabled_array: wp.array) -> None:
         """Update the enabled/disabled state of tracked obstacles.
 
         Enables or disables collision checking for obstacles that have already been
@@ -1028,7 +1039,7 @@ class CumotionWorldInterface(mg.WorldInterface):
         )
         return cumotion_to_isaac_sim_pose(transform_base_to_world.inverse())
 
-    def update_world_to_robot_root_transforms(self, poses: tuple[wp.array, wp.array]):
+    def update_world_to_robot_root_transforms(self, poses: tuple[wp.array, wp.array]) -> None:
         """Update the transform from world frame to robot base frame.
 
         cuMotion plans relative to the robot base frame. This method updates the base
@@ -1043,7 +1054,6 @@ class CumotionWorldInterface(mg.WorldInterface):
             ValueError: If positions don't have 3 elements.
             ValueError: If quaternions don't have 4 elements.
         """
-
         positions, quaternions = poses
         if not (positions.shape[0] == quaternions.shape[0] == 1):
             raise ValueError("cuMotion only works with a single robot.")
@@ -1064,7 +1074,7 @@ class CumotionWorldInterface(mg.WorldInterface):
         self,
         prim_paths: list[str],
         poses: tuple[wp.array, wp.array],
-    ):
+    ) -> None:
         """Update world-to-object transforms and recompute all collider poses.
 
         This is an internal method that updates the stored transforms and propagates
@@ -1176,7 +1186,7 @@ class CumotionWorldInterface(mg.WorldInterface):
     def _update_world_to_robot_root_transforms(
         self,
         pose: tuple[wp.array, wp.array],
-    ):
+    ) -> None:
         """Update the robot base frame transform and recompute all collider poses.
 
         This is an internal method that updates the base frame transform and propagates
@@ -1222,7 +1232,7 @@ class CumotionWorldInterface(mg.WorldInterface):
             # set the base-frame pose:
             self._world.set_pose(obstacle_handle, pose)
 
-    def _update_prim_enabled_value(self, prim_path: str, enabled: bool):
+    def _update_prim_enabled_value(self, prim_path: str, enabled: bool) -> None:
         """Update the enabled state for all colliders associated with a prim.
 
         Args:

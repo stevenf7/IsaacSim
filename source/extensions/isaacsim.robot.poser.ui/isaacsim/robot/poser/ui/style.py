@@ -16,6 +16,7 @@
 """Style and color constants for the Robot Poser UI."""
 
 import pathlib
+from typing import Any
 
 import omni.kit.app
 import omni.ui as ui
@@ -180,7 +181,7 @@ def get_property_style() -> dict:
     }
 
 
-def get_style():
+def get_style() -> dict[str, Any]:
     """Return the omni.ui style dictionary for the Robot Poser extension.
 
     Returns:

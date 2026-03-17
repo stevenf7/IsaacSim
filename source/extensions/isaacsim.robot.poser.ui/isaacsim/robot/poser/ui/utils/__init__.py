@@ -15,11 +15,9 @@
 
 """Tree view and delegate utilities for the Robot Poser UI."""
 
-from .treeview_delegate import (
-    AddNamedPoseItem,
-    PlacerHolderItem,
-    SearchableItem,
-    TreeViewIDColumn,
-    TreeViewWithPlacerHolderDelegate,
-    TreeViewWithPlacerHolderModel,
-)
+from .treeview_delegate import AddNamedPoseItem as AddNamedPoseItem
+from .treeview_delegate import PlacerHolderItem as PlacerHolderItem
+from .treeview_delegate import SearchableItem as SearchableItem
+from .treeview_delegate import TreeViewIDColumn as TreeViewIDColumn
+from .treeview_delegate import TreeViewWithPlacerHolderDelegate as TreeViewWithPlacerHolderDelegate
+from .treeview_delegate import TreeViewWithPlacerHolderModel as TreeViewWithPlacerHolderModel

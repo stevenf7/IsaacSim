@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Implementation of RMPflow-based reactive motion controller using cuMotion for collision-free robot motion generation."""
+
 from __future__ import annotations
 
 import pathlib
+from typing import Any
 
 import cumotion
 import isaacsim.robot_motion.experimental.motion_generation as mg
@@ -46,6 +49,7 @@ class RmpFlowController(mg.BaseController):
             it is used as-is. Defaults to "rmp_flow.yaml".
         tool_frame: Name of the tool frame for end-effector control. Defaults to None,
             which uses the first tool frame defined in the robot description.
+
     Example:
 
         .. code-block:: python
@@ -67,7 +71,7 @@ class RmpFlowController(mg.BaseController):
         robot_site_space: list[str],
         rmp_flow_configuration_filename: pathlib.Path | str = "rmp_flow.yaml",
         tool_frame: str | None = None,
-    ):
+    ) -> None:
 
         if not set(cumotion_robot.controlled_joint_names).issubset(set(robot_joint_space)):
             raise ValueError(
@@ -133,7 +137,7 @@ class RmpFlowController(mg.BaseController):
         return self._rmp_flow_config
 
     def forward(
-        self, estimated_state: mg.RobotState, setpoint_state: mg.RobotState | None, t: float, **kwargs
+        self, estimated_state: mg.RobotState, setpoint_state: mg.RobotState | None, t: float, **kwargs: Any
     ) -> mg.RobotState | None:
         """Compute the desired joint action for the next time-step.
 
@@ -213,7 +217,9 @@ class RmpFlowController(mg.BaseController):
             )
         )
 
-    def reset(self, estimated_state: mg.RobotState, setpoint_state: mg.RobotState | None, t: float, **kwargs) -> bool:
+    def reset(
+        self, estimated_state: mg.RobotState, setpoint_state: mg.RobotState | None, t: float, **kwargs: Any
+    ) -> bool:
         """Reset the controller to a safe initial state.
 
         Initializes the RMPflow controller and sets the internal state to match the
@@ -237,7 +243,6 @@ class RmpFlowController(mg.BaseController):
                 if success:
                     print("Controller initialized successfully")
         """
-
         # Get all of the joint relevant joint-states from the estimated
         current_joint_positions = self._joint_position_from_robot_state(estimated_state)
         if current_joint_positions is None:

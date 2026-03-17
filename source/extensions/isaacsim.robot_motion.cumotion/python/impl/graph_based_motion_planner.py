@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Graph-based motion planner module using cuMotion for collision-free path planning in robotics applications."""
+
 from __future__ import annotations
 
 import os

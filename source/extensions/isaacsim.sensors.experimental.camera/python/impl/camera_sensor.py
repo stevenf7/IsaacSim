@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level class for creating, wrapping and operating single camera sensors with configurable annotators."""
+
+
 from __future__ import annotations
 
 from typing import Any, Literal, get_args
@@ -83,7 +86,7 @@ class CameraSensor:
         # CameraSensor
         resolution: tuple[int, int],
         annotators: ANNOTATOR | list[ANNOTATOR],
-    ):
+    ) -> None:
         # define properties
         self._resolution = resolution
         self._hydra_texture = None
@@ -125,7 +128,7 @@ class CameraSensor:
             >>> camera_sensor.annotators
             ['distance_to_image_plane', 'rgb']
         """
-        return sorted(list(self._annotators.keys()))
+        return sorted(self._annotators.keys())
 
     @property
     def camera(self) -> Camera:
@@ -308,7 +311,7 @@ class CameraSensor:
     Internal methods.
     """
 
-    def _invalidate_sensor(self):
+    def _invalidate_sensor(self) -> None:
         """Invalidate sensor by detaching annotators and destroying the hydra texture."""
         # detach annotators and destroy the hydra texture
         if self._hydra_texture is not None:
@@ -318,7 +321,7 @@ class CameraSensor:
         self._annotators = {}
         self._hydra_texture = None
 
-    def _initialize_sensor(self, annotators: str | list[str]):
+    def _initialize_sensor(self, annotators: str | list[str]) -> None:
         """Initialize sensor by creating the hydra texture and attaching annotators."""
         # create the hydra texture
         self._hydra_texture = rep.create.render_product(

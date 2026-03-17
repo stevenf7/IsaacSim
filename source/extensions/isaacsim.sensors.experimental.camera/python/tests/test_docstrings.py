@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test module for validating docstrings in the isaacsim.sensors.experimental.camera extension."""
+
+
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.test.docstring
 from isaacsim.sensors.experimental.camera import (
@@ -25,32 +28,51 @@ from pxr import UsdGeom
 
 
 class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
-    async def setUp(self):
-        """Method called to prepare the test fixture"""
+    """Test case class for validating docstrings in the isaacsim.sensors.experimental.camera extension.
+
+    This class extends isaacsim.test.docstring.AsyncDocTestCase to provide automated testing of docstring
+    examples for camera sensor classes and functions. It sets up a USD stage environment with appropriate
+    prims and validates that all docstring code examples execute correctly.
+
+    The test class covers:
+    - CameraSensor docstring validation
+    - SingleViewDepthCameraSensor docstring validation
+    - TiledCameraSensor docstring validation with multiple camera prims
+    - draw_annotator_data_to_image function docstring validation
+
+    Each test method creates the necessary USD prims and stage setup required for the respective sensor
+    classes to function properly during docstring testing.
+    """
+
+    async def setUp(self) -> None:
+        """Method called to prepare the test fixture."""
         super().setUp()
         # create new stage
         await stage_utils.create_new_stage_async()
         stage_utils.define_prim(f"/World", "Xform")
 
-    async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+    async def tearDown(self) -> None:
+        """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
-    async def test_camera_sensor_docstrings(self):
+    async def test_camera_sensor_docstrings(self) -> None:
+        """Tests docstrings for the CameraSensor class by creating a camera prim and running docstring tests."""
         # define prim
         stage_utils.define_prim(f"/World/prim_0", "Camera")
         # test case
         await self.assertDocTests(CameraSensor)
 
-    async def test_single_view_depth_camera_sensor_docstrings(self):
+    async def test_single_view_depth_camera_sensor_docstrings(self) -> None:
+        """Tests docstrings for the SingleViewDepthCameraSensor class by creating a camera prim and running docstring tests."""
         # define prim
         stage_utils.define_prim(f"/World/prim_0", "Camera")
         # test case
         await self.assertDocTests(SingleViewDepthCameraSensor)
 
-    async def test_tiled_camera_sensor_docstrings(self):
+    async def test_tiled_camera_sensor_docstrings(self) -> None:
+        """Tests docstrings for the TiledCameraSensor class by creating multiple camera prims with different transforms and running docstring tests."""
         # define prims
         for i in range(3):
             prim = stage_utils.define_prim(f"/World/prim_{i}", "Camera")
@@ -59,5 +81,6 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
         # test case
         await self.assertDocTests(TiledCameraSensor)
 
-    async def test_draw_annotator_data_to_image_docstrings(self):
+    async def test_draw_annotator_data_to_image_docstrings(self) -> None:
+        """Tests docstrings for the draw_annotator_data_to_image function by running docstring tests."""
         self.assertDocTest(draw_annotator_data_to_image)

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test suite for CumotionWorldInterface functionality including obstacle management and robot base transforms."""
+
+
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.robot_motion.cumotion as cu_mg
 import numpy as np
@@ -24,19 +27,19 @@ from omni.kit.app import get_app
 class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
     """Test suite for CumotionWorldInterface."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment before each test."""
         await stage_utils.create_new_stage_async()
         await get_app().next_update_async()
         self._timeline = omni.timeline.get_timeline_interface()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up after each test."""
         if self._timeline.is_playing():
             self._timeline.stop()
         await get_app().next_update_async()
 
-    async def test_world_interface_initialization(self):
+    async def test_world_interface_initialization(self) -> None:
         """Test basic initialization of CumotionWorldInterface."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -44,7 +47,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(world_interface.world_view)
         self.assertEqual(len(world_interface._prim_path_to_collision_data), 0)
 
-    async def test_world_interface_with_debug_visualization(self):
+    async def test_world_interface_with_debug_visualization(self) -> None:
         """Test initialization with debug visualization enabled."""
         world_interface = cu_mg.CumotionWorldInterface(
             visualize_debug_prims=True,
@@ -55,7 +58,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
 
         self.assertIsNotNone(world_interface)
 
-    async def test_world_interface_with_robot_base_transform(self):
+    async def test_world_interface_with_robot_base_transform(self) -> None:
         """Test initialization with robot base transform."""
         robot_base_pose = (
             wp.array([1.0, 0.0, 0.0], dtype=wp.float32),
@@ -66,7 +69,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
 
         self.assertIsNotNone(world_interface)
 
-    async def test_add_sphere_obstacle(self):
+    async def test_add_sphere_obstacle(self) -> None:
         """Test adding sphere obstacles directly."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -94,7 +97,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         collision_data = world_interface._prim_path_to_collision_data["/World/Sphere"]
         self.assertEqual(collision_data.n_colliders, 1)
 
-    async def test_add_cube_obstacle(self):
+    async def test_add_cube_obstacle(self) -> None:
         """Test adding cube obstacles directly."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -122,7 +125,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         collision_data = world_interface._prim_path_to_collision_data["/World/Cube"]
         self.assertEqual(collision_data.n_colliders, 1)
 
-    async def test_add_capsule_obstacle(self):
+    async def test_add_capsule_obstacle(self) -> None:
         """Test adding capsule obstacles directly."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -154,7 +157,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         collision_data = world_interface._prim_path_to_collision_data["/World/Capsule"]
         self.assertEqual(collision_data.n_colliders, 1)
 
-    async def test_add_oriented_bounding_box_obstacle(self):
+    async def test_add_oriented_bounding_box_obstacle(self) -> None:
         """Test adding oriented bounding box obstacles directly."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -186,7 +189,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         collision_data = world_interface._prim_path_to_collision_data["/World/OBB"]
         self.assertEqual(collision_data.n_colliders, 1)
 
-    async def test_update_obstacle_transform(self):
+    async def test_update_obstacle_transform(self) -> None:
         """Test updating obstacle transforms."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -223,7 +226,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.isclose(sphere_position, [1.0, 0.5, 0.3]).all())
         self.assertTrue(np.isclose(sphere_quaternion, [1.0, 0.0, 0.0, 0.0]).all())
 
-    async def test_enable_disable_obstacle(self):
+    async def test_enable_disable_obstacle(self) -> None:
         """Test enabling and disabling obstacles."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -256,7 +259,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         # Verify update completed
         self.assertIn("/World/Sphere", world_interface._prim_path_to_collision_data)
 
-    async def test_multiple_obstacles(self):
+    async def test_multiple_obstacles(self) -> None:
         """Test adding multiple obstacles of different types."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -297,7 +300,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         self.assertIn("/World/Cube", world_interface._prim_path_to_collision_data)
         self.assertIn("/World/Capsule", world_interface._prim_path_to_collision_data)
 
-    async def test_world_view_update(self):
+    async def test_world_view_update(self) -> None:
         """Test that world view updates properly."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -306,7 +309,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
 
         self.assertIsNotNone(world_interface.world_view)
 
-    async def test_uniform_scale_requirement_sphere(self):
+    async def test_uniform_scale_requirement_sphere(self) -> None:
         """Test that non-uniform scaling on spheres raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -330,7 +333,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=enabled,
             )
 
-    async def test_uniform_scale_requirement_capsule(self):
+    async def test_uniform_scale_requirement_capsule(self) -> None:
         """Test that non-uniform scaling on capsules raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -358,7 +361,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=enabled,
             )
 
-    async def test_robot_base_transform_update(self):
+    async def test_robot_base_transform_update(self) -> None:
         """Test updating robot base transform."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -382,7 +385,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         # Should complete without errors
         self.assertIsNotNone(world_interface)
 
-    async def test_add_plane_obstacle(self):
+    async def test_add_plane_obstacle(self) -> None:
         """Test adding plane obstacles directly."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -412,7 +415,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         # Verify plane was added
         self.assertIn("/World/Plane", world_interface._prim_path_to_collision_data)
 
-    async def test_add_triangulated_mesh(self):
+    async def test_add_triangulated_mesh(self) -> None:
         """Test adding triangulated mesh obstacles directly."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -461,7 +464,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         # Verify mesh was added (will be represented as collision spheres)
         self.assertIn("/World/Mesh", world_interface._prim_path_to_collision_data)
 
-    async def test_capsule_different_axes(self):
+    async def test_capsule_different_axes(self) -> None:
         """Test adding capsules with different axis orientations."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -506,7 +509,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
         self.assertIn("/World/CapsuleY", world_interface._prim_path_to_collision_data)
         self.assertIn("/World/CapsuleZ", world_interface._prim_path_to_collision_data)
 
-    async def test_invalid_capsule_axis(self):
+    async def test_invalid_capsule_axis(self) -> None:
         """Test that invalid axis for capsule raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -526,7 +529,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_invalid_plane_axis(self):
+    async def test_invalid_plane_axis(self) -> None:
         """Test that invalid axis for plane raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -546,7 +549,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_mismatched_array_lengths(self):
+    async def test_mismatched_array_lengths(self) -> None:
         """Test that mismatched array lengths raise an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -564,7 +567,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_empty_prim_paths(self):
+    async def test_empty_prim_paths(self) -> None:
         """Test that empty prim paths list is handled gracefully."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -628,7 +631,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([], dtype=bool),
             )
 
-    async def test_mesh_with_invalid_face_indices(self):
+    async def test_mesh_with_invalid_face_indices(self) -> None:
         """Test that mesh with out-of-bounds face indices raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -650,7 +653,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_mesh_with_negative_face_indices(self):
+    async def test_mesh_with_negative_face_indices(self) -> None:
         """Test that mesh with negative face indices raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -672,7 +675,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_mesh_with_non_triangular_faces(self):
+    async def test_mesh_with_non_triangular_faces(self) -> None:
         """Test that mesh with non-triangular faces (quads) raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -694,7 +697,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_mesh_with_empty_points(self):
+    async def test_mesh_with_empty_points(self) -> None:
         """Test that mesh with no points raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -716,7 +719,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_negative_radius(self):
+    async def test_negative_radius(self) -> None:
         """Test that negative radius raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -733,7 +736,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_negative_capsule_length(self):
+    async def test_negative_capsule_length(self) -> None:
         """Test that negative capsule length raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -752,7 +755,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_update_nonexistent_obstacle(self):
+    async def test_update_nonexistent_obstacle(self) -> None:
         """Test that updating a non-existent obstacle raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -766,7 +769,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 ),
             )
 
-    async def test_invalid_quaternion_dimensions(self):
+    async def test_invalid_quaternion_dimensions(self) -> None:
         """Test that quaternions with wrong number of elements raise an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -784,7 +787,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_invalid_position_dimensions(self):
+    async def test_invalid_position_dimensions(self) -> None:
         """Test that positions with wrong number of elements raise an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -802,7 +805,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_non_uniform_scale_on_sphere(self):
+    async def test_non_uniform_scale_on_sphere(self) -> None:
         """Test that non-uniform scale on sphere raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -820,7 +823,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_non_uniform_scale_on_capsule(self):
+    async def test_non_uniform_scale_on_capsule(self) -> None:
         """Test that non-uniform scale on capsule raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -840,7 +843,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_duplicate_prim_path_same_type(self):
+    async def test_duplicate_prim_path_same_type(self) -> None:
         """Test that adding the same prim path twice with same geometry type raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -868,7 +871,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_duplicate_prim_path_different_types(self):
+    async def test_duplicate_prim_path_different_types(self) -> None:
         """Test that adding the same prim path with different geometry types raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -896,7 +899,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_duplicate_prim_path_in_batch(self):
+    async def test_duplicate_prim_path_in_batch(self) -> None:
         """Test that adding duplicate prim paths within a single batch raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -914,7 +917,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True, True, True], dtype=bool),
             )
 
-    async def test_invalid_robot_base_position_dimensions(self):
+    async def test_invalid_robot_base_position_dimensions(self) -> None:
         """Test that invalid robot base position dimensions raise an error."""
         # Invalid position (2D instead of 3D)
         with self.assertRaises((ValueError, RuntimeError)):
@@ -925,7 +928,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 )
             )
 
-    async def test_invalid_robot_base_quaternion_dimensions(self):
+    async def test_invalid_robot_base_quaternion_dimensions(self) -> None:
         """Test that invalid robot base quaternion dimensions raise an error."""
         # Invalid quaternion (3 elements instead of 4)
         with self.assertRaises((ValueError, RuntimeError)):
@@ -936,7 +939,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 )
             )
 
-    async def test_update_robot_base_invalid_positions(self):
+    async def test_update_robot_base_invalid_positions(self) -> None:
         """Test that updating robot base with invalid position dimensions raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -946,7 +949,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 poses=(wp.array([[1.0, 0.0]], dtype=wp.float32), wp.array([[1.0, 0.0, 0.0, 0.0]], dtype=wp.float32))
             )
 
-    async def test_update_robot_base_invalid_quaternions(self):
+    async def test_update_robot_base_invalid_quaternions(self) -> None:
         """Test that updating robot base with invalid quaternion dimensions raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -959,7 +962,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 )  # Only 3 elements
             )
 
-    async def test_oriented_bounding_box_non_uniform_scale(self):
+    async def test_oriented_bounding_box_non_uniform_scale(self) -> None:
         """Test that non-uniform scale on oriented bounding box raises an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -983,7 +986,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_oriented_bounding_box_negative_half_side_lengths(self):
+    async def test_oriented_bounding_box_negative_half_side_lengths(self) -> None:
         """Test that negative half side lengths for OBB raise an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 
@@ -1006,7 +1009,7 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 enabled_array=wp.array([True], dtype=bool),
             )
 
-    async def test_mesh_points_with_wrong_dimensions(self):
+    async def test_mesh_points_with_wrong_dimensions(self) -> None:
         """Test that mesh points with wrong number of coordinates raise an error."""
         world_interface = cu_mg.CumotionWorldInterface()
 

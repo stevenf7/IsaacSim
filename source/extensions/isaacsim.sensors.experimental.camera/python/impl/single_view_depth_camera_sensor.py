@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""High level class for creating and operating single view depth camera sensors using simulated stereo disparity computation."""
+
+
 from __future__ import annotations
 
 from typing import Literal, get_args
@@ -88,7 +91,7 @@ class SingleViewDepthCameraSensor(CameraSensor):
         # CameraSensor
         resolution: tuple[int, int],
         annotators: ANNOTATOR | list[ANNOTATOR],
-    ):
+    ) -> None:
         # define properties
         self._annotators_spec = {annotator: ANNOTATOR_SPEC[annotator] for annotator in get_args(ANNOTATOR)}
         # initialize base class

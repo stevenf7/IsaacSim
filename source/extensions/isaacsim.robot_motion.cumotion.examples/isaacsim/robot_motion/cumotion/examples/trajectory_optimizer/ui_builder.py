@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""UI building module for cuMotion trajectory optimization examples."""
+
+
 import asyncio
+from typing import Any
 
 import numpy as np
 import omni.kit.app
@@ -35,31 +39,59 @@ from .scenario import FrankaTrajectoryOptimizerExample
 
 
 class UIBuilder:
-    def __init__(self):
+    """A UI builder for the cuMotion trajectory optimization examples.
+
+    Provides an interactive interface for demonstrating robot motion planning with cuMotion,
+    including controls for loading scenes, configuring joint targets, and running trajectory
+    optimization scenarios. The interface supports both configuration-space and task-space
+    planning targets with real-time visualization.
+
+    The UI includes world controls for scene management, joint sliders for target configuration,
+    and scenario execution controls. It integrates with Isaac Sim's timeline and physics
+    systems to provide interactive robot motion planning demonstrations.
+    """
+
+    def __init__(self) -> None:
         self.frames = []
         self.wrapped_ui_elements = []
         self._timeline = omni.timeline.get_timeline_interface()
         self._joint_slider_models = []
         self._on_init()
 
-    def on_menu_callback(self):
-        pass
+    def on_menu_callback(self) -> None:
+        """Callback for the menu item."""
 
-    def on_timeline_event(self, event):
+    def on_timeline_event(self, event: Any) -> None:
+        """Callback for timeline events.
+
+        Args:
+            event: The timeline event.
+        """
         self._scenario_state_btn.reset()
         self._scenario_state_btn.enabled = False
 
-    def on_physics_step(self, step: float):
-        pass
+    def on_physics_step(self, step: float) -> None:
+        """Callback for physics steps.
 
-    def on_stage_event(self, event):
+        Args:
+            step: The physics step.
+        """
+
+    def on_stage_event(self, event: Any) -> None:
+        """Callback for stage events.
+
+        Args:
+            event: The stage event.
+        """
         self._reset_extension()
 
-    def cleanup(self):
+    def cleanup(self) -> None:
+        """Cleanup the UI."""
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()
 
-    def build_ui(self):
+    def build_ui(self) -> None:
+        """Build the UI."""
         world_controls_frame = CollapsableFrame("World Controls", collapsed=False)
 
         with world_controls_frame:
@@ -108,10 +140,11 @@ class UIBuilder:
                 self._scenario_state_btn.enabled = False
                 self.wrapped_ui_elements.append(self._scenario_state_btn)
 
-    def _on_init(self):
+    def _on_init(self) -> None:
+        """Initialize the UI."""
         self._scenario = FrankaTrajectoryOptimizerExample()
 
-    def _load_example_assets(self):
+    def _load_example_assets(self) -> None:
         """Load robot, target, and obstacle assets to the stage."""
         self._scenario._robot_prim_path = "/panda"
         path_to_robot_usd = get_assets_root_path() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
@@ -151,11 +184,11 @@ class UIBuilder:
         # Apply collision APIs
         GeomPrim(obstacle_path, apply_collision_apis=True)
 
-    def _on_load_btn(self):
+    def _on_load_btn(self) -> None:
         """Handle Load button click - loads scene and initializes scenario."""
         asyncio.ensure_future(self._load_scene_async())
 
-    async def _load_scene_async(self):
+    async def _load_scene_async(self) -> None:
         """Async function to load the scene without using World."""
         # Create new stage
         await stage_utils.create_new_stage_async(template="default stage")
@@ -197,12 +230,13 @@ class UIBuilder:
         # Setup scenario (post-load callback)
         self._setup_scenario()
 
-    def _setup_scene(self):
+    def _setup_scene(self) -> None:
         """Load assets onto the stage."""
         # Load assets - prims are automatically added to the stage
         self._load_example_assets()
 
-    def _setup_scenario(self):
+    def _setup_scenario(self) -> None:
+        """Setup the scenario."""
         # Don't call setup() here - let user choose target type via buttons
         self._scenario_state_btn.reset()
         self._scenario_state_btn.enabled = False  # Enable only after planning
@@ -212,11 +246,11 @@ class UIBuilder:
         # Create joint sliders after robot is loaded
         self._create_joint_sliders()
 
-    def _get_joint_limits(self):
+    def _get_joint_limits(self) -> tuple[np.ndarray, np.ndarray]:
         """Get joint limits for all controlled joints.
 
         Returns:
-            tuple: (lower_limits, upper_limits) as numpy arrays
+            Tuple of (lower_limits, upper_limits) as numpy arrays
         """
         if self._scenario._cumotion_robot is None:
             return None, None
@@ -233,17 +267,17 @@ class UIBuilder:
 
         return np.array(lower_limits), np.array(upper_limits)
 
-    def _get_joint_names(self):
+    def _get_joint_names(self) -> list[str]:
         """Get the names of all controlled joints.
 
         Returns:
-            list: List of joint names
+            List of joint names
         """
         if self._scenario._cumotion_robot is None:
             return []
         return self._scenario._cumotion_robot.controlled_joint_names
 
-    def _create_joint_sliders(self):
+    def _create_joint_sliders(self) -> None:
         """Create sliders for each joint with limits from the robot description."""
         # Clear existing sliders
         self._joint_slider_models.clear()
@@ -293,7 +327,7 @@ class UIBuilder:
 
                     self._joint_slider_models.append(field_model)
 
-    def _show_error_dialog(self, message: str):
+    def _show_error_dialog(self, message: str) -> None:
         """Show a modal error dialog with the given message.
 
         Args:
@@ -307,11 +341,11 @@ class UIBuilder:
             flags=(ui.WINDOW_FLAGS_NO_SCROLLBAR | ui.WINDOW_FLAGS_MODAL | ui.WINDOW_FLAGS_NO_SAVED_SETTINGS),
         )
 
-        def _close_dialog():
+        def _close_dialog() -> None:
             """Hide immediately, destroy on the next frame."""
             dialog.visible = False
 
-            async def _destroy_next_frame():
+            async def _destroy_next_frame() -> None:
                 await omni.kit.app.get_app().next_update_async()
                 dialog.destroy()
 
@@ -325,7 +359,7 @@ class UIBuilder:
                 ui.Button("OK", clicked_fn=_close_dialog, alignment=ui.Alignment.CENTER)
                 ui.Spacer(height=10)
 
-    def _on_to_cspace_target_btn(self):
+    def _on_to_cspace_target_btn(self) -> None:
         """Handle click on 'to cspace_target' button."""
         # Pause timeline before planning
         self._timeline.pause()
@@ -342,7 +376,7 @@ class UIBuilder:
             self._scenario_state_btn.reset()
             self._scenario_state_btn.enabled = True
 
-    def _on_to_task_space_target_btn(self):
+    def _on_to_task_space_target_btn(self) -> None:
         """Handle click on 'to task-space target' button."""
         # Pause timeline before planning
         self._timeline.pause()
@@ -355,24 +389,44 @@ class UIBuilder:
             self._scenario_state_btn.reset()
             self._scenario_state_btn.enabled = True
 
-    def _update_scenario(self, step: float, *args, **kwargs):
+    def _update_scenario(self, step: float, *args: Any, **kwargs: Any) -> None:
+        """Update the scenario.
+
+        Args:
+            step: The physics step.
+            args: The arguments.
+            kwargs: The keyword arguments.
+        """
         # Check if physics tensors are valid before updating
         if self._scenario._articulation is not None:
             if not self._scenario._articulation.is_physics_tensor_entity_valid():
                 return
         self._scenario.update(step)
 
-    def _on_run_scenario_a_text(self):
+    def _on_run_scenario_a_text(self) -> None:
+        """Play the timeline when the scenario run button is clicked."""
         self._timeline.play()
 
-    def _on_run_scenario_b_text(self):
+    def _on_run_scenario_b_text(self) -> None:
+        """Handles the stop scenario button click.
+
+        Pauses the timeline to halt scenario execution.
+        """
         self._timeline.pause()
 
-    def _reset_extension(self):
+    def _reset_extension(self) -> None:
+        """Resets the extension to its initial state.
+
+        Reinitializes the scenario and resets all UI elements.
+        """
         self._on_init()
         self._reset_ui()
 
-    def _reset_ui(self):
+    def _reset_ui(self) -> None:
+        """Resets the UI elements to their initial state.
+
+        Disables scenario controls and target buttons, returning the interface to its default configuration.
+        """
         self._scenario_state_btn.reset()
         self._scenario_state_btn.enabled = False
         self._to_cspace_btn.enabled = False

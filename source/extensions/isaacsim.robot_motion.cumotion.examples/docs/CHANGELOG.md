@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.0] - 2026-03-05
+### Changed
+- Added Overview.md, python_api.md and updated docstrings
+
 ## [0.1.1] - 2026-03-02
 ### Changed
 - Uses improved QOL motion generation APIs

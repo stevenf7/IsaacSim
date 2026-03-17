@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""UI builder module for the cuMotion world interface example."""
+
+
 import asyncio
+from typing import Any
 
 import omni.kit.app
 import omni.timeline
@@ -29,30 +33,63 @@ from .scenario import CumotionWorldInterfaceExample
 
 
 class UIBuilder:
-    def __init__(self):
+    """A user interface builder for the cuMotion robot motion planning example.
+
+    This class creates and manages the graphical user interface for the cuMotion world interface example,
+    providing controls for loading scenes, resetting scenarios, and running robot motion planning demonstrations.
+    The UI includes world controls for scene management and scenario controls for motion execution with
+    configurable update styles.
+
+    The interface allows users to:
+    - Load and initialize the cuMotion example scene with robot assets
+    - Reset the scenario to its initial state
+    - Configure motion update styles (synchronize, synchronize_transforms, synchronize_properties)
+    - Run and stop motion planning scenarios with real-time control
+
+    The UI automatically manages timeline events, physics initialization, and scenario state transitions
+    to ensure proper operation of the cuMotion motion planning system.
+    """
+
+    def __init__(self) -> None:
         self.frames = []
         self.wrapped_ui_elements = []
         self._timeline = omni.timeline.get_timeline_interface()
         self._on_init()
 
-    def on_menu_callback(self):
-        pass
+    def on_menu_callback(self) -> None:
+        """Callback for the menu item."""
 
-    def on_timeline_event(self, event):
+    def on_timeline_event(self, event: Any) -> None:
+        """Callback for timeline events.
+
+        Args:
+            event: The timeline event.
+        """
         self._scenario_state_btn.reset()
         self._scenario_state_btn.enabled = False
 
-    def on_physics_step(self, step: float):
-        pass
+    def on_physics_step(self, step: float) -> None:
+        """Callback for physics steps.
 
-    def on_stage_event(self, event):
+        Args:
+            step: The physics step.
+        """
+
+    def on_stage_event(self, event: Any) -> None:
+        """Callback for stage events.
+
+        Args:
+            event: The stage event.
+        """
         self._reset_extension()
 
-    def cleanup(self):
+    def cleanup(self) -> None:
+        """Cleanup the UI."""
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()
 
-    def build_ui(self):
+    def build_ui(self) -> None:
+        """Build the UI."""
         world_controls_frame = CollapsableFrame("World Controls", collapsed=False)
 
         with world_controls_frame:
@@ -119,7 +156,8 @@ class UIBuilder:
                 self._scenario_state_btn.enabled = False
                 self.wrapped_ui_elements.append(self._scenario_state_btn)
 
-    def _on_init(self):
+    def _on_init(self) -> None:
+        """Initialize the UI."""
         self._scenario = CumotionWorldInterfaceExample()
         # Initialize update style items list (will be set in build_ui, but initialize here for safety)
         self._update_style_items = ["synchronize", "synchronize_transforms", "synchronize_properties"]
@@ -127,11 +165,11 @@ class UIBuilder:
         # # Initialize collision API items list
         # self._collision_api_items = ["physics", "motion_generation"]
 
-    def _on_load_btn(self):
+    def _on_load_btn(self) -> None:
         """Handle Load button click - loads scene and initializes scenario."""
         asyncio.ensure_future(self._load_scene_async())
 
-    async def _load_scene_async(self):
+    async def _load_scene_async(self) -> None:
         """Async function to load the scene without using World."""
         # Create new stage
         await stage_utils.create_new_stage_async(template="default stage")
@@ -173,23 +211,23 @@ class UIBuilder:
         # Setup scenario (post-load callback)
         self._setup_scenario()
 
-    def _setup_scene(self):
+    def _setup_scene(self) -> None:
         """Load assets onto the stage."""
         # Load assets - prims are automatically added to the stage
         self._scenario.load_example_assets()
 
-    def _setup_scenario(self):
+    def _setup_scenario(self) -> None:
         """Initialize the scenario after assets are loaded."""
         self._scenario.setup()
         self._scenario_state_btn.reset()
         self._scenario_state_btn.enabled = True
         self._reset_btn.enabled = True
 
-    def _on_reset_btn(self):
+    def _on_reset_btn(self) -> None:
         """Handle Reset button click - resets the scenario."""
         asyncio.ensure_future(self._reset_scene_async())
 
-    async def _reset_scene_async(self):
+    async def _reset_scene_async(self) -> None:
         """Async function to reset the scene without using World."""
         # Stop timeline
         self._timeline.stop()
@@ -206,8 +244,13 @@ class UIBuilder:
         # # Enable collision API dropdown after reset
         # self._collision_api_combo.enabled = True
 
-    def _on_update_style_changed(self, model, val):
-        """Callback when update style dropdown selection changes."""
+    def _on_update_style_changed(self, model: Any, val: Any) -> None:
+        """Callback when update style dropdown selection changes.
+
+        Args:
+            model: The model.
+            val: The value.
+        """
         selected_index = model.get_item_value_model().as_int
         selected_style = self._update_style_items[selected_index]
         self._scenario.set_update_style(selected_style)
@@ -219,24 +262,35 @@ class UIBuilder:
     #     selected_api = self._collision_api_items[selected_index]
     #     self._scenario.set_tracked_collision_api(selected_api)
 
-    def _update_scenario(self, step: float, *args, **kwargs):
+    def _update_scenario(self, step: float, *args: Any, **kwargs: Any) -> None:
+        """Update the scenario.
+
+        Args:
+            step: The physics step.
+            args: The arguments.
+            kwargs: The keyword arguments.
+        """
         # Check if physics tensors are valid before updating
         if hasattr(self._scenario, "_articulation") and self._scenario._articulation is not None:
             if not self._scenario._articulation.is_physics_tensor_entity_valid():
                 return
         self._scenario.update(step)
 
-    def _on_run_scenario_a_text(self):
+    def _on_run_scenario_a_text(self) -> None:
+        """Play the timeline when the scenario run button is clicked."""
         self._timeline.play()
 
-    def _on_run_scenario_b_text(self):
+    def _on_run_scenario_b_text(self) -> None:
+        """Pause the timeline when the scenario stop button is clicked."""
         self._timeline.pause()
 
-    def _reset_extension(self):
+    def _reset_extension(self) -> None:
+        """Reset the extension."""
         self._on_init()
         self._reset_ui()
 
-    def _reset_ui(self):
+    def _reset_ui(self) -> None:
+        """Reset the UI."""
         self._scenario_state_btn.reset()
         self._scenario_state_btn.enabled = False
         self._reset_btn.enabled = False

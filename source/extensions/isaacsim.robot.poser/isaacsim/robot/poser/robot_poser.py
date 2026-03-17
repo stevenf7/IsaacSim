@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 
@@ -311,7 +312,7 @@ class RobotPoser:
         seed: dict[str, float] | np.ndarray | list[float] | None = None,
         *,
         tolerance: float = 1e-4,
-        **solver_kwargs,
+        **solver_kwargs: Any,
     ) -> PoseResult:
         """Solve inverse kinematics for the configured chain.
 
@@ -475,7 +476,7 @@ class RobotPoser:
 _articulation_cache: dict[str, tuple] = {}
 
 
-def _get_articulation(robot_path: str):
+def _get_articulation(robot_path: str) -> tuple[Any, dict[str, int]]:
     """Return a cached (Articulation, dof_path_to_idx) pair for *robot_path*.
 
     Args:
