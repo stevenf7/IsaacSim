@@ -19,7 +19,7 @@
   </dependency>
   <!-- For API docs -->
   <dependency name="repo_docs" linkPath="../_repo/deps/repo_docs">
-    <package name="repo_docs" version="2.5.0-dev.3412+mr536.1957a5a5" />
+    <package name="repo_docs" version="2.7.0-dev.3485+mr536.4defac86" />
   </dependency>
   <!-- For PyPI packages -->
   <dependency name="repo_python_package" linkPath="../_repo/deps/repo_python_package">

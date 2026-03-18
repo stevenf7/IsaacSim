@@ -14,6 +14,7 @@
 -- limitations under the License.
 
 local ext = get_current_extension_info()
+ext.target_dir = deprecated_exts_path .. "/" .. ext.id
 project_ext(ext)
 
 -- Python Bindings for Carobnite Plugin
@@ -37,7 +38,7 @@ includedirs {
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
     "%{root}/_build/target-deps/omni_client_library/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
-    "%{root}/source/extensions/isaacsim.core.utils/include",
+    "%{root}/source/deprecated/isaacsim.core.utils/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
 }
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.1] - 2026-03-18
+### Deprecated
+- Extension deprecated in favor of the Core Experimental extension `isaaacsim.core.experimental.prims`
+
 ## [0.9.0] - 2026-03-12
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings
