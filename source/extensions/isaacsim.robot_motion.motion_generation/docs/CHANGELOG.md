@@ -1,4 +1,8 @@
 # Changelog
+## [8.2.3] - 2026-03-05
+### Changed
+- Modifies Fanuc CRX-10iA/L nucleus server path + urdf joint names to match new usd assets.
+
 ## [8.2.2] - 2026-03-05
 ### Changed
 - Updated Overview.md with note about newer experimental motion generation API.

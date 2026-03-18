@@ -125,42 +125,42 @@
     </collision>
   </link>
   <!-- joints: main serial chain -->
-  <joint name="joint_1" type="revolute">
+  <joint name="J1" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0.245"/>
     <parent link="base_link"/>
     <child link="link_1"/>
     <axis xyz="0 0 1"/>
     <limit effort="0" lower="-3.141592653589793" upper="3.141592653589793" velocity="2.0943951023931953"/>
   </joint>
-  <joint name="joint_2" type="revolute">
+  <joint name="J2" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="link_1"/>
     <child link="link_2"/>
     <axis xyz="0 1 0"/>
     <limit effort="0" lower="-3.141592653589793" upper="3.141592653589793" velocity="2.0943951023931953"/>
   </joint>
-  <joint name="joint_3" type="revolute">
+  <joint name="J3" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0.710"/>
     <parent link="link_2"/>
     <child link="link_3"/>
     <axis xyz="0 -1 0"/>
     <limit effort="0" lower="-4.71238898038469" upper="4.71238898038469" velocity="3.141592653589793"/>
   </joint>
-  <joint name="joint_4" type="revolute">
+  <joint name="J4" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="link_3"/>
     <child link="link_4"/>
     <axis xyz="-1 0 0"/>
     <limit effort="0" lower="-3.3161255787892263" upper="3.3161255787892263" velocity="3.141592653589793"/>
   </joint>
-  <joint name="joint_5" type="revolute">
+  <joint name="J5" type="revolute">
     <origin rpy="0 0 0" xyz="0.540 -0.150 0"/>
     <parent link="link_4"/>
     <child link="link_5"/>
     <axis xyz="0 -1 0"/>
     <limit effort="0" lower="-3.141592653589793" upper="3.141592653589793" velocity="3.141592653589793"/>
   </joint>
-  <joint name="joint_6" type="revolute">
+  <joint name="J6" type="revolute">
     <origin rpy="0 0 0" xyz="0.160 0 0"/>
     <parent link="link_5"/>
     <child link="link_6"/>
@@ -176,7 +176,7 @@
   </joint>
   <!-- ROS-Industrial 'flange' frame: attachment point for EEF models -->
   <link name="flange"/>
-  <joint name="joint_6-flange" type="fixed">
+  <joint name="J6-flange" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="link_6"/>
     <child link="flange"/>

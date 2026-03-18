@@ -480,9 +480,9 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         Generates and validates rectangular and circular trajectory paths with rotations.
         """
         assets_root_path = await get_assets_root_path_async()
-        usd_path = assets_root_path + "/Isaac/Robots/Fanuc/CRX10IAL/crx10ial.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Fanuc/crx10ia_l/crx10ia_l.usd"
         robot_name = "Fanuc_CRX10IAL"
-        robot_prim_path = "/fanuc_crx10ial"
+        robot_prim_path = "/crx10ia_l"
         ee_frame = "tool0"
 
         path, pos_targets, orient_targets = await self._build_rect_path()
