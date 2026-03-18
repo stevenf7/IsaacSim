@@ -8,9 +8,9 @@ The isaacsim.gui.content_browser extension enhances the Omniverse content browse
 
 ## Key Components
 
-### [IsaacCollection](isaacsim.gui.content_browser/isaacsim.gui.content_browser.IsaacCollection)
+### {class}`IsaacCollection <isaacsim.gui.content_browser.IsaacCollection>`
 
-The [IsaacCollection](isaacsim.gui.content_browser/isaacsim.gui.content_browser.IsaacCollection) class creates the main Isaac Sim collection that appears in the content browser with a cloud icon. This collection automatically detects the appropriate protocol (Omniverse or HTTPS) based on the default asset root configuration and populates itself with configured asset folders from the extension settings.
+The {class}`IsaacCollection <isaacsim.gui.content_browser.IsaacCollection>` class creates the main Isaac Sim collection that appears in the content browser with a cloud icon. This collection automatically detects the appropriate protocol (Omniverse or HTTPS) based on the default asset root configuration and populates itself with configured asset folders from the extension settings.
 
 The collection is read-only and does not support adding new connections. Asset folders are loaded asynchronously from the application settings and displayed as browsable items within the file browser interface.
 
@@ -24,9 +24,9 @@ collection = IsaacCollection()
 
 Individual asset folder connections are represented by `IsaacConnectionItem` instances, which are specialized `NucleusItem` objects designed for Isaac Sim asset directories. These items handle the display and navigation of specific asset categories like robots, environments, materials, and sensors.
 
-### [ExtendedFileInfo](isaacsim.gui.content_browser/isaacsim.gui.content_browser.ExtendedFileInfo)
+### {class}`ExtendedFileInfo <isaacsim.gui.content_browser.ExtendedFileInfo>`
 
-The [ExtendedFileInfo](isaacsim.gui.content_browser/isaacsim.gui.content_browser.ExtendedFileInfo) class extends the detail view controller to provide enhanced file information display within the content browser. This component builds custom headers and presents detailed metadata about selected assets, improving the browsing experience for Isaac Sim content.
+The {class}`ExtendedFileInfo <isaacsim.gui.content_browser.ExtendedFileInfo>` class extends the detail view controller to provide enhanced file information display within the content browser. This component builds custom headers and presents detailed metadata about selected assets, improving the browsing experience for Isaac Sim content.
 
 ## Configuration
 

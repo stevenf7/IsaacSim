@@ -17,7 +17,7 @@ align: center
 
 ### Contact Sensor
 
-[ContactSensor](isaacsim.sensors.experimental.physics/isaacsim.sensors.experimental.physics.ContactSensor) provides collision detection and force measurement capabilities with configurable thresholds and radius filtering. The sensor automatically handles prim creation if it doesn't exist and applies the necessary PhysxContactReportAPI to enable contact reporting.
+{class}`ContactSensor <isaacsim.sensors.experimental.physics.ContactSensor>` provides collision detection and force measurement capabilities with configurable thresholds and radius filtering. The sensor automatically handles prim creation if it doesn't exist and applies the necessary PhysxContactReportAPI to enable contact reporting.
 
 ```python
 from isaacsim.sensors.experimental.physics import ContactSensor
@@ -40,7 +40,7 @@ The sensor returns structured frame data including contact status, force magnitu
 
 ### Effort Sensor
 
-[EffortSensor](isaacsim.sensors.experimental.physics/isaacsim.sensors.experimental.physics.EffortSensor) measures joint effort (torque or force) from articulated bodies using the physics tensor API. It requires a valid articulation hierarchy and monitors specific degrees of freedom within joints.
+{class}`EffortSensor <isaacsim.sensors.experimental.physics.EffortSensor>` measures joint effort (torque or force) from articulated bodies using the physics tensor API. It requires a valid articulation hierarchy and monitors specific degrees of freedom within joints.
 
 ```python
 from isaacsim.sensors.experimental.physics import EffortSensor
@@ -54,11 +54,11 @@ if reading.is_valid:
     print(f"Joint torque: {reading.value}")
 ```
 
-The sensor provides [EffortSensorReading](isaacsim.sensors.experimental.physics/isaacsim.sensors.experimental.physics.EffortSensorReading) objects containing validity status, simulation time, and effort values. It supports configurable data buffering and dynamic DOF name updates.
+The sensor provides {class}`EffortSensorReading <isaacsim.sensors.experimental.physics.EffortSensorReading>` objects containing validity status, simulation time, and effort values. It supports configurable data buffering and dynamic DOF name updates.
 
 ### IMU Sensor
 
-[IMUSensor](isaacsim.sensors.experimental.physics/isaacsim.sensors.experimental.physics.IMUSensor) captures inertial measurements including linear acceleration, angular velocity, and orientation. It supports configurable rolling average filters for each measurement type to reduce noise.
+{class}`IMUSensor <isaacsim.sensors.experimental.physics.IMUSensor>` captures inertial measurements including linear acceleration, angular velocity, and orientation. It supports configurable rolling average filters for each measurement type to reduce noise.
 
 ```python
 from isaacsim.sensors.experimental.physics import IMUSensor
@@ -80,7 +80,7 @@ The sensor returns structured frame data with filtered measurements and supports
 
 ### Joint State Sensor
 
-[JointStateSensor](isaacsim.sensors.experimental.physics/isaacsim.sensors.experimental.physics.JointStateSensor) reads positions, velocities, and efforts for every degree of freedom in an articulation in a single call, analogous to a ROS2 JointState message. It is backed by the C++ IJointStateSensor plugin and requires a valid articulation root prim.
+{class}`JointStateSensor <isaacsim.sensors.experimental.physics.JointStateSensor>` reads positions, velocities, and efforts for every degree of freedom in an articulation in a single call, analogous to a ROS2 JointState message. It is backed by the C++ IJointStateSensor plugin and requires a valid articulation root prim.
 
 ```python
 from isaacsim.sensors.experimental.physics import JointStateSensor
@@ -95,13 +95,13 @@ if reading.is_valid:
         print(f"{name}: {pos:.4f} rad")
 ```
 
-The sensor returns [JointStateSensorReading](isaacsim.sensors.experimental.physics/isaacsim.sensors.experimental.physics.JointStateSensorReading) objects with validity, simulation time, DOF names, and arrays for positions (rad or m), velocities (rad/s or m/s), efforts (Nm or N), and per-DOF joint types. It supports pause/resume via the `enabled` property.
+The sensor returns {class}`JointStateSensorReading <isaacsim.sensors.experimental.physics.JointStateSensorReading>` objects with validity, simulation time, DOF names, and arrays for positions (rad or m), velocities (rad/s or m/s), efforts (Nm or N), and per-DOF joint types. It supports pause/resume via the `enabled` property.
 
 ## Functionality
 
 ### Programmatic Sensor Creation
 
-The extension provides command-based sensor creation through [IsaacSensorExperimentalCreateContactSensor](isaacsim.sensors.experimental.physics/isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreateContactSensor) and [IsaacSensorExperimentalCreateImuSensor](isaacsim.sensors.experimental.physics/isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreateImuSensor). These commands handle USD prim creation, schema application, and attribute configuration with full undo support.
+The extension provides command-based sensor creation through {class}`IsaacSensorExperimentalCreateContactSensor <isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreateContactSensor>` and {class}`IsaacSensorExperimentalCreateImuSensor <isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreateImuSensor>`. These commands handle USD prim creation, schema application, and attribute configuration with full undo support.
 
 ### Frame-Based Data Access
 

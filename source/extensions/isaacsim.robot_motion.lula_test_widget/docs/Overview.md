@@ -15,9 +15,9 @@ align: center
 
 ## Key Components
 
-### [LulaTestScenarios](isaacsim.robot_motion.lula_test_widget/isaacsim.robot_motion.lula_test_widget.LulaTestScenarios)
+### {class}`LulaTestScenarios <isaacsim.robot_motion.lula_test_widget.LulaTestScenarios>`
 
-**[LulaTestScenarios](isaacsim.robot_motion.lula_test_widget/isaacsim.robot_motion.lula_test_widget.LulaTestScenarios) is the core testing framework that manages all motion planning scenarios.** This class provides comprehensive testing capabilities for robotic motion planning scenarios, including inverse kinematics target following, obstacle avoidance with RmpFlow, custom trajectory execution, and sinusoidal target tracking.
+**{class}`LulaTestScenarios <isaacsim.robot_motion.lula_test_widget.LulaTestScenarios>` is the core testing framework that manages all motion planning scenarios.** This class provides comprehensive testing capabilities for robotic motion planning scenarios, including inverse kinematics target following, obstacle avoidance with RmpFlow, custom trajectory execution, and sinusoidal target tracking.
 
 The class manages visual elements like targets, obstacles, coordinate frames, and trajectory waypoints, providing both interactive control and automated scenario execution with real-time visualization of end-effector frames and collision spheres for debugging.
 
@@ -44,7 +44,7 @@ scenarios.toggle_rmpflow_debug_mode()
 
 #### Scenario Management
 
-[LulaTestScenarios](isaacsim.robot_motion.lula_test_widget/isaacsim.robot_motion.lula_test_widget.LulaTestScenarios) provides methods for managing scenario lifecycle:
+{class}`LulaTestScenarios <isaacsim.robot_motion.lula_test_widget.LulaTestScenarios>` provides methods for managing scenario lifecycle:
 
 - `full_reset()`: Performs complete reset of all scenario data and Lula components
 - `scenario_reset()`: Resets current scenario by clearing targets, obstacles, and trajectories
@@ -55,8 +55,8 @@ scenarios.toggle_rmpflow_debug_mode()
 
 The extension provides specialized file filtering functions for robot configuration:
 
-- [is_yaml_file](isaacsim.robot_motion.lula_test_widget/isaacsim.robot_motion.lula_test_widget.is_yaml_file) and [is_urdf_file](isaacsim.robot_motion.lula_test_widget/isaacsim.robot_motion.lula_test_widget.is_urdf_file): Check file extensions for YAML and URDF formats
-- [on_filter_yaml_item](isaacsim.robot_motion.lula_test_widget/isaacsim.robot_motion.lula_test_widget.on_filter_yaml_item) and [on_filter_urdf_item](isaacsim.robot_motion.lula_test_widget/isaacsim.robot_motion.lula_test_widget.on_filter_urdf_item): Filter functions for file browser items to display only relevant robot configuration files
+- {func}`is_yaml_file <isaacsim.robot_motion.lula_test_widget.is_yaml_file>` and {func}`is_urdf_file <isaacsim.robot_motion.lula_test_widget.is_urdf_file>`: Check file extensions for YAML and URDF formats
+- {func}`on_filter_yaml_item <isaacsim.robot_motion.lula_test_widget.on_filter_yaml_item>` and {func}`on_filter_urdf_item <isaacsim.robot_motion.lula_test_widget.on_filter_urdf_item>`: Filter functions for file browser items to display only relevant robot configuration files
 
 ### Extension Interface
 

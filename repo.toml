@@ -1088,15 +1088,12 @@ excluded_extensions = [
 # AUTOREMOVE: BEGIN
     # internal extensions
     "isaacsim.app.compatibility_check",
-    # TODO: Is it a problem this is also explicitly included in extsbuild_exts_includes?
-    "isaacsim.util.debug_draw",
     "isaacsim.xr.input_devices",
 # AUTOREMOVE: END
 ]
 
 # Extensions from extsbuild that needed to be included in docs
 extsbuild_exts_includes = [
-    "isaacsim.util.debug_draw",
 ]
 
 ########################################################################################################################

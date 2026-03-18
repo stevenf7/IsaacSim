@@ -20,9 +20,9 @@ The extension includes two main robot platforms with comprehensive control inter
 
 Two interactive examples provide hands-on demonstrations accessible through Isaac Sim's examples browser:
 
-**[FrankaPickPlaceInteractive](isaacsim.robot.manipulators.examples.interactive.pick_place/isaacsim.robot.manipulators.examples.interactive.pick_place.FrankaPickPlaceInteractive)** - Demonstrates a complete pick-and-place operation with the Franka robot, allowing users to execute and observe the multi-phase manipulation sequence through an intuitive UI interface.
+**{class}`FrankaPickPlaceInteractive <isaacsim.robot.manipulators.examples.interactive.pick_place.FrankaPickPlaceInteractive>`** - Demonstrates a complete pick-and-place operation with the Franka robot, allowing users to execute and observe the multi-phase manipulation sequence through an intuitive UI interface.
 
-**[UR10FollowTargetInteractive](isaacsim.robot.manipulators.examples.interactive.follow_target/isaacsim.robot.manipulators.examples.interactive.follow_target.UR10FollowTargetInteractive)** - Showcases continuous target following behavior where the UR10 robot tracks a movable cube target using real-time inverse kinematics, with selectable IK methods and live status monitoring.
+**{class}`UR10FollowTargetInteractive <isaacsim.robot.manipulators.examples.interactive.follow_target.UR10FollowTargetInteractive>`** - Showcases continuous target following behavior where the UR10 robot tracks a movable cube target using real-time inverse kinematics, with selectable IK methods and live status monitoring.
 
 ### Task Collections
 

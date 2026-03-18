@@ -8,9 +8,9 @@ The `isaacsim.robot.manipulators` extension provides high-level Python classes f
 
 ## Key Components
 
-### [SingleManipulator](isaacsim.robot.manipulators/isaacsim.robot.manipulators.SingleManipulator)
+### {class}`SingleManipulator <isaacsim.robot.manipulators.SingleManipulator>`
 
-The [SingleManipulator](isaacsim.robot.manipulators/isaacsim.robot.manipulators.SingleManipulator) class serves as the primary interface for manipulator control, built on top of the articulation system. It encapsulates a complete manipulator system consisting of the robotic arm, end effector, and optional gripper components.
+The {class}`SingleManipulator <isaacsim.robot.manipulators.SingleManipulator>` class serves as the primary interface for manipulator control, built on top of the articulation system. It encapsulates a complete manipulator system consisting of the robotic arm, end effector, and optional gripper components.
 
 Key features include:
 - **End Effector Tracking**: Monitors the rigid body corresponding to the end effector through the `end_effector` property, enabling access to world pose and motion data
@@ -24,7 +24,7 @@ The class inherits from `SingleArticulation`, extending it with manipulator-spec
 
 ### Manipulator Configuration
 
-The [SingleManipulator](isaacsim.robot.manipulators/isaacsim.robot.manipulators.SingleManipulator) supports flexible configuration during instantiation:
+The {class}`SingleManipulator <isaacsim.robot.manipulators.SingleManipulator>` supports flexible configuration during instantiation:
 - Prim path specification for USD stage integration
 - End effector path definition for tracking specific rigid bodies
 - Transform properties including position, orientation, and scale

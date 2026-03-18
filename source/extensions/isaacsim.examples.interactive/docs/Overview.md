@@ -17,23 +17,23 @@ align: center
 
 ### Robot Manipulation Examples
 
-**[FollowTarget](isaacsim.examples.interactive.follow_target/isaacsim.examples.interactive.follow_target.FollowTarget)** demonstrates real-time target following using a Franka robot with RMP Flow control. The robot continuously tracks a movable target cube while avoiding dynamically added obstacles, showcasing reactive motion planning and collision avoidance.
+**{class}`FollowTarget <isaacsim.examples.interactive.follow_target.FollowTarget>`** demonstrates real-time target following using a Franka robot with RMP Flow control. The robot continuously tracks a movable target cube while avoiding dynamically added obstacles, showcasing reactive motion planning and collision avoidance.
 
-**[PathPlanning](isaacsim.examples.interactive.path_planning/isaacsim.examples.interactive.path_planning.PathPlanning)** showcases RRT-based path planning with a Franka robot navigating through complex static environments. Users can add and remove wall obstacles to create challenging scenarios that require sophisticated motion planning algorithms.
+**{class}`PathPlanning <isaacsim.examples.interactive.path_planning.PathPlanning>`** showcases RRT-based path planning with a Franka robot navigating through complex static environments. Users can add and remove wall obstacles to create challenging scenarios that require sophisticated motion planning algorithms.
 
-**[BinFilling](isaacsim.examples.interactive.bin_filling/isaacsim.examples.interactive.bin_filling.BinFilling)** illustrates industrial automation scenarios with a UR10 robot performing bin filling tasks. The example includes realistic gripper failure conditions and demonstrates surface gripper behavior under various load conditions.
+**{class}`BinFilling <isaacsim.examples.interactive.bin_filling.BinFilling>`** illustrates industrial automation scenarios with a UR10 robot performing bin filling tasks. The example includes realistic gripper failure conditions and demonstrates surface gripper behavior under various load conditions.
 
 ### Input Device Integration
 
-**[KayaGamepad](isaacsim.examples.interactive.kaya_gamepad/isaacsim.examples.interactive.kaya_gamepad.KayaGamepad)** provides gamepad control integration for the NVIDIA Kaya robot, demonstrating how to connect physical input devices with robotic systems in simulation for teleoperation scenarios.
+**{class}`KayaGamepad <isaacsim.examples.interactive.kaya_gamepad.KayaGamepad>`** provides gamepad control integration for the NVIDIA Kaya robot, demonstrating how to connect physical input devices with robotic systems in simulation for teleoperation scenarios.
 
-**[OmnigraphKeyboard](isaacsim.examples.interactive.omnigraph_keyboard/isaacsim.examples.interactive.omnigraph_keyboard.OmnigraphKeyboard)** shows keyboard input processing through Omni Graph nodes, allowing users to control object properties (like cube size) using keyboard inputs, illustrating the integration between user input and graph-based programming.
+**{class}`OmnigraphKeyboard <isaacsim.examples.interactive.omnigraph_keyboard.OmnigraphKeyboard>`** shows keyboard input processing through Omni Graph nodes, allowing users to control object properties (like cube size) using keyboard inputs, illustrating the integration between user input and graph-based programming.
 
 ### Multi-Robot Coordination
 
-**[RoboParty](isaacsim.examples.interactive.robo_party/isaacsim.examples.interactive.robo_party.RoboParty)** demonstrates concurrent operation of multiple robot types including Franka manipulators, UR10 arms, Kaya holonomic robots, and Jetbot differential drive robots, each performing specialized tasks simultaneously.
+**{class}`RoboParty <isaacsim.examples.interactive.robo_party.RoboParty>`** demonstrates concurrent operation of multiple robot types including Franka manipulators, UR10 arms, Kaya holonomic robots, and Jetbot differential drive robots, each performing specialized tasks simultaneously.
 
-**[RoboFactory](isaacsim.examples.interactive.robo_factory/isaacsim.examples.interactive.robo_factory.RoboFactory)** showcases multiple robots performing stacking operations in a coordinated manner, illustrating multi-robot task coordination and workspace sharing.
+**{class}`RoboFactory <isaacsim.examples.interactive.robo_factory.RoboFactory>`** showcases multiple robots performing stacking operations in a coordinated manner, illustrating multi-robot task coordination and workspace sharing.
 
 ### Behavior Framework Examples
 
@@ -41,11 +41,11 @@ align: center
 
 ### Educational and Template Examples
 
-**[HelloWorld](isaacsim.examples.interactive.hello_world/isaacsim.examples.interactive.hello_world.HelloWorld)** serves as the foundational template demonstrating basic Isaac Sim sample structure and scene setup patterns.
+**{class}`HelloWorld <isaacsim.examples.interactive.hello_world.HelloWorld>`** serves as the foundational template demonstrating basic Isaac Sim sample structure and scene setup patterns.
 
-**[GettingStarted](isaacsim.examples.interactive.getting_started/isaacsim.examples.interactive.getting_started.GettingStarted)** and **[GettingStartedRobot](isaacsim.examples.interactive.getting_started/isaacsim.examples.interactive.getting_started.GettingStartedRobot)** provide step-by-step tutorials for Isaac Sim fundamentals, covering scene creation, physics setup, robot integration, and basic simulation concepts.
+**{class}`GettingStarted <isaacsim.examples.interactive.getting_started.GettingStarted>`** and **{class}`GettingStartedRobot <isaacsim.examples.interactive.getting_started.GettingStartedRobot>`** provide step-by-step tutorials for Isaac Sim fundamentals, covering scene creation, physics setup, robot integration, and basic simulation concepts.
 
-**[ReplayFollowTarget](isaacsim.examples.interactive.replay_follow_target/isaacsim.examples.interactive.replay_follow_target.ReplayFollowTarget)** demonstrates data logging and replay capabilities, showing how to record robot trajectories and scene states for analysis and reproduction.
+**{class}`ReplayFollowTarget <isaacsim.examples.interactive.replay_follow_target.ReplayFollowTarget>`** demonstrates data logging and replay capabilities, showing how to record robot trajectories and scene states for analysis and reproduction.
 
 ## Functionality
 

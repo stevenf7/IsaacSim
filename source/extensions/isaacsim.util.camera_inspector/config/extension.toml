@@ -86,4 +86,4 @@ args = [
 ]
 
 [documentation]
-pages = ["docs/Overview.md"]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

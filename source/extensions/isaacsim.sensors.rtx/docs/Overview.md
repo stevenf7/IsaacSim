@@ -12,15 +12,15 @@ The isaacsim.sensors.rtx extension provides APIs for creating and managing RTX-b
 
 The extension provides specialized command classes that inherit from `IsaacSensorCreateRtxSensor` for creating different types of RTX sensors:
 
-- **[IsaacSensorCreateRtxLidar](isaacsim.sensors.rtx/isaacsim.sensors.rtx.IsaacSensorCreateRtxLidar)**: Creates RTX Lidar sensors with configurable parameters for point cloud generation
-- **[IsaacSensorCreateRtxRadar](isaacsim.sensors.rtx/isaacsim.sensors.rtx.IsaacSensorCreateRtxRadar)**: Creates RTX Radar sensors with motion compensation capabilities (requires Motion BVH)
-- **[IsaacSensorCreateRtxIDS](isaacsim.sensors.rtx/isaacsim.sensors.rtx.IsaacSensorCreateRtxIDS)**: Creates RTX Idealized Depth Sensors with occupancy detection features
+- **{class}`IsaacSensorCreateRtxLidar <isaacsim.sensors.rtx.IsaacSensorCreateRtxLidar>`**: Creates RTX Lidar sensors with configurable parameters for point cloud generation
+- **{class}`IsaacSensorCreateRtxRadar <isaacsim.sensors.rtx.IsaacSensorCreateRtxRadar>`**: Creates RTX Radar sensors with motion compensation capabilities (requires Motion BVH)
+- **{class}`IsaacSensorCreateRtxIDS <isaacsim.sensors.rtx.IsaacSensorCreateRtxIDS>`**: Creates RTX Idealized Depth Sensors with occupancy detection features
 
 These commands support multiple creation methods including USD references, Replicator API integration, or direct camera prim creation based on the configuration and available APIs.
 
-### [LidarRtx](isaacsim.sensors.rtx/isaacsim.sensors.rtx.LidarRtx) Sensor Interface
+### {class}`LidarRtx <isaacsim.sensors.rtx.LidarRtx>` Sensor Interface
 
-The [LidarRtx](isaacsim.sensors.rtx/isaacsim.sensors.rtx.LidarRtx) class provides a comprehensive interface for RTX-based Lidar sensors, extending the base sensor API with RTX-specific functionality:
+The {class}`LidarRtx <isaacsim.sensors.rtx.LidarRtx>` class provides a comprehensive interface for RTX-based Lidar sensors, extending the base sensor API with RTX-specific functionality:
 
 ```python
 from isaacsim.sensors.rtx import LidarRtx
@@ -45,7 +45,7 @@ The extension supports various annotators for different data collection modes:
 - **IsaacExtractRTXSensorPointCloudNoAccumulator**: Extracts point cloud data without accumulation
 - **IsaacCreateRTXLidarScanBuffer**: Creates structured scan buffers for processing
 - **StableIdMap**: Provides stable object identification mapping
-- **[GenericModelOutput](isaacsim.sensors.rtx.generic_model_output/isaacsim.sensors.rtx.generic_model_output.GenericModelOutput)**: Outputs standardized sensor data format
+- **{class}`GenericModelOutput <isaacsim.sensors.rtx.generic_model_output.GenericModelOutput>`**: Outputs standardized sensor data format
 
 Writers enable visualization and debug capabilities, such as `RtxLidarDebugDrawPointCloud` for real-time point cloud visualization.
 
@@ -53,11 +53,11 @@ Writers enable visualization and debug capabilities, such as `RtxLidarDebugDrawP
 
 ### Generic Model Output
 
-The `isaacsim.sensors.rtx.generic_model_output` module defines a standardized data format for sensor outputs. It provides the [GenericModelOutput](isaacsim.sensors.rtx.generic_model_output/isaacsim.sensors.rtx.generic_model_output.GenericModelOutput) class and associated enums for sensor modalities (LIDAR, RADAR, USS, IDS), coordinate types (CARTESIAN, SPHERICAL), and frame reference systems. This module enables consistent data exchange between different sensor types and external processing systems.
+The `isaacsim.sensors.rtx.generic_model_output` module defines a standardized data format for sensor outputs. It provides the {class}`GenericModelOutput <isaacsim.sensors.rtx.generic_model_output.GenericModelOutput>` class and associated enums for sensor modalities (LIDAR, RADAR, USS, IDS), coordinate types (CARTESIAN, SPHERICAL), and frame reference systems. This module enables consistent data exchange between different sensor types and external processing systems.
 
 ### Sensor Checker
 
-The `isaacsim.sensors.rtx.sensor_checker` module provides validation utilities through the [SensorCheckerUtil](isaacsim.sensors.rtx.sensor_checker/isaacsim.sensors.rtx.sensor_checker.SensorCheckerUtil) class. It validates sensor configurations, parameters, and AOV (Arbitrary Output Variable) data against predefined schemas, ensuring sensor models conform to expected specifications before deployment.
+The `isaacsim.sensors.rtx.sensor_checker` module provides validation utilities through the {class}`SensorCheckerUtil <isaacsim.sensors.rtx.sensor_checker.SensorCheckerUtil>` class. It validates sensor configurations, parameters, and AOV (Arbitrary Output Variable) data against predefined schemas, ensuring sensor models conform to expected specifications before deployment.
 
 ## Functionality
 

@@ -26,9 +26,9 @@ Each template generation requires three inputs: the target directory path, exten
 
 ## Key Components
 
-### [TemplateGenerator](isaacsim.examples.extension/isaacsim.examples.extension.TemplateGenerator)
+### {class}`TemplateGenerator <isaacsim.examples.extension.TemplateGenerator>`
 
-The [TemplateGenerator](isaacsim.examples.extension/isaacsim.examples.extension.TemplateGenerator) class handles the core template generation functionality. It manages file system operations including directory creation, template file copying, and keyword replacement within template files. The generator maintains consistent extension metadata across all generated templates and ensures proper package naming conventions.
+The {class}`TemplateGenerator <isaacsim.examples.extension.TemplateGenerator>` class handles the core template generation functionality. It manages file system operations including directory creation, template file copying, and keyword replacement within template files. The generator maintains consistent extension metadata across all generated templates and ensures proper package naming conventions.
 
 ```python
 from isaacsim.examples.extension import TemplateGenerator

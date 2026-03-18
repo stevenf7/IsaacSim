@@ -8,11 +8,11 @@ The isaacsim.sensors.camera extension provides APIs for creating and managing ca
 
 ## Key Components
 
-### [Camera](isaacsim.sensors.camera/isaacsim.sensors.camera.Camera)
+### {class}`Camera <isaacsim.sensors.camera.Camera>`
 
-The [Camera](isaacsim.sensors.camera/isaacsim.sensors.camera.Camera) class provides high-level functions for managing individual camera prims and their properties. It encapsulates a single camera sensor with comprehensive control over camera parameters, lens distortion models, and data collection through annotators.
+The {class}`Camera <isaacsim.sensors.camera.Camera>` class provides high-level functions for managing individual camera prims and their properties. It encapsulates a single camera sensor with comprehensive control over camera parameters, lens distortion models, and data collection through annotators.
 
-**[Camera](isaacsim.sensors.camera/isaacsim.sensors.camera.Camera) properties include:**
+**{class}`Camera <isaacsim.sensors.camera.Camera>` properties include:**
 - Resolution, focal length, and aperture settings
 - Multiple lens distortion models (OpenCV pinhole/fisheye, F-theta, Kannala-Brandt, etc.)
 - Projection modes (perspective/orthographic) and stereo configurations
@@ -25,9 +25,9 @@ The [Camera](isaacsim.sensors.camera/isaacsim.sensors.camera.Camera) class provi
 - Motion vectors, normals, and occlusion data
 - Configurable annotator attachment with device-specific tensor placement
 
-### [CameraView](isaacsim.sensors.camera/isaacsim.sensors.camera.CameraView)
+### {class}`CameraView <isaacsim.sensors.camera.CameraView>`
 
-The [CameraView](isaacsim.sensors.camera/isaacsim.sensors.camera.CameraView) class extends XFormPrim to handle batched/tiled data from multiple cameras simultaneously. It provides efficient processing for scenarios requiring multiple camera views, such as multi-agent robotics or panoramic vision systems.
+The {class}`CameraView <isaacsim.sensors.camera.CameraView>` class extends XFormPrim to handle batched/tiled data from multiple cameras simultaneously. It provides efficient processing for scenarios requiring multiple camera views, such as multi-agent robotics or panoramic vision systems.
 
 **Tiled rendering features:**
 - Batch processing of camera data as single tiled images or separate batches
@@ -53,7 +53,7 @@ The extension supports multiple lens distortion models for realistic camera simu
 
 ### Annotator Integration
 
-Both [Camera](isaacsim.sensors.camera/isaacsim.sensors.camera.Camera) and [CameraView](isaacsim.sensors.camera/isaacsim.sensors.camera.CameraView) integrate with Omniverse Replicator annotators to provide various computer vision data types. The extension handles annotator lifecycle management and provides normalized access keys for consistent data retrieval across different annotator variants.
+Both {class}`Camera <isaacsim.sensors.camera.Camera>` and {class}`CameraView <isaacsim.sensors.camera.CameraView>` integrate with Omniverse Replicator annotators to provide various computer vision data types. The extension handles annotator lifecycle management and provides normalized access keys for consistent data retrieval across different annotator variants.
 
 ### Coordinate Transformations
 

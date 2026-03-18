@@ -65,7 +65,7 @@ authors = ["email@nvidia.com"]   # List of author emails
 repository = "https://..."       # Repository URL for the extension
 keywords = ["keyword1", "keyword2"] # Keywords for search/categorization
 changelog = "docs/CHANGELOG.md"  # Path to changelog file
-readme = "docs/README.md"        # Path to readme file
+readme = "docs/Overview.md"      # Path to readme/overview file
 preview_image = "data/preview.png" # Path to preview image
 icon = "data/icon.png"           # Path to icon image
 writeTarget.kit = true           # Target platforms (optional)
@@ -246,7 +246,7 @@ pages = [                        # Documentation pages
    - The CODEOWNERS file is automatically generated from extension.toml author lists
 
 6. **Documentation**:
-   - Always include a README.md and CHANGELOG.md
+   - Always include an Overview.md and CHANGELOG.md
    - Keep the changelog up to date with each version change
 
 7. **Dependencies**:

@@ -31,7 +31,7 @@ Every extension MUST include:
 
 3. **docs/** folder
    - Must contain `CHANGELOG.md` file
-   - Must contain `README.md` file
+   - Must contain `Overview.md` file
    - Must contain `api.rst` file if the extension has a `bindings/` folder OR contains Python implementation files in `python/impl/` (other than `extension.py` and `__init__.py`)
    - Must contain `index.rst` file if it contains `api.rst`. 
    - May contain additional `.rst` files
