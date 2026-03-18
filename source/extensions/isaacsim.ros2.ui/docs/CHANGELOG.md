@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.0] - 2026-03-17
+### Changed
+- Updated documentation with AI agent.
+
 ## [1.4.2] - 2026-03-06
 ### Changed
 - Migrated test_menu_graphs imports to use experimental prims and stage utilities (XformPrim, define_prim, add_reference_to_stage)

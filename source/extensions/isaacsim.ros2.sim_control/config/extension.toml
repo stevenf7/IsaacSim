@@ -1,5 +1,5 @@
 [package]
-version = "1.3.3"
+version = "1.4.0"
 category = "Simulation"
 title = "ROS 2 Simulation Control"
 description = "Extension that uses the ROS 2 Simulation Interfaces to control Isaac Sim"
@@ -7,7 +7,7 @@ authors = ["hmazhar@nvidia.com", "ayushg@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.ros2.sim_control"
 keywords = ["isaac", "ROS2", "simulation", "sim", "control"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -94,3 +94,6 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
 ]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Viewport scene management for TF frame visualization in ROS 2."""
+
+
 import omni.ui as ui
 from omni.ui import color as cl
 from omni.ui import scene as sc

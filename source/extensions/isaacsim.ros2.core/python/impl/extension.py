@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides core functionality and utilities for ROS 2 integration in Isaac Sim."""
+
+
 import os
 import subprocess
 import sys
@@ -35,7 +38,7 @@ class ROS2CoreExtension(omni.ext.IExt):
     and foundational utilities for ROS 2 integration in Isaac Sim.
     """
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the ROS 2 core foundation extension.
 
         Args:
@@ -138,7 +141,7 @@ class ROS2CoreExtension(omni.ext.IExt):
 
             carb.log_info("ROS2 Core: Foundation extension loaded successfully")
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Shutdown the core extension.
 
         Properly shutdown the rclpy extension and core interface.
@@ -152,7 +155,17 @@ class ROS2CoreExtension(omni.ext.IExt):
 
         carb.log_info("ROS2 Core: Foundation extension shutdown complete")
 
-    def check_status(self, distro):
+    def check_status(self, distro: str) -> bool:
+        """Check if ROS 2 can be loaded for the specified distribution.
+
+        Runs an external process to verify ROS 2 availability without risking memory leaks in the main process.
+
+        Args:
+            distro: The ROS distribution to check.
+
+        Returns:
+            True if ROS 2 can be loaded successfully, False otherwise.
+        """
         # Run an external process that checks if ROS2 can be loaded
         # If ROS2 cannot be loaded a memory leak occurs, running in a separate process prevent this
         path = os.path.abspath(self._extension_path + "/bin")

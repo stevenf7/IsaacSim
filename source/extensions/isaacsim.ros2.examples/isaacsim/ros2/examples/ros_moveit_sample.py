@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides a ROS 2 MoveIt integration example extension for controlling a Franka robot in Isaac Sim."""
+
+
 import asyncio
 import gc
 import os

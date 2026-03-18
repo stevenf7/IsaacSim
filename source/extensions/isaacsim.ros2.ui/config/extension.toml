@@ -1,5 +1,5 @@
 [package]
-version = "1.4.2"
+version = "1.5.0"
 category = "Simulation"
 title = "ROS 2 UI Components"
 description = "This extension provides UI components for ROS 2 integration with Isaac Sim."
@@ -7,7 +7,7 @@ authors = ["hmazhar@nvidia.com", "ayushg@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.ros2.ui"
 keywords = ["isaac", "ROS2", "UI"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -118,3 +118,6 @@ args = [
     "--/renderer/raytracingMotion/enabledForHydraEngines=0,1,2,3",
     "--/rtx-transient/stableIds/enabled=true",
 ]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]
