@@ -1347,6 +1347,8 @@ class RigidPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         # USD API
+        if SimulationManager.get_active_physics_engine() != "physx":
+            return
         indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         enabled = ops_utils.place(enabled, device="cpu").numpy().reshape((-1, 1))
         for i, index in enumerate(indices.numpy()):
@@ -1393,6 +1395,9 @@ class RigidPrim(XformPrim):
         # USD API
         indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
         enabled = np.zeros((indices.shape[0], 1), dtype=np.bool_)
+        if SimulationManager.get_active_physics_engine() != "physx":
+            enabled[:] = bool(self._contact_filter_paths)
+            return ops_utils.place(enabled, device=self._device)
         for i, index in enumerate(indices.numpy()):
             enabled[i] = self.prims[index].HasAPI(PhysxSchema.PhysxContactReportAPI)
         return ops_utils.place(enabled, device=self._device)
@@ -1476,6 +1481,7 @@ class RigidPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         assert self._physics_rigid_contact_view is not None, "Physics contact view is not valid"
+        assert self._contact_filter_paths, "contact_filter_paths must be provided at construction"
         # Tensor API
         contact_force_matrix = self._physics_rigid_contact_view.get_contact_force_matrix(dt)
         indices = ops_utils.resolve_indices(indices, count=len(self), device=contact_force_matrix.device)
@@ -1526,6 +1532,7 @@ class RigidPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         assert self._physics_rigid_contact_view is not None, "Physics contact view is not valid"
+        assert self._contact_filter_paths, "contact_filter_paths must be provided at construction"
         # Tensor API
         forces, points, normals, distances, pair_contacts_count, pair_contacts_start_indices = (
             self._physics_rigid_contact_view.get_contact_data(dt)
@@ -1583,6 +1590,7 @@ class RigidPrim(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         assert self._physics_rigid_contact_view is not None, "Physics contact view is not valid"
+        assert self._contact_filter_paths, "contact_filter_paths must be provided at construction"
         # Tensor API
         forces, points, pair_contacts_count, pair_contacts_start_indices = (
             self._physics_rigid_contact_view.get_friction_data(dt)
@@ -1594,6 +1602,86 @@ class RigidPrim(XformPrim):
             pair_contacts_count[indices, :].contiguous().to(self._device),
             pair_contacts_start_indices[indices, :].contiguous().to(self._device),
         )
+
+    def get_raw_contact_data(
+        self,
+        *,
+        indices: int | list | np.ndarray | wp.array | None = None,
+        dt: float = 1.0,
+    ) -> tuple[wp.array, wp.array, wp.array, wp.array, wp.array, wp.array, wp.array]:
+        """Get raw contact data for all contacts per sensor without filter patterns.
+
+        Backends: :guilabel:`tensor`.
+
+        Returns all contacts for each sensor along with the IDs of the other contacting bodies.
+        Unlike :meth:`get_contact_force_data`, this method does not require ``contact_filter_paths``
+        at construction. The output count and start-index tensors are indexed by sensor only
+        (not sensor x filter). Use :meth:`get_actor_paths_from_ids` to convert actor IDs
+        to USD paths.
+
+        .. note::
+
+            This method requires ``max_contact_count > 0`` at construction.
+
+        Args:
+            indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
+            dt: Time step multiplier to convert impulses to forces. Default value returns contact impulses.
+
+        Returns:
+            Seven-element tuple. 1) Force magnitudes (shape ``(max_contact_count, 1)``).
+            2) Contact points (shape ``(max_contact_count, 3)``).
+            3) Contact normals (shape ``(max_contact_count, 3)``).
+            4) Separation distances (shape ``(max_contact_count, 1)``).
+            5) Contact count per sensor (shape ``(N,)``).
+            6) Start indices per sensor (shape ``(N,)``).
+            7) Other actor IDs (shape ``(max_contact_count,)``), uint64.
+
+        Raises:
+            AssertionError: Wrapped prims are not valid.
+            AssertionError: Physics contact view is not valid.
+        """
+        assert self.valid, _MSG_PRIM_NOT_VALID
+        assert self._physics_rigid_contact_view is not None, "Physics contact view is not valid"
+        # Tensor API
+        forces, points, normals, separations, counts, start_indices, other_actor_ids = (
+            self._physics_rigid_contact_view.get_raw_contact_data(dt)
+        )
+        indices = ops_utils.resolve_indices(indices, count=len(self), device=counts.device)
+        return (
+            forces.to(self._device),
+            points.to(self._device),
+            normals.to(self._device),
+            separations.to(self._device),
+            counts[indices].contiguous().to(self._device),
+            start_indices[indices].contiguous().to(self._device),
+            other_actor_ids.to(self._device),
+        )
+
+    def get_actor_paths_from_ids(
+        self,
+        actor_ids: wp.array,
+    ) -> list[str]:
+        """Convert actor IDs from :meth:`get_raw_contact_data` to USD paths.
+
+        Backends: :guilabel:`tensor`.
+
+        Args:
+            actor_ids: Tensor of actor IDs (uint64) or a slice from :meth:`get_raw_contact_data`.
+                Must be a CPU tensor.
+
+        Returns:
+            List of USD paths. Empty string for invalid IDs.
+
+        Raises:
+            AssertionError: Wrapped prims are not valid.
+            AssertionError: Physics contact view is not valid.
+        """
+        assert self.valid, _MSG_PRIM_NOT_VALID
+        assert self._physics_rigid_contact_view is not None, "Physics contact view is not valid"
+        view = self._physics_rigid_contact_view
+        if hasattr(view, "get_actor_paths_from_ids"):
+            return view.get_actor_paths_from_ids(actor_ids)
+        return view.get_other_actor_paths_from_ids(actor_ids)
 
     def set_default_state(
         self,
@@ -1813,13 +1901,17 @@ class RigidPrim(XformPrim):
                 f"Unable to create rigid body view for {self.paths}. Underlying physics objects are not valid"
             )
             self._physics_rigid_body_view = None
-        # create rigid contact view if filter patterns are provided
-        if self._contact_filter_paths:
-            # If there is one filter path per prim, use it directly. Otherwise, apply the same filters to all prims.
-            if len(self._contact_filter_paths) == len(self.paths):
-                filter_patterns = [[path] for path in self._contact_filter_paths]
+        # create rigid contact view if filter patterns or max_contact_count are provided
+        if self._contact_filter_paths or self._max_contact_count > 0:
+            if self._contact_filter_paths:
+                # If there is one filter path per prim, use it directly.
+                # Otherwise, apply the same filters to all prims.
+                if len(self._contact_filter_paths) == len(self.paths):
+                    filter_patterns = [[path] for path in self._contact_filter_paths]
+                else:
+                    filter_patterns = [self._contact_filter_paths for _ in range(len(self.paths))]
             else:
-                filter_patterns = [self._contact_filter_paths for _ in range(len(self.paths))]
+                filter_patterns = []
             self._physics_rigid_contact_view = physics_simulation_view.create_rigid_contact_view(
                 self.paths,
                 filter_patterns=filter_patterns,

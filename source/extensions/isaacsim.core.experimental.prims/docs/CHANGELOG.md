@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.0] - 2026-03-17
+### Added
+- Added a filterless contact API that captures all contacts for prims
+
 ## [1.5.0] - 2026-03-12
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings

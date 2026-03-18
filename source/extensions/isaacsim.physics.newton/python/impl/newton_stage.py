@@ -413,6 +413,7 @@ class NewtonStage:
 
         self.control = self.model.control()
         self.model.ground = True
+        self.model.request_contact_attributes("force")
         self.state_0 = self.model.state()
         self.state_1 = self.model.state()
         if self.cfg.use_cuda_graph:

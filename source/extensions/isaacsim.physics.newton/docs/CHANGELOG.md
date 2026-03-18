@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.2] - 2026-03-17
+### Fixed
+- Newton contact tensor API: apply force sign convention in net and matrix kernels (add for shape0, subtract for shape1) so net contact forces match PhysX expectations.
+- Populate contact points from MuJoCo world-space positions when Newton Contacts do not provide rigid_contact_point0/1.
+
+### Changed
+- Contact force scaling in tensor view uses SimulationManager.get_physics_dt() instead of Newton stage sim_dt.
+
 ## [0.6.1] - 2026-03-17
 ### Added
 - CTRL_DIRECT actuator PD control via tensor API: bridge `set_dof_stiffnesses`, `set_dof_dampings`, and `set_dof_position_targets` to MuJoCo actuator parameters (gainprm, biasprm, ctrl) and set biastype=AFFINE so robot policies (e.g. Go2) work with Newton when USD uses `mujoco:actuator` rather than `physics:driveAPI`.
