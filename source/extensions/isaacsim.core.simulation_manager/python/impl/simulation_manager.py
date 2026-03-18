@@ -1716,7 +1716,7 @@ class SimulationManager:
 
     @classmethod
     def get_broadphase_type(cls, physics_scene: str | None = None) -> str:
-        """Gets current broadcast phase algorithm type.
+        """Gets current broadphase algorithm type.
 
         .. deprecated:: 1.8.0
 
@@ -1730,7 +1730,7 @@ class SimulationManager:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
 
         Returns:
-            Broadcast phase algorithm used.
+            Broadphase algorithm used.
         """
         if not cls._physics_scenes:
             cls._create_physics_scene()
@@ -1739,7 +1739,7 @@ class SimulationManager:
 
     @classmethod
     def set_broadphase_type(cls, val: str, physics_scene: str | None = None):
-        """Broadcast phase algorithm used in simulation.
+        """Broadphase algorithm used in simulation.
 
         .. deprecated:: 1.8.0
 
@@ -1747,7 +1747,7 @@ class SimulationManager:
             instead for each targeted Physics Scene.
 
         Args:
-            val: Type of broadcasting to be used, can be "MBP".
+            val: Broadphase algorithm type (e.g. "MBP", "GPU", "SAP").
             physics_scene: Physics scene prim path.
 
         Raises:
