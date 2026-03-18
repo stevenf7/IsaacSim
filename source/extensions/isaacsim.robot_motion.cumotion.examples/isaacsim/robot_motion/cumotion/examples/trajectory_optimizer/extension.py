@@ -18,12 +18,10 @@
 
 import asyncio
 import gc
-import os
 from typing import Any
 
 import carb.eventdispatcher
 import omni
-import omni.kit.commands
 import omni.physics.core
 import omni.timeline
 import omni.ui as ui
@@ -58,7 +56,6 @@ class Extension(omni.ext.IExt):
             ext_id: The extension ID.
         """
         self.ext_id = ext_id
-        self._is_windows = os.name == "nt"
 
         # Register menu item
         menu_item_name = "Trajectory Optimizer"
@@ -67,18 +64,6 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "cuMotion Examples")
 
-        # On Windows, show popup instead of initializing extension
-        if self._is_windows:
-            action_registry = omni.kit.actions.core.get_action_registry()
-            action_registry.register_action(
-                ext_id,
-                f"CreateUIExtension:{EXTENSION_TITLE}",
-                self._show_windows_not_available_popup,
-                description=f"Add {EXTENSION_TITLE} Extension to UI toolbar",
-            )
-            return
-
-        # Normal initialization for non-Windows platforms
         self._usd_context = omni.usd.get_context()
 
         self._window = ScrollingWindow(
@@ -108,43 +93,11 @@ class Extension(omni.ext.IExt):
         action_registry = omni.kit.actions.core.get_action_registry()
         action_registry.deregister_action(self.ext_id, f"CreateUIExtension:{EXTENSION_TITLE}")
 
-        if self._is_windows:
-            return
-
         self._models = {}
         if self._window:
             self._window = None
         self.ui_builder.cleanup()
         gc.collect()
-
-    def _show_windows_not_available_popup(self) -> None:
-        """Show a popup message indicating that Trajectory Optimizer is not available on Windows."""
-        dialog = ui.Window(
-            "Trajectory Optimizer Not Available",
-            width=500,
-            height=0,
-            visible=True,
-            flags=(ui.WINDOW_FLAGS_NO_SCROLLBAR | ui.WINDOW_FLAGS_MODAL | ui.WINDOW_FLAGS_NO_SAVED_SETTINGS),
-        )
-
-        def _close_dialog() -> None:
-            """Hide immediately, destroy on the next frame."""
-            dialog.visible = False
-
-            async def _destroy_next_frame() -> None:
-                await omni.kit.app.get_app().next_update_async()
-                dialog.destroy()
-
-            asyncio.ensure_future(_destroy_next_frame())
-
-        message = "The Trajectory Optimizer is not currently available on Windows."
-
-        with dialog.frame:
-            with ui.VStack(spacing=10):
-                ui.Spacer(height=10)
-                ui.Label(message, word_wrap=True, alignment=ui.Alignment.LEFT_TOP)
-                ui.Spacer(height=10)
-                ui.Button("OK", clicked_fn=_close_dialog, alignment=ui.Alignment.CENTER)
 
     def _on_window(self, visible: bool) -> None:
         if self._window.visible:

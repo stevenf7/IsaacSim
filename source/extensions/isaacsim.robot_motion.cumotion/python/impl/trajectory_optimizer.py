@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-import os
 import pathlib
 import warnings
 
@@ -69,9 +68,6 @@ class TrajectoryOptimizer:
         tool_frame: str | None = None,
         trajectory_optimizer_config_filename: pathlib.Path | str | None = None,
     ) -> None:
-        if os.name == "nt":
-            raise AssertionError("Trajectory Optimizer is not supported on Windows.")
-
         # if there is no tool_frame, we will take the default (first one):
         if not tool_frame:
             tool_frame_names = cumotion_robot.robot_description.tool_frame_names()
@@ -171,6 +167,7 @@ class TrajectoryOptimizer:
                 # TaskSpaceTarget, or TaskSpaceTargetGoalset objects
                 trajectory = optimizer.plan_to_goal(q_initial, target)
         """
+        wp.synchronize()
         trajectory_optimizer = cumotion.create_trajectory_optimizer(self._trajectory_optimizer_config)
 
         self._world_view.update()

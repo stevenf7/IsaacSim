@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.1] - 2026-03-18
+### Changed
+- TrajectoryOptimizer example functional on Windows.
+
 ## [0.2.0] - 2026-03-05
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings

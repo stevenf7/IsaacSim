@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-import os
 import pathlib
 
 import cumotion
@@ -157,6 +156,7 @@ class GraphBasedMotionPlanner:
                 if path is not None:
                     trajectory = path.to_minimal_time_joint_trajectory()
         """
+        wp.synchronize()
         # make sure we have the correct types:
         if isinstance(q_initial, wp.array):
             q_initial = q_initial.numpy()
@@ -174,9 +174,6 @@ class GraphBasedMotionPlanner:
             )
 
         # create the planner with whatever the current parameters happen to be:
-        if os.name == "nt":
-            # patch for windows crash.
-            self._motion_planner_config.set_param("enable_cuda_tree", False)
         planner = cumotion.create_motion_planner(config=self._motion_planner_config)
 
         # update the world view:
@@ -220,6 +217,7 @@ class GraphBasedMotionPlanner:
                 orientation = [1.0, 0.0, 0.0, 0.0]  # wxyz quaternion (identity)
                 path = planner.plan_to_pose_target(q_initial, position, orientation)
         """
+        wp.synchronize()
         # make sure we have the correct types for q_initial:
         if isinstance(q_initial, wp.array):
             q_initial = q_initial.numpy()
@@ -244,9 +242,6 @@ class GraphBasedMotionPlanner:
 
         # create the planner with whatever the current parameters happen to be:
         self._cumotion_world_interface.world_view.update()
-        if os.name == "nt":
-            # patch for windows crash.
-            self._motion_planner_config.set_param("enable_cuda_tree", False)
         planner = cumotion.create_motion_planner(config=self._motion_planner_config)
 
         planning_result = planner.plan_to_pose_target(q_initial, pose_base_target)
@@ -283,6 +278,7 @@ class GraphBasedMotionPlanner:
                 translation_target = [0.5, 0.2, 0.4]
                 path = planner.plan_to_translation_target(q_initial, translation_target)
         """
+        wp.synchronize()
         # make sure we have the correct types for q_initial:
         if isinstance(q_initial, wp.array):
             q_initial = q_initial.numpy()
@@ -305,9 +301,6 @@ class GraphBasedMotionPlanner:
         )
 
         # create the planner with whatever the current parameters happen to be:
-        if os.name == "nt":
-            # patch for windows crash.
-            self._motion_planner_config.set_param("enable_cuda_tree", False)
         planner = cumotion.create_motion_planner(config=self._motion_planner_config)
 
         self._cumotion_world_interface.world_view.update()
