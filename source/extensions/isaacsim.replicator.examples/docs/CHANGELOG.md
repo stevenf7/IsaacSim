@@ -1,4 +1,8 @@
 # Changelog
+## [1.9.2] - 2026-03-18
+### Changed
+- SDG deformables test: comparing semantic segmentation labels instead of images
+
 ## [1.9.1] - 2026-03-10
 ### Changed
 - Added stricter test tolerances for SDG deformables example test
