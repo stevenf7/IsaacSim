@@ -16,7 +16,6 @@
 """Demonstrates trajectory optimization using cuMotion for robotic motion planning."""
 
 
-import os
 from typing import Any
 
 import cumotion
@@ -26,12 +25,9 @@ from isaacsim.core.experimental.utils import prim as prim_utils
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.robot_motion.cumotion import (
     CumotionWorldInterface,
+    TrajectoryOptimizer,
     load_cumotion_supported_robot,
 )
-
-# temporary: TrajectoryOptimizer does not work on Windows.
-if os.name != "nt":
-    from isaacsim.robot_motion.cumotion import TrajectoryOptimizer
 from isaacsim.robot_motion.cumotion.impl.utils import isaac_sim_to_cumotion_pose
 from isaacsim.robot_motion.experimental.motion_generation import (
     ObstacleConfiguration,

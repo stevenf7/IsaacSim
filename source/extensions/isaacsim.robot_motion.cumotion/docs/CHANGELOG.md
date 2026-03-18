@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.1] - 2026-03-16
+### Fixed
+- TrajectoryOptimizer now functional on Windows.
 
 ## [1.1.0] - 2026-03-05
 ### Changed
