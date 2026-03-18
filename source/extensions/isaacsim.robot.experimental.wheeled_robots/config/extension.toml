@@ -25,6 +25,9 @@ name = "isaacsim.robot.experimental.wheeled_robots"
 [[python.module]]
 name = "isaacsim.robot.experimental.wheeled_robots.tests"
 
+[fswatcher.patterns]
+include = ["*.py"]
+
 [[test]]
 dependencies = [
     "isaacsim.test.utils",
@@ -33,6 +36,3 @@ stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
     '*omni.syntheticdata.scripts.extension*stageFrameHistoryCount*',
 ]
-
-[fswatcher.patterns]
-include = ["*.py"]

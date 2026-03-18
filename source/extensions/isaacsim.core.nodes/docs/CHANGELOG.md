@@ -5,7 +5,6 @@
 - Added Overview.md, python_api.md and updated docstrings
 
 ## [5.5.0] - 2026-03-04
-
 ### Added
 - IsaacComputeTransformTree node that computes parent/child frame names, translations, and orientations for a prim hierarchy using IXformDataView (no physics tensors required)
 

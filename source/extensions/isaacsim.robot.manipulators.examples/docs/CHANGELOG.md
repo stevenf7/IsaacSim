@@ -140,4 +140,3 @@
 ## [0.1.0] - 2024-08-09
 ### Added
 - Franka and universal_robots folder
-

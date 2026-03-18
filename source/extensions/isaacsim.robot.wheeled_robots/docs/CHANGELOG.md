@@ -7,7 +7,6 @@
 ### Changed
 - Fix api errors
 
-
 ## [5.1.0] - 2026-03-04
 ### Changed
 - Added python_api.md and updated docstrings

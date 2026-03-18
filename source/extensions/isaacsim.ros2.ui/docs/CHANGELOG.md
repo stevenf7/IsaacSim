@@ -14,7 +14,6 @@
 ### Changed
 - Fix api and docs syntax issues
 
-
 ## [1.4.0] - 2026-02-08
 ### Added
 - Added PointCloud2 metadata options to RTX Lidar OG tool

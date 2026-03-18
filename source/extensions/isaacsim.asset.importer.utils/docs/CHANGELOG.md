@@ -3,9 +3,7 @@
 ### Changed
 - Fix api and docs syntax issues
 
-
 ## [1.1.0] - 2026-02-26
-
 ### Added
 - Utilities to convert between mjc, physx, urdf attributes
 - Utilities to add physx mimic joints based on Newton Minic API

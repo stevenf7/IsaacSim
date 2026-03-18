@@ -49,7 +49,6 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
-
 [[test]]
 name = "physx"
 enabled = true
@@ -120,8 +119,8 @@ name = "newton"
 timeout = 1800
 dependencies = [
     "isaacsim.physics.newton",
-    "omni.isaac.ml_archive",
-    "isaacsim.test.utils" # Used to suppress NumPy coverage errors
+    "isaacsim.test.utils", # Used to suppress NumPy coverage errors
+    "omni.isaac.ml_archive"
 ]
 args = [
     "--enable",
