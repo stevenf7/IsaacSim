@@ -24,6 +24,7 @@ import carb
 import isaacsim.core.api.objects as objects
 import isaacsim.robot_motion.motion_generation.interface_config_loader as interface_config_loader
 import numpy as np
+import omni.client
 import omni.kit.test
 from isaacsim.core.api.robots.robot import Robot
 from isaacsim.core.api.world import World
@@ -434,9 +435,9 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
     async def test_rmpflow_crx10ial(self):
         """Test RMPflow motion policy with Fanuc CRX10IAL robot."""
         assets_root_path = await get_assets_root_path_async()
-        usd_path = assets_root_path + "/Isaac/Robots/Fanuc/CRX10IAL/crx10ial.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Fanuc/crx10ia_l/crx10ia_l.usd"
         robot_name = "Fanuc_CRX10IAL"
-        robot_prim_path = "/fanuc_crx10ial"
+        robot_prim_path = "/crx10ia_l"
 
         obstacle_position = np.array([0.7, 0.25, 0.7])
         target_position = np.array([0.78, 0.4, 0.55])
