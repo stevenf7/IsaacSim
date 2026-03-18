@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.1.2] - 2026-03-18
+### Deprecated
+- Extension deprecated in favor of the Core Experimental extensions `isaaacsim.core.experimental.*`
+
 ## [5.1.1] - 2026-03-17
 ### Fixed
 - Correct "broadcast" to "broadphase" in physics scene docs and parameter names (collision broadphase algorithm)

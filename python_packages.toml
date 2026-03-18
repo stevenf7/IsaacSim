@@ -369,7 +369,9 @@ inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/isaacsim.core.api",
+    "extsDeprecated/isaacsim.core.api",
+    "extsDeprecated/isaacsim.core.prims",
+    "extsDeprecated/isaacsim.core.utils",
     "exts/isaacsim.core.cloner",
     "exts/isaacsim.core.deprecation_manager",
     "exts/isaacsim.core.experimental.materials",
@@ -378,11 +380,9 @@ inventory.includes.all = [
     "exts/isaacsim.core.experimental.utils",
     "exts/isaacsim.core.includes",
     "exts/isaacsim.core.nodes",
-    "exts/isaacsim.core.prims",
     "exts/isaacsim.core.rendering_manager",
     "exts/isaacsim.core.simulation_manager",
     "exts/isaacsim.core.throttling",
-    "exts/isaacsim.core.utils",
     "exts/isaacsim.core.version",
     "exts/isaacsim.physics.newton",
     "exts/isaacsim.physics.newton.ui",

@@ -15,6 +15,7 @@
 
 -- Setup the basic extension variables
 local ext = get_current_extension_info()
+ext.target_dir = deprecated_exts_path .. "/" .. ext.id
 -- Set up the basic shared project information
 project_ext(ext)
 

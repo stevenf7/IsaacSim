@@ -1,67 +1,47 @@
 [package]
-version = "5.1.1"
+version = "4.1.1"
 category = "Simulation"
-title = "Isaac Sim Core"
-description = "The Core extension provides a set of APIs to control the Simulation State as well as the physics scene. It also provides wrappers for USD objects, physics and visual materials."
+title = "Isaac Sim Utilities"
+description = "The Core Utils extension provides useful utilities for USD, physics, math, rendering and carb."
 authors = ["hmazhar@nvidia.com", "aserranomuno@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.api"
-keywords = ["isaac"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/isaacsim.core.utils"
+keywords = ["isaac", "utils"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
+writeTarget.platform = true
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 6.0.0 in favor of the Core Experimental extension: isaacsim.core.experimental.utils"
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
-"isaacsim.core.prims" = {}
-"isaacsim.core.simulation_manager" = {}
-"isaacsim.core.utils" = {}
-"isaacsim.core.version" = {}
 "isaacsim.storage.native" = {}
-"omni.hydra.usdrt_delegate" = {}
-"omni.isaac.core_archive" = {}
-"omni.kit.material.library" = {optional = true} # OmniGlass
-"omni.kit.stage_templates" = {}
 "omni.kit.usd.layers" = {}
 "omni.physics" = {}
 "omni.physics.physx" = {}
-"omni.physics.stageupdate" = {}
-"omni.physx.tensors" = {}
-"omni.pip.compute" = {} # scipy
+"omni.physics.tensors" = {}
+"omni.physx" = {}
+"omni.usd.metrics.assembler" = {}
+"omni.usd.metrics.assembler.physics" = {}
 "omni.usd.schema.semantics" = {}
+"omni.usdphysics" = {}
 "omni.warp.core" = {}
 
 [[python.module]]
-name = "isaacsim.core.api"
+name = "isaacsim.core.utils"
 
 [[python.module]]
-name = "isaacsim.core.api.tests"
-
-[[native.plugin]]
-path = "bin/*.plugin"
-recursive = false
+name = "isaacsim.core.utils.tests"
 
 [[test]]
-name = "startup"
 dependencies = [
+    "isaacsim.core.api",
+    "isaacsim.sensors.camera",
     "omni.isaac.ml_archive",
-]
-args = [
-    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
-]
-
-[[test]]
-timeout = 900
-dependencies = [
-    "isaacsim.core.cloner",
-    "omni.isaac.ml_archive",
-    "omni.kit.renderer.core",
-]
-
-stdoutFailPatterns.exclude = [
-    "*Invalid articulation pointer for*", # Per node tests won't have valid bundles
-    '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
+    "omni.replicator.core",
 ]
 
 args = [
@@ -111,4 +91,4 @@ args = [
 ]
 
 [documentation]
-pages = ["docs/Overview.md", "docs/CHANGELOG.md"]
+pages = ["docs/Overview.md", "docs/commands_api.md", "docs/CHANGELOG.md"]

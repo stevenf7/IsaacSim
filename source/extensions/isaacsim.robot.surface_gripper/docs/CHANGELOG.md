@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.4.2] - 2026-03-18
+### Changed
+- Update path of `isaacsim.core.utils` header file that has been relocated
+
 ## [3.4.1] - 2026-03-05
 ### Removed
 - Remove unused and deprecated extension dependencies
