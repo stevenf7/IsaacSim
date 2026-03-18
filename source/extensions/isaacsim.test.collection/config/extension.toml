@@ -54,10 +54,10 @@ args = [
 timeout = 900
 dependencies = [
     "isaacsim.ros2.bridge",
+    "isaacsim.test.utils",
     "omni.isaac.ml_archive",
     "omni.kit.material.library",
-    "omni.kit.window.toolbar",
-    "isaacsim.test.utils",
+    "omni.kit.window.toolbar"
 ]
 
 stdoutFailPatterns.exclude = [
