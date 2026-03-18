@@ -15,9 +15,9 @@ align: center
 
 ## Key Components
 
-### [RangeSensorMenu](isaacsim.sensors.physx.ui/isaacsim.sensors.physx.ui.RangeSensorMenu)
+### {class}`RangeSensorMenu <isaacsim.sensors.physx.ui.RangeSensorMenu>`
 
-The [RangeSensorMenu](isaacsim.sensors.physx.ui/isaacsim.sensors.physx.ui.RangeSensorMenu) class provides menu integration for range sensor operations within Isaac Sim. This menu component allows users to access range sensor functionality through the application's menu system, offering a convenient interface for sensor configuration and control.
+The {class}`RangeSensorMenu <isaacsim.sensors.physx.ui.RangeSensorMenu>` class provides menu integration for range sensor operations within Isaac Sim. This menu component allows users to access range sensor functionality through the application's menu system, offering a convenient interface for sensor configuration and control.
 
 The menu integrates with Isaac Sim's context menu system to provide sensor-specific options when working with range sensors in the scene. Users can access range sensor operations directly from the interface without needing to write code or use lower-level APIs.
 

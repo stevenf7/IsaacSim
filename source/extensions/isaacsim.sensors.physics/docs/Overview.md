@@ -8,9 +8,9 @@ The isaacsim.sensors.physics extension provides physics-based sensor simulation 
 
 ## Key Components
 
-### [ContactSensor](isaacsim.sensors.physics/isaacsim.sensors.physics.ContactSensor)
+### {class}`ContactSensor <isaacsim.sensors.physics.ContactSensor>`
 
-**[ContactSensor](isaacsim.sensors.physics/isaacsim.sensors.physics.ContactSensor) detects physical contact and measures contact forces in real-time.** The sensor creates a collision detection area that monitors when objects come into contact and reports the magnitude of contact forces. It requires the parent prim to have UsdPhysics.CollisionAPI enabled and supports configurable force thresholds to filter contacts based on minimum and maximum force values.
+**{class}`ContactSensor <isaacsim.sensors.physics.ContactSensor>` detects physical contact and measures contact forces in real-time.** The sensor creates a collision detection area that monitors when objects come into contact and reports the magnitude of contact forces. It requires the parent prim to have UsdPhysics.CollisionAPI enabled and supports configurable force thresholds to filter contacts based on minimum and maximum force values.
 
 The sensor provides both basic contact information (boolean contact state and force magnitude) and detailed contact data including contact positions, normals, and impulses. Detection radius can be configured to limit the sensing area, and the sensor operates at specified frequencies or time steps.
 
@@ -30,9 +30,9 @@ contact_sensor = sensors_physics.ContactSensor(
 frame_data = contact_sensor.get_current_frame()
 ```
 
-### [IMUSensor](isaacsim.sensors.physics/isaacsim.sensors.physics.IMUSensor)
+### {class}`IMUSensor <isaacsim.sensors.physics.IMUSensor>`
 
-**[IMUSensor](isaacsim.sensors.physics/isaacsim.sensors.physics.IMUSensor) measures linear acceleration, angular velocity, and orientation through simulated inertial measurement.** The sensor provides three-axis linear acceleration, three-axis angular velocity, and quaternion orientation data from physics simulation. It supports configurable filtering for each measurement type using moving average filters to smooth sensor readings.
+**{class}`IMUSensor <isaacsim.sensors.physics.IMUSensor>` measures linear acceleration, angular velocity, and orientation through simulated inertial measurement.** The sensor provides three-axis linear acceleration, three-axis angular velocity, and quaternion orientation data from physics simulation. It supports configurable filtering for each measurement type using moving average filters to smooth sensor readings.
 
 The sensor can be positioned and oriented relative to its parent body through local translation and rotation offsets. It operates at configurable sampling frequencies and can include or exclude gravity from acceleration measurements.
 
@@ -50,9 +50,9 @@ imu_sensor = sensors_physics.IMUSensor(
 imu_data = imu_sensor.get_current_frame(read_gravity=False)
 ```
 
-### [EffortSensor](isaacsim.sensors.physics/isaacsim.sensors.physics.EffortSensor)
+### {class}`EffortSensor <isaacsim.sensors.physics.EffortSensor>`
 
-**[EffortSensor](isaacsim.sensors.physics/isaacsim.sensors.physics.EffortSensor) monitors joint effort (force/torque) in articulated bodies during physics simulation.** The sensor measures the effort applied to specific joints in robotic systems and provides configurable sampling rates with data interpolation capabilities. It maintains internal buffers for temporal data processing and automatically manages data acquisition through physics simulation callbacks.
+**{class}`EffortSensor <isaacsim.sensors.physics.EffortSensor>` monitors joint effort (force/torque) in articulated bodies during physics simulation.** The sensor measures the effort applied to specific joints in robotic systems and provides configurable sampling rates with data interpolation capabilities. It maintains internal buffers for temporal data processing and automatically manages data acquisition through physics simulation callbacks.
 
 The sensor can operate at different frequencies than the physics step rate and provides interpolation between samples when needed. It supports both latest data retrieval and time-based interpolated values.
 
@@ -73,11 +73,11 @@ print(f"Joint effort: {reading.value} at time {reading.time}")
 
 ### Sensor Creation Commands
 
-The extension provides USD commands for programmatically creating sensor prims in the stage. [IsaacSensorCreateContactSensor](isaacsim.sensors.physics/isaacsim.sensors.physics.IsaacSensorCreateContactSensor) creates contact sensors with collision detection capabilities, while [IsaacSensorCreateImuSensor](isaacsim.sensors.physics/isaacsim.sensors.physics.IsaacSensorCreateImuSensor) creates IMU sensors with inertial measurement functionality. These commands handle prim creation, schema application, and initial configuration.
+The extension provides USD commands for programmatically creating sensor prims in the stage. {class}`IsaacSensorCreateContactSensor <isaacsim.sensors.physics.IsaacSensorCreateContactSensor>` creates contact sensors with collision detection capabilities, while {class}`IsaacSensorCreateImuSensor <isaacsim.sensors.physics.IsaacSensorCreateImuSensor>` creates IMU sensors with inertial measurement functionality. These commands handle prim creation, schema application, and initial configuration.
 
 ### Data Structures
 
-[EsSensorReading](isaacsim.sensors.physics/isaacsim.sensors.physics.EsSensorReading) encapsulates effort sensor measurement data including the measured value, timestamp, and validity status. The sensor classes use these data containers to manage buffered sensor readings and provide consistent interfaces for accessing measurement data across different sensor types.
+{class}`EsSensorReading <isaacsim.sensors.physics.EsSensorReading>` encapsulates effort sensor measurement data including the measured value, timestamp, and validity status. The sensor classes use these data containers to manage buffered sensor readings and provide consistent interfaces for accessing measurement data across different sensor types.
 
 ## Integration
 

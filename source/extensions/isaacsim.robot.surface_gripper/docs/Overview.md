@@ -15,9 +15,9 @@ align: center
 
 ## Key Components
 
-### [CreateSurfaceGripper](isaacsim.robot.surface_gripper/isaacsim.robot.surface_gripper.CreateSurfaceGripper) Command
+### {class}`CreateSurfaceGripper <isaacsim.robot.surface_gripper.CreateSurfaceGripper>` Command
 
-The [CreateSurfaceGripper](isaacsim.robot.surface_gripper/isaacsim.robot.surface_gripper.CreateSurfaceGripper) command creates a complete surface gripper setup including the necessary action graph nodes and prims. This command integrates with the **omni.kit.commands** system to provide undo/redo functionality.
+The {class}`CreateSurfaceGripper <isaacsim.robot.surface_gripper.CreateSurfaceGripper>` command creates a complete surface gripper setup including the necessary action graph nodes and prims. This command integrates with the **omni.kit.commands** system to provide undo/redo functionality.
 
 ```python
 result, prim = omni.kit.commands.execute(
@@ -28,9 +28,9 @@ result, prim = omni.kit.commands.execute(
 
 The command automatically handles the creation of all required components, including action graph nodes that manage the gripper's behavior and state transitions.
 
-### [GripperView](isaacsim.robot.surface_gripper/isaacsim.robot.surface_gripper.GripperView)
+### {class}`GripperView <isaacsim.robot.surface_gripper.GripperView>`
 
-The [GripperView](isaacsim.robot.surface_gripper/isaacsim.robot.surface_gripper.GripperView) class provides batch operations for managing multiple surface grippers simultaneously. It inherits from XformPrim and supports regex-based path matching to control collections of grippers efficiently.
+The {class}`GripperView <isaacsim.robot.surface_gripper.GripperView>` class provides batch operations for managing multiple surface grippers simultaneously. It inherits from XformPrim and supports regex-based path matching to control collections of grippers efficiently.
 
 ```python
 gripper_view = GripperView(
@@ -56,7 +56,7 @@ Surface grippers operate through contact detection and force-based attachment. W
 
 ### Batch Operations
 
-The extension provides efficient batch operations for controlling multiple grippers simultaneously. Both [GripperView](isaacsim.robot.surface_gripper/isaacsim.robot.surface_gripper.GripperView) and SurfaceGripperInterface support batch methods that process multiple gripper paths in parallel, improving performance in multi-robot scenarios.
+The extension provides efficient batch operations for controlling multiple grippers simultaneously. Both {class}`GripperView <isaacsim.robot.surface_gripper.GripperView>` and SurfaceGripperInterface support batch methods that process multiple gripper paths in parallel, improving performance in multi-robot scenarios.
 
 ### State Management
 

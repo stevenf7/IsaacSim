@@ -12,11 +12,11 @@ The isaacsim.robot.policy.examples extension provides interactive demonstrations
 
 The extension provides three main robot demonstration categories through specialized example classes:
 
-**[FrankaExample](isaacsim.robot.policy.examples.interactive.franka/isaacsim.robot.policy.examples.interactive.franka.FrankaExample)** demonstrates a Franka Emika Panda robot performing an autonomous drawer opening task. The robot uses a learned policy to interact with a cabinet, attempting to open and hold a drawer in position. The simulation runs at 200 Hz physics with 60 Hz rendering and automatically resets every 10 seconds for continuous demonstration.
+**{class}`FrankaExample <isaacsim.robot.policy.examples.interactive.franka.FrankaExample>`** demonstrates a Franka Emika Panda robot performing an autonomous drawer opening task. The robot uses a learned policy to interact with a cabinet, attempting to open and hold a drawer in position. The simulation runs at 200 Hz physics with 60 Hz rendering and automatically resets every 10 seconds for continuous demonstration.
 
-**[HumanoidExample](isaacsim.robot.policy.examples.interactive.humanoid/isaacsim.robot.policy.examples.interactive.humanoid.HumanoidExample)** showcases a Unitree H1 humanoid robot executing flat terrain locomotion policies. The simulation operates with GPU-accelerated physics at 200 Hz and 25 Hz rendering, providing keyboard controls for forward movement and rotational commands. Users can control the robot using arrow keys or numpad inputs for directional movement.
+**{class}`HumanoidExample <isaacsim.robot.policy.examples.interactive.humanoid.HumanoidExample>`** showcases a Unitree H1 humanoid robot executing flat terrain locomotion policies. The simulation operates with GPU-accelerated physics at 200 Hz and 25 Hz rendering, providing keyboard controls for forward movement and rotational commands. Users can control the robot using arrow keys or numpad inputs for directional movement.
 
-**[QuadrupedExample](isaacsim.robot.policy.examples.interactive.quadruped/isaacsim.robot.policy.examples.interactive.quadruped.QuadrupedExample)** features a Boston Dynamics Spot robot running flat terrain locomotion policies trained in Isaac Lab. The example provides comprehensive keyboard control including forward/backward movement, lateral motion, and yaw rotation commands, running at 500 Hz physics with 50 Hz rendering for smooth real-time interaction.
+**{class}`QuadrupedExample <isaacsim.robot.policy.examples.interactive.quadruped.QuadrupedExample>`** features a Boston Dynamics Spot robot running flat terrain locomotion policies trained in Isaac Lab. The example provides comprehensive keyboard control including forward/backward movement, lateral motion, and yaw rotation commands, running at 500 Hz physics with 50 Hz rendering for smooth real-time interaction.
 
 ### Policy Controller Framework
 

@@ -16,7 +16,7 @@
 """Utility functions for working with Warp tensors and arrays, including data type conversion, device management, and array operations."""
 
 
-from typing import Any
+from typing import Any, Optional, Union
 
 import numpy as np
 import warp as wp
@@ -160,7 +160,7 @@ def arange(n, device="cpu"):
 global_arange = {}
 
 
-def resolve_indices(indices: list[int] | wp.array | None, count: int, device: str) -> wp.array:
+def resolve_indices(indices: Optional[Union[list[int], wp.array]], count: int, device: str) -> wp.array:
     """Resolve indices into a Warp array.
 
     If indices is a list, converts it to a Warp array. If indices is None, generates an array
@@ -253,7 +253,7 @@ def expand_dims(data, axis):
     return wp.from_torch(data_torch, dtype=dtype)
 
 
-def to_list(data: wp.array | wp.indexedarray | torch.Tensor | Any) -> list:
+def to_list(data: Union[wp.array, wp.indexedarray, "torch.Tensor", Any]) -> list:
     """Convert data to a Python list.
 
     Handles conversion from Warp arrays, indexed arrays, and PyTorch tensors to Python lists.

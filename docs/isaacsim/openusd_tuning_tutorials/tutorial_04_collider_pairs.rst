@@ -96,7 +96,7 @@ You should now see the **physx.usda** layer highlighted green, indicating it is 
    :alt: GIF showing simulation instability with self-collisions enabled.
 
 Step 2: Visualize solid collision meshes and find overlapping pairs
-------------------------------------------------------------------
+-------------------------------------------------------------------
 
 We use the pinky as the example: visualize its collision meshes, find the overlaps, then filter those pairs in the next section.
 

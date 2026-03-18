@@ -14,7 +14,7 @@ The extension defines a single-apply API schema that adds motion planning attrib
 
 ### Schema Application API
 
-The extension provides the [apply_motion_planning_api](isaacsim.robot_motion.schema/isaacsim.robot_motion.schema.apply_motion_planning_api) function to programmatically apply the IsaacMotionPlanningAPI to USD prims. This function handles the proper application of the schema and optionally sets the collision-enabled attribute in a single operation.
+The extension provides the {func}`apply_motion_planning_api <isaacsim.robot_motion.schema.apply_motion_planning_api>` function to programmatically apply the IsaacMotionPlanningAPI to USD prims. This function handles the proper application of the schema and optionally sets the collision-enabled attribute in a single operation.
 
 ```python
 from isaacsim.robot_motion.schema import apply_motion_planning_api

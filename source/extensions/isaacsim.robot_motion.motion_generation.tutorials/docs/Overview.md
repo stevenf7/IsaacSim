@@ -24,15 +24,15 @@ The Kinematics module focuses on fundamental robot kinematics concepts. It provi
 #### Trajectory Generator Tutorial
 The Trajectory Generator module presents comprehensive trajectory planning capabilities for UR10 robots. It covers configuration space trajectories, task space trajectories, and advanced trajectory planning methods, demonstrating how to generate smooth, time-parameterized paths for robot motion.
 
-### [UIBuilder](isaacsim.robot_motion.motion_generation.tutorials.rmp_flow/isaacsim.robot_motion.motion_generation.tutorials.rmp_flow.UIBuilder) Architecture
+### {class}`UIBuilder <isaacsim.robot_motion.motion_generation.tutorials.rmp_flow.UIBuilder>` Architecture
 
-Each tutorial module implements a [UIBuilder](isaacsim.robot_motion.motion_generation.tutorials.rmp_flow/isaacsim.robot_motion.motion_generation.tutorials.rmp_flow.UIBuilder) class that creates a standardized interface with two main control sections:
+Each tutorial module implements a {class}`UIBuilder <isaacsim.robot_motion.motion_generation.tutorials.rmp_flow.UIBuilder>` class that creates a standardized interface with two main control sections:
 
 **World Controls** - Provides Load and Reset buttons for scene management, allowing users to initialize robot scenarios and restore default states.
 
 **Scenario Controls** - Contains interactive buttons for starting and stopping motion generation demonstrations, with state-aware feedback to indicate execution status.
 
-The [UIBuilder](isaacsim.robot_motion.motion_generation.tutorials.rmp_flow/isaacsim.robot_motion.motion_generation.tutorials.rmp_flow.UIBuilder) classes handle timeline integration, physics step callbacks, and stage event management to ensure proper synchronization between the UI and Isaac Sim's simulation systems.
+The {class}`UIBuilder <isaacsim.robot_motion.motion_generation.tutorials.rmp_flow.UIBuilder>` classes handle timeline integration, physics step callbacks, and stage event management to ensure proper synchronization between the UI and Isaac Sim's simulation systems.
 
 ## Functionality
 

@@ -19,7 +19,7 @@ The extension integrates synthetic data recording capabilities directly into Isa
 
 ### Recording Configuration
 
-The [SyntheticRecorderWindow](isaacsim.replicator.synthetic_recorder/isaacsim.replicator.synthetic_recorder.SyntheticRecorderWindow) allows users to configure various aspects of synthetic data recording, including output settings and writer parameters. The interface supports both the default Replicator BasicWriter and custom writers that can be loaded through configuration files as key-value pairs, providing flexibility for different synthetic data generation requirements.
+The {class}`SyntheticRecorderWindow <isaacsim.replicator.synthetic_recorder.SyntheticRecorderWindow>` allows users to configure various aspects of synthetic data recording, including output settings and writer parameters. The interface supports both the default Replicator BasicWriter and custom writers that can be loaded through configuration files as key-value pairs, providing flexibility for different synthetic data generation requirements.
 
 ### Custom Writer Support
 

@@ -15,7 +15,7 @@ align: center
 
 ## Functionality
 
-The extension centers around the [RobotWizardWindow](isaacsim.robot_setup.wizard/isaacsim.robot_setup.wizard.RobotWizardWindow) class, which implements a six-step wizard workflow for robot setup:
+The extension centers around the {class}`RobotWizardWindow <isaacsim.robot_setup.wizard.RobotWizardWindow>` class, which implements a six-step wizard workflow for robot setup:
 
 1. **Add Robot** - Initial robot import and selection
 2. **Robot Hierarchy** - Structure configuration and organization  
@@ -28,7 +28,7 @@ Each step includes validation, progress tracking, and contextual guidance to ens
 
 ## Key Components
 
-### [RobotWizardWindow](isaacsim.robot_setup.wizard/isaacsim.robot_setup.wizard.RobotWizardWindow)
+### {class}`RobotWizardWindow <isaacsim.robot_setup.wizard.RobotWizardWindow>`
 
 The main wizard interface provides a structured workflow with visual progress indicators. The window automatically docks to the viewport and maintains state across wizard steps. Users can navigate between steps, with each step building upon the previous configuration.
 

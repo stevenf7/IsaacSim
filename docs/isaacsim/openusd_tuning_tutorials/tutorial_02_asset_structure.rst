@@ -174,7 +174,7 @@ This file does not define geometry or physics; it identifies the asset as a robo
            displayName = "Robot Joints"
        )
 
-   …
+   ...
    }
 
 instances.usda — Mesh + materials + colliders

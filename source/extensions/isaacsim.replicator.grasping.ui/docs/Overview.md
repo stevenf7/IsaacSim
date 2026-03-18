@@ -8,9 +8,9 @@ The isaacsim.replicator.grasping.ui extension provides a comprehensive user inte
 
 ## Key Components
 
-### [GraspingWindow](isaacsim.replicator.grasping.ui/isaacsim.replicator.grasping.ui.GraspingWindow)
+### {class}`GraspingWindow <isaacsim.replicator.grasping.ui.GraspingWindow>`
 
-The [GraspingWindow](isaacsim.replicator.grasping.ui/isaacsim.replicator.grasping.ui.GraspingWindow) class serves as the main interface for all grasping-related functionality. The window is organized into several collapsible sections that cover the complete grasping workflow:
+The {class}`GraspingWindow <isaacsim.replicator.grasping.ui.GraspingWindow>` class serves as the main interface for all grasping-related functionality. The window is organized into several collapsible sections that cover the complete grasping workflow:
 
 **Gripper Configuration** - Users can define gripper joint pregrasp states and configure grasp phases to specify how the gripper should move during grasp execution.
 

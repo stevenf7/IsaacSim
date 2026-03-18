@@ -10,13 +10,13 @@ The isaacsim.sensors.physx extension provides PhysX-based sensor implementations
 
 ### Range Sensors
 
-The extension provides several range sensor types through command-based creation patterns. **[RangeSensorCreateLidar](isaacsim.sensors.physx/isaacsim.sensors.physx.RangeSensorCreateLidar)** creates rotating lidar sensors with configurable field of view, resolution, and rotation rates. **[RangeSensorCreateGeneric](isaacsim.sensors.physx/isaacsim.sensors.physx.RangeSensorCreateGeneric)** creates basic range sensors for general distance measurement applications. **[IsaacSensorCreateLightBeamSensor](isaacsim.sensors.physx/isaacsim.sensors.physx.IsaacSensorCreateLightBeamSensor)** creates light beam sensors that can form curtain patterns for safety zone detection.
+The extension provides several range sensor types through command-based creation patterns. **{class}`RangeSensorCreateLidar <isaacsim.sensors.physx.RangeSensorCreateLidar>`** creates rotating lidar sensors with configurable field of view, resolution, and rotation rates. **{class}`RangeSensorCreateGeneric <isaacsim.sensors.physx.RangeSensorCreateGeneric>`** creates basic range sensors for general distance measurement applications. **{class}`IsaacSensorCreateLightBeamSensor <isaacsim.sensors.physx.IsaacSensorCreateLightBeamSensor>`** creates light beam sensors that can form curtain patterns for safety zone detection.
 
 These commands handle USD prim creation, configuration, and provide undo functionality through the Kit command system. They set up the underlying PhysX schemas and attributes needed for sensor operation.
 
 ### Rotating Lidar
 
-**[RotatingLidarPhysX](isaacsim.sensors.physx/isaacsim.sensors.physx.RotatingLidarPhysX)** provides a complete rotating lidar sensor implementation that extends the base sensor framework. It supports configurable rotation frequency, field of view, resolution settings, and multiple data output types including depth, intensity, point clouds, and semantic data.
+**{class}`RotatingLidarPhysX <isaacsim.sensors.physx.RotatingLidarPhysX>`** provides a complete rotating lidar sensor implementation that extends the base sensor framework. It supports configurable rotation frequency, field of view, resolution settings, and multiple data output types including depth, intensity, point clouds, and semantic data.
 
 The sensor operates through PhysX simulation callbacks and provides frame-based data collection with pause/resume functionality. It can generate various data types simultaneously:
 
@@ -29,7 +29,7 @@ lidar.add_intensity_data_to_frame()
 
 ### Proximity Sensor
 
-**[ProximitySensor](isaacsim.sensors.physx/isaacsim.sensors.physx.ProximitySensor)** uses PhysX box overlap queries to detect when objects enter, remain within, or exit defined detection zones. It tracks overlap duration and distances while providing callback-based event handling for zone transitions.
+**{class}`ProximitySensor <isaacsim.sensors.physx.ProximitySensor>`** uses PhysX box overlap queries to detect when objects enter, remain within, or exit defined detection zones. It tracks overlap duration and distances while providing callback-based event handling for zone transitions.
 
 The sensor uses the parent prim's scale property to define detection box dimensions and maintains internal state for tracking entry and exit events:
 
