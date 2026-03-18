@@ -80,7 +80,7 @@ class SimulationContext:
             ccd_enabled,
             stabilization_enabled,
             gpu dynamics turned off,
-            broadcast type is MBP,
+            broadphase type is MBP,
             solver type is TGS].
         backend: specifies the backend to be used (numpy or torch or warp).
         device: specifies the device to be used if running on the gpu with torch or warp backend.

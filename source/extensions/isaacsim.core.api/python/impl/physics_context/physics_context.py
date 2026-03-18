@@ -48,7 +48,7 @@ class PhysicsContext(object):
             ccd_enabled,
             stabilization_enabled,
             gpu dynamics turned off,
-            broadcast type is MBP,
+            broadphase type is MBP,
             solver type is TGS].
 
     Raises:
@@ -418,10 +418,10 @@ class PhysicsContext(object):
         return SimulationManager.is_gpu_dynamics_enabled()
 
     def set_broadphase_type(self, broadcast_type: str) -> None:
-        """Broadcast phase algorithm used in simulation.
+        """Broadphase algorithm used in simulation.
 
         Args:
-            broadcast_type: Type of broadcasting to be used, can be "MBP"
+            broadcast_type: Broadphase algorithm type (e.g. "MBP", "GPU", "SAP").
 
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
@@ -430,13 +430,13 @@ class PhysicsContext(object):
         return
 
     def get_broadphase_type(self) -> str:
-        """Current broadcast phase algorithm type.
+        """Current broadphase algorithm type.
 
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
 
         Returns:
-            Broadcast phase algorithm used.
+            Broadphase algorithm used.
         """
         return SimulationManager.get_broadphase_type()
 
