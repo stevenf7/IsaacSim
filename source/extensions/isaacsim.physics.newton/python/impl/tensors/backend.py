@@ -30,6 +30,36 @@ from .utils import find_matching_paths
 if TYPE_CHECKING:
     from ..newton_stage import NewtonStage
 
+
+UNRESOLVED_BODY = -2
+"""Returned by ``_resolve_filter_path_to_body_index`` when a path cannot be
+resolved to any body or world shape."""
+
+
+def _resolve_filter_path_to_body_index(filter_path: str, model) -> int:
+    """Resolve a filter prim path to a body index.
+
+    Returns:
+        body index (>=0), -1 for world body shapes (``shape_body == -1``),
+        or :data:`UNRESOLVED_BODY` (-2) if the path cannot be resolved.
+    """
+    if not filter_path or model is None:
+        return UNRESOLVED_BODY
+    body_label = model.body_label
+    if filter_path in body_label:
+        return body_label.index(filter_path)
+    candidates = [(i, path) for i, path in enumerate(body_label) if filter_path.startswith(path + "/")]
+    if candidates:
+        best = max(candidates, key=lambda x: len(x[1]))
+        return best[0]
+    shape_body = model.shape_body.numpy() if hasattr(model.shape_body, "numpy") else model.shape_body
+    for i, label in enumerate(model.shape_label):
+        if label == filter_path or filter_path.startswith(label + "/") or label.startswith(filter_path + "/"):
+            if shape_body[i] == -1:
+                return -1
+    return UNRESOLVED_BODY
+
+
 # Map Newton joint types to omni.physics.tensors.JointType enum
 JointTypeDic = {
     newton.JointType.PRISMATIC: omni.physics.tensors.JointType.Prismatic,
@@ -261,7 +291,11 @@ class RigidContactSet:
         filter_paths: List of lists of filter body paths.
         filter_names: List of lists of filter body names.
         max_filters: Maximum number of filters per sensor.
-        body_sensor_map: Warp array mapping body indices to sensor indices.
+        body_sensor_map: Warp array mapping body indices to sensor indices,
+            length ``body_count + 1`` (last element is the world body slot).
+        world_body_idx: Index used for the world body (ground plane) in the
+            sensor / filter mapping arrays.
+        max_contact_data_count: Maximum contact data buffer size.
     """
 
     def __init__(
@@ -275,6 +309,8 @@ class RigidContactSet:
         filter_names: list[list[str]],
         max_filters: int,
         body_sensor_map: wp.array,
+        world_body_idx: int,
+        max_contact_data_count: int = 0,
     ):
         self.newton_stage = newton_stage
         self.model = newton_stage.model
@@ -288,6 +324,8 @@ class RigidContactSet:
         self.filter_count = max_filters
         self.count = self.sensor_count
         self.body_sensor_map = body_sensor_map
+        self.world_body_idx = world_body_idx
+        self.max_contact_data_count = max_contact_data_count
 
 
 class NewtonSimView:
@@ -412,7 +450,7 @@ class NewtonSimView:
 
             for filt_pat in sensor_filter_patterns:
                 matched_filter_paths = find_matching_paths(stage, filt_pat)
-
+                # Same as PhysX BaseSimulationView: single filter match → use for all sensors (e.g. ground plane).
                 if len(matched_filter_paths) == 1:
                     filter_paths_per_pattern.append([matched_filter_paths[0]] * len(matched_sensor_paths))
                 elif len(matched_filter_paths) == len(matched_sensor_paths):
@@ -452,8 +490,13 @@ class NewtonSimView:
                     filter_path = filter_paths_per_pattern[filter_pattern_idx][sensor_local_idx]
                     sensor_filter_paths.append(filter_path)
 
-                    if filter_path and filter_path in self.model.body_label:
-                        filter_body_idx = self.model.body_label.index(filter_path)
+                    filter_body_idx = (
+                        _resolve_filter_path_to_body_index(filter_path, self.model) if filter_path else UNRESOLVED_BODY
+                    )
+                    if filter_body_idx == -1:
+                        sensor_filter_indices.append(self.model.body_count)
+                        sensor_filter_names.append("world")
+                    elif filter_body_idx >= 0:
                         sensor_filter_indices.append(filter_body_idx)
                         sensor_filter_names.append(self.model.body_label[filter_body_idx])
                     else:
@@ -469,8 +512,11 @@ class NewtonSimView:
             carb.log_error("No sensors matched")
             return None
 
+        world_body_idx = self.model.body_count
+
         filter_indices = np.ones((num_sensors, num_filters), dtype=int) * -1
-        body_sensor_map = np.ones((self.model.body_count), dtype=int) * -1
+        # Extra slot at index body_count for the world body (shape_body = -1).
+        body_sensor_map = np.ones((world_body_idx + 1), dtype=int) * -1
 
         for i in range(num_sensors):
             body_sensor_map[all_sensor_indices[i]] = i
@@ -491,6 +537,8 @@ class NewtonSimView:
             all_filter_names_per_sensor,
             num_filters,
             body_sensor_map,
+            world_body_idx,
+            max_contact_data_count,
         )
 
     def create_rigid_body_view(self, pattern: str | list[str]) -> RigidBodySet:
