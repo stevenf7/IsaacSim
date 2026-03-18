@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+
 import carb.settings
 import omni.kit
 import omni.usd
@@ -24,7 +26,6 @@ from isaacsim.test.utils.image_comparison import compare_images_in_directories
 class TestSDGDeformables(omni.kit.test.AsyncTestCase):
 
     RGB_MEAN_DIFF_TOLERANCE = 5
-    SEMANTIC_MEAN_DIFF_TOLERANCE = 1
 
     async def setUp(self):
         await omni.kit.app.get_app().next_update_async()
@@ -263,15 +264,31 @@ class TestSDGDeformables(omni.kit.test.AsyncTestCase):
         )
         self.assertTrue(result["all_passed"], f"RGB image comparison failed for output directory: {out_dir}")
 
-        result = compare_images_in_directories(
-            golden_dir=golden_dir,
-            test_dir=out_dir,
-            path_pattern=r"semantic_segmentation_.*\.png$",
-            allclose_rtol=None,
-            allclose_atol=None,
-            mean_tolerance=self.SEMANTIC_MEAN_DIFF_TOLERANCE,
-            print_all_stats=False,
+        golden_label_files = sorted(
+            file_name
+            for file_name in os.listdir(golden_dir)
+            if file_name.startswith("semantic_segmentation_labels_") and file_name.endswith(".json")
         )
-        self.assertTrue(
-            result["all_passed"], f"Semantic segmentation comparison failed for output directory: {out_dir}"
+        out_label_files = sorted(
+            file_name
+            for file_name in os.listdir(out_dir)
+            if file_name.startswith("semantic_segmentation_labels_") and file_name.endswith(".json")
         )
+        self.assertEqual(
+            out_label_files, golden_label_files, f"Semantic segmentation label files mismatch for {out_dir}"
+        )
+
+        for file_name in golden_label_files:
+            with open(os.path.join(golden_dir, file_name), encoding="utf-8") as golden_file:
+                golden_labels = json.load(golden_file)
+            with open(os.path.join(out_dir, file_name), encoding="utf-8") as out_file:
+                out_labels = json.load(out_file)
+
+            golden_label_values = sorted(json.dumps(label, sort_keys=True) for label in golden_labels.values())
+            out_label_values = sorted(json.dumps(label, sort_keys=True) for label in out_labels.values())
+
+            self.assertEqual(
+                out_label_values,
+                golden_label_values,
+                f"Semantic segmentation label comparison failed for {os.path.join(out_dir, file_name)}",
+            )
