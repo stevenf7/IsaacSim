@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utilities for reading camera information and computing relative poses for ROS2 camera configurations."""
+
+
 from typing import Tuple
 
 import carb
@@ -26,8 +29,19 @@ from isaacsim.sensors.camera.camera import OPENCV_FISHEYE_ATTRIBUTE_MAP, OPENCV_
 from pxr import Gf, Usd
 
 
-def read_camera_info(render_product_path: str) -> Tuple:
-    """Reads camera prim attributes given render product path."""
+def read_camera_info(render_product_path: str) -> tuple:
+    """Reads camera prim attributes given render product path.
+
+    Retrieves camera intrinsic parameters, distortion model, and distortion coefficients from the camera prim
+    associated with the render product. Supports OpenCV Pinhole and OpenCV Fisheye distortion models, as well as
+    legacy physical distortion models.
+
+    Args:
+        render_product_path: Path to the render product.
+
+    Returns:
+        A tuple containing the populated CameraInfo message and the camera prim object.
+    """
 
     from sensor_msgs.msg import CameraInfo
 
@@ -123,7 +137,17 @@ def read_camera_info(render_product_path: str) -> Tuple:
     return camera_info, camera_prim
 
 
-def compute_relative_pose(left_camera_prim: Usd.Prim, right_camera_prim: Usd.Prim) -> Tuple[np.ndarray, np.ndarray]:
+def compute_relative_pose(left_camera_prim: Usd.Prim, right_camera_prim: Usd.Prim) -> tuple[np.ndarray, np.ndarray]:
+    """Computes the relative pose between two camera prims for stereo camera configurations.
+
+    Args:
+        left_camera_prim: The left camera prim.
+        right_camera_prim: The right camera prim.
+
+    Returns:
+        A tuple containing the translation vector and orientation (rotation matrix) from the left camera to the right
+        camera.
+    """
 
     # Compute relative transform -> translation, orientation
     relative_transform = get_relative_transform(target_prim=right_camera_prim, source_prim=left_camera_prim)

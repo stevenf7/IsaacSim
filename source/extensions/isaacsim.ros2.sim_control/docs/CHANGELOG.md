@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.0] - 2026-03-17
+### Changed
+- Updated documentation with AI agent.
+
 ## [1.3.3] - 2025-10-27
 ### Changed
 - Make omni.isaac.ml_archive an explicit test dependency

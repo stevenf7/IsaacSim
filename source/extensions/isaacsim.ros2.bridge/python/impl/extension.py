@@ -23,10 +23,21 @@ class ROS2BridgeExtension(omni.ext.IExt):
     This extension brings together all ROS 2 extensions required for the ROS 2 bridge extension.
     """
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
+        """Called when the extension starts up.
+
+        Logs the startup of the ROS 2 Bridge extension.
+
+        Args:
+            ext_id: The extension identifier.
+        """
 
         carb.log_info("Starting ROS 2 Bridge extension")
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
+        """Called when the extension shuts down.
+
+        Logs the shutdown of the ROS 2 Bridge extension.
+        """
 
         carb.log_info("Shutting down ROS 2 Bridge extension")

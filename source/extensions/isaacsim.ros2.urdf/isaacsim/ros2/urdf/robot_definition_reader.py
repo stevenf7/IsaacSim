@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any, Callable
+
 """ROS 2 robot description reader helpers."""
 
 import re
@@ -47,7 +49,8 @@ def replace_package_urls_with_paths(input_string: str) -> tuple[str, bool]:
         input_string: URDF string containing package URLs.
 
     Returns:
-        Updated URDF string and whether any package URL was resolved.
+        A tuple of (updated_urdf_string, package_found) where updated_urdf_string contains resolved paths and
+        package_found indicates whether any package URL was successfully resolved.
     """
     pattern = r"package://([^/]+)"
     matches = re.findall(pattern, input_string)
@@ -89,7 +92,11 @@ Singleton = singleton
 
 @singleton
 class RobotDefinitionReader:
-    """Fetch robot descriptions from ROS 2 nodes."""
+    """Fetch robot descriptions from ROS 2 nodes.
+
+    This is a singleton class that queries ROS 2 nodes for robot_description parameters and resolves package URLs
+    to filesystem paths.
+    """
 
     def __init__(self) -> None:
         self.node_name = None

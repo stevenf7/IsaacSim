@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test suite for validating ROS 2 transform listener functionality with Isaac Sim."""
+
+
 import os
 
 import carb
@@ -26,17 +29,43 @@ from pxr import Sdf
 
 
 class TestTransformListener(omni.kit.test.AsyncTestCase):
+    """Test suite for validating ROS 2 transform listener functionality with Isaac Sim.
+
+    This test case verifies the integration between Isaac Sim and ROS 2 transform (tf) system by:
+
+    1. Loading a Franka Panda robot into the stage
+    2. Setting up an OmniGraph to publish transform tree data to ROS 2
+    3. Initializing the transform listener plugin to receive and process tf messages
+    4. Running a simulation and spinning the listener to capture transforms
+    5. Validating that all expected robot link frames are received
+    6. Verifying transform values and parent-child relationships between frames
+
+    The test ensures that the isaacsim.ros2.tf_viewer extension correctly captures and maintains the complete
+    transform hierarchy of a robot, including positions, orientations, and frame relationships. It validates both
+    the structural completeness of the transform tree (all expected frames present) and the correctness of
+    specific transform values.
+    """
+
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Sets up the test environment by creating a new stage and initializing the timeline interface."""
         await create_new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Cleans up the test environment by releasing the timeline interface."""
         self._timeline = None
 
     # ----------------------------------------------------------------------
-    async def test_transform_listener(self):
+    async def test_transform_listener(self) -> None:
+        """Tests the ROS2 transform listener functionality with a Franka Panda robot.
+
+        Verifies that the transform listener correctly receives and processes transform data published via ROS2 /tf
+        topic. The test adds a Franka Panda robot to the stage, creates an action graph to publish transform tree
+        data, initializes the transform listener plugin, runs the simulation, and validates that all expected frames,
+        transforms, and parent-child relations are correctly captured.
+        """
         # add robot
         assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:

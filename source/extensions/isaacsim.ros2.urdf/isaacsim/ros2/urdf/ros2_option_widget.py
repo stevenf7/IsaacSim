@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any, Callable
+
 """UI option widgets for the ROS 2 URDF node importer."""
 
 import typing
@@ -115,12 +117,20 @@ class Ros2UrdfOptionWidget:
 
     @property
     def models(self) -> dict[str, typing.Any]:
-        """Return the models dictionary used by the widget."""
+        """Models dictionary used by the widget.
+
+        Returns:
+            Dictionary mapping model names to their UI model instances.
+        """
         return self._models
 
     @property
     def config(self) -> URDFImporterConfig:
-        """Return the importer configuration instance."""
+        """Importer configuration instance.
+
+        Returns:
+            The URDFImporterConfig object used for import settings.
+        """
         return self._config
 
     def build_options(self) -> None:
@@ -173,7 +183,7 @@ class Ros2UrdfOptionWidget:
 
         Args:
             text: Status text to display.
-            color: Text color to apply. Defaults to green.
+            color: Text color to apply.
 
         Example:
 

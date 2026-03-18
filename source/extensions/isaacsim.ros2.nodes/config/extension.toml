@@ -1,5 +1,5 @@
 [package]
-version = "1.11.0"
+version = "1.12.0"
 category = "Simulation"
 title = "ROS 2 Nodes"
 description = "The ROS 2 Nodes extension provides OmniGraph nodes for ROS 2 communication. It contains publisher, subscriber, and service nodes that can be used in Action graphs to interface with ROS 2 systems. This extension depends on the isaacsim.ros2.core extension for underlying ROS 2 functionality."
@@ -7,7 +7,7 @@ authors = ["hmazhar@nvidia.com", "ayushg@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.ros2.nodes"
 keywords = ["isaac", "ROS2", "nodes", "omniGraph"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/README.md"
+readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -225,3 +225,6 @@ args = [
     "--/app/asyncRendering=1",
     "--/app/omni.usd/asyncHandshake=1",
 ]
+
+[documentation]
+pages = ["docs/Overview.md"]

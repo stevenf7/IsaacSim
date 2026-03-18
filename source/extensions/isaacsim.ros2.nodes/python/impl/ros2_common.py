@@ -135,7 +135,7 @@ class CompressedImageManager:
 
 
 def build_rtx_sensor_pointcloud_writer(
-    metadata: List[str], enable_full_scan: bool = True, use_system_time: bool = False
+    metadata: list[str], enable_full_scan: bool = True, use_system_time: bool = False
 ) -> rep.Writer:
     """Build and register an RTX sensor point cloud writer with specified metadata.
 
@@ -144,13 +144,13 @@ def build_rtx_sensor_pointcloud_writer(
     and reused if they already exist with the same configuration.
 
     Args:
-        param metadata: List of metadata field names to include in the point cloud output.
+        metadata: List of metadata field names to include in the point cloud output.
             Valid options include "intensity", "timestamp", "emitterId", "channelId",
             "materialId", "tickId", "hitNormal", "velocity", "objectId", "echoId",
             "tickState", and "radialVelocityMS".
-        param enable_full_scan: If True, enables full scan buffer mode. If False, enables
+        enable_full_scan: If True, enables full scan buffer mode. If False, enables
             per-frame output mode.
-        param use_system_time: If True, uses system time for timestamps. If False, uses
+        use_system_time: If True, uses system time for timestamps. If False, uses
             simulation time.
 
     Returns:

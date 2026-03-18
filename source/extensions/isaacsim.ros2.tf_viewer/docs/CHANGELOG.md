@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.2.0] - 2026-03-17
+### Changed
+- Updated documentation with AI agent.
+
 ## [2.1.24] - 2025-11-10
 ### Changed
 - Added CUDA build dependencies

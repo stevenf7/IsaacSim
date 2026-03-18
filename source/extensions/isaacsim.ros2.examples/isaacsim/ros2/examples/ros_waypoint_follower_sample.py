@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Module for ROS2 waypoint following examples and UI integration."""
+
+
 import gc
 import os
 import weakref

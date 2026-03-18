@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.0] - 2026-03-17
+### Changed
+- Updated documentation with AI agent.
+
 ## [1.0.1] - 2026-01-30
 ### Changed
 - Update waypoint follower action graph to use ReadPrimLocalTransform node

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.0] - 2026-03-17
+### Changed
+- Updated documentation with AI agent.
+
 ## [1.5.1] - 2026-03-09
 ### Fixed
 - Hardened subprocess call to avoid shell=True with string concatenation

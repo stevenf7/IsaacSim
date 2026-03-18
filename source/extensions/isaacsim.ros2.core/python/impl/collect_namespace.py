@@ -25,16 +25,20 @@ from pxr import Gf, Sdf, Usd
 
 
 def collect_namespace(namespace_input: str, render_product_path: str) -> str:
-    """
-    If no input namespace is undefined, this method collects the namespace from a USD Prim by traversing its hierarchy upwards, and appends any 'isaac:namespace' attributes found.
+    """Collects the ROS 2 namespace from a USD Prim hierarchy by traversing upwards and appending any
+    'isaac:namespace' attributes found.
 
-    Parameters:
-    - namespace_input: A string representing an initial namespace. If this is non-empty, it will be returned as-is.
-    - render_product_path: A string representing the path of the render product, used to find the Camera prim associated with the render product.
+    If an input namespace is provided, it will be returned as-is without traversing the hierarchy.
+    Otherwise, the function starts from the Camera prim associated with the render product and traverses
+    upwards through the hierarchy, collecting all 'isaac:namespace' attributes.
 
+    Args:
+        namespace_input: An initial namespace. If this is non-empty, it will be returned as-is.
+        render_product_path: The path of the render product, used to find the Camera prim associated with
+            the render product.
 
     Returns:
-    - A string representing the accumulated namespace.
+        The accumulated namespace string.
     """
 
     # If the namespace_input is not empty, return it immediately
