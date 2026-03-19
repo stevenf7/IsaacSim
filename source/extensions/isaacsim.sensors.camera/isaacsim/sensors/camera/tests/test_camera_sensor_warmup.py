@@ -45,7 +45,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         rep.functional.create.xform(name="World")
         dome_light = DomeLight("/World/DomeLight")
         dome_light.set_intensities(500)
-        GroundPlane("/World/defaultGroundPlane", sizes=100.0)
+        GroundPlane("/World/defaultGroundPlane", sizes=100.0, templates=None)
         rep.functional.create.camera(position=(0, 0, 3), look_at=(0, 0, 0), parent="/World", name="Camera")
 
         # Initialize camera with annotators

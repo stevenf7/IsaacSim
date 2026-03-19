@@ -68,7 +68,7 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
         # Create a plane and dome light
         dome_light = DomeLight("/World/DomeLight")
         dome_light.set_intensities(500)
-        GroundPlane("/World/defaultGroundPlane", sizes=100.0)
+        GroundPlane("/World/defaultGroundPlane", sizes=100.0, templates=None)
 
         cube_1 = Cube(
             "/cube_1",

@@ -18,13 +18,16 @@
 
 from __future__ import annotations
 
-from typing import Literal
+import pathlib
+from typing import Literal, get_args
 
+import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.ops as ops_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.kit.commands
 import warp as wp
+from isaacsim.core.experimental.materials import OmniPbrMaterial
 from isaacsim.core.experimental.prims import GeomPrim, XformPrim
 from pxr import PhysicsSchemaTools, Usd, UsdGeom
 
@@ -51,9 +54,10 @@ def _check_and_get_composite_prims(stage: Usd.Stage, path: str) -> tuple[str, st
     """
     prim = stage.GetPrimAtPath(path)
     children = prim.GetChildren()
-    assert (
-        len(children) == 2
-    ), f"Ground plane prim (at path {path}) must have exactly 2 child (Plane and Mesh) prims. Got {len(children)}"
+    assert len(children) == 2 or len(children) == 3, (
+        f"Ground plane (at path '{path}') must have 2 or 3 child prims: plane, mesh and visual material (optional). "
+        f"Got {len(children)} child prims"
+    )
     plane, mesh = None, None
     for child in children:
         if child.IsA(UsdGeom.Plane):
@@ -65,6 +69,9 @@ def _check_and_get_composite_prims(stage: Usd.Stage, path: str) -> tuple[str, st
     return plane, mesh
 
 
+TEMPLATE = Literal["wireframe-blue"]
+
+
 class GroundPlane(XformPrim):
     """High level class for creating/wrapping ground plane prims.
 
@@ -72,9 +79,10 @@ class GroundPlane(XformPrim):
 
     .. code-block:: cpp
 
-        Xform        // GroundPlane instance
-          |-- Plane  // for collision and physics
-          |-- Mesh   // for rendering, since Plane is unsupported by Hydra rendering
+        Xform           // GroundPlane instance
+          |-- Plane     // for collision and physics
+          |-- Mesh      // for rendering, since Plane is unsupported by Hydra rendering
+          |-- Material  // template's visual material (optional)
 
     .. note::
 
@@ -89,9 +97,12 @@ class GroundPlane(XformPrim):
         sizes: Sizes of the ground planes (shape ``(N, 1)``).
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
             It has effect only when new ground plane prims are created. Ignored when wrapping existing prims.
-        colors: Colors of the ground planes (shape ``(N, 3)``).
+        colors: Normalized RGB display colors (shape ``(N, 3)``) or case-insensitive string representations.
+            Supported string representations include hex codes and X11/CSS4 color names without spaces,
+            as well as any other format supported by Matplotlib. Alpha channel is ignored for string representations.
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
-            It has effect only when new ground plane prims are created. Ignored when wrapping existing prims.
+        templates: Templates to apply to the ground plane prims. If defined, it has precedence over the colors argument.
+            If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
         positions: Positions in the world frame (shape ``(N, 3)``).
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
         translations: Translations in the local frame (shape ``(N, 3)``).
@@ -115,12 +126,12 @@ class GroundPlane(XformPrim):
         >>> from isaacsim.core.experimental.objects import GroundPlane
         >>>
         >>> # given an empty USD stage with the /World Xform prim,
-        >>> # create a ground plane at path: /World/ground_plane
+        >>> # create a ground plane (with default template) at path: /World/ground_plane
         >>> prim = GroundPlane("/World/ground_plane")  # doctest: +NO_CHECK
         >>>
-        >>> # create ground planes at paths: /World/prim_0, /World/prim_1, and /World/prim_2
+        >>> # create dark-blue ground planes at paths: /World/prim_0, /World/prim_1, and /World/prim_2
         >>> paths = ["/World/prim_0", "/World/prim_1", "/World/prim_2"]
-        >>> prims = GroundPlane(paths)  # doctest: +NO_CHECK
+        >>> prims = GroundPlane(paths, colors="darkblue", templates=None)  # doctest: +NO_CHECK
     """
 
     def __init__(
@@ -129,7 +140,8 @@ class GroundPlane(XformPrim):
         *,
         # GroundPlane
         sizes: float | list | np.ndarray | wp.array = 100.0,
-        colors: list | np.ndarray | wp.array = [0.5, 0.5, 0.5],
+        colors: str | list | np.ndarray | wp.array | None = None,
+        templates: TEMPLATE | list[TEMPLATE] | None = "wireframe-blue",
         # XformPrim
         positions: list | np.ndarray | wp.array | None = None,
         translations: list | np.ndarray | wp.array | None = None,
@@ -153,9 +165,8 @@ class GroundPlane(XformPrim):
             paths = nonexistent_paths
             up_axis = stage_utils.get_stage_up_axis()
             sizes = ops_utils.broadcast_to(sizes, shape=(len(paths), 1), device="cpu").numpy().flatten().tolist()
-            colors = ops_utils.broadcast_to(colors, shape=(len(paths), 3), device="cpu").numpy().tolist()
-            for path, size, color in zip(nonexistent_paths, sizes, colors):
-                PhysicsSchemaTools.addGroundPlane(stage, path, up_axis, size / 2.0, (0.0, 0.0, 0.0), color)
+            for path, size in zip(nonexistent_paths, sizes):
+                PhysicsSchemaTools.addGroundPlane(stage, path, up_axis, size / 2.0, (0.0, 0.0, 0.0), (0.5, 0.5, 0.5))
                 plane, mesh = _check_and_get_composite_prims(stage, path)
                 planes.append(plane)
                 meshes.append(mesh)
@@ -173,6 +184,12 @@ class GroundPlane(XformPrim):
         self._planes = Plane(planes)
         self._meshes = Mesh(meshes)
         self._geoms = GeomPrim(self._planes.paths)
+        # initialize instance from arguments
+        if colors is not None:
+            self._planes.set_display_colors(colors)
+            self._meshes.set_display_colors(colors)
+        if templates is not None:
+            self.apply_visual_templates(templates)
 
     """
     Properties.
@@ -496,3 +513,41 @@ class GroundPlane(XformPrim):
             '/World/physics_material/aluminum'
         """
         return self._geoms.get_applied_physics_materials(indices=indices)
+
+    def apply_visual_templates(
+        self, templates: TEMPLATE | list[TEMPLATE], *, indices: int | list | np.ndarray | wp.array | None = None
+    ) -> None:
+        """Apply visual templates to the ground plane prims.
+
+        Backends: :guilabel:`usd`.
+
+        Args:
+            templates: Templates to apply to the ground plane prims.
+            indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
+
+        Raises:
+            ValueError: If the template is not supported.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # apply the blue grid template to all prims
+            >>> prims.apply_visual_templates("wireframe-blue")
+        """
+        # USD API
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        templates = [templates] if isinstance(templates, str) else templates
+        for template in templates:
+            if template not in get_args(TEMPLATE):
+                raise ValueError(f"Unsupported template: {template}. Supported templates are {get_args(TEMPLATE)}")
+        templates = np.broadcast_to(np.array(templates, dtype=object), (indices.shape[0],))
+        ext_path = app_utils.get_extension_path("isaacsim.core.experimental.objects")
+        for i, index in enumerate(indices.numpy()):
+            if templates[i] == "wireframe-blue":
+                diffuse_texture = str(pathlib.Path(ext_path) / "data" / "templates" / "wireframe-blue.png")
+            # apply visual material
+            visual_material = OmniPbrMaterial(f"{self.paths[index]}/visualMaterial")
+            visual_material.set_input_values("diffuse_texture", diffuse_texture)
+            visual_material.set_input_values("project_uvw", True)
+            self.meshes.apply_visual_materials(visual_material, indices=[index])

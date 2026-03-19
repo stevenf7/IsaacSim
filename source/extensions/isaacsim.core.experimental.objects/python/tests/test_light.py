@@ -32,6 +32,7 @@ from isaacsim.core.experimental.prims.tests.common import (
     check_allclose,
     check_array,
     cprint,
+    draw_choice,
     draw_indices,
     draw_sample,
     parametrize,
@@ -165,6 +166,18 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_colors(self, prim, num_prims, device, backend):
+        choices = [
+            (0.1, 0.2, 0.3),  # RGB tuple
+            "#aBc",  # case-insensitive short hex RGB
+            "#0A1b2C",  # case-insensitive hex RGB
+            "0.5",  # grayscale
+            "k",  # basic color
+            "AquaMarine",  # case-insensitive X11/CSS4 color with no spaces
+            "xkcd:eggShell",  # case-insensitive  xkcd color
+            "tab:Green",  # case-insensitive tableau color
+            "C2",  # CN color specification
+            "none",  # special value (fully transparent)
+        ]
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 3), dtype=wp.float32):
@@ -172,3 +185,7 @@ class TestLight(omni.kit.test.AsyncTestCase):
                 output = prim.get_colors(indices=indices)
                 check_array(output, shape=(expected_count, 3), dtype=wp.float32, device=device)
                 check_allclose(expected_v0, output, given=(v0,))
+        for indices, expected_count in draw_indices(count=num_prims, step=2):
+            cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
+            for v0, expected_v0 in draw_choice(shape=(expected_count,), choices=choices):
+                prim.set_colors(v0, indices=indices)

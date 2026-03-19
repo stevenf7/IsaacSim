@@ -1,8 +1,12 @@
 # Changelog
 
+## [0.13.0] - 2026-03-10
+### Added
+- Add Isaac Sim's `gridroom` stage template
+
 ## [0.12.0] - 2026-03-04
 ### Changed
-- Added Overview.md, python_api.md and updated docstrings
+- Add Overview.md, python_api.md and updated docstrings
 
 ## [0.11.4] - 2026-02-06
 ### Changed

@@ -43,7 +43,9 @@ class Sphere(Shape):
             Can include regular expressions for matching multiple prims.
         radii: Radii (sphere's radius) (shape ``(N, 1)``).
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
-        colors: Display colors (shape ``(N, 3)``).
+        colors: Normalized RGB display colors (shape ``(N, 3)``) or case-insensitive string representations.
+            Supported string representations include hex codes and X11/CSS4 color names without spaces,
+            as well as any other format supported by Matplotlib. Alpha channel is ignored for string representations.
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
         positions: Positions in the world frame (shape ``(N, 3)``).
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
@@ -58,6 +60,7 @@ class Sphere(Shape):
 
     Raises:
         ValueError: If resulting paths are mixed (existing and non-existing prims) or invalid.
+        ValueError: Invalid string representation format for the colors.
         AssertionError: If wrapped prims are not USD Sphere.
         AssertionError: If both positions and translations are specified.
 
@@ -70,7 +73,7 @@ class Sphere(Shape):
         >>> # given an empty USD stage with the /World Xform prim,
         >>> # create purple spheres at paths: /World/prim_0, /World/prim_1, and /World/prim_2
         >>> paths = ["/World/prim_0", "/World/prim_1", "/World/prim_2"]
-        >>> prims = Sphere(paths, colors=[1.0, 0.0, 1.0])  # doctest: +NO_CHECK
+        >>> prims = Sphere(paths, colors=(1.0, 0.0, 1.0))  # doctest: +NO_CHECK
     """
 
     def __init__(
@@ -80,7 +83,7 @@ class Sphere(Shape):
         # Sphere
         radii: float | list | np.ndarray | wp.array | None = None,
         # Shape
-        colors: list | np.ndarray | wp.array | None = None,
+        colors: str | list | np.ndarray | wp.array | None = None,
         # XformPrim
         positions: list | np.ndarray | wp.array | None = None,
         translations: list | np.ndarray | wp.array | None = None,

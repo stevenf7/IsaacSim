@@ -1,5 +1,5 @@
 [package]
-version = "2.6.0"
+version = "2.6.1"
 category = "Simulation"
 title = "Isaac Sim Tests"
 description = "Collection of tests for isaac sim that are not tied to a specific extension"
@@ -13,6 +13,7 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
+"isaacsim.core.experimental.materials" = {}
 "isaacsim.core.experimental.objects" = {}
 "isaacsim.core.experimental.prims" = {}
 "isaacsim.core.experimental.utils" = {}
@@ -56,7 +57,6 @@ dependencies = [
     "isaacsim.ros2.bridge",
     "isaacsim.test.utils",
     "omni.isaac.ml_archive",
-    "omni.kit.material.library",
     "omni.kit.window.toolbar"
 ]
 

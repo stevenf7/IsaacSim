@@ -1,5 +1,5 @@
 [package]
-version = "0.12.0"
+version = "0.13.0"
 category = "Simulation"
 title = "Isaac Sim Core (Utils)"
 description = "The Core Utils extension provides a set of utility functions."
@@ -30,6 +30,8 @@ name = "isaacsim.core.experimental.utils.tests"
 [[test]]
 timeout = 900
 dependencies = [
+    "isaacsim.core.experimental.materials",
+    "isaacsim.core.experimental.objects",
     "isaacsim.storage.native",
     "isaacsim.test.docstring",
 ]

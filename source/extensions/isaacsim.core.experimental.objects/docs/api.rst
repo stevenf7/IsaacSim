@@ -64,19 +64,19 @@ The following table summarizes the available objects.
 
 .. API
 
-Ground Plane
-^^^^^^^^^^^^
+Camera
+^^^^^^
 
-.. autoclass:: isaacsim.core.experimental.objects.GroundPlane
+.. autoclass:: isaacsim.core.experimental.objects.Camera
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
 
-Camera
-^^^^^^
+Ground Plane
+^^^^^^^^^^^^
 
-.. autoclass:: isaacsim.core.experimental.objects.Camera
+.. autoclass:: isaacsim.core.experimental.objects.GroundPlane
     :members:
     :undoc-members:
     :inherited-members:

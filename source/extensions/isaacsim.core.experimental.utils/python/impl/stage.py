@@ -31,6 +31,7 @@ import usdrt
 from omni.metrics.assembler.core import get_metrics_assembler_interface
 from pxr import Sdf, Usd, UsdGeom, UsdPhysics, UsdUtils
 
+from . import _templates as stage_templates
 from . import backend as backend_utils
 from . import prim as prim_utils
 
@@ -221,7 +222,15 @@ def create_new_stage(*, template: str | None = None) -> Usd.Stage:
         At least the following templates should be available.
         Other templates might be available depending on app customizations.
 
-        .. list-table::
+        .. list-table:: Isaac Sim templates
+            :header-rows: 1
+
+            * - Template
+              - Description
+            * - ``"gridroom"``
+              - Stage with a blue gridroom scene.
+
+        .. list-table:: Kit templates
             :header-rows: 1
 
             * - Template
@@ -248,19 +257,21 @@ def create_new_stage(*, template: str | None = None) -> Usd.Stage:
 
         >>> import isaacsim.core.experimental.utils.stage as stage_utils
         >>>
-        >>> # create a new stage from the 'sunlight' template
-        >>> stage_utils.create_new_stage(template="sunlight")
+        >>> # create a new stage from the 'gridroom' template
+        >>> stage_utils.create_new_stage(template="gridroom")
         Usd.Stage.Open(rootLayer=Sdf.Find('anon:...usd'), ...)
 
-        >>> # get the list of available templates
+        >>> # get the list of available Kit templates
         >>> import omni.kit.stage_templates
         >>>
         >>> [name for item in omni.kit.stage_templates.get_stage_template_list() for name in item]
         ['empty', 'sunlight', 'default stage']
     """
     # create 'empty' stage
-    if template is None:
+    if template in [None, "gridroom"]:
         omni.usd.get_context().new_stage()
+        if template == "gridroom":
+            stage_templates.gridroom()
     # create stage from template
     else:
         templates = [name for item in omni.kit.stage_templates.get_stage_template_list() for name in item]
@@ -287,8 +298,10 @@ async def create_new_stage_async(*, template: str | None = None) -> Usd.Stage:
         ValueError: When the template is not found.
     """
     # create 'empty' stage
-    if template is None:
+    if template in [None, "gridroom"]:
         await omni.usd.get_context().new_stage_async()
+        if template == "gridroom":
+            stage_templates.gridroom()
     # create stage from template
     else:
         templates = [name for item in omni.kit.stage_templates.get_stage_template_list() for name in item]

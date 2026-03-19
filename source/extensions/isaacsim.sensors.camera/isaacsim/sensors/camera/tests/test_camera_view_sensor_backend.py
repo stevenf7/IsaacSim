@@ -61,7 +61,7 @@ class TestCameraViewSensorBackend(omni.kit.test.AsyncTestCase):
         # Create a plane and dome light
         dome_light = DomeLight("/World/DomeLight")
         dome_light.set_intensities(500)
-        GroundPlane("/World/defaultGroundPlane", sizes=100.0)
+        GroundPlane("/World/defaultGroundPlane", sizes=100.0, templates=None)
 
         num_cameras = 4
         for i in range(num_cameras):

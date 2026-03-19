@@ -1,5 +1,5 @@
 [package]
-version = "0.7.0"
+version = "0.8.0"
 category = "Simulation"
 title = "Isaac Sim Core (Objects)"
 description = "The Core Objects extension provides a set of APIs to create and/or wrap one or more USD objects in the stage..."
@@ -14,6 +14,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.experimental.materials" = {}
 "isaacsim.core.experimental.prims" = {}
 "isaacsim.core.experimental.utils" = {}
 "omni.isaac.core_archive" = {}
@@ -28,10 +29,6 @@ name = "isaacsim.core.experimental.objects.tests"
 
 [[test]]
 timeout = 900
-dependencies = [
-    "isaacsim.core.experimental.materials",  # for visual/physics materials,
-    "omni.kit.material.library",
-]
 args = [
     "--enable",
     "omni.kit.loop-isaac",
