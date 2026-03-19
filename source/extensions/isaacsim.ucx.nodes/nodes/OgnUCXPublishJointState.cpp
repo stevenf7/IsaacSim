@@ -13,17 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// clang-format off
-#include <pch/UsdPCH.h>
-// clang-format on
-
-#include <carb/Framework.h>
-#include <carb/Types.h>
-
-#include <isaacsim/core/includes/Math.h>
-#include <isaacsim/core/includes/UsdUtilities.h>
 #include <isaacsim/ucx/nodes/UcxPublishJointStateNodeBase.h>
-#include <omni/fabric/FabricUSD.h>
 
 #include <OgnUCXPublishJointStateDatabase.h>
 
@@ -34,30 +24,11 @@ using namespace isaacsim::ucx::nodes;
  * @brief OmniGraph node for publishing joint states via UCX.
  * @details
  * This node publishes robot joint state data over UCX using tagged communication.
- * It reads joint data from an articulation using the physics tensors API.
+ * It reads joint data from upstream input ports (e.g. connected from Isaac Read Joint State).
  */
 class OgnUCXPublishJointState : public UCXPublishJointStateNodeBase<OgnUCXPublishJointStateDatabase>
 {
 public:
-    /**
-     * @brief Initialize the node instance.
-     * @details
-     * Acquires the physics tensor API interface needed for reading joint data.
-     *
-     * @param[in] nodeObj The node object
-     * @param[in] instanceId The instance ID
-     */
-    static void initInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
-    {
-        auto& state = OgnUCXPublishJointStateDatabase::sPerInstanceState<OgnUCXPublishJointState>(nodeObj, instanceId);
-        state.m_tensorInterface = carb::getCachedInterface<omni::physics::tensors::TensorApi>();
-        if (!state.m_tensorInterface)
-        {
-            CARB_LOG_ERROR("Failed to acquire Tensor Api interface\n");
-            return;
-        }
-    }
-
     /**
      * @brief Release the node instance.
      * @details
@@ -83,14 +54,13 @@ public:
      */
     static bool compute(OgnUCXPublishJointStateDatabase& db)
     {
-        const GraphContextObj& context = db.abi_context();
         auto& state = db.template perInstanceState<OgnUCXPublishJointState>();
 
         const uint16_t port = static_cast<uint16_t>(db.inputs.port());
         const uint64_t tag = db.inputs.tag();
         const uint32_t timeoutMs = db.inputs.timeoutMs();
 
-        bool success = state.computeImpl(db, context, port, tag, timeoutMs);
+        bool success = state.computeImpl(db, port, tag, timeoutMs);
 
         if (success)
         {
@@ -102,9 +72,7 @@ public:
 
 protected:
     /**
-     * @brief Extract joint state data from articulation.
-     * @details
-     * Reads joint state data from the articulation using tensor API.
+     * @brief Extract joint state data from input ports.
      *
      * @param[in] db Database accessor for node inputs
      * @return JointStateData Extracted joint state data
@@ -113,67 +81,13 @@ protected:
     {
         isaacsim::ucx::nodes::JointStateData data;
         data.timestamp = db.inputs.timeStamp();
-        data.numJoints = 0;
-
-        if (!m_articulation)
-        {
-            return data;
-        }
-
-        double stageUnits = 1.0 / m_unitScale;
-
-        // Get number of DOFs
-        uint32_t numDofs = m_articulation->getMaxDofs();
-        data.numJoints = numDofs;
-
-        // Resize vectors
-        m_jointPositions.resize(numDofs);
-        m_jointVelocities.resize(numDofs);
-        m_jointEfforts.resize(numDofs);
-
-        // Create tensor descriptors
-        omni::physics::tensors::TensorDesc positionTensor;
-        omni::physics::tensors::TensorDesc velocityTensor;
-        omni::physics::tensors::TensorDesc effortTensor;
-
-        createTensorDesc(
-            positionTensor, m_jointPositions.data(), numDofs, omni::physics::tensors::TensorDataType::eFloat32);
-        createTensorDesc(
-            velocityTensor, m_jointVelocities.data(), numDofs, omni::physics::tensors::TensorDataType::eFloat32);
-        createTensorDesc(effortTensor, m_jointEfforts.data(), numDofs, omni::physics::tensors::TensorDataType::eFloat32);
-
-        // Get joint data from articulation
-        if (!m_articulation->getDofPositions(&positionTensor))
-        {
-            db.logError("Failed to get DOF positions");
-            data.numJoints = 0;
-            return data;
-        }
-        if (!m_articulation->getDofVelocities(&velocityTensor))
-        {
-            db.logError("Failed to get DOF velocities");
-            data.numJoints = 0;
-            return data;
-        }
-        if (!m_articulation->getDofProjectedJointForces(&effortTensor))
-        {
-            db.logError("Failed to get DOF forces");
-            data.numJoints = 0;
-            return data;
-        }
-
-        // Convert to doubles with unit scaling
-        data.positions.resize(numDofs);
-        data.velocities.resize(numDofs);
-        data.efforts.resize(numDofs);
-
-        for (uint32_t i = 0; i < numDofs; ++i)
-        {
-            data.positions[i] = static_cast<double>(m_jointPositions[i]) * stageUnits;
-            data.velocities[i] = static_cast<double>(m_jointVelocities[i]) * stageUnits;
-            data.efforts[i] = static_cast<double>(m_jointEfforts[i]);
-        }
-
+        auto positions = db.inputs.jointPositions();
+        auto velocities = db.inputs.jointVelocities();
+        auto efforts = db.inputs.jointEfforts();
+        data.numJoints = static_cast<uint32_t>(positions.size());
+        data.positions.assign(positions.begin(), positions.end());
+        data.velocities.assign(velocities.begin(), velocities.end());
+        data.efforts.assign(efforts.begin(), efforts.end());
         return data;
     }
 

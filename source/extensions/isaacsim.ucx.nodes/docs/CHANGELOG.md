@@ -1,4 +1,10 @@
 # Changelog
+## [1.4.0] - 2026-03-18
+### Changed
+- Remove `targetPrim` input from `UCXPublishJointState`; node now accepts `jointPositions`, `jointVelocities`, and `jointEfforts` arrays from upstream nodes (e.g. Isaac Read Articulation State)
+- Remove `targetPrim` input from `UCXPublishOdometry`; direct data inputs are now the sole data source
+- Remove unused `renderProductPath` input from `UCXPublishImage`
+
 ## [1.3.3] - 2026-03-05
 ### Fixed
 - Fixed flaky `test_sim_clock` test by increasing UCX send timeout from 1ms to 5000ms and using non-blocking `asyncio.sleep` in the receive wait loop

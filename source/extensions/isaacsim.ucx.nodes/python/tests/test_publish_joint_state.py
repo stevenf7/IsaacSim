@@ -126,16 +126,21 @@ class TestUCXPublishJointState(UCXTestCase):
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("PublishJointState", "isaacsim.ucx.nodes.UCXPublishJointState"),
                         ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
+                        ("ReadJointState", "isaacsim.core.nodes.IsaacArticulationState"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("PublishJointState.inputs:targetPrim", [usdrt.Sdf.Path("/Articulation")]),
+                        ("ReadJointState.inputs:targetPrim", [usdrt.Sdf.Path("/Articulation")]),
                         ("PublishJointState.inputs:port", self.port),
                         ("PublishJointState.inputs:tag", 1),
                         ("PublishJointState.inputs:timeoutMs", 1000),
                     ],
                     og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "ReadJointState.inputs:execIn"),
                         ("OnPlaybackTick.outputs:tick", "PublishJointState.inputs:execIn"),
                         ("ReadSimTime.outputs:simulationTime", "PublishJointState.inputs:timeStamp"),
+                        ("ReadJointState.outputs:jointPositions", "PublishJointState.inputs:jointPositions"),
+                        ("ReadJointState.outputs:jointVelocities", "PublishJointState.inputs:jointVelocities"),
+                        ("ReadJointState.outputs:measuredJointEfforts", "PublishJointState.inputs:jointEfforts"),
                     ],
                 },
             )
