@@ -1,4 +1,8 @@
 # Changelog
+## [1.9.3] - 2026-03-19
+### Changed
+- Amr navigation example test: added None to the default environment list which will use a simple ground plane environment
+
 ## [1.9.2] - 2026-03-18
 ### Changed
 - SDG deformables test: comparing semantic segmentation labels instead of images
