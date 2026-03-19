@@ -3318,12 +3318,12 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
             .. tab-item:: CRX10IAL
 
 
-                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_Fanuc_CRX10IAL_crx10ial.usd.png
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Fanuc_crx10ia_l_crx10ia_l.usd.png
                   :align: center
                   :alt: CRX10IAL Robot
                   :width: 80%
 
-                  **USD Path:** Fanuc/CRX10IAL/crx10ial.usd
+                  **USD Path:** Fanuc/crx10ial_l/crx10ial_l.usd
 
                 .. dropdown:: Properties
                     :animate: fade-in
