@@ -822,6 +822,8 @@ exclude = [
     "tools/update.sh",
     "source/internal_extensions",
     "tools/docker/.env",
+    "CLAUDE.md",
+    "tools/claude",
 ]
 
 [[repo_stage_for_github.trim]]
