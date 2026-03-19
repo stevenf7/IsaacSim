@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.1] - 2026-03-18
+### Changed
+- Update the test dependencies, as the core experimental extensions already depend on the `omni.kit.material.library`
+
 ## [2.6.0] - 2026-03-12
 ### Changed
 - Add test for environment golden images

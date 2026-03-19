@@ -83,7 +83,7 @@ class TestStage(omni.kit.test.AsyncTestCase):
         self.assertEqual(templates, ["default stage", "empty", "sunlight"], f"Available templates: {templates}")
         # test cases
         # - sync
-        for template in [None] + templates:
+        for template in [None, "gridroom"] + templates:
             stage = stage_utils.create_new_stage(template=template)
             self.assertIsInstance(stage, Usd.Stage)
             self.assertIs(stage, stage_utils.get_current_stage())
@@ -93,7 +93,7 @@ class TestStage(omni.kit.test.AsyncTestCase):
                 f"Invalid stage content for the given template: {template}",
             )
         # - async
-        for template in [None] + templates:
+        for template in [None, "gridroom"] + templates:
             stage = await stage_utils.create_new_stage_async(template=template)
             self.assertIsInstance(stage, Usd.Stage)
             self.assertIs(stage, stage_utils.get_current_stage())

@@ -60,7 +60,7 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
         # Create a plane and dome light
         dome_light = DomeLight("/World/DomeLight")
         dome_light.set_intensities(500)
-        GroundPlane("/World/defaultGroundPlane", sizes=10.0)
+        GroundPlane("/World/defaultGroundPlane", sizes=10.0, templates=None)
 
         # Create cubes with different positions, scales, and orientations
         cube_1 = Cube(

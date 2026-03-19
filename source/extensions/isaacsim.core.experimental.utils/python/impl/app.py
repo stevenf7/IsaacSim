@@ -42,17 +42,17 @@ def update_app(*, steps: int = 1, callback: Callable[[int, int], bool | None] | 
         >>> import isaacsim.core.experimental.utils.app as app_utils
         >>>
         >>> # perform one update step
-        >>> app_utils.update_app()
+        >>> app_utils.update_app()  # doctest: +SKIP
         >>>
         >>> # perform 10 update steps
-        >>> app_utils.update_app(steps=10)
+        >>> app_utils.update_app(steps=10)  # doctest: +SKIP
         >>>
         >>> # perform 10 update steps with a callback
         >>> def callback(step, steps):
         ...     print(f"update step {step}/{steps}")
         ...     return step < 3  # stop after 3 steps (return False to break the loop)
         ...
-        >>> app_utils.update_app(steps=10, callback=callback)
+        >>> app_utils.update_app(steps=10, callback=callback)  # doctest: +SKIP
         update step 1/10
         update step 2/10
         update step 3/10

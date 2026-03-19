@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.1] - 2026-03-18
+### Changed
+- Disable `GroundPlane` template on test cases
+
 ## [1.7.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings

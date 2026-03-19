@@ -58,6 +58,14 @@ class TestGroundPlane(omni.kit.test.AsyncTestCase):
 
     # --------------------------------------------------------------------
 
+    async def test_instances(self):
+        await stage_utils.create_new_stage_async()
+        path = "/World/ground_plane"
+        ground_plane = GroundPlane(path)  # create
+        self.assertEqual(len(ground_plane.prims[0].GetChildren()), 3, "Invalid number of child prims")
+        ground_plane = GroundPlane(path)  # wrap
+        self.assertEqual(len(ground_plane.prims[0].GetChildren()), 3, "Invalid number of child prims")
+
     @parametrize(backends=["usd"], prim_class=GroundPlane, populate_stage_func=populate_stage)
     async def test_len(self, prim, num_prims, device, backend):
         self.assertEqual(len(prim), num_prims, f"Invalid len ({num_prims} prims)")
@@ -164,3 +172,11 @@ class TestGroundPlane(omni.kit.test.AsyncTestCase):
         assert (
             number_of_materials == count
         ), f"{count} materials should have been applied. Applied: {number_of_materials}"
+
+    @parametrize(backends=["usd"], prim_class=GroundPlane, populate_stage_func=populate_stage)
+    async def test_apply_visual_templates(self, prim, num_prims, device, backend):
+        choices = ["wireframe-blue"]
+        for indices, expected_count in draw_indices(count=num_prims, step=2):
+            cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
+            for v0, expected_v0 in draw_choice(shape=(expected_count,), choices=choices):
+                prim.apply_visual_templates(v0, indices=indices)

@@ -55,7 +55,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         # Create ground plane and dome light
         dome_light = DomeLight("/World/DomeLight")
         dome_light.set_intensities(500)
-        GroundPlane("/World/defaultGroundPlane", sizes=100.0)
+        GroundPlane("/World/defaultGroundPlane", sizes=100.0, templates=None)
 
         # Add cubes for testing (static positions)
         cube_2 = Cube(

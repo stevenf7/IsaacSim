@@ -123,7 +123,7 @@ class DomeLight(Light):
         )
         # initialize instance from arguments
         if radii is not None:
-            self.set_radii(radii)
+            self.set_guide_radii(radii)
         if texture_files is not None:
             self.set_texture_files(texture_files)
         if texture_formats is not None:

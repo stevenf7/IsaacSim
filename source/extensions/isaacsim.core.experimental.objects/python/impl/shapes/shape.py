@@ -22,9 +22,11 @@ from abc import ABC, abstractmethod
 
 import isaacsim.core.experimental.utils.ops as ops_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
+import matplotlib.colors
 import numpy as np
 import warp as wp
 from isaacsim.core.experimental.prims import XformPrim
+from isaacsim.core.experimental.prims.impl.prim import _MSG_PRIM_NOT_VALID
 from pxr import Gf, Usd, UsdGeom
 
 
@@ -41,7 +43,9 @@ class Shape(XformPrim, ABC):
     Args:
         paths: Single path or list of paths to existing or non-existing (one of both) USD prims.
             Can include regular expressions for matching multiple prims.
-        colors: Display colors (shape ``(N, 3)``).
+        colors: Normalized RGB display colors (shape ``(N, 3)``) or case-insensitive string representations.
+            Supported string representations include hex codes and X11/CSS4 color names without spaces,
+            as well as any other format supported by Matplotlib. Alpha channel is ignored for string representations.
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
         resolve_paths: Whether to resolve the given paths (true) or use them as is (false).
         positions: Positions in the world frame (shape ``(N, 3)``).
@@ -57,6 +61,7 @@ class Shape(XformPrim, ABC):
 
     Raises:
         ValueError: If resulting paths are mixed (existing and non-existing prims) or invalid.
+        ValueError: Invalid string representation format for the colors.
     """
 
     def __init__(
@@ -64,7 +69,7 @@ class Shape(XformPrim, ABC):
         paths: str | list[str],
         *,
         # Shape
-        colors: list | np.ndarray | wp.array | None = None,
+        colors: str | list | np.ndarray | wp.array | None = None,
         # Prim
         resolve_paths: bool = True,
         # XformPrim
@@ -85,11 +90,9 @@ class Shape(XformPrim, ABC):
         )
         if not hasattr(self, "_geoms"):
             self._geoms = []
-        # set display colors
+        # initialize instance from arguments
         if colors is not None:
-            colors = ops_utils.broadcast_to(colors, shape=(len(self._geoms), 3), dtype=wp.float32, device="cpu").numpy()
-            for geom, color in zip(self._geoms, colors):
-                geom.GetDisplayColorAttr().Set([Gf.Vec3f(*color.tolist())])
+            self.set_display_colors(colors)
 
     """
     Properties.
@@ -190,3 +193,49 @@ class Shape(XformPrim, ABC):
                     break
             instances.append(instance)
         return instances
+
+    """
+    Methods.
+    """
+
+    def set_display_colors(
+        self,
+        colors: str | list | np.ndarray | wp.array,
+        *,
+        indices: int | list | np.ndarray | wp.array | None = None,
+    ) -> None:
+        """Set the display colors of the prims.
+
+        Backends: :guilabel:`usd`.
+
+        Args:
+            colors: Normalized RGB display colors (shape ``(N, 3)``) or case-insensitive string representations.
+                Supported string representations include hex codes and X11/CSS4 color names without spaces,
+                as well as any other format supported by Matplotlib. Alpha channel is ignored for string representations.
+                If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
+            indices: Indices of prims to process (shape ``(N,)``). If not defined, all wrapped prims are processed.
+
+        Raises:
+            AssertionError: Wrapped prims are not valid.
+            ValueError: Invalid string representation format for the colors.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> # set same colors (red) for all prims
+            >>> prims.set_display_colors([1.0, 0.0, 0.0])
+            >>>
+            >>> # set only the color (green) for the second prim
+            >>> prims.set_display_colors("#00ff00", indices=[1])
+        """
+        assert self.valid, _MSG_PRIM_NOT_VALID
+        # USD API
+        indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        if isinstance(colors, str):
+            colors = matplotlib.colors.to_rgb(colors)
+        elif isinstance(colors, (list, tuple)):
+            colors = [matplotlib.colors.to_rgb(color) if isinstance(color, str) else color for color in colors]
+        colors = ops_utils.broadcast_to(colors, shape=(indices.shape[0], 3), dtype=wp.float32, device="cpu").numpy()
+        for i, index in enumerate(indices.numpy()):
+            self.geoms[index].GetDisplayColorAttr().Set([Gf.Vec3f(*colors[i].tolist())])
