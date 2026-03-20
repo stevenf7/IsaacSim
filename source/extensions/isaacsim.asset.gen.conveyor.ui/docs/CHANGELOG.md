@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.20] - 2026-03-06
+### Fixed
+- Fix shutdown() clearing wrong variable name (`_stage_event_subscription` instead of `_stage_event_sub_selection`), which leaked the selection subscription
+
 ## [2.1.19] - 2026-01-06
 ### Changed
 - Migrate more events to Events 2.0.

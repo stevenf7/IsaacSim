@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.1] - 2026-03-06
+### Fixed
+- Clear assets-loaded and physics subscriptions when window is hidden to avoid callbacks running while the panel is not visible
+
 ## [3.3.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings

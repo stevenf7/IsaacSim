@@ -1516,14 +1516,18 @@ class CollisionDetectorWidget:
     def on_visibility_changed(self, visible: bool) -> None:
         """Respond to the owning window's visibility changes.
 
-        Clears viewport overlays when the widget becomes hidden.
+        Clears viewport overlays when the widget becomes hidden. Removes listeners when hidden and restores them when shown.
 
         Args:
             visible: Whether the widget is now visible.
         """
         if not visible:
+            self._deregister_usd_notice_listener()
             self._clear_viewport_overlay()
             self._restore_selection_outline()
+        else:
+            self._register_usd_notice_listener()
+            self._refresh_robot_list()
 
     def destroy(self) -> None:
         """Release all resources, subscriptions, and UI references."""

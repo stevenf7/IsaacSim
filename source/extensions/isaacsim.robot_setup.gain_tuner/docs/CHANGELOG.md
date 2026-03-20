@@ -1,4 +1,8 @@
 # Changelog
+## [3.4.2] - 2026-03-06
+### Fixed
+- Clear physics, render, and assets-loaded subscriptions when window is hidden to avoid per-frame callbacks running while the panel is not visible
+
 ## [3.4.1] - 2026-03-04
 ### Changed
 - Fix api errors

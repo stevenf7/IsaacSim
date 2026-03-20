@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.1] - 2026-03-06
+### Fixed
+- Clear per-frame plot update subscription when window is hidden to stop GLOBAL_EVENT_UPDATE callbacks running in the background
+
 ## [1.2.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings

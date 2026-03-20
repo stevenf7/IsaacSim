@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.2] - 2026-03-06
+### Fixed
+- Revoke existing USD ObjectsChanged listener before registering a new one in build_items to prevent listener leaks on repeated property panel rebuilds
+
 ## [3.1.1] - 2026-03-05
 ### Removed
 - Remove unused and deprecated extension dependencies

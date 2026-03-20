@@ -1,4 +1,8 @@
 # Changelog
+## [3.4.2] - 2026-03-06
+### Fixed
+- Clear physics subscription when window is hidden to stop per-physics-step callbacks while the panel is not visible
+
 ## [3.4.1] - 2026-03-04
 ### Fixed
 - Fix api errors

@@ -135,6 +135,7 @@ class Extension(omni.ext.IExt):
             self._build_ui()
         else:
             self._usd_context = None
+            self._camera_state_subscriber = None
 
     def _menu_callback(self):
         """Toggle the window visibility when the menu item is clicked."""

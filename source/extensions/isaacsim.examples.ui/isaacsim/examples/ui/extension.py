@@ -125,6 +125,10 @@ class Extension(omni.ext.IExt):
         for i in range(4):
             self.dpads.append(Dpad(name=f"Dpad Controller {i}"))
 
+    def _on_visibility_changed(self, visible):
+        if not visible:
+            self._app_event_sub = None
+
     def build_window(self):
 
         # Add Dpads on Top
@@ -137,6 +141,7 @@ class Extension(omni.ext.IExt):
             self._window = ui.Window(
                 title=EXTENSION_NAME, width=700, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
+            self._window.set_visibility_changed_fn(self._on_visibility_changed)
 
             with self._window.frame:
                 with ui.VStack(spacing=5, height=0):
