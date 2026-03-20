@@ -28,8 +28,6 @@ import omni
 import omni.ui as ui
 from isaacsim.gui.components.ui_utils import (
     BUTTON_WIDTH,
-    LABEL_HEIGHT,
-    LABEL_WIDTH,
     add_line_rect_flourish,
     add_separator,
     format_tt,
@@ -1097,6 +1095,9 @@ class StateButton(UIWidgetWrapper):
         physics_callback_fn: A function that will be called on every physics step while the
             button is in state B (a_text was pressed). The function should have one argument for physics step size (float).
             The return value will not be used.
+
+    Raises:
+        ValueError: if state A and state B use the same text.
     """
 
     def __init__(
@@ -1111,6 +1112,9 @@ class StateButton(UIWidgetWrapper):
     ):
         self.a_text = a_text.upper()
         self.b_text = b_text.upper()
+
+        if self.a_text == self.b_text:
+            raise ValueError(f"State A and B must have different text: {self.a_text}")
 
         self._on_a_click_fn = on_a_click_fn
         self._on_b_click_fn = on_b_click_fn
@@ -1174,10 +1178,9 @@ class StateButton(UIWidgetWrapper):
         """Return True if the StateButton is in the a state.  False implies that it is in the b state.
 
         Returns:
-            True when the StateButton is in the b state.
+            True when the StateButton is in the a state; False when in the b state.
         """
-        if self.state_button.text == self.a_text:
-            return True
+        return self.state_button.text == self.a_text
 
     def trigger_click_if_a_state(self):
         """If in the A state, trigger button to execute the same behavior as if it were clicked by the

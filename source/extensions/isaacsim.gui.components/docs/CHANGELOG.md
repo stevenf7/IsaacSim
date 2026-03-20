@@ -1,4 +1,10 @@
 # Changelog
+## [1.7.3] - 2026-03-20
+### Fixed
+- Duplicate import
+- `StateButton.is_in_a_state()` returned `None` instead of `False` when not in state A
+- `StateButton` now guards against identical text for states "A" and "B".
+
 ## [1.7.2] - 2026-03-09
 ### Fixed
 - Hardened subprocess calls to avoid shell=True with string concatenation
