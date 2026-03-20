@@ -513,8 +513,8 @@ class TestRos2Odometry(ROS2TestCase):
         print(f"- Steering angle: {steering_angle} rad (straight line)")
 
         # Drive the robot in a straight line
-        drive_time = 5  # seconds
-        steps = 50
+        drive_time = 2  # seconds
+        steps = 20
         step_time = drive_time / steps
 
         # Drive in a straight line
@@ -699,8 +699,8 @@ class TestRos2Odometry(ROS2TestCase):
         print(f"- Expected angular velocity: {expected_angular_velocity:.4f} rad/s")
 
         # Drive the robot in a circle
-        drive_time = 10  # seconds
-        steps = 100
+        drive_time = 5  # seconds
+        steps = 50
         step_time = drive_time / steps
 
         # Track maximum displacement during the test

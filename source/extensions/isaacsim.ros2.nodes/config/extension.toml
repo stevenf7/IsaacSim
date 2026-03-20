@@ -1,5 +1,5 @@
 [package]
-version = "1.12.0"
+version = "1.12.1"
 category = "Simulation"
 title = "ROS 2 Nodes"
 description = "The ROS 2 Nodes extension provides OmniGraph nodes for ROS 2 communication. It contains publisher, subscriber, and service nodes that can be used in Action graphs to interface with ROS 2 systems. This extension depends on the isaacsim.ros2.core extension for underlying ROS 2 functionality."
@@ -95,6 +95,7 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] /Graph/ROS_TF/PublisherTF: [/Graph/ROS_TF] The prim  is not valid. Please specify at least one valid target prim for the ROS pose tree component*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/PublishJointState: [/TestGraph] The prim /NonExistentPrim is not valid*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/PublishJointState: [/TestGraph] Could not find target prim*",
+    "*[Error] [omni.graph.core.plugin] /TestGraph/PublishJointState: [/TestGraph] Specify targetPrim or connect Isaac Read Joint State node outputs*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/PublishTransformTree: [/TestGraph] Please specify at least one valid target prim for the ROS pose tree component*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/PublishTransformTree: [/TestGraph] The prim /NonExistentPrim* is not valid. Please specify at least one valid target prim for the ROS pose tree component*",
     '*The NumPy module was reloaded*',

@@ -822,6 +822,7 @@ local function get_doc_snippets_tests()
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.test_snippets_async",
             "standalone_examples/testing/doc_snippets/test_snippets_async.py",
+            "--expected-failures-csv expected_failures.csv --experience-csv experiences.csv",
         },
     }
 end

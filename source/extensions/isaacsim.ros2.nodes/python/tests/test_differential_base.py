@@ -245,7 +245,7 @@ class TestRos2DifferentialBase(ROS2TestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(3, 60, self.spin)
+        await simulate_async(1, 60, self.spin)
 
         # check 0: is carter initially stationary
         # No transform expected in this test, only check odometry

@@ -310,7 +310,7 @@ class TestRos2Camera(ROS2TestCase):
 
         await omni.kit.app.get_app().next_update_async()
 
-        system_time = time.time()
+        system_time = int(time.time())
 
         self._timeline.play()
         await self.simulate_until_condition(
