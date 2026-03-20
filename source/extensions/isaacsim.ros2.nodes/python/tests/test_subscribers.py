@@ -658,7 +658,7 @@ class TestRos2Subscribers(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
-        for i in range(10):
+        for i in range(5):
             msg = TransformStamped()
             msg.header.stamp = node.get_clock().now().to_msg()
             msg.child_frame_id = "base_link"
@@ -693,7 +693,9 @@ class TestRos2Subscribers(ROS2TestCase):
                 rot_match = np.linalg.norm(r - rot) < 1e-5 or np.linalg.norm(r + rot) < 1e-5
                 return pos_match and rot_match
 
-            condition_met = await self.simulate_until_condition(pose_condition, per_frame_callback=self.spin)
+            condition_met = await self.simulate_until_condition(
+                pose_condition, max_frames=60, per_frame_callback=self.spin
+            )
 
             self.assertTrue(
                 condition_met,

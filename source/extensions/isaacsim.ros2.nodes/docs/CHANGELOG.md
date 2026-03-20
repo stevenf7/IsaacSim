@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.12.1] - 2026-03-19
+### Fixed
+- Fix broken test and reduce test time
+
 ## [1.12.0] - 2026-03-17
 ### Changed
 - Updated documentation with AI agent.

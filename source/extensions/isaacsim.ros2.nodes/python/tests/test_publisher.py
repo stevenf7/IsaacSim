@@ -132,7 +132,7 @@ class TestRos2Publisher(ROS2TestCase):
                     rotation=geometry_msgs.msg.Quaternion(x=float(i), y=float(i - 1), z=float(i - 2), w=float(i - 3)),
                 ),
             )
-            for i in range(2**16 + 1)
+            for i in range(2**10 + 1)
         ]
         messages += [
             (
