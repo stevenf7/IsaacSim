@@ -59,7 +59,7 @@ The ``use_temp_rp`` flag is used to provide an option to use temporary render pr
 
 The scenario uses the left and right camera sensors of Nova Carter (``<..>/stereo_cam_<left/right>_sensor_frame/camera_sensor_<left/right>``) to collect **LdrColor** (rgb) :doc:`annotator <extensions:ext_replicator/annotators_details>` data using Replicator. By default, the data is written to ``<working_dir>/_out_nav_sdg_demo`` and runs for ``num_frames=9`` iterations. 
 
-Furthermore, it changes the background environment every ``env_interval=3`` captured frames. The ``use_temp_rp`` flag can be used to optimize performance by disabling the sensor render products during simulation and temporarily enabling them during data capture. 
+Furthermore, it changes the background environment every ``env_interval=3`` captured frames. By default the tutorial cycles through ``DEFAULT_ENV_URLS``; an entry of ``None`` creates a generic environment under ``/Environment`` using a Replicator dome light and a collider-enabled plane instead of loading a USD environment. The ``use_temp_rp`` flag can be used to optimize performance by disabling the sensor render products during simulation and temporarily enabling them during data capture. 
 
 The following image provides an illustration of the resulting data from the various environments.
 
@@ -85,6 +85,7 @@ The following section provides an overview and explanation of the implementation
         - ``--use_temp_rp`` flag to use temporary render products (default: False) 
         - ``--num_frames`` the number of frames to be captured (default: 9)
         - ``--env_interval`` the capture interval at which the background environment is changed (default: 3)
+        - ``--env_urls`` replaces ``DEFAULT_ENV_URLS`` entirely. Use ``None`` for the generic environment
 
         For example, to run the application with all the arguments:
 
@@ -130,7 +131,7 @@ The following section provides an overview and explanation of the implementation
 
         **Running the AMR Navigation SDG Demo**
 
-        The following snippet is from the end of the code sample, it runs for the given ``num_frames`` and changes the background environment every ``env_interval``. The output is written to the given ``out_dir path``. The ``use_temp_rp`` parameter can be used to optimize performance by creating render products only for the frames when the data is captured.
+        The following snippet is from the end of the code sample, it runs for the given ``num_frames`` and changes the background environment every ``env_interval``. The output is written to the given ``out_dir path``. The ``use_temp_rp`` parameter can be used to optimize performance by creating render products only for the frames when the data is captured. When ``--env_urls`` is provided it replaces ``DEFAULT_ENV_URLS`` entirely; otherwise the demo uses the default environment cycle.
 
         The start method loads and runs the demo with the specified parameters, while clear halts the demo and clears any active subscribers and render products. You can use ``is_running`` to verify whether the demo is still running.  
       
@@ -143,11 +144,12 @@ The following section provides an overview and explanation of the implementation
         .. code-block:: python
 
             out_dir = os.path.join(os.getcwd(), "_out_nav_sdg_demo", "")
+            selected_env_urls = args.env_urls if args.env_urls is not None else DEFAULT_ENV_URLS
             nav_demo = NavSDGDemo()
             nav_demo.start(
                 num_frames=args.num_frames,
                 out_dir=out_dir,
-                env_urls=ENV_URLS,
+                env_urls=selected_env_urls,
                 env_interval=args.env_interval,
                 use_temp_rp=args.use_temp_rp,
                 seed=22,
@@ -182,6 +184,7 @@ The following section provides an overview and explanation of the implementation
                 PROPS_URL = "/Isaac/Props/YCB/Axis_Aligned_Physics"
                 LEFT_CAMERA_REL_PATH = "sensors/front_hawk/left/camera_left"
                 RIGHT_CAMERA_REL_PATH = "sensors/front_hawk/right/camera_right"
+                ENVIRONMENT_SCOPE_PATH = "/Environment"
 
                 def __init__(self) -> None:
                     """Initialize the navigation SDG demo with default values."""
@@ -215,7 +218,7 @@ The following section provides an overview and explanation of the implementation
         * ``self._dolly`` is used as the target for the navigation target of Nova Carter and to track the distance to Nova Carter
         * ``self._dolly_light`` randomized light placed above the dolly each captured frame
         * ``self._props`` list of prop prims to place and simulate above the dolly each captured frame
-        * ``self._cycled_env_urls`` the paths for the background environments to cycle through
+        * ``self._cycled_env_urls`` the paths for the background environments to cycle through, including ``None`` for the generic Replicator-built environment
         * ``self._env_interval`` is used to determine after how many frames to change the background environment
         * ``self._timeline`` is used to control (play/pause) the simulation timeline between frame captures
         * ``self._timeline_sub`` is the subscriber to the timeline ticks. It is used as the feedback loop to trigger the synthetic data generation
@@ -227,12 +230,12 @@ The following section provides an overview and explanation of the implementation
         * ``self._render_products`` are the two render products attached to the left and right camera sensors of Nova Carter, the writer is attached to these to access data from the annotators
         * ``self._use_temp_rp`` is a flag, which when set to ``True``, causes the demo to disable render products when not capturing. Otherwise the render products are always enabled
         * ``self._in_running_state`` indicates the running state of the demo used to track whether the demo has finished or not
-        * ``self._completion_event`` is an asyncio event used for the ``run_async`` method to signal when the demo has completed
+        The class constant ``ENVIRONMENT_SCOPE_PATH`` keeps both referenced USD environments and the generic fallback environment under the same ``/Environment`` scope, which makes switching between them consistent.
  
     
         **Workflow and Start Function**
 
-        The workflow's main functions are ``start`` and the ``_on_timeline_event`` callback functions. ``start`` creates a new environment with: 
+        The workflow's main functions are ``start`` and the ``_on_timeline_event`` callback functions. ``start`` resolves the selected environment list, creates a new environment with:
             
         * navigation specific physics scene
         * Nova Carter
@@ -240,6 +243,8 @@ The following section provides an overview and explanation of the implementation
         * dolly
         * randomization light
         * props to drop around the dolly
+
+        If ``env_urls`` is ``None``, ``start`` uses ``DEFAULT_ENV_URLS``. Environment changes are routed through ``_load_environment``, which always rebuilds the shared ``/Environment`` scope. When the selected environment entry is ``None``, the demo creates a generic environment with ``rep.functional.create.dome_light``, ``rep.functional.create.plane``, and ``rep.functional.physics.apply_collider``.
 
         It also creates the timeline subscriber with ``_on_timeline_event`` as the callback function triggered with each timeline tick. The ``_on_timeline_event`` function checks if Nova Carter is close enough to the dolly, if so it pauses the simulation, unsubscribes the timeline callback, and triggers the synthetic data generation (SDG). Depending on whether the demo is running in the script editor or as a standalone application it runs the SDG synchronously or asynchronously.
 
@@ -254,7 +259,7 @@ The following section provides an overview and explanation of the implementation
                 self,
                 num_frames: int = 10,
                 out_dir: str | None = None,
-                env_urls: list[str] = [],
+                env_urls: list[str | None] | None = None,
                 env_interval: int = 3,
                 use_temp_rp: bool = False,
                 seed: int | None = None,
@@ -264,9 +269,10 @@ The following section provides an overview and explanation of the implementation
                 if seed is not None:
                     rep.set_global_seed(seed)
                     random.seed(seed)
+                selected_env_urls = env_urls if env_urls is not None else DEFAULT_ENV_URLS
                 self._num_frames = num_frames
                 self._out_dir = out_dir if out_dir is not None else os.path.join(os.getcwd(), "_out_nav_sdg_demo")
-                self._cycled_env_urls = cycle(env_urls)
+                self._cycled_env_urls = cycle(selected_env_urls)
                 self._env_interval = env_interval
                 self._use_temp_rp = use_temp_rp
                 self._frame_counter = 0
@@ -394,7 +400,7 @@ The following section provides an overview and explanation of the implementation
 
         **Next Frame Explanation**
 
-        After the synthetic data generation (SDG) completes, the ``_setup_next_frame`` function prepares the simulation for the next frame. This involves incrementing the frame counter (``self._frame_counter``), randomizing the dolly, dolly light, and props. Then changing the background environment, if the ``env_interval`` is reached. Additionally the timeline and its subscriber are re-started. 
+        After the synthetic data generation (SDG) completes, the ``_setup_next_frame`` function prepares the simulation for the next frame. This involves incrementing the frame counter (``self._frame_counter``), randomizing the dolly, dolly light, and props. Then changing the background environment, if the ``env_interval`` is reached. Because environment loading now goes through the shared ``/Environment`` scope, switching between referenced USD environments and the generic ``None`` environment uses the same update path. Additionally the timeline and its subscriber are re-started. 
             
         If the ``_num_frames`` is reached the demo makes sure the the writer backend is finished with writing the data to disk (``rep.orchestrator.wait_until_complete``) and clears the demo.
 

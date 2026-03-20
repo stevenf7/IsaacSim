@@ -460,12 +460,12 @@ local function get_replicator_tests()
         {
             "tests-nativepython-replicator.amr_navigation",
             "standalone_examples/replicator/amr_navigation.py",
-            "--num_frames 3 --env_interval 1",
+            "--num_frames 3 --env_interval 1 --env_urls None",
         },
         {
             "tests-nativepython-replicator.amr_navigation_use_temp_rp",
             "standalone_examples/replicator/amr_navigation.py",
-            "--num_frames 3 --env_interval 1 --use_temp_rp",
+            "--num_frames 3 --env_interval 1 --use_temp_rp --env_urls None",
         },
         {
             "tests-nativepython-replicator.cosmos_writer_warehouse",

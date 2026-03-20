@@ -30,10 +30,11 @@ from isaacsim.core.utils.stage import create_new_stage
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf, UsdGeom
 
-ENV_URLS = [
+DEFAULT_ENV_URLS = [
     "/Isaac/Environments/Grid/default_environment.usd",
     "/Isaac/Environments/Simple_Warehouse/warehouse.usd",
     "/Isaac/Environments/Grid/gridroom_black.usd",
+    None,
 ]
 NUM_FRAMES = 9
 ENV_INTERVAL = 3
@@ -48,6 +49,7 @@ class NavSDGDemo:
     PROPS_URL = "/Isaac/Props/YCB/Axis_Aligned_Physics"
     LEFT_CAMERA_REL_PATH = "sensors/front_hawk/left/camera_left"
     RIGHT_CAMERA_REL_PATH = "sensors/front_hawk/right/camera_right"
+    ENVIRONMENT_SCOPE_PATH = "/Environment"
 
     def __init__(self) -> None:
         """Initialize the navigation SDG demo with default values."""
@@ -76,7 +78,7 @@ class NavSDGDemo:
         self,
         num_frames: int = 10,
         out_dir: str | None = None,
-        env_urls: list[str] = [],
+        env_urls: list[str | None] | None = None,
         env_interval: int = 3,
         use_temp_rp: bool = False,
         seed: int | None = None,
@@ -97,7 +99,7 @@ class NavSDGDemo:
         self,
         num_frames: int = 10,
         out_dir: str | None = None,
-        env_urls: list[str] = [],
+        env_urls: list[str | None] | None = None,
         env_interval: int = 3,
         use_temp_rp: bool = False,
         seed: int | None = None,
@@ -107,9 +109,10 @@ class NavSDGDemo:
         if seed is not None:
             rep.set_global_seed(seed)
             random.seed(seed)
+        selected_env_urls = env_urls if env_urls is not None else DEFAULT_ENV_URLS
         self._num_frames = num_frames
         self._out_dir = out_dir if out_dir is not None else os.path.join(os.getcwd(), "_out_nav_sdg_demo")
-        self._cycled_env_urls = cycle(env_urls)
+        self._cycled_env_urls = cycle(selected_env_urls)
         self._env_interval = env_interval
         self._use_temp_rp = use_temp_rp
         self._frame_counter = 0
@@ -176,7 +179,7 @@ class NavSDGDemo:
 
         # Environment
         assets_root_path = get_assets_root_path()
-        rep.functional.create.reference(usd_path=assets_root_path + next(self._cycled_env_urls), name="Environment")
+        self._load_environment(next(self._cycled_env_urls))
 
         # Nova Carter
         rep.functional.create.scope(name="NavWorld")
@@ -358,11 +361,26 @@ class NavSDGDemo:
 
     def _load_next_env(self) -> None:
         """Replace current environment with the next one from the cycle."""
-        if self._stage.GetPrimAtPath("/Environment"):
-            omni.kit.commands.execute("DeletePrimsCommand", paths=["/Environment"])
-        assets_root_path = get_assets_root_path()
+        self._load_environment(next(self._cycled_env_urls))
+
+    def _load_environment(self, env_url: str | None) -> None:
+        """Load the next environment under a shared scope."""
+        if self._stage.GetPrimAtPath(self.ENVIRONMENT_SCOPE_PATH):
+            omni.kit.commands.execute("DeletePrimsCommand", paths=[self.ENVIRONMENT_SCOPE_PATH])
+
         rep.functional.create.scope(name="Environment")
-        rep.functional.create.reference(usd_path=assets_root_path + next(self._cycled_env_urls), name="Environment")
+        if env_url:
+            assets_root_path = get_assets_root_path()
+            rep.functional.create.reference(
+                usd_path=assets_root_path + env_url, parent=self.ENVIRONMENT_SCOPE_PATH, name="Scene"
+            )
+            return
+
+        rep.functional.create.dome_light(intensity=500, parent=self.ENVIRONMENT_SCOPE_PATH, name="DomeLight")
+        ground = rep.functional.create.plane(
+            parent=self.ENVIRONMENT_SCOPE_PATH, name="GroundPlane", scale=(100, 100, 1)
+        )
+        rep.functional.physics.apply_collider(ground)
 
     def _on_sdg_done(self, task) -> None:
         """Callback invoked when async SDG step completes."""
@@ -416,7 +434,7 @@ asyncio.ensure_future(
     nav_demo.run_async(
         num_frames=NUM_FRAMES,
         out_dir=out_dir,
-        env_urls=ENV_URLS,
+        env_urls=DEFAULT_ENV_URLS,
         env_interval=ENV_INTERVAL,
         use_temp_rp=USE_TEMP_RP,
         seed=22,
