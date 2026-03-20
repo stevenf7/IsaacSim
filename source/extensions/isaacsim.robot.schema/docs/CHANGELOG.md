@@ -1,8 +1,12 @@
 # Changelog
 
-## [5.1.1] - 2026-03-05
+## [5.1.2] - 2026-03-19
 ### Removed
 - Remove the `omni.isaac.ml_archive` dependency
+
+## [5.1.1] - 2026-03-05
+### Changed
+- Simpify import statements
 
 ## [5.1.0] - 2026-03-04
 ### Changed
