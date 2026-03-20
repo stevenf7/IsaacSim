@@ -284,6 +284,7 @@ class Extension(omni.ext.IExt):
             self._stage_event_sub_closed = None
             self._stage_event_sub_sim_play = None
             self._stage_event_sub_sim_stop = None
+            self._physics_subscription = None
 
     def _menu_callback(self):
         """Toggle window visibility and update the selection if timeline is playing."""

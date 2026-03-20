@@ -180,8 +180,10 @@ class Extension(omni.ext.IExt):
             self._usd_context = None
             self._stage_event_sub_opened = None
             self._stage_event_sub_closed = None
+            self._stage_event_sub_assets_loaded = None
             self._timeline_event_sub_play = None
             self._timeline_event_sub_stop = None
+            self._physics_subscription = None
             self.ui_builder.cleanup()
 
     def _build_ui(self):

@@ -1,4 +1,8 @@
 # Changelog
+## [2.1.1] - 2026-03-06
+### Fixed
+- Clear per-frame GLOBAL_EVENT_UPDATE subscription in hide_all() so the callback stops running when sensor icons are hidden
+
 ## [2.1.0] - 2026-03-04
 ### Changed
 - Add Overview.md, python_api.md, SETTINGS.md and update docstrings

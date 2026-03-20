@@ -526,6 +526,7 @@ class IconModel(sc.AbstractManipulatorModel):
         """Hides all sensor icons by deactivating USD listening and clearing the icon model."""
         # Deactivate USD listening
         self._usd_listening_active = False
+        self._frame_sub = None
 
         # Forcefully clear all icons from the model
         if self._icons:

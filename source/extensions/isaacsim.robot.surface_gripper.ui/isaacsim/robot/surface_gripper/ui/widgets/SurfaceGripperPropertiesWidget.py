@@ -81,6 +81,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._old_payload = []
+        self._listener = None
         self.frames = []
         self.wrapped_ui_elements = []
         self.reset()
@@ -179,6 +180,9 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         Returns:
             List of valid Surface Gripper prims if found, otherwise False.
         """
+        if self._listener:
+            self._listener.Revoke()
+            self._listener = None
 
         if not super().on_new_payload(payload):
             return False
@@ -205,7 +209,6 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         if not stage:  # pragma: no cover
             return
 
-        # Register for USD change notifications
         self._listener = Tf.Notice.Register(Usd.Notice.ObjectsChanged, self._on_usd_changed, stage)
 
         # Get shared properties from selected prims
