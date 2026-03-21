@@ -84,7 +84,6 @@ struct EffortSensorImpl::ImplData
 {
     long stageId = 0;
     std::string engineType = "physx";
-    int64_t nextSensorId = 0;
     float lastDt = 0.0f;
     int stepCount = 0;
     uint64_t readerGeneration = 0;
@@ -97,7 +96,7 @@ struct EffortSensorImpl::ImplData
     carb::events::ISubscriptionPtr physicsEventSub;
 
     pxr::UsdStageRefPtr usdStage;
-    std::unordered_map<int64_t, EffortSensorData> sensors;
+    std::unordered_map<std::string, EffortSensorData> sensors;
 };
 
 EffortSensorImpl::EffortSensorImpl() : m_impl(std::make_unique<ImplData>())
@@ -186,43 +185,40 @@ void EffortSensorImpl::_initializeStage(long stageId)
     _subscribeToPhysicsStepEvents();
 }
 
-int64_t EffortSensorImpl::createSensor(const char* jointPrimPath)
+bool EffortSensorImpl::createSensor(const char* jointPrimPath)
 {
     if (!m_impl->usdStage || !m_impl->reader)
-        return -1;
+        return false;
 
-    for (auto& [id, s] : m_impl->sensors)
-    {
-        if (s.jointPrimPath == jointPrimPath)
-            return id;
-    }
+    std::string key(jointPrimPath);
+    if (m_impl->sensors.count(key))
+        return true;
 
     pxr::SdfPath sdfPath(jointPrimPath);
     pxr::UsdPrim prim = m_impl->usdStage->GetPrimAtPath(sdfPath);
     if (!prim.IsValid())
-        return -1;
+        return false;
 
     std::string dofName = sdfPath.GetName();
     pxr::SdfPath parentPath = sdfPath.GetParentPath();
 
     std::string articulationRootPath = findArticulationRoot(m_impl->usdStage, parentPath);
     if (articulationRootPath.empty())
-        return -1;
+        return false;
 
-    int64_t sensorId = m_impl->nextSensorId++;
-    EffortSensorData& sensor = m_impl->sensors[sensorId];
+    EffortSensorData& sensor = m_impl->sensors[key];
     sensor.jointPrimPath = jointPrimPath;
     sensor.articulationRootPath = articulationRootPath;
     sensor.dofName = dofName;
-    sensor.viewId = "effort_art_" + std::to_string(sensorId);
+    sensor.viewId = "effort_art_" + key;
 
     const char* pathStr = articulationRootPath.c_str();
     sensor.articulationView =
         m_impl->reader->createArticulationView(sensor.viewId.c_str(), &pathStr, 1, m_impl->engineType.c_str());
     if (!sensor.articulationView)
     {
-        m_impl->sensors.erase(sensorId);
-        return -1;
+        m_impl->sensors.erase(key);
+        return false;
     }
 
     sensor.dofIndex = sensor.articulationView->getDofIndex(jointPrimPath);
@@ -231,17 +227,17 @@ int64_t EffortSensorImpl::createSensor(const char* jointPrimPath)
         CARB_LOG_WARN("EffortSensor: could not resolve DOF index for joint '%s' in articulation '%s'", jointPrimPath,
                       articulationRootPath.c_str());
         m_impl->reader->removeView(sensor.viewId.c_str());
-        m_impl->sensors.erase(sensorId);
-        return -1;
+        m_impl->sensors.erase(key);
+        return false;
     }
 
     m_impl->readerGeneration = m_impl->reader->getGeneration();
-    return sensorId;
+    return true;
 }
 
-void EffortSensorImpl::removeSensor(int64_t sensorId)
+void EffortSensorImpl::removeSensor(const char* jointPrimPath)
 {
-    auto it = m_impl->sensors.find(sensorId);
+    auto it = m_impl->sensors.find(std::string(jointPrimPath));
     if (it == m_impl->sensors.end())
         return;
     if (m_impl->reader && !it->second.viewId.empty())
@@ -249,9 +245,10 @@ void EffortSensorImpl::removeSensor(int64_t sensorId)
     m_impl->sensors.erase(it);
 }
 
-EffortSensorReading EffortSensorImpl::getSensorReading(int64_t sensorId)
+EffortSensorReading EffortSensorImpl::getSensorReading(const char* jointPrimPath)
 {
-    auto it = m_impl->sensors.find(sensorId);
+    std::string key(jointPrimPath);
+    auto it = m_impl->sensors.find(key);
     if (it == m_impl->sensors.end())
         return EffortSensorReading();
 
@@ -260,12 +257,11 @@ EffortSensorReading EffortSensorImpl::getSensorReading(int64_t sensorId)
 
     EffortSensorData& sensor = it->second;
 
-    // On-the-fly processing if the reading isn't valid yet but we have data
     if (sensor.enabled && !sensor.latestReading.isValid && sensor.articulationView && m_impl->simManager &&
         m_impl->usdStage && m_impl->lastDt > 0.0f)
     {
         double simTime = m_impl->simManager->getSimulationTime();
-        _processSensor(*m_impl, sensorId, m_impl->lastDt, simTime);
+        _processSensor(*m_impl, key, m_impl->lastDt, simTime);
     }
 
     if (!sensor.enabled || !sensor.latestReading.isValid)
@@ -377,9 +373,9 @@ void EffortSensorImpl::_stepSensors(float dt)
     }
 }
 
-void EffortSensorImpl::_processSensor(ImplData& impl, int64_t sensorId, float dt, double simTime)
+void EffortSensorImpl::_processSensor(ImplData& impl, const std::string& jointPrimPath, float dt, double simTime)
 {
-    auto it = impl.sensors.find(sensorId);
+    auto it = impl.sensors.find(jointPrimPath);
     if (it == impl.sensors.end())
         return;
     EffortSensorData& sensor = it->second;

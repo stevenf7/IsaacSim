@@ -17,8 +17,6 @@
 
 #include <carb/Interface.h>
 
-#include <cstdint>
-
 namespace isaacsim
 {
 namespace sensors
@@ -90,7 +88,7 @@ struct ImuRawData
  */
 struct IImuSensor
 {
-    CARB_PLUGIN_INTERFACE("isaacsim::sensors::experimental::physics::IImuSensor", 1, 0);
+    CARB_PLUGIN_INTERFACE("isaacsim::sensors::experimental::physics::IImuSensor", 2, 0);
 
     /**
      * @brief Shut down the manager, destroying all sensors and freeing resources.
@@ -100,25 +98,26 @@ struct IImuSensor
     /**
      * @brief Create an IMU sensor for the given IsaacImuSensor prim.
      * @details Finds the parent rigid body by walking up the prim hierarchy and
-     * creates an IRigidBodyDataView for velocity data.
+     * creates an IRigidBodyDataView for velocity data. If a sensor already exists
+     * for this prim path the call succeeds without creating a duplicate.
      * @param primPath USD path to the IsaacImuSensor prim.
-     * @return Unique sensor ID (>= 0), or -1 on failure.
+     * @return true on success (sensor created or already exists), false on failure.
      */
-    virtual int64_t createSensor(const char* primPath) = 0;
+    virtual bool createSensor(const char* primPath) = 0;
 
     /**
      * @brief Remove a sensor and free its resources.
-     * @param sensorId ID returned by createSensor().
+     * @param primPath USD path used when the sensor was created.
      */
-    virtual void removeSensor(int64_t sensorId) = 0;
+    virtual void removeSensor(const char* primPath) = 0;
 
     /**
      * @brief Get the latest reading for a sensor.
-     * @param sensorId ID returned by createSensor().
+     * @param primPath USD path used when the sensor was created.
      * @param readGravity If true, include gravity in acceleration output.
      * @return Sensor reading. isValid is false if sensor is disabled or not found.
      */
-    virtual ImuSensorReading getSensorReading(int64_t sensorId, bool readGravity) = 0;
+    virtual ImuSensorReading getSensorReading(const char* primPath, bool readGravity) = 0;
 };
 
 } // namespace physics

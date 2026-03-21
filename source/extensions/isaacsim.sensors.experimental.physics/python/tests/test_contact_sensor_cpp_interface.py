@@ -76,12 +76,11 @@ class TestContactSensorCppInterface(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        sensor_id = iface.create_sensor("/World/Cube/contact_sensor")
-        self.assertGreaterEqual(sensor_id, 0)
+        self.assertTrue(iface.create_sensor("/World/Cube/contact_sensor"))
 
         await step_simulation(1.0)
 
-        reading = iface.get_sensor_reading(sensor_id)
+        reading = iface.get_sensor_reading("/World/Cube/contact_sensor")
         self.assertTrue(reading.is_valid)
         self.assertNotEqual(reading.value, 0.0)
         self.assertTrue(reading.in_contact)
@@ -94,12 +93,11 @@ class TestContactSensorCppInterface(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        sensor_id = iface.create_sensor("/World/Cube/contact_sensor")
-        self.assertGreaterEqual(sensor_id, 0)
+        self.assertTrue(iface.create_sensor("/World/Cube/contact_sensor"))
 
         await step_simulation(1.0)
 
-        raw_contacts = iface.get_raw_contacts(sensor_id)
+        raw_contacts = iface.get_raw_contacts("/World/Cube/contact_sensor")
         self.assertGreater(len(raw_contacts), 0)
 
         contact = raw_contacts[0]
@@ -146,8 +144,7 @@ class TestContactSensorCppInterface(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        sensor_id = iface.create_sensor("/World/Cube")
-        self.assertEqual(sensor_id, -1)
+        self.assertFalse(iface.create_sensor("/World/Cube"))
 
-        reading = iface.get_sensor_reading(-1)
+        reading = iface.get_sensor_reading("/World/nonexistent")
         self.assertFalse(reading.is_valid)

@@ -59,8 +59,14 @@ PYBIND11_MODULE(_physics_sensors, m)
             "create_sensor",
             [](IImuSensor& self, const std::string& primPath) { return self.createSensor(primPath.c_str()); },
             py::arg("prim_path"))
-        .def("remove_sensor", &IImuSensor::removeSensor, py::arg("sensor_id"))
-        .def("get_sensor_reading", &IImuSensor::getSensorReading, py::arg("sensor_id"), py::arg("read_gravity"));
+        .def(
+            "remove_sensor", [](IImuSensor& self, const std::string& primPath) { self.removeSensor(primPath.c_str()); },
+            py::arg("prim_path"))
+        .def(
+            "get_sensor_reading",
+            [](IImuSensor& self, const std::string& primPath, bool readGravity)
+            { return self.getSensorReading(primPath.c_str(), readGravity); },
+            py::arg("prim_path"), py::arg("read_gravity"));
 
     // --- Contact sensor ---
     py::class_<ContactSensorReading>(m, "ContactSensorReading")
@@ -77,15 +83,21 @@ PYBIND11_MODULE(_physics_sensors, m)
             "create_sensor",
             [](IContactSensor& self, const std::string& primPath) { return self.createSensor(primPath.c_str()); },
             py::arg("prim_path"))
-        .def("remove_sensor", &IContactSensor::removeSensor, py::arg("sensor_id"))
-        .def("get_sensor_reading", &IContactSensor::getSensorReading, py::arg("sensor_id"))
+        .def(
+            "remove_sensor",
+            [](IContactSensor& self, const std::string& primPath) { self.removeSensor(primPath.c_str()); },
+            py::arg("prim_path"))
+        .def(
+            "get_sensor_reading",
+            [](IContactSensor& self, const std::string& primPath) { return self.getSensorReading(primPath.c_str()); },
+            py::arg("prim_path"))
         .def(
             "get_raw_contacts",
-            [](IContactSensor& self, int64_t sensorId) -> py::list
+            [](IContactSensor& self, const std::string& primPath) -> py::list
             {
                 const ContactRawData* data = nullptr;
                 int32_t count = 0;
-                self.getRawContacts(sensorId, &data, &count);
+                self.getRawContacts(primPath.c_str(), &data, &count);
                 py::list result;
                 for (int32_t i = 0; i < count; i++)
                 {
@@ -104,7 +116,7 @@ PYBIND11_MODULE(_physics_sensors, m)
                 }
                 return result;
             },
-            py::arg("sensor_id"));
+            py::arg("prim_path"));
 
     // --- Effort sensor ---
     py::class_<EffortSensorReading>(m, "EffortSensorReading")
@@ -121,8 +133,15 @@ PYBIND11_MODULE(_physics_sensors, m)
             [](IEffortSensor& self, const std::string& jointPrimPath)
             { return self.createSensor(jointPrimPath.c_str()); },
             py::arg("joint_prim_path"))
-        .def("remove_sensor", &IEffortSensor::removeSensor, py::arg("sensor_id"))
-        .def("get_sensor_reading", &IEffortSensor::getSensorReading, py::arg("sensor_id"));
+        .def(
+            "remove_sensor",
+            [](IEffortSensor& self, const std::string& jointPrimPath) { self.removeSensor(jointPrimPath.c_str()); },
+            py::arg("prim_path"))
+        .def(
+            "get_sensor_reading",
+            [](IEffortSensor& self, const std::string& jointPrimPath)
+            { return self.getSensorReading(jointPrimPath.c_str()); },
+            py::arg("prim_path"));
 
     // --- Joint state sensor ---
     // positions / velocities / efforts: one copy from C into numpy arrays (no list intermediate).
@@ -187,8 +206,16 @@ PYBIND11_MODULE(_physics_sensors, m)
             [](IJointStateSensor& self, const std::string& articulationRootPath)
             { return self.createSensor(articulationRootPath.c_str()); },
             py::arg("articulation_root_path"))
-        .def("remove_sensor", &IJointStateSensor::removeSensor, py::arg("sensor_id"))
-        .def("get_sensor_reading", &IJointStateSensor::getSensorReading, py::arg("sensor_id"));
+        .def(
+            "remove_sensor",
+            [](IJointStateSensor& self, const std::string& articulationRootPath)
+            { self.removeSensor(articulationRootPath.c_str()); },
+            py::arg("prim_path"))
+        .def(
+            "get_sensor_reading",
+            [](IJointStateSensor& self, const std::string& articulationRootPath)
+            { return self.getSensorReading(articulationRootPath.c_str()); },
+            py::arg("prim_path"));
 }
 
 } // anonymous namespace

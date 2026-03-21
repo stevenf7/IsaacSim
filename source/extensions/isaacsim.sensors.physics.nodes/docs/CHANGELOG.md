@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.0] - 2026-03-20
+### Changed
+- Update OmniGraph nodes to use prim path based sensor API instead of integer sensor IDs
+
 ## [1.3.0] - 2026-03-05
 ### Added
 - Add Isaac Read Joint State node that reads full joint state (names, positions, velocities, efforts, DOF types, stage units) from an articulation prim
