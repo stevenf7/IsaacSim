@@ -1,5 +1,5 @@
 [package]
-version = "1.3.0"
+version = "1.4.0"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor OmniGraph Nodes"
 description = "OmniGraph nodes for Isaac Sim physics-based sensors (Contact, Effort, IMU, Joint State). Depends on isaacsim.sensors.experimental.physics for sensor backends."

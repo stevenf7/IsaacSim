@@ -208,7 +208,6 @@ public:
 struct ContactSensorImpl::ImplData
 {
     long stageId = 0;
-    int64_t nextSensorId = 0;
     float lastDt = 0.0f;
     int stepCount = 0;
     uint64_t readerGeneration = 0;
@@ -222,7 +221,7 @@ struct ContactSensorImpl::ImplData
 
     pxr::UsdStageRefPtr usdStage;
     usdrt::UsdStageRefPtr usdrtStage;
-    std::unordered_map<int64_t, SensorData> sensors;
+    std::unordered_map<std::string, SensorData> sensors;
     ContactDataStore contactStore;
 };
 
@@ -318,28 +317,26 @@ void ContactSensorImpl::_initializeStage(long stageId)
     }
 }
 
-int64_t ContactSensorImpl::createSensor(const char* primPath)
+bool ContactSensorImpl::createSensor(const char* primPath)
 {
     if (!m_impl->usdStage)
-        return -1;
+        return false;
 
-    for (auto& [id, s] : m_impl->sensors)
-    {
-        if (s.sensorPrimPath == primPath)
-            return id;
-    }
+    std::string key(primPath);
+    if (m_impl->sensors.count(key))
+        return true;
 
     pxr::SdfPath sdfPath(primPath);
     pxr::UsdPrim prim = m_impl->usdStage->GetPrimAtPath(sdfPath);
     if (!prim.IsValid())
-        return -1;
+        return false;
 
     if (prim.GetTypeName() != "IsaacContactSensor")
-        return -1;
+        return false;
 
     std::string parentPath = findParentRigidBody(m_impl->usdStage, sdfPath);
     if (parentPath.empty())
-        return -1;
+        return false;
 
     // SIDE EFFECT: createSensor() modifies the USD stage on the parent rigid body.
     //
@@ -378,12 +375,11 @@ int64_t ContactSensorImpl::createSensor(const char* primPath)
             rigidBodyAPI.CreateSleepThresholdAttr(pxr::VtValue(0.0f));
     }
 
-    int64_t sensorId = m_impl->nextSensorId++;
-    SensorData& sensor = m_impl->sensors[sensorId];
+    SensorData& sensor = m_impl->sensors[key];
     sensor.sensorPrimPath = primPath;
     sensor.parentRigidBodyPath = parentPath;
     sensor.parentToken = sdfPathToToken(pxr::SdfPath(parentPath));
-    sensor.viewId = "contact_xform_" + std::to_string(sensorId);
+    sensor.viewId = "contact_xform_" + key;
 
     if (m_impl->reader)
     {
@@ -394,12 +390,12 @@ int64_t ContactSensorImpl::createSensor(const char* primPath)
 
     sensor.refreshConfig(m_impl->usdStage);
 
-    return sensorId;
+    return true;
 }
 
-void ContactSensorImpl::removeSensor(int64_t sensorId)
+void ContactSensorImpl::removeSensor(const char* primPath)
 {
-    auto it = m_impl->sensors.find(sensorId);
+    auto it = m_impl->sensors.find(std::string(primPath));
     if (it == m_impl->sensors.end())
         return;
     if (m_impl->reader && !it->second.viewId.empty())
@@ -407,16 +403,16 @@ void ContactSensorImpl::removeSensor(int64_t sensorId)
     m_impl->sensors.erase(it);
 }
 
-ContactSensorReading ContactSensorImpl::getSensorReading(int64_t sensorId)
+ContactSensorReading ContactSensorImpl::getSensorReading(const char* primPath)
 {
-    auto it = m_impl->sensors.find(sensorId);
+    auto it = m_impl->sensors.find(std::string(primPath));
     if (it == m_impl->sensors.end())
         return ContactSensorReading();
 
     return it->second.latestReading;
 }
 
-void ContactSensorImpl::getRawContacts(int64_t sensorId, const ContactRawData** outData, int32_t* outCount)
+void ContactSensorImpl::getRawContacts(const char* primPath, const ContactRawData** outData, int32_t* outCount)
 {
     if (!outData || !outCount)
         return;
@@ -424,7 +420,7 @@ void ContactSensorImpl::getRawContacts(int64_t sensorId, const ContactRawData** 
     *outData = nullptr;
     *outCount = 0;
 
-    auto it = m_impl->sensors.find(sensorId);
+    auto it = m_impl->sensors.find(std::string(primPath));
     if (it == m_impl->sensors.end())
         return;
 
@@ -620,9 +616,9 @@ void ContactSensorImpl::_stepSensors(float dt)
     }
 }
 
-void ContactSensorImpl::_processSensor(ImplData& impl, int64_t sensorId, float dt, double simTime)
+void ContactSensorImpl::_processSensor(ImplData& impl, const std::string& primPath, float dt, double simTime)
 {
-    auto it = impl.sensors.find(sensorId);
+    auto it = impl.sensors.find(primPath);
     if (it == impl.sensors.end())
         return;
     SensorData& sensor = it->second;

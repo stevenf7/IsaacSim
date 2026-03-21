@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0] - 2026-03-20
+### Changed
+- Replace int64 sensorID with prim path string for deterministic sensor identity across runs
+- Bump C++ Carbonite interface versions to 2.0 (IImuSensor, IContactSensor, IEffortSensor, IJointStateSensor)
+- createSensor() now returns bool instead of int64; removeSensor/getSensorReading/getRawContacts take prim path instead of sensor ID
+- Internal sensor maps keyed by prim path (std::string) instead of monotonic counter
+
 ## [2.2.1] - 2026-03-12
 ### Changed
 - Migrate ContactSensor and ImuSensor world-transform reads from computeWorldXformNoCache to IXformDataView (IPrimDataReader)

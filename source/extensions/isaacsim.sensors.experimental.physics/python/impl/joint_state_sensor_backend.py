@@ -53,7 +53,7 @@ class JointStateSensorBackend:
 
     def __init__(self, articulation_prim_path: str) -> None:
         self._articulation_prim_path = articulation_prim_path
-        self._sensor_id: int = -1
+        self._sensor_created: bool = False
         self._iface = None
 
     def _ensure_sensor(self) -> bool:
@@ -61,10 +61,10 @@ class JointStateSensorBackend:
             self._iface = _get_joint_state_interface()
         if self._iface is None:
             return False
-        if self._sensor_id >= 0:
+        if self._sensor_created:
             return True
-        self._sensor_id = self._iface.create_sensor(self._articulation_prim_path)
-        return self._sensor_id >= 0
+        self._sensor_created = self._iface.create_sensor(self._articulation_prim_path)
+        return self._sensor_created
 
     def get_sensor_reading(self) -> object:
         """Get the complete joint state reading.
@@ -72,24 +72,24 @@ class JointStateSensorBackend:
         Returns the C++ JointStateSensorReading struct with dof_count, dof_names,
         positions, velocities, and efforts populated when is_valid is True.
         """
-        if self._sensor_id < 0 and not self._ensure_sensor():
+        if not self._sensor_created and not self._ensure_sensor():
             return _get_invalid_reading()
 
-        reading = self._iface.get_sensor_reading(self._sensor_id)
+        reading = self._iface.get_sensor_reading(self._articulation_prim_path)
         if not reading.is_valid:
-            self._sensor_id = -1
+            self._sensor_created = False
             if not self._ensure_sensor():
                 return _get_invalid_reading()
-            reading = self._iface.get_sensor_reading(self._sensor_id)
+            reading = self._iface.get_sensor_reading(self._articulation_prim_path)
         return reading
 
     def on_timeline_stop(self) -> None:
         """Reset sensor state on timeline stop."""
-        self._sensor_id = -1
+        self._sensor_created = False
         self._iface = None
 
     def reset(self) -> None:
         """Remove the C++ sensor and reset state."""
-        if self._iface is not None and self._sensor_id >= 0:
-            self._iface.remove_sensor(self._sensor_id)
-        self._sensor_id = -1
+        if self._iface is not None and self._sensor_created:
+            self._iface.remove_sensor(self._articulation_prim_path)
+        self._sensor_created = False

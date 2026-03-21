@@ -68,7 +68,7 @@ class ImuSensorBackend(_PhysicsSensorBase):
 
     def __init__(self, prim_path: str):
         self._prim_path = prim_path
-        self._sensor_id: int = -1
+        self._sensor_created: bool = False
         self._iface = None
         _SensorStepManager.instance().register(self)
 
@@ -82,10 +82,10 @@ class ImuSensorBackend(_PhysicsSensorBase):
             self._iface = _get_imu_interface()
         if self._iface is None:
             return False
-        if self._sensor_id >= 0:
+        if self._sensor_created:
             return True
-        self._sensor_id = self._iface.create_sensor(self._prim_path)
-        return self._sensor_id >= 0
+        self._sensor_created = self._iface.create_sensor(self._prim_path)
+        return self._sensor_created
 
     def get_sensor_reading(self, read_gravity: bool = True) -> object:
         """Get the current IMU sensor reading.
@@ -94,15 +94,15 @@ class ImuSensorBackend(_PhysicsSensorBase):
         ``reading.linear_acceleration_x``, ``reading.orientation_w``, etc.
         An ``orientation`` property returns ``(w, x, y, z)`` as a tuple.
         """
-        if self._sensor_id < 0 and not self._ensure_sensor():
+        if not self._sensor_created and not self._ensure_sensor():
             return _get_invalid_imu_reading()
 
-        reading = self._iface.get_sensor_reading(self._sensor_id, read_gravity)
+        reading = self._iface.get_sensor_reading(self._prim_path, read_gravity)
         if not reading.is_valid:
-            self._sensor_id = -1
+            self._sensor_created = False
             if not self._ensure_sensor():
                 return _get_invalid_imu_reading()
-            reading = self._iface.get_sensor_reading(self._sensor_id, read_gravity)
+            reading = self._iface.get_sensor_reading(self._prim_path, read_gravity)
         return reading
 
     def on_physics_step(self, step_dt: float):
@@ -115,14 +115,14 @@ class ImuSensorBackend(_PhysicsSensorBase):
 
     def on_timeline_stop(self):
         """Handle timeline stop events."""
-        self._sensor_id = -1
+        self._sensor_created = False
         self._iface = None
 
     def reset(self):
         """Reset the IMU sensor.
 
-        Removes the sensor from the simulation and resets the sensor ID.
+        Removes the sensor from the simulation and resets state.
         """
-        if self._iface is not None and self._sensor_id >= 0:
-            self._iface.remove_sensor(self._sensor_id)
-        self._sensor_id = -1
+        if self._iface is not None and self._sensor_created:
+            self._iface.remove_sensor(self._prim_path)
+        self._sensor_created = False

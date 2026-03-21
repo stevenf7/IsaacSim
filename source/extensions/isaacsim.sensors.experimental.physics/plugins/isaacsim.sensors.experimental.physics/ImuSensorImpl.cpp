@@ -258,7 +258,6 @@ struct ImuSensorImpl::ImplData
 {
     long stageId = 0;
     std::string engineType = "physx";
-    int64_t nextSensorId = 0;
     float lastDt = 0.0f;
     int stepCount = 0;
     uint64_t readerGeneration = 0;
@@ -273,7 +272,7 @@ struct ImuSensorImpl::ImplData
     pxr::UsdStageRefPtr usdStage;
     usdrt::UsdStageRefPtr usdrtStage;
     pxr::SdfPath cachedPhysicsScenePath;
-    std::unordered_map<int64_t, SensorData> sensors;
+    std::unordered_map<std::string, SensorData> sensors;
 };
 
 ImuSensorImpl::ImuSensorImpl() : m_impl(std::make_unique<ImplData>())
@@ -376,50 +375,47 @@ void ImuSensorImpl::_initializeStage(long stageId)
     _subscribeToPhysicsStepEvents();
 }
 
-int64_t ImuSensorImpl::createSensor(const char* primPath)
+bool ImuSensorImpl::createSensor(const char* primPath)
 {
     if (!m_impl->usdStage || !m_impl->reader)
-        return -1;
+        return false;
 
-    for (auto& [id, s] : m_impl->sensors)
-    {
-        if (s.sensorPrimPath == primPath)
-            return id;
-    }
+    std::string key(primPath);
+    if (m_impl->sensors.count(key))
+        return true;
 
     pxr::SdfPath sdfPath(primPath);
     pxr::UsdPrim prim = m_impl->usdStage->GetPrimAtPath(sdfPath);
     if (!prim.IsValid())
-        return -1;
+        return false;
 
     std::string parentPath = findParentRigidBody(m_impl->usdStage, sdfPath);
     if (parentPath.empty())
-        return -1;
+        return false;
 
-    int64_t sensorId = m_impl->nextSensorId++;
-    SensorData& sensor = m_impl->sensors[sensorId];
+    SensorData& sensor = m_impl->sensors[key];
     sensor.sensorPrimPath = primPath;
     sensor.parentRigidBodyPath = parentPath;
-    sensor.viewId = "imu_rb_" + std::to_string(sensorId);
+    sensor.viewId = "imu_rb_" + key;
 
     const char* pathStr = parentPath.c_str();
     sensor.rigidBodyView =
         m_impl->reader->createRigidBodyView(sensor.viewId.c_str(), &pathStr, 1, m_impl->engineType.c_str());
     if (!sensor.rigidBodyView)
     {
-        m_impl->sensors.erase(sensorId);
-        return -1;
+        m_impl->sensors.erase(key);
+        return false;
     }
 
     m_impl->readerGeneration = m_impl->reader->getGeneration();
     sensor.refreshConfig(m_impl->usdStage, m_impl->cachedPhysicsScenePath);
     sensor.resetBuffers();
-    return sensorId;
+    return true;
 }
 
-void ImuSensorImpl::removeSensor(int64_t sensorId)
+void ImuSensorImpl::removeSensor(const char* primPath)
 {
-    auto it = m_impl->sensors.find(sensorId);
+    auto it = m_impl->sensors.find(std::string(primPath));
     if (it == m_impl->sensors.end())
         return;
     if (m_impl->reader && !it->second.viewId.empty())
@@ -427,9 +423,10 @@ void ImuSensorImpl::removeSensor(int64_t sensorId)
     m_impl->sensors.erase(it);
 }
 
-ImuSensorReading ImuSensorImpl::getSensorReading(int64_t sensorId, bool readGravity)
+ImuSensorReading ImuSensorImpl::getSensorReading(const char* primPath, bool readGravity)
 {
-    auto it = m_impl->sensors.find(sensorId);
+    std::string key(primPath);
+    auto it = m_impl->sensors.find(key);
     if (it == m_impl->sensors.end())
         return ImuSensorReading();
 
@@ -441,7 +438,7 @@ ImuSensorReading ImuSensorImpl::getSensorReading(int64_t sensorId, bool readGrav
         m_impl->simManager && m_impl->usdStage && m_impl->lastDt > 0.0f)
     {
         double simTime = m_impl->simManager->getSimulationTime();
-        _processSensor(*m_impl, sensorId, m_impl->lastDt, simTime, m_impl->stepCount);
+        _processSensor(*m_impl, key, m_impl->lastDt, simTime, m_impl->stepCount);
     }
 
     if (!sensor.enabled || sensor.readings.empty() || !sensor.readingAt(0).isValid)
@@ -576,9 +573,9 @@ void ImuSensorImpl::_stepSensors(float dt)
     }
 }
 
-void ImuSensorImpl::_processSensor(ImplData& impl, int64_t sensorId, float dt, double simTime, int64_t stepIndex)
+void ImuSensorImpl::_processSensor(ImplData& impl, const std::string& primPath, float dt, double simTime, int64_t stepIndex)
 {
-    auto it = impl.sensors.find(sensorId);
+    auto it = impl.sensors.find(primPath);
     if (it == impl.sensors.end())
         return;
     SensorData& sensor = it->second;

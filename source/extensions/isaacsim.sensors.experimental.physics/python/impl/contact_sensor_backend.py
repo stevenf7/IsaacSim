@@ -68,7 +68,7 @@ class ContactSensorBackend(_PhysicsSensorBase):
 
     def __init__(self, prim_path: str):
         self._prim_path = prim_path
-        self._cpp_sensor_id: int = -1
+        self._sensor_created: bool = False
         self._iface = None
         self._is_valid_sensor = self._check_sensor_prim_type()
         self._latest_reading = ContactSensorReading()
@@ -99,13 +99,13 @@ class ContactSensorBackend(_PhysicsSensorBase):
         Returns:
             True if the sensor is created and initialized, False otherwise.
         """
-        if self._cpp_sensor_id >= 0:
+        if self._sensor_created:
             return True
         iface = self._get_iface()
         if iface is None:
             return False
-        self._cpp_sensor_id = iface.create_sensor(self._prim_path)
-        return self._cpp_sensor_id >= 0
+        self._sensor_created = iface.create_sensor(self._prim_path)
+        return self._sensor_created
 
     def on_physics_step(self, step_dt: float) -> None:
         """Called by _SensorStepManager after each physics step.
@@ -127,11 +127,11 @@ class ContactSensorBackend(_PhysicsSensorBase):
         if iface is None:
             return
 
-        cpp_reading = iface.get_sensor_reading(self._cpp_sensor_id)
-        if not cpp_reading.is_valid and self._cpp_sensor_id >= 0:
-            self._cpp_sensor_id = -1
+        cpp_reading = iface.get_sensor_reading(self._prim_path)
+        if not cpp_reading.is_valid and self._sensor_created:
+            self._sensor_created = False
             if self._ensure_cpp_sensor():
-                cpp_reading = iface.get_sensor_reading(self._cpp_sensor_id)
+                cpp_reading = iface.get_sensor_reading(self._prim_path)
 
         self._latest_reading = cpp_reading
 
@@ -139,7 +139,7 @@ class ContactSensorBackend(_PhysicsSensorBase):
         """Reset sensor state when timeline stops."""
         self._latest_reading = ContactSensorReading()
         self._last_physics_step = -1
-        self._cpp_sensor_id = -1
+        self._sensor_created = False
         self._iface = None
 
     def get_sensor_reading(self) -> ContactSensorReading:
@@ -198,7 +198,7 @@ class ContactSensorBackend(_PhysicsSensorBase):
         if iface is None:
             return []
 
-        return iface.get_raw_contacts(self._cpp_sensor_id)
+        return iface.get_raw_contacts(self._prim_path)
 
     @property
     def parent_token(self) -> int | None:

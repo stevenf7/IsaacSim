@@ -18,6 +18,7 @@
 #include <isaacsim/sensors/experimental/physics/IImuSensor.h>
 
 #include <memory>
+#include <string>
 
 namespace isaacsim
 {
@@ -35,9 +36,9 @@ public:
     ~ImuSensorImpl();
 
     void shutdown() override;
-    int64_t createSensor(const char* primPath) override;
-    void removeSensor(int64_t sensorId) override;
-    ImuSensorReading getSensorReading(int64_t sensorId, bool readGravity) override;
+    bool createSensor(const char* primPath) override;
+    void removeSensor(const char* primPath) override;
+    ImuSensorReading getSensorReading(const char* primPath, bool readGravity) override;
 
 private:
     struct ImplData;
@@ -52,7 +53,7 @@ private:
     void _unsubscribeFromPhysicsStepEvents();
     void _stepSensors(float dt);
     void _recreateSensorViews();
-    void _processSensor(ImplData& impl, int64_t sensorId, float dt, double simTime, int64_t stepIndex);
+    void _processSensor(ImplData& impl, const std::string& primPath, float dt, double simTime, int64_t stepIndex);
     static void _sanitizeReading(ImuSensorReading& r);
 };
 

@@ -18,6 +18,7 @@
 #include <isaacsim/sensors/experimental/physics/IContactSensor.h>
 
 #include <memory>
+#include <string>
 
 namespace isaacsim
 {
@@ -35,10 +36,10 @@ public:
     ~ContactSensorImpl();
 
     void shutdown() override;
-    int64_t createSensor(const char* primPath) override;
-    void removeSensor(int64_t sensorId) override;
-    ContactSensorReading getSensorReading(int64_t sensorId) override;
-    void getRawContacts(int64_t sensorId, const ContactRawData** outData, int32_t* outCount) override;
+    bool createSensor(const char* primPath) override;
+    void removeSensor(const char* primPath) override;
+    ContactSensorReading getSensorReading(const char* primPath) override;
+    void getRawContacts(const char* primPath, const ContactRawData** outData, int32_t* outCount) override;
 
 private:
     struct ImplData;
@@ -54,7 +55,7 @@ private:
     void _unsubscribeFromPhysicsStepEvents();
     void _pullContactData(float dt);
     void _stepSensors(float dt);
-    void _processSensor(ImplData& impl, int64_t sensorId, float dt, double simTime);
+    void _processSensor(ImplData& impl, const std::string& primPath, float dt, double simTime);
 };
 
 } // namespace physics
