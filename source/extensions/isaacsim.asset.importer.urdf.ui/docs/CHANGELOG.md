@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.5] - 2026-03-21
+### Fixed
+- Fixed test setUp to call `super().setUp()`, ensuring menus are rebuilt before UI tests run so `File/Import` navigation succeeds on first test invocation
+
 ## [1.0.4] - 2026-03-09
 ### Fixed
 - Hardened subprocess calls to avoid shell=True with string concatenation

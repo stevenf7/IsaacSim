@@ -79,8 +79,13 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
             >>> import asyncio
             >>> asyncio.sleep(0)  # doctest: +SKIP
         """
-        await omni.kit.app.get_app().next_update_async()
-        pass
+        if self._timeline.is_playing():
+            self._timeline.stop()
+        # Flush several run-loop frames so the timeline plugin fully processes
+        # the stop event before the next test's new_stage_async() destroys the
+        # current stage (avoiding a SIGSEGV in UsdStage::~UsdStage).
+        for _ in range(10):
+            await omni.kit.app.get_app().next_update_async()
 
     async def standard_checks(self, prim_path: str) -> None:
         """Validate standard properties of imported URDF prims.

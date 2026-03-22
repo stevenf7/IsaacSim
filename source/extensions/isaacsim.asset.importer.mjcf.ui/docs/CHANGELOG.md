@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.1] - 2026-03-21
+### Fixed
+- Fixed test setUp to call `super().setUp()`, ensuring menus are rebuilt before UI tests run so `File/Import` navigation succeeds on first test invocation
+
 ## [1.1.0] - 2026-03-04
 ### Changed
 - Added scene import option to the UI
