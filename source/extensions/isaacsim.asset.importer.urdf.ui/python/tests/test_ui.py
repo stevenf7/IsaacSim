@@ -61,7 +61,7 @@ class TestImporterUI(MenuUITestCase):
             >>> import omni.usd
             >>> omni.usd.get_context()  # doctest: +SKIP
         """
-        self._timeline = omni.timeline.get_timeline_interface()
+        await super().setUp()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.importer.urdf.ui")
@@ -71,10 +71,6 @@ class TestImporterUI(MenuUITestCase):
         self._urdf_path = os.path.normpath(
             os.path.join(self._urdf_extension_path, "data", "urdf", "robots", "ur10", "urdf", "ur10.urdf")
         )
-
-        await omni.usd.get_context().new_stage_async()
-        await omni.kit.app.get_app().next_update_async()
-        self._stage = omni.usd.get_context().get_stage()
 
     # After running each test
     async def tearDown(self) -> None:

@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.2.2] - 2026-03-21
+### Fixed
+- Fixed test teardown to stop the timeline and flush run-loop frames before the next stage is created, preventing a SIGSEGV crash in `UsdStage::~UsdStage`
+
 ## [3.2.1] - 2026-03-09
 ### Changed
 - Update urdf-usd-converter to v0.1.0
