@@ -99,13 +99,18 @@ class Executor:
                 return k
         return -1
 
-    async def execute(self, source: str) -> ExecutionResult:
+    def execute(self, source: str) -> ExecutionResult:
         """Execute *source* in the configured Python scope.
 
         The method first attempts to compile the source as an expression
         (``eval`` mode).  If that fails with a `SyntaxError`, it falls back to
         ``exec`` mode.  For expressions the evaluated value is captured in
         `ExecutionResult.result`.
+
+        When the compiled code is a coroutine (contains top-level ``await``),
+        the unawaited coroutine is stored in ``result`` so the caller can
+        schedule it on the event loop.  This avoids running user code inside an
+        asyncio Task, which would prevent other pending tasks from being woken.
 
         Args:
             source: Python statement or expression to execute.
@@ -128,11 +133,11 @@ class Executor:
 
                 if is_exec:
                     code = compile(source, "<string>", "exec", flags=self._compiler_flags, dont_inherit=True)
-                    eval(code, self._globals, self._locals)  # noqa: S307
-                    result = _SENTINEL
+                    result = eval(code, self._globals, self._locals)  # noqa: S307
 
-                if self._coroutine_flag != -1 and bool(code.co_flags & self._coroutine_flag):
-                    result = await result
+                is_coroutine = self._coroutine_flag != -1 and bool(code.co_flags & self._coroutine_flag)
+                if not is_coroutine and is_exec:
+                    result = _SENTINEL
         except Exception as exc:
             return ExecutionResult(
                 output=output.getvalue(),

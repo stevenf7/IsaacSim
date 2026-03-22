@@ -9,8 +9,6 @@
 
 .. _isaac_sim_tutorial_tuning_openusd_practice:
 
-==============================================
-Tutorial 7: Using the Dexterous Hand in Practice
 =================================================
 Tutorial 7: Using the Dexterous Hand in Practice
 =================================================

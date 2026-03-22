@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # Configuration Selector Extension
 
 This Sphinx extension provides an alternative to nested tabs by implementing a configuration selector. Users select their configuration once at the top of the page, and all relevant content is dynamically shown/hidden throughout the document.

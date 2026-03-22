@@ -127,7 +127,7 @@ enum class DofOffsetOpOrder
 };
 
 /** @brief Common prefix token for Isaac schema attributes. */
-const std::string _attrPrefix("isaac");
+const std::string _attrPrefix = "isaac";
 
 /** @brief Array of schema class name strings indexed by Classes enum. */
 const std::string classNames[] = { "IsaacRobotAPI", "IsaacLinkAPI",        "IsaacReferencePointAPI", "IsaacSiteAPI",
@@ -226,10 +226,10 @@ inline pxr::TfToken getAttributeName(Attributes attr);
 namespace details
 {
 /** @brief Token for PhysicsD6Joint type name. */
-inline const pxr::TfToken kPhysicsD6JointType("PhysicsD6Joint");
+inline const pxr::TfToken kPhysicsD6JointType{ "PhysicsD6Joint" };
 
 /** @brief Token for PhysicsSphericalJoint type name. */
-inline const pxr::TfToken kPhysicsSphericalJointType("PhysicsSphericalJoint");
+inline const pxr::TfToken kPhysicsSphericalJointType{ "PhysicsSphericalJoint" };
 
 /**
  * @brief Check if a joint prim is a multi-axis joint.
@@ -278,6 +278,7 @@ inline const std::array<DeprecatedDofAttributeDescriptor, 6> kDeprecatedDofAttri
     DeprecatedDofAttributeDescriptor{ pxr::TfToken("isaac:physics:Rot_Z:DoFOffset"), "RotZ", pxr::UsdPhysicsTokens->rotZ }
 };
 
+/// @cond DOXYGEN_SHOULD_SKIP_THIS
 inline const std::unordered_map<std::string, size_t> kTokenFallbackOrder = []()
 {
     std::unordered_map<std::string, size_t> order;
@@ -287,6 +288,7 @@ inline const std::unordered_map<std::string, size_t> kTokenFallbackOrder = []()
     }
     return order;
 }();
+/// @endcond
 
 /**
  * @brief Check if a joint axis has valid limit values.

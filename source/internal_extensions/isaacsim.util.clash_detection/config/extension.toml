@@ -2,7 +2,7 @@
 version = "0.2.0"
 category = "Simulation"
 title = "Isaac Sim Clash Detection"
-description = "Mesh Collision Detection Utility"
+description = "Mesh collision detection utility for identifying overlapping geometry"
 authors = ["hmazhar@nvidia.com", "rgasoto@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.util.clash_detection"
 keywords = ["isaac", "clashdetection", "utils",]

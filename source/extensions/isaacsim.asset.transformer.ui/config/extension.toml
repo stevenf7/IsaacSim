@@ -2,7 +2,7 @@
 version = "1.0.1"
 category = "Simulation"
 title = "Isaac Sim Asset Transformer"
-description = "Tool for applying asset transformations"
+description = "UI tool for applying and previewing asset transformations"
 authors = ["sharper@nvidia.com", "rgasoto@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim"
 keywords = ["isaac", "asset", "transformer", "ui"]

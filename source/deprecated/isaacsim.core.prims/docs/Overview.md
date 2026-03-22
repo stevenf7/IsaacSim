@@ -8,15 +8,17 @@ isaacsim.core.prims provides a comprehensive set of APIs for reading and writing
 
 <div align="center">
 
-```text
-XFormPrim
-├── GeometryPrim
-│   └── SdfShapePrim
-├── RigidPrim
-├── Articulation
-├── ClothPrim
-└── DeformablePrim
+```{mermaid}
+graph TD
+    %% Inheritance relationships
+    XFormPrim --> GeometryPrim
+    XFormPrim --> RigidPrim
+    XFormPrim --> Articulation
+    XFormPrim --> ClothPrim
+    XFormPrim --> DeformablePrim
+    GeometryPrim --> SdfShapePrim
 ```
+
 
 </div>
 

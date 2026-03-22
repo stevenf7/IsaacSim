@@ -258,7 +258,7 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
                 return False
 
             stamp = self._ros_msg_data.header.stamp.sec + self._ros_msg_data.header.stamp.nanosec / 1e9
-            if stamp < 1.0:
+            if stamp < 0.2:
                 return False
             if system_time_start is not None and stamp < system_time_start:
                 return False

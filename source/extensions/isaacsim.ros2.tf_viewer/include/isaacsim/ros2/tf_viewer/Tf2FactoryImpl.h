@@ -45,16 +45,10 @@ public:
 } // namespace ros2
 } // namespace isaacsim
 
+/// @cond DOXYGEN_SHOULD_SKIP_THIS
 #ifdef _MSC_VER
-/**
- * @brief Factory creation function for Windows platform.
- * @return Pointer to a new TF2 factory instance.
- */
 extern "C" __declspec(dllexport) isaacsim::ros2::tf_viewer::Tf2Factory* createFactory();
 #else
-/**
- * @brief Factory creation function for non-Windows platforms.
- * @return Pointer to a new TF2 factory instance.
- */
 extern "C" isaacsim::ros2::tf_viewer::Tf2Factory* createFactory();
 #endif
+/// @endcond

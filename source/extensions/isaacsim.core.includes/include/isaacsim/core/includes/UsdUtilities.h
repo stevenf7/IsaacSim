@@ -52,7 +52,7 @@ namespace includes
  * @brief Token for overriding prim names in Isaac Sim.
  * @details Used to specify custom names for prims that differ from their USD names.
  */
-static const PXR_NS::TfToken g_kIsaacNameOveride("isaac:nameOverride");
+static const PXR_NS::TfToken g_kIsaacNameOveride{ "isaac:nameOverride" };
 
 /**
  * enum to show effective timesamples in layerstacks based on current authoring layer

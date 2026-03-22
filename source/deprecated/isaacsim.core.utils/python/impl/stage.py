@@ -166,7 +166,7 @@ def set_stage_up_axis(axis: str = "z"):
     """Change the up axis of the current stage
 
     Args:
-        axis: valid values are ``"x"``, ``"y"`` and ``"z"
+        axis: valid values are ``"x"``, ``"y"`` and ``"z"``
 
     Example:
 

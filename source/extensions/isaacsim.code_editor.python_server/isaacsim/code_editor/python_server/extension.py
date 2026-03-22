@@ -23,6 +23,7 @@ import socket
 import sys
 import threading
 import time
+import traceback
 
 import carb
 import omni.ext
@@ -203,10 +204,7 @@ class Extension(omni.ext.IExt):
                 self.transport = transport
 
             def data_received(self, data: bytes) -> None:
-                asyncio.run_coroutine_threadsafe(
-                    self._parent._process_code(data.decode(), self.transport),
-                    _get_event_loop(),
-                )
+                self._parent._process_code(data.decode(), self.transport)
 
             def eof_received(self) -> bool:
                 return True
@@ -225,16 +223,58 @@ class Extension(omni.ext.IExt):
             carb.log_error(str(exc))
             self._server = None
 
-    async def _process_code(self, source: str, transport: asyncio.Transport) -> None:
+    def _process_code(self, source: str, transport: asyncio.Transport) -> None:
         """Execute Python source and send a JSON reply back to the client.
+
+        Synchronous code is executed directly inside the protocol callback so
+        that the event loop is **not** inside an asyncio Task.  This avoids
+        ``RuntimeError: Cannot enter into task … while another task … is being
+        executed`` when the user code pumps the application event loop (e.g.
+        ``update_app``).
+
+        If the compiled code is a coroutine (contains ``await``), a Task is
+        created to await it and send the reply asynchronously.
 
         Args:
             source: The Python source code to execute.
             transport: The asyncio transport for sending the response.
         """
         executor = Executor(self._globals, self._globals)
-        exec_result: ExecutionResult = await executor.execute(source)
+        exec_result: ExecutionResult = executor.execute(source)
 
+        if exec_result.exception is None and asyncio.iscoroutine(exec_result.result):
+            _get_event_loop().create_task(self._await_and_reply(exec_result, transport))
+            return
+
+        self._send_reply(exec_result, transport)
+
+    async def _await_and_reply(self, exec_result: ExecutionResult, transport: asyncio.Transport) -> None:
+        """Await a coroutine result produced by user code and send the reply.
+
+        Args:
+            exec_result: The execution result whose ``result`` is a coroutine.
+            transport: The asyncio transport for sending the response.
+        """
+        coro = exec_result.result
+        try:
+            awaited = await coro
+        except Exception as exc:
+            exec_result = ExecutionResult(
+                output=exec_result.output,
+                exception=exc,
+                traceback_str=traceback.format_exc(),
+            )
+        else:
+            exec_result = ExecutionResult(output=exec_result.output, result=awaited)
+        self._send_reply(exec_result, transport)
+
+    def _send_reply(self, exec_result: ExecutionResult, transport: asyncio.Transport) -> None:
+        """Build and send the JSON response for an execution result.
+
+        Args:
+            exec_result: The completed execution result.
+            transport: The asyncio transport for sending the response.
+        """
         output = exec_result.output
         if output.endswith("\n"):
             output = output[:-1]

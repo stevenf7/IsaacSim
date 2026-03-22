@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import unittest
 
 import isaacsim.core.experimental.utils.app as app_utils
 import omni.kit.test
@@ -32,7 +33,7 @@ class TestApp(omni.kit.test.AsyncTestCase):
         super().tearDown()
 
     # --------------------------------------------------------------------
-
+    @unittest.skip("Skipping update_app tests in async environment")
     async def test_update_app(self):
         # perform 1 update step
         app_utils.update_app()

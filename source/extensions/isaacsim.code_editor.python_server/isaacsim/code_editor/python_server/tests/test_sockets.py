@@ -91,6 +91,19 @@ class TestSockets(omni.kit.test.AsyncTestCase):
         self.assertIsInstance(data["result"], str)
         self.assertTrue(data["result"].startswith("<object object at"))
 
+    async def test_sync_code_not_in_asyncio_task(self) -> None:
+        """Verify that synchronous code does not execute inside an asyncio Task.
+
+        Running user code inside a Task causes ``RuntimeError: Cannot enter
+        into task … while another task … is being executed`` when the code
+        pumps the Kit event loop (e.g. ``update_app``) and pending tasks try
+        to wake up.  This test ensures the fix stays in place.
+        """
+        data = await _send_and_receive(self._socket_port, "__import__('asyncio').current_task()")
+        print("response:", data)
+        self.assertEqual("ok", data.get("status"))
+        self.assertIsNone(data["result"], "Synchronous code must not execute inside an asyncio Task")
+
     async def test_tcp_socket_multiline(self) -> None:
         """Verify that multiline code returns combined output."""
         source = "for i in range(3):\n    print(i)"

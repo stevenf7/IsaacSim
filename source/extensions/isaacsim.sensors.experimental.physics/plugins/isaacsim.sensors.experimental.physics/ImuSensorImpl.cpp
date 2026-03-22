@@ -34,13 +34,14 @@
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 #include <pxr/usd/usdPhysics/scene.h>
-#include <usdrt/scenegraph/usd/rt/xformable.h>
 #if defined(_WIN32)
+#    include <usdrt/scenegraph/usd/rt/xformable.h>
 #    include <usdrt/scenegraph/usd/usd/stage.h>
 #else
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wunused-variable"
 #    pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#    include <usdrt/scenegraph/usd/rt/xformable.h>
 #    include <usdrt/scenegraph/usd/usd/stage.h>
 #    pragma GCC diagnostic pop
 #endif

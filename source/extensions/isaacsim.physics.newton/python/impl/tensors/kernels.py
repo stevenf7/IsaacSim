@@ -19,6 +19,8 @@ These kernels handle efficient get/set operations for articulation properties
 using Warp's GPU acceleration.
 """
 
+from __future__ import annotations
+
 from typing import Any
 
 import newton

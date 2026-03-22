@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 import json
 
 import numpy as np
 import omni.graph.core as og
 import omni.kit.test
-from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import create_new_stage_async
 
 from .common import ROS2TestCase
@@ -132,7 +130,7 @@ class TestRos2Publisher(ROS2TestCase):
                     rotation=geometry_msgs.msg.Quaternion(x=float(i), y=float(i - 1), z=float(i - 2), w=float(i - 3)),
                 ),
             )
-            for i in range(2**10 + 1)
+            for i in range(2**12)
         ]
         messages += [
             (
@@ -167,32 +165,11 @@ class TestRos2Publisher(ROS2TestCase):
             if message_type.startswith("tf2_msgs"):
                 og.Controller.attribute("inputs:transforms", ogn_node).set(
                     [
-                        json.dumps(
-                            {
-                                "header": {
-                                    "frame_id": transform.header.frame_id,
-                                    "stamp": {
-                                        "sec": transform.header.stamp.sec,
-                                        "nanosec": transform.header.stamp.nanosec,
-                                    },
-                                },
-                                "child_frame_id": transform.child_frame_id,
-                                "transform": {
-                                    "translation": {
-                                        "x": transform.transform.translation.x,
-                                        "y": transform.transform.translation.y,
-                                        "z": transform.transform.translation.z,
-                                    },
-                                    "rotation": {
-                                        "x": transform.transform.rotation.x,
-                                        "y": transform.transform.rotation.y,
-                                        "z": transform.transform.rotation.z,
-                                        "w": transform.transform.rotation.w,
-                                    },
-                                },
-                            }
-                        )
-                        for transform in message_value.transforms
+                        f'{{"header": {{"frame_id": "{t.header.frame_id}", "stamp": {{"sec": {t.header.stamp.sec}, "nanosec": {t.header.stamp.nanosec}}}}}, '
+                        f'"child_frame_id": "{t.child_frame_id}", '
+                        f'"transform": {{"translation": {{"x": {t.transform.translation.x}, "y": {t.transform.translation.y}, "z": {t.transform.translation.z}}}, '
+                        f'"rotation": {{"x": {t.transform.rotation.x}, "y": {t.transform.rotation.y}, "z": {t.transform.rotation.z}, "w": {t.transform.rotation.w}}}}}}}'
+                        for t in message_value.transforms
                     ]
                 )
             # - array
@@ -215,11 +192,18 @@ class TestRos2Publisher(ROS2TestCase):
                 else:
                     og.Controller.attribute("inputs:data", ogn_node).set(message_value.data)
 
+            self._ros_message = None
             self._timeline.play()
-            await asyncio.sleep(0.25)
 
-            # spin node
-            rclpy.spin_once(ros2_node)
+            def spin_callback():
+                rclpy.spin_once(ros2_node, timeout_sec=0)
+
+            condition_met = await self.simulate_until_condition(
+                condition_func=lambda: self._ros_message is not None,
+                max_frames=300,
+                per_frame_callback=spin_callback,
+            )
+            self.assertTrue(condition_met, f"Timed out waiting for message: {message_type}")
 
             # check node implementation
             # - tf2_msgs
@@ -227,18 +211,48 @@ class TestRos2Publisher(ROS2TestCase):
                 transforms = self._ros_message.transforms
 
                 self.assertEqual(len(message_value.transforms), len(transforms))
-                for md, d in zip(message_value.transforms, transforms):
-                    self.assertEqual(md.header.frame_id, d.header.frame_id)
-                    self.assertEqual(md.header.stamp.sec, d.header.stamp.sec)
-                    self.assertEqual(md.header.stamp.nanosec, d.header.stamp.nanosec)
-                    self.assertEqual(md.child_frame_id, d.child_frame_id)
-                    self.assertEqual(md.transform.translation.x, d.transform.translation.x)
-                    self.assertEqual(md.transform.translation.y, d.transform.translation.y)
-                    self.assertEqual(md.transform.translation.z, d.transform.translation.z)
-                    self.assertEqual(md.transform.rotation.x, d.transform.rotation.x)
-                    self.assertEqual(md.transform.rotation.y, d.transform.rotation.y)
-                    self.assertEqual(md.transform.rotation.z, d.transform.rotation.z)
-                    self.assertEqual(md.transform.rotation.w, d.transform.rotation.w)
+
+                expected_frame_ids = [t.header.frame_id for t in message_value.transforms]
+                received_frame_ids = [t.header.frame_id for t in transforms]
+                self.assertListEqual(expected_frame_ids, received_frame_ids)
+
+                expected_child_ids = [t.child_frame_id for t in message_value.transforms]
+                received_child_ids = [t.child_frame_id for t in transforms]
+                self.assertListEqual(expected_child_ids, received_child_ids)
+
+                expected_nums = np.array(
+                    [
+                        [
+                            t.header.stamp.sec,
+                            t.header.stamp.nanosec,
+                            t.transform.translation.x,
+                            t.transform.translation.y,
+                            t.transform.translation.z,
+                            t.transform.rotation.x,
+                            t.transform.rotation.y,
+                            t.transform.rotation.z,
+                            t.transform.rotation.w,
+                        ]
+                        for t in message_value.transforms
+                    ]
+                )
+                received_nums = np.array(
+                    [
+                        [
+                            t.header.stamp.sec,
+                            t.header.stamp.nanosec,
+                            t.transform.translation.x,
+                            t.transform.translation.y,
+                            t.transform.translation.z,
+                            t.transform.rotation.x,
+                            t.transform.rotation.y,
+                            t.transform.rotation.z,
+                            t.transform.rotation.w,
+                        ]
+                        for t in transforms
+                    ]
+                )
+                np.testing.assert_array_equal(expected_nums, received_nums)
             # - array
             elif message_type.endswith("Array"):
                 data = self._ros_message.data
@@ -267,3 +281,6 @@ class TestRos2Publisher(ROS2TestCase):
                     self.assertAlmostEqual(message_value.data, data)
                 else:
                     self.assertEqual(message_value.data, data)
+
+            self._timeline.stop()
+            await omni.kit.app.get_app().next_update_async()

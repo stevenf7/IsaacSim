@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.13.1] - 2026-03-20
+### Changed
+- Skip update_app tests in async environment
+
 ## [0.13.0] - 2026-03-10
 ### Added
 - Add Isaac Sim's `gridroom` stage template

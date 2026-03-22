@@ -241,6 +241,9 @@ sphinx_conf_py_extra = """
             return True
 
     logging.getLogger("sphinx.sphinx.domains.python").addFilter(DuplicateObjectDescriptionFilter())
+
+    html_theme_options = html_theme_options or {}
+    html_theme_options["sidebar_includehidden"] = False
 """
 
 sphinx_exclude_patterns = [
@@ -271,6 +274,14 @@ sphinx_exclude_patterns = [
   "CODING.md",
   "_container_temp/extscache",
   "_container_temp/kit",
+  # Deprecated extension docs are represented by thin-wrapper stubs in source/extensions/
+  "source/deprecated",
+  # Internal extension docs not included in public API toctree
+  "source/internal_extensions/isaacsim.app.compatibility_check",
+  "source/internal_extensions/isaacsim.util.clash_detection",
+  "source/internal_extensions/isaacsim.xr.input_devices",
+  # Duplicate of docs/api/source/generic_model_output/ (already in API toctree)
+  "docs/source/generic_model_output",
 ]
 
 doxygen_input = [
@@ -283,6 +294,7 @@ doxygen_input = [
   "source/extensions/isaacsim.core.experimental.prims/include/isaacsim/core/experimental/prims/IPrimDataReader.h",
   "source/extensions/isaacsim.core.experimental.prims/include/isaacsim/core/experimental/prims/IPrimDataReaderManager.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/BaseResetNode.h",
+  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/BindingsPythonUtils.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Buffer.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Color.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Component.h",
@@ -390,6 +402,7 @@ doxygen_predefined = [
   "__restrict=",
   "PXR_NAMESPACE_OPEN_SCOPE=",
   "PXR_NAMESPACE_CLOSE_SCOPE=",
+  "ISAACSIM_EXPORT=",
 ]
 
 
@@ -398,7 +411,7 @@ WARN_IF_UNDOCUMENTED  = YES
 WARN_IF_INCOMPLETE_DOC= YES
 WARN_IF_UNDOC_ENUM_VAL= YES
 CASE_SENSE_NAMES=NO
-EXCLUDE_SYMBOLS = omni::physics omni::physics::*
+EXCLUDE_SYMBOLS = omni::physics omni::physics::* DLL_EXPORT
 """
 
 api_output_directory = "api"
@@ -881,3 +894,42 @@ strip = true
 strip_nowarn = true
 extra_files = []
 paths = ["$root/_build/$platform/release"]
+
+########################################################################################################################
+# Stub generation (pybind)
+########################################################################################################################
+
+[repo_stubgen]
+enabled = true
+stubgen_copy_back = true
+kit_path = "${root}/_build/${platform}/${config}/kit/kit${exe_ext}"
+exts_autosearch_paths = [
+  "${root}/_build/${platform}/${config}/exts",
+  "${root}/_build/${platform}/${config}/extsDeprecated",
+  "${root}/_build/${platform}/${config}/extsInternal",
+]
+exts_exclude = [
+  "omni.usd.schema.omni_lens_distortion*",
+  "isaacsim.asset.exporter.urdf*",
+  "isaacsim.app.compatibility_check*",
+  "omni.pip.compute",
+  "omni.pip.cloud",
+  "omni.isaac.core_archive",
+  "isaacsim.xr.input_devices",
+  "isaacsim.kit.xr.teleop.bridge",
+]
+kit_extra_args = [
+  "--/app/extensions/isaacsim.asset.exporter.urdf/enabled=false",
+  "--/app/extensions/isaacsim.app.compatibility_check/enabled=false",
+]
+stubgen_exclude = [
+  "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle/torch",
+  "${root}/_build/${platform}/${config}/extscache",
+]
+ext_folders = [
+  "${root}/_build/${platform}/${config}/exts",
+  "${root}/_build/${platform}/${config}/extsDeprecated",
+  # "${root}/_build/${platform}/${config}/extsbuild",
+  "${root}/_build/${platform}/${config}/extscache",
+  "${root}/_build/${platform}/${config}/extsInternal",
+]

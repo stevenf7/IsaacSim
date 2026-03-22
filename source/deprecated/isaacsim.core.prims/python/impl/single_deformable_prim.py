@@ -66,9 +66,13 @@ class SingleDeformablePrim(_SinglePrimWrapper):
         embedding: Optional[Sequence[int]] = None,
     ):
         """Creates a deformable body at prim_path given the deformable parameters.
+
         Note that although this class provide methods for retrieving the rest points and element indices of the underlying mesh, using the constructor of the class is the only way to set the rest points and element indices of the underlying mesh. This is to ensure the compatibility of the relevant input parameters and to avoid corrupting the mesh.
+
         Note also that this class does not provide methods to change USD attributes related to meshing, because once those are used for constructing the mesh, changing the parameters at runtime does not have any effect. Using the constructor of the class is the only way to set desired values for such parameters.
+
         TODO: indicated the range and dimensions of the input parameters
+
         Args:
             prim_path: The absolute path that the prim is supposed to be registered in.
             deformable_material: The deformable material to apply to the prim.
