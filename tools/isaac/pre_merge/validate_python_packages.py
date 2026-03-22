@@ -381,6 +381,7 @@ def _check_dependencies(
     dependencies_files,
     platforms,
     tokens_override=None,
+    export_requirements=False,
 ):
     def _should_exclude_dependency(dependency):
         for item in ["isaacsim-", "nvidia-"]:
@@ -543,13 +544,13 @@ def _check_dependencies(
                         f"[source: definition_paths, platform: {platform}] Defined dependency not found in target dependencies: {defined_dependency}",
                         logging.ERROR,
                     )
-    # export defined dependencies to a requirements.txt file
-    for platform in platforms:
-        with open(f"python-package-requirements-{platform}.txt", "w") as file:
-            file.write("# common dependencies\n")
-            file.write("\n".join(defined_dependencies["all"]))
-            file.write("\n# platform-specific dependencies\n")
-            file.write("\n".join(defined_dependencies[platform]))
+    if export_requirements:
+        for platform in platforms:
+            with open(f"python-package-requirements-{platform}.txt", "w") as file:
+                file.write("# common dependencies\n")
+                file.write("\n".join(defined_dependencies["all"]))
+                file.write("\n# platform-specific dependencies\n")
+                file.write("\n".join(defined_dependencies[platform]))
     if missing_dependencies:
         sys.exit(1)
 
@@ -708,6 +709,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             tool_config["dependencies_files"],
             platforms,
             tokens_override=upstream_tokens,
+            export_requirements=options.gitlab,
         )
 
         if options.validate:
