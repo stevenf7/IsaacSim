@@ -133,7 +133,7 @@ class TestRos2Subscribers(ROS2TestCase):
                 msg.name = ["test1", "test2"]
                 msg.position = [0.0, 0.0]
                 test_pub.publish(msg)
-                time.sleep(0.02)
+                time.sleep(0.005)
 
         publish_data()
 
@@ -242,7 +242,7 @@ class TestRos2Subscribers(ROS2TestCase):
                 time_obj.sec = count
                 msg.clock = time_obj
                 test_pub.publish(msg)
-                time.sleep(0.02)
+                time.sleep(0.005)
 
         publish_data()
 
@@ -348,7 +348,7 @@ class TestRos2Subscribers(ROS2TestCase):
                 msg = Twist()
                 msg.linear.x = float(count)
                 test_pub.publish(msg)
-                time.sleep(0.02)
+                time.sleep(0.005)
 
         publish_data()
 
@@ -457,7 +457,7 @@ class TestRos2Subscribers(ROS2TestCase):
                 time_obj.sec = count
                 msg.header.stamp = time_obj
                 test_pub.publish(msg)
-                time.sleep(0.02)
+                time.sleep(0.005)
 
         publish_data()
 
@@ -584,7 +584,7 @@ class TestRos2Subscribers(ROS2TestCase):
 
             test_pub.publish(tf_msg)
 
-            time.sleep(0.02)
+            time.sleep(0.005)
 
             # Wait until pose condition is met or timeout
             def pose_condition():
@@ -684,7 +684,7 @@ class TestRos2Subscribers(ROS2TestCase):
 
             test_pub.publish(tf_msg)
 
-            time.sleep(0.02)
+            time.sleep(0.005)
 
             # Wait until pose condition is met or timeout
             def pose_condition():

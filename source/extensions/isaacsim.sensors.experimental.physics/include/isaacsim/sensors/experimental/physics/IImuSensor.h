@@ -54,18 +54,18 @@ struct ImuSensorReading
  */
 struct ImuRawData
 {
-    float time{ 0.0f };
-    float dt{ 0.0f };
-    float linearVelocityX{ 0.0f };
-    float linearVelocityY{ 0.0f };
-    float linearVelocityZ{ 0.0f };
-    float angularVelocityX{ 0.0f };
-    float angularVelocityY{ 0.0f };
-    float angularVelocityZ{ 0.0f };
-    float orientationW{ 1.0f };
-    float orientationX{ 0.0f };
-    float orientationY{ 0.0f };
-    float orientationZ{ 0.0f };
+    float time{ 0.0f }; ///< Simulation time of this sample in seconds.
+    float dt{ 0.0f }; ///< Physics step delta time in seconds.
+    float linearVelocityX{ 0.0f }; ///< Linear velocity X component in m/s.
+    float linearVelocityY{ 0.0f }; ///< Linear velocity Y component in m/s.
+    float linearVelocityZ{ 0.0f }; ///< Linear velocity Z component in m/s.
+    float angularVelocityX{ 0.0f }; ///< Angular velocity X component in rad/s.
+    float angularVelocityY{ 0.0f }; ///< Angular velocity Y component in rad/s.
+    float angularVelocityZ{ 0.0f }; ///< Angular velocity Z component in rad/s.
+    float orientationW{ 1.0f }; ///< Orientation quaternion W component.
+    float orientationX{ 0.0f }; ///< Orientation quaternion X component.
+    float orientationY{ 0.0f }; ///< Orientation quaternion Y component.
+    float orientationZ{ 0.0f }; ///< Orientation quaternion Z component.
 };
 
 /**

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 import isaacsim.core.experimental.utils.ops as ops_utils
 import numpy as np
 import omni.kit.test

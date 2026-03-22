@@ -53,19 +53,29 @@ Stiffness and damping directly determine how the joint responds to position comm
 
 The ratio of stiffness to damping defines the **damping regime** of the response. For a step to a target position, you will see one of three behaviors:
 
-+------------------+------------------------------------------------------------------+------------------------------------------------------------------+
-| Regime           | What it looks like                                               | Cause                                                            |
-+==================+==================================================================+==================================================================+
-| **Underdamped**  | The joint overshoots the target, then oscillates (rings) before  | Stiffness is high relative to damping; the "spring" dominates    |
-|                  | settling. You may see multiple overshoots.                       | and there isn't enough "shock absorber" to dissipate energy.      |
-+------------------+------------------------------------------------------------------+------------------------------------------------------------------+
-| **Critically     | The joint approaches the target smoothly and reaches it in the   | Stiffness and damping are balanced so that the system neither    |
-|  damped**        | shortest time **without** overshooting.                         | rings nor moves slowly. Often the goal for responsive, stable    |
-|                  |                                                                  | motion.                                                          |
-+------------------+------------------------------------------------------------------+------------------------------------------------------------------+
-| **Overdamped**   | The joint approaches the target slowly and never overshoots.     | Damping is high relative to stiffness; motion is heavily         |
-|                  | Response is sluggish; it may take a long time to settle.         | resisted.                                                        |
-+------------------+------------------------------------------------------------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 40 40
+
+   * - Regime
+     - What it looks like
+     - Cause
+   * - **Underdamped**
+     - The joint overshoots the target, then oscillates (rings) before
+       settling. You may see multiple overshoots.
+     - Stiffness is high relative to damping; the "spring" dominates
+       and there isn't enough "shock absorber" to dissipate energy.
+   * - **Critically damped**
+     - The joint approaches the target smoothly and reaches it in the
+       shortest time **without** overshooting.
+     - Stiffness and damping are balanced so that the system neither
+       rings nor moves slowly. Often the goal for responsive, stable
+       motion.
+   * - **Overdamped**
+     - The joint approaches the target slowly and never overshoots.
+       Response is sluggish; it may take a long time to settle.
+     - Damping is high relative to stiffness; motion is heavily
+       resisted.
 
 In the Gain Tuner, if you see **oscillation or overshoot** in the position chart, you are underdamped—increase damping (or reduce stiffness). If the joint **barely moves or creeps** toward the target, you are overdamped—increase stiffness or reduce damping. Aim for a response that reaches the target quickly with little or no overshoot (near critically damped).
 
@@ -199,21 +209,59 @@ Click **Run Test**. The resulting charts will reveal how well your current **Sti
    :align: center
    :alt: Example results: All joint tests running in parallel in Gain Tuner charts.
 
-+------------------------+------+-----------+----------+----------+--------+--------+
-| Joint                  | Test | Sequencer | Step Min | Step Max | Period | Phase  |
-+========================+======+===========+==========+==========+========+========+
-| right_thumb_1_joint     | 1    | 1         | 10.0 deg | 60.0 deg| 2.0 s  | 0.0 s  |
-+------------------------+------+-----------+----------+----------+--------+--------+
-| right_index_1_joint     | 1    | 1         | 10.0 deg | 30.0 deg| 2.0 s  | 0.0 s  |
-+------------------------+------+-----------+----------+----------+--------+--------+
-| right_middle_1_joint    | 1    | 1         | 10.0 deg | 30.0 deg| 2.0 s  | 0.0 s  |
-+------------------------+------+-----------+----------+----------+--------+--------+
-| right_ring_1_joint      | 1    | 1         | 10.0 deg | 30.0 deg| 2.0 s  | 0.0 s  |
-+------------------------+------+-----------+----------+----------+--------+--------+
-| right_little_1_joint     | 1    | 1         | 10.0 deg | 30.0 deg| 2.0 s  | 0.0 s  |
-+------------------------+------+-----------+----------+----------+--------+--------+
-| right_thumb_2_joint      | 1    | 1         | 0.0 deg  | 10.0 deg| 2.0 s  | 0.0 s  |
-+------------------------+------+-----------+----------+----------+--------+--------+
+.. list-table::
+   :header-rows: 1
+   :widths: 28 8 12 12 12 10 10
+
+   * - Joint
+     - Test
+     - Sequencer
+     - Step Min
+     - Step Max
+     - Period
+     - Phase
+   * - right_thumb_1_joint
+     - 1
+     - 1
+     - 10.0 deg
+     - 60.0 deg
+     - 2.0 s
+     - 0.0 s
+   * - right_index_1_joint
+     - 1
+     - 1
+     - 10.0 deg
+     - 30.0 deg
+     - 2.0 s
+     - 0.0 s
+   * - right_middle_1_joint
+     - 1
+     - 1
+     - 10.0 deg
+     - 30.0 deg
+     - 2.0 s
+     - 0.0 s
+   * - right_ring_1_joint
+     - 1
+     - 1
+     - 10.0 deg
+     - 30.0 deg
+     - 2.0 s
+     - 0.0 s
+   * - right_little_1_joint
+     - 1
+     - 1
+     - 10.0 deg
+     - 30.0 deg
+     - 2.0 s
+     - 0.0 s
+   * - right_thumb_2_joint
+     - 1
+     - 1
+     - 0.0 deg
+     - 10.0 deg
+     - 2.0 s
+     - 0.0 s
 
 .. note:: Open the checkpoint at ``IsaacSim/Samples/Rigging/Inspire/module_5_end-checkpoint_3/inspire_hand.usda`` in the Gain Tuner to review the final tuned stiffness and damping values.
 
@@ -227,11 +275,11 @@ This tutorial covered:
 - Verifying **parallel tests** for all joints; the same workflow applies to other digits or custom hands. The **module_5_end-checkpoint_3** checkpoint contains the final tuned values.
 
 Next Steps
-^^^^^^^^^^
+==========
 
 Continue to :ref:`isaac_sim_tutorial_tuning_openusd_practice` (Tutorial 7: Using the Dexterous Hand in Practice) for next steps and further resources.
 
 Further Learning
-^^^^^^^^^^^^^^^^
+================
 
 - Read :ref:`isaac_gain_tuner` for more details on the physical mechanics relating joint gains to derived motions and how the Gain Tuner works.

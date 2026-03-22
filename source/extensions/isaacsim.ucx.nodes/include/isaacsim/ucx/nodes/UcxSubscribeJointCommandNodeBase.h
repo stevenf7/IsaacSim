@@ -56,8 +56,8 @@ template <typename DatabaseT>
 class UCXSubscribeJointCommandNodeBase : public UcxNode
 {
 public:
-    using NodeObj = omni::graph::core::NodeObj;
-    using GraphInstanceID = omni::graph::core::GraphInstanceID;
+    using NodeObj = omni::graph::core::NodeObj; ///< Alias for the OmniGraph node object type.
+    using GraphInstanceID = omni::graph::core::GraphInstanceID; ///< Alias for the OmniGraph instance ID type.
 
     /**
      * @brief Initialize the node instance.

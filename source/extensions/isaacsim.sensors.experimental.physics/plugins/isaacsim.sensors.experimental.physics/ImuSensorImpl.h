@@ -29,6 +29,9 @@ namespace experimental
 namespace physics
 {
 
+/**
+ * @brief Implementation of the IImuSensor interface for physics-based IMU sensing.
+ */
 class ImuSensorImpl : public IImuSensor
 {
 public:

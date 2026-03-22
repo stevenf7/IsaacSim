@@ -29,6 +29,9 @@ namespace experimental
 namespace physics
 {
 
+/**
+ * @brief Implementation of the IEffortSensor interface for physics-based effort sensing.
+ */
 class EffortSensorImpl : public IEffortSensor
 {
 public:

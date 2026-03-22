@@ -348,6 +348,6 @@ This tutorial covered:
 - The role of each file—from **geometry.usdc** and **material.usda** through **physics.usda** and **physx.usda**—so you know where to author collision filters and joint parameters in later tutorials.
 
 Next Steps
-^^^^^^^^^^
+==========
 
 Continue to :ref:`isaac_sim_tutorial_tuning_openusd_module_2` (Tutorial 3: Inspect Asset) to enable the joint visualizer and verify mass, inertia, and collision meshes before collision filtering.

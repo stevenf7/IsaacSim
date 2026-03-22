@@ -62,9 +62,9 @@ public:
      */
     struct TimeData
     {
-        double simTime;
-        double simTimeMonotonic;
-        double systemTime;
+        double simTime; ///< Simulation time in seconds (may reset on timeline stop).
+        double simTimeMonotonic; ///< Monotonically increasing simulation time in seconds.
+        double systemTime; ///< Wall-clock system time in seconds.
     };
 
     /**
@@ -72,9 +72,9 @@ public:
      */
     struct Entry
     {
-        omni::fabric::RationalTime time;
-        TimeData data;
-        bool valid = false;
+        omni::fabric::RationalTime time; ///< Rational time code for this sample.
+        TimeData data; ///< Time data associated with this sample.
+        bool valid = false; ///< Whether this entry contains valid data.
     };
     /**
      * @brief Constructor

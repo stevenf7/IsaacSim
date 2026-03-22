@@ -144,6 +144,6 @@ This tutorial covered:
 - Turning on **collider visualization** and confirming the collider strategy (Convex Hull for this series), so you know what shapes will collide when self-collisions are enabled in Tutorial 4.
 
 Next Steps
-^^^^^^^^^^
+==========
 
 Continue to :ref:`isaac_sim_tutorial_tuning_openusd_module_3` (Tutorial 4: Collider Pairs) to identify problematic collision pairs with the Physics Debugger and add filtered pairs.

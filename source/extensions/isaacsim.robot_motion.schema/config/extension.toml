@@ -6,7 +6,7 @@ order = -100
 [package]
 version = "0.2.0"
 category = "Simulation"
-title = "Isaac Sim Motion Generation"
+title = "Isaac Sim Robot Motion Schema"
 description = "Extension that provides USD schema for the Isaac Motion Planning API"
 authors = ["ssulkunte@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_motion.schema"

@@ -230,7 +230,7 @@ The following section provides an overview and explanation of the implementation
         * ``self._render_products`` are the two render products attached to the left and right camera sensors of Nova Carter, the writer is attached to these to access data from the annotators
         * ``self._use_temp_rp`` is a flag, which when set to ``True``, causes the demo to disable render products when not capturing. Otherwise the render products are always enabled
         * ``self._in_running_state`` indicates the running state of the demo used to track whether the demo has finished or not
-        The class constant ``ENVIRONMENT_SCOPE_PATH`` keeps both referenced USD environments and the generic fallback environment under the same ``/Environment`` scope, which makes switching between them consistent.
+        * The class constant ``ENVIRONMENT_SCOPE_PATH`` keeps both referenced USD environments and the generic fallback environment under the same ``/Environment`` scope, which makes switching between them consistent.
  
     
         **Workflow and Start Function**

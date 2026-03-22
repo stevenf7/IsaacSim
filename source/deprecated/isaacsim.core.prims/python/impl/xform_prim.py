@@ -15,6 +15,7 @@
 
 """Provides high-level wrapper functionality for working with USD Xform prims and their transformation properties."""
 
+from __future__ import annotations
 
 import re
 import weakref

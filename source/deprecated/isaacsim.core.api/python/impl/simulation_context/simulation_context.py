@@ -314,10 +314,10 @@ class SimulationContext:
 
     @property
     def backend(self) -> str:
-        """Current backend. Supported backends are ``"numpy"``, ``"torch"`` and ``"warp"`
+        """Current backend. Supported backends are ``"numpy"``, ``"torch"`` and ``"warp"``
 
         Returns:
-            Current backend. Supported backends are ``"numpy"``, ``"torch"`` and ``"warp"`
+            Current backend. Supported backends are ``"numpy"``, ``"torch"`` and ``"warp"``
 
         Example:
 
@@ -353,11 +353,11 @@ class SimulationContext:
 
             * - Backend
               - Utils module
-            * - ``"numpy"`
+            * - ``"numpy"``
               - ``isaacsim.core.utils.numpy``
-            * - ``"torch"`
+            * - ``"torch"``
               - ``isaacsim.core.utils.torch``
-            * - ``"warp"`
+            * - ``"warp"``
               - ``isaacsim.core.utils.warp``
 
         Returns:

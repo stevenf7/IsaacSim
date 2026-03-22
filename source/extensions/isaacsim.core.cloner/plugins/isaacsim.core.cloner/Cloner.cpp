@@ -27,8 +27,20 @@
 #    pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
 #include <omni/fabric/connectivity/Connectivity.h>
+#if defined(__GNUC__) && !defined(_WIN32)
+#    pragma GCC diagnostic pop
+#endif
+// clang-format on
+
 #include <usdrt/hierarchy/IFabricHierarchy.h>
 #include <usdrt/population/IUtils.h>
+
+// clang-format off
+#if defined(__GNUC__) && !defined(_WIN32)
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wunused-variable"
+#    pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 #include <usdrt/scenegraph/usd/usd/stage.h>
 #if !defined(_WIN32)
 #    pragma GCC diagnostic pop

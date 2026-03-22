@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.12.2] - 2026-03-21
+### Fixed
+- Fix test publisher hang and reduce test time
+
 ## [1.12.1] - 2026-03-19
 ### Fixed
 - Fix broken test and reduce test time

@@ -15,6 +15,7 @@
 
 """High level wrapper to deal with prims (one or many) that have the Root Articulation API applied and their attributes/properties."""
 
+from __future__ import annotations
 
 import gc
 import weakref

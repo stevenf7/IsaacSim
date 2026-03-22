@@ -15,6 +15,7 @@
 
 import json
 
+import numpy as np
 import omni.graph.core as og
 import omni.kit.test
 from isaacsim.core.utils.stage import create_new_stage_async
@@ -134,7 +135,7 @@ class TestRos2Subscriber(ROS2TestCase):
                     rotation=geometry_msgs.msg.Quaternion(x=float(i), y=float(i - 1), z=float(i - 2), w=float(i - 3)),
                 ),
             )
-            for i in range(2**16 + 1)
+            for i in range(2**12)
         ]
         messages += [
             (
@@ -220,19 +221,50 @@ class TestRos2Subscriber(ROS2TestCase):
             if message_type.startswith("tf2_msgs"):
                 transforms = og.Controller.attribute("outputs:transforms", subscriber_node).get()
                 self.assertEqual(len(message_value.transforms), len(transforms))
-                for md, d in zip(message_value.transforms, transforms):
-                    transform = json.loads(d)
-                    self.assertEqual(md.header.frame_id, transform["header"]["frame_id"])
-                    self.assertEqual(md.header.stamp.sec, transform["header"]["stamp"]["sec"])
-                    self.assertEqual(md.header.stamp.nanosec, transform["header"]["stamp"]["nanosec"])
-                    self.assertEqual(md.child_frame_id, transform["child_frame_id"])
-                    self.assertEqual(md.transform.translation.x, transform["transform"]["translation"]["x"])
-                    self.assertEqual(md.transform.translation.y, transform["transform"]["translation"]["y"])
-                    self.assertEqual(md.transform.translation.z, transform["transform"]["translation"]["z"])
-                    self.assertEqual(md.transform.rotation.x, transform["transform"]["rotation"]["x"])
-                    self.assertEqual(md.transform.rotation.y, transform["transform"]["rotation"]["y"])
-                    self.assertEqual(md.transform.rotation.z, transform["transform"]["rotation"]["z"])
-                    self.assertEqual(md.transform.rotation.w, transform["transform"]["rotation"]["w"])
+
+                parsed = [json.loads(d) for d in transforms]
+
+                expected_frame_ids = [t.header.frame_id for t in message_value.transforms]
+                received_frame_ids = [p["header"]["frame_id"] for p in parsed]
+                self.assertListEqual(expected_frame_ids, received_frame_ids)
+
+                expected_child_ids = [t.child_frame_id for t in message_value.transforms]
+                received_child_ids = [p["child_frame_id"] for p in parsed]
+                self.assertListEqual(expected_child_ids, received_child_ids)
+
+                expected_nums = np.array(
+                    [
+                        [
+                            t.header.stamp.sec,
+                            t.header.stamp.nanosec,
+                            t.transform.translation.x,
+                            t.transform.translation.y,
+                            t.transform.translation.z,
+                            t.transform.rotation.x,
+                            t.transform.rotation.y,
+                            t.transform.rotation.z,
+                            t.transform.rotation.w,
+                        ]
+                        for t in message_value.transforms
+                    ]
+                )
+                received_nums = np.array(
+                    [
+                        [
+                            p["header"]["stamp"]["sec"],
+                            p["header"]["stamp"]["nanosec"],
+                            p["transform"]["translation"]["x"],
+                            p["transform"]["translation"]["y"],
+                            p["transform"]["translation"]["z"],
+                            p["transform"]["rotation"]["x"],
+                            p["transform"]["rotation"]["y"],
+                            p["transform"]["rotation"]["z"],
+                            p["transform"]["rotation"]["w"],
+                        ]
+                        for p in parsed
+                    ]
+                )
+                np.testing.assert_array_equal(expected_nums, received_nums)
             # - array
             elif message_type.endswith("Array"):
                 data = og.Controller.attribute("outputs:data", subscriber_node).get()

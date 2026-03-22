@@ -29,6 +29,9 @@ namespace experimental
 namespace physics
 {
 
+/**
+ * @brief Implementation of the IContactSensor interface for physics-based contact sensing.
+ */
 class ContactSensorImpl : public IContactSensor
 {
 public:

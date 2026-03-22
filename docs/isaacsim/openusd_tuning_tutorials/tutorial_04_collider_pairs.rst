@@ -238,6 +238,6 @@ This tutorial covered:
 - Adding **filtered pairs** for the palm and pinky so the problematic pairs no longer produce invalid self-collisions.
 
 Next Steps
-^^^^^^^^^^
+==========
 
 Continue to :ref:`isaac_sim_tutorial_tuning_openusd_module_4` (Tutorial 5: Joint Drive Tuning) to set drive limits (max force, max velocity) from the Inspire Hand specs, then to Tutorial 6 for stiffness and damping with the Gain Tuner.

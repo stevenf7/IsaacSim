@@ -15,6 +15,7 @@
 
 """Provides high level functions for dealing with rigid body prims and their physics properties."""
 
+from __future__ import annotations
 
 import gc
 import weakref
