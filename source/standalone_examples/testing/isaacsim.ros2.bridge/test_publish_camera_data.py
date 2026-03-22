@@ -32,25 +32,24 @@ CONFIG = {"renderer": "RealTimePathTracing", "headless": True}
 
 # Example ROS2 bridge sample demonstrating the manual loading of stages and manual publishing of images
 simulation_app = SimulationApp(CONFIG)
-import isaacsim.core.utils.numpy.rotations as rot_utils
+import isaacsim.core.experimental.utils.app as app_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.transform as transform_utils
 import numpy as np
 import omni
 import omni.graph.core as og
 import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as sd
-from isaacsim.core.api import SimulationContext
 from isaacsim.core.nodes.scripts.utils import set_target_prims
-from isaacsim.core.utils import extensions, stage
-from isaacsim.core.utils.prims import is_prim_path_valid
 from isaacsim.sensors.camera import Camera
 from isaacsim.storage.native import nucleus
 
 # Enable ROS2 bridge extension
-extensions.enable_extension("isaacsim.ros2.bridge")
+app_utils.enable_extension("isaacsim.ros2.bridge")
 
 simulation_app.update()
 
-simulation_context = SimulationContext(stage_units_in_meters=1.0)
+stage_utils.set_stage_units(meters_per_unit=1.0)
 
 # Locate Isaac Sim assets folder to load environment and robot stages
 assets_root_path = nucleus.get_assets_root_path()
@@ -60,7 +59,7 @@ if assets_root_path is None:
     sys.exit()
 
 # Loading the environment
-stage.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
+stage_utils.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
 
 from collections import defaultdict
 from threading import Event, Thread
@@ -157,7 +156,7 @@ def run_checker(checker):
 def publish_camera_tf(camera: Camera):
     camera_prim = camera.prim_path
 
-    if not is_prim_path_valid(camera_prim):
+    if not omni.usd.get_context().get_stage().GetPrimAtPath(camera_prim).IsValid():
         raise ValueError(f"Camera path '{camera_prim}' is invalid.")
 
     try:
@@ -170,7 +169,7 @@ def publish_camera_tf(camera: Camera):
         ros_camera_graph_path = "/CameraTFActionGraph"
 
         # If a camera graph is not found, create a new one.
-        if not is_prim_path_valid(ros_camera_graph_path):
+        if not omni.usd.get_context().get_stage().GetPrimAtPath(ros_camera_graph_path).IsValid():
             (ros_camera_graph, _, _, _) = og.Controller.edit(
                 {
                     "graph_path": ros_camera_graph_path,
@@ -349,7 +348,7 @@ camera = Camera(
     position=np.array([-3.11, -1.87, 1.0]),
     frequency=20,
     resolution=(256, 256),
-    orientation=rot_utils.euler_angles_to_quats(np.array([0, 0, 0]), degrees=True),
+    orientation=transform_utils.euler_angles_to_quaternion(np.array([0, 0, 0]), degrees=True).numpy(),
 )
 camera.initialize()
 
@@ -386,12 +385,12 @@ checker_thread.start()
 
 ####################################################################
 
-# Initialize physics
-simulation_context.initialize_physics()
-simulation_context.play()
+# Initialize physics and start simulation
+app_utils.play()
+simulation_app.update()
 
 for _ in range(args.test_steps):
-    simulation_context.step(render=True)
+    simulation_app.update()
     if checker.error_detected:
         print("[error] Exiting simulation loop due to timestamp error")
         break
@@ -401,5 +400,5 @@ checker.stop()
 rclpy.shutdown()
 checker_thread.join()
 checker.destroy_node()
-simulation_context.stop()
+app_utils.stop()
 simulation_app.close()

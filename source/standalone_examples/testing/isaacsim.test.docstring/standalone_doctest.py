@@ -18,10 +18,10 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": True})
 
 # enable the extension
-import isaacsim.core.utils.extensions as extensions_utils
+import isaacsim.core.experimental.utils.app as app_utils
 
 simulation_app.update()
-extensions_utils.enable_extension("isaacsim.test.docstring")
+app_utils.enable_extension("isaacsim.test.docstring")
 simulation_app.update()
 
 # run test
