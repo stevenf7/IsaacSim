@@ -26,7 +26,7 @@ async def convert_asset_to_usd(input_obj: str, output_usd: str):
     task = instance.create_converter_task(input_obj, output_usd, progress_callback, converter_context)
     success = await task.wait_until_finished()
     if not success:
-        carb.log_error(task.get_status(), task.get_detailed_error())
+        carb.log_error(f"{task.get_status()}, {task.get_error_message()}")
     print("converting done")
 
 

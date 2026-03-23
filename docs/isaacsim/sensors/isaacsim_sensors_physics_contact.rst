@@ -153,6 +153,7 @@ Creating a contact sensor can only be done on a prim with a collider API, and it
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/using_python_wrapper_1.py
     :language: python
+    :start-after: # -- End test setup --
 
 To modify sensor parameters, you can use built-in class API calls such as ``set_frequency``, ``set_dt``, or USD attribute API calls.
 

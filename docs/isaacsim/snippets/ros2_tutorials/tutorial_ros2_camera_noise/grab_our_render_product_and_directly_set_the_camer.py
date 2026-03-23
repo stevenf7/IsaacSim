@@ -1,3 +1,6 @@
+import warp as wp
+
+
 # GPU Noise Kernel for illustrative purposes, input is rgba, outputs rgb
 @wp.kernel
 def image_gaussian_noise_warp(

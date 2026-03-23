@@ -1,7 +1,10 @@
+# -- Test setup --
 import omni.usd
 from pxr import Gf, UsdGeom
 
 stage = omni.usd.get_context().get_stage()
+UsdGeom.Cube.Define(stage, "/visual_cube_usd")
+# -- End test setup --
 cube_prim = stage.GetPrimAtPath("/visual_cube_usd")
 translate_offset = Gf.Vec3f(1.5, -0.2, 1.0)
 rotate_offset = Gf.Vec3f(90, -90, 180)  # note this is in degrees

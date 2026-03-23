@@ -112,6 +112,7 @@ The problem is framed as a quadratic program to minimize the residual "net force
 
    .. literalinclude:: ../snippets/robot_simulation/mobile_robot_controllers/holonomic_robot_usd_setup.py
        :language: python
+       :start-after: # -- End test setup --
 
    The :class:`HolonomicRobotUsdSetup` class automates this process.
 

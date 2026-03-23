@@ -29,7 +29,7 @@ from isaacsim.core.utils.semantics import add_labels, remove_labels, upgrade_pri
 from isaacsim.storage.native import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 from omni.physx import get_physx_interface, get_physx_scene_query_interface
-from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
 
 def add_colliders(root_prim: Usd.Prim) -> None:
@@ -329,7 +329,7 @@ async def run_example_async(config: dict) -> None:
 
     # RANDOMIZERS
     def on_overlap_hit(hit) -> bool:
-        prim = stage.GetPrimAtPath(hit.rigid_body)
+        prim = stage.GetPrimAtPath(Sdf.Path(hit.rigid_body))
         if prim not in camera_colliders:
             rand_vel = (random.uniform(-2, 2), random.uniform(-2, 2), random.uniform(4, 8))
             prim.GetAttribute("physics:velocity").Set(rand_vel)

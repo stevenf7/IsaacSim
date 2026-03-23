@@ -200,7 +200,7 @@ class HolonomicController(BaseController):
             try:
                 res = self.prob.solve()
             except Exception as e:
-                carb.log_error("error:", e)
+                carb.log_error(f"error: {e}")
 
             if res is not None:
                 values = res.x.reshape([res.x.shape[0]]) * self.max_linear_speed

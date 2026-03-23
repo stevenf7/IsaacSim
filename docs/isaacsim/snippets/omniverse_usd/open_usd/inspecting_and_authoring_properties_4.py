@@ -1,4 +1,9 @@
-from pxr import Sdf, UsdShade
+# -- Test setup --
+import omni.usd
+from pxr import Gf, Sdf, UsdShade
+
+stage = omni.usd.get_context().get_stage()
+# -- End test setup --
 
 # create the material and shader
 material_path = "/hello/material"
