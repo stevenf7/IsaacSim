@@ -1,4 +1,8 @@
 # Changelog
+## [15.14.2] - 2026-03-21
+### Fixed
+- Added temporary fix for missing GenericModelOutput annotator in omni.replicator.core
+
 ## [15.14.1] - 2026-03-09
 ### Fixed
 - Fixed occasional segfault when running with many lidars doing full-scan processing at the same time by copying GenericModelOutput buffers into local copies rather than manipulating AOV

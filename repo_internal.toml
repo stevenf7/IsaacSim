@@ -212,6 +212,7 @@ sphinx_conf_py_extra = """
         "OmniGraphSchema",
         "omni.isaac.IsaacSensorSchema",
         "omni.isaac.RangeSensorSchema",
+        "isaacsim.ros2.nodes.bindings",
     ]
 
     rst_prolog = '''
@@ -352,7 +353,11 @@ doxygen_input = [
   "source/extensions/isaacsim.ros2.core/library/backend/Ros2Impl.h",
   "source/extensions/isaacsim.ros2.core/library/tests/TestBase.h",
   "source/extensions/isaacsim.ros2.nodes/include/isaacsim/ros2/nodes/IRos2Nodes.h",
+  "source/extensions/isaacsim.ros2.nodes/include/isaacsim/ros2/nodes/ImagePublisher.h",
+  "source/extensions/isaacsim.ros2.nodes/include/isaacsim/ros2/nodes/PointCloudPublisher.h",
+  "source/extensions/isaacsim.ros2.nodes/include/isaacsim/ros2/nodes/PublisherBase.h",
   "source/extensions/isaacsim.ros2.nodes/include/isaacsim/ros2/nodes/Ros2OgnUtils.h",
+  "source/extensions/isaacsim.ros2.nodes/include/isaacsim/ros2/nodes/SrtxPublisherFactory.h",
   "source/extensions/isaacsim.ros2.tf_viewer/include/isaacsim/ros2/tf_viewer/ITransformListener.h",
   "source/extensions/isaacsim.ros2.tf_viewer/include/isaacsim/ros2/tf_viewer/Tf2Factory.h",
   "source/extensions/isaacsim.ros2.tf_viewer/include/isaacsim/ros2/tf_viewer/Tf2FactoryImpl.h",
@@ -361,11 +366,6 @@ doxygen_input = [
   "source/extensions/isaacsim.sensors.experimental.physics/include/isaacsim/sensors/experimental/physics/IEffortSensor.h",
   "source/extensions/isaacsim.sensors.experimental.physics/include/isaacsim/sensors/experimental/physics/IImuSensor.h",
   "source/extensions/isaacsim.sensors.experimental.physics/include/isaacsim/sensors/experimental/physics/IJointStateSensor.h",
-  "source/extensions/isaacsim.sensors.experimental.physics/plugins/isaacsim.sensors.experimental.physics/ContactSensorImpl.h",
-  "source/extensions/isaacsim.sensors.experimental.physics/plugins/isaacsim.sensors.experimental.physics/EffortSensorImpl.h",
-  "source/extensions/isaacsim.sensors.experimental.physics/plugins/isaacsim.sensors.experimental.physics/ImuSensorImpl.h",
-  "source/extensions/isaacsim.sensors.experimental.physics/plugins/isaacsim.sensors.experimental.physics/JointStateSensorImpl.h",
-  "source/extensions/isaacsim.sensors.experimental.physics/plugins/isaacsim.sensors.experimental.physics/SensorImplUtils.h",
   "source/extensions/isaacsim.sensors.physics.nodes/include/isaacsim/sensors/physics/nodes/IPhysicsSensorNodes.h",
   "source/extensions/isaacsim.sensors.physics/include/isaacsim/sensors/physics/ContactManager.h",
   "source/extensions/isaacsim.sensors.physics/include/isaacsim/sensors/physics/ContactSensor.h",
@@ -375,11 +375,6 @@ doxygen_input = [
   "source/extensions/isaacsim.sensors.physics/include/isaacsim/sensors/physics/IsaacSensorManager.h",
   "source/extensions/isaacsim.sensors.physics/include/isaacsim/sensors/physics/IsaacSensorTypes.h",
   "source/extensions/isaacsim.sensors.physx/include/isaacsim/sensors/physx/IPhysxSensorInterface.h",
-  "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/core/RangeSensorComponent.h",
-  "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/core/RangeSensorManager.h",
-  "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/generic/GenericSensor.h",
-  "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/lidar/LidarSensor.h",
-  "source/extensions/isaacsim.sensors.physx/plugins/isaacsim.sensors.physx/lightbeam_sensor/LightBeamSensor.h",
   "source/extensions/isaacsim.sensors.rtx/include/isaacsim/sensors/rtx/IIsaacSimSensorsRtx.h",
   "source/extensions/isaacsim.sensors.rtx/nodes/LidarConfigHelper.h",
   "source/extensions/isaacsim.ucx.core/include/isaacsim/ucx/core/UcxListener.h",
@@ -394,7 +389,6 @@ doxygen_input = [
   "source/extensions/isaacsim.ucx.nodes/include/isaacsim/ucx/nodes/UcxPublishOdometryNodeBase.h",
   "source/extensions/isaacsim.ucx.nodes/include/isaacsim/ucx/nodes/UcxSubscribeJointCommandNodeBase.h",
   "source/extensions/omni.kit.loop-isaac/include/RunLoopRunner.h",
-  "source/extensions/omni.kit.loop-isaac/plugins/omni.kit.loop/RunLoopSynchronizer.h",
 ]
 
 doxygen_predefined = [
@@ -402,6 +396,13 @@ doxygen_predefined = [
   "__restrict=",
   "PXR_NAMESPACE_OPEN_SCOPE=",
   "PXR_NAMESPACE_CLOSE_SCOPE=",
+  "float2=struct float2",
+  "float3=struct float3",
+  "float4=struct float4",
+  "double2=struct double2",
+  "double3=struct double3",
+  "double4=struct double4",
+  "cudaStream_t=void*",
   "ISAACSIM_EXPORT=",
 ]
 
@@ -610,7 +611,7 @@ scan_dirs = [
   "${root}/source/extensions",
   "${root}/source/deprecated"
 ]
-ignore_folders = []
+ignore_folders = ["plugins"]
 ignore_files = ["UsdPCH.h"]
 
 ########################################################################################################################
