@@ -163,7 +163,7 @@ class PalletizingSDGDemo:
 
     def _on_overlap_hit(self, hit):
         # Skip self-hits
-        if hit.rigid_body == self._active_bin.GetPrimPath():
+        if hit.rigid_body == str(self._active_bin.GetPrimPath()):
             return True
 
         # Handle flip scenario (only once per bin)

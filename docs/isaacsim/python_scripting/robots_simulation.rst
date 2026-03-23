@@ -68,6 +68,8 @@ Query Articulation
 .. literalinclude:: ../snippets/python_scripting/robots_simulation/query_articulation.py
     :language: python
     :linenos:
+    :start-after: # -- End test setup --
+    :end-before: # -- Test cleanup --
 
 Read DOF States
 ^^^^^^^^^^^^^^^
@@ -75,6 +77,8 @@ Read DOF States
 .. literalinclude:: ../snippets/python_scripting/robots_simulation/read_dof_states.py
     :language: python
     :linenos:
+    :start-after: # -- End test setup --
+    :end-before: # -- Test cleanup --
 
 DOF Position Control
 ^^^^^^^^^^^^^^^^^^^^
@@ -82,6 +86,8 @@ DOF Position Control
 .. literalinclude:: ../snippets/python_scripting/robots_simulation/dof_position_control.py
     :language: python
     :linenos:
+    :start-after: # -- End test setup --
+    :end-before: # -- Test cleanup --
 
 Single DOF Position Control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -89,6 +95,8 @@ Single DOF Position Control
 .. literalinclude:: ../snippets/python_scripting/robots_simulation/single_dof_position_control.py
     :language: python
     :linenos:
+    :start-after: # -- End test setup --
+    :end-before: # -- Test cleanup --
 
 DOF Velocity Control
 ^^^^^^^^^^^^^^^^^^^^
@@ -96,6 +104,8 @@ DOF Velocity Control
 .. literalinclude:: ../snippets/python_scripting/robots_simulation/velocity_control.py
     :language: python
     :linenos:
+    :start-after: # -- End test setup --
+    :end-before: # -- Test cleanup --
 
 Single DOF Velocity Control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -103,6 +113,8 @@ Single DOF Velocity Control
 .. literalinclude:: ../snippets/python_scripting/robots_simulation/single_dof_velocity_control.py
     :language: python
     :linenos:
+    :start-after: # -- End test setup --
+    :end-before: # -- Test cleanup --
 
 DOF Effort Control
 ^^^^^^^^^^^^^^^^^^
@@ -110,3 +122,5 @@ DOF Effort Control
 .. literalinclude:: ../snippets/python_scripting/robots_simulation/dof_effort_control.py
     :language: python
     :linenos:
+    :start-after: # -- End test setup --
+    :end-before: # -- Test cleanup --

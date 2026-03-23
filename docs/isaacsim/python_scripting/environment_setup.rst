@@ -137,6 +137,7 @@ The following can be added to set specific settings, in this case use CPU physic
 
 .. literalinclude:: ../snippets/python_scripting/environment_setup/set_gravity_vector.py
     :language: python
+    :start-after: # -- End test setup --
 
 Adding a ground plane to a stage can be done via the following code:
 It creates a Z up plane with a size of 100 cm at a Z coordinate of -100
@@ -213,6 +214,7 @@ Adding a transform matrix to a prim
 
 .. literalinclude:: ../snippets/python_scripting/environment_setup/adding_a_transform_matrix_to_a_prim.py
     :language: python
+    :start-after: # -- End test setup --
 
 Align two USD prims
 ^^^^^^^^^^^^^^^^^^^^^^^^

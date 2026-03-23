@@ -360,10 +360,24 @@ Traversal and Tree Generation
    * - ``PrintRobotTree(root, indent)``
      - Prints an indented text representation of the link tree to the console.
 
-The ``RobotLinkNode`` class represents a node in the kinematic tree:
+The ``RobotLinkNode`` class (from ``isaacsim.robot.schema.utils``) represents a node in the kinematic tree:
 
-.. literalinclude:: ../snippets/omniverse_usd/robot_schema/robot_link_node.py
-    :language: python
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Attribute
+     - Description
+   * - ``prim``
+     - The USD prim for this link.
+   * - ``name``
+     - Prim name (or ``None``).
+   * - ``path``
+     - Prim path (or ``None``).
+   * - ``parent``
+     - Parent ``RobotLinkNode`` (``None`` for root).
+   * - ``children``
+     - List of child ``RobotLinkNode`` instances.
 
 Schema Population
 -----------------
@@ -659,16 +673,24 @@ Traversal and Tree Generation
    * - ``PrintRobotTree(root, indent)``
      - Prints an indented text representation of the link tree to the console.
 
-The ``RobotLinkNode`` class represents a node in the kinematic tree:
+The ``RobotLinkNode`` class (from ``isaacsim.robot.schema.utils``) represents a node in the kinematic tree:
 
-.. code-block:: python
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
 
-   class RobotLinkNode:
-       prim       # The USD prim for this link
-       name       # Prim name (or None)
-       path       # Prim path (or None)
-       parent     # Parent RobotLinkNode (None for root)
-       children   # List of child RobotLinkNodes
+   * - Attribute
+     - Description
+   * - ``prim``
+     - The USD prim for this link.
+   * - ``name``
+     - Prim name (or ``None``).
+   * - ``path``
+     - Prim path (or ``None``).
+   * - ``parent``
+     - Parent ``RobotLinkNode`` (``None`` for root).
+   * - ``children``
+     - List of child ``RobotLinkNode`` instances.
 
 Schema Population
 -----------------

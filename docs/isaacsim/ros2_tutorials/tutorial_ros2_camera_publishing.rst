@@ -40,8 +40,9 @@ Setup a Camera in a Scene
 
 To begin this tutorial, set up an environment with a ``isaacsim.sensors.camera`` :ref:`Camera<isaacsim_sensors_camera>` object. Running the following code results in a basic warehouse environment loaded with a camera in the scene.
 
-.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/setup_a_camera_in_a_scene.py
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/camera_publishing.py
     :language: python
+    :end-before: ###### Camera helper functions
 
 Publish Camera Intrinsics to CameraInfo Topic
 ==============================================
@@ -52,28 +53,32 @@ The following snippet will publish camera intrinsics associated with an ``isaacs
 
         <a href="http://docs.ros2.org/latest/api/sensor_msgs/msg/CameraInfo.html" target="_blank">sensor_msgs/CameraInfo</a>
 
-   .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/publish_camera_intrinsics_to_camerainfo_topic.py
+   .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/camera_publishing.py
        :language: python
+       :pyobject: publish_camera_info
 
 Publish Pointcloud from Depth Images
 ==============================================
 
 In the following snippet, a pointcloud is published to a `sensor_msgs/PointCloud2 <https://docs.ros2.org/latest/api/sensor_msgs/msg/PointCloud2.html>`_ message. This pointcloud is reconstructed from the depth image using the intrinsics of the camera.
 
-   .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/publish_pointcloud_from_depth_images.py
+   .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/camera_publishing.py
        :language: python
+       :pyobject: publish_pointcloud_from_depth
 
 Publish RGB Images
 ==============================================
 
-    .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/publish_rgb_images.py
+    .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/camera_publishing.py
         :language: python
+        :pyobject: publish_rgb
 
 Publish Depth Images
 ==============================================
 
-    .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/publish_depth_images.py
+    .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/camera_publishing.py
         :language: python
+        :pyobject: publish_depth
 
 Publish a TF Tree for the Camera Pose
 ==============================================
@@ -106,11 +111,19 @@ The TF Tree looks like this:
 
 Because the pointcloud is published in ``{camera_frame_id}``, it is encouraged to set the ``frame_id`` of the pointcloud topic to ``{camera_frame_id}``. The resulting visualization of the pointclouds can be viewed in the world frame in RViz.
 
-.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/publish_a_tf_tree_for_the_camera_pose.py
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/camera_publishing.py
     :language: python
+    :pyobject: publish_camera_tf
 
 Running the Example
 ==============================================
+
+The full standalone script combining all of the above sections is available here:
+
+.. dropdown:: Full Script
+
+    .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/camera_publishing.py
+        :language: python
 
 Enable ``isaacsim.ros2.bridge`` extension and set up ROS 2 environment variables following :ref:`this workflow tutorial <isaac_sim_app_tutorial_ros2_python>`. Save the above script and run it using ``python.sh`` in the Isaac Sim folder. In our example, ``{camera_frame_id}`` is the prim name of the camera, which is ``floating_camera``.
 

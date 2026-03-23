@@ -1,4 +1,8 @@
 # Changelog
+## [5.1.3] - 2026-03-22
+### Fixed
+- Fix carb.log_error calls passing multiple arguments instead of a single formatted string
+
 ## [5.1.2] - 2026-03-05
 ### Changed
 - Fix api and docs syntax issues

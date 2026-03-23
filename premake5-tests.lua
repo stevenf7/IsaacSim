@@ -689,8 +689,8 @@ local function get_doc_snippets_tests()
         },
         -- ros2_tutorials
         {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.ros2_tutorials.tutorial_ros2_camera_publishing.setup_a_camera_in_a_scene",
-            "../../../docs/isaacsim/snippets/ros2_tutorials/tutorial_ros2_camera_publishing/setup_a_camera_in_a_scene.py",
+            "doc_snippets/tests-nativepython-testing-doc_snippets.ros2_tutorials.tutorial_ros2_camera_publishing.camera_publishing",
+            "../../../docs/isaacsim/snippets/ros2_tutorials/tutorial_ros2_camera_publishing/camera_publishing.py",
             "--test",
         },
         {

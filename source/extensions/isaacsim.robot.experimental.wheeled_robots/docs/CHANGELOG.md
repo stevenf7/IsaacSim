@@ -1,4 +1,8 @@
 # Changelog
+## [0.2.4] - 2026-03-22
+### Fixed
+- Fix carb.log_error call passing multiple arguments instead of a single formatted string
+
 ## [0.2.3] - 2026-03-05
 ### Changed
 - Linting: `__all__` re-exports, docstrings, and type/doc fixes for ruff, mypy, darglint, pydoclint.

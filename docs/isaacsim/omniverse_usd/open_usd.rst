@@ -31,8 +31,9 @@ Let's start by creating a basic USD file from code:
 
 .. literalinclude:: ../snippets/omniverse_usd/open_usd/hello_world.py
     :language: python
+    :start-after: # -- End test setup --
 
-Replacing :code:`/path/to/` with the desired save folder. You can execute this code in the script editor (**Window > Script Editor**) in |isaac-sim_short|, and it yields the following USD file:
+Uncomment the line :code:`stage.GetRootLayer().SaveAs('/path/to/hello_world.usda')` and replace :code:`/path/to/` with the desired save folder, you can execute this code in the script editor (**Window > Script Editor**) in |isaac-sim_short|, and it yields the following USD file:
 
 .. code-block:: USD
 
@@ -68,6 +69,7 @@ With a basic scene, you can start making modifications to the elements. Start by
 
 .. literalinclude:: ../snippets/omniverse_usd/open_usd/inspecting_and_authoring_properties.py
     :language: python
+    :start-after: # -- End test setup --
 
 The output for the code above is:
 
@@ -82,6 +84,7 @@ To update these attributes, you can append the following to the code above:
 
 .. literalinclude:: ../snippets/omniverse_usd/open_usd/inspecting_and_authoring_properties_1.py
     :language: python
+    :start-after: # -- End test setup --
 
 Because the stage was still open from the previous sample, you'll see the sphere reducing from radius 1.0 to 0.5, but it also prints these values in the console.
 
@@ -94,11 +97,13 @@ Our sphere doesn't have its own, so to create a new one:
 
 .. literalinclude:: ../snippets/omniverse_usd/open_usd/inspecting_and_authoring_properties_2.py
     :language: python
+    :start-after: # -- End test setup --
 
 Notice that the sphere has jumped to a new position along the X-axis. Alternatively, you could apply the translation to the parent :code:`xform` instead.
 
 .. literalinclude:: ../snippets/omniverse_usd/open_usd/inspecting_and_authoring_properties_3.py
     :language: python
+    :start-after: # -- End test setup --
 
 Verify that you see the sphere jump to a new location, which is the composition of both the parent and child transforms.
 
@@ -108,11 +113,13 @@ To create and bind a material to the prim to change its color, first create it:
 
 .. literalinclude:: ../snippets/omniverse_usd/open_usd/inspecting_and_authoring_properties_4.py
     :language: python
+    :start-after: # -- End test setup --
 
 Material color shading is complicated. After creating the prim and appropriate attributes, you must link those attributes and properties together to form a ``shader graph`` that is processed to produce the desired material effect.  After it's created, the material can then be bound to the prim, thus changing its apparent color in the viewport.
 
 .. literalinclude:: ../snippets/omniverse_usd/open_usd/connect_up_the_shader_graph.py
     :language: python
+    :start-after: # -- End test setup --
 
 .. image:: /images/isim_4.0_full_ref_gui_usd_2.png
     :width: 900
@@ -162,11 +169,13 @@ and specifically, the ``diffuse_color_constant`` attribute type.  To directly mo
 
 .. literalinclude:: ../snippets/omniverse_usd/open_usd/usda_10_1.py
     :language: python
+    :start-after: # -- End test setup --
 
 Of course, this level of direct manipulation of USD can become tedious. For situations like this, there are a set of predefined commands through the kit API, which dramatically simplifies working with USD in code.  For example, you could have done the following instead:
 
 .. literalinclude:: ../snippets/omniverse_usd/open_usd/usda_10_2.py
     :language: python
+    :start-after: # -- End test setup --
 
 Further Reading
 ==================

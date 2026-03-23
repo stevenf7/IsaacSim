@@ -99,6 +99,8 @@ Tutorial
 
         .. literalinclude:: ../snippets/introduction/quickstart_isaacsim_robot/examine_robot_joints.py
             :language: python
+            :start-after: # -- End test setup --
+            :end-before: # -- Test cleanup --
 
         Notice when you pressed "Run", it only prints the state once, even if the simulation is running. You would have to keep pressing "Run" if you want to see more recent states. If you want to see the information printed at every physics step, you would need to insert these commands into a physics callback that runs at each physics step. We will go more in depth on how time stepping works in the next section :ref:`isaac_sim_app_tutorial_intro_workflows`.
 
@@ -122,6 +124,8 @@ Tutorial
 
         .. literalinclude:: ../snippets/introduction/quickstart_isaacsim_robot/set_joint_positions_control.py
             :language: python
+            :start-after: # -- End test setup --
+            :end-before: # -- Test cleanup --
 
         Similar to the examine snippet above, ``set_dof_positions`` here is executed once when you press "Run". If you wish to send commands at every physics step, you would need to insert these commands into a physics callback that runs at each physics step.
 

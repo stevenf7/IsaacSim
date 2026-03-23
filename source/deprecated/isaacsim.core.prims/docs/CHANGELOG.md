@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.2] - 2026-03-22
+### Fixed
+- Fix carb.log_error calls passing multiple arguments instead of a single formatted string
+
 ## [0.9.1] - 2026-03-18
 ### Deprecated
 - Extension deprecated in favor of the Core Experimental extension `isaaacsim.core.experimental.prims`

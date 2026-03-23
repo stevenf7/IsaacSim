@@ -500,7 +500,7 @@ class ClothPrim(XFormPrim):
             idx_count = 0
             for i in indices:
                 if stiffness[idx_count].any() < 0:
-                    carb.log_error("The range of stiffness is [0. inf). Incorrect value for index ", idx_count)
+                    carb.log_error(f"The range of stiffness is [0. inf). Incorrect value for index {idx_count}")
                 self._apply_cloth_api(i.tolist())
                 if "physxParticle:springStiffnesses" not in self._prims[i.tolist()].GetPropertyNames():
                     self._cloth_apis[i.tolist()].CreateSpringStiffnessesAttr().Set(
@@ -575,7 +575,7 @@ class ClothPrim(XFormPrim):
             idx_count = 0
             for i in indices:
                 if damping[idx_count].any() < 0:
-                    carb.log_error("The range of damping is [0. inf). Incorrect value for index ", idx_count)
+                    carb.log_error(f"The range of damping is [0. inf). Incorrect value for index {idx_count}")
                 self._apply_cloth_api(i.tolist())
                 if "physxParticle:springDampings" not in self._prims[i.tolist()].GetPropertyNames():
                     self._cloth_apis[i.tolist()].CreateSpringDampingsAttr().Set(
@@ -739,7 +739,7 @@ class ClothPrim(XFormPrim):
         idx_count = 0
         for i in indices:
             if values[idx_count] < 0:
-                carb.log_error("The range of damping is [0. inf). Incorrect value for index ", idx_count)
+                carb.log_error(f"The range of damping is [0. inf). Incorrect value for index {idx_count}")
             self._apply_cloth_auto_api(i.tolist())
             if "physxAutoParticleCloth:springDamping" not in self._prims[i.tolist()].GetPropertyNames():
                 self._cloth_auto_apis[i.tolist()].CreateSpringDampingAttr().Set(values[idx_count].tolist())
@@ -764,7 +764,7 @@ class ClothPrim(XFormPrim):
         idx_count = 0
         for i in indices:
             if values[idx_count] < 0:
-                carb.log_error("The range of stretch stiffness is [0. inf). Incorrect value for index ", idx_count)
+                carb.log_error(f"The range of stretch stiffness is [0. inf). Incorrect value for index {idx_count}")
             self._apply_cloth_auto_api(i.tolist())
             if "physxAutoParticleCloth:springStretchStiffness" not in self._prims[i.tolist()].GetPropertyNames():
                 self._cloth_auto_apis[i.tolist()].CreateSpringStretchStiffnessAttr().Set(values[idx_count].tolist())
@@ -790,7 +790,7 @@ class ClothPrim(XFormPrim):
         idx_count = 0
         for i in indices:
             if values[idx_count] < 0:
-                carb.log_error("The range of bend stiffness is [0. inf). Incorrect value for index ", idx_count)
+                carb.log_error(f"The range of bend stiffness is [0. inf). Incorrect value for index {idx_count}")
             self._apply_cloth_auto_api(i.tolist())
             if "physxAutoParticleCloth:springBendStiffness" not in self._prims[i.tolist()].GetPropertyNames():
                 self._cloth_auto_apis[i.tolist()].CreateSpringBendStiffnessAttr().Set(values[idx_count].tolist())
@@ -816,7 +816,7 @@ class ClothPrim(XFormPrim):
         idx_count = 0
         for i in indices:
             if values[idx_count] < 0:
-                carb.log_error("The range of shear stiffness is [0. inf). Incorrect value for index ", idx_count)
+                carb.log_error(f"The range of shear stiffness is [0. inf). Incorrect value for index {idx_count}")
             self._apply_cloth_auto_api(i.tolist())
             if "physxAutoParticleCloth:springShearStiffness" not in self._prims[i.tolist()].GetPropertyNames():
                 self._cloth_auto_apis[i.tolist()].CreateSpringShearStiffnessAttr().Set(values[idx_count].tolist())

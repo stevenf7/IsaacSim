@@ -168,7 +168,7 @@ class HolonomicController:
         try:
             res = self.prob.solve()
         except Exception as e:
-            carb.log_error("HolonomicController error:", e)
+            carb.log_error(f"HolonomicController error: {e}")
         if res is not None:
             values = res.x.reshape(-1) * self.max_linear_speed
             if np.max(np.abs(values)) > self.max_wheel_speed:

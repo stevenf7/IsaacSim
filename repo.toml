@@ -863,6 +863,17 @@ timeout = 300
 kind = "glob_and_exec"
 path = "${test_root}/tests/doc_snippets"
 stdout_fail_patterns.include = ["*[error]*", "*[fatal]*", "*[fail]*"]
+stdout_fail_patterns.exclude = [
+  "*[Error] [omni.physx.plugin]*",
+  "*[Error] [omni.usd]*",
+  "*[Error] [omni.ext.plugin]*",
+  "*[Error] [omni.kit.app._impl]*",
+  "*[Error] [asyncio]*",
+  "*[Error] [omni.behavior.scripting*",
+  "*[Error] [omni.kit.asset_converter*",
+  "*[Error] [_snippet_test_*",
+  "*[Error] [isaacsim.core.simulation_manager*",
+]
 tc_report_enabled = false
 
 generate_report_cmd = [

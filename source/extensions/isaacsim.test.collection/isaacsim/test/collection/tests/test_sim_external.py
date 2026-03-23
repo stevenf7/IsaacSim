@@ -65,6 +65,6 @@ class TestExternalDependencies(omni.kit.test.AsyncTestCase):
         task = instance.create_converter_task(input_obj, output_usd, progress_callback, converter_context)
         success = await task.wait_until_finished()
         if not success:
-            carb.log_error(task.get_status(), task.get_detailed_error())
+            carb.log_error(f"{task.get_status()}, {task.get_error_message()}")
         print("converting done")
         self.assertTrue(os.path.isfile(output_usd))

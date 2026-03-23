@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.2] - 2026-03-22
+### Fixed
+- Fix carb.log_error call passing multiple arguments instead of a single formatted string
+
 ## [2.6.1] - 2026-03-18
 ### Changed
 - Update the test dependencies, as the core experimental extensions already depend on the `omni.kit.material.library`

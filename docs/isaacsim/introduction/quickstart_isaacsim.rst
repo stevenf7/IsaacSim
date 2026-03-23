@@ -203,6 +203,7 @@ There are three tabs for this tutorial, all three perform the same actions and r
 
       .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/adding_physics_and_collision_to_existing_object.py
           :language: python
+          :start-after: # -- End test setup --
 
       Click the **Play** button to see the cubes fall under gravity and collide with the ground plane.
 
@@ -212,11 +213,13 @@ There are three tabs for this tutorial, all three perform the same actions and r
 
       .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/moving_an_object_using_core_api.py
           :language: python
+          :start-after: # -- End test setup --
 
       Moving an object using raw USD API:
 
       .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/moving_an_object_using_raw_usd_api.py
           :language: python
+          :start-after: # -- End test setup --
 
    .. tab-item:: Standalone Python
 
@@ -291,6 +294,7 @@ There are three tabs for this tutorial, all three perform the same actions and r
 
       .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/moving_an_object_using_core_api_standalone.py
           :language: python
+          :start-after: # -- End test setup --
 
 Save your work. 
 

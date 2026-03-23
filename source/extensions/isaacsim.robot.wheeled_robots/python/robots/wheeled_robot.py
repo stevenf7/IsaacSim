@@ -96,7 +96,7 @@ class WheeledRobot(Robot):
                 else:
                     carb.log_error("no valid usd path defined to create new robot")
             else:
-                carb.log_error("no prim at path %s", prim_path)
+                carb.log_error(f"no prim at path {prim_path}")
 
         if robot_path is not None:
             robot_path = "/" + robot_path

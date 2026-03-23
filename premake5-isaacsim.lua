@@ -399,7 +399,7 @@ function create_python_sample_runner(name, sample_path, config, extra_args, pyth
     -- Path from script dir to config (release/) so _testoutput is always <config>/_testoutput
     local testoutput_prefix = rel_path
 
-    if string.find(name, "ros2") or string.find(name, "scene_loading") or string.find(name, "test_test_runner") then
+    if string.find(name, "ros2") or string.find(name, "scene_loading") or string.find(name, "test_test_runner") or string.find(name, "test_snippets_async") then
         extra = get_ros2_extra(os_target, rel_path)
     else
         extra = ""
