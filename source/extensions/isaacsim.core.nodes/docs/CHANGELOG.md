@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.7.0] - 2026-03-21
+### Changed
+- IsaacCreateRenderProduct node now supports re-using existing render products via `renderProductPrim` input
+- IsaacCreateRenderProduct node now supports SRTX render product creation
+
 ## [5.6.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings

@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.13.0] - 2026-03-21
+### Added
+- SRTX publisher support for ROS 2 image, lidar point cloud, and laser scan topics
+- New C++ SRTX publisher classes: ImagePublisher, PointCloudPublisher, and PublisherBase
+- SrtxPublisherFactory for creating SRTX-based ROS 2 publishers
+- SRTX support in ROS2CameraHelper, ROS2CameraInfoHelper, and ROS2RtxLidarHelper OmniGraph nodes
+
+### Changed
+- Refactored OgnROS2PublishPointCloud to use shared PublisherBase/PointCloudPublisher classes
+
 ## [1.12.2] - 2026-03-21
 ### Fixed
 - Fix test publisher hang and reduce test time
@@ -12,7 +22,7 @@
 ### Changed
 - Updated documentation with AI agent.
 
-## [1.11.0] - 2026-03-09
+## [1.11.0] - 2026-03-10
 ### Changed
 - ROS2PublishTransformTree accepts optional parentFrames, childFrames, translations, and orientations inputs to receive pre-computed transform data from IsaacComputeTransformTree, deprecating direct use of targetPrims
 

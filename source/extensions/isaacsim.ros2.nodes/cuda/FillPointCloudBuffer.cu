@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "isaacsim/core/includes/ScopedCudaDevice.h"
-#include "ROS2PublishPointCloud.cuh"
+#include "FillPointCloudBuffer.cuh"
 
 namespace isaacsim
 {
@@ -38,7 +38,7 @@ __global__ void fillBufferKernel(uint8_t* __restrict__ buffer, const uint8_t* __
     }
 }
 
-void fillPointCloudBuffer(uint8_t* __restrict__ buffer, const float3* __restrict__ pointCloudData, const std::vector<std::tuple<void*, size_t, size_t>>& orderedFields, const size_t pointWidth, const size_t numPoints, const int maxThreadsPerBlock, const int multiProcessorCount, const int cudaDeviceIndex, const cudaStream_t stream)
+void fillPointCloudBuffer(uint8_t* __restrict__ buffer, const float3* __restrict__ pointCloudData, const std::vector<std::tuple<void*, size_t, size_t>>& orderedFields, const size_t pointWidth, const size_t numPoints, const int maxThreadsPerBlock, const int multiProcessorCount, const int cudaDeviceIndex, cudaStream_t stream)
 {
     isaacsim::core::includes::ScopedDevice scopedDevice(cudaDeviceIndex);
 

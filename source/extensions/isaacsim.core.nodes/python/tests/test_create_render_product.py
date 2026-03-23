@@ -18,6 +18,7 @@ import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.graph.core as og
 import omni.graph.core.tests as ogts
 import omni.kit.test
+import omni.replicator.core as rep
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import UsdRender
 
@@ -41,6 +42,8 @@ class TestCreateRenderProduct(ogts.OmniGraphTestCase):
 
     # ----------------------------------------------------------------------
     async def test_create_render_product(self):
+        rp_3 = rep.create.render_product("/OmniverseKit_Persp", (512, 512), name="RP3")
+
         (test_graph, new_nodes, _, _) = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
@@ -48,15 +51,20 @@ class TestCreateRenderProduct(ogts.OmniGraphTestCase):
                     ("OnTick", "omni.graph.action.OnTick"),
                     ("createRP1", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
                     ("createRP2", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+                    ("createRP3", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     ("OnTick.outputs:tick", "createRP1.inputs:execIn"),
                     ("OnTick.outputs:tick", "createRP2.inputs:execIn"),
+                    ("OnTick.outputs:tick", "createRP3.inputs:execIn"),
                 ],
                 og.Controller.Keys.SET_VALUES: [
+                    ("createRP1.inputs:width", 512),
                     ("createRP1.inputs:cameraPrim", "/OmniverseKit_Persp"),
                     ("createRP2.inputs:cameraPrim", "/OmniverseKit_Persp"),
                     ("createRP2.inputs:enabled", False),
+                    ("createRP3.inputs:cameraPrim", "/OmniverseKit_Persp"),
+                    ("createRP3.inputs:renderProductPrim", [rp_3.path]),
                 ],
             },
         )
@@ -83,3 +91,7 @@ class TestCreateRenderProduct(ogts.OmniGraphTestCase):
 
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
+
+        # Test that RP3 re-uses the existing render product
+        rp_3_node_rp_out = og.Controller.attribute("outputs:renderProductPath", new_nodes[3]).get()
+        self.assertEqual(rp_3_node_rp_out, rp_3.path)

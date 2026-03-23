@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 import traceback
-from typing import Dict
 
 import carb
 import cv2 as cv
@@ -28,7 +29,9 @@ from pxr import Usd
 
 
 class OgnROS2CameraInfoHelperInternalState(BaseWriterNode):
-    def __init__(self):
+    """Internal state for the ROS2CameraInfoHelper OmniGraph node."""
+
+    def __init__(self) -> None:
         self.viewport = None
         self.viewport_name = ""
         self.rv = ""
@@ -38,7 +41,7 @@ class OgnROS2CameraInfoHelperInternalState(BaseWriterNode):
 
         super().__init__(initialize=False)
 
-    def post_attach(self, writer, render_product):
+    def post_attach(self, writer, render_product) -> None:
         try:
             if self.rv != "":
                 omni.syntheticdata.SyntheticData.Get().set_node_attributes(
@@ -52,17 +55,21 @@ class OgnROS2CameraInfoHelperInternalState(BaseWriterNode):
             omni.syntheticdata.SyntheticData.Get().set_node_attributes(
                 "IsaacReadSimulationTime", {"inputs:resetOnStop": self.resetSimulationTimeOnStop}, render_product
             )
-        except:
+        except Exception:
             pass
 
 
 class OgnROS2CameraInfoHelper:
+    """OmniGraph node that sets up ROS 2 camera info publishers."""
+
     @staticmethod
-    def internal_state():
+    def internal_state() -> OgnROS2CameraInfoHelperInternalState:
         return OgnROS2CameraInfoHelperInternalState()
 
     @staticmethod
-    def add_camera_info_writer(db, frameId, topicName, camera_info, render_product_path: str, time_type: str = ""):
+    def add_camera_info_writer(
+        db, frameId, topicName, camera_info, render_product_path: str, time_type: str = ""
+    ) -> None:
         writer = rep.writers.get(f"ROS2{time_type}PublishCameraInfo")
         writer.initialize(
             frameId=frameId,
@@ -81,137 +88,134 @@ class OgnROS2CameraInfoHelper:
             physicalDistortionCoefficients=camera_info.d,
         )
         db.per_instance_state.attach_writer(writer, render_product_path)
-        return
 
     @staticmethod
     def compute(db) -> bool:
-        if db.inputs.enabled is False:
-            if db.per_instance_state.initialized is False:
-                return True
-            else:
-                db.per_instance_state.custom_reset()
-                return True
+        state = db.per_instance_state
+        if not db.inputs.enabled:
+            if state.initialized:
+                # Camera helper was disabled, reset the state
+                state.custom_reset()
+            return True
 
-        if db.per_instance_state.initialized is False:
-            db.per_instance_state.initialized = True
-            # Get stage reference
-            stage = omni.usd.get_context().get_stage()
+        if state.initialized:
+            # Camera Info helper was already initialized, nothing to do
+            return True
 
-            with Usd.EditContext(stage, stage.GetSessionLayer()):
+        render_product_path = db.inputs.renderProductPath
+        render_product_path_right = db.inputs.renderProductPathRight
 
-                is_stereo = False
-                if not db.inputs.renderProductPath:
-                    carb.log_warn(f"Render product {db.inputs.renderProductPath} not valid")
-                    db.per_instance_state.initialized = False
+        stage = omni.usd.get_context().get_stage()
+        with Usd.EditContext(stage, stage.GetSessionLayer()):
+            is_stereo = False
+            if not render_product_path:
+                carb.log_warn(f"Render product '{render_product_path}' not valid")
+                return False
+            if render_product_path_right:
+                is_stereo = True
+
+            db.per_instance_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
+            db.per_instance_state.publishStepSize = db.inputs.frameSkipCount + 1
+
+            time_type_input = ""
+            if db.inputs.useSystemTime:
+                time_type_input = "SystemTime"
+                if db.inputs.resetSimulationTimeOnStop:
+                    carb.log_warn("System timestamp is being used. Ignoring resetSimulationTimeOnStop input")
+
+            camera_info_left, camera_left = read_camera_info(render_product_path=render_product_path)
+
+            if is_stereo:
+                camera_info_right, camera_right = read_camera_info(render_product_path=render_product_path_right)
+
+                width_left = camera_info_left.width
+                height_left = camera_info_left.height
+                width_right = camera_info_right.width
+                height_right = camera_info_right.height
+                if width_left != width_right or height_left != height_right:
+                    carb.log_warn(
+                        f"Mismatched stereo camera resolutions: left = [{width_left}, {height_left}], right = [{width_right}, {height_right}]"
+                    )
                     return False
-                if db.inputs.renderProductPathRight:
-                    is_stereo = True
 
-                db.per_instance_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
-                db.per_instance_state.publishStepSize = db.inputs.frameSkipCount + 1
+                distortion_model_left = camera_info_left.distortion_model
+                distortion_model_right = camera_info_right.distortion_model
+                if distortion_model_left != distortion_model_right:
+                    carb.log_warn(
+                        f"Mismatched stereo camera distortion models: left = {distortion_model_left}, right = {distortion_model_right}."
+                    )
+                    return False
 
-                time_type_input = ""
-                if db.inputs.useSystemTime:
-                    time_type_input = "SystemTime"
-                    if db.inputs.resetSimulationTimeOnStop:
-                        carb.log_warn("System timestamp is being used. Ignoring resetSimulationTimeOnStop input")
+                translation, orientation = compute_relative_pose(
+                    left_camera_prim=camera_left, right_camera_prim=camera_right
+                )
 
-                camera_info_left, camera_left = read_camera_info(render_product_path=db.inputs.renderProductPath)
-
-                if is_stereo:
-                    camera_info_right, camera_right = read_camera_info(
-                        render_product_path=db.inputs.renderProductPathRight
+                # Compute stereo rectification parameters
+                if distortion_model_left == "equidistant":
+                    (
+                        R1,
+                        R2,
+                        P1,
+                        P2,
+                        _,
+                    ) = cv.fisheye.stereoRectify(
+                        K1=np.reshape(camera_info_left.k, [3, 3]),
+                        D1=np.array(camera_info_left.d),
+                        K2=np.reshape(camera_info_right.k, [3, 3]),
+                        D2=np.array(camera_info_right.d),
+                        imageSize=(width_left, height_left),
+                        R=orientation,
+                        tvec=translation,
+                        flags=cv.CALIB_ZERO_DISPARITY,
+                    )
+                else:
+                    R1, R2, P1, P2, _, _, _ = cv.stereoRectify(
+                        cameraMatrix1=np.reshape(camera_info_left.k, [3, 3]),
+                        distCoeffs1=np.array(camera_info_left.d),
+                        cameraMatrix2=np.reshape(camera_info_right.k, [3, 3]),
+                        distCoeffs2=np.array(camera_info_right.d),
+                        imageSize=(width_left, height_left),
+                        R=orientation,
+                        T=translation,
+                        flags=cv.CALIB_ZERO_DISPARITY,
                     )
 
-                    width_left = camera_info_left.width
-                    height_left = camera_info_left.height
-                    width_right = camera_info_right.width
-                    height_right = camera_info_right.height
-                    if width_left != width_right or height_left != height_right:
-                        carb.log_warn(
-                            f"Mismatched stereo camera resolutions: left = [{width_left}, {height_left}], right = [{width_right}, {height_right}]"
-                        )
-                        return False
+                camera_info_left.r = R1.ravel().tolist()
+                camera_info_right.r = R2.ravel().tolist()
+                camera_info_left.p = P1.ravel().tolist()
+                camera_info_right.p = P2.ravel().tolist()
 
-                    distortion_model_left = camera_info_left.distortion_model
-                    distortion_model_right = camera_info_right.distortion_model
-                    if distortion_model_left != distortion_model_right:
-                        carb.log_warn(
-                            f"Mismatched stereo camera distortion models: left = {distortion_model_left}, right = {distortion_model_right}."
-                        )
-                        return False
-
-                    translation, orientation = compute_relative_pose(
-                        left_camera_prim=camera_left, right_camera_prim=camera_right
-                    )
-
-                    # Compute stereo rectification parameters
-                    if distortion_model_left == "equidistant":
-                        (
-                            R1,
-                            R2,
-                            P1,
-                            P2,
-                            _,
-                        ) = cv.fisheye.stereoRectify(
-                            K1=np.reshape(camera_info_left.k, [3, 3]),
-                            D1=np.array(camera_info_left.d),
-                            K2=np.reshape(camera_info_right.k, [3, 3]),
-                            D2=np.array(camera_info_right.d),
-                            imageSize=(width_left, height_left),
-                            R=orientation,
-                            tvec=translation,
-                            flags=cv.CALIB_ZERO_DISPARITY,
-                        )
-                    else:
-                        R1, R2, P1, P2, _, _, _ = cv.stereoRectify(
-                            cameraMatrix1=np.reshape(camera_info_left.k, [3, 3]),
-                            distCoeffs1=np.array(camera_info_left.d),
-                            cameraMatrix2=np.reshape(camera_info_right.k, [3, 3]),
-                            distCoeffs2=np.array(camera_info_right.d),
-                            imageSize=(width_left, height_left),
-                            R=orientation,
-                            T=translation,
-                            flags=cv.CALIB_ZERO_DISPARITY,
-                        )
-
-                    camera_info_left.r = R1.ravel().tolist()
-                    camera_info_right.r = R2.ravel().tolist()
-                    camera_info_left.p = P1.ravel().tolist()
-                    camera_info_right.p = P2.ravel().tolist()
-
-                    # Create right-side writer
-                    db.per_instance_state.rvRight = "PostProcessDispatchRight"
-                    OgnROS2CameraInfoHelper.add_camera_info_writer(
-                        db,
-                        topicName=db.inputs.topicNameRight,
-                        frameId=db.inputs.frameIdRight,
-                        camera_info=camera_info_right,
-                        render_product_path=db.inputs.renderProductPathRight,
-                        time_type=time_type_input,
-                    )
-
-                # Create left-side writer
-                db.per_instance_state.rv = "PostProcessDispatch"
+                # Create right-side writer
+                db.per_instance_state.rvRight = "PostProcessDispatchRight"
                 OgnROS2CameraInfoHelper.add_camera_info_writer(
                     db,
-                    topicName=db.inputs.topicName,
-                    frameId=db.inputs.frameId,
-                    camera_info=camera_info_left,
-                    render_product_path=db.inputs.renderProductPath,
+                    topicName=db.inputs.topicNameRight,
+                    frameId=db.inputs.frameIdRight,
+                    camera_info=camera_info_right,
+                    render_product_path=render_product_path_right,
                     time_type=time_type_input,
                 )
 
-        else:
-            return True
+            # Create left-side writer
+            db.per_instance_state.rv = "PostProcessDispatch"
+            OgnROS2CameraInfoHelper.add_camera_info_writer(
+                db,
+                topicName=db.inputs.topicName,
+                frameId=db.inputs.frameId,
+                camera_info=camera_info_left,
+                render_product_path=render_product_path,
+                time_type=time_type_input,
+            )
+
+        state.initialized = True
+        return True
 
     @staticmethod
-    def release_instance(node, graph_instance_id):
+    def release_instance(node, graph_instance_id) -> None:
         try:
             state = OgnROS2CameraInfoHelperInternalState.per_instance_internal_state(node)
         except Exception:
             state = None
-            pass
 
         if state is not None:
             state.reset()

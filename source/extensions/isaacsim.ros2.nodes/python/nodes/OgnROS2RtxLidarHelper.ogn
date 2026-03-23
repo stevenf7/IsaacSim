@@ -1,6 +1,6 @@
 {
     "isaacsim.ros2.bridge.ROS2RtxLidarHelper" : {
-        "version" : 2,
+        "version" : 3,
         "icon" : "icons/isaac-sim.svg",
         "description" : "Handles automation of Lidar Sensor pipeline",
         "language" : "Python",

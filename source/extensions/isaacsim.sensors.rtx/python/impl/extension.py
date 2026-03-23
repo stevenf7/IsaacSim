@@ -175,6 +175,15 @@ class Extension(omni.ext.IExt):
         Registers various annotators for RTX sensor data extraction including point cloud,
         flat scan, and radar annotators. Also registers debug draw writers for visualization.
         """
+        # Temporary fix due to GMO annotator missing from omni.replicator.core-1.13.6
+        if "GenericModelOutput" not in AnnotatorRegistry.get_registered_annotators():
+            AnnotatorRegistry.register_annotator_from_aov(
+                aov="GenericModelOutput",
+                output_data_type=np.uint8,
+                output_channels=1,
+                is_gpu_enabled=False,
+            )
+
         annotator_name = "IsaacExtractRTXSensorPointCloud" + "NoAccumulator"
         register_annotator_from_node_with_telemetry(
             name=annotator_name,

@@ -15,8 +15,9 @@
 
 """Common utilities and constants for ROS 2 nodes extension."""
 
-from typing import List
+from __future__ import annotations
 
+import carb
 import numpy as np
 import omni.replicator.core as rep
 import omni.syntheticdata
@@ -25,11 +26,193 @@ from isaacsim.core.nodes.scripts.utils import (
     register_annotator_from_node_with_telemetry,
     register_node_writer_with_telemetry,
 )
-from pxr import Usd
+from pxr import Sdf, Usd
 
 # Nodes extension constants
 BRIDGE_NAME = "isaacsim.ros2.bridge"
 BRIDGE_PREFIX = "ROS2"
+SRTX_SENSOR_SET = "default-sensor-set"
+USE_SRTX_SETTING = "/exts/omni.replicator.srtx/enabled"
+
+NON_IMAGE_COMPRESSION_FALLBACK = "blosc"
+
+# When searching existing RenderVars on a render product, a match against any
+# name in the alias set is accepted in addition to the canonical AOV name.
+# This handles render products that use "LdrColor" rather than "LdrColorSD".
+AOV_ALIASES: dict[str, set[str]] = {
+    "LdrColorSD": {"LdrColor"},
+    "LdrColor": {"LdrColorSD"},
+}
+
+
+class SrtxCaptureState:
+    """Encapsulates mutable SRTX continuous-capture tracking state.
+
+    This avoids bare module-level globals and makes stage-change resets explicit.
+    """
+
+    def __init__(self) -> None:
+        self._stage_id: str = ""
+        self._output_paths: dict[str, list[str]] = {}
+
+    def _refresh_stage(self) -> None:
+        """Clear stale state when the current stage changes."""
+        stage = omni.usd.get_context().get_stage()
+        current_stage_id = str(stage.GetRootLayer().identifier) if stage else ""
+        if current_stage_id != self._stage_id:
+            self._output_paths.clear()
+            CompressedImageManager.reset()
+            self._stage_id = current_stage_id
+
+    def start_or_extend(self, srtx_instance, sensor_set_name: str, output_path: str) -> None:
+        """Add *output_path* to the SRTX continuous capture for *sensor_set_name*.
+
+        Because ``start_continuous_capture`` replaces (rather than merges)
+        output paths and silently ignores subsequent calls while active,
+        we track the accumulated paths and do a stop/restart cycle when
+        a new path needs to be added.
+        """
+        self._refresh_stage()
+
+        paths = self._output_paths.setdefault(sensor_set_name, [])
+        if output_path in paths:
+            return
+        paths.append(output_path)
+        srtx_instance.stop_continuous_capture(sensor_set_name)
+        srtx_instance.start_continuous_capture(sensor_set_name, paths)
+
+    def stop_or_shrink(self, srtx_instance, sensor_set_name: str, output_paths_to_remove: list[str]) -> None:
+        """Remove *output_paths_to_remove* from the SRTX continuous capture for *sensor_set_name*.
+
+        If other output paths remain active on the same sensor set the capture is
+        restarted with only those paths.  If no paths remain, continuous capture is
+        simply stopped.
+        """
+        paths = self._output_paths.get(sensor_set_name)
+        if paths is None:
+            return
+
+        for p in output_paths_to_remove:
+            try:
+                paths.remove(p)
+            except ValueError:
+                pass
+
+        srtx_instance.stop_continuous_capture(sensor_set_name)
+
+        if paths:
+            srtx_instance.start_continuous_capture(sensor_set_name, paths)
+        else:
+            self._output_paths.pop(sensor_set_name, None)
+
+
+_srtx_capture_state = SrtxCaptureState()
+
+
+def _start_or_extend_continuous_capture(srtx_instance, sensor_set_name: str, output_path: str) -> None:
+    _srtx_capture_state.start_or_extend(srtx_instance, sensor_set_name, output_path)
+
+
+def _stop_or_shrink_continuous_capture(srtx_instance, sensor_set_name: str, output_paths_to_remove: list[str]) -> None:
+    _srtx_capture_state.stop_or_shrink(srtx_instance, sensor_set_name, output_paths_to_remove)
+
+
+def _add_render_var(stage, rendervar_path: str, aov_name: str) -> bool:
+    """Create a RenderVar USD prim at *rendervar_path* for *aov_name* if it does not already exist.
+
+    Args:
+        stage: The USD stage.
+        rendervar_path: Absolute USD path for the new RenderVar prim.
+        aov_name: AOV source name to set on the prim's ``sourceName`` attribute.
+
+    Returns:
+        True on success, False if the prim could not be created.
+    """
+    if not stage.GetPrimAtPath(rendervar_path).IsValid():
+        render_var_prim = stage.DefinePrim(rendervar_path, "RenderVar")
+        if not render_var_prim.IsValid():
+            carb.log_error(f"Failed to create RenderVar at {rendervar_path}")
+            return False
+        render_var_prim.CreateAttribute("sourceName", Sdf.ValueTypeNames.String).Set(aov_name)
+
+    carb.log_info(f"Created SRTX RenderVar at {rendervar_path}")
+    return True
+
+
+def ensure_render_var_on_product(
+    stage, render_product_path: str, aov_name: str, compression_type: str | None = None, is_image: bool = False
+) -> tuple[bool, str | None]:
+    """Ensure a RenderVar for the given AOV exists as a child of the render product and is in orderedVars.
+
+    Args:
+        stage: The USD stage.
+        render_product_path: Path to the render product prim.
+        aov_name: The AOV source name to match or create.
+        compression_type: Optional SRTX compression type to set on the render var.
+        is_image: Whether this AOV represents image data (affects compression validation).
+
+    Returns:
+        A (success, rendervar_path) tuple.
+    """
+    rp_prim = stage.GetPrimAtPath(render_product_path)
+    aov_name_aliases = AOV_ALIASES.get(aov_name, set())
+    rendervar_path = None
+    for child in rp_prim.GetChildren():
+        if child.HasAttribute("sourceName"):
+            src = child.GetAttribute("sourceName").Get()
+            if src == aov_name or src in aov_name_aliases:
+                rendervar_path = str(child.GetPath())
+                break
+    if not rendervar_path:
+        rendervar_path = render_product_path + "/" + aov_name
+        if not _add_render_var(stage, rendervar_path, aov_name):
+            return False, None
+
+    if compression_type:
+        render_var_prim = stage.GetPrimAtPath(rendervar_path)
+        if not render_var_prim.HasAttribute("srtx:compression:type"):
+            render_var_prim.CreateAttribute("srtx:compression:type", Sdf.ValueTypeNames.String)
+        if compression_type in ["hevc", "h264", "h265"] and not is_image:
+            carb.log_warn(
+                f"Compression type {compression_type} is not valid for non-image data {aov_name}. "
+                f"Using {NON_IMAGE_COMPRESSION_FALLBACK} instead."
+            )
+            compression_type = NON_IMAGE_COMPRESSION_FALLBACK
+        render_var_prim.GetAttribute("srtx:compression:type").Set(compression_type)
+
+    rp_orderedvars = rp_prim.GetRelationship("orderedVars").GetTargets()
+    if rendervar_path not in rp_orderedvars:
+        rp_prim.GetRelationship("orderedVars").AddTarget(rendervar_path)
+    return True, rendervar_path
+
+
+def cleanup_srtx_state(state) -> None:
+    """Unregister SRTX frame callbacks and clean up capture state on an OG node's internal state object.
+
+    Expects the state object to have ``_srtx_callback_handle``, ``_srtx_sensor_set``,
+    ``_srtx_output_path``, and ``_srtx_capsule`` attributes (initialised to ``None``).
+    """
+    handle = state._srtx_callback_handle
+    sensor_set = state._srtx_sensor_set
+    output_path = state._srtx_output_path
+    if handle is not None and sensor_set is not None:
+        try:
+            from omni.replicator.srtx import SrtxCore
+
+            stage = omni.usd.get_context().get_stage()
+            if stage:
+                usd_scene = str(stage.GetRootLayer().identifier)
+                srtx_instance = SrtxCore.get_instance(usd_scene)
+                if srtx_instance is not None:
+                    srtx_instance.unregister_frame_callback(sensor_set, handle)
+                    if output_path:
+                        _stop_or_shrink_continuous_capture(srtx_instance, sensor_set, [output_path])
+        except Exception as e:
+            carb.log_warn(f"Error during SRTX cleanup: {e}")
+    state._srtx_callback_handle = None
+    state._srtx_capsule = None
+    state._srtx_output_path = None
+    state._srtx_sensor_set = None
 
 
 class CompressedImageManager:
@@ -42,6 +225,11 @@ class CompressedImageManager:
 
     _annotators: dict = {}
     #: Per-render-product annotator instances keyed by render product path.
+
+    @classmethod
+    def reset(cls) -> None:
+        """Clear all cached annotators (e.g. on stage change)."""
+        cls._annotators.clear()
 
     @classmethod
     def attach(cls, render_product_path: str) -> None:
