@@ -61,9 +61,9 @@ def arbitrate_kit_upstream(build_config: str | None = None) -> None:
     # For kit-integration/* use the branch name from the ref for nightly lookup.
     kit_branch = KIT_BRANCH
     if ci_commit_ref.startswith("kit-integration/"):
-        kit_branch = ci_commit_ref.split("/")[1]
+        kit_branch = ci_commit_ref.removeprefix("kit-integration/")
     if ci_mr_target.startswith("kit-integration/"):
-        kit_branch = ci_mr_target.split("/")[1]
+        kit_branch = ci_mr_target.removeprefix("kit-integration/")
 
     print(
         f"[arbitrate_kit_upstream] downstream_pipeline={downstream_pipeline}, "
