@@ -47,7 +47,7 @@ RENDERING_DEPS_ARTIFACT_PATH = "kit/_build/rendering_deps.xml"
 
 # The Kit branch that Isaac Sim depends on.  Used by the nightly fallback
 # to find the latest scheduled pipeline with all build jobs passing.
-KIT_BRANCH = "feature/110.0"
+KIT_BRANCH = "feature/110.1"
 
 
 def _gitlab_headers() -> dict:
