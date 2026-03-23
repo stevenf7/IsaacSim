@@ -35,15 +35,17 @@ simulation_app = SimulationApp(
 )
 
 # Import post-launch modules
+import isaacsim.core.experimental.utils.app as app_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.graph.core as og
 import omni.usd
 import usdrt.Sdf
-from isaacsim.core.api import World
-from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.utils.extensions import enable_extension
-from isaacsim.core.utils.viewports import set_camera_view
+from isaacsim.core.experimental.objects import Cube, GroundPlane
+from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
+from isaacsim.core.rendering_manager import RenderingManager, ViewportManager
+from isaacsim.core.simulation_manager import SimulationManager
 
-enable_extension("isaacsim.ros2.bridge")
+app_utils.enable_extension("isaacsim.ros2.bridge")
 simulation_app.update()
 
 import rclpy
@@ -143,11 +145,17 @@ node = rclpy.create_node("sync_test_node")
 tf_sub = node.create_subscription(TFMessage, "/tf_test", tf_callback, 10)
 img_sub = node.create_subscription(Image, "rgb", img_callback, 10)
 
-# Create world and add cube
-world = World(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0)
+# Setup physics and rendering rates
+SimulationManager.set_physics_dt(1.0 / 60.0)
+RenderingManager.set_dt(1.0 / 60.0)
+
+# Create scene
+stage_utils.create_new_stage()
 CUBE_PRIM_PATH = "/Cube"
-cube = world.scene.add(DynamicCuboid(prim_path=CUBE_PRIM_PATH, scale=[0.5, 0.5, 0.5]))
-world.scene.add_default_ground_plane()
+Cube(paths=CUBE_PRIM_PATH, scales=[0.5, 0.5, 0.5])
+cube = RigidPrim(paths=CUBE_PRIM_PATH)
+GeomPrim(paths=CUBE_PRIM_PATH, apply_collision_apis=True)
+GroundPlane("/World/GroundPlane")
 
 # Add camera
 CAMERA_PRIM_PATH = "/Camera"
@@ -156,9 +164,10 @@ CAMERA_TARGET = [0, 0, 0.1]
 
 stage = omni.usd.get_context().get_stage()
 stage.DefinePrim(CAMERA_PRIM_PATH, "Camera")
-set_camera_view(eye=CAMERA_EYE, target=CAMERA_TARGET, camera_prim_path=CAMERA_PRIM_PATH)
+ViewportManager.set_camera_view(CAMERA_PRIM_PATH, eye=CAMERA_EYE, target=CAMERA_TARGET)
 
-world.reset()
+app_utils.play()
+simulation_app.update()
 
 # Create Action Graph
 og.Controller.edit(
@@ -195,7 +204,7 @@ log.info("Action graph created, starting warmup...")
 
 # Warmup
 for i in range(20):
-    world.step(render=True)
+    simulation_app.update()
     rclpy.spin_once(node, timeout_sec=0.0)
     warmup_tf = tf_msg is not None
     warmup_img = img_msg is not None
@@ -209,7 +218,7 @@ log.info(f"Warmup complete. Total callbacks so far: tf={tf_recv_count}, img={img
 # frame. Without this, the first test step receives an image stamped from the previous
 # warmup frame while TF already carries the current frame's timestamp.
 clear_message_state()
-world.step(render=True)
+simulation_app.update()
 for _ in range(20):
     rclpy.spin_once(node, timeout_sec=0.05)
     if tf_queue and img_queue:
@@ -229,7 +238,7 @@ log.info(
     f"{SETTLE_REQUIRED_CONSECUTIVE} consecutive zero-delta pairs (max {SETTLE_MAX_STEPS} steps)"
 )
 for settle_step in range(SETTLE_MAX_STEPS):
-    world.step(render=True)
+    simulation_app.update()
     (
         tf_ns,
         img_ns,
@@ -293,8 +302,8 @@ missed_steps = []
 for step in range(args.test_steps):
     step_start = time.perf_counter()
     new_pos = np.random.uniform(-1, 1, 3)
-    cube.set_world_pose(position=new_pos)
-    world.step(render=True)
+    cube.set_world_poses(positions=[new_pos])
+    simulation_app.update()
     step_elapsed = time.perf_counter() - step_start
 
     (
