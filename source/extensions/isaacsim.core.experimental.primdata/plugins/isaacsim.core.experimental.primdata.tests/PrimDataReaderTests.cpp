@@ -16,13 +16,14 @@
 #include <carb/BindingsUtils.h>
 
 #include <doctest/doctest.h>
-#include <isaacsim/core/experimental/prims/BufferRegistry.h>
 
-CARB_BINDINGS("isaacsim.core.experimental.prims.tests")
+#include <BufferRegistry.h>
+
+CARB_BINDINGS("isaacsim.core.experimental.primdata.tests")
 
 using namespace isaacsim::core::experimental::prims;
 
-TEST_SUITE("isaacsim.core.experimental.prims.tests")
+TEST_SUITE("isaacsim.core.experimental.primdata.tests")
 {
     TEST_CASE("ViewData::getOrCreateField allocates buffer on CPU")
     {

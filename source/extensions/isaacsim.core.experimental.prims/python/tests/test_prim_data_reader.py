@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.app
 import omni.kit.test
@@ -63,6 +64,21 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
 
     async def test_get_prim_data_reader_singleton(self):
         """Verify get_prim_data_reader returns a non-None singleton."""
+        self.assertIsNotNone(self.reader)
+
+    async def test_provider_extension_setting_defaults_to_primdata(self):
+        """Default provider setting should point to isaacsim.core.experimental.primdata."""
+        settings = carb.settings.get_settings()
+        provider = settings.get("/exts/isaacsim.core.experimental.prims/prim_data_reader_provider_extension")
+        self.assertEqual(provider, "isaacsim.core.experimental.primdata")
+
+    async def test_provider_extension_enabled_for_reader(self):
+        """Provider extension should be enabled before/while acquiring the reader interface."""
+        app = omni.kit.app.get_app()
+        ext_manager = app.get_extension_manager()
+        settings = carb.settings.get_settings()
+        provider = settings.get("/exts/isaacsim.core.experimental.prims/prim_data_reader_provider_extension")
+        self.assertTrue(ext_manager.is_extension_enabled(provider))
         self.assertIsNotNone(self.reader)
 
     # -- View creation and type safety --

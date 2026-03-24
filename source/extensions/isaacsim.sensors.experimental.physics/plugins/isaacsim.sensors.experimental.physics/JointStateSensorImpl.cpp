@@ -152,7 +152,7 @@ void JointStateSensorImpl::_initializeFromContext()
 
 void JointStateSensorImpl::_initializeStage(const long stageId)
 {
-    if (m_impl->stageId == stageId && m_impl->usdStage)
+    if (m_impl->stageId == stageId && m_impl->usdStage && m_impl->readerManager && m_impl->reader)
     {
         return;
     }
