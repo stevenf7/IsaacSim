@@ -1,4 +1,8 @@
 # Changelog
+## [0.2.5] - 2026-03-23
+### Added
+- Add WheeledRobot integration test with kinematic distance assertion
+
 ## [0.2.4] - 2026-03-22
 ### Fixed
 - Fix carb.log_error call passing multiple arguments instead of a single formatted string

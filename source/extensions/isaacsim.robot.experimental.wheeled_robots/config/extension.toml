@@ -1,5 +1,5 @@
 [package]
-version = "0.2.4"
+version = "0.2.5"
 category = "Simulation"
 title = "Wheeled Robots (Experimental)"
 description = "This extension provides wheeled robot utilities"
@@ -30,6 +30,8 @@ include = ["*.py"]
 
 [[test]]
 dependencies = [
+    "isaacsim.core.experimental.objects",
+    "isaacsim.storage.native",
     "isaacsim.test.utils",
 ]
 stdoutFailPatterns.exclude = [
