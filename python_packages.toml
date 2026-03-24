@@ -382,6 +382,7 @@ inventory.includes.all = [
     "exts/isaacsim.core.nodes",
     "exts/isaacsim.core.rendering_manager",
     "exts/isaacsim.core.simulation_manager",
+    "exts/isaacsim.core.telemetry",
     "exts/isaacsim.core.throttling",
     "exts/isaacsim.core.version",
     "exts/isaacsim.physics.newton",

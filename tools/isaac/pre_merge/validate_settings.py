@@ -70,7 +70,7 @@ _SETTINGS_HEADER = [
 ]
 
 _TOML_FENCE_RE = re.compile(r"```toml\s*\n(.*?)\n```", re.DOTALL)
-_SETTING_HEADING_RE = re.compile(r"^###\s+(.+?)\s*$")
+_SETTING_HEADING_RE = re.compile(r"^#{2,3}\s+(\S+)\s*$")
 _BULLET_INDENT_RE = re.compile(r"^(\s*)-\s+\*\*Default Value\*\*:")
 _COMMENTED_SETTING_RE = re.compile(r"^#\s*([A-Za-z0-9_.\"-]+)\s*=")
 
@@ -292,9 +292,17 @@ def _parse_settings_md(settings_path: Path) -> SettingsDoc:
             if indent_match:
                 bullet_indent = indent_match.group(1)
 
-    header_lines = lines[: header_end + 1] if header_end >= 0 else _default_settings_header()
+    if header_end >= 0:
+        first_setting = header_end + 1
+        while first_setting < len(lines):
+            if _SETTING_HEADING_RE.match(lines[first_setting].strip()):
+                break
+            first_setting += 1
+        header_lines = lines[:first_setting]
+    else:
+        header_lines = _default_settings_header()
 
-    index = header_end + 1 if header_end >= 0 else len(lines)
+    index = first_setting if header_end >= 0 else len(lines)
     while index < len(lines):
         heading_match = _SETTING_HEADING_RE.match(lines[index].strip())
         if not heading_match:

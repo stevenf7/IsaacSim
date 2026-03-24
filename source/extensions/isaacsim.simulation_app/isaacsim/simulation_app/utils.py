@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# The functions in this file are copies from isaacsim.core.api to make the dependency structure cleaner.
+"""Utility functions for SimulationApp including settings, stage, and livesync operations."""
 
 from __future__ import annotations
 
@@ -27,6 +27,7 @@ def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value
     """Convenience function to set settings.
 
     Arguments:
+        carb_settings: Carb settings interface.
         setting (str): Name of setting to change.
         value (Any): New value for the setting.
 
@@ -46,10 +47,10 @@ def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value
 
 
 def open_stage(usd_path: str) -> bool:
-    """
-    Open the given usd file and replace currently opened stage
+    """Open the given usd file and replace currently opened stage.
+
     Args:
-        usd_path (str): Path to open
+        usd_path (str): Path to open.
     """
     import omni.usd
     from pxr import Usd
@@ -75,10 +76,10 @@ def create_new_stage() -> Usd.Stage:
 
 
 def save_stage(usd_path: str) -> bool:
-    """
-    Save usd file to path, it will be overwritten with the current stage
+    """Save usd file to path, it will be overwritten with the current stage.
+
     Args:
-        usd_path (str): Path to save the current stage to
+        usd_path (str): Path to save the current stage to.
     """
     import omni.usd
     from pxr import Usd
@@ -99,8 +100,6 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
     Returns:
         True if the operation succeeded, False otherwise.
     """
-    import omni.usd
-
     # TODO: Check that the provided usd_path exists
     if save_stage(usd_path):
         if enable:
@@ -118,9 +117,7 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
 
 
 def is_stage_loading() -> bool:
-    """
-    bool: Convenience function to see if any files are being loaded. True if loading, False otherwise
-    """
+    """Convenience function to see if any files are being loaded. True if loading, False otherwise."""
     import omni.usd
 
     context = omni.usd.get_context()
