@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.7.0] - 2026-03-20
+### Changed
+- Decouple prim data reader interface from implementation; implementation moved to `isaacsim.core.experimental.primdata`
+- Add lazy provider loading to enable the primdata extension on-the-fly
+- Add configurable provider extension setting
+
 ## [1.6.0] - 2026-03-17
 ### Added
 - Added a filterless contact API that captures all contacts for prims

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.1] - 2026-03-22
+### Changed
+- Add null guards for deferred prim data reader provider loading in sensor _initializeStage
+
 ## [2.3.0] - 2026-03-20
 ### Changed
 - Replace int64 sensorID with prim path string for deterministic sensor identity across runs

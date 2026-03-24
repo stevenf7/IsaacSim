@@ -335,7 +335,7 @@ void ImuSensorImpl::_initializeFromContext()
 
 void ImuSensorImpl::_initializeStage(long stageId)
 {
-    if (m_impl->stageId == stageId && m_impl->usdStage)
+    if (m_impl->stageId == stageId && m_impl->usdStage && m_impl->readerManager && m_impl->reader)
         return;
 
     if (m_impl->stageId != 0 && m_impl->stageId != stageId)

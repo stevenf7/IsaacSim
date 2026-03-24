@@ -291,7 +291,6 @@ doxygen_input = [
   "source/extensions/isaacsim.asset.gen.omap/include/isaacsim/asset/gen/omap/IOccupancyMap.h",
   "source/extensions/isaacsim.asset.gen.omap/include/isaacsim/asset/gen/omap/MapGenerator.h",
   "source/extensions/isaacsim.core.cloner/include/isaacsim/core/cloner/Cloner.h",
-  "source/extensions/isaacsim.core.experimental.prims/include/isaacsim/core/experimental/prims/BufferRegistry.h",
   "source/extensions/isaacsim.core.experimental.prims/include/isaacsim/core/experimental/prims/IPrimDataReader.h",
   "source/extensions/isaacsim.core.experimental.prims/include/isaacsim/core/experimental/prims/IPrimDataReaderManager.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/BaseResetNode.h",
