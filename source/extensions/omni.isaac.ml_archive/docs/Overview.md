@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The **omni.isaac.ml_archive** extension provides machine learning pip packages required by Isaac Sim extensions. This extension bundles essential ML libraries and dependencies into the Isaac Sim environment, making them available to other extensions that require machine learning functionality.

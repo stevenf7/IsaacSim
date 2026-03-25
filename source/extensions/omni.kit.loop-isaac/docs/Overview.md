@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The omni.kit.loop-isaac extension provides a custom loop runner for Isaac Sim that controls simulation timing and frame stepping. It replaces the default Kit loop runner with one that supports manual stepping mode, fixed timesteps, and multi-tick rendering for deterministic physics simulation.

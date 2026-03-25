@@ -11,21 +11,6 @@ Every Isaac Sim extension must have a `docs/Overview.md` file that serves as the
 documentation. It is referenced by `readme` in `config/extension.toml` and rendered in the extension
 manager and published documentation site.
 
-## Required Header
-
-Every Overview.md must begin with exactly this header (no blank lines before it):
-
-```markdown
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
-# Overview
-```
-
-The csv-table block is a Sphinx directive that auto-populates extension version and build date.
-The `# Overview` heading must immediately follow it (one blank line between).
-
 ## Content Structure
 
 ### 1. Opening Paragraph (required)
@@ -142,13 +127,12 @@ and update the path. The filename `Overview.md` is the project standard.
 
 When reviewing or writing an Overview.md:
 
-1. ☐ csv-table header is present and correctly formatted
-2. ☐ `# Overview` heading follows the header
-3. ☐ Opening paragraph names the extension and describes its purpose
-4. ☐ Key public classes/functions are documented (check `python/impl/`, `__init__.py`)
-5. ☐ C++ interfaces are mentioned if `plugins/` or `bindings/` exist
-6. ☐ No individual OGN node listings (nodes are auto-documented in `index.rst`)
-7. ☐ No references to classes/modules that don't exist in the extension
-8. ☐ Content is proportional to extension complexity (not a stub for complex extensions)
-9. ☐ Code examples are valid and use current API
-10. ☐ `extension.toml` has `readme = "docs/Overview.md"`
+1. ☐ `# Overview` heading is present at the top of the file
+2. ☐ Opening paragraph names the extension and describes its purpose
+3. ☐ Key public classes/functions are documented (check `python/impl/`, `__init__.py`)
+4. ☐ C++ interfaces are mentioned if `plugins/` or `bindings/` exist
+5. ☐ No individual OGN node listings (nodes are auto-documented in `index.rst`)
+6. ☐ No references to classes/modules that don't exist in the extension
+7. ☐ Content is proportional to extension complexity (not a stub for complex extensions)
+8. ☐ Code examples are valid and use current API
+9. ☐ `extension.toml` has `readme = "docs/Overview.md"`

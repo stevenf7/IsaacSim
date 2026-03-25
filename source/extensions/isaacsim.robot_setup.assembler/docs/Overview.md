@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot_setup.assembler extension enables the assembly of multiple articulated robots into single unified structures. It provides tools to physically connect separate robot components by creating fixed joints between them, managing their transforms, and handling collision masking to prevent interference during simulation.

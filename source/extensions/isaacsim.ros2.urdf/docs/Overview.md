@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 This extension expands the URDF Importer to fetch and import robot descriptions directly from ROS 2 nodes. Instead of requiring local URDF files, it queries ROS 2 nodes for their robot_description parameters and resolves ROS 2 package URLs to filesystem paths, streamlining the workflow for importing robots that are already configured in a ROS 2 environment.

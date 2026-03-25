@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.asset.gen.conveyor extension provides utilities for authoring and simulating conveyor belts in Isaac Sim. It includes a C++ plugin for runtime conveyor physics, an OmniGraph node for controlling conveyor behavior during simulation, and Python commands for programmatic conveyor creation.

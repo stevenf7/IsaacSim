@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.replicator.examples extension provides example implementations and demonstrations of Replicator functionality within Isaac Sim for synthetic data generation workflows in robotics simulation and machine learning.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.examples.interactive extension provides a comprehensive collection of interactive robotics examples for Isaac Sim, demonstrating key concepts in robot manipulation, path planning, multi-robot coordination, and behavior-driven programming. Each example includes both programmatic APIs and interactive user interfaces, making them valuable for learning robotics concepts, testing implementations, and serving as templates for custom applications.

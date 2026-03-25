@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.physics.newton extension integrates Newton physics simulation into Isaac Sim, providing an alternative physics engine to PhysX with support for advanced solvers including XPBD and MuJoCo backends. This extension enables high-performance physics simulation with CUDA graph capture optimization and tensor-based interfaces for machine learning workflows.

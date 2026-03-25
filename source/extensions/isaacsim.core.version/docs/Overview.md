@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.core.version extension provides tools to query Isaac Sim version and build information. It enables developers to programmatically access detailed version components from Isaac Sim applications, including major, minor, patch versions, prerelease tags, and build metadata.

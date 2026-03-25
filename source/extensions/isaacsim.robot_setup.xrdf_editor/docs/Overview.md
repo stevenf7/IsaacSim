@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot_setup.xrdf_editor extension provides an interactive editor for creating and modifying Lula Robot Description files and cuMotion XRDF files. This extension enables users to generate collision sphere representations of robots, configure joint properties, and export robot configuration data for use with Lula-based algorithms and Isaac cuMotion.

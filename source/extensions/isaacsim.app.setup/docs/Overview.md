@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.app.setup extension handles the initial configuration and layout setup for the Isaac Sim application. This extension configures window arrangements, application menus, and various Isaac Sim-specific UI components during application startup.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.replicator.experimental.domain_randomization extension provides domain randomization capabilities for reinforcement learning and simulation-to-real transfer applications in Isaac Sim. This extension offers specialized OmniGraph nodes that enable dynamic randomization of physics simulation parameters across multiple environments, supporting both individual environment resets and interval-based randomization patterns.

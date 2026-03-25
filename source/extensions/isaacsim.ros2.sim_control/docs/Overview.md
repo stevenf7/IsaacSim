@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The ROS 2 Simulation Control extension bridges Isaac Sim with ROS 2 by implementing standard ROS 2 simulation control interfaces. It enables external ROS 2 nodes to control Isaac Sim's timeline, spawn entities, and manage simulation state through service-based communication.

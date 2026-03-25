@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot_motion.motion_generation.tutorials extension provides interactive UI-based tutorials for robot motion generation concepts within Isaac Sim. This extension demonstrates various motion planning algorithms and trajectory generation techniques through hands-on examples with Franka and UR10 robots.

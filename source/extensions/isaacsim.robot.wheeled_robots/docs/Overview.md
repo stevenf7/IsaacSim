@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The `isaacsim.robot.wheeled_robots` extension provides Python and C++ classes for controlling wheeled mobile robots in Isaac Sim. It includes robot wrappers, multiple controller types covering differential, holonomic, and Ackermann drive systems, path planning utilities, and OmniGraph nodes for graph-based robot control.

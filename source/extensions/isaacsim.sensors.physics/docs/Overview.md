@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.sensors.physics extension provides physics-based sensor simulation capabilities for Isaac Sim. This extension offers contact sensors for detecting physical interactions, IMU sensors for measuring inertial data, and effort sensors for monitoring joint forces and torques in robotic simulations. The sensors integrate with the physics simulation to provide real-time measurements with configurable sampling rates, filtering, and interpolation capabilities.

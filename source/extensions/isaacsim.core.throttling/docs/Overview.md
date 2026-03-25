@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.core.throttling extension automatically optimizes Isaac Sim performance by managing rendering settings based on timeline state. It provides intelligent throttling mechanisms that adjust system behavior during simulation playback to balance performance with simulation accuracy, then restore optimal settings for scene editing.

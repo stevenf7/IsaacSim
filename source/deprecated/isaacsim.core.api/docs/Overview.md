@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The `isaacsim.core.api` extension provides APIs for controlling simulation state and physics scenes within Isaac Sim. This extension serves as the primary interface for managing simulation execution, physics interactions, and USD object manipulation in robotics and AI simulation workflows.

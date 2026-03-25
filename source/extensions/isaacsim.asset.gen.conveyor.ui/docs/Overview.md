@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.asset.gen.conveyor.ui extension provides the graphical interface for creating and configuring conveyor belts in Isaac Sim. It adds menu entries for one-click conveyor creation and a Conveyor Track Builder tool for assembling multi-segment conveyor systems from Digital Twin Assets.

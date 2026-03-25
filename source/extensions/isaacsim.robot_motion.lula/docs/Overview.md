@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 .. note::
    The Isaac Sim bindings for Lula are available in :ref:`isaacsim.robot_motion.motion_generation.lula <isaacsim.robot_motion.motion_generation.lula>`. For new development, consider using the newer :ref:`isaacsim.robot_motion.cumotion <isaacsim.robot_motion.cumotion>` extension, which is a superset of what used to exist in Lula and is built on the new experimental motion generation API.
 

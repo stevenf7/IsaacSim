@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.code_editor.python_server extension provides a TCP socket server that enables remote Python code execution within a running Isaac Sim instance. Any client (VS Code, LLM agents, custom scripts) can connect, send Python source code, and receive structured JSON results.

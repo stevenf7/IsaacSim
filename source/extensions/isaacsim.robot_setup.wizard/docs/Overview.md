@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot_setup.wizard extension provides a comprehensive wizard interface for importing and configuring robots in Isaac Sim. This extension guides users through a step-by-step process to set up robots, from initial import through final configuration, with visual progress tracking and integrated tools.

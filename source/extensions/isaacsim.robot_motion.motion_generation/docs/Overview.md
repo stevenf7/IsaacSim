@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 .. note::
    For new development, consider using the newer experimental motion generation API in :ref:`isaacsim.robot_motion.experimental.motion_generation <isaacsim.robot_motion.experimental.motion_generation>` which provides improved interfaces and additional features.
 

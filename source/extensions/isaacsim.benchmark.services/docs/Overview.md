@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 isaacsim.benchmark.services provides a comprehensive framework for performance benchmarking in Isaac Sim applications. The extension offers structured approaches to measure and analyze CPU, GPU, memory, and frame time performance through both synchronous and asynchronous benchmark implementations.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot_motion.experimental.motion_generation extension provides APIs for interfacing external motion generation code with Isaac Sim. This extension enables developers to build motion planning systems by providing core components for trajectory generation, controller composition, obstacle representation, and world synchronization.

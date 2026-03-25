@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.core.rendering_manager extension provides centralized control over rendering operations and viewport management within Isaac Sim. This extension offers programmatic APIs for executing rendering steps, managing rendering timing, and controlling viewport configurations including camera settings and window management.

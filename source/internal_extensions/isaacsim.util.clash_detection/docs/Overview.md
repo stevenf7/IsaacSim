@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.util.clash_detection extension provides mesh-level collision detection for USD assets. It uses PhysX overlap queries to identify intersecting geometry between prims, supporting both hard clashes (actual overlaps) and clearance checks with configurable tolerances.

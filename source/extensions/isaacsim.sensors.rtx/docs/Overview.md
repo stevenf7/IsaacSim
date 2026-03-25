@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.sensors.rtx extension provides APIs for creating and managing RTX-based sensors in Isaac Sim, including RTX Lidar, RTX Radar, and RTX Idealized Depth Sensors (IDS). These sensors leverage RTX ray tracing technology for high-fidelity sensor simulation in robotics applications.

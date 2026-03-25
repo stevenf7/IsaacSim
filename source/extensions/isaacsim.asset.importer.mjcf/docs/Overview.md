@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 To enable this extension, go to the Extension Manager menu and enable isaacsim.asset.importer.mjcf extension.

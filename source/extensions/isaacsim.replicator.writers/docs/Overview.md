@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 This extension provides specialized writers for synthetic data generation workflows in Isaac Sim. The extension extends the core Replicator framework with Isaac Sim-specific writers that handle various machine learning training data formats including pose estimation, DOPE (Detection of Pose Estimation), YCB Video dataset, and PyTorch tensors.

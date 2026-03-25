@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot.poser.ui extension provides a user interface for creating, managing, and exporting mimic training points for robots using an IK (inverse kinematics) goal workflow. It enables users to define poses for robotic articulations and track them through named pose systems.

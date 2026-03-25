@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.sensors.physx extension provides PhysX-based sensor implementations for robotics simulation in Isaac Sim. It offers range sensors, proximity detection, and rotating lidar functionality that use PhysX raycasting for physics-accurate sensor data collection.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.core.includes extension provides essential header files and C++ plugin infrastructure for Isaac Sim development. This extension serves as a foundational component that makes common Isaac Sim headers available to other extensions that need to build against or extend Isaac Sim's core functionality.

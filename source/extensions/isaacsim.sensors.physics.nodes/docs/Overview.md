@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.sensors.physics.nodes extension provides OmniGraph nodes for reading physics-based sensor data in Isaac Sim. The extension offers four specialized sensor reader nodes that integrate with Isaac Sim's physics simulation to output real-time sensor measurements for robotics applications.

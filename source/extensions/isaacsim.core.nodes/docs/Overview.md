@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.core.nodes extension provides OmniGraph nodes for Isaac Sim workflows including articulation control, simulation timing, camera info reading, viewport management, and physics step event handling. This extension serves as the computational backbone for synthetic data generation and robotics simulation workflows in Isaac Sim.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot_setup.grasp_editor extension provides functionality for importing and managing robot grasps from YAML files. It enables robotic manipulation tasks by offering tools to parse grasp specifications and perform coordinate transformations between gripper and object poses.

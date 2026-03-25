@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot.manipulators.ui extension provides user interface components for creating OmniGraph-based robot controllers in Isaac Sim. This extension adds menu-driven tools for setting up joint position control, joint velocity control, and gripper control systems by automatically generating the necessary OmniGraph networks and node configurations.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.replicator.behavior.ui extension provides UI components for managing behavior script configuration within Isaac Sim's Replicator framework. The extension integrates with the Property window to display exposed variables from behavior scripts, enabling users to configure script parameters through a specialized property widget interface.

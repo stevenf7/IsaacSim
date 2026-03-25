@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot.schema extension provides comprehensive USD schemas for robot modeling and sensor simulation in Isaac Sim. This extension defines formal USD schemas for range sensors, Isaac-specific sensors, and robot structural components, enabling standardized representation of robotic systems in USD stages. The extension is loaded early in the Kit startup sequence to ensure all robot-related schemas are available to other extensions.

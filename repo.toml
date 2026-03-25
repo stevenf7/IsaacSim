@@ -1081,6 +1081,7 @@ sections = [
   { "actions" = "../config/actions_api.md" },
   "ogn",
   "settings",
+  "python-api",
 ]
 
 # These extensions are excluded as they do not contain any documentation
@@ -1249,7 +1250,9 @@ enabled = true
 
 exts.folders = [
     "${root}/_build/${platform}/${config}/exts",
-    "${root}/_build/${platform}/${config}/extsInternal"
+    "${root}/_build/${platform}/${config}/extsInternal",
+    "${root}/_build/${platform}/${config}/extsDeprecated",
+
 ]
 
 exts.extra_folders = [

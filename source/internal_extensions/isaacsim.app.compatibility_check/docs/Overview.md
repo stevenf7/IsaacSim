@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.app.compatibility_check extension verifies that the host system meets hardware and software requirements for running Isaac Sim. It checks GPU, CPU, memory, storage, driver, and OS compatibility, reporting results at four levels: unmet, minimum, good, and ideal.

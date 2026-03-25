@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The Isaac Sim Occupancy Map extension provides tools for generating 2D and 3D occupancy maps from USD stages. These maps represent spatial information about environments for robotics applications such as navigation, path planning, and collision avoidance.

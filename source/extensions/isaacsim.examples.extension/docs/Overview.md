@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.examples.extension provides a code generation tool for creating Isaac Sim extension templates. It offers a user interface that streamlines the development of custom extensions by generating boilerplate code and proper file structures for different workflow types.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot_motion.schema extension provides a USD schema for motion planning functionality in Isaac Sim. The extension defines the IsaacMotionPlanningAPI, which can be applied to USD prims to enable collision-aware motion planning capabilities for robotic applications.

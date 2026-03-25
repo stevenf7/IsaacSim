@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.test.docstring extension provides test case base classes for validating Python docstring examples using Python's doctest module. It enables developers to automatically test code examples within docstrings to ensure they execute correctly and produce expected outputs, supporting both standalone unittest environments and Kit's async testing framework.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 Extension providing wheeled robot and controller APIs: `WheeledRobot`, `HolonomicRobotUsdSetup`, `DifferentialController`, `HolonomicController`, `AckermannController`, `StanleyControl`, and `QuinticPathPlanner`.

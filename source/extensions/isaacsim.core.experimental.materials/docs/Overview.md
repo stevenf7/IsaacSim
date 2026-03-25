@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.core.experimental.materials extension provides high-level wrappers for creating and managing USD materials in Isaac Sim. This extension offers a unified API to work with both physics and visual materials, allowing developers to programmatically create, configure, and manipulate material properties for simulation and rendering purposes.

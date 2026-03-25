@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The TF Viewer extension provides real-time visualization of ROS 2 transform (TF) data directly within the Isaac Sim viewport. It displays the coordinate frame hierarchy broadcast through the ROS 2 tf2 system, showing relationships between frames, their spatial positions, and orientations as they update dynamically.

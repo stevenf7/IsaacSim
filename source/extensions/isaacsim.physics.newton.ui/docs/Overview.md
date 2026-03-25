@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.physics.newton.ui extension provides UI integration for Newton and Mujoco physics schemas within Isaac Sim. It registers schema definitions and property widgets that enable users to configure and interact with Newton and Mujoco physics parameters through the property panel interface.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.simulation_app extension provides Python classes for launching and controlling Omniverse applications from Python code. This extension enables developers to programmatically start Isaac Sim applications, manage their lifecycle, and interact with the underlying Omniverse framework through Python scripts.

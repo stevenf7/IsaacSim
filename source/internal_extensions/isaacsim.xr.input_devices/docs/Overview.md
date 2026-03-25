@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 This extension provides XR input device support for a vendor hand-tracking library via a pluggable C API and for Vive trackers via `pysurvive` (libsurvive), with a unified Python integration API.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.asset.validation extension provides custom validation rules for checking robot and simulation assets in Isaac Sim. It integrates with the Omniverse Asset Validator framework to verify that USD assets follow Isaac Sim conventions for physics, materials, joints, drives, and file structure.

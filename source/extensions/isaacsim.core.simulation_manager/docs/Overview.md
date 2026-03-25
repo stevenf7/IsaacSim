@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.core.simulation_manager extension provides APIs to control and query simulation state and physics engine functionality within Isaac Sim. This extension manages physics scenes, simulation time tracking, and event callbacks for physics simulation workflows.

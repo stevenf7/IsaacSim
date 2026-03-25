@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The `isaacsim.robot.manipulators` extension provides high-level Python classes for controlling robotic manipulators in Isaac Sim. This extension covers the complete manipulator stack: robot representation, gripper abstractions, task-level controllers, and an OmniGraph node for gripper control.
