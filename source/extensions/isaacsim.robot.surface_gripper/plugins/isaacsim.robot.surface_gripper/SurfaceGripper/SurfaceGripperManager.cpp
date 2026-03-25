@@ -120,7 +120,9 @@ void SurfaceGripperManager::onComponentChange(const pxr::UsdPrim& prim)
     const std::string key = prim.GetPath().GetString();
     auto it = m_componentIndexByKey.find(key);
     if (it != m_componentIndexByKey.end())
+    {
         m_components[it->second]->onComponentChange();
+    }
 }
 
 void SurfaceGripperManager::onPhysicsStep(const double& dt)
@@ -190,7 +192,9 @@ void SurfaceGripperManager::executeUsdActions()
                 {
                     pxr::UsdPrim selfPrim = m_stage->GetPrimAtPath(pxr::SdfPath(ua.primPath));
                     if (!selfPrim)
+                    {
                         continue;
+                    }
                     pxr::UsdAttribute gripperStatusAttr = selfPrim.GetAttribute(
                         isaacsim::robot::schema::getAttributeName(isaacsim::robot::schema::Attributes::STATUS));
                     if (gripperStatusAttr)
@@ -203,20 +207,28 @@ void SurfaceGripperManager::executeUsdActions()
                 {
                     pxr::UsdPrim selfPrim = m_stage->GetPrimAtPath(pxr::SdfPath(ua.primPath));
                     if (!selfPrim)
+                    {
                         continue;
+                    }
                     pxr::SdfPathVector objectPathsVec;
                     objectPathsVec.reserve(ua.grippedObjectPaths.size());
                     for (const auto& p : ua.grippedObjectPaths)
+                    {
                         objectPathsVec.push_back(pxr::SdfPath(p));
+                    }
 
                     pxr::UsdRelationship rel = selfPrim.GetRelationship(
                         isaacsim::robot::schema::relationNames.at(isaacsim::robot::schema::Relations::GRIPPED_OBJECTS));
                     if (rel)
                     {
                         if (ua.grippedObjectPaths.empty())
+                        {
                             rel.ClearTargets(true);
+                        }
                         else
+                        {
                             rel.SetTargets(objectPathsVec);
+                        }
                     }
                     if (!ua.body0PathForFilterPairs.empty())
                     {
@@ -225,11 +237,17 @@ void SurfaceGripperManager::executeUsdActions()
                         {
                             pxr::UsdPhysicsFilteredPairsAPI filterPairsAPI = pxr::UsdPhysicsFilteredPairsAPI(body0Prim);
                             if (!filterPairsAPI)
+                            {
                                 filterPairsAPI = pxr::UsdPhysicsFilteredPairsAPI::Apply(body0Prim);
+                            }
                             if (ua.grippedObjectPaths.empty())
+                            {
                                 filterPairsAPI.GetFilteredPairsRel().ClearTargets(true);
+                            }
                             else
+                            {
                                 filterPairsAPI.GetFilteredPairsRel().SetTargets(objectPathsVec);
+                            }
                         }
                     }
                     break;
@@ -265,7 +283,9 @@ void SurfaceGripperManager::executeUsdActions()
                         float value = kv.second;
                         pxr::UsdPrim p = m_stage->GetPrimAtPath(pxr::SdfPath(pathStr));
                         if (!p)
+                        {
                             continue;
+                        }
                         pxr::UsdAttribute attr = p.GetAttribute(isaacsim::robot::schema::getAttributeName(
                             isaacsim::robot::schema::Attributes::CLEARANCE_OFFSET));
                         if (!attr)
@@ -329,7 +349,9 @@ bool SurfaceGripperManager::setGripperStatus(const std::string& primPath, Grippe
 {
     auto it = m_componentIndexByKey.find(primPath);
     if (it != m_componentIndexByKey.end())
+    {
         return m_components[it->second]->setGripperStatus(status);
+    }
     return false;
 }
 
@@ -337,7 +359,9 @@ GripperStatus SurfaceGripperManager::getGripperStatus(const std::string& primPat
 {
     auto it = m_componentIndexByKey.find(primPath);
     if (it != m_componentIndexByKey.end())
+    {
         return m_components[it->second]->getGripperStatus();
+    }
     else
     {
         CARB_LOG_ERROR("Gripper not found: %s", primPath.c_str());
@@ -350,7 +374,9 @@ std::vector<std::string> SurfaceGripperManager::getAllGrippers() const
     std::vector<std::string> result;
     result.reserve(m_componentKeys.size());
     for (const auto& key : m_componentKeys)
+    {
         result.push_back(key);
+    }
     return result;
 }
 
@@ -358,7 +384,9 @@ SurfaceGripperComponent* SurfaceGripperManager::getGripper(const std::string& pr
 {
     auto it = m_componentIndexByKey.find(primPath);
     if (it != m_componentIndexByKey.end())
+    {
         return m_components[it->second].get();
+    }
     return nullptr;
 }
 
@@ -372,7 +400,9 @@ void SurfaceGripperManager::onComponentRemove(const pxr::SdfPath& primPath)
     std::unique_lock<std::mutex> lck(m_componentMtx);
 
     if (m_components.empty())
+    {
         return;
+    }
 
     std::vector<std::unique_ptr<SurfaceGripperComponent>> newComponents;
     std::vector<std::string> newKeys;
@@ -396,7 +426,9 @@ void SurfaceGripperManager::onComponentRemove(const pxr::SdfPath& primPath)
 
     m_componentIndexByKey.clear();
     for (size_t i = 0; i < m_componentKeys.size(); ++i)
+    {
         m_componentIndexByKey[m_componentKeys[i]] = i;
+    }
 }
 
 void SurfaceGripperManager::deleteAllComponents()

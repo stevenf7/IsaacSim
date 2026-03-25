@@ -144,7 +144,9 @@ void JointStateSensorImpl::_initializeFromContext()
     {
         const char* engineSetting = settings->getStringBuffer("/exts/isaacsim.core.simulation_manager/default_engine");
         if (engineSetting && engineSetting[0] != '\0')
+        {
             m_impl->engineType = engineSetting;
+        }
     }
 
     _initializeStage(stageId);
@@ -242,14 +244,20 @@ bool JointStateSensorImpl::createSensor(const char* articulationRootPath)
     sensor.dofNames.clear();
     sensor.dofNames.reserve(dofCount);
     for (int i = 0; i < dofCount; ++i)
+    {
         sensor.dofNames.push_back(names[i] ? names[i] : std::string());
+    }
     sensor.dofTypes.assign(types, types + (typeCount >= dofCount ? dofCount : typeCount));
     if (static_cast<int>(sensor.dofTypes.size()) < dofCount)
+    {
         sensor.dofTypes.resize(dofCount, 0);
+    }
 
     sensor.dofNamePtrs.resize(dofCount);
     for (int i = 0; i < dofCount; i++)
+    {
         sensor.dofNamePtrs[i] = sensor.dofNames[i].c_str();
+    }
 
     sensor.positions.resize(dofCount, 0.0f);
     sensor.velocities.resize(dofCount, 0.0f);

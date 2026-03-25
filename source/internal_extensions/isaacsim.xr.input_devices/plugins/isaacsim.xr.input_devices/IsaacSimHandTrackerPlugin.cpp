@@ -63,7 +63,9 @@ static void* loadSymbol(LibHandle lib, const char* name)
 static void unloadLibrary(LibHandle lib)
 {
     if (lib)
+    {
         ::dlclose(lib);
+    }
 }
 #endif
 
@@ -96,10 +98,14 @@ struct HandTrackerLibrary
         std::vector<std::string> candidates;
 
         if (overridePath && std::strlen(overridePath) > 0)
+        {
             candidates.emplace_back(overridePath);
+        }
 
         if (envPath && std::strlen(envPath) > 0)
+        {
             candidates.emplace_back(envPath);
+        }
 
         if (envName && std::strlen(envName) > 0)
         {
@@ -139,7 +145,9 @@ struct HandTrackerLibrary
         {
             const char* candidate = candidateStr.c_str();
             if (candidate == nullptr || std::strlen(candidate) == 0)
+            {
                 continue;
+            }
 
             handle = loadLibraryByName(candidate);
             if (!handle)
@@ -210,36 +218,42 @@ extern "C"
 {
 
     // Load the hand tracker shared library. Optional path overrides default search.
-    ISAACSIM_HANDTRACKER_PLUGIN_API bool IsaacSimHandTrackerPlugin_Load(const char* overrideLibraryPath)
+    ISAACSIM_HANDTRACKER_PLUGIN_API bool IsaacSimHandTrackerPlugin_Load(
+        const char* overrideLibraryPath) // NOLINT(readability-identifier-naming)
     {
         return g_library.load(overrideLibraryPath);
     }
 
     // Unload the previously loaded hand tracker shared library.
-    ISAACSIM_HANDTRACKER_PLUGIN_API void IsaacSimHandTrackerPlugin_Unload()
+    ISAACSIM_HANDTRACKER_PLUGIN_API void IsaacSimHandTrackerPlugin_Unload() // NOLINT(readability-identifier-naming)
     {
         g_library.unload();
     }
 
     // Initialize the underlying device via the loaded library.
-    ISAACSIM_HANDTRACKER_PLUGIN_API bool IsaacSimHandTrackerPlugin_Initialize()
+    ISAACSIM_HANDTRACKER_PLUGIN_API bool IsaacSimHandTrackerPlugin_Initialize() // NOLINT(readability-identifier-naming)
     {
         if (!g_library.load(nullptr))
+        {
             return false;
+        }
         return g_library.fpInitialize();
     }
 
     // Fetch joint data via the loaded library.
+    // NOLINTNEXTLINE(readability-identifier-naming)
     ISAACSIM_HANDTRACKER_PLUGIN_API bool IsaacSimHandTrackerPlugin_GetData(IsaacSimHandJointPose* outJointPoses,
                                                                            int outJointPoseCount)
     {
         if (!g_library.isLoadedUnsafe())
+        {
             return false;
+        }
         return g_library.fpGetData(outJointPoses, outJointPoseCount);
     }
 
     // Shutdown the underlying device via the loaded library.
-    ISAACSIM_HANDTRACKER_PLUGIN_API void IsaacSimHandTrackerPlugin_Shutdown()
+    ISAACSIM_HANDTRACKER_PLUGIN_API void IsaacSimHandTrackerPlugin_Shutdown() // NOLINT(readability-identifier-naming)
     {
         if (g_library.isLoadedUnsafe())
         {

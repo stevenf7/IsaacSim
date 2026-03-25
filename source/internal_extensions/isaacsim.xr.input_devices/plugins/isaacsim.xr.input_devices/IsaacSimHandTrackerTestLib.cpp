@@ -36,16 +36,21 @@ extern "C"
         return true;
     }
 
+    // NOLINTNEXTLINE(readability-identifier-naming)
     ISAACSIM_HANDTRACKER_API ISAACSIM_USED bool IsaacSimHandTracker_GetData(IsaacSimHandJointPose* out_joint_poses,
-                                                                            int out_joint_pose_count)
+                                                                            int outJointPoseCount)
     {
         if (!g_initialized.load(std::memory_order_acquire))
+        {
             return false;
-        if (out_joint_poses == nullptr || out_joint_pose_count <= 0)
+        }
+        if (out_joint_poses == nullptr || outJointPoseCount <= 0)
+        {
             return false;
+        }
 
         const int totalRequired = ISAACSIM_HAND_COUNT * ISAACSIM_HAND_JOINT_COUNT;
-        const int count = (out_joint_pose_count < totalRequired) ? out_joint_pose_count : totalRequired;
+        const int count = (outJointPoseCount < totalRequired) ? outJointPoseCount : totalRequired;
 
         const double t = std::chrono::duration<double>(Clock::now() - g_startTime).count();
 
@@ -58,7 +63,9 @@ extern "C"
             {
                 const int idx = handBase + j;
                 if (idx >= count)
+                {
                     break;
+                }
                 IsaacSimHandJointPose& p = out_joint_poses[idx];
 
                 // Simple animated circle per joint with slight phase offset; different radius per hand

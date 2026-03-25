@@ -42,21 +42,21 @@ public:
         {
             auto inputTimeData = inputTimeAttr.get<double>();
             auto inputTime = inputTimeData.vectorized(1)[0];
-            timeSplit(inputTime, seconds, milliseconds, microseconds, nanoseconds);
+            _timeSplit(inputTime, seconds, milliseconds, microseconds, nanoseconds);
             break;
         }
         case BaseDataType::eFloat:
         {
             auto inputTimeData = inputTimeAttr.get<float>();
             auto inputTime = inputTimeData.vectorized(1)[0];
-            timeSplit(inputTime, seconds, milliseconds, microseconds, nanoseconds);
+            _timeSplit(inputTime, seconds, milliseconds, microseconds, nanoseconds);
             break;
         }
         case BaseDataType::eHalf:
         {
             auto inputTimeData = inputTimeAttr.get<pxr::GfHalf>();
             auto inputTime = static_cast<float>(inputTimeData.vectorized(1)[0]);
-            timeSplit(inputTime, seconds, milliseconds, microseconds, nanoseconds);
+            _timeSplit(inputTime, seconds, milliseconds, microseconds, nanoseconds);
             break;
         }
         case BaseDataType::eInt:
@@ -96,7 +96,7 @@ public:
     }
 
 private:
-    static void timeSplit(
+    static void _timeSplit(
         const double& time, int32_t& seconds, uint32_t& milliseconds, uint32_t& microseconds, uint32_t& nanoseconds)
     {
         const auto result = std::div(static_cast<long long>(time * 1e9), DENOMINATOR);

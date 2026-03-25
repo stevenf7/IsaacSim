@@ -104,17 +104,25 @@ bool Ros2SrtxImagePublisher::initialize(const std::string& topicName,
 
     std::string ns = nodeNamespace;
     while (!ns.empty() && !std::isalnum(static_cast<unsigned char>(ns.front())))
+    {
         ns.erase(ns.begin());
+    }
     while (!ns.empty() && !std::isalnum(static_cast<unsigned char>(ns.back())))
+    {
         ns.pop_back();
+    }
     if (!ns.empty())
+    {
         ns = "/" + ns;
+    }
 
     std::string nodeName = "srtx_publisher" + topicName;
     for (auto& c : nodeName)
     {
         if (c == '/' || c == '-')
+        {
             c = '_';
+        }
     }
 
     m_nodeHandle = m_factory->createNodeHandle(nodeName.c_str(), ns.c_str(), contextHandlePtr->get());
@@ -146,9 +154,13 @@ bool Ros2SrtxImagePublisher::initialize(const std::string& topicName,
 
     std::string trimmedTopic = topicName;
     while (!trimmedTopic.empty() && !std::isalnum(static_cast<unsigned char>(trimmedTopic.front())))
+    {
         trimmedTopic.erase(trimmedTopic.begin());
+    }
     while (!trimmedTopic.empty() && !std::isalnum(static_cast<unsigned char>(trimmedTopic.back())))
+    {
         trimmedTopic.pop_back();
+    }
     std::string fullTopicName = ns + "/" + trimmedTopic;
 
     m_publisher =
@@ -195,7 +207,9 @@ void Ros2SrtxImagePublisher::publishImage(
 {
     CARB_PROFILE_ZONE(0, "SRTX ROS2 Publish Image");
     if (!m_initialized || !m_publisher || !data)
+    {
         return;
+    }
 
     m_message->writeHeader(timestamp, m_frameId);
     m_message->generateBuffer(height, width, encoding, false);

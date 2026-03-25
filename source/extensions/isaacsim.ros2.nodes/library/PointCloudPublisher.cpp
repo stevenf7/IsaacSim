@@ -52,12 +52,16 @@ bool PointCloudPublisher::prepareFromHost(const void* data,
     CARB_PROFILE_ZONE(1, "[IsaacSim] PointCloudPublisher::prepareFromHost");
 
     if (!m_publisher)
+    {
         return false;
+    }
 
     m_tasks.wait();
 
     if (!shouldPublish())
+    {
         return false;
+    }
 
     m_message->setUsePinnedBuffer(false);
     m_message->generateBuffer(timestamp, m_frameId, dataSize, metadata.intensityPtr, metadata.timestampPtr,
@@ -75,7 +79,9 @@ bool PointCloudPublisher::publishFromHost(const void* data,
                                           const PointCloudMetadata& metadata)
 {
     if (!prepareFromHost(data, dataSize, timestamp, metadata))
+    {
         return false;
+    }
     send();
     return true;
 }
@@ -86,15 +92,21 @@ bool PointCloudPublisher::prepareFromDevice(
     CARB_PROFILE_ZONE(1, "[IsaacSim] PointCloudPublisher::prepareFromDevice");
 
     if (!m_publisher)
+    {
         return false;
+    }
 
     m_tasks.wait();
 
     if (!shouldPublish())
+    {
         return false;
+    }
 
     if (!initializeCudaProperties(cudaDeviceIndex))
+    {
         return false;
+    }
 
     isaacsim::core::includes::ScopedDevice scopedDev(cudaDeviceIndex);
     ensureCudaStream(cudaDeviceIndex);
@@ -139,7 +151,9 @@ bool PointCloudPublisher::publishFromDevice(
     const void* devicePtr, size_t bufferSize, double timestamp, int cudaDeviceIndex, const PointCloudMetadata& metadata)
 {
     if (!prepareFromDevice(devicePtr, bufferSize, timestamp, cudaDeviceIndex, metadata))
+    {
         return false;
+    }
     send();
     return true;
 }
@@ -147,10 +161,14 @@ bool PointCloudPublisher::publishFromDevice(
 bool PointCloudPublisher::initializeCudaProperties(int cudaDeviceIndex)
 {
     if (m_maxThreadsPerBlock > 0)
+    {
         return true;
+    }
 
     if (cudaDeviceIndex == -1)
+    {
         return true;
+    }
 
     isaacsim::core::includes::ScopedDevice scopedDev(cudaDeviceIndex);
     try

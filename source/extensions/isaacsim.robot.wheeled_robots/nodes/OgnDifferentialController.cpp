@@ -143,7 +143,7 @@ public:
         return true;
     }
 
-    virtual void reset()
+    void reset() override
     {
         if (!m_nodeObj.iNode)
         {

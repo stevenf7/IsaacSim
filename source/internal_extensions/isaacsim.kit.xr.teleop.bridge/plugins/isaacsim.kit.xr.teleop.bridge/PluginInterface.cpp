@@ -39,9 +39,11 @@ namespace isaacsim::kit::xr::teleop::bridge
 
 namespace
 {
-constexpr const char* kRequiredExtensionsSetSetting = "/exts/isaacsim.kit.xr.teleop.bridge/openxr/requiredExtensions/set";
-constexpr const char* kRequiredExtensionsAddSetting = "/exts/isaacsim.kit.xr.teleop.bridge/openxr/requiredExtensions/add";
-constexpr const char* kRequiredExtensionsRemoveSetting =
+constexpr const char* g_kRequiredExtensionsSetSetting =
+    "/exts/isaacsim.kit.xr.teleop.bridge/openxr/requiredExtensions/set";
+constexpr const char* g_kRequiredExtensionsAddSetting =
+    "/exts/isaacsim.kit.xr.teleop.bridge/openxr/requiredExtensions/add";
+constexpr const char* g_kRequiredExtensionsRemoveSetting =
     "/exts/isaacsim.kit.xr.teleop.bridge/openxr/requiredExtensions/remove";
 
 std::vector<std::string> getStringArraySetting(carb::settings::ISettings* settings, const char* path)
@@ -120,7 +122,7 @@ public:
         return subscriptionId;
     }
 
-    virtual void unsubscribe(uint64_t subscriptionId) noexcept override
+    void unsubscribe(uint64_t subscriptionId) noexcept override
     {
         if (subscriptionId == 0)
         {
@@ -203,7 +205,7 @@ void appendRequiredExtensionsFromCallbacks(std::vector<std::string>& requiredExt
  * @details Matches the identity pose definition in Kit's OxrUtils.h. Quaternion is
  * {x=0, y=0, z=0, w=1} and position is {x=0, y=0, z=0}.
  */
-static constexpr XrPosef kIdentityPose = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
+static constexpr XrPosef g_kIdentityPose = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
 
 /**
  * @class BridgeComponent
@@ -250,7 +252,7 @@ public:
      */
     XrSpace getStageSpace()
     {
-        ensureStageSpace();
+        _ensureStageSpace();
         return m_stageSpace;
     }
 
@@ -270,7 +272,7 @@ protected:
      *
      * @return The display name string.
      */
-    virtual std::string getDisplayName() override
+    std::string getDisplayName() override
     {
         return "Isaac Kit XR Teleop Bridge";
     }
@@ -280,7 +282,7 @@ protected:
      *
      * @return The component identifier string.
      */
-    virtual std::string getOpenXRComponentId() override
+    std::string getOpenXRComponentId() override
     {
         return "isaacsim.kit.xr.teleop.bridge";
     }
@@ -290,7 +292,7 @@ protected:
      *
      * @param[out] ret Vector to which required extension names are appended.
      */
-    virtual void getRequiredExtensions(std::vector<std::string>& ret) override
+    void getRequiredExtensions(std::vector<std::string>& ret) override
     {
         std::vector<std::string> requiredExtensions;
         auto* settings = carb::getCachedInterface<carb::settings::ISettings>();
@@ -308,9 +310,9 @@ protected:
                 return values;
             };
 
-            requiredExtensions = getAndLog(kRequiredExtensionsSetSetting, "requiredExtensions.set");
-            appendUniqueValues(requiredExtensions, getAndLog(kRequiredExtensionsAddSetting, "requiredExtensions.add"));
-            removeValues(requiredExtensions, getAndLog(kRequiredExtensionsRemoveSetting, "requiredExtensions.remove"));
+            requiredExtensions = getAndLog(g_kRequiredExtensionsSetSetting, "requiredExtensions.set");
+            appendUniqueValues(requiredExtensions, getAndLog(g_kRequiredExtensionsAddSetting, "requiredExtensions.add"));
+            removeValues(requiredExtensions, getAndLog(g_kRequiredExtensionsRemoveSetting, "requiredExtensions.remove"));
         }
 
         appendRequiredExtensionsFromCallbacks(requiredExtensions);
@@ -333,10 +335,10 @@ protected:
      *
      * @return True if initialization succeeded, false on failure.
      */
-    virtual bool initialize(XrInstance instance,
-                            PFN_xrGetInstanceProcAddr xrGetInstanceProcAddr,
-                            XrSystemId xrSystemId,
-                            XrVersion openXRVersion) override
+    bool initialize(XrInstance instance,
+                    PFN_xrGetInstanceProcAddr xrGetInstanceProcAddr,
+                    XrSystemId xrSystemId,
+                    XrVersion openXRVersion) override
     {
         CARB_LOG_INFO("Component initialize() called with instance %p", instance);
 
@@ -372,7 +374,7 @@ protected:
      *
      * @param[in] instance The OpenXR instance handle being destroyed.
      */
-    virtual void shutdown(XrInstance instance) override
+    void shutdown(XrInstance instance) override
     {
         CARB_LOG_INFO("Component shutdown() called");
 
@@ -392,7 +394,7 @@ protected:
      * @param[in] session The newly started OpenXR session.
      * @param[in] mode The XR mode token indicating the type of session.
      */
-    virtual void onSessionStart(XrSession session, omni::kit::xr::XRToken mode) override
+    void onSessionStart(XrSession session, omni::kit::xr::XRToken mode) override
     {
         CARB_LOG_INFO("onSessionStart() called with session %p", session);
 
@@ -411,7 +413,7 @@ protected:
      *
      * @param[in] session The OpenXR session being stopped.
      */
-    virtual void onSessionStop(XrSession session) override
+    void onSessionStop(XrSession session) override
     {
         CARB_LOG_INFO("onSessionStop() called");
 
@@ -431,7 +433,7 @@ private:
      *
      * @details Tries STAGE first, then falls back to LOCAL if STAGE is unsupported.
      */
-    void ensureStageSpace()
+    void _ensureStageSpace()
     {
         if (m_stageSpace != XR_NULL_HANDLE || m_session == XR_NULL_HANDLE || !m_xrCreateReferenceSpace)
         {
@@ -440,7 +442,7 @@ private:
 
         XrReferenceSpaceCreateInfo createInfo{ XR_TYPE_REFERENCE_SPACE_CREATE_INFO };
         createInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_STAGE;
-        createInfo.poseInReferenceSpace = kIdentityPose;
+        createInfo.poseInReferenceSpace = g_kIdentityPose;
 
         XrResult result = m_xrCreateReferenceSpace(m_session, &createInfo, &m_stageSpace);
         if (XR_FAILED(result))
@@ -502,7 +504,7 @@ public:
      *
      * @return The XrInstance handle as uint64, or 0 if no active session.
      */
-    virtual uint64_t getInstanceHandle() noexcept override
+    uint64_t getInstanceHandle() noexcept override
     {
         auto* ext = carb::getCachedInterface<omni::kit::xr::openxr::IOpenXRExtension_v1>();
         if (ext)
@@ -510,7 +512,7 @@ public:
             return ext->getInstanceHandle();
         }
         // Fallback to component if extension not available
-        auto* component = getComponent();
+        auto* component = _getComponent();
         return component ? reinterpret_cast<uint64_t>(component->getInstance()) : 0;
     }
 
@@ -522,7 +524,7 @@ public:
      *
      * @return The XrSession handle as uint64, or 0 if no active session.
      */
-    virtual uint64_t getSessionHandle() noexcept override
+    uint64_t getSessionHandle() noexcept override
     {
         auto* ext = carb::getCachedInterface<omni::kit::xr::openxr::IOpenXRExtension_v1>();
         if (ext)
@@ -530,7 +532,7 @@ public:
             return ext->getSessionHandle();
         }
         // Fallback to component if extension not available
-        auto* component = getComponent();
+        auto* component = _getComponent();
         return component ? reinterpret_cast<uint64_t>(component->getSession()) : 0;
     }
 
@@ -542,10 +544,10 @@ public:
      *
      * @return The XrSpace handle as uint64, or 0 if no active session.
      */
-    virtual uint64_t getStageSpaceHandle() noexcept override
+    uint64_t getStageSpaceHandle() noexcept override
     {
         // IOpenXRExtension_v1 doesn't expose this, use component
-        auto* component = getComponent();
+        auto* component = _getComponent();
         return component ? reinterpret_cast<uint64_t>(component->getStageSpace()) : 0;
     }
 
@@ -557,14 +559,14 @@ public:
      *
      * @return The function pointer as uint64, or 0 if not available.
      */
-    virtual uint64_t getInstanceProcAddr() noexcept override
+    uint64_t getInstanceProcAddr() noexcept override
     {
         // IOpenXRExtension_v1 doesn't expose this, use component
-        auto* component = getComponent();
+        auto* component = _getComponent();
         return component ? reinterpret_cast<uint64_t>(component->getInstanceProcAddr()) : 0;
     }
 
-    virtual RequiredExtensionsSubscription subscribeRequiredExtensions(const RequiredExtensionsCallback& callback) noexcept override
+    RequiredExtensionsSubscription subscribeRequiredExtensions(const RequiredExtensionsCallback& callback) noexcept override
     {
         auto registryState = g_requiredExtensionsRegistryState;
         if (!registryState)
@@ -656,7 +658,7 @@ private:
      *
      * @return Pointer to the BridgeComponent, or nullptr if the component has been released.
      */
-    BridgeComponent* getComponent() const
+    BridgeComponent* _getComponent() const
     {
         auto componentPtr = m_component.getObjectPtr();
         if (componentPtr)

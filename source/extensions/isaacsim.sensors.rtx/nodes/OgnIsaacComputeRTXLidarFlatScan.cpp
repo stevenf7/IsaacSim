@@ -52,7 +52,7 @@ private:
     float* m_azimuthBuffer{ nullptr };
 
 public:
-    void reset()
+    void reset() override
     {
         m_firstFrame = true;
         m_isInitialized = false;

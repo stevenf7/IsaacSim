@@ -156,15 +156,21 @@ PYBIND11_MODULE(_physics_sensors, m)
                                {
                                    py::list result;
                                    if (r.dofNames)
+                                   {
                                        for (int32_t i = 0; i < r.dofCount; i++)
+                                       {
                                            result.append(py::str(r.dofNames[i]));
+                                       }
+                                   }
                                    return result;
                                })
         .def_property_readonly("positions",
                                [](const JointStateSensorReading& r) -> py::array_t<float>
                                {
                                    if (!r.positions || r.dofCount <= 0)
+                                   {
                                        return py::array_t<float>({ 0 });
+                                   }
                                    py::array_t<float> arr({ static_cast<py::ssize_t>(r.dofCount) });
                                    std::copy(r.positions, r.positions + r.dofCount, arr.mutable_data());
                                    return arr;
@@ -173,7 +179,9 @@ PYBIND11_MODULE(_physics_sensors, m)
                                [](const JointStateSensorReading& r) -> py::array_t<float>
                                {
                                    if (!r.velocities || r.dofCount <= 0)
+                                   {
                                        return py::array_t<float>({ 0 });
+                                   }
                                    py::array_t<float> arr({ static_cast<py::ssize_t>(r.dofCount) });
                                    std::copy(r.velocities, r.velocities + r.dofCount, arr.mutable_data());
                                    return arr;
@@ -182,7 +190,9 @@ PYBIND11_MODULE(_physics_sensors, m)
                                [](const JointStateSensorReading& r) -> py::array_t<float>
                                {
                                    if (!r.efforts || r.dofCount <= 0)
+                                   {
                                        return py::array_t<float>({ 0 });
+                                   }
                                    py::array_t<float> arr({ static_cast<py::ssize_t>(r.dofCount) });
                                    std::copy(r.efforts, r.efforts + r.dofCount, arr.mutable_data());
                                    return arr;
@@ -191,7 +201,9 @@ PYBIND11_MODULE(_physics_sensors, m)
                                [](const JointStateSensorReading& r) -> py::array_t<uint8_t>
                                {
                                    if (!r.dofTypes || r.dofCount <= 0)
+                                   {
                                        return py::array_t<uint8_t>({ 0 });
+                                   }
                                    py::array_t<uint8_t> arr({ static_cast<py::ssize_t>(r.dofCount) });
                                    std::copy(r.dofTypes, r.dofTypes + r.dofCount, arr.mutable_data());
                                    return arr;

@@ -32,9 +32,9 @@ namespace
 
 enum class GripperStatus
 {
-    Open,
-    Closing,
-    Closed,
+    Open, // NOLINT(readability-identifier-naming) Python API
+    Closing, // NOLINT(readability-identifier-naming) Python API
+    Closed, // NOLINT(readability-identifier-naming) Python API
 };
 
 namespace py = pybind11;
@@ -141,7 +141,9 @@ PYBIND11_MODULE(_surface_gripper, m)
             [](const SurfaceGripperInterface* iface, const char* primPath) -> GripperStatus
             {
                 if (!iface)
+                {
                     return GripperStatus::Open;
+                }
                 return static_cast<GripperStatus>(iface->getGripperStatus(primPath));
             },
             py::arg("prim_path"),

@@ -32,9 +32,9 @@ namespace nodes
 namespace
 {
 
-static constexpr size_t kGmoHeaderSize = sizeof(omni::sensors::GenericModelOutput);
-static constexpr size_t kGmoMinSize = kGmoHeaderSize + sizeof(int32_t) + sizeof(float) * 4 + sizeof(uint8_t);
-static constexpr float kDegToRad = static_cast<float>(M_PI) / 180.0f;
+static constexpr size_t g_kGmoHeaderSize = sizeof(omni::sensors::GenericModelOutput);
+static constexpr size_t g_kGmoMinSize = g_kGmoHeaderSize + sizeof(int32_t) + sizeof(float) * 4 + sizeof(uint8_t);
+static constexpr float g_kDegToRad = static_cast<float>(M_PI) / 180.0f;
 
 } // namespace
 
@@ -70,17 +70,25 @@ bool Ros2SrtxLidarPublisher::initialize(const std::string& topicName,
 
     std::string ns = nodeNamespace;
     while (!ns.empty() && !std::isalnum(static_cast<unsigned char>(ns.front())))
+    {
         ns.erase(ns.begin());
+    }
     while (!ns.empty() && !std::isalnum(static_cast<unsigned char>(ns.back())))
+    {
         ns.pop_back();
+    }
     if (!ns.empty())
+    {
         ns = "/" + ns;
+    }
 
     std::string nodeName = "srtx_lidar_publisher" + topicName;
     for (auto& c : nodeName)
     {
         if (c == '/' || c == '-')
+        {
             c = '_';
+        }
     }
 
     m_nodeHandle = m_factory->createNodeHandle(nodeName.c_str(), ns.c_str(), contextHandlePtr->get());
@@ -112,9 +120,13 @@ bool Ros2SrtxLidarPublisher::initialize(const std::string& topicName,
 
     std::string trimmedTopic = topicName;
     while (!trimmedTopic.empty() && !std::isalnum(static_cast<unsigned char>(trimmedTopic.front())))
+    {
         trimmedTopic.erase(trimmedTopic.begin());
+    }
     while (!trimmedTopic.empty() && !std::isalnum(static_cast<unsigned char>(trimmedTopic.back())))
+    {
         trimmedTopic.pop_back();
+    }
     std::string fullTopicName = ns + "/" + trimmedTopic;
 
     m_publisher =
@@ -135,9 +147,11 @@ void Ros2SrtxLidarPublisher::publishData(const uint8_t* data, size_t dataSize, d
 {
     CARB_PROFILE_ZONE(0, "SRTX ROS2 LidarData Publish");
     if (!m_initialized || !m_publisher || !data)
+    {
         return;
+    }
 
-    if (dataSize < kGmoMinSize)
+    if (dataSize < g_kGmoMinSize)
     {
         CARB_LOG_WARN("Ros2SrtxLidarPublisher: Buffer too small (%zu bytes)", dataSize);
         return;
@@ -153,16 +167,18 @@ void Ros2SrtxLidarPublisher::publishData(const uint8_t* data, size_t dataSize, d
 
     const uint32_t numElements = gmo->numElements;
     if (numElements == 0)
+    {
         return;
+    }
 
-    if (dataSize < kGmoMinSize)
+    if (dataSize < g_kGmoMinSize)
     {
         CARB_LOG_WARN(
             "Ros2SrtxLidarPublisher: Buffer has %u elements but data too small (%zu bytes)", numElements, dataSize);
         return;
     }
 
-    size_t offset = kGmoHeaderSize;
+    size_t offset = g_kGmoHeaderSize;
     offset += sizeof(int32_t) * numElements; // timeOffsetNs
     const float* azimuth = reinterpret_cast<const float*>(data + offset);
     offset += sizeof(float) * numElements;
@@ -193,13 +209,15 @@ void Ros2SrtxLidarPublisher::publishData(const uint8_t* data, size_t dataSize, d
         for (uint32_t i = 0; i < numElements; ++i)
         {
             if (!(flags[i] & omni::sensors::ElementFlags::VALID))
+            {
                 continue;
+            }
 
             float x, y, z;
             if (isSpherical)
             {
-                float azRad = azimuth[i] * kDegToRad;
-                float elRad = elevation[i] * kDegToRad;
+                float azRad = azimuth[i] * g_kDegToRad;
+                float elRad = elevation[i] * g_kDegToRad;
                 float cosEl = std::cos(elRad);
                 float rangeXY = distance[i] * cosEl;
                 x = rangeXY * std::cos(azRad);
@@ -223,7 +241,9 @@ void Ros2SrtxLidarPublisher::publishData(const uint8_t* data, size_t dataSize, d
     }
 
     if (numValid == 0)
+    {
         return;
+    }
 
     size_t xyzBufferSize = numValid * 3 * sizeof(float);
 

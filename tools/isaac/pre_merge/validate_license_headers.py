@@ -36,7 +36,7 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
-from repo_helpers import REPO_ROOT
+from repo_helpers import REPO_ROOT  # noqa: E402
 
 FILE_EXTENSIONS: dict[str, str] = {
     ".py": "#",
@@ -82,6 +82,7 @@ COPYRIGHT_RE = re.compile(
     r"SPDX-FileCopyrightText:\s*Copyright \(c\)\s*(\d{4}(?:-\d{4})?) NVIDIA CORPORATION & AFFILIATES\. All rights reserved\."
 )
 LICENSE_RE = re.compile(r"SPDX-License-Identifier:\s*Apache-2\.0")
+PROPRIETARY_LICENSE_RE = re.compile(r"SPDX-License-Identifier:\s*LicenseRef-NvidiaProprietary")
 
 _LEGACY_COPYRIGHT_RE = re.compile(r"Copyright \(c\)\s*\d{4}(?:[,-]\s*\d{4})?,?\s*NVIDIA CORPORATION")
 
@@ -101,6 +102,28 @@ TEMPLATE = [
     "See the License for the specific language governing permissions and",
     "limitations under the License.",
 ]
+
+PROPRIETARY_TEMPLATE = [
+    "SPDX-FileCopyrightText: Copyright (c) {year} NVIDIA CORPORATION & AFFILIATES. All rights reserved.",
+    "SPDX-License-Identifier: LicenseRef-NvidiaProprietary",
+    "",
+    "NVIDIA CORPORATION, its affiliates and licensors retain all intellectual",
+    "property and proprietary rights in and to this material, related",
+    "documentation and any modifications thereto. Any use, reproduction,",
+    "disclosure or distribution of this material and related documentation",
+    "without an express license agreement from NVIDIA CORPORATION or",
+    "its affiliates is strictly prohibited.",
+]
+
+_INTERNAL_EXTENSIONS_PATH = REPO_ROOT / "source" / "internal_extensions"
+
+
+def _is_internal_extension(file_path: Path) -> bool:
+    try:
+        file_path.resolve().relative_to(_INTERNAL_EXTENSIONS_PATH.resolve())
+        return True
+    except ValueError:
+        return False
 
 
 def _normalize_content(line: str, comment_symbol: str) -> str:
@@ -200,6 +223,7 @@ def check_file_header(file_path: Path) -> tuple[bool, list[str]]:
     issues: list[str] = []
     copyright_line_count = 0
     license_line_count = 0
+    is_internal = _is_internal_extension(file_path)
 
     for idx, line in enumerate(lines[:30], start=1):
         content = _normalize_content(line, comment_symbol)
@@ -209,7 +233,10 @@ def check_file_header(file_path: Path) -> tuple[bool, list[str]]:
                 issues.append(f"Line {idx}: Invalid SPDX copyright format")
         if "SPDX-License-Identifier:" in content:
             license_line_count += 1
-            if not LICENSE_RE.fullmatch(content):
+            license_valid = LICENSE_RE.fullmatch(content)
+            if is_internal:
+                license_valid = license_valid or PROPRIETARY_LICENSE_RE.fullmatch(content)
+            if not license_valid:
                 issues.append(f"Line {idx}: Invalid SPDX license identifier")
 
     if copyright_line_count == 0:
@@ -228,10 +255,11 @@ def check_file_header(file_path: Path) -> tuple[bool, list[str]]:
     return len(issues) == 0, issues
 
 
-def _generate_header(file_path: Path, year: str) -> list[str]:
+def _generate_header(file_path: Path, year: str, *, proprietary: bool = False) -> list[str]:
     comment_symbol = FILE_EXTENSIONS[file_path.suffix.lower()]
+    template = PROPRIETARY_TEMPLATE if proprietary else TEMPLATE
     out: list[str] = []
-    for line in TEMPLATE:
+    for line in template:
         rendered = line.format(year=year)
         if rendered:
             out.append(f"{comment_symbol} {rendered}")
@@ -253,11 +281,22 @@ _APACHE_HEADER_MARKERS = {
     "limitations under the License",
 }
 
+_PROPRIETARY_SPDX_MARKERS = {
+    "NVIDIA CORPORATION, its affiliates and licensors retain all intellectual",
+    "property and proprietary rights in and to this material",
+    "documentation and any modifications thereto",
+    "disclosure or distribution of this material",
+    "without an express license agreement from NVIDIA CORPORATION",
+    "its affiliates is strictly prohibited",
+}
+
 
 def _is_header_line(content: str, stripped: str, comment_symbol: str) -> bool:
     if stripped == "" or stripped == comment_symbol:
         return True
-    return any(marker in content for marker in _APACHE_HEADER_MARKERS)
+    return any(marker in content for marker in _APACHE_HEADER_MARKERS) or any(
+        marker in content for marker in _PROPRIETARY_SPDX_MARKERS
+    )
 
 
 def _strip_existing_header(lines: list[str], comment_symbol: str) -> list[str]:
@@ -354,7 +393,16 @@ def fix_file_header(file_path: Path) -> bool:
         if existing_year:
             break
     year = _compute_year_range(existing_year)
-    license_header = _generate_header(file_path, year)
+
+    use_proprietary = False
+    if _is_internal_extension(file_path):
+        has_proprietary = any(
+            PROPRIETARY_LICENSE_RE.search(_normalize_content(line, comment_symbol)) for line in lines[:30]
+        )
+        has_apache = any(LICENSE_RE.search(_normalize_content(line, comment_symbol)) for line in lines[:30])
+        use_proprietary = has_proprietary or not has_apache
+
+    license_header = _generate_header(file_path, year, proprietary=use_proprietary)
 
     if file_path.suffix.lower() == ".ipynb":
         try:

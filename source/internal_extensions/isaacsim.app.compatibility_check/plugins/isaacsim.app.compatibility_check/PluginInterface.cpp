@@ -69,7 +69,7 @@ public:
         }
 
         // create carb graphics
-        graphics = createCarbGraphics(framework);
+        graphics = _createCarbGraphics(framework);
 
         // create GPU foundation and devices
         if (createGpuFoundation)
@@ -151,12 +151,13 @@ public:
             // get device UUID
             const carb::graphics::PhysicalDeviceDesc& physicalDeviceDesc =
                 graphics->getPhysicalDeviceDesc(graphics->getPhysicalDevice(device));
-            rtxGpuInfo.deviceUUID = uint8ArrayToHexString(physicalDeviceDesc.deviceProperties.deviceUuid, OMNI_UUID_SIZE);
+            rtxGpuInfo.deviceUUID =
+                _uint8ArrayToHexString(physicalDeviceDesc.deviceProperties.deviceUuid, OMNI_UUID_SIZE);
             // get other identifiers
-            rtxGpuInfo.pciBusId = uint32ToHexString(physicalDeviceDesc.deviceProperties.pciBusId);
-            rtxGpuInfo.deviceId = uint32ToHexString(physicalDeviceDesc.deviceId);
-            rtxGpuInfo.vendorId = uint32ToHexString(physicalDeviceDesc.vendorId);
-            rtxGpuInfo.subSysId = uint32ToHexString(physicalDeviceDesc.subSysId);
+            rtxGpuInfo.pciBusId = _uint32ToHexString(physicalDeviceDesc.deviceProperties.pciBusId);
+            rtxGpuInfo.deviceId = _uint32ToHexString(physicalDeviceDesc.deviceId);
+            rtxGpuInfo.vendorId = _uint32ToHexString(physicalDeviceDesc.vendorId);
+            rtxGpuInfo.subSysId = _uint32ToHexString(physicalDeviceDesc.subSysId);
             // store info
             rtxGpuInfos.push_back(rtxGpuInfo);
         }
@@ -172,7 +173,7 @@ public:
     }
 
 private:
-    std::string uint8ArrayToHexString(const uint8_t* array, const size_t length)
+    std::string _uint8ArrayToHexString(const uint8_t* array, const size_t length)
     {
         std::stringstream stringStream;
         for (size_t i = 0; i < length; i++)
@@ -182,14 +183,14 @@ private:
         return stringStream.str();
     }
 
-    std::string uint32ToHexString(const uint32_t value)
+    std::string _uint32ToHexString(const uint32_t value)
     {
         std::stringstream stringStream;
         stringStream << std::hex << std::setw(2) << std::setfill('0') << value;
         return stringStream.str();
     }
 
-    carb::graphics::Graphics* createCarbGraphics(carb::Framework* framework)
+    carb::graphics::Graphics* _createCarbGraphics(carb::Framework* framework)
     {
         carb::settings::ISettings* settings = framework->acquireInterface<carb::settings::ISettings>();
         // get graphics API

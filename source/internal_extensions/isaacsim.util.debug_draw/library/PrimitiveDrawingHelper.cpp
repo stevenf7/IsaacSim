@@ -36,7 +36,7 @@ namespace drawing
 struct PrimitiveDrawingHelper::VertexData
 {
     std::vector<PrimitiveVertex> vertices;
-    SceneId lastSceneId = 0;
+    SceneId lastSceneId = nullptr;
 };
 
 PrimitiveDrawingHelper::PrimitiveDrawingHelper(omni::usd::UsdContext* usdContext,

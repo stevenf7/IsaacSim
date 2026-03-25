@@ -24,7 +24,8 @@ import subprocess
 import sys
 import tempfile
 from collections import defaultdict
-from typing import Callable, Dict, List, Optional
+from collections.abc import Callable
+from typing import Optional
 from xml.etree import ElementTree
 
 import omni.repo.man
@@ -48,7 +49,7 @@ KIT_GITLAB_BASE_URL = "https://gitlab-master.nvidia.com"
 KIT_VERSION_PATH = "kit/VERSION"
 
 
-def _get_upstream_kit_tokens() -> Optional[Dict]:
+def _get_upstream_kit_tokens() -> Optional[dict]:
     """When running as a downstream pipeline (CI_PIPELINE_SOURCE == 'pipeline') with
     UPSTREAM_PIPELINE_ID set, get version tokens from the upstream Kit pipeline: one
     API call for sha/ref/iid, plus kit/VERSION for major.minor.patch. The version
@@ -271,7 +272,7 @@ def _update_omniverse_kit_version(definition_paths, incompatible_versions, targe
             omni.repo.man.print_log(f"Skipping package definition: {definition_path} doesn't exist", logging.WARN)
             continue
         # get file content
-        with open(definition_path, "r") as f:
+        with open(definition_path) as f:
             content = f.read()
         # replace incompatible version occurrences
         version_updated = False
@@ -558,7 +559,7 @@ def _check_dependencies(
 VENV_DEPENDENCY_CHECK_DIR = "_env_dependency_check"
 
 
-def _get_current_platform(platforms: List[str]) -> str:
+def _get_current_platform(platforms: list[str]) -> str:
     """Return the repo platform key for the current host. Exits with error if unsupported."""
     sys_name = platform_module.system()
     machine = platform_module.machine().lower()
@@ -593,8 +594,7 @@ def _get_python312_executable(platform_key: str) -> str:
 
 
 def _run_validate(platform_key: str, requirements_path: str, python_exe: str) -> None:
-    """
-    Create a fresh venv, upgrade pip, and install from the generated requirements file.
+    """Create a fresh venv, upgrade pip, and install from the generated requirements file.
     Exits nonzero on any failure.
     """
     venv_dir = os.path.abspath(VENV_DEPENDENCY_CHECK_DIR)
@@ -631,7 +631,7 @@ def _run_validate(platform_key: str, requirements_path: str, python_exe: str) ->
     omni.repo.man.print_log("Dependency validation passed", logging.INFO)
 
 
-def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
+def setup_repo_tool(parser: argparse.ArgumentParser, config: dict) -> Callable:
     parser.description = "Check for the proper definition of the python packages"
     parser.add_argument(
         "--update-omniverse-kit",
@@ -655,7 +655,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         help="For the current platform: run checks, generate python-package-requirements file, create _env_dependency_check venv with Python 3.12, install dependencies, and pass/fail",
     )
 
-    def run_repo_tool(options: Dict, config: Dict):
+    def run_repo_tool(options: dict, config: dict):
         tool_config = config["repo_validate_python_packages"]
         python_package_tool_config = config.get("repo_python_package", {})
 

@@ -214,7 +214,7 @@ omni::string LidarConfigHelper::getProfileJsonAtPaths(const char* fileName)
     std::vector<std::string> paths;
 
     // Use this local function to resolve strings and create a json file name.
-    const auto get_resolved_path = [](const std::string& path, carb::tokens::ITokens* tokens)
+    const auto getResolvedPath = [](const std::string& path, carb::tokens::ITokens* tokens)
     {
         return carb::extras::Path(carb::tokens::resolveString(tokens, { carb::cpp::unsafe_length, path.c_str() }).c_str())
             .getNormalized()
@@ -245,7 +245,7 @@ omni::string LidarConfigHelper::getProfileJsonAtPaths(const char* fileName)
     // Search all known paths for the LiDAR config file.
     for (const std::string& path : paths)
     {
-        const std::string profilePath = get_resolved_path(path, tokens) + sensorProfileName + ".json";
+        const std::string profilePath = getResolvedPath(path, tokens) + sensorProfileName + ".json";
         json = LidarConfigHelper::ReadWholeTextFile(profilePath);
         if (!json.empty())
         {
@@ -260,7 +260,7 @@ omni::string LidarConfigHelper::getProfileJsonAtPaths(const char* fileName)
                        sensorProfileName.c_str());
         for (const std::string& path : paths)
         {
-            CARB_LOG_ERROR("\t%s", (get_resolved_path(path, tokens) + sensorProfileName + ".json").c_str());
+            CARB_LOG_ERROR("\t%s", (getResolvedPath(path, tokens) + sensorProfileName + ".json").c_str());
         }
         // CARB_LOG_ERROR("getProfileJsonAtPaths is creating a minimal modality specific profile");
         // json = omni::sensors::nv::lidar::invalidProfileJson(m_type);
@@ -280,7 +280,9 @@ std::string LidarConfigHelper::ReadWholeTextFile(const std::string& fullPath)
 #endif
 
     if (nullptr == f)
+    {
         return {};
+    }
 
     std::fseek(f, 0, SEEK_END);
     size_t size = ::ftell(f);

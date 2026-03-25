@@ -70,11 +70,17 @@ bool PublisherBase::initialize(const std::string& nodeName,
 
     std::string ns = namespaceName;
     while (!ns.empty() && !std::isalnum(ns.front()))
+    {
         ns.erase(ns.begin());
+    }
     while (!ns.empty() && !std::isalnum(ns.back()))
+    {
         ns.pop_back();
+    }
     if (!ns.empty())
+    {
         ns = "/" + ns;
+    }
 
     if (context)
     {
@@ -112,9 +118,13 @@ bool PublisherBase::initialize(const std::string& nodeName,
     {
         std::string trimmedTopic = topicName;
         while (!trimmedTopic.empty() && !std::isalnum(trimmedTopic.front()))
+        {
             trimmedTopic.erase(trimmedTopic.begin());
+        }
         while (!trimmedTopic.empty() && !std::isalnum(trimmedTopic.back()))
+        {
             trimmedTopic.pop_back();
+        }
         fullTopicName = ns + "/" + trimmedTopic;
     }
 
