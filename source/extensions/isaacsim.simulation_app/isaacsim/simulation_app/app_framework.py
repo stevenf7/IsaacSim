@@ -20,21 +20,23 @@ import builtins
 import os
 import sys
 import typing
-from typing import Any
 
 import carb
 import omni.kit.app
 
 
 class AppFramework:
-    """Minimal omniverse application that launches without any application config
+    """Minimal omniverse application that launches without any application config.
 
     Args:
         name: Name of the application.
         argv: Command line arguments to pass to the application.
     """
 
-    def __init__(self, name: str = "kit", argv=[]):
+    def __init__(self, name: str = "kit", argv: list[str] | None = None) -> None:
+
+        if argv is None:
+            argv = []
 
         builtins.ISAAC_LAUNCHED_FROM_TERMINAL = False
 
@@ -55,11 +57,11 @@ class AppFramework:
             argv.append("--allow-root")
         self._app.startup(name, app_root, argv)
 
-    def update(self):
+    def update(self) -> None:
         """Convenience function to step the application forward one frame."""
         self._app.update()
 
-    def close(self):
+    def close(self) -> None:
         """Close the running Omniverse Toolkit."""
         self._app.shutdown()
         self._framework.unload_all_plugins()

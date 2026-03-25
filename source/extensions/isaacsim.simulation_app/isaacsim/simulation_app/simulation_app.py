@@ -28,7 +28,7 @@ import re
 import signal
 import sys
 import time
-from typing import Any, Coroutine
+from typing import Any
 
 import carb
 import omni.kit.app
@@ -154,7 +154,7 @@ class SimulationApp:
         disable_viewport_updates (bool): Disable viewport updates to improve performance. Defaults to False.
     """
 
-    def __init__(self, launch_config: dict = None, experience: str = ""):
+    def __init__(self, launch_config: dict = None, experience: str = "") -> None:
         """Initialize the SimulationApp with specified configuration.
 
         Launches the Omniverse Toolkit with the provided configuration settings.
@@ -294,7 +294,7 @@ class SimulationApp:
 
         # Register signal handler to exit when ctrl-c happens
         # This needs to happen after the app starts so that we can overide the default handler
-        def signal_handler(signal, frame):
+        def signal_handler(signal: int, frame: Any) -> None:
             # Disable logging as we are forcefully exiting
             _logging = carb.logging.acquire_logging()
             _logging.set_log_enabled(False)
@@ -340,7 +340,7 @@ class SimulationApp:
             window_title = get_main_window_title()
             app_version_core, _, _, _, _, _, _, _ = get_version()
             window_title.set_app_version(app_version_core)
-        except:
+        except Exception:
             pass
 
         self._wait_for_viewport()
@@ -360,6 +360,18 @@ class SimulationApp:
 
         # Notify toolkit is running
         self._app.print_and_log("Simulation App Startup Complete")
+
+        try:
+            from isaacsim.core.telemetry import emit_feature_used
+
+            emit_feature_used(
+                extension_id="isaacsim.simulation_app",
+                feature_name="app_startup",
+                feature_type="api_call",
+                duration_ms=self._app.get_time_since_start_ms(),
+            )
+        except Exception:
+            pass
 
         # Record startup time as time at which app is ready for use
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -383,7 +395,7 @@ class SimulationApp:
 
         atexit.register(self._atexit_close)
 
-    def _apply_renderer_defaults(self, launch_config: dict | None):
+    def _apply_renderer_defaults(self, launch_config: dict | None) -> None:
         """Apply renderer-specific defaults when values are not provided in the launch config.
 
         Args:
@@ -398,7 +410,7 @@ class SimulationApp:
             if setting_key not in override_keys:
                 self.config[setting_key] = default_value
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Destructor for the SimulationApp class.
 
         Warns if the application is still running when Python exits,
@@ -411,7 +423,7 @@ class SimulationApp:
                 + "\033[0m"
             )
 
-    def _atexit_close(self):
+    def _atexit_close(self) -> None:
         """Automatically close the application during interpreter shutdown if close() was not called."""
         if not self._exiting:
             carb.log_warn("SimulationApp.close() was not called explicitly. Shutting down automatically")
@@ -419,7 +431,7 @@ class SimulationApp:
 
     ### Private methods
 
-    def _start_app(self):
+    def _start_app(self) -> None:
         """Launch the Omniverse application."""
         carb.log_info("SimulationApp._start_app: Starting app launch process")
         exe_path = os.path.abspath(f'{os.environ["CARB_APP_PATH"]}')
@@ -589,7 +601,7 @@ class SimulationApp:
             carb.log_info("SimulationApp._start_app: Help requested, exiting")
             self.close(skip_cleanup=True)
 
-    def _set_render_settings(self, default: bool = False):
+    def _set_render_settings(self, default: bool = False) -> None:
         """Set render settings to those in config.
 
         Note:
@@ -656,7 +668,7 @@ class SimulationApp:
         set_carb_setting(self._carb_settings, "/omni.kit.plugin/syncUsdLoads", self.config["sync_loads"])
         carb.log_info("SimulationApp._set_render_settings: Completed render settings configuration")
 
-    def _prepare_ui(self):
+    def _prepare_ui(self) -> None:
         """Dock the windows in the UI if they exist."""
         carb.log_info("SimulationApp._prepare_ui: Starting UI setup")
         try:
@@ -674,13 +686,13 @@ class SimulationApp:
                 console.dock_order = 1
             if samples:
                 samples.visible = False
-        except:
+        except Exception:
             pass
 
         self._update_without_ready()
         carb.log_info("SimulationApp._prepare_ui: UI setup completed")
 
-    def _update_without_ready(self):
+    def _update_without_ready(self) -> None:
         """Update the application without waiting for the app to be ready.
 
         This is a convenience function that updates the application without waiting for the app to be ready.
@@ -690,7 +702,7 @@ class SimulationApp:
             app.delay_app_ready("IsaacSim")
         self._app.update()
 
-    def _wait_for_viewport(self):
+    def _wait_for_viewport(self) -> None:
         """Wait for the viewport to become available and properly initialized."""
         MAX_FRAMES = 240 if os.name == "nt" else 120
         DOCKING_FRAMES = 10
@@ -716,7 +728,6 @@ class SimulationApp:
                 raise Exception("Timeout waiting for viewport")
         except Exception as e:
             carb.log_info(f"SimulationApp._wait_for_viewport: Exception during viewport wait: {e}")
-            pass
 
         # once we load, we need a few frames so everything docks itself
         if frame_count < DOCKING_FRAMES:
@@ -727,7 +738,7 @@ class SimulationApp:
 
     ### Public methods
 
-    def update(self):
+    def update(self) -> None:
         """Step the application forward by one frame.
 
         This is a convenience function that advances the simulation by a single frame,
@@ -745,7 +756,7 @@ class SimulationApp:
         """
         self._app.update()
 
-    def set_setting(self, setting: str, value):
+    def set_setting(self, setting: str, value: Any) -> None:
         """Set a Carbonite framework setting.
 
         Sets a configuration value in the Carbonite settings system.
@@ -768,7 +779,7 @@ class SimulationApp:
 
         set_carb_setting(self._carb_settings, setting, value)
 
-    def reset_render_settings(self):
+    def reset_render_settings(self) -> None:
         """Reset render settings to those specified in the launch configuration.
 
         Re-applies the rendering settings from the initial configuration.
@@ -834,7 +845,7 @@ class SimulationApp:
             return task_or_future.result()
         return task_or_future
 
-    def close(self, wait_for_replicator=True, skip_cleanup=False):
+    def close(self, wait_for_replicator: bool = True, skip_cleanup: bool = False) -> None:
         """Close the running Omniverse Toolkit application.
 
         Performs cleanup and shuts down the application. Can either perform
