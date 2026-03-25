@@ -74,10 +74,10 @@ while is_stage_loading():
 # =============================================================================
 # CREATE RTX RADAR USING COMMAND API
 # =============================================================================
-# Radar uses the WpmDmat sensor model. Set auxOutputType to FULL for all data.
+# Radar uses the WpmDmat sensor model. Set auxOutputType to BASIC for all data.
 # Note: Radar attribute prefix is "omni:sensor:WpmDmat:" (not "Core:" like lidar)
 
-custom_attributes = {"omni:sensor:WpmDmat:auxOutputType": "FULL"}
+custom_attributes = {"omni:sensor:WpmDmat:auxOutputType": "BASIC"}
 
 _, radar = omni.kit.commands.execute(
     "IsaacSensorCreateRtxRadar",

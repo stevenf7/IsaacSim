@@ -35,7 +35,8 @@ logo_target_url = "index.html"
 copybutton_enabled = true
 enhanced_search_enabled = true
 external_links_open_new_tab = true
-sphinx_parallel = "auto"
+# Use 1 worker to avoid KeyError/EOFError in forked workers when resolving module paths (e.g. isaacsim.asset.gen.omap).
+sphinx_parallel = "1"
 copyright_start = 2023
 version = "6.0.0"
 

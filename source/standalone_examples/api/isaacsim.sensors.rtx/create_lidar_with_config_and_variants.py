@@ -106,7 +106,6 @@ _, lidar1 = omni.kit.commands.execute(
 )
 
 carb.log_info(f"Created {lidar1.GetPath()}")
-carb.log_info(f"  auxOutputType: {lidar1.GetAttribute('omni:sensor:Core:auxOutputType').Get()}")
 
 # =============================================================================
 # EXAMPLE 2: OUSTER LIDAR WITH VARIANT SELECTION
@@ -166,10 +165,6 @@ if lidar1.HasAttribute("omni:sensor:Core:farRangeM"):
         carb.log_info(f"Modified far range to: {new_far_range}m")
     except Exception as e:
         carb.log_warn(f"Could not modify farRangeM: {e}")
-
-# Change the auxiliary output type dynamically
-lidar1.GetAttribute("omni:sensor:Core:auxOutputType").Set("BASIC")
-carb.log_info(f"Changed auxOutputType to: {lidar1.GetAttribute('omni:sensor:Core:auxOutputType').Get()}")
 
 # =============================================================================
 # ATTACH DEBUG DRAW FOR VISUALIZATION

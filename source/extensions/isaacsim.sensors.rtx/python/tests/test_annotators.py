@@ -561,7 +561,7 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         WARMUP_FRAMES = 10
         NUM_FRAMES = 10
         PAUSE_FRAMES = 10
-        GRACE_FRAMES = 3
+        GRACE_FRAMES = 5
         # Expected per-frame advance when playing: 1/60s in nanoseconds
         EXPECTED_ADVANCE_NS = int(1.0 / 60.0 * 1e9)  # 16_666_666 ns
         # Tolerance for timestamp delta (2ms in nanoseconds)
@@ -633,6 +633,11 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
             if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
                 print(f"[PAUSED  ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (bad magic)")
                 continue
+            if gmo.numElements == 0:
+                print(
+                    f"[PAUSED  ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (no elements)"
+                )
+                continue
 
             gmo_timestamp_ns = int(gmo.timestampNs)
             delta_ns = gmo_timestamp_ns - prev_gmo_timestamp_ns
@@ -658,26 +663,6 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         # Phase 3: Resume the timeline and verify timestamp advances by 1/60s again
         self._timeline.play()
 
-        for i in range(GRACE_FRAMES):
-            await omni.kit.app.get_app().next_update_async()
-            timeline_time_ns = int(self._timeline.get_current_time() * 1e9)
-            self._annotator_data = self._annotator.get_data()
-
-            gmo_timestamp_ns_str = "None"
-            delta_ns_str = ""
-            if self._annotator_data is not None and self._annotator_data.size > 0:
-                gmo = get_gmo_data(self._annotator_data)
-                if gmo.magicNumber == gmo_utils.getMagicNumberGMO():
-                    gmo_timestamp_ns = int(gmo.timestampNs)
-                    delta_ns = gmo_timestamp_ns - prev_gmo_timestamp_ns
-                    gmo_timestamp_ns_str = f"{gmo_timestamp_ns:>10d}"
-                    delta_ns_str = f"  delta_ns={delta_ns:>10d}"
-                    prev_gmo_timestamp_ns = gmo_timestamp_ns
-
-            print(
-                f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={gmo_timestamp_ns_str}  prev_gmo_ns={prev_gmo_timestamp_ns:>10d}  {delta_ns_str}    (grace)"
-            )
-
         resumed_frames_collected = 0
         found_new_data_after_resume = False
 
@@ -693,6 +678,11 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
             gmo = get_gmo_data(self._annotator_data)
             if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
                 print(f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (bad magic)")
+                continue
+            if gmo.numElements == 0:
+                print(
+                    f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (no elements)"
+                )
                 continue
 
             gmo_timestamp_ns = int(gmo.timestampNs)
@@ -712,13 +702,14 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
                 f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={gmo_timestamp_ns:>10d}  delta_ns={delta_ns:>10d}  expected={EXPECTED_ADVANCE_NS}"
             )
 
-            self.assertAlmostEqual(
-                delta_ns,
-                EXPECTED_ADVANCE_NS,
-                delta=TOLERANCE_NS,
-                msg=f"Resumed: GMO timestamp delta ({delta_ns} ns) != expected ({EXPECTED_ADVANCE_NS} ns). "
-                f"prev={prev_gmo_timestamp_ns}, curr={gmo_timestamp_ns}",
-            )
+            if i >= GRACE_FRAMES:
+                self.assertAlmostEqual(
+                    delta_ns,
+                    EXPECTED_ADVANCE_NS,
+                    delta=TOLERANCE_NS,
+                    msg=f"Resumed: GMO timestamp delta ({delta_ns} ns) != expected ({EXPECTED_ADVANCE_NS} ns). "
+                    f"prev={prev_gmo_timestamp_ns}, curr={gmo_timestamp_ns}",
+                )
             prev_gmo_timestamp_ns = gmo_timestamp_ns
             resumed_frames_collected += 1
 

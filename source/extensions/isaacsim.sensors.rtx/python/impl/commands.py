@@ -208,6 +208,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         for attr, value in self._prim_creation_kwargs.items():
             if prim.HasAttribute(attr):
                 prim.GetAttribute(attr).Set(value)
+                carb.log_warn(f"Setting {attr} to {value} for {prim.GetPath()}")
         return prim
 
     def _call_replicator_api(self) -> Usd.Prim | None:
@@ -338,8 +339,24 @@ class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
             The created Lidar sensor prim.
         """
         prim = super().do()
-        if prim.IsValid() and prim.HasAttribute("omni:sensor:Core:skipDroppingInvalidPoints"):
-            prim.GetAttribute("omni:sensor:Core:skipDroppingInvalidPoints").Set(True)
+        if prim.IsValid():
+            if prim.HasAttribute("omni:sensor:Core:skipDroppingInvalidPoints"):
+                prim.GetAttribute("omni:sensor:Core:skipDroppingInvalidPoints").Set(True)
+            # WAR: Expose auxOutputType as "channels" for Replicator API to assign to RenderVar as attribute
+            aux_output_type = None
+            if "omni:sensor:Core:auxOutputType" in self._prim_creation_kwargs:
+                attr_value = self._prim_creation_kwargs["omni:sensor:Core:auxOutputType"]
+                aux_output_type = [str(attr_value)]
+            if prim.HasAttribute("_replicator:rendervar:GenericModelOutput:omni:sensor:Core:auxOutputType"):
+                attr_value = prim.GetAttribute(
+                    "_replicator:rendervar:GenericModelOutput:omni:sensor:Core:auxOutputType"
+                ).Get()
+                prim.RemoveProperty("_replicator:rendervar:GenericModelOutput:omni:sensor:Core:auxOutputType")
+                aux_output_type = [str(attr_value)]
+            if aux_output_type is not None:
+                prim.CreateAttribute(
+                    "_replicator:rendervar:GenericModelOutput:channels", Sdf.ValueTypeNames.StringArray, True
+                ).Set(aux_output_type)
         return prim
 
 
@@ -387,7 +404,24 @@ class IsaacSensorCreateRtxRadar(IsaacSensorCreateRtxSensor):
             )
             return None
 
-        return super().do()
+        prim = super().do()
+        if prim.IsValid():
+            # WAR: Expose auxOutputType as "channels" for Replicator API to assign to RenderVar as attribute
+            aux_output_type = None
+            if "omni:sensor:WpmDmat:auxOutputType" in self._prim_creation_kwargs:
+                attr_value = self._prim_creation_kwargs["omni:sensor:WpmDmat:auxOutputType"]
+                aux_output_type = [str(attr_value)]
+            if prim.HasAttribute("_replicator:rendervar:GenericModelOutput:omni:sensor:WpmDmat:auxOutputType"):
+                attr_value = prim.GetAttribute(
+                    "_replicator:rendervar:GenericModelOutput:omni:sensor:WpmDmat:auxOutputType"
+                ).Get()
+                prim.RemoveProperty("_replicator:rendervar:GenericModelOutput:omni:sensor:WpmDmat:auxOutputType")
+                aux_output_type = [str(attr_value)]
+            if aux_output_type is not None:
+                prim.CreateAttribute(
+                    "_replicator:rendervar:GenericModelOutput:channels", Sdf.ValueTypeNames.StringArray, True
+                ).Set(aux_output_type)
+        return prim
 
 
 class IsaacSensorCreateRtxIDS(IsaacSensorCreateRtxSensor):
@@ -428,7 +462,7 @@ class IsaacSensorCreateRtxUltrasonic(IsaacSensorCreateRtxSensor):
 
     _sensor_type: str = "ultrasonic"
     """String identifier for the type of sensor."""
-    _sensor_plugin_name: str = "omni.sensors.nv.ultrasonic.wpm_ultrasonic.plugin"
+    _sensor_plugin_name: str = "omni.sensors.nv.acoustic.wpm_ultrasonic.plugin"
     """Name of the Ultrasonic sensor plugin."""
 
 

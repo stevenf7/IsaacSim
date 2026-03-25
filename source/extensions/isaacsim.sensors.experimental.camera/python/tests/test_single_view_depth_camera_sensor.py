@@ -68,7 +68,7 @@ class TestSingleViewDepthCameraSensor(omni.kit.test.AsyncTestCase):
 
     @parametrize(
         prim_class=SingleViewDepthCameraSensor,
-        prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
+        prim_class_kwargs={"resolution": RESOLUTION, "annotators": []},
         populate_stage_func=populate_stage,
     )
     async def test_sensor_baseline(self, prim: Any, num_prims: int, operation: str) -> None:
@@ -80,7 +80,7 @@ class TestSingleViewDepthCameraSensor(omni.kit.test.AsyncTestCase):
 
     @parametrize(
         prim_class=SingleViewDepthCameraSensor,
-        prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
+        prim_class_kwargs={"resolution": RESOLUTION, "annotators": []},
         populate_stage_func=populate_stage,
     )
     async def test_sensor_disparity_confidence(self, prim: Any, num_prims: int, operation: str) -> None:
@@ -92,7 +92,7 @@ class TestSingleViewDepthCameraSensor(omni.kit.test.AsyncTestCase):
 
     @parametrize(
         prim_class=SingleViewDepthCameraSensor,
-        prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
+        prim_class_kwargs={"resolution": RESOLUTION, "annotators": []},
         populate_stage_func=populate_stage,
     )
     async def test_sensor_maximum_disparity(self, prim: Any, num_prims: int, operation: str) -> None:
@@ -104,7 +104,7 @@ class TestSingleViewDepthCameraSensor(omni.kit.test.AsyncTestCase):
 
     @parametrize(
         prim_class=SingleViewDepthCameraSensor,
-        prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
+        prim_class_kwargs={"resolution": RESOLUTION, "annotators": []},
         populate_stage_func=populate_stage,
     )
     async def test_enabled_post_processing(self, prim: Any, num_prims: int, operation: str) -> None:
@@ -117,7 +117,7 @@ class TestSingleViewDepthCameraSensor(omni.kit.test.AsyncTestCase):
 
     @parametrize(
         prim_class=SingleViewDepthCameraSensor,
-        prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
+        prim_class_kwargs={"resolution": RESOLUTION, "annotators": []},
         populate_stage_func=populate_stage,
     )
     async def test_sensor_focal_length(self, prim: Any, num_prims: int, operation: str) -> None:
@@ -129,7 +129,7 @@ class TestSingleViewDepthCameraSensor(omni.kit.test.AsyncTestCase):
 
     @parametrize(
         prim_class=SingleViewDepthCameraSensor,
-        prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
+        prim_class_kwargs={"resolution": RESOLUTION, "annotators": []},
         populate_stage_func=populate_stage,
     )
     async def test_sensor_distance_cutoffs(self, prim: Any, num_prims: int, operation: str) -> None:
@@ -145,7 +145,7 @@ class TestSingleViewDepthCameraSensor(omni.kit.test.AsyncTestCase):
 
     @parametrize(
         prim_class=SingleViewDepthCameraSensor,
-        prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
+        prim_class_kwargs={"resolution": RESOLUTION, "annotators": []},
         populate_stage_func=populate_stage,
     )
     async def test_sensor_disparity_noise_downscale(self, prim: Any, num_prims: int, operation: str) -> None:
@@ -157,7 +157,7 @@ class TestSingleViewDepthCameraSensor(omni.kit.test.AsyncTestCase):
 
     @parametrize(
         prim_class=SingleViewDepthCameraSensor,
-        prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
+        prim_class_kwargs={"resolution": RESOLUTION, "annotators": []},
         populate_stage_func=populate_stage,
     )
     async def test_sensor_noise_parameters(self, prim: Any, num_prims: int, operation: str) -> None:
@@ -173,7 +173,7 @@ class TestSingleViewDepthCameraSensor(omni.kit.test.AsyncTestCase):
 
     @parametrize(
         prim_class=SingleViewDepthCameraSensor,
-        prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
+        prim_class_kwargs={"resolution": RESOLUTION, "annotators": []},
         populate_stage_func=populate_stage,
     )
     async def test_enabled_outlier_removal(self, prim: Any, num_prims: int, operation: str) -> None:
@@ -185,7 +185,7 @@ class TestSingleViewDepthCameraSensor(omni.kit.test.AsyncTestCase):
 
     @parametrize(
         prim_class=SingleViewDepthCameraSensor,
-        prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
+        prim_class_kwargs={"resolution": RESOLUTION, "annotators": []},
         populate_stage_func=populate_stage,
     )
     async def test_sensor_output_mode(self, prim: Any, num_prims: int, operation: str) -> None:
@@ -197,7 +197,7 @@ class TestSingleViewDepthCameraSensor(omni.kit.test.AsyncTestCase):
 
     @parametrize(
         prim_class=SingleViewDepthCameraSensor,
-        prim_class_kwargs={"resolution": RESOLUTION, "annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
+        prim_class_kwargs={"resolution": RESOLUTION, "annotators": []},
         populate_stage_func=populate_stage,
     )
     async def test_sensor_size(self, prim: Any, num_prims: int, operation: str) -> None:

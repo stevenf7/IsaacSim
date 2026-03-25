@@ -237,7 +237,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
 
         plugin_attr = prim.GetAttribute("sensorModelPluginName")
         self.assertTrue(plugin_attr.IsValid())
-        self.assertEqual(plugin_attr.Get(), "omni.sensors.nv.ultrasonic.wpm_ultrasonic.plugin")
+        self.assertEqual(plugin_attr.Get(), "omni.sensors.nv.acoustic.wpm_ultrasonic.plugin")
 
     async def test_create_rtx_ultrasonic_with_config(self):
         """Test creating an RTX Ultrasonic sensor with a specific configuration."""
@@ -263,7 +263,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
 
         plugin_attr = prim.GetAttribute("sensorModelPluginName")
         self.assertTrue(plugin_attr.IsValid())
-        self.assertEqual(plugin_attr.Get(), "omni.sensors.nv.ultrasonic.wpm_ultrasonic.plugin")
+        self.assertEqual(plugin_attr.Get(), "omni.sensors.nv.acoustic.wpm_ultrasonic.plugin")
 
     async def test_sensor_with_parent(self):
         """Test creating a sensor with a parent prim."""

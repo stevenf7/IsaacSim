@@ -99,10 +99,13 @@ def parametrize(
                     # run test function
                     app_utils.play(commit=True)
                     await app_utils.update_app_async()
-                    await func(self, prim=prim, num_prims=num_prims, operation=operation)
-                    app_utils.stop(commit=True)
-                    await app_utils.update_app_async()
-                    del prim  # needed to destroy/release everything before the next test
+                    try:
+                        await func(self, prim=prim, num_prims=num_prims, operation=operation)
+                    finally:
+                        app_utils.stop(commit=True)
+                        await app_utils.update_app_async()
+                        del prim  # needed to destroy/release everything before the next test
+                        await app_utils.update_app_async(steps=3)
 
         return wrapper
 

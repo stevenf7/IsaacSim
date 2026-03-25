@@ -1,4 +1,10 @@
 # Changelog
+## [15.14.3] - 2026-03-22
+### Added
+- WAR for omni.replicator.core 1.13.5 - specify RTX Lidar and Radar auxOutputType as "channels" attribute on GenericModelOutput RenderVar
+### Fixed
+- Increase grace frame count for TestGenericModelOutput.test_radar_timestamp_alignment
+
 ## [15.14.2] - 2026-03-21
 ### Fixed
 - Added temporary fix for missing GenericModelOutput annotator in omni.replicator.core
