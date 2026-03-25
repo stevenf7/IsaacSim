@@ -653,13 +653,15 @@ skip_if_build_is_mr = true
 fail_if_exts_are_missing = false
 create_mr = true
 auto_merge_mr = false
+exts_include = [
+  "omni.pip.cloud",
+  "omni.pip.compute",
+]
 exts_exclude = [
   "isaacsim.*",
   "omni.isaac.core_archive",
   "omni.isaac.ml_archive",
   "omni.kit.loop-isaac",
-  "omni.pip.cloud",
-  "omni.pip.compute",
   "omni.usd.schema.mujoco",
   "omni.usd.schema.newton",
   "omni.cuopt.*",
@@ -676,11 +678,13 @@ exts_include = [
   "omni.isaac.core_archive",
   "omni.isaac.ml_archive",
   "omni.kit.loop-isaac",
-  "omni.pip.cloud",
-  "omni.pip.compute",
   "omni.usd.schema.mujoco",
   "omni.usd.schema.newton",
   "omni.cuopt.*",
+]
+exts_exclude = [
+  "omni.pip.cloud",
+  "omni.pip.compute",
 ]
 
 [repo_deploy_exts.pipeline_repo.branch.prod]
