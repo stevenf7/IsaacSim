@@ -76,7 +76,7 @@ EXCLUDED_DIRS = {
     "extsUser",
 }
 
-EXCLUDED_FILES = {"__init__.py", "setup.py", "conftest.py"}
+EXCLUDED_FILES = {"setup.py", "conftest.py"}
 
 COPYRIGHT_RE = re.compile(
     r"SPDX-FileCopyrightText:\s*Copyright \(c\)\s*(\d{4}(?:-\d{4})?) NVIDIA CORPORATION & AFFILIATES\. All rights reserved\."
@@ -245,6 +245,22 @@ def check_file_header(file_path: Path) -> tuple[bool, list[str]]:
         issues.append("Missing SPDX-License-Identifier line")
     if copyright_line_count > 1:
         issues.append("Multiple SPDX-FileCopyrightText lines detected")
+    if license_line_count > 1:
+        issues.append("Multiple SPDX-License-Identifier lines detected")
+
+    if copyright_line_count > 0 and license_line_count > 0:
+        has_apache_body = any(
+            "Licensed under the Apache License" in _normalize_content(line, comment_symbol) for line in lines[:30]
+        )
+        has_proprietary_body = any(
+            "its affiliates is strictly prohibited" in _normalize_content(line, comment_symbol) for line in lines[:30]
+        )
+        if is_internal:
+            if not has_apache_body and not has_proprietary_body:
+                issues.append("Missing license body text after SPDX identifiers")
+        else:
+            if not has_apache_body:
+                issues.append("Missing Apache 2.0 license body text after SPDX identifiers")
 
     for idx, line in enumerate(lines[:60], start=1):
         content = _normalize_content(line, comment_symbol)
@@ -300,31 +316,43 @@ def _is_header_line(content: str, stripped: str, comment_symbol: str) -> bool:
 
 
 def _strip_existing_header(lines: list[str], comment_symbol: str) -> list[str]:
-    start = -1
-    end = -1
-    for i, line in enumerate(lines[:60]):
-        content = _normalize_content(line, comment_symbol)
-        if "SPDX-FileCopyrightText:" in content:
-            start = i
-            end = i + 1
+    result = list(lines)
+
+    for _ in range(3):
+        start = -1
+        for i, line in enumerate(result[:60]):
+            content = _normalize_content(line, comment_symbol)
+            if "SPDX-FileCopyrightText:" in content or "SPDX-License-Identifier:" in content:
+                start = i
+                break
+
+        if start == -1:
             break
 
-    if start == -1:
-        return _strip_legacy_header(lines, comment_symbol)
+        while start > 0:
+            prev = result[start - 1].strip()
+            if prev.startswith(comment_symbol) and not prev.startswith("#!"):
+                start -= 1
+            else:
+                break
 
-    for j in range(start + 1, min(len(lines), start + 30)):
-        content = _normalize_content(lines[j], comment_symbol)
-        stripped = lines[j].strip()
-        if _is_header_line(content, stripped, comment_symbol):
-            end = j + 1
-        else:
+        end = start + 1
+        for j in range(start + 1, min(len(result), start + 30)):
+            stripped = result[j].strip()
+            if stripped == "":
+                end = j + 1
+                break
+            if stripped.startswith(comment_symbol):
+                end = j + 1
+                continue
             break
 
-    while end < len(lines) and lines[end].strip() == "":
-        end += 1
+        while end < len(result) and result[end].strip() == "":
+            end += 1
 
-    remaining = lines[:start] + lines[end:]
-    return _strip_legacy_header(remaining, comment_symbol)
+        result = result[:start] + result[end:]
+
+    return _strip_legacy_header(result, comment_symbol)
 
 
 _LEGACY_HEADER_MARKERS = {
@@ -382,7 +410,18 @@ def fix_file_header(file_path: Path) -> bool:
         return False
 
     if not lines:
-        return False
+        if file_path.suffix.lower() == ".ipynb":
+            return False
+        year = _current_year()
+        use_proprietary = _is_internal_extension(file_path)
+        license_header = _generate_header(file_path, year, proprietary=use_proprietary)
+        try:
+            with open(file_path, "w", encoding="utf-8") as f:
+                for line in license_header:
+                    f.write(line + "\n")
+            return True
+        except Exception:
+            return False
 
     if _multiple_header_count(lines, comment_symbol) > 1:
         return False
@@ -438,8 +477,11 @@ def fix_file_header(file_path: Path) -> bool:
 
     cleaned_lines = _strip_existing_header(lines, comment_symbol)
     insert_at = 1 if cleaned_lines and cleaned_lines[0].startswith("#!") else 0
+    body_start = insert_at
+    while body_start < len(cleaned_lines) and cleaned_lines[body_start].strip() == "":
+        body_start += 1
     new_lines = cleaned_lines[:insert_at] + license_header + [""]
-    new_lines.extend(cleaned_lines[insert_at:])
+    new_lines.extend(cleaned_lines[body_start:])
     try:
         with open(file_path, "w", encoding="utf-8") as f:
             for line in new_lines:
