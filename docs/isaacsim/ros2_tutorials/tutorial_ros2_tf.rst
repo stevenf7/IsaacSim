@@ -40,7 +40,7 @@ Getting Started
 Transform Tree Publisher
 ===========================
 
-Assuming you've already gone through the ROS 2 camera tutorial and have two cameras on stage already, let's add those cameras to a transform tree, so that you can track the camera's position in the global frame.
+Assuming you've already gone through the ROS 2 camera tutorial and have two cameras on stage already, let's add those cameras to a transform tree, so that you can track the cameras' positions in the global frame.
 
 Transform Publisher
 ^^^^^^^^^^^^^^^^^^^^
@@ -67,7 +67,7 @@ To get the transforms of each linkage on an articulated robot, you can add the r
 
     If you find that the generated transform tree for an articulated robot chose the wrong link as the root link, use the following step to manually select the articulation root link.
 
-    - Select the robot's root prim on the Stage Tree, in its **Raw USD Properties** tab, find the **Articulation Root** Section. Delete it by click on the **X** on the right upper corner inside the section.
+    - Select the robot's root prim on the Stage Tree, in its **Raw USD Properties** tab, find the **Articulation Root** Section. Delete it by clicking on the **X** on the right upper corner inside the section.
     - Select the desired link on the Stage Tree, inside its **Raw USD Properties** Tab, click on the **+ADD** button, and add **Physics > Articulation Root**.
     - After you change the articulation root, save the file and reload.
 
@@ -89,7 +89,7 @@ To setup odometry for a robot, publish the odometry ROS message and its correspo
 
     - (Optional Exercise) Add */World/turtlebot3_burger* (the default) to the **targetPrims** field in any **ROS2 Publish Transform Tree** node, and observe that the transforms of all the links of the robot, fixed or articulated, will be published on the ``/tf`` topic.  
 
-#. To setup up the odometry publisher, compose an Action Graph that matches the following image.
+#. To set up the odometry publisher, compose an Action Graph that matches the following image.
 
     .. figure:: /images/isim_5.0_ros_tut_gui_ros2_odometry_graph.png
         :align: center
@@ -99,7 +99,7 @@ To setup odometry for a robot, publish the odometry ROS message and its correspo
 
     - In the Property tab for the **Isaac Compute Odometry Node**: 
 
-        - Add the Turtlebot prim (that is. ``/World/turtlebot3_burger``) to its **Chassis Prim** input field. This node calculates the position of the robot relative to its start location. Its output will be fed into both a publisher for the ``/odom`` ROS 2 topic, and a TF publisher that publishes the singular transform from ``/odom`` frame to ``/base_link`` frame.
+        - Add the Turtlebot prim (that is, ``/World/turtlebot3_burger``) to its **Chassis Prim** input field. This node calculates the position of the robot relative to its start location. Its output will be fed into both a publisher for the ``/odom`` ROS 2 topic, and a TF publisher that publishes the singular transform from ``/odom`` frame to ``/base_link`` frame.
     
     - In the Property tab for the **ROS2 Publish Raw Transform Tree** node:
 
@@ -137,9 +137,9 @@ To setup odometry for a robot, publish the odometry ROS message and its correspo
   
         - Set the *childFrameId* input field to ``odom``. 
         - Set the *parentFrameId* input field to ``world``. This will now enable publishing `world -> odom` frames in the transform tree.
-        - Leave *Translation* and *Rotation* fields detached as this will use the defaults of (0.0, 0.0, 0.0) translation vector (XYZ) and (1.0, 0.0, 0.0, 0.0) rotation quaternion (IJKR). This rotation and translation corresponds to the robot's Start pose. If the robot starts in a different position, these fields would have to be updated accordingly to match that pose.
+        - Leave *Translation* and *Rotation* fields detached as this will use the defaults of (0.0, 0.0, 0.0) translation vector (XYZ) and (1.0, 0.0, 0.0, 0.0) rotation quaternion (IJKR). This rotation and translation correspond to the robot's Start pose. If the robot starts in a different position, these fields would have to be updated accordingly to match that pose.
 
-Verify that Your final graph is similar to the following:
+Verify that your final graph is similar to the following:
 
     .. figure:: /images/isim_5.0_ros_tut_gui_ros2_odometry_graph_final.png
         :align: center
@@ -168,7 +168,7 @@ Open the generated PDF file to observe the transform tree that you are publishin
 |
 |
 
-For an example of all the publishers and subscribers setup in the Turtlebot ROS2 tutorials, open the scene which can be found by going to the Isaac Sim Content browser and click **Isaac Sim>Samples>ROS2>Scenario>turtlebot_tutorial.usd**.
+For an example of all the publishers and subscribers setup in the Turtlebot ROS2 tutorials, open the scene which can be found by going to the Isaac Sim Content browser and clicking **Isaac Sim>Samples>ROS2>Scenario>turtlebot_tutorial.usd**.
 
 
 Graph Shortcuts
@@ -213,14 +213,14 @@ The Isaac Sim's ransform viewer allows you to draw on the simulated scene itself
     #. Frame on which to compute the transformations.
     #. Whether the frames (markers) are displayed. Marker color. Marker size (relative).
     #. Whether the frames' names are displayed. Text color. Text size (relative).
-    #. Whether the frames's axes are displayed (RGB -> XYZ axes). Axis length (in meters). Axis thickness (relative).
+    #. Whether the frames' axes are displayed (RGB -> XYZ axes). Axis length (in meters). Axis thickness (relative).
     #. Whether to show the connection between the child frames and the parent frames. Line color. Line thickness (relative).
     #. Frame transformation update frequency (Hz). Higher frequency might reduce simulation performance.
     #. Reset transformation tree (clear transformation buffers). Useful to clean ``TF_OLD_DATA`` warning, for example.
 
     .. note::
 
-        Closing the transform viewer window stops the display and clear the viewport drawings.
+        Closing the transform viewer window stops the display and clears the viewport drawings.
 
 #. To start the visualization, choose the appropriate root frame on which to compute the transformations (for example, `World` or `world`, according to the published transform tree specification).
 

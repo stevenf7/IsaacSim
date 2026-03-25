@@ -62,7 +62,7 @@ Setting QoS Profile for ROS 2 |omnigraph_short| Nodes
         }
 
 
-    *depth* must be set as positive integer while *deadline*, *lifespan*, and *leaseDuration* must be set as floats in order for the JSON string to be valid.
+    *depth* must be set as a positive integer while *deadline*, *lifespan*, and *leaseDuration* must be set as floats in order for the JSON string to be valid.
 
     While you can directly set the *qosProfile* input of any ROS 2 OmniGraph node with a valid JSON string, you can also use the *ROS2 QoS Profile* node to automatically generate this string and connect its output to multiple ROS 2 publisher or subscriber nodes.
 

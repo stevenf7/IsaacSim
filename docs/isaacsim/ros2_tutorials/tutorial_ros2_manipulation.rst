@@ -36,7 +36,7 @@ Getting Started
 
 - Completed :ref:`isaac_sim_app_tutorial_intro_workflows` to understand the Extension Workflow.
 - Appropriate ``ros2_ws`` is sourced in the terminal that will be running Python scripts.
-- ``FASTRTPS_DEFAULT_PROFILES_FILE`` environmental variable is set prior to launching Isaac Sim and the ROS2 bridge is enabled.
+- ``FASTRTPS_DEFAULT_PROFILES_FILE`` environment variable is set prior to launching Isaac Sim and the ROS2 bridge is enabled.
 
 Add Joint States in UI
 =====================================
@@ -101,7 +101,7 @@ The same action done using the UI can also be done using a Python script. More d
 
 3. Press **Run** in the **Script Editor** and the Action Graph with all required nodes is added. You can find the corresponding ActionGraph in the Stage Tree.
 
-.. note:: This script must only be run once. It is assuming there is no ActionGraph that already exist on stage. You can start a new stage to run it again.
+.. note:: This script must only be run once. It is assuming there is no ActionGraph that already exists on stage. You can start a new stage to run it again.
 
 4. Test out the ROS 2 bridge using the provided ROS 2 Python node to publish joint commands to the robot. In a ROS 2 sourced terminal, run the following command:
 

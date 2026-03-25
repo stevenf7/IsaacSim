@@ -30,9 +30,9 @@ Getting Started
 
 - Enable the ``isaacsim.ros2.bridge`` Extension in the `Extension Manager` window by navigating to **Window** > **Extensions**.
 
-- This tutorial requires the ``h1_fullbody_controller`` ROS 2 package, which is provided in `IsaacSim-ros_workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ repo. Complete :ref:`isaac_sim_app_install_ros` to make sure the ROS 2 workspace environment is setup correctly.
+- This tutorial requires the ``h1_fullbody_controller`` ROS 2 package, which is provided in `IsaacSim-ros_workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ repo. Complete :ref:`isaac_sim_app_install_ros` to make sure the ROS 2 workspace environment is set up correctly.
 
-- This tutorial requires the completion of :ref:`isaac_sim_app_tutorial_rig_legged_robot` to setup the robot joint configurations based on the locomotion policy parameter, see the section below.
+- This tutorial requires the completion of :ref:`isaac_sim_app_tutorial_rig_legged_robot` to set up the robot joint configurations based on the locomotion policy parameter, see the section below.
 
 .. hint::
 
@@ -42,7 +42,7 @@ Getting Started
 About the H1 Flat Terrain Locomotion Policy
 ============================================
 
-The policy is trained on based on the **Isaac-Velocity-Flat-H1-v0** environment from Isaac Lab. This policy tracks a velocity command on a flat terrain for the H1 humanoid robot. The policy is capable of walking forward and turning left/right. The policy does not support moving backwards nor sideways.
+The policy is trained based on the **Isaac-Velocity-Flat-H1-v0** environment from Isaac Lab. This policy tracks a velocity command on a flat terrain for the H1 humanoid robot. The policy is capable of walking forward and turning left/right. The policy does not support moving backwards nor sideways.
 
 Set Up Robot Joint Configurations
 =================================
@@ -67,7 +67,7 @@ The flat terrain policy requires the linear velocity, angular velocity, and grav
 Set up ROS 2 Node for the H1 Humanoid Robot
 ============================================
 
-The ROS 2 node publishes the observations and receives the actions from Isaac Sim. As specified in the environment definition file, the observations requires the following information:
+The ROS 2 node publishes the observations and receives the actions from Isaac Sim. As specified in the environment definition file, the observations require the following information:
 
 - Body frame linear velocity
 - Body frame angular velocity
@@ -84,7 +84,7 @@ The previous action is the action applied last iteration and can be tracked by t
 
 The action is a joint state message, which is a dictionary of joint names and their desired positions.
 
-In this section, we will setup OmniGraph nodes that publishes the observations and receives the actions from Isaac Sim on physics step.
+In this section, we will set up OmniGraph nodes that publish the observations and receive the actions from Isaac Sim at each physics step.
 
 
 Create an On Demand OmniGraph
@@ -168,7 +168,7 @@ Setup Simulation Scenario
 
 1. Create a new file, in the Content Browser, go to ``Isaac Sim/Environments/Simple_Warehouse`` and drag the ``warehouse.usd`` asset into the stage.
 2. Drag and drop the ``h1_ROS.usd`` asset that you made earlier into the stage. Set the Z transform to ``1.0`` so it is above the ground.
-3. Create a ``Physics Scene`` by right clicking on the stage and selecting **Create** > **Physics** > **Physcis Scene**.
+3. Create a ``Physics Scene`` by right clicking on the stage and selecting **Create** > **Physics** > **Physics Scene**.
 4. Select the ``Physics Scene`` and set ``Time Steps Per Second`` to ``200``.
 5. Because you only have one robot, use CPU physics for better performance.
 
@@ -233,7 +233,7 @@ You can now control the H1 humanoid robot using your keyboard. Try the controls 
 
    - Moving backwards is not supported in this version of the policy. Pressing ``m``, ``,``, ``.`` key will cause the robot to fall over.
    - Setting linear and angular velocity above 0.75 exceeds the velocity limits of the policy and will cause the robot to fall over.
-   - The robot might drift overtime when there's no command velocities. This is expected behavior.
+   - The robot might drift over time when there's no command velocities. This is expected behavior.
 
 .. image:: /images/isim_5.0_full_tut_gui_rl_ros_controller_5.webp
    :width: 80%
@@ -245,7 +245,7 @@ Summary
 
 This tutorial covered:
 
-#. Creating and setting up an ROS 2 node to publish observations and receive actions from Isaac Sim for the H1 flat terrain locomotion policy.
+#. Creating and setting up a ROS 2 node to publish observations and receive actions from Isaac Sim for the H1 flat terrain locomotion policy.
 #. Setting up Isaac Sim environment to run a reinforcement learning policy.
 
 

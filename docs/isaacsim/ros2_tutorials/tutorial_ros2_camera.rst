@@ -32,7 +32,7 @@ Getting Started
 **Prerequisite**
 
 - Completed :ref:`isaac_sim_app_install_ros`: installed ROS 2, enabled the ROS 2 extension, built the provided *Isaac Sim* ROS 2 workspace, and set up the necessary environment variables.
-- Basic understanding of `ROS topics <http://wiki.ros.org/ROS/Tutorials/UnderstandingTopics>`_ and how `publisher and subscriber <http://wiki.ros.org/ROS/Tutorials/ExaminingPublisherSubscriber>`_ works.
+- Basic understanding of `ROS topics <http://wiki.ros.org/ROS/Tutorials/UnderstandingTopics>`_ and how `publisher and subscriber <http://wiki.ros.org/ROS/Tutorials/ExaminingPublisherSubscriber>`_ work.
 - Completed tutorial on :ref:`isaac_sim_app_tutorial_gui_omnigraph` and :ref:`isaac_sim_app_tutorial_gui_camera_sensors`.
 - Completed :ref:`isaac_sim_app_tutorial_ros2_turtlebot` so that there is a Turtlebot ready on stage.
 
@@ -69,10 +69,10 @@ Building the Graph for an RGB Publisher
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Open the Graph Editors, **Window > Graph Editors > Action Graph**.
-#. Click on the **New Action Graph** Icon in middle of the **Action Graph** window, or **Edit Action Graph** if you want to append the camera publisher to an existing action graph.
+#. Click on the **New Action Graph** Icon in the middle of the **Action Graph** window, or **Edit Action Graph** if you want to append the camera publisher to an existing action graph.
 #. Build an Action Graph with: 
 
-    * the nodes and connection of the following *image*
+    * the nodes and connections of the following *image*
     * the parameters of the *table* below
 
     .. figure:: /images/isaac_tutorial_ros2_camera_graph.png
@@ -100,10 +100,10 @@ Ticking this graph will automatically create a new render product assigned to *C
 
 Graph Explained
 ^^^^^^^^^^^^^^^^^^^
-- **On Playback Tick Node**: Producing a tick when simulation is "Playing". Nodes that receives ticks from this node will execute their compute functions every simulation step.
+- **On Playback Tick Node**: Producing a tick when simulation is "Playing". Nodes that receive ticks from this node will execute their compute functions every simulation step.
 - **ROS 2 Context Node**: ROS 2 uses DDS for its middleware communication. DDS uses `Domain ID <https://docs.ros.org/en/humble/Concepts/Intermediate/About-Domain-ID.html>`_ to allow for different logical networks operate independently even though they share a physical network. ROS 2 nodes on the same domain can freely discover and send messages to each other, while ROS 2 nodes on different domains cannot. ROS 2 context node creates a context with a given Domain ID. It is set to 0 by default. If `Use Domain ID Env Var` is checked, it will import the ``ROS_DOMAIN_ID`` from the environment in which you launched the current instance of |isaac-sim_short|.
 - **Isaac Create Render Product**: Creating a render product prim, which acquires the rendered data from the given camera prim and outputs the path to the render product prim. Rendering can be enabled and disabled on command by checking or unchecking the ``enabled`` field.
-- **Isaac Run One Simulation Frame**: This node will make sure the pipeline is only ran once on start.
+- **Isaac Run One Simulation Frame**: This node will make sure the pipeline is only run once on start.
 - **ROS 2 Camera Helper**: Indicating the type of data to publish, and the rostopic to publish it on.
 
 
@@ -119,7 +119,7 @@ This graph is automatically created by the Camera Helper Node. The pipeline retr
 Depth and Other Perception Ground Truth Data
 ===============================================
 
-In addition to RGB images, the following synthetic sensor and perceptual information are also available for any camera: 
+In addition to RGB images, the following synthetic sensor and perceptual information is also available for any camera: 
 
 - Depth
 - Point Cloud
@@ -252,7 +252,7 @@ Further Learning
 ^^^^^^^^^^^^^^^^^^^^^^
 
 - Additional information about synthetic data generation can be found in the Replicator Tutorial Series.
-- Examples of running similar environment using Standalone Python workflow is outlined :ref:`here<isaac_sim_app_tutorial_ros2_python_stereo>`.
+- Examples of running a similar environment using Standalone Python workflow are outlined :ref:`here<isaac_sim_app_tutorial_ros2_python_stereo>`.
 
 
 

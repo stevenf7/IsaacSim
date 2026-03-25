@@ -18,7 +18,7 @@ Learning Objectives
 
 In this tutorial, you:
 
-- Have a brief discussion on the Isaac Sim ROS 2 service messages types for manipulating prims attributes.
+- Have a brief discussion on the Isaac Sim ROS 2 service message types for manipulating prim attributes.
 - Create ROS 2 services to list prims and their attributes, as well as to read and write a specific prim attribute.
 
 Getting Started
@@ -39,7 +39,7 @@ If sourcing ROS 2 is a part of your ``.bashrc`` then |isaac-sim_short| can be ru
 Service Message Types
 =======================
 
-The ROS2 Service Prim node provides four service with the following message types:
+The ROS2 Service Prim node provides four services with the following message types:
 
     * Get all prim path (and types) under a specific path
 
@@ -97,7 +97,7 @@ The ROS2 Service Prim node provides four service with the following message type
 
 .. note::
 
-    Prim attributes are read and write as JSON (applied directly to the data, without keys). Arrays, vectors, matrixes and other numeric containers (for example: ``pxr.Gf.Vec3f``, ``pxr.Gf.Matrix4d``, and ``pxr.Gf.Quatd``) are interpreted as a list of numbers (row first).
+    Prim attributes are read and write as JSON (applied directly to the data, without keys). Arrays, vectors, matrices and other numeric containers (for example: ``pxr.Gf.Vec3f``, ``pxr.Gf.Matrix4d``, and ``pxr.Gf.Quatd``) are interpreted as a list of numbers (row first).
 
 Manipulating Prims Attributes
 ==============================

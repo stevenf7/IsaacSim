@@ -19,7 +19,7 @@ Learning Objectives
 
 In this tutorial, we will:
 
-- Have a brief discussion on the ROS 2 messages types
+- Have a brief discussion on the ROS 2 message types
 - Publish a message of any type to a ROS 2 topic
 - Subscribe to a ROS 2 topic of any message type 
 
@@ -34,7 +34,7 @@ If sourcing ROS 2 is a part of your ``.bashrc`` then |isaac-sim_short| can be ru
 
 - If using multiple systems, set the ``FASTRTPS_DEFAULT_PROFILES_FILE`` environment variable as per instructions in :ref:`isaac_sim_app_install_ros` before launching |isaac-sim_short|, as well as any terminal where ROS messages will be sent or received, and ROS 2 Extension is enabled.
 
-ROS 2 Messages Types
+ROS 2 Message Types
 ========================
 
 One of the main styles of communication interfaces of ROS 2 is the topic. Its use is oriented to send/receive messages of continuous data streams like robot state (``nav_msgs/msg/Odometry``), sensors (e.g: ``sensor_msgs/msg/Imu``), among others. 
@@ -88,7 +88,7 @@ Generic Publisher
 Example: Publish Joint States
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following example shows how to publish to the topic ``/joint_states``, using a the ROS 2 message type ``sensor_msgs/msgs/JointState``, the joint states (positions, velocities and efforts) of a robot using the generic ROS2 Publisher node.
+The following example shows how to publish to the topic ``/joint_states``, using the ROS 2 message type ``sensor_msgs/msg/JointState``, the joint states (positions, velocities and efforts) of a robot using the generic ROS2 Publisher node.
 
 #. In a new stage, load the Franka robot using the Robotics Examples browser by going to **Window > Examples > Robotics Examples**. Then click on the **Robotics Examples** tab and expand the sections on the left hand side and open the example: **Import Robots > Franka URDF**. Then click on **LOAD** and *CONFIGURE*, in the **Import Franka** window, to load the environment and configure the robot.
 #. Go to **Window > Graph Editors > Action Graph** to create an Action Graph and add, connect and configure the following |omnigraph_short| nodes into the Action Graph:
@@ -96,7 +96,7 @@ The following example shows how to publish to the topic ``/joint_states``, using
  * **On Playback Tick** node to execute other graph nodes every simulation frame.
  * **Isaac Read Simulation Time** node to retrieve current simulation time. Note: By default the simulation time increases monotonically, meaning regardless of whether simulation is stopped and re-played, the time will continue incrementing. This is mainly to prevent issues that might arise with the time jumping back when simulation resets. You can set ``resetOnStop`` to True if you would like the clock to start from 0 every time simulation is reset.
  * **Isaac Time Splitter** node to split the current simulation time to fill the ROS 2 ``std_msgs/Header header`` message timestamp (expressed as seconds and nanoseconds).
- * **Articulation State** node to get the robot articulation states (joint positions, velocities and efforts) to fill the ``sensor_msgs/msgs/JointState`` message.
+ * **Articulation State** node to get the robot articulation states (joint positions, velocities and efforts) to fill the ``sensor_msgs/msg/JointState`` message.
  * **ROS2 Context** node to create a context using either the given Domain ID or the ``ROS_DOMAIN_ID`` environment variable.
  * **ROS2 Publisher** node to publish a message of any type to a ROS 2 topic.
 
@@ -130,7 +130,7 @@ The following example shows how to publish to the topic ``/joint_states``, using
 Example: Publish Object Pose
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following example shows how to publish to the topic ``/object_pose``, using a the ROS 2 message type ``geometry_msgs/msgs/Pose``, the pose of an object using the generic ROS2 Publisher node. 
+The following example shows how to publish to the topic ``/object_pose``, using the ROS 2 message type ``geometry_msgs/msg/Pose``, the pose of an object using the generic ROS2 Publisher node. 
 
 #. In a new stage, create an object (Cube) using the **Create > Shape > Cube** menu. Then select the Cube (``/World/Cube``) and right click **Add > Physics > Rigid Body with Colliders Preset** to enable free-fall.
 #. Go to **Window > Graph Editors > Action Graph** to create an Action Graph and add, connect and configure the following |omnigraph_short| nodes into the Action Graph:
@@ -213,7 +213,7 @@ Generic Subscriber
 Example: Subscribe to Object Pose
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following example shows how to create a subscription to the topic ``/object_pose``, with the ROS 2 message type ``geometry_msgs/msgs/Pose``, to teleport an object to the received pose using the generic ROS2 Subscriber node. 
+The following example shows how to create a subscription to the topic ``/object_pose``, with the ROS 2 message type ``geometry_msgs/msg/Pose``, to teleport an object to the received pose using the generic ROS2 Subscriber node. 
 
 #. In a new stage, create an object (Cube) using the **Create > Shape > Cube** menu.
 #. Go to **Window > Graph Editors > Action Graph** to create an Action Graph and add, connect, and configure the following |omnigraph_short| nodes into the Action Graph:

@@ -34,7 +34,7 @@ If sourcing ROS 2 is a part of your ``.bashrc`` then |isaac-sim_short| can be ru
 
 - If using multiple systems, set the ``FASTRTPS_DEFAULT_PROFILES_FILE`` environment variable, as per instructions in :ref:`isaac_sim_app_install_ros` before launching |isaac-sim_short|, and set it in any terminal where ROS messages will be sent or received and the ROS 2 Extension is enabled.
 
-ROS 2 Messages Types
+ROS 2 Message Types
 ========================
 
 See :ref:`isaac_sim_app_tutorial_ros2_generic_publisher_subscriber` for background information about ROS2 topics and message types. Generic services (server and client) build on a similar communication style.
@@ -61,7 +61,7 @@ Generic Server
  * **On Playback Tick** node to execute other graph nodes every simulation frame.
  * **ROS2 Context** node to create a context using either the given Domain ID or the ``ROS_DOMAIN_ID`` environment variable.
  * **ROS2 Service Server Request** node to receive a ROS2 service request message of any type.
- * **ROS2 Service Server Response** node to respond a ROS2 service request message of any type.
+ * **ROS2 Service Server Response** node to respond to a ROS2 service request message of any type.
 
 3. Make the following connections:
  
@@ -152,7 +152,7 @@ To add a generic client
 3. In the node **Property** panel define the message type following this pattern: ``messagePackage / messageSubfolder / messageName``. 
     **ROS2 Service Client** node inputs and outputs will reconfigure according to the service configuration selected by you. The inputs include the service request fields. The outputs include the response field.
     For instance, for a service, such as ``std_srvs/srv/SetBool``, the messagePackage is ``std_srvs``, ``messageSubfolder`` is ``srv``, and ``messageName`` must be ``SetBool``.
-    When a valid  and existing message type is defined, the node will reconfigure its input/outputs attributes.
+    When a valid and existing message type is defined, the node will reconfigure its input/outputs attributes.
     Below is an example of how the **ROS2 Service Client** node `inputs/outputs` reconfigure to include the `Request/Response` fields:
 
     .. figure:: /images/tutorial_ros2_client_1.PNG

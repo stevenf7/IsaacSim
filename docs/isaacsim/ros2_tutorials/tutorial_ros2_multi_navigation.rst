@@ -107,11 +107,11 @@ Follow the steps depending on what environment you would like to use.
                 :alt: Top View of Office with Occupancy Map
 
 
-1. After the setup for either environments is complete, click on **CALCULATE** followed by **VISUALIZE IMAGE**. A Visualization popup will appear.
+1. After the setup for either environment is complete, click on **CALCULATE** followed by **VISUALIZE IMAGE**. A Visualization popup will appear.
 
 2. For `Rotate Image`, select 180 degrees and for Coordinate Type select **ROS Occupancy Map Parameters File (YAML)**. Click **RE-GENERATE IMAGE**. Occupancy map parameters formatted to YAML will appear in the field below. Change the image name to your preference. Copy the full text.
 
-3. Click **Save YAML** and save the YAML file to the `maps` directory, which is located in the sample ``carter_navigation`` ROS2 package(``carter_navigation/maps/carter_hospital_navigation.yaml``).
+3. Click **Save YAML** and save the YAML file to the `maps` directory, which is located in the sample ``carter_navigation`` ROS2 package (``carter_navigation/maps/carter_hospital_navigation.yaml``).
 
 4. Back in the visualization tab in |isaac-sim|, click **Save Image**. Set the same image name as in the map parameters and choose to save in the same directory as the map parameters file.
 
@@ -154,7 +154,7 @@ Running Multiple Robot ROS2 Navigation
 #. Load scenario:
 
 	- For the hospital environment, go to **Window > Examples > Robotics Examples**, and then click on the **Robotics Examples** tab and expand the sections on the left hand side and open the example: **ROS2 > Navigation > Multiple Robots > Hospital Scene**.
-	- For the Office scenario, go to go to **Window > Examples > Robotics Examples**, and then click on the **Robotics Examples** tab and expand the sections on the left hand side and open the example: **ROS2 > Navigation > Multiple Robots > Office Scene**.
+	- For the Office scenario, go to **Window > Examples > Robotics Examples**, and then click on the **Robotics Examples** tab and expand the sections on the left hand side and open the example: **ROS2 > Navigation > Multiple Robots > Office Scene**.
 
 
 #. Click on **Play** to begin simulation.
@@ -183,7 +183,7 @@ Running Multiple Robot ROS2 Navigation
 
 #. In each RViz2 window, click on the **Map** located in the **Displays** panel to observe the **Topic** name and take note of the robot namespace corresponding to the RViz2 window.
 
-#. Since the positions of each robot is defined in parameter files in ``carter_navigation/params/hospital/`` or ``carter_navigation/params/office/``, the robots should already be properly localized.
+#. Since the positions of each robot are defined in parameter files in ``carter_navigation/params/hospital/`` or ``carter_navigation/params/office/``, the robots should already be properly localized.
 
 #. In the ``/carter1`` namespaced RViz2 window, click on the **2D Nav Goal** button and then click and drag at the desired location point in the map. The ROS2 Navigation stack will now generate a trajectory and the ``/carter1`` robot will start moving towards its destination!
 
@@ -213,7 +213,7 @@ Running Multiple Robot ROS2 Navigation
         </div>
     </div>
 
-.. note:: The ROS2 Image publisher pipelines are disabled by default to improve performance. To start publishing images, open the `_hawk` action graphs found under each of the `Nova_Carter_ROS` prims and enable the `_camera_render_product` nodes. The ROS Camera publisher nodes, which are downstream of the render product nodes, must be enabled by default and will only start publishing when the render product node is enabled. All sensors and images in Nova Carter are being published with `Sensor Data QoS <https://docs.ros.org/en/rolling/Concepts/Intermediate/About-Quality-of-Service-Settings.html#qos-profiles>`_. If you wish to visualize the images in RViz  expand the image tab, navigate to **Topic > Reliability Policy** and change the policy to `Best Effort`.
+.. note:: The ROS2 Image publisher pipelines are disabled by default to improve performance. To start publishing images, open the `_hawk` action graphs found under each of the `Nova_Carter_ROS` prims and enable the `_camera_render_product` nodes. The ROS Camera publisher nodes, which are downstream of the render product nodes, must be enabled by default and will only start publishing when the render product node is enabled. All sensors and images in Nova Carter are being published with `Sensor Data QoS <https://docs.ros.org/en/rolling/Concepts/Intermediate/About-Quality-of-Service-Settings.html#qos-profiles>`_. If you wish to visualize the images in RViz2, expand the image tab, navigate to **Topic > Reliability Policy** and change the policy to `Best Effort`.
 
 .. _isaac_sim_app_tutorial_ros2_multi_nav_instructions_troubleshoot:
 

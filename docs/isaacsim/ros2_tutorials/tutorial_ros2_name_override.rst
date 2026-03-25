@@ -30,7 +30,7 @@ Getting Started
 - Completed :ref:`isaac_sim_app_tutorial_ros2_manipulation` to understand how to setup Joint Publishers and Subscribers.
 - Completed :ref:`isaac_sim_app_tutorial_ros2_tf` to understand how to setup ``TF`` Publishers.
 - Appropriate ``ros2_ws`` is sourced in the terminal that will be running Python scripts.
-- If running multiple machines, ensure ``FASTRTPS_DEFAULT_PROFILES_FILE`` environmental variable is set prior to launching sim, and ROS2 bridge is enabled.
+- If running multiple machines, ensure ``FASTRTPS_DEFAULT_PROFILES_FILE`` environment variable is set prior to launching sim, and ROS2 bridge is enabled.
 
 
 Setting up the NameOverride Attribute
@@ -82,5 +82,5 @@ This tutorial covered adding the ``isaac:nameOverride`` attribute to prims to en
 
 Next Steps
 ^^^^^^^^^^^^^^^^^^^^^^
-Continue on to the next tutorial in our ROS2 Tutorials series, :ref:`isaac_sim_app_tutorial_ros2_ackermann_controller` to learn how to setup a Ackermann controller for your robot.
+Continue on to the next tutorial in our ROS2 Tutorials series, :ref:`isaac_sim_app_tutorial_ros2_ackermann_controller` to learn how to set up an Ackermann controller for your robot.
 

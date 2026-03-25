@@ -34,7 +34,7 @@ Getting Started
 Using Custom Messages with Python
 ==================================
 
-For using ``rclpy`` with |isaac-sim_short| the packages must be built with ``Python 3.12``. You can create your own package and build it with the ROS 2 workspace
+For using ``rclpy`` with |isaac-sim_short| the packages must be built with ``Python 3.12``. You can create your own package and build it in the ROS 2 workspace.
 
 |isaac-sim_short| only supports Python 3.12. Packages built can be used directly with ``rclpy`` in |isaac-sim_short|, if they are built with Python 3.12. 
 
@@ -55,7 +55,7 @@ Otherwise, run ``./build_ros.sh`` and source your workspaces before running |isa
 Ensure you have completed the steps in :ref:`isaac_sim_ros_workspace_setup_other_platforms`.
     
 
-#. Run |isaac-sim_short| from the same terminal, the sourced workspace contains the minimal ROS 2 dependencies needed to enable the ROS 2 bridge and the ``custom_message`` package, which contains our sample message.
+#. Run |isaac-sim_short| from the same terminal where the sourced workspace contains the minimal ROS 2 dependencies needed to enable the ROS 2 bridge and the ``custom_message`` package, which contains our sample message.
 
 Using the ``custom_message`` package with Python in |isaac-sim_short|:
 

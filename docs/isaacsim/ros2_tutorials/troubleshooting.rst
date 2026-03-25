@@ -44,7 +44,7 @@ If your RGB camera images appear distorted or have incorrect coloring, check the
 MoveIt Integration Issues
 ==========================
 
-If your Rviz window is showing a black screen where the robot should be, you can  update your mesa driver. Add the following commands to ``moveit2_tutorials/doc/how_to_guides/isaac_panda/.docker/Dockerfile`` after line 17:
+If your RViz window is showing a black screen where the robot should be, you can update your mesa driver. Add the following commands to ``moveit2_tutorials/doc/how_to_guides/isaac_panda/.docker/Dockerfile`` after line 17:
 
 .. code-block:: bash
 
@@ -91,4 +91,4 @@ General ROS 2 Issues
 
 2. When using OmniGraph nodes with ROS 2, make sure to save your scene after setting up the nodes and before hitting play to ensure all values are correctly set.
 
-3. The ROS 2 Auto Namespace feature can not correctly apply to all nodes in complex hierarchies. Review your node namespaces in ROS 2 command line tools to ensure they're behaving as expected.
+3. The ROS 2 Auto Namespace feature does not correctly apply to all nodes in complex hierarchies. Review your node namespaces in ROS 2 command line tools to ensure they're behaving as expected.

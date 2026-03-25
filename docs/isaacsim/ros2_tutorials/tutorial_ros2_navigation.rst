@@ -40,7 +40,7 @@ Getting Started
 
 - Enable the ``isaacsim.ros2.bridge`` Extension in the **Extension Manager** window by navigating to **Window** > **Extensions**.
 
-- This tutorial requires ``carter_navigation``, ``iw_hub_navigation``, and ``isaac_ros_navigation_goal`` ROS2 packages, which are provided as part of your |isaac-sim| download. These ROS2 packages are located inside the appropriate ``ros2_ws``. They contain the required launch file, navigation parameters, and robot model. Complete :ref:`isaac_sim_app_install_ros`, make sure the ROS 2 workspace environment is setup correctly.
+- This tutorial requires ``carter_navigation``, ``iw_hub_navigation``, and ``isaac_ros_navigation_goal`` ROS2 packages, which are provided as part of your |isaac-sim| download. These ROS2 packages are located inside the appropriate ``ros2_ws``. They contain the required launch file, navigation parameters, and robot model. Complete :ref:`isaac_sim_app_install_ros`, make sure the ROS 2 workspace environment is set up correctly.
 
 .. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly.
 
@@ -78,7 +78,7 @@ The following topics and message types being published to Nav2 in this scenario 
 ..     =============================== ================
 ..     Omnigraph Node                 Function
 ..     =============================== ================
-..     ros2_subscribe_twist            Subscribes to the `/cmd_vel` topic and triggers the differential and articulation controllers to the move the robot
+..     ros2_subscribe_twist            Subscribes to the `/cmd_vel` topic and triggers the differential and articulation controllers to move the robot
 ..     ros2_publish_odometry           Publishes odometry received from the ``isaac_compute_odometry_node``
 ..     ros2_publish_raw_transform_tree Publishes the transform between the `odom` frame and `base_link` frame
 ..     ros2_publish_transform_tree     Publishes the static transform between the `base_link` frame and `chassis_link` frame. Keep in mind that since the target prim is set as ``Carter_ROS``, the entire transform tree of the Carter robot (with chassis_link as root) will be published as children of the `base_link` frame
@@ -175,7 +175,7 @@ Nav2 with Nova Carter in a Small Warehouse
     RViz2 opens and begins loading the occupancy map. If a map does not appear, repeat the previous step.
 
 
-#. Because the position of the robot is defined in the parameter file ``carter_navigation_params.yaml``, verify that the robot is already be properly localized. If required, the **2D Pose Estimate** button can be used to re-set the position of the robot.
+#. Because the position of the robot is defined in the parameter file ``carter_navigation_params.yaml``, verify that the robot is already properly localized. If required, the **2D Pose Estimate** button can be used to re-set the position of the robot.
 
 
 #. Click on the **Navigation2 Goal** button and then click and drag at the desired location point in the map. Nav2 now generates a trajectory and the robot starts moving towards its destination.
@@ -276,7 +276,7 @@ In addition to the previous steps, you can visualize the robot description in th
 Nav2 with Nova Carter with robot_state_publisher in a Small Warehouse
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The previous Nova Carter warehouse scene had the robot publish transforms (TFs) directly from Isaac Sim. As your robot and scene assets becomes more complex, it will be more scalable and performant to publish static TFs of the robot using the default ROS 2 `robot_state_publisher <https://github.com/ros/robot_state_publisher>`_ package instead. This way, the robot state publisher will parse the robot URDF and publish the static TFs. Meanwhile, Isaac Sim will be responsible for publishing joint states for moving joints. The robot state publisher will then receive these joint states and convert them to corresponding transforms, adding them to the overall TF tree.
+The previous Nova Carter warehouse scene had the robot publish transforms (TFs) directly from Isaac Sim. As your robot and scene assets become more complex, it will be more scalable and performant to publish static TFs of the robot using the default ROS 2 `robot_state_publisher <https://github.com/ros/robot_state_publisher>`_ package instead. This way, the robot state publisher will parse the robot URDF and publish the static TFs. Meanwhile, Isaac Sim will be responsible for publishing joint states for moving joints. The robot state publisher will then receive these joint states and convert them to corresponding transforms, adding them to the overall TF tree.
 
 A new Nova Carter robot asset called ``Nova_Carter_Joint_States_ROS.usd`` has been created. This asset differs from the original ``Nova_Carter_ROS.usd`` in the following ways:
 
@@ -412,9 +412,9 @@ Nav2 with iw.hub in Warehouse
     RViz2 opens and begins loading the occupancy map. If a map does not appear, repeat the previous step.
 
 
-#. Because the position of the robot is defined in the parameter file ``iw_hub_navigation_params.yaml``, verify that the robot is already be properly localized. If required, the **2D Pose Estimate** button can be used to re-set the position of the robot.
+#. Because the position of the robot is defined in the parameter file ``iw_hub_navigation_params.yaml``, verify that the robot is already properly localized. If required, the **2D Pose Estimate** button can be used to re-set the position of the robot.
 
-#. Click on the **Navigation2 Goal** button and then click and drag at the desired location point in the map. Nav2 now generates a trajectory and the robot starts moving towards its destination. Verify that the robot avoids dynamic obstacles, such the pallets that are in scene but are not included in the initial map.
+#. Click on the **Navigation2 Goal** button and then click and drag at the desired location point in the map. Nav2 now generates a trajectory and the robot starts moving towards its destination. Verify that the robot avoids dynamic obstacles, such as the pallets that are in scene but are not included in the initial map.
 
 .. raw:: html
 
@@ -493,7 +493,7 @@ The ``isaac_ros_navigation_goal`` ROS2 package can be used to set goal poses for
 
 To automatically launch Isaac Sim and Nav2, while programmatically sending navigation goals from a single launch process, refer to :ref:`isaac_sim_app_tutorial_ros2_nav_goals_launch`.
 
-To learn more about programmatically sending navigation goals to multiple robots simultaneously refer to :ref:`isaac_sim_app_tutorial_ros2_multi_nav_goals`.
+To learn more about programmatically sending navigation goals to multiple robots simultaneously, refer to :ref:`isaac_sim_app_tutorial_ros2_multi_nav_goals`.
 
 Sending Goals Using ActionGraph
 ================================

@@ -50,7 +50,7 @@ Creating the ROS 2 Custom |omnigraph_short| Python Node Template
         :width: 100%
         :alt: Extension template wizard
 
-#. Edit the extension configuration file (``custom.python.ros2_node/config/extension.toml``) to add the Isaac Sim's ROS 2 Bridge extension as dependencies (under ``[dependencies]``)
+#. Edit the extension configuration file (``custom.python.ros2_node/config/extension.toml``) to add the Isaac Sim's ROS 2 Bridge extension as a dependency (under ``[dependencies]``)
 
     .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_custom_omnigraph_node_python/edit_the_extension_configuration_file_custompython.py
         :language: python
@@ -120,7 +120,7 @@ Running the Custom |omnigraph_short| Node
         :width: 200
         :alt: Results display
 
-#. Publish different number using previous ROS 2 topic command and notice the change in Isaac Sim.
+#. Publish a different number using the previous ROS 2 topic command and notice the change in Isaac Sim.
 
 Summary
 ========
