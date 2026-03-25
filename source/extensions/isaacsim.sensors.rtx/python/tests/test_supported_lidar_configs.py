@@ -62,15 +62,16 @@ class TestSupportedLidarConfigs(omni.kit.test.AsyncTestCase):
         # Create a sensor checker
         self._checker = SensorCheckerUtil()
 
-        # Initialize with LidarCore model
+        # Initialize with LidarCore model (lowercase names for checker library discovery)
         model_info = ModelInfo()
-        model_info.modelName = "LidarCore"
+        model_info.modelName = "lidar.core"
         model_info.modelVersion = "1.0"
         model_info.schemaVersion = "1.0"
-        model_info.modelVendor = "NVIDIA"
+        model_info.modelVendor = "nv"
         model_info.marketName = "GenericLidar"
 
-        self._checker.init(model_info)
+        error = self._checker.init(model_info)
+        self.assertIsNone(error, f"SensorCheckerUtil.init() failed: {error}")
 
     async def tearDown(self):
         """Cleans up the test environment after lidar configuration testing.
