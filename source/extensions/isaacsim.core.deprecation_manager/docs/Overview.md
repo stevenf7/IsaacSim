@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.core.deprecation_manager extension provides automated migration handling for deprecated configuration settings and OmniGraph nodes in Isaac Sim. This extension monitors for deprecated items during startup and stage operations, automatically updating them to their current equivalents while providing detailed logging and user notifications about the changes.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.ros2.ui extension provides pre-configured OmniGraph templates for publishing ROS 2 messages from Isaac Sim. These templates streamline the process of setting up common ROS 2 publishing workflows by providing ready-to-use graph configurations for sensors, robot data, and simulation state.

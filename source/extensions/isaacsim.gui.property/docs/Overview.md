@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.gui.property extension provides specialized property panel widgets for robotics workflows in Isaac Sim. It extends the USD Property Window with custom widgets designed specifically for editing robot-related schemas, arrays, custom data, and Isaac Sim-specific attributes on USD prims.

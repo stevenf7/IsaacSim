@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.sensors.physx.examples extension provides interactive demonstrations of PhysX-based sensor functionality in Isaac Sim. This extension includes three comprehensive examples showcasing different types of physics-based sensors: Generic Range Sensors, LIDAR sensors, and LightBeam sensors, each demonstrating real-time data collection through PhysX line tracing for collision detection and distance measurements.

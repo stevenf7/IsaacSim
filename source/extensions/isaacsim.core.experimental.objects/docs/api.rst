@@ -1,5 +1,5 @@
-API
-===
+Python API
+==========
 
 .. warning::
 
@@ -8,9 +8,6 @@ API
 
 .. contents:: API Content
     :local:
-
-Python API
-----------
 
 .. Summary
 

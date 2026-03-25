@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.replicator.synthetic_recorder extension provides a UI for recording synthetic data using Replicator writers in Isaac Sim. This extension enables users to configure and control synthetic data recording sessions through an intuitive graphical interface, supporting both default BasicWriter functionality and custom writers with configurable parameters for machine learning workflows.

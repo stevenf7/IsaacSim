@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 isaacsim.ros2.examples provides pre-built demonstration scenes showcasing ROS 2 integration capabilities within Isaac Sim. The extension includes three main example categories: MoveIt manipulation workflows, navigation scenarios with the Nova Carter robot, and waypoint-following demonstrations. Each example comes with its own UI panel for configuration and scene management.

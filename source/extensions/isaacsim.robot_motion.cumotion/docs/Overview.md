@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot_motion.cumotion extension provides access to cuMotion planners and controllers within Isaac Sim's motion generation framework. This extension bridges NVIDIA's cuMotion library with Isaac Sim, offering high-performance motion planning, trajectory generation, and reactive control for robotic manipulators.

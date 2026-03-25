@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot.surface_gripper extension provides functionality for creating and controlling surface-based grippers in Isaac Sim, including suction grippers and distance-based grippers. Surface grippers can attach to and manipulate objects through contact detection rather than traditional mechanical clamping, making them suitable for handling a wide variety of objects with different shapes and materials.

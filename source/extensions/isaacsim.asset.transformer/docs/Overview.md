@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.asset.transformer extension provides the core framework for transforming USD assets through configurable rule pipelines. It defines the rule interface, profile model, rule registry, and execution manager that orchestrate ordered sequences of transformation rules over USD stages.

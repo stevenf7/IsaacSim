@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.core.experimental.prims extension provides high-level wrapper classes for manipulating USD prims and their attributes during simulation. It offers object-oriented interfaces that simplify common operations on different types of prims, from basic transformations to complex physics properties, while supporting batch operations across multiple prims using regular expressions and efficient NumPy-style broadcasting.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 This extension provides UI integration for creating camera and depth sensors in Isaac Sim. It adds menu items to the Create menu and context menus that enable users to create various camera and depth sensor prims from multiple vendors including Orbbec, Leopard Imaging, RealSense, Sensing, SICK, and Stereolabs.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 This extension enables a set of UI based examples demonstrating the cuOpt service for routing optimization.  These examples include:

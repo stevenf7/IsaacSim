@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.ros2.core extension provides the foundational C++ backend that enables ROS 2 integration within Isaac Sim. It implements a Carbonite plugin exposing the `Ros2Bridge` interface, manages distribution-specific factory libraries, and supplies Python utilities for environment setup, camera information, namespace collection, and test scaffolding. All other ROS 2 bridge extensions (e.g., isaacsim.ros2.bridge) depend on this core extension.

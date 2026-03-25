@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.replicator.grasping.ui extension provides a comprehensive user interface for interactive robotic grasp generation and evaluation within Isaac Sim. This extension creates a dedicated window accessible through the Tools/Replicator menu that enables users to configure grasping scenarios, generate grasp poses, simulate grasp execution, and evaluate grasp success metrics.

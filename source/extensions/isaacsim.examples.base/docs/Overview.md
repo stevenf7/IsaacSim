@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.examples.base extension provides foundational base classes for creating structured Isaac Sim simulation examples. It establishes a standardized framework that combines simulation logic with user interface templates, enabling developers to build consistent and reusable simulation demonstrations.

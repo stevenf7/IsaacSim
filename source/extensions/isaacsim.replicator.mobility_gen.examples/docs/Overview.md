@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.replicator.mobility_gen.examples extension provides a collection of pre-configured robot implementations and control scenarios for mobility generation and autonomous navigation within Isaac Sim. This extension offers ready-to-use robot classes for various platforms including wheeled robots (Jetbot, Carter), humanoid robots (H1), and quadruped robots (Spot), along with comprehensive teleoperation and autonomous navigation scenarios.

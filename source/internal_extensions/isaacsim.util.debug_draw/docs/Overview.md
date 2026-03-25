@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.util.debug_draw extension provides persistent debug drawing helpers for visualizing points, lines, and splines in the Isaac Sim viewport. It includes both a Python API for programmatic drawing and OmniGraph nodes for node-based workflows.

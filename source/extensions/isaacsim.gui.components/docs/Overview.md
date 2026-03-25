@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 isaacsim.gui.components provides a comprehensive collection of UI builder functions and wrapper classes for creating standardized Isaac Sim user interfaces. The extension offers both functional builder APIs and object-oriented wrapper classes to construct common UI elements with consistent styling and behavior across Isaac Sim extensions.

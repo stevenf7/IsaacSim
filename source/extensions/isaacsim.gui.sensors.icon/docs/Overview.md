@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.gui.sensors.icon extension renders sensor icons in the viewport and stage hierarchy for visual identification of camera, lidar, IMU, and other sensor prims in Isaac Sim.

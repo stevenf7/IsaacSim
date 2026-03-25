@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.cortex.behaviors extension provides a library of sample behaviors for the Isaac Cortex decision framework. These behaviors demonstrate reactive task execution on simulated robots, including block stacking, pick-and-place, and game-playing scenarios using decider networks and state machines.

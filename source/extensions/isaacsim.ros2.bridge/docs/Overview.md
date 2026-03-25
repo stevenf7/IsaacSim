@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The ROS 2 Bridge extension enables communication between Isaac Sim and ROS 2 systems. It provides a complete integration layer that allows Isaac Sim to publish and subscribe to ROS 2 topics and services through OmniGraph nodes and Action graphs. This bridge makes it possible to connect Isaac Sim simulations with the ROS 2 ecosystem, enabling robotic applications to interact with simulated environments in real-time.

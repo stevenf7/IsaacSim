@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.examples.browser extension provides a browser interface for discovering and navigating Isaac Sim robotics examples. It creates a window-based browser that organizes examples by category using a tree-structured interface, allowing users to explore different types of robotics examples available in Isaac Sim through both menu shortcuts and programmatic access.

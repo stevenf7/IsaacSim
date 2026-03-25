@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot_setup.gain_tuner extension provides a UI-based tool for tuning PD (Proportional-Derivative) gains on robot articulations. This extension creates an interactive interface accessible through the Tools > Robotics menu, allowing users to adjust stiffness and damping parameters for robot joints and validate their settings through testing functionality.

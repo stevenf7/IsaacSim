@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot.manipulators.examples extension provides practical implementations for Franka and Universal Robots manipulators demonstrating common robotics operations in Isaac Sim. This extension serves as a collection of reference implementations showcasing pick-and-place, follow target behaviors, stacking operations, and motion planning tasks that can be used as starting points for robotics applications.

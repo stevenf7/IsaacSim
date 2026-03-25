@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.code_editor.vscode extension provides Visual Studio Code launcher and menu integration for Isaac Sim. It adds a *Window > VS Code* menu item that opens VS Code pointed at the application directory and displays connection details for the Python execution server.

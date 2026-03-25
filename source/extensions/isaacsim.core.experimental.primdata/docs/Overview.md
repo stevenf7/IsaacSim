@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.core.experimental.primdata extension provides the default C++ provider implementation for the `IPrimDataReader` and `IPrimDataReaderManager` Carbonite interfaces defined in `isaacsim.core.experimental.prims`. It delivers high-performance, read-only access to prim transform, rigid body, and articulation data from both PhysX and Newton physics backends, with support for CPU and GPU (CUDA) buffer storage.

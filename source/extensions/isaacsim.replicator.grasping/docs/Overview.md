@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 isaacsim.replicator.grasping provides a comprehensive workflow for generating synthetic grasping datasets using Isaac Sim's Replicator framework. This extension focuses specifically on robotic manipulation scenarios, offering automated generation of diverse grasping data for training and validation of robotic manipulation models.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot.policy.examples extension provides interactive demonstrations of reinforcement learning policy deployment for robotic systems in Isaac Sim. This extension showcases trained policies running on different robot types including manipulator arms, humanoid robots, and quadruped robots, with real-time keyboard control interfaces and GPU-accelerated physics simulation.

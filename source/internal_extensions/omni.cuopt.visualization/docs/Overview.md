@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 This extension enables helper utilities to process and visualize waypoint graph data and routing solutions in Isaac Sim for use with cuOpt.

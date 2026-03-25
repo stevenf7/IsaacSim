@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 isaacsim.storage.native provides utilities for accessing Isaac Sim assets from Nucleus servers or S3 buckets. This extension handles asset path resolution, server connectivity checks, file system operations, and USD reference validation across both local and remote storage systems. It enables Isaac Sim to seamlessly work with assets stored on various backends while providing robust error handling and retry mechanisms for network operations.

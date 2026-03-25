@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot.poser extension provides functionality for authoring robot poses through inverse kinematics and managing named pose libraries. This extension enables developers to programmatically solve IK problems, store solutions as reusable named poses, and apply joint configurations to robots in both simulation and non-simulation contexts.

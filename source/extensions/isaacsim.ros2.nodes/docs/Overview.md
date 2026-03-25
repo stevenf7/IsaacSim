@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The `isaacsim.ros2.nodes` extension provides OmniGraph nodes that enable ROS 2 communication within Isaac Sim. This extension bridges robotics simulation with ROS 2 systems by offering nodes for publishing, subscribing, and handling services that can be connected in Action Graphs. It relies on `isaacsim.ros2.core` for the underlying ROS 2 functionality and integrates sensor data from camera and physics sensors into the ROS 2 ecosystem.

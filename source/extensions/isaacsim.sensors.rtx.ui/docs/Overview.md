@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 This extension provides UI integration for creating RTX sensors in Isaac Sim. It adds menu items and actions that allow users to create RTX Lidar and RTX Radar sensors directly from the Create menu and viewport context menus, streamlining the sensor creation workflow within the Isaac Sim interface.

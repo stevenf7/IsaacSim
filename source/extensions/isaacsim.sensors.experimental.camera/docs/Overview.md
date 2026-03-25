@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.sensors.experimental.camera extension provides high-level APIs for creating and operating camera sensors in Isaac Sim. This extension simplifies camera sensor setup and data collection by wrapping underlying rendering and annotation systems into user-friendly sensor classes that can capture various types of visual data including RGB images, depth maps, motion vectors, and other annotated sensor outputs.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.sensors.camera extension provides APIs for creating and managing camera sensors in Isaac Sim. This extension enables programmatic control of camera properties, lens distortion models, and batch processing of camera data for robotics simulation and computer vision applications.

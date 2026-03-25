@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.gui.content_browser extension enhances the Omniverse content browser by adding an Isaac Sim collection that provides quick access to curated robot models, environments, materials, and sensor assets. This extension creates a dedicated "Isaac Sim" collection within the content browser interface, allowing users to browse and access Isaac Sim-specific assets without manually navigating to remote servers.

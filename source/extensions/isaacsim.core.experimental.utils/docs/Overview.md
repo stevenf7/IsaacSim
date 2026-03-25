@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.core.experimental.utils extension provides a comprehensive set of utility functions for Isaac Sim applications. These utilities streamline common operations across application lifecycle management, USD stage manipulation, prim operations, geometric transformations, and backend switching, offering developers essential tools for building Isaac Sim applications efficiently.

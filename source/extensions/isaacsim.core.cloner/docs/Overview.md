@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.core.cloner extension provides APIs for efficiently duplicating USD prims and environments within Isaac Sim. This extension enables batch creation of identical objects at specified positions, making it particularly useful for creating multiple environments for parallel simulation workflows.

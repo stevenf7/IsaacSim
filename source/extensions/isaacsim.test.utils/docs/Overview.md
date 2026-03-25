@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.test.utils extension provides a comprehensive testing framework for Isaac Sim, featuring utilities for image capture, comparison, validation, and UI testing. This extension streamlines automated test workflows by offering specialized tools for capturing synthetic data, validating file systems, and comparing images with configurable tolerances.

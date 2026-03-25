@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.robot_motion.cumotion.examples extension provides interactive UI demonstrations for cuMotion robot motion planning capabilities within Isaac Sim. This extension showcases various motion planning algorithms and techniques through five distinct example modules, each demonstrating different aspects of the cuMotion library for robotic motion generation and control.

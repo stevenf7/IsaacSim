@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.gui.menu extension provides Isaac Sim-specific menu bar functionality for robotics applications. It creates and manages multiple specialized menus including File, Edit, Create, Window, Tools, Utilities, Layouts, and Help menus, each tailored with robotics-focused operations and Isaac Sim assets.

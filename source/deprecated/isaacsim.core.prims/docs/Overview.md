@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 isaacsim.core.prims provides a comprehensive set of APIs for reading and writing state information to different types of prims in Isaac Sim. This extension serves as a high-level wrapper around USD prims, offering both individual prim management through Single classes and efficient batch operations through View classes for physics simulation environments.

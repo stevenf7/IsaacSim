@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.asset.exporter.urdf extension exports USD robot assets to URDF (Unified Robot Description Format) files. It extracts joint hierarchies, link geometries, inertia properties, and physics parameters from USD stages and writes them in standard URDF XML format for use with ROS and other robotics frameworks.

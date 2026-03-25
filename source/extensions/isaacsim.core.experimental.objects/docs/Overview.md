@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.core.experimental.objects extension provides high-level classes for creating and wrapping USD primitive objects and lights within Isaac Sim scenes. This extension offers a comprehensive set of geometric shapes, lighting elements, and specialized objects like ground planes with consistent APIs for creation, manipulation, and property management.

@@ -1,7 +1,3 @@
-```{csv-table}
-**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
-```
-
 # Overview
 
 The isaacsim.asset.importer.heightmap extension converts 2D heightmap and occupancy map images into 3D terrain environments in USD format. It reads grayscale images where pixel intensity represents elevation or occupancy, and generates corresponding 3D geometry using USD point instancers for efficient rendering.
