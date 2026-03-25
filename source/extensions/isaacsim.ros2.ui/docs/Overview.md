@@ -6,23 +6,6 @@
 
 The isaacsim.ros2.ui extension provides pre-configured OmniGraph templates for publishing ROS 2 messages from Isaac Sim. These templates streamline the process of setting up common ROS 2 publishing workflows by providing ready-to-use graph configurations for sensors, robot data, and simulation state.
 
-<div align="center">
-
-After analyzing the stub contents for module "isaacsim.ros2.ui", I cannot identify any meaningful relationships between the public APIs ['Ros2CameraGraph', 'Ros2RtxLidarGraph', 'Ros2ClockGraph', 'Ros2GenericPubGraph', 'Ros2JointStatesGraph', 'Ros2OdometryGraph', 'Ros2TfPubGraph'].
-
-The stub only shows that these classes are imported from submodules but provides no implementation details, class definitions, or method signatures that would reveal:
-- Inheritance relationships
-- Model-Item relationships
-- Delegate-Model relationships
-- Widget-Model relationships
-- Delegate-Widget relationships
-
-Without access to the actual class definitions and their relationships, no diagram can be created.
-
-NONE
-
-</div>
-
 ## Functionality
 
 The extension offers seven graph template classes that create OmniGraph networks for different ROS 2 publishing scenarios:

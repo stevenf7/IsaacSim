@@ -8,22 +8,6 @@ The isaacsim.replicator.experimental.domain_randomization extension provides dom
 
 ## Key Components
 
-### OmniGraph Nodes
-
-The extension provides several specialized OmniGraph nodes for domain randomization workflows:
-
-**OgnOnRLFrame** manages frame-by-frame execution in reinforcement learning scenarios. It tracks environment states and outputs frame numbers and reset indices for environments that need randomization.
-
-**OgnIntervalFiltering** controls randomization timing by filtering execution based on configurable frame intervals. Users can specify intervals and ignore patterns to create sophisticated randomization schedules.
-
-**OgnWritePhysicsSimulationContext** applies randomization to global simulation parameters like gravity using different operation types (direct assignment, additive modification, or scaling).
-
-**OgnWritePhysicsRigidPrimView** randomizes properties of rigid body objects including position, orientation, velocity, mass, material properties, and contact parameters.
-
-**OgnWritePhysicsArticulationView** handles randomization for articulated bodies, supporting joint properties like stiffness, damping, limits, and tendon parameters for complex robotic systems.
-
-**OgnCountIndices** provides utility functionality to count the number of indices being processed, useful for debugging and monitoring randomization operations.
-
 ### Physics View Integration
 
 The extension integrates with Isaac Sim's physics view system to enable efficient batch randomization operations. Users register RigidPrim and Articulation views by name, then reference these registered views in randomization functions.

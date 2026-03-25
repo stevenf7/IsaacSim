@@ -80,6 +80,10 @@ Each sensor node maintains internal state through dedicated state classes that i
 
 All nodes support both latest data mode and historical data access, allowing flexibility in how sensor information is consumed by downstream graph nodes. Sensor initialization occurs during the first compute cycle, with error handling for invalid prim paths or sensor configurations.
 
+## C++ Plugin
+
+The sensor reader nodes are implemented in C++ as a Carbonite plugin (`isaacsim::sensors::physics::nodes::IPhysicsSensorNodes`). The native plugin registers the OGN nodes at startup and provides the compute implementations for reading IMU, contact sensor, effort sensor, and joint state data directly from the physics simulation. Python bindings expose the `IPhysicsSensorNodes` interface through the `_physics_sensor_nodes` module for plugin lifecycle management.
+
 ## Relationships
 
 The extension depends on isaacsim.sensors.experimental.physics for the underlying sensor backend implementations. Each OmniGraph node acts as a bridge between the physics sensor systems and the visual scripting environment, enabling sensor data to flow through OmniGraph workflows for robotics applications and automation tasks.

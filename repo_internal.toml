@@ -295,7 +295,6 @@ doxygen_input = [
   "source/extensions/isaacsim.core.experimental.prims/include/isaacsim/core/experimental/prims/IPrimDataReader.h",
   "source/extensions/isaacsim.core.experimental.prims/include/isaacsim/core/experimental/prims/IPrimDataReaderManager.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/BaseResetNode.h",
-  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/BindingsPythonUtils.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Buffer.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Color.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Component.h",

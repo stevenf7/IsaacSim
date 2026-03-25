@@ -41,6 +41,10 @@ The scenario system organizes robot navigation tasks within occupancy map enviro
 
 The `OccupancyMap` class represents navigation environments as grid-based maps with three cell states: unknown, freespace, and occupied. It provides coordinate conversion between pixel and world coordinates, supports ROS-format import/export, and offers buffering operations for robot collision avoidance. Path generation utilities create navigation waypoints using pathfinding algorithms.
 
+### C++ Path Planner
+
+The extension includes a C++ path planning backend exposed to Python through pybind11 bindings (`_path_planner` module). It implements a priority-queue-based graph search over the freespace grid, computing distance-to-start maps and parent maps for efficient path unrolling. The two entry points are `generate_paths`, which runs a Dijkstra-like expansion from a start point across the occupancy map, and `unroll_path`, which traces back through the parent maps to reconstruct a waypoint sequence from any reachable endpoint.
+
 ### Data Recording
 
 The recording system organizes captured data into hierarchical directory structures. `MobilityGenWriter` handles timestamped output of sensor data, robot states, and configuration files, while `MobilityGenReader` provides access to recorded datasets with support for individual data type retrieval or complete state dictionary reconstruction.
