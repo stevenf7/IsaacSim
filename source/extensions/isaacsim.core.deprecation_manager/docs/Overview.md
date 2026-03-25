@@ -32,12 +32,7 @@ The extension uses a comprehensive configuration list that maps deprecated setti
 
 ### OmniGraph Node Mapping
 
-The extension maintains an extensive mapping of deprecated OmniGraph nodes to their updated versions, covering:
-
-- Sensor nodes (RTX lidar, physics sensors, contact sensors)
-- Robotics components (manipulators, surface grippers, wheeled robots)
-- Domain randomization and replicator nodes
-- Physics simulation nodes
+The extension maintains a mapping of deprecated OmniGraph node type names to their current equivalents, covering nodes across sensor, robotics, domain randomization, and physics simulation domains.
 
 ## Integration
 

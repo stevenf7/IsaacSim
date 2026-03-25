@@ -62,6 +62,10 @@ The extension automatically registers various annotators for synthetic data proc
 
 The nodes enable comprehensive data extraction from rendered scenes, supporting robotics simulations with utilities for image format conversion, point cloud generation, and controlled data flow through simulation gates.
 
+## C++ Plugin
+
+The OmniGraph nodes in this extension are implemented in C++ as a Carbonite plugin (`isaacsim::core::nodes::CoreNodes`). The native plugin handles node registration via the OGN framework and provides performance-critical compute for image conversion, depth-to-point-cloud processing, simulation timing, and physics step event handling. Python bindings expose the `CoreNodes` interface through the `_isaacsim_core_nodes` module for plugin lifecycle management.
+
 ## Integration
 
 The extension integrates with **omni.replicator.core** for synthetic data generation workflows and uses **omni.graph** as the computational framework. It connects to Isaac Sim's rendering and simulation systems through dedicated manager components for coordinated operation.

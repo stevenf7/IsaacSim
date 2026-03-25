@@ -4,7 +4,7 @@
 
 # Overview
 
-The `isaacsim.robot.manipulators` extension provides high-level Python classes for controlling robotic manipulators in Isaac Sim. This extension focuses on single-arm manipulator systems that can include end effectors and optional grippers for robotic manipulation tasks.
+The `isaacsim.robot.manipulators` extension provides high-level Python classes for controlling robotic manipulators in Isaac Sim. This extension covers the complete manipulator stack: robot representation, gripper abstractions, task-level controllers, and an OmniGraph node for gripper control.
 
 ## Key Components
 
@@ -20,26 +20,22 @@ Key features include:
 
 The class inherits from `SingleArticulation`, extending it with manipulator-specific functionality while maintaining compatibility with the broader articulation framework.
 
-## Functionality
+### Grippers
 
-### Manipulator Configuration
+The extension provides an abstract gripper framework and two concrete implementations:
 
-The {class}`SingleManipulator <isaacsim.robot.manipulators.SingleManipulator>` supports flexible configuration during instantiation:
-- Prim path specification for USD stage integration
-- End effector path definition for tracking specific rigid bodies
-- Transform properties including position, orientation, and scale
-- Visual properties and gripper attachment options
+**{class}`Gripper <isaacsim.robot.manipulators.Gripper>`** is the abstract base class for all gripper types. It extends `SingleRigidPrim` and defines the interface for opening, closing, and querying gripper state. All gripper implementations must provide `open()`, `close()`, `get_action()`, and state management methods.
 
-### Physics Simulation
+**{class}`ParallelGripper <isaacsim.robot.manipulators.ParallelGripper>`** controls two-finger parallel grippers through joint position control. It supports configurable open/closed joint positions, action deltas for incremental movement, and optional mimic joint mode where only a single drive joint is commanded.
 
-Integration with Isaac Sim's physics system occurs through:
-- Physics simulation view creation and management
-- Articulation view setup using PhysX tensor API
-- Reset handling for timeline stop/play cycles
+**{class}`SurfaceGripper <isaacsim.robot.manipulators.SurfaceGripper>`** wraps the surface gripper physics interface for suction-cup style grippers. It manages gripper state through the `isaacsim.robot.surface_gripper` C++ backend, translating high-level open/close commands into the underlying surface gripper API calls.
 
-### Component Access
+### Controllers
 
-The extension provides property-based access to manipulator components:
-- End effector access for pose and velocity queries
-- Gripper control for opening, closing, and state monitoring
-- Integration with the broader Isaac Sim robotics ecosystem
+**{class}`PickPlaceController <isaacsim.robot.manipulators.PickPlaceController>`** implements a state machine that manages pick-and-place operations through a sequence of predefined phases. These phases include moving to a picking position, approaching and grasping the object, lifting, moving to the target location, and placing the object. It coordinates end-effector control and gripper actions across all phases.
+
+**{class}`StackingController <isaacsim.robot.manipulators.StackingController>`** extends the pick-and-place workflow to stack multiple objects in a specified order. It sequences {class}`PickPlaceController <isaacsim.robot.manipulators.PickPlaceController>` calls to move objects from their initial positions onto a growing stack.
+
+## Integration
+
+The extension builds upon `isaacsim.core.api` for base articulation and controller classes, and `isaacsim.robot.surface_gripper` for the surface gripper physics backend. The controllers and grippers are designed to work together with {class}`SingleManipulator <isaacsim.robot.manipulators.SingleManipulator>`, providing a complete manipulator control stack from low-level gripper actuation to high-level task execution.

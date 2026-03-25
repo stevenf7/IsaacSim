@@ -1,4 +1,8 @@
-# Robot Self Collision Detector
+```{csv-table}
+**Extension**: {{ extension_version }},**Documentation Generated**: {sub-ref}`today`
+```
+
+# Overview
 
 A dockable panel for enumerating self-collision pairs in robot articulations
 and managing collision filters.

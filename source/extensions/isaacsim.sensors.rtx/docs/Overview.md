@@ -55,6 +55,10 @@ Writers enable visualization and debug capabilities, such as `RtxLidarDebugDrawP
 
 The `isaacsim.sensors.rtx.generic_model_output` module defines a standardized data format for sensor outputs. It provides the {class}`GenericModelOutput <isaacsim.sensors.rtx.generic_model_output.GenericModelOutput>` class and associated enums for sensor modalities (LIDAR, RADAR, USS, IDS), coordinate types (CARTESIAN, SPHERICAL), and frame reference systems. This module enables consistent data exchange between different sensor types and external processing systems.
 
+### Nonvisual Materials
+
+The `isaacsim.sensors.rtx.nonvisual_materials` module provides functionality for applying and retrieving nonvisual material properties used by RTX sensors like LiDAR and radar. It includes {func}`apply_nonvisual_material <isaacsim.sensors.rtx.apply_nonvisual_material>` for setting material properties on USD prims, {func}`get_material_id <isaacsim.sensors.rtx.get_material_id>` for reading the current material assignment, and {func}`decode_material_id <isaacsim.sensors.rtx.decode_material_id>` for decomposing a material ID into its base, surface, and retroreflective categories. The module contains predefined dictionaries covering metals, non-metals, vegetation, and other material categories.
+
 ### Sensor Checker
 
 The `isaacsim.sensors.rtx.sensor_checker` module provides validation utilities through the {class}`SensorCheckerUtil <isaacsim.sensors.rtx.sensor_checker.SensorCheckerUtil>` class. It validates sensor configurations, parameters, and AOV (Arbitrary Output Variable) data against predefined schemas, ensuring sensor models conform to expected specifications before deployment.

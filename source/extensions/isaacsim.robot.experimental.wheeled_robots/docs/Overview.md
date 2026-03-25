@@ -4,7 +4,7 @@
 
 # Overview
 
-Extension providing wheeled robot and controller APIs: `WheeledRobot`, `HolonomicRobotUsdSetup`, `DifferentialController`, `HolonomicController`, `AckermannController`.
+Extension providing wheeled robot and controller APIs: `WheeledRobot`, `HolonomicRobotUsdSetup`, `DifferentialController`, `HolonomicController`, `AckermannController`, `StanleyControl`, and `QuinticPathPlanner`.
 
 ## Basic Usage
 
@@ -88,6 +88,10 @@ my_controller = HolonomicController(
 velocities = my_controller.forward([0.4, 0.0, 0.0])  # [forward, lateral, yaw]
 my_kaya.apply_wheel_actions(velocities)
 ```
+### Path planning and tracking
+
+`StanleyControl` implements the Stanley lateral path-tracking algorithm for path following with configurable gains. `QuinticPathPlanner` generates smooth quintic polynomial trajectories between waypoints for wheeled robot navigation.
+
 ### Ackermann steering
 
 `AckermannController` uses a bicycle model and returns steering angles and per-wheel rotation velocities. The command is a length-5 array: `[steering_angle, steering_angle_velocity, speed, acceleration, dt]`. The return value is a tuple `(joint_positions, joint_velocities)`. Use these to drive the robot's steering and wheel joints according to your robot's USD structure.

@@ -4,48 +4,54 @@
 
 # Overview
 
-To enable this extension, go to the Extension Manager menu and enable isaacsim.robot.wheeled_robots extension.
+The `isaacsim.robot.wheeled_robots` extension provides Python and C++ classes for controlling wheeled mobile robots in Isaac Sim. It includes robot wrappers, multiple controller types covering differential, holonomic, and Ackermann drive systems, path planning utilities, and OmniGraph nodes for graph-based robot control.
+
+## Key Components
+
+### Robots
+
+**{class}`WheeledRobot <isaacsim.robot.wheeled_robots.WheeledRobot>`** wraps an articulation prim to provide a high-level interface for wheeled robot control. It manages joint states and accepts drive commands through `apply_wheel_actions()` using `ArticulationAction` objects, supporting mixed command modes (effort, velocity, and position).
+
+**{class}`HolonomicRobotUsdSetup <isaacsim.robot.wheeled_robots.HolonomicRobotUsdSetup>`** reads wheel geometry parameters from USD for holonomic (mecanum) robots. It extracts wheel radii, positions, orientations, and mecanum angles needed to construct a {class}`HolonomicController <isaacsim.robot.wheeled_robots.HolonomicController>`.
+
+### Controllers
+
+**{class}`DifferentialController <isaacsim.robot.wheeled_robots.DifferentialController>`** converts throttle and steering (or linear/angular velocity) commands into left and right wheel velocities for two-wheeled differential drive robots.
+
+**{class}`HolonomicController <isaacsim.robot.wheeled_robots.HolonomicController>`** computes per-wheel velocities for omnidirectional (mecanum) robots from forward, lateral, and yaw commands, accounting for wheel geometry and mecanum roller angles.
+
+**{class}`AckermannController <isaacsim.robot.wheeled_robots.AckermannController>`** implements bicycle-model Ackermann steering, returning both steering angles and per-wheel rotation velocities from steering angle, speed, and acceleration inputs.
+
+**{class}`WheelBasePoseController <isaacsim.robot.wheeled_robots.WheelBasePoseController>`** provides a higher-level controller that drives a wheeled robot to a target 2D pose (position + heading) by combining proportional control with an underlying differential or holonomic controller.
+
+**{class}`StanleyControl <isaacsim.robot.wheeled_robots.StanleyControl>`** implements the Stanley lateral path-tracking algorithm for path following with configurable gains.
+
+**{class}`QuinticPathPlanner <isaacsim.robot.wheeled_robots.QuinticPathPlanner>`** generates smooth quintic polynomial trajectories between waypoints for wheeled robot navigation.
 
 ## Basic Usage
 
-The classes and controllers provided by isaacsim.robot.wheeled_robots are designed to be run within the **world**
-simulation context provided by `isaacsim.core.api`. Like many other classes provided by core,
-**wheeled_robots** are created by wrapping prims already present on the stage in an interface class. This API is expected
-by **world** to do things like initialize and reset data structures, apply drive commands, retrieve joint states, etc.
-
-Creating this interface means specifying the articulation being managed, the name that **world** will
-know this object by, and the names of the drivable joints.
-
 ```python
- # Assuming a stage context containing a Jetbot at /World/Jetbot
- from isaacsim.robot.wheeled_robots.robots import WheeledRobot
- jetbot_prim_path = "/World/Jetbot"
+from isaacsim.robot.wheeled_robots.robots import WheeledRobot
+from isaacsim.robot.wheeled_robots.controllers import DifferentialController
+from isaacsim.core.utils.types import ArticulationAction
 
- #wrap the articulation in the interface class
- jetbot = WheeledRobot(prim_path=jetbot_prim_path,
-                       name="Joan",
-                       wheel_dof_names=["left_wheel_joint", "right_wheel_joint"]
-                      )
+# Wrap an articulation as a wheeled robot
+jetbot = WheeledRobot(
+    prim_path="/World/Jetbot",
+    name="jetbot",
+    wheel_dof_names=["left_wheel_joint", "right_wheel_joint"],
+)
+
+# Create a differential controller
+controller = DifferentialController(
+    name="diff_ctrl", wheel_radius=0.035, wheel_base=0.1
+)
+
+# In your simulation loop:
+action = controller.forward(command=[0.5, 0.0])  # [linear, angular]
+jetbot.apply_wheel_actions(action)
 ```
-Commanding the robot should be done prior to the physics step using an **ArticulationAction**, a type provided
-by `isaacsim.core.api` to facilitate things like mixed command modes (effort, velocity, and position)
-and complex robots with multiple types of actions that could be taken.
 
-```python
- from isaacsim.core.utils.types import ArticulationAction
+## Integration
 
- action = ArticulationAction(joint_velocities = np.array([1.14, 1.42]))
- jetbot.apply_wheel_actions(action)
-```
-It is rarely the case however, that a user will want to command a robot by directly manipulating the joints,
-and so we also provide a suite of controllers to convert various types of general commands into specific joint actions.
-For example, you may want to control your differential base using throttle and steering commands.
-
-```python
- from isaacsim.robot.wheeled_robots.controllers import DifferentialController
-
- throttle = 1.0
- steering = 0.5
- controller = DifferentialController(name="simple_control", wheel_radius=0.035, wheel_base=0.1)
- jetbot.apply_wheel_actions(controller.forward(throttle, steering))
-```
+The extension integrates with `isaacsim.core.api` for articulation and controller base classes. The extension also provides OmniGraph nodes for graph-based robot control, which can be combined with Isaac Sim's action graph system for complete autonomous navigation pipelines.
