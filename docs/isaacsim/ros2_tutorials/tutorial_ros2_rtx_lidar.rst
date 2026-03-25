@@ -19,7 +19,7 @@ RTX Lidar Sensors
 |isaac-sim_short| RTX or Raytraced Lidar supports both Solid State and Rotating Lidar configurations.
 Each RTX Sensor must be attached to its own viewport to simulate properly.
 
-.. Warning:: Docking windows in the Isaac Sim UI when an RTX Lidars simulation is running will likely lead to a crash. Pause the simulation before re-docking the window.
+.. Warning:: Docking windows in the Isaac Sim UI when an RTX Lidar simulation is running will likely lead to a crash. Pause the simulation before re-docking the window.
 
 Learning Objectives
 =======================
@@ -27,7 +27,7 @@ Learning Objectives
 In this example, you:
 
 - Briefly introduce how to use RTX Lidar sensors.
-- Create a RTX Lidar sensor.
+- Create an RTX Lidar sensor.
 - Publish sensor data to ROS2 as LaserScan and PointCloud2 messages.
 - Use the menu shortcut to create RTX Lidar sensor publishers.
 - Put it all together and visualize multiple sensors in RViz2.
@@ -40,10 +40,10 @@ Getting Started
 **Prerequisites**
 
 - Completed the :ref:`isaac_sim_app_tutorial_ros2_camera` tutorial.
-- ``FASTRTPS_DEFAULT_PROFILES_FILE`` environmental variable is set prior to launching |isaac-sim_short| and ROS2 bridge is enabled.
+- ``FASTRTPS_DEFAULT_PROFILES_FILE`` environment variable is set prior to launching |isaac-sim_short| and ROS2 bridge is enabled.
 - OPTIONAL: Explore the inner workings of RTX Lidar sensors by reviewing :ref:`isaacsim_sensors_rtx_lidar_how_they_work` and how to get :ref:`rtx_sensor_annotator_descriptions`.
 - Completed the :ref:`isaac_sim_app_tutorial_ros2_turtlebot` tutorial so that Turtlebot is loaded and moving around.
-- The optional portion of this tutorial requires the ``isaac_tutorials`` ROS 2 package, which is provided in `IsaacSim-ros_workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ repo. Complete :ref:`isaac_sim_app_install_ros` to make sure the ROS 2 workspace environment is setup correctly.
+- The optional portion of this tutorial requires the ``isaac_tutorials`` ROS 2 package, which is provided in `IsaacSim-ros_workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ repo. Complete :ref:`isaac_sim_app_install_ros` to make sure the ROS 2 workspace environment is set up correctly.
 
 
 .. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly. Some bandwidth-heavy topics might not be available to visualize in RViz2 in WSL.
@@ -60,8 +60,8 @@ Adding a RTX Lidar ROS 2 Bridge
 #. Connect the ROS2 bridge with the sensor output using Omnigraph Nodes. Open visual scripting editor by going to **Window > Graph Editors > Action Graph**. (Optionally: Move the graph under the */World/turtlebot3_burger/base_scan*. The placement of the graph is important for :ref:`isaac_sim_app_tutorial_ros2_auto_namespace`). Add the following nodes to this graph:
 
     #. `On Playback Tick`: This is the node responsible for triggering all the other nodes after **Play** is pressed.
-    #. `ROS2 Context Node`: ROS2 uses DDS for its middleware communication. DDS uses `Domain ID <https://docs.ros.org/en/humble/Concepts/Intermediate/About-Domain-ID.html>`_ to allow for different logical networks operate independently even though they share a physical network. ROS 2 nodes on the same domain can freely discover and send messages to each other, while ROS 2 nodes on different domains cannot. ROS2 context node creates a context with a given Domain ID. It is set to 0 by default. If `Use Domain ID Env Var` is checked, it will import the ``ROS_DOMAIN_ID`` from the environment in, which you launched the current instance of |isaac-sim_short|.
-    #. `Isaac Run One Simulation Frame`: This is the node to running the create render product pipeline once at the start to improve performance.
+    #. `ROS2 Context Node`: ROS2 uses DDS for its middleware communication. DDS uses `Domain ID <https://docs.ros.org/en/humble/Concepts/Intermediate/About-Domain-ID.html>`_ to allow for different logical networks to operate independently even though they share a physical network. ROS 2 nodes on the same domain can freely discover and send messages to each other, while ROS 2 nodes on different domains cannot. ROS2 context node creates a context with a given Domain ID. It is set to 0 by default. If `Use Domain ID Env Var` is checked, it will import the ``ROS_DOMAIN_ID`` from the environment in which you launched the current instance of |isaac-sim_short|.
+    #. `Isaac Run One Simulation Frame`: This is the node for running the create render product pipeline once at the start to improve performance.
     #. `Isaac Create Render Product`: For the `cameraPrim` input, select the RTX Lidar created in step 1.
     #. Add another `Isaac Create Render Product` node. For the `cameraPrim` input, select the RTX Lidar created in step 3.
     #. `ROS2 RTX Lidar Helper`: This node will handle publishing of the laser scan message from the RTX Lidar. The input render product is obtained from the output of Isaac Create Render Product in step d. Set the `frameId` to ``base_scan``.
@@ -195,7 +195,7 @@ To publish the simulation time to the ROS 2 clock topic, you can setup the graph
 
 **frameId and topicName**
 
-#. To visualize all the sensors as well as the tf tree all at once inside RViz, the frameId and topicNames must follow a certain convention for RViz to recognize them all. The table below roughly describes these conventions. To observe the multi-sensor example below, consult the USD asset, which can be found by going to the Isaac Sim Content browser and click **Isaac Sim>Samples>ROS2>Scenario>turtlebot_tutorial.usd**.
+#. To visualize all the sensors as well as the tf tree all at once inside RViz, the frameId and topicNames must follow a certain convention for RViz to recognize them all. The table below roughly describes these conventions. To observe the multi-sensor example below, consult the USD asset, which can be found by going to the Isaac Sim Content browser and clicking **Isaac Sim>Samples>ROS2>Scenario>turtlebot_tutorial.usd**.
 
         =======================  =========================  ============================  ======================== ========================
         Source		 	         frameId                     nodeNamespace                 topicName                Type
@@ -217,7 +217,7 @@ To publish the simulation time to the ROS 2 clock topic, you can setup the graph
 .. figure:: /images/isim_4.5_ros_tut_external_rtx_lidar_multisensor_rviz2.png
     :align: center
     :width: 800
-    :alt: Example Multisensor RVIz2 configuration
+    :alt: Example Multisensor RViz2 configuration
 
 .. important:: Ensure that the ``use_sim_time`` ROS2 param is set to true after running the RViz2 node.
                This ensures that the RViz2 node is synchronized with the simulation data especially when RViz2 interpolates position of Lidar data points.
@@ -301,7 +301,7 @@ Interpreting Object ID Metadata
 
 As described in :ref:`rtx_sensor_resolving_object_ids`, the Object ID metadata is a stable, unique 128-bit unsigned integer mapping to the prim path of the object that generated the corresponding return.
 This can be used for semantic segmentation of the scene, by mapping the object IDs to prim paths and then retrieving semantic labels from the prims. If ``ObjectId`` is included in the metadata,
-the PointCLoud2 message will contain 4 ``uint32`` fields: ``object_id_0``, ``object_id_1``, ``object_id_2``, and ``object_id_3``.
+the PointCloud2 message will contain 4 ``uint32`` fields: ``object_id_0``, ``object_id_1``, ``object_id_2``, and ``object_id_3``.
 
 After playing the timeline in one of the examples above, in a new terminal verify that your Isaac Sim ROS workspace is sourced, and run the following node to print the prim paths of the objects generating individual returns:
 

@@ -28,7 +28,7 @@ Getting Started
     
 **Prerequisite**
 
-- This tutorial requires ``isaac_moveit``,ROS 2 packages, which are provided as part of your |isaac-sim| download. These ROS 2 packages are located inside the appropriate ``humble_ws`` or ``jazzy_ws``. They contain the required launch file and moveit configs. Complete :ref:`isaac_sim_app_install_ros` to ensure the ROS 2 workspace environment is setup correctly.
+- This tutorial requires ``isaac_moveit`` and ROS 2 packages, which are provided as part of your |isaac-sim| download. These ROS 2 packages are located inside the appropriate ``humble_ws`` or ``jazzy_ws``. They contain the required launch file and moveit configs. Complete :ref:`isaac_sim_app_install_ros` to ensure the ROS 2 workspace environment is set up correctly.
 
 - If using multiple systems, set the ``FASTRTPS_DEFAULT_PROFILES_FILE`` environment variable as per instructions in :ref:`isaac_sim_app_install_ros` before launching |isaac-sim_short|, as well as any terminal where ROS messages will be sent or received, and ROS2 Extension is enabled.
 
@@ -111,7 +111,7 @@ Running MoveIt 2
         </div>
 
 
-TroubleShooting
+Troubleshooting
 ====================
 
 If your Rviz window is showing a black screen for where the robot should be, you can  update your mesa driver. Run the following commands in a new terminal.

@@ -49,7 +49,7 @@ Running the Example
 
     After the scene finishes loading, verify that you observe the viewport scanning a warehouse scene counterclockwise.
 #. In a new terminal with your ROS environment sourced, open an empty RViz window by running ``rviz2`` on the command line.
-#. Add a Image window by clicking on "Add" on the bottom left. In the pop-up window, under the "By display type" tab, select "Image" and click "OK".
+#. Add an Image window by clicking on "Add" on the bottom left. In the pop-up window, under the "By display type" tab, select "Image" and click "OK".
 #. A new image window will appear somewhere on your RViz screen, along with a menu item labeled "Image" in the Display window. Dock the image window somewhere convenient.
 #. Expand the Image in the Display menu and change the "Image Topic" to ``/rgb_augmented``. Verify that a slightly noisy version of the image in |isaac-sim_short| is now showing in the RViz image window.
 

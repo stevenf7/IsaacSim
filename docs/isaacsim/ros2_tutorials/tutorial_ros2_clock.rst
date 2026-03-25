@@ -121,7 +121,7 @@ While publishing the simulation time is the most common workflow, there can be c
   - **On Playback Tick** node to execute other graph nodes every simulation frame.
   - **ROS2 Context** node to create a context using either the given Domain ID or the ``ROS_DOMAIN_ID`` environment variable.
   - **Isaac Read System Time** node to retrieve current system time.
-  - **ROS2 Publish Clock** node to publish simulation time to the ``/clock`` topic.
+  - **ROS2 Publish Clock** node to publish system time to the ``/clock`` topic.
 
     .. figure:: /images/isim_4.5_ros_tut_gui_ros2_clock_publisher_system_time.png
         :align: center

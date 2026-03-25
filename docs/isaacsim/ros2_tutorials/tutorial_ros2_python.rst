@@ -102,7 +102,7 @@ A few of the tutorial examples were transformed into standalone Python examples.
 ROS 2 Clock
 *************
 
-This sample demonstrates how to create a action graph with ROS 2 component nodes and then tick them at different rates.
+This sample demonstrates how to create an action graph with ROS 2 component nodes and then tick them at different rates.
 
 The sample can be executed by running the following:
 
@@ -124,7 +124,7 @@ To create and set up a ROS 2 Clock publisher using the |isaac-sim_short| UI, ref
 ROS 2 Camera
 *************
 
-The following two samples demonstrates how to create a action graph with ROS 2 Camera Helper and Camera Info Helper |omnigraph_short| nodes, which are used to setup ROS 2 RGB image, depth image, and camera info publishers.
+The following two samples demonstrate how to create an action graph with ROS 2 Camera Helper and Camera Info Helper |omnigraph_short| nodes, which are used to setup ROS 2 RGB image, depth image, and camera info publishers.
 Both samples accomplish the same outcome of publishing ROS 2 image data at different rates but use different solutions.
 
 - On each frame:
@@ -187,7 +187,7 @@ To visualize the result of either sample in RViz2, in a new ROS2-sourced termina
 Carter Stereo
 ******************
 
-This sample demonstrates how to take an existing USD stage with an action graph containing ROS 2 component nodes and modifying the default settings. The stereo camera pair is automatically enabled and the second viewport window is docked in the UI.
+This sample demonstrates how to take an existing USD stage with an action graph containing ROS 2 component nodes and modify the default settings. The stereo camera pair is automatically enabled and the second viewport window is docked in the UI.
 
 - On each frame:
 
@@ -272,7 +272,7 @@ To exit the sample, you can terminate the process using ``CTRL-C`` from the term
 MoveIt2
 ******************
 
-This sample shows how to add multiple USD stages. It also demonstrates how to manually create a action graph with ROS 2 component nodes and then manually tick them.
+This sample shows how to add multiple USD stages. It also demonstrates how to manually create an action graph with ROS 2 component nodes and then manually tick them.
 
 To visualize the output refer to the :ref:`interactive version of the sample<isaac_sim_app_tutorial_ros2_moveit>`:
 

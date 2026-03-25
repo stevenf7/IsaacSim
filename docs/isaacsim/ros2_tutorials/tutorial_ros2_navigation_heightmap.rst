@@ -62,7 +62,7 @@ Add a Carter robot, which has all ROS 2 |omnigraph_short| Nodes setup, into this
 Add Clock in Scene
 ^^^^^^^^^^^^^^^^^^^^^
 
-To ensure all external ROS 2 nodes reference simulation time, a ``ROS_Clock`` graph  needs to be added, which contains a ``Ros2PublishClock`` node responsible for publishing the simulation time to the ``/clock`` topic.
+To ensure all external ROS 2 nodes reference simulation time, a ``ROS_Clock`` graph needs to be added, which contains a ``Ros2PublishClock`` node responsible for publishing the simulation time to the ``/clock`` topic.
 
 Follow the steps in :ref:`isaac_sim_app_tutorial_ros2_clock_omnigraph_shortcut` to add a clock in the scene.
 
@@ -91,7 +91,7 @@ Summary
 In this tutorial, you:
 
 #. Generated 3D world using 2D occupancy map with :ref:`Heightmap Importer <ext_omni_isaac_heightmap_tool>`.
-#. Added a robot into this world and running Nav2 with it.
+#. Added a robot into this world and ran Nav2 with it.
 
 
 Next Steps

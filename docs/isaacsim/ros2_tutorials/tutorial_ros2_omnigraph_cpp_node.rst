@@ -56,7 +56,7 @@ Follow the instructions on the ROS 2 Humble Documentation for `Creating custom m
 
 .. important::
 
-    Follow the package and message naming terminologies provided in the official tutorials, they are important when you build your own C++ |omnigraph_short| nodes.
+    Follow the package and message naming terminology provided in the official tutorials; it is important when you build your own C++ |omnigraph_short| nodes.
 
 Setting Up Kit Extension C++ Template
 ======================================
@@ -202,7 +202,7 @@ With the ``Custom ROS2 OGN Example Extension`` enabled, to create an ActionGraph
 Deeper Dive into Nodes and Extension
 =======================================
 
-- The ``premake5.lua`` handles building of the extension, review the section, which handles the compiling and linking against the specified ROS install paths: 
+- The ``premake5.lua`` file handles building of the extension, review the section, which handles the compiling and linking against the specified ROS install paths: 
 
 .. code-block:: bash
 
@@ -264,7 +264,7 @@ Deeper Dive into Nodes and Extension
 
 
 - The |omnigraph_short| nodes are present under ``plugins/nodes``. The ``rcl`` ROS 2 API is used for creating and working with the ROS 2 components in the |omnigraph_short| node:
-    - In the C++ Node, ``compute()`` is called when the ``Exec In`` condition is true, this is where the node and publisher is initially created. The message is also published from this function. 
+    - In the C++ Node, ``compute()`` is called when the ``Exec In`` condition is true, this is where the node and publisher are initially created. The message is also published from this function. 
 
 
 Summary

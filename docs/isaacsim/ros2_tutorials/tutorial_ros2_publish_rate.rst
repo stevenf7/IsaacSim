@@ -43,7 +43,7 @@ Isaac Simulation Gate Node
 
 This section will demonstrate the Isaac Simulation Gate node, which can be used to tick |omnigraph_short| every certain number of frames, as defined. An IMU publisher is setup with this |omnigraph_short| node.
 
-1. Open the turtlebot simple room scene, which can be found by going to the Isaac Sim Content browser and click **Isaac Sim>Samples>ROS2>Scenario>turtlebot_tutorial.usd**.
+1. Open the turtlebot simple room scene, which can be found by going to the Isaac Sim Content browser and clicking **Isaac Sim>Samples>ROS2>Scenario>turtlebot_tutorial.usd**.
 
 2. Select the prim at ``/World/turtlebot3_burger/base_link/imu_link`` and then create an IMU sensor by going to **Create > Sensors > Imu Sensor**. Verify that the Imu sensor is created under the *imu_link* prim.
 
@@ -162,7 +162,7 @@ Checking ROS 2 Publish Rate
     
     The publish rates are estimated. On a high-performance machine the maximum FPS would be closer to the ``physics_rate`` that was set in the previous section (default of 60Hz). 
     
-3.  For each sensor topic, their rates are factors of the maximum simulation FPS (according to the execution steps that we defined earlier).
+3.  For each sensor topic, the rate is a factor of the maximum simulation FPS (according to the execution steps that we defined earlier).
 
     - **/clock**:  publish at same rate as the simulation FPS (~60hz default).
     - **/imu**:  publish at rate of *sim_fps/2* (~30 hz)
@@ -170,7 +170,7 @@ Checking ROS 2 Publish Rate
     - **/camera_1/rgb/image_raw**:  publish at *sim_fps/4* (~15 Hz)
     - **/camera_1/rgb/camera_info**:  publish at *sim_fps/6* (~10 hz)
 
-    The file that contains all of the steps in this tutorial can be opened by going to the Isaac Sim Content browser and click **Isaac Sim>Samples>ROS2>Scenario>turtlebot_tutorial_multi_sensor_publish_rates.usd**. After opening the file, remember to run the steps in :ref:`isaac_sim_app_tutorial_ros2_publish_rate_set_simulation_frame_rates` to set the target simulation rate.
+    The file that contains all of the steps in this tutorial can be opened by going to the Isaac Sim Content browser and clicking **Isaac Sim>Samples>ROS2>Scenario>turtlebot_tutorial_multi_sensor_publish_rates.usd**. After opening the file, remember to run the steps in :ref:`isaac_sim_app_tutorial_ros2_publish_rate_set_simulation_frame_rates` to set the target simulation rate.
 
     .. note:: If you observe that the */camera_1/rgb/image_raw* topic is publishing at a slower rate than anticipated, it might be because the large size of each image message is causing bottlenecks in network traffic or DDS queue management. To improve the publish rate, you can try reducing the dimensions of the render product resolution. This can be done by going to the render product node that is attached to the image publisher */World/ActionGraph_camera/isaac_create_render_product* and modifying the dimensions before replaying the scene.
 
@@ -188,7 +188,7 @@ If you observe much different publish rates from the target simulation frame rat
 
         ./isaac-sim.sh --reset-user
 
-2. Check your computer's CPU usage to identify bottlenecks. If Isaac Sim exhibiting incredibly high usage try running with *Fabric* enabled:
+2. Check your computer's CPU usage to identify bottlenecks. If Isaac Sim is exhibiting incredibly high usage try running with *Fabric* enabled:
 
     .. code-block:: bash
 

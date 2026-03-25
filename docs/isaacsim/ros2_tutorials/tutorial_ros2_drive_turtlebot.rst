@@ -54,7 +54,7 @@ Main Concepts
 Driving the Robot
 ^^^^^^^^^^^^^^^^^^^^
 
-At the end of :ref:`isaac_sim_app_tutorial_ros2_turtlebot`, the robot has drivable joints, and when given a target position or velocity, it can move the joints to match the targets. Typically, you want to control the vehicle speed and not the individual wheel speed. Therefore, add the appropriate controllers. For Turtlebot3, a wheeled-robot with two wheels, the nodes needed are ``Differential Controller`` and ``Articulation Controller``. The ``Differential Controller`` node convert vehicle speed to wheel speed, and the ``Articulation Controller`` node sends the commands to the joint drives.
+At the end of :ref:`isaac_sim_app_tutorial_ros2_turtlebot`, the robot has drivable joints, and when given a target position or velocity, it can move the joints to match the targets. Typically, you want to control the vehicle speed and not the individual wheel speed. Therefore, add the appropriate controllers. For Turtlebot3, a wheeled robot with two wheels, the nodes needed are ``Differential Controller`` and ``Articulation Controller``. The ``Differential Controller`` node converts vehicle speed to wheel speed, and the ``Articulation Controller`` node sends the commands to the joint drives.
 
 For more instructions on how to connect nodes, refer to :ref:`isaac_sim_app_tutorial_gui_omnigraph`.
 
@@ -62,7 +62,7 @@ For more instructions on how to connect nodes, refer to :ref:`isaac_sim_app_tuto
 Connecting to ROS2
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-As part of our ROS2 bridge, there are nodes that are subscribers and publisher of specific messages, some utility nodes such as keeping track of simulation time and context ID. You will also find "Helper Nodes", which are gateways to more complex OmniGraphs that we abstract away from users.
+As part of our ROS2 bridge, there are nodes that are subscribers and publishers of specific messages, some utility nodes such as keeping track of simulation time and context ID. You will also find "Helper Nodes", which are gateways to more complex OmniGraphs that we abstract away from users.
 
 To establish a ROS2 bridge for a specific topic, the steps can be generalized to the following:
 
@@ -81,7 +81,7 @@ Building the Graph
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Open Visual Scripting: **Window > Graph Editors > Action Graph**. An **Action Graph** window will appear on the bottom, you can dock it wherever convenient.
-#. Click on the **New Action Graph** icon in middle of the **Action Graph** window.
+#. Click on the **New Action Graph** icon in the middle of the **Action Graph** window.
 #. Inside the **Action Graph** window, there is a panel on the left hand side with all the |omnigraph_short| Nodes (or OG nodes). All ROS2 related OG nodes are listed under *Isaac Ros2*. You can also search for nodes by name. To place a node into the graph, drag it from the node list into the graph window.
 #. Build a graph that matches the one below.
 
@@ -99,11 +99,11 @@ Building the Graph
 Graph Explained
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-- **On Playback Tick Node**: Producing a tick when simulation is "Playing". Nodes that receives ticks from this node will execute their compute functions every simulation step.
-- **ROS2 Context Node**: ROS2 uses DDS for its middleware communication. DDS uses `Domain ID <https://docs.ros.org/en/humble/Concepts/Intermediate/About-Domain-ID.html>`_ to allow for different logical networks operate independently even though they share a physical network. ROS 2 nodes on the same domain can freely discover and send messages to each other, while ROS 2 nodes on different domains cannot. ROS2 context node creates a context with a given Domain ID. It is set to 0 by default. If `Use Domain ID Env Var` is checked, it will import the ``ROS_DOMAIN_ID`` from the environment in which you launched the current instance of |isaac-sim_short|.
+- **On Playback Tick Node**: Producing a tick when simulation is "Playing". Nodes that receive ticks from this node will execute their compute functions every simulation step.
+- **ROS2 Context Node**: ROS2 uses DDS for its middleware communication. DDS uses `Domain ID <https://docs.ros.org/en/humble/Concepts/Intermediate/About-Domain-ID.html>`_ to allow for different logical networks to operate independently even though they share a physical network. ROS 2 nodes on the same domain can freely discover and send messages to each other, while ROS 2 nodes on different domains cannot. ROS2 context node creates a context with a given Domain ID. It is set to 0 by default. If `Use Domain ID Env Var` is checked, it will import the ``ROS_DOMAIN_ID`` from the environment in which you launched the current instance of |isaac-sim_short|.
 - **ROS2 Subscribe Twist Node**: Subscribing to a Twist message. Specify the ROS 2 topic's name ``/cmd_vel`` in the *topicName* field in its Property Tab.
 
-    - The subscriber nodes often have a *Exec Out* field. This act similar to a tick and will send a signal when a message is received by the subscriber. In this case, the differential controller must be ticked each frame regardless of when a new command arrives. Therefore, for this situation, the Differential Node's *Exec In* is ticked by the output of the *On Playback Tick* node rather than the subscriber node.
+    - The subscriber nodes often have a *Exec Out* field. This acts similar to a tick and will send a signal when a message is received by the subscriber. In this case, the differential controller must be ticked each frame regardless of when a new command arrives. Therefore, for this situation, the Differential Node's *Exec In* is ticked by the output of the *On Playback Tick* node rather than the subscriber node.
 
 - **Scale To/From Stage Unit Node**: Convert assets or inputs to stage unit.
 - **Break 3-Vector Node**: The output of the Twist subscriber node is linear and angular velocities, both 3-dimensional vectors. But the input of the differential controller node only takes a forward velocity and rotation velocity in z-axis, therefore you must decompose the array and extract the corresponding elements before feeding them into the differential controller node.
@@ -120,7 +120,7 @@ Graph Explained
 
 
 
-- **Articulation Controller Node**: This node is assigned to a target robot, then takes in the names or the indices of the joints that needs to be moved, and move them by the commands given in *Position Commands*, *Velocity Commands*, or *Effort Commands*.
+- **Articulation Controller Node**: This node is assigned to a target robot, then takes in the names or the indices of the joints that need to be moved, and moves them by the commands given in *Position Commands*, *Velocity Commands*, or *Effort Commands*.
 
     - The Articulation Controller node is ticked by *On Playback Tick*. So that if no new Twist message arrives, it will continue to execute whatever command it had received before.
     
@@ -138,7 +138,7 @@ Verifying ROS Connections
 
 #. Press **Play** to start ticking the graph and the physics simulation.
 
-#. In a separate ROS-sourced terminal, check that the associated ROS 2 topics exist with ``ros2 topic list``. Verify that ``/cmd_vel`` is listed in along with ``/rosout`` and ``/parameter_events``.
+#. In a separate ROS-sourced terminal, check that the associated ROS 2 topics exist with ``ros2 topic list``. Verify that ``/cmd_vel`` is listed along with ``/rosout`` and ``/parameter_events``.
 
 #. Now a twist message can be published to the ``/cmd_vel`` topic to control the robot. Let's drive it forward with the command:
 

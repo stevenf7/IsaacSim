@@ -32,14 +32,14 @@ In this tutorial, we are demonstrating running |isaac-sim| from a ROS 2 launch f
     - ROS 2 and Nav2 are installed.
     - ROS 2 bridge is enabled.
 
-- This tutorial requires the ``carter_navigation``, ``isaac_ros_navigation_goal``, and ``isaacsim`` ROS 2 packages that are provided as part of your |isaac-sim| download. These ROS 2 packages are located inside the appropriate ``ros2_ws``. They contain the required launch files, navigation parameters, and robot model. Complete :ref:`isaac_sim_app_install_ros`, make sure the ROS 2 workspace environment is setup correctly.
+- This tutorial requires the ``carter_navigation``, ``isaac_ros_navigation_goal``, and ``isaacsim`` ROS 2 packages that are provided as part of your |isaac-sim| download. These ROS 2 packages are located inside the appropriate ``ros2_ws``. They contain the required launch files, navigation parameters, and robot model. Complete :ref:`isaac_sim_app_install_ros`, make sure the ROS 2 workspace environment is set up correctly.
 
 
 
 Launching |isaac-sim_short| with ROS 2
 =========================================
 
-The ``isaacsim`` package contains scripts and ROS 2 launch file to launch |isaac-sim_short|.
+The ``isaacsim`` package contains scripts and a ROS 2 launch file to launch |isaac-sim_short|.
 
 The launch file called ``run_isaacsim.launch.py`` is included in the *launch* folder of the ``isaacsim`` package.
 
@@ -59,9 +59,9 @@ The launch parameters are defined below:
 
     - **standalone**: Provide the path to the Python file to open it and start Isaac Sim in standalone workflow. If left empty, Isaac Sim will open an empty stage in standard Gui mode. [**default_value** = ""]
 
-    - **play_sim_on_start**: If enabled and Isaac Sim will start playing the scene after it is loaded. (Only applicable when in standard gui mode). [**default_value** = "false"]
+    - **play_sim_on_start**: If enabled, Isaac Sim will start playing the scene after it is loaded. (Only applicable when in standard gui mode). [**default_value** = "false"]
 
-    - **ros_distro**: Provide ROS version to use. Both Jazzy and Humble is supported. [**default_value** = "humble"]
+    - **ros_distro**: Provide ROS version to use. Both Jazzy and Humble are supported. [**default_value** = "humble"]
 
     - **ros_installation_path**: Comma-separated list of ROS installation paths. If ROS is installed in a non-default location (as in not under /opt/ros/), provide the path to your main setup.bash file for your ROS install. (/path/to/custom/ros/install/setup.bash). Similarly add the path to your local_setup.bash file for your workspace installation. (/path/to/custom_ros_workspace/install/local_setup.bash). [**default_value** = ""]
 
@@ -106,7 +106,7 @@ Now we will go through the main examples for running |isaac-sim_short| from ROS 
 
         ros2 launch isaacsim run_isaacsim.launch.py gui:=https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd play_sim_on_start:=true
 
-4. Now lets launch |isaac-sim_short| with :ref:`standalone workflow <isaac_sim_app_tutorial_ros2_nav_goals>`. Run the command below.
+4. Now let's launch |isaac-sim_short| with :ref:`standalone workflow <isaac_sim_app_tutorial_ros2_nav_goals>`. Run the command below.
 
     .. code-block:: bash
 
@@ -135,7 +135,7 @@ In this scenario, the launch file is configured to wait for a console output fro
 
     Wait a moment for the scene to load. After the warehouse navigation scene is automatically loaded in |isaac-sim_short|, RViz2 will automatically begin displaying the robot's sensor data and automatic goals will be generated for the robot to navigate towards.
 
-    .. note:: If the above demo fails activate automatic goals, it is possible that Nav2 has not initialized yet. A workaround for this issue is manually add a delay before launching the `isaac_ros_navigation_goal` package. You can do so by looking for ``execute_second_node_if_condition_met`` function inside of ``carter_navigation_isaacsim.launch.py`` and uncommenting the lines as explained in the comment.
+    .. note:: If the above demo fails to activate automatic goals, it is possible that Nav2 has not initialized yet. A workaround for this issue is to manually add a delay before launching the `isaac_ros_navigation_goal` package. You can do so by looking for ``execute_second_node_if_condition_met`` function inside of ``carter_navigation_isaacsim.launch.py`` and uncommenting the lines as explained in the comment.
 
 You can run the same workflow using the iw_hub robot navigation scene and the ``iw_hub_navigation`` package. Run the integrated launch file using the following command:
 

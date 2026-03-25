@@ -169,7 +169,7 @@ Verify that the depth image ``/camera_depth`` and RGB image ``/camera_rgb`` look
             :width: 400
             :align: center
 
-The pointcloud will look like so. Verify that the camera frames published by the TF publisher shows the two frames. The image on the left shows the ``{camera_frame_id}_world`` frame, and the image on the right shows the ``{camera_frame_id}`` frame.
+The pointcloud will look like so. Verify that the camera frames published by the TF publisher show the two frames. The image on the left shows the ``{camera_frame_id}_world`` frame, and the image on the right shows the ``{camera_frame_id}`` frame.
 
 .. figure:: /images/isaac_tutorial_ros_camera_publishing_pc_frontview.png
             :align: center

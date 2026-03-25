@@ -15,7 +15,7 @@ ROS 2 Ackermann Controller
 
 Learning Objectives
 =======================
-In this example, you learn to drive a Leatherback car by subscribing to a ``AckermannDriveStamped`` message through the ROS network. You will learn to:
+In this example, you learn to drive a Leatherback car by subscribing to an ``AckermannDriveStamped`` message through the ROS network. You will learn to:
 
 - Setup Articulation and Ackermann Controllers to a Leatherback
 - Setup the robot to be driven by a ROS 2 ``AckermannDriveStamped`` message
@@ -38,7 +38,7 @@ Getting Started
 
 - Enable the ``isaacsim.ros2.bridge`` Extension in the `Extension Manager` window by navigating to **Window** > **Extensions**.
 
-- This tutorial requires ``isaac_tutorials`` and ``cmdvel_to_ackermann`` ROS 2 packages, which are provided in `IsaacSim-ros_workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ repo. Complete :ref:`isaac_sim_app_install_ros` to make sure the ROS 2 workspace environment is setup correctly.
+- This tutorial requires ``isaac_tutorials`` and ``cmdvel_to_ackermann`` ROS 2 packages, which are provided in `IsaacSim-ros_workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ repo. Complete :ref:`isaac_sim_app_install_ros` to make sure the ROS 2 workspace environment is set up correctly.
 
 
 Ackermann Controller and Drive Setup
@@ -46,7 +46,7 @@ Ackermann Controller and Drive Setup
 
 #. In a new stage, create the Flat Grid environment by going to **Create > Environments > Flat Grid**.
 
-#. Add the Leatherback robot by going to the Content Browser, click **Isaac Sim>ROBOTS>NVIDIA>Leatherback**.
+#. Add the Leatherback robot by going to the Content Browser and clicking **Isaac Sim>ROBOTS>NVIDIA>Leatherback**.
 
 #. Drag and drop the **leatherback.usd** asset in scene/stage window. Ensure that it is placed at the origin by zero'ing out all the *Translate* components in the Transform Property.
 
@@ -63,7 +63,7 @@ Ackermann Controller and Drive Setup
     - **ROS 2 QoS Profile** node to create a QoS profile.
     - **Articulation Controller** node to manipulate the steering joints of the Leatherback. In the **Property** tab:
 
-        - Add the Leatherback prim (that is. ``/Leatherback``) to its **targetPrim** input field.
+        - Add the Leatherback prim (that is, ``/Leatherback``) to its **targetPrim** input field.
         - For the *jointNames* input field:
 
             - Click **Add Element** and enter ``Knuckle__Upright__Front_Left`` in the text field that appears.
@@ -71,7 +71,7 @@ Ackermann Controller and Drive Setup
 
     - **Articulation Controller_01** node to manipulate the wheels of the Leatherback. In the **Property** tab:
 
-        - Add the Leatherback prim (that is. ``/Leatherback``) to its *targetPrim* input field.
+        - Add the Leatherback prim (that is, ``/Leatherback``) to its *targetPrim* input field.
         - For the *jointNames* input field:
 
             - Click **Add Element** and enter ``Wheel__Upright__Rear_Left`` in the text field that appears.
@@ -179,9 +179,9 @@ Summary
 
 This tutorial covered:
 
-#. Creating and setting up an Ackermann Controller node and with articulation controller nodes.
+#. Creating and setting up an Ackermann Controller node with articulation controller nodes.
 #. Adding a ROS 2 ``AckermannDriveStamped`` subscriber node, which feeds commands into the Ackermann Controller node.
-#. Translating the command velocity to ``AckermannDriveStamped`` message and control an Ackermann based robot with keyboard.
+#. Translating the command velocity to an ``AckermannDriveStamped`` message and controlling an Ackermann based robot with keyboard.
 
 
 Next Steps
