@@ -18,6 +18,8 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
+import io
 import json
 import socket
 import sys
@@ -193,20 +195,28 @@ class Extension(omni.ext.IExt):
         """Create the async TCP server and begin accepting connections."""
 
         class _ServerProtocol(asyncio.Protocol):
-            """Handle individual TCP connections from clients."""
+            """Handle individual TCP connections from clients.
+
+            Incoming data is buffered until the client signals EOF (half-close),
+            ensuring that TCP-fragmented payloads are fully reassembled before
+            execution.
+            """
 
             def __init__(self, parent: Extension) -> None:
                 super().__init__()
                 self._parent = parent
+                self._buffer = bytearray()
 
             def connection_made(self, transport: asyncio.BaseTransport) -> None:
                 carb.log_info(f"Connection from {transport.get_extra_info('peername')}")
                 self.transport = transport
 
             def data_received(self, data: bytes) -> None:
-                self._parent._process_code(data.decode(), self.transport)
+                self._buffer.extend(data)
 
             def eof_received(self) -> bool:
+                self._parent._process_code(self._buffer.decode(), self.transport)
+                self._buffer.clear()
                 return True
 
         try:
@@ -251,21 +261,28 @@ class Extension(omni.ext.IExt):
     async def _await_and_reply(self, exec_result: ExecutionResult, transport: asyncio.Transport) -> None:
         """Await a coroutine result produced by user code and send the reply.
 
+        Stdout is redirected during the await so that ``print()`` calls inside
+        the coroutine are captured in the JSON response ``output`` field.
+
         Args:
             exec_result: The execution result whose ``result`` is a coroutine.
             transport: The asyncio transport for sending the response.
         """
         coro = exec_result.result
+        async_output = io.StringIO()
         try:
-            awaited = await coro
+            with contextlib.redirect_stdout(async_output):
+                awaited = await coro
         except Exception as exc:
+            combined_output = exec_result.output + async_output.getvalue()
             exec_result = ExecutionResult(
-                output=exec_result.output,
+                output=combined_output,
                 exception=exc,
                 traceback_str=traceback.format_exc(),
             )
         else:
-            exec_result = ExecutionResult(output=exec_result.output, result=awaited)
+            combined_output = exec_result.output + async_output.getvalue()
+            exec_result = ExecutionResult(output=combined_output, result=awaited)
         self._send_reply(exec_result, transport)
 
     def _send_reply(self, exec_result: ExecutionResult, transport: asyncio.Transport) -> None:

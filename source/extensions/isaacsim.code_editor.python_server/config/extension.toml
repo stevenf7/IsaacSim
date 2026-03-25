@@ -1,5 +1,5 @@
 [package]
-version = "1.0.1"
+version = "1.1.0"
 category = "Utility"
 title = "Python Server"
 description = "TCP socket server for remote Python code execution in Isaac Sim"
@@ -36,6 +36,12 @@ dependencies = [
 ]
 args = [
     "--/exts/isaacsim.code_editor.python_server/port=8227",
+]
+stdoutFailPatterns.exclude = [
+    # Pre-existing asyncio context re-entry errors when update_app() pumps the
+    # event loop while a TCP transport's _read_ready callback is pending.
+    "*_SelectorSocketTransport._read_ready*",
+    "*cannot enter context*is already entered*",
 ]
 
 [documentation]
