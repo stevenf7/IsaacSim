@@ -31,7 +31,7 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
-from term_helpers import Colors, colorize
+from term_helpers import Colors, colorize  # noqa: E402
 
 
 def print_messages(messages: list[str], color: str) -> None:

@@ -151,7 +151,7 @@ public:
         state.reset();
     }
 
-    virtual void reset()
+    void reset() override
     {
         m_publisher.reset(); // Publisher should be reset before we reset the handle.
         Ros2Node::reset();

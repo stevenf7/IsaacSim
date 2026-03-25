@@ -75,7 +75,9 @@ static std::string findParentRigidBody(pxr::UsdStageRefPtr stage, const pxr::Sdf
 {
     pxr::UsdPrim prim = stage->GetPrimAtPath(sensorPath);
     if (!prim.IsValid())
+    {
         return {};
+    }
 
     prim = prim.GetParent();
     while (prim.IsValid() && prim.GetPath() != pxr::SdfPath::AbsoluteRootPath())
@@ -85,13 +87,19 @@ static std::string findParentRigidBody(pxr::UsdStageRefPtr stage, const pxr::Sdf
         bool hasRigidBodyAPI = prim.HasAPI<pxr::UsdPhysicsRigidBodyAPI>();
         bool attrValid = attr.IsValid();
         if (attrValid)
+        {
             attr.Get(&enabled);
+        }
 
         if (enabled)
+        {
             return prim.GetPath().GetString();
+        }
 
         if (hasRigidBodyAPI && !attrValid)
+        {
             return prim.GetPath().GetString();
+        }
 
         prim = prim.GetParent();
     }
@@ -140,14 +148,18 @@ public:
     {
         auto it = perBodyMap.find(token);
         if (it != perBodyMap.end() && !it->second.empty())
+        {
             return it->second;
+        }
 
         auto& vec = perBodyMap[token];
         vec.clear();
         for (const auto& e : rawContacts)
         {
             if (e.body0 == token || e.body1 == token)
+            {
                 vec.push_back(e);
+            }
         }
         return vec;
     }
@@ -175,7 +187,9 @@ public:
     {
         pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(sensorPrimPath));
         if (!prim.IsValid())
+        {
             return;
+        }
 
         pxr::IsaacSensorIsaacContactSensor typedPrim(prim);
 
@@ -261,16 +275,22 @@ void ContactSensorImpl::_initializeFromContext()
 {
     auto* usdContext = omni::usd::UsdContext::getContext();
     if (!usdContext)
+    {
         return;
+    }
 
     pxr::UsdStageRefPtr stage = usdContext->getStage();
     if (!stage)
+    {
         return;
+    }
 
     pxr::UsdStageCache& cache = pxr::UsdUtilsStageCache::Get();
     const long stageId = cache.GetId(stage).ToLongInt();
     if (stageId == 0)
+    {
         return;
+    }
 
     _initializeStage(stageId);
     _discoverSensorsFromStage();
@@ -279,10 +299,14 @@ void ContactSensorImpl::_initializeFromContext()
 void ContactSensorImpl::_initializeStage(long stageId)
 {
     if (m_impl->stageId == stageId && m_impl->usdStage && m_impl->readerManager && m_impl->reader)
+    {
         return;
+    }
 
     if (m_impl->stageId != 0 && m_impl->stageId != stageId)
+    {
         _clearSensors();
+    }
 
     m_impl->stageId = stageId;
     m_impl->stepCount = 0;
@@ -320,23 +344,33 @@ void ContactSensorImpl::_initializeStage(long stageId)
 bool ContactSensorImpl::createSensor(const char* primPath)
 {
     if (!m_impl->usdStage)
+    {
         return false;
+    }
 
     std::string key(primPath);
     if (m_impl->sensors.count(key))
+    {
         return true;
+    }
 
     pxr::SdfPath sdfPath(primPath);
     pxr::UsdPrim prim = m_impl->usdStage->GetPrimAtPath(sdfPath);
     if (!prim.IsValid())
+    {
         return false;
+    }
 
     if (prim.GetTypeName() != "IsaacContactSensor")
+    {
         return false;
+    }
 
     std::string parentPath = findParentRigidBody(m_impl->usdStage, sdfPath);
     if (parentPath.empty())
+    {
         return false;
+    }
 
     // SIDE EFFECT: createSensor() modifies the USD stage on the parent rigid body.
     //
@@ -360,19 +394,25 @@ bool ContactSensorImpl::createSensor(const char* primPath)
         pxr::PhysxSchemaPhysxContactReportAPI contactReportAPI =
             pxr::PhysxSchemaPhysxContactReportAPI::Get(m_impl->usdStage, parentSdfPath);
         if (!contactReportAPI)
+        {
             contactReportAPI = pxr::PhysxSchemaPhysxContactReportAPI::Apply(parentPrim);
+        }
 
         if (contactReportAPI)
         {
             if (!contactReportAPI.GetReportPairsRel())
+            {
                 contactReportAPI.CreateReportPairsRel();
+            }
             contactReportAPI.GetThresholdAttr().Set(0.0f);
         }
 
         pxr::PhysxSchemaPhysxRigidBodyAPI rigidBodyAPI =
             pxr::PhysxSchemaPhysxRigidBodyAPI::Get(m_impl->usdStage, parentSdfPath);
         if (rigidBodyAPI)
+        {
             rigidBodyAPI.CreateSleepThresholdAttr(pxr::VtValue(0.0f));
+        }
     }
 
     SensorData& sensor = m_impl->sensors[key];
@@ -397,9 +437,13 @@ void ContactSensorImpl::removeSensor(const char* primPath)
 {
     auto it = m_impl->sensors.find(std::string(primPath));
     if (it == m_impl->sensors.end())
+    {
         return;
+    }
     if (m_impl->reader && !it->second.viewId.empty())
+    {
         m_impl->reader->removeView(it->second.viewId.c_str());
+    }
     m_impl->sensors.erase(it);
 }
 
@@ -407,7 +451,9 @@ ContactSensorReading ContactSensorImpl::getSensorReading(const char* primPath)
 {
     auto it = m_impl->sensors.find(std::string(primPath));
     if (it == m_impl->sensors.end())
+    {
         return ContactSensorReading();
+    }
 
     return it->second.latestReading;
 }
@@ -415,14 +461,18 @@ ContactSensorReading ContactSensorImpl::getSensorReading(const char* primPath)
 void ContactSensorImpl::getRawContacts(const char* primPath, const ContactRawData** outData, int32_t* outCount)
 {
     if (!outData || !outCount)
+    {
         return;
+    }
 
     *outData = nullptr;
     *outCount = 0;
 
     auto it = m_impl->sensors.find(std::string(primPath));
     if (it == m_impl->sensors.end())
+    {
         return;
+    }
 
     const auto& contacts = it->second.latestRawContacts;
     if (!contacts.empty())
@@ -435,7 +485,9 @@ void ContactSensorImpl::getRawContacts(const char* primPath, const ContactRawDat
 void ContactSensorImpl::_discoverSensorsFromStage()
 {
     if (!m_impl->usdStage)
+    {
         return;
+    }
 
     int found = 0;
     for (auto prim : m_impl->usdStage->Traverse())
@@ -454,7 +506,9 @@ void ContactSensorImpl::_clearSensors()
     {
         (void)id;
         if (m_impl->reader && !sensor.viewId.empty())
+        {
             m_impl->reader->removeView(sensor.viewId.c_str());
+        }
     }
     m_impl->sensors.clear();
     m_impl->contactStore.clear();
@@ -463,13 +517,17 @@ void ContactSensorImpl::_clearSensors()
 void ContactSensorImpl::_recreateSensorViews()
 {
     if (!m_impl->reader)
+    {
         return;
+    }
 
     for (auto& [id, sensor] : m_impl->sensors)
     {
         sensor.xformView = nullptr;
         if (sensor.viewId.empty() || sensor.sensorPrimPath.empty())
+        {
             continue;
+        }
 
         const char* sensorPathPtr = sensor.sensorPrimPath.c_str();
         sensor.xformView = m_impl->reader->createXformView(sensor.viewId.c_str(), &sensorPathPtr, 1, "physx");
@@ -480,11 +538,15 @@ void ContactSensorImpl::_recreateSensorViews()
 void ContactSensorImpl::_subscribeToPhysicsEvents()
 {
     if (m_impl->physicsEventSub)
+    {
         return;
+    }
 
     auto* physicsStageUpdate = carb::getCachedInterface<omni::physics::IPhysicsStageUpdate>();
     if (!physicsStageUpdate)
+    {
         return;
+    }
 
     m_impl->physicsEventSub = carb::events::createSubscriptionToPop(
         physicsStageUpdate->getSimulationEventStream().get(),
@@ -510,11 +572,15 @@ void ContactSensorImpl::_subscribeToPhysicsEvents()
 void ContactSensorImpl::_subscribeToPhysicsStepEvents()
 {
     if (m_impl->physicsStepSub != omni::physics::kInvalidSubscriptionId)
+    {
         return;
+    }
 
     m_impl->physicsSimulation = carb::getCachedInterface<omni::physics::IPhysicsSimulation>();
     if (!m_impl->physicsSimulation)
+    {
         return;
+    }
 
     m_impl->physicsStepSub = m_impl->physicsSimulation->subscribePhysicsOnStepEvents(
         false, 1,
@@ -534,7 +600,9 @@ void ContactSensorImpl::_pullContactData(float dt)
 {
     m_impl->contactStore.rawContacts.clear();
     for (auto& it : m_impl->contactStore.perBodyMap)
+    {
         it.second.clear();
+    }
 
     auto* physxSim = carb::getCachedInterface<omni::physx::IPhysxSimulation>();
     if (!physxSim)
@@ -598,15 +666,21 @@ void ContactSensorImpl::_stepSensors(float dt)
     m_impl->stepCount++;
 
     if (!m_impl->simManager || !m_impl->usdStage)
+    {
         return;
+    }
 
     if (m_impl->reader && m_impl->reader->getGeneration() != m_impl->readerGeneration)
+    {
         _recreateSensorViews();
+    }
 
     _pullContactData(dt);
 
     if (m_impl->sensors.empty())
+    {
         return;
+    }
 
     const double simTime = m_impl->simManager->getSimulationTime();
     for (auto& [id, sensor] : m_impl->sensors)
@@ -620,7 +694,9 @@ void ContactSensorImpl::_processSensor(ImplData& impl, const std::string& primPa
 {
     auto it = impl.sensors.find(primPath);
     if (it == impl.sensors.end())
+    {
         return;
+    }
     SensorData& sensor = it->second;
 
     sensor.refreshConfig(impl.usdStage);
@@ -636,7 +712,9 @@ void ContactSensorImpl::_processSensor(ImplData& impl, const std::string& primPa
     }
 
     if (!sensor.enabled)
+    {
         return;
+    }
 
     ContactSensorReading reading;
     reading.time = static_cast<float>(simTime);
@@ -656,7 +734,9 @@ void ContactSensorImpl::_processSensor(ImplData& impl, const std::string& primPa
     float sensorPos[3] = {};
     float sensorOri[4] = {};
     if (sensor.xformView)
+    {
         sensor.xformView->getPrimWorldTransform(sensor.sensorPrimPath.c_str(), sensorPos, sensorOri);
+    }
 
     double totalImpulseX = 0.0, totalImpulseY = 0.0, totalImpulseZ = 0.0;
     float contactDt = dt;
@@ -670,7 +750,9 @@ void ContactSensorImpl::_processSensor(ImplData& impl, const std::string& primPa
             double dz = sensorPos[2] - c.positionZ;
             double distance = std::sqrt(dx * dx + dy * dy + dz * dz);
             if (distance >= static_cast<double>(sensor.radius))
+            {
                 continue;
+            }
         }
 
         double impulseX = static_cast<double>(c.impulseX);
@@ -689,7 +771,9 @@ void ContactSensorImpl::_processSensor(ImplData& impl, const std::string& primPa
         totalImpulseZ += impulseZ;
 
         if (c.dt > 0.0f)
+        {
             contactDt = c.dt;
+        }
     }
 
     double impulseMagnitude =
@@ -703,7 +787,9 @@ void ContactSensorImpl::_processSensor(ImplData& impl, const std::string& primPa
     }
 
     if (contactDt <= 0.0f)
+    {
         contactDt = dt > 0.0f ? dt : 1.0f / 60.0f;
+    }
 
     float forceValue = static_cast<float>(impulseMagnitude / static_cast<double>(contactDt));
 

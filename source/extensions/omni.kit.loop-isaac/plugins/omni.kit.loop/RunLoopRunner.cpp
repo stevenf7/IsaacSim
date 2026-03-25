@@ -99,14 +99,14 @@ const double kDefaultFrequency = 60;
 class PrecisionSleep
 {
 public:
-    PrecisionSleep()
+    PrecisionSleep() // NOLINT(modernize-use-equals-default)
 #if CARB_PLATFORM_WINDOWS
         : m_timer(CreateWaitableTimer(NULL, FALSE, NULL))
 #endif
     {
     }
 
-    ~PrecisionSleep()
+    ~PrecisionSleep() // NOLINT(modernize-use-equals-default)
     {
 #if CARB_PLATFORM_WINDOWS
         CloseHandle(m_timer);
@@ -241,7 +241,9 @@ public:
     ~RunLoopThread()
     {
         if (m_thread.joinable())
+        {
             m_thread.join();
+        }
     }
 
     void setLoop(RunLoop* loop_, bool usingEventAdapter_, bool usingMessageBusEventAdapter_)
@@ -291,7 +293,9 @@ public:
     void run()
     {
         if (!mainThread && loop && !m_thread.joinable())
+        {
             m_thread = std::thread(&RunLoopThread::updateLoop, this);
+        }
     }
 
     void update()
@@ -363,7 +367,9 @@ public:
             // Dispatch the events. We don't do profile zones here because EventDispatcher already does named zones.
             ed->internalDispatch({ preUpdateName, numParams, params });
             if (updateEnabled)
+            {
                 ed->internalDispatch({ updateName, numParams, params });
+            }
             ed->internalDispatch({ postUpdateName, numParams, params });
         }
         else
@@ -466,7 +472,9 @@ public:
     {
         auto settings = getCachedInterface<settings::ISettings>();
         if (!settings)
+        {
             return;
+        }
 
         if (!m_minLoopTimeString.length())
         {
@@ -648,7 +656,7 @@ class RunLoopRunnerImpl : public omni::kit::IRunLoopRunner
     CARB_IOBJECT_IMPL
 
 public:
-    virtual void startup() override
+    void startup() override
     {
         std::unique_lock lock(m_mutex);
 
@@ -671,12 +679,14 @@ public:
         }
 
         for (auto& kv : m_runLoops)
+        {
             kv.second.run();
+        }
 
         m_started = true;
     }
 
-    virtual void onAddRunLoop(const char* name, RunLoop* loop) override
+    void onAddRunLoop(const char* name, RunLoop* loop) override
     {
         std::unique_lock lock(m_mutex);
 
@@ -700,10 +710,12 @@ public:
         }
 
         if (m_started)
+        {
             t->run();
+        }
     }
 
-    virtual void onRemoveRunLoop(const char* name, RunLoop* loop, bool bBlock) override
+    void onRemoveRunLoop(const char* name, RunLoop* loop, bool bBlock) override
     {
         bool bRequestedQuit = false;
 
@@ -749,7 +761,7 @@ public:
         }
     }
 
-    virtual void update() override
+    void update() override
     {
         if (m_mainThread)
         {
@@ -757,7 +769,7 @@ public:
         }
     }
 
-    virtual void shutdown() override
+    void shutdown() override
     {
         decltype(m_runLoops) runLoops;
         {
@@ -779,7 +791,9 @@ public:
         for (auto& loop : m_runLoops)
         {
             if (!loop.second.mainThread)
+            {
                 loop.second.quit = true;
+            }
         }
 
         // Wait up to 100 ms for all threads to "exit". We cannot join these threads because the thread calling
@@ -802,7 +816,9 @@ public:
             }
 
             if (allDone)
+            {
                 break;
+            }
 
             lock.unlock();
             std::this_thread::yield();
@@ -823,7 +839,9 @@ private:
 
         auto it = m_runLoops.find(name);
         if (it == m_runLoops.end())
+        {
             it = m_runLoops.emplace(std::piecewise_construct, std::forward_as_tuple(name), std::forward_as_tuple(name)).first;
+        }
         return std::addressof(it->second);
     }
 
@@ -867,7 +885,7 @@ static void SetManualStepSize(const double dt, const std::string& name = "")
 }
 static void SetManualMode(const bool enabled, const std::string& name = "")
 {
-    if (m_runLoops.size() == 0)
+    if (m_runLoops.empty())
     {
         auto settings = getCachedInterface<settings::ISettings>();
         if (settings)

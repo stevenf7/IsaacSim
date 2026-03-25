@@ -78,7 +78,7 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
-from term_helpers import Colors
+from term_helpers import Colors  # noqa: E402
 
 
 @dataclass
@@ -1358,7 +1358,7 @@ class ExtensionTomlValidator:
 
             # Verify that important sections are preserved
             if "package" in original_toml_data and "package" not in fixed_toml:
-                print(f"  - ERROR: [package] section missing in fixed content!")
+                print("  - ERROR: [package] section missing in fixed content!")
 
             # Check for array sections like python.module or native.plugin
             array_sections = ["python.module", "native.plugin", "native.library", "test", "trigger"]
@@ -1761,7 +1761,7 @@ class ExtensionTomlValidator:
                 ValidationError(
                     file_path,
                     "Deprecation Field Missing",
-                    f"Required field 'warning' missing in [deprecation] section",
+                    "Required field 'warning' missing in [deprecation] section",
                     section_line,
                 )
             )
@@ -1770,7 +1770,7 @@ class ExtensionTomlValidator:
         elif not deprecation_data["warning"]:
             self.errors.append(
                 ValidationError(
-                    file_path, "Deprecation Warning Empty", f"Deprecation warning message is empty", section_line
+                    file_path, "Deprecation Warning Empty", "Deprecation warning message is empty", section_line
                 )
             )
 
@@ -1915,7 +1915,7 @@ class ExtensionTomlValidator:
                 # If we already have a test section started, add it to our list
                 if current_section_lines:
                     # Only add non-empty sections
-                    if any(l.strip() and not l.strip().startswith("#") for l in current_section_lines[1:]):
+                    if any(ln.strip() and not ln.strip().startswith("#") for ln in current_section_lines[1:]):
                         section_line_numbers.append(current_section_start_line)
                         section_contents.append(current_section_lines)
 
@@ -1932,7 +1932,7 @@ class ExtensionTomlValidator:
 
                 # Add the last test section if it's non-empty
                 if current_section_lines and any(
-                    l.strip() and not l.strip().startswith("#") for l in current_section_lines[1:]
+                    ln.strip() and not ln.strip().startswith("#") for ln in current_section_lines[1:]
                 ):
                     section_line_numbers.append(current_section_start_line)
                     section_contents.append(current_section_lines)
@@ -1948,7 +1948,7 @@ class ExtensionTomlValidator:
         if in_test_section and current_section_lines:
             block_end_line = len(lines)  # Reaches end of file
             # Only add non-empty sections
-            if any(l.strip() and not l.strip().startswith("#") for l in current_section_lines[1:]):
+            if any(ln.strip() and not ln.strip().startswith("#") for ln in current_section_lines[1:]):
                 section_line_numbers.append(current_section_start_line)
                 section_contents.append(current_section_lines)
 
@@ -2147,7 +2147,7 @@ class ExtensionTomlValidator:
                 named_test_sections.append((section_content, section_name))
             else:
                 if self.config.verbose:
-                    print(f"DEBUG: Found unnamed section")
+                    print("DEBUG: Found unnamed section")
                 unnamed_test_sections.append(section_content)
 
         # Handle multiple unnamed test sections - keep only the first one found
@@ -2645,7 +2645,6 @@ class ExtensionTomlValidator:
                         lines = lines[: insert_index + 2] + lines[insert_index + 1 + empty_line_count :]
 
                 fixed_content = "\n".join(lines)
-                fixed = True
                 self.fixes_applied.append("Added required 'writeTarget.kit = true' to [package] section")
 
         elif field_exists_in_content and package_data.get("writeTarget.kit") is not True:
@@ -2732,7 +2731,7 @@ class ExtensionTomlValidator:
                 ValidationError(
                     file_path,
                     "Redundant Core Section",
-                    f"[core] section contains only default values (reloadable = true, order = 0) and should be removed",
+                    "[core] section contains only default values (reloadable = true, order = 0) and should be removed",
                     line_mapping.get("core", 0),
                 )
             )
@@ -3007,7 +3006,7 @@ def process_files(args: argparse.Namespace, validator: ExtensionTomlValidator, c
         toml_files = find_extension_toml_files(args.root_dir, args.dir)
 
         if not toml_files:
-            print(f"No extension.toml files found to validate.")
+            print("No extension.toml files found to validate.")
             return 1
 
         # Simplify the check here, just use config.verbose

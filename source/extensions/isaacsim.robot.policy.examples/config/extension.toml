@@ -144,7 +144,6 @@ args = [
     "--/app/viewport/createCameraModelRep=0",
     "--/crashreporter/skipOldDumpUpload=1",
     "--/exts/omni.usd/locking/onClose=0",
-    "--/exts/isaacsim.core.simulation_manager/default_engine=newton",
     "--/omni/kit/plugin/syncUsdLoads=1",
     "--/omni/replicator/asyncRendering=0",
     "--/omnihydra/parallelHydraSprimSync=1",
@@ -167,6 +166,8 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    ### Extension specific args
+    "--/exts/isaacsim.core.simulation_manager/default_engine=newton",
 ]
 pythonTests.include = [
     # "isaacsim.robot.policy.examples.tests.test_anymal*",

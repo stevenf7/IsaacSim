@@ -51,8 +51,8 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
-from repo_helpers import REPO_ROOT, load_toml, read_toml_version
-from term_helpers import log_fail, log_info, log_pass, log_warn
+from repo_helpers import REPO_ROOT, load_toml, read_toml_version  # noqa: E402
+from term_helpers import log_fail, log_info, log_pass, log_warn  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Version comparison helpers
@@ -352,10 +352,10 @@ class ChangelogValidator:
             extension_data = load_toml(Path(self.extension_toml_path))
 
             if "package" not in extension_data:
-                self.errors.append(f"No [package] section found in extension.toml")
+                self.errors.append("No [package] section found in extension.toml")
                 return
             if "version" not in extension_data["package"]:
-                self.errors.append(f"No version field found in [package] section of extension.toml")
+                self.errors.append("No version field found in [package] section of extension.toml")
                 return
 
             toml_version = extension_data["package"]["version"]

@@ -82,14 +82,14 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
-from repo_helpers import (
+from repo_helpers import (  # noqa: E402
     APP_SETUP_EXT,
     BUILD_DIR,
     TEST_SCRIPT_EXT,
     all_extension_names,
     build_reverse_deps,
 )
-from term_helpers import Colors, log_fail, log_info, log_pass, log_warn
+from term_helpers import Colors, log_fail, log_info, log_pass, log_warn  # noqa: E402
 
 _ROLLING_WINDOW_LINES = 20
 _REDRAW_MIN_INTERVAL = 0.10

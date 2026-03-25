@@ -88,7 +88,9 @@ void SurfaceGripperComponent::onPhysicsStep(double dt)
     // CARB_PROFILE_ZONE(0, "[IsaacSim] SurfaceGripperComponent::onPhysicsStep");
     // Early return if component is not initialized
     if (!m_isInitialized)
+    {
         return;
+    }
 
     // Use SdfChangeBlock to batch USD changes for better performance
     // pxr::SdfChangeBlock changeBlock;
@@ -169,7 +171,9 @@ bool SurfaceGripperComponent::setGripperStatus(GripperStatus status)
     GripperStatus gripperStatus = status;
     if (gripperStatus != GripperStatus::Open && gripperStatus != GripperStatus::Closed &&
         gripperStatus != GripperStatus::Closing)
+    {
         return false;
+    }
     if (gripperStatus != m_status)
     {
 
@@ -586,7 +590,9 @@ void SurfaceGripperComponent::findObjectsToGrip()
     // Get physics query interface
     auto physxQuery = carb::getCachedInterface<omni::physx::IPhysxSceneQuery>();
     if (!physxQuery)
+    {
         return;
+    }
 
     // Iterate through each attachment point sequentially using reusable buffers
     m_apIndicesToActivate.clear();
@@ -654,9 +660,11 @@ void SurfaceGripperComponent::_processAttachmentForGrip(size_t attachmentIndex,
     {
         pxr::GfVec3f rayStart = worldPos + direction * static_cast<float>(clearanceOffset);
 
-        carb::Float3 _rayStart{ static_cast<float>(rayStart[0]), static_cast<float>(rayStart[1]),
+        carb::Float3 _rayStart{ static_cast<float>(rayStart[0]),
+                                static_cast<float>(rayStart[1]), // NOLINT(readability-identifier-naming)
                                 static_cast<float>(rayStart[2]) };
-        carb::Float3 _rayDir{ static_cast<float>(direction[0]), static_cast<float>(direction[1]),
+        carb::Float3 _rayDir{ static_cast<float>(direction[0]),
+                              static_cast<float>(direction[1]), // NOLINT(readability-identifier-naming)
                               static_cast<float>(direction[2]) };
 
         omni::physx::RaycastHit result;
@@ -762,7 +770,7 @@ void SurfaceGripperComponent::releaseAllObjects()
     for (size_t i = 0; i < m_attachmentPaths.size(); ++i)
     {
         // Immediate release used for non-physics-step flows (e.g., onStop)
-        physx::PxJoint* px_joint = _getCachedJoint(i);
+        physx::PxJoint* px_joint = _getCachedJoint(i); // NOLINT(readability-identifier-naming)
         if (px_joint)
         {
             px_joint->setConstraintFlag(physx::PxConstraintFlag::eDISABLE_CONSTRAINT, true);
@@ -859,7 +867,9 @@ void SurfaceGripperComponent::_queueWriteAttachmentPointBatch(
 Axis SurfaceGripperComponent::_getJointForwardAxis(size_t attachmentIndex) const
 {
     if (attachmentIndex < m_jointForwardAxis.size())
+    {
         return m_jointForwardAxis[attachmentIndex];
+    }
     return Axis::Z;
 }
 
@@ -908,7 +918,9 @@ const std::vector<std::string>& SurfaceGripperComponent::getGrippedObjects() con
 physx::PxJoint* SurfaceGripperComponent::_getCachedJoint(size_t attachmentIndex) const
 {
     if (attachmentIndex < m_attachmentJoints.size())
+    {
         return m_attachmentJoints[attachmentIndex];
+    }
     return nullptr;
 }
 

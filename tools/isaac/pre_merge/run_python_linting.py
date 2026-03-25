@@ -91,8 +91,8 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
-from repo_helpers import EXTENSION_ROOTS, REPO_ROOT, all_extensions, get_uncommitted_files
-from term_helpers import Colors, colorize
+from repo_helpers import EXTENSION_ROOTS, REPO_ROOT, all_extensions, get_uncommitted_files  # noqa: E402
+from term_helpers import Colors, colorize  # noqa: E402
 
 # =============================================================================
 # Tool Configurations (hardcoded defaults when config files not supported)

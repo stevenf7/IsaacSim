@@ -64,15 +64,21 @@ bool ImagePublisher::prepareFromHost(
     CARB_PROFILE_ZONE(1, "[IsaacSim] ImagePublisher::prepareFromHost");
 
     if (!m_publisher)
+    {
         return false;
+    }
 
     m_tasks.wait();
 
     if (!shouldPublish())
+    {
         return false;
+    }
 
     if (!prepareMessage(width, height, encoding, timestamp, false))
+    {
         return false;
+    }
 
     size_t totalBytes = m_message->getTotalBytes();
     void* bufPtr = m_message->getBufferPtr();
@@ -91,7 +97,9 @@ bool ImagePublisher::publishFromHost(
     const void* data, size_t dataSize, uint32_t width, uint32_t height, const std::string& encoding, double timestamp)
 {
     if (!prepareFromHost(data, dataSize, width, height, encoding, timestamp))
+    {
         return false;
+    }
     send();
     return true;
 }
@@ -108,15 +116,21 @@ bool ImagePublisher::prepareFromDevice(const void* devicePtr,
     CARB_PROFILE_ZONE(1, "[IsaacSim] ImagePublisher::prepareFromDevice");
 
     if (!m_publisher)
+    {
         return false;
+    }
 
     m_tasks.wait();
 
     if (!shouldPublish())
+    {
         return false;
+    }
 
     if (!prepareMessage(width, height, encoding, timestamp, true))
+    {
         return false;
+    }
 
     size_t totalBytes = m_message->getTotalBytes();
     void* bufPtr = m_message->getBufferPtr();
@@ -126,7 +140,7 @@ bool ImagePublisher::prepareFromDevice(const void* devicePtr,
 
     if (bufferSize == 0)
     {
-        cudaArray_t levelArray = 0;
+        cudaArray_t levelArray = nullptr;
         CUDA_CHECK(cudaGetMipmappedArrayLevel(
             &levelArray, reinterpret_cast<cudaMipmappedArray_t>(const_cast<void*>(devicePtr)), 0));
 
@@ -166,7 +180,9 @@ bool ImagePublisher::publishFromDevice(const void* devicePtr,
                                        carb::Format format)
 {
     if (!prepareFromDevice(devicePtr, bufferSize, width, height, encoding, timestamp, cudaDeviceIndex, format))
+    {
         return false;
+    }
     send();
     return true;
 }

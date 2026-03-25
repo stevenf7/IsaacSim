@@ -26,7 +26,8 @@ to a standalone script:
   6. Extension structure validation  -> validate_extension_structure.py
   7. License header validation       -> validate_license_headers.py
   8. Python package definitions      -> repo.sh validate_python_packages
-  9. Extension test discovery & run  -> run_extension_tests.py
+  9. C++ linting (clang-tidy)        -> clang_tidy.py  (--clang-tidy flag, requires build)
+ 10. Extension test discovery & run  -> run_extension_tests.py
 
 Determines the full set of changed files by comparing against the merge-base
 of the current branch with its upstream (auto-detected, or set via --base-branch).
@@ -77,7 +78,7 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
-from repo_helpers import (
+from repo_helpers import (  # noqa: E402
     _IS_WINDOWS,
     EXTENSION_ROOTS,
     REPO_ROOT,
@@ -87,7 +88,7 @@ from repo_helpers import (
     get_all_modified_files,
     has_apps_changes,
 )
-from term_helpers import (
+from term_helpers import (  # noqa: E402
     Colors,
     colorize,
     header,
@@ -667,7 +668,36 @@ def check_python_packages() -> int:
 
 
 # ---------------------------------------------------------------------------
-# Check 9: Extension tests — delegates to run_extension_tests.py
+# Check 9: C++ linting (clang-tidy) — delegates to clang_tidy.py
+# ---------------------------------------------------------------------------
+
+
+def check_clang_tidy(extensions: list[Path], fix: bool = False) -> int:
+    """Run clang-tidy on C++ files in the given extensions.
+
+    Args:
+        extensions: List of extension paths to analyze.
+        fix: Whether to apply auto-fixes.
+
+    Returns:
+        Number of extensions with clang-tidy issues.
+    """
+    if not extensions:
+        log_info("No modified extensions to check with clang-tidy.")
+        return 0
+
+    from run_clang_tidy import check_extensions
+
+    errors = check_extensions(extensions, REPO_ROOT, fix=fix)
+    if errors > 0:
+        log_fail(f"clang-tidy reported issues in {errors} extension(s).")
+    else:
+        log_pass("clang-tidy clean.")
+    return errors
+
+
+# ---------------------------------------------------------------------------
+# Check 10: Extension tests — delegates to run_extension_tests.py
 # ---------------------------------------------------------------------------
 
 
@@ -728,7 +758,7 @@ def build_parser() -> argparse.ArgumentParser:
         Configured ArgumentParser instance.
     """
     parser = argparse.ArgumentParser(
-        description="Pre-commit validation for Isaac Sim: lint, format, changelog, toml, settings docs, structure, and license checks.",
+        description="Pre-commit validation for Isaac Sim: lint, format, changelog, toml, settings docs, structure, license, and clang-tidy checks.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -741,6 +771,11 @@ def build_parser() -> argparse.ArgumentParser:
     checks.add_argument("--structure", action="store_true", help="Validate extension directory structure")
     checks.add_argument("--license", action="store_true", help="Validate SPDX license headers on changed files")
     checks.add_argument("--packages", action="store_true", help="Validate Python package definitions")
+    checks.add_argument(
+        "--clang-tidy",
+        action="store_true",
+        help="Run clang-tidy on C++ files in modified extensions (requires a build).",
+    )
     checks.add_argument(
         "--test",
         action="store_true",
@@ -884,6 +919,7 @@ def _run(args: argparse.Namespace) -> int:
         args.structure,
         args.license,
         args.packages,
+        args.clang_tidy,
         args.test,
     ]
     run_all_validation = not any(check_flags)
@@ -956,6 +992,10 @@ def _run(args: argparse.Namespace) -> int:
         if run_all_validation or args.packages:
             header("Python Package Definitions")
             total_errors += check_python_packages()
+
+        if args.clang_tidy:
+            header("C++ Linting (clang-tidy)")
+            total_errors += check_clang_tidy(extensions, fix=args.fix)
 
     if args.test and not args.skip_tests:
         header("Extension Tests")

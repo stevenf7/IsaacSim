@@ -181,7 +181,7 @@ public:
         state.reset();
     }
 
-    virtual void reset()
+    void reset() override
     {
         {
             CARB_PROFILE_ZONE(1, "[IsaacSim] wait for previous publish");

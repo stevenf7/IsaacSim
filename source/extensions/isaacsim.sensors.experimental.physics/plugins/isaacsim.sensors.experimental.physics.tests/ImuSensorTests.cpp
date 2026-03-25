@@ -93,7 +93,9 @@ TEST_SUITE("isaacsim.sensors.experimental.physics.tests")
         int filterSize = 3;
         float sum = 0.0f;
         for (int i = 0; i < filterSize; i++)
+        {
             sum += buffer[i].angularVelocityZ;
+        }
         float average = sum / filterSize;
 
         CHECK(std::abs(average - 2.0f) < 1e-6f);

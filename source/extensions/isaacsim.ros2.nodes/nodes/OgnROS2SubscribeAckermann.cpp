@@ -93,7 +93,7 @@ public:
         state.reset();
     }
 
-    virtual void reset()
+    void reset() override
     {
         if (!m_nodeObj.iNode)
         {

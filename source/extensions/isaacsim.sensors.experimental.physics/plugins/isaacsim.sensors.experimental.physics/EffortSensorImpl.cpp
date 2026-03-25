@@ -59,7 +59,9 @@ static std::string findArticulationRoot(pxr::UsdStageRefPtr stage, const pxr::Sd
     while (prim.IsValid() && prim.GetPath() != pxr::SdfPath::AbsoluteRootPath())
     {
         if (prim.HasAPI<pxr::UsdPhysicsArticulationRootAPI>())
+        {
             return prim.GetPath().GetString();
+        }
         prim = prim.GetParent();
     }
     return {};
@@ -132,23 +134,31 @@ void EffortSensorImpl::_initializeFromContext()
 {
     auto* usdContext = omni::usd::UsdContext::getContext();
     if (!usdContext)
+    {
         return;
+    }
 
     pxr::UsdStageRefPtr stage = usdContext->getStage();
     if (!stage)
+    {
         return;
+    }
 
     pxr::UsdStageCache& cache = pxr::UsdUtilsStageCache::Get();
     const long stageId = cache.GetId(stage).ToLongInt();
     if (stageId == 0)
+    {
         return;
+    }
 
     auto* settings = carb::getCachedInterface<carb::settings::ISettings>();
     if (settings)
     {
         const char* engineSetting = settings->getStringBuffer("/exts/isaacsim.core.simulation_manager/default_engine");
         if (engineSetting && engineSetting[0] != '\0')
+        {
             m_impl->engineType = engineSetting;
+        }
     }
 
     _initializeStage(stageId);
@@ -157,10 +167,14 @@ void EffortSensorImpl::_initializeFromContext()
 void EffortSensorImpl::_initializeStage(long stageId)
 {
     if (m_impl->stageId == stageId && m_impl->usdStage && m_impl->readerManager && m_impl->reader)
+    {
         return;
+    }
 
     if (m_impl->stageId != 0 && m_impl->stageId != stageId)
+    {
         _clearSensors();
+    }
 
     m_impl->stageId = stageId;
     m_impl->stepCount = 0;
@@ -171,7 +185,9 @@ void EffortSensorImpl::_initializeStage(long stageId)
     if (m_impl->readerManager)
     {
         if (!m_impl->readerManager->ensureInitialized(stageId, -1))
+        {
             return;
+        }
         m_impl->reader = m_impl->readerManager->getReader();
     }
     else
@@ -188,23 +204,31 @@ void EffortSensorImpl::_initializeStage(long stageId)
 bool EffortSensorImpl::createSensor(const char* jointPrimPath)
 {
     if (!m_impl->usdStage || !m_impl->reader)
+    {
         return false;
+    }
 
     std::string key(jointPrimPath);
     if (m_impl->sensors.count(key))
+    {
         return true;
+    }
 
     pxr::SdfPath sdfPath(jointPrimPath);
     pxr::UsdPrim prim = m_impl->usdStage->GetPrimAtPath(sdfPath);
     if (!prim.IsValid())
+    {
         return false;
+    }
 
     std::string dofName = sdfPath.GetName();
     pxr::SdfPath parentPath = sdfPath.GetParentPath();
 
     std::string articulationRootPath = findArticulationRoot(m_impl->usdStage, parentPath);
     if (articulationRootPath.empty())
+    {
         return false;
+    }
 
     EffortSensorData& sensor = m_impl->sensors[key];
     sensor.jointPrimPath = jointPrimPath;
@@ -239,9 +263,13 @@ void EffortSensorImpl::removeSensor(const char* jointPrimPath)
 {
     auto it = m_impl->sensors.find(std::string(jointPrimPath));
     if (it == m_impl->sensors.end())
+    {
         return;
+    }
     if (m_impl->reader && !it->second.viewId.empty())
+    {
         m_impl->reader->removeView(it->second.viewId.c_str());
+    }
     m_impl->sensors.erase(it);
 }
 
@@ -250,10 +278,14 @@ EffortSensorReading EffortSensorImpl::getSensorReading(const char* jointPrimPath
     std::string key(jointPrimPath);
     auto it = m_impl->sensors.find(key);
     if (it == m_impl->sensors.end())
+    {
         return EffortSensorReading();
+    }
 
     if (m_impl->reader && m_impl->reader->getGeneration() != m_impl->readerGeneration)
+    {
         _recreateSensorViews();
+    }
 
     EffortSensorData& sensor = it->second;
 
@@ -265,7 +297,9 @@ EffortSensorReading EffortSensorImpl::getSensorReading(const char* jointPrimPath
     }
 
     if (!sensor.enabled || !sensor.latestReading.isValid)
+    {
         return EffortSensorReading();
+    }
 
     return sensor.latestReading;
 }
@@ -276,7 +310,9 @@ void EffortSensorImpl::_clearSensors()
     {
         (void)id;
         if (m_impl->reader && !sensor.viewId.empty())
+        {
             m_impl->reader->removeView(sensor.viewId.c_str());
+        }
     }
     m_impl->sensors.clear();
 }
@@ -284,20 +320,26 @@ void EffortSensorImpl::_clearSensors()
 void EffortSensorImpl::_recreateSensorViews()
 {
     if (!m_impl->reader)
+    {
         return;
+    }
 
     for (auto& [id, sensor] : m_impl->sensors)
     {
         sensor.articulationView = nullptr;
         sensor.dofIndex = -1;
         if (sensor.viewId.empty() || sensor.articulationRootPath.empty())
+        {
             continue;
+        }
 
         const char* pathStr = sensor.articulationRootPath.c_str();
         sensor.articulationView =
             m_impl->reader->createArticulationView(sensor.viewId.c_str(), &pathStr, 1, m_impl->engineType.c_str());
         if (sensor.articulationView)
+        {
             sensor.dofIndex = sensor.articulationView->getDofIndex(sensor.jointPrimPath.c_str());
+        }
     }
     m_impl->readerGeneration = m_impl->reader->getGeneration();
 }
@@ -305,11 +347,15 @@ void EffortSensorImpl::_recreateSensorViews()
 void EffortSensorImpl::_subscribeToPhysicsEvents()
 {
     if (m_impl->physicsEventSub)
+    {
         return;
+    }
 
     auto* physicsStageUpdate = carb::getCachedInterface<omni::physics::IPhysicsStageUpdate>();
     if (!physicsStageUpdate)
+    {
         return;
+    }
 
     m_impl->physicsEventSub = carb::events::createSubscriptionToPop(
         physicsStageUpdate->getSimulationEventStream().get(),
@@ -334,11 +380,15 @@ void EffortSensorImpl::_subscribeToPhysicsEvents()
 void EffortSensorImpl::_subscribeToPhysicsStepEvents()
 {
     if (m_impl->physicsStepSub != omni::physics::kInvalidSubscriptionId)
+    {
         return;
+    }
 
     m_impl->physicsSimulation = carb::getCachedInterface<omni::physics::IPhysicsSimulation>();
     if (!m_impl->physicsSimulation)
+    {
         return;
+    }
 
     m_impl->physicsStepSub = m_impl->physicsSimulation->subscribePhysicsOnStepEvents(
         false, 1,
@@ -360,10 +410,14 @@ void EffortSensorImpl::_stepSensors(float dt)
     m_impl->stepCount++;
 
     if (!m_impl->simManager || !m_impl->usdStage || m_impl->sensors.empty())
+    {
         return;
+    }
 
     if (m_impl->reader && m_impl->reader->getGeneration() != m_impl->readerGeneration)
+    {
         _recreateSensorViews();
+    }
 
     const double simTime = m_impl->simManager->getSimulationTime();
     for (auto& [id, sensor] : m_impl->sensors)
@@ -377,11 +431,15 @@ void EffortSensorImpl::_processSensor(ImplData& impl, const std::string& jointPr
 {
     auto it = impl.sensors.find(jointPrimPath);
     if (it == impl.sensors.end())
+    {
         return;
+    }
     EffortSensorData& sensor = it->second;
 
     if (!sensor.enabled || !sensor.articulationView || sensor.dofIndex < 0)
+    {
         return;
+    }
 
     int effortCount = 0;
     const float* efforts = sensor.articulationView->getDofEffortsHost(&effortCount);

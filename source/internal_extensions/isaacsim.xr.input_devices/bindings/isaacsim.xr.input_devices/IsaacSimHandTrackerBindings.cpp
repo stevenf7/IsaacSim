@@ -21,11 +21,12 @@ CARB_BINDINGS("isaacsim.xr.input_devices.python")
 // C-API exported by the plugin shared library (implemented in IsaacSimHandTrackerPlugin.cpp)
 extern "C"
 {
-    bool IsaacSimHandTrackerPlugin_Load(const char* overrideLibraryPath);
-    void IsaacSimHandTrackerPlugin_Unload();
-    bool IsaacSimHandTrackerPlugin_Initialize();
-    bool IsaacSimHandTrackerPlugin_GetData(IsaacSimHandJointPose* outJointPoses, int outJointPoseCount);
-    void IsaacSimHandTrackerPlugin_Shutdown();
+    bool IsaacSimHandTrackerPlugin_Load(const char* overrideLibraryPath); // NOLINT(readability-identifier-naming)
+    void IsaacSimHandTrackerPlugin_Unload(); // NOLINT(readability-identifier-naming)
+    bool IsaacSimHandTrackerPlugin_Initialize(); // NOLINT(readability-identifier-naming)
+    bool IsaacSimHandTrackerPlugin_GetData(IsaacSimHandJointPose* outJointPoses,
+                                           int outJointPoseCount); // NOLINT(readability-identifier-naming)
+    void IsaacSimHandTrackerPlugin_Shutdown(); // NOLINT(readability-identifier-naming)
 }
 
 // Register enums, constants, and hand-tracker control/data functions.

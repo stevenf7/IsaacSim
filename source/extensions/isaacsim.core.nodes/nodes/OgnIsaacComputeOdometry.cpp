@@ -197,7 +197,9 @@ public:
     void computeOdometry(OgnIsaacComputeOdometryDatabase& db)
     {
         if (!m_articulationView && !m_rigidBodyView)
+        {
             return;
+        }
 
         readTransformAndVelocity();
 

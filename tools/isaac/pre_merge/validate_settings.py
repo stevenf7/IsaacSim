@@ -50,8 +50,8 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
-from repo_helpers import all_extensions
-from term_helpers import log_fail, log_info, log_pass, log_warn
+from repo_helpers import all_extensions  # noqa: E402
+from term_helpers import log_fail, log_info, log_pass, log_warn  # noqa: E402
 
 try:
     import tomllib as _toml_reader

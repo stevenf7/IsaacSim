@@ -1,9 +1,12 @@
+HeaderFilterRegex: '.*/source/(?!.*isaacsim\.robot\.schema).*'
+
 Checks: >
-    -*, 
+    -*,
     readability-identifier-naming,
     modernize-use-pragma-once,
     modernize-use-equals-default,
     modernize-use-enum-default,
+    modernize-use-override,
     readability-braces-around-statements,
     readability-container-size-empty,
     cert-err60-cpp,
@@ -14,7 +17,7 @@ Checks: >
     modernize-use-using,
     readability-redundant-access-specifiers,
     misc-unused-using-decls
-    
+
 CheckOptions:
   # Classes, structs, and enum classes use PascalCase
   - key: readability-identifier-naming.ClassCase
@@ -25,36 +28,49 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.TypedefCase
     value: CamelCase
-  
+  - key: readability-identifier-naming.TypeAliasCase
+    value: CamelCase
+
   # Files use PascalCase
   - key: readability-identifier-naming.FileCase
     value: CamelCase
-  
-  # Namespaces use snake_case
+
+  # Namespaces use lowercase
   - key: readability-identifier-naming.NamespaceCase
     value: lower_case
-  
-  # Functions
+
+  # Free functions use camelBack
   - key: readability-identifier-naming.FunctionCase
     value: camelBack
-  - key: readability-identifier-naming.PrivateFunctionCase
+
+  # Public methods use camelBack
+  - key: readability-identifier-naming.MethodCase
     value: camelBack
-  - key: readability-identifier-naming.PrivateFunctionPrefix
-    value: _
-  - key: readability-identifier-naming.ProtectedFunctionCase
+  # Private/protected methods use _camelBack
+  - key: readability-identifier-naming.PrivateMethodCase
     value: camelBack
-  - key: readability-identifier-naming.ProtectedFunctionPrefix
+  - key: readability-identifier-naming.PrivateMethodPrefix
     value: _
-  
-  # Variables
+  - key: readability-identifier-naming.ProtectedMethodCase
+    value: camelBack
+  - key: readability-identifier-naming.ProtectedMethodPrefix
+    value: _
+
+  # Variables use camelBack
   - key: readability-identifier-naming.VariableCase
     value: camelBack
   - key: readability-identifier-naming.ParameterCase
     value: camelBack
-  
-  # Class members
+  # Local const variables stay camelBack (kCamelCase is for named/constexpr constants only)
+  - key: readability-identifier-naming.LocalConstantCase
+    value: camelBack
+  - key: readability-identifier-naming.ConstantParameterCase
+    value: camelBack
+
+  # Public class members use camelBack
   - key: readability-identifier-naming.PublicMemberCase
     value: camelBack
+  # Private/protected members use m_camelBack
   - key: readability-identifier-naming.PrivateMemberCase
     value: camelBack
   - key: readability-identifier-naming.PrivateMemberPrefix
@@ -63,8 +79,15 @@ CheckOptions:
     value: camelBack
   - key: readability-identifier-naming.ProtectedMemberPrefix
     value: m_
-  
-  # Special cases
+
+  # Static variables use s_camelBack
+  - key: readability-identifier-naming.StaticVariableCase
+    value: camelBack
+  - key: readability-identifier-naming.StaticVariablePrefix
+    value: s_
+
+  # Constants — scoped rules handle static/global/class constexpr correctly;
+  # a standalone ConstexprVariable rule would conflict with StaticConstant (s_k prefix).
   - key: readability-identifier-naming.GlobalConstantCase
     value: CamelCase
   - key: readability-identifier-naming.GlobalConstantPrefix
@@ -73,19 +96,23 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.ClassConstantPrefix
     value: s_k
-  - key: readability-identifier-naming.GlobalVariableCase
-    value: camelBack
-  - key: readability-identifier-naming.GlobalVariablePrefix
-    value: g_
   - key: readability-identifier-naming.StaticConstantCase
     value: CamelCase
   - key: readability-identifier-naming.StaticConstantPrefix
     value: s_k
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: camelBack
+  - key: readability-identifier-naming.GlobalVariablePrefix
+    value: g_
+
+  # Enum values use eCamelCase
   - key: readability-identifier-naming.EnumConstantCase
     value: CamelCase
   - key: readability-identifier-naming.EnumConstantPrefix
     value: e
-  
-  # Macros
+
+  # Macros use UPPER_CASE (ignore reserved identifiers starting with __)
   - key: readability-identifier-naming.MacroDefinitionCase
     value: UPPER_CASE
+  - key: readability-identifier-naming.MacroDefinitionIgnoredRegexp
+    value: "^__.*"

@@ -72,7 +72,9 @@ static std::string findParentRigidBody(pxr::UsdStageRefPtr stage, const pxr::Sdf
 {
     pxr::UsdPrim prim = stage->GetPrimAtPath(sensorPath);
     if (!prim.IsValid())
+    {
         return {};
+    }
 
     prim = prim.GetParent();
     while (prim.IsValid() && prim.GetPath() != pxr::SdfPath::AbsoluteRootPath())
@@ -82,13 +84,19 @@ static std::string findParentRigidBody(pxr::UsdStageRefPtr stage, const pxr::Sdf
         bool hasRigidBodyAPI = prim.HasAPI<pxr::UsdPhysicsRigidBodyAPI>();
         bool attrValid = attr.IsValid();
         if (attrValid)
+        {
             attr.Get(&enabled);
+        }
 
         if (enabled)
+        {
             return prim.GetPath().GetString();
+        }
 
         if (hasRigidBodyAPI && !attrValid)
+        {
             return prim.GetPath().GetString();
+        }
 
         prim = prim.GetParent();
     }
@@ -99,14 +107,18 @@ static omni::math::linalg::vec3d readGravityFromStage(pxr::UsdStageRefPtr stage,
 {
     double unitScale = UsdGeomGetStageMetersPerUnit(stage);
     if (!std::isfinite(unitScale) || unitScale <= 0.0)
+    {
         unitScale = 1.0;
+    }
 
     omni::math::linalg::vec3d dir(0.0, 0.0, -1.0);
     double mag = 9.80665;
 
     pxr::UsdPrim scenePrim;
     if (!cachedScenePath.IsEmpty())
+    {
         scenePrim = stage->GetPrimAtPath(cachedScenePath);
+    }
 
     if (!scenePrim.IsValid() || !scenePrim.IsA<pxr::UsdPhysicsScene>())
     {
@@ -128,13 +140,17 @@ static omni::math::linalg::vec3d readGravityFromStage(pxr::UsdStageRefPtr stage,
         float magAttr = 0.0f;
         isaacsim::core::includes::safeGetAttribute(scene.GetGravityMagnitudeAttr(), magAttr);
         if (std::isfinite(magAttr) && magAttr != 0.0f)
+        {
             mag = static_cast<double>(std::abs(magAttr));
+        }
 
         pxr::GfVec3f dirAttr(0.0f, 0.0f, 0.0f);
         isaacsim::core::includes::safeGetAttribute(scene.GetGravityDirectionAttr(), dirAttr);
         double dirLen = std::sqrt(dirAttr[0] * dirAttr[0] + dirAttr[1] * dirAttr[1] + dirAttr[2] * dirAttr[2]);
         if (std::isfinite(dirLen) && dirLen > 1e-10)
+        {
             dir.Set(static_cast<double>(dirAttr[0]), static_cast<double>(dirAttr[1]), static_cast<double>(dirAttr[2]));
+        }
     }
 
     return mag / unitScale * -dir;
@@ -201,7 +217,9 @@ public:
     {
         pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(sensorPrimPath));
         if (!prim.IsValid())
+        {
             return;
+        }
 
         pxr::IsaacSensorIsaacImuSensor typedPrim(prim);
         pxr::UsdAttribute enabledAttr = typedPrim.GetEnabledAttr();
@@ -209,7 +227,9 @@ public:
         {
             bool val = true;
             if (enabledAttr.Get(&val))
+            {
                 enabled = val;
+            }
         }
     }
 
@@ -217,7 +237,9 @@ public:
     {
         pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(sensorPrimPath));
         if (!prim.IsValid())
+        {
             return;
+        }
 
         pxr::IsaacSensorIsaacImuSensor typedPrim(prim);
         pxr::UsdAttribute enabledAttr = typedPrim.GetEnabledAttr();
@@ -310,23 +332,31 @@ void ImuSensorImpl::_initializeFromContext()
 {
     auto* usdContext = omni::usd::UsdContext::getContext();
     if (!usdContext)
+    {
         return;
+    }
 
     pxr::UsdStageRefPtr stage = usdContext->getStage();
     if (!stage)
+    {
         return;
+    }
 
     pxr::UsdStageCache& cache = pxr::UsdUtilsStageCache::Get();
     const long stageId = cache.GetId(stage).ToLongInt();
     if (stageId == 0)
+    {
         return;
+    }
 
     auto* settings = carb::getCachedInterface<carb::settings::ISettings>();
     if (settings)
     {
         const char* engineSetting = settings->getStringBuffer("/exts/isaacsim.core.simulation_manager/default_engine");
         if (engineSetting && engineSetting[0] != '\0')
+        {
             m_impl->engineType = engineSetting;
+        }
     }
 
     _initializeStage(stageId);
@@ -336,10 +366,14 @@ void ImuSensorImpl::_initializeFromContext()
 void ImuSensorImpl::_initializeStage(long stageId)
 {
     if (m_impl->stageId == stageId && m_impl->usdStage && m_impl->readerManager && m_impl->reader)
+    {
         return;
+    }
 
     if (m_impl->stageId != 0 && m_impl->stageId != stageId)
+    {
         _clearSensors();
+    }
 
     m_impl->stageId = stageId;
     m_impl->stepCount = 0;
@@ -350,7 +384,9 @@ void ImuSensorImpl::_initializeStage(long stageId)
     if (m_impl->readerManager)
     {
         if (!m_impl->readerManager->ensureInitialized(stageId, -1))
+        {
             return;
+        }
         m_impl->reader = m_impl->readerManager->getReader();
     }
     else
@@ -379,20 +415,28 @@ void ImuSensorImpl::_initializeStage(long stageId)
 bool ImuSensorImpl::createSensor(const char* primPath)
 {
     if (!m_impl->usdStage || !m_impl->reader)
+    {
         return false;
+    }
 
     std::string key(primPath);
     if (m_impl->sensors.count(key))
+    {
         return true;
+    }
 
     pxr::SdfPath sdfPath(primPath);
     pxr::UsdPrim prim = m_impl->usdStage->GetPrimAtPath(sdfPath);
     if (!prim.IsValid())
+    {
         return false;
+    }
 
     std::string parentPath = findParentRigidBody(m_impl->usdStage, sdfPath);
     if (parentPath.empty())
+    {
         return false;
+    }
 
     SensorData& sensor = m_impl->sensors[key];
     sensor.sensorPrimPath = primPath;
@@ -418,9 +462,13 @@ void ImuSensorImpl::removeSensor(const char* primPath)
 {
     auto it = m_impl->sensors.find(std::string(primPath));
     if (it == m_impl->sensors.end())
+    {
         return;
+    }
     if (m_impl->reader && !it->second.viewId.empty())
+    {
         m_impl->reader->removeView(it->second.viewId.c_str());
+    }
     m_impl->sensors.erase(it);
 }
 
@@ -429,10 +477,14 @@ ImuSensorReading ImuSensorImpl::getSensorReading(const char* primPath, bool read
     std::string key(primPath);
     auto it = m_impl->sensors.find(key);
     if (it == m_impl->sensors.end())
+    {
         return ImuSensorReading();
+    }
 
     if (m_impl->reader && m_impl->reader->getGeneration() != m_impl->readerGeneration)
+    {
         _recreateSensorViews();
+    }
 
     SensorData& sensor = it->second;
     if (sensor.enabled && !sensor.readings.empty() && !sensor.readingAt(0).isValid && sensor.rigidBodyView &&
@@ -443,7 +495,9 @@ ImuSensorReading ImuSensorImpl::getSensorReading(const char* primPath, bool read
     }
 
     if (!sensor.enabled || sensor.readings.empty() || !sensor.readingAt(0).isValid)
+    {
         return ImuSensorReading();
+    }
 
     ImuSensorReading reading = sensor.readingAt(0);
     if (readGravity)
@@ -461,7 +515,9 @@ ImuSensorReading ImuSensorImpl::getSensorReading(const char* primPath, bool read
 void ImuSensorImpl::_discoverSensorsFromStage()
 {
     if (!m_impl->usdStage || !m_impl->reader)
+    {
         return;
+    }
 
     for (auto prim : m_impl->usdStage->Traverse())
     {
@@ -478,7 +534,9 @@ void ImuSensorImpl::_clearSensors()
     {
         (void)id;
         if (m_impl->reader && !sensor.viewId.empty())
+        {
             m_impl->reader->removeView(sensor.viewId.c_str());
+        }
     }
     m_impl->sensors.clear();
     m_impl->cachedPhysicsScenePath = pxr::SdfPath();
@@ -487,13 +545,17 @@ void ImuSensorImpl::_clearSensors()
 void ImuSensorImpl::_recreateSensorViews()
 {
     if (!m_impl->reader)
+    {
         return;
+    }
 
     for (auto& [id, sensor] : m_impl->sensors)
     {
         sensor.rigidBodyView = nullptr;
         if (sensor.viewId.empty() || sensor.parentRigidBodyPath.empty())
+        {
             continue;
+        }
 
         const char* pathStr = sensor.parentRigidBodyPath.c_str();
         sensor.rigidBodyView =
@@ -505,11 +567,15 @@ void ImuSensorImpl::_recreateSensorViews()
 void ImuSensorImpl::_subscribeToPhysicsEvents()
 {
     if (m_impl->physicsEventSub)
+    {
         return;
+    }
 
     auto* physicsStageUpdate = carb::getCachedInterface<omni::physics::IPhysicsStageUpdate>();
     if (!physicsStageUpdate)
+    {
         return;
+    }
 
     m_impl->physicsEventSub = carb::events::createSubscriptionToPop(
         physicsStageUpdate->getSimulationEventStream().get(),
@@ -535,11 +601,15 @@ void ImuSensorImpl::_subscribeToPhysicsEvents()
 void ImuSensorImpl::_subscribeToPhysicsStepEvents()
 {
     if (m_impl->physicsStepSub != omni::physics::kInvalidSubscriptionId)
+    {
         return;
+    }
 
     m_impl->physicsSimulation = carb::getCachedInterface<omni::physics::IPhysicsSimulation>();
     if (!m_impl->physicsSimulation)
+    {
         return;
+    }
 
     m_impl->physicsStepSub = m_impl->physicsSimulation->subscribePhysicsOnStepEvents(
         false, 1,
@@ -561,10 +631,14 @@ void ImuSensorImpl::_stepSensors(float dt)
     m_impl->stepCount++;
 
     if (!m_impl->simManager || !m_impl->usdStage || m_impl->sensors.empty())
+    {
         return;
+    }
 
     if (m_impl->reader && m_impl->reader->getGeneration() != m_impl->readerGeneration)
+    {
         _recreateSensorViews();
+    }
 
     const double simTime = m_impl->simManager->getSimulationTime();
     for (auto& [id, sensor] : m_impl->sensors)
@@ -578,11 +652,15 @@ void ImuSensorImpl::_processSensor(ImplData& impl, const std::string& primPath, 
 {
     auto it = impl.sensors.find(primPath);
     if (it == impl.sensors.end())
+    {
         return;
+    }
     SensorData& sensor = it->second;
 
     if (sensor.lastProcessedStep == stepIndex)
+    {
         return;
+    }
 
     sensor.timeDelta = dt;
     sensor.timeSeconds = simTime;
@@ -598,7 +676,9 @@ void ImuSensorImpl::_processSensor(ImplData& impl, const std::string& primPath, 
     if (sensor.previousEnabled != sensor.enabled)
     {
         if (sensor.enabled)
+        {
             sensor.resetBuffers();
+        }
         sensor.previousEnabled = sensor.enabled;
     }
 
@@ -615,9 +695,13 @@ void ImuSensorImpl::_processSensor(ImplData& impl, const std::string& primPath, 
     omni::math::linalg::vec3d vW(0.0, 0.0, 0.0);
     omni::math::linalg::vec3d wW(0.0, 0.0, 0.0);
     if (linearVelocityPointer && linearCount >= 3)
+    {
         vW.Set(linearVelocityPointer[0], linearVelocityPointer[1], linearVelocityPointer[2]);
+    }
     if (angularVelocityPointer && angularCount >= 3)
+    {
         wW.Set(angularVelocityPointer[0], angularVelocityPointer[1], angularVelocityPointer[2]);
+    }
 
     float sensorPos[3] = {};
     float sensorOri[4] = {}; // [qw, qx, qy, qz]
@@ -731,17 +815,29 @@ void ImuSensorImpl::_processSensor(ImplData& impl, const std::string& primPath, 
 void ImuSensorImpl::_sanitizeReading(ImuSensorReading& r)
 {
     if (!std::isfinite(r.linearAccelerationX))
+    {
         r.linearAccelerationX = 0.0f;
+    }
     if (!std::isfinite(r.linearAccelerationY))
+    {
         r.linearAccelerationY = 0.0f;
+    }
     if (!std::isfinite(r.linearAccelerationZ))
+    {
         r.linearAccelerationZ = 0.0f;
+    }
     if (!std::isfinite(r.angularVelocityX))
+    {
         r.angularVelocityX = 0.0f;
+    }
     if (!std::isfinite(r.angularVelocityY))
+    {
         r.angularVelocityY = 0.0f;
+    }
     if (!std::isfinite(r.angularVelocityZ))
+    {
         r.angularVelocityZ = 0.0f;
+    }
 
     float norm = std::sqrt(r.orientationW * r.orientationW + r.orientationX * r.orientationX +
                            r.orientationY * r.orientationY + r.orientationZ * r.orientationZ);

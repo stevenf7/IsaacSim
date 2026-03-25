@@ -79,7 +79,7 @@ public:
         return true;
     }
 
-    virtual void reset()
+    void reset() override
     {
         m_resetTimes = true;
     }

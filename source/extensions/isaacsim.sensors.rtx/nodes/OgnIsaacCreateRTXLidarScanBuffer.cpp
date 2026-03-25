@@ -50,7 +50,9 @@ static bool rebaseGMOReadOnly(void* buffer, omni::sensors::GenericModelOutput& o
 {
     auto* raw = reinterpret_cast<omni::sensors::GenericModelOutput*>(buffer);
     if (raw->magicNumber != omni::sensors::MAGIC_NUMBER_GMO)
+    {
         return false;
+    }
 
     memcpy(&out, raw, sizeof(omni::sensors::GenericModelOutput));
 
@@ -69,7 +71,9 @@ static bool rebaseGMOReadOnly(void* buffer, omni::sensors::GenericModelOutput& o
     out.elements.flags = reinterpret_cast<uint8_t*>(data + offset);
     offset += sizeof(uint8_t) * out.numElements;
     if (offset % 8 != 0)
+    {
         offset += 8 - (offset % 8);
+    }
     out.auxiliaryData = out.auxType == omni::sensors::AuxType::NONE ? nullptr : reinterpret_cast<void*>(data + offset);
 
     return true;
@@ -91,7 +95,9 @@ static void rebaseLidarAuxReadOnly(const omni::sensors::GenericModelOutput& gmo,
         offset += sizeof(uint32_t) * gmo.numElements;
     }
     else
+    {
         out.emitterId = nullptr;
+    }
 
     if ((filled & omni::sensors::LidarAuxHas::CHANNEL_ID) == omni::sensors::LidarAuxHas::CHANNEL_ID)
     {
@@ -99,7 +105,9 @@ static void rebaseLidarAuxReadOnly(const omni::sensors::GenericModelOutput& gmo,
         offset += sizeof(uint32_t) * gmo.numElements;
     }
     else
+    {
         out.channelId = nullptr;
+    }
 
     if ((filled & omni::sensors::LidarAuxHas::MAT_ID) == omni::sensors::LidarAuxHas::MAT_ID)
     {
@@ -107,7 +115,9 @@ static void rebaseLidarAuxReadOnly(const omni::sensors::GenericModelOutput& gmo,
         offset += sizeof(uint32_t) * gmo.numElements;
     }
     else
+    {
         out.matId = nullptr;
+    }
 
     if ((filled & omni::sensors::LidarAuxHas::TICK_ID) == omni::sensors::LidarAuxHas::TICK_ID)
     {
@@ -115,7 +125,9 @@ static void rebaseLidarAuxReadOnly(const omni::sensors::GenericModelOutput& gmo,
         offset += sizeof(uint32_t) * gmo.numElements;
     }
     else
+    {
         out.tickId = nullptr;
+    }
 
     if ((filled & omni::sensors::LidarAuxHas::HIT_NORMALS) == omni::sensors::LidarAuxHas::HIT_NORMALS)
     {
@@ -123,7 +135,9 @@ static void rebaseLidarAuxReadOnly(const omni::sensors::GenericModelOutput& gmo,
         offset += sizeof(float) * 3 * gmo.numElements;
     }
     else
+    {
         out.hitNormals = nullptr;
+    }
 
     if ((filled & omni::sensors::LidarAuxHas::VELOCITIES) == omni::sensors::LidarAuxHas::VELOCITIES)
     {
@@ -131,7 +145,9 @@ static void rebaseLidarAuxReadOnly(const omni::sensors::GenericModelOutput& gmo,
         offset += sizeof(float) * gmo.numElements * 3;
     }
     else
+    {
         out.velocities = nullptr;
+    }
 
     if ((filled & omni::sensors::LidarAuxHas::OBJ_ID) == omni::sensors::LidarAuxHas::OBJ_ID)
     {
@@ -139,7 +155,9 @@ static void rebaseLidarAuxReadOnly(const omni::sensors::GenericModelOutput& gmo,
         offset += sizeof(uint8_t) * gmo.numElements * 16;
     }
     else
+    {
         out.objId = nullptr;
+    }
 
     if ((filled & omni::sensors::LidarAuxHas::ECHO_ID) == omni::sensors::LidarAuxHas::ECHO_ID)
     {
@@ -147,7 +165,9 @@ static void rebaseLidarAuxReadOnly(const omni::sensors::GenericModelOutput& gmo,
         offset += sizeof(uint8_t) * gmo.numElements;
     }
     else
+    {
         out.echoId = nullptr;
+    }
 
     if ((filled & omni::sensors::LidarAuxHas::TICK_STATES) == omni::sensors::LidarAuxHas::TICK_STATES)
     {
@@ -155,7 +175,9 @@ static void rebaseLidarAuxReadOnly(const omni::sensors::GenericModelOutput& gmo,
         offset += sizeof(uint8_t) * gmo.numElements;
     }
     else
+    {
         out.tickStates = nullptr;
+    }
 }
 
 // Rebase RadarAuxiliaryData pointers into a caller-owned struct.
@@ -183,32 +205,32 @@ private:
 
     // parallelism + inter-frame overlap
     // Basic data: current buffer streams
-    static constexpr size_t STREAM_AZIMUTH_CURRENT = 0; // azimuth current buffer
-    static constexpr size_t STREAM_ELEVATION_CURRENT = 1; // elevation current buffer
-    static constexpr size_t STREAM_DISTANCE_CURRENT = 2; // distance current buffer
-    static constexpr size_t STREAM_FLAGS_CURRENT = 3; // flags current buffer
+    static constexpr size_t s_kStreamAzimuthCurrent = 0; // azimuth current buffer
+    static constexpr size_t s_kStreamElevationCurrent = 1; // elevation current buffer
+    static constexpr size_t s_kStreamDistanceCurrent = 2; // distance current buffer
+    static constexpr size_t s_kStreamFlagsCurrent = 3; // flags current buffer
     // Basic data: next buffer streams
-    static constexpr size_t STREAM_AZIMUTH_NEXT = 4; // azimuth next buffer
-    static constexpr size_t STREAM_ELEVATION_NEXT = 5; // elevation next buffer
-    static constexpr size_t STREAM_DISTANCE_NEXT = 6; // distance next buffer
-    static constexpr size_t STREAM_FLAGS_NEXT = 7; // flags next buffer
+    static constexpr size_t s_kStreamAzimuthNext = 4; // azimuth next buffer
+    static constexpr size_t s_kStreamElevationNext = 5; // elevation next buffer
+    static constexpr size_t s_kStreamDistanceNext = 6; // distance next buffer
+    static constexpr size_t s_kStreamFlagsNext = 7; // flags next buffer
     // Optional data streams
-    static constexpr size_t STREAM_INTENSITY = 8; // intensity data
-    static constexpr size_t STREAM_TIMESTAMP = 9; // timestamp data
-    static constexpr size_t STREAM_EMITTER_ID = 10; // emitter ID data
-    static constexpr size_t STREAM_CHANNEL_ID = 11; // channel ID data
-    static constexpr size_t STREAM_MATERIAL_ID = 12; // material ID data
-    static constexpr size_t STREAM_TICK_ID = 13; // tick ID data
-    static constexpr size_t STREAM_NORMAL = 14; // normal vectors
-    static constexpr size_t STREAM_VELOCITY = 15; // velocity data
-    static constexpr size_t STREAM_OBJECT_ID = 16; // object ID data
-    static constexpr size_t STREAM_ECHO_ID = 17; // echo ID data
-    static constexpr size_t STREAM_TICK_STATE = 18; // tick states data
-    static constexpr size_t STREAM_RADIAL_VELOCITY_MS = 19; // radial velocity data in m/s
+    static constexpr size_t s_kStreamIntensity = 8; // intensity data
+    static constexpr size_t s_kStreamTimestamp = 9; // timestamp data
+    static constexpr size_t s_kStreamEmitterId = 10; // emitter ID data
+    static constexpr size_t s_kStreamChannelId = 11; // channel ID data
+    static constexpr size_t s_kStreamMaterialId = 12; // material ID data
+    static constexpr size_t s_kStreamTickId = 13; // tick ID data
+    static constexpr size_t s_kStreamNormal = 14; // normal vectors
+    static constexpr size_t s_kStreamVelocity = 15; // velocity data
+    static constexpr size_t s_kStreamObjectId = 16; // object ID data
+    static constexpr size_t s_kStreamEchoId = 17; // echo ID data
+    static constexpr size_t s_kStreamTickState = 18; // tick states data
+    static constexpr size_t s_kStreamRadialVelocityMs = 19; // radial velocity data in m/s
     // Point cloud processing stream
-    static constexpr size_t STREAM_POINT_CLOUD = 20; // point cloud processing
+    static constexpr size_t s_kStreamPointCloud = 20; // point cloud processing
 
-    size_t m_numStreams{ STREAM_POINT_CLOUD + 1 }; // parallel basic data + pipeline optimization
+    size_t m_numStreams{ s_kStreamPointCloud + 1 }; // parallel basic data + pipeline optimization
 
     std::vector<cudaStream_t> m_cudaStreams; // Persistent streams
     std::vector<cudaEvent_t> m_cudaEvents; // Persistent events
@@ -238,40 +260,40 @@ private:
     bool m_dataOnHost{ false };
 
     // Device-side double buffers (used when m_dataOnHost == false, i.e. GPU path)
-    std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> azimuthBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> elevationBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> distanceBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<uint8_t>, 2> flagsBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> intensityBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<uint64_t>, 2> timestampBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> emitterIdBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> channelIdBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> materialIdBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> tickIdBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<float3>, 2> normalBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<float3>, 2> velocityBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<uint8_t>, 2> objectIdBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<uint8_t>, 2> echoIdBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<uint8_t>, 2> tickStateBuffers;
-    std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> radialVelocityMSBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> m_azimuthBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> m_elevationBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> m_distanceBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<uint8_t>, 2> m_flagsBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> m_intensityBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<uint64_t>, 2> m_timestampBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> m_emitterIdBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> m_channelIdBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> m_materialIdBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<uint32_t>, 2> m_tickIdBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<float3>, 2> m_normalBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<float3>, 2> m_velocityBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<uint8_t>, 2> m_objectIdBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<uint8_t>, 2> m_echoIdBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<uint8_t>, 2> m_tickStateBuffers;
+    std::array<isaacsim::core::includes::DeviceBufferBase<float>, 2> m_radialVelocityMsBuffers;
 
     // Host-side double buffers (used when m_dataOnHost == true, i.e. host path)
-    std::array<isaacsim::core::includes::HostBufferBase<float>, 2> h_azimuthBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<float>, 2> h_elevationBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<float>, 2> h_distanceBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<uint8_t>, 2> h_flagsBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<float>, 2> h_intensityBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<uint64_t>, 2> h_timestampBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<uint32_t>, 2> h_emitterIdBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<uint32_t>, 2> h_channelIdBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<uint32_t>, 2> h_materialIdBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<uint32_t>, 2> h_tickIdBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<float3>, 2> h_normalBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<float3>, 2> h_velocityBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<uint8_t>, 2> h_objectIdBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<uint8_t>, 2> h_echoIdBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<uint8_t>, 2> h_tickStateBuffers;
-    std::array<isaacsim::core::includes::HostBufferBase<float>, 2> h_radialVelocityMSBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<float>, 2> m_hAzimuthBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<float>, 2> m_hElevationBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<float>, 2> m_hDistanceBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<uint8_t>, 2> m_hFlagsBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<float>, 2> m_hIntensityBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<uint64_t>, 2> m_hTimestampBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<uint32_t>, 2> m_hEmitterIdBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<uint32_t>, 2> m_hChannelIdBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<uint32_t>, 2> m_hMaterialIdBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<uint32_t>, 2> m_hTickIdBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<float3>, 2> m_hNormalBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<float3>, 2> m_hVelocityBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<uint8_t>, 2> m_hObjectIdBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<uint8_t>, 2> m_hEchoIdBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<uint8_t>, 2> m_hTickStateBuffers;
+    std::array<isaacsim::core::includes::HostBufferBase<float>, 2> m_hRadialVelocityMsBuffers;
 
     bool m_outputAzimuth{ false };
     bool m_outputElevation{ false };
@@ -289,69 +311,69 @@ private:
     bool m_outputTickState{ false };
     bool m_outputRadialVelocityMS{ false };
 
-    isaacsim::core::includes::DeviceBufferBase<size_t> indicesBuffer;
-    isaacsim::core::includes::DeviceBufferBase<size_t> indicesValidBuffer;
+    isaacsim::core::includes::DeviceBufferBase<size_t> m_indicesBuffer;
+    isaacsim::core::includes::DeviceBufferBase<size_t> m_indicesValidBuffer;
 
     // Dedicated device output buffers for the valid points (GPU path)
-    isaacsim::core::includes::DeviceBufferBase<float3> pcBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<float> distanceBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<float> intensityBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<float> azimuthBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<float> elevationBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<int32_t> deltaTimesBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<uint64_t> timestampBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<uint32_t> emitterIdBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<uint32_t> channelIdBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<uint32_t> materialIdBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<uint32_t> tickIdBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<float3> normalBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<float3> velocityBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<uint8_t> objectIdBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<uint8_t> echoIdBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<uint8_t> tickStateBufferValid;
-    isaacsim::core::includes::DeviceBufferBase<float> radialVelocityMSBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<float3> m_pcBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<float> m_distanceBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<float> m_intensityBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<float> m_azimuthBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<float> m_elevationBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<int32_t> m_deltaTimesBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<uint64_t> m_timestampBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<uint32_t> m_emitterIdBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<uint32_t> m_channelIdBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<uint32_t> m_materialIdBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<uint32_t> m_tickIdBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<float3> m_normalBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<float3> m_velocityBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<uint8_t> m_objectIdBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<uint8_t> m_echoIdBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<uint8_t> m_tickStateBufferValid;
+    isaacsim::core::includes::DeviceBufferBase<float> m_radialVelocityMsBufferValid;
 
     // Dedicated host output buffers for the valid points (host path)
-    isaacsim::core::includes::HostBufferBase<float3> h_pcBufferValid;
-    isaacsim::core::includes::HostBufferBase<float> h_distanceBufferValid;
-    isaacsim::core::includes::HostBufferBase<float> h_intensityBufferValid;
-    isaacsim::core::includes::HostBufferBase<float> h_azimuthBufferValid;
-    isaacsim::core::includes::HostBufferBase<float> h_elevationBufferValid;
-    isaacsim::core::includes::HostBufferBase<uint64_t> h_timestampBufferValid;
-    isaacsim::core::includes::HostBufferBase<uint32_t> h_emitterIdBufferValid;
-    isaacsim::core::includes::HostBufferBase<uint32_t> h_channelIdBufferValid;
-    isaacsim::core::includes::HostBufferBase<uint32_t> h_materialIdBufferValid;
-    isaacsim::core::includes::HostBufferBase<uint32_t> h_tickIdBufferValid;
-    isaacsim::core::includes::HostBufferBase<float3> h_normalBufferValid;
-    isaacsim::core::includes::HostBufferBase<float3> h_velocityBufferValid;
-    isaacsim::core::includes::HostBufferBase<uint8_t> h_objectIdBufferValid;
-    isaacsim::core::includes::HostBufferBase<uint8_t> h_echoIdBufferValid;
-    isaacsim::core::includes::HostBufferBase<uint8_t> h_tickStateBufferValid;
-    isaacsim::core::includes::HostBufferBase<float> h_radialVelocityMSBufferValid;
+    isaacsim::core::includes::HostBufferBase<float3> m_hPcBufferValid;
+    isaacsim::core::includes::HostBufferBase<float> m_hDistanceBufferValid;
+    isaacsim::core::includes::HostBufferBase<float> m_hIntensityBufferValid;
+    isaacsim::core::includes::HostBufferBase<float> m_hAzimuthBufferValid;
+    isaacsim::core::includes::HostBufferBase<float> m_hElevationBufferValid;
+    isaacsim::core::includes::HostBufferBase<uint64_t> m_hTimestampBufferValid;
+    isaacsim::core::includes::HostBufferBase<uint32_t> m_hEmitterIdBufferValid;
+    isaacsim::core::includes::HostBufferBase<uint32_t> m_hChannelIdBufferValid;
+    isaacsim::core::includes::HostBufferBase<uint32_t> m_hMaterialIdBufferValid;
+    isaacsim::core::includes::HostBufferBase<uint32_t> m_hTickIdBufferValid;
+    isaacsim::core::includes::HostBufferBase<float3> m_hNormalBufferValid;
+    isaacsim::core::includes::HostBufferBase<float3> m_hVelocityBufferValid;
+    isaacsim::core::includes::HostBufferBase<uint8_t> m_hObjectIdBufferValid;
+    isaacsim::core::includes::HostBufferBase<uint8_t> m_hEchoIdBufferValid;
+    isaacsim::core::includes::HostBufferBase<uint8_t> m_hTickStateBufferValid;
+    isaacsim::core::includes::HostBufferBase<float> m_hRadialVelocityMsBufferValid;
 
-    std::vector<size_t> h_indicesValidBuffer;
-    int h_numValidPoints{ 0 };
+    std::vector<size_t> m_hIndicesValidBuffer;
+    int m_hNumValidPoints{ 0 };
 
     // Cached temporary storage for CUB operations
-    void* m_d_temp_storage{ nullptr };
-    size_t m_temp_storage_bytes{ 0 };
+    void* m_dTempStorage{ nullptr };
+    size_t m_tempStorageBytes{ 0 };
     int m_numPoints{ 0 };
 
     // Cached enable masks for output selection kernels
     uint32_t m_requiredOutputsMask{ 0 };
     uint32_t m_optionalOutputsMask{ 0 };
 
-    omni::sensors::GenericModelOutput* hostGMO{ nullptr };
-    omni::sensors::LidarAuxiliaryData* hostLidarAuxPoints{ nullptr };
-    omni::sensors::RadarAuxiliaryData* hostRadarAuxPoints{ nullptr };
+    omni::sensors::GenericModelOutput* m_hostGmo{ nullptr };
+    omni::sensors::LidarAuxiliaryData* m_hostLidarAuxPoints{ nullptr };
+    omni::sensors::RadarAuxiliaryData* m_hostRadarAuxPoints{ nullptr };
 
-    int* numValidPointsHost{ nullptr };
-    int* numValidPointsDevice{ nullptr };
+    int* m_numValidPointsHost{ nullptr };
+    int* m_numValidPointsDevice{ nullptr };
 
-    static constexpr size_t MAX_POINTS_RADAR = 2500; // RTX Radar model limit
+    static constexpr size_t s_kMaxPointsRadar = 2500; // RTX Radar model limit
 
 public:
-    void reset()
+    void reset() override
     {
         m_firstFrame = true;
         m_isInitialized = false;
@@ -376,30 +398,30 @@ public:
         else
         {
             // GPU path: free CUDA resources (null-check each — node may never have been initialized)
-            if (hostGMO)
+            if (m_hostGmo)
             {
-                CUDA_CHECK(cudaFreeHost(hostGMO));
-                hostGMO = nullptr;
+                CUDA_CHECK(cudaFreeHost(m_hostGmo));
+                m_hostGmo = nullptr;
             }
-            if (hostLidarAuxPoints)
+            if (m_hostLidarAuxPoints)
             {
-                CUDA_CHECK(cudaFreeHost(hostLidarAuxPoints));
-                hostLidarAuxPoints = nullptr;
+                CUDA_CHECK(cudaFreeHost(m_hostLidarAuxPoints));
+                m_hostLidarAuxPoints = nullptr;
             }
-            if (hostRadarAuxPoints)
+            if (m_hostRadarAuxPoints)
             {
-                CUDA_CHECK(cudaFreeHost(hostRadarAuxPoints));
-                hostRadarAuxPoints = nullptr;
+                CUDA_CHECK(cudaFreeHost(m_hostRadarAuxPoints));
+                m_hostRadarAuxPoints = nullptr;
             }
-            if (numValidPointsHost)
+            if (m_numValidPointsHost)
             {
-                CUDA_CHECK(cudaFreeHost(numValidPointsHost));
-                numValidPointsHost = nullptr;
+                CUDA_CHECK(cudaFreeHost(m_numValidPointsHost));
+                m_numValidPointsHost = nullptr;
             }
-            if (numValidPointsDevice)
+            if (m_numValidPointsDevice)
             {
-                CUDA_CHECK(cudaFree(numValidPointsDevice));
-                numValidPointsDevice = nullptr;
+                CUDA_CHECK(cudaFree(m_numValidPointsDevice));
+                m_numValidPointsDevice = nullptr;
             }
 
             // Cleanup persistent streams
@@ -433,12 +455,12 @@ public:
             }
 
             // Cleanup cached temporary storage
-            if (m_d_temp_storage)
+            if (m_dTempStorage)
             {
-                CUDA_CHECK(cudaFree(m_d_temp_storage));
-                m_d_temp_storage = nullptr;
+                CUDA_CHECK(cudaFree(m_dTempStorage));
+                m_dTempStorage = nullptr;
             }
-            m_temp_storage_bytes = 0;
+            m_tempStorageBytes = 0;
             m_numPoints = 0;
         }
 
@@ -502,17 +524,17 @@ public:
         else
         {
             // Allocate pinned host memory
-            CUDA_CHECK(cudaMallocHost(&hostGMO, sizeof(omni::sensors::GenericModelOutput)));
-            CUDA_CHECK(cudaMallocHost(&hostLidarAuxPoints, sizeof(omni::sensors::LidarAuxiliaryData)));
-            CUDA_CHECK(cudaMallocHost(&hostRadarAuxPoints, sizeof(omni::sensors::RadarAuxiliaryData)));
-            CUDA_CHECK(cudaMallocHost(&numValidPointsHost, sizeof(int)));
-            numValidPointsHost[0] = 0;
+            CUDA_CHECK(cudaMallocHost(&m_hostGmo, sizeof(omni::sensors::GenericModelOutput)));
+            CUDA_CHECK(cudaMallocHost(&m_hostLidarAuxPoints, sizeof(omni::sensors::LidarAuxiliaryData)));
+            CUDA_CHECK(cudaMallocHost(&m_hostRadarAuxPoints, sizeof(omni::sensors::RadarAuxiliaryData)));
+            CUDA_CHECK(cudaMallocHost(&m_numValidPointsHost, sizeof(int)));
+            m_numValidPointsHost[0] = 0;
 
             // Get auxiliary data structure to set output flags
-            CUDA_CHECK(cudaMemcpy(hostGMO, reinterpret_cast<void*>(db.inputs.dataPtr()),
+            CUDA_CHECK(cudaMemcpy(m_hostGmo, reinterpret_cast<void*>(db.inputs.dataPtr()),
                                   sizeof(omni::sensors::GenericModelOutput), cudaMemcpyDeviceToHost));
-            auxType = hostGMO->auxType;
-            modality = hostGMO->modality;
+            auxType = m_hostGmo->auxType;
+            modality = m_hostGmo->modality;
         }
         const std::string renderProductPath = std::string(db.tokenToString(db.inputs.renderProductPath()));
         const pxr::UsdPrim sensorPrim = isaacsim::core::includes::getCameraPrimFromRenderProduct(renderProductPath);
@@ -527,7 +549,7 @@ public:
                 }
                 else
                 {
-                    CUDA_CHECK(cudaMemcpy(hostLidarAuxPoints, hostGMO->auxiliaryData,
+                    CUDA_CHECK(cudaMemcpy(m_hostLidarAuxPoints, m_hostGmo->auxiliaryData,
                                           sizeof(omni::sensors::LidarAuxiliaryData), cudaMemcpyDeviceToHost));
                 }
             }
@@ -578,11 +600,11 @@ public:
                 }
                 else
                 {
-                    CUDA_CHECK(cudaMemcpy(hostRadarAuxPoints, hostGMO->auxiliaryData,
+                    CUDA_CHECK(cudaMemcpy(m_hostRadarAuxPoints, m_hostGmo->auxiliaryData,
                                           sizeof(omni::sensors::RadarAuxiliaryData), cudaMemcpyDeviceToHost));
                 }
             }
-            m_maxPoints = MAX_POINTS_RADAR;
+            m_maxPoints = s_kMaxPointsRadar;
         }
         else
         {
@@ -595,7 +617,7 @@ public:
         m_outputElevation = db.inputs.outputElevation();
         m_outputDistance = db.inputs.outputDistance();
 
-        const omni::sensors::LidarAuxiliaryData* initLidarAux = m_dataOnHost ? &localInitLidarAux : hostLidarAuxPoints;
+        const omni::sensors::LidarAuxiliaryData* initLidarAux = m_dataOnHost ? &localInitLidarAux : m_hostLidarAuxPoints;
 
         // Lambda to validate output flags and check aux type/modality requirements
         auto validateOutput = [&](bool inputEnabled, omni::sensors::AuxType requiredAuxType,
@@ -603,7 +625,9 @@ public:
                                   const char* outputName) -> bool
         {
             if (!inputEnabled)
+            {
                 return false;
+            }
 
             bool auxTypeValid = auxType >= requiredAuxType;
             bool modalityValid = modality == requiredModality;
@@ -666,7 +690,9 @@ public:
         auto allocateHostOutput = [&](auto& hostBufferArray, auto& validBuffer, size_t stride = 1)
         {
             for (size_t i = 0; i < 2; ++i)
+            {
                 hostBufferArray[i].resize(m_maxPoints * stride);
+            }
             validBuffer.resize(m_maxPoints * stride);
         };
 
@@ -707,155 +733,239 @@ public:
         if (m_dataOnHost)
         {
             if (m_outputIntensity)
-                allocateHostOutput(h_intensityBuffers, h_intensityBufferValid);
+            {
+                allocateHostOutput(m_hIntensityBuffers, m_hIntensityBufferValid);
+            }
             if (m_outputTimestamp)
-                allocateHostOutput(h_timestampBuffers, h_timestampBufferValid);
+            {
+                allocateHostOutput(m_hTimestampBuffers, m_hTimestampBufferValid);
+            }
             if (m_outputEmitterId)
-                allocateHostOutput(h_emitterIdBuffers, h_emitterIdBufferValid);
+            {
+                allocateHostOutput(m_hEmitterIdBuffers, m_hEmitterIdBufferValid);
+            }
             if (m_outputChannelId)
-                allocateHostOutput(h_channelIdBuffers, h_channelIdBufferValid);
+            {
+                allocateHostOutput(m_hChannelIdBuffers, m_hChannelIdBufferValid);
+            }
             if (m_outputMaterialId)
-                allocateHostOutput(h_materialIdBuffers, h_materialIdBufferValid);
+            {
+                allocateHostOutput(m_hMaterialIdBuffers, m_hMaterialIdBufferValid);
+            }
             if (m_outputTickId)
-                allocateHostOutput(h_tickIdBuffers, h_tickIdBufferValid);
+            {
+                allocateHostOutput(m_hTickIdBuffers, m_hTickIdBufferValid);
+            }
             if (m_outputHitNormal)
-                allocateHostOutput(h_normalBuffers, h_normalBufferValid);
+            {
+                allocateHostOutput(m_hNormalBuffers, m_hNormalBufferValid);
+            }
             if (m_outputVelocity)
-                allocateHostOutput(h_velocityBuffers, h_velocityBufferValid);
+            {
+                allocateHostOutput(m_hVelocityBuffers, m_hVelocityBufferValid);
+            }
             if (m_outputObjectId)
-                allocateHostOutput(h_objectIdBuffers, h_objectIdBufferValid, 16);
+            {
+                allocateHostOutput(m_hObjectIdBuffers, m_hObjectIdBufferValid, 16);
+            }
             if (m_outputEchoId)
-                allocateHostOutput(h_echoIdBuffers, h_echoIdBufferValid);
+            {
+                allocateHostOutput(m_hEchoIdBuffers, m_hEchoIdBufferValid);
+            }
             if (m_outputTickState)
-                allocateHostOutput(h_tickStateBuffers, h_tickStateBufferValid);
+            {
+                allocateHostOutput(m_hTickStateBuffers, m_hTickStateBufferValid);
+            }
             if (m_outputRadialVelocityMS)
-                allocateHostOutput(h_radialVelocityMSBuffers, h_radialVelocityMSBufferValid);
+            {
+                allocateHostOutput(m_hRadialVelocityMsBuffers, m_hRadialVelocityMsBufferValid);
+            }
         }
         else
         {
             if (m_outputIntensity)
-                allocateDeviceOutput(intensityBuffers, intensityBufferValid);
+            {
+                allocateDeviceOutput(m_intensityBuffers, m_intensityBufferValid);
+            }
             if (m_outputTimestamp)
-                allocateDeviceOutput(timestampBuffers, timestampBufferValid);
+            {
+                allocateDeviceOutput(m_timestampBuffers, m_timestampBufferValid);
+            }
             if (m_outputEmitterId)
-                allocateDeviceOutput(emitterIdBuffers, emitterIdBufferValid);
+            {
+                allocateDeviceOutput(m_emitterIdBuffers, m_emitterIdBufferValid);
+            }
             if (m_outputChannelId)
-                allocateDeviceOutput(channelIdBuffers, channelIdBufferValid);
+            {
+                allocateDeviceOutput(m_channelIdBuffers, m_channelIdBufferValid);
+            }
             if (m_outputMaterialId)
-                allocateDeviceOutput(materialIdBuffers, materialIdBufferValid);
+            {
+                allocateDeviceOutput(m_materialIdBuffers, m_materialIdBufferValid);
+            }
             if (m_outputTickId)
-                allocateDeviceOutput(tickIdBuffers, tickIdBufferValid);
+            {
+                allocateDeviceOutput(m_tickIdBuffers, m_tickIdBufferValid);
+            }
             if (m_outputHitNormal)
-                allocateDeviceOutput(normalBuffers, normalBufferValid);
+            {
+                allocateDeviceOutput(m_normalBuffers, m_normalBufferValid);
+            }
             if (m_outputVelocity)
-                allocateDeviceOutput(velocityBuffers, velocityBufferValid);
+            {
+                allocateDeviceOutput(m_velocityBuffers, m_velocityBufferValid);
+            }
             if (m_outputObjectId)
-                allocateDeviceOutput(objectIdBuffers, objectIdBufferValid, 16);
+            {
+                allocateDeviceOutput(m_objectIdBuffers, m_objectIdBufferValid, 16);
+            }
             if (m_outputEchoId)
-                allocateDeviceOutput(echoIdBuffers, echoIdBufferValid);
+            {
+                allocateDeviceOutput(m_echoIdBuffers, m_echoIdBufferValid);
+            }
             if (m_outputTickState)
-                allocateDeviceOutput(tickStateBuffers, tickStateBufferValid);
+            {
+                allocateDeviceOutput(m_tickStateBuffers, m_tickStateBufferValid);
+            }
             if (m_outputRadialVelocityMS)
-                allocateDeviceOutput(radialVelocityMSBuffers, radialVelocityMSBufferValid);
+            {
+                allocateDeviceOutput(m_radialVelocityMsBuffers, m_radialVelocityMsBufferValid);
+            }
         }
 
         // Initialize cached enable masks for output selection kernels
         m_requiredOutputsMask = 0;
         if (m_outputAzimuth)
+        {
             m_requiredOutputsMask |= 1; // bit 0: azimuth
+        }
         if (m_outputElevation)
+        {
             m_requiredOutputsMask |= 2; // bit 1: elevation
+        }
         if (m_outputDistance)
+        {
             m_requiredOutputsMask |= 4; // bit 2: distance
+        }
         if (m_outputIntensity)
+        {
             m_requiredOutputsMask |= 8; // bit 3: intensity
+        }
 
         m_optionalOutputsMask = 0;
         if (m_outputTimestamp)
+        {
             m_optionalOutputsMask |= (1 << 4); // bit 4: timestamp
+        }
         if (m_outputEmitterId)
+        {
             m_optionalOutputsMask |= (1 << 5); // bit 5: emitter ID
+        }
         if (m_outputChannelId)
+        {
             m_optionalOutputsMask |= (1 << 6); // bit 6: channel ID
+        }
         if (m_outputMaterialId)
+        {
             m_optionalOutputsMask |= (1 << 7); // bit 7: material ID
+        }
         if (m_outputTickId)
+        {
             m_optionalOutputsMask |= (1 << 8); // bit 8: tick ID
+        }
         if (m_outputHitNormal)
+        {
             m_optionalOutputsMask |= (1 << 9); // bit 9: normal
+        }
         if (m_outputVelocity)
+        {
             m_optionalOutputsMask |= (1 << 10); // bit 10: velocity
+        }
         if (m_outputObjectId)
+        {
             m_optionalOutputsMask |= (1 << 11); // bit 11: object ID
+        }
         if (m_outputEchoId)
+        {
             m_optionalOutputsMask |= (1 << 12); // bit 12: echo ID
+        }
         if (m_outputTickState)
+        {
             m_optionalOutputsMask |= (1 << 13); // bit 13: tick states
+        }
         if (m_outputRadialVelocityMS)
+        {
             m_optionalOutputsMask |= (1 << 14); // bit 14: radial velocity MS
+        }
 
         if (m_dataOnHost)
         {
             // Host path: allocate host buffers for required data (azimuth, elevation, distance, flags)
             for (size_t i = 0; i < 2; ++i)
             {
-                h_azimuthBuffers[i].resize(m_maxPoints);
-                h_elevationBuffers[i].resize(m_maxPoints);
-                h_distanceBuffers[i].resize(m_maxPoints);
-                h_flagsBuffers[i].resize(m_maxPoints);
+                m_hAzimuthBuffers[i].resize(m_maxPoints);
+                m_hElevationBuffers[i].resize(m_maxPoints);
+                m_hDistanceBuffers[i].resize(m_maxPoints);
+                m_hFlagsBuffers[i].resize(m_maxPoints);
             }
 
             // Allocate host output buffers
-            h_pcBufferValid.resize(m_maxPoints);
+            m_hPcBufferValid.resize(m_maxPoints);
             if (m_outputAzimuth)
-                h_azimuthBufferValid.resize(m_maxPoints);
+            {
+                m_hAzimuthBufferValid.resize(m_maxPoints);
+            }
             if (m_outputElevation)
-                h_elevationBufferValid.resize(m_maxPoints);
+            {
+                m_hElevationBufferValid.resize(m_maxPoints);
+            }
             if (m_outputDistance)
-                h_distanceBufferValid.resize(m_maxPoints);
+            {
+                m_hDistanceBufferValid.resize(m_maxPoints);
+            }
 
             // Reserve space for valid indices
-            h_indicesValidBuffer.reserve(m_maxPoints);
+            m_hIndicesValidBuffer.reserve(m_maxPoints);
         }
         else
         {
             // GPU path: allocate device buffers and CUDA resources
-            CUDA_CHECK(cudaMalloc(&numValidPointsDevice, sizeof(int)));
+            CUDA_CHECK(cudaMalloc(&m_numValidPointsDevice, sizeof(int)));
 
             for (size_t i = 0; i < 2; ++i)
             {
-                azimuthBuffers[i].setDevice(cudaDeviceIndex);
-                azimuthBuffers[i].resize(m_maxPoints);
-                elevationBuffers[i].setDevice(cudaDeviceIndex);
-                elevationBuffers[i].resize(m_maxPoints);
-                distanceBuffers[i].setDevice(cudaDeviceIndex);
-                distanceBuffers[i].resize(m_maxPoints);
-                flagsBuffers[i].setDevice(cudaDeviceIndex);
-                flagsBuffers[i].resize(m_maxPoints);
+                m_azimuthBuffers[i].setDevice(cudaDeviceIndex);
+                m_azimuthBuffers[i].resize(m_maxPoints);
+                m_elevationBuffers[i].setDevice(cudaDeviceIndex);
+                m_elevationBuffers[i].resize(m_maxPoints);
+                m_distanceBuffers[i].setDevice(cudaDeviceIndex);
+                m_distanceBuffers[i].resize(m_maxPoints);
+                m_flagsBuffers[i].setDevice(cudaDeviceIndex);
+                m_flagsBuffers[i].resize(m_maxPoints);
             }
 
-            pcBufferValid.setDevice(cudaDeviceIndex);
-            pcBufferValid.resize(m_maxPoints);
+            m_pcBufferValid.setDevice(cudaDeviceIndex);
+            m_pcBufferValid.resize(m_maxPoints);
             if (m_outputAzimuth)
             {
-                azimuthBufferValid.setDevice(cudaDeviceIndex);
-                azimuthBufferValid.resize(m_maxPoints);
+                m_azimuthBufferValid.setDevice(cudaDeviceIndex);
+                m_azimuthBufferValid.resize(m_maxPoints);
             }
             if (m_outputElevation)
             {
-                elevationBufferValid.setDevice(cudaDeviceIndex);
-                elevationBufferValid.resize(m_maxPoints);
+                m_elevationBufferValid.setDevice(cudaDeviceIndex);
+                m_elevationBufferValid.resize(m_maxPoints);
             }
             if (m_outputDistance)
             {
-                distanceBufferValid.setDevice(cudaDeviceIndex);
-                distanceBufferValid.resize(m_maxPoints);
+                m_distanceBufferValid.setDevice(cudaDeviceIndex);
+                m_distanceBufferValid.resize(m_maxPoints);
             }
 
-            indicesBuffer.setDevice(cudaDeviceIndex);
-            indicesBuffer.resize(m_maxPoints);
-            indicesValidBuffer.setDevice(cudaDeviceIndex);
-            indicesValidBuffer.resize(m_maxPoints);
+            m_indicesBuffer.setDevice(cudaDeviceIndex);
+            m_indicesBuffer.resize(m_maxPoints);
+            m_indicesValidBuffer.setDevice(cudaDeviceIndex);
+            m_indicesValidBuffer.resize(m_maxPoints);
 
             // Init persistent CUDA streams
             m_cudaStreams.resize(m_numStreams);
@@ -871,7 +981,7 @@ public:
                 CUDA_CHECK(cudaEventCreate(&m_cudaEvents[i]));
             }
 
-            fillIndices(indicesBuffer.data(), m_maxPoints, m_maxThreadsPerBlock, cudaDeviceIndex);
+            fillIndices(m_indicesBuffer.data(), m_maxPoints, m_maxThreadsPerBlock, cudaDeviceIndex);
 
             // init cuda graphs for repeated ops
             if (!initializeCudaGraphs(cudaDeviceIndex))
@@ -880,11 +990,11 @@ public:
             }
 
             // Pre-allocate temporary storage for CUB operations - dynamic allocation not supported on vGPU
-            m_d_temp_storage = nullptr;
-            m_temp_storage_bytes = getTempStorageSizeForValidIndices(m_maxPoints, cudaDeviceIndex);
+            m_dTempStorage = nullptr;
+            m_tempStorageBytes = getTempStorageSizeForValidIndices(m_maxPoints, cudaDeviceIndex);
 
             // Allocate temporary storage based on max points
-            CUDA_CHECK(cudaMalloc(&m_d_temp_storage, m_temp_storage_bytes));
+            CUDA_CHECK(cudaMalloc(&m_dTempStorage, m_tempStorageBytes));
             m_numPoints = static_cast<int>(m_maxPoints); // Cache the max points
         }
 
@@ -894,7 +1004,9 @@ public:
     bool initializeCudaGraphs(int cudaDeviceIndex)
     {
         if (m_graphsInitialized)
+        {
             return true;
+        }
 
         isaacsim::core::includes::ScopedDevice scopedDev(cudaDeviceIndex);
 
@@ -910,30 +1022,30 @@ public:
             copyParams.kind = cudaMemcpyDeviceToDevice;
 
             // Current buffer nodes - use placeholder parameters that will be updated at runtime
-            copyParams.srcPtr =
-                make_cudaPitchedPtr(azimuthBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
-            copyParams.dstPtr =
-                make_cudaPitchedPtr(azimuthBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
+            copyParams.srcPtr = make_cudaPitchedPtr(
+                m_azimuthBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
+            copyParams.dstPtr = make_cudaPitchedPtr(
+                m_azimuthBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
             copyParams.extent = make_cudaExtent(m_maxPoints * sizeof(float), 1, 1); // Width in bytes for proper 1D copy
             CUDA_CHECK(cudaGraphAddMemcpyNode(&m_azimuthCurrentNode, m_basicDataCopyGraph, nullptr, 0, &copyParams));
 
             copyParams.srcPtr = make_cudaPitchedPtr(
-                elevationBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
+                m_elevationBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
             copyParams.dstPtr = make_cudaPitchedPtr(
-                elevationBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
+                m_elevationBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
             CUDA_CHECK(cudaGraphAddMemcpyNode(&m_elevationCurrentNode, m_basicDataCopyGraph, nullptr, 0, &copyParams));
 
             copyParams.srcPtr = make_cudaPitchedPtr(
-                distanceBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
+                m_distanceBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
             copyParams.dstPtr = make_cudaPitchedPtr(
-                distanceBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
+                m_distanceBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
             CUDA_CHECK(cudaGraphAddMemcpyNode(&m_distanceCurrentNode, m_basicDataCopyGraph, nullptr, 0, &copyParams));
 
             // Flags current - uint8_t data
-            copyParams.srcPtr =
-                make_cudaPitchedPtr(flagsBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(uint8_t), m_maxPoints, 1);
-            copyParams.dstPtr =
-                make_cudaPitchedPtr(flagsBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(uint8_t), m_maxPoints, 1);
+            copyParams.srcPtr = make_cudaPitchedPtr(
+                m_flagsBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(uint8_t), m_maxPoints, 1);
+            copyParams.dstPtr = make_cudaPitchedPtr(
+                m_flagsBuffers[m_currentBuffer].data(), m_maxPoints * sizeof(uint8_t), m_maxPoints, 1);
             copyParams.extent = make_cudaExtent(m_maxPoints * sizeof(uint8_t), 1, 1); // Width in bytes
             CUDA_CHECK(cudaGraphAddMemcpyNode(&m_flagsCurrentNode, m_basicDataCopyGraph, nullptr, 0, &copyParams));
 
@@ -949,28 +1061,28 @@ public:
 
             // Next buffer nodes in separate graph
             overflowParams.srcPtr =
-                make_cudaPitchedPtr(azimuthBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
+                make_cudaPitchedPtr(m_azimuthBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
             overflowParams.dstPtr =
-                make_cudaPitchedPtr(azimuthBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
+                make_cudaPitchedPtr(m_azimuthBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
             overflowParams.extent = make_cudaExtent(m_maxPoints * sizeof(float), 1, 1);
             CUDA_CHECK(cudaGraphAddMemcpyNode(&m_azimuthNextNode, m_overflowCopyGraph, nullptr, 0, &overflowParams));
 
-            overflowParams.srcPtr =
-                make_cudaPitchedPtr(elevationBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
-            overflowParams.dstPtr =
-                make_cudaPitchedPtr(elevationBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
+            overflowParams.srcPtr = make_cudaPitchedPtr(
+                m_elevationBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
+            overflowParams.dstPtr = make_cudaPitchedPtr(
+                m_elevationBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
             CUDA_CHECK(cudaGraphAddMemcpyNode(&m_elevationNextNode, m_overflowCopyGraph, nullptr, 0, &overflowParams));
 
             overflowParams.srcPtr =
-                make_cudaPitchedPtr(distanceBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
+                make_cudaPitchedPtr(m_distanceBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
             overflowParams.dstPtr =
-                make_cudaPitchedPtr(distanceBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
+                make_cudaPitchedPtr(m_distanceBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints, 1);
             CUDA_CHECK(cudaGraphAddMemcpyNode(&m_distanceNextNode, m_overflowCopyGraph, nullptr, 0, &overflowParams));
 
             overflowParams.srcPtr =
-                make_cudaPitchedPtr(flagsBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(uint8_t), m_maxPoints, 1);
+                make_cudaPitchedPtr(m_flagsBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(uint8_t), m_maxPoints, 1);
             overflowParams.dstPtr =
-                make_cudaPitchedPtr(flagsBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(uint8_t), m_maxPoints, 1);
+                make_cudaPitchedPtr(m_flagsBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(uint8_t), m_maxPoints, 1);
             overflowParams.extent = make_cudaExtent(m_maxPoints * sizeof(uint8_t), 1, 1);
             CUDA_CHECK(cudaGraphAddMemcpyNode(&m_flagsNextNode, m_overflowCopyGraph, nullptr, 0, &overflowParams));
 
@@ -1012,7 +1124,9 @@ public:
                                       size_t startIndex)
     {
         if (!m_graphsInitialized)
+        {
             return false;
+        }
 
         try
         {
@@ -1030,7 +1144,7 @@ public:
                 // Azimuth current
                 currentParams.srcPtr = make_cudaPitchedPtr((void*)hostGMO->elements.x, copyByteSize, copyByteSize, 1);
                 currentParams.dstPtr =
-                    make_cudaPitchedPtr((void*)((char*)azimuthBuffers[m_currentBuffer].data() + startByteOffset),
+                    make_cudaPitchedPtr((void*)((char*)m_azimuthBuffers[m_currentBuffer].data() + startByteOffset),
                                         m_maxPoints * sizeof(float), m_maxPoints * sizeof(float), 1);
                 currentParams.extent = make_cudaExtent(copyByteSize, 1, 1);
                 CUDA_CHECK(
@@ -1039,7 +1153,7 @@ public:
                 // Elevation current
                 currentParams.srcPtr = make_cudaPitchedPtr((void*)hostGMO->elements.y, copyByteSize, copyByteSize, 1);
                 currentParams.dstPtr =
-                    make_cudaPitchedPtr((void*)((char*)elevationBuffers[m_currentBuffer].data() + startByteOffset),
+                    make_cudaPitchedPtr((void*)((char*)m_elevationBuffers[m_currentBuffer].data() + startByteOffset),
                                         m_maxPoints * sizeof(float), m_maxPoints * sizeof(float), 1);
                 CUDA_CHECK(
                     cudaGraphExecMemcpyNodeSetParams(m_basicDataCopyGraphExec, m_elevationCurrentNode, &currentParams));
@@ -1047,7 +1161,7 @@ public:
                 // Distance current
                 currentParams.srcPtr = make_cudaPitchedPtr((void*)hostGMO->elements.z, copyByteSize, copyByteSize, 1);
                 currentParams.dstPtr =
-                    make_cudaPitchedPtr((void*)((char*)distanceBuffers[m_currentBuffer].data() + startByteOffset),
+                    make_cudaPitchedPtr((void*)((char*)m_distanceBuffers[m_currentBuffer].data() + startByteOffset),
                                         m_maxPoints * sizeof(float), m_maxPoints * sizeof(float), 1);
                 CUDA_CHECK(
                     cudaGraphExecMemcpyNodeSetParams(m_basicDataCopyGraphExec, m_distanceCurrentNode, &currentParams));
@@ -1058,7 +1172,7 @@ public:
                 currentParams.srcPtr =
                     make_cudaPitchedPtr((void*)hostGMO->elements.flags, flagsCopyByteSize, flagsCopyByteSize, 1);
                 currentParams.dstPtr =
-                    make_cudaPitchedPtr((void*)((char*)flagsBuffers[m_currentBuffer].data() + flagsStartByteOffset),
+                    make_cudaPitchedPtr((void*)((char*)m_flagsBuffers[m_currentBuffer].data() + flagsStartByteOffset),
                                         m_maxPoints * sizeof(uint8_t), m_maxPoints * sizeof(uint8_t), 1);
                 currentParams.extent = make_cudaExtent(flagsCopyByteSize, 1, 1);
                 CUDA_CHECK(cudaGraphExecMemcpyNodeSetParams(m_basicDataCopyGraphExec, m_flagsCurrentNode, &currentParams));
@@ -1072,21 +1186,21 @@ public:
                 zeroParams.kind = cudaMemcpyDeviceToDevice;
                 zeroParams.extent = make_cudaExtent(1, 1, 1); // Minimal self-copy
 
-                zeroParams.srcPtr = make_cudaPitchedPtr(azimuthBuffers[m_currentBuffer].data(), 1, 1, 1);
-                zeroParams.dstPtr = make_cudaPitchedPtr(azimuthBuffers[m_currentBuffer].data(), 1, 1, 1);
+                zeroParams.srcPtr = make_cudaPitchedPtr(m_azimuthBuffers[m_currentBuffer].data(), 1, 1, 1);
+                zeroParams.dstPtr = make_cudaPitchedPtr(m_azimuthBuffers[m_currentBuffer].data(), 1, 1, 1);
                 CUDA_CHECK(cudaGraphExecMemcpyNodeSetParams(m_basicDataCopyGraphExec, m_azimuthCurrentNode, &zeroParams));
 
-                zeroParams.srcPtr = make_cudaPitchedPtr(elevationBuffers[m_currentBuffer].data(), 1, 1, 1);
-                zeroParams.dstPtr = make_cudaPitchedPtr(elevationBuffers[m_currentBuffer].data(), 1, 1, 1);
+                zeroParams.srcPtr = make_cudaPitchedPtr(m_elevationBuffers[m_currentBuffer].data(), 1, 1, 1);
+                zeroParams.dstPtr = make_cudaPitchedPtr(m_elevationBuffers[m_currentBuffer].data(), 1, 1, 1);
                 CUDA_CHECK(
                     cudaGraphExecMemcpyNodeSetParams(m_basicDataCopyGraphExec, m_elevationCurrentNode, &zeroParams));
 
-                zeroParams.srcPtr = make_cudaPitchedPtr(distanceBuffers[m_currentBuffer].data(), 1, 1, 1);
-                zeroParams.dstPtr = make_cudaPitchedPtr(distanceBuffers[m_currentBuffer].data(), 1, 1, 1);
+                zeroParams.srcPtr = make_cudaPitchedPtr(m_distanceBuffers[m_currentBuffer].data(), 1, 1, 1);
+                zeroParams.dstPtr = make_cudaPitchedPtr(m_distanceBuffers[m_currentBuffer].data(), 1, 1, 1);
                 CUDA_CHECK(cudaGraphExecMemcpyNodeSetParams(m_basicDataCopyGraphExec, m_distanceCurrentNode, &zeroParams));
 
-                zeroParams.srcPtr = make_cudaPitchedPtr(flagsBuffers[m_currentBuffer].data(), 1, 1, 1);
-                zeroParams.dstPtr = make_cudaPitchedPtr(flagsBuffers[m_currentBuffer].data(), 1, 1, 1);
+                zeroParams.srcPtr = make_cudaPitchedPtr(m_flagsBuffers[m_currentBuffer].data(), 1, 1, 1);
+                zeroParams.dstPtr = make_cudaPitchedPtr(m_flagsBuffers[m_currentBuffer].data(), 1, 1, 1);
                 CUDA_CHECK(cudaGraphExecMemcpyNodeSetParams(m_basicDataCopyGraphExec, m_flagsCurrentNode, &zeroParams));
             }
 
@@ -1104,9 +1218,13 @@ public:
                                        size_t numElementsToCopyToNextBuffer)
     {
         if (!m_graphsInitialized)
+        {
             return false;
+        }
         if (numElementsToCopyToNextBuffer == 0)
+        {
             return true; // Nothing to update
+        }
 
         try
         {
@@ -1122,7 +1240,7 @@ public:
             nextParams.srcPtr = make_cudaPitchedPtr(
                 (void*)((char*)hostGMO->elements.x + srcByteOffset), nextCopyByteSize, nextCopyByteSize, 1);
             nextParams.dstPtr = make_cudaPitchedPtr(
-                azimuthBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints * sizeof(float), 1);
+                m_azimuthBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints * sizeof(float), 1);
             nextParams.extent = make_cudaExtent(nextCopyByteSize, 1, 1);
             CUDA_CHECK(cudaGraphExecMemcpyNodeSetParams(m_overflowCopyGraphExec, m_azimuthNextNode, &nextParams));
 
@@ -1130,14 +1248,14 @@ public:
             nextParams.srcPtr = make_cudaPitchedPtr(
                 (void*)((char*)hostGMO->elements.y + srcByteOffset), nextCopyByteSize, nextCopyByteSize, 1);
             nextParams.dstPtr = make_cudaPitchedPtr(
-                elevationBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints * sizeof(float), 1);
+                m_elevationBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints * sizeof(float), 1);
             CUDA_CHECK(cudaGraphExecMemcpyNodeSetParams(m_overflowCopyGraphExec, m_elevationNextNode, &nextParams));
 
             // Distance next
             nextParams.srcPtr = make_cudaPitchedPtr(
                 (void*)((char*)hostGMO->elements.z + srcByteOffset), nextCopyByteSize, nextCopyByteSize, 1);
             nextParams.dstPtr = make_cudaPitchedPtr(
-                distanceBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints * sizeof(float), 1);
+                m_distanceBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(float), m_maxPoints * sizeof(float), 1);
             CUDA_CHECK(cudaGraphExecMemcpyNodeSetParams(m_overflowCopyGraphExec, m_distanceNextNode, &nextParams));
 
             // Flags next (uint8_t)
@@ -1146,7 +1264,7 @@ public:
             nextParams.srcPtr = make_cudaPitchedPtr((void*)((char*)hostGMO->elements.flags + flagsSrcByteOffset),
                                                     flagsNextCopyByteSize, flagsNextCopyByteSize, 1);
             nextParams.dstPtr = make_cudaPitchedPtr(
-                flagsBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(uint8_t), m_maxPoints * sizeof(uint8_t), 1);
+                m_flagsBuffers[m_nextBuffer].data(), m_maxPoints * sizeof(uint8_t), m_maxPoints * sizeof(uint8_t), 1);
             nextParams.extent = make_cudaExtent(flagsNextCopyByteSize, 1, 1);
             CUDA_CHECK(cudaGraphExecMemcpyNodeSetParams(m_overflowCopyGraphExec, m_flagsNextNode, &nextParams));
 
@@ -1271,12 +1389,12 @@ public:
         {
             // GPU path: copy GMO from device to host using async copy
             cudaStream_t headerStream = state.m_cudaStreams[0];
-            CUDA_CHECK(cudaMemcpyAsync(state.hostGMO, reinterpret_cast<void*>(db.inputs.dataPtr()),
+            CUDA_CHECK(cudaMemcpyAsync(state.m_hostGmo, reinterpret_cast<void*>(db.inputs.dataPtr()),
                                        sizeof(omni::sensors::GenericModelOutput), cudaMemcpyDeviceToHost, headerStream));
             CUDA_CHECK(cudaStreamSynchronize(headerStream));
-            numElements = static_cast<size_t>(state.hostGMO->numElements);
-            auxType = state.hostGMO->auxType;
-            modality = state.hostGMO->modality;
+            numElements = static_cast<size_t>(state.m_hostGmo->numElements);
+            auxType = state.m_hostGmo->auxType;
+            modality = state.m_hostGmo->modality;
         }
 
         if (numElements == 0)
@@ -1301,9 +1419,13 @@ public:
             if (state.m_dataOnHost)
             {
                 if (modality == omni::sensors::Modality::LIDAR)
+                {
                     rebaseLidarAuxReadOnly(localGMO, localLidarAux);
+                }
                 else if (modality == omni::sensors::Modality::RADAR)
+                {
                     rebaseRadarAuxReadOnly(localGMO, localRadarAux);
+                }
             }
             else
             {
@@ -1311,13 +1433,13 @@ public:
                 cudaStream_t auxStream = state.m_cudaStreams[1];
                 if (modality == omni::sensors::Modality::LIDAR)
                 {
-                    CUDA_CHECK(cudaMemcpyAsync(state.hostLidarAuxPoints, state.hostGMO->auxiliaryData,
+                    CUDA_CHECK(cudaMemcpyAsync(state.m_hostLidarAuxPoints, state.m_hostGmo->auxiliaryData,
                                                sizeof(omni::sensors::LidarAuxiliaryData), cudaMemcpyDeviceToHost,
                                                auxStream));
                 }
                 else if (modality == omni::sensors::Modality::RADAR)
                 {
-                    CUDA_CHECK(cudaMemcpyAsync(state.hostRadarAuxPoints, state.hostGMO->auxiliaryData,
+                    CUDA_CHECK(cudaMemcpyAsync(state.m_hostRadarAuxPoints, state.m_hostGmo->auxiliaryData,
                                                sizeof(omni::sensors::RadarAuxiliaryData), cudaMemcpyDeviceToHost,
                                                auxStream));
                 }
@@ -1361,42 +1483,50 @@ public:
                 tasking->addTask(carb::tasking::Priority::eHigh, copyTasks,
                                  [&]()
                                  {
-                                     memcpy(state.h_azimuthBuffers[state.m_currentBuffer].data() + startIndex,
+                                     memcpy(state.m_hAzimuthBuffers[state.m_currentBuffer].data() + startIndex,
                                             localGMO.elements.x, numElementsToCopyToCurrentBuffer * sizeof(float));
                                      if (numElementsToCopyToNextBuffer > 0)
-                                         memcpy(state.h_azimuthBuffers[state.m_nextBuffer].data(),
+                                     {
+                                         memcpy(state.m_hAzimuthBuffers[state.m_nextBuffer].data(),
                                                 localGMO.elements.x + numElementsToCopyToCurrentBuffer,
                                                 numElementsToCopyToNextBuffer * sizeof(float));
+                                     }
                                  });
                 tasking->addTask(carb::tasking::Priority::eHigh, copyTasks,
                                  [&]()
                                  {
-                                     memcpy(state.h_elevationBuffers[state.m_currentBuffer].data() + startIndex,
+                                     memcpy(state.m_hElevationBuffers[state.m_currentBuffer].data() + startIndex,
                                             localGMO.elements.y, numElementsToCopyToCurrentBuffer * sizeof(float));
                                      if (numElementsToCopyToNextBuffer > 0)
-                                         memcpy(state.h_elevationBuffers[state.m_nextBuffer].data(),
+                                     {
+                                         memcpy(state.m_hElevationBuffers[state.m_nextBuffer].data(),
                                                 localGMO.elements.y + numElementsToCopyToCurrentBuffer,
                                                 numElementsToCopyToNextBuffer * sizeof(float));
+                                     }
                                  });
                 tasking->addTask(carb::tasking::Priority::eHigh, copyTasks,
                                  [&]()
                                  {
-                                     memcpy(state.h_distanceBuffers[state.m_currentBuffer].data() + startIndex,
+                                     memcpy(state.m_hDistanceBuffers[state.m_currentBuffer].data() + startIndex,
                                             localGMO.elements.z, numElementsToCopyToCurrentBuffer * sizeof(float));
                                      if (numElementsToCopyToNextBuffer > 0)
-                                         memcpy(state.h_distanceBuffers[state.m_nextBuffer].data(),
+                                     {
+                                         memcpy(state.m_hDistanceBuffers[state.m_nextBuffer].data(),
                                                 localGMO.elements.z + numElementsToCopyToCurrentBuffer,
                                                 numElementsToCopyToNextBuffer * sizeof(float));
+                                     }
                                  });
                 tasking->addTask(carb::tasking::Priority::eHigh, copyTasks,
                                  [&]()
                                  {
-                                     memcpy(state.h_flagsBuffers[state.m_currentBuffer].data() + startIndex,
+                                     memcpy(state.m_hFlagsBuffers[state.m_currentBuffer].data() + startIndex,
                                             localGMO.elements.flags, numElementsToCopyToCurrentBuffer * sizeof(uint8_t));
                                      if (numElementsToCopyToNextBuffer > 0)
-                                         memcpy(state.h_flagsBuffers[state.m_nextBuffer].data(),
+                                     {
+                                         memcpy(state.m_hFlagsBuffers[state.m_nextBuffer].data(),
                                                 localGMO.elements.flags + numElementsToCopyToCurrentBuffer,
                                                 numElementsToCopyToNextBuffer * sizeof(uint8_t));
+                                     }
                                  });
 
                 // Launch optional data copies as parallel tasks
@@ -1405,13 +1535,15 @@ public:
                     tasking->addTask(carb::tasking::Priority::eHigh, copyTasks,
                                      [&]()
                                      {
-                                         memcpy(state.h_intensityBuffers[state.m_currentBuffer].data() + startIndex,
+                                         memcpy(state.m_hIntensityBuffers[state.m_currentBuffer].data() + startIndex,
                                                 localGMO.elements.scalar,
                                                 numElementsToCopyToCurrentBuffer * sizeof(float));
                                          if (numElementsToCopyToNextBuffer > 0)
-                                             memcpy(state.h_intensityBuffers[state.m_nextBuffer].data(),
+                                         {
+                                             memcpy(state.m_hIntensityBuffers[state.m_nextBuffer].data(),
                                                     localGMO.elements.scalar + numElementsToCopyToCurrentBuffer,
                                                     numElementsToCopyToNextBuffer * sizeof(float));
+                                         }
                                      });
                 }
 
@@ -1421,17 +1553,21 @@ public:
                     tasking->addTask(carb::tasking::Priority::eHigh, copyTasks,
                                      [&]()
                                      {
-                                         auto* dst = state.h_timestampBuffers[state.m_currentBuffer].data() + startIndex;
+                                         auto* dst = state.m_hTimestampBuffers[state.m_currentBuffer].data() + startIndex;
                                          auto* offsets = localGMO.elements.timeOffsetNs;
                                          uint64_t baseNs = localGMO.timestampNs;
                                          for (size_t i = 0; i < numElementsToCopyToCurrentBuffer; ++i)
+                                         {
                                              dst[i] = baseNs + static_cast<uint64_t>(offsets[i]);
+                                         }
                                          if (numElementsToCopyToNextBuffer > 0)
                                          {
-                                             auto* dstNext = state.h_timestampBuffers[state.m_nextBuffer].data();
+                                             auto* dstNext = state.m_hTimestampBuffers[state.m_nextBuffer].data();
                                              auto* offsetsNext = offsets + numElementsToCopyToCurrentBuffer;
                                              for (size_t i = 0; i < numElementsToCopyToNextBuffer; ++i)
+                                             {
                                                  dstNext[i] = baseNs + static_cast<uint64_t>(offsetsNext[i]);
+                                             }
                                          }
                                      });
                 }
@@ -1448,9 +1584,11 @@ public:
                                              memcpy(hostBufferArray[state.m_currentBuffer].data() + startIndex * stride,
                                                     sourcePtr, numElementsToCopyToCurrentBuffer * elementSize * stride);
                                              if (numElementsToCopyToNextBuffer > 0)
+                                             {
                                                  memcpy(hostBufferArray[state.m_nextBuffer].data(),
                                                         sourcePtr + numElementsToCopyToCurrentBuffer * stride,
                                                         numElementsToCopyToNextBuffer * elementSize * stride);
+                                             }
                                          });
                     }
                 };
@@ -1458,26 +1596,26 @@ public:
                 if (modality == omni::sensors::Modality::LIDAR && auxType > omni::sensors::AuxType::NONE)
                 {
                     copyHostAuxData(
-                        state.m_outputEmitterId, state.h_emitterIdBuffers, localLidarAux.emitterId, sizeof(uint32_t));
+                        state.m_outputEmitterId, state.m_hEmitterIdBuffers, localLidarAux.emitterId, sizeof(uint32_t));
                     copyHostAuxData(
-                        state.m_outputChannelId, state.h_channelIdBuffers, localLidarAux.channelId, sizeof(uint32_t));
+                        state.m_outputChannelId, state.m_hChannelIdBuffers, localLidarAux.channelId, sizeof(uint32_t));
                     copyHostAuxData(
-                        state.m_outputMaterialId, state.h_materialIdBuffers, localLidarAux.matId, sizeof(uint32_t));
-                    copyHostAuxData(state.m_outputTickId, state.h_tickIdBuffers, localLidarAux.tickId, sizeof(uint32_t));
+                        state.m_outputMaterialId, state.m_hMaterialIdBuffers, localLidarAux.matId, sizeof(uint32_t));
+                    copyHostAuxData(state.m_outputTickId, state.m_hTickIdBuffers, localLidarAux.tickId, sizeof(uint32_t));
                     copyHostAuxData(
-                        state.m_outputHitNormal, state.h_normalBuffers, localLidarAux.hitNormals, sizeof(float3));
+                        state.m_outputHitNormal, state.m_hNormalBuffers, localLidarAux.hitNormals, sizeof(float3));
                     copyHostAuxData(
-                        state.m_outputVelocity, state.h_velocityBuffers, localLidarAux.velocities, sizeof(float3));
+                        state.m_outputVelocity, state.m_hVelocityBuffers, localLidarAux.velocities, sizeof(float3));
                     copyHostAuxData(
-                        state.m_outputObjectId, state.h_objectIdBuffers, localLidarAux.objId, sizeof(uint8_t), 16);
-                    copyHostAuxData(state.m_outputEchoId, state.h_echoIdBuffers, localLidarAux.echoId, sizeof(uint8_t));
+                        state.m_outputObjectId, state.m_hObjectIdBuffers, localLidarAux.objId, sizeof(uint8_t), 16);
+                    copyHostAuxData(state.m_outputEchoId, state.m_hEchoIdBuffers, localLidarAux.echoId, sizeof(uint8_t));
                     copyHostAuxData(
-                        state.m_outputTickState, state.h_tickStateBuffers, localLidarAux.tickStates, sizeof(uint8_t));
+                        state.m_outputTickState, state.m_hTickStateBuffers, localLidarAux.tickStates, sizeof(uint8_t));
                 }
 
                 if (modality == omni::sensors::Modality::RADAR && auxType > omni::sensors::AuxType::NONE)
                 {
-                    copyHostAuxData(state.m_outputRadialVelocityMS, state.h_radialVelocityMSBuffers,
+                    copyHostAuxData(state.m_outputRadialVelocityMS, state.m_hRadialVelocityMsBuffers,
                                     localRadarAux.rv_ms, sizeof(float));
                 }
 
@@ -1495,7 +1633,7 @@ public:
                 // 1. Find valid indices — parallel two-pass filter
                 // In per-frame mode, read flags directly from GMO data.
                 const uint8_t* flags =
-                    perFrameOutput ? localGMO.elements.flags : state.h_flagsBuffers[state.m_currentBuffer].data();
+                    perFrameOutput ? localGMO.elements.flags : state.m_hFlagsBuffers[state.m_currentBuffer].data();
                 constexpr size_t kFilterChunkSize = 4096;
                 const size_t numChunks = (numPointsToCheck + kFilterChunkSize - 1) / kFilterChunkSize;
                 std::vector<size_t> chunkCounts(numChunks);
@@ -1510,7 +1648,9 @@ public:
                         for (size_t i = start; i < end; ++i)
                         {
                             if ((flags[i] & omni::sensors::ElementFlags::VALID) == omni::sensors::ElementFlags::VALID)
+                            {
                                 ++count;
+                            }
                         }
                         chunkCounts[chunk] = count;
                     });
@@ -1520,14 +1660,16 @@ public:
                 {
                     chunkOffsets[0] = 0;
                     for (size_t i = 1; i < numChunks; ++i)
+                    {
                         chunkOffsets[i] = chunkOffsets[i - 1] + chunkCounts[i - 1];
+                    }
                 }
                 const size_t totalValid = (numChunks > 0) ? chunkOffsets.back() + chunkCounts.back() : 0;
-                state.h_indicesValidBuffer.resize(totalValid);
+                state.m_hIndicesValidBuffer.resize(totalValid);
 
                 if (totalValid > 0)
                 {
-                    size_t* indicesOut = state.h_indicesValidBuffer.data();
+                    size_t* indicesOut = state.m_hIndicesValidBuffer.data();
                     tasking->parallelFor(
                         size_t(0), numChunks,
                         [flags, numPointsToCheck, indicesOut, &chunkOffsets, kFilterChunkSize](size_t chunk)
@@ -1538,98 +1680,102 @@ public:
                             for (size_t i = start; i < end; ++i)
                             {
                                 if ((flags[i] & omni::sensors::ElementFlags::VALID) == omni::sensors::ElementFlags::VALID)
+                                {
                                     indicesOut[writePos++] = i;
+                                }
                             }
                         });
                 }
-                state.h_numValidPoints = static_cast<int>(totalValid);
+                state.m_hNumValidPoints = static_cast<int>(totalValid);
 
-                if (state.h_numValidPoints > 0)
+                if (state.m_hNumValidPoints > 0)
                 {
-                    const size_t* validIdx = state.h_indicesValidBuffer.data();
-                    const int nValid = state.h_numValidPoints;
+                    const size_t* validIdx = state.m_hIndicesValidBuffer.data();
+                    const int nValid = state.m_hNumValidPoints;
 
                     // Resolve all source/destination pointers up front so the
                     // inner loop captures only raw pointers (no state& needed).
                     // In per-frame mode, source pointers read directly from GMO/aux
                     // data, skipping the intermediate double buffers entirely.
                     const auto curBuf = state.m_currentBuffer;
-                    const float* azData = perFrameOutput ? localGMO.elements.x : state.h_azimuthBuffers[curBuf].data();
-                    const float* elData = perFrameOutput ? localGMO.elements.y : state.h_elevationBuffers[curBuf].data();
-                    const float* distData = perFrameOutput ? localGMO.elements.z : state.h_distanceBuffers[curBuf].data();
-                    float3* pcOut = state.h_pcBufferValid.data();
+                    const float* azData = perFrameOutput ? localGMO.elements.x : state.m_hAzimuthBuffers[curBuf].data();
+                    const float* elData = perFrameOutput ? localGMO.elements.y : state.m_hElevationBuffers[curBuf].data();
+                    const float* distData =
+                        perFrameOutput ? localGMO.elements.z : state.m_hDistanceBuffers[curBuf].data();
+                    float3* pcOut = state.m_hPcBufferValid.data();
                     const float degToRad = static_cast<float>(M_PI) / 180.0f;
 
-                    float* azDst = state.m_outputAzimuth ? state.h_azimuthBufferValid.data() : nullptr;
-                    float* elDst = state.m_outputElevation ? state.h_elevationBufferValid.data() : nullptr;
-                    float* distDst = state.m_outputDistance ? state.h_distanceBufferValid.data() : nullptr;
+                    float* azDst = state.m_outputAzimuth ? state.m_hAzimuthBufferValid.data() : nullptr;
+                    float* elDst = state.m_outputElevation ? state.m_hElevationBufferValid.data() : nullptr;
+                    float* distDst = state.m_outputDistance ? state.m_hDistanceBufferValid.data() : nullptr;
                     const float* intSrc =
                         state.m_outputIntensity ?
-                            (perFrameOutput ? localGMO.elements.scalar : state.h_intensityBuffers[curBuf].data()) :
+                            (perFrameOutput ? localGMO.elements.scalar : state.m_hIntensityBuffers[curBuf].data()) :
                             nullptr;
-                    float* intDst = state.m_outputIntensity ? state.h_intensityBufferValid.data() : nullptr;
+                    float* intDst = state.m_outputIntensity ? state.m_hIntensityBufferValid.data() : nullptr;
 
                     // Timestamps: in per-frame mode, compute inline from base + offset
                     // (the intermediate timestamp buffer was never filled).
-                    const uint64_t* tsSrc =
-                        (!perFrameOutput && state.m_outputTimestamp) ? state.h_timestampBuffers[curBuf].data() : nullptr;
-                    uint64_t* tsDst = state.m_outputTimestamp ? state.h_timestampBufferValid.data() : nullptr;
+                    const uint64_t* tsSrc = (!perFrameOutput && state.m_outputTimestamp) ?
+                                                state.m_hTimestampBuffers[curBuf].data() :
+                                                nullptr;
+                    uint64_t* tsDst = state.m_outputTimestamp ? state.m_hTimestampBufferValid.data() : nullptr;
                     const int32_t* tsOffsets =
                         (perFrameOutput && state.m_outputTimestamp) ? localGMO.elements.timeOffsetNs : nullptr;
                     const uint64_t tsBaseNs = localGMO.timestampNs;
 
                     const uint32_t* emSrc =
                         state.m_outputEmitterId ?
-                            (perFrameOutput ? localLidarAux.emitterId : state.h_emitterIdBuffers[curBuf].data()) :
+                            (perFrameOutput ? localLidarAux.emitterId : state.m_hEmitterIdBuffers[curBuf].data()) :
                             nullptr;
-                    uint32_t* emDst = state.m_outputEmitterId ? state.h_emitterIdBufferValid.data() : nullptr;
+                    uint32_t* emDst = state.m_outputEmitterId ? state.m_hEmitterIdBufferValid.data() : nullptr;
                     const uint32_t* chSrc =
                         state.m_outputChannelId ?
-                            (perFrameOutput ? localLidarAux.channelId : state.h_channelIdBuffers[curBuf].data()) :
+                            (perFrameOutput ? localLidarAux.channelId : state.m_hChannelIdBuffers[curBuf].data()) :
                             nullptr;
-                    uint32_t* chDst = state.m_outputChannelId ? state.h_channelIdBufferValid.data() : nullptr;
+                    uint32_t* chDst = state.m_outputChannelId ? state.m_hChannelIdBufferValid.data() : nullptr;
                     const uint32_t* matSrc =
                         state.m_outputMaterialId ?
-                            (perFrameOutput ? localLidarAux.matId : state.h_materialIdBuffers[curBuf].data()) :
+                            (perFrameOutput ? localLidarAux.matId : state.m_hMaterialIdBuffers[curBuf].data()) :
                             nullptr;
-                    uint32_t* matDst = state.m_outputMaterialId ? state.h_materialIdBufferValid.data() : nullptr;
+                    uint32_t* matDst = state.m_outputMaterialId ? state.m_hMaterialIdBufferValid.data() : nullptr;
                     const uint32_t* tkSrc =
                         state.m_outputTickId ?
-                            (perFrameOutput ? localLidarAux.tickId : state.h_tickIdBuffers[curBuf].data()) :
+                            (perFrameOutput ? localLidarAux.tickId : state.m_hTickIdBuffers[curBuf].data()) :
                             nullptr;
-                    uint32_t* tkDst = state.m_outputTickId ? state.h_tickIdBufferValid.data() : nullptr;
+                    uint32_t* tkDst = state.m_outputTickId ? state.m_hTickIdBufferValid.data() : nullptr;
                     const float3* nrmSrc =
                         state.m_outputHitNormal ?
                             (perFrameOutput ? reinterpret_cast<const float3*>(localLidarAux.hitNormals) :
-                                              state.h_normalBuffers[curBuf].data()) :
+                                              state.m_hNormalBuffers[curBuf].data()) :
                             nullptr;
-                    float3* nrmDst = state.m_outputHitNormal ? state.h_normalBufferValid.data() : nullptr;
+                    float3* nrmDst = state.m_outputHitNormal ? state.m_hNormalBufferValid.data() : nullptr;
                     const float3* velSrc =
                         state.m_outputVelocity ?
                             (perFrameOutput ? reinterpret_cast<const float3*>(localLidarAux.velocities) :
-                                              state.h_velocityBuffers[curBuf].data()) :
+                                              state.m_hVelocityBuffers[curBuf].data()) :
                             nullptr;
-                    float3* velDst = state.m_outputVelocity ? state.h_velocityBufferValid.data() : nullptr;
+                    float3* velDst = state.m_outputVelocity ? state.m_hVelocityBufferValid.data() : nullptr;
                     const uint8_t* objSrc =
                         state.m_outputObjectId ?
-                            (perFrameOutput ? localLidarAux.objId : state.h_objectIdBuffers[curBuf].data()) :
+                            (perFrameOutput ? localLidarAux.objId : state.m_hObjectIdBuffers[curBuf].data()) :
                             nullptr;
-                    uint8_t* objDst = state.m_outputObjectId ? state.h_objectIdBufferValid.data() : nullptr;
+                    uint8_t* objDst = state.m_outputObjectId ? state.m_hObjectIdBufferValid.data() : nullptr;
                     const uint8_t* echoSrc =
                         state.m_outputEchoId ?
-                            (perFrameOutput ? localLidarAux.echoId : state.h_echoIdBuffers[curBuf].data()) :
+                            (perFrameOutput ? localLidarAux.echoId : state.m_hEchoIdBuffers[curBuf].data()) :
                             nullptr;
-                    uint8_t* echoDst = state.m_outputEchoId ? state.h_echoIdBufferValid.data() : nullptr;
+                    uint8_t* echoDst = state.m_outputEchoId ? state.m_hEchoIdBufferValid.data() : nullptr;
                     const uint8_t* tickStSrc =
                         state.m_outputTickState ?
-                            (perFrameOutput ? localLidarAux.tickStates : state.h_tickStateBuffers[curBuf].data()) :
+                            (perFrameOutput ? localLidarAux.tickStates : state.m_hTickStateBuffers[curBuf].data()) :
                             nullptr;
-                    uint8_t* tickStDst = state.m_outputTickState ? state.h_tickStateBufferValid.data() : nullptr;
+                    uint8_t* tickStDst = state.m_outputTickState ? state.m_hTickStateBufferValid.data() : nullptr;
                     const float* rvSrc =
                         state.m_outputRadialVelocityMS ?
-                            (perFrameOutput ? localRadarAux.rv_ms : state.h_radialVelocityMSBuffers[curBuf].data()) :
+                            (perFrameOutput ? localRadarAux.rv_ms : state.m_hRadialVelocityMsBuffers[curBuf].data()) :
                             nullptr;
-                    float* rvDst = state.m_outputRadialVelocityMS ? state.h_radialVelocityMSBufferValid.data() : nullptr;
+                    float* rvDst = state.m_outputRadialVelocityMS ? state.m_hRadialVelocityMsBufferValid.data() : nullptr;
 
                     // Fused parallel loop: cartesian computation + all output gathering
                     // in a single pass over validIdx for optimal cache locality.
@@ -1645,120 +1791,150 @@ public:
                                              pcOut[idx] = make_float3(rxy * cosf(az), rxy * sinf(az), r * sinf(el));
 
                                              if (azDst)
+                                             {
                                                  azDst[idx] = azData[srcIdx];
+                                             }
                                              if (elDst)
+                                             {
                                                  elDst[idx] = elData[srcIdx];
+                                             }
                                              if (distDst)
+                                             {
                                                  distDst[idx] = distData[srcIdx];
+                                             }
                                              if (intDst)
+                                             {
                                                  intDst[idx] = intSrc[srcIdx];
+                                             }
 
                                              if (tsDst)
+                                             {
                                                  tsDst[idx] = tsOffsets ?
                                                                   (tsBaseNs + static_cast<uint64_t>(tsOffsets[srcIdx])) :
                                                                   tsSrc[srcIdx];
+                                             }
                                              if (emDst)
+                                             {
                                                  emDst[idx] = emSrc[srcIdx];
+                                             }
                                              if (chDst)
+                                             {
                                                  chDst[idx] = chSrc[srcIdx];
+                                             }
                                              if (matDst)
+                                             {
                                                  matDst[idx] = matSrc[srcIdx];
+                                             }
                                              if (tkDst)
+                                             {
                                                  tkDst[idx] = tkSrc[srcIdx];
+                                             }
                                              if (nrmDst)
+                                             {
                                                  nrmDst[idx] = nrmSrc[srcIdx];
+                                             }
                                              if (velDst)
+                                             {
                                                  velDst[idx] = velSrc[srcIdx];
+                                             }
                                              if (objDst)
+                                             {
                                                  memcpy(&objDst[idx * 16], &objSrc[srcIdx * 16], 16);
+                                             }
                                              if (echoDst)
+                                             {
                                                  echoDst[idx] = echoSrc[srcIdx];
+                                             }
                                              if (tickStDst)
+                                             {
                                                  tickStDst[idx] = tickStSrc[srcIdx];
+                                             }
                                              if (rvDst)
+                                             {
                                                  rvDst[idx] = rvSrc[srcIdx];
+                                             }
                                          });
 
                     // Set output pointers to host buffers
-                    db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.h_pcBufferValid.data());
+                    db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.m_hPcBufferValid.data());
                     db.outputs.bufferSize() = nValid * sizeof(float3);
                     db.outputs.width() = nValid;
                     db.outputs.height() = 1;
 
                     if (state.m_outputAzimuth)
                     {
-                        db.outputs.azimuthPtr() = reinterpret_cast<uint64_t>(state.h_azimuthBufferValid.data());
+                        db.outputs.azimuthPtr() = reinterpret_cast<uint64_t>(state.m_hAzimuthBufferValid.data());
                         db.outputs.azimuthBufferSize() = nValid * sizeof(float);
                     }
                     if (state.m_outputElevation)
                     {
-                        db.outputs.elevationPtr() = reinterpret_cast<uint64_t>(state.h_elevationBufferValid.data());
+                        db.outputs.elevationPtr() = reinterpret_cast<uint64_t>(state.m_hElevationBufferValid.data());
                         db.outputs.elevationBufferSize() = nValid * sizeof(float);
                     }
                     if (state.m_outputDistance)
                     {
-                        db.outputs.distancePtr() = reinterpret_cast<uint64_t>(state.h_distanceBufferValid.data());
+                        db.outputs.distancePtr() = reinterpret_cast<uint64_t>(state.m_hDistanceBufferValid.data());
                         db.outputs.distanceBufferSize() = nValid * sizeof(float);
                     }
                     if (state.m_outputIntensity)
                     {
-                        db.outputs.intensityPtr() = reinterpret_cast<uint64_t>(state.h_intensityBufferValid.data());
+                        db.outputs.intensityPtr() = reinterpret_cast<uint64_t>(state.m_hIntensityBufferValid.data());
                         db.outputs.intensityBufferSize() = nValid * sizeof(float);
                     }
                     if (state.m_outputTimestamp)
                     {
-                        db.outputs.timestampPtr() = reinterpret_cast<uint64_t>(state.h_timestampBufferValid.data());
+                        db.outputs.timestampPtr() = reinterpret_cast<uint64_t>(state.m_hTimestampBufferValid.data());
                         db.outputs.timestampBufferSize() = nValid * sizeof(uint64_t);
                     }
                     if (state.m_outputEmitterId)
                     {
-                        db.outputs.emitterIdPtr() = reinterpret_cast<uint64_t>(state.h_emitterIdBufferValid.data());
+                        db.outputs.emitterIdPtr() = reinterpret_cast<uint64_t>(state.m_hEmitterIdBufferValid.data());
                         db.outputs.emitterIdBufferSize() = nValid * sizeof(uint32_t);
                     }
                     if (state.m_outputChannelId)
                     {
-                        db.outputs.channelIdPtr() = reinterpret_cast<uint64_t>(state.h_channelIdBufferValid.data());
+                        db.outputs.channelIdPtr() = reinterpret_cast<uint64_t>(state.m_hChannelIdBufferValid.data());
                         db.outputs.channelIdBufferSize() = nValid * sizeof(uint32_t);
                     }
                     if (state.m_outputMaterialId)
                     {
-                        db.outputs.materialIdPtr() = reinterpret_cast<uint64_t>(state.h_materialIdBufferValid.data());
+                        db.outputs.materialIdPtr() = reinterpret_cast<uint64_t>(state.m_hMaterialIdBufferValid.data());
                         db.outputs.materialIdBufferSize() = nValid * sizeof(uint32_t);
                     }
                     if (state.m_outputTickId)
                     {
-                        db.outputs.tickIdPtr() = reinterpret_cast<uint64_t>(state.h_tickIdBufferValid.data());
+                        db.outputs.tickIdPtr() = reinterpret_cast<uint64_t>(state.m_hTickIdBufferValid.data());
                         db.outputs.tickIdBufferSize() = nValid * sizeof(uint32_t);
                     }
                     if (state.m_outputHitNormal)
                     {
-                        db.outputs.hitNormalPtr() = reinterpret_cast<uint64_t>(state.h_normalBufferValid.data());
+                        db.outputs.hitNormalPtr() = reinterpret_cast<uint64_t>(state.m_hNormalBufferValid.data());
                         db.outputs.hitNormalBufferSize() = nValid * sizeof(float3);
                     }
                     if (state.m_outputVelocity)
                     {
-                        db.outputs.velocityPtr() = reinterpret_cast<uint64_t>(state.h_velocityBufferValid.data());
+                        db.outputs.velocityPtr() = reinterpret_cast<uint64_t>(state.m_hVelocityBufferValid.data());
                         db.outputs.velocityBufferSize() = nValid * sizeof(float3);
                     }
                     if (state.m_outputObjectId)
                     {
-                        db.outputs.objectIdPtr() = reinterpret_cast<uint64_t>(state.h_objectIdBufferValid.data());
+                        db.outputs.objectIdPtr() = reinterpret_cast<uint64_t>(state.m_hObjectIdBufferValid.data());
                         db.outputs.objectIdBufferSize() = nValid * sizeof(uint8_t) * 16;
                     }
                     if (state.m_outputEchoId)
                     {
-                        db.outputs.echoIdPtr() = reinterpret_cast<uint64_t>(state.h_echoIdBufferValid.data());
+                        db.outputs.echoIdPtr() = reinterpret_cast<uint64_t>(state.m_hEchoIdBufferValid.data());
                         db.outputs.echoIdBufferSize() = nValid * sizeof(uint8_t);
                     }
                     if (state.m_outputTickState)
                     {
-                        db.outputs.tickStatePtr() = reinterpret_cast<uint64_t>(state.h_tickStateBufferValid.data());
+                        db.outputs.tickStatePtr() = reinterpret_cast<uint64_t>(state.m_hTickStateBufferValid.data());
                         db.outputs.tickStateBufferSize() = nValid * sizeof(uint8_t);
                     }
                     if (state.m_outputRadialVelocityMS)
                     {
                         db.outputs.radialVelocityMSPtr() =
-                            reinterpret_cast<uint64_t>(state.h_radialVelocityMSBufferValid.data());
+                            reinterpret_cast<uint64_t>(state.m_hRadialVelocityMsBufferValid.data());
                         db.outputs.radialVelocityMSBufferSize() = nValid * sizeof(float);
                     }
                 }
@@ -1785,95 +1961,99 @@ public:
             // CUDA Graph based data copy operations
             {
                 if (state.m_graphsInitialized &&
-                    state.updateCurrentGraphParameters(state.hostGMO, numElementsToCopyToCurrentBuffer, startIndex))
+                    state.updateCurrentGraphParameters(state.m_hostGmo, numElementsToCopyToCurrentBuffer, startIndex))
                 {
                     CARB_PROFILE_ZONE(0, "CUDA Graph Launch - Current Buffer");
                     // Launch current buffer graph
-                    auto graphStream = cudaStreams[state.STREAM_AZIMUTH_CURRENT];
+                    auto graphStream = cudaStreams[state.s_kStreamAzimuthCurrent];
                     CUDA_CHECK(cudaGraphLaunch(state.m_basicDataCopyGraphExec, graphStream));
                     // Record completion events for dependency tracking (current)
-                    CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_AZIMUTH_CURRENT], graphStream));
-                    CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_ELEVATION_CURRENT], graphStream));
-                    CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_DISTANCE_CURRENT], graphStream));
-                    CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_FLAGS_CURRENT], graphStream));
+                    CUDA_CHECK(cudaEventRecord(copyEvents[state.s_kStreamAzimuthCurrent], graphStream));
+                    CUDA_CHECK(cudaEventRecord(copyEvents[state.s_kStreamElevationCurrent], graphStream));
+                    CUDA_CHECK(cudaEventRecord(copyEvents[state.s_kStreamDistanceCurrent], graphStream));
+                    CUDA_CHECK(cudaEventRecord(copyEvents[state.s_kStreamFlagsCurrent], graphStream));
 
-                    auto overflowStream = cudaStreams[state.STREAM_AZIMUTH_NEXT];
+                    auto overflowStream = cudaStreams[state.s_kStreamAzimuthNext];
                     // Handle overflow with separate graph if needed
                     if (numElementsToCopyToNextBuffer > 0 &&
                         state.updateOverflowGraphParameters(
-                            state.hostGMO, numElementsToCopyToCurrentBuffer, numElementsToCopyToNextBuffer))
+                            state.m_hostGmo, numElementsToCopyToCurrentBuffer, numElementsToCopyToNextBuffer))
                     {
                         CUDA_CHECK(cudaGraphLaunch(state.m_overflowCopyGraphExec, overflowStream));
 
-                        CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_AZIMUTH_NEXT], overflowStream));
-                        CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_ELEVATION_NEXT], overflowStream));
-                        CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_DISTANCE_NEXT], overflowStream));
-                        CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_FLAGS_NEXT], overflowStream));
+                        CUDA_CHECK(cudaEventRecord(copyEvents[state.s_kStreamAzimuthNext], overflowStream));
+                        CUDA_CHECK(cudaEventRecord(copyEvents[state.s_kStreamElevationNext], overflowStream));
+                        CUDA_CHECK(cudaEventRecord(copyEvents[state.s_kStreamDistanceNext], overflowStream));
+                        CUDA_CHECK(cudaEventRecord(copyEvents[state.s_kStreamFlagsNext], overflowStream));
                     }
                     else
                     {
                         // No overflow: immediately mark next-buffer events as completed to avoid waits
-                        CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_AZIMUTH_NEXT], overflowStream));
-                        CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_ELEVATION_NEXT], overflowStream));
-                        CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_DISTANCE_NEXT], overflowStream));
-                        CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_FLAGS_NEXT], overflowStream));
+                        CUDA_CHECK(cudaEventRecord(copyEvents[state.s_kStreamAzimuthNext], overflowStream));
+                        CUDA_CHECK(cudaEventRecord(copyEvents[state.s_kStreamElevationNext], overflowStream));
+                        CUDA_CHECK(cudaEventRecord(copyEvents[state.s_kStreamDistanceNext], overflowStream));
+                        CUDA_CHECK(cudaEventRecord(copyEvents[state.s_kStreamFlagsNext], overflowStream));
                     }
                 }
                 else
                 {
                     // Fallback to individual operations if graph fails or not initialized
-                    CUDA_CHECK(cudaMemcpyAsync(state.azimuthBuffers[state.m_currentBuffer].data() + startIndex,
-                                               state.hostGMO->elements.x, numElementsToCopyToCurrentBuffer * sizeof(float),
-                                               cudaMemcpyDeviceToDevice, cudaStreams[state.STREAM_AZIMUTH_CURRENT]));
+                    CUDA_CHECK(cudaMemcpyAsync(state.m_azimuthBuffers[state.m_currentBuffer].data() + startIndex,
+                                               state.m_hostGmo->elements.x,
+                                               numElementsToCopyToCurrentBuffer * sizeof(float),
+                                               cudaMemcpyDeviceToDevice, cudaStreams[state.s_kStreamAzimuthCurrent]));
                     CUDA_CHECK(cudaEventRecord(
-                        copyEvents[state.STREAM_AZIMUTH_CURRENT], cudaStreams[state.STREAM_AZIMUTH_CURRENT]));
+                        copyEvents[state.s_kStreamAzimuthCurrent], cudaStreams[state.s_kStreamAzimuthCurrent]));
 
-                    CUDA_CHECK(cudaMemcpyAsync(state.elevationBuffers[state.m_currentBuffer].data() + startIndex,
-                                               state.hostGMO->elements.y, numElementsToCopyToCurrentBuffer * sizeof(float),
-                                               cudaMemcpyDeviceToDevice, cudaStreams[state.STREAM_ELEVATION_CURRENT]));
+                    CUDA_CHECK(cudaMemcpyAsync(state.m_elevationBuffers[state.m_currentBuffer].data() + startIndex,
+                                               state.m_hostGmo->elements.y,
+                                               numElementsToCopyToCurrentBuffer * sizeof(float),
+                                               cudaMemcpyDeviceToDevice, cudaStreams[state.s_kStreamElevationCurrent]));
                     CUDA_CHECK(cudaEventRecord(
-                        copyEvents[state.STREAM_ELEVATION_CURRENT], cudaStreams[state.STREAM_ELEVATION_CURRENT]));
+                        copyEvents[state.s_kStreamElevationCurrent], cudaStreams[state.s_kStreamElevationCurrent]));
 
-                    CUDA_CHECK(cudaMemcpyAsync(state.distanceBuffers[state.m_currentBuffer].data() + startIndex,
-                                               state.hostGMO->elements.z, numElementsToCopyToCurrentBuffer * sizeof(float),
-                                               cudaMemcpyDeviceToDevice, cudaStreams[state.STREAM_DISTANCE_CURRENT]));
+                    CUDA_CHECK(cudaMemcpyAsync(state.m_distanceBuffers[state.m_currentBuffer].data() + startIndex,
+                                               state.m_hostGmo->elements.z,
+                                               numElementsToCopyToCurrentBuffer * sizeof(float),
+                                               cudaMemcpyDeviceToDevice, cudaStreams[state.s_kStreamDistanceCurrent]));
                     CUDA_CHECK(cudaEventRecord(
-                        copyEvents[state.STREAM_DISTANCE_CURRENT], cudaStreams[state.STREAM_DISTANCE_CURRENT]));
+                        copyEvents[state.s_kStreamDistanceCurrent], cudaStreams[state.s_kStreamDistanceCurrent]));
 
-                    CUDA_CHECK(cudaMemcpyAsync(state.flagsBuffers[state.m_currentBuffer].data() + startIndex,
-                                               state.hostGMO->elements.flags,
+                    CUDA_CHECK(cudaMemcpyAsync(state.m_flagsBuffers[state.m_currentBuffer].data() + startIndex,
+                                               state.m_hostGmo->elements.flags,
                                                numElementsToCopyToCurrentBuffer * sizeof(uint8_t),
-                                               cudaMemcpyDeviceToDevice, cudaStreams[state.STREAM_FLAGS_CURRENT]));
+                                               cudaMemcpyDeviceToDevice, cudaStreams[state.s_kStreamFlagsCurrent]));
                     CUDA_CHECK(cudaEventRecord(
-                        copyEvents[state.STREAM_FLAGS_CURRENT], cudaStreams[state.STREAM_FLAGS_CURRENT]));
+                        copyEvents[state.s_kStreamFlagsCurrent], cudaStreams[state.s_kStreamFlagsCurrent]));
 
                     // Next buffer copies
-                    CUDA_CHECK(cudaMemcpyAsync(state.azimuthBuffers[state.m_nextBuffer].data(),
-                                               state.hostGMO->elements.x + numElementsToCopyToCurrentBuffer,
+                    CUDA_CHECK(cudaMemcpyAsync(state.m_azimuthBuffers[state.m_nextBuffer].data(),
+                                               state.m_hostGmo->elements.x + numElementsToCopyToCurrentBuffer,
                                                numElementsToCopyToNextBuffer * sizeof(float), cudaMemcpyDeviceToDevice,
-                                               cudaStreams[state.STREAM_AZIMUTH_NEXT]));
-                    CUDA_CHECK(
-                        cudaEventRecord(copyEvents[state.STREAM_AZIMUTH_NEXT], cudaStreams[state.STREAM_AZIMUTH_NEXT]));
-
-                    CUDA_CHECK(cudaMemcpyAsync(state.elevationBuffers[state.m_nextBuffer].data(),
-                                               state.hostGMO->elements.y + numElementsToCopyToCurrentBuffer,
-                                               numElementsToCopyToNextBuffer * sizeof(float), cudaMemcpyDeviceToDevice,
-                                               cudaStreams[state.STREAM_ELEVATION_NEXT]));
+                                               cudaStreams[state.s_kStreamAzimuthNext]));
                     CUDA_CHECK(cudaEventRecord(
-                        copyEvents[state.STREAM_ELEVATION_NEXT], cudaStreams[state.STREAM_ELEVATION_NEXT]));
+                        copyEvents[state.s_kStreamAzimuthNext], cudaStreams[state.s_kStreamAzimuthNext]));
 
-                    CUDA_CHECK(cudaMemcpyAsync(state.distanceBuffers[state.m_nextBuffer].data(),
-                                               state.hostGMO->elements.z + numElementsToCopyToCurrentBuffer,
+                    CUDA_CHECK(cudaMemcpyAsync(state.m_elevationBuffers[state.m_nextBuffer].data(),
+                                               state.m_hostGmo->elements.y + numElementsToCopyToCurrentBuffer,
                                                numElementsToCopyToNextBuffer * sizeof(float), cudaMemcpyDeviceToDevice,
-                                               cudaStreams[state.STREAM_DISTANCE_NEXT]));
+                                               cudaStreams[state.s_kStreamElevationNext]));
                     CUDA_CHECK(cudaEventRecord(
-                        copyEvents[state.STREAM_DISTANCE_NEXT], cudaStreams[state.STREAM_DISTANCE_NEXT]));
+                        copyEvents[state.s_kStreamElevationNext], cudaStreams[state.s_kStreamElevationNext]));
 
-                    CUDA_CHECK(cudaMemcpyAsync(state.flagsBuffers[state.m_nextBuffer].data(),
-                                               state.hostGMO->elements.flags + numElementsToCopyToCurrentBuffer,
+                    CUDA_CHECK(cudaMemcpyAsync(state.m_distanceBuffers[state.m_nextBuffer].data(),
+                                               state.m_hostGmo->elements.z + numElementsToCopyToCurrentBuffer,
+                                               numElementsToCopyToNextBuffer * sizeof(float), cudaMemcpyDeviceToDevice,
+                                               cudaStreams[state.s_kStreamDistanceNext]));
+                    CUDA_CHECK(cudaEventRecord(
+                        copyEvents[state.s_kStreamDistanceNext], cudaStreams[state.s_kStreamDistanceNext]));
+
+                    CUDA_CHECK(cudaMemcpyAsync(state.m_flagsBuffers[state.m_nextBuffer].data(),
+                                               state.m_hostGmo->elements.flags + numElementsToCopyToCurrentBuffer,
                                                numElementsToCopyToNextBuffer * sizeof(uint8_t),
-                                               cudaMemcpyDeviceToDevice, cudaStreams[state.STREAM_FLAGS_NEXT]));
-                    CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_FLAGS_NEXT], cudaStreams[state.STREAM_FLAGS_NEXT]));
+                                               cudaMemcpyDeviceToDevice, cudaStreams[state.s_kStreamFlagsNext]));
+                    CUDA_CHECK(
+                        cudaEventRecord(copyEvents[state.s_kStreamFlagsNext], cudaStreams[state.s_kStreamFlagsNext]));
                 }
             }
 
@@ -1898,49 +2078,49 @@ public:
                 };
 
                 // Copy intensity data
-                copyAuxDataAsync(state.m_outputIntensity, "Copy Intensity Data", state.STREAM_INTENSITY,
-                                 state.intensityBuffers, state.hostGMO->elements.scalar, sizeof(float));
+                copyAuxDataAsync(state.m_outputIntensity, "Copy Intensity Data", state.s_kStreamIntensity,
+                                 state.m_intensityBuffers, state.m_hostGmo->elements.scalar, sizeof(float));
 
                 // Copy timestamp data (special case with custom kernel)
                 if (state.m_outputTimestamp)
                 {
                     CARB_PROFILE_ZONE(0, "Copy Timestamp Data");
-                    auto timestampStream = cudaStreams[state.STREAM_TIMESTAMP];
-                    copyTimestamps(state.timestampBuffers[state.m_currentBuffer].data() + startIndex,
-                                   state.hostGMO->timestampNs, state.hostGMO->elements.timeOffsetNs,
+                    auto timestampStream = cudaStreams[state.s_kStreamTimestamp];
+                    copyTimestamps(state.m_timestampBuffers[state.m_currentBuffer].data() + startIndex,
+                                   state.m_hostGmo->timestampNs, state.m_hostGmo->elements.timeOffsetNs,
                                    static_cast<int>(numElementsToCopyToCurrentBuffer), state.m_maxThreadsPerBlock,
                                    state.m_multiProcessorCount, cudaDeviceIndex, timestampStream);
-                    copyTimestamps(state.timestampBuffers[state.m_nextBuffer].data(), state.hostGMO->timestampNs,
-                                   state.hostGMO->elements.timeOffsetNs + numElementsToCopyToCurrentBuffer,
+                    copyTimestamps(state.m_timestampBuffers[state.m_nextBuffer].data(), state.m_hostGmo->timestampNs,
+                                   state.m_hostGmo->elements.timeOffsetNs + numElementsToCopyToCurrentBuffer,
                                    static_cast<int>(numElementsToCopyToNextBuffer), state.m_maxThreadsPerBlock,
                                    state.m_multiProcessorCount, cudaDeviceIndex, timestampStream);
-                    CUDA_CHECK(cudaEventRecord(copyEvents[state.STREAM_TIMESTAMP], timestampStream));
+                    CUDA_CHECK(cudaEventRecord(copyEvents[state.s_kStreamTimestamp], timestampStream));
                 }
 
                 // Copy lidar auxiliary data
-                copyAuxDataAsync(state.m_outputEmitterId, "Copy Emitter ID Data", state.STREAM_EMITTER_ID,
-                                 state.emitterIdBuffers, state.hostLidarAuxPoints->emitterId, sizeof(uint32_t));
-                copyAuxDataAsync(state.m_outputChannelId, "Copy Channel ID Data", state.STREAM_CHANNEL_ID,
-                                 state.channelIdBuffers, state.hostLidarAuxPoints->channelId, sizeof(uint32_t));
-                copyAuxDataAsync(state.m_outputMaterialId, "Copy Material ID Data", state.STREAM_MATERIAL_ID,
-                                 state.materialIdBuffers, state.hostLidarAuxPoints->matId, sizeof(uint32_t));
-                copyAuxDataAsync(state.m_outputTickId, "Copy Tick ID Data", state.STREAM_TICK_ID, state.tickIdBuffers,
-                                 state.hostLidarAuxPoints->tickId, sizeof(uint32_t));
-                copyAuxDataAsync(state.m_outputHitNormal, "Copy Normal Data", state.STREAM_NORMAL, state.normalBuffers,
-                                 state.hostLidarAuxPoints->hitNormals, sizeof(float3));
-                copyAuxDataAsync(state.m_outputVelocity, "Copy Velocity Data", state.STREAM_VELOCITY,
-                                 state.velocityBuffers, state.hostLidarAuxPoints->velocities, sizeof(float3));
-                copyAuxDataAsync(state.m_outputObjectId, "Copy Object ID Data", state.STREAM_OBJECT_ID,
-                                 state.objectIdBuffers, state.hostLidarAuxPoints->objId, sizeof(uint8_t), 16);
-                copyAuxDataAsync(state.m_outputEchoId, "Copy Echo ID Data", state.STREAM_ECHO_ID, state.echoIdBuffers,
-                                 state.hostLidarAuxPoints->echoId, sizeof(uint8_t));
-                copyAuxDataAsync(state.m_outputTickState, "Copy Tick States Data", state.STREAM_TICK_STATE,
-                                 state.tickStateBuffers, state.hostLidarAuxPoints->tickStates, sizeof(uint8_t));
+                copyAuxDataAsync(state.m_outputEmitterId, "Copy Emitter ID Data", state.s_kStreamEmitterId,
+                                 state.m_emitterIdBuffers, state.m_hostLidarAuxPoints->emitterId, sizeof(uint32_t));
+                copyAuxDataAsync(state.m_outputChannelId, "Copy Channel ID Data", state.s_kStreamChannelId,
+                                 state.m_channelIdBuffers, state.m_hostLidarAuxPoints->channelId, sizeof(uint32_t));
+                copyAuxDataAsync(state.m_outputMaterialId, "Copy Material ID Data", state.s_kStreamMaterialId,
+                                 state.m_materialIdBuffers, state.m_hostLidarAuxPoints->matId, sizeof(uint32_t));
+                copyAuxDataAsync(state.m_outputTickId, "Copy Tick ID Data", state.s_kStreamTickId,
+                                 state.m_tickIdBuffers, state.m_hostLidarAuxPoints->tickId, sizeof(uint32_t));
+                copyAuxDataAsync(state.m_outputHitNormal, "Copy Normal Data", state.s_kStreamNormal,
+                                 state.m_normalBuffers, state.m_hostLidarAuxPoints->hitNormals, sizeof(float3));
+                copyAuxDataAsync(state.m_outputVelocity, "Copy Velocity Data", state.s_kStreamVelocity,
+                                 state.m_velocityBuffers, state.m_hostLidarAuxPoints->velocities, sizeof(float3));
+                copyAuxDataAsync(state.m_outputObjectId, "Copy Object ID Data", state.s_kStreamObjectId,
+                                 state.m_objectIdBuffers, state.m_hostLidarAuxPoints->objId, sizeof(uint8_t), 16);
+                copyAuxDataAsync(state.m_outputEchoId, "Copy Echo ID Data", state.s_kStreamEchoId,
+                                 state.m_echoIdBuffers, state.m_hostLidarAuxPoints->echoId, sizeof(uint8_t));
+                copyAuxDataAsync(state.m_outputTickState, "Copy Tick States Data", state.s_kStreamTickState,
+                                 state.m_tickStateBuffers, state.m_hostLidarAuxPoints->tickStates, sizeof(uint8_t));
 
                 // Copy radar auxiliary data
                 copyAuxDataAsync(state.m_outputRadialVelocityMS, "Copy Radial Velocity MS Data",
-                                 state.STREAM_RADIAL_VELOCITY_MS, state.radialVelocityMSBuffers,
-                                 state.hostRadarAuxPoints->rv_ms, sizeof(float));
+                                 state.s_kStreamRadialVelocityMs, state.m_radialVelocityMsBuffers,
+                                 state.m_hostRadarAuxPoints->rv_ms, sizeof(float));
             }
 
             // Event-based sync: Output processing waits for current buffer completion
@@ -1951,22 +2131,22 @@ public:
                 // We've reached the end of the current buffer, and the buffers are guaranteed to be filled.
                 // Kick off the point cloud kernel on its own stream
 
-                auto pointCloudStream = cudaStreams[state.STREAM_POINT_CLOUD];
-                auto outputEvent = copyEvents[state.STREAM_POINT_CLOUD];
+                auto pointCloudStream = cudaStreams[state.s_kStreamPointCloud];
+                auto outputEvent = copyEvents[state.s_kStreamPointCloud];
 
                 // Output processing waits for current buffer data completion
                 if (state.m_graphsInitialized)
                 {
                     // When using graphs, all basic data operations complete on the same stream
-                    CUDA_CHECK(cudaStreamWaitEvent(pointCloudStream, copyEvents[state.STREAM_AZIMUTH_CURRENT], 0));
+                    CUDA_CHECK(cudaStreamWaitEvent(pointCloudStream, copyEvents[state.s_kStreamAzimuthCurrent], 0));
                 }
                 else
                 {
                     // When using individual operations, wait for all current buffer streams
-                    CUDA_CHECK(cudaStreamWaitEvent(pointCloudStream, copyEvents[state.STREAM_AZIMUTH_CURRENT], 0));
-                    CUDA_CHECK(cudaStreamWaitEvent(pointCloudStream, copyEvents[state.STREAM_ELEVATION_CURRENT], 0));
-                    CUDA_CHECK(cudaStreamWaitEvent(pointCloudStream, copyEvents[state.STREAM_DISTANCE_CURRENT], 0));
-                    CUDA_CHECK(cudaStreamWaitEvent(pointCloudStream, copyEvents[state.STREAM_FLAGS_CURRENT], 0));
+                    CUDA_CHECK(cudaStreamWaitEvent(pointCloudStream, copyEvents[state.s_kStreamAzimuthCurrent], 0));
+                    CUDA_CHECK(cudaStreamWaitEvent(pointCloudStream, copyEvents[state.s_kStreamElevationCurrent], 0));
+                    CUDA_CHECK(cudaStreamWaitEvent(pointCloudStream, copyEvents[state.s_kStreamDistanceCurrent], 0));
+                    CUDA_CHECK(cudaStreamWaitEvent(pointCloudStream, copyEvents[state.s_kStreamFlagsCurrent], 0));
                 }
 
                 // Select only valid indices on point cloud stream
@@ -1974,23 +2154,23 @@ public:
 
                 cudaEvent_t findValidIndicesEvent;
                 CUDA_CHECK(cudaEventCreate(&findValidIndicesEvent));
-                findValidIndices(state.indicesBuffer.data(), state.indicesValidBuffer.data(),
-                                 state.numValidPointsDevice, numPointsToCheck,
-                                 state.flagsBuffers[state.m_currentBuffer].data(), cudaDeviceIndex, pointCloudStream,
-                                 &state.m_d_temp_storage, &state.m_temp_storage_bytes, &state.m_numPoints);
+                findValidIndices(state.m_indicesBuffer.data(), state.m_indicesValidBuffer.data(),
+                                 state.m_numValidPointsDevice, numPointsToCheck,
+                                 state.m_flagsBuffers[state.m_currentBuffer].data(), cudaDeviceIndex, pointCloudStream,
+                                 &state.m_dTempStorage, &state.m_tempStorageBytes, &state.m_numPoints);
                 // Copy the number of valid points to the host
-                CUDA_CHECK(cudaMemcpyAsync(state.numValidPointsHost, state.numValidPointsDevice, sizeof(int),
+                CUDA_CHECK(cudaMemcpyAsync(state.m_numValidPointsHost, state.m_numValidPointsDevice, sizeof(int),
                                            cudaMemcpyDeviceToHost, pointCloudStream));
                 CUDA_CHECK(cudaEventRecord(findValidIndicesEvent, pointCloudStream));
                 CUDA_CHECK(cudaStreamSynchronize(pointCloudStream));
                 CUDA_CHECK(cudaEventDestroy(findValidIndicesEvent));
 
                 // Fill the valid cartesian points
-                fillValidCartesianPoints(state.azimuthBuffers[state.m_currentBuffer].data(),
-                                         state.elevationBuffers[state.m_currentBuffer].data(),
-                                         state.distanceBuffers[state.m_currentBuffer].data(),
-                                         state.pcBufferValid.data(), state.indicesValidBuffer.data(),
-                                         state.numValidPointsDevice, numPointsToCheck, state.m_maxThreadsPerBlock,
+                fillValidCartesianPoints(state.m_azimuthBuffers[state.m_currentBuffer].data(),
+                                         state.m_elevationBuffers[state.m_currentBuffer].data(),
+                                         state.m_distanceBuffers[state.m_currentBuffer].data(),
+                                         state.m_pcBufferValid.data(), state.m_indicesValidBuffer.data(),
+                                         state.m_numValidPointsDevice, numPointsToCheck, state.m_maxThreadsPerBlock,
                                          state.m_multiProcessorCount, cudaDeviceIndex, pointCloudStream);
                 CUDA_CHECK(cudaEventRecord(outputEvent, pointCloudStream));
 
@@ -2001,79 +2181,79 @@ public:
                     // Set output pointers and sizes for enabled outputs
                     if (state.m_outputAzimuth)
                     {
-                        db.outputs.azimuthPtr() = reinterpret_cast<uint64_t>(state.azimuthBufferValid.data());
-                        db.outputs.azimuthBufferSize() = state.numValidPointsHost[0] * sizeof(float);
+                        db.outputs.azimuthPtr() = reinterpret_cast<uint64_t>(state.m_azimuthBufferValid.data());
+                        db.outputs.azimuthBufferSize() = state.m_numValidPointsHost[0] * sizeof(float);
                     }
                     if (state.m_outputElevation)
                     {
-                        db.outputs.elevationPtr() = reinterpret_cast<uint64_t>(state.elevationBufferValid.data());
-                        db.outputs.elevationBufferSize() = state.numValidPointsHost[0] * sizeof(float);
+                        db.outputs.elevationPtr() = reinterpret_cast<uint64_t>(state.m_elevationBufferValid.data());
+                        db.outputs.elevationBufferSize() = state.m_numValidPointsHost[0] * sizeof(float);
                     }
                     if (state.m_outputDistance)
                     {
-                        db.outputs.distancePtr() = reinterpret_cast<uint64_t>(state.distanceBufferValid.data());
-                        db.outputs.distanceBufferSize() = state.numValidPointsHost[0] * sizeof(float);
+                        db.outputs.distancePtr() = reinterpret_cast<uint64_t>(state.m_distanceBufferValid.data());
+                        db.outputs.distanceBufferSize() = state.m_numValidPointsHost[0] * sizeof(float);
                     }
                     if (state.m_outputIntensity)
                     {
-                        db.outputs.intensityPtr() = reinterpret_cast<uint64_t>(state.intensityBufferValid.data());
-                        db.outputs.intensityBufferSize() = state.numValidPointsHost[0] * sizeof(float);
+                        db.outputs.intensityPtr() = reinterpret_cast<uint64_t>(state.m_intensityBufferValid.data());
+                        db.outputs.intensityBufferSize() = state.m_numValidPointsHost[0] * sizeof(float);
                     }
                     if (state.m_outputTimestamp)
                     {
-                        db.outputs.timestampPtr() = reinterpret_cast<uint64_t>(state.timestampBufferValid.data());
-                        db.outputs.timestampBufferSize() = state.numValidPointsHost[0] * sizeof(uint64_t);
+                        db.outputs.timestampPtr() = reinterpret_cast<uint64_t>(state.m_timestampBufferValid.data());
+                        db.outputs.timestampBufferSize() = state.m_numValidPointsHost[0] * sizeof(uint64_t);
                     }
                     if (state.m_outputEmitterId)
                     {
-                        db.outputs.emitterIdPtr() = reinterpret_cast<uint64_t>(state.emitterIdBufferValid.data());
-                        db.outputs.emitterIdBufferSize() = state.numValidPointsHost[0] * sizeof(uint32_t);
+                        db.outputs.emitterIdPtr() = reinterpret_cast<uint64_t>(state.m_emitterIdBufferValid.data());
+                        db.outputs.emitterIdBufferSize() = state.m_numValidPointsHost[0] * sizeof(uint32_t);
                     }
                     if (state.m_outputChannelId)
                     {
-                        db.outputs.channelIdPtr() = reinterpret_cast<uint64_t>(state.channelIdBufferValid.data());
-                        db.outputs.channelIdBufferSize() = state.numValidPointsHost[0] * sizeof(uint32_t);
+                        db.outputs.channelIdPtr() = reinterpret_cast<uint64_t>(state.m_channelIdBufferValid.data());
+                        db.outputs.channelIdBufferSize() = state.m_numValidPointsHost[0] * sizeof(uint32_t);
                     }
                     if (state.m_outputMaterialId)
                     {
-                        db.outputs.materialIdPtr() = reinterpret_cast<uint64_t>(state.materialIdBufferValid.data());
-                        db.outputs.materialIdBufferSize() = state.numValidPointsHost[0] * sizeof(uint32_t);
+                        db.outputs.materialIdPtr() = reinterpret_cast<uint64_t>(state.m_materialIdBufferValid.data());
+                        db.outputs.materialIdBufferSize() = state.m_numValidPointsHost[0] * sizeof(uint32_t);
                     }
                     if (state.m_outputTickId)
                     {
-                        db.outputs.tickIdPtr() = reinterpret_cast<uint64_t>(state.tickIdBufferValid.data());
-                        db.outputs.tickIdBufferSize() = state.numValidPointsHost[0] * sizeof(uint32_t);
+                        db.outputs.tickIdPtr() = reinterpret_cast<uint64_t>(state.m_tickIdBufferValid.data());
+                        db.outputs.tickIdBufferSize() = state.m_numValidPointsHost[0] * sizeof(uint32_t);
                     }
                     if (state.m_outputHitNormal)
                     {
-                        db.outputs.hitNormalPtr() = reinterpret_cast<uint64_t>(state.normalBufferValid.data());
-                        db.outputs.hitNormalBufferSize() = state.numValidPointsHost[0] * sizeof(float3);
+                        db.outputs.hitNormalPtr() = reinterpret_cast<uint64_t>(state.m_normalBufferValid.data());
+                        db.outputs.hitNormalBufferSize() = state.m_numValidPointsHost[0] * sizeof(float3);
                     }
                     if (state.m_outputVelocity)
                     {
-                        db.outputs.velocityPtr() = reinterpret_cast<uint64_t>(state.velocityBufferValid.data());
-                        db.outputs.velocityBufferSize() = state.numValidPointsHost[0] * sizeof(float3);
+                        db.outputs.velocityPtr() = reinterpret_cast<uint64_t>(state.m_velocityBufferValid.data());
+                        db.outputs.velocityBufferSize() = state.m_numValidPointsHost[0] * sizeof(float3);
                     }
                     if (state.m_outputObjectId)
                     {
-                        db.outputs.objectIdPtr() = reinterpret_cast<uint64_t>(state.objectIdBufferValid.data());
-                        db.outputs.objectIdBufferSize() = state.numValidPointsHost[0] * sizeof(uint8_t) * 16;
+                        db.outputs.objectIdPtr() = reinterpret_cast<uint64_t>(state.m_objectIdBufferValid.data());
+                        db.outputs.objectIdBufferSize() = state.m_numValidPointsHost[0] * sizeof(uint8_t) * 16;
                     }
                     if (state.m_outputEchoId)
                     {
-                        db.outputs.echoIdPtr() = reinterpret_cast<uint64_t>(state.echoIdBufferValid.data());
-                        db.outputs.echoIdBufferSize() = state.numValidPointsHost[0] * sizeof(uint8_t);
+                        db.outputs.echoIdPtr() = reinterpret_cast<uint64_t>(state.m_echoIdBufferValid.data());
+                        db.outputs.echoIdBufferSize() = state.m_numValidPointsHost[0] * sizeof(uint8_t);
                     }
                     if (state.m_outputTickState)
                     {
-                        db.outputs.tickStatePtr() = reinterpret_cast<uint64_t>(state.tickStateBufferValid.data());
-                        db.outputs.tickStateBufferSize() = state.numValidPointsHost[0] * sizeof(uint8_t);
+                        db.outputs.tickStatePtr() = reinterpret_cast<uint64_t>(state.m_tickStateBufferValid.data());
+                        db.outputs.tickStateBufferSize() = state.m_numValidPointsHost[0] * sizeof(uint8_t);
                     }
                     if (state.m_outputRadialVelocityMS)
                     {
                         db.outputs.radialVelocityMSPtr() =
-                            reinterpret_cast<uint64_t>(state.radialVelocityMSBufferValid.data());
-                        db.outputs.radialVelocityMSBufferSize() = state.numValidPointsHost[0] * sizeof(float);
+                            reinterpret_cast<uint64_t>(state.m_radialVelocityMsBufferValid.data());
+                        db.outputs.radialVelocityMSBufferSize() = state.m_numValidPointsHost[0] * sizeof(float);
                     }
 
                     // Launch fused kernel for common outputs (azimuth, elevation, distance, intensity)
@@ -2081,23 +2261,23 @@ public:
                                             state.m_outputDistance || state.m_outputIntensity;
                     if (hasCommonOutputs)
                     {
-                        auto commonStream = cudaStreams[state.STREAM_AZIMUTH_CURRENT]; // Use one stream for common
-                                                                                       // outputs
+                        auto commonStream = cudaStreams[state.s_kStreamAzimuthCurrent]; // Use one stream for common
+                                                                                        // outputs
                         CUDA_CHECK(cudaStreamWaitEvent(commonStream, outputEvent, 0));
                         if (state.m_outputIntensity)
                         {
-                            CUDA_CHECK(cudaStreamWaitEvent(commonStream, copyEvents[state.STREAM_INTENSITY], 0));
+                            CUDA_CHECK(cudaStreamWaitEvent(commonStream, copyEvents[state.s_kStreamIntensity], 0));
                         }
 
-                        selectRequiredValidPoints(state.azimuthBuffers[state.m_currentBuffer].data(),
-                                                  state.elevationBuffers[state.m_currentBuffer].data(),
-                                                  state.distanceBuffers[state.m_currentBuffer].data(),
-                                                  state.intensityBuffers[state.m_currentBuffer].data(),
-                                                  state.azimuthBufferValid.data(), state.elevationBufferValid.data(),
-                                                  state.distanceBufferValid.data(), state.intensityBufferValid.data(),
-                                                  state.indicesValidBuffer.data(), state.numValidPointsDevice,
-                                                  numPointsToCheck, state.m_requiredOutputsMask,
-                                                  state.m_maxThreadsPerBlock, cudaDeviceIndex, commonStream);
+                        selectRequiredValidPoints(
+                            state.m_azimuthBuffers[state.m_currentBuffer].data(),
+                            state.m_elevationBuffers[state.m_currentBuffer].data(),
+                            state.m_distanceBuffers[state.m_currentBuffer].data(),
+                            state.m_intensityBuffers[state.m_currentBuffer].data(), state.m_azimuthBufferValid.data(),
+                            state.m_elevationBufferValid.data(), state.m_distanceBufferValid.data(),
+                            state.m_intensityBufferValid.data(), state.m_indicesValidBuffer.data(),
+                            state.m_numValidPointsDevice, numPointsToCheck, state.m_requiredOutputsMask,
+                            state.m_maxThreadsPerBlock, cudaDeviceIndex, commonStream);
 
                         cudaEvent_t commonCompleteEvent;
                         CUDA_CHECK(cudaEventCreate(&commonCompleteEvent));
@@ -2112,53 +2292,53 @@ public:
                                          state.m_outputTickState || state.m_outputRadialVelocityMS;
                     if (hasAuxOutputs)
                     {
-                        auto auxStream = cudaStreams[state.STREAM_TIMESTAMP]; // Use one stream for aux outputs
+                        auto auxStream = cudaStreams[state.s_kStreamTimestamp]; // Use one stream for aux outputs
                         CUDA_CHECK(cudaStreamWaitEvent(auxStream, outputEvent, 0));
 
                         // Wait for all relevant aux data copy events
                         if (state.m_outputTimestamp)
-                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.STREAM_TIMESTAMP], 0));
+                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.s_kStreamTimestamp], 0));
                         if (state.m_outputEmitterId)
-                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.STREAM_EMITTER_ID], 0));
+                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.s_kStreamEmitterId], 0));
                         if (state.m_outputChannelId)
-                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.STREAM_CHANNEL_ID], 0));
+                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.s_kStreamChannelId], 0));
                         if (state.m_outputMaterialId)
-                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.STREAM_MATERIAL_ID], 0));
+                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.s_kStreamMaterialId], 0));
                         if (state.m_outputTickId)
-                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.STREAM_TICK_ID], 0));
+                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.s_kStreamTickId], 0));
                         if (state.m_outputHitNormal)
-                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.STREAM_NORMAL], 0));
+                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.s_kStreamNormal], 0));
                         if (state.m_outputVelocity)
-                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.STREAM_VELOCITY], 0));
+                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.s_kStreamVelocity], 0));
                         if (state.m_outputObjectId)
-                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.STREAM_OBJECT_ID], 0));
+                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.s_kStreamObjectId], 0));
                         if (state.m_outputEchoId)
-                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.STREAM_ECHO_ID], 0));
+                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.s_kStreamEchoId], 0));
                         if (state.m_outputTickState)
-                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.STREAM_TICK_STATE], 0));
+                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.s_kStreamTickState], 0));
                         if (state.m_outputRadialVelocityMS)
-                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.STREAM_RADIAL_VELOCITY_MS], 0));
+                            CUDA_CHECK(cudaStreamWaitEvent(auxStream, copyEvents[state.s_kStreamRadialVelocityMs], 0));
 
-                        selectOptionalValidPoints(state.timestampBuffers[state.m_currentBuffer].data(),
-                                                  state.emitterIdBuffers[state.m_currentBuffer].data(),
-                                                  state.channelIdBuffers[state.m_currentBuffer].data(),
-                                                  state.materialIdBuffers[state.m_currentBuffer].data(),
-                                                  state.tickIdBuffers[state.m_currentBuffer].data(),
-                                                  state.normalBuffers[state.m_currentBuffer].data(),
-                                                  state.velocityBuffers[state.m_currentBuffer].data(),
-                                                  state.objectIdBuffers[state.m_currentBuffer].data(),
-                                                  state.echoIdBuffers[state.m_currentBuffer].data(),
-                                                  state.tickStateBuffers[state.m_currentBuffer].data(),
-                                                  state.radialVelocityMSBuffers[state.m_currentBuffer].data(),
-                                                  state.timestampBufferValid.data(), state.emitterIdBufferValid.data(),
-                                                  state.channelIdBufferValid.data(), state.materialIdBufferValid.data(),
-                                                  state.tickIdBufferValid.data(), state.normalBufferValid.data(),
-                                                  state.velocityBufferValid.data(), state.objectIdBufferValid.data(),
-                                                  state.echoIdBufferValid.data(), state.tickStateBufferValid.data(),
-                                                  state.radialVelocityMSBufferValid.data(),
-                                                  state.indicesValidBuffer.data(), state.numValidPointsDevice,
-                                                  numPointsToCheck, state.m_optionalOutputsMask,
-                                                  state.m_maxThreadsPerBlock, cudaDeviceIndex, auxStream);
+                        selectOptionalValidPoints(
+                            state.m_timestampBuffers[state.m_currentBuffer].data(),
+                            state.m_emitterIdBuffers[state.m_currentBuffer].data(),
+                            state.m_channelIdBuffers[state.m_currentBuffer].data(),
+                            state.m_materialIdBuffers[state.m_currentBuffer].data(),
+                            state.m_tickIdBuffers[state.m_currentBuffer].data(),
+                            state.m_normalBuffers[state.m_currentBuffer].data(),
+                            state.m_velocityBuffers[state.m_currentBuffer].data(),
+                            state.m_objectIdBuffers[state.m_currentBuffer].data(),
+                            state.m_echoIdBuffers[state.m_currentBuffer].data(),
+                            state.m_tickStateBuffers[state.m_currentBuffer].data(),
+                            state.m_radialVelocityMsBuffers[state.m_currentBuffer].data(),
+                            state.m_timestampBufferValid.data(), state.m_emitterIdBufferValid.data(),
+                            state.m_channelIdBufferValid.data(), state.m_materialIdBufferValid.data(),
+                            state.m_tickIdBufferValid.data(), state.m_normalBufferValid.data(),
+                            state.m_velocityBufferValid.data(), state.m_objectIdBufferValid.data(),
+                            state.m_echoIdBufferValid.data(), state.m_tickStateBufferValid.data(),
+                            state.m_radialVelocityMsBufferValid.data(), state.m_indicesValidBuffer.data(),
+                            state.m_numValidPointsDevice, numPointsToCheck, state.m_optionalOutputsMask,
+                            state.m_maxThreadsPerBlock, cudaDeviceIndex, auxStream);
 
                         cudaEvent_t auxCompleteEvent;
                         CUDA_CHECK(cudaEventCreate(&auxCompleteEvent));
@@ -2185,12 +2365,12 @@ public:
                 // Note: Next buffer streams intentionally NOT synchronized
 
                 // Set output buffers
-                db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.pcBufferValid.data());
-                db.outputs.bufferSize() = state.numValidPointsHost[0] * sizeof(float3);
-                db.outputs.width() = state.numValidPointsHost[0];
+                db.outputs.dataPtr() = reinterpret_cast<uint64_t>(state.m_pcBufferValid.data());
+                db.outputs.bufferSize() = state.m_numValidPointsHost[0] * sizeof(float3);
+                db.outputs.width() = state.m_numValidPointsHost[0];
                 db.outputs.height() = 1;
 
-                auto frameEnd = state.hostGMO->frameEnd;
+                auto frameEnd = state.m_hostGmo->frameEnd;
                 getTransformFromSensorPose(frameEnd, matrixOutput);
 
                 // Swap the current and next buffers
@@ -2204,51 +2384,51 @@ public:
             if (state.m_graphsInitialized)
             {
                 // When using graphs, all basic operations complete on single stream
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_AZIMUTH_CURRENT]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamAzimuthCurrent]));
             }
             else
             {
                 // When using individual operations, sync all basic data streams
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_AZIMUTH_CURRENT]));
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_ELEVATION_CURRENT]));
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_DISTANCE_CURRENT]));
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_FLAGS_CURRENT]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamAzimuthCurrent]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamElevationCurrent]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamDistanceCurrent]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamFlagsCurrent]));
 
                 // Wait for next buffer completion events only if data was copied
                 if (numElementsToCopyToNextBuffer > 0)
                 {
-                    CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_AZIMUTH_NEXT]));
-                    CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_ELEVATION_NEXT]));
-                    CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_DISTANCE_NEXT]));
-                    CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_FLAGS_NEXT]));
+                    CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamAzimuthNext]));
+                    CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamElevationNext]));
+                    CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamDistanceNext]));
+                    CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamFlagsNext]));
                 }
             }
 
             // Wait for optional data completion events only if they were used
             if (state.m_outputIntensity)
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_INTENSITY]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamIntensity]));
             if (state.m_outputTimestamp)
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_TIMESTAMP]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamTimestamp]));
             if (state.m_outputEmitterId)
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_EMITTER_ID]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamEmitterId]));
             if (state.m_outputChannelId)
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_CHANNEL_ID]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamChannelId]));
             if (state.m_outputMaterialId)
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_MATERIAL_ID]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamMaterialId]));
             if (state.m_outputTickId)
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_TICK_ID]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamTickId]));
             if (state.m_outputHitNormal)
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_NORMAL]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamNormal]));
             if (state.m_outputVelocity)
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_VELOCITY]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamVelocity]));
             if (state.m_outputObjectId)
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_OBJECT_ID]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamObjectId]));
             if (state.m_outputEchoId)
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_ECHO_ID]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamEchoId]));
             if (state.m_outputTickState)
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_TICK_STATE]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamTickState]));
             if (state.m_outputRadialVelocityMS)
-                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.STREAM_RADIAL_VELOCITY_MS]));
+                CUDA_CHECK(cudaEventSynchronize(copyEvents[state.s_kStreamRadialVelocityMs]));
         }
 
         return true;
