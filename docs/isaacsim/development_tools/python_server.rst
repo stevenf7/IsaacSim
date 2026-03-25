@@ -36,6 +36,15 @@ The wire protocol is intentionally simple so that any TCP client can use it:
 **Request**
 
 Send raw UTF-8 Python source code over a TCP connection to the configured host and port.
+After sending all code, the client **must** signal end-of-input by performing a TCP half-close
+(``write_eof()`` in Python, ``shutdown(SHUT_WR)`` at the socket level, or ``-q 0`` with netcat).
+The server buffers incoming data until EOF is received, ensuring that TCP-fragmented payloads
+are fully reassembled before execution.
+
+.. warning::
+
+   If the client does not signal EOF, the server will wait indefinitely for more data and
+   the connection will hang until the client disconnects or a timeout occurs.
 
 **Response**
 
@@ -114,6 +123,48 @@ For quick testing, use ``netcat`` or similar tools:
 
 |br| |hr|
 
+Async Code Support
+--------------------
+
+The server supports top-level ``await`` expressions.
+When submitted code contains ``await``, the server compiles it as an async coroutine,
+schedules it on the Kit event loop, and awaits the result before sending the JSON response.
+
+.. code-block:: python
+
+    # Top-level await is supported
+    import asyncio
+    await asyncio.sleep(0.1)
+    print("this output is captured")
+
+Standard output from ``print()`` calls inside awaited coroutines is captured and included in the
+JSON response ``output`` field, just like synchronous code.
+
+|br| |hr|
+
+.. _python_server_state_persistence:
+
+State Persistence
+-------------------
+
+The server maintains a shared Python globals dictionary across all connections within a session.
+Variables, imports, and function definitions from one request are available in subsequent requests.
+This enables incremental workflows such as building a scene step by step:
+
+.. code-block:: python
+
+    # Request 1: Create a stage
+    import isaacsim.core.experimental.utils.stage as stage_utils
+    await stage_utils.create_new_stage_async(template="empty")
+
+    # Request 2: Uses stage_utils from the previous request
+    stage_utils.define_prim("/World", "Xform")
+
+Each new TCP connection reuses the same globals, so there is no need to re-import modules
+or re-define variables between calls.
+
+|br| |hr|
+
 LLM Integration
 -----------------
 
@@ -122,11 +173,13 @@ An LLM tool implementation needs only to:
 
 1. Open a TCP connection to the configured host and port.
 2. Send the Python code as UTF-8 bytes.
-3. Signal end-of-input (close the write side or send EOF).
+3. Signal end-of-input by calling ``write_eof()`` (required — the server buffers until EOF).
 4. Read the JSON response.
 5. Parse ``status`` to determine success or failure, ``output`` for printed text, and ``result`` for expression values.
 
-Because the protocol is a single request/response per connection, there is no session state to manage.
+Because the protocol is a single request/response per connection, there is no connection-level state to manage.
+However, Python-level state (variables, imports) persists across connections within a session
+(see :ref:`python_server_state_persistence` above).
 
 |br| |hr|
 

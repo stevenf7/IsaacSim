@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import annotations
-
 """Provide a Python code executor for running statements and expressions within Isaac Sim."""
 
-import __future__ as _future_module
+from __future__ import annotations  # isort: skip
+import __future__ as _future_module  # isort: skip
 
 import contextlib
 import dis

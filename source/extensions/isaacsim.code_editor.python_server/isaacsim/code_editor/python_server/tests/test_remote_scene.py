@@ -45,6 +45,7 @@ async def _send_and_receive(port: int, source: str) -> dict:
     """
     reader, writer = await asyncio.open_connection(_HOST, port)
     writer.write(source.encode())
+    writer.write_eof()
     data = await asyncio.wait_for(reader.read(), timeout=30.0)
     writer.close()
     return json.loads(data.decode())
