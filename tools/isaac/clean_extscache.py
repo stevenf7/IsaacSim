@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import argparse
-import json
 import os
 import re
 import sys
@@ -244,8 +243,9 @@ def check_version_locks(kit_file, verbose=False, dry_run=False, update_locks=Fal
 
 def update_physics_versions(kit_file, packman_xml_file, verbose=False, dry_run=False):
     """
-    Extract the physics version from the packman XML file and check if physics extensions
-    in the kit file match that version.
+    Extract the physics version from the packman XML file and update all physics extensions
+    in the kit file to match that version.  Updates the [dependencies] section, enabled list
+    entries, and exact version dependency comments.
 
     Args:
         kit_file (str): Path to the kit file
@@ -261,11 +261,11 @@ def update_physics_versions(kit_file, packman_xml_file, verbose=False, dry_run=F
         if verbose:
             print(f"DEBUG: {msg}")
 
-    log("Checking physics extension versions...")
+    log("Updating physics extension versions...")
 
     # Check if packman XML file exists
     if not os.path.isfile(packman_xml_file):
-        log(f"Packman XML file {packman_xml_file} does not exist, skipping physics version check")
+        log(f"Packman XML file {packman_xml_file} does not exist, skipping physics version update")
         return True
 
     # Extract version from packman XML
@@ -305,8 +305,10 @@ def update_physics_versions(kit_file, packman_xml_file, verbose=False, dry_run=F
         print(f"Error reading kit file: {e}")
         return False
 
-    # Define physics extensions that should be checked
-    physics_extensions = [
+    updated_content = content
+
+    # Extensions explicitly pinned in [dependencies] with exact = true
+    pinned_physics_extensions = [
         "omni.physx.bundle",
         "omni.physx.fabric",
         "omni.physx.pvd",
@@ -316,32 +318,88 @@ def update_physics_versions(kit_file, packman_xml_file, verbose=False, dry_run=F
         "omni.physx.tests.visual",
     ]
 
-    # Track mismatches found
-    mismatches = []
+    PHYSICS_PREFIXES = (
+        "omni.physx",
+        "omni.physics",
+        "omni.usdphysics",
+        "omni.usd.schema.physx",
+        "omni.convexdecomposition",
+        "omni.kit.property.physics",
+    )
 
-    # Check each physics extension version
-    for ext_name in physics_extensions:
-        # Pattern to match the extension with its current version
-        # Matches: "omni.physx.bundle" = {version = "107.3.7", exact = true}
-        pattern = r'("' + re.escape(ext_name) + r'"\s*=\s*\{\s*version\s*=\s*")([^"]+)(".*?\})'
-        match = re.search(pattern, content)
+    def is_physics_ext(name):
+        """Check if an extension name belongs to the physics package."""
+        for prefix in PHYSICS_PREFIXES:
+            if name == prefix or name.startswith(prefix + "."):
+                return True
+        return False
 
+    all_updates = []
+
+    # 1. Update [dependencies] section (e.g. "omni.physx.bundle" = {version = "110.0.6", exact = true})
+    for ext_name in pinned_physics_extensions:
+        pattern = r'("' + re.escape(ext_name) + r'"\s*=\s*\{[^}]*?version\s*=\s*")([^"]+)(")'
+        match = re.search(pattern, updated_content)
         if match:
             current_version = match.group(2)
             if current_version != physics_version:
-                mismatches.append((ext_name, current_version, physics_version))
-                log(f"Found version mismatch for {ext_name}: {current_version} vs {physics_version}")
+                log(f"[dependencies] {ext_name}: {current_version} -> {physics_version}")
+                all_updates.append((ext_name, current_version, "dependencies"))
+                updated_content = re.sub(pattern, rf"\g<1>{physics_version}\3", updated_content)
         else:
-            log(f"Could not find version for {ext_name}")
+            log(f"Could not find {ext_name} in [dependencies]")
 
-    # Report mismatches if any found
-    if mismatches:
-        print("\nPhysics extension version mismatches found:")
-        print(f"Expected version from packman XML: {physics_version}")
-        for ext_name, current_version, expected_version in mismatches:
-            print(f"  - {ext_name}: {current_version} (expected {expected_version})")
+    # 2. Update enabled list entries (e.g. "omni.physx-110.0.6")
+    enabled_updates = []
+
+    def _replace_enabled_entry(match):
+        name = match.group(1)
+        version = match.group(2)
+        if is_physics_ext(name) and version != physics_version:
+            enabled_updates.append((name, version))
+            return f'"{name}-{physics_version}"'
+        return match.group(0)
+
+    updated_content = re.sub(r'"([\w.]+)-(\d+\.\d+\.\d+)"', _replace_enabled_entry, updated_content)
+    for name, old_ver in enabled_updates:
+        log(f"[enabled] {name}: {old_ver} -> {physics_version}")
+        all_updates.append((name, old_ver, "enabled"))
+
+    # 3. Update "# Exact Version dependencies:" comments (e.g. #\tomni.physx.bundle-110.0.6)
+    comment_updates = []
+
+    def _replace_comment_entry(match):
+        prefix = match.group(1)
+        name = match.group(2)
+        version = match.group(3)
+        if is_physics_ext(name) and version != physics_version:
+            comment_updates.append((name, version))
+            return f"{prefix}{name}-{physics_version}"
+        return match.group(0)
+
+    updated_content = re.sub(r"(#\s+)([\w.]+)-(\d+\.\d+\.\d+)", _replace_comment_entry, updated_content)
+    for name, old_ver in comment_updates:
+        log(f"[comment] {name}: {old_ver} -> {physics_version}")
+        all_updates.append((name, old_ver, "comment"))
+
+    if not all_updates:
+        log("All physics extensions already at correct version.")
+        return True
+
+    if dry_run:
+        print(f"Dry run: Would update {len(all_updates)} physics extension entries to version {physics_version}:")
+        for name, old_ver, location in all_updates:
+            print(f"  - {name}: {old_ver} -> {physics_version} ({location})")
     else:
-        log("All physics extensions have matching versions")
+        try:
+            with open(kit_file, "w") as f:
+                f.write(updated_content)
+            print(f"Updated {len(all_updates)} physics extension entries to version {physics_version}:")
+            for name, old_ver, location in all_updates:
+                print(f"  - {name}: {old_ver} -> {physics_version} ({location})")
+        except Exception as e:
+            print(f"Error writing kit file: {e}")
+            return False
 
     return True
 
@@ -376,12 +434,21 @@ def compare_with_template(kit_file, verbose=False, dry_run=False, commit_hash=No
         return False
 
     # Download the template file
+    KAT_BASE_URL = "https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw"
+    KAT_TEMPLATE_PATH = "templates/omni.all.template.extensions.kit"
     if commit_hash:
-        template_url = f"https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/{commit_hash}/templates/omni.all.template.extensions.kit"
+        template_url = f"{KAT_BASE_URL}/{commit_hash}/{KAT_TEMPLATE_PATH}"
         log(f"Using commit hash {commit_hash} for template URL")
     else:
-        template_url = "https://gitlab-master.nvidia.com/omniverse/kit-github/kit-app-template/-/raw/feature/110.0/templates/omni.all.template.extensions.kit"
-        log("Using default production branch for template URL")
+        # Derive the KAT branch from the Kit SDK version in the kit file
+        sdk_match = re.search(r"Kit SDK Version:\s*(\d+)\.(\d+)\.\d+", content)
+        if sdk_match:
+            kat_branch = f"feature/{sdk_match.group(1)}.{sdk_match.group(2)}"
+            log(f"Derived KAT branch '{kat_branch}' from Kit SDK Version {sdk_match.group(0)}")
+        else:
+            kat_branch = "feature/110.1"
+            print(f"WARNING: Could not find Kit SDK Version in {kit_file}, falling back to '{kat_branch}'")
+        template_url = f"{KAT_BASE_URL}/{kat_branch}/{KAT_TEMPLATE_PATH}"
 
     print(f"Fetching template from: {template_url}")
 
@@ -471,14 +538,27 @@ def compare_with_template(kit_file, verbose=False, dry_run=False, commit_hash=No
     kit_locks = extract_version_locks(kit_generated)
     template_locks = extract_version_locks(template_generated)
 
-    # Compare version locks
-    lock_mismatches = []
+    def _parse_version(ver_str):
+        """Parse a version string into a comparable tuple of ints."""
+        try:
+            return tuple(int(x) for x in ver_str.split("."))
+        except (ValueError, AttributeError):
+            return ()
+
+    # Compare version locks — separate upgrades/new from downgrades
+    lock_upgrades = []
+    lock_downgrades = []
     for name, template_version in template_locks.items():
         if name in kit_locks:
             if kit_locks[name] != template_version:
-                lock_mismatches.append((name, kit_locks[name], template_version))
+                kit_ver = _parse_version(kit_locks[name])
+                tmpl_ver = _parse_version(template_version)
+                if tmpl_ver >= kit_ver:
+                    lock_upgrades.append((name, kit_locks[name], template_version))
+                else:
+                    lock_downgrades.append((name, kit_locks[name], template_version))
         else:
-            lock_mismatches.append((name, "missing", template_version))
+            lock_upgrades.append((name, "missing", template_version))
 
     # Report mismatches
     if version_mismatches:
@@ -486,27 +566,183 @@ def compare_with_template(kit_file, verbose=False, dry_run=False, commit_hash=No
         for name, kit_version, template_version in version_mismatches:
             print(f"  - {name}: {kit_version} → {template_version}")
 
-    if lock_mismatches:
-        print("\nVersion lock mismatches:")
-        for name, kit_version, template_version in lock_mismatches:
+    if lock_upgrades:
+        print("\nVersion lock upgrades from template:")
+        for name, kit_version, template_version in lock_upgrades:
             print(f"  - {name}: {kit_version} → {template_version}")
 
-        if not dry_run:
-            # Update the version locks in the kit file (across all enabled sections)
-            updated_content = content
-            for name, _, template_version in lock_mismatches:
-                # Find and replace the version in all enabled sections
-                pattern = f'"{name}-[^"]*"'
-                replacement = f'"{name}-{template_version}"'
-                updated_content = re.sub(pattern, replacement, updated_content)
+    if lock_downgrades:
+        print(f"\nSkipped {len(lock_downgrades)} version lock downgrades (template is older):")
+        for name, kit_version, template_version in lock_downgrades:
+            print(f"  - {name}: {kit_version} (keeping) vs {template_version} (template)")
 
-            try:
-                with open(kit_file, "w") as f:
-                    f.write(updated_content)
-                print(f"\nUpdated {len(lock_mismatches)} version locks in the kit file")
-            except Exception as e:
-                print(f"Error writing updated kit file: {e}")
-                return False
+    if lock_upgrades and not dry_run:
+        updated_content = content
+        for name, _, template_version in lock_upgrades:
+            pattern = f'"{name}-[^"]*"'
+            replacement = f'"{name}-{template_version}"'
+            updated_content = re.sub(pattern, replacement, updated_content)
+
+        try:
+            with open(kit_file, "w") as f:
+                f.write(updated_content)
+            print(f"\nUpdated {len(lock_upgrades)} version locks in the kit file")
+        except Exception as e:
+            print(f"Error writing updated kit file: {e}")
+            return False
+
+    return True
+
+
+def _reconcile_file(filepath, enabled_versions, verbose=False, dry_run=False):
+    """Reconcile version constraints in a single .kit file against the enabled version map.
+
+    Returns a list of (ext_name, old_constraint, new_constraint) tuples that were applied,
+    or None on error.
+    """
+
+    def log(msg):
+        if verbose:
+            print(f"DEBUG: {msg}")
+
+    try:
+        with open(filepath, "r") as f:
+            content = f.read()
+    except Exception as e:
+        print(f"Error reading {filepath}: {e}")
+        return None
+
+    dep_pattern = re.compile(r'"([\w.]+)"\s*=\s*\{([^}]*)\}')
+    updated_content = content
+    updates = []
+
+    for dep_match in dep_pattern.finditer(content):
+        ext_name = dep_match.group(1)
+        attrs = dep_match.group(2)
+
+        if "exact" in attrs and "true" in attrs:
+            log(f"Skipping {ext_name} (exact = true)")
+            continue
+
+        ver_match = re.search(r'version\s*=\s*"([^"]+)"', attrs)
+        if not ver_match:
+            continue
+
+        constraint = ver_match.group(1)
+
+        if ext_name not in enabled_versions:
+            continue
+
+        enabled_ver = enabled_versions[ext_name]
+        enabled_parts = enabled_ver.split(".")
+
+        if constraint.startswith("~"):
+            tilde_ver = constraint[1:]
+            depth = len(tilde_ver.split("."))
+            enabled_prefix = ".".join(enabled_parts[:depth])
+
+            if tilde_ver == enabled_prefix:
+                log(f"{ext_name}: constraint {constraint} already compatible with {enabled_ver}")
+                continue
+
+            new_constraint = "~" + enabled_prefix
+            updates.append((ext_name, constraint, new_constraint))
+        else:
+            if constraint == enabled_ver:
+                log(f"{ext_name}: constraint {constraint} already matches {enabled_ver}")
+                continue
+
+            new_constraint = enabled_ver
+            updates.append((ext_name, constraint, new_constraint))
+
+    if not updates:
+        return []
+
+    if not dry_run:
+        for ext_name, old_constraint, new_constraint in updates:
+            pattern = (
+                r'("' + re.escape(ext_name) + r'"\s*=\s*\{[^}]*version\s*=\s*")' + re.escape(old_constraint) + r'(")'
+            )
+            updated_content = re.sub(pattern, rf"\g<1>{new_constraint}\2", updated_content)
+
+        try:
+            with open(filepath, "w") as f:
+                f.write(updated_content)
+        except Exception as e:
+            print(f"Error writing {filepath}: {e}")
+            return None
+
+    return updates
+
+
+def reconcile_dependency_versions(kit_file, verbose=False, dry_run=False):
+    """
+    After a KAT sync, reconcile version constraints in [dependencies] with the
+    actual versions in the enabled list.  Scans both ``kit_file`` and all
+    sibling ``.kit`` files in the same directory so that transitive constraints
+    (e.g. in ``isaacsim.exp.full.kit``) are also corrected.
+
+    Skips entries with ``exact = true`` (handled by the physics / XR updaters).
+
+    Args:
+        kit_file (str): Path to the primary kit file (must contain the enabled list)
+        verbose (bool): If True, print detailed debug information
+        dry_run (bool): If True, don't modify files, just report
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+
+    def log(msg):
+        if verbose:
+            print(f"DEBUG: {msg}")
+
+    log("Reconciling [dependencies] version constraints with enabled list...")
+
+    try:
+        with open(kit_file, "r") as f:
+            content = f.read()
+    except Exception as e:
+        print(f"Error reading kit file: {e}")
+        return False
+
+    # Build a canonical version map from the enabled list in the primary kit file
+    enabled_versions = {}
+    for m in re.finditer(r'"([\w.]+)-(\d+(?:\.\d+)+)"', content):
+        enabled_versions[m.group(1)] = m.group(2)
+    log(f"Found {len(enabled_versions)} extensions in enabled list")
+
+    # Collect all .kit files to reconcile: primary file + siblings in the same directory
+    apps_dir = os.path.dirname(os.path.abspath(kit_file))
+    kit_files = [kit_file]
+    try:
+        for fname in sorted(os.listdir(apps_dir)):
+            if fname.endswith(".kit"):
+                full = os.path.join(apps_dir, fname)
+                if os.path.abspath(full) != os.path.abspath(kit_file):
+                    kit_files.append(full)
+    except OSError as e:
+        log(f"Could not list apps directory {apps_dir}: {e}")
+
+    all_updates = []
+
+    for kf in kit_files:
+        basename = os.path.basename(kf)
+        updates = _reconcile_file(kf, enabled_versions, verbose, dry_run)
+        if updates is None:
+            print(f"WARNING: Failed to reconcile {basename}")
+            continue
+        for ext_name, old_c, new_c in updates:
+            all_updates.append((basename, ext_name, old_c, new_c))
+
+    if not all_updates:
+        log("All [dependencies] version constraints are compatible with the enabled list.")
+        return True
+
+    action = "Dry run: Would update" if dry_run else "Updated"
+    print(f"{action} {len(all_updates)} dependency version constraints to match enabled list:")
+    for basename, ext_name, old_c, new_c in all_updates:
+        print(f"  - {ext_name}: {old_c} -> {new_c}  ({basename})")
 
     return True
 
@@ -902,17 +1138,25 @@ def clean_extscache(
         if not locks_ok and not dry_run:
             print("WARNING: Some extensions have version locks that don't match the SDK hash.")
 
-    # Update physics versions if requested
-    if update_physics:
-        update_physics_ok = update_physics_versions(kit_file, packman_xml, verbose, dry_run)
-        if not update_physics_ok and not dry_run:
-            print(f"WARNING: Failed to update physics extension versions (packman XML: {packman_xml}).")
-
-    # Compare with template if requested
+    # Compare with template if requested (runs before update_physics so
+    # physics versions from packman XML take precedence over template versions)
     if match_kat:
         template_ok = compare_with_template(kit_file, verbose, dry_run, commit_hash)
         if not template_ok and not dry_run:
             print("WARNING: Failed to compare with template file. See errors above for details.")
+
+        # Reconcile [dependencies] constraints that may now conflict with
+        # the updated enabled list (e.g. ~209.0 vs 209.1.1)
+        reconcile_ok = reconcile_dependency_versions(kit_file, verbose, dry_run)
+        if not reconcile_ok and not dry_run:
+            print("WARNING: Failed to reconcile dependency version constraints.")
+
+    # Update physics versions if requested (runs after match_kat to correct
+    # any physics version overrides from the template)
+    if update_physics:
+        update_physics_ok = update_physics_versions(kit_file, packman_xml, verbose, dry_run)
+        if not update_physics_ok and not dry_run:
+            print(f"WARNING: Failed to update physics extension versions (packman XML: {packman_xml}).")
 
     return True
 
