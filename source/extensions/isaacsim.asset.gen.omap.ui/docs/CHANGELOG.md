@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.1] - 2026-03-25
+### Changed
+- Replace deprecated onclick_fn with onclick_action for menu registration
+
 ## [2.5.0] - 2026-02-25
 ### Added
 - Save YAML button in the visualization window to save the ROS occupancy map parameters file directly, alongside the existing Save Image button

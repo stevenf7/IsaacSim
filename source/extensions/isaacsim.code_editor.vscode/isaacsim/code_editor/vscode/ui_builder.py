@@ -29,14 +29,16 @@ class UIBuilder:
     """Manage the VS Code menu item and launcher.
 
     Args:
+        ext_name: Extension name used for action registration.
         menu_name: Name of the menu where the item will be added.
         menu_item_name: Display name for the menu item.
         host: Host address for the Python server.
         port: Port number for the Python server.
     """
 
-    def __init__(self, menu_name: str, menu_item_name: str, host: str, port: int) -> None:
+    def __init__(self, ext_name: str, menu_name: str, menu_item_name: str, host: str, port: int) -> None:
         self._menu_items: list = []
+        self._ext_name = ext_name
         self._host = host
         self._port = port
         self._menu_name = menu_name
@@ -50,12 +52,22 @@ class UIBuilder:
     def startup(self) -> None:
         """Create the menu item for launching VS Code."""
         try:
+            import omni.kit.actions.core
             from omni.kit.menu.utils import MenuItemDescription, add_menu_items
+
+            action_registry = omni.kit.actions.core.get_action_registry()
+            action_registry.register_action(
+                self._ext_name,
+                "launch_vscode",
+                lambda p=weakref.proxy(self): p._launch(),
+                display_name=self._menu_item_name,
+                description=f"Launch {self._menu_item_name}",
+            )
 
             self._menu_items = [
                 MenuItemDescription(
                     name=self._menu_item_name,
-                    onclick_fn=lambda p=weakref.proxy(self): p._launch(),
+                    onclick_action=(self._ext_name, "launch_vscode"),
                 )
             ]
             add_menu_items(self._menu_items, self._menu_name)
@@ -65,9 +77,12 @@ class UIBuilder:
     def shutdown(self) -> None:
         """Remove the menu item."""
         try:
+            import omni.kit.actions.core
             from omni.kit.menu.utils import remove_menu_items
 
             remove_menu_items(self._menu_items, "Window")
+            action_registry = omni.kit.actions.core.get_action_registry()
+            action_registry.deregister_action(self._ext_name, "launch_vscode")
         except ImportError:
             pass
         self._menu_items = []
