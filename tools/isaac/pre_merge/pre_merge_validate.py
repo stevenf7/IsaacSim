@@ -28,6 +28,7 @@ to a standalone script:
   8. Python package definitions      -> repo.sh validate_python_packages
   9. C++ linting (clang-tidy)        -> clang_tidy.py  (--clang-tidy flag, requires build)
  10. Extension test discovery & run  -> run_extension_tests.py
+ 11. API docs check (checkapi)       -> run_checkapi.py (--checkapi flag, requires build)
 
 Determines the full set of changed files by comparing against the merge-base
 of the current branch with its upstream (auto-detected, or set via --base-branch).
@@ -697,7 +698,46 @@ def check_clang_tidy(extensions: list[Path], fix: bool = False) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Check 10: Extension tests — delegates to run_extension_tests.py
+# Check 10: API docs check (checkapi) — delegates to run_checkapi.py
+# ---------------------------------------------------------------------------
+
+
+def check_checkapi(extensions: list[Path], fix: bool = False) -> int:
+    """Run checkapi on modified extensions to verify python_api.md is up-to-date.
+
+    Args:
+        extensions: List of extension paths to check.
+        fix: Whether to auto-update python_api.md files.
+
+    Returns:
+        Exit code (0 if OK, 1 if issues).
+    """
+    if not extensions:
+        log_info("No modified extensions to check API docs.")
+        return 0
+
+    script = TOOLS_DIR / "run_checkapi.py"
+    if not script.exists():
+        log_warn("run_checkapi.py not found; skipping checkapi.")
+        return 0
+
+    ext_names = [ext.name for ext in extensions]
+    cmd = [sys.executable, str(script), "--check"] + ext_names
+    if not fix:
+        # In non-fix mode we still generate to detect drift, but report it
+        pass
+
+    proc = _run_teed(cmd, cwd=REPO_ROOT)
+    if proc.returncode != 0:
+        log_fail("API docs check (checkapi) reported issues.")
+        return 1
+
+    log_pass("API docs check (checkapi) clean.")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# Check 11: Extension tests — delegates to run_extension_tests.py
 # ---------------------------------------------------------------------------
 
 
@@ -775,6 +815,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--clang-tidy",
         action="store_true",
         help="Run clang-tidy on C++ files in modified extensions (requires a build).",
+    )
+    checks.add_argument(
+        "--checkapi",
+        action="store_true",
+        help="Run checkapi to verify python_api.md is up-to-date for modified extensions (requires a build).",
     )
     checks.add_argument(
         "--test",
@@ -920,6 +965,7 @@ def _run(args: argparse.Namespace) -> int:
         args.license,
         args.packages,
         args.clang_tidy,
+        args.checkapi,
         args.test,
     ]
     run_all_validation = not any(check_flags)
@@ -996,6 +1042,10 @@ def _run(args: argparse.Namespace) -> int:
         if args.clang_tidy:
             header("C++ Linting (clang-tidy)")
             total_errors += check_clang_tidy(extensions, fix=args.fix)
+
+        if args.checkapi:
+            header("API Docs Check (checkapi)")
+            total_errors += check_checkapi(extensions, fix=args.fix)
 
     if args.test and not args.skip_tests:
         header("Extension Tests")
