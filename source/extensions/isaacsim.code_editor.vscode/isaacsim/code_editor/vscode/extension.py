@@ -43,7 +43,8 @@ class Extension(omni.ext.IExt):
         host: str = settings.get(f"{_PYTHON_SERVER_SETTINGS}/host")
         port: int = settings.get(f"{_PYTHON_SERVER_SETTINGS}/port")
 
-        self._ui_builder = ui_builder.UIBuilder("Window", "VS Code", host, port)
+        ext_name = omni.ext.get_extension_name(ext_id)
+        self._ui_builder = ui_builder.UIBuilder(ext_name, "Window", "VS Code", host, port)
         self._ui_builder.startup()
 
     def on_shutdown(self) -> None:

@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.4] - 2026-03-25
+### Changed
+- Replace deprecated onclick_fn with onclick_action for menu registration
+
 ## [1.1.3] - 2026-03-02
 ### Changed
 - Add Overview.md, add python_api.md, add SETTINGS.md and update docstrings

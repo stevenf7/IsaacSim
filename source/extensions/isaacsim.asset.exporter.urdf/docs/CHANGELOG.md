@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.4] - 2026-03-25
+### Changed
+- Replace deprecated onclick_fn with onclick_action for menu registration
+
 ## [1.4.3] - 2026-02-24
 ### Changed
 - Temporarily disable nova carter and go2 unit test for urdf converter fix

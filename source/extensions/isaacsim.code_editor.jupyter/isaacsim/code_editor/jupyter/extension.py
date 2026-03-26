@@ -145,9 +145,9 @@ class Extension(omni.ext.IExt):
             order=0,
         )
 
-        # ui components
+        ext_name = omni.ext.get_extension_name(ext_id)
         self._ui_builder = ui_builder.UIBuilder(
-            "Window", "Jupyter Notebook", self._notebook_ip, self._notebook_port, self._get_display_url
+            ext_name, "Window", "Jupyter Notebook", self._notebook_ip, self._notebook_port, self._get_display_url
         )
         self._ui_builder.startup()
 

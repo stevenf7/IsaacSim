@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2026-03-25
+### Changed
+- Replace deprecated onclick_fn with onclick_action for menu registration
+
 ## [1.2.0] - 2026-03-09
 ### Changed
 - Extract TCP socket server and Python executor into isaacsim.code_editor.python_server

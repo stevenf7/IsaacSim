@@ -22,6 +22,7 @@ import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni
 import omni.ext
+import omni.kit.actions.core
 import omni.kit.app
 import omni.kit.usd.layers
 import omni.ui as ui
@@ -135,7 +136,8 @@ class Extension(omni.ext.IExt, MenuHelperExtensionFull):
         Args:
             ext_id: The unique identifier for this extension instance.
         """
-        # add to menu
+        self._ext_name = omni.ext.get_extension_name(ext_id)
+
         self.menu_startup(
             lambda: OccupancyMapWindow(),
             Extension.EXTENSION_NAME,
@@ -143,9 +145,17 @@ class Extension(omni.ext.IExt, MenuHelperExtensionFull):
             "Tools/Robotics",
         )
 
-        # add layout template to Layouts menu
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.register_action(
+            self._ext_name,
+            "open_omap_layout",
+            lambda *_: self._open_layout_fn(ext_id),
+            display_name="Occupancy Map Generation",
+            description="Open the Occupancy Map Generation layout",
+        )
+
         self._menu_items = [
-            MenuItemDescription(name="Occupancy Map Generation", onclick_fn=lambda *_: self._open_layout_fn(ext_id))
+            MenuItemDescription(name="Occupancy Map Generation", onclick_action=(self._ext_name, "open_omap_layout"))
         ]
         add_menu_items(self._menu_items, "Layouts")
 
@@ -175,9 +185,9 @@ class Extension(omni.ext.IExt, MenuHelperExtensionFull):
 
         Removes menu items and cleans up resources.
         """
-        # remove layout template from Layouts menu
-
         remove_menu_items(self._menu_items, "Layouts")
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.deregister_action(self._ext_name, "open_omap_layout")
         self.menu_shutdown()
 
 

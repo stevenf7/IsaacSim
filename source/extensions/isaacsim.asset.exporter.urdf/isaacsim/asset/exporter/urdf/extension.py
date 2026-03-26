@@ -17,6 +17,7 @@ import gc
 from typing import List
 
 import omni.ext
+import omni.kit.actions.core
 import omni.ui as ui
 import omni.usd
 from isaacsim.gui.components.menu import MenuItemDescription
@@ -29,11 +30,22 @@ EXTENSION_TITLE = "URDF Exporter"
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id):
+        self._ext_name = omni.ext.get_extension_name(ext_id)
         self._export_options = None
 
-        # Menu Setup
-        self._menu_items = [MenuItemDescription(name=EXTENSION_TITLE, onclick_fn=self._show_dialog)]
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.register_action(
+            self._ext_name,
+            "show_export_dialog",
+            self._show_dialog,
+            display_name=EXTENSION_TITLE,
+            description="Show the URDF export dialog",
+        )
+
+        self._menu_items = [
+            MenuItemDescription(name=EXTENSION_TITLE, onclick_action=(self._ext_name, "show_export_dialog"))
+        ]
         add_menu_items(self._menu_items, "File")
 
     def _show_dialog(self):
@@ -59,14 +71,12 @@ class Extension(omni.ext.IExt):
             file_exporter.hide_window()
 
     def on_shutdown(self):
-        # Cleanup Delegate
         if self._export_options:
             self._export_options.cleanup()
-        # Cleanup Dialog
         self._hide_dialog()
-        # Cleanup Menu
         remove_menu_items(self._menu_items, "File")
-        # Cleanup Garbage
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.deregister_action(self._ext_name, "show_export_dialog")
         gc.collect()
 
 
