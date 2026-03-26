@@ -271,6 +271,105 @@ async def capture_depth_data_async(
     )
 
 
+async def capture_app_screenshot_async(output_path: str, *, max_wait_frames: int = 20) -> bool:
+    """Capture a full-application screenshot (entire window including UI chrome) and save it to disk.
+
+    Uses ``omni.kit.renderer.capture`` swapchain capture.  Works in both windowed and
+    headless (``--no-window``) modes.
+
+    Args:
+        output_path: Destination file path for the PNG screenshot.
+        max_wait_frames: Maximum number of additional app-update frames to wait for
+            the file to appear on disk after the capture is triggered.
+
+    Returns:
+        ``True`` if the screenshot file was successfully created, ``False`` otherwise.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from isaacsim.test.utils.image_capture import capture_app_screenshot_async
+        >>>
+        >>> ok = await capture_app_screenshot_async("/tmp/app.png")
+        App screenshot saved: /tmp/app.png (12345 bytes)
+        >>> ok
+        True
+    """
+    import omni.kit.app
+    import omni.kit.renderer.capture
+
+    renderer = omni.kit.renderer.capture.acquire_renderer_capture_interface()
+
+    # Wait one frame so any open menus close
+    await omni.kit.app.get_app().next_update_async()
+
+    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+    renderer.capture_next_frame_swapchain(output_path)
+
+    await omni.kit.app.get_app().next_update_async()
+    renderer.wait_async_capture()
+
+    # Poll until the file appears on disk
+    for _ in range(max_wait_frames):
+        if os.path.isfile(output_path):
+            break
+        await omni.kit.app.get_app().next_update_async()
+
+    if os.path.isfile(output_path):
+        print(f"App screenshot saved: {output_path} ({os.path.getsize(output_path)} bytes)")
+        return True
+    print(f"ERROR: App screenshot not created at {output_path}")
+    return False
+
+
+async def capture_viewport_screenshot_async(output_path: str, *, viewport_api=None) -> bool:
+    """Capture the active viewport's rendered image and save it to disk.
+
+    Uses replicator annotators to capture the RGB render — works in headless
+    (``--no-window``) mode.  Does not include UI chrome.
+
+    Args:
+        output_path: Destination file path for the PNG screenshot.
+        viewport_api: Viewport API instance to capture from.  If ``None``, the
+            active viewport is used.
+
+    Returns:
+        ``True`` if the screenshot file was successfully created, ``False`` otherwise.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from isaacsim.test.utils.image_capture import capture_viewport_screenshot_async
+        >>>
+        >>> ok = await capture_viewport_screenshot_async("/tmp/viewport.png")
+        Viewport screenshot saved: /tmp/viewport.png (98765 bytes)
+        >>> ok
+        True
+    """
+    import omni.kit.viewport.utility
+    from isaacsim.test.utils.image_io import save_rgb_image
+
+    if viewport_api is None:
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
+    if viewport_api is None:
+        print("ERROR: No active viewport found")
+        return False
+
+    rgb_data = await capture_viewport_annotator_data_async(viewport_api, annotator_name="rgb")
+
+    out_dir = os.path.dirname(output_path) or "."
+    os.makedirs(out_dir, exist_ok=True)
+    save_rgb_image(rgb_data, out_dir, os.path.basename(output_path))
+
+    if os.path.isfile(output_path):
+        print(f"Viewport screenshot saved: {output_path} ({os.path.getsize(output_path)} bytes)")
+        return True
+    print(f"ERROR: Viewport screenshot not created at {output_path}")
+    return False
+
+
 async def capture_viewport_annotator_data_async(viewport_api, annotator_name="rgb") -> Any:
     """Capture annotator data from an existing viewport's render product.
 

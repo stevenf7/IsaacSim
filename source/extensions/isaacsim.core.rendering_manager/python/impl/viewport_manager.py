@@ -26,6 +26,7 @@ import carb
 import isaacsim.core.experimental.utils.ops as ops_utils
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.transform as transform_utils
 import numpy as np
 import omni.kit.viewport.utility
 import omni.kit.viewport.window
@@ -691,12 +692,9 @@ class ViewportManager:
             position_in_parent = parent_inverse_transform.Transform(local_transform.Transform(Gf.Vec3d(0, 0, 0)))
             # adjust for collinearity, if needed
             position = _adjust_for_collinearity(xformable, position)
-            # rotate camera to look at target
             up_direction = Gf.Vec3d(0, 0, 1) if stage_utils.get_stage_up_axis() == "Z" else Gf.Vec3d(0, 1, 0)
             center_in_parent = parent_inverse_transform.Transform(position)
-            new_local_transform = (
-                Gf.Matrix4d(1).SetLookAt(position_in_parent, center_in_parent, up_direction).GetInverse()
-            )
+            new_local_transform = transform_utils.look_at_matrix(position_in_parent, center_in_parent, up_direction)
             omni.kit.commands.create(
                 "TransformPrimCommand",
                 path=prim.GetPath(),

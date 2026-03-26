@@ -109,6 +109,78 @@ async def find_enabled_widget_with_retry(query: str, max_frames: int = _DEFAULT_
     raise TimeoutError(f"Widget '{query}' not found or not enabled after {max_frames} frames")
 
 
+async def perform_widget_action(
+    query: str,
+    action: str = "click",
+    text: str = "",
+    max_frames: int = _DEFAULT_MAX_WAIT_FRAMES,
+) -> dict:
+    """Find a UI widget and perform an action on it.
+
+    Combines :func:`find_widget_with_retry` with action dispatch so callers
+    do not need to handle the find/act pattern themselves.
+
+    Args:
+        query: Widget query string (same syntax as ``omni.kit.ui_test.find``).
+        action: Action to perform — one of ``click``, ``double_click``,
+            ``right_click``, ``type``, ``read``.
+        text: Text to type; only used when *action* is ``"type"``.
+        max_frames: Maximum frames to poll for the widget to appear.
+
+    Returns:
+        For ``action="read"``: dict of widget properties (type, visible,
+        enabled, width, height, and optionally text/value).
+        For all other actions: empty dict.
+
+    Raises:
+        TimeoutError: If the widget is not found within *max_frames*.
+        ValueError: If *action* is not one of the supported values.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from isaacsim.test.utils import perform_widget_action
+        >>>
+        >>> await perform_widget_action("Load")
+        >>> await perform_widget_action("Search", action="type", text="franka")
+        >>> info = await perform_widget_action("Play", action="read")
+        >>> print(info)
+        {'type': 'Button', 'visible': True, 'enabled': True, ...}
+    """
+    widget = await find_widget_with_retry(query, max_frames=max_frames)
+
+    if action == "click":
+        await widget.click()
+    elif action == "double_click":
+        await widget.double_click()
+    elif action == "right_click":
+        await widget.right_click()
+    elif action == "type":
+        await widget.input(text)
+    elif action == "read":
+        w = widget.widget
+        info: dict = {
+            "type": type(w).__name__,
+            "visible": getattr(w, "visible", None),
+            "enabled": getattr(w, "enabled", None),
+            "width": getattr(w, "width", None),
+            "height": getattr(w, "height", None),
+        }
+        if hasattr(w, "text"):
+            info["text"] = w.text
+        if hasattr(w, "model") and w.model:
+            try:
+                info["value"] = w.model.get_value_as_string()
+            except Exception:
+                pass
+        return info
+    else:
+        raise ValueError(f"Unknown action '{action}'. Use: click, double_click, right_click, type, read")
+
+    return {}
+
+
 async def _wait_for_menu_item(parent_widget, menu_name: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES):
     """Poll until ``parent_widget.find_menu(menu_name)`` returns a non-None result.
 
@@ -221,19 +293,15 @@ async def menu_click_with_retry(
 ):
     """Click a menu item with retry at different delay speeds.
 
-    Some menu items require different timing to be clicked successfully.
-    This function navigates the menu hierarchy step-by-step, polling at each
-    level until the submenu is found and becomes visible.  If a full
-    navigation attempt fails, it retries with the next delay value.
-
-    This avoids the ``carb.log_error`` and ``AttributeError`` that
-    ``omni.kit.ui_test.menu_click`` can produce when submenus are slow to
-    appear.
+    First attempts a direct programmatic click via ``omni.kit.ui_test.menu_click``
+    which works in both windowed and headless (``--no-window``) modes.  If that
+    fails (e.g. due to slow submenus), falls back to step-by-step mouse-emulation
+    navigation via :func:`_navigate_menu` with increasing delays.
 
     Args:
         menu_path: The menu path to click (e.g., "Create/Sensors/Contact Sensor").
         delays: List of delay values (in frames) to use for ``human_delay_speed``
-            on each attempt.
+            on each fallback attempt.
         window_name: Optional window name to check for after clicking.
             If provided, the function returns early when the window is found
             and returns the window widget.
@@ -264,9 +332,31 @@ async def menu_click_with_retry(
         f"[menu_click_with_retry] starting: menu_path='{menu_path}', " f"window_name={window_name!r}, delays={delays}"
     )
 
+    # --- Primary path: direct programmatic menu click (works headless) ---
+    try:
+        await ui_test.menu_click(menu_path, human_delay_speed=3)
+        for _ in range(wait_n_frames):
+            await omni.kit.app.get_app().next_update_async()
+
+        if window_name:
+            if (window := ui_test.find(window_name)) is not None:
+                carb.log_info(f"[menu_click_with_retry] window '{window_name}' found via ui_test.menu_click")
+                return window
+            carb.log_info(
+                f"[menu_click_with_retry] ui_test.menu_click succeeded but window '{window_name}' not found, "
+                f"falling back to _navigate_menu"
+            )
+        else:
+            carb.log_info(f"[menu_click_with_retry] succeeded via ui_test.menu_click for '{menu_path}'")
+            return None
+    except Exception as e:
+        carb.log_info(f"[menu_click_with_retry] ui_test.menu_click failed for '{menu_path}': {e}")
+
+    # --- Fallback: step-by-step mouse-emulation navigation ---
     for i, delay in enumerate(delays):
         carb.log_info(
-            f"[menu_click_with_retry] attempt {i + 1}/{len(delays)} " f"(human_delay_speed={delay}) for '{menu_path}'"
+            f"[menu_click_with_retry] fallback attempt {i + 1}/{len(delays)} "
+            f"(human_delay_speed={delay}) for '{menu_path}'"
         )
 
         success = await _navigate_menu(menu_path, human_delay_speed=delay)
@@ -292,8 +382,63 @@ async def menu_click_with_retry(
                 await omni.kit.app.get_app().next_update_async()
             return None
 
-    carb.log_info(f"[menu_click_with_retry] all {len(delays)} attempts exhausted for '{menu_path}'")
+    carb.log_info(f"[menu_click_with_retry] all attempts exhausted for '{menu_path}'")
     return None
+
+
+def list_menu_paths(max_depth: int = 3) -> list[str]:
+    """Return all menu item paths from the live menubar up to *max_depth* levels.
+
+    Walks the widget tree without opening any menus.  Returns slash-separated
+    paths suitable for use with :func:`menu_click_with_retry`.
+
+    Args:
+        max_depth: Maximum recursion depth (1 = top-level names only,
+            2 = one level of submenus, etc.).
+
+    Returns:
+        Sorted list of all discoverable menu paths.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from isaacsim.test.utils import list_menu_paths
+        >>>
+        >>> paths = list_menu_paths()
+        >>> for p in paths:
+        ...     print(p)
+        Create/Lights/Cylinder Light
+        Create/Mesh/Capsule
+        File/New
+        File/Open
+        ...
+    """
+    try:
+        menubar = get_menubar()
+    except Exception:
+        return []
+    if menubar is None:
+        return []
+
+    paths: list[str] = []
+
+    def _walk(widget_ref, prefix: str, depth: int) -> None:
+        if depth > max_depth:
+            return
+        for child in widget_ref.find_all("*"):
+            name = getattr(child.widget, "text", None)
+            if not name:
+                continue
+            path = f"{prefix}/{name}" if prefix else name
+            children = child.find_all("*")
+            if children:
+                _walk(child, path, depth + 1)
+            else:
+                paths.append(path)
+
+    _walk(menubar, "", 1)
+    return sorted(paths)
 
 
 def get_all_menu_paths(menu_dict: dict, current_path: str = "", root_path: str = "") -> list[str]:

@@ -632,3 +632,204 @@ class TestTransform(omni.kit.test.AsyncTestCase):
 
         # Check 90 deg Z rotation gives [0, 0, pi/2]
         self.assertTrue(np.allclose(result_np[3, 2], np.pi / 2, atol=self.tolerance))
+
+    # ----------------------------------------------------------------
+    # look_at_quaternion
+    # ----------------------------------------------------------------
+
+    async def test_look_at_quaternion_single(self):
+        """Test look_at_quaternion with a single eye/target pair."""
+        eye = np.array([5.0, 5.0, 5.0])
+        target = np.array([0.0, 0.0, 0.0])
+        result = transform_utils.look_at_quaternion(eye=eye, target=target)
+
+        self.assertIsInstance(result, wp.array)
+        self.assertEqual(result.shape, (4,))
+
+        # Verify the quaternion is unit-length
+        q = result.numpy()
+        self.assertAlmostEqual(float(np.linalg.norm(q)), 1.0, places=5)
+
+    async def test_look_at_quaternion_z_aligned_fallback(self):
+        """Test that looking straight down uses the up-vector fallback."""
+        eye = np.array([0.0, 0.0, 10.0])
+        target = np.array([0.0, 0.0, 0.0])
+        result = transform_utils.look_at_quaternion(eye=eye, target=target)
+
+        q = result.numpy()
+        self.assertAlmostEqual(float(np.linalg.norm(q)), 1.0, places=5)
+
+    async def test_look_at_quaternion_batch(self):
+        """Test look_at_quaternion with batched inputs."""
+        eyes = np.array([[5, 5, 5], [10, 0, 0], [0, 10, 0]], dtype=np.float32)
+        targets = np.zeros((3, 3), dtype=np.float32)
+        result = transform_utils.look_at_quaternion(eye=eyes, target=targets)
+
+        self.assertIsInstance(result, wp.array)
+        self.assertEqual(result.shape, (3, 4))
+
+        quats = result.numpy()
+        for i in range(3):
+            self.assertAlmostEqual(float(np.linalg.norm(quats[i])), 1.0, places=5)
+
+    async def test_look_at_quaternion_custom_up(self):
+        """Test look_at_quaternion with a custom up vector."""
+        eye = np.array([5.0, 5.0, 5.0])
+        target = np.array([0.0, 0.0, 0.0])
+        result_z = transform_utils.look_at_quaternion(eye=eye, target=target)
+        result_y = transform_utils.look_at_quaternion(eye=eye, target=target, up=np.array([0.0, 1.0, 0.0]))
+
+        # Different up vectors should produce different orientations
+        self.assertFalse(np.allclose(result_z.numpy(), result_y.numpy(), atol=1e-4))
+
+    async def test_look_at_quaternion_roundtrip(self):
+        """Test that look_at quaternion produces correct forward direction."""
+        eye = np.array([10.0, 0.0, 0.0], dtype=np.float32)
+        target = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        quat = transform_utils.look_at_quaternion(eye=eye, target=target)
+
+        # Convert quaternion to rotation matrix, extract -Z column (forward)
+        rot_mat = transform_utils.quaternion_to_rotation_matrix(quat).numpy()
+        forward = -rot_mat[:, 2]  # -Z axis in the rotated frame
+
+        # Forward should point from eye toward target: [-1, 0, 0]
+        expected = np.array([-1.0, 0.0, 0.0])
+        self.assertTrue(np.allclose(forward, expected, atol=1e-4))
+
+    async def test_look_at_quaternion_shape_mismatch(self):
+        """Test that mismatched eye/target shapes raise ValueError."""
+        eye = np.array([[5, 5, 5], [10, 0, 0]], dtype=np.float32)
+        target = np.array([[0, 0, 0]], dtype=np.float32)
+        with self.assertRaises(ValueError):
+            transform_utils.look_at_quaternion(eye=eye, target=target)
+
+    # ----------------------------------------------------------------
+    # look_at_matrix — equivalence with Gf.Matrix4d.SetLookAt
+    # ----------------------------------------------------------------
+
+    async def test_look_at_matrix_matches_gf_set_look_at(self):
+        """Test that look_at_matrix produces the same result as Gf.Matrix4d.SetLookAt.GetInverse."""
+        from pxr import Gf
+
+        test_cases = [
+            (Gf.Vec3d(5, 5, 5), Gf.Vec3d(0, 0, 0), Gf.Vec3d(0, 0, 1)),
+            (Gf.Vec3d(10, 0, 0), Gf.Vec3d(0, 0, 0), Gf.Vec3d(0, 0, 1)),
+            (Gf.Vec3d(0, 10, 0), Gf.Vec3d(0, 0, 0), Gf.Vec3d(0, 0, 1)),
+            (Gf.Vec3d(0, 0, 10), Gf.Vec3d(0, 0, 5), Gf.Vec3d(0, 1, 0)),
+            (Gf.Vec3d(3, 4, 5), Gf.Vec3d(1, 2, 3), Gf.Vec3d(0, 0, 1)),
+            (Gf.Vec3d(-5, -5, 10), Gf.Vec3d(5, 5, 0), Gf.Vec3d(0, 0, 1)),
+            (Gf.Vec3d(100, 0, 50), Gf.Vec3d(0, 0, 0), Gf.Vec3d(0, 1, 0)),
+        ]
+
+        for eye, target, up in test_cases:
+            expected = Gf.Matrix4d(1).SetLookAt(eye, target, up).GetInverse()
+            result = transform_utils.look_at_matrix(eye, target, up)
+
+            for row in range(4):
+                for col in range(4):
+                    self.assertAlmostEqual(
+                        result[row][col],
+                        expected[row][col],
+                        places=10,
+                        msg=f"Mismatch at [{row}][{col}] for eye={eye}, target={target}, up={up}",
+                    )
+
+    async def test_look_at_matrix_with_numpy_inputs(self):
+        """Test that look_at_matrix accepts numpy arrays and matches Gf.SetLookAt."""
+        from pxr import Gf
+
+        eye_np = np.array([5.0, 5.0, 5.0])
+        target_np = np.array([0.0, 0.0, 0.0])
+        up_np = np.array([0.0, 0.0, 1.0])
+
+        eye_gf = Gf.Vec3d(5.0, 5.0, 5.0)
+        target_gf = Gf.Vec3d(0.0, 0.0, 0.0)
+        up_gf = Gf.Vec3d(0.0, 0.0, 1.0)
+
+        result_np = transform_utils.look_at_matrix(eye_np, target_np, up_np)
+        result_gf = Gf.Matrix4d(1).SetLookAt(eye_gf, target_gf, up_gf).GetInverse()
+
+        for row in range(4):
+            for col in range(4):
+                self.assertAlmostEqual(result_np[row][col], result_gf[row][col], places=10)
+
+    async def test_look_at_matrix_with_list_inputs(self):
+        """Test that look_at_matrix accepts Python lists and matches Gf.SetLookAt."""
+        from pxr import Gf
+
+        result_list = transform_utils.look_at_matrix([10, 0, 5], [0, 0, 0], [0, 0, 1])
+        expected = Gf.Matrix4d(1).SetLookAt(Gf.Vec3d(10, 0, 5), Gf.Vec3d(0, 0, 0), Gf.Vec3d(0, 0, 1)).GetInverse()
+
+        for row in range(4):
+            for col in range(4):
+                self.assertAlmostEqual(result_list[row][col], expected[row][col], places=10)
+
+    async def test_look_at_matrix_default_up_is_z(self):
+        """Test that omitting the up parameter defaults to Z-up and matches Gf.SetLookAt."""
+        from pxr import Gf
+
+        eye = Gf.Vec3d(5, 5, 5)
+        target = Gf.Vec3d(0, 0, 0)
+        up = Gf.Vec3d(0, 0, 1)
+
+        result_default = transform_utils.look_at_matrix(eye, target)
+        expected = Gf.Matrix4d(1).SetLookAt(eye, target, up).GetInverse()
+
+        for row in range(4):
+            for col in range(4):
+                self.assertAlmostEqual(result_default[row][col], expected[row][col], places=10)
+
+    async def test_look_at_matrix_returns_gf_matrix4d(self):
+        """Test that look_at_matrix returns a Gf.Matrix4d instance."""
+        from pxr import Gf
+
+        result = transform_utils.look_at_matrix([5, 5, 5], [0, 0, 0])
+        self.assertIsInstance(result, Gf.Matrix4d)
+
+    async def test_look_at_matrix_collinearity_fallback(self):
+        """Test that look_at_matrix handles collinear forward/up without error."""
+        from pxr import Gf
+
+        result = transform_utils.look_at_matrix([0, 0, 10], [0, 0, 0], [0, 0, 1])
+        self.assertIsInstance(result, Gf.Matrix4d)
+
+        translation = result.ExtractTranslation()
+        self.assertAlmostEqual(translation[0], 0.0, places=5)
+        self.assertAlmostEqual(translation[1], 0.0, places=5)
+        self.assertAlmostEqual(translation[2], 10.0, places=5)
+
+    async def test_look_at_matrix_translation_is_eye_position(self):
+        """Test that the translation component of the returned matrix equals the eye position."""
+        from pxr import Gf
+
+        test_eyes = [
+            Gf.Vec3d(5, 5, 5),
+            Gf.Vec3d(10, 0, 0),
+            Gf.Vec3d(0, -3, 7),
+            Gf.Vec3d(100, 200, 300),
+        ]
+
+        for eye in test_eyes:
+            result = transform_utils.look_at_matrix(eye, Gf.Vec3d(0, 0, 0))
+            translation = result.ExtractTranslation()
+            for i in range(3):
+                self.assertAlmostEqual(
+                    translation[i],
+                    eye[i],
+                    places=10,
+                    msg=f"Translation[{i}] mismatch for eye={eye}",
+                )
+
+    async def test_look_at_matrix_negative_z_points_toward_target(self):
+        """Test that the -Z axis of the result matrix points toward the target."""
+        from pxr import Gf
+
+        eye = Gf.Vec3d(10, 0, 0)
+        target = Gf.Vec3d(0, 0, 0)
+        result = transform_utils.look_at_matrix(eye, target)
+
+        neg_z = -Gf.Vec3d(result[2][0], result[2][1], result[2][2])
+
+        expected_forward = (target - eye).GetNormalized()
+        for i in range(3):
+            self.assertAlmostEqual(neg_z[i], expected_forward[i], places=5)

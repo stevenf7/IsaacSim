@@ -73,7 +73,12 @@ quaternion = transform_utils.euler_angles_to_quaternion([0, np.pi/2, 0])
 # Perform quaternion operations
 result = transform_utils.quaternion_multiplication(quat1, quat2)
 conjugate = transform_utils.quaternion_conjugate(quaternion)
+
+# Compute camera look-at transform
+matrix = transform_utils.look_at_matrix(eye=[5.0, 5.0, 5.0], target=[0.0, 0.0, 0.0])
 ```
+
+The {func}`look_at_matrix <isaacsim.core.experimental.utils.transform.look_at_matrix>` function computes the ``Gf.Matrix4d`` camera transform (position + orientation) that places a camera at a given eye position oriented toward a target. It accepts lists, NumPy arrays, or ``Gf.Vec3d`` and automatically selects a fallback up vector when the forward direction is collinear with the specified up axis. The batched {func}`look_at_quaternion <isaacsim.core.experimental.utils.transform.look_at_quaternion>` variant returns a Warp array quaternion and supports batched inputs for multi-camera workflows.
 
 ### Pose Manipulation
 
