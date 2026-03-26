@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.0] - 2026-03-25
+### Added
+- Add `capture_app_screenshot_async` to `image_capture` for full-application swapchain screenshots (headless and windowed)
+- Add `capture_viewport_screenshot_async` to `image_capture` for viewport-only screenshots via replicator annotators
+- Add `save_annotator_data` to `image_io` to dispatch and save any annotator output (array, dict, or PNG) to disk
+- Add `list_menu_paths` to `menu_utils` to enumerate all live menubar paths up to a configurable depth
+- Add `perform_widget_action` to `menu_utils` combining widget find-with-retry and action dispatch in a single call
+
 ## [0.11.1] - 2026-03-07
 ### Fixed
 - Add `omni.kit.material.library` as a dependency

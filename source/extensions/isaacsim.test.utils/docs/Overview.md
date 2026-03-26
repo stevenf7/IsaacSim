@@ -10,6 +10,8 @@ The isaacsim.test.utils extension provides a comprehensive testing framework for
 
 The extension supports various depth measurement types including radial distance (`distance_to_camera`) and Z-depth (`distance_to_image_plane`). For advanced use cases, {func}`capture_annotator_data_async <isaacsim.test.utils.capture_annotator_data_async>` provides access to any replicator annotator including semantic segmentation, normals, and camera parameters.
 
+High-level screenshot helpers simplify the most common capture workflows. {func}`capture_viewport_screenshot_async <isaacsim.test.utils.capture_viewport_screenshot_async>` captures the rendered 3D viewport directly to a PNG file via replicator annotators and works in headless mode. {func}`capture_app_screenshot_async <isaacsim.test.utils.capture_app_screenshot_async>` captures the full application window including UI chrome using the swapchain capture interface, working in both windowed and headless modes.
+
 ### Image Comparison
 
 **Tolerance-based image comparison** forms the core validation capability. The {func}`compare_arrays_within_tolerances <isaacsim.test.utils.compare_arrays_within_tolerances>` function evaluates images against multiple criteria including mean absolute difference, max tolerance, percentile-based thresholds, and RMSE metrics.
@@ -26,6 +28,8 @@ File list validation through {func}`validate_file_list <isaacsim.test.utils.vali
 
 **Menu testing capabilities** address the timing challenges of UI automation. The {class}`MenuUITestCase <isaacsim.test.utils.MenuUITestCase>` provides base functionality for menu-driven tests, while {func}`menu_click_with_retry <isaacsim.test.utils.menu_click_with_retry>` handles unreliable menu interactions through intelligent retry mechanisms with exponential backoff.
 
+{func}`list_menu_paths <isaacsim.test.utils.list_menu_paths>` discovers all clickable paths from the live menubar up to a configurable depth without opening any menus, returning slash-separated paths ready for use with `menu_click_with_retry`. {func}`perform_widget_action <isaacsim.test.utils.perform_widget_action>` combines widget discovery with action dispatch — supporting click, double-click, right-click, text input, and property read — in a single polling call.
+
 The {class}`TimedAsyncTestCase <isaacsim.test.utils.TimedAsyncTestCase>` automatically measures test execution duration, providing performance insights for optimization.
 
 ## Key Components
@@ -36,7 +40,7 @@ The {func}`compute_difference_metrics <isaacsim.test.utils.compute_difference_me
 
 ### Data Persistence
 
-Image I/O functions preserve test data in appropriate formats. The {func}`save_depth_image <isaacsim.test.utils.save_depth_image>` function automatically selects between lossless float32 TIFF for metric data and 8-bit grayscale for visualization, while {func}`save_rgb_image <isaacsim.test.utils.save_rgb_image>` handles RGB/RGBA data with format-appropriate transparency support.
+Image I/O functions preserve test data in appropriate formats. The {func}`save_depth_image <isaacsim.test.utils.save_depth_image>` function automatically selects between lossless float32 TIFF for metric data and 8-bit grayscale for visualization, while {func}`save_rgb_image <isaacsim.test.utils.save_rgb_image>` handles RGB/RGBA data with format-appropriate transparency support. The {func}`save_annotator_data <isaacsim.test.utils.save_annotator_data>` function accepts any annotator output — numpy arrays, dicts, or image data — and automatically selects the correct format (`.npy`, `.png`, or `.json`) based on the data type and output path extension.
 
 ## Dependencies
 

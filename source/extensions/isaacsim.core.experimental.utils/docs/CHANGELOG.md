@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.14.0] - 2026-03-25
+### Added
+- Add `look_at_matrix` to `transform` to compute a USD camera transform (`Gf.Matrix4d`) from eye and target positions, with automatic collinearity fallback
+
 ## [0.13.1] - 2026-03-20
 ### Changed
 - Skip update_app tests in async environment

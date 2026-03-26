@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.1] - 2026-03-25
+### Changed
+- `ViewportManager.set_camera_view` now delegates look-at matrix computation to `look_at_matrix` from `isaacsim.core.experimental.utils.transform`
+
 ## [0.3.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings
