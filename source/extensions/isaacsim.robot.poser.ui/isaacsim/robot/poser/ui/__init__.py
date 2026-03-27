@@ -17,4 +17,4 @@
 
 from isaacsim.robot.poser.ui.extension import *  # noqa: F401,F403
 
-__all__ = ["UIBuilder"]
+__all__ = []

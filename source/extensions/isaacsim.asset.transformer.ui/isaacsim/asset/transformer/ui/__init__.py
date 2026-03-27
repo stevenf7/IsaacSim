@@ -14,3 +14,5 @@
 # limitations under the License.
 
 from .extension import AssetTransformerUiExtension
+
+__all__ = []

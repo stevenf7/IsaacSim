@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__all__ = ["CreateConveyorBelt"]
+
 import omni
 import omni.graph.core as og
 import omni.kit.commands

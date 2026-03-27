@@ -37,9 +37,6 @@
   - def get_max_threshold(self) -> float
   - def set_max_threshold(self, value: float)
 
-- class EsSensorReading
-  - def __init__(self, is_valid: bool = False, time: float = 0, value: float = 0)
-
 - class EffortSensor(SingleArticulation)
   - def __init__(self, prim_path: str, sensor_period: float = -1, use_latest_data: bool = False, enabled: bool = True)
   - def initialize_callbacks(self)
@@ -47,6 +44,9 @@
   - def get_sensor_reading(self, interpolation_function = None, use_latest_data = False) -> EsSensorReading
   - def update_dof_name(self, dof_name: str)
   - def change_buffer_size(self, new_buffer_size: int)
+
+- class EsSensorReading
+  - def __init__(self, is_valid: bool = False, time: float = 0, value: float = 0)
 
 - class IMUSensor(BaseSensor)
   - def __init__(self, prim_path: str, name: Optional[str] = 'imu_sensor', frequency: Optional[int] = None, dt: Optional[float] = None, translation: Optional[np.ndarray] = None, position: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None, linear_acceleration_filter_size: Optional[int] = 1, angular_velocity_filter_size: Optional[int] = 1, orientation_filter_size: Optional[int] = 1)

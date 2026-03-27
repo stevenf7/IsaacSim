@@ -15,6 +15,7 @@
 
 """Extension module for Isaac Sim physics sensors, providing access to contact sensors and IMU sensors."""
 
+__all__ = []
 
 import gc
 

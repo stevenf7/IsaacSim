@@ -90,6 +90,13 @@
   - def get_fixed_tendon_rest_lengths(self) -> wp.array
   - def get_fixed_tendon_offsets(self) -> wp.array
   - def set_fixed_tendon_properties(self)
+  - def initialize_cpp_data_view(self)
+
+- class BufferDtype(str, Enum)
+  - FLOAT: str
+  - FLOAT32: str
+  - UINT8: str
+  - UINT8_T: str
 
 - class DeformablePrim(XformPrim)
   - def __init__(self, paths: str | list[str])
@@ -169,9 +176,12 @@
   - def get_contact_force_matrix(self) -> wp.array
   - def get_contact_force_data(self) -> tuple[wp.array, wp.array, wp.array, wp.array, wp.array, wp.array]
   - def get_friction_data(self) -> tuple[wp.array, wp.array, wp.array, wp.array]
+  - def get_raw_contact_data(self) -> tuple[wp.array, wp.array, wp.array, wp.array, wp.array, wp.array, wp.array]
+  - def get_actor_paths_from_ids(self, actor_ids: wp.array) -> list[str]
   - def set_default_state(self, positions: list | np.ndarray | wp.array | None = None, orientations: list | np.ndarray | wp.array | None = None, linear_velocities: list | np.ndarray | wp.array | None = None, angular_velocities: list | np.ndarray | wp.array | None = None)
   - def get_default_state(self) -> tuple[wp.array | None, wp.array | None, wp.array | None, wp.array | None]
   - def reset_to_default_state(self)
+  - def initialize_cpp_data_view(self)
 
 - class XformPrim(Prim)
   - def __init__(self, paths: str | list[str])

@@ -18,4 +18,4 @@
 
 from .extension import *
 
-__all__ = ["RangeSensorMenu"]
+__all__ = []

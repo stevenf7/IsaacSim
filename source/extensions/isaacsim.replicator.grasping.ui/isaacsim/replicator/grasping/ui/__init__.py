@@ -18,4 +18,4 @@
 
 from .grasping_ui_extension import *
 
-__all__ = ["GraspingWindow"]
+__all__ = []

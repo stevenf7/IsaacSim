@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .impl.extension import *
+from .impl.extension import Extension  # noqa: F401 (Extension loaded for side effects)
