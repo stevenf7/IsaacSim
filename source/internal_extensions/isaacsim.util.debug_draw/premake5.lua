@@ -128,7 +128,7 @@ project_ext_bindings {
     project_name = "isaacsim.util.debug_draw.python",
     module = "_debug_draw",
     src = "bindings",
-    target_subdir = "isaacsim/util/debug_draw",
+    target_subdir = "isaacsim/util/debug_draw/bindings",
 }
 
 -- Add the standard dependencies all OGN projects have, and link directories with Python nodes

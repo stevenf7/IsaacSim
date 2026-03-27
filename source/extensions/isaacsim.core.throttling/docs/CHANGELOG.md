@@ -1,4 +1,8 @@
 # Changelog
+## [2.3.1] - 2026-03-26
+### Changed
+- Updated Python bindings import paths for consistency
+
 ## [2.3.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md, SETTINGS.md and updated docstrings

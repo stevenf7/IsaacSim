@@ -16,7 +16,7 @@ functions into ``omni.kit.xr.system.openxr`` so that OpenXRSessionHandles
 can be fully constructed for use with IsaacTeleop's DeviceIO.
 """
 
-from .._bridge import acquire_teleop_bridge_interface
+from ..bindings._bridge import acquire_teleop_bridge_interface
 
 # Acquire the interface on import
 _interface = acquire_teleop_bridge_interface()

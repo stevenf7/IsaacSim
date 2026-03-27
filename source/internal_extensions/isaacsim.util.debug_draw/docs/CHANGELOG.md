@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.2.2] - 2026-03-26
+### Changed
+- Moved Python binding module to `bindings/` subdirectory
+
 ## [3.2.1] - 2026-02-02
 ### Changed
 - Update to Kit 110.0

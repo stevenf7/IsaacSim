@@ -75,7 +75,7 @@ project_ext_bindings {
     project_name = "isaacsim.sensors.experimental.physics.python",
     module = "_physics_sensors",
     src = "bindings/isaacsim.sensors.experimental.physics",
-    target_subdir = python_target_path,
+    target_subdir = python_target_path .. "/bindings",
 }
 dependson { "isaacsim.sensors.experimental.physics.plugin" }
 

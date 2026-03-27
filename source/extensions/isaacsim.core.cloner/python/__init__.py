@@ -13,5 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .bindings import _isaac_cloner  # noqa: F401
 from .impl.cloner import *
 from .impl.grid_cloner import *

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.2] - 2026-03-26
+### Changed
+- Moved Python binding module to `bindings/` subdirectory
+
 ## [1.13.1] - 2026-03-17
 ### Fixed
 - Correct "broadcast" to "broadphase" in SimulationManager docstrings (collision broadphase algorithm)

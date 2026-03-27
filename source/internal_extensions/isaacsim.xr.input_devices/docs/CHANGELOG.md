@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.1] - 2026-03-26
+### Changed
+- Moved Python binding module to `bindings/` subdirectory
+
 ## [1.1.0] - 2025-12-17
 ### Changed
 - Migrate extension implementation to core experimental API

@@ -14,4 +14,4 @@
 # limitations under the License.
 
 from . import commands  # populates commands list
-from . import _isaac_utils
+from .bindings import _isaac_utils

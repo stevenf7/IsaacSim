@@ -60,7 +60,7 @@ class Extension(omni.ext.IExt):
         # Initialize loop runner
         self._loop_runner = None
         try:
-            import omni.kit.loop._loop as omni_loop
+            from omni.kit.loop import _loop as omni_loop
 
             self._loop_runner = omni_loop.acquire_loop_interface()
         except Exception:

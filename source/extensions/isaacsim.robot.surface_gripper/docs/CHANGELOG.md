@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.4.3] - 2026-03-26
+### Changed
+- Moved Python binding module to `bindings/` subdirectory
+
 ## [3.4.2] - 2026-03-18
 ### Changed
 - Update path of `isaacsim.core.utils` header file that has been relocated

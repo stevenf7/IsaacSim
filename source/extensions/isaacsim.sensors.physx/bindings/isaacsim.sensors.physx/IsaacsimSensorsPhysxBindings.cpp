@@ -37,7 +37,7 @@ PYBIND11_MODULE(_range_sensor, m)
 
             .. code-block:: python
 
-                >>> import isaacsim.sensors.physx._range_sensor as _range_sensor
+                >>> from isaacsim.sensors.physx import _range_sensor
                 >>> lidar_sensor_interface = _range_sensor.acquire_lidar_sensor_interface()
                 >>> if lidar_sensor_interface.is_lidar_sensor("/World/Lidar"):
                 ...     print("range_sensor is valid")

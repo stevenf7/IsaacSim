@@ -1,5 +1,5 @@
 [package]
-version = "3.4.0"
+version = "3.4.1"
 category = "Simulation"
 title = "Isaac Sim Manipulators"
 description = "Provides Python classes for controlling robotic manipulators including single-arm robots, parallel grippers, and surface grippers with pick-and-place and stacking controllers."

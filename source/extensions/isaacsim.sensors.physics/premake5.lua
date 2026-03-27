@@ -85,7 +85,7 @@ project_ext_bindings {
     project_name = "isaacsim.sensors.physics.python",
     module = "_sensor",
     src = "bindings",
-    target_subdir = "isaacsim/sensors/physics",
+    target_subdir = "isaacsim/sensors/physics/bindings",
 }
 
 includedirs {

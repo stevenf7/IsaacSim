@@ -32,7 +32,7 @@ import omni.physics.tensors
 import omni.timeline
 import omni.usd
 from isaacsim.robot.surface_gripper import GripperView
-from isaacsim.robot.surface_gripper._surface_gripper import GripperStatus
+from isaacsim.robot.surface_gripper.bindings._surface_gripper import GripperStatus
 from pxr import Gf, PhysxSchema
 from usd.schema.isaac import robot_schema
 

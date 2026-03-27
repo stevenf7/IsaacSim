@@ -29,7 +29,7 @@ import omni.kit.commands
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 from isaacsim.robot.surface_gripper import GripperView
-from isaacsim.robot.surface_gripper._surface_gripper import GripperStatus
+from isaacsim.robot.surface_gripper.bindings._surface_gripper import GripperStatus
 from omni.physx.scripts.physicsUtils import add_ground_plane
 from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 from usd.schema.isaac import robot_schema

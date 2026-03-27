@@ -19,10 +19,10 @@
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils
-import isaacsim.robot.surface_gripper._surface_gripper as surface_gripper
 import numpy as np
 import warp as wp
 from isaacsim.core.experimental.prims import XformPrim
+from isaacsim.robot.surface_gripper import _surface_gripper as surface_gripper
 from usd.schema.isaac import robot_schema
 
 

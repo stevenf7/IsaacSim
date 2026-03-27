@@ -21,7 +21,6 @@ from functools import partial
 from typing import List
 
 import carb
-import isaacsim.robot.surface_gripper._surface_gripper as surface_gripper
 import omni
 import omni.ui as ui
 from isaacsim.gui.components.element_wrappers import (
@@ -39,6 +38,7 @@ from isaacsim.gui.components.element_wrappers import (
 )
 from isaacsim.gui.components.ui_utils import get_style
 from isaacsim.gui.components.widgets import SelectPrimWidget
+from isaacsim.robot.surface_gripper import _surface_gripper as surface_gripper
 from omni.kit.property.usd.prim_selection_payload import PrimSelectionPayload
 from omni.kit.property.usd.usd_attribute_model import UsdAttributeModel
 from omni.kit.property.usd.usd_property_widget import UiDisplayGroup, UsdPropertiesWidget, UsdPropertyUiEntry

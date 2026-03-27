@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.1] - 2026-03-26
+### Changed
+- Moved Python binding module to `bindings/` subdirectory
+
 ## [1.1.0] - 2026-02-23
 ### Added
 - Configurable OpenXR required extension settings via carb settings:

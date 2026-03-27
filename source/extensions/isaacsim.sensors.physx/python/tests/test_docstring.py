@@ -14,9 +14,9 @@
 # limitations under the License.
 
 import isaacsim.core.utils.stage as stage_utils
-import isaacsim.sensors.physx._range_sensor as _range_sensor
 import isaacsim.test.docstring
 import omni
+from isaacsim.sensors.physx import _range_sensor
 
 
 class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):

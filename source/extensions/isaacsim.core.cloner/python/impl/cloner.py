@@ -20,7 +20,7 @@ import carb.settings
 import numpy as np
 import omni.usd
 import usdrt
-from isaacsim.core.cloner._isaac_cloner import _fabric_clone
+from isaacsim.core.cloner.bindings._isaac_cloner import _fabric_clone
 from isaacsim.core.simulation_manager import SimulationManager
 from omni.physx import get_physx_replicator_interface
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdUtils, Vt

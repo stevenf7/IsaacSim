@@ -8,4 +8,5 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
+from .bindings import _debug_draw  # noqa: F401
 from .impl.extension import *

@@ -57,7 +57,7 @@ class RenderingManager:
     _timeline = omni.timeline.get_timeline_interface()
     """Timeline interface for controlling time-related operations and frame rate settings."""
     try:
-        import omni.kit.loop._loop as kit_loop
+        from omni.kit.loop import _loop as kit_loop
 
         _loop_runner = kit_loop.acquire_loop_interface()
     except Exception as e:

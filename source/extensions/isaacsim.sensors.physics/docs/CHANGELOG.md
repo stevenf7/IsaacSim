@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.1] - 2026-03-26
+### Changed
+- Moved Python binding module to `bindings/` subdirectory
+
 ## [1.1.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings

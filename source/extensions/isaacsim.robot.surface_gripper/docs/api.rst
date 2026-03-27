@@ -10,7 +10,7 @@ Python API
 
     CreateSurfaceGripper
     GripperView
-    _surface_gripper.SurfaceGripperInterface
+    bindings._surface_gripper.SurfaceGripperInterface
 
 |
 
@@ -23,7 +23,7 @@ Python API
     :show-inheritance:
     :exclude-members: do, undo
 
-.. autoclass:: isaacsim.robot.surface_gripper._surface_gripper.SurfaceGripperInterface
+.. autoclass:: isaacsim.robot.surface_gripper.bindings._surface_gripper.SurfaceGripperInterface
     :members:
     :undoc-members:
     :inherited-members:
