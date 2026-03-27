@@ -25,7 +25,7 @@ import omni.usd
 import usdrt
 
 # isaacsim
-from isaacsim.core.utils._isaac_utils import _find_matching_prim_paths
+from isaacsim.core.utils.bindings._isaac_utils import _find_matching_prim_paths
 from isaacsim.core.utils.semantics import add_labels
 from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage, get_current_stage_id
 from isaacsim.core.utils.string import find_root_prim_path_from_regex

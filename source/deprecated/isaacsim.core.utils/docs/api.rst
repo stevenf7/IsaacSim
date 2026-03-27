@@ -135,13 +135,13 @@ Math Utils
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: isaacsim.core.utils._isaac_utils.math
+.. automodule:: isaacsim.core.utils.bindings._isaac_utils.math
     :members:
     :undoc-members:
     :show-inheritance:
     :imported-members:
 
-.. automodule:: isaacsim.core.utils._isaac_utils.transforms
+.. automodule:: isaacsim.core.utils.bindings._isaac_utils.transforms
     :members:
     :undoc-members:
     :show-inheritance:

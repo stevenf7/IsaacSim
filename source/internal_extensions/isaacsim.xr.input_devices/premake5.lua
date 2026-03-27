@@ -26,7 +26,7 @@ if platform_target == "linux-x86_64" then
         project_name = "isaacsim.xr.input_devices.python",
         module = "_isaac_xr_input_devices",
         src = "bindings",
-        target_subdir = "isaacsim/xr/input_devices",
+        target_subdir = "isaacsim/xr/input_devices/bindings",
     }
     staticruntime("Off")
     add_files("impl", "plugins")

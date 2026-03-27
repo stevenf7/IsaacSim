@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.1.4] - 2026-03-26
+### Changed
+- Updated Python bindings import paths for consistency
+
 ## [5.1.3] - 2026-03-24
 ### Fixed
 - Fix C++ plugin binary output

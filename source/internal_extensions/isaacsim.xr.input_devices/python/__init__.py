@@ -17,7 +17,7 @@ from .impl.extension import Extension
 
 # Re-export hand tracker plugin bindings if available
 try:
-    from ._isaac_xr_input_devices import (
+    from .bindings._isaac_xr_input_devices import (
         ISAACSIM_HAND_COUNT,
         ISAACSIM_HAND_JOINT_COUNT,
         handtracker_get_data,

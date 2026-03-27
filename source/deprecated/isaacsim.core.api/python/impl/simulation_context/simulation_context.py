@@ -471,7 +471,7 @@ class SimulationContext:
         self._rendering_dt = rendering_dt
         # The isaac sim loop runner is enabled by default in isaac sim apps, but in case we are in an app with the kit loop runner, protect against this
         try:
-            import omni.kit.loop._loop as omni_loop
+            from omni.kit.loop import _loop as omni_loop
 
             _loop_runner = omni_loop.acquire_loop_interface()
             _loop_runner.set_manual_step_size(rendering_dt)
@@ -535,7 +535,7 @@ class SimulationContext:
             return _get_dt_from_frequency()
 
         try:
-            import omni.kit.loop._loop as omni_loop
+            from omni.kit.loop import _loop as omni_loop
 
             _loop_runner = omni_loop.acquire_loop_interface()
             if _loop_runner.get_manual_mode():

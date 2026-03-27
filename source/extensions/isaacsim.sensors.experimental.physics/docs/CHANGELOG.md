@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.2] - 2026-03-26
+### Changed
+- Moved Python binding module to `bindings/` subdirectory
+
 ## [2.3.1] - 2026-03-22
 ### Changed
 - Add null guards for deferred prim data reader provider loading in sensor _initializeStage

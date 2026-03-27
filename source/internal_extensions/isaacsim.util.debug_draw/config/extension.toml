@@ -1,5 +1,5 @@
 [package]
-version = "3.2.1"
+version = "3.2.2"
 category = "Simulation"
 title = "Isaac Sim Debug Drawing"
 description = "Persistent debug drawing helpers and visualization utilities"

@@ -24,7 +24,6 @@ import carb
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import isaacsim.core.experimental.utils.app as app_utils
-import isaacsim.robot.surface_gripper._surface_gripper as surface_gripper
 import omni
 import omni.ext
 import omni.kit.app
@@ -45,6 +44,7 @@ from isaacsim.gui.components.ui_utils import (
     setup_ui_headers,
     state_btn_builder,
 )
+from isaacsim.robot.surface_gripper import _surface_gripper as surface_gripper
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.kit.window.property.templates import LABEL_HEIGHT, LABEL_WIDTH
 from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics

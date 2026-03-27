@@ -32,7 +32,7 @@ project_ext_bindings {
     project_name = "omni.kit.loop-isaac.python",
     module = "_loop",
     src = "bindings",
-    target_subdir = "omni/kit/loop",
+    target_subdir = "omni/kit/loop/bindings",
 }
 
 includedirs {

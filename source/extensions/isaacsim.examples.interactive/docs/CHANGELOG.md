@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.15.2] - 2026-03-26
+### Changed
+- Updated Python bindings import paths for consistency
+
 ## [4.15.1] - 2026-03-05
 ### Changed
 - Experimental API alignment: app_utils for timeline control, SimulationEvent for physics callbacks.

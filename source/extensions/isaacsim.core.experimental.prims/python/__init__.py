@@ -13,5 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .bindings import _prims_reader  # noqa: F401
 from .impl import *
 from .impl.extension import Extension  # noqa: F401 (Extension loaded for side effects)

@@ -18,7 +18,7 @@ import asyncio
 import carb
 import omni.kit.commands
 import omni.kit.utils
-from isaacsim.core.utils._isaac_utils import transforms
+from isaacsim.core.utils.bindings._isaac_utils import transforms
 from isaacsim.core.utils.stage import get_current_stage, get_current_stage_id
 from pxr import Sdf
 

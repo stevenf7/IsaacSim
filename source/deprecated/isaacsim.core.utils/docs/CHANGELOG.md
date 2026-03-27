@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.2] - 2026-03-26
+### Changed
+- Moved Python binding module to `bindings/` subdirectory
+
 ## [4.1.1] - 2026-03-18
 ### Deprecated
 - Extension deprecated in favor of the Core Experimental extension `isaaacsim.core.experimental.utils`

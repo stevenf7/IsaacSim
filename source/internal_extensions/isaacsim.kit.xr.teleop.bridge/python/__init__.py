@@ -38,5 +38,6 @@ Example:
     >>> session = DeviceIOSession.run([HandTracker()], handles)
 """
 
+from .bindings import _bridge  # noqa: F401
 from .impl.teleop_bridge import *  # noqa: F401,F403
 from .impl.teleop_bridge import __all__

@@ -37,7 +37,7 @@ project_ext_bindings {
     project_name = "isaacsim.app.compatibility_check.python",
     module = "_compatibility_check",
     src = "bindings",
-    target_subdir = "isaacsim/app/compatibility_check",
+    target_subdir = "isaacsim/app/compatibility_check/bindings",
 }
 includedirs {
     "include",

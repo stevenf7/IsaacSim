@@ -23,7 +23,7 @@ project_ext_bindings {
     project_name = "isaacsim.core.utils.python",
     module = "_isaac_utils",
     src = "bindings",
-    target_subdir = "isaacsim/core/utils",
+    target_subdir = "isaacsim/core/utils/bindings",
 }
 staticruntime("Off")
 add_files("impl", "plugins")

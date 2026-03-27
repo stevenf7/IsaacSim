@@ -17,11 +17,11 @@
 
 
 import carb
-import isaacsim.robot.surface_gripper._surface_gripper as surface_gripper
 import numpy as np
 import omni.kit.app
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.robot.manipulators.grippers.gripper import Gripper
+from isaacsim.robot.surface_gripper import _surface_gripper as surface_gripper
 
 
 class SurfaceGripper(Gripper):

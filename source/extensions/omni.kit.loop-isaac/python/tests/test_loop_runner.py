@@ -22,7 +22,7 @@ class TestLoopRunner(omni.kit.test.AsyncTestCase):
 
     async def test_manual_mode(self):
         """Test enabling and disabling manual stepping mode and verifying dt behavior."""
-        import omni.kit.loop._loop as omni_loop
+        from omni.kit.loop import _loop as omni_loop
 
         _loop_runner = omni_loop.acquire_loop_interface()
         # Manual mode is enabled via carb setting in test settings
@@ -74,7 +74,7 @@ class TestLoopRunner(omni.kit.test.AsyncTestCase):
 
     async def test_set_next_simulation_time(self):
         """Test setting the next simulation time for multi-tick rendering mode."""
-        import omni.kit.loop._loop as omni_loop
+        from omni.kit.loop import _loop as omni_loop
 
         _loop_runner = omni_loop.acquire_loop_interface()
 

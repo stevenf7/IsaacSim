@@ -1,5 +1,5 @@
 [package]
-version = "2.5.0"
+version = "2.5.1"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensors"
 description = "Isaac Sim PhysX Sensors extension provides APIs for PhysX-raycast-based lidars and sensors including Proximity Sensor and Lightbeam Sensor."

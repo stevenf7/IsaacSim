@@ -65,7 +65,7 @@ project_ext_bindings {
     project_name = "isaacsim.core.simulation_manager.python",
     module = "_simulation_manager",
     src = "bindings/isaacsim.core.simulation_manager",
-    target_subdir = "isaacsim/core/simulation_manager",
+    target_subdir = "isaacsim/core/simulation_manager/bindings",
 }
 dependson { "isaacsim.core.simulation_manager.plugin" }
 libdirs {

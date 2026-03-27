@@ -16,7 +16,7 @@
 import os
 
 import carb
-from isaacsim.xr.input_devices._isaac_xr_input_devices import (
+from isaacsim.xr.input_devices.bindings._isaac_xr_input_devices import (
     ISAACSIM_HAND_JOINT_COUNT,
     handtracker_get_data,
     handtracker_initialize,

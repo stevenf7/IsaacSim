@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import isaacsim.robot.surface_gripper._surface_gripper as surface_gripper
+from isaacsim.robot.surface_gripper import _surface_gripper as surface_gripper
 
 
 class OgnSurfaceGripper:

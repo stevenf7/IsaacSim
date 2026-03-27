@@ -22,7 +22,7 @@ project_ext_bindings {
     project_name = "isaacsim.core.cloner.python",
     module = "_isaac_cloner",
     src = "bindings",
-    target_subdir = "isaacsim/core/cloner",
+    target_subdir = "isaacsim/core/cloner/bindings",
 }
 staticruntime("Off")
 add_files("impl", "plugins")

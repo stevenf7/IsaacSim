@@ -96,7 +96,7 @@ project_ext_bindings {
     project_name = "isaacsim.robot.surface_gripper.python",
     module = "_surface_gripper",
     src = "bindings",
-    target_subdir = "isaacsim/robot/surface_gripper",
+    target_subdir = "isaacsim/robot/surface_gripper/bindings",
 }
 
 includedirs {

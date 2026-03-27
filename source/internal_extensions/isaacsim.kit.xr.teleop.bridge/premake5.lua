@@ -76,7 +76,7 @@ if platform_target ~= "linux-aarch64" then -- Skip build for aarch64 architectur
         project_name = "isaacsim.kit.xr.teleop.bridge.python",
         module = "_bridge",
         src = "bindings/isaacsim.kit.xr.teleop.bridge",
-        target_subdir = "isaacsim/kit/xr/teleop/bridge",
+        target_subdir = "isaacsim/kit/xr/teleop/bridge/bindings",
     }
     dependson { "isaacsim.kit.xr.teleop.bridge.plugin" }
     links { "isaacsim.kit.xr.teleop.bridge.plugin" }

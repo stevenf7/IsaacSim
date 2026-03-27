@@ -14,4 +14,5 @@
 # limitations under the License.
 
 # there is no extension, so we just import bindings
+from .bindings import _surface_gripper  # noqa: F401
 from .impl import *

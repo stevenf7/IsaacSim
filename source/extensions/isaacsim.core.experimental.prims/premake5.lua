@@ -39,7 +39,7 @@ project_ext_bindings {
     project_name = "isaacsim.core.experimental.prims.python",
     module = "_prims_reader",
     src = "bindings/isaacsim.core.experimental.prims",
-    target_subdir = "isaacsim/core/experimental/prims",
+    target_subdir = "isaacsim/core/experimental/prims/bindings",
 }
 dependson { "isaacsim.core.experimental.prims.plugin" }
 links { "isaacsim.core.experimental.prims.plugin" }

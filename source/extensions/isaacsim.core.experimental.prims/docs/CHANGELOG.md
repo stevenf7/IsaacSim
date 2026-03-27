@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.1] - 2026-03-26
+### Changed
+- Moved Python binding module to `bindings/` subdirectory
+
 ## [1.7.0] - 2026-03-20
 ### Changed
 - Decouple prim data reader interface from implementation; implementation moved to `isaacsim.core.experimental.primdata`

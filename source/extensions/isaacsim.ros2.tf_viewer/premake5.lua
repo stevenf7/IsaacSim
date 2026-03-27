@@ -123,7 +123,7 @@ project_ext_bindings {
     project_name = "isaacsim.ros2.tf_viewer.python",
     module = "_transform_listener",
     src = "bindings",
-    target_subdir = "isaacsim/ros2/tf_viewer",
+    target_subdir = "isaacsim/ros2/tf_viewer/bindings",
 }
 includedirs {
     "include",

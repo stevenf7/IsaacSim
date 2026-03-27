@@ -3,7 +3,7 @@ Python API
 
 .. Summary
 
-.. currentmodule:: isaacsim.util.debug_draw
+.. currentmodule:: isaacsim.util.debug_draw.bindings
 
 .. autosummary::
     :nosignatures:
@@ -14,7 +14,7 @@ Python API
 
 .. API
 
-.. automodule:: isaacsim.util.debug_draw._debug_draw
+.. automodule:: isaacsim.util.debug_draw.bindings._debug_draw
     :members:
     :undoc-members:
     :show-inheritance:
