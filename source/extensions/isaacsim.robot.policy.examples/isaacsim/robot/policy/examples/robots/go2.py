@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import isaacsim.core.experimental.utils.transform as transform_utils
-import omni.usd
 import warp as wp
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.simulation_manager import SimulationManager

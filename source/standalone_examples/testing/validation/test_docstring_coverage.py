@@ -29,11 +29,10 @@ import fnmatch
 import importlib
 import inspect
 import json
-import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Tuple
 
 from isaacsim.core.utils.extensions import enable_extension
 

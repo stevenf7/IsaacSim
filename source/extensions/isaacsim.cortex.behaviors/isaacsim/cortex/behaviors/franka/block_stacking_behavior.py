@@ -13,11 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
-import copy
-import math
-import random
-import sys
 import time
 from collections import OrderedDict
 
@@ -32,7 +27,6 @@ from isaacsim.cortex.framework.dfb import (
     DfRobotApiContext,
     make_go_home,
 )
-from isaacsim.cortex.framework.motion_commander import MotionCommand, PosePq
 
 
 def make_grasp_T(t, ay):

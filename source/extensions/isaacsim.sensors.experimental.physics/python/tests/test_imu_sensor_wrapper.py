@@ -26,7 +26,7 @@ from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.sensors.experimental.physics import IMUSensor
 from isaacsim.storage.native import get_assets_root_path_async
 
-from .common import EARTH_GRAVITY, GRAVITY_TOLERANCE, ORIENTATION_TOLERANCE, SMALL_TOLERANCE, reset_timeline
+from .common import EARTH_GRAVITY, GRAVITY_TOLERANCE, ORIENTATION_TOLERANCE, reset_timeline
 
 
 class TestIMU(omni.kit.test.AsyncTestCase):

@@ -28,7 +28,7 @@ from isaacsim.core.api.objects.ground_plane import GroundPlane
 from isaacsim.core.api.robots import Robot
 from isaacsim.core.api.world import World
 from isaacsim.core.prims import SingleXFormPrim
-from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats, rot_matrices_to_quats
+from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats
 from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,

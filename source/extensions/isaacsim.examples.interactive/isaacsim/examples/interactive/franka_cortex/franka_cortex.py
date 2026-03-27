@@ -16,15 +16,12 @@
 """Interactive Franka robot control system using the Cortex framework for behavior-based manipulation tasks."""
 
 
-import carb
 import numpy as np
 import omni
-from isaacsim.core.api.objects import DynamicCuboid, VisualCuboid
+from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.cortex.framework.cortex_utils import load_behavior_module
-from isaacsim.cortex.framework.cortex_world import Behavior, CortexWorld, LogicalStateMonitor
 from isaacsim.cortex.framework.dfb import DfDiagnosticsMonitor
-from isaacsim.cortex.framework.robot import CortexFranka, add_franka_to_stage
-from isaacsim.cortex.framework.tools import SteadyRate
+from isaacsim.cortex.framework.robot import add_franka_to_stage
 from isaacsim.examples.interactive.cortex.cortex_base import CortexBase
 
 

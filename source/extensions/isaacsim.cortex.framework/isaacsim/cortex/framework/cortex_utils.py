@@ -16,11 +16,8 @@
 """Cortex-specific utilities and helper methods"""
 
 from types import ModuleType
-from typing import Union
 
-import numpy as np
 from isaacsim.storage.native import get_assets_root_path
-from pxr import Usd
 
 
 def load_behavior_module(behavior_filepath: str, module_name: str = "behavior") -> ModuleType:

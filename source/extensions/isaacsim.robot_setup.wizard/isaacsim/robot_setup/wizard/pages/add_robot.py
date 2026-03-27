@@ -25,7 +25,6 @@ import omni.ui as ui
 from omni.usd import Sdf
 
 from ..builders.robot_templates import *
-from ..progress import ProgressColorState, ProgressRegistry
 from ..utils.robot_asset_picker import RobotAssetPicker
 from ..utils.ui_utils import (
     ButtonWithIcon,
@@ -35,7 +34,6 @@ from ..utils.ui_utils import (
     custom_header,
     next_step,
     open_extension,
-    open_folder_picker,
     separator,
     text_with_dot,
 )

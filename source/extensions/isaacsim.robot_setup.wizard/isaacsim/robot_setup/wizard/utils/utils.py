@@ -18,7 +18,6 @@
 
 import os
 
-import omni.usd
 from pxr import Sdf, UsdGeom, UsdLux
 
 

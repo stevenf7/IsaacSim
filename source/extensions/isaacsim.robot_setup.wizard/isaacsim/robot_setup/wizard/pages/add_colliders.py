@@ -16,16 +16,11 @@
 """Provides UI components and models for managing collision physics setup in the Isaac Sim robot setup wizard."""
 
 
-import os
-from typing import List
-
 import omni.ui as ui
 import omni.usd
 from omni.kit.widget.filter import FilterButton
-from omni.kit.widget.options_button import OptionsButton
-from omni.kit.widget.options_menu import OptionItem
 from omni.kit.widget.searchfield import SearchField
-from pxr import PhysxSchema, UsdGeom, UsdPhysics
+from pxr import UsdGeom
 
 from ..builders.collider_helper import MESH_APPROXIMATIONS, MESH_TYPES, apply_collider
 from ..builders.robot_templates import RobotRegistry

@@ -15,7 +15,6 @@
 
 """Formatted reporting for benchmark metric phases."""
 
-from .. import utils
 from . import measurements
 
 # List of other "metadata" metrics to be filtered out of each phase

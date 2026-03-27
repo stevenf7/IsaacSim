@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import carb
 import numpy as np
 import omni.graph.core as og
 import omni.kit.commands
@@ -21,12 +20,12 @@ import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.semantics import add_labels
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.core.utils.viewports import set_camera_view
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 
-from .common import ROS2TestCase, get_qos_profile
+from .common import get_qos_profile
 
 
 class TestRos2SemanticLabels(ROS2TestCase):

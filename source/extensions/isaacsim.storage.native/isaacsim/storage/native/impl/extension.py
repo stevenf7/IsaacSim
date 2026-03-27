@@ -15,7 +15,6 @@
 
 import os
 
-import carb
 import omni.client
 import omni.ext
 

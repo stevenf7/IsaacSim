@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from re import I
 
-import carb
 import numpy as np
 import omni.graph.core as og
 import omni.kit.commands
@@ -24,12 +22,12 @@ import omni.kit.usd
 import usdrt.Sdf
 from isaacsim.core.nodes.scripts.utils import set_target_prims
 from isaacsim.core.prims import XFormPrim
-from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.stage import add_reference_to_stage, open_stage_async
-from pxr import Sdf, UsdGeom
+from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
+from pxr import Sdf
 from usd.schema.isaac import robot_schema
 
-from .common import ROS2TestCase, add_cube, add_franka, get_qos_profile
+from .common import add_cube, add_franka, get_qos_profile
 
 
 class TestRos2PoseTree(ROS2TestCase):

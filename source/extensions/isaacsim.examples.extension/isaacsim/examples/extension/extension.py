@@ -18,9 +18,7 @@
 
 import asyncio
 import gc
-import os
 
-import carb
 import omni
 import omni.kit.actions.core
 import omni.kit.commands

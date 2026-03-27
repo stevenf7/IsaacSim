@@ -216,7 +216,6 @@ class TestIsaacComputeTransformTree(ogts.OmniGraphTestCase):
 
     async def test_orientation_is_unit_quaternion(self):
         """Output quaternion (x,y,z,w) should be unit-length."""
-        import math
 
         cube_path = "/World/Cube"
         # Apply a 45-degree rotation around Z (w, x, y, z)

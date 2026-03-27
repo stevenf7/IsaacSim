@@ -15,7 +15,6 @@
 
 """UI tests for menu behaviors and links."""
 
-import carb
 import omni.kit.test
 import omni.usd
 from omni.kit.ui_test.menu import *

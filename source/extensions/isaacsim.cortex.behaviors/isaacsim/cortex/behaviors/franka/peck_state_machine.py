@@ -29,7 +29,7 @@ import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
 from isaacsim.cortex.framework.df import DfNetwork, DfState, DfStateMachineDecider, DfStateSequence, DfTimedDeciderState
 from isaacsim.cortex.framework.dfb import DfBasicContext, DfCloseGripper, DfLift
-from isaacsim.cortex.framework.motion_commander import ApproachParams, MotionCommand, PosePq
+from isaacsim.cortex.framework.motion_commander import ApproachParams, PosePq
 
 
 def sample_target_p():

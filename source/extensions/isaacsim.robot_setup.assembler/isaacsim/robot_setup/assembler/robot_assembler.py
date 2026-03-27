@@ -18,12 +18,10 @@
 
 import asyncio
 from enum import IntEnum
-from typing import List, Tuple
+from typing import List
 
-import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-import numpy as np
 import omni.kit.commands
 import omni.timeline
 import usd.schema.isaac.robot_schema as robot_schema

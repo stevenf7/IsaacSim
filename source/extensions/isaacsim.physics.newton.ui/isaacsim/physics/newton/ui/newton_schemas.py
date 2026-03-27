@@ -134,7 +134,7 @@ class ExtendedNewtonSceneWidget(ExtensionSchemaWidget):
 from omni.kit.property.physics.builders import PrettyPrintTokenComboBuilder
 from pxr import UsdPhysics
 
-from .utils import DisableByCallbackBuilder, HideByCallbackBuilder, PrimType, make_hide_cb
+from .utils import DisableByCallbackBuilder, PrimType, make_hide_cb
 
 CallbackBuilder = DisableByCallbackBuilder
 

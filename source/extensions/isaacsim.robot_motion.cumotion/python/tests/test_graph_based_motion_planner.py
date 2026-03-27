@@ -15,7 +15,6 @@
 
 """Tests for the graph-based motion planner functionality with Franka robot configurations."""
 
-import os
 
 import cumotion
 import isaacsim.core.experimental.utils.stage as stage_utils

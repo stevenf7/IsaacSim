@@ -18,11 +18,10 @@
 
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
-import omni.graph.core as og
 import omni.usd
 from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.storage.native import get_assets_root_path
-from pxr import Sdf, UsdLux
+from pxr import Sdf
 
 
 class KayaGamepad(BaseSample):

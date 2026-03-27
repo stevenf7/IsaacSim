@@ -26,7 +26,7 @@ from isaacsim.core.utils.distance_metrics import rotational_distance_angle
 from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats, quats_to_rot_matrices
 from isaacsim.core.utils.stage import add_reference_to_stage
-from isaacsim.robot_motion.motion_generation import PathPlannerVisualizer, interface_config_loader
+from isaacsim.robot_motion.motion_generation import PathPlannerVisualizer
 from isaacsim.robot_motion.motion_generation.lula import RRT
 from isaacsim.storage.native import get_assets_root_path
 

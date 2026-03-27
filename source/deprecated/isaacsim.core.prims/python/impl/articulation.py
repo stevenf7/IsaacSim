@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-import gc
 import weakref
 from collections import OrderedDict
 from typing import List, Optional, Tuple, Union
@@ -32,7 +31,7 @@ import omni.physx
 import omni.timeline
 import warp as wp
 from isaacsim.core.deprecation_manager import import_module
-from isaacsim.core.simulation_manager import IsaacEvents, SimulationManager
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.prims import (
     get_articulation_root_api_prim_path,
     get_prim_at_path,

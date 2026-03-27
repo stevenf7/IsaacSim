@@ -15,18 +15,13 @@
 
 """Shared utility helpers for benchmark services."""
 
-import asyncio
-import dataclasses
 import functools
 import inspect
 import logging
 import os
-import platform
-import stat
 import sys
 import time
 import traceback
-from enum import Enum, auto
 from pathlib import Path
 from typing import Any
 from urllib import parse as urlparse

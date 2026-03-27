@@ -30,7 +30,7 @@ from omni.kit.helper.file_utils import (
     asset_types,
     get_latest_urls_from_event_queue,
 )
-from omni.kit.menu.utils import IconMenuDelegate, LayoutSourceSearch, MenuItemDescription, MenuLayout
+from omni.kit.menu.utils import IconMenuDelegate, MenuItemDescription, MenuLayout
 from omni.ui import color as cl
 
 from .file_actions import deregister_actions, register_actions

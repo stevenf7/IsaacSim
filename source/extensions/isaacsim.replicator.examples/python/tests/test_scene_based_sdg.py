@@ -16,7 +16,7 @@
 import carb.settings
 import omni.kit
 import omni.usd
-from isaacsim.test.utils.file_validation import get_folder_file_summary, validate_folder_contents
+from isaacsim.test.utils.file_validation import validate_folder_contents
 
 
 class TestSceneBasedSDG(omni.kit.test.AsyncTestCase):
@@ -36,7 +36,6 @@ class TestSceneBasedSDG(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set("rtx/post/dlss/execMode", self.original_dlss_exec_mode)
 
     async def test_scene_based_sdg(self):
-        import asyncio
         import math
         import os
 

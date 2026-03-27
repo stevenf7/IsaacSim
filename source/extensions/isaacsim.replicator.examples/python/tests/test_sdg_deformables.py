@@ -45,7 +45,6 @@ class TestSDGDeformables(omni.kit.test.AsyncTestCase):
         SimulationManager.set_physics_sim_device(self.original_physics_sim_device)
 
     async def test_sdg_snippet_deformables(self):
-        import asyncio
         import os
         import random
 

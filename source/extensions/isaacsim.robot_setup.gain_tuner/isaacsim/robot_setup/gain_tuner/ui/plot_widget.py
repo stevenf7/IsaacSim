@@ -16,7 +16,7 @@
 """A customizable XY plot widget module for displaying multiple data series with enhanced visualization features."""
 
 
-from typing import Callable, List, Optional, Tuple, Union
+from typing import List, Union
 
 import numpy as np
 import omni.ui as ui

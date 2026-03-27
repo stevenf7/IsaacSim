@@ -35,7 +35,6 @@ class TestSDGCosmosWriter(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set("rtx/post/dlss/execMode", self.original_dlss_exec_mode)
 
     async def test_sdg_snippet_cosmos_simple(self):
-        import asyncio
         import os
 
         import carb.settings
@@ -118,7 +117,6 @@ class TestSDGCosmosWriter(omni.kit.test.AsyncTestCase):
         self.assertTrue(all_data_written, f"Output directory contents validation failed for {out_dir}")
 
     async def test_sdg_snippet_cosmos_warehouse(self):
-        import asyncio
         import os
 
         import carb

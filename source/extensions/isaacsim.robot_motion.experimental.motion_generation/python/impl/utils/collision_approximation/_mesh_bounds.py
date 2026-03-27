@@ -21,7 +21,7 @@ import trimesh
 from isaacsim.core.experimental.objects import Mesh
 from isaacsim.core.experimental.utils.transform import quaternion_to_rotation_matrix, rotation_matrix_to_quaternion
 
-from .bounding_geometries import AABB, OBB, ConvexHull
+from .bounding_geometries import AABB, OBB
 from .triangulate_mesh import triangulate_mesh
 
 

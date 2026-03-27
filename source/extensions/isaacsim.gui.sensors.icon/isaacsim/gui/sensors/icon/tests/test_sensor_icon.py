@@ -22,7 +22,7 @@ import omni.kit.ui_test as ui_test
 import omni.usd
 from omni.kit.viewport.utility import get_active_viewport, get_active_viewport_window
 from omni.ui.tests.test_base import OmniUiTest
-from pxr import Gf, Sdf, Usd
+from pxr import Gf, Sdf
 
 from ..impl.manipulator import SHOW_TITLE_PATH
 from ..impl.scene import VISIBLE_SETTING, SensorIcon

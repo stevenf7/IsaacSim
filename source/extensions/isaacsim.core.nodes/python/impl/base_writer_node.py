@@ -17,7 +17,6 @@
 
 
 import copy
-from typing import List, Union
 
 import carb.events
 import omni.replicator.core as rep

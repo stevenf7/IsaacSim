@@ -29,7 +29,6 @@ import numpy as np
 import omni.kit.test
 import omni.timeline
 from isaacsim.core.deprecation_manager import import_module
-from isaacsim.core.experimental.utils.stage import create_new_stage_async, define_prim
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
 from isaacsim.robot.policy.examples.robots.h1 import H1FlatTerrainPolicy

@@ -25,7 +25,7 @@ from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.prims import get_prim_at_path
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.sensors.camera.camera import Camera
-from pxr import Gf, Usd
+from pxr import Usd
 
 
 class SingleViewDepthSensor(Camera):

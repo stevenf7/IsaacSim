@@ -33,7 +33,6 @@ class TestRclpy(ROS2TestCase):
         await super().tearDown()
 
     async def test_rclpy(self):
-        import rclpy
         from std_msgs.msg import String
 
         msg = String()

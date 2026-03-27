@@ -23,7 +23,6 @@ import os
 # python
 import typing
 from collections import namedtuple
-from typing import List, Tuple, Union
 from urllib.parse import urlparse
 
 # omniverse

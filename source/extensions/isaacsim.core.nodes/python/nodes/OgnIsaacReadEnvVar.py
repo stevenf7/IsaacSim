@@ -15,9 +15,6 @@
 
 import os
 
-import numpy
-import omni
-
 
 class OgnIsaacReadEnvVar:
     """

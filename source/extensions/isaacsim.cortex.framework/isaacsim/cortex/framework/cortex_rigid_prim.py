@@ -17,7 +17,7 @@ from typing import Sequence
 
 import numpy as np
 from isaacsim.core.prims import SingleXFormPrim
-from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, UsdPhysics
 
 
 class CortexRigidPrim(SingleXFormPrim):

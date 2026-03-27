@@ -14,3 +14,5 @@
 # limitations under the License.
 
 from .impl import *
+from .impl.rendering_manager import RenderingEvent  # noqa: F401 – re-exported public API
+from .impl.viewport_manager import ViewportManager  # noqa: F401 – re-exported public API

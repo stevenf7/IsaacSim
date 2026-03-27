@@ -8,7 +8,7 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 from omni.kit.material.library import CreateAndBindMdlMaterialFromLibrary
-from pxr import Gf, Sdf, UsdGeom, UsdShade
+from pxr import Gf, Sdf, UsdShade
 
 from .common import translate_rotate_scale_prim
 from .generate_waypoint_graph import get_closest_node

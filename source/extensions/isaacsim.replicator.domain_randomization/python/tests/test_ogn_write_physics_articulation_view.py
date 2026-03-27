@@ -28,9 +28,7 @@ import omni.usd
 from isaacsim.core.api import World
 from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async
-from isaacsim.replicator.domain_randomization import physics_view as physics
 from isaacsim.storage.native import get_assets_root_path_async
-from scipy.spatial.transform import Rotation as R
 
 
 class TestOgnWritePhysicsArticulationView(omni.kit.test.AsyncTestCase):

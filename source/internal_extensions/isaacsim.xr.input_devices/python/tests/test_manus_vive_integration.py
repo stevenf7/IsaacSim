@@ -14,7 +14,6 @@ plugin through the integration layer. The test forces the use of the test
 hand-tracker shared library by setting ISAACSIM_HANDTRACKER_LIB.
 """
 
-import asyncio
 import os
 import sys
 

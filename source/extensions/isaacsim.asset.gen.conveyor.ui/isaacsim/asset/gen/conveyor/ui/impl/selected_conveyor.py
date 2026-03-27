@@ -16,7 +16,6 @@
 import omni.ui as ui
 
 from .conveyor_builder.conveyor_track import Ramp, Type
-from .preferences import ConveyorBuilderPreferences
 
 
 class SelectedConveyorWidget:

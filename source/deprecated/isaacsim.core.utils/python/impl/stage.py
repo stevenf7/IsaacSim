@@ -19,7 +19,6 @@ import threading
 
 # python
 import typing
-from typing import Callable, Optional, Tuple, Union
 
 # omniverse
 import carb

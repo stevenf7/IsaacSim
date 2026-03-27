@@ -463,7 +463,6 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
         self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_randomize_physics_based_volume_filling(self):
-        import asyncio
         import os
         import random
         from itertools import chain

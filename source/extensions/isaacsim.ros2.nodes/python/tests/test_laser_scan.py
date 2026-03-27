@@ -15,7 +15,6 @@
 
 import copy
 
-import carb
 import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd

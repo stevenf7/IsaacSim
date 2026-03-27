@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import omni.kit.actions.core
 import omni.kit.menu.utils
-from omni.kit.menu.utils import LayoutSourceSearch, MenuItemDescription, MenuLayout, refresh_menu_items
+from omni.kit.menu.utils import MenuItemDescription, MenuLayout, refresh_menu_items
 
 from .asset_check import AssetCheck
 

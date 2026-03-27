@@ -17,9 +17,7 @@
 
 from __future__ import annotations
 
-import asyncio
 import os
-import subprocess
 import sys
 from cmath import inf
 from typing import TYPE_CHECKING

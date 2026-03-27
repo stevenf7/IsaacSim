@@ -29,10 +29,9 @@ import numpy as np
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.timeline
+from isaacsim.core.experimental.utils.stage import open_stage_async
 from isaacsim.core.experimental.utils.xform import get_world_pose
 from isaacsim.storage.native import get_assets_root_path_async
-
-from .robot_helpers import open_stage_async
 
 
 def get_qos_profile():

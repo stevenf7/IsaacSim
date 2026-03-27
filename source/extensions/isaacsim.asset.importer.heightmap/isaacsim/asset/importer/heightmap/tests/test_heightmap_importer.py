@@ -17,7 +17,6 @@
 
 from unittest.mock import MagicMock, Mock, patch
 
-import numpy as np
 import omni.kit.test
 from isaacsim.asset.importer.heightmap.importer import (
     OCCUPIED_PIXEL_THRESHOLD,

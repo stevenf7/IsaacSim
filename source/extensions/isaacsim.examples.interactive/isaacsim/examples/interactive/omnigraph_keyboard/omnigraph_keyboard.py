@@ -17,7 +17,6 @@
 
 
 import isaacsim.core.experimental.utils.stage as stage_utils
-import omni.ext
 import omni.graph.core as og
 from isaacsim.core.experimental.materials import PreviewSurfaceMaterial
 from isaacsim.core.experimental.objects import Cube

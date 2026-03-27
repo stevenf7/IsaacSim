@@ -15,10 +15,9 @@
 
 __all__ = ["GridCloner"]
 
-from typing import List, Union
+from typing import List
 
 import numpy as np
-import omni.usd
 from isaacsim.core.cloner import Cloner
 from pxr import Gf, Usd, UsdGeom
 

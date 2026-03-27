@@ -27,7 +27,6 @@ from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.style import get_style
 from isaacsim.gui.components.ui_utils import btn_builder, cb_builder, combo_cb_str_builder, str_builder
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade
 
 from .mesh_merger import MeshMerger
 

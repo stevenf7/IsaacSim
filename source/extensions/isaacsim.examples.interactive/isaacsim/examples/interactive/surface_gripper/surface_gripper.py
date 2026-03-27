@@ -18,7 +18,6 @@
 
 import asyncio
 import os
-import weakref
 
 import carb
 
@@ -35,19 +34,15 @@ import omni.ui as ui
 import usd.schema.isaac.robot_schema as robot_schema
 from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.examples.browser import get_instance as get_browser_instance
-from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.ui_utils import (
     add_separator,
     btn_builder,
-    combo_floatfield_slider_builder,
     get_style,
     setup_ui_headers,
     state_btn_builder,
 )
 from isaacsim.robot.surface_gripper import _surface_gripper as surface_gripper
-from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.kit.window.property.templates import LABEL_HEIGHT, LABEL_WIDTH
-from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 
 EXTENSION_NAME = "Surface Gripper"
 

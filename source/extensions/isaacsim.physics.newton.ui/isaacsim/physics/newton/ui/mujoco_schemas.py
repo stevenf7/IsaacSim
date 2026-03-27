@@ -97,7 +97,7 @@ def get_mujoco_schema_names() -> tuple[set[str], set[str]]:
 from omni.kit.property.physics.builders import HideWidgetBuilder
 from pxr import UsdPhysics
 
-from .utils import DisableByCallbackBuilder, HideByCallbackBuilder, PrimType, make_hide_cb
+from .utils import DisableByCallbackBuilder, PrimType, make_hide_cb
 
 CallbackBuilder = DisableByCallbackBuilder
 HIDE_PROPERTY = [HideWidgetBuilder]

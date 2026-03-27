@@ -18,7 +18,7 @@
 import numpy as np
 import omni.kit.test
 import omni.timeline
-from isaacsim.core.experimental.objects import Cube, Mesh, Plane
+from isaacsim.core.experimental.objects import Cube, Mesh
 from isaacsim.core.experimental.utils.stage import create_new_stage_async
 from isaacsim.robot_motion.experimental.motion_generation.impl.utils.collision_approximation import (  # compute_mesh_convex_hull,
     compute_obb,

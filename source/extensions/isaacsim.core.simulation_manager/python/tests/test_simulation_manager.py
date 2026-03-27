@@ -816,7 +816,6 @@ class TestSimulationManagerStageTransitions(omni.kit.test.AsyncTestCase):
         4. The cached PhysxScene now has a stale prim reference
         5. Try to play - without fix, this raises RuntimeError for expired prim
         """
-        from pxr import Sdf
 
         # Create physics scene and start simulation
         stage_utils.define_prim(self._physics_scene_path, type_name="PhysicsScene")

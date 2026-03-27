@@ -26,7 +26,6 @@ import yaml
 from isaacsim.core.api.materials import PreviewSurface
 from isaacsim.core.api.objects.sphere import VisualSphere
 from isaacsim.core.utils.prims import delete_prim, is_prim_path_valid
-from isaacsim.core.utils.string import find_unique_string_name
 from pxr import Sdf
 
 

@@ -17,7 +17,7 @@
 
 
 import numpy as np
-from isaacsim.core.utils.numpy.rotations import gf_quat_to_tensor, wxyz2xyzw, xyzw2wxyz
+from isaacsim.core.utils.numpy.rotations import gf_quat_to_tensor, wxyz2xyzw
 from isaacsim.core.utils.numpy.tensor import create_zeros_tensor
 from pxr import Gf
 from scipy.spatial.transform import Rotation

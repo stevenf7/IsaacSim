@@ -17,7 +17,6 @@
 
 
 import typing
-from typing import List, Optional
 
 import numpy as np
 from isaacsim.core.api.controllers.base_controller import BaseController

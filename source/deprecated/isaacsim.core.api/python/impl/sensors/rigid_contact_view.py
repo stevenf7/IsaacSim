@@ -25,7 +25,7 @@ import warp as wp
 from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.utils.prims import find_matching_prim_paths, get_prim_at_path
-from pxr import PhysxSchema, UsdPhysics
+from pxr import PhysxSchema
 
 torch = import_module("torch")
 

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 
 import carb
 import numpy as np
@@ -22,7 +21,7 @@ from isaacsim.core.api import World
 from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.api.robots import Robot
 from isaacsim.core.prims import Articulation, RigidPrim, SingleRigidPrim
-from isaacsim.core.utils.prims import get_prim_object_type, is_prim_path_valid
+from isaacsim.core.utils.prims import is_prim_path_valid
 from isaacsim.core.utils.stage import (
     add_reference_to_stage,
     create_new_stage_async,

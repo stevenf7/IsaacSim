@@ -47,9 +47,9 @@ from isaacsim.core.utils.prims import (
     get_prim_type_name,
     is_prim_path_valid,
 )
-from isaacsim.core.utils.render_product import get_resolution, set_camera_prim_path, set_resolution
+from isaacsim.core.utils.render_product import set_camera_prim_path, set_resolution
 from omni.isaac.IsaacSensorSchema import IsaacRtxLidarSensorAPI
-from pxr import Gf, Sdf, Usd, UsdGeom, Vt
+from pxr import Gf, Sdf, Usd, UsdGeom
 
 torch = import_module("torch")
 

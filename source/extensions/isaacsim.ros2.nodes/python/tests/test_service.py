@@ -18,8 +18,7 @@ import importlib
 import omni.graph.core as og
 import omni.kit.test
 from isaacsim.core.utils.stage import create_new_stage_async
-
-from .common import ROS2TestCase
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 
 # Each test case exercises writeNodeAttributeFromMessage for specific primitive types
 # by creating a service client/server pair and verifying that request fields are correctly
@@ -133,8 +132,6 @@ class TestRos2Service(ROS2TestCase):
 
     # ----------------------------------------------------------------------
     async def test_service(self):
-        import builtin_interfaces.msg
-        import rclpy
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()

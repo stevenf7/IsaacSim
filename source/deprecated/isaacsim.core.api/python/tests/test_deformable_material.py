@@ -21,13 +21,11 @@ from isaacsim.core.api.tests.common import TestProperties
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
-from isaacsim.core.utils.prims import define_prim
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from pxr import Gf, Usd, UsdGeom
-
 from .common import CoreTestCase
+
+# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 
 
 class TestDeformableMaterial(CoreTestCase, TestProperties):

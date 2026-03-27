@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import re
-from typing import Any
 
 import numpy as np
 

@@ -22,11 +22,8 @@ import carb
 import omni.ui as ui
 import omni.usd
 from omni.kit.widget.filter import FilterButton
-from omni.kit.widget.options_button import OptionsButton
-from omni.kit.widget.options_menu import OptionItem
 from omni.kit.widget.searchfield import SearchField
 from omni.usd import Sdf
-from pxr import UsdGeom
 
 from ..builders.joint_helper import (
     AXIS_LIST,

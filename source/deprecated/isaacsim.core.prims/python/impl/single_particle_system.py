@@ -16,12 +16,11 @@
 """Implements a wrapper for PhysX particle system functionality in Isaac Sim."""
 
 
-from typing import Optional, Sequence
+from typing import Sequence
 
 import carb
 import isaacsim.core.utils.prims as prim_utils
 import isaacsim.core.utils.stage as stage_utils
-from isaacsim.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from pxr import PhysxSchema, Usd
 
 from .particle_system import ParticleSystem

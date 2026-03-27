@@ -17,10 +17,8 @@
 
 import logging
 import math
-from collections.abc import Sequence
 
-import usd.schema.newton
-from pxr import PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import PhysxSchema, Usd, UsdPhysics
 
 from .importer_utils import create_physx_mimic_joint
 

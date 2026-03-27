@@ -42,7 +42,6 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
             )
 
     async def test_sdg_getting_started_01(self):
-        import asyncio
         import os
 
         import carb.settings
@@ -98,7 +97,6 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_sdg_getting_started_02(self):
-        import asyncio
         import os
 
         import carb.settings
@@ -201,7 +199,6 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_sdg_getting_started_03(self):
-        import asyncio
         import os
         import random
 
@@ -276,7 +273,6 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_sdg_getting_started_04(self):
-        import asyncio
         import os
 
         import carb.settings
@@ -389,7 +385,6 @@ class TestSDGGettingStarted(omni.kit.test.AsyncTestCase):
         self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_sdg_getting_started_05(self):
-        import asyncio
         import os
         import time
 

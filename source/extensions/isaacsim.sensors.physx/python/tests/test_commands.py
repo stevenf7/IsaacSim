@@ -18,13 +18,10 @@
 Tests the functionality of creating different types of PhysX sensors through commands.
 """
 
-import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import omni.kit.commands
 import omni.kit.test
 import omni.usd
-from isaacsim.core.utils.prims import get_prim_at_path
-from isaacsim.core.utils.stage import traverse_stage
 from pxr import Gf, Sdf, UsdGeom
 
 

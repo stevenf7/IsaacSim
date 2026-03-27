@@ -16,8 +16,6 @@
 """Provides high-level cloth prim management functionality for cloth simulation objects in Isaac Sim."""
 
 
-from typing import Optional, Union
-
 import carb
 import carb.eventdispatcher
 import numpy as np

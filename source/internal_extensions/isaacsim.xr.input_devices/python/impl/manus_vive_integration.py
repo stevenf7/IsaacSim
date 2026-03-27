@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 
 import carb
 from isaacsim.xr.input_devices.bindings._isaac_xr_input_devices import (
@@ -49,7 +48,6 @@ def get_manus_vive_integration(handtracker_lib_override=None):
         ManusViveIntegration: integration used for device coordination.
     """
     try:
-        import omni.ext
 
         from .extension import Extension
 

@@ -20,11 +20,9 @@ from __future__ import annotations
 import json
 import logging
 import os
-from collections.abc import Sequence
 
-import usd.schema.newton
 from isaacsim.asset.transformer import AssetTransformerManager, RuleProfile
-from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
 _logger = logging.getLogger(__name__)
 

@@ -18,7 +18,6 @@ import numpy as np
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import omni.kit.commands
 import omni.kit.test
-import Semantics
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.sensors.physx import _range_sensor

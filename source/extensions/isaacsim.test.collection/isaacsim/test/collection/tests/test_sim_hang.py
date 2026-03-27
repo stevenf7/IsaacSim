@@ -26,10 +26,9 @@ import omni.kit.test
 import omni.timeline
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
+from isaacsim.core.experimental.utils.stage import open_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Usd, UsdPhysics
-
-from .robot_helpers import open_stage_async
 
 
 def create_fixed_cuboid(stage: Usd.Stage, prim_path: str, position: list, scale: list):
@@ -92,7 +91,7 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
         #     Set it to be invisible
         #     Delete it
 
-        from pxr import Gf, UsdGeom
+        from pxr import UsdGeom
 
         self._timeline = omni.timeline.get_timeline_interface()
         stage = omni.usd.get_context().get_stage()

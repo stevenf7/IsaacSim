@@ -20,7 +20,6 @@ import os
 import tempfile
 from pathlib import Path
 
-import omni.kit.app
 from isaacsim.test.utils.file_validation import get_folder_file_summary, validate_file_list, validate_folder_contents
 from isaacsim.test.utils.timed_async_test import TimedAsyncTestCase
 

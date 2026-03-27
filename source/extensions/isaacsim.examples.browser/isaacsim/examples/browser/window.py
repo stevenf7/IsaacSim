@@ -17,11 +17,9 @@
 
 
 import os
-from typing import Optional
 
 import carb.settings
 import omni.ui as ui
-from omni.kit.browser.core import TreeCategoryDelegate
 from omni.kit.browser.folder.core import TreeFolderBrowserWidgetEx
 
 from .delegate import AssetDetailDelegate

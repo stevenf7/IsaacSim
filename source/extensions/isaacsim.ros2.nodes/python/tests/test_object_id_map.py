@@ -16,16 +16,15 @@
 import json
 from uuid import uuid4
 
-import numpy as np
 import omni
 import omni.kit
 import omni.replicator.core as rep
 import rclpy
-from isaacsim.core.utils.physics import simulate_async
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from isaacsim.sensors.rtx import LidarRtx
 from std_msgs.msg import String
 
-from .common import ROS2TestCase, create_sarcophagus, get_qos_profile
+from .common import create_sarcophagus, get_qos_profile
 
 
 class TestROS2ObjectIdMap(ROS2TestCase):

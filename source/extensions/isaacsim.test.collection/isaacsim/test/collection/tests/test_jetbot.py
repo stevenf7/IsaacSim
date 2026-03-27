@@ -16,9 +16,6 @@
 """Tests for the NVIDIA JetBot robot simulation including loading, movement, acceleration, braking, spinning, and circular motion behaviors."""
 
 
-import math
-import time
-
 import carb
 import carb.tokens
 import isaacsim.core.experimental.utils.app as app_utils
@@ -32,9 +29,10 @@ import omni.graph.core as og
 import omni.kit.test
 import omni.timeline
 from isaacsim.core.experimental.prims import Articulation
+from isaacsim.core.experimental.utils.stage import open_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
 
-from .robot_helpers import init_robot_sim, open_stage_async, setup_robot_og
+from .robot_helpers import init_robot_sim, setup_robot_og
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

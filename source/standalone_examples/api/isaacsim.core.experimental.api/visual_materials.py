@@ -40,7 +40,6 @@ import random
 import sys
 
 import carb
-import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

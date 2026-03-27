@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
 
 import omni.asset_validator.core as av_core
 from omni.asset_validator.core import registerRule

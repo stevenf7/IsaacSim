@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
 
 import isaacsim.core.experimental.utils.transform as transform_utils
 import numpy as np

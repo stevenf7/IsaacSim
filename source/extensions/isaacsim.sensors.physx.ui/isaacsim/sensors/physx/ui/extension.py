@@ -16,11 +16,8 @@
 """UI extension for PhysX sensors that adds sensor functionality to the Kit interface."""
 
 
-from functools import partial
-
 import carb
 import omni.ext
-from omni.isaac import RangeSensorSchema
 from pxr import Sdf, UsdShade
 
 from .. import _range_sensor

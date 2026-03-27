@@ -26,7 +26,7 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import typing_extensions
 
         if sys.platform == "win32":
-            import pywintypes
+            import pywintypes  # noqa: F401
 
         # isort: on
         import azure.core

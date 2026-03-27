@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import asyncio
-import json
 
 import carb
 import omni.kit.commands

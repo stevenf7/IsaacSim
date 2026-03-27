@@ -13,11 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, List, Optional, Sequence, Set, TypeVar, Union
-
-import omni.usd
-from pxr import Sdf, Usd, UsdGeom, UsdUtils
-
 
 def is_relationship_prepended(relationship):
     """Check if a relationship is prepended in the layer stack.

@@ -17,7 +17,6 @@
 
 
 import omni.ui as ui
-from isaacsim.gui.components.ui_utils import get_style
 
 
 class UIWidgetWrapper:

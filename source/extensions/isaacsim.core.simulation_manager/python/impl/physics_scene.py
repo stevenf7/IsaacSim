@@ -18,11 +18,9 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
 from .. import _simulation_manager
 

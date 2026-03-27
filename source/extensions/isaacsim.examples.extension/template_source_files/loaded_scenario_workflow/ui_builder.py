@@ -20,7 +20,6 @@ import omni.usd
 from isaacsim.core.api.objects.cuboid import FixedCuboid
 from isaacsim.core.api.world import World
 from isaacsim.core.prims import SingleArticulation, XFormPrim
-from isaacsim.core.utils.prims import is_prim_path_valid
 from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage, get_current_stage
 from isaacsim.examples.extension.core_connectors import LoadButton, ResetButton
 from isaacsim.gui.components.element_wrappers import CollapsableFrame, StateButton

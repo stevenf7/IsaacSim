@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 
-import numpy as np
 import omni.kit.test
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.particle_material import ParticleMaterial
@@ -26,9 +24,8 @@ from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
-from isaacsim.core.utils.types import DynamicsViewState
 from omni.physx.scripts import deformableUtils, physicsUtils
-from pxr import Gf, Usd, UsdGeom
+from pxr import Gf, UsdGeom
 
 from .common import CoreTestCase
 

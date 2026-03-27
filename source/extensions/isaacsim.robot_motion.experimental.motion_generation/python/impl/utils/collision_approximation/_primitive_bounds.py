@@ -22,7 +22,7 @@ are cleaned and triangulated before computing bounds.
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.transform as transform_utils
 import numpy as np
-from pxr import Gf, Usd, UsdGeom
+from pxr import Usd, UsdGeom
 
 from .bounding_geometries import AABB, OBB
 

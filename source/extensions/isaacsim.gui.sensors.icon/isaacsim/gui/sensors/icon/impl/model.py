@@ -16,14 +16,14 @@
 __all__ = ["IconModel"]
 
 from pathlib import Path
-from typing import Callable, Dict
+from typing import Callable
 
 import carb
 import omni.kit.app
 import omni.usd
 import usdrt.Usd
 from omni.ui import scene as sc
-from pxr import Gf, Sdf, Tf, Trace, Usd, UsdGeom
+from pxr import Gf, Sdf, Trace, Usd, UsdGeom
 
 
 class IconModel(sc.AbstractManipulatorModel):

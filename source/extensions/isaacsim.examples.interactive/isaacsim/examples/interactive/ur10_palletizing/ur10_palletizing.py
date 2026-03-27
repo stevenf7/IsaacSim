@@ -25,7 +25,6 @@ from isaacsim.core.api.objects.capsule import VisualCapsule
 from isaacsim.core.api.objects.sphere import VisualSphere
 from isaacsim.core.api.tasks.base_task import BaseTask
 from isaacsim.core.prims import SingleXFormPrim
-from isaacsim.core.utils.rotations import euler_angles_to_quat
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.cortex.behaviors.ur10 import bin_stacking_behavior as behavior
 from isaacsim.cortex.framework.cortex_rigid_prim import CortexRigidPrim

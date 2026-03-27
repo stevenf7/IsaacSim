@@ -21,9 +21,7 @@ import weakref
 
 import carb
 import omni.ext
-from omni.kit.widget.filebrowser import FileBrowserModel
 from omni.kit.window.content_browser import get_content_window
-from omni.kit.window.filepicker import CollectionData
 
 from .detail_view import ExtendedFileInfo
 from .isaac_collection import IsaacCollection

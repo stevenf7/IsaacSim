@@ -13,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 import copy
 import json
-from math import asin, degrees
 
 import carb
 import carb.eventdispatcher

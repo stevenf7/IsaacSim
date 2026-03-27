@@ -17,36 +17,26 @@
 
 
 import asyncio
-import os
 from typing import List
 
 import carb
 import isaacsim.core.experimental.utils.app as app_utils
-import numpy as np
 import omni.kit.commands
 import omni.timeline
 import omni.ui as ui
 import omni.usd
 import pxr
 from isaacsim.gui.components.element_wrappers import (
-    CollapsableFrame,
     DropDown,
-    FloatField,
-    Frame,
-    StateButton,
-    StringField,
-    TextBlock,
 )
-from isaacsim.gui.components.ui_utils import add_line_rect_flourish, setup_ui_headers
 from omni.kit.widget.filebrowser import FileBrowserItem
 from omni.kit.window.filepicker import FilePickerDialog
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, Sdf, Usd, UsdGeom
 from usd.schema.isaac import robot_schema
 
-from ..global_variables import EXTENSION_TITLE
 from ..robot_assembler import RobotAssembler
 from .style import get_style
-from .widget import LABEL_WIDTH, DropDownWithPicker, DropDownWithSelect
+from .widget import LABEL_WIDTH
 
 
 class UIBuilder:

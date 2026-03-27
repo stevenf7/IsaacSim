@@ -17,15 +17,11 @@
 
 import os
 import platform
-from pathlib import Path
-from typing import TYPE_CHECKING
 
-import omni.client
-import omni.stats
 import psutil
 
 from ..metrics import measurements
-from .interface import InputContext, MeasurementData, MeasurementDataRecorder, MeasurementDataRecorderRegistry
+from .interface import MeasurementData, MeasurementDataRecorder, MeasurementDataRecorderRegistry
 
 
 @MeasurementDataRecorderRegistry.register("memory")

@@ -20,7 +20,6 @@ from typing import Optional
 
 import carb
 import isaacsim.core.utils.stage as stage_utils
-import omni.kit.app
 from pxr import Usd, UsdPhysics, UsdShade
 
 

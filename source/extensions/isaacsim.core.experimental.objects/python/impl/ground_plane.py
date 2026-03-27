@@ -25,7 +25,6 @@ import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.ops as ops_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-import omni.kit.commands
 import warp as wp
 from isaacsim.core.experimental.materials import OmniPbrMaterial
 from isaacsim.core.experimental.prims import GeomPrim, XformPrim

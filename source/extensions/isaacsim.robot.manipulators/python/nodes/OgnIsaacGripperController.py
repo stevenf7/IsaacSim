@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import numpy as np
-import omni.graph.core as og
 from isaacsim.core.nodes import BaseResetNode
 from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction

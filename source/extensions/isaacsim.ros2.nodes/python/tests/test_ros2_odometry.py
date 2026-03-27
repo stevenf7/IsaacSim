@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import carb
 import numpy as np
 import omni.graph.core as og
 import omni.kit.commands
@@ -30,8 +29,9 @@ from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.prims import is_prim_path_valid
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.core.utils.string import find_unique_string_name
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 
-from .common import ROS2TestCase, get_qos_profile
+from .common import get_qos_profile
 
 torch = import_module("torch")
 
@@ -624,7 +624,6 @@ class TestRos2Odometry(ROS2TestCase):
 
     async def test_ROS2_angular_odometry(self):
         """Test odometry with Leatherback robot going in a circle, verifying angular velocity."""
-        import time
 
         import rclpy
         from ackermann_msgs.msg import AckermannDriveStamped

@@ -16,7 +16,6 @@
 """Utilities for capturing image and annotator data from virtual cameras in Isaac Sim simulations."""
 
 
-import os
 from typing import Any
 
 import numpy as np

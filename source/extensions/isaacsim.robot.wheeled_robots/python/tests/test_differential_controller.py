@@ -16,10 +16,7 @@
 """Unit tests for the DifferentialController and DifferentialController node functionality in wheeled robots."""
 
 
-from re import I
-
 import carb
-import numpy as np
 import omni.graph.core as og
 import omni.graph.core.tests as ogts
 import omni.kit.test

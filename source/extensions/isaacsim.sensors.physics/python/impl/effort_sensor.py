@@ -17,7 +17,6 @@
 
 
 import copy
-from typing import Optional
 
 import carb
 import carb.eventdispatcher

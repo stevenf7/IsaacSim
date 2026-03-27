@@ -20,9 +20,8 @@ import omni.graph.core as og
 import omni.kit.test
 import omni.usd
 from isaacsim.core.utils.stage import create_new_stage_async
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Sdf
-
-from .common import ROS2TestCase
 
 
 class TestRos2ServicePrim(ROS2TestCase):

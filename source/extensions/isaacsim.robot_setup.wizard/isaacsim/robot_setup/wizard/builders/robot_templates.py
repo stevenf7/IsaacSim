@@ -16,10 +16,7 @@
 """Provides robot template classes for the Isaac Sim robot setup wizard, including base abstractions and specific implementations for different robot types like manipulators, wheeled robots, humanoids, and quadrupeds."""
 
 
-from abc import ABC, abstractmethod
-
-import omni.usd
-import usd.schema.isaac.robot_schema as rs
+from abc import ABC
 
 from ..utils.utils import Singleton
 

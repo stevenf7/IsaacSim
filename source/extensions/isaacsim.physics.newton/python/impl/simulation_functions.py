@@ -21,7 +21,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import carb
-from pxr import Plug, Tf, Usd
+from pxr import Plug, Usd
 
 if TYPE_CHECKING:
     from .newton_stage import NewtonStage

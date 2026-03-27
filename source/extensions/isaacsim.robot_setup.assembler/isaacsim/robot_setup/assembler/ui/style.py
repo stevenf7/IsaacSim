@@ -16,14 +16,8 @@
 """Defines UI styling constants and functions for the robot setup assembler extension."""
 
 
-import pathlib
-
-import carb.settings
 import omni
 import omni.kit.app
-import omni.ui as ui
-from omni.kit.window.extensions.common import get_icons_path
-from omni.ui import color as cl
 
 EXTENSION_FOLDER_PATH = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
 

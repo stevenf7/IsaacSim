@@ -16,7 +16,6 @@
 """UI builder module for the UR10 trajectory generation tutorial extension."""
 
 
-import numpy as np
 import omni.timeline
 import omni.ui as ui
 from isaacsim.core.api.world import World

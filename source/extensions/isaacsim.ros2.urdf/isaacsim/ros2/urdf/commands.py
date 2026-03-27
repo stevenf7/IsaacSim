@@ -25,7 +25,6 @@ import omni.kit.commands
 from isaacsim.asset.importer.urdf import URDFImporter, URDFImporterConfig
 from isaacsim.ros2.urdf.robot_definition_reader import RobotDefinitionReader
 from omni.client import Result
-from pxr import Usd, UsdUtils
 
 
 class URDFImportFromROS2Node(omni.kit.commands.Command):

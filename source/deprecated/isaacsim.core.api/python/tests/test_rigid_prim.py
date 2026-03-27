@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import numpy as np
-import omni.kit.test
 from isaacsim.core.api import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)

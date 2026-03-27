@@ -24,7 +24,6 @@ import omni.timeline
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim, XformPrim
 from isaacsim.core.experimental.utils.app import get_extension_path
-from isaacsim.core.experimental.utils.prim import get_prim_at_path
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 

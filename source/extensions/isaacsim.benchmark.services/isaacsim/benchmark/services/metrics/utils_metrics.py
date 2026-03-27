@@ -16,44 +16,19 @@
 """Utility helpers for building benchmark metrics payloads."""
 
 import calendar
-import copy
-import hashlib
-import json
 import os
 import pathlib
 import platform
-import subprocess
-import time
 import uuid
-import xml.etree.ElementTree as ET
-from dataclasses import asdict, dataclass
 from datetime import datetime
-from getpass import getuser
-from socket import gethostname
-from typing import Any
 
 import carb
 import omni.kit
-import psutil
 import yaml  # type: ignore[import-untyped]
 
 from .. import utils
 
 logger = utils.set_up_logging(__name__)
-from isaacsim.benchmark.services.metrics.schemas import (
-    GPU,
-    Application,
-    BenchData,
-    Benchmark,
-    BenchmarkIdentifier,
-    CPUConfiguration,
-    ExecutionEnvironment,
-    GPUConfiguration,
-    HardwareConfiguration,
-    MemoryConfiguration,
-    Metric,
-    OSConfiguration,
-)
 
 from .. import utils
 

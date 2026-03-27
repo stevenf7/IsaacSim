@@ -16,7 +16,6 @@
 """Module for setting up USD attributes and parameters for holonomic robots with mecanum wheels."""
 
 
-import carb
 import numpy as np
 import omni
 from isaacsim.core.utils.prims import get_prim_at_path

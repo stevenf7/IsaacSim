@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 
 import carb
 import numpy as np
 import omni.kit.test
-from isaacsim.core.api import SimulationContext, World
+from isaacsim.core.api import World
 from isaacsim.core.api.robots import Robot
-from isaacsim.core.utils.stage import add_reference_to_stage, open_stage_async, update_stage_async
+from isaacsim.core.utils.stage import open_stage_async, update_stage_async
 from isaacsim.core.utils.types import ArticulationAction
 from isaacsim.storage.native import get_assets_root_path_async
 
