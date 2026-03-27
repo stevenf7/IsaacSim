@@ -140,7 +140,6 @@ kit = SimulationApp({"headless": args.headless})
 
 # Now import the rest after SimulationApp is initialized
 import carb
-import omni.kit.app
 from isaacsim.asset.transformer import AssetTransformerManager, RuleProfile
 from isaacsim.core.utils.extensions import enable_extension, get_extension_path_from_name
 

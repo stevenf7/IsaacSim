@@ -22,7 +22,7 @@ from isaacsim.core.api import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.sensors.physx import _range_sensor
-from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
+from pxr import Gf, UsdGeom, UsdPhysics
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

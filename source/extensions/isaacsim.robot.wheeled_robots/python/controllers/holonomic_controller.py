@@ -24,19 +24,16 @@
 """Holonomic controller for mecanum wheel robots that computes joint drive commands to achieve commanded forward, lateral, and yaw speeds."""
 
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import carb
 import numpy as np
-import omni
 
 # Import packages.
 import osqp
 from isaacsim.core.api.controllers.base_controller import BaseController
-from isaacsim.core.utils.math import cross
 from isaacsim.core.utils.rotations import euler_angles_to_quat, quat_to_rot_matrix
 from isaacsim.core.utils.types import ArticulationAction
-from numpy import linalg
 from pxr import Gf
 from scipy import sparse
 

@@ -19,7 +19,6 @@
 import re
 from typing import List, Optional, Union
 
-import carb
 import numpy as np
 import omni.kit.app
 import warp as wp

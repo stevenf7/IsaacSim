@@ -24,8 +24,6 @@ import functools
 import carb.settings
 import omni.kit.app
 import omni.kit.viewport.utility as vpUtil
-import omni.ui as ui
-from omni.ui import color as cl
 from omni.ui import scene as sc
 from pxr import Gf, Sdf
 

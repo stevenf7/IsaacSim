@@ -16,9 +16,8 @@
 """UI widget components for robot setup assembler interface."""
 
 
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable
 
-import omni.kit.actions.core
 import omni.ui as ui
 from isaacsim.gui.components.element_wrappers import CheckBox, DropDown, Frame
 from isaacsim.gui.components.widgets import DynamicComboBoxModel

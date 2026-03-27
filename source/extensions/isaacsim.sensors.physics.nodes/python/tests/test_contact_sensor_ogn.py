@@ -15,10 +15,8 @@
 
 import asyncio
 
-import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-import numpy as np
 import omni.graph.core as og
 import omni.kit.commands
 import omni.kit.test
@@ -27,7 +25,7 @@ import usdrt.Sdf
 from isaacsim.core.experimental.objects import Cube, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.core.simulation_manager import SimulationManager
-from pxr import Gf, PhysxSchema
+from pxr import PhysxSchema
 
 from .common import setup_ant_scene, step_simulation
 

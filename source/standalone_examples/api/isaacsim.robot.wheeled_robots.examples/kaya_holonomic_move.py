@@ -21,7 +21,6 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import isaacsim.core.experimental.utils.app as app_utils
-import numpy as np
 from isaacsim.core.experimental.objects import DomeLight
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.simulation_manager import SimulationManager

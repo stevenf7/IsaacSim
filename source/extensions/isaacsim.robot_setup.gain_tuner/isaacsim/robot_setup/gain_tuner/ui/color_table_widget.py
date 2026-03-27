@@ -17,14 +17,11 @@
 
 
 import colorsys
-from enum import Enum
-from functools import partial
 
 import omni.ui as ui
 
 from .base_table_widget import ITEM_HEIGHT, TableItem, TableItemDelegate, TableModel, TableWidget
 from .cell_widget import CellColor
-from .style import get_style
 
 
 def generate_distinct_colors(n: int) -> list[list[int]]:

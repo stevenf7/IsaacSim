@@ -24,7 +24,6 @@ import sys
 import time
 import xml.etree.ElementTree as ET
 from collections import defaultdict
-from datetime import datetime
 
 # Default arguments that are always passed to test scripts
 DEFAULT_SCRIPT_ARGS = ["--no-window"]

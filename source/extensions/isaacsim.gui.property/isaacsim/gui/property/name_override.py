@@ -15,24 +15,12 @@
 
 """Property widget for the Isaac Name Override attribute on prims."""
 
-import asyncio
 
-import carb
 import omni
 import omni.ui as ui
 from omni.kit.property.usd.prim_selection_payload import PrimSelectionPayload
-from omni.kit.property.usd.usd_attribute_model import UsdAttributeModel
-from omni.kit.property.usd.usd_property_widget import UsdPropertiesWidget, UsdPropertyUiEntry
-from omni.kit.property.usd.usd_property_widget_builder import UsdPropertiesWidgetBuilder
-from omni.kit.property.usd.widgets import ICON_PATH
-from omni.kit.window.property.templates import (
-    HORIZONTAL_SPACING,
-    LABEL_HEIGHT,
-    LABEL_WIDTH,
-    SimplePropertyWidget,
-    build_frame_header,
-)
-from pxr import Gf, Sdf, Tf, Usd
+from omni.kit.property.usd.usd_property_widget import UsdPropertiesWidget
+from pxr import Sdf, Usd
 from usd.schema.isaac import robot_schema
 
 _ROBOT_SCHEMA_CLASSES = (

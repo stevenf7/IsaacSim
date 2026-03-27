@@ -16,7 +16,7 @@
 """Provides a view class for managing deformable material prims and their physical properties."""
 
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 # omniverse
 import carb

@@ -17,10 +17,8 @@
 
 from __future__ import annotations
 
-from ctypes import alignment
-from enum import Enum, IntEnum, auto
+from enum import Enum, IntEnum
 from functools import partial
-from re import I
 
 import numpy as np
 import omni.ui as ui
@@ -28,7 +26,6 @@ import pxr
 
 from .base_table_widget import TableWidget
 from .resetable_widget import ResetableLabelField
-from .style import get_style
 
 ITEM_HEIGHT = 28
 DEG_TO_RAD = np.pi / 180.0

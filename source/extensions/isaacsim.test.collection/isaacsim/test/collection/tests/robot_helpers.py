@@ -19,7 +19,6 @@ import omni.graph.core as og
 import omni.kit.app
 import usdrt.Sdf
 from isaacsim.core.experimental.prims import Articulation
-from isaacsim.core.experimental.utils.stage import open_stage_async
 
 
 async def init_robot_sim(art_path: str, graph_path: str = "/ActionGraph"):

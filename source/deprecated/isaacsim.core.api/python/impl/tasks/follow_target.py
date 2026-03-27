@@ -21,7 +21,7 @@ from collections import OrderedDict
 from typing import Optional
 
 import numpy as np
-from isaacsim.core.api.objects import DynamicCuboid, VisualCuboid
+from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.api.scenes.scene import Scene
 from isaacsim.core.api.tasks import BaseTask
 from isaacsim.core.prims import SingleXFormPrim

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import carb
 import omni.graph.core as og
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -25,8 +24,9 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 from isaacsim.core.utils.physics import simulate_async
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 
-from .common import ROS2TestCase, get_qos_profile
+from .common import get_qos_profile
 
 
 class TestRos2NodeCommands(ROS2TestCase):

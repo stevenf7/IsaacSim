@@ -14,11 +14,9 @@
 # limitations under the License.
 
 import asyncio
-import sys
 
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-import numpy as np
 import omni.graph.core as og
 import omni.kit.commands
 import omni.kit.test

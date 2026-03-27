@@ -16,7 +16,7 @@
 """Provides a view class for managing particle material prims and their physics properties in bulk operations."""
 
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 # omniverse
 import carb

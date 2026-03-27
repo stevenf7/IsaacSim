@@ -15,11 +15,8 @@
 
 import pathlib
 
-import carb.settings
 import omni
 import omni.kit.app
-import omni.ui as ui
-from omni.kit.window.extensions.common import get_icons_path
 from omni.ui import color as cl
 
 EXTENSION_FOLDER_PATH = pathlib.Path(

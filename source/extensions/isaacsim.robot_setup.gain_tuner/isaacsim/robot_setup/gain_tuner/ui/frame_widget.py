@@ -16,14 +16,11 @@
 """UI components for the gain tuner frame widget interface."""
 
 
-from functools import partial
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable
 
-import numpy as np
 import omni.ui as ui
 from isaacsim.gui.components.element_wrappers import CollapsableFrame
 from isaacsim.gui.components.ui_utils import get_style, on_copy_to_clipboard
-from isaacsim.gui.components.widgets import DynamicComboBoxModel
 
 from .style import get_style as get_custom_style
 

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
 from copy import deepcopy
 
 import carb
@@ -25,10 +24,10 @@ import usdrt.Sdf
 from isaacsim.core.api import SimulationContext
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.physics import simulate_async
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Gf
 
 from .common import (
-    ROS2TestCase,
     add_carter,
     add_carter_ros,
     add_nova_carter_ros,
@@ -52,7 +51,6 @@ class TestRos2DifferentialBase(ROS2TestCase):
         self._odom_data = None
 
         # Create ROS2 node for this test
-        import rclpy
 
         self.node = self.create_node("isaac_sim_test_diff_drive")
 

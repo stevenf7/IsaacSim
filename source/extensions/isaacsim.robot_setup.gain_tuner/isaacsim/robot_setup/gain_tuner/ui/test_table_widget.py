@@ -16,11 +16,9 @@
 """Provides UI widgets for configuring joint test parameters in the gains tuner interface."""
 
 
-from enum import Enum, IntEnum
+from enum import IntEnum
 from functools import partial
-from math import inf
 
-import carb
 import numpy as np
 import omni.ui as ui
 import pxr
@@ -30,7 +28,6 @@ from ..gains_tuner import GainsTestMode
 from .base_table_widget import ITEM_HEIGHT, TableItem, TableItemDelegate, TableModel, TableWidget
 from .cell_widget import CellLabelField
 from .joint_table_widget import is_joint_mimic
-from .style import get_style
 
 
 class ColumnIndex(IntEnum):

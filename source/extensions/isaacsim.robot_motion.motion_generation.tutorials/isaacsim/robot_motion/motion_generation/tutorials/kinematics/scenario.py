@@ -28,7 +28,6 @@ from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.robot_motion.motion_generation import (
     ArticulationKinematicsSolver,
     LulaKinematicsSolver,
-    interface_config_loader,
 )
 from isaacsim.storage.native import get_assets_root_path
 

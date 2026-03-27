@@ -20,16 +20,14 @@
 from typing import Optional
 
 import carb
-import isaacsim.core.utils.prims as prim_utils
 
 # isaac-core
 import isaacsim.core.utils.stage as stage_utils
 
 # omniverse
-import omni
 from isaacsim.core.api.materials.particle_material_view import ParticleMaterialView
 from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
-from pxr import PhysxSchema, Usd, UsdShade
+from pxr import Usd, UsdShade
 
 
 class ParticleMaterial:
@@ -91,7 +89,7 @@ class ParticleMaterial:
             self._device = SimulationContext.instance().device
             self._backend_utils = SimulationContext.instance().backend_utils
         else:
-            import isaacsim.core.utils.numpy as np_utils
+            import isaacsim.core.utils.numpy as np_utils  # noqa: F401
 
         if stage.GetPrimAtPath(prim_path).IsValid():
             if not self._prim.IsA(UsdShade.Material):

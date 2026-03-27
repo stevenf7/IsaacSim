@@ -18,7 +18,6 @@ import asyncio
 import numpy as np
 import omni.kit.test
 import omni.timeline
-import omni.ui as ui
 import omni.usd
 from isaacsim.core.experimental.utils.stage import create_new_stage_async
 from isaacsim.robot.manipulators.examples.franka.franka_experimental import FrankaExperimental

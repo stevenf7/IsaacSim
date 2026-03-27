@@ -18,7 +18,6 @@
 
 import asyncio
 import gc
-import weakref
 
 import carb.eventdispatcher
 import omni
@@ -28,11 +27,10 @@ import omni.timeline
 import omni.ui as ui
 import omni.usd
 from isaacsim.gui.components.element_wrappers import ScrollingWindow
-from isaacsim.gui.components.menu import MenuItemDescription, make_menu_item_description
+from isaacsim.gui.components.menu import MenuItemDescription
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
-from omni.usd import StageEventType
 
-from .global_variables import EXTENSION_DESCRIPTION, EXTENSION_TITLE
+from .global_variables import EXTENSION_TITLE
 from .ui.ui_builder import UIBuilder
 
 """

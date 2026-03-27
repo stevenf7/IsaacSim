@@ -32,7 +32,7 @@ import omni.kit.notification_manager as nm
 import omni.kit.usd.layers as layers
 import omni.ui as ui
 import omni.usd
-from omni.kit.menu.utils import LayoutSourceSearch, MenuItemDescription, MenuLayout
+from omni.kit.menu.utils import MenuItemDescription, MenuLayout
 from pxr import Kind, Sdf, Tf, Usd
 
 from .edit_actions import deregister_actions, register_actions

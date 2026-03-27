@@ -33,10 +33,8 @@ from isaacsim.cortex.framework.df import (
     DfDecider,
     DfDecision,
     DfLogicalState,
-    DfNetwork,
     DfState,
     DfStateMachineDecider,
-    DfStateSequence,
 )
 from isaacsim.cortex.framework.motion_commander import ApproachParams, MotionCommand, PosePq
 from isaacsim.cortex.framework.robot import CortexRobot

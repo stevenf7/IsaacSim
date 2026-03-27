@@ -16,13 +16,7 @@
 """Base class for Cortex-based interactive examples with CortexWorld integration."""
 
 
-import gc
-from abc import abstractmethod
-
-from isaacsim.core.api import World
-from isaacsim.core.api.scenes.scene import Scene
-from isaacsim.core.api.tasks.base_task import BaseTask
-from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
+from isaacsim.core.utils.stage import create_new_stage_async
 from isaacsim.cortex.framework.cortex_world import CortexWorld
 from isaacsim.examples.interactive import base_sample
 

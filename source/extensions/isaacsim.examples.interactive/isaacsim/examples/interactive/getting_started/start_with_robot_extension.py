@@ -19,7 +19,6 @@
 import os
 
 import carb.eventdispatcher
-import numpy as np
 import omni.ext
 import omni.timeline
 import omni.ui as ui
@@ -230,7 +229,7 @@ class GettingStartedRobotUI(BaseSampleUITemplate):
     def _add_vehicle(self):
         """Adds a Nova Carter mobile robot to the scene and creates an articulation handle for it."""
         import carb
-        from isaacsim.core.experimental.prims import Articulation, XformPrim
+        from isaacsim.core.experimental.prims import Articulation
         from isaacsim.core.experimental.utils import stage as stage_utils
         from isaacsim.storage.native import get_assets_root_path
 

@@ -29,7 +29,6 @@ import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.commands
 import omni.kit.test
 from isaacsim.asset.importer.urdf import URDFImporterConfig
-from pxr import UsdPhysics
 
 
 class TestURDFCommands(omni.kit.test.AsyncTestCase):

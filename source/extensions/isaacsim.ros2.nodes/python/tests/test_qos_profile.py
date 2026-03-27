@@ -17,8 +17,7 @@ import json
 
 import omni.graph.core as og
 import omni.kit.test
-
-from .common import ROS2TestCase
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 
 NODE_TYPE = "isaacsim.ros2.bridge.ROS2QoSProfile"
 

@@ -22,7 +22,6 @@ import carb.eventdispatcher
 import carb.input
 import carb.settings
 import omni.timeline
-import omni.ui as ui
 from omni.ui import scene as sc
 
 from .manipulator import IconManipulator, PreventOthers

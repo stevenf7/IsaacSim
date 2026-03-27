@@ -17,8 +17,6 @@
 
 from __future__ import annotations
 
-import re
-import weakref
 from typing import List, Optional, Tuple, Union
 
 import carb

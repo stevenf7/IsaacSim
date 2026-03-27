@@ -20,14 +20,13 @@ import os
 from collections import namedtuple
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 
 import omni.client
 import omni.kit.app
 import omni.ui as ui
 from omni.kit.async_engine import run_coroutine
 from omni.kit.helper.file_utils import asset_types
-from omni.kit.widget.filebrowser import FileBrowserItem
 from omni.kit.window.filepicker import DetailFrameController
 from pxr import Usd
 

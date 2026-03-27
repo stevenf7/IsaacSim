@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import unittest
 
 import carb.settings
 import omni.kit
 import omni.usd
-from isaacsim.test.utils.file_validation import get_folder_file_summary, validate_folder_contents
+from isaacsim.test.utils.file_validation import validate_folder_contents
 
 
 class TestAmrNavigation(omni.kit.test.AsyncTestCase):

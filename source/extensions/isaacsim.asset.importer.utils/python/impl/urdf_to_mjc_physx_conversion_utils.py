@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import logging
 
-import usd.schema.newton
 from pxr import PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
 from .importer_utils import create_physx_mimic_joint

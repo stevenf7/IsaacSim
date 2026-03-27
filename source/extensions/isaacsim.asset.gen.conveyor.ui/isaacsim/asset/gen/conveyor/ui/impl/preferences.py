@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import asyncio
-import os
 from pathlib import Path
 from typing import Callable
 
@@ -22,7 +21,7 @@ import carb
 import omni
 import omni.ui as ui
 from isaacsim.storage.native import nucleus
-from omni.kit.window.preferences import PERSISTENT_SETTINGS_PREFIX, PreferenceBuilder, SettingType
+from omni.kit.window.preferences import PreferenceBuilder
 
 SETTINGS_PATH = "/persistent/exts/isaacsim.asset.gen.conveyor.ui.settings"
 

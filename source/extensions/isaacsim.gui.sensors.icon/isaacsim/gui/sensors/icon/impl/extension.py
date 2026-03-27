@@ -18,7 +18,6 @@
 
 from pathlib import Path
 
-import carb.settings
 import omni.ext
 import omni.kit.widget.stage
 from omni.kit.viewport.menubar.core import CategoryStateItem

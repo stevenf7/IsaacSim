@@ -17,7 +17,6 @@
 
 
 import carb
-import omni.kit.commands
 from omni.kit.widget.stage import ContextMenu
 from omni.kit.widget.stage.stage_delegate import StageDelegate
 

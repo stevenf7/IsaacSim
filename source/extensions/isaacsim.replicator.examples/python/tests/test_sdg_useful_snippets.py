@@ -35,7 +35,6 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set("rtx/post/dlss/execMode", self.original_dlss_exec_mode)
 
     async def test_sdg_snippet_multi_camera(self):
-        import asyncio
         import os
 
         import carb.settings
@@ -170,8 +169,6 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         )
 
     async def test_sdg_snippet_simulation_get_data(self):
-        import asyncio
-        import json
         import os
 
         import carb.settings
@@ -284,7 +281,6 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         self.assertTrue(folder_contents_success_writer, f"Output directory contents validation failed for {writer_dir}")
 
     async def test_sdg_snippet_custom_event_and_write(self):
-        import asyncio
         import os
 
         import carb.settings
@@ -363,7 +359,6 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
     async def test_sdg_snippet_motion_blur_short(self):
-        import asyncio
         import os
 
         import carb.settings

@@ -25,7 +25,7 @@ from isaacsim.cortex.framework.cortex_world import CortexWorld
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.examples.interactive.base_sample import BaseSampleUITemplate
 from isaacsim.examples.interactive.ur10_palletizing.ur10_palletizing import BinStacking
-from isaacsim.gui.components.ui_utils import btn_builder, cb_builder, get_style, str_builder
+from isaacsim.gui.components.ui_utils import btn_builder, cb_builder, str_builder
 
 
 class BinStackingExtension(omni.ext.IExt):

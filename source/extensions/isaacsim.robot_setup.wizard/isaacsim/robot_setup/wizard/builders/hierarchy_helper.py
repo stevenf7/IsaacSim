@@ -29,7 +29,7 @@ import os
 import shutil
 
 import omni.usd
-from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 from ..utils.utils import can_create_dir
 from .collider_helper import remove_collider

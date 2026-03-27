@@ -27,7 +27,6 @@ import numpy as np
 import usdrt
 import usdrt.Gf
 import warp as wp
-from isaacsim.core.simulation_manager import SimulationManager
 from pxr import Gf, Usd, UsdGeom, UsdShade
 
 from . import _fabric, _transform

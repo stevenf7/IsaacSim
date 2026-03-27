@@ -15,7 +15,6 @@
 
 import asyncio
 
-import carb
 import omni.graph.core as og
 import omni.graph.core.tests as ogts
 import omni.kit.test

@@ -17,7 +17,6 @@ import time
 
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
-import omni
 from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.math import normalized
 from isaacsim.cortex.framework.cortex_world import CortexWorld

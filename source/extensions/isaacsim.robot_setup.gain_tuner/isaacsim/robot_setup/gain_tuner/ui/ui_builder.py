@@ -16,8 +16,6 @@
 """Main UI builder class for the Gain Tuner extension interface that manages robot selection, gain parameter adjustment, testing functionality, and results visualization."""
 
 
-import math
-import traceback
 from functools import partial
 
 import carb
@@ -26,23 +24,15 @@ import omni.timeline
 import omni.ui as ui
 import pxr
 from isaacsim.gui.components.element_wrappers import (
-    Button,
-    CheckBox,
     CollapsableFrame,
-    DropDown,
-    FloatField,
     StateButton,
-    TextBlock,
-    XYPlot,
 )
 from omni.kit.window.file import StageSaveDialog
 from omni.physics.tensors import DofType
-from omni.usd import StageEventType
-from pxr import Sdf, Usd
+from pxr import Usd
 from usd.schema.isaac.robot_schema import Classes
 
 from ..gains_tuner import GainsTestMode, GainTuner
-from ..global_variables import EXTENSION_TITLE
 from .color_table_widget import ColorJointWidget
 from .dropdown_widget import create_combo_list_model
 from .frame_widget import CustomCollapsableFrame as CollapsableFrame

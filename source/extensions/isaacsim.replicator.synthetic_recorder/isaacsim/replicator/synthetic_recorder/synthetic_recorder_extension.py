@@ -16,10 +16,7 @@
 """Extension for recording synthetic data in Isaac Sim through the Replicator framework."""
 
 
-import asyncio
-
 import omni.ext
-import omni.ui as ui
 from omni.kit.menu.utils import MenuHelperExtensionFull
 
 from .synthetic_recorder_window import SyntheticRecorderWindow

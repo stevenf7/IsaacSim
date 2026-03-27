@@ -15,7 +15,6 @@
 
 """Property widgets for Isaac Robot Schema APIs (Robot, Link, Joint, Site)."""
 
-import carb
 import omni
 import omni.ui as ui
 from omni.kit.property.usd.prim_selection_payload import PrimSelectionPayload

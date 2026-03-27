@@ -23,8 +23,6 @@ scaling that would cause issues with world-space operations.
 
 import isaacsim.core.experimental.utils.prim as prim_utils
 import numpy as np
-from isaacsim.core.experimental.prims import XformPrim
-from pxr import UsdGeom
 
 
 def _prim_scaling_is_valid(prim) -> bool:

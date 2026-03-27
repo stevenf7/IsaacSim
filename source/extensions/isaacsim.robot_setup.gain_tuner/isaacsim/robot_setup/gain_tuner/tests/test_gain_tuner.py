@@ -17,13 +17,11 @@
 
 import asyncio
 import math
-from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional, Tuple
 
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-import numpy as np
 import omni.kit.test
 import omni.usd
 import usd.schema.isaac.robot_schema as robot_schema

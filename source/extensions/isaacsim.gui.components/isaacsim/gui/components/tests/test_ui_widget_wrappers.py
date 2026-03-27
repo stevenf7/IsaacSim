@@ -14,7 +14,6 @@
 # limitations under the License.
 
 # This import is included for visualization of UI elements as demonstrated in testXYPlotWrapper
-import asyncio
 
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np

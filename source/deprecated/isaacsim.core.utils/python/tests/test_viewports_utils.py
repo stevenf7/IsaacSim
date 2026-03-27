@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import carb
 import numpy as np
 import omni.kit.test
 from isaacsim.core.utils.viewports import (
@@ -29,7 +28,6 @@ from omni.kit.viewport.utility import (
     create_viewport_window,
     get_active_viewport,
     get_active_viewport_window,
-    get_num_viewports,
 )
 from pxr import Sdf
 

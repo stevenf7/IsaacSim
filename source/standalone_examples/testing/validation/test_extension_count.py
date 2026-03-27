@@ -17,7 +17,7 @@
 
 import argparse
 import sys
-from typing import Dict, List, Tuple
+from typing import Dict
 
 # Initialize simulation app first
 from isaacsim import SimulationApp

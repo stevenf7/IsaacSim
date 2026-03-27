@@ -19,9 +19,10 @@ import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
 from isaacsim.core.utils.stage import open_stage_async
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import UsdGeom
 
-from .common import ROS2TestCase, add_cube, add_franka
+from .common import add_cube, add_franka
 
 
 class TestPrimValidation(ROS2TestCase):

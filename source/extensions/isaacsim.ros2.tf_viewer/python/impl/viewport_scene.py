@@ -17,7 +17,6 @@
 
 
 import omni.ui as ui
-from omni.ui import color as cl
 from omni.ui import scene as sc
 
 from .view_manipulator import ViewManipulator

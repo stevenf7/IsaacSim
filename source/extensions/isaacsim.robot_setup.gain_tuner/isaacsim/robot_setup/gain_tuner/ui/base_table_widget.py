@@ -21,8 +21,6 @@ from functools import partial
 
 import omni.ui as ui
 
-from .cell_widget import CellLabelField
-
 ITEM_HEIGHT = 28
 
 

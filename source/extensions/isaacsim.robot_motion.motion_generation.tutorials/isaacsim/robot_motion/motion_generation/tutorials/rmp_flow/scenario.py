@@ -16,13 +16,10 @@
 """Tutorial example module demonstrating RMPflow motion generation with a Franka Panda robot for collision-aware end-effector target tracking."""
 
 
-import os
-
 import numpy as np
 from isaacsim.core.api.objects.cuboid import FixedCuboid
 from isaacsim.core.prims import SingleArticulation as Articulation
 from isaacsim.core.prims import SingleXFormPrim as XFormPrim
-from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.core.utils.numpy.rotations import euler_angles_to_quats
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.robot_motion.motion_generation import ArticulationMotionPolicy, RmpFlow

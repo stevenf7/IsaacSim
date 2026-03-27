@@ -17,7 +17,6 @@
 
 
 import gc
-import weakref
 from functools import partial
 from pathlib import Path
 

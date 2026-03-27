@@ -17,15 +17,12 @@
 
 
 import asyncio
-import os
-import tempfile
 from pathlib import Path
 
 import omni.kit.test
-from isaacsim.core.utils.stage import create_new_stage_async, save_stage, update_stage_async
+from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.rtx import SUPPORTED_LIDAR_CONFIGS
 from isaacsim.sensors.rtx.sensor_checker import ModelInfo, SensorCheckerUtil
-from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf
 
 from .common import create_sarcophagus

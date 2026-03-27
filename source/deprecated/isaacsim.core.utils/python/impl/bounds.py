@@ -15,9 +15,6 @@
 
 import typing
 
-# python
-from typing import List, Tuple
-
 # omniverse
 import carb
 import numpy as np

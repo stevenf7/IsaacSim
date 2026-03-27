@@ -19,7 +19,6 @@
 
 import os
 import typing
-from typing import Tuple
 
 import carb.settings
 import carb.tokens

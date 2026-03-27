@@ -27,11 +27,6 @@ from typing import Callable, Optional
 import carb
 import carb.eventdispatcher
 
-# isaac-core
-import isaacsim.core.utils.numpy as np_utils
-import isaacsim.core.utils.torch as torch_utils
-import isaacsim.core.utils.warp as warp_utils
-
 # omniverse
 import omni.kit.app
 import omni.physics.tensors
@@ -46,10 +41,11 @@ from isaacsim.core.utils.stage import (
     get_current_stage,
     set_stage_units,
     set_stage_up_axis,
-    update_stage_async,
     use_stage,
 )
 from pxr import Usd
+
+# isaac-core
 
 
 class SimulationContext:

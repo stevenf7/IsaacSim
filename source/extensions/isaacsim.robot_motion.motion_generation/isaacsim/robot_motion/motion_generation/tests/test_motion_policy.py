@@ -20,7 +20,6 @@ import asyncio
 import json
 import os
 
-import carb
 import isaacsim.core.api.objects as objects
 import isaacsim.robot_motion.motion_generation.interface_config_loader as interface_config_loader
 import numpy as np

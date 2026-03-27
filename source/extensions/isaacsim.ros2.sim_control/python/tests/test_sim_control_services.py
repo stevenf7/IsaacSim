@@ -378,7 +378,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         and verifies the GetEntities service returns the expected entities.
         """
         # fmt: off
-        from simulation_interfaces.msg import Result
 
         # fmt: on
         from simulation_interfaces.srv import GetEntities

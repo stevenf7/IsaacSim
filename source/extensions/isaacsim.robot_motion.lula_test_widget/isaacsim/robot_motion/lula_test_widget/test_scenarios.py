@@ -16,7 +16,6 @@
 """Test scenarios for Lula motion planning and control algorithms."""
 
 
-import carb
 import numpy as np
 from isaacsim.core.api.objects.cone import VisualCone
 from isaacsim.core.api.objects.cuboid import VisualCuboid

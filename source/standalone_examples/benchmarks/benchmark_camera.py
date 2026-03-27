@@ -51,7 +51,6 @@ simulation_app = SimulationApp(
 import carb
 import omni
 import omni.replicator.core as rep
-from isaacsim.core.experimental.utils.stage import is_stage_loading
 from isaacsim.core.utils.extensions import enable_extension
 
 enable_extension("isaacsim.benchmark.services")

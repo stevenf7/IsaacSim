@@ -15,7 +15,6 @@
 
 import math
 
-import numpy as np
 import omni.kit.test
 import torch
 from isaacsim.core.utils.torch.transformations import get_world_from_local_position

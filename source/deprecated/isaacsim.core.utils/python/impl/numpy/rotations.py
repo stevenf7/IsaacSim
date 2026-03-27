@@ -17,7 +17,6 @@
 
 
 import typing
-from typing import Union
 
 import numpy as np
 from pxr import Gf

@@ -15,10 +15,8 @@
 
 import typing
 from copy import copy
-from typing import List
 
 from isaacsim.core.utils.stage import get_current_stage
-from omni.usd import get_context
 from pxr import PhysxSchema, Usd, UsdPhysics
 
 

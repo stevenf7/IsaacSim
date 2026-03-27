@@ -18,7 +18,6 @@
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 
 import asyncio
-from typing import List
 
 import carb.tokens
 import isaacsim.core.experimental.utils.prim as prim_utils

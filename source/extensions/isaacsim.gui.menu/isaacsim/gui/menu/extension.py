@@ -19,7 +19,6 @@ import gc
 
 import omni.ext
 import omni.kit.commands
-from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
 from .create_menu import CreateMenuExtension
 from .edit_menu.edit_menu import EditMenuExtension

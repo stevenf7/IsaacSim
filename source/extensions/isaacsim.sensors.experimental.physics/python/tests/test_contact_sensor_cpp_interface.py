@@ -29,7 +29,7 @@ from isaacsim.core.experimental.objects import Cube, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.sensors.experimental.physics.impl.extension import get_contact_sensor_interface
-from pxr import Gf, PhysxSchema
+from pxr import PhysxSchema
 
 from .common import step_simulation
 

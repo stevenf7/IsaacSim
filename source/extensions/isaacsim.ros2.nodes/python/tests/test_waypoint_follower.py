@@ -25,9 +25,8 @@ import omni.usd
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.prims import delete_prim, get_prim_at_path
 from isaacsim.core.utils.stage import create_new_stage_async, get_next_free_path
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Gf, UsdGeom
-
-from .common import ROS2TestCase
 
 WAYPOINT_SCRIPT = """
 import rclpy
@@ -753,7 +752,6 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
     async def test_waypoint_mode_action_graph(self):
         import threading
 
-        import rclpy
         from std_msgs.msg import String
 
         # Test to verify waypoint mode action graph
@@ -804,7 +802,6 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
     async def test_patrolling_mode_action_graph(self):
         import threading
 
-        import rclpy
         from std_msgs.msg import String
 
         # Test to verify patrolling mode action graph

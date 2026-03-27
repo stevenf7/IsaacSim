@@ -16,7 +16,6 @@
 """Extension that provides ROS 2 shortcuts menu for creating ROS 2-related assets in the stage."""
 
 
-import weakref
 from functools import partial
 
 import carb

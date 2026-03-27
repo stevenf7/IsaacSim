@@ -25,7 +25,6 @@ from isaacsim.asset.gen.conveyor.bindings._isaacsim_asset_gen_conveyor import ac
 from isaacsim.asset.gen.conveyor.bindings._isaacsim_asset_gen_conveyor import release_interface as _release
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.kit.window.preferences import register_page, unregister_page
-from pxr import Gf, Sdf, UsdGeom
 
 from .conveyor_builder_widget import ConveyorBuilderWidget
 from .preferences import ConveyorBuilderPreferences

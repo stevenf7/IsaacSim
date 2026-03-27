@@ -15,8 +15,6 @@
 
 """Stage helpers for asset importer utilities."""
 
-import os
-import threading
 
 from pxr import Usd, UsdUtils
 

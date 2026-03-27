@@ -17,12 +17,9 @@
 
 
 from collections import namedtuple
-from typing import Callable, List, Optional
 
-import carb
 import omni
 import omni.ui as ui
-from isaacsim.gui.components.ui_utils import BUTTON_WIDTH, LABEL_WIDTH, get_style
 from omni.kit.property.usd.relationship import RelationshipTargetPicker
 from omni.kit.window.popup_dialog.dialog import get_field_value
 

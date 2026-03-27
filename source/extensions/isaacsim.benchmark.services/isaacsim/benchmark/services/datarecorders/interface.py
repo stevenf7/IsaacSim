@@ -18,7 +18,6 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from ..metrics.measurements import Measurement, MetadataBase
 

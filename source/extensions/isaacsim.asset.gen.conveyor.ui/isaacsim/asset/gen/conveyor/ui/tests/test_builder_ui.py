@@ -16,13 +16,11 @@
 import asyncio
 
 import carb
-import numpy as np
 import omni.kit.test
 
 # from omni.kit.test_suite.helpers import StageEventHandler
 import omni.kit.ui_test as ui_test
 import omni.timeline
-import omni.ui as ui
 
 
 class TestConveyorBuilderUI(omni.kit.test.AsyncTestCase):

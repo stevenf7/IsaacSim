@@ -21,10 +21,11 @@ import omni.kit.viewport.utility
 import usdrt.Sdf
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import open_stage_async
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Gf, Sdf
 from sensor_msgs_py.point_cloud2 import read_points
 
-from .common import ROS2TestCase, add_carter, add_carter_ros, add_cube, get_qos_profile
+from .common import add_carter, add_carter_ros, add_cube, get_qos_profile
 
 
 class TestRos2PointCloud(ROS2TestCase):

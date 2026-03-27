@@ -24,7 +24,7 @@ import omni.kit.app
 import warp as wp
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.utils.prims import find_matching_prim_paths, get_prim_at_path
-from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
+from pxr import PhysxSchema, UsdGeom, UsdPhysics
 
 from .geometry_prim import GeometryPrim
 

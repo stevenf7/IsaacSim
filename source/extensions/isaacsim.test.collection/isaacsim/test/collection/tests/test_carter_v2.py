@@ -30,12 +30,12 @@ import omni.kit.test
 import omni.timeline
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.experimental.utils.app import get_extension_path
+from isaacsim.core.experimental.utils.stage import open_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, PhysicsSchemaTools
 
 from .robot_helpers import (
     init_robot_sim,
-    open_stage_async,
     setup_robot_og,
 )
 

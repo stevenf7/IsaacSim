@@ -16,7 +16,7 @@
 import carb.settings
 import omni.kit.test
 import omni.usd
-from isaacsim.test.utils.file_validation import get_folder_file_summary, validate_folder_contents
+from isaacsim.test.utils.file_validation import validate_folder_contents
 from isaacsim.test.utils.image_comparison import compare_images_in_directories
 
 
@@ -43,7 +43,6 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set("rtx/post/dlss/execMode", self.original_dlss_exec_mode)
 
     async def test_behavior_sdg_pipeline_warehouse(self):
-        import asyncio
         import inspect
         import os
 

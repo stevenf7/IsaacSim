@@ -18,7 +18,6 @@
 
 from typing import List, Union
 
-import carb
 import lula
 import numpy as np
 from isaacsim.core.api import objects

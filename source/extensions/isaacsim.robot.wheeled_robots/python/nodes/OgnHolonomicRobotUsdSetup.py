@@ -13,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from re import I
 
 import numpy as np
-import omni.graph.core as og
 from isaacsim.robot.wheeled_robots.ogn.OgnHolonomicRobotUsdSetupDatabase import OgnHolonomicRobotUsdSetupDatabase
 from isaacsim.robot.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
 

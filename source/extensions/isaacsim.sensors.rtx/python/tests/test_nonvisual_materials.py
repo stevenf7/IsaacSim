@@ -32,7 +32,7 @@ from isaacsim.sensors.rtx import (
     decode_material_id,
     get_material_id,
 )
-from pxr import Sdf, Usd, UsdGeom, UsdShade
+from pxr import Sdf, UsdGeom, UsdShade
 
 
 class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):

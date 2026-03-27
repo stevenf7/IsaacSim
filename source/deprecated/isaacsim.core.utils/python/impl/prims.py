@@ -13,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
 
 # python
 import typing
-from typing import Any, Callable, List, Optional, Sequence, Union
 
 import numpy as np
 import omni.kit
@@ -28,12 +26,11 @@ import usdrt
 from isaacsim.core.utils.bindings._isaac_utils import _find_matching_prim_paths
 from isaacsim.core.utils.semantics import add_labels
 from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage, get_current_stage_id
-from isaacsim.core.utils.string import find_root_prim_path_from_regex
 from isaacsim.core.utils.types import SDF_type_to_Gf
 from omni.usd.commands import DeletePrimsCommand, MovePrimCommand
 
 # omniverse
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics  # noqa: F401 -- Gf is used inside eval() in set_prim_attribute_value
 
 
 def get_prim_at_path(prim_path: str, fabric: bool = False) -> typing.Union[Usd.Prim, usdrt.Usd._Usd.Prim]:

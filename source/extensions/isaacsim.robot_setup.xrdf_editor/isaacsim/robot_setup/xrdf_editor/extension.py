@@ -35,7 +35,7 @@ import omni.timeline
 import omni.ui as ui
 import omni.usd
 import yaml
-from isaacsim.core.prims import Articulation, SingleArticulation, SingleXFormPrim
+from isaacsim.core.prims import Articulation, SingleArticulation
 from isaacsim.core.utils.articulations import find_all_articulation_base_paths
 from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices
 from isaacsim.core.utils.prims import get_prim_at_path, get_prim_object_type

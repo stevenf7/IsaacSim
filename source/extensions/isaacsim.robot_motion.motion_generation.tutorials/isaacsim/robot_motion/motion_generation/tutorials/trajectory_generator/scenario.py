@@ -21,7 +21,6 @@ import os
 import carb
 import lula
 import numpy as np
-from isaacsim.core.api.objects.cuboid import FixedCuboid
 from isaacsim.core.prims import SingleArticulation, SingleXFormPrim
 from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.core.utils.numpy.rotations import rot_matrices_to_quats

@@ -17,8 +17,6 @@ import numpy as np
 import usdrt
 from isaacsim.core.utils.prims import (
     get_prim_at_path,
-    get_prim_attribute_names,
-    get_prim_attribute_value,
     get_prim_parent,
     get_prim_path,
     is_prim_path_valid,

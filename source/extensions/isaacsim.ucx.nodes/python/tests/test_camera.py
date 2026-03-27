@@ -29,7 +29,6 @@ import usdrt.Sdf
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.ucx.nodes.tests.common import UCXTestCase, find_available_port, unpack_image_message
-from pxr import Sdf
 from ucxx._lib.arr import Array
 
 

@@ -19,7 +19,6 @@ import carb.tokens
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni
-import omni.isaac.IsaacSensorSchema as sensorSchema
 import omni.kit.commands
 
 # NOTE:
@@ -33,9 +32,9 @@ from isaacsim.core.experimental.utils.stage import add_reference_to_stage
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.sensors.physics import ContactSensor, _sensor
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
-from .common import AntConfig, reset_timeline, setup_ant_scene, step_simulation
+from .common import reset_timeline, setup_ant_scene, step_simulation
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 

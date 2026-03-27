@@ -17,7 +17,6 @@ import carb
 import omni.graph.core as og
 import omni.kit.test
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Sdf
 
 

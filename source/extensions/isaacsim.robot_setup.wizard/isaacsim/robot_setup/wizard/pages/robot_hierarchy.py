@@ -17,7 +17,6 @@
 
 
 import asyncio
-import os
 import weakref
 
 import carb

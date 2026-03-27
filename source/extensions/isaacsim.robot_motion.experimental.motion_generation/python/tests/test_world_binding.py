@@ -20,7 +20,6 @@
 
 import numpy as np
 import omni.kit.test
-import warp as wp
 from isaacsim.core.experimental.objects import (
     Capsule,
     Cone,

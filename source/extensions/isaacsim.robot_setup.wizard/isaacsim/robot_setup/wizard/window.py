@@ -22,7 +22,6 @@ import carb
 import omni.kit.actions
 import omni.kit.app
 import omni.ui as ui
-from omni.ui import color as cl
 
 from .builders.robot_templates import RobotRegistry
 from .pages.add_colliders import AddColliders
@@ -34,7 +33,6 @@ from .pages.save_robot import SaveRobot
 from .progress import ProgressColorState, ProgressRegistry
 from .splitter import Splitter
 from .style import *
-from .utils.ui_utils import create_combo_list_model
 
 
 class RobotWizardWindow:

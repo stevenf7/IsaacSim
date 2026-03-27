@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import carb
 import omni.graph.core as og
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -28,9 +27,10 @@ import usdrt.Sdf
 from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import open_stage_async
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from numpy import pi as PI
 
-from .common import ROS2TestCase, get_qos_profile, set_joint_drive_parameters
+from .common import get_qos_profile, set_joint_drive_parameters
 
 
 class TestRos2JointStatePublisher(ROS2TestCase):
@@ -337,7 +337,6 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         """
         test if the joint state subscriber node is able to receive the joint state commands
         """
-        import rclpy
         from sensor_msgs.msg import JointState
 
         ros2_publisher = None
@@ -379,7 +378,6 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         """
         test if the joint state subscriber is able to move the robot as expected
         """
-        import rclpy
         from sensor_msgs.msg import JointState
 
         ros2_publisher = None
@@ -510,7 +508,6 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         )
         await og.Controller.evaluate(graph_handle)
 
-        import rclpy
         from sensor_msgs.msg import JointState
 
         ros2_publisher = None

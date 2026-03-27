@@ -29,7 +29,7 @@ import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
 from isaacsim.core.utils.semantics import upgrade_prim_semantics_to_labels
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Sdf, Usd, UsdGeom, UsdPhysics
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--num_scenarios", type=int, default=5, help="Number of randomization scenarios to create")

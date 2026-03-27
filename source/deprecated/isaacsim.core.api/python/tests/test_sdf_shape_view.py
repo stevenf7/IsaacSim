@@ -13,14 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 
 import carb
 import numpy as np
 import omni.kit.test
 import warp as wp
 from isaacsim.core.api import World
-from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.prims import SdfShapePrim
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async

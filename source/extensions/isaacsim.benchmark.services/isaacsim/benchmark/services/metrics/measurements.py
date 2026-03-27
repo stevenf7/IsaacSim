@@ -40,8 +40,6 @@ class _MetadataWithData(Protocol):
     data: Any
 
 
-import carb
-
 from .. import utils
 
 logger = utils.set_up_logging(__name__)

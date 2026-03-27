@@ -13,12 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import sys
 from typing import Dict
 
 import carb
-from pxr import Gf
 
 try:
     import pysurvive

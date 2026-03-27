@@ -24,7 +24,7 @@ import omni.ui as ui
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.examples.interactive.base_sample import BaseSampleUITemplate
 from isaacsim.examples.interactive.follow_target import FollowTarget
-from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers, state_btn_builder, str_builder
+from isaacsim.gui.components.ui_utils import btn_builder, state_btn_builder, str_builder
 
 
 class FollowTargetExtension(omni.ext.IExt):

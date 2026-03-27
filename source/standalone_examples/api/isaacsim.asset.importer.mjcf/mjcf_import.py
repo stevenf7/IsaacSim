@@ -15,7 +15,6 @@
 
 import argparse
 import os
-import sys
 
 from isaacsim import SimulationApp
 

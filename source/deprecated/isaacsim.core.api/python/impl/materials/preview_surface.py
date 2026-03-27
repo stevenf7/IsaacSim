@@ -21,7 +21,6 @@ from typing import Optional
 import carb
 import isaacsim.core.utils.stage as stage_utils
 import numpy as np
-import omni.kit.app
 from isaacsim.core.api.materials.visual_material import VisualMaterial
 from pxr import Gf, Sdf, UsdShade
 

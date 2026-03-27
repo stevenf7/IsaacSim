@@ -18,7 +18,6 @@ import math
 import os
 import shutil
 
-import numpy as np
 import omni.graph.core as og
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -33,7 +32,7 @@ import omni.kit.viewport.utility
 import omni.usd
 import rclpy
 import usdrt.Sdf
-from isaacsim.core.api.objects import VisualCone, VisualCuboid, VisualCylinder, VisualSphere
+from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.experimental.prims import RigidPrim, XformPrim
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.experimental.utils import transform as transform_utils
@@ -41,13 +40,15 @@ from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.semantics import add_labels
 from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.core.utils.viewports import set_camera_view
+from isaacsim.ros2.core.impl.ros2_image_test_utils import ros2_image_to_buffer
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from isaacsim.storage.native import get_assets_root_path
 from isaacsim.test.utils.image_comparison import compare_arrays_within_tolerances
 from isaacsim.test.utils.image_io import read_image_as_array, save_rgb_image
 from pxr import PhysxSchema, Sdf
 from sensor_msgs.msg import Image
 
-from .common import ROS2TestCase, get_qos_profile, ros2_image_to_buffer
+from .common import get_qos_profile
 
 
 def _camera_orientation_at_angle_deg(angle_deg: float):
@@ -679,7 +680,7 @@ class TestRos2Camera(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         from std_msgs.msg import String
-        from vision_msgs.msg import Detection2DArray, Detection3DArray
+        from vision_msgs.msg import Detection3DArray
 
         self._bbox_3d = None
         self._semantic_data = None

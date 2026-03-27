@@ -19,7 +19,6 @@ import time
 from typing import List
 from uuid import uuid4
 
-import carb
 import numpy as np
 import omni
 import omni.graph.core as og
@@ -28,10 +27,11 @@ import omni.kit.commands
 import omni.kit.test
 import omni.replicator.core as rep
 import rclpy
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from sensor_msgs.msg import LaserScan, PointCloud2
 from std_msgs.msg import String
 
-from .common import ROS2TestCase, create_sarcophagus, get_qos_profile
+from .common import create_sarcophagus, get_qos_profile
 
 
 class TestROS2SensorMsgRTX(ROS2TestCase):

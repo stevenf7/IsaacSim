@@ -30,7 +30,7 @@ from isaacsim.core.utils.stage import update_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
 from isaacsim.test.utils import MenuUITestCase
 from omni.physx.scripts.physicsUtils import add_ground_plane
-from pxr import Gf, Usd
+from pxr import Gf
 
 
 class TestArticulationGraphs(MenuUITestCase):

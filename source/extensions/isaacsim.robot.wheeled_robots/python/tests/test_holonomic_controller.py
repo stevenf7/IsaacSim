@@ -16,17 +16,10 @@
 """Tests for the HolonomicController class and its OmniGraph node implementation."""
 
 
-from re import I
-
-import carb
 import omni.graph.core as og
 import omni.graph.core.tests as ogts
 import omni.kit.test
-from isaacsim.core.api.robots import Robot
-from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.robot.wheeled_robots.controllers.holonomic_controller import HolonomicController
-from isaacsim.storage.native import get_assets_root_path
 
 
 class TestHolonomicController(omni.kit.test.AsyncTestCase):

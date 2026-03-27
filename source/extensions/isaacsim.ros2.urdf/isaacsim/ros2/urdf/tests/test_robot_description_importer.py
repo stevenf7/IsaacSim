@@ -16,7 +16,6 @@
 """UI tests for importing URDF from a ROS 2 node."""
 
 import os
-import shutil
 import threading
 
 import omni.kit.ui_test as ui_test

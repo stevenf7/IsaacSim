@@ -16,15 +16,11 @@
 """Browser model implementation for organizing and managing examples in the Isaac Sim Examples Browser."""
 
 
-import os
 from typing import List, Optional
 
 import carb.settings
-import omni.kit.commands
-import omni.usd
 from omni.kit.browser.core import CategoryItem, CollectionItem, DetailItem
-from omni.kit.browser.folder.core import FileSystemFolder, TreeFolderBrowserModel
-from pxr import Sdf, Tf, Usd
+from omni.kit.browser.folder.core import TreeFolderBrowserModel
 
 SETTING_FOLDER = "/exts/isaacsim.examples.browser/folders"
 

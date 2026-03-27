@@ -15,7 +15,7 @@
 
 """Window menu layout for Isaac Sim."""
 import omni.kit.menu.utils
-from omni.kit.menu.utils import LayoutSourceSearch, MenuItemDescription, MenuLayout, add_menu_items
+from omni.kit.menu.utils import MenuItemDescription, MenuLayout, add_menu_items
 
 
 class WindowMenuExtension:

@@ -15,29 +15,14 @@
 
 """Common utilities for RTX sensor tests."""
 
-import asyncio
-import os
-import unittest
-from pathlib import Path
 
-import carb
-import matplotlib.pyplot as plt
 import numpy as np
-import omni.kit.test
-import omni.replicator.core as rep
 from isaacsim.core.api.materials import OmniPBR
 from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.utils.stage import create_new_stage_async, get_current_stage, update_stage_async
 from isaacsim.sensors.rtx import (
-    SUPPORTED_LIDAR_CONFIGS,
-    LidarRtx,
     apply_nonvisual_material,
-    decode_material_id,
-    get_gmo_data,
     get_material_id,
 )
-from isaacsim.storage.native import get_assets_root_path
-from pxr import Gf, UsdGeom
 
 
 def create_sarcophagus(enable_nonvisual_material: bool = True) -> dict:

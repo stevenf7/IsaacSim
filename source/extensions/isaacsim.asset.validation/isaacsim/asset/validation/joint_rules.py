@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import omni.asset_validator.core as av_core
-from omni.asset_validator.core import AuthoringLayers, registerRule
+from omni.asset_validator.core import registerRule
 from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 

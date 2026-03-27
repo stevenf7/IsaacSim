@@ -18,7 +18,6 @@ import asyncio
 import isaacsim.core.experimental.utils.app as app_utils
 import numpy as np
 import omni.kit.test
-import omni.ui as ui
 import omni.usd
 from isaacsim.core.experimental.utils.stage import create_new_stage_async
 from isaacsim.robot.manipulators.examples.interactive.pick_place.pick_place_example import (

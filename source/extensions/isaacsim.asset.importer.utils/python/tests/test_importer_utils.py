@@ -15,8 +15,8 @@
 
 import omni.kit.test
 import omni.usd
-from isaacsim.asset.importer.utils.impl import importer_utils, stage_utils
-from pxr import PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
+from isaacsim.asset.importer.utils.impl import importer_utils
+from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 
 class TestImporterUtils(omni.kit.test.AsyncTestCase):

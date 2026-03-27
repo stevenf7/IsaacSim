@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import omni.kit.test
-from pxr import Plug, Tf, Usd
+from pxr import Plug, Usd
 
 
 class NewtonSchemaTests(omni.kit.test.AsyncTestCaseFailOnLogError):

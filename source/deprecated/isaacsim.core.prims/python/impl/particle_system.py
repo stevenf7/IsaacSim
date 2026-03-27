@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Sequence, Union
 
 import carb
 import carb.eventdispatcher
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from isaacsim.core.api.materials.particle_material import ParticleMaterial
 
 # omniverse
-from pxr import PhysxSchema, Usd, UsdShade
+from pxr import UsdShade
 
 torch = import_module("torch")
 

@@ -16,7 +16,6 @@
 """Provides UI management for the ROS 2 TF viewer extension."""
 
 
-import carb
 import isaacsim.gui.components.ui_utils as ui_utils
 import omni.kit.menu.utils
 import omni.ui as ui

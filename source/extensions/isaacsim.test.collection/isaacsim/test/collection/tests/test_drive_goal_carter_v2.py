@@ -29,6 +29,7 @@ import omni.kit.test
 import omni.timeline
 import usdrt.Sdf
 from isaacsim.core.experimental.utils.app import get_extension_path
+from isaacsim.core.experimental.utils.stage import open_stage_async
 from isaacsim.core.experimental.utils.transform import quaternion_to_euler_angles
 from isaacsim.core.rendering_manager import RenderingManager
 from isaacsim.core.simulation_manager import SimulationManager
@@ -37,7 +38,6 @@ from pxr import Gf, PhysicsSchemaTools
 
 from .robot_helpers import (
     init_robot_sim,
-    open_stage_async,
     setup_robot_og,
 )
 

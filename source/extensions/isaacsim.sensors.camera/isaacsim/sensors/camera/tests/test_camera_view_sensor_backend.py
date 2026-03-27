@@ -15,7 +15,6 @@
 
 import omni.kit.app
 import omni.kit.test
-import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
 from isaacsim.core.experimental.objects import DomeLight, GroundPlane

@@ -25,7 +25,6 @@ import omni.syntheticdata._syntheticdata as sd
 from isaacsim.core.nodes.scripts.utils import register_annotator_from_node_with_telemetry
 from omni.replicator.core import AnnotatorRegistry
 from omni.syntheticdata import sensors
-from pxr import Sdf, Usd
 
 from ..bindings._isaacsim_core_nodes import acquire_interface, release_interface
 

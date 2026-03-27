@@ -20,7 +20,7 @@ from collections import OrderedDict
 from typing import List, Optional, Tuple
 
 import numpy as np
-from isaacsim.core.api.objects import FixedCuboid, VisualCuboid
+from isaacsim.core.api.objects import VisualCuboid
 from isaacsim.core.api.scenes.scene import Scene
 from isaacsim.core.api.tasks import BaseTask
 from isaacsim.core.prims import SingleXFormPrim

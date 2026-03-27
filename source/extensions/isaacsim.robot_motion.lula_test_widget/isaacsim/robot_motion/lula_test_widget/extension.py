@@ -23,7 +23,6 @@ import weakref
 
 import carb
 import carb.eventdispatcher
-import numpy as np
 import omni
 import omni.kit.commands
 import omni.physics.core

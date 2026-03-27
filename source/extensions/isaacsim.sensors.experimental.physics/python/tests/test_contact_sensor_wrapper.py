@@ -15,7 +15,6 @@
 
 import asyncio
 
-import numpy as np
 import omni.kit.test
 import omni.timeline
 from isaacsim.core.experimental.objects import Cube, GroundPlane

@@ -16,25 +16,18 @@
 """Unit tests for the Ackermann controller used in wheeled robot simulations."""
 
 
-import asyncio
-import sys
-
 import carb
 import numpy as np
 import omni.graph.core as og
 import omni.graph.core.tests as ogts
 import omni.kit.test
-import usdrt.Sdf
 from isaacsim.core.api import World
 from isaacsim.core.api.robots import Robot
-from isaacsim.core.utils import rotations
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.prims import create_prim, delete_prim, get_prim_at_path
 from isaacsim.core.utils.stage import create_new_stage_async
 from isaacsim.robot.wheeled_robots.controllers.ackermann_controller import AckermannController
-from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import Gf
 
 
 class TestAckermannController(omni.kit.test.AsyncTestCase):

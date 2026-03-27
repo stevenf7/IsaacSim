@@ -29,7 +29,7 @@ from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.replicator.experimental.domain_randomization.scripts import context
 from omni.replicator.core import distribution
 from omni.replicator.core.utils import ReplicatorItem, ReplicatorWrapper, utils
-from pxr import Gf, UsdPhysics
+from pxr import Gf
 
 from .attributes import TENDON_ATTRIBUTES
 from .context import trigger_randomization

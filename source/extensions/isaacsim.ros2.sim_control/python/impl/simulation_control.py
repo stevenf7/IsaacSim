@@ -309,7 +309,6 @@ class ROS2ServiceManager:
             return False
 
         try:
-            import rclpy
             from rclpy.action import ActionServer
 
             # Create the action server with callback group for parallel execution
@@ -404,7 +403,6 @@ class ROS2ServiceManager:
         This method runs the multithreaded executor which enables parallel
         callback execution. The executor will run until shutdown() is called.
         """
-        import rclpy
 
         try:
             self.executor.spin()

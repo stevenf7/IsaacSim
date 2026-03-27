@@ -18,8 +18,7 @@
 
 import omni.ext
 
-from .rendering_manager import RenderingEvent, RenderingManager
-from .viewport_manager import ViewportManager
+from .rendering_manager import RenderingManager
 
 
 class Extension(omni.ext.IExt):

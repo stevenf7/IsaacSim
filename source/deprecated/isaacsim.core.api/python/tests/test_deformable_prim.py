@@ -16,7 +16,6 @@
 import isaacsim.core.utils.deformable_mesh_utils as DeformableMeshUtils
 import omni.kit.test
 from isaacsim.core.api import World
-from isaacsim.core.api.materials.particle_material import ParticleMaterial
 from isaacsim.core.api.tests.common import TestProperties
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.prims import SingleDeformablePrim
@@ -24,12 +23,11 @@ from isaacsim.core.prims import SingleDeformablePrim
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
-from isaacsim.core.utils.prims import define_prim
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
-from omni.physx.scripts import deformableUtils, physicsUtils
+from omni.physx.scripts import physicsUtils
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from pxr import Gf, Usd, UsdGeom
+from pxr import Gf, UsdGeom
 
 from .common import CoreTestCase
 

@@ -18,7 +18,6 @@ import unittest
 
 import carb
 import numpy as np
-import omni.kit.test
 import warp as wp
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid

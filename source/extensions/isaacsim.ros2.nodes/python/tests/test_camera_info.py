@@ -16,7 +16,7 @@
 import os
 import random
 import sys
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import carb
 import cv2
@@ -33,13 +33,14 @@ import usdrt
 from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage, open_stage_async
+from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from isaacsim.sensors.camera import Camera
 from isaacsim.test.utils import save_depth_image
 from pxr import Sdf, UsdLux
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2
 from sensor_msgs_py import point_cloud2
 
-from .common import ROS2TestCase, get_qos_profile
+from .common import get_qos_profile
 
 # Debug flags for saving depth images during testing
 SAVE_DEPTH_IMAGES_AS_TEST = False
@@ -630,7 +631,6 @@ class TestRos2CameraInfo(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def test_camera_info_sim_time(self):
-        import time
 
         import rclpy
         from sensor_msgs.msg import CameraInfo
@@ -689,7 +689,6 @@ class TestRos2CameraInfo(ROS2TestCase):
         )
 
     async def test_camera_info_sim_time_monotonic(self):
-        import time
 
         import rclpy
         from sensor_msgs.msg import CameraInfo

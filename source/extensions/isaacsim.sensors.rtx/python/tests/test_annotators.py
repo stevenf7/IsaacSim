@@ -17,7 +17,6 @@
 
 
 import asyncio
-import os
 
 import carb
 import isaacsim.sensors.rtx.generic_model_output as gmo_utils

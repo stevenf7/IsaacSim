@@ -15,7 +15,6 @@
 
 import asyncio
 
-import carb
 import numpy as np
 import omni.kit
 

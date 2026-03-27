@@ -17,7 +17,6 @@ import os
 import unittest
 
 import numpy as np
-import omni.kit.test
 from isaacsim.core.api import SimulationContext
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)

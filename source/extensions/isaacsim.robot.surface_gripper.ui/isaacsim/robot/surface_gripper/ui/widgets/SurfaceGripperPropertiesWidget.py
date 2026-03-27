@@ -17,41 +17,14 @@
 
 
 import asyncio
-from functools import partial
-from typing import List
 
 import carb
 import omni
 import omni.ui as ui
-from isaacsim.gui.components.element_wrappers import (
-    Button,
-    CheckBox,
-    CollapsableFrame,
-    ColorPicker,
-    DropDown,
-    FloatField,
-    IntField,
-    StateButton,
-    StringField,
-    TextBlock,
-    XYPlot,
-)
-from isaacsim.gui.components.ui_utils import get_style
-from isaacsim.gui.components.widgets import SelectPrimWidget
 from isaacsim.robot.surface_gripper import _surface_gripper as surface_gripper
-from omni.kit.property.usd.prim_selection_payload import PrimSelectionPayload
-from omni.kit.property.usd.usd_attribute_model import UsdAttributeModel
-from omni.kit.property.usd.usd_property_widget import UiDisplayGroup, UsdPropertiesWidget, UsdPropertyUiEntry
+from omni.kit.property.usd.usd_property_widget import UiDisplayGroup, UsdPropertiesWidget
 from omni.kit.property.usd.usd_property_widget_builder import UsdPropertiesWidgetBuilder
-from omni.kit.property.usd.widgets import ICON_PATH
-from omni.kit.window.property.templates import (
-    HORIZONTAL_SPACING,
-    LABEL_HEIGHT,
-    LABEL_WIDTH,
-    SimplePropertyWidget,
-    build_frame_header,
-)
-from pxr import Gf, Sdf, Tf, Usd
+from pxr import Tf, Usd
 from usd.schema.isaac import robot_schema
 
 

@@ -28,7 +28,7 @@ import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
 from isaacsim.test.utils.image_comparison import compare_arrays_within_tolerances
-from pxr import Gf, Usd, UsdGeom, UsdRender
+from pxr import Gf, UsdGeom, UsdRender
 
 
 class TestAttachHydraTexture(ogts.OmniGraphTestCase):

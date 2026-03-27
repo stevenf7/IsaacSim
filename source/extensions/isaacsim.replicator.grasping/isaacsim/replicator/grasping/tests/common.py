@@ -21,7 +21,7 @@ def check_grasp_pose_generation_dependencies() -> bool:
         True if the dependencies are installed, False otherwise.
     """
     try:
-        import rtree
+        import rtree  # noqa: F401
     except Exception as e:
         print(f"Could not import 'rtree': {e}.")
         return False

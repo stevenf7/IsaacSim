@@ -19,7 +19,6 @@ from typing import Optional, Sequence, Tuple
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
 from isaacsim.core.prims import SingleXFormPrim
-from isaacsim.core.utils.rotations import gf_quat_to_np_array
 from pxr import Gf, Usd
 
 

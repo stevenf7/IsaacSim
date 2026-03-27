@@ -25,7 +25,6 @@ from isaacsim.core.experimental.objects import (
     Sphere,
 )
 from isaacsim.core.experimental.prims import (
-    Articulation,
     GeomPrim,
     RigidPrim,
 )

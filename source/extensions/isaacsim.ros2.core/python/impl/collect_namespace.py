@@ -13,15 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Tuple
 
-import carb
-import cv2 as cv
-import numpy as np
 import omni
 import omni.syntheticdata
 from isaacsim.core.utils.render_product import get_camera_prim_path
-from pxr import Gf, Sdf, Usd
 
 
 def collect_namespace(namespace_input: str, render_product_path: str) -> str:

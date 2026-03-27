@@ -20,7 +20,6 @@ import os
 
 import omni.ui as ui
 import omni.usd
-from pxr import Gf, Sdf, Usd
 
 from ..builders.robot_templates import RobotRegistry
 from ..builders.save_robot_helper import apply_articulation_apis, apply_robot_schema, create_variant_usd

@@ -35,7 +35,6 @@ class TestSDGUsefulSnippetsSimready(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set("rtx/post/dlss/execMode", self.original_dlss_exec_mode)
 
     async def test_sdg_snippet_simready_assets(self):
-        import asyncio
         import os
         import time
 

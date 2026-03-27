@@ -19,7 +19,6 @@
 import asyncio
 import os
 
-import carb
 import omni.ext
 import omni.ui as ui
 from isaacsim.examples.browser import get_instance as get_browser_instance

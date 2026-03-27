@@ -21,13 +21,9 @@ Backend of "Add Colliders"
 
 """
 
-import os
 
 import omni.usd
-import usd.schema.isaac.robot_schema as rs
-from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
-
-from .robot_templates import RobotRegistry
+from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 MESH_TYPES = ["Mesh", "Cube", "Sphere", "Cylinder", "Cone", "Capsule"]
 MESH_APPROXIMATIONS = {

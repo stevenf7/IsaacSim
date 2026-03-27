@@ -15,8 +15,6 @@
 
 from os.path import exists
 
-import omni
-
 
 class OgnIsaacReadFilePath:
     """

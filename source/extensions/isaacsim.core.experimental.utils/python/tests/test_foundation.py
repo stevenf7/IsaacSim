@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import isaacsim.core.experimental.utils.backend as backend_utils
 import isaacsim.core.experimental.utils.foundation as foundation_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test

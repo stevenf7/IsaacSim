@@ -15,13 +15,12 @@
 
 import typing
 
-# python
-from typing import Union
-
 # omniverse
 import carb
 import numpy as np
 from pxr import Gf
+
+# python
 
 
 def _standardize_transform_matrix(t1: typing.Union[np.ndarray, Gf.Matrix4d]) -> np.ndarray:

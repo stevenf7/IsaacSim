@@ -216,7 +216,6 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
     async def test_material_texture(self):
         """Test creating material with texture and binding to a prim."""
         ###
-        import carb
         import omni
         from isaacsim.storage.native import get_assets_root_path_async
         from pxr import Sdf, UsdShade
@@ -392,7 +391,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
     async def test_get_mesh_size(self):
         """Test getting bounding box size of a mesh prim."""
         import omni
-        from pxr import Gf, Usd, UsdGeom
+        from pxr import Usd, UsdGeom
 
         stage = omni.usd.get_context().get_stage()
         result, path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cone")
