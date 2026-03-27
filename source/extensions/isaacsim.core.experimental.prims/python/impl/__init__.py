@@ -19,8 +19,10 @@
 from .articulation import Articulation
 from .buffer_dtype import BufferDtype
 from .deformable_prim import DeformablePrim
-from .extension import Extension
+from .extension import Extension  # noqa: F401 (Extension loaded for side effects)
 from .geom_prim import GeomPrim
 from .prim import Prim
 from .rigid_prim import RigidPrim
 from .xform_prim import XformPrim
+
+__all__ = ["Articulation", "BufferDtype", "DeformablePrim", "GeomPrim", "Prim", "RigidPrim", "XformPrim"]

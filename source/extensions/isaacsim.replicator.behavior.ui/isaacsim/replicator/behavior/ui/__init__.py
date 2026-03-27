@@ -18,4 +18,4 @@
 
 from .extension import *
 
-__all__ = ["ExposedVariablesPropertyWidget"]
+__all__ = []

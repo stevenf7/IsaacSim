@@ -14,3 +14,4 @@
 # limitations under the License.
 
 from .impl import *
+from .impl.extension import Extension  # noqa: F401 (Extension loaded for side effects)

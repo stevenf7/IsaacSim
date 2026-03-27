@@ -299,24 +299,6 @@
   - def set_sdf_subgrid_resolution(self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None)
   - def set_sdf_resolution(self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None)
 
-- class XFormPrim(Prim)
-  - def __init__(self, prim_paths_expr: str | list[str], name: str = 'xform_prim_view', positions: np.ndarray | torch.Tensor | None = None, translations: np.ndarray | torch.Tensor | None = None, orientations: np.ndarray | torch.Tensor | None = None, scales: np.ndarray | torch.Tensor | None = None, visibilities: np.ndarray | torch.Tensor | None = None, reset_xform_properties: bool = True, usd: bool = True)
-  - [property] def is_non_root_articulation_link(self) -> bool
-  - def set_visibilities(self, visibilities: Union[np.ndarray, torch.Tensor, wp.array], indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None)
-  - def get_visibilities(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]
-  - def get_default_state(self) -> XFormPrimViewState
-  - def set_default_state(self, positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None, orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None)
-  - def apply_visual_materials(self, visual_materials: Union[VisualMaterial, List[VisualMaterial]], weaker_than_descendants: Optional[Union[bool, List[bool]]] = None, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None)
-  - def get_applied_visual_materials(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> List[VisualMaterial]
-  - def is_visual_material_applied(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> List[bool]
-  - def get_world_poses(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, usd: bool = True) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]]
-  - def set_world_poses(self, positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None, orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, usd: bool = True)
-  - def get_local_poses(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> tuple[np.ndarray, np.ndarray] | tuple[torch.Tensor, torch.Tensor] | tuple[wp.indexedarray, wp.indexedarray]
-  - def set_local_poses(self, translations: np.ndarray | torch.Tensor | wp.array | None = None, orientations: np.ndarray | torch.Tensor | wp.array | None = None, indices: np.ndarray | list | torch.Tensor | wp.array | None = None)
-  - def get_world_scales(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> np.ndarray | torch.Tensor | wp.indexedarray
-  - def set_local_scales(self, scales: np.ndarray | torch.Tensor | wp.array | None, indices: np.ndarray | list | torch.Tensor | wp.array | None = None)
-  - def get_local_scales(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> np.ndarray | torch.Tensor | wp.indexedarray
-
 - class SingleArticulation(_SinglePrimWrapper)
   - def __init__(self, prim_path: str, name: str = 'articulation', position: Optional[Sequence[float]] = None, translation: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None, scale: Optional[Sequence[float]] = None, visible: Optional[bool] = None, reset_xform_properties: bool = True, articulation_controller: Optional[ArticulationController] = None)
   - [property] def handles_initialized(self) -> bool
@@ -496,3 +478,21 @@
 
 - class SingleXFormPrim(_SinglePrimWrapper)
   - def __init__(self, prim_path: str, name: str = 'xform_prim', position: Optional[Sequence[float]] = None, translation: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None, scale: Optional[Sequence[float]] = None, visible: Optional[bool] = None, reset_xform_properties: bool = True)
+
+- class XFormPrim(Prim)
+  - def __init__(self, prim_paths_expr: str | list[str], name: str = 'xform_prim_view', positions: np.ndarray | torch.Tensor | None = None, translations: np.ndarray | torch.Tensor | None = None, orientations: np.ndarray | torch.Tensor | None = None, scales: np.ndarray | torch.Tensor | None = None, visibilities: np.ndarray | torch.Tensor | None = None, reset_xform_properties: bool = True, usd: bool = True)
+  - [property] def is_non_root_articulation_link(self) -> bool
+  - def set_visibilities(self, visibilities: Union[np.ndarray, torch.Tensor, wp.array], indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None)
+  - def get_visibilities(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]
+  - def get_default_state(self) -> XFormPrimViewState
+  - def set_default_state(self, positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None, orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None)
+  - def apply_visual_materials(self, visual_materials: Union[VisualMaterial, List[VisualMaterial]], weaker_than_descendants: Optional[Union[bool, List[bool]]] = None, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None)
+  - def get_applied_visual_materials(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> List[VisualMaterial]
+  - def is_visual_material_applied(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> List[bool]
+  - def get_world_poses(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, usd: bool = True) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]]
+  - def set_world_poses(self, positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None, orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, usd: bool = True)
+  - def get_local_poses(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> tuple[np.ndarray, np.ndarray] | tuple[torch.Tensor, torch.Tensor] | tuple[wp.indexedarray, wp.indexedarray]
+  - def set_local_poses(self, translations: np.ndarray | torch.Tensor | wp.array | None = None, orientations: np.ndarray | torch.Tensor | wp.array | None = None, indices: np.ndarray | list | torch.Tensor | wp.array | None = None)
+  - def get_world_scales(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> np.ndarray | torch.Tensor | wp.indexedarray
+  - def set_local_scales(self, scales: np.ndarray | torch.Tensor | wp.array | None, indices: np.ndarray | list | torch.Tensor | wp.array | None = None)
+  - def get_local_scales(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> np.ndarray | torch.Tensor | wp.indexedarray

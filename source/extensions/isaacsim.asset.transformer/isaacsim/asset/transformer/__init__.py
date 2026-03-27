@@ -20,7 +20,6 @@ from .models import ExecutionReport, RuleConfigurationParam, RuleExecutionResult
 from .rule_interface import RuleInterface  # noqa: F401
 
 __all__ = [
-    "Extension",
     "RuleInterface",
     "RuleSpec",
     "RuleProfile",

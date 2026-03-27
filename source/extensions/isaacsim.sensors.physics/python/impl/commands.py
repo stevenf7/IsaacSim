@@ -15,6 +15,7 @@
 
 """Provides commands for creating Isaac physics sensors in USD stages."""
 
+__all__ = ["IsaacSensorCreatePrim", "IsaacSensorCreateContactSensor", "IsaacSensorCreateImuSensor"]
 
 import carb
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema

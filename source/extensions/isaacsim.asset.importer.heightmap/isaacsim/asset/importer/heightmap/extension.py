@@ -30,6 +30,10 @@ from isaacsim.gui.components.ui_utils import btn_builder, float_builder
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from PIL import Image
 
+__all__ = [
+    "HeightmapImporter",
+]
+
 EXTENSION_NAME = "Heightmap Importer"
 
 # UI Constants

@@ -15,6 +15,6 @@
 
 """TCP socket server for remote Python code execution in Isaac Sim."""
 
-from .extension import *
+from .extension import Extension  # noqa: F401 (Extension loaded for side effects)
 
 __all__: list[str] = []

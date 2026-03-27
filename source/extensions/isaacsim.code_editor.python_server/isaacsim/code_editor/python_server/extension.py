@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+__all__ = []
+
 import asyncio
 import contextlib
 import io

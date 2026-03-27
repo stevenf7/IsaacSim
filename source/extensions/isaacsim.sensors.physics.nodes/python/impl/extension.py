@@ -18,6 +18,9 @@
 This extension provides OmniGraph nodes; sensor backends and lifecycle
 are in isaacsim.sensors.experimental.physics.
 """
+
+__all__ = []
+
 import omni
 
 from ..bindings._physics_sensor_nodes import acquire_interface, release_interface
