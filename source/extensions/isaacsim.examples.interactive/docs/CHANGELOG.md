@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.15.3] - 2026-03-26
+### Changed
+- Update the test dependencies to use the new experimental wheeled robots extension
+
 ## [4.15.2] - 2026-03-26
 ### Changed
 - Updated Python bindings import paths for consistency

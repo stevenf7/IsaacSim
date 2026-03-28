@@ -515,7 +515,8 @@ inventory.includes.all = [
     "exts/isaacsim.robot.schema.ui",
     "exts/isaacsim.robot.surface_gripper",
     "exts/isaacsim.robot.surface_gripper.ui",
-    "exts/isaacsim.robot.wheeled_robots",
+    "extsDeprecated/isaacsim.robot.wheeled_robots",
+    "exts/isaacsim.robot.wheeled_robots.nodes",
     "exts/isaacsim.robot.wheeled_robots.ui",
     "exts/isaacsim.robot.experimental.wheeled_robots",
 ]

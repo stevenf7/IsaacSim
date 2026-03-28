@@ -1,5 +1,5 @@
 [package]
-version = "4.15.2"
+version = "4.15.3"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Provides interactive sample extensions demonstrating Isaac Sim features including robot manipulation, path planning, gamepad control, bin filling, and Cortex behavior framework usage."
@@ -25,7 +25,7 @@ writeTarget.kit = true
 "isaacsim.robot.experimental.wheeled_robots" = {}
 "isaacsim.robot.manipulators" = {}
 "isaacsim.robot.manipulators.examples" = {}
-"isaacsim.robot.wheeled_robots" = {}
+"isaacsim.robot.wheeled_robots.nodes" = {}
 "isaacsim.robot_motion.motion_generation" = {}
 "isaacsim.storage.native" = {}
 "omni.graph.action" = {}

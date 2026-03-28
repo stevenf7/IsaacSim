@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.13.1] - 2026-03-26
+### Changed
+- Update the test dependencies to use isaacsim.robot.wheeled_robots.nodes
+
 ## [1.13.0] - 2026-03-21
 ### Added
 - SRTX publisher support for ROS 2 image, lidar point cloud, and laser scan topics
