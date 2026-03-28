@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.3] - 2026-03-26
+### Changed
+- Update the test dependencies to use the new experimental wheeled robots extension
+
 ## [2.6.2] - 2026-03-22
 ### Fixed
 - Fix carb.log_error call passing multiple arguments instead of a single formatted string

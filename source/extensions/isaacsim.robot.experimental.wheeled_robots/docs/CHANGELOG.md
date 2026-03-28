@@ -1,4 +1,13 @@
 # Changelog
+## [0.2.6] - 2026-03-26
+### Fixed
+- Fix euler angle convention in HolonomicController causing reversed motion direction
+- Add missing public property accessors on HolonomicRobotUsdSetup (wheel_radius, wheel_positions, etc.)
+
+### Changed
+- Strengthen HolonomicController test to assert numerical parity with deprecated controller
+- Add directional sanity test for pure-forward command
+
 ## [0.2.5] - 2026-03-23
 ### Added
 - Add WheeledRobot integration test with kinematic distance assertion

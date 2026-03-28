@@ -169,7 +169,7 @@ Extensions
    isaacsim.robot.schema.ui <source/extensions/isaacsim.robot.schema.ui/docs/index>
    isaacsim.robot.surface_gripper <source/extensions/isaacsim.robot.surface_gripper/docs/index>
    isaacsim.robot.surface_gripper.ui <source/extensions/isaacsim.robot.surface_gripper.ui/docs/index>
-   isaacsim.robot.wheeled_robots <source/extensions/isaacsim.robot.wheeled_robots/docs/index>
+   isaacsim.robot.wheeled_robots <source/deprecated/isaacsim.robot.wheeled_robots/docs/index>
    isaacsim.robot.wheeled_robots.ui <source/extensions/isaacsim.robot.wheeled_robots.ui/docs/index>
 
 .. toctree::

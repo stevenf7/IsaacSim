@@ -1,10 +1,10 @@
 [package]
-version = "2.2.0"
+version = "2.3.0"
 category = "Simulation"
 title = "Wheeled Robots UI"
 description = "This extension provides the UI elements for the wheeled_robots extension"
 authors = ["hmazhar@nvidia.com", "ayushg@nvidia.com", "qwan@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.wheeled_robots"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.wheeled_robots.ui"
 keywords = ["isaac", "physics", "analyze", "tune", "ui"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/Overview.md"
@@ -13,10 +13,10 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"isaacsim.core.api" = {}
-"isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.experimental.utils" = {}
+"isaacsim.core.simulation_manager" = {}
 "isaacsim.gui.components" = {}
-"isaacsim.robot.wheeled_robots" = {}
+"isaacsim.robot.wheeled_robots.nodes" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
 "omni.kit.menu.utils" = {}
@@ -39,6 +39,7 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 dependencies = [
+    "isaacsim.core.experimental.objects",
     "isaacsim.test.utils",
     "omni.isaac.ml_archive",
 ]

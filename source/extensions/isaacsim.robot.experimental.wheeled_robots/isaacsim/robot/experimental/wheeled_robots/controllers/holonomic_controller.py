@@ -101,7 +101,7 @@ class HolonomicController:
             joint_pose[3, 3] = 1
             mecanum_angle = self.mecanum_angles[i]
             mecanum_radius = self.wheel_radius[i]
-            euler_vec = np.array(self.up_axis * mecanum_angle, dtype=np.float64)
+            euler_vec = np.array((self.up_axis * mecanum_angle)[::-1], dtype=np.float64)
             quat = transform_utils.euler_angles_to_quaternion(euler_vec, degrees=True, extrinsic=True).numpy()
             m_rot = Gf.Rotation(Gf.Quatf(*quat.tolist()))
             j_axis = Gf.Vec3f(

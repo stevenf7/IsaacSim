@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2026-03-26
+### Changed
+- Update the test dependencies to use the new experimental wheeled robots extension
+
 ## [1.4.0] - 2026-03-17
 ### Changed
 - Updated documentation with AI agent.
