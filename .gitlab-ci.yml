@@ -17,7 +17,7 @@ include:
   # external
   - project: 'omniverse/devplat/gitlab/templates/runners'
     file: 'modules/include.yml'
-    ref: v1_latest
+    ref: v2_latest
   - project: 'omniverse/devplat/gitlab/templates/common/utilities'
     file: 'modules/include.yml'
     ref: v1_latest
@@ -30,18 +30,11 @@ include:
       - 'templates/v3/windows/packman_s3.gitlab-ci.yml'
       - 'templates/v3/linux/nucleus/kit-extensions.ov.nvidia.com/kit-extension-svc.gitlab-ci.yml'
   - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-    # local to devplat/gitlab/templates/runners, external to this repo:
     file: 'modules/common.yml'
   - project: omniverse/benchmark/reggie
-    #- project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-    #  file: 'modules/benchmarks.yml'
     ref: release/v2
     file: /ci/detect.yml
   - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-    # - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-    #   file: 'modules/stage-build.yml'
-    # - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
-    #   file: 'modules/etm.yml'
     file:
       - 'modules/stage-deploy.yml'
       - 'modules/stage-security.yml'
@@ -50,6 +43,9 @@ include:
   - project: "omniverse/devplat/gitlab/templates/common/compliance"
     file: "modules/omniverse-repo-compliance.gitlab-ci.yml"
     ref: v1_latest
+  # Internal
+  # This odd structure allows us to toggle between the two test matrixes depending on the pipeline source
+  # It is vital that we make sure the rules are mutually exclusive
   - local: tools/ci/test_matrixes/kit_mr_tests.yml
     rules:
       - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE == "merge_request"
@@ -198,12 +194,6 @@ variables:
     RUN_DEPLOY:
         value: "true"
         description: "Set to true to run deploy stage."
-    # KUBERNETES_EPHEMERAL_STORAGE_REQUEST:
-    #     value: "200Gi"
-    #     description: "Fix publish extensions"
-    # KUBERNETES_EPHEMERAL_STORAGE_LIMIT:
-    #     value: "200Gi"
-    #     description: "Fix publish extensions"
 
 # ==============================================================================================================
 # Slack notifications
@@ -455,17 +445,6 @@ check-jira-ticket:
     rules:
       - !reference [.rules-mr, rules]
 
-# # ==============================================================================================================
-# # Job to dump out the current configuration environment variables
-# dump-env-vars:
-#     extends:
-#       - .check-common
-#       - .dump-env-vars
-#       - .ipp_lnx_x86_64_cpu_medium
-#     allow_failure: true
-#     when: manual
-#     rules:
-#       - !reference [.rules-workflow, rules]
 
 # ==============================================================================================================
 check-code-format:
@@ -540,18 +519,10 @@ check-python-packages:
 .aarch64-build-common:
     extends:
       - .build-common
-    image: nvcr.io/nvidia/cuda:13.1.0-devel-ubuntu24.04
+    dependencies: []
     variables:
       OMNI_REPO_BUILD_NO_DOCKER: "1"
     before_script:
-      - set -eu
-      - apt-get update
-      - apt-get install -y --no-install-recommends curl unzip g++-11 gcc-11 git
-      # Create alternatives for gcc-11 and g++-11 and set as default
-      - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110
-      - update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 110
-      - update-alternatives --set gcc /usr/bin/gcc-11
-      - update-alternatives --set g++ /usr/bin/g++-11
       - !reference [.gitlab-info-external-urls-linux, script]
       - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
     after_script:
@@ -562,7 +533,6 @@ build-linux-x86_64-release:
       - .build-common
       - .ipp_lnx_x86_64_cpu_large
       - .osec:vault:v3:prod_token_job
-    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
     before_script:
       - set -eu
       - apt-get install -y libarchive-tools
@@ -590,7 +560,6 @@ build-linux-x86_64-c++-coverage:
       - .build-common
       - .ipp_lnx_x86_64_cpu_large
       - .osec:vault:v3:prod_token_job
-    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
     rules:
       - !reference [ '.build-common', rules ]
     # Override to remove yum install bsdtar
@@ -602,7 +571,6 @@ build-linux-x86_64-debug:
       - .build-common
       - .ipp_lnx_x86_64_cpu_large
       - .osec:vault:v3:prod_token_job
-    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
     before_script:
       - set -eu
       - apt-get install -y libarchive-tools
@@ -639,7 +607,6 @@ build-linux-aarch64-debug:
     - .aarch64-build-common
     - .runner-build-linux-aarch64
     - .osec:vault:v3:prod_token_job
-  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-builder:1.0.11-1cf1ab9a
   variables:
     OMNI_REPO_BUILD_NO_DOCKER: "1"
   before_script:
@@ -1008,8 +975,7 @@ test-windows-x86_64-internalpythontests-1:
 
 test-windows-x86_64-nativepythontests:
     extends:
-      # - .test-nightly
-      - .test-common # TESTING PURPOSES ONLY REMOVE LATER PLEASE
+      - .test-nightly
       - .test-windows-common
       - .kit-runner-test-windows-x86_64-1x-gpu
     parallel:
@@ -1023,7 +989,6 @@ test-windows-x86_64-nativepythontests:
 
 
 gather-coverage:
-    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
     rules:
       - !reference [.disable_on_downstream_of_mr, rules]
       - !reference [.test-common, rules]
@@ -1113,24 +1078,6 @@ test-linux-x86_64-external-ar:
           - _logs/**/*.log
 
 # ==============================================================================================================
-.deploy-common:
-    stage: deploy
-    extends:
-      - .deploy-artifacts
-      - .osec:vault:v3:prod_token_job
-    timeout: 3 hour
-    interruptible: false
-    variables:
-        KUBERNETES_EPHEMERAL_STORAGE_REQUEST: "200Gi"
-        KUBERNETES_EPHEMERAL_STORAGE_LIMIT: "200Gi"
-    before_script:
-      - set -eu
-      - !reference [.osec:vault:v3:linux, codesign:perform_vault_requests]
-      - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
-      - !reference [.osec:vault:v3:linux, nucleus:kit-extensions.ov.nvidia.com:kit-extension-svc:perform_vault_requests]
-    rules:
-      - if: $RUN_DOCS_BUILD == "true" || RUN_NIGHTLY_TESTS=="true" || $RUN_DEPLOY != "true"
-        when: never
 
 .build-docs-base:
     extends:
@@ -1327,65 +1274,27 @@ benchmark-windows-x86_64:
       - job: build-windows-x86_64-release
         artifacts: true
 
-# autoupdate-kit:
-#   rules:
-#    - when: never
 
-# include:
-#   - project: 'omniverse/sectools/omni-pulse'
-#     file: '/templates/nspect-pulse-scan.yml'
-#     # ref: main
+# ==============================================================================================================
+.deploy-common:
+    stage: deploy
+    extends:
+      - .deploy-artifacts
+      - .osec:vault:v3:prod_token_job
+    timeout: 3 hour
+    interruptible: false
+    variables:
+        KUBERNETES_EPHEMERAL_STORAGE_REQUEST: "200Gi"
+        KUBERNETES_EPHEMERAL_STORAGE_LIMIT: "200Gi"
+    before_script:
+      - set -eu
+      - !reference [.osec:vault:v3:linux, codesign:perform_vault_requests]
+      - !reference [.osec:vault:v3:linux, packman_s3:perform_vault_requests]
+      - !reference [.osec:vault:v3:linux, nucleus:kit-extensions.ov.nvidia.com:kit-extension-svc:perform_vault_requests]
+    rules:
+      - if: $RUN_DOCS_BUILD == "true" || $RUN_NIGHTLY_TESTS == "true" || $RUN_DEPLOY != "true"
+        when: never
 
-# nspect:
-#   extends: .nspect-scan
-#   stage: test
-#   tags: ['os/linux', 'type/docker']
-#   # allow_failure: true
-#   variables:
-#     PULSE_NSPECT_ID: "NSPECT-8CX1-LP1G"
-#     PULSE_SCAN_PROJECT: "Omniverse Isaac Sim"
-#     PULSE_SCAN_PROJECT_VERSION: "${CI_COMMIT_REF_SLUG}"
-
-#     OMNI_PULSE_TOOL_ARGS: "
-#     --target-deps-platforms linux-x86_64 windows-x86_64 \
-#     --target-deps-paths \
-#         deps/kit-sdk.packman.xml \
-#         deps/rtx-plugins.packman.xml \
-#         deps/target-deps.packman.xml \
-#         deps/isaac-sim.packman.xml \
-#     --additional-sources-path \
-#         source \
-#     --override-branches master develop 'release/*'' \
-#         "
-#   script:
-#     - set e
-#     # WAR for omni.pulse not knowing how to magically create <import path="../_build/${platform}/${config}/kit/dev/deps/rtx-target-deps.packman.xml.user">
-#     - tools/packman/packman pull deps/kit-sdk.packman.xml --platform linux-x86_64 -t config=release
-#     - tools/packman/packman pull deps/rtx-plugins.packman.xml --platform linux-x86_64 -t config=release
-#     - tools/packman/packman pull deps/omni-physics.packman.xml --platform linux-x86_64 -t config=release
-#     # - tools/packman/packman pull deps/target-deps.packman.xml --platform linux-x86_64 -t config=release
-#     # - tools/packman/packman pull deps/isaac-sim.packman.xml --platform linux-x86_64 -t config=release
-#     - tools/packman/packman pull deps/kit-sdk.packman.xml --platform windows-x86_64 -t config=release
-#     - tools/packman/packman pull deps/rtx-plugins.packman.xml --platform windows-x86_64 -t config=release
-#     - tools/packman/packman pull deps/omni-physics.packman.xml --platform windows-x86_64 -t config=release
-#     # - tools/packman/packman pull deps/target-deps.packman.xml --platform windows-x86_64 -t config=release
-#     # - tools/packman/packman pull deps/isaac-sim.packman.xml --platform windows-x86_64 -t config=release
-#     - !reference ['.nspect-scan', 'script']
-#   rules:
-#     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-#       when: manual
-#     - if: '$CI_PIPELINE_SOURCE == "schedule"'
-#       when: always
-#     # the default branch has a scheduled scanner, disable per-commit automatic scan
-#     - if: '$CI_COMMIT_BRANCH == "develop"'
-#       when: manual
-#     - if: '$CI_COMMIT_BRANCH == "master"'
-#       when: manual
-#     # we probably don't have a scheduled scan setup for each release branch (though we should),
-#     # scan per-commit to catch some updates
-#     - if: $CI_COMMIT_REF_NAME =~ /^release\/.*$/
-#       when: always
-#     - when: never
 
 
 # ==============================================================================================================
@@ -1393,21 +1302,14 @@ benchmark-windows-x86_64:
 # but this can be changed in repo.toml config if necessary:
 #    [repo_publish_exts]
 #    platforms = ["linux-x86_64"]
-verify-publish-extensions:
+.publish-extensions-common:
     extends:
       - .deploy-common
       - .ipp_lnx_x86_64_cpu_small
-    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
-    script:
-      - ./repo.sh build --fetch-only -r
-      - ./repo.sh publish_exts -a --from-package --verify
-      # - ./repo.sh ci publish_extensions
     variables:
       IPP_RUNNER_EPHEMERAL_STORAGE_REQUEST: 250Gi
       IPP_RUNNER_EPHEMERAL_STORAGE_LIMIT: 250Gi
     needs:
-      # We set all dependencies as optional just in case a platform is not needed,
-      # then the yml file can override both build/test on one platform and deploy will still work.
       - job: build-windows-x86_64-release
         artifacts: true
         optional: false
@@ -1426,12 +1328,6 @@ verify-publish-extensions:
       - job: build-linux-aarch64-debug
         artifacts: true
         optional: false
-      #   - job: test-windows-x86_64-startuptests
-      #     artifacts: false
-      #     optional: true
-      #   - job: test-linux-x86_64-startuptests
-      #     artifacts: false
-      #     optional: true
     rules:
       - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
         when: never
@@ -1441,51 +1337,26 @@ verify-publish-extensions:
         when: never
       - if: $CI_PIPELINE_SOURCE == "pipeline"
         when: never
+      - if: '$CI_COMMIT_BRANCH != "develop"'
+        when: never
+
+verify-publish-extensions:
+    extends: .publish-extensions-common
+    script:
+      - ./repo.sh build --fetch-only -r
+      - ./repo.sh publish_exts -a --from-package --verify
+    rules:
+      - !reference [.publish-extensions-common, rules]
       - !reference [.rules-push, rules]
-      # - !reference [.rules-version-changed, rules]
-
-
 
 publish-extensions:
-    extends:
-      - .deploy-common
-      - .ipp_lnx_x86_64_cpu_small
-    image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
+    extends: .publish-extensions-common
     timeout: 6 hour
     script:
       - ./repo.sh build --fetch-only -r
       - ./repo.sh publish_exts -a --from-package
-    variables:
-      IPP_RUNNER_EPHEMERAL_STORAGE_REQUEST: 250Gi
-      IPP_RUNNER_EPHEMERAL_STORAGE_LIMIT: 250Gi
-    needs:
-      # We set all dependencies as optional just in case a platform is not needed,
-      # then the yml file can override both build/test on one platform and deploy will still work.
-      - job: build-windows-x86_64-release
-        artifacts: true
-        optional: false
-      - job: build-linux-x86_64-release
-        artifacts: true
-        optional: false
-      - job: build-windows-x86_64-debug
-        artifacts: true
-        optional: false
-      - job: build-linux-x86_64-debug
-        artifacts: true
-        optional: false
-      - job: build-linux-aarch64-release
-        artifacts: true
-        optional: false
-      - job: build-linux-aarch64-debug
-        artifacts: true
-        optional: false
     rules:
-      - if: $ALLOW_PUBLISH_EXTENSIONS != "true"
-        when: never
-      - if: $RUN_BUMP_VERSION == "true"
-        when: never
-      - if: '$CI_COMMIT_BRANCH != "develop"'
-        when: never
+      - !reference [.publish-extensions-common, rules]
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
 
@@ -1494,21 +1365,16 @@ publish-extensions:
 
 
 # ==============================================================================================================
-publish-python-packages-linux-x86_64:
-    extends:
-      - .deploy-common
-      - .ipp_lnx_x86_64_cpu_medium
+.publish-python-packages-linux-common:
+    extends: .deploy-common
     script:
-      - ./repo.sh unzip_file --file _build/packages/isaac-sim-standalone*.release.7z --dst _build/linux-x86_64/release
-      - ls _build/linux-x86_64/release
+      - ./repo.sh unzip_file --file _build/packages/isaac-sim-standalone*.release.7z --dst $ZIP_DESTINATION
+      - ls $ZIP_DESTINATION
       - ./repo.sh python_package --create
       - ./repo.sh comment_archive_deps
       - ./repo.sh python_package --wheel
       - ls _build/packages/dist
       - ./repo.sh python_package --publish
-    needs:
-      - job: build-linux-x86_64-release
-        artifacts: true
     rules:
       - if: $ALLOW_PUBLISH_PYTHON_PACKAGES != "true"
         when: never
@@ -1517,28 +1383,25 @@ publish-python-packages-linux-x86_64:
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
 
+publish-python-packages-linux-x86_64:
+    extends:
+      - .publish-python-packages-linux-common
+      - .ipp_lnx_x86_64_cpu_medium
+    variables:
+      ZIP_DESTINATION: _build/linux-x86_64/release
+    needs:
+      - job: build-linux-x86_64-release
+        artifacts: true
+
 publish-python-packages-linux-aarch64:
     extends:
-      - .deploy-common
+      - .publish-python-packages-linux-common
       - .runner-build-linux-aarch64
-    script:
-      - ./repo.sh unzip_file --file _build/packages/isaac-sim-standalone*.release.7z --dst _build/linux-aarch64/release
-      - ls _build/linux-aarch64/release
-      - ./repo.sh python_package --create
-      - ./repo.sh comment_archive_deps
-      - ./repo.sh python_package --wheel
-      - ls _build/packages/dist
-      - ./repo.sh python_package --publish
+    variables:
+      ZIP_DESTINATION: _build/linux-aarch64/release
     needs:
       - job: build-linux-aarch64-release
         artifacts: true
-    rules:
-      - if: $ALLOW_PUBLISH_PYTHON_PACKAGES != "true"
-        when: never
-      - if: $RUN_BUMP_VERSION == "true"
-        when: never
-      - !reference [.rules-version-changed, rules]
-      - !reference [.rules-push-manual, rules]
 
 publish-python-packages-windows-x86_64:
     extends:
@@ -1566,6 +1429,13 @@ publish-python-packages-windows-x86_64:
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
 
+# Hidden jobs defining Python 3.12 images for Linux
+.python312-image-linux-x86_64:
+  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-python312:1.0.17
+
+.python312-image-linux-aarch64:
+  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-python312:1.0.17
+
 verify-publish-python-packages-linux-x86_64:
     interruptible: true
     allow_failure: true
@@ -1573,15 +1443,8 @@ verify-publish-python-packages-linux-x86_64:
       - .deploy-common
       - .ipp_lnx_x86_64_gpu
       - .kit-runner-test-linux-x86_64-1x-gpu
+      - .python312-image-linux-x86_64
     script:
-      # install Python 3.12
-      - export TZ="America/Los_Angeles"
-      - export DEBIAN_FRONTEND="noninteractive"
-      - apt-get update
-      - apt-get install -y software-properties-common
-      - add-apt-repository ppa:deadsnakes/ppa -y
-      - apt-get update
-      - apt-get install -y python3.12 python3.12-venv python3.12-dev
       # create and source a virtual environment
       - python3.12 -m venv env_isaacsim
       - source env_isaacsim/bin/activate
@@ -1672,12 +1535,6 @@ publish-to-launcher:
         artifacts: true
       - job: build-linux-x86_64-release
         artifacts: true
-      #   - job: test-windows-x86_64-startuptests
-      #     artifacts: false
-      #     optional: true
-      #   - job: test-linux-x86_64-startuptests
-      #     artifacts: false
-      #     optional: true
     retry:
         max: 2
         when:
@@ -1689,23 +1546,6 @@ publish-to-launcher:
         when: never
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
-#   allow_failure: true
-
-#   extends:
-#   - .deploy-common
-#   - .ipp_lnx_x86_64_cpu_small
-#   script:
-#   - ./repo.sh ci publish_to_launcher
-#   needs:
-#   - job: build-windows-x86_64-release
-#     artifacts: true
-#   - job: build-linux-x86_64-release
-#     artifacts: true
-#   rules:
-#   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-#     when: never
-#   - !reference [.rules-push-manual, rules]
-#   allow_failure: true
 
 
 # ==============================================================================================================
@@ -1713,36 +1553,12 @@ release-new-version:
     rules:
       - when: never
 
-#   extends:
-#   - .deploy-common
-#   - .ipp_lnx_x86_64_cpu_small
-#   needs: []
-#   script:
-#   - ./repo.sh ci release_new_version
-#   rules:
-#   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-#     when: never
-#   - !reference [.rules-push-manual, rules]
-#   allow_failure: true
-
 
 # ==============================================================================================================
-# update Kit SDK and extensions, merge master, typically done in daily branch
-# set AUTOUPDATE_KIT=true for scheduled pipeline to run
 autoupdate-kit:
     rules:
       - when: never
-#   extends:
-#   - .deploy-common
-#   - .ipp_lnx_x86_64_cpu_small
-#   needs: []
-#   script:
-#   - ./repo.sh ci autoupdate_kit
-#   rules:
-#   - if: $ALLOW_PUBLISH_TO_LAUNCHER != "true"
-#     when: never
-#   - if: $AUTOUPDATE_KIT == "true" && ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule")
-#     when: always
+
 
 
 # ==============================================================================================================
@@ -1823,7 +1639,6 @@ sign-windows-x86_64-release:
         allow_failure: true
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
-#   allow_failure: true
 
 # ==============================================================================================================
 .container-rules:
@@ -1940,8 +1755,6 @@ test-container:
     - .ipp_lnx_x86_64_gpu
     - .kit-runner-test-linux-x86_64-1x-gpu
   image: gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim${MR_SUFFIX}:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}-x86_64
-  # variables:
-  #   GIT_STRATEGY: none
   parallel:
     matrix:
       - BUCKET:
@@ -1956,8 +1769,6 @@ test-container:
         - robot
   script:
     - pushd /isaac-sim
-    - ls -lash
-    - echo "Okay wasn't sure if this would work"
     - ./python.sh run_tests.py --suite pythontests --bucket ${BUCKET}
     - popd
     - cp -r /isaac-sim/.local/share/ov/data/_testoutput .
@@ -2212,7 +2023,7 @@ publish-etm-list:
   extends:
     - .deploy-common
     - .ipp_lnx_x86_64_cpu_small
-  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
+  # image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
   timeout: 1 hour
   script:
     - ./repo.sh build --fetch-only -r
@@ -2272,6 +2083,7 @@ check-python-packages-dependencies-linux-x86_64:
     - .repo-artifacts
     - .check-common
     - .ipp_lnx_x86_64_cpu_small
+    - .python312-image-linux-x86_64
   stage: check-externals
   needs: []
   allow_failure: true
@@ -2280,15 +2092,10 @@ check-python-packages-dependencies-linux-x86_64:
       when: never
     - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE =~ /^(nightly|post_merge)$/ && $CI_COMMIT_REF_NAME =~ /^kit-integration\//
       when: always
+    # TEMPORARY : REMOVE LATER
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - !reference [.check-common, rules]
   script:
-    - export TZ="America/Los_Angeles"
-    - export DEBIAN_FRONTEND="noninteractive"
-    - apt-get update
-    - apt-get install -y software-properties-common
-    - add-apt-repository ppa:deadsnakes/ppa -y
-    - apt-get update
-    - apt-get install -y python3.12 python3.12-venv python3.12-dev
     - ./repo.sh validate_python_packages --gitlab --validate
 
 check-python-packages-dependencies-linux-aarch64:
@@ -2296,6 +2103,7 @@ check-python-packages-dependencies-linux-aarch64:
     - .repo-artifacts
     - .check-common
     - .runner-build-linux-aarch64
+    - .python312-image-linux-aarch64
   stage: check-externals
   needs: []
   allow_failure: true
@@ -2306,13 +2114,6 @@ check-python-packages-dependencies-linux-aarch64:
       when: always
     - !reference [.check-common, rules]
   script:
-    - export TZ="America/Los_Angeles"
-    - export DEBIAN_FRONTEND="noninteractive"
-    - apt-get update
-    - apt-get install -y software-properties-common
-    - add-apt-repository ppa:deadsnakes/ppa -y
-    - apt-get update
-    - apt-get install -y python3.12 python3.12-venv python3.12-dev
     - ./repo.sh validate_python_packages --gitlab --validate
 
 check-python-packages-dependencies-windows-x86_64:
@@ -2360,8 +2161,6 @@ stage-to-github:
       - git lfs fetch --all
       # Custom Cleanup - clean extension.toml files to remove authors and repository
       - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
-    #   # Custom Cleanup - remove pycaches
-    #   - find -type d -iname '__pycache__' -exec rm -rf "{}" \;
       - git config user.email "7774242+sheikh-nv@users.noreply.github.com"
       - git config user.name "sheikh-nv"
       - echo "Isaac Sim Update"
@@ -2372,10 +2171,6 @@ stage-to-github:
     rules:
       - if: $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+_oss$/
         when: manual
-    #   - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME  =~ /^release\/\d+\.\d+_oss$/
-    #     when: manual
-      # - !reference [.rules-version-changed, rules]
-      # - !reference [.rules-push-manual, rules]
 
 # ==============================================================================================================
 stage-to-gitlab:
@@ -2402,22 +2197,15 @@ stage-to-gitlab:
       - git lfs fetch --all
       # Custom Cleanup - clean extension.toml files to remove authors and repository
       - find source -name "extension.toml" -exec sed -i '/^\s*\(authors\|repository\)\s*=/d' {} \;
-    #   # Custom Cleanup - remove pycaches
-    #   - find -type d -iname '__pycache__' -exec rm -rf "{}" \;
       - git config user.email "gitlab@nvidia.com"
       - git config user.name "gitlab"
       - echo "Isaac Sim Update"
       - git checkout -b upstream/update_from_${CI_COMMIT_SHORT_SHA}
       - git add -Af && git commit -m "Isaac Sim Update"
       - git push --set-upstream origin upstream/update_from_${CI_COMMIT_SHORT_SHA}
-    # when: manual
     rules:
       - if: $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+_oss$/
         when: manual
-    #   - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME  =~ /^release\/\d+\.\d+_oss$/
-    #     when: manual
-      # - !reference [.rules-version-changed, rules]
-      # - !reference [.rules-push-manual, rules]
 
 # ==============================================================================================================
 verify-stage-to-gitlab:
