@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <isaacsim/core/includes/LibraryLoader.h>
 #include <nlohmann/json.hpp>
 #include <omni/fabric/Type.h>
 
