@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.1] - 2026-03-30
+### Changed
+- Added `LibraryLoader.h` include to `Ros2Types.h` for SRTX integration support
+
 ## [1.6.0] - 2026-03-17
 ### Changed
 - Updated documentation with AI agent.
