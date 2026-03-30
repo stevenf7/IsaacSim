@@ -378,7 +378,7 @@ class OmniPbrMaterial(VisualMaterial):
         if existent_paths:
             paths = existent_paths
             for path in existent_paths:
-                material, shader = self._get_material_and_shader_from_material(stage, path)
+                material, shader = self._get_material_and_shader(stage, path)
                 assert material is not None, f"The wrapped prim at path {path} is not a USD Material"
                 assert shader is not None, f"The wrapped prim at path {path} is not a USD Shader"
                 source_asset = shader.GetSourceAsset("mdl")
@@ -399,7 +399,7 @@ class OmniPbrMaterial(VisualMaterial):
                     mtl_path=path,
                     select_new_prim=False,
                 )
-                material, shader = self._get_material_and_shader_from_material(stage, path)
+                material, shader = self._get_material_and_shader(stage, path)
                 assert material is not None and shader is not None, f"Unable to create OmniPBR material at path {path}"
                 source_asset = shader.GetSourceAsset("mdl").path
                 assert (
@@ -505,7 +505,7 @@ class OmniPbrMaterial(VisualMaterial):
         for item in paths if isinstance(paths, (list, tuple)) else [paths]:
             status = False
             path = item if isinstance(item, str) else item.GetPath()
-            material, shader = VisualMaterial._get_material_and_shader_from_material(stage, path)
+            material, shader = VisualMaterial._get_material_and_shader(stage, path)
             if material is not None and shader is not None:
                 source_asset = shader.GetSourceAsset("mdl")
                 if source_asset is not None:

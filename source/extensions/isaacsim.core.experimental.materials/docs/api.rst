@@ -12,6 +12,12 @@ The following table summarizes the available materials.
 
 .. currentmodule:: isaacsim.core.experimental.materials
 
+.. rubric:: non-visual materials
+.. autosummary::
+    :nosignatures:
+
+    NonVisualMaterial
+
 .. rubric:: physics materials
 .. autosummary::
     :nosignatures:
@@ -37,6 +43,15 @@ The following table summarizes the available materials.
 
 Materials
 ^^^^^^^^^
+
+Non-Visual Materials
+""""""""""""""""""""
+
+.. autoclass:: isaacsim.core.experimental.materials.NonVisualMaterial
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 Physics Materials
 """""""""""""""""

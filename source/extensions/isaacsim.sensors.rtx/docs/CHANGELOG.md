@@ -1,4 +1,9 @@
 # Changelog
+
+## [15.15.0] - 2026-03-25
+### Changed
+- Move `generic_model_output`, `sensor_checker` and supported lidar configurations to the experimental extension version
+
 ## [15.14.3] - 2026-03-22
 ### Added
 - WAR for omni.replicator.core 1.13.5 - specify RTX Lidar and Radar auxOutputType as "channels" attribute on GenericModelOutput RenderVar

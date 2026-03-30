@@ -1,11 +1,11 @@
 [package]
-version = "0.7.0"
+version = "0.1.0"
 category = "Simulation"
-title = "Isaac Sim Core (Materials)"
-description = "The Core Materials extension provides a set of APIs to create and/or wrap one or more USD materials in the stage..."
-authors = ["hmazhar@nvidia.com","aserranomuno@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.core.materials"
-keywords = ["isaacsim", "core", "materials"]
+title = "Isaac Sim RTX Sensor Simulation"
+description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
+authors = ["hmazhar@nvidia.com", "adevalla@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.experimental.rtx"
+keywords = ["isaac", "physics", "robotics"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/Overview.md"
 preview_image = "data/preview.png"
@@ -15,24 +15,54 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.experimental.prims" = {}
-"isaacsim.core.experimental.utils" = {}
-"omni.isaac.core_archive" = {}
-"omni.kit.material.library" = {}
-"omni.kit.usd.mdl" = {}
-"omni.warp.core" = {}
+"isaacsim.storage.native" = {}
+"omni.replicator.core" = {}
+"omni.sensors.nv.common" = {}
+"omni.sensors.nv.ids" = {}
+"omni.sensors.nv.lidar" = {}
+"omni.sensors.nv.radar" = {}
+"omni.usd.schema.omni_sensors" = {}
 
 [[python.module]]
-name = "isaacsim.core.experimental.materials"
+name = "isaacsim.sensors.experimental.rtx"
 
-# define the Python module for tests
 [[python.module]]
-name = "isaacsim.core.experimental.materials.tests"
+name = "isaacsim.sensors.experimental.rtx.generic_model_output"
+
+[[python.module]]
+name = "isaacsim.sensors.experimental.rtx.sensor_checker"
+
+[[python.module]]
+name = "isaacsim.sensors.experimental.rtx.tests"
+public = false
+
+[settings]
+# Renderer keeps Lidar return buffer on GPU for post-processing.
+app.sensors.nv.lidar.outputBufferOnGPU = false
+# Renderer keeps Radar return buffer on GPU for post-processing.
+app.sensors.nv.radar.outputBufferOnGPU = false
+# Enable non-visual materials using USD attributes.
+rtx.materialDb.nonVisualMaterialCSV.enabled = false
+# Specify the non-visual material USD attribute prefix.
+rtx.materialDb.nonVisualMaterialSemantics.prefix = "omni:simready:nonvisual"
+# Use Hydra time (`omni.timeline`) in RTX sensor models.
+rtx.rtxsensor.useHydraTimeAlways = true
+
+[[test]]
+name = "startup"
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
 
 [[test]]
 timeout = 900
 dependencies = [
-    "omni.physx.commands",
+    "isaacsim.core.experimental.materials",
+    "isaacsim.core.experimental.objects",
+    "isaacsim.core.rendering_manager",
+    "isaacsim.test.utils",
 ]
+
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -41,7 +71,7 @@ args = [
     "--/app/asyncRendering=0",
     "--/app/asyncRenderingLowLatency=0",
     "--/app/fastShutdown=1",
-    "--/app/file/ignoreUnsavedStage=1",
+    "--/app/file/ignoreUnsavedOnExit=1",
     "--/app/hydraEngine/waitIdle=0",
     "--/app/player/useFixedTimeStepping=false",
     "--/app/renderer/skipWhileMinimized=0",
@@ -78,11 +108,6 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
 ]
-pythonTests.include = ["isaacsim.core.experimental.materials.tests.*"]
-
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]
-
-[documentation]
-pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

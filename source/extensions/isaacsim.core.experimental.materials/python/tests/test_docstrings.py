@@ -16,6 +16,7 @@
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.test.docstring
 from isaacsim.core.experimental.materials import (
+    NonVisualMaterial,
     OmniGlassMaterial,
     OmniPbrMaterial,
     PhysicsMaterial,
@@ -69,3 +70,8 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
     async def test_visual_material_preview_surface_docstrings(self):
         await self.assertDocTests(PreviewSurfaceMaterial)
         await self.assertDocTests(VisualMaterial)
+
+    # --------------------------------------------------------------------
+
+    async def test_non_visual_material_docstrings(self):
+        await self.assertDocTests(NonVisualMaterial)

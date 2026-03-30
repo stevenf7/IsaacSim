@@ -99,16 +99,10 @@ repo_build.prebuild_link {
     { "data", ext.target_dir .. "/data" },
     { "python/impl", ogn.python_target_path .. "/impl" },
     { "python/tests", ogn.python_target_path .. "/tests" },
+    { "python/generic_model_output", ogn.python_target_path .. "/generic_model_output" },
+    { "python/sensor_checker", ogn.python_target_path .. "/sensor_checker" },
 }
 
 repo_build.prebuild_copy {
     { "python/__init__.py", ogn.python_target_path },
-    {
-        "%{root}/_build/target-deps/generic_model_output/%{platform}/%{config}/omni/sensors",
-        ogn.python_target_path,
-    },
-    {
-        "%{root}/_build/target-deps/sensor-checker/%{platform}/%{config}/omni/sensors",
-        ogn.python_target_path,
-    },
 }
