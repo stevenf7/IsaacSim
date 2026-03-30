@@ -1,5 +1,5 @@
 [package]
-version = "15.14.3"
+version = "15.15.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar & RTX Radar."
@@ -19,6 +19,7 @@ writeTarget.kit = true
 "isaacsim.core.simulation_manager" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.robot.schema" = {}
+"isaacsim.sensors.experimental.rtx" = {}
 "isaacsim.storage.native" = {}
 "isaacsim.util.debug_draw" = {}
 "omni.graph" = {}

@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides implementations for physics and visual material classes in Isaac Sim."""
-
-
-from .non_visual_material import NonVisualMaterial
-from .physics_materials import PhysicsMaterial, RigidBodyMaterial, SurfaceDeformableMaterial, VolumeDeformableMaterial
-from .visual_materials import OmniGlassMaterial, OmniPbrMaterial, PreviewSurfaceMaterial, VisualMaterial
+ANNOTATOR_SPEC = {
+    "generic-model-output": {"name": "GenericModelOutput"},
+    "stable-id-map": {"name": "StableIdMap"},
+}

@@ -223,7 +223,7 @@ class PreviewSurfaceMaterial(VisualMaterial):
         for item in paths if isinstance(paths, (list, tuple)) else [paths]:
             status = False
             path = item if isinstance(item, str) else item.GetPath()
-            material, shader = VisualMaterial._get_material_and_shader_from_material(stage, path)
+            material, shader = VisualMaterial._get_material_and_shader(stage, path)
             if material is not None and shader is not None:
                 shader_id = shader.GetIdAttr().Get()
                 status = shader_id == "UsdPreviewSurface"

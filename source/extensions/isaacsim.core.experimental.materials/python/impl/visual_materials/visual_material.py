@@ -324,30 +324,6 @@ class VisualMaterial(Prim, ABC):
     """
 
     @staticmethod
-    def _get_material_and_shader_from_material(
-        stage: Usd.Stage, path: str
-    ) -> tuple[UsdShade.Material | None, UsdShade.Shader | None]:
-        """Get the material and shader from a material.
-
-        Args:
-            stage: USD stage containing the material.
-            path: Path to the material prim.
-
-        Returns:
-            A tuple of (material, shader) where material is the UsdShade.Material and shader is the associated UsdShade.Shader.
-        """
-        material = None
-        shader = None
-        # material
-        prim = stage.GetPrimAtPath(path)
-        if prim.IsValid() and prim.IsA(UsdShade.Material):
-            material = UsdShade.Material(prim)
-        # shader
-        if material is not None:
-            shader = UsdShade.Shader(omni.usd.get_shader_from_material(prim, get_prim=True))
-        return material, shader
-
-    @staticmethod
     def _get_material_and_shader(
         stage: Usd.Stage, path: str
     ) -> tuple[UsdShade.Material | None, UsdShade.Shader | None]:
@@ -358,7 +334,7 @@ class VisualMaterial(Prim, ABC):
             path: Path to the material prim.
 
         Returns:
-            A tuple of (material, shader) where material is the UsdShade.Material and shader is the associated UsdShade.Shader.
+            Two-elements tuple. 1) USD Material, if found. 2) USD Shader, if found.
         """
         material = None
         shader = None
@@ -367,11 +343,14 @@ class VisualMaterial(Prim, ABC):
         if prim.IsValid() and prim.IsA(UsdShade.Material):
             material = UsdShade.Material(prim)
         # shader
-        for name in ["Shader", "shader"]:
-            prim = stage.GetPrimAtPath(f"{path}/{name}")
-            if prim.IsValid() and prim.IsA(UsdShade.Shader):
-                shader = UsdShade.Shader(prim)
-                break
+        if material is not None:
+            shader = UsdShade.Shader(omni.usd.get_shader_from_material(prim, get_prim=True))
+        if shader is None:
+            for name in ["Shader", "shader"]:
+                prim = stage.GetPrimAtPath(f"{path}/{name}")
+                if prim.IsValid() and prim.IsA(UsdShade.Shader):
+                    shader = UsdShade.Shader(prim)
+                    break
         return material, shader
 
     @staticmethod
