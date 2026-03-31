@@ -31,7 +31,7 @@ from isaacsim.robot_motion.cumotion.impl.utils import (
     cumotion_to_isaac_sim_pose,
     isaac_sim_to_cumotion_pose,
 )
-from isaacsim.storage.native import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path, get_assets_root_path_async
 
 
 class UR10TrajectoryGeneratorExample:
@@ -52,10 +52,10 @@ class UR10TrajectoryGeneratorExample:
         self._robot_config = None
         self._generator = None
 
-    def load_example_assets(self) -> None:
+    async def load_example_assets(self) -> None:
         """Load robot assets to the stage."""
         robot_prim_path = "/ur10"
-        path_to_robot_usd = get_assets_root_path() + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
+        path_to_robot_usd = await get_assets_root_path_async() + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
 
         add_reference_to_stage(path_to_robot_usd, robot_prim_path)
         self._articulation = Articulation(robot_prim_path)

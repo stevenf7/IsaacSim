@@ -32,7 +32,7 @@ from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.gui.components.element_wrappers import Button, CollapsableFrame, StateButton
 from isaacsim.gui.components.style import get_style
 from isaacsim.robot_motion.cumotion import load_cumotion_supported_robot
-from isaacsim.storage.native import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import UsdPhysics
 
 from .scenario import FrankaGraphPlannerExample
@@ -151,10 +151,10 @@ class UIBuilder:
         """Initialize the UI."""
         self._scenario = FrankaGraphPlannerExample()
 
-    def _load_example_assets(self) -> None:
+    async def _load_example_assets(self) -> None:
         """Load robot, target, and obstacle assets to the stage."""
         self._scenario._robot_prim_path = "/panda"
-        path_to_robot_usd = get_assets_root_path() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        path_to_robot_usd = await get_assets_root_path_async() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
 
         add_reference_to_stage(path_to_robot_usd, self._scenario._robot_prim_path)
         self._scenario._articulation = Articulation(self._scenario._robot_prim_path)
@@ -205,7 +205,7 @@ class UIBuilder:
         stage_utils.set_stage_units(meters_per_unit=1.0)
 
         # Setup scene (load assets)
-        self._setup_scene()
+        await self._load_example_assets()
 
         # Set camera view
         ViewportManager.set_camera_view(camera="/OmniverseKit_Persp", eye=[2, 1.5, 2], target=[0, 0, 0])
@@ -215,11 +215,6 @@ class UIBuilder:
         physics_scene_path = "/World/PhysicsScene"
         if not stage.GetPrimAtPath(physics_scene_path).IsValid():
             UsdPhysics.Scene.Define(stage, physics_scene_path)
-        await omni.kit.app.get_app().next_update_async()
-
-        # Set physics and rendering timesteps
-        SimulationManager.set_physics_dt(dt=1.0 / 60.0)
-        RenderingManager.set_dt(dt=1.0 / 60.0)
         await omni.kit.app.get_app().next_update_async()
 
         # Initialize physics if needed
@@ -236,11 +231,6 @@ class UIBuilder:
 
         # Setup scenario (post-load callback)
         self._setup_scenario()
-
-    def _setup_scene(self) -> None:
-        """Load assets onto the stage."""
-        # Load assets - prims are automatically added to the stage
-        self._load_example_assets()
 
     def _setup_scenario(self) -> None:
         """Set up the scenario after assets are loaded."""

@@ -191,11 +191,6 @@ class UIBuilder:
             UsdPhysics.Scene.Define(stage, physics_scene_path)
         await omni.kit.app.get_app().next_update_async()
 
-        # Set physics and rendering timesteps
-        SimulationManager.set_physics_dt(dt=1.0 / 60.0)
-        RenderingManager.set_dt(dt=1.0 / 60.0)
-        await omni.kit.app.get_app().next_update_async()
-
         # Initialize physics if needed
         if SimulationManager.get_physics_sim_view() is None:
             SimulationManager.initialize_physics()

@@ -153,7 +153,7 @@ class UIBuilder:
         stage_utils.set_stage_units(meters_per_unit=1.0)
 
         # Setup scene (load assets)
-        self._setup_scene()
+        await self._scenario.load_example_assets()
 
         # Set camera view
         ViewportManager.set_camera_view(camera="/OmniverseKit_Persp", eye=[2, 1.5, 2], target=[0, 0, 0])
@@ -163,11 +163,6 @@ class UIBuilder:
         physics_scene_path = "/World/PhysicsScene"
         if not stage.GetPrimAtPath(physics_scene_path).IsValid():
             UsdPhysics.Scene.Define(stage, physics_scene_path)
-        await omni.kit.app.get_app().next_update_async()
-
-        # Set physics and rendering timesteps
-        SimulationManager.set_physics_dt(dt=1.0 / 60.0)
-        RenderingManager.set_dt(dt=1.0 / 60.0)
         await omni.kit.app.get_app().next_update_async()
 
         # Initialize physics if needed
@@ -184,11 +179,6 @@ class UIBuilder:
 
         # Setup scenario (post-load callback)
         self._setup_scenario()
-
-    def _setup_scene(self) -> None:
-        """Load assets onto the stage."""
-        # Load assets - prims are automatically added to the stage
-        self._scenario.load_example_assets()
 
     def _setup_scenario(self) -> None:
         """Initialize the scenario after assets are loaded."""
