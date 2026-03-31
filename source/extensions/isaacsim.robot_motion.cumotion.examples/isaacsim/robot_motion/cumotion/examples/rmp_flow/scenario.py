@@ -36,7 +36,7 @@ from isaacsim.robot_motion.experimental.motion_generation import (
     TrackableApi,
     WorldBinding,
 )
-from isaacsim.storage.native import get_assets_root_path
+from isaacsim.storage.native import get_assets_root_path_async
 
 
 class FrankaRmpFlowExample:
@@ -56,10 +56,10 @@ class FrankaRmpFlowExample:
         self._world_binding = None
         self._controlled_joint_names = None
 
-    def load_example_assets(self) -> tuple:
+    async def load_example_assets(self) -> tuple:
         """Load robot, target, and obstacle assets to the stage."""
         self._robot_prim_path = "/panda"
-        path_to_robot_usd = get_assets_root_path() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+        path_to_robot_usd = await get_assets_root_path_async() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
 
         add_reference_to_stage(path_to_robot_usd, self._robot_prim_path)
         self._articulation = Articulation(self._robot_prim_path)

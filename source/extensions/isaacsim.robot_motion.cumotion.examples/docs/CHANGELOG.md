@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0] - 2026-03-18
+### Added
+- Unittests for button presses, slider values, stateful behavior of all GUI components.
+### Changed
+- All functions for loading assets are async.
+### Fixed
+- We no longer force physics or rendering dt, which threw an uncapture `RuntimeError` because timeline could be playing.
+
 ## [0.2.1] - 2026-03-18
 ### Changed
 - TrajectoryOptimizer example functional on Windows.
