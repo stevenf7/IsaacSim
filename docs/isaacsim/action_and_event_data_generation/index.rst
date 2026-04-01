@@ -53,7 +53,7 @@ Action and Event Data Generation Stack
 Extensions
 ----------
 
-The core functionality is provided by a set of five application-level extensions and supporting tools:
+The core functionality is provided by a set of application-level extensions and supporting tools:
 
 .. list-table::
    :widths: 25 30 45
@@ -83,6 +83,9 @@ The core functionality is provided by a set of five application-level extensions
    * - Behavior Composer
      - ``omni.behavior.composer``
      - The **Behavior Composer (OBC)** extension implements the classic behavior tree system for Omniverse Kit applications. It provides tools and APIs to author entity behaviors using OpenUSD and a standalone C++ core runtime API to power simulation engines.
+   * - Agent Planner
+     - ``isaacsim.agent.planner.core``
+     - The **Isaac Agent Planner** core extension converts natural-language scenarios into behavior tree outputs. It provides the planning pipeline used to process scene context, node catalogs, and model configuration data for interactive and scripted workflows.
    * - Animated Robot Controller
      - ``isaacsim.anim.robot``
      - The **Animated Robot Controller (IAR)** extension enables realistic robot animation by playing back captured simulation motion data. It bridges physics-based simulation and animation, allowing for precise robot movements without the overhead of real-time physics.
@@ -100,6 +103,7 @@ Extension Tutorials
    :maxdepth: 1
 
    ./tutorial_replicator_agent
+   ./tutorial_agent_planner
    ./tutorial_replicator_object
    ./tutorial_replicator_caption
    ./tutorial_replicator_incident
