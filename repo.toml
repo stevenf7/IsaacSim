@@ -1159,30 +1159,6 @@ files.exclude = [
   "tools/container/*"
 ]
 
-
-########################################################################################################################
-# Clang-Tidy
-########################################################################################################################
-
-[repo_clang_tidy]
-# Path to the clang-tidy configuration file
-config_file = "${root}/.clang-tidy"
-# Path to the compile_commands.json file
-compile_commands = "${root}/_build/${platform}/${config}/compile_commands.json"
-# Paths to exclude from analysis (glob patterns)
-exclude_paths = [
-  "*/isaacsim.robot.schema/*"
-]
-# Extra arguments to pass to clang-tidy
-extra_args = [
-  "--extra-arg=-std=c++17",
-  "--extra-arg=-Wno-error",
-  "--quiet",
-  "--warnings-as-errors=-*"
-]
-
-
-
 ########################################################################################################################
 # Tool to pull kit kernel and extensions before running
 ########################################################################################################################
