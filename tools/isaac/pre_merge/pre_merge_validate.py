@@ -48,6 +48,15 @@ Usage:
     # Run only tests for modified extensions
     python tools/isaac/pre_merge/pre_merge_validate.py --test-only
 
+    # Run checks on a single extension
+    python tools/isaac/pre_merge/pre_merge_validate.py -e isaacsim.ros2.core
+
+    # Run checks on multiple extensions
+    python tools/isaac/pre_merge/pre_merge_validate.py --extensions isaacsim.ros2.core isaacsim.ros2.nodes
+
+    # Run tests for specific extensions
+    python tools/isaac/pre_merge/pre_merge_validate.py --test -e isaacsim.ros2.core
+
     # Auto-fix what can be fixed (ruff, extension.toml, settings docs)
     python tools/isaac/pre_merge/pre_merge_validate.py --fix
 
@@ -88,6 +97,7 @@ from repo_helpers import (  # noqa: E402
     all_extensions,
     get_all_modified_files,
     has_apps_changes,
+    resolve_extensions_by_name,
 )
 from term_helpers import (  # noqa: E402
     Colors,
@@ -857,6 +867,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--extensions",
+        "-e",
+        nargs="+",
+        default=None,
+        metavar="EXT",
+        help="Run checks on the specified extension(s) instead of auto-detecting "
+        "from modified files. Accepts one or more extension names "
+        "(e.g. isaacsim.ros2.core isaacsim.ros2.nodes).",
+    )
+    parser.add_argument(
         "--all",
         action="store_true",
         dest="all_extensions",
@@ -970,7 +990,11 @@ def _run(args: argparse.Namespace) -> int:
     ]
     run_all_validation = not any(check_flags)
 
-    if args.all_extensions:
+    if args.extensions:
+        extensions = resolve_extensions_by_name(args.extensions)
+        modified, resolved_base = get_all_modified_files(args.base_branch)
+        log_info(f"Running on {len(extensions)} explicitly specified extension(s).")
+    elif args.all_extensions:
         modified: list[Path] = []
         resolved_base = args.base_branch
         extensions = all_extensions()
