@@ -921,7 +921,7 @@ test-linux-x86_64-benchmarks-1-gpu:
     after_script:
       - !reference [.datadog-test-visibility-linux-x86_64, script]
 
-test-linux-x86_64-omniperf-benchmarks-1-gpu:
+test-linux-x86_64-omniperf-benchmarks-1-gpu: 
     rules:
       - if: $RUN_BUMP_VERSION == "true"
         when: never
@@ -967,6 +967,8 @@ test-linux-x86_64-omniperf-benchmarks-1-gpu:
 omniperf-result-handler:
     extends: .result_handler
     rules:
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
       - !reference [.disable_on_downstream_of_mr, rules]
       - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^kit-integration\/.*/ || $CI_COMMIT_BRANCH =~ /^release\/.*/
         when: on_success
@@ -1134,6 +1136,8 @@ get-isaaclab-historical-data:
       - .ipp_lnx_x86_64_cpu_small
     allow_failure: true
     rules:
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
       # Allow explicitly in IsaacLab-triggered pipelines before the downstream-of-MR block fires.
       - if: $CI_PIPELINE_SOURCE == "pipeline"
         when: on_success
