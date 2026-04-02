@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.1] - 2026-04-01
+### Removed
+- Remove the `omni.isaac.ml_archive` dependency
+
 ## [1.11.0] - 2026-03-23
 ### Added
 - Emit telemetry event for app startup duration via isaacsim.core.telemetry
