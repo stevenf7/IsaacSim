@@ -119,6 +119,48 @@ def all_extension_names() -> list[str]:
     return [ext.name for ext in all_extensions()]
 
 
+def resolve_extensions_by_name(names: list[str]) -> list[Path]:
+    """Resolve extension names to their directory paths.
+
+    Each name is matched against every directory under :data:`EXTENSION_ROOTS`
+    that contains ``config/extension.toml``.
+
+    Args:
+        names: Extension names (e.g. ``["isaacsim.ros2.core"]``).
+
+    Returns:
+        Sorted list of resolved extension directory paths.
+
+    Raises:
+        SystemExit: If any name cannot be resolved to an extension directory.
+    """
+    name_to_path: dict[str, Path] = {}
+    for root in EXTENSION_ROOTS:
+        if root.exists():
+            for child in root.iterdir():
+                if child.is_dir() and (child / "config" / "extension.toml").exists():
+                    name_to_path[child.name] = child
+
+    resolved: list[Path] = []
+    missing: list[str] = []
+    for name in names:
+        if name in name_to_path:
+            resolved.append(name_to_path[name])
+        else:
+            missing.append(name)
+
+    if missing:
+        import sys
+
+        print(f"Error: unknown extension(s): {', '.join(missing)}", file=sys.stderr)
+        print(f"Available extensions ({len(name_to_path)}):", file=sys.stderr)
+        for n in sorted(name_to_path):
+            print(f"  {n}", file=sys.stderr)
+        raise SystemExit(1)
+
+    return sorted(resolved)
+
+
 def has_apps_changes(files: list[Path]) -> bool:
     """Return True if any file in the given list lives under ``source/apps/``.
 
