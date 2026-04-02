@@ -1,5 +1,5 @@
 [package]
-version = "2.5.1"
+version = "2.5.2"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensors"
 description = "Isaac Sim PhysX Sensors extension provides APIs for PhysX-raycast-based lidars and sensors including Proximity Sensor and Lightbeam Sensor."
@@ -18,14 +18,11 @@ writeTarget.kit = true
 "isaacsim.robot.schema" = {}
 "isaacsim.util.debug_draw" = {}
 "omni.graph" = {}
-"omni.kit.menu.utils" = {}
-"omni.kit.pip_archive" = {} # pulls in numpy
-"omni.kit.uiapp" = {}
 "omni.physics" = {}
 "omni.physics.physx" = {}
 "omni.physx" = {}
 "omni.syntheticdata" = {}
-"omni.timeline" = {} # needed for simulation to start
+"omni.timeline" = {}
 "omni.usd" = {}
 "omni.usdphysics" = {}
 "usdrt.scenegraph" = {}
