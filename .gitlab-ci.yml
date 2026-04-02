@@ -34,6 +34,9 @@ include:
   - project: omniverse/benchmark/reggie
     ref: release/v2
     file: /ci/detect.yml
+  - project: 'omniverse/benchmark/omniperf-benchmark'
+    file: 'ci/result-handler-ci.yml'
+    ref: main
   - project: 'omniverse/devplat/gitlab/templates/common/kit-extension'
     file:
       - 'modules/stage-deploy.yml'
@@ -389,6 +392,10 @@ osec:sonarqube:
       - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"
       - when: never
 
+.rules-run-omniperf-mr:
+    rules:
+      - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Run omniperf benchmark/"
+        when: on_success
 # ==============================================================================================================
 # Rule for running publisher on push on develop and release branches
 .rules-version-changed:
@@ -910,6 +917,64 @@ test-linux-x86_64-benchmarks-1-gpu:
       - ./repo.sh ci test -- -s benchmarks --generate-report
     after_script:
       - !reference [.datadog-test-visibility-linux-x86_64, script]
+
+test-linux-x86_64-omniperf-benchmarks-1-gpu:
+    rules:
+      - !reference [.disable_on_downstream_of_mr, rules]
+      - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^kit-integration\/.*/ || $CI_COMMIT_BRANCH =~ /^release\/.*/
+        when: on_success
+      - !reference [.rules-run-omniperf-mr, rules]
+      - when: never
+    stage: test
+    timeout: 3 hour
+    interruptible: true
+    allow_failure: true
+    tags:
+      - omni-perf-only/linux
+      - instance/gitlab-gtl-performance
+    variables:
+      OMNIPERF_INDEX_URL: "https://urm.nvidia.com/artifactory/api/pypi/ct-omniverse-pypi/simple"
+      OMNIPERF_EXTRA_INDEX_URL: "https://urm.nvidia.com/artifactory/api/pypi/nv-shared-pypi/simple"
+      MACHINE_OS: "ubuntu22-04-5"
+      MACHINE_KIND: "EPYC_9124P_1XL40_ADA"
+      MACHINE_DRIVER: "NVIDIA-Linux-x86_64-580.126.09"
+    id_tokens: !reference [.with_omniperf_vault_linux, id_tokens]
+    needs:
+      - job: build-linux-x86_64-release
+        artifacts: true
+    before_script:
+      - !reference [.with_omniperf_vault_linux, before_script]
+      - python3 -m pip install --upgrade --index-url ${OMNIPERF_INDEX_URL} --extra-index-url ${OMNIPERF_EXTRA_INDEX_URL} --extra-index-url https://pypi.org/simple --no-cache-dir omniperf
+      # Bootstrap reggie (download + setup venv, same as .reggie_detect_ubuntu but without running detect)
+      - echo "Installing reggie bootstrap (ref ${REGGIE_BOOTSTRAP_REF})..."
+      - curl -s "https://gitlab-master.nvidia.com/omniverse/benchmark/reggie-bootstrap/-/archive/${REGGIE_BOOTSTRAP_REF}/reggie-bootstrap-${REGGIE_BOOTSTRAP_REF}.tar.gz" | tar -zx
+      - ./reggie-bootstrap-${REGGIE_BOOTSTRAP_REF}/setup_venv.sh ${REGGIE_VERSION}
+    script:
+      - ./tools/ci/omniperf/run_benchmarks.sh
+    artifacts:
+      paths:
+        - _omniperf_results/
+        - .reggie-out/
+        - .reggie-out-iter-*/
+      when: always
+      expire_in: 2 weeks
+
+omniperf-result-handler:
+    extends: .result_handler
+    rules:
+      - !reference [.disable_on_downstream_of_mr, rules]
+      - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^kit-integration\/.*/ || $CI_COMMIT_BRANCH =~ /^release\/.*/
+        when: on_success
+      - !reference [.rules-run-omniperf-mr, rules]
+      - when: never
+    variables:
+      OMNIPERF_RESULT_HANDLER_TYPE: "isaac-sim"
+      OMNIPERF_RESULT_PATH: "_omniperf_results"
+    needs:
+      - job: test-linux-x86_64-omniperf-benchmarks-1-gpu
+        artifacts: true
+    script:
+      - ./tools/ci/omniperf/handle_results.sh
 
 test-linux-x86_64-benchmarks-2-gpu:
     rules:
