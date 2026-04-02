@@ -549,8 +549,6 @@ build-linux-x86_64-release:
       # - apt-get install -y rdfind # TODO: Add rdfind back in, was seeing package not found error on gitlab runner
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     rules:
-      # Covered by build-linux-x86_64-c++-coverage, so skip it in MR pipelines to save resources.
-      - !reference [.disable_on_downstream_of_mr, rules]
       - !reference [.build-common, rules]
     artifacts:
       when: always
@@ -926,7 +924,7 @@ test-linux-x86_64-omniperf-benchmarks-1-gpu:
       - if: $RUN_BUMP_VERSION == "true"
         when: never
       - !reference [.disable_on_downstream_of_mr, rules]
-      - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^kit-integration\/.*/ || $CI_COMMIT_BRANCH =~ /^release\/.*/
+      - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^kit-integration\// || $CI_COMMIT_BRANCH =~ /^release\//
         when: on_success
       - !reference [.rules-run-omniperf-mr, rules]
       - when: never
@@ -970,7 +968,7 @@ omniperf-result-handler:
       - if: $RUN_BUMP_VERSION == "true"
         when: never
       - !reference [.disable_on_downstream_of_mr, rules]
-      - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^kit-integration\/.*/ || $CI_COMMIT_BRANCH =~ /^release\/.*/
+      - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^kit-integration\// || $CI_COMMIT_BRANCH =~ /^release\//
         when: on_success
       - !reference [.rules-run-omniperf-mr, rules]
       - when: never
