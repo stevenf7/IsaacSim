@@ -231,10 +231,11 @@ def _tweak_rendering_deps_xml(xml_content: str, build_config: str) -> str:
     Sets linkPath="rtx_plugins" on the remaining dependency so packman extracts there.
     """
     root = ElementTree.fromstring(xml_content)
-    config_suffix = ".release." if build_config == "release" else ".debug."
+    # Match ".release." (old format) or ".release_" (new format with underscore separator).
+    config_marker = f".{build_config}"
     for dep in list(root.findall("dependency")):
         dep_name = dep.get("name") or ""
-        if config_suffix not in dep_name:
+        if config_marker not in dep_name:
             root.remove(dep)
         else:
             dep.set("linkPath", "rtx_plugins")
@@ -320,17 +321,19 @@ def _fetch_rtx_deps_via_packman_lookup(
         packmanapi.pull(
             project_path=xml_path,
             platform=packman_platform,
-            include_tags=[build_config],
-            tokens={"config": build_config},
         )
     except Exception as e:
         print(f"[pull_kit] Fallback: packman pull failed: {e}")
         return {}
 
     rtx_plugins_dir = os.path.join(output_base_dir, "rtx_plugins")
-    libs_dir = os.path.join(rtx_plugins_dir, "_build", packman_platform, build_config, "libs")
+    # Package internal layout may use either the short platform name (linux-x86_64, new) or
+    # the packman/manylinux name (manylinux_2_35_x86_64, old).  Try both.
+    libs_dir = os.path.join(rtx_plugins_dir, "_build", platform, build_config, "libs")
     if not os.path.isdir(libs_dir):
-        print(f"[pull_kit] Fallback: libs dir not found at {libs_dir}")
+        libs_dir = os.path.join(rtx_plugins_dir, "_build", packman_platform, build_config, "libs")
+    if not os.path.isdir(libs_dir):
+        print(f"[pull_kit] Fallback: libs dir not found under _build/{platform} or _build/{packman_platform}")
         return {}
 
     extracted = {}
