@@ -14,6 +14,8 @@
 -- limitations under the License.
 
 local ext = get_current_extension_info()
+ext.target_dir = deprecated_exts_path .. "/" .. ext.id
+ext.bin_dir = ext.target_dir .. "/bin"
 local ogn = get_ogn_project_information(ext, "isaacsim/sensors/rtx")
 local targetDepsDir = "%{root}/_build/target-deps"
 local hostDepsDir = "%{root}/_build/host-deps"
@@ -22,6 +24,7 @@ project_ext(ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, ogn.plugin_project)
+targetdir(ext.bin_dir)
 
 add_files("impl", "plugins")
 add_files("nodes", ogn.nodes_path)
@@ -35,7 +38,7 @@ includedirs {
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",
-    "%{root}/source/extensions/isaacsim.sensors.rtx/include",
+    "%{root}/source/deprecated/isaacsim.sensors.rtx/include",
     target_deps .. "/generic_model_output/%{platform}/%{config}/include",
     target_deps .. "/sensor-checker/%{platform}/%{config}/include",
     target_deps .. "/omni_client_library/include",
@@ -89,7 +92,7 @@ add_files("python/impl", "python/impl/**.py")
 add_files("python/tests", "python/tests/**.py")
 
 includedirs {
-    "%{root}/source/extensions/isaacsim.sensors.rtx/include",
+    "%{root}/source/deprecated/isaacsim.sensors.rtx/include",
 }
 
 add_ogn_dependencies(ogn)

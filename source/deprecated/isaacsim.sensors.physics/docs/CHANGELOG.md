@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.2] - 2026-03-31
+### Deprecated
+- Extension deprecated in favor of the Experimental extension `isaacsim.sensors.experimental.physics`
+
 ## [1.1.1] - 2026-03-26
 ### Changed
 - Moved Python binding module to `bindings/` subdirectory

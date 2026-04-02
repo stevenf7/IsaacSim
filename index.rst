@@ -189,19 +189,19 @@ Extensions
    :maxdepth: 1
    :caption: Extensions (Sensors)
 
-   isaacsim.sensors.camera <source/extensions/isaacsim.sensors.camera/docs/index>
+   isaacsim.sensors.camera <source/deprecated/isaacsim.sensors.camera/docs/index>
    isaacsim.sensors.camera.ui <source/extensions/isaacsim.sensors.camera.ui/docs/index>
    isaacsim.sensors.experimental.camera <source/extensions/isaacsim.sensors.experimental.camera/docs/index>
    isaacsim.sensors.experimental.physics <source/extensions/isaacsim.sensors.experimental.physics/docs/index>
    isaacsim.sensors.experimental.rtx <source/extensions/isaacsim.sensors.experimental.rtx/docs/index>
-   isaacsim.sensors.physics <source/extensions/isaacsim.sensors.physics/docs/index>
+   isaacsim.sensors.physics <source/deprecated/isaacsim.sensors.physics/docs/index>
    isaacsim.sensors.physics.examples <source/extensions/isaacsim.sensors.physics.examples/docs/index>
    isaacsim.sensors.physics.nodes <source/extensions/isaacsim.sensors.physics.nodes/docs/index>
    isaacsim.sensors.physics.ui <source/extensions/isaacsim.sensors.physics.ui/docs/index>
    isaacsim.sensors.physx <source/extensions/isaacsim.sensors.physx/docs/index>
    isaacsim.sensors.physx.examples <source/extensions/isaacsim.sensors.physx.examples/docs/index>
    isaacsim.sensors.physx.ui <source/extensions/isaacsim.sensors.physx.ui/docs/index>
-   isaacsim.sensors.rtx <source/extensions/isaacsim.sensors.rtx/docs/index>
+   isaacsim.sensors.rtx <source/deprecated/isaacsim.sensors.rtx/docs/index>
    isaacsim.sensors.rtx.ui <source/extensions/isaacsim.sensors.rtx.ui/docs/index>
 
 .. toctree::

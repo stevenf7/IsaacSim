@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.15.1] - 2026-03-31
+### Deprecated
+- Extension deprecated in favor of the Experimental extension `isaacsim.sensors.experimental.rtx`
+
 ## [15.15.0] - 2026-03-25
 ### Changed
 - Move `generic_model_output`, `sensor_checker` and supported lidar configurations to the experimental extension version

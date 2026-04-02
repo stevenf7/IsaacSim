@@ -613,20 +613,20 @@ inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
+    "extsDeprecated/isaacsim.sensors.camera",
+    "extsDeprecated/isaacsim.sensors.physics",
+    "extsDeprecated/isaacsim.sensors.rtx",
     "exts/isaacsim.sensors.camera.ui",
-    "exts/isaacsim.sensors.camera",
     "exts/isaacsim.sensors.experimental.camera",
     "exts/isaacsim.sensors.experimental.physics",
     "exts/isaacsim.sensors.experimental.rtx",
     "exts/isaacsim.sensors.physics.examples",
     "exts/isaacsim.sensors.physics.nodes",
     "exts/isaacsim.sensors.physics.ui",
-    "exts/isaacsim.sensors.physics",
     "exts/isaacsim.sensors.physx.examples",
     "exts/isaacsim.sensors.physx.ui",
     "exts/isaacsim.sensors.physx",
     "exts/isaacsim.sensors.rtx.ui",
-    "exts/isaacsim.sensors.rtx",
 ]
 
 [isaacsim-storage]

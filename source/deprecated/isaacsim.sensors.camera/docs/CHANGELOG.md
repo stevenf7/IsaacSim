@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.2] - 2026-03-31
+### Deprecated
+- Extension deprecated in favor of the Experimental extension `isaacsim.sensors.experimental.camera`
+
 ## [1.7.1] - 2026-03-18
 ### Changed
 - Disable `GroundPlane` template on test cases
