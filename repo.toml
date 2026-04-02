@@ -311,9 +311,9 @@ links.exts.include = [
   "omni.kit.test",
   "isaacsim.util.debug_draw",
   "omni.kit.asset_converter",
-  # AUTOREMOVE: BEGIN
+# AUTOREMOVE: BEGIN
   "omni.kit.xr.core",
-  # AUTOREMOVE: END
+# AUTOREMOVE: END
 ]
 links.path = "${root}/_build/${platform}/${config}/extsbuild"
 
