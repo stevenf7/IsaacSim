@@ -1648,7 +1648,7 @@ rebase-kit-integration-branches:
              - kit-integration/master
              - kit-integration/feature/110.0
              - kit-integration/feature/110.1
-             - kit-integration/production/110.0
+             - kit-integration/production/110.1
     extends:
       - .ipp_lnx_x86_64_cpu_small
     variables:
