@@ -1,4 +1,8 @@
 # Changelog
+## [2.5.2] - 2026-04-01
+### Changed
+- Removed unused dependencies from extension.toml
+
 ## [2.5.1] - 2026-03-26
 ### Changed
 - Moved Python binding module to `bindings/` subdirectory
