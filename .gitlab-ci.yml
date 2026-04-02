@@ -923,6 +923,8 @@ test-linux-x86_64-benchmarks-1-gpu:
 
 test-linux-x86_64-omniperf-benchmarks-1-gpu:
     rules:
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
       - !reference [.disable_on_downstream_of_mr, rules]
       - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^kit-integration\/.*/ || $CI_COMMIT_BRANCH =~ /^release\/.*/
         when: on_success
