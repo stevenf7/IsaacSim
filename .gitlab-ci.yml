@@ -157,6 +157,9 @@ variables:
     ALLOW_TAG_PIPELINE:
         value: "true"
         description: "Set to 'false' to disable tag pipeline on a all push jobs."
+    FF_SCRIPT_SECTIONS:
+        value: "true"
+        description: "Set to true to show the script output."
     RUN_EXTENSION_BENCHMARKS:
         value: "false"
         description: "Set to true to run benchmarks for kit extensions."
@@ -218,7 +221,7 @@ post_to_slack:
     - ./tools/packman/python.sh -m pip install -r tools/ci/slack/requirements.txt --quiet
     - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --pipeline-report --channel $SLACK_CHANNEL
   rules:
-    # Using rules to set the channel.  
+    # Using rules to set the channel.
     # Nightlies from Kit against a kit-integration branch get #isaac-sim-kit-integration-ci
     # We shouldn't get them but nightlies from kit that do not hit a kit-integration branch get #isaac-sim-ci
     # MRs from Kit (with checkbox selected) and Isaac (with checkbox selected) get #isaac-sim-ci-mr
@@ -238,7 +241,7 @@ post_to_slack:
     - if: $CI_COMMIT_REF_NAME =~ /^kit-integration\// && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "nightly"
       when: always
       variables:
-       SLACK_CHANNEL: "#isaac-sim-kit-integration-ci"
+        SLACK_CHANNEL: "#isaac-sim-kit-integration-ci"
     - !reference [.rules-nightly-tests-always, rules]
   artifacts:
     paths:
@@ -246,7 +249,7 @@ post_to_slack:
       - pipeline_test_chart_heatmap.png
       - regressions.txt
     expire_in: 1 week
-  
+
 
 
 # ==============================================================================================================
@@ -795,7 +798,7 @@ build-windows-x86_64-debug:
       - |
         # Install VC++ Redistributable and UCRT using multiple methods for reliability
         Write-Host "Installing Visual C++ Redistributable 2015-2022 (includes UCRT)..."
-        
+
         # Method 1: Try winget first (fastest, most reliable on modern Windows)
         $wingetAvailable = Get-Command winget -ErrorAction SilentlyContinue
         if ($wingetAvailable) {
@@ -809,13 +812,13 @@ build-windows-x86_64-debug:
         } else {
           Write-Host "winget not available, using direct download..."
         }
-        
+
         # Method 2: Direct download as fallback/supplement
         Write-Host "Downloading and installing VC++ Redistributable directly..."
         Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "vc_redist.x64.exe"
         Start-Process -FilePath ".\vc_redist.x64.exe" -ArgumentList "/install","/quiet","/norestart" -Wait
         Write-Host "Direct installation complete."
-        
+
         # Verify installation
         Write-Host "`nVerifying VC++ Runtime installation:"
         $vcDlls = @("vcruntime140.dll", "vcruntime140_1.dll", "msvcp140.dll", "ucrtbase.dll")
@@ -1096,9 +1099,81 @@ gather-coverage:
 
 # We do coverage in all test jobs, need to disable the automatic one
 test-linux-x86_64-c++-coverage:
-   rules:
-     - if: $CI_COMMIT_BRANCH == $CI_COMMIT_BRANCH
-       when: never
+    rules:
+      - if: $CI_COMMIT_BRANCH == $CI_COMMIT_BRANCH
+        when: never
+
+# ==============================================================================================================
+# Shared GitLab cache for IsaacLab dashboard: historical GitLab/GitHub data under _dashboard_cache/.
+# get-isaaclab-historical-data runs fetch-gitlab/fetch-github subcommands (no tests); generate-isaac-lab-dashboard runs the ci subcommand (needs JUnit).
+.isaaclab-dashboard-cache:
+    variables:
+        ISAAC_LAB_BRANCH: "develop"
+        # Newline-separated list of omni_isaac_sim branches whose historical GitLab
+        # pipelines are fetched and displayed in the Isaac Sim CI dropdown.
+        ISAAC_LAB_CI_REPORT_BRANCHES: |
+            develop
+            develop-kit-tot
+            kit-integration/master
+            kit-integration/feature/110.0
+            kit-integration/feature/110.1
+            kit-integration/production/110.0
+    cache:
+        key: "isaaclab-dashboard-${ISAAC_LAB_BRANCH}"
+        paths:
+            - _dashboard_cache/
+        policy: pull-push
+
+# ==============================================================================================================
+# Manual: requests install + API token checks + optional historical fetch (same cache as generate job).
+get-isaaclab-historical-data:
+    extends:
+      - .isaaclab-dashboard-cache
+      - .ipp_lnx_x86_64_cpu_small
+    allow_failure: true
+    rules:
+      # Allow explicitly in IsaacLab-triggered pipelines before the downstream-of-MR block fires.
+      - if: $CI_PIPELINE_SOURCE == "pipeline"
+        when: on_success
+      - !reference [.disable_on_downstream_of_mr, rules]
+      - !reference [.test-common, rules]
+    artifacts:
+        expire_in: 1 week
+        when: always
+        paths:
+          - _dashboard_cache/
+    script:
+      - ./tools/packman/python.sh -m pip install --quiet requests
+      - echo "=== GitLab / GitHub API (GITLAB_AUTH_TOKEN, GITHUB_NVIDIA_DEV_TOKEN) ==="
+      - ./tools/packman/python.sh tools/ci/verify_dashboard_api_tokens.py
+      # Historical GitLab + GitHub data (no JUnit — same cache key as generate-isaac-lab-dashboard).
+      - |
+        set +e
+        ERR_COUNT=0
+        echo "=== Historical GitLab fetch (optional) ==="
+        while IFS= read -r REPORT_BRANCH; do
+          [ -z "$REPORT_BRANCH" ] && continue
+          echo "--- Fetching branch: $REPORT_BRANCH ---"
+          ./tools/packman/python.sh tools/ci/isaac_lab_dashboard.py \
+            fetch-gitlab \
+            --isaac-sim-branch "$REPORT_BRANCH" \
+            --isaac-lab-branch "${ISAAC_LAB_BRANCH:-develop}" \
+            --data-dir _dashboard_cache
+          if [ $? -ne 0 ]; then
+            echo "${RED}Error: historical GitLab fetch failed for branch $REPORT_BRANCH.${RESET}" >&2
+            ERR_COUNT=$((ERR_COUNT + 1))
+          fi
+        done <<< "${ISAAC_LAB_CI_REPORT_BRANCHES:-develop}"
+        echo "=== Historical GitHub fetch ==="
+        ./tools/packman/python.sh tools/ci/isaac_lab_dashboard.py fetch-github --data-dir _dashboard_cache
+        if [ $? -ne 0 ]; then
+          echo "${RED}Error: historical GitHub fetch (isaac_lab_dashboard.py fetch-github) failed.${RESET}" >&2
+          ERR_COUNT=$((ERR_COUNT + 1))
+        fi
+        if [ "$ERR_COUNT" -gt 0 ]; then
+          echo "${RED}Historical fetch finished with ${ERR_COUNT} error(s).${RESET}" >&2
+        fi
+        exit "$ERR_COUNT"
 
 # ==============================================================================================================
 # external-tests
@@ -1250,6 +1325,46 @@ build-docs-only-mr:
       url: https://omniverse.gitlab-master-pages.nvidia.com/-/isaac/omni_isaac_sim/-/jobs/$CI_JOB_ID/artifacts/_build/docs/isaac-sim/latest/index.html
       auto_stop_in: 2 weeks
 
+generate-isaac-lab-dashboard:
+    stage: external-test
+    allow_failure: true
+    extends:
+      - .isaaclab-dashboard-cache
+      - .ipp_lnx_x86_64_cpu_small
+    needs:
+      - job: get-isaaclab-historical-data
+        artifacts: true
+        optional: true
+      - job: test-linux-x86_64-isaaclab-integration
+        artifacts: true
+        optional: true
+      - job: test-linux-x86_64-isaaclab-integration-nightly
+        artifacts: true
+        optional: true
+    script:
+      - export TZ="America/Los_Angeles"
+      - ./tools/packman/python.sh -m pip install --quiet requests
+      # Historical data arrives via artifact from get-isaaclab-historical-data; this job only merges the current JUnit.
+      # Folded block (>): one shell command with spaces between tokens — avoids CRLF breaking '\' line continuation.
+      - >
+        ./tools/packman/python.sh tools/ci/isaac_lab_dashboard.py
+        ci
+        --junit-xml _isaaclab/tests/full_report.xml
+        --isaac-lab-branch "${ISAAC_LAB_BRANCH:-develop}"
+        --data-dir _dashboard_cache
+    artifacts:
+        expire_in: 2 weeks
+        when: always
+        paths:
+          - _dashboard_cache/output/
+    rules:
+      - if: $CI_PIPELINE_SOURCE == "pipeline"
+        when: on_success
+      - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      - !reference [.test-nightly, rules]
+      - when: never
+
+
 pages:
     stage: pages
     extends:
@@ -1260,6 +1375,13 @@ pages:
       - cp -r _build/docs/isaac-sim/latest/* .public/ || true
       - mv pipeline_test_chart_heatmap.html .public/heatmap.html || true
       - mv pipeline_test_chart_heatmap.png .public/heatmap.png || true
+      - |
+        ILAB_BRANCH="${ISAAC_LAB_BRANCH:-develop}"
+        if [ -d _dashboard_cache/output ]; then
+          mkdir -p ".public/${ILAB_BRANCH}/data"
+          cp _dashboard_cache/output/isaac_lab_test_dashboard.html ".public/${ILAB_BRANCH}/"
+          cp -r _dashboard_cache/output/data/. ".public/${ILAB_BRANCH}/data/"
+        fi
       - mv .public public
     artifacts:
         expire_in: never
@@ -1275,6 +1397,9 @@ pages:
         artifacts: true
         optional: true
       - job: post_to_slack
+        artifacts: true
+        optional: true
+      - job: generate-isaac-lab-dashboard
         artifacts: true
         optional: true
 
@@ -1643,7 +1768,7 @@ bump-version:
 rebase-kit-integration-branches:
     parallel:
        matrix:
-           - BRANCH: 
+           - BRANCH:
              - develop-kit-tot
              - kit-integration/master
              - kit-integration/feature/110.0
@@ -1715,7 +1840,7 @@ sign-windows-x86_64-release:
     - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Generate containers in MR pipelines/"
       # Extra bit of hackery to get the MR suffix into the container tags
       variables:
-         MR_SUFFIX: "-mr"
+          MR_SUFFIX: "-mr"
     - !reference [.rules-version-changed, rules]
     - !reference [.rules-push-manual, rules]
 
@@ -2315,14 +2440,14 @@ scan-packages-internal-urls:
         artifacts: true
         optional: true
     script:
-      - python3 tools/ci/package_scanner/scan_packages.py
-          --version $(cat VERSION | head -1)
-          --skip-download
-          --filter release
-          --exclude-dir kit
-          --exclude-dir extscache
-          --exclude-dir tests
-          --exclude-dir docs
+      - python3 tools/ci/package_scanner/scan_packages.py \
+          --version $(cat VERSION | head -1) \
+          --skip-download \
+          --filter release \
+          --exclude-dir kit \
+          --exclude-dir extscache \
+          --exclude-dir tests \
+          --exclude-dir docs \
           --exclude-dir extsInternal
     rules:
       - if: $RUN_BUMP_VERSION == "true"
@@ -2357,16 +2482,15 @@ scan-packages-internal-urls:
     when: always
     paths:
       - _isaaclab/tests/*
-      - '**/tests/*.xml'
     reports:
       junit:
-        - '**/tests/full_report.xml'
+        - '_isaaclab/tests/full_report.xml'
 
 test-linux-x86_64-isaaclab-integration:
   rules:
-    # Disable this job for all downstream pipelines until its more green
     - if: $CI_PIPELINE_SOURCE == "pipeline"
-      when: never
+      when: on_success
+      allow_failure: true
     - !reference [.disable_on_downstream_of_mr, rules]
     - !reference [.test-common, rules]
   extends:

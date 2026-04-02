@@ -1,5 +1,6 @@
 # all folders starting with _ are local
 _*/
+.ci-dashboard-venv/
 !_impl/
 # exclude local website repo, used for publishing
 website/
