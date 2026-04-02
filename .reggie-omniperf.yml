@@ -1,0 +1,117 @@
+project: '$CI_PROJECT_PATH_SLUG'
+artifacts_glob: '_omniperf_results/WARM_*_reggie_results_1.json'
+
+regression_detection:
+  metrics:
+
+    # FPS metrics
+    - metric_name: 'benchmark/Mean FPS'
+      func: and
+      params:
+        funcs:
+          - func: percentage_change
+            params:
+              threshold: -10.0
+          - func: stdev
+            params:
+              min_trailing_samples: 4
+              max_trailing_samples: 20
+              max_deviation: 4.0
+
+    # App Update Frametime metrics
+    - metric_name: 'benchmark/*App_Update Frametime'
+      func: and
+      params:
+        funcs:
+          - func: percentage_change
+            params:
+              threshold: 10.0
+          - func: stdev
+            params:
+              min_trailing_samples: 4
+              max_trailing_samples: 20
+              max_deviation: 4.0
+
+    # GPU Frametime metrics
+    - metric_name: 'benchmark/*GPU Frametime'
+      func: and
+      params:
+        funcs:
+          - func: percentage_change
+            params:
+              threshold: 10.0
+          - func: stdev
+            params:
+              min_trailing_samples: 4
+              max_trailing_samples: 20
+              max_deviation: 4.0
+
+    # Physics Frametime metrics
+    - metric_name: 'benchmark/*Physics Frametime'
+      func: and
+      params:
+        funcs:
+          - func: percentage_change
+            params:
+              threshold: 10.0
+          - func: stdev
+            params:
+              min_trailing_samples: 4
+              max_trailing_samples: 20
+              max_deviation: 4.0
+
+    # CPU Usage metrics
+    - metric_name: 'benchmark/*CPU Usage'
+      func: and
+      params:
+        funcs:
+          - func: percentage_change
+            params:
+              threshold: 10.0
+          - func: stdev
+            params:
+              min_trailing_samples: 4
+              max_trailing_samples: 20
+              max_deviation: 4.0
+
+    # Memory metrics (benchmark)
+    - metric_name: 'benchmark/*Memory*'
+      func: and
+      params:
+        funcs:
+          - func: percentage_change
+            params:
+              threshold: 10.0
+          - func: stdev
+            params:
+              min_trailing_samples: 4
+              max_trailing_samples: 20
+              max_deviation: 4.0
+
+    # Runtime metrics (benchmark)
+    - metric_name: 'benchmark/Runtime'
+      func: and
+      params:
+        funcs:
+          - func: percentage_change
+            params:
+              threshold: 10.0
+          - func: stdev
+            params:
+              min_trailing_samples: 4
+              max_trailing_samples: 20
+              max_deviation: 4.0
+
+    # Loading metrics
+    - metric_name: 'loading/*'
+      func: and
+      params:
+        funcs:
+          - func: percentage_change
+            params:
+              threshold: 10.0
+          - func: stdev
+            params:
+              min_trailing_samples: 4
+              max_trailing_samples: 20
+              max_deviation: 4.0

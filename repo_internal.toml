@@ -795,6 +795,7 @@ exclude = [
     ".nspect-vuln-allowlist.toml",
     ".omni-pulse.toml",
     ".stylua.toml",
+    ".reggie-omniperf.yml",
     "CHANGELOG.md",
     "CODEOWNERS",
     "CODING.md",
