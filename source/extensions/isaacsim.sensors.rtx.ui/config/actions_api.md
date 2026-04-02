@@ -4,9 +4,7 @@
 |:----------------------------------------|:--|:----------------------------------------------------------|
 | create_lidar_Example_Rotary             |   | Create NVIDIA Example Rotary RTX Lidar sensor             |
 | create_lidar_Example_Rotary_2D          |   | Create NVIDIA Example Rotary 2D RTX Lidar sensor          |
-| create_lidar_Example_Rotary_BEAMS       |   | Create NVIDIA Example Rotary BEAMS RTX Lidar sensor       |
 | create_lidar_Example_Solid_State        |   | Create NVIDIA Example Solid State RTX Lidar sensor        |
-| create_lidar_Example_Solid_State_BEAMS  |   | Create NVIDIA Example Solid State BEAMS RTX Lidar sensor  |
 | create_lidar_HESAI_XT32_SD10            |   | Create HESAI XT32 SD10 RTX Lidar sensor                   |
 | create_lidar_OS0                        |   | Create Ouster OS0 RTX Lidar sensor                        |
 | create_lidar_OS1                        |   | Create Ouster OS1 RTX Lidar sensor                        |

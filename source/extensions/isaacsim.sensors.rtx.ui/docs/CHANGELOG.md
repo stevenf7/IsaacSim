@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.1] - 2026-04-01
+### Changed
+- Update actions_api.md file
+
 ## [1.3.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings

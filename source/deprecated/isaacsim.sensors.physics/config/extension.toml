@@ -1,10 +1,10 @@
 [package]
-version = "1.1.1"
+version = "1.1.2"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation"
 description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor."
 authors = ["hmazhar@nvidia.com", "stevfeng@nvidia.com", "adevalla@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.physics"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/isaacsim.sensors.physics"
 keywords = ["isaac", "physics", "robotics"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/Overview.md"
@@ -13,7 +13,7 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [deprecation]
-warning = "Extension deprecated since Isaac Sim 6.0.0. Replaced with isaacsim.sensors.experimental.physics"
+warning = "Extension deprecated since Isaac Sim 6.0.0 in favor of the Experimental extension: isaacsim.sensors.experimental.physics"
 
 [dependencies]
 "isaacsim.core.api" = {}

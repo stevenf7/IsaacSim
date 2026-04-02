@@ -14,6 +14,8 @@
 -- limitations under the License.
 
 local ext = get_current_extension_info()
+ext.target_dir = deprecated_exts_path .. "/" .. ext.id
+ext.bin_dir = ext.target_dir .. "/bin"
 local targetDepsDir = "%{root}/_build/target-deps"
 local hostDepsDir = "%{root}/_build/host-deps"
 
@@ -21,6 +23,7 @@ project_ext(ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "isaacsim.sensors.physics.plugin")
+targetdir(ext.bin_dir)
 
 dependson { "prebuild", "carb.physics-usd.plugin", "omni.physx.plugin" }
 add_files("impl", "plugins")
@@ -40,7 +43,7 @@ includedirs {
     target_deps .. "/python/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
-    "%{root}/source/extensions/isaacsim.sensors.physics/include",
+    "%{root}/source/deprecated/isaacsim.sensors.physics/include",
 }
 libdirs {
     target_deps .. "/python/lib",
@@ -89,7 +92,7 @@ project_ext_bindings {
 }
 
 includedirs {
-    "%{root}/source/extensions/isaacsim.sensors.physics/include",
+    "%{root}/source/deprecated/isaacsim.sensors.physics/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
 }
 
