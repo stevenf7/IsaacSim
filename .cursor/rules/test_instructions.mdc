@@ -316,6 +316,10 @@ Tests are configured in several key files:
 - `source/extensions/[ext]/config/extension.toml`: Extension test configuration
 - `source/extensions/[ext]/python/tests/`: Extension test source files
 
+## Important: Run Tests Sequentially
+
+**Only run one test process at a time.** Kit applications share the same shader cache, so running multiple test processes in parallel will cause each one to re-generate the shader cache, greatly increasing overall test time and system resource usage. 
+
 ## Troubleshooting
 
 ### Test Not Found

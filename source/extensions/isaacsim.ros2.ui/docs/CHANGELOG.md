@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.0] - 2026-04-01
+### Changed
+- Removed deprecated `isaacsim.core.utils` dependency
+- Migrated to `isaacsim.core.experimental.utils` and `isaacsim.core.rendering_manager`
+- Replaced `set_camera_view` with `ViewportManager.set_camera_view`
+- Replaced `_simulate_async` with `simulate_until_condition` in test cases
+- Replaced `DomeLight` with `DistantLight` in test scene setup
+
 ## [1.5.0] - 2026-03-17
 ### Changed
 - Updated documentation with AI agent.

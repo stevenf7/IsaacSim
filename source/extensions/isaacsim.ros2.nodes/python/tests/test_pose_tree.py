@@ -20,9 +20,9 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.nodes.scripts.utils import set_target_prims
 from isaacsim.core.prims import XFormPrim
-from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Sdf
 from usd.schema.isaac import robot_schema
@@ -233,15 +233,11 @@ class TestRos2PoseTree(ROS2TestCase):
         import rclpy
         from tf2_msgs.msg import TFMessage
 
-        stage = omni.usd.get_context().get_stage()
-        dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")
-        dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(500.0)
-
         # Create two Franka robots at different paths
 
         asset_path = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
-        add_reference_to_stage(usd_path=asset_path, prim_path="/World/panda1")
-        add_reference_to_stage(usd_path=asset_path, prim_path="/World/panda2")
+        stage_utils.add_reference_to_stage(usd_path=asset_path, path="/World/panda1")
+        stage_utils.add_reference_to_stage(usd_path=asset_path, path="/World/panda2")
 
         stage = omni.usd.get_context().get_stage()
 

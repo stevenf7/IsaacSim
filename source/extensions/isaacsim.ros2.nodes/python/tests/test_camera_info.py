@@ -22,7 +22,6 @@ import carb
 import cv2
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-import isaacsim.core.utils.numpy.rotations as rot_utils
 import numpy as np
 import omni.graph.core as og
 import omni.kit.commands
@@ -30,9 +29,10 @@ import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
 import usdrt
+from isaacsim.core.experimental.prims import XformPrim
+from isaacsim.core.experimental.utils import stage as stage_utils
+from isaacsim.core.experimental.utils import transform as transform_utils
 from isaacsim.core.prims import SingleXFormPrim
-from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage, open_stage_async
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from isaacsim.sensors.camera import Camera
 from isaacsim.test.utils import save_depth_image
@@ -40,7 +40,7 @@ from pxr import Sdf, UsdLux
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2
 from sensor_msgs_py import point_cloud2
 
-from .common import get_qos_profile
+from .common import get_qos_profile, simulate_async
 
 # Debug flags for saving depth images during testing
 SAVE_DEPTH_IMAGES_AS_TEST = False
@@ -52,7 +52,6 @@ class TestRos2CameraInfo(ROS2TestCase):
         await super().setUp()
 
         self._visualize = False
-        omni.usd.get_context().new_stage()
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -118,11 +117,9 @@ class TestRos2CameraInfo(ROS2TestCase):
         return im
 
     async def test_monocular_camera_info(self):
-        scene_path = "/Isaac/Environments/Grid/default_environment.usd"
-        await open_stage_async(self._assets_root_path + scene_path)
 
         camera_path = "/Isaac/Sensors/LeopardImaging/Hawk/hawk_v1.1_nominal.usd"
-        add_reference_to_stage(usd_path=self._assets_root_path + camera_path, prim_path="/Hawk")
+        stage_utils.add_reference_to_stage(usd_path=self._assets_root_path + camera_path, path="/Hawk")
         import rclpy
 
         try:
@@ -224,14 +221,14 @@ class TestRos2CameraInfo(ROS2TestCase):
             self._camera_info_timestamp_prev = None
 
     def _add_light(self, name: str, position: List[float]) -> None:
-        sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path(f"/World/SphereLight_{name}"))
+        sphereLight = UsdLux.SphereLight.Define(stage_utils.get_current_stage(), Sdf.Path(f"/World/SphereLight_{name}"))
         sphereLight.CreateRadiusAttr(6)
         sphereLight.CreateIntensityAttr(10000)
         SingleXFormPrim(str(sphereLight.GetPath())).set_world_pose(position)
 
     def _add_checkerboard(self, position: List[float]) -> None:
         checkerboard_path = self._assets_root_path + "/Isaac/Props/Camera/checkerboard_6x10.usd"
-        add_reference_to_stage(usd_path=checkerboard_path, prim_path="/calibration_target")
+        stage_utils.add_reference_to_stage(usd_path=checkerboard_path, path="/calibration_target")
         SingleXFormPrim("/calibration_target", name="calibration_target", position=position)
 
     def _get_rectified_image(self, image_msg_raw, camera_info_msg, side):
@@ -774,7 +771,9 @@ class TestRos2CameraInfo(ROS2TestCase):
             prim_path="/World/Camera",
             position=np.array([4.0, 0, 0.0]),
             resolution=resolution,
-            orientation=rot_utils.euler_angles_to_quats(np.array([0, 0, 180]), degrees=True),
+            orientation=transform_utils.euler_angles_to_quaternion([0, 0, 180], degrees=True, extrinsic=True)
+            .numpy()
+            .flatten(),
         )
         camera.set_focal_length(1.814756)
 
@@ -1152,7 +1151,7 @@ class TestRos2CameraInfo(ROS2TestCase):
         """
         # Load a simple scene
         scene_path = "/Isaac/Environments/Simple_Room/simple_room.usd"
-        await open_stage_async(self._assets_root_path + scene_path)
+        await stage_utils.open_stage_async(self._assets_root_path + scene_path)
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -1177,21 +1176,19 @@ class TestRos2CameraInfo(ROS2TestCase):
         await self._setup_test_scene_with_objects()
 
         # Create camera using low-level USD API
-        from isaacsim.core.utils.prims import define_prim
         from pxr import Gf, UsdGeom
 
         camera_prim_path = "/World/CameraLowLevel"
-        camera_prim = UsdGeom.Camera(define_prim(prim_path=camera_prim_path, prim_type="Camera"))
+        camera_prim = UsdGeom.Camera(stage_utils.define_prim(camera_prim_path, type_name="Camera"))
 
-        # Set camera transform and properties
-        from isaacsim.core.utils.xforms import reset_and_set_xform_ops
-
-        # Set up camera transform using XFormPrim for convenience
-        orientation = rot_utils.euler_angles_to_quats(np.array([90, 0, 90]), degrees=True)
-        reset_and_set_xform_ops(
-            camera_prim.GetPrim(),
-            Gf.Vec3d([4, 0, 0.0]),
-            Gf.Quatd(orientation[0], orientation[1], orientation[2], orientation[3]),
+        # Set camera transform using XformPrim
+        orientation = (
+            transform_utils.euler_angles_to_quaternion([90, 0, 90], degrees=True, extrinsic=True).numpy().flatten()
+        )
+        cam_xform = XformPrim(camera_prim_path, reset_xform_op_properties=True)
+        cam_xform.set_world_poses(
+            positions=[[4, 0, 0.0]],
+            orientations=[[orientation[0], orientation[1], orientation[2], orientation[3]]],
         )
 
         # Set camera properties

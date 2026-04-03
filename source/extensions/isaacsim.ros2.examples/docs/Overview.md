@@ -51,4 +51,4 @@ The extension provides access to multiple pre-configured scene templates:
 
 ## Integration
 
-The extension integrates with isaacsim.examples.browser to register its demonstrations, making them discoverable and launchable from the standard Isaac Sim examples interface. It uses isaacsim.ros2.nodes to provide ROS 2-specific OmniGraph nodes that enable communication between Isaac Sim and external ROS 2 systems. The extension also leverages **omni.graph.tools** for programmatic action graph construction and management.
+The extension integrates with isaacsim.examples.browser to register its demonstrations, making them discoverable and launchable from the standard Isaac Sim examples interface. It uses isaacsim.ros2.nodes to provide ROS 2-specific OmniGraph nodes that enable communication between Isaac Sim and external ROS 2 systems. Scene setup uses **isaacsim.core.experimental.utils** for stage operations, **isaacsim.core.rendering_manager** for viewport camera control, and **isaacsim.core.simulation_manager** for physics scene configuration. The extension also leverages **omni.graph.tools** for programmatic action graph construction and management.

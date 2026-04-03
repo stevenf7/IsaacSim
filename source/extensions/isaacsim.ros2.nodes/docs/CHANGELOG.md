@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.14.0] - 2026-04-01
+### Changed
+- Removed deprecated `isaacsim.core.api` and `isaacsim.core.utils` dependencies
+- Migrated to `isaacsim.core.experimental.utils`, `isaacsim.core.experimental.objects`, `isaacsim.core.experimental.prims`, `isaacsim.core.rendering_manager`, and `isaacsim.core.simulation_manager`
+- Consolidated `_simulate_async` into shared `common.py` test utility
+- Replaced `_find_unique_string_name` with `stage_utils.generate_next_free_path`
+- Migrated `OgnROS2RtxLidarHelper` to use `ViewportManager` from `isaacsim.core.rendering_manager`
+
 ## [1.13.1] - 2026-03-26
 ### Changed
 - Update the test dependencies to use isaacsim.robot.wheeled_robots.nodes

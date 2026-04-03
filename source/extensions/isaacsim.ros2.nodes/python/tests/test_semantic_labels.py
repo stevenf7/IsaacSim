@@ -19,10 +19,10 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
-from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.utils.semantics import add_labels
-from isaacsim.core.utils.stage import open_stage_async
-from isaacsim.core.utils.viewports import set_camera_view
+from isaacsim.core.experimental.objects import Cube
+from isaacsim.core.experimental.utils import semantics as semantics_utils
+from isaacsim.core.experimental.utils import stage as stage_utils
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 
 from .common import get_qos_profile
@@ -57,13 +57,13 @@ class TestRos2SemanticLabels(ROS2TestCase):
         BACKGROUND_USD_PATH = "/Isaac/Environments/Grid/default_environment.usd"
 
         # Add Small Warehouse environment to the stage
-        (result, error) = await open_stage_async(self._assets_root_path + BACKGROUND_USD_PATH)
+        (result, error) = await stage_utils.open_stage_async(self._assets_root_path + BACKGROUND_USD_PATH)
         await omni.kit.app.get_app().next_update_async()
-        cube_1 = VisualCuboid("/cube_1", position=[0, 0, 0], scale=[1.5, 1, 1])
-        add_labels(cube_1.prim, labels=["Cube0"], instance_name="class")
+        cube_1 = Cube("/cube_1", sizes=1.0, positions=[0, 0, 0], scales=[1.5, 1, 1])
+        semantics_utils.add_labels(cube_1.prims[0], labels=["Cube0"])
 
-        cube_2 = VisualCuboid("/cube_2", position=[-4, 4, 0], scale=[1.5, 1, 1])
-        add_labels(cube_2.prim, labels=["Cube1"], instance_name="class")
+        cube_2 = Cube("/cube_2", sizes=1.0, positions=[-4, 4, 0], scales=[1.5, 1, 1])
+        semantics_utils.add_labels(cube_2.prims[0], labels=["Cube1"])
 
         viewport_window = omni.kit.viewport.utility.get_active_viewport_window()
         try:
@@ -169,7 +169,7 @@ class TestRos2SemanticLabels(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # Run second test, with camera pointing at cube1
-        set_camera_view(eye=np.array([0, 0, 3]), target=np.array([-4, 4, 0]), camera_prim_path="/OmniverseKit_Persp")
+        ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=np.array([0, 0, 3]), target=np.array([-4, 4, 0]))
         await omni.kit.app.get_app().next_update_async()
 
         clear_data()

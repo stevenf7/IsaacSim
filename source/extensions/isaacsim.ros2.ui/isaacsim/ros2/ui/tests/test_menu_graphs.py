@@ -23,12 +23,9 @@ import omni.kit.ui_test as ui_test
 import omni.usd
 import rclpy
 import usdrt.Sdf
-from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.api.scenes.scene import Scene
+from isaacsim.core.experimental.objects import Cube, GroundPlane
 from isaacsim.core.experimental.prims import XformPrim
 from isaacsim.core.experimental.utils.stage import add_reference_to_stage, define_prim
-from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.stage import update_stage_async
 from isaacsim.test.utils import menu_click_with_retry
 from nav_msgs.msg import Odometry
 from rosgraph_msgs.msg import Clock
@@ -58,22 +55,19 @@ class ROS2MenuTestBase(ROS2TestCase):
         from pxr import UsdLux
 
         # Creating environment and Carter Robot
-        dome_light_path = "/World/DomeLight"
         stage = omni.usd.get_context().get_stage()
-        dome_light = UsdLux.DomeLight.Define(stage, dome_light_path)
-        dome_light.CreateIntensityAttr(1000)
+        distant_light = UsdLux.DistantLight.Define(stage, "/World/DistantLight")
+        distant_light.CreateIntensityAttr(3000)
 
-        scene = Scene()
-        scene.add_default_ground_plane()
+        GroundPlane("/World/groundPlane")
 
         if add_test_cubes:
-            # Add cubes to the scene for sensor detection
-            VisualCuboid(prim_path="/World/cube_1", scale=(1, 3, 1), position=(5, 0, 0), size=1.0)
-            VisualCuboid(prim_path="/World/cube_2", scale=(1, 3, 1), position=(-5, 0, 0), size=1.0)
-            VisualCuboid(prim_path="/World/cube_3", scale=(3, 1, 1), position=(0, 5, 0), size=1.0)
-            VisualCuboid(prim_path="/World/cube_4", scale=(3, 1, 1), position=(0, -5, 0), size=1.0)
+            Cube("/World/cube_1", scales=(1, 3, 1), positions=(5, 0, 0), sizes=1.0)
+            Cube("/World/cube_2", scales=(1, 3, 1), positions=(-5, 0, 0), sizes=1.0)
+            Cube("/World/cube_3", scales=(3, 1, 1), positions=(0, 5, 0), sizes=1.0)
+            Cube("/World/cube_4", scales=(3, 1, 1), positions=(0, -5, 0), sizes=1.0)
 
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
 
         asset_path = self._assets_root_path + "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
         robot = add_reference_to_stage(asset_path, robot_path)
@@ -87,7 +81,7 @@ class ROS2MenuTestBase(ROS2TestCase):
 
         XformPrim(xform_path, positions=np.array([[0.0, 0.0, 0.0]]), reset_xform_op_properties=True)
 
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
 
         return robot, xform_path, articulation_root_path
 
@@ -106,7 +100,7 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
         param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/Camera", window_name=window_name)
         self.assertIsNotNone(param_window, "Parameter window not found")
 
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
 
         # Find and set the graph root prim
         root_widget_path = f"{window_name}//Frame/VStack[0]"
@@ -139,7 +133,7 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
         bbox3d_checkbox = ui_test.find(root_widget_path + "/HStack[12]/HStack[0]/VStack[0]/ToolButton[0]")
         bbox3d_checkbox.model.set_value(True)
 
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
 
         # Click OK button
         ok_button = ui_test.find(root_widget_path + "/HStack[13]/Button[0]")
@@ -193,7 +187,7 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
 
         # Run simulation to test (should not crash)
         self._timeline.play()
-        await simulate_async(2.0)
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
 
         await omni.kit.app.get_app().next_update_async()
@@ -207,7 +201,7 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment(add_test_cubes=True)
 
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
 
         # Setup ROS2 Subscribers
         self.rgb_image_data = None
@@ -388,7 +382,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
 
         # Run simulation to test (should not crash)
         self._timeline.play()
-        await simulate_async(2.0)
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
 
         await omni.kit.app.get_app().next_update_async()
@@ -764,7 +758,7 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
 
         # Run simulation to test (should not crash)
         self._timeline.play()
-        await simulate_async(2.0)
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
 
         await omni.kit.app.get_app().next_update_async()
@@ -778,13 +772,14 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
 
-        # Brief physics initialization (reduced from 0.5s as actual data wait happens later)
-        self._timeline.play()
-        await simulate_async(0.1)
-        self._timeline.stop()
-        await update_stage_async()
+        # # Brief physics initialization (reduced from 0.5s as actual data wait happens later)
+        # self._timeline.play()
+        # await omni.kit.app.get_app().next_update_async()
+
+        # self._timeline.stop()
+        # await omni.kit.app.get_app().next_update_async()
 
         # Setup ROS2 subscribers
         # Store actual message data for validation
@@ -892,56 +887,39 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
                 # Clear the current joint_state_data to ensure we get a fresh one after the command
                 self.joint_state_data = None
 
-                # Publish command
-
-                # Run simulation to let command take effect
-                self._timeline.play()
-                for i in range(10):
+                def publish_and_spin():
                     command_msg.header.stamp = self.node.get_clock().now().to_msg()
                     command_publisher.publish(command_msg)
-                    await simulate_async(0.1, callback=spin_ros)
+                    spin_ros()
 
-                # Run for longer to ensure joints have time to move
-                await simulate_async(1.0, callback=spin_ros)
+                def wheel_joints_moved():
+                    if self.joint_state_data is None:
+                        return False
+                    for i, name in enumerate(self.joint_state_data.name):
+                        if name in initial_joint_positions:
+                            if abs(self.joint_state_data.position[i] - initial_joint_positions[name]) > 0.01:
+                                return True
+                    return False
+
+                self._timeline.play()
+                await self.simulate_until_condition(
+                    wheel_joints_moved,
+                    max_frames=300,
+                    per_frame_callback=publish_and_spin,
+                )
                 self._timeline.stop()
 
-                # Verify the joints moved in response to the command
                 self.assertIsNotNone(self.joint_state_data, "No joint states received after sending command")
+                self.assertTrue(wheel_joints_moved(), "Wheel joints did not move after sending velocity command")
 
-                if self.joint_state_data:
-                    # Create a dictionary of current positions
-                    current_joint_positions = {}
-                    for i, name in enumerate(self.joint_state_data.name):
-                        current_joint_positions[name] = self.joint_state_data.position[i]
-
-                    # Verify that wheel joints actually moved
-                    wheel_joints_moved = False
-                    for name in command_msg.name:
-                        if name in initial_joint_positions and name in current_joint_positions:
-                            # Check if position changed (allowing for small numerical differences)
-                            initial_pos = initial_joint_positions[name]
-                            current_pos = current_joint_positions[name]
-                            difference = abs(current_pos - initial_pos)
-
-                            # For wheel joints, they should rotate with the velocity we set
-                            # Using a smaller threshold to match actual simulation behavior
-                            if difference > 0.01:  # Reduced threshold to detect smaller movements
-                                wheel_joints_moved = True
-
-                    # At least one wheel joint should have moved
-                    self.assertTrue(wheel_joints_moved, "Wheel joints did not move after sending velocity command")
-
-                    # Additional verification: check if the joints are still moving (velocities should be non-zero)
-                    if hasattr(self.joint_state_data, "velocity") and len(self.joint_state_data.velocity) > 0:
-                        wheel_velocities = {
-                            self.joint_state_data.name[i]: self.joint_state_data.velocity[i]
-                            for i in wheel_indices
-                            if i < len(self.joint_state_data.velocity)
-                        }
-
-                        # Check if any wheel joint has non-zero velocity
-                        any_wheel_moving = any(abs(v) > 0.1 for v in wheel_velocities.values())
-                        self.assertTrue(any_wheel_moving, "No wheel joints are currently moving")
+                if hasattr(self.joint_state_data, "velocity") and len(self.joint_state_data.velocity) > 0:
+                    wheel_velocities = {
+                        self.joint_state_data.name[i]: self.joint_state_data.velocity[i]
+                        for i in wheel_indices
+                        if i < len(self.joint_state_data.velocity)
+                    }
+                    any_wheel_moving = any(abs(v) > 0.1 for v in wheel_velocities.values())
+                    self.assertTrue(any_wheel_moving, "No wheel joints are currently moving")
 
 
 class TestMenuROS2TFGraph(ROS2MenuTestBase):
@@ -1025,7 +1003,7 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
 
         # Run simulation to test (should not crash)
         self._timeline.play()
-        await simulate_async(2.0)
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
 
         await omni.kit.app.get_app().next_update_async()
@@ -1219,7 +1197,7 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
 
         # Run simulation to test (should not crash)
         self._timeline.play()
-        await simulate_async(1.0)
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
 
         await omni.kit.app.get_app().next_update_async()
@@ -1439,7 +1417,7 @@ class TestMenuROS2ClockGraph(ROS2MenuTestBase):
         # Create environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
 
         # Setup ROS2 subscribers
         # Store actual message data for validation
@@ -1528,7 +1506,9 @@ class TestMenuROS2ClockGraph(ROS2MenuTestBase):
 
         for i in range(steps):
             # Run simulation for this step
-            await simulate_async(step_size, callback=spin_ros)
+            for _ in range(int(step_size * 60)):
+                await omni.kit.app.get_app().next_update_async()
+                spin_ros()
 
             # Check current simulation time directly from the timeline
             current_sim_time = self._timeline.get_current_time()
@@ -1664,7 +1644,7 @@ class TestMenuROS2GenericPublisherGraph(ROS2MenuTestBase):
                 og.Controller.set(topic_name_attr, test_topic)
                 print(f"Set topic name to {test_topic}")
 
-        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
 
         # Run simulation to generate RTF data
         self._timeline.play()

@@ -1,5 +1,5 @@
 [package]
-version = "1.1.0"
+version = "1.2.0"
 category = "Simulation"
 title = "ROS 2 Examples"
 description = "This extension provides ROS 2 example scenes and demonstrations for Isaac Sim, including MoveIt integration, navigation samples, and waypoint following."
@@ -13,17 +13,16 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"isaacsim.core.api" = {}
+"isaacsim.core.experimental.utils" = {}
 "isaacsim.core.nodes" = {}
-"isaacsim.core.utils" = {}
+"isaacsim.core.rendering_manager" = {}
+"isaacsim.core.simulation_manager" = {}
 "isaacsim.examples.browser" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.ros2.nodes" = {}
 "isaacsim.storage.native" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
-"omni.kit.menu.utils" = {}
-"omni.kit.uiapp" = {}
 "omni.replicator.core" = {}
 "omni.timeline" = {}
 "omni.ui" = {}

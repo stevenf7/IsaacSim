@@ -19,7 +19,7 @@ import omni.graph.core as og
 import omni.ui as ui
 import omni.usd
 import OmniGraphSchema
-from isaacsim.core.utils.stage import get_next_free_path
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.gui.components.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from isaacsim.gui.components.style import get_style
 from isaacsim.gui.components.ui_utils import dropdown_builder
@@ -507,7 +507,7 @@ class Ros2JointStatesGraph(MenuHelperWindow):
 
         # if starting from a new graph, start it with just a tick,context, and sim_time node, the rest is the same for adding to exsiting graph
         if not self._add_to_existing_graph:
-            self._og_path = get_next_free_path(self._og_path, "")
+            self._og_path = stage_utils.generate_next_free_path(self._og_path, prepend_default_prim=False)
             (graph_handle, nodes, _, _) = og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},
                 {
@@ -544,17 +544,17 @@ class Ros2JointStatesGraph(MenuHelperWindow):
                 sim_time_node = node_path
             elif node_type == "isaacsim.ros2.bridge.ROS2PublishJointState":
                 # if there already exist a js pub node, add a new one with a different name
-                js_pub_node_path = get_next_free_path(node_path, "")
+                js_pub_node_path = stage_utils.generate_next_free_path(node_path, prepend_default_prim=False)
                 js_pub_node_name = Path(js_pub_node_path).name
             elif node_type == "isaacsim.ros2.bridge.ROS2SubscribeJointState":
                 # if there already exist a js sub node, add a new one with a different name
-                js_sub_node_path = get_next_free_path(node_path, "")
+                js_sub_node_path = stage_utils.generate_next_free_path(node_path, prepend_default_prim=False)
                 js_sub_node_name = Path(js_sub_node_path).name
             elif node_type == "isaacsim.core.nodes.IsaacArticulationController":
                 msg = "already has an articulation controller node, CREATING A NEW ARTICULATION NODE"
                 print(msg)
                 post_notification(msg, status=NotificationStatus.WARNING)
-                art_node = get_next_free_path(node_path, "")
+                art_node = stage_utils.generate_next_free_path(node_path, prepend_default_prim=False)
                 art_node_name = Path(art_node).name
 
         if self._publisher:
@@ -849,7 +849,7 @@ class Ros2TfPubGraph(MenuHelperWindow):
         keys = og.Controller.Keys
         # if starting from a new graph, start it with just a tick,context, and sim_time node, the rest is the same for adding to exsiting graph
         if not self._add_to_existing_graph:
-            self._og_path = get_next_free_path(self._og_path, "")
+            self._og_path = stage_utils.generate_next_free_path(self._og_path, prepend_default_prim=False)
             (graph_handle, nodes, _, _) = og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},
                 {
@@ -890,7 +890,7 @@ class Ros2TfPubGraph(MenuHelperWindow):
 
                 else:
                     # get ready to add a new tf node
-                    tf_pub_node = get_next_free_path(node_path, "")
+                    tf_pub_node = stage_utils.generate_next_free_path(node_path, prepend_default_prim=False)
                     tf_pub_name = Path(tf_pub_node).name
 
         if self._has_existing_node and self._add_to_existing_node:
@@ -1124,7 +1124,7 @@ class Ros2OdometryGraph(MenuHelperWindow):
         keys = og.Controller.Keys
         # if starting from a new graph, start it with just a tick,context, and sim_time node, the rest is the same for adding to exsiting graph
         if not self._add_to_existing_graph:
-            self._og_path = get_next_free_path(self._og_path, "")
+            self._og_path = stage_utils.generate_next_free_path(self._og_path, prepend_default_prim=False)
             (graph_handle, nodes, _, _) = og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},
                 {
@@ -1164,20 +1164,24 @@ class Ros2OdometryGraph(MenuHelperWindow):
                 sim_time_node = node_path
             elif node_type == "isaacsim.ros2.bridge.ROS2PublishOdometry":
                 # get ready to add a new odom publisher nodes
-                odom_pub_node = get_next_free_path(node_path, "")
+                odom_pub_node = stage_utils.generate_next_free_path(node_path, prepend_default_prim=False)
                 odom_pub_name = Path(odom_pub_node).name
             elif node_type == "isaacsim.core.nodes.IsaacComputeOdometry":
                 # get ready to add a new odom compute nodes
-                odom_compute_node = get_next_free_path(node_path, "")
+                odom_compute_node = stage_utils.generate_next_free_path(node_path, prepend_default_prim=False)
                 odom_compute_name = Path(odom_compute_node).name
             elif node_type == "isaacsim.ros2.bridge.ROS2PublishRawTransformTree":
                 # get ready to add two new raw tf publisher nodes
-                tf_world2odom_node = get_next_free_path(self._og_path + "/" + tf_world2odom_name, "")
-                tf_odom2robot_node = get_next_free_path(self._og_path + "/" + tf_odom2robot_name, "")
+                tf_world2odom_node = stage_utils.generate_next_free_path(
+                    self._og_path + "/" + tf_world2odom_name, prepend_default_prim=False
+                )
+                tf_odom2robot_node = stage_utils.generate_next_free_path(
+                    self._og_path + "/" + tf_odom2robot_name, prepend_default_prim=False
+                )
                 tf_world2odom_name = Path(tf_world2odom_node).name
                 tf_odom2robot_name = Path(tf_odom2robot_node).name
             elif node_type == "isaacsim.ros2.bridge.ROS2PublishTransformTree":
-                tf_robot_node = get_next_free_path(node_path, "")
+                tf_robot_node = stage_utils.generate_next_free_path(node_path, prepend_default_prim=False)
                 tf_robot_name = Path(tf_robot_node).name
 
         # add odometry related nodes and connections:

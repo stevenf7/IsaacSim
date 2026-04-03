@@ -22,7 +22,7 @@ import carb
 import omni.graph.core as og
 import omni.kit.app
 import omni.kit.test
-from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Sdf
 
@@ -48,7 +48,7 @@ class TestTransformListener(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self) -> None:
         """Sets up the test environment by creating a new stage and initializing the timeline interface."""
-        await create_new_stage_async()
+        await stage_utils.create_new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
 
     # After running each test
@@ -71,7 +71,7 @@ class TestTransformListener(omni.kit.test.AsyncTestCase):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
         asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
-        robot = add_reference_to_stage(usd_path=asset_path, prim_path="/World/panda")
+        robot = stage_utils.add_reference_to_stage(usd_path=asset_path, path="/World/panda")
         robot.GetVariantSet("Gripper").SetVariantSelection("Default")
         robot.GetVariantSet("Mesh").SetVariantSelection("Performance")
 

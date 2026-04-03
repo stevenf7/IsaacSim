@@ -57,3 +57,37 @@ class TestXform(omni.kit.test.AsyncTestCase):
             xform_utils.set_world_pose(path_b, position=[4.0, 5.0, 6.0], orientation=[0.0, 0.0, 0.0, 1.0])
             # get local poses
             _check_pose(xform_utils.get_local_pose(path_b), [3.0, 3.0, -3.0], [0.0, 0.0, 0.7071, 0.7071])
+
+    async def test_get_relative_transform(self):
+        """Verify get_relative_transform resolves USD prims and returns a valid 4x4 matrix."""
+        path_a = "/World/A"
+        path_b = "/World/B"
+        stage_utils.define_prim(path_a)
+        stage_utils.define_prim(path_b)
+        with backend_utils.use_backend("usdrt"):
+            xform_utils.set_local_pose(path_a, translation=[5.0, 3.0, 1.0], orientation=[0.7071, 0.7071, 0.0, 0.0])
+            xform_utils.set_local_pose(path_b, translation=[2.0, 0.0, 0.0])
+
+        result = xform_utils.get_relative_transform(path_a, path_b)
+        self.assertEqual(result.shape, (4, 4))
+        np.testing.assert_allclose(xform_utils.get_relative_transform(path_a, path_a), np.eye(4), atol=1e-6)
+
+    async def test_get_relative_transform_accepts_prim_objects(self):
+        """get_relative_transform should accept Usd.Prim objects in addition to paths."""
+        import omni.usd
+
+        path_a = "/World/A"
+        path_b = "/World/B"
+        stage_utils.define_prim(path_a)
+        stage_utils.define_prim(path_b)
+        with backend_utils.use_backend("usdrt"):
+            xform_utils.set_local_pose(path_a, translation=[2.0, 0.0, 0.0])
+            xform_utils.set_local_pose(path_b, translation=[0.0, 3.0, 0.0])
+
+        stage = omni.usd.get_context().get_stage()
+        prim_a = stage.GetPrimAtPath(path_a)
+        prim_b = stage.GetPrimAtPath(path_b)
+
+        result_paths = xform_utils.get_relative_transform(path_a, path_b)
+        result_prims = xform_utils.get_relative_transform(prim_a, prim_b)
+        np.testing.assert_allclose(result_paths, result_prims, atol=1e-6)

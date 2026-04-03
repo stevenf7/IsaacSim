@@ -24,7 +24,7 @@ import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.kit.viewport.utility
 import omni.ui as ui
 import OmniGraphSchema
-from isaacsim.core.utils.stage import get_next_free_path
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.gui.components.callbacks import on_docs_link_clicked, on_open_IDE_clicked
 from isaacsim.gui.components.style import get_style
 from isaacsim.gui.components.widgets import ParamWidget, SelectPrimWidget
@@ -100,7 +100,7 @@ class Ros2CameraGraph(MenuHelperWindow):
         keys = og.Controller.Keys
         # if starting from a new graph, start it with just a tick and context, render product and camera info (no sim time), the rest is the same for adding to exsiting graph
         if not self._add_to_existing_graph:
-            self._og_path = get_next_free_path(self._og_path, "")
+            self._og_path = stage_utils.generate_next_free_path(self._og_path, prepend_default_prim=False)
             (graph_handle, nodes, _, _) = og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},
                 {
@@ -156,7 +156,7 @@ class Ros2CameraGraph(MenuHelperWindow):
         # if the existing graph doesn't already have a render node, or if the existing node does not use the same camera, then create a new render node and connect it to the new camera
         # TODO: so far only support if there's one existing render node. If there are multiple render nodes, it won't check if every node has unique camera prims.
         if render_node is None or render_node.get_attribute("inputs:cameraPrim").get()[0] != self._camera_prim:
-            render_node = get_next_free_path(
+            render_node = stage_utils.generate_next_free_path(
                 self._og_path + "/RenderProduct", ""
             )  # this is actually a string path at this point, not a node prim despite the name. This is so that it's consistent with the others.
             render_node_name = Path(render_node).name
@@ -178,7 +178,7 @@ class Ros2CameraGraph(MenuHelperWindow):
             render_node = render_node_path  # once again set render_node to the actual path, as oppose to the node_prim, just for consistency
 
         if self._rgb_pub:
-            rgb_node = get_next_free_path(self._og_path + "/RGBPublish", "")
+            rgb_node = stage_utils.generate_next_free_path(self._og_path + "/RGBPublish", prepend_default_prim=False)
             rgb_node_name = Path(rgb_node).name
             og.Controller.edit(
                 graph_handle,
@@ -207,7 +207,9 @@ class Ros2CameraGraph(MenuHelperWindow):
                 )
 
         if self._depth_pub:
-            depth_node = get_next_free_path(self._og_path + "/DepthPublish", "")
+            depth_node = stage_utils.generate_next_free_path(
+                self._og_path + "/DepthPublish", prepend_default_prim=False
+            )
             depth_node_name = Path(depth_node).name
             og.Controller.edit(
                 graph_handle,
@@ -235,7 +237,9 @@ class Ros2CameraGraph(MenuHelperWindow):
                 )
 
         if self._depth_pcl_pub:
-            depth_pcl_node = get_next_free_path(self._og_path + "/DepthPclPublish", "")
+            depth_pcl_node = stage_utils.generate_next_free_path(
+                self._og_path + "/DepthPclPublish", prepend_default_prim=False
+            )
             depth_pcl_node_name = Path(depth_pcl_node).name
             og.Controller.edit(
                 graph_handle,
@@ -264,7 +268,9 @@ class Ros2CameraGraph(MenuHelperWindow):
                 )
 
         if self._instance_pub:
-            instance_node = get_next_free_path(self._og_path + "/InstancePublish", "")
+            instance_node = stage_utils.generate_next_free_path(
+                self._og_path + "/InstancePublish", prepend_default_prim=False
+            )
             instance_node_name = Path(instance_node).name
             og.Controller.edit(
                 graph_handle,
@@ -294,7 +300,9 @@ class Ros2CameraGraph(MenuHelperWindow):
                 )
 
         if self._semantic_pub:
-            semantic_node = get_next_free_path(self._og_path + "/SemanticPublish", "")
+            semantic_node = stage_utils.generate_next_free_path(
+                self._og_path + "/SemanticPublish", prepend_default_prim=False
+            )
             semantic_node_name = Path(semantic_node).name
             og.Controller.edit(
                 graph_handle,
@@ -324,7 +332,9 @@ class Ros2CameraGraph(MenuHelperWindow):
                 )
 
         if self._bbox2d_tight_pub:
-            bbox2d_tight_node = get_next_free_path(self._og_path + "/Bbox2dTightPublish", "")
+            bbox2d_tight_node = stage_utils.generate_next_free_path(
+                self._og_path + "/Bbox2dTightPublish", prepend_default_prim=False
+            )
             bbox2d_tight_node_name = Path(bbox2d_tight_node).name
             og.Controller.edit(
                 graph_handle,
@@ -354,7 +364,9 @@ class Ros2CameraGraph(MenuHelperWindow):
                 )
 
         if self._bbox2d_loose_pub:
-            bbox2d_loose_node = get_next_free_path(self._og_path + "/Bbox2dLoosePublish", "")
+            bbox2d_loose_node = stage_utils.generate_next_free_path(
+                self._og_path + "/Bbox2dLoosePublish", prepend_default_prim=False
+            )
             bbox2d_loose_node_name = Path(bbox2d_loose_node).name
             og.Controller.edit(
                 graph_handle,
@@ -384,7 +396,9 @@ class Ros2CameraGraph(MenuHelperWindow):
                 )
 
         if self._bbox3d_pub:
-            bbox3d_node = get_next_free_path(self._og_path + "/Bbox3dPublish", "")
+            bbox3d_node = stage_utils.generate_next_free_path(
+                self._og_path + "/Bbox3dPublish", prepend_default_prim=False
+            )
             bbox3d_node_name = Path(bbox3d_node).name
             og.Controller.edit(
                 graph_handle,
@@ -736,7 +750,7 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
         keys = og.Controller.Keys
         # if starting from a new graph, start it with just a tick, context, and render product, (no sim time), the rest is the same for adding to exsiting graph
         if not self._add_to_existing_graph:
-            self._og_path = get_next_free_path(self._og_path, "")
+            self._og_path = stage_utils.generate_next_free_path(self._og_path, prepend_default_prim=False)
             (graph_handle, nodes, _, _) = og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},
                 {
@@ -784,7 +798,7 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
         # if the existing graph doesn't already have a render node, or if the existing node does not use the same camera, then create a new render node and connect it to the new camera
         # TODO: so far only support if there's one existing render node. If there are multiple render nodes, it won't check if every node has unique camera prims.
         if render_node is None or render_node.get_attribute("inputs:cameraPrim").get()[0] != self._lidar_prim:
-            render_node = get_next_free_path(
+            render_node = stage_utils.generate_next_free_path(
                 self._og_path + "/RenderProduct", ""
             )  # this is actually a string path at this point, not a node prim despite the name. This is so that it's consistent with the others.
             render_node_name = Path(render_node).name
@@ -806,7 +820,9 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
             render_node = render_node_path  # once again set render_node to the actual path, as oppose to the node_prim, just for consistency
 
         if self._laser_scan_pub:
-            laser_scan_node = get_next_free_path(self._og_path + "/LaserScanPublish", "")
+            laser_scan_node = stage_utils.generate_next_free_path(
+                self._og_path + "/LaserScanPublish", prepend_default_prim=False
+            )
             laser_scan_node_name = Path(laser_scan_node).name
             og.Controller.edit(
                 graph_handle,
@@ -833,14 +849,18 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
                 )
 
         if self._point_cloud_pub:
-            point_cloud_node = get_next_free_path(self._og_path + "/PointCloudPublish", "")
+            point_cloud_node = stage_utils.generate_next_free_path(
+                self._og_path + "/PointCloudPublish", prepend_default_prim=False
+            )
             point_cloud_node_name = Path(point_cloud_node).name
 
             # Check if any metadata is selected, create config node and connect it
             selected_metadata = [attr for attr, selected in self._metadata_selected.items() if selected]
 
             if selected_metadata:
-                pcl_config_node = get_next_free_path(self._og_path + "/PointCloudConfig", "")
+                pcl_config_node = stage_utils.generate_next_free_path(
+                    self._og_path + "/PointCloudConfig", prepend_default_prim=False
+                )
                 pcl_config_node_name = Path(pcl_config_node).name
 
                 # Create the config node with the selected metadata

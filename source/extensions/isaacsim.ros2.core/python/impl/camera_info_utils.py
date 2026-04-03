@@ -21,8 +21,8 @@ import cv2 as cv
 import numpy as np
 import omni
 import omni.syntheticdata
-from isaacsim.core.utils.render_product import get_camera_prim_path, get_resolution
-from isaacsim.core.utils.transformations import get_relative_transform
+from isaacsim.core.experimental.utils import xform as xform_utils
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.sensors.camera.camera import OPENCV_FISHEYE_ATTRIBUTE_MAP, OPENCV_PINHOLE_ATTRIBUTE_MAP
 from pxr import Gf, Usd
 
@@ -45,9 +45,7 @@ def read_camera_info(render_product_path: str) -> tuple:
 
     camera_info = CameraInfo()
 
-    # Retrieve and store camera prim object
-    camera_path = get_camera_prim_path(render_product_path=render_product_path)
-    camera_prim = omni.usd.get_context().get_stage().GetPrimAtPath(camera_path)
+    camera_prim = ViewportManager.get_camera(render_product_path).GetPrim()
 
     # Store CameraInfo distortion model and parameters
     lens_distortion_model = camera_prim.GetAttribute("omni:lensdistortion:model").Get()
@@ -90,7 +88,7 @@ def read_camera_info(render_product_path: str) -> tuple:
             f"ROS2 CameraInfo support for lens distortion models beyond opencvPinhole and opencvFisheye is deprecated as of Isaac Sim 5.0, and will be removed in a future release."
         )
 
-        width, height = get_resolution(render_product_path=render_product_path)
+        width, height = ViewportManager.get_resolution(render_product_path)
         focalLength = camera_prim.GetAttribute("focalLength").Get()
         horizontalAperture = camera_prim.GetAttribute("horizontalAperture").Get()
         verticalAperture = camera_prim.GetAttribute("verticalAperture").Get()
@@ -148,7 +146,7 @@ def compute_relative_pose(left_camera_prim: Usd.Prim, right_camera_prim: Usd.Pri
     """
 
     # Compute relative transform -> translation, orientation
-    relative_transform = get_relative_transform(target_prim=right_camera_prim, source_prim=left_camera_prim)
+    relative_transform = xform_utils.get_relative_transform(source_prim=left_camera_prim, target_prim=right_camera_prim)
     mat = Gf.Transform()
     mat.SetMatrix(Gf.Matrix4d(np.transpose(relative_transform)))
     rotation_vec = mat.GetRotation().Decompose(Gf.Vec3d.XAxis(), Gf.Vec3d.YAxis(), Gf.Vec3d.ZAxis())

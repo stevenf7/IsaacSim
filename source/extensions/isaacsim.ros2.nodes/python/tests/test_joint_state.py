@@ -24,13 +24,12 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.prims import SingleArticulation
-from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.stage import open_stage_async
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from numpy import pi as PI
 
-from .common import get_qos_profile, set_joint_drive_parameters
+from .common import get_qos_profile, set_joint_drive_parameters, simulate_async
 
 
 class TestRos2JointStatePublisher(ROS2TestCase):
@@ -40,7 +39,7 @@ class TestRos2JointStatePublisher(ROS2TestCase):
         ## load asset and setup ROS bridge
         # open simple_articulation asset (with one drivable revolute and one drivable prismatic joint)
         self.usd_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/articulation_3_joints.usd"
-        (result, error) = await open_stage_async(self.usd_path)
+        (result, error) = await stage_utils.open_stage_async(self.usd_path)
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(result)  # Make sure the stage loaded
         self._stage = omni.usd.get_context().get_stage()
@@ -171,7 +170,7 @@ class TestRos2JointStatePublisherFromSensor(ROS2TestCase):
     async def setUp(self):
         await super().setUp()
         self.usd_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/articulation_3_joints.usd"
-        (result, error) = await open_stage_async(self.usd_path)
+        (result, error) = await stage_utils.open_stage_async(self.usd_path)
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(result)
         self._stage = omni.usd.get_context().get_stage()
@@ -292,7 +291,7 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         ## load asset and setup ROS bridge
         # open simple_articulation asset (with one drivable revolute and one drivable prismatic joint)
         self.usd_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/articulation_3_joints.usd"
-        (result, error) = await open_stage_async(self.usd_path)
+        (result, error) = await stage_utils.open_stage_async(self.usd_path)
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(result)  # Make sure the stage loaded
         self._stage = omni.usd.get_context().get_stage()

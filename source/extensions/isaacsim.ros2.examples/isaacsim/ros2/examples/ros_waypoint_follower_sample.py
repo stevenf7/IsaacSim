@@ -28,7 +28,7 @@ import omni.kit.commands
 import omni.kit.viewport.utility
 import omni.ui as ui
 import omni.usd
-from isaacsim.core.utils.stage import get_next_free_path
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.ui_utils import setup_ui_headers
 from isaacsim.gui.components.widgets import ParamWidget
@@ -489,7 +489,7 @@ class Extension(omni.ext.IExt):
         keys = og.Controller.Keys
 
         if self._enable_multi_robot:
-            self._og_path = get_next_free_path(self._og_path, "")
+            self._og_path = stage_utils.generate_next_free_path(self._og_path, prepend_default_prim=False)
         try:
             og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},

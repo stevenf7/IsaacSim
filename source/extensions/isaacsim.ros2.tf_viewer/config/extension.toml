@@ -1,5 +1,5 @@
 [package]
-version = "2.2.1"
+version = "2.3.0"
 category = "Utility"
 title = "TF Viewer"
 description = "Show the tf transform tree in the viewport"
@@ -15,8 +15,8 @@ writeTarget.platform = true
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.experimental.utils" = {}
 "isaacsim.ros2.bridge" = {}
-"omni.kit.uiapp" = {}
 "omni.kit.viewport.utility" = {}
 "omni.ui.scene" = {}
 

@@ -19,13 +19,12 @@ import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
 import usdrt.Sdf
-from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.stage import open_stage_async
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Gf, Sdf
 from sensor_msgs_py.point_cloud2 import read_points
 
-from .common import add_carter, add_carter_ros, add_cube, get_qos_profile
+from .common import add_carter, add_carter_ros, add_cube, get_qos_profile, simulate_async
 
 
 class TestRos2PointCloud(ROS2TestCase):
@@ -196,7 +195,7 @@ class TestRos2PointCloud(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import PointCloud2
 
-        (result, error) = await open_stage_async(
+        (result, error) = await stage_utils.open_stage_async(
             self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd"
         )
 

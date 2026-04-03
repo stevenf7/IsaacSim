@@ -21,9 +21,7 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
-from isaacsim.core.api import SimulationContext
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.physics import simulate_async
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Gf
 
@@ -34,16 +32,15 @@ from .common import (
     get_qos_profile,
     set_rotate,
     set_translate,
+    simulate_async,
 )
 
 
 class TestRos2DifferentialBase(ROS2TestCase):
     async def setUp(self):
         await super().setUp()
-        SimulationContext.clear_instance()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        self.simulation_context = SimulationContext()
         SimulationManager.enable_fabric(enable=False)
 
         # Initialize class members

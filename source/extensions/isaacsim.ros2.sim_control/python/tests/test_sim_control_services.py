@@ -19,7 +19,7 @@ import time
 
 import numpy as np
 import omni.kit.test
-from isaacsim.core.utils.stage import create_new_stage_async
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, UsdGeom, UsdLux, UsdPhysics
 
@@ -29,7 +29,7 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         import rclpy
 
-        await create_new_stage_async()
+        await stage_utils.create_new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
 
         self._timeline.stop()

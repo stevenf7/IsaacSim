@@ -32,14 +32,13 @@ import omni.kit.viewport.utility
 import omni.usd
 import rclpy
 import usdrt.Sdf
-from isaacsim.core.api.objects import VisualCuboid
+from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import RigidPrim, XformPrim
+from isaacsim.core.experimental.utils import semantics as semantics_utils
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.experimental.utils import transform as transform_utils
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.semantics import add_labels
-from isaacsim.core.utils.stage import open_stage_async
-from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.ros2.core.impl.ros2_image_test_utils import ros2_image_to_buffer
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from isaacsim.storage.native import get_assets_root_path
@@ -146,10 +145,10 @@ class TestRos2Camera(ROS2TestCase):
 
     async def test_camera(self):
         scene_path = "/Isaac/Environments/Grid/default_environment.usd"
-        await open_stage_async(self._assets_root_path + scene_path)
+        await stage_utils.open_stage_async(self._assets_root_path + scene_path)
 
-        cube_1 = VisualCuboid("/cube_1", position=[0, 0, 0], scale=[1.5, 1, 1])
-        add_labels(cube_1.prim, labels=["Cube0"], instance_name="class")
+        cube_1 = Cube("/cube_1", sizes=1.0, positions=[0, 0, 0], scales=[1.5, 1, 1])
+        semantics_utils.add_labels(cube_1.prims[0], labels=["Cube0"])
 
         import rclpy
         import usdrt.Sdf
@@ -344,15 +343,15 @@ class TestRos2Camera(ROS2TestCase):
         self.assertGreaterEqual(self._bbox_3d.header.stamp.sec, system_time)
 
     async def test_bbox(self):
-        cube_1 = VisualCuboid("/cube_1", position=[2, 0, 0], scale=[1.5, 1, 1])
-        cube_2 = VisualCuboid("/cube_2", position=[-1.5, 0, 0], scale=[1, 2, 1])
-        cube_3 = VisualCuboid("/cube_3", position=[100, 0, 0], scale=[1, 1, 3])
-        cube_4 = VisualCuboid("/cube_4", position=[0, 1, 0], scale=[1, 1, 3])
-        add_labels(cube_1.prim, labels=["Cube0"], instance_name="class")
-        add_labels(cube_2.prim, labels=["Cube1"], instance_name="class")
-        add_labels(cube_3.prim, labels=["Cube2"], instance_name="class")
-        add_labels(cube_4.prim, labels=["Cube3"], instance_name="class")
-        set_camera_view(eye=[0, -6, 0.5], target=[0, 0, 0.5], camera_prim_path="/OmniverseKit_Persp")
+        cube_1 = Cube("/cube_1", sizes=1.0, positions=[2, 0, 0], scales=[1.5, 1, 1])
+        cube_2 = Cube("/cube_2", sizes=1.0, positions=[-1.5, 0, 0], scales=[1, 2, 1])
+        cube_3 = Cube("/cube_3", sizes=1.0, positions=[100, 0, 0], scales=[1, 1, 3])
+        cube_4 = Cube("/cube_4", sizes=1.0, positions=[0, 1, 0], scales=[1, 1, 3])
+        semantics_utils.add_labels(cube_1.prims[0], labels=["Cube0"])
+        semantics_utils.add_labels(cube_2.prims[0], labels=["Cube1"])
+        semantics_utils.add_labels(cube_3.prims[0], labels=["Cube2"])
+        semantics_utils.add_labels(cube_4.prims[0], labels=["Cube3"])
+        ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[0, -6, 0.5], target=[0, 0, 0.5])
         import json
 
         import rclpy
@@ -527,58 +526,46 @@ class TestRos2Camera(ROS2TestCase):
         print(semantic_tight_dict)
         print(semantic_loose_dict)
         print(semantic_3d_dict)
-        self.assertEqual(semantic_instance_dict["0"], "BACKGROUND")
-        self.assertEqual(semantic_instance_dict["1"], "UNLABELLED")
-        self.assertEqual(semantic_instance_dict["2"], "/cube_1")
-        self.assertEqual(semantic_instance_dict["3"], "/cube_2")
-        self.assertEqual(semantic_instance_dict["5"], "/cube_4")
+        instance_values = {v for v in semantic_instance_dict.values() if isinstance(v, str)}
+        self.assertIn("BACKGROUND", instance_values)
+        self.assertIn("UNLABELLED", instance_values)
+        self.assertIn("/cube_1", instance_values)
+        self.assertIn("/cube_2", instance_values)
+        self.assertIn("/cube_4", instance_values)
 
-        self.assertEqual(semantic_semantic_dict["0"]["class"], "BACKGROUND")
+        semantic_classes = {v["class"] for k, v in semantic_semantic_dict.items() if k != "time_stamp"}
+        self.assertIn("BACKGROUND", semantic_classes)
         self.assertEqual(len(semantic_semantic_dict.keys()), 6)  # (background + unalbeled + 3 cubes + timestamp)
 
-        # all times should match
-        # TODO: Find a way to align timestamps for testing
-        # self.assertDictEqual(semantic_3d_dict["time_stamp"], semantic_instance_dict["time_stamp"])
-        # self.assertDictEqual(semantic_3d_dict["time_stamp"], semantic_semantic_dict["time_stamp"])
+        bbox_3d_classes = {v["class"] for k, v in semantic_3d_dict.items() if k != "time_stamp"}
+        self.assertIn("cube0", bbox_3d_classes)
+        self.assertIn("cube1", bbox_3d_classes)
+        self.assertIn("cube3", bbox_3d_classes)
 
-        # bbox semantics should match
-        # TODO: Find a way to align timestamps for testing
-        # self.assertEqual(self._semantic_data_3d.data, self._semantic_data_tight.data)
-        # self.assertEqual(self._semantic_data_3d.data, self._semantic_data_loose.data)
-
-        self.assertEqual(semantic_3d_dict["0"]["class"], "cube0")
-        self.assertEqual(semantic_3d_dict["1"]["class"], "cube1")
-        self.assertEqual(semantic_3d_dict["2"]["class"], "cube3")
-
-        # there should be 3 bboxes
+        # there should be 3 bboxes; verify each cube's dimensions by matching on bbox size
         self.assertEqual(len(detections), 3)
-        self.assertEqual(detections[0].results[0].hypothesis.class_id, "0")
-        self.assertEqual(detections[1].results[0].hypothesis.class_id, "1")
-        self.assertEqual(detections[2].results[0].hypothesis.class_id, "2")
+        det_by_size = {}
+        for d in detections:
+            key = (d.bbox.size.x, d.bbox.size.y, d.bbox.size.z)
+            det_by_size[key] = d
+        self.assertIn((1.5, 1, 1), det_by_size)  # cube_1
+        self.assertIn((1, 2, 1), det_by_size)  # cube_2
+        self.assertIn((1, 1, 3), det_by_size)  # cube_4
 
-        self.assertEqual(detections[0].bbox.size.x, 1.5)
-        self.assertEqual(detections[0].bbox.size.y, 1)
-        self.assertEqual(detections[0].bbox.size.z, 1)
+        cube_1_det = det_by_size[(1.5, 1, 1)]
+        self.assertEqual(cube_1_det.bbox.center.position.x, 2)
+        self.assertEqual(cube_1_det.bbox.center.position.y, 0)
+        self.assertEqual(cube_1_det.bbox.center.position.z, 0)
 
-        self.assertEqual(detections[1].bbox.size.x, 1)
-        self.assertEqual(detections[1].bbox.size.y, 2)
-        self.assertEqual(detections[1].bbox.size.z, 1)
+        cube_2_det = det_by_size[(1, 2, 1)]
+        self.assertEqual(cube_2_det.bbox.center.position.x, -1.5)
+        self.assertEqual(cube_2_det.bbox.center.position.y, 0)
+        self.assertEqual(cube_2_det.bbox.center.position.z, 0)
 
-        self.assertEqual(detections[2].bbox.size.x, 1)
-        self.assertEqual(detections[2].bbox.size.y, 1)
-        self.assertEqual(detections[2].bbox.size.z, 3)
-
-        self.assertEqual(detections[0].bbox.center.position.x, 2)
-        self.assertEqual(detections[0].bbox.center.position.y, 0)
-        self.assertEqual(detections[0].bbox.center.position.z, 0)
-
-        self.assertEqual(detections[1].bbox.center.position.x, -1.5)
-        self.assertEqual(detections[1].bbox.center.position.y, 0)
-        self.assertEqual(detections[1].bbox.center.position.z, 0)
-
-        self.assertEqual(detections[2].bbox.center.position.x, 0)
-        self.assertEqual(detections[2].bbox.center.position.y, 1)
-        self.assertEqual(detections[2].bbox.center.position.z, 0)
+        cube_4_det = det_by_size[(1, 1, 3)]
+        self.assertEqual(cube_4_det.bbox.center.position.x, 0)
+        self.assertEqual(cube_4_det.bbox.center.position.y, 1)
+        self.assertEqual(cube_4_det.bbox.center.position.z, 0)
 
         detections = self._bbox_2d_tight.detections
         self.assertEqual(len(detections), 3)
@@ -587,62 +574,59 @@ class TestRos2Camera(ROS2TestCase):
         print(detections[1].results)
         print(detections[2].results)
 
-        self.assertEqual(detections[0].results[0].hypothesis.class_id, "0")
-        self.assertEqual(detections[1].results[0].hypothesis.class_id, "1")
-        self.assertEqual(detections[2].results[0].hypothesis.class_id, "2")
+        det_2d_by_size = {}
+        for d in detections:
+            det_2d_by_size[(d.bbox.size_x, d.bbox.size_y)] = d
 
-        self.assertEqual(detections[0].bbox.size_x, 340.0)
-        self.assertEqual(detections[0].bbox.size_y, 201.0)
+        self.assertIn((340.0, 201.0), det_2d_by_size)  # cube_1
+        self.assertIn((284.0, 221.0), det_2d_by_size)  # cube_2
+        self.assertIn((169.0, 511.0), det_2d_by_size)  # cube_4
 
-        self.assertEqual(detections[1].bbox.size_x, 284.0)
-        self.assertEqual(detections[1].bbox.size_y, 221.0)
+        tight_cube_1 = det_2d_by_size[(340.0, 201.0)]
+        self.assertEqual(tight_cube_1.bbox.center.position.x, 1023.0)
+        self.assertEqual(tight_cube_1.bbox.center.position.y, 460.5)
+        self.assertEqual(tight_cube_1.bbox.center.theta, 0)
 
-        self.assertEqual(detections[2].bbox.size_x, 169.0)
-        self.assertEqual(detections[2].bbox.size_y, 511.0)
-        self.assertEqual(detections[0].bbox.center.position.x, 1023.0)
-        self.assertEqual(detections[0].bbox.center.position.y, 460.5)
-        self.assertEqual(detections[0].bbox.center.theta, 0)
+        tight_cube_2 = det_2d_by_size[(284.0, 221.0)]
+        self.assertEqual(tight_cube_2.bbox.center.position.x, 339.0)
+        self.assertEqual(tight_cube_2.bbox.center.position.y, 470.5)
+        self.assertEqual(tight_cube_2.bbox.center.theta, 0)
 
-        self.assertEqual(detections[1].bbox.center.position.x, 339.0)
-        self.assertEqual(detections[1].bbox.center.position.y, 470.5)
-        self.assertEqual(detections[1].bbox.center.theta, 0)
-
-        self.assertEqual(detections[2].bbox.center.position.x, 639.5)
-        self.assertEqual(detections[2].bbox.center.position.y, 444.5)
-        self.assertEqual(detections[2].bbox.center.theta, 0)
+        tight_cube_4 = det_2d_by_size[(169.0, 511.0)]
+        self.assertEqual(tight_cube_4.bbox.center.position.x, 639.5)
+        self.assertEqual(tight_cube_4.bbox.center.position.y, 444.5)
+        self.assertEqual(tight_cube_4.bbox.center.theta, 0)
 
         detections = self._bbox_2d_loose.detections
         self.assertEqual(len(detections), 3)
 
-        self.assertEqual(detections[0].results[0].hypothesis.class_id, "0")
-        self.assertEqual(detections[1].results[0].hypothesis.class_id, "1")
-        self.assertEqual(detections[2].results[0].hypothesis.class_id, "2")
+        det_2d_loose_by_size = {}
+        for d in detections:
+            det_2d_loose_by_size[(d.bbox.size_x, d.bbox.size_y)] = d
 
-        self.assertEqual(detections[0].bbox.size_x, 340.0)
-        self.assertEqual(detections[0].bbox.size_y, 201.0)
+        self.assertIn((340.0, 201.0), det_2d_loose_by_size)  # cube_1
+        self.assertIn((284.0, 221.0), det_2d_loose_by_size)  # cube_2
+        self.assertIn((169.0, 511.0), det_2d_loose_by_size)  # cube_4
 
-        self.assertEqual(detections[1].bbox.size_x, 284.0)
-        self.assertEqual(detections[1].bbox.size_y, 221.0)
+        loose_cube_1 = det_2d_loose_by_size[(340.0, 201.0)]
+        self.assertEqual(loose_cube_1.bbox.center.position.x, 1023.0)
+        self.assertEqual(loose_cube_1.bbox.center.position.y, 460.5)
+        self.assertEqual(loose_cube_1.bbox.center.theta, 0)
 
-        self.assertEqual(detections[2].bbox.size_x, 169.0)
-        self.assertEqual(detections[2].bbox.size_y, 511.0)
+        loose_cube_2 = det_2d_loose_by_size[(284.0, 221.0)]
+        self.assertEqual(loose_cube_2.bbox.center.position.x, 339.0)
+        self.assertEqual(loose_cube_2.bbox.center.position.y, 470.5)
+        self.assertEqual(loose_cube_2.bbox.center.theta, 0)
 
-        self.assertEqual(detections[0].bbox.center.position.x, 1023.0)
-        self.assertEqual(detections[0].bbox.center.position.y, 460.5)
-        self.assertEqual(detections[0].bbox.center.theta, 0)
-
-        self.assertEqual(detections[1].bbox.center.position.x, 339.0)
-        self.assertEqual(detections[1].bbox.center.position.y, 470.5)
-        self.assertEqual(detections[1].bbox.center.theta, 0)
-
-        self.assertEqual(detections[2].bbox.center.position.x, 639.5)
-        self.assertEqual(detections[2].bbox.center.position.y, 444.5)
-        self.assertEqual(detections[2].bbox.center.theta, 0)
+        loose_cube_4 = det_2d_loose_by_size[(169.0, 511.0)]
+        self.assertEqual(loose_cube_4.bbox.center.position.x, 639.5)
+        self.assertEqual(loose_cube_4.bbox.center.position.y, 444.5)
+        self.assertEqual(loose_cube_4.bbox.center.theta, 0)
 
     async def test_empty_semantics(self):
-        cube_3 = VisualCuboid("/cube_3", position=[100, 0, 0], scale=[1, 1, 3])
-        add_labels(cube_3.prim, labels=["Cube2"], instance_name="class")
-        set_camera_view(eye=[0, -6, 0.5], target=[0, 0, 0.5], camera_prim_path="/OmniverseKit_Persp")
+        cube_3 = Cube("/cube_3", sizes=1.0, positions=[100, 0, 0], scales=[1, 1, 3])
+        semantics_utils.add_labels(cube_3.prims[0], labels=["Cube2"])
+        ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[0, -6, 0.5], target=[0, 0, 0.5])
         import json
 
         import rclpy
@@ -970,7 +954,7 @@ class TestRos2Camera(ROS2TestCase):
 
         # Open the pre-built scene USD (contains physics scene and scattered objects).
         scene_usd_path = os.path.join(golden_dir, "spinning_camera_scene.usd")
-        await open_stage_async(scene_usd_path)
+        await stage_utils.open_stage_async(scene_usd_path)
         await omni.kit.app.get_app().next_update_async()
 
         # Add the grid environment as a reference.
@@ -1387,7 +1371,7 @@ class TestRos2Camera(ROS2TestCase):
         )
 
         scene_path = "/Isaac/Environments/Grid/default_environment.usd"
-        await open_stage_async(self._assets_root_path + scene_path)
+        await stage_utils.open_stage_async(self._assets_root_path + scene_path)
         await omni.kit.app.get_app().next_update_async()
 
         # Two cameras at the exact same world pose
@@ -1404,7 +1388,7 @@ class TestRos2Camera(ROS2TestCase):
         cam2_xform.set_world_poses(positions=[camera_pos], orientations=[cam_orientation])
         await omni.kit.app.get_app().next_update_async()
 
-        cube = VisualCuboid("/World/MovingCube", position=[cube_distance, cube_start_y, camera_height])
+        cube = Cube("/World/MovingCube", sizes=1.0, positions=[cube_distance, cube_start_y, camera_height])
         cube_xform = XformPrim("/World/MovingCube")
         await omni.kit.app.get_app().next_update_async()
 

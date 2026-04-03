@@ -1155,3 +1155,48 @@ def _wk_look_at_quaternion(
     output[i, 1] = x
     output[i, 2] = y
     output[i, 3] = z
+
+
+def compute_relative_transform(
+    source_to_world: list | np.ndarray | wp.array,
+    target_to_world: list | np.ndarray | wp.array,
+) -> np.ndarray:
+    """Compute the relative 4x4 transform from a source frame to a target frame given their world transforms.
+
+    Both inputs are expected in USD row-major convention (as returned by
+    ``UsdGeom.Xformable.ComputeLocalToWorldTransform``). The result is a column-major
+    4x4 matrix that transforms points from the source local frame into the target local frame.
+
+    Args:
+        source_to_world: Row-major 4x4 world transform of the source frame.
+        target_to_world: Row-major 4x4 world transform of the target frame.
+
+    Returns:
+        Column-major 4x4 relative transformation matrix.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> import isaacsim.core.experimental.utils.transform as transform_utils
+        >>> import numpy as np
+        >>>
+        >>> identity = np.eye(4)
+        >>> translated = np.eye(4)
+        >>> translated[3, :3] = [1.0, 2.0, 3.0]  # USD row-major: translation in last row
+        >>> result = transform_utils.compute_relative_transform(identity, translated)
+        >>> result[:3, 3]  # column-major: translation in last column
+        array([-1., -2., -3.])
+    """
+    if isinstance(source_to_world, wp.array):
+        source_to_world = source_to_world.numpy()
+    source_to_world = np.asarray(source_to_world, dtype=np.float64)
+
+    if isinstance(target_to_world, wp.array):
+        target_to_world = target_to_world.numpy()
+    target_to_world = np.asarray(target_to_world, dtype=np.float64)
+
+    source_col = np.transpose(source_to_world)
+    target_col = np.transpose(target_to_world)
+    world_to_target_col = np.linalg.inv(target_col)
+    return world_to_target_col @ source_col

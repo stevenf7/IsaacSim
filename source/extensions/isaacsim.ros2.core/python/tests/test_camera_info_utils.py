@@ -16,7 +16,7 @@
 import numpy as np
 import omni.kit.test
 import omni.usd
-from isaacsim.core.utils.stage import open_stage_async
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.ros2.core.impl.camera_info_utils import compute_relative_pose, read_camera_info
 from isaacsim.sensors.camera import Camera
 from pxr import Sdf
@@ -34,10 +34,9 @@ class TestCameraInfoUtils(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # Load a scene
-        scene_path = "/Isaac/Environments/Grid/default_environment.usd"
-        await open_stage_async(self._assets_root_path + scene_path)
-        self._stage = omni.usd.get_context().get_stage()
 
+        self._stage = omni.usd.get_context().get_stage()
+        await omni.kit.app.get_app().next_update_async()
         # Create a camera using the Camera API
         camera_path = "/test_camera"
         self._camera = Camera(
@@ -63,7 +62,8 @@ class TestCameraInfoUtils(ROS2TestCase):
 
     # After running each test
     async def tearDown(self):
-
+        await omni.usd.get_context().new_stage_async()
+        self._timeline.stop()
         # Clean up the camera
         if hasattr(self, "_camera"):
             self._camera = None

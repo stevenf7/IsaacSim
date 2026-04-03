@@ -1,5 +1,5 @@
 [package]
-version = "1.4.1"
+version = "1.5.0"
 category = "Simulation"
 title = "ROS 2 Simulation Control"
 description = "Extension that uses the ROS 2 Simulation Interfaces to control Isaac Sim"
@@ -14,7 +14,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.experimental.prims" = {}
-"isaacsim.core.utils" = {}
+"isaacsim.core.experimental.utils" = {}
 "isaacsim.ros2.bridge" = {}
 
 [[python.module]]

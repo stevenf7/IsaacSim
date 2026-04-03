@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.0] - 2026-04-01
+### Changed
+- Removed deprecated `isaacsim.core.api` and `isaacsim.core.utils` dependencies
+- Replaced `render_product_utils.py` with `ViewportManager` from `isaacsim.core.rendering_manager`
+
 ## [1.6.1] - 2026-03-30
 ### Changed
 - Added `LibraryLoader.h` include to `Ros2Types.h` for SRTX integration support

@@ -19,12 +19,11 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
-from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Gf, Sdf
 
-from .common import get_qos_profile
+from .common import get_qos_profile, simulate_async
 
 
 class TestRos2LaserScan(ROS2TestCase):
@@ -34,8 +33,8 @@ class TestRos2LaserScan(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import LaserScan
 
-        stage = add_reference_to_stage(
-            usd_path=self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd", prim_path="/World"
+        stage = stage_utils.add_reference_to_stage(
+            usd_path=self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd", path="/World"
         )
 
         await omni.kit.app.get_app().next_update_async()
