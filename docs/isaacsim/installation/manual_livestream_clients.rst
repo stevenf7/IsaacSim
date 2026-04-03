@@ -202,7 +202,8 @@ This method does not require downloading or installing a native application. The
 
     # Create cache/log mounts (use uid 1234 to match container user)
     mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
-    sudo chown -R 1234:1234 ~/docker
+    mkdir -p ~/.cache/ov/hub
+    sudo chown -R 1234:1234 ~/docker ~/.cache/ov/hub
 
     # Build the Isaac Sim image (skip if using a prebuilt NGC image)
     ./tools/docker/prep_docker_build.sh --build --x86_64

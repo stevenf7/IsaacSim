@@ -18,6 +18,7 @@ This directory contains scripts for building Docker images of Isaac Sim. The bui
   - [Checking status and endpoints](#checking-status-and-endpoints)
   - [Rebuilding the web viewer](#rebuilding-the-web-viewer)
   - [Multiple instances with dedicated GPUs](#multiple-instances-with-dedicated-gpus)
+- [Hub Workstation Cache](#hub-workstation-cache)
 - [Cloud Deployment (AWS, GCP, Azure)](#cloud-deployment-aws-gcp-azure)
   - [Retrieving the VM's public IP](#retrieving-the-vms-public-ip)
   - [Launching with the public IP](#launching-with-the-public-ip)
@@ -221,7 +222,8 @@ Alternatively, use the provided helper script which drops into a bash shell insi
 ```bash
 # Create cache/log mounts (optional; use uid 1234 to match container user)
 mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
-sudo chown -R 1234:1234 ~/docker
+mkdir -p ~/.cache/ov/hub
+sudo chown -R 1234:1234 ~/docker ~/.cache/ov/hub
 
 docker run --name isaac-sim --rm -it --gpus all --network=host \
   -e ACCEPT_EULA=Y \
@@ -234,6 +236,7 @@ docker run --name isaac-sim --rm -it --gpus all --network=host \
   -v ~/docker/isaac-sim/config:/isaac-sim/.nvidia-omniverse/config:rw \
   -v ~/docker/isaac-sim/data:/isaac-sim/.local/share/ov/data:rw \
   -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
+  -v ~/.cache/ov/hub:/var/cache/hub:rw \
   -u 1234:1234 \
   isaac-sim-docker:latest
 ```
@@ -282,7 +285,8 @@ A `docker-compose.yml` is provided that launches both Isaac Sim (headless stream
 ```bash
 # Create cache/log mounts (use uid 1234 to match container user)
 mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
-sudo chown -R 1234:1234 ~/docker
+mkdir -p ~/.cache/ov/hub
+sudo chown -R 1234:1234 ~/docker ~/.cache/ov/hub
 
 # 1. Build the Isaac Sim image (existing workflow)
 ./tools/docker/prep_docker_build.sh --build --x86_64
@@ -360,7 +364,8 @@ You can run multiple Isaac Sim instances on the same host by using Docker Compos
 # Prepare separate data directories (one per instance, owned by uid 1234)
 mkdir -p ~/docker/isaac-sim-1/{cache/main,cache/computecache,config,data,logs,pkg}
 mkdir -p ~/docker/isaac-sim-2/{cache/main,cache/computecache,config,data,logs,pkg}
-sudo chown -R 1234:1234 ~/docker/isaac-sim-1 ~/docker/isaac-sim-2
+mkdir -p ~/.cache/ov/hub
+sudo chown -R 1234:1234 ~/docker ~/.cache/ov/hub
 
 # Instance 1 — GPU 0, default ports, web viewer on 8210
 GPU_DEVICE=0 \
@@ -399,6 +404,33 @@ To stop a specific instance:
 docker compose -p isim1 -f tools/docker/docker-compose.yml down
 docker compose -p isim2 -f tools/docker/docker-compose.yml down
 ```
+
+## Hub Workstation Cache
+
+[Hub Workstation Cache](https://docs.omniverse.nvidia.com/utilities/latest/cache/hub-workstation.html) is a service that speeds up USD workflows by caching storage-derived data locally. When running Isaac Sim in a container, Hub should also run as a container on the same host so that all Kit-based clients can benefit from the shared cache.
+
+> **Note:** Hub Workstation Cache is designed for **local workstation use only** — for example, bare-metal runs or containers on a local workstation. It is not intended for multi-user servers or cloud deployments. For distributed or cloud caching, see [Derived Data Cache Service (DDCS)](https://docs.nvidia.com/cloud-functions/current/latest/ddcs.html).
+
+Start the Hub container **before** launching Isaac Sim:
+
+```bash
+docker run --name hub-cache --rm -d --network=host \
+  -v ~/.cache/ov/hub:/var/cache/hub:rw \
+  -u 1234:$(id -g ${USER}) \
+  nvcr.io/nvidia/omniverse/hub_workstation_cache:2.0.0
+```
+
+The Isaac Sim container is already configured to discover Hub at runtime via the following environment variables baked into the image:
+
+| Variable                  | Value                 | Purpose                                                    |
+| ------------------------- | --------------------- | ---------------------------------------------------------- |
+| `HUB__CACHE__PATH`        | `/var/cache/hub`      | Tells the local Hub executable where to find the cache     |
+| `HUB__ARGS__DETECT_ONLY`  | `true`                | Prevents the client from starting its own Hub instance     |
+| `OMNICLIENT_HUB_EXE`     | `/usr/local/bin/hub`  | Path to the Hub executable used for client coordination    |
+
+The `~/.cache/ov/hub` volume mount in the Isaac Sim `docker run` examples maps the same host directory into both containers so they share the cache. `--network=host` is required so the Hub client inside Isaac Sim can reach the Hub service on `localhost`.
+
+For more details, see the [Hub as a Docker Container](https://docs.omniverse.nvidia.com/utilities/latest/cache/hub-workstation.html#hub-as-a-docker-container) documentation.
 
 ## Cloud Deployment (AWS, GCP, Azure)
 
@@ -489,7 +521,9 @@ gcloud compute firewall-rules create allow-isaacsim \
   ```bash
   sudo rm -rf ~/docker
   mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
-  sudo chown -R 1234:1234 ~/docker
+  sudo rm -rf ~/.cache/ov/hub
+  mkdir -p ~/.cache/ov/hub
+  sudo chown -R 1234:1234 ~/docker ~/.cache/ov/hub
   ```
 - **Second browser or tab cannot connect**: Only one browser connection to Isaac Sim is supported at a time. Close the existing browser tab or window that is connected to the web viewer, then open the URL again in a single tab.
 - **Clipboard (Ctrl+C/V) not working in the web viewer**: The browser Clipboard API requires a secure context. When accessing the web viewer over HTTP from a non-localhost address, clipboard forwarding to Isaac Sim is blocked. To enable it, open `chrome://flags/#unsafely-treat-insecure-origin-as-secure` in Chrome, add your web viewer URL (e.g. `http://192.168.1.100:8210`), and relaunch the browser.

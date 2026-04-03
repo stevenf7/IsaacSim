@@ -130,7 +130,8 @@ This section describes how to run the |isaac-sim| container in headless mode wit
     $ mkdir -p ~/docker/isaac-sim/data/Kit
     $ mkdir -p ~/docker/isaac-sim/logs
     $ mkdir -p ~/docker/isaac-sim/pkg
-    $ sudo chown -R 1234:1234 ~/docker/isaac-sim
+    $ mkdir -p ~/.cache/ov/hub
+    $ sudo chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub
 
 5. Run the |isaac-sim_short| container with an interactive Bash session:
 
@@ -144,6 +145,7 @@ This section describes how to run the |isaac-sim| container in headless mode wit
         -v ~/docker/isaac-sim/config:/isaac-sim/.nvidia-omniverse/config:rw \
         -v ~/docker/isaac-sim/data:/isaac-sim/.local/share/ov/data:rw \
         -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
+        -v ~/.cache/ov/hub:/var/cache/hub:rw \
         -u 1234:1234 \
         nvcr.io/nvidia/isaac-sim:6.0.0-dev2
 
@@ -305,7 +307,8 @@ If you override ports via ``ISAACSIM_SIGNAL_PORT``, ``ISAACSIM_STREAM_PORT``, or
           $ mkdir -p ~/docker/isaac-sim/data/Kit
           $ mkdir -p ~/docker/isaac-sim/logs
           $ mkdir -p ~/docker/isaac-sim/pkg
-          $ sudo chown -R 1234:1234 ~/docker/isaac-sim
+          $ mkdir -p ~/.cache/ov/hub
+          $ sudo chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub
 
     * **Second browser cannot connect**: Only one browser tab or window can be connected to |isaac-sim_short|
       at a time. Close the existing browser session before opening a new one.
@@ -318,6 +321,59 @@ If you override ports via ``ISAACSIM_SIGNAL_PORT``, ``ISAACSIM_STREAM_PORT``, or
 
     To build a Docker image from source instead of pulling from NGC, see the `Docker Build Tools README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_.
     The README also covers multi-instance deployment with dedicated GPUs, cloud VM configuration (AWS, GCP, Azure), and advanced Docker options.
+
+
+.. _isaac_sim_hub_workstation_cache:
+
+Hub Workstation Cache
+------------------------------------------------------------------------------------------------
+
+`Hub Workstation Cache <https://docs.omniverse.nvidia.com/utilities/latest/cache/hub-workstation.html>`_ is a service
+that speeds up USD workflows by caching storage-derived data locally. When running |isaac-sim_short| in a container,
+Hub should also run as a container on the same host so that all Kit-based clients can benefit from the shared cache.
+
+.. note::
+
+    Hub Workstation Cache is designed for **local workstation use only** — for example, bare-metal runs or containers
+    on a local workstation. It is not intended for multi-user servers or cloud deployments. For distributed or cloud
+    caching, see `Derived Data Cache Service (DDCS) <https://docs.nvidia.com/cloud-functions/current/latest/ddcs.html>`_.
+
+Start the Hub container **before** launching |isaac-sim_short|:
+
+.. code-block:: console
+
+    $ docker run --name hub-cache --rm -d --network=host \
+        -v ~/.cache/ov/hub:/var/cache/hub:rw \
+        -u 1234:$(id -g ${USER}) \
+        nvcr.io/nvidia/omniverse/hub_workstation_cache:2.0.0
+
+The |isaac-sim_short| container is pre-configured to discover Hub at runtime via the following environment variables
+baked into the image:
+
+.. list-table::
+    :widths: 30 25 45
+    :header-rows: 1
+
+    * - Variable
+      - Value
+      - Purpose
+    * - ``HUB__CACHE__PATH``
+      - ``/var/cache/hub``
+      - Tells the local Hub executable where to find the cache
+    * - ``HUB__ARGS__DETECT_ONLY``
+      - ``true``
+      - Prevents the client from starting its own Hub instance
+    * - ``OMNICLIENT_HUB_EXE``
+      - ``/usr/local/bin/hub``
+      - Path to the Hub executable used for client coordination
+
+The ``~/.cache/ov/hub:/var/cache/hub`` volume mount in the |isaac-sim_short| ``docker run`` examples maps the same
+host directory into both containers so they share the cache. ``--network=host`` is required so the Hub client
+inside |isaac-sim_short| can reach the Hub service on ``localhost``.
+
+For more details, see the
+`Hub as a Docker Container <https://docs.omniverse.nvidia.com/utilities/latest/cache/hub-workstation.html#hub-as-a-docker-container>`_
+documentation.
 
 
 .. _isaac_sim_docker_compose_deployment:
@@ -341,7 +397,8 @@ The ``docker-compose.yml`` in ``tools/docker/`` handles volume mounts, GPU assig
 
     # Create cache/log mounts (use uid 1234 to match container user)
     $ mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
-    $ sudo chown -R 1234:1234 ~/docker
+    $ mkdir -p ~/.cache/ov/hub
+    $ sudo chown -R 1234:1234 ~/docker ~/.cache/ov/hub
 
     # Build the Isaac Sim image (one-time)
     $ ./tools/docker/prep_docker_build.sh --build --x86_64
@@ -412,7 +469,8 @@ This section describes how to run the |isaac-sim| container with GUI.
     $ mkdir -p ~/docker/isaac-sim/data/Kit
     $ mkdir -p ~/docker/isaac-sim/logs
     $ mkdir -p ~/docker/isaac-sim/pkg
-    $ sudo chown -R 1234:1234 ~/docker/isaac-sim
+    $ mkdir -p ~/.cache/ov/hub
+    $ sudo chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub
 
 5. Run the |isaac-sim_short| container with an interactive Bash session:
 
@@ -429,6 +487,7 @@ This section describes how to run the |isaac-sim| container with GUI.
         -v ~/docker/isaac-sim/config:/isaac-sim/.nvidia-omniverse/config:rw \
         -v ~/docker/isaac-sim/data:/isaac-sim/.local/share/ov/data:rw \
         -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
+        -v ~/.cache/ov/hub:/var/cache/hub:rw \
         -u 1234:1234 \
         nvcr.io/nvidia/isaac-sim:6.0.0-dev2
 
