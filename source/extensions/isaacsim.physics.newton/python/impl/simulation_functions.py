@@ -223,7 +223,7 @@ class NewtonSimulationFunctions:
             # Use None instead of removing to preserve indices
             self.contact_callbacks[subscription_id - 1] = None
 
-    def get_simulation_time_steps_per_second(self, stage_id: int, scene_path: int) -> float:
+    def get_simulation_time_steps_per_second(self, stage_id: int, scene_path: int) -> int:
         """Get physics simulation time steps per second.
 
         Args:
@@ -235,8 +235,10 @@ class NewtonSimulationFunctions:
             Current time steps per second.
         """
         if hasattr(self.newton_stage, "physics_frequency"):
-            return self.newton_stage.physics_frequency
-        return self.newton_stage.cfg.physics_frequency if hasattr(self.newton_stage.cfg, "physics_frequency") else 60.0
+            return int(self.newton_stage.physics_frequency)
+        return (
+            int(self.newton_stage.cfg.physics_frequency) if hasattr(self.newton_stage.cfg, "physics_frequency") else 60
+        )
 
     def get_simulation_timestamp(self) -> int:
         """Get physics simulation timestamp.

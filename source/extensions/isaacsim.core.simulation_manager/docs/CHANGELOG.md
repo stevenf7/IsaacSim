@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.0] - 2026-04-01
+### Changed
+- When available, use integer time steps per second and step count to compute simulation time in onPhysicsStep callback to eliminate accumulated bias due to floating-point timestep precision
+
 ## [1.13.2] - 2026-03-26
 ### Changed
 - Moved Python binding module to `bindings/` subdirectory
