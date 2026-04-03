@@ -245,6 +245,47 @@ protected:
         return _fetchFieldHostT<float>(name, outCount);
     }
 
+    /**
+     * @brief Fetch world positions and orientations atomically, running the shared fill callback at most once.
+     * @details Both fields share the same fill callback. This method checks staleness once, runs the callback
+     * if needed, and marks both fields current — avoiding the double invocation that occurs when calling
+     * getWorldPositions and getWorldOrientations separately.
+     * @param[in] hostVariant If true, copies GPU buffers to host staging before returning.
+     * @return Poses struct with pointers to the positions and orientations buffers and their element counts.
+     */
+    Poses _fetchWorldPosesImpl(bool hostVariant)
+    {
+        auto& fieldsF = m_data->fieldsF;
+        auto itPos = fieldsF.find("world_positions");
+        auto itOri = fieldsF.find("world_orientations");
+        if (itPos == fieldsF.end() || itOri == fieldsF.end())
+            return { nullptr, 0, nullptr, 0 };
+
+        auto& posField = itPos->second;
+        auto& oriField = itOri->second;
+        int64_t step = m_simulationManager ? static_cast<int64_t>(m_simulationManager->getNumPhysicsSteps()) : 0;
+
+        // Run the shared transform callback only once and mark both fields current.
+        if (posField.lastStep < step || oriField.lastStep < step)
+        {
+            if (posField.callback)
+                posField.callback();
+            posField.lastStep = step;
+            oriField.lastStep = step;
+        }
+
+        const float* positions = posField.buffer ? posField.buffer->data() : nullptr;
+        const float* orientations = oriField.buffer ? oriField.buffer->data() : nullptr;
+
+        if (hostVariant && m_data->deviceOrdinal >= 0)
+        {
+            positions = _copyToHostAndGet(fieldsF, "world_positions");
+            orientations = _copyToHostAndGet(fieldsF, "world_orientations");
+        }
+
+        return { positions, static_cast<int>(posField.count), orientations, static_cast<int>(oriField.count) };
+    }
+
     const uint8_t* _fetchFieldU8(const std::string& name, int* outCount)
     {
         return _fetchFieldT<uint8_t>(name, outCount);
@@ -374,6 +415,14 @@ protected:
     const float* getLocalScalesHost(int* outCount) override                                                             \
     {                                                                                                                   \
         return _fetchFieldHost("local_scales", outCount);                                                               \
+    }                                                                                                                   \
+    Poses getWorldPoses() override                                                                                      \
+    {                                                                                                                   \
+        return _fetchWorldPosesImpl(false);                                                                             \
+    }                                                                                                                   \
+    Poses getWorldPosesHost() override                                                                                  \
+    {                                                                                                                   \
+        return _fetchWorldPosesImpl(true);                                                                              \
     }                                                                                                                   \
     bool getPrimFrameName(const char* primPath, char* outName, size_t maxLen) override                                  \
     {                                                                                                                   \
@@ -884,7 +933,7 @@ private:
         }
     }
 
-    // ---- Fabric transform callbacks (engine-agnostic) ----
+    // ---- Transform callbacks: bulk PhysX tensor read for physics prims, Fabric fallback for the rest ----
 
     void _setupTransformCallbacks(ViewData& data)
     {
@@ -895,11 +944,127 @@ private:
         auto& worldPositionsField = data.getOrCreateField<float>("world_positions", numPrims * 3, -1);
         auto& worldOrientationsField = data.getOrCreateField<float>("world_orientations", numPrims * 4, -1);
 
-        // Capture by value: copies of smart pointers and path list are safe across calls.
         pxr::UsdStageRefPtr usdStage = m_usdStage;
         usdrt::UsdStageRefPtr usdrtStage = m_usdrtStage;
         std::vector<std::string> primPaths = data.primPaths;
 
+        if (data.engine == EngineType::ePhysX && m_simulationView)
+        {
+            std::vector<std::string> physicsPaths;
+            std::vector<size_t> physicsIndices;
+            std::vector<size_t> fabricIndices;
+
+            for (size_t i = 0; i < numPrims; ++i)
+            {
+                ObjectType ot = m_simulationView->getObjectType(primPaths[i].c_str());
+                if (ot == ObjectType::eRigidBody || ot == ObjectType::eArticulationLink ||
+                    ot == ObjectType::eArticulationRootLink)
+                {
+                    physicsIndices.push_back(i);
+                    physicsPaths.push_back(primPaths[i]);
+                }
+                else
+                {
+                    fabricIndices.push_back(i);
+                }
+            }
+
+            if (!physicsPaths.empty())
+            {
+                IRigidBodyView* rawView = m_simulationView->createRigidBodyView(physicsPaths);
+                if (rawView && rawView->getCount() == static_cast<uint32_t>(physicsPaths.size()))
+                {
+                    auto rbView = std::shared_ptr<IRigidBodyView>(rawView, [](IRigidBodyView* v) { v->release(); });
+                    int device = m_simulationView->getDeviceOrdinal();
+                    size_t numPhysics = physicsPaths.size();
+
+                    auto tensorBuffer = std::make_shared<includes::GenericBufferBase<float>>(numPhysics * 7, device);
+                    auto hostStaging = std::make_shared<std::vector<float>>(numPhysics * 7);
+
+                    if (fabricIndices.empty())
+                    {
+                        // All prims are physics — tight loop without index indirection or
+                        // Fabric fallback.  Avoids capturing usdStage/usdrtStage/primPaths.
+                        auto fillTransforms = [rbView, device, numPhysics, tensorBuffer, hostStaging,
+                                               &worldPositionsField, &worldOrientationsField]()
+                        {
+                            TensorDesc desc;
+                            fillTensorDesc(desc, tensorBuffer->data(), static_cast<int>(numPhysics * 7),
+                                           TensorDataType::eFloat32, device);
+                            rbView->getTransforms(&desc);
+                            tensorBuffer->copyTo(hostStaging->data(), numPhysics * 7);
+
+                            const float* tensorData = hostStaging->data();
+                            float* positions = worldPositionsField.buffer->data();
+                            float* orientations = worldOrientationsField.buffer->data();
+
+                            for (size_t j = 0; j < numPhysics; ++j)
+                            {
+                                const float* src = tensorData + j * 7;
+                                positions[j * 3 + 0] = src[0];
+                                positions[j * 3 + 1] = src[1];
+                                positions[j * 3 + 2] = src[2];
+                                orientations[j * 4 + 0] = src[6]; // qw
+                                orientations[j * 4 + 1] = src[3]; // qx
+                                orientations[j * 4 + 2] = src[4]; // qy
+                                orientations[j * 4 + 3] = src[5]; // qz
+                            }
+                        };
+
+                        worldPositionsField.callback = fillTransforms;
+                        worldOrientationsField.callback = fillTransforms;
+                    }
+                    else
+                    {
+                        // Mixed: some physics prims (tensor) + some non-physics (Fabric).
+                        auto fillTransforms = [rbView, device, numPhysics, physicsIndices, fabricIndices, tensorBuffer,
+                                               hostStaging, usdStage, usdrtStage, primPaths, &worldPositionsField,
+                                               &worldOrientationsField]()
+                        {
+                            TensorDesc desc;
+                            fillTensorDesc(desc, tensorBuffer->data(), static_cast<int>(numPhysics * 7),
+                                           TensorDataType::eFloat32, device);
+                            rbView->getTransforms(&desc);
+                            tensorBuffer->copyTo(hostStaging->data(), numPhysics * 7);
+
+                            const float* tensorData = hostStaging->data();
+                            float* positions = worldPositionsField.buffer->data();
+                            float* orientations = worldOrientationsField.buffer->data();
+
+                            for (size_t j = 0; j < physicsIndices.size(); ++j)
+                            {
+                                size_t i = physicsIndices[j];
+                                const float* src = tensorData + j * 7;
+                                positions[i * 3 + 0] = src[0];
+                                positions[i * 3 + 1] = src[1];
+                                positions[i * 3 + 2] = src[2];
+                                orientations[i * 4 + 0] = src[6]; // qw
+                                orientations[i * 4 + 1] = src[3]; // qx
+                                orientations[i * 4 + 2] = src[4]; // qy
+                                orientations[i * 4 + 3] = src[5]; // qz
+                            }
+
+                            for (size_t idx : fabricIndices)
+                            {
+                                auto xform = includes::pose::computeWorldXformNoCache(
+                                    usdStage, usdrtStage, pxr::SdfPath(primPaths[idx]));
+                                decomposeMatrix(xform, positions + idx * 3, orientations + idx * 4);
+                            }
+                        };
+
+                        worldPositionsField.callback = fillTransforms;
+                        worldOrientationsField.callback = fillTransforms;
+                    }
+                    return;
+                }
+                else if (rawView)
+                {
+                    rawView->release();
+                }
+            }
+        }
+
+        // Fallback: pure Fabric path (Newton engine, no simulation view, or no physics prims matched)
         auto fillTransforms = [usdStage, usdrtStage, primPaths, &worldPositionsField, &worldOrientationsField]()
         {
             for (size_t i = 0; i < primPaths.size(); ++i)
