@@ -93,7 +93,10 @@ If creating the Annotator through the ``LidarRtx`` class, this can be done as fo
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/note_this_must_be_done_before_attaching_the_annota.py
     :language: python
 
-The node outputs data as pointers to buffers and the table below specifies the data type of each buffer.
+The node outputs data as pointers to buffers and the table below specifies the data type of each buffer, as well as any attributes to set on the ``OmniLidar`` prim or carb settings that are required for the desired output(s).
+If the user does not set the required attributes or carb settings, the annotator will print a warning and will not output the desired data.
+
+.. warning:: In |isaac-sim_short| 5.1 and earlier, the ``IsaacCreateRTXLidarScanBuffer`` node  included an ``outputNormal`` field, which has been deprecated. Use the ``outputHitNormal`` input instead.
 
 .. csv-table::
     :header: "Output", "Type", "Description", "Notes"
