@@ -316,6 +316,10 @@ def _patch_gmo_extra_includes(
         resp = requests.get(
             f"{gitlab_url}/api/v4/projects/{project_id}/pipelines/{pipeline_id}",
             headers=headers,
+        resp = requests.get(
+            f"{gitlab_url}/api/v4/projects/{project_id}/pipelines/{pipeline_id}",
+            headers=headers,
+            timeout=30,
         )
         resp.raise_for_status()
         sha = resp.json()["sha"]
@@ -332,7 +336,7 @@ def _patch_gmo_extra_includes(
         encoded = quote(src_path, safe="")
         url = f"{gitlab_url}/api/v4/projects/{project_id}/repository/files/{encoded}/raw?ref={sha}"
         try:
-            resp = requests.get(url, headers=headers)
+            resp = requests.get(url, headers=headers, timeout=30)
             resp.raise_for_status()
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             with open(dst, "wb") as f:
