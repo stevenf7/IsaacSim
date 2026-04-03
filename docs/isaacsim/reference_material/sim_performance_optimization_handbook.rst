@@ -220,7 +220,6 @@ Asynchronous Rendering
 Asynchronous rendering is a feature that allows the rendering to run in a separate thread from the simulation thread. In |isaac-sim_short|, asynchronous rendering is enabled by default whenever |isaac-sim_short| is in a stoppped or paused state. This greatly improves UI responsiveness and viewport FPS, particularly for complex scenes. 
 
 Asynchronous Rendering Toggle (Default)
-Asynchronous Rendering Toggle (Default)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This is set in the isaacsim.core.throttling extension. To disable this feature in the event of unexpected behavior, set the ``exts."isaacsim.core.throttling".enable_async`` setting to ``false`` when starting the application.
@@ -233,7 +232,6 @@ This is set in the isaacsim.core.throttling extension. To disable this feature i
     This setting is only set true when running with ``isaacsim.exp.full.kit``, not when running via a Python-based workflow. It could be enabled manually using the above setting for other workflows if desired.
     In certain use cases, particularly with Replicator-based SDG workflows, it may be necessary to disable asynchronous rendering to ensure proper behavior.
 
-Runtime Asynchronous Rendering (Experimental)
 Runtime Asynchronous Rendering (Experimental)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
