@@ -287,6 +287,60 @@ RTX_LIBS_SUBDIR_TO_PACKAGE = {
     "sensors-gmo": "generic-model-output",
 }
 
+# Extra files that the published generic-model-output packman package bundles from
+# rendering/source/include/ (see rendering/package.toml) but that the sensors-gmo
+# build output does not contain.  Must be patched in when using the fallback path.
+_GMO_EXTRA_INCLUDE_FILES = [
+    "omni/sensors/cuda/CudaHelperDecl.h",
+    "omni/sensors/cuda/CudaHelperMath.h",
+    "omni/sensors/cuda/CudaHelperMem.h",
+]
+
+
+def _patch_gmo_extra_includes(
+    gmo_dir: str,
+    project_id,
+    pipeline_id,
+    gitlab_url: str,
+) -> None:
+    """Download CudaHelper headers missing from the sensors-gmo build output.
+
+    The published generic-model-output packman package bundles extra headers from
+    rendering/source/include/ (see rendering/package.toml ``CudaHelper**`` glob).
+    The sensors-gmo directory under rtx_plugins.release does not include them,
+    so builds that depend on GMOAuxiliaryData.h fail with a missing CudaHelperMem.h.
+    """
+    headers = _gitlab_headers()
+    # Resolve the pipeline SHA for deterministic file downloads.
+    try:
+        resp = requests.get(
+            f"{gitlab_url}/api/v4/projects/{project_id}/pipelines/{pipeline_id}",
+            headers=headers,
+        )
+        resp.raise_for_status()
+        sha = resp.json()["sha"]
+    except (requests.HTTPError, KeyError) as e:
+        print(f"[pull_kit] Fallback: WARNING: could not resolve pipeline SHA: {e}")
+        return
+
+    include_dir = os.path.join(gmo_dir, "include")
+    for rel_path in _GMO_EXTRA_INCLUDE_FILES:
+        dst = os.path.join(include_dir, rel_path)
+        if os.path.exists(dst):
+            continue
+        src_path = f"rendering/source/include/{rel_path}"
+        encoded = quote(src_path, safe="")
+        url = f"{gitlab_url}/api/v4/projects/{project_id}/repository/files/{encoded}/raw?ref={sha}"
+        try:
+            resp = requests.get(url, headers=headers)
+            resp.raise_for_status()
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            with open(dst, "wb") as f:
+                f.write(resp.content)
+            print(f"[pull_kit] Fallback: patched {rel_path} into GMO include dir")
+        except requests.HTTPError as e:
+            print(f"[pull_kit] Fallback: WARNING: failed to download {rel_path}: {e}")
+
 
 def _fetch_rtx_deps_via_packman_lookup(
     rendering_deps_xml: str,
@@ -390,7 +444,13 @@ def fetch_rtx_kit_dep_packages(
         print(f"[pull_kit] No rtx-build job for platform '{platform}', trying kit-rtx-plugins-lookup fallback...")
         ok, rendering_deps_xml = fetch_rendering_deps_from_lookup_job(project_id, pipeline_id, platform, gitlab_url)
         if ok and rendering_deps_xml is not None:
-            return _fetch_rtx_deps_via_packman_lookup(rendering_deps_xml, build_config, platform, output_base_dir)
+            extracted = _fetch_rtx_deps_via_packman_lookup(rendering_deps_xml, build_config, platform, output_base_dir)
+            # The sensors-gmo build output is missing headers that the published
+            # generic-model-output packman package bundles from rendering/source/include/.
+            # Patch them in so downstream builds can find CudaHelperMem.h et al.
+            if "generic-model-output" in extracted:
+                _patch_gmo_extra_includes(extracted["generic-model-output"], project_id, pipeline_id, gitlab_url)
+            return extracted
         return {}
 
     job_id = target_job["id"]
