@@ -15,24 +15,19 @@
 
 """Interactive example demonstrating surface gripper simulation and control in Isaac Sim."""
 
-
 import asyncio
 import os
 
 import carb
-
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import isaacsim.core.experimental.utils.app as app_utils
 import omni
 import omni.ext
 import omni.kit.app
-import omni.kit.commands
-import omni.kit.usd
-import omni.physics.core
 import omni.physics.tensors as physics
 import omni.ui as ui
 import usd.schema.isaac.robot_schema as robot_schema
 from isaacsim.core.rendering_manager import ViewportManager
+from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.ui_utils import (
     add_separator,
@@ -93,6 +88,7 @@ class Extension(omni.ext.IExt):
 
         self.surface_gripper = None
         self._stage_id = -1
+        self._physics_callback_id = None
 
     def build_window(self):
         pass
@@ -155,7 +151,9 @@ class Extension(omni.ext.IExt):
                     add_separator()
 
     def on_shutdown(self):
-        self._physics_subscription = None
+        if self._physics_callback_id is not None:
+            SimulationManager.deregister_callback(self._physics_callback_id)
+            self._physics_callback_id = None
         self._stage_event_sub = None
         self._window = None
         get_browser_instance().deregister_example(name=EXTENSION_NAME, category="Manipulation")
@@ -189,7 +187,10 @@ class Extension(omni.ext.IExt):
             self._models["gripped_objects"].set_value("\n".join(objects))
 
     def _on_reset_scenario_button_clicked(self):
-        pass
+        if self._physics_callback_id is not None:
+            SimulationManager.deregister_callback(self._physics_callback_id)
+            self._physics_callback_id = None
+        self._on_create_scenario_button_clicked()
 
     async def _create_scenario(self, task):
         done, pending = await asyncio.wait({task})
@@ -250,10 +251,8 @@ class Extension(omni.ext.IExt):
                 eye=[2.00, 2.00, 2.00], target=list(self.gripper_start_pose.p), camera="/OmniverseKit_Persp"
             )
 
-            self._physics_subscription = (
-                omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
-                    pre_step=False, order=0, on_update=self._on_simulation_step
-                )
+            self._physics_callback_id = SimulationManager.register_callback(
+                self._on_simulation_step, event=SimulationEvent.PHYSICS_POST_STEP
             )
             app_utils.play()
 
@@ -266,8 +265,6 @@ class Extension(omni.ext.IExt):
             usd_path = os.path.join(ext_path, "data", "SurfaceGripper_gantry.usda")
             await omni.usd.get_context().new_stage_async()
             stage = omni.usd.get_context().get_stage()
-            # root_layer = stage.GetRootLayer()
-            # root_layer.subLayerPaths.append(usd_path)
             stage.DefinePrim("/World", "Xform").GetReferences().AddReference(usd_path)
             stage.SetDefaultPrim(stage.GetPrimAtPath("/World"))
 

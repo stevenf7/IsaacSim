@@ -59,7 +59,7 @@ Scaling to Multiple Scenarios
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_multiple_tasks/scaling_to_many_tasks.py
     :language: python
     :linenos:
-    :emphasize-lines: 20, 30-34, 38-39, 48-49, 53-54, 60
+    :emphasize-lines: 152, 160-164, 168-169, 177-178, 181-182, 189
 
 .. image:: /images/core_api_tutorials_6_2.webp
     :align: center
@@ -70,17 +70,12 @@ Adding Randomization
 ====================
 
 To make simulations more interesting, you can add randomization to the scenario parameters.
-Modify the :code:`RobotScenario` class to accept randomization options:
+In the :code:`setup_scene` method above, set :code:`randomize=True` when creating each scenario:
 
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_multiple_tasks/adding_randomization.py
     :language: python
     :linenos:
-
-Then create scenarios with randomization enabled:
-
-.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_multiple_tasks/adding_randomization_2.py
-    :language: python
-    :linenos:
+    :emphasize-lines: 3
 
 Best Practices for Scaling
 ==========================
