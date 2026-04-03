@@ -710,8 +710,15 @@ public:
         m_outputTickId =
             validateOutput(db.inputs.outputTickId(), omni::sensors::AuxType::BASIC, omni::sensors::Modality::LIDAR,
                            omni::sensors::LidarAuxHas::TICK_ID, "outputTickId");
+
+        bool outputHitNormalInput = db.inputs.outputHitNormal();
+        if (db.inputs.outputNormal())
+        {
+            CARB_LOG_WARN("IsaacCreateRTXLidarScanBuffer: outputNormal is deprecated, use outputHitNormal instead.");
+            outputHitNormalInput = true;
+        }
         m_outputHitNormal =
-            validateOutput(db.inputs.outputHitNormal(), omni::sensors::AuxType::FULL, omni::sensors::Modality::LIDAR,
+            validateOutput(outputHitNormalInput, omni::sensors::AuxType::FULL, omni::sensors::Modality::LIDAR,
                            omni::sensors::LidarAuxHas::HIT_NORMALS, "outputHitNormal");
         m_outputVelocity =
             validateOutput(db.inputs.outputVelocity(), omni::sensors::AuxType::FULL, omni::sensors::Modality::LIDAR,

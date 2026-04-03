@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.15.2] - 2026-04-03
+### Changed
+- Formally deprecate outputNormal input in favor of outputHitNormal input in IsaacCreateRTXLidarScanBuffer
+
 ## [15.15.1] - 2026-03-31
 ### Deprecated
 - Extension deprecated in favor of the Experimental extension `isaacsim.sensors.experimental.rtx`
