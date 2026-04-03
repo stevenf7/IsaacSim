@@ -10,6 +10,8 @@ folders = [
 "isaacsim.exp.full" = { version = "6.0.0" }
 "isaacsim.exp.action_and_event_data_generation.full" = {}
 # All isaac sim extensions so we have their dependencies properly cached regardless if the extension is part of the full app or not
+"isaacsim.agent.planner.bridge" = {}
+"isaacsim.agent.planner.core" = {}
 "isaacsim.app.about" = {}
 "isaacsim.app.setup" = {}
 "isaacsim.asset.exporter.urdf" = {}
@@ -190,7 +192,9 @@ folders = [
 "omni.anim.window.timeline" = {}
 "omni.asset_validator.core" = {}
 "omni.asset_validator.ui" = {}
+"omni.behavior.composer.models" = {}
 "omni.behavior.scripting.core" = {}
+"omni.behavior.tree.core" = { version = "110.0.20", exact = true }
 "omni.curve.creator" = {}
 "omni.curve.manipulator" = {}
 "omni.genproc.core" = {}
@@ -267,6 +271,7 @@ folders = [
 "omni.kit.window.quicksearch" = {}
 "omni.kit.window.section" = {}
 "omni.kit.window.usddebug" = {}
+"omni.metropolis.agent_registry" = {}
 "omni.no_code_ui.bundle" = {}
 "omni.ramp" = {}
 "omni.scene.optimizer.bundle" = {}
@@ -344,7 +349,12 @@ folders = [
 # Kit SDK Version: 110.1.0+feature.289037.7a07a475.gl
 
 # Exact Version dependencies:
+# 	isaacsim.agent.planner.bridge-1.0.7
+# 	isaacsim.agent.planner.core-1.0.3
 # 	isaacsim.xr.input_devices-1.0.4
+# 	omni.behavior.composer.models-0.7.25
+# 	omni.behavior.tree.core-110.0.20
+# 	omni.metropolis.agent_registry-0.1.2
 # 	omni.physics.tensors-110.0.7
 # 	omni.physx.bundle-110.0.7
 # 	omni.physx.fabric-110.0.7
@@ -357,6 +367,8 @@ folders = [
 [settings.app.exts]
 enabled = [
 	"isaacsim.action_and_event_data_generation.setup-0.6.0",
+	"isaacsim.agent.planner.bridge-1.0.7",
+	"isaacsim.agent.planner.core-1.0.3",
 	"isaacsim.anim.robot.core-1.2.2",
 	"isaacsim.anim.robot.schema-0.1.0",
 	"isaacsim.app.compatibility_check-1.1.1",
@@ -400,7 +412,9 @@ enabled = [
 	"omni.anim.window.timeline-110.0.0",
 	"omni.asset_validator.core-1.15.1",
 	"omni.asset_validator.ui-1.15.1",
+	"omni.behavior.composer.models-0.7.25",
 	"omni.behavior.scripting.core-110.0.4",
+	"omni.behavior.tree.core-110.0.20",
 	"omni.behavior.tree.schema-110.0.3",
 	"omni.convexdecomposition-110.0.7",
 	"omni.cuopt.examples-1.4.1",
@@ -503,6 +517,7 @@ enabled = [
 	"omni.kit.window.quicksearch-2.4.4",
 	"omni.kit.window.section-107.1.4",
 	"omni.kit.window.usddebug-1.1.4",
+	"omni.metropolis.agent_registry-0.1.2",
 	"omni.metropolis.pipeline-0.0.5",
 	"omni.metropolis.schema-0.0.1",
 	"omni.metropolis.utils-1.0.5",
