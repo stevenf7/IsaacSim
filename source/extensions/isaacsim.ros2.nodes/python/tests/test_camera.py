@@ -1506,3 +1506,140 @@ class TestRos2Camera(ROS2TestCase):
             f"{len(comparison_failures)} of {matched_pairs} pairs failed image comparison: "
             f"{comparison_failures[0][1] if comparison_failures else 'N/A'}",
         )
+
+    async def test_camera_tf_includes_180_x_rotation(self):
+        """Camera prims in the TF tree must include a 180-deg x-axis rotation.
+
+        Verifies the USD camera convention (-Z forward, +Y up) to ROS optical
+        frame convention (+Z forward, +Y down) conversion applied by
+        OgnIsaacComputeTransformTree.  Uses two cameras (identity and 90-deg Z
+        rotated) and a plain Xform control to confirm the rotation is applied
+        only to cameras and that it composes correctly with authored orientation.
+        """
+        from tf2_msgs.msg import TFMessage
+
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        stage_utils.define_prim("/CameraIdentity", "Camera")
+        cam_id = XformPrim("/CameraIdentity", reset_xform_op_properties=True)
+        cam_id.set_world_poses(positions=[[1.0, 2.0, 3.0]], orientations=[[1, 0, 0, 0]])
+
+        cos45 = math.cos(math.radians(45))
+        sin45 = math.sin(math.radians(45))
+        stage_utils.define_prim("/CameraRotZ90", "Camera")
+        cam_rot = XformPrim("/CameraRotZ90", reset_xform_op_properties=True)
+        cam_rot.set_world_poses(positions=[[4.0, 5.0, 6.0]], orientations=[[cos45, 0, 0, sin45]])
+
+        stage_utils.define_prim("/ControlXform", "Xform")
+        ctrl = XformPrim("/ControlXform", reset_xform_op_properties=True)
+        ctrl.set_world_poses(positions=[[7.0, 8.0, 9.0]], orientations=[[1, 0, 0, 0]])
+
+        await omni.kit.app.get_app().next_update_async()
+
+        self._camera_tf_data = None
+
+        def tf_callback(data: TFMessage):
+            self._camera_tf_data = data
+
+        node = self.create_node("camera_tf_tester")
+        self.create_subscription(node, TFMessage, "/tf_camera_test", tf_callback, get_qos_profile())
+
+        try:
+            og.Controller.edit(
+                {"graph_path": "/CameraTFGraph", "evaluator_name": "execution"},
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
+                        ("ComputeTF", "isaacsim.core.nodes.IsaacComputeTransformTree"),
+                        ("PublishTF", "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
+                    ],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("PublishTF.inputs:topicName", "/tf_camera_test"),
+                        (
+                            "ComputeTF.inputs:targetPrims",
+                            [
+                                usdrt.Sdf.Path("/CameraIdentity"),
+                                usdrt.Sdf.Path("/CameraRotZ90"),
+                                usdrt.Sdf.Path("/ControlXform"),
+                            ],
+                        ),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "ComputeTF.inputs:execIn"),
+                        ("ComputeTF.outputs:execOut", "PublishTF.inputs:execIn"),
+                        ("ComputeTF.outputs:parentFrames", "PublishTF.inputs:parentFrames"),
+                        ("ComputeTF.outputs:childFrames", "PublishTF.inputs:childFrames"),
+                        ("ComputeTF.outputs:translations", "PublishTF.inputs:translations"),
+                        ("ComputeTF.outputs:orientations", "PublishTF.inputs:orientations"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.01)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await self.simulate_until_condition(
+            lambda: self._camera_tf_data is not None,
+            max_frames=60,
+            per_frame_callback=spin,
+        )
+
+        self.assertIsNotNone(self._camera_tf_data, "Expected TF data from camera TF test")
+
+        tf_map = {t.child_frame_id: t for t in self._camera_tf_data.transforms}
+        all_frames = list(tf_map.keys())
+
+        cam_id_tf = tf_map.get("CameraIdentity")
+        cam_rot_tf = tf_map.get("CameraRotZ90")
+        ctrl_tf = tf_map.get("ControlXform")
+
+        self.assertIsNotNone(cam_id_tf, f"CameraIdentity not in TF. Frames: {all_frames}")
+        self.assertIsNotNone(cam_rot_tf, f"CameraRotZ90 not in TF. Frames: {all_frames}")
+        self.assertIsNotNone(ctrl_tf, f"ControlXform not in TF. Frames: {all_frames}")
+
+        # Control xform at identity — no camera rotation applied
+        r = ctrl_tf.transform.rotation
+        self.assertAlmostEqual(r.w, 1.0, places=5, msg="Control w")
+        self.assertAlmostEqual(r.x, 0.0, places=5, msg="Control x")
+        self.assertAlmostEqual(r.y, 0.0, places=5, msg="Control y")
+        self.assertAlmostEqual(r.z, 0.0, places=5, msg="Control z")
+
+        # Camera at identity: 180-deg x-rotation -> (x~1, y~0, z~0, w~0)
+        r = cam_id_tf.transform.rotation
+        self.assertAlmostEqual(r.w, 0.0, places=4, msg="CameraIdentity w")
+        self.assertAlmostEqual(abs(r.x), 1.0, places=4, msg="CameraIdentity |x|")
+        self.assertAlmostEqual(r.y, 0.0, places=4, msg="CameraIdentity y")
+        self.assertAlmostEqual(r.z, 0.0, places=4, msg="CameraIdentity z")
+
+        # Camera at 90-deg Z composed with 180-deg x -> (x~cos45, y~sin45, z~0, w~0)
+        r = cam_rot_tf.transform.rotation
+        self.assertAlmostEqual(r.w, 0.0, places=4, msg="CameraRotZ90 w")
+        self.assertAlmostEqual(abs(r.x), cos45, places=4, msg="CameraRotZ90 |x|")
+        self.assertAlmostEqual(abs(r.y), sin45, places=4, msg="CameraRotZ90 |y|")
+        self.assertAlmostEqual(r.z, 0.0, places=4, msg="CameraRotZ90 z")
+
+        # Positions should match authored values
+        t = cam_id_tf.transform.translation
+        self.assertAlmostEqual(t.x, 1.0, places=3)
+        self.assertAlmostEqual(t.y, 2.0, places=3)
+        self.assertAlmostEqual(t.z, 3.0, places=3)
+
+        t = cam_rot_tf.transform.translation
+        self.assertAlmostEqual(t.x, 4.0, places=3)
+        self.assertAlmostEqual(t.y, 5.0, places=3)
+        self.assertAlmostEqual(t.z, 6.0, places=3)
+
+        t = ctrl_tf.transform.translation
+        self.assertAlmostEqual(t.x, 7.0, places=3)
+        self.assertAlmostEqual(t.y, 8.0, places=3)
+        self.assertAlmostEqual(t.z, 9.0, places=3)
+
+        self._timeline.stop()
+        spin()

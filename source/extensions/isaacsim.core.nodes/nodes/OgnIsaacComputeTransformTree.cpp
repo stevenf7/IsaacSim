@@ -24,11 +24,11 @@
 #include <isaacsim/core/includes/BaseResetNode.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
 #include <omni/fabric/FabricUSD.h>
-#include <pxr/base/gf/matrix4d.h>
-#include <pxr/base/gf/quatd.h>
-#include <pxr/base/gf/rotation.h>
 #include <pxr/base/gf/vec3d.h>
 #include <pxr/base/gf/vec4d.h>
+#include <pxr/base/tf/type.h>
+#include <pxr/usd/usdGeom/camera.h>
+#include <pxr/usd/usdPhysics/articulationRootAPI.h>
 
 #include <OgnIsaacComputeTransformTreeDatabase.h>
 #include <algorithm>
@@ -36,6 +36,7 @@
 #include <map>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace isaacsim
@@ -55,14 +56,47 @@ static std::atomic<int> s_transformTreeViewCounter{ 0 };
 /// View index value meaning "use world or optional parent prim" (not an index into m_viewPaths).
 static constexpr int kWorldParentViewIdx = -1;
 
-/// Per-link-pair record: which view indices are the parent and child, plus frame names.
+/// Per-link-pair record: which view indices are the parent and child, plus frame names and cached tokens.
 struct TransformPair
 {
     int parentViewIdx; ///< kWorldParentViewIdx = world/external parent; >= 0 = index in m_viewPaths
     int childViewIdx; ///< index in m_viewPaths
     std::string parentFrame;
     std::string childFrame;
+    bool isCamera; ///< true if child is a UsdGeomCamera (needs 180° x-axis rotation for ROS convention)
+    NameToken parentToken; ///< cached token for parentFrame (avoid per-frame stringToToken)
+    NameToken childToken; ///< cached token for childFrame
 };
+
+/// World-space position + orientation in float32, matching IPrimDataReader's float arrays directly.
+struct WorldPose
+{
+    float px, py, pz;
+    float qw, qx, qy, qz; ///< (w, x, y, z) to match Fabric decomposeMatrix layout
+};
+
+/// Hamilton product: out = a * b.
+static inline void quatMul(
+    float aw, float ax, float ay, float az, float bw, float bx, float by, float bz, float& ow, float& ox, float& oy, float& oz)
+{
+    ow = aw * bw - ax * bx - ay * by - az * bz;
+    ox = aw * bx + ax * bw + ay * bz - az * by;
+    oy = aw * by - ax * bz + ay * bw + az * bx;
+    oz = aw * bz + ax * by - ay * bx + az * bw;
+}
+
+/// Rotate vector (vx,vy,vz) by unit quaternion (qw,qx,qy,qz) using the
+/// cross-product form: result = v + 2w*(q×v) + 2*(q×(q×v)).
+static inline void rotateVec(
+    float qw, float qx, float qy, float qz, float vx, float vy, float vz, float& ox, float& oy, float& oz)
+{
+    float tx = 2.0f * (qy * vz - qz * vy);
+    float ty = 2.0f * (qz * vx - qx * vz);
+    float tz = 2.0f * (qx * vy - qy * vx);
+    ox = vx + qw * tx + (qy * tz - qz * ty);
+    oy = vy + qw * ty + (qz * tx - qx * tz);
+    oz = vz + qw * tz + (qx * ty - qy * tx);
+}
 
 class OgnIsaacComputeTransformTree : public isaacsim::core::includes::BaseResetNode
 {
@@ -118,7 +152,10 @@ public:
         cleanupView();
         m_firstFrame = true;
         m_viewPaths.clear();
+        m_cameraViewIndices.clear();
         m_pairs.clear();
+        m_parentPoseCache.clear();
+        m_parentPoseCacheValid.clear();
         m_renamedFrames.clear();
         m_publishedFrames.clear();
         m_parentPath.clear();
@@ -136,7 +173,7 @@ private:
         }
 
         std::unordered_map<std::string, std::string> linkParents;
-        if (!collectViewPathsAndLinkParents(db, linkParents))
+        if (!collectViewPathsAndLinkParents(db, linkParents, stageId))
         {
             return false;
         }
@@ -151,7 +188,7 @@ private:
             return false;
         }
 
-        buildTransformPairs(linkParents);
+        buildTransformPairs(db, linkParents);
 
         m_firstFrame = false;
         return true;
@@ -198,7 +235,8 @@ private:
     }
 
     bool collectViewPathsAndLinkParents(OgnIsaacComputeTransformTreeDatabase& db,
-                                        std::unordered_map<std::string, std::string>& linkParents)
+                                        std::unordered_map<std::string, std::string>& linkParents,
+                                        long stageId)
     {
         const auto& targetPrims = db.inputs.targetPrims();
         if (targetPrims.empty())
@@ -207,47 +245,88 @@ private:
             return false;
         }
 
+        // Obtain the stage to guard articulation discovery with a cheap API check, avoiding
+        // spurious PhysX tensor errors for sensor/camera/Xform-only prims.
+        pxr::UsdStageRefPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+
         for (size_t i = 0; i < targetPrims.size(); i++)
         {
             std::string primPathStr = omni::fabric::toSdfPath(targetPrims[i]).GetString();
 
-            // Create a temporary articulation view to detect links via USD traversal.
-            std::string tempId = "ctt_discover_" + std::to_string(i);
-            const char* pathPtr = primPathStr.c_str();
-            IArticulationDataView* artView = m_reader->createArticulationView(tempId.c_str(), &pathPtr, 1, "physx");
-
-            const experimental::prims::LinkInfo* links = nullptr;
-            size_t linkCount = 0;
-            bool isArticulation =
-                artView && artView->getArticulationLinks(primPathStr.c_str(), &links, &linkCount) && linkCount > 0;
-
-            if (isArticulation)
+            // Only attempt articulation discovery for prims that have UsdPhysicsArticulationRootAPI.
+            // Without this guard, createArticulationView triggers PhysX tensor errors for every
+            // non-physics prim (sensors, cameras, IMUs, etc.).
+            bool hasArticulationApi = false;
+            if (stage)
             {
-                // Copy link data before removing the view (pointers become invalid after removeView).
-                struct LinkCopy
+                pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPathStr));
+                hasArticulationApi = prim && prim.HasAPI<pxr::UsdPhysicsArticulationRootAPI>();
+            }
+
+            bool isArticulation = false;
+            if (hasArticulationApi)
+            {
+                // Create a temporary articulation view to detect links via USD traversal.
+                // Use "newton" engine type to avoid triggering PhysX tensor setup — getArticulationLinks
+                // is pure USD traversal and does not require any physics backend to be active.
+                std::string tempId = "ctt_discover_" + std::to_string(i);
+                const char* pathPtr = primPathStr.c_str();
+                IArticulationDataView* artView = m_reader->createArticulationView(tempId.c_str(), &pathPtr, 1, "newton");
+
+                const experimental::prims::LinkInfo* links = nullptr;
+                size_t linkCount = 0;
+                isArticulation =
+                    artView && artView->getArticulationLinks(primPathStr.c_str(), &links, &linkCount) && linkCount > 0;
+
+                if (isArticulation)
                 {
-                    std::string path;
-                    std::string parentPath;
-                };
-                std::vector<LinkCopy> copied(linkCount);
-                for (size_t j = 0; j < linkCount; j++)
-                {
-                    copied[j].path = links[j].path;
-                    copied[j].parentPath = links[j].parentPath;
+                    // Copy link data before removing the view (pointers become invalid after removeView).
+                    struct LinkCopy
+                    {
+                        std::string path;
+                        std::string parentPath;
+                    };
+                    std::vector<LinkCopy> copied(linkCount);
+                    for (size_t j = 0; j < linkCount; j++)
+                    {
+                        copied[j].path = links[j].path;
+                        copied[j].parentPath = links[j].parentPath;
+                    }
+                    m_reader->removeView(tempId.c_str());
+                    for (const auto& lc : copied)
+                    {
+                        m_viewPaths.push_back(lc.path);
+                        linkParents[lc.path] = lc.parentPath;
+                    }
                 }
-                m_reader->removeView(tempId.c_str());
-                for (const auto& lc : copied)
+                else
                 {
-                    m_viewPaths.push_back(lc.path);
-                    linkParents[lc.path] = lc.parentPath;
+                    m_reader->removeView(tempId.c_str());
                 }
             }
-            else
+
+            if (!isArticulation)
             {
-                m_reader->removeView(tempId.c_str());
                 // Not an articulation (or no links found): treat as a single prim.
+                int viewIdx = static_cast<int>(m_viewPaths.size());
                 m_viewPaths.push_back(primPathStr);
                 linkParents[primPathStr] = "";
+
+                // Cameras (excluding RTX Lidar sensors that share the Camera schema) need a
+                // 180° x-axis rotation to match the ROS optical frame convention.
+                if (stage)
+                {
+                    pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPathStr));
+                    if (prim && prim.IsA<pxr::UsdGeomCamera>())
+                    {
+                        static const pxr::TfType kRtxLidarType =
+                            pxr::TfType::FindByName("IsaacSensorIsaacRtxLidarSensorAPI");
+                        if (!kRtxLidarType || !prim.HasAPI(kRtxLidarType))
+                        {
+                            m_cameraViewIndices.insert(viewIdx);
+                        }
+                    }
+                }
             }
         }
 
@@ -277,7 +356,8 @@ private:
         return true;
     }
 
-    void buildTransformPairs(const std::unordered_map<std::string, std::string>& linkParents)
+    void buildTransformPairs(OgnIsaacComputeTransformTreeDatabase& db,
+                             const std::unordered_map<std::string, std::string>& linkParents)
     {
         std::unordered_map<std::string, int> pathIndex;
         for (size_t i = 0; i < m_viewPaths.size(); i++)
@@ -296,7 +376,6 @@ private:
             }
             else
             {
-                // Fallback: use the last component of the path
                 auto slash = path.rfind('/');
                 name = (slash != std::string::npos) ? path.substr(slash + 1) : path;
             }
@@ -308,10 +387,11 @@ private:
             const std::string& childPath = m_viewPaths[i];
             const std::string& childFrame = pathToFrame[childPath];
             const auto& parentPathStr = linkParents.at(childPath);
+            bool isCamera = m_cameraViewIndices.count(static_cast<int>(i)) > 0;
 
             if (parentPathStr.empty())
             {
-                m_pairs.push_back({ kWorldParentViewIdx, static_cast<int>(i), m_parentFrame, childFrame });
+                m_pairs.push_back({ kWorldParentViewIdx, static_cast<int>(i), m_parentFrame, childFrame, isCamera });
             }
             else
             {
@@ -319,51 +399,48 @@ private:
                 if (it != pathIndex.end())
                 {
                     const std::string& parentFrame = pathToFrame.at(parentPathStr);
-                    m_pairs.push_back({ it->second, static_cast<int>(i), parentFrame, childFrame });
+                    m_pairs.push_back({ it->second, static_cast<int>(i), parentFrame, childFrame, isCamera });
                 }
                 else
                 {
-                    // Parent link not in view (shouldn't happen); use world as parent
-                    m_pairs.push_back({ kWorldParentViewIdx, static_cast<int>(i), m_parentFrame, childFrame });
+                    m_pairs.push_back({ kWorldParentViewIdx, static_cast<int>(i), m_parentFrame, childFrame, isCamera });
                 }
             }
         }
+
+        // Cache OmniGraph tokens once — avoids per-frame stringToToken calls.
+        for (auto& pair : m_pairs)
+        {
+            pair.parentToken = db.stringToToken(pair.parentFrame.c_str());
+            pair.childToken = db.stringToToken(pair.childFrame.c_str());
+        }
+
+        m_parentPoseCache.resize(m_viewPaths.size());
+        m_parentPoseCacheValid.resize(m_viewPaths.size(), 0);
     }
 
     bool computeTransforms(OgnIsaacComputeTransformTreeDatabase& db)
     {
-        int posCount = 0, oriCount = 0;
-        const float* positions = m_xformView->getWorldPositionsHost(&posCount);
-        const float* orientations = m_xformView->getWorldOrientationsHost(&oriCount);
+        const auto poses = m_xformView->getWorldPosesHost();
+        const float* positions = poses.positions;
+        const float* orientations = poses.orientations;
 
         const size_t numViews = m_viewPaths.size();
-        if (!positions || !orientations || static_cast<size_t>(posCount) < numViews * 3 ||
-            static_cast<size_t>(oriCount) < numViews * 4)
+        if (!positions || !orientations || static_cast<size_t>(poses.posCount) < numViews * 3 ||
+            static_cast<size_t>(poses.oriCount) < numViews * 4)
         {
             return false;
         }
 
-        // Compute parent frame world transform (identity if no parent prim)
-        pxr::GfMatrix4d parentWorld(1.0);
+        WorldPose parentWorldPose{ 0, 0, 0, 1, 0, 0, 0 };
         if (!m_parentPath.empty())
         {
             float pos[3] = {}, ori[4] = {};
             if (m_xformView->getPrimWorldTransform(m_parentPath.c_str(), pos, ori))
             {
-                // ori layout: (qw, qx, qy, qz) from decomposeMatrix
-                double qw = static_cast<double>(ori[0]);
-                double qx = static_cast<double>(ori[1]);
-                double qy = static_cast<double>(ori[2]);
-                double qz = static_cast<double>(ori[3]);
-                pxr::GfQuatd q(qw, qx, qy, qz);
-                pxr::GfRotation rot(q);
-                double px = static_cast<double>(pos[0]);
-                double py = static_cast<double>(pos[1]);
-                double pz = static_cast<double>(pos[2]);
-                parentWorld.SetTransform(rot, pxr::GfVec3d(px, py, pz));
+                parentWorldPose = { pos[0], pos[1], pos[2], ori[0], ori[1], ori[2], ori[3] };
             }
         }
-        pxr::GfMatrix4d parentWorldInv = parentWorld.GetInverse();
 
         const int numPairs = static_cast<int>(m_pairs.size());
 
@@ -377,62 +454,75 @@ private:
         outTranslations.resize(numPairs);
         outOrientations.resize(numPairs);
 
+        std::fill(m_parentPoseCacheValid.begin(), m_parentPoseCacheValid.end(), static_cast<uint8_t>(0));
+
         for (int i = 0; i < numPairs; i++)
         {
             const auto& pair = m_pairs[i];
-            const int childViewIdx = pair.childViewIdx;
-            const int parentViewIdx = pair.parentViewIdx;
 
-            pxr::GfMatrix4d childWorld = worldTransformFromView(positions, orientations, childViewIdx);
+            WorldPose childPose = worldPoseFromView(positions, orientations, pair.childViewIdx);
 
-            pxr::GfMatrix4d refWorldInv;
-            if (parentViewIdx == kWorldParentViewIdx)
+            if (pair.isCamera)
             {
-                refWorldInv = parentWorldInv;
+                float cw, cx, cy, cz;
+                quatMul(childPose.qw, childPose.qx, childPose.qy, childPose.qz, 0.0f, 1.0f, 0.0f, 0.0f, cw, cx, cy, cz);
+                childPose.qw = cw;
+                childPose.qx = cx;
+                childPose.qy = cy;
+                childPose.qz = cz;
+            }
+
+            const WorldPose* refPose = nullptr;
+            if (pair.parentViewIdx == kWorldParentViewIdx)
+            {
+                refPose = &parentWorldPose;
             }
             else
             {
-                pxr::GfMatrix4d parentLinkWorld = worldTransformFromView(positions, orientations, parentViewIdx);
-                refWorldInv = parentLinkWorld.GetInverse();
+                int idx = pair.parentViewIdx;
+                if (!m_parentPoseCacheValid[idx])
+                {
+                    m_parentPoseCache[idx] = worldPoseFromView(positions, orientations, idx);
+                    m_parentPoseCacheValid[idx] = 1;
+                }
+                refPose = &m_parentPoseCache[idx];
             }
 
-            // Relative transform: childWorld * refWorldInv (row-vector convention)
-            pxr::GfMatrix4d rel = childWorld * refWorldInv;
+            float relTx, relTy, relTz, relQw, relQx, relQy, relQz;
+            computeRelativeTransform(*refPose, childPose, relTx, relTy, relTz, relQw, relQx, relQy, relQz);
 
-            pxr::GfVec3d relTrans = rel.ExtractTranslation();
-            pxr::GfRotation relRot = rel.ExtractRotationMatrix().ExtractRotation();
-            pxr::GfQuatd relQuat = relRot.GetQuat();
-            pxr::GfVec3d quatImag = relQuat.GetImaginary();
-            double quatReal = relQuat.GetReal();
-
-            outParentFrames[i] = db.stringToToken(pair.parentFrame.c_str());
-            outChildFrames[i] = db.stringToToken(pair.childFrame.c_str());
-            outTranslations[i] = pxr::GfVec3d(relTrans[0], relTrans[1], relTrans[2]);
-            outOrientations[i] = pxr::GfVec4d(quatImag[0], quatImag[1], quatImag[2], quatReal);
+            outParentFrames[i] = pair.parentToken;
+            outChildFrames[i] = pair.childToken;
+            outTranslations[i] = pxr::GfVec3d(relTx, relTy, relTz);
+            outOrientations[i] = pxr::GfVec4d(relQx, relQy, relQz, relQw);
         }
 
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
 
-    /// Build a GfMatrix4d from the IXformDataView host float arrays for prim at index idx.
-    /// Positions layout: [3*idx + 0..2] = (x, y, z)
-    /// Orientations layout: [4*idx + 0..3] = (qw, qx, qy, qz) — Fabric decomposeMatrix layout
-    static pxr::GfMatrix4d worldTransformFromView(const float* positions, const float* orientations, int idx)
+    /// Read a WorldPose directly from the float arrays with zero conversion.
+    static WorldPose worldPoseFromView(const float* positions, const float* orientations, int idx)
     {
-        double px = static_cast<double>(positions[3 * idx + 0]);
-        double py = static_cast<double>(positions[3 * idx + 1]);
-        double pz = static_cast<double>(positions[3 * idx + 2]);
-        double qw = static_cast<double>(orientations[4 * idx + 0]);
-        double qx = static_cast<double>(orientations[4 * idx + 1]);
-        double qy = static_cast<double>(orientations[4 * idx + 2]);
-        double qz = static_cast<double>(orientations[4 * idx + 3]);
+        return { positions[3 * idx],        positions[3 * idx + 1],    positions[3 * idx + 2],   orientations[4 * idx],
+                 orientations[4 * idx + 1], orientations[4 * idx + 2], orientations[4 * idx + 3] };
+    }
 
-        pxr::GfQuatd q(qw, qx, qy, qz);
-        pxr::GfRotation rot(q);
-        pxr::GfMatrix4d m;
-        m.SetTransform(rot, pxr::GfVec3d(px, py, pz));
-        return m;
+    /// Compute child-in-parent relative transform using inline float32 quaternion math.
+    static void computeRelativeTransform(const WorldPose& parent,
+                                         const WorldPose& child,
+                                         float& outTx,
+                                         float& outTy,
+                                         float& outTz,
+                                         float& outQw,
+                                         float& outQx,
+                                         float& outQy,
+                                         float& outQz)
+    {
+        float piw = parent.qw, pix = -parent.qx, piy = -parent.qy, piz = -parent.qz;
+        quatMul(piw, pix, piy, piz, child.qw, child.qx, child.qy, child.qz, outQw, outQx, outQy, outQz);
+        rotateVec(
+            piw, pix, piy, piz, child.px - parent.px, child.py - parent.py, child.pz - parent.pz, outTx, outTy, outTz);
     }
 
     /// Returns a unique frame name: uses existing rename, or frame if first use, or path-derived name on collision.
@@ -488,7 +578,10 @@ private:
     // View state
     std::string m_viewId;
     std::vector<std::string> m_viewPaths; ///< All prim paths in the IXformDataView, in order
+    std::unordered_set<int> m_cameraViewIndices; ///< View indices that are camera prims needing rotation
     std::vector<TransformPair> m_pairs; ///< Output parent-child pairs
+    std::vector<WorldPose> m_parentPoseCache; ///< Flat cache indexed by viewIdx, avoids per-frame heap alloc
+    std::vector<uint8_t> m_parentPoseCacheValid; ///< 1 = entry populated this frame
 
     // Parent frame
     std::string m_parentPath;

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.1] - 2026-04-03
+### Changed
+- Added camera TF test verifying 180-degree x-axis rotation is applied to UsdGeomCamera prims in the ComputeTransformTree -> PublishTransformTree pipeline
+
 ## [1.14.0] - 2026-04-01
 ### Changed
 - Removed deprecated `isaacsim.core.api` and `isaacsim.core.utils` dependencies

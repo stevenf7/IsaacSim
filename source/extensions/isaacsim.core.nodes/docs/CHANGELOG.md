@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.7.1] - 2026-03-25
+### Fixed
+- IsaacComputeTransformTree now applies a 180-degree x-axis rotation for UsdGeomCamera prims to convert from USD camera convention to ROS optical frame convention
+
+### Changed
+- IsaacComputeTransformTree uses quaternion math instead of GfMatrix4d for relative transform computation, improving performance
+- IsaacComputeTransformTree caches parent world poses to avoid redundant lookups
+
 ## [5.7.0] - 2026-03-21
 ### Changed
 - IsaacCreateRenderProduct node now supports re-using existing render products via `renderProductPrim` input

@@ -31,6 +31,21 @@ namespace prims
 {
 
 /**
+ * @struct Poses
+ * @brief Combined positions and orientations for all prims in a view.
+ * @details Positions are tightly packed as (x, y, z) triplets; orientations as
+ * (qw, qx, qy, qz) quaternions. Both pointers are nullptr and counts are zero
+ * when the underlying fields are unavailable.
+ */
+struct Poses
+{
+    const float* positions; ///< float[posCount] packed as (x,y,z) per prim
+    int posCount; ///< total number of position floats (numPrims * 3)
+    const float* orientations; ///< float[oriCount] packed as (qw,qx,qy,qz) per prim
+    int oriCount; ///< total number of orientation floats (numPrims * 4)
+};
+
+/**
  * @struct IXformDataView
  * @brief Read-only view for XformPrim data (positions, orientations, scales).
  * @details Engine-agnostic transform data read via IFabricHierarchy.
@@ -55,6 +70,11 @@ struct IXformDataView
     virtual const float* getLocalTranslationsHost(int* outCount) = 0;
     virtual const float* getLocalOrientationsHost(int* outCount) = 0;
     virtual const float* getLocalScalesHost(int* outCount) = 0;
+
+    // Combined pose getters — invoke the shared fill callback only once instead of twice.
+    // Prefer these over calling getWorldPositions + getWorldOrientations separately.
+    virtual Poses getWorldPoses() = 0;
+    virtual Poses getWorldPosesHost() = 0;
 
     // Batch pre-fetch all fields for this view
     virtual bool update() = 0;
