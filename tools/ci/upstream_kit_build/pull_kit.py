@@ -320,6 +320,10 @@ def _patch_gmo_extra_includes(
             f"{gitlab_url}/api/v4/projects/{project_id}/pipelines/{pipeline_id}",
             headers=headers,
             timeout=30,
+        resp = requests.get(
+            f"{gitlab_url}/api/v4/projects/{project_id}/pipelines/{pipeline_id}",
+            headers=headers,
+            timeout=30,
         )
         resp.raise_for_status()
         sha = resp.json()["sha"]
