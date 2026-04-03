@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.2.7] - 2026-04-03
+### Changed
+- Remove `[::-1]` reversal in `HolonomicController` to match new `[roll, pitch, yaw]` euler angle convention
+
 ## [0.2.6] - 2026-03-26
 ### Fixed
 - Fix euler angle convention in HolonomicController causing reversed motion direction

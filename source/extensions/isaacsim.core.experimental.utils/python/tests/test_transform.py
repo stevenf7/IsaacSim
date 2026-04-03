@@ -516,11 +516,10 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         ]
 
         for euler_original in test_angles:
-            # Convert to quaternion
-            euler_extrinsic = euler_original[[2, 1, 0]]
-            quaternion = transform_utils.euler_angles_to_quaternion(euler_extrinsic, extrinsic=True)
+            # Convert to quaternion (input is [roll, pitch, yaw])
+            quaternion = transform_utils.euler_angles_to_quaternion(euler_original, extrinsic=True)
 
-            # Convert back to euler
+            # Convert back to euler (output is [roll, pitch, yaw])
             euler_back = transform_utils.quaternion_to_euler_angles(quaternion, extrinsic=True)
 
             # Should be approximately equal
@@ -544,12 +543,11 @@ class TestTransform(omni.kit.test.AsyncTestCase):
             # Normalize to ensure it's a unit quaternion
             quat_original = quat_original / np.linalg.norm(quat_original)
 
-            # Convert to euler
+            # Convert to euler (output is [roll, pitch, yaw])
             euler = transform_utils.quaternion_to_euler_angles(quat_original, extrinsic=True)
 
-            # Convert back to quaternion
-            euler_extrinsic = euler.numpy()[[2, 1, 0]]
-            quat_back = transform_utils.euler_angles_to_quaternion(euler_extrinsic, extrinsic=True)
+            # Convert back to quaternion (input is [roll, pitch, yaw])
+            quat_back = transform_utils.euler_angles_to_quaternion(euler, extrinsic=True)
 
             # Quaternions q and -q represent the same rotation
             quat_back_np = quat_back.numpy()

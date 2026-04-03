@@ -99,14 +99,16 @@ def euler_angles_to_rotation_matrix(
     dtype: type | None = None,
     device: str | wp.Device | None = None,
 ) -> wp.array:
-    """Convert Euler XYZ or ZYX angles to rotation matrix.
+    """Convert Euler angles to rotation matrix.
 
     Args:
         euler_angles: Euler angles or batch of Euler angles with shape (..., 3).
+            Input order is always [X, Y, Z] = [roll, pitch, yaw] for both conventions.
         degrees: Whether passed angles are in degrees.
         extrinsic: True if the euler angles follows the extrinsic angles
-            convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
-            the intrinsic angles conventions (equivalent to XYZ ordering).
+            convention (rotation applied as Rz * Ry * Rx about fixed world axes) and False if it
+            follows the intrinsic angles conventions (rotation applied as Rx * Ry * Rz about
+            body-fixed axes).
         dtype: Data type of the output array. If ``None``, the data type of the input is used.
         device: Device to place the output array on. If ``None``, the default device is used,
             unless the input is a Warp array (in which case the input device is used).
@@ -181,11 +183,12 @@ def euler_angles_to_quaternion(
 
     Args:
         euler_angles: Euler angles or batch of Euler angles with shape (..., 3).
+            Input order is always [X, Y, Z] = [roll, pitch, yaw] for both conventions.
         degrees: Whether input angles are in degrees.
         extrinsic: True if the euler angles follows the extrinsic angles
-            convention (equivalent to ZYX ordering but returned in the reverse). In this case the input
-            order is [Z, Y, X] = [yaw, pitch, roll]. If False, it follows the intrinsic angles convention
-            (equivalent to XYZ ordering) with input order [X, Y, Z] = [roll, pitch, yaw].
+            convention (rotation applied as Rz * Ry * Rx about fixed world axes) and False if it
+            follows the intrinsic angles conventions (rotation applied as Rx * Ry * Rz about
+            body-fixed axes).
         dtype: Data type of the output array. If ``None``, the data type of the input is used.
         device: Device to place the output array on. If ``None``, the default device is used,
             unless the input is a Warp array (in which case the input device is used).
@@ -752,11 +755,13 @@ def _wk_euler_angles_to_rotation_matrix(
 ):
     """Convert Euler angles to rotation matrix using Warp kernel.
 
+    Input order is always [X, Y, Z] = [roll, pitch, yaw] for both conventions.
+
     Args:
         euler_angles: Euler angles or batch of Euler angles with shape (batch_size, 3).
         output: Output array for rotation matrices with shape (batch_size, 3, 3).
         degrees: Whether input angles are in degrees.
-        extrinsic: Whether to use extrinsic convention (ZYX) or intrinsic convention (XYZ).
+        extrinsic: Whether to use extrinsic convention (Rz * Ry * Rx) or intrinsic convention (Rx * Ry * Rz).
     """
     i = wp.tid()
 
@@ -780,17 +785,10 @@ def _wk_euler_angles_to_rotation_matrix(
         angle2 = angle2 * deg_to_rad
         angle3 = angle3 * deg_to_rad
 
-    # Assign to roll, pitch, yaw based on convention
-    if extrinsic:
-        # ZYX extrinsic convention: [Z, Y, X] = [yaw, pitch, roll]
-        roll = angle3  # X rotation (third)
-        pitch = angle2  # Y rotation (second)
-        yaw = angle1  # Z rotation (first)
-    else:
-        # XYZ intrinsic convention: [X, Y, Z] = [roll, pitch, yaw]
-        roll = angle1  # X rotation (first)
-        pitch = angle2  # Y rotation (second)
-        yaw = angle3  # Z rotation (third)
+    # Input is always [X, Y, Z] = [roll, pitch, yaw]
+    roll = angle1
+    pitch = angle2
+    yaw = angle3
 
     cr = wp.cos(roll)
     sr = wp.sin(roll)
