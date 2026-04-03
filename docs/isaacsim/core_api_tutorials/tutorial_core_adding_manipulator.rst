@@ -73,17 +73,6 @@ ground plane, and a cube to manipulate.
 Run the script. The robot automatically executes all phases of picking up and placing the cube.
 
 
-Customizing the FrankaPickPlace Scene
-=====================================
-
-The :code:`setup_scene()` method accepts parameters to customize the cube position, size,
-and target position:
-
-.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_manipulator/customizing_the_scene.py
-    :language: python
-    :linenos:
-
-
 Understanding the Pick-and-Place State Machine
 ==============================================
 
@@ -121,6 +110,8 @@ You can customize the phase durations by passing :code:`events_dt` to the constr
 
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_manipulator/understanding_the_state_machine.py
     :language: python
+    :linenos:
+    :emphasize-lines: 22,23,24,25,26
 
 .. image:: /images/core_api_tutorials_4_1.webp
     :align: center

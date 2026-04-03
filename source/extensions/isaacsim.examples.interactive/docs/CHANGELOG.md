@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.15.4] - 2026-03-31
+### Changed
+- Added test for Robo Party example
+- Updated Surface Gripper example to resolve reverse console functionality
+
 ## [4.15.3] - 2026-03-26
 ### Changed
 - Update the test dependencies to use the new experimental wheeled robots extension

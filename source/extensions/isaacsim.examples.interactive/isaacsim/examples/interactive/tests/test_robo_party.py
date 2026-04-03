@@ -16,14 +16,9 @@
 import asyncio
 
 import omni.kit
-
-# NOTE:
-#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
-#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
+from isaacsim.core.simulation_manager import PhysicsScene, PhysxScene
 from isaacsim.core.utils.stage import is_stage_loading, update_stage_async
-
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.examples.interactive.robo_party import RoboParty
 
 
@@ -69,3 +64,23 @@ class TestRoboPartyExampleExtension(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         await update_stage_async()
         pass
+
+    async def test_cpu_device_preserved_after_reset(self):
+        """After reset with device='cpu', all physics scenes must remain in CPU mode."""
+        await self._sample.reset_async()
+        await update_stage_async()
+
+        scene_paths = PhysicsScene.get_physics_scene_paths()
+        self.assertGreater(len(scene_paths), 0, "No physics scenes found after reset")
+
+        for scene_path in scene_paths:
+            physx_scene = PhysxScene(scene_path)
+            self.assertFalse(
+                physx_scene.get_enabled_gpu_dynamics(),
+                f"GPU dynamics should be False (CPU mode) at {scene_path}, got True",
+            )
+            self.assertEqual(
+                physx_scene.get_broadphase_type(),
+                "MBP",
+                f"Broadphase should be 'MBP' (CPU mode) at {scene_path}, " f"got '{physx_scene.get_broadphase_type()}'",
+            )

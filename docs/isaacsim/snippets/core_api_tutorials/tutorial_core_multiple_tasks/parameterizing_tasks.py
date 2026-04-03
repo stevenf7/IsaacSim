@@ -1,9 +1,8 @@
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-from isaacsim.core.experimental.materials import PreviewSurfaceMaterial
-from isaacsim.core.experimental.objects import Cube
+from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
 from isaacsim.core.experimental.prims import Articulation, GeomPrim, RigidPrim, XformPrim
-from isaacsim.core.simulation_manager import SimulationManager
+from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
 from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.robot.manipulators.examples.franka import FrankaExperimental
 from isaacsim.storage.native import get_assets_root_path
@@ -35,29 +34,26 @@ class RobotScenario:
         )
         jetbot_xform = XformPrim(f"{base_path}/Jetbot")
         jetbot_xform.reset_xform_op_properties()
-        jetbot_xform.set_world_poses(positions=[self.offset.tolist()])
+        jetbot_xform.set_world_poses(positions=self.offset.tolist())
 
         # Add cube in front of Jetbot
         cube_pos = self.offset + np.array([0.15, 0.0, 0.025])
-        visual_material = PreviewSurfaceMaterial(f"{base_path}/Materials/red")
-        visual_material.set_input_values("diffuseColor", [1.0, 0.0, 0.0])
         cube_shape = Cube(
             paths=f"{base_path}/Cube",
-            positions=np.array([cube_pos]),
-            sizes=[1.0],
-            scales=np.array([[0.05, 0.05, 0.05]]),
-            reset_xform_op_properties=True,
+            positions=cube_pos.tolist(),
+            sizes=1.0,
+            scales=[0.05, 0.05, 0.05],
+            colors="red",
         )
         GeomPrim(paths=cube_shape.paths, apply_collision_apis=True)
         RigidPrim(paths=cube_shape.paths)
-        cube_shape.apply_visual_materials(visual_material)
 
         # Add Franka
         franka_pos = self.offset + np.array([0.8, -0.3, 0.0])
         self.franka = FrankaExperimental(robot_path=f"{base_path}/Franka", create_robot=True)
         franka_xform = XformPrim(f"{base_path}/Franka")
         franka_xform.reset_xform_op_properties()
-        franka_xform.set_world_poses(positions=[franka_pos.tolist()])
+        franka_xform.set_world_poses(positions=franka_pos.tolist())
 
     def initialize(self):
         """Initialize articulation handles after scene load."""
@@ -78,18 +74,18 @@ class RobotScenario:
             # Jetbot pushes cube
             cube_pos = self.cube.get_world_poses()[0].numpy()[0]
             if np.linalg.norm(cube_pos[:2] - self.cube_goal[:2]) > 0.05:
-                self.jetbot.set_dof_velocity_targets([[10.0, 10.0]])
+                self.jetbot.set_dof_velocity_targets([10.0, 10.0])
             else:
-                self.jetbot.set_dof_velocity_targets([[0.0, 0.0]])
+                self.jetbot.set_dof_velocity_targets([0.0, 0.0])
                 self.state = 1
                 self.step_counter = 0
 
         elif self.state == 1:
             # Jetbot backs up
-            self.jetbot.set_dof_velocity_targets([[-8.0, -8.0]])
+            self.jetbot.set_dof_velocity_targets([-8.0, -8.0])
             self.step_counter += 1
             if self.step_counter > 100:
-                self.jetbot.set_dof_velocity_targets([[0.0, 0.0]])
+                self.jetbot.set_dof_velocity_targets([0.0, 0.0])
                 self.state = 2
                 self.step_counter = 0
                 self.franka.open_gripper()
@@ -105,54 +101,52 @@ class RobotScenario:
         self.step_counter += 1
 
         if self.pick_phase == 0:
-            self.franka.set_end_effector_pose(np.array([[cube_pos[0], cube_pos[1], cube_pos[2] + 0.2]]), down_orient)
+            self.franka.set_end_effector_pose(np.array([cube_pos[0], cube_pos[1], cube_pos[2] + 0.2]), down_orient)
             if self.step_counter > 120:
                 self.pick_phase = 1
                 self.step_counter = 0
         elif self.pick_phase == 1:
-            self.franka.set_end_effector_pose(np.array([[cube_pos[0], cube_pos[1], cube_pos[2] + 0.1]]), down_orient)
+            self.franka.set_end_effector_pose(np.array([cube_pos[0], cube_pos[1], cube_pos[2] + 0.1]), down_orient)
             if self.step_counter > 100:
-                self.franka.close_gripper()
                 self.pick_phase = 2
                 self.step_counter = 0
         elif self.pick_phase == 2:
             self.franka.close_gripper()
-            if self.step_counter > 50:
+            if self.step_counter > 100:
                 self.pick_phase = 3
                 self.step_counter = 0
         elif self.pick_phase == 3:
-            self.franka.set_end_effector_pose(np.array([[cube_pos[0], cube_pos[1], cube_pos[2] + 0.25]]), down_orient)
-            if self.step_counter > 100:
-                self.pick_phase = 4
-                self.step_counter = 0
-        elif self.pick_phase == 4:
-            target = self.offset + np.array([0.3, 0.3, 0.15])
-            self.franka.set_end_effector_pose(np.array([target]), down_orient)
+            _, current_position, _ = self.franka.get_current_state()
+            target = current_position + np.array([0.1, 0.0, 0.08])
+            self.franka.set_end_effector_pose(position=target, orientation=down_orient)
             if self.step_counter > 150:
-                self.franka.open_gripper()
+                self.step_counter = 0
+                self.pick_phase = 4
+        elif self.pick_phase == 4:
+            _, current_position, _ = self.franka.get_current_state()
+            target = current_position + np.array([0.1, 0.0, 0.01])
+            self.franka.set_end_effector_pose(position=target, orientation=down_orient)
+            if self.step_counter > 150:
                 self.step_counter = 0
                 self.pick_phase = 5
         elif self.pick_phase == 5:
-            # Lift the arm from target position (don't use cube_pos - cube was dropped)
-            target = self.offset + np.array([0.3, 0.3, 0.4])  # Lift above drop location
-            self.franka.set_end_effector_pose(np.array([target]), down_orient)
+            self.franka.open_gripper()
             if self.step_counter > 150:
                 self.step_counter = 0
-                self.state = 5  # Done
+                self.state = 6  # Done
 
 
 class HelloWorld(BaseSample):
     def __init__(self) -> None:
         super().__init__()
         self._physics_callback_id = None
-        self._scenario = None
+        self._scenarios = []
 
     def setup_scene(self):
-        # Add ground plane
-        stage_utils.add_reference_to_stage(
-            usd_path=get_assets_root_path() + "/Isaac/Environments/Grid/default_environment.usd",
-            path="/World/ground",
-        )
+        GroundPlane("/World/ground_plane")
+        dome_light = DomeLight("/World/DomeLight")
+        dome_light.set_intensities(1000)
+
         # Create a single scenario
         self._scenario = RobotScenario(name="scenario_0", offset=np.array([0.0, 0.0, 0.0]))
         self._scenario.setup_scene()
@@ -160,10 +154,8 @@ class HelloWorld(BaseSample):
     async def setup_post_load(self):
         self._scenario.initialize()
 
-        from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
-
         self._physics_callback_id = SimulationManager.register_callback(
-            self.physics_step, IsaacEvents.POST_PHYSICS_STEP
+            self.physics_step, event=SimulationEvent.PHYSICS_POST_STEP
         )
 
     def physics_step(self, dt, context):

@@ -5,21 +5,15 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import isaacsim.core.experimental.utils.app as app_utils
-import isaacsim.core.experimental.utils.stage as stage_utils
+from isaacsim.core.experimental.objects import DomeLight, GroundPlane
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.robot.manipulators.examples.franka import FrankaPickPlace
-from isaacsim.storage.native import get_assets_root_path
 
 DEVICE = "cpu"
 
-assets_root_path = get_assets_root_path()
-
-stage_utils.set_stage_up_axis("Z")
-stage_utils.set_stage_units(meters_per_unit=1.0)
-stage_utils.add_reference_to_stage(
-    usd_path=assets_root_path + "/Isaac/Environments/Grid/default_environment.usd",
-    path="/World/ground",
-)
+GroundPlane("/World/ground_plane")
+dome_light = DomeLight("/World/DomeLight")
+dome_light.set_intensities(1000)
 
 # FrankaPickPlace spawns robot and cube, and provides the pick-place state machine
 controller = FrankaPickPlace()
