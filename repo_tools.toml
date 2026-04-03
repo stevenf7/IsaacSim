@@ -69,25 +69,9 @@ entry_point = "${config_root}/tools/ci/publish_packages.py:setup_repo_tool"
 # Isaac Sim Assets package publish tool
 ########################################################################################################################
 
-[publish_assets_package_1]
-command = "publish_assets_package_1"
-entry_point = "${config_root}/tools/ci/publish_assets_package_1.py:setup_repo_tool"
-
-[publish_assets_package_2]
-command = "publish_assets_package_2"
-entry_point = "${config_root}/tools/ci/publish_assets_package_2.py:setup_repo_tool"
-
-[publish_assets_package_3]
-command = "publish_assets_package_3"
-entry_point = "${config_root}/tools/ci/publish_assets_package_3.py:setup_repo_tool"
-
-[publish_assets_package_4]
-command = "publish_assets_package_4"
-entry_point = "${config_root}/tools/ci/publish_assets_package_4.py:setup_repo_tool"
-
-[publish_assets_package_5]
-command = "publish_assets_package_5"
-entry_point = "${config_root}/tools/ci/publish_assets_package_5.py:setup_repo_tool"
+[publish_assets_package]
+command = "publish_assets_package"
+entry_point = "${config_root}/tools/ci/publish_assets_package.py:setup_repo_tool"
 
 ########################################################################################################################
 # Bump version

@@ -7,12 +7,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import argparse
-import glob
 import logging
 import os
 import sys
 from pathlib import Path
-from string import Template
 from typing import Callable, Dict
 
 import omni.repo.man
@@ -22,44 +20,15 @@ import packmanapi
 logger = logging.getLogger(os.path.basename(__file__))
 
 
-class Version:
-    def __init__(self):
-        self.core = ""
-        self.prerelease = ""
-        self.major = ""
-        self.minor = ""
-        self.patch = ""
-        self.pretag = ""
-        self.prebuild = ""
-
-
-def parse_version(full_version: Version):
-    parsed_version = Version()
-    if "-" in full_version:
-        parsed_version.core, parsed_version.prerelease = full_version.split("-", maxsplit=1)
-        parsed_version.major, parsed_version.minor, parsed_version.patch = parsed_version.core.split(".", maxsplit=2)
-        parsed_version.pretag, parsed_version.prebuild = parsed_version.prerelease.split(".", maxsplit=1)
-    else:
-        parsed_version.major, parsed_version.minor, parsed_version.patch = full_version.split(".", maxsplit=2)
-        parsed_version.core = full_version
-    return parsed_version
-
-
-def call_git_safe(root, args):
-    print("> git {}".format(" ".join(args)))
-    with omni.repo.man.change_cwd(root):
-        omni.repo.man.run_process(["git"] + args, exit_on_error=True)
-
-
-def substitute_tokens_in_file(path, tokens):
-    logger.info(f"substitute_tokens_in_file: '{path}'. Tokens: {tokens}")
-    content = Template(open(path, "r").read()).substitute(tokens)
-    with open(path, "w") as f:
-        f.write(content)
-
-
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
-    parser.description = "Tool to publish packages to packman."
+    parser.description = "Tool to publish asset packages to packman."
+    parser.add_argument(
+        "-n",
+        "--num",
+        dest="num",
+        required=True,
+        help="Asset package number (e.g. 1 for isaac-sim-assets-1).",
+    )
     parser.add_argument(
         "-s",
         "--skip-commit",
@@ -72,14 +41,14 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
 
     def run_repo_tool(options: Dict, config: Dict):
         repo_folders = config["repo"]["folders"]
+        pattern = f"isaac-sim-assets-{options.num}*"
 
-        # publish first
         if not options.test_run:
             packages, labels = omni.repo.man.publish.get_packages_and_labels(
-                "isaac-sim-assets-1*", repo_folders["packages"], None
+                pattern, repo_folders["packages"], None
             )
             if len(packages) == 0:
-                logger.error("No packages found.")
+                logger.error("No packages found matching '%s'.", pattern)
                 sys.exit(-1)
             for package in packages:
                 print(f"Publishing Package {package}")
