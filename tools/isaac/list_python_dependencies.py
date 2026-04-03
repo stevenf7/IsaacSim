@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
-"""
-Tool to discover all external Python package dependencies in Isaac Sim release build.
-"""
+"""Tool to discover all external Python package dependencies in Isaac Sim release build."""
 import csv
 import email.parser
 import os
 import re
 import sys
+from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
 
 
-def find_dist_info_dirs(root_path: Path, follow_symlinks: bool = True) -> List[Tuple[Path, str]]:
-    """
-    Find all .dist-info directories which indicate installed Python packages.
-    Returns list of tuples: (directory_path, package_name-version)
+def find_dist_info_dirs(root_path: Path, follow_symlinks: bool = True) -> list[tuple[Path, str]]:
+    """Find all .dist-info directories which indicate installed Python packages.
+
+    Returns list of tuples: (directory_path, package_name-version).
     """
     dist_info_dirs = []
 
@@ -27,11 +25,11 @@ def find_dist_info_dirs(root_path: Path, follow_symlinks: bool = True) -> List[T
     return dist_info_dirs
 
 
-def parse_packages_list_txt(filepath: Path) -> List[str]:
+def parse_packages_list_txt(filepath: Path) -> list[str]:
     """Parse a packages_list.txt file to get package names and versions."""
     packages = []
     if filepath.exists():
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#"):
@@ -39,9 +37,8 @@ def parse_packages_list_txt(filepath: Path) -> List[str]:
     return packages
 
 
-def parse_package_name_version(package_identifier: str) -> Tuple[str, str]:
-    """
-    Parse package name and version from identifier string.
+def parse_package_name_version(package_identifier: str) -> tuple[str, str]:
+    """Parse package name and version from identifier string.
 
     Args:
         package_identifier: String like 'package-1.0.0' or 'package_name-2.3.4'
@@ -50,16 +47,35 @@ def parse_package_name_version(package_identifier: str) -> Tuple[str, str]:
         Tuple of (name, version)
     """
     # Handle cases like 'package-1.0.0' or 'package_name-2.3.4.dev0'
-    # Split from the right at the first dash followed by a number
-    match = re.match(r"^(.+?)[-_](\d+.*)$", package_identifier)
+    # Split at the first dash/underscore followed by a digit and a dot (standard version pattern)
+    match = re.match(r"^(.+?)[-_](\d+\..*)$", package_identifier)
     if match:
         return match.group(1), match.group(2)
     return package_identifier, "unknown"
 
 
+def _identify_license_from_text(text: str) -> str | None:
+    """Identify a common license type by pattern-matching raw text."""
+    upper = text.upper()
+    if "MIT LICENSE" in upper:
+        return "MIT License"
+    if "APACHE LICENSE" in upper:
+        if "2.0" in upper:
+            return "Apache License 2.0"
+        return "Apache License"
+    if "BSD LICENSE" in upper:
+        if "3-CLAUSE" in upper:
+            return "BSD 3-Clause License"
+        if "2-CLAUSE" in upper:
+            return "BSD 2-Clause License"
+        return "BSD License"
+    if "GPL" in upper:
+        return "GPL License"
+    return None
+
+
 def extract_license_from_metadata(dist_info_path: Path) -> str:
-    """
-    Extract license information from a .dist-info directory.
+    """Extract license information from a .dist-info directory.
 
     Args:
         dist_info_path: Path to the .dist-info directory
@@ -67,12 +83,10 @@ def extract_license_from_metadata(dist_info_path: Path) -> str:
     Returns:
         License string or "Unknown"
     """
-    # Try to read license from METADATA file
     metadata_file = dist_info_path / "METADATA"
     if metadata_file.exists():
         try:
-            with open(metadata_file, "r", encoding="utf-8", errors="ignore") as f:
-                # Parse email-style metadata
+            with open(metadata_file, encoding="utf-8", errors="ignore") as f:
                 parser = email.parser.Parser()
                 metadata = parser.parse(f)
 
@@ -81,73 +95,40 @@ def extract_license_from_metadata(dist_info_path: Path) -> str:
                 if classifiers:
                     for classifier in classifiers:
                         if classifier.startswith("License ::"):
-                            # Extract the license name from classifier
-                            # Example: "License :: OSI Approved :: MIT License"
                             license_name = classifier.split("::")[-1].strip()
                             return license_name
 
-                # Try License field
                 license_text = metadata.get("License", "").strip()
                 if license_text and license_text not in ["", "UNKNOWN", "Unknown"]:
-                    # Truncate if it's too long (likely full license text)
                     if len(license_text) > 100:
-                        # Try to extract just the name from the first line
                         first_line = license_text.split("\n")[0].strip()
                         if len(first_line) < 100 and first_line:
                             return first_line
-                        # Look for common license names in the text
-                        text_upper = license_text[:500].upper()
-                        if "MIT LICENSE" in text_upper:
-                            return "MIT License"
-                        elif "APACHE LICENSE" in text_upper:
-                            if "2.0" in text_upper:
-                                return "Apache License 2.0"
-                            return "Apache License"
-                        elif "BSD LICENSE" in text_upper:
-                            if "3-CLAUSE" in text_upper:
-                                return "BSD 3-Clause License"
-                            elif "2-CLAUSE" in text_upper:
-                                return "BSD 2-Clause License"
-                            return "BSD License"
-                        elif "GPL" in text_upper:
-                            return "GPL License"
+                        identified = _identify_license_from_text(license_text[:500])
+                        if identified:
+                            return identified
                         return "See METADATA License field"
                     return license_text
-        except Exception as e:
+        except Exception:
             pass
 
-    # Try to find LICENSE files
     license_files = list(dist_info_path.glob("LICENSE*")) + list(dist_info_path.glob("COPYING*"))
     if license_files:
         try:
-            # Read first few lines to identify license type
-            with open(license_files[0], "r", encoding="utf-8", errors="ignore") as f:
-                content = f.read(500).upper()
-                if "MIT LICENSE" in content:
-                    return "MIT License"
-                elif "APACHE LICENSE" in content:
-                    if "2.0" in content:
-                        return "Apache License 2.0"
-                    return "Apache License"
-                elif "BSD LICENSE" in content:
-                    if "3-CLAUSE" in content:
-                        return "BSD 3-Clause License"
-                    elif "2-CLAUSE" in content:
-                        return "BSD 2-Clause License"
-                    return "BSD License"
-                elif "GPL" in content:
-                    return "GPL License"
-                else:
-                    return "See LICENSE file"
+            with open(license_files[0], encoding="utf-8", errors="ignore") as f:
+                content = f.read(500)
+                identified = _identify_license_from_text(content)
+                if identified:
+                    return identified
+                return "See LICENSE file"
         except Exception:
             return "See LICENSE file"
 
     return "Unknown"
 
 
-def get_package_details(dist_info_path: Path, package_identifier: str, release_root: Path) -> Dict[str, str]:
-    """
-    Extract detailed package information including name, version, license, and location.
+def get_package_details(dist_info_path: Path, package_identifier: str, release_root: Path) -> dict[str, str]:
+    """Extract detailed package information including name, version, license, and location.
 
     Args:
         dist_info_path: Path to the .dist-info directory
@@ -178,8 +159,8 @@ def get_package_details(dist_info_path: Path, package_identifier: str, release_r
 
 
 def get_parent_directory_type(package_path: Path, release_root: Path) -> str:
-    """
-    Determine what type of directory contains this package.
+    """Determine what type of directory contains this package.
+
     Returns: 'pip_prebundle', 'site-packages', 'other', etc.
     """
     try:
@@ -206,16 +187,14 @@ def get_parent_directory_type(package_path: Path, release_root: Path) -> str:
         return "unknown"
 
 
-def clean_location_path(location: str, location_type: str) -> str:
-    """
-    Clean the location path by removing version information from extension names.
+def clean_location_path(location: str) -> str:
+    """Clean the location path by removing version information from extension names.
 
     Removes version strings like '-0.18.1+109.0.0.lx64.cp312' from extension
     directory names in all locations.
 
     Args:
         location: The relative path containing the package
-        location_type: The type of location (e.g., 'pip_prebundle (...)')
 
     Returns:
         Cleaned location path
@@ -251,40 +230,47 @@ def is_symlink_in_path(path: Path) -> bool:
     return False
 
 
-def analyze_python_packages(release_dir: str) -> Dict:
-    """
-    Analyze all Python packages in the release directory.
+def analyze_python_packages(release_dir: str) -> dict:
+    """Analyze all Python packages in the release directory.
+
     Returns a dictionary with analysis results.
+
+    Raises:
+        FileNotFoundError: If the release directory does not exist.
     """
     release_path = Path(release_dir).resolve()
 
     if not release_path.exists():
-        print(f"Error: Release directory not found: {release_path}")
-        sys.exit(1)
+        raise FileNotFoundError(f"Release directory not found: {release_path}")
 
     print(f"Scanning for Python packages in: {release_path}")
     print("This may take a minute...\n")
 
-    # Find all .dist-info directories
-    dist_info_dirs = find_dist_info_dirs(release_path, follow_symlinks=True)
+    # Single walk to collect both .dist-info dirs and packages_list.txt files
+    dist_info_dirs: list[tuple[Path, str]] = []
+    packages_list_files: list[Path] = []
+    for dirpath, dirnames, filenames in os.walk(release_path, followlinks=True):
+        for dirname in dirnames:
+            if dirname.endswith(".dist-info"):
+                full_path = Path(dirpath) / dirname
+                dist_info_dirs.append((full_path, dirname.replace(".dist-info", "")))
+        if "packages_list.txt" in filenames:
+            packages_list_files.append(Path(dirpath) / "packages_list.txt")
 
-    # Organize by location type
-    packages_by_location = {}
+    packages_by_location: dict[str, list] = defaultdict(list)
     packages_in_pip_prebundle = []
     packages_not_in_pip_prebundle = []
     symlinked_packages = []
 
     for dist_info_path, package_name in dist_info_dirs:
         location_type = get_parent_directory_type(dist_info_path.parent, release_path)
-
-        if location_type not in packages_by_location:
-            packages_by_location[location_type] = []
+        has_symlink = is_symlink_in_path(dist_info_path)
 
         packages_by_location[location_type].append(
             {
                 "name": package_name,
                 "path": str(dist_info_path.parent.relative_to(release_path)),
-                "is_symlink": is_symlink_in_path(dist_info_path),
+                "is_symlink": has_symlink,
             }
         )
 
@@ -299,18 +285,12 @@ def analyze_python_packages(release_dir: str) -> Dict:
                 }
             )
 
-        if is_symlink_in_path(dist_info_path):
+        if has_symlink:
             symlinked_packages.append({"name": package_name, "path": str(dist_info_path.relative_to(release_path))})
-
-    # Also find packages_list.txt files
-    packages_list_files = []
-    for root, dirs, files in os.walk(release_path, followlinks=True):
-        if "packages_list.txt" in files:
-            packages_list_files.append(Path(root) / "packages_list.txt")
 
     return {
         "total_packages": len(dist_info_dirs),
-        "packages_by_location": packages_by_location,
+        "packages_by_location": dict(packages_by_location),
         "packages_in_pip_prebundle": packages_in_pip_prebundle,
         "packages_not_in_pip_prebundle": packages_not_in_pip_prebundle,
         "symlinked_packages": symlinked_packages,
@@ -319,9 +299,8 @@ def analyze_python_packages(release_dir: str) -> Dict:
     }
 
 
-def print_report(analysis: Dict):
+def print_report(analysis: dict) -> None:
     """Print a comprehensive report of the analysis."""
-
     print("=" * 80)
     print("PYTHON PACKAGE DEPENDENCY ANALYSIS")
     print("=" * 80)
@@ -404,7 +383,7 @@ def print_report(analysis: Dict):
     print("=" * 80)
 
 
-def export_to_file(analysis: Dict, output_file: str):
+def export_to_file(analysis: dict, output_file: str) -> None:
     """Export detailed package list to a file."""
     with open(output_file, "w") as f:
         f.write("# External Python Package Dependencies\n")
@@ -421,19 +400,20 @@ def export_to_file(analysis: Dict, output_file: str):
     print(f"\nDetailed package list exported to: {output_file}")
 
 
-def export_to_csv(release_dir: str, output_file: str):
-    """
-    Export consolidated package list to CSV with name, version, license, and location.
+def export_to_csv(release_dir: str, output_file: str) -> None:
+    """Export consolidated package list to CSV with name, version, license, and location.
 
     Args:
         release_dir: Path to the release directory
         output_file: Output CSV file path
+
+    Raises:
+        FileNotFoundError: If the release directory does not exist.
     """
     release_path = Path(release_dir).resolve()
 
     if not release_path.exists():
-        print(f"Error: Release directory not found: {release_path}")
-        sys.exit(1)
+        raise FileNotFoundError(f"Release directory not found: {release_path}")
 
     print(f"Scanning for Python packages in: {release_path}")
     print("Extracting package details (this may take a minute)...\n")
@@ -443,13 +423,13 @@ def export_to_csv(release_dir: str, output_file: str):
 
     # Collect unique packages (by name-version)
     # Some packages may appear multiple times due to symlinks
-    packages_map = {}
+    packages_map: dict[str, dict[str, str]] = {}
 
     for dist_info_path, package_identifier in dist_info_dirs:
         details = get_package_details(dist_info_path, package_identifier, release_path)
 
         # Clean location path to remove version info from extensions
-        details["location"] = clean_location_path(details["location"], details["location_type"])
+        details["location"] = clean_location_path(details["location"])
 
         # Use name-version as key to deduplicate
         key = f"{details['name']}-{details['version']}"
@@ -493,21 +473,21 @@ if __name__ == "__main__":
         default="_build/linux-x86_64/release",
         help="Path to release directory (default: _build/linux-x86_64/release)",
     )
-    parser.add_argument("-o", "--output", help="Export detailed package list to markdown file")
-    parser.add_argument("--csv", help="Export consolidated package list (name, version, license, location) to CSV file")
+    parser.add_argument("-o", "--output", metavar="FILE", help="Export detailed package list to markdown file")
+    parser.add_argument(
+        "--csv", metavar="FILE", help="Export consolidated package list (name, version, license, location) to CSV file"
+    )
 
     args = parser.parse_args()
 
-    # CSV export mode (faster, no full analysis)
-    if args.csv:
-        export_to_csv(args.release_dir, args.csv)
-    else:
-        # Run full analysis
-        analysis = analyze_python_packages(args.release_dir)
-
-        # Print report
-        print_report(analysis)
-
-        # Export if requested
-        if args.output:
-            export_to_file(analysis, args.output)
+    try:
+        if args.csv:
+            export_to_csv(args.release_dir, args.csv)
+        else:
+            analysis = analyze_python_packages(args.release_dir)
+            print_report(analysis)
+            if args.output:
+                export_to_file(analysis, args.output)
+    except FileNotFoundError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)

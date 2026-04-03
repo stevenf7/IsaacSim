@@ -18,6 +18,13 @@ import_configs = [
 # Repository Name. It is used for solution name and final package name
 name = "isaac-sim"
 
+########################################################################################################################
+# Extension / App Template Tool
+########################################################################################################################
+
+[repo_kit_template]
+extension_templates_config = "${root}/templates/templates.toml"
+
 #logging = "warn"
 
 # Specify python executable path for each platform
@@ -1004,6 +1011,7 @@ python.maintain_legal_blurbs = false
 
 
 cpp.files.exclude = [
+  "templates/**",
   "tools/container/**",
 ]
 
@@ -1023,6 +1031,7 @@ python.files.exclude = [
   ".venv/*",
   ".vscode/*",
   "schemas/*",
+  "templates/**",
   "tools/autopull/**",
   "tools/ci/**",
   "tools/container/**",

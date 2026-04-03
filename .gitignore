@@ -167,6 +167,7 @@ results_by_file.json
 
 # EULA check marker file
 .eula_accepted
+.omniverse_eula_accepted.*
 
 # Ignore external tests
 source/standalone_examples/testing/external_workflow_tests/**
@@ -212,3 +213,6 @@ pipeline_test_chart_heatmap.html
 pipeline_test_chart_heatmap.png
 regressions.txt
 tools/docker/.env
+
+# Template tool metadata (auto-generated, machine-local)
+source/rendered_template_metadata.json

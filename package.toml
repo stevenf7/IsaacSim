@@ -93,9 +93,6 @@ files_exclude = [
 ]
 
 [isaac-sim-standalone.linux-x86_64]
-files = [
-    ["../../docs/isaac-sim/latest/py/**", "docs/py/"] # linux ext api docs
-]
 files_strip = [
     ["**/*.so"],
 ]
@@ -109,6 +106,11 @@ files_strip_exclude = [
     ["exts/omni.pip.compute/pip_prebundle/**"],
     ["kit/exts/omni.kit.pip_archive/pip_prebundle/**"],
     ["extscache/omni.kit.livestream.*/**"],
+]
+
+[isaac-sim-standalone.linux-x86_64.release]
+files = [
+    ["../../docs/isaac-sim/latest/py/**", "docs/py/"] # linux ext api docs
 ]
 
 [isaac-sim-standalone.linux-aarch64]
