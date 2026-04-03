@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.16.0] - 2026-04-03
+### Changed
+- **Breaking:** `euler_angles_to_quaternion` and `euler_angles_to_rotation_matrix` now expect `[roll, pitch, yaw]` (XYZ) input order for both extrinsic and intrinsic conventions, enabling clean euler-to-quaternion-to-euler round trips
+
 ## [0.15.0] - 2026-04-01
 ### Added
 - Add `get_relative_transform` to xform utils for computing relative transforms between USD prims

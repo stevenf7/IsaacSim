@@ -89,7 +89,7 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
             frequency=self.CAMERA_FREQUENCY,
             position=np.array([0.0, 0.0, 10]),
             resolution=self.CAMERA_RESOLUTION,
-            orientation=euler_angles_to_quaternion(np.array([30, 90, 0]), degrees=True).numpy(),
+            orientation=euler_angles_to_quaternion(np.array([0, 90, 30]), degrees=True).numpy(),
         )
 
         return camera, cube_1, cube_2, cube_3

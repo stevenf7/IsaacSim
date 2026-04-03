@@ -273,7 +273,7 @@ else:
         prim_path=CAMERA_PATH,
         position=np.array(CAMERA_POS),
         resolution=RESOLUTION,
-        orientation=transform_utils.euler_angles_to_quaternion(np.array([[0, 90, 90]]), degrees=True).numpy().flatten(),
+        orientation=transform_utils.euler_angles_to_quaternion(np.array([[90, 90, 0]]), degrees=True).numpy().flatten(),
     )
 
 app_utils.play()

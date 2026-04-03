@@ -2,6 +2,7 @@
 
 ## [1.14.1] - 2026-04-03
 ### Changed
+- Adapt camera test euler angles to new `[roll, pitch, yaw]` input convention
 - Added camera TF test verifying 180-degree x-axis rotation is applied to UsdGeomCamera prims in the ComputeTransformTree -> PublishTransformTree pipeline
 
 ## [1.14.0] - 2026-04-01

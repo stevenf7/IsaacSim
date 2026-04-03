@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.3] - 2026-04-03
+### Changed
+- Adapt test euler angles to new `[roll, pitch, yaw]` input convention
+
 ## [1.7.2] - 2026-03-31
 ### Deprecated
 - Extension deprecated in favor of the Experimental extension `isaacsim.sensors.experimental.camera`

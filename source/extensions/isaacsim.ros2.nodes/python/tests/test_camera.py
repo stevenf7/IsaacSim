@@ -56,7 +56,7 @@ def _camera_orientation_at_angle_deg(angle_deg: float):
     Camera local -Z is the view direction. Extrinsic ZYX Euler: Rz(angle-90) * Ry(0) * Rx(90)
     maps camera -Z to (cos(angle), sin(angle), 0) and camera +Y to world +Z.
     """
-    quat = transform_utils.euler_angles_to_quaternion([angle_deg - 90.0, 0.0, 90.0], degrees=True, extrinsic=True)
+    quat = transform_utils.euler_angles_to_quaternion([90.0, 0.0, angle_deg - 90.0], degrees=True, extrinsic=True)
     return quat.numpy().tolist()
 
 
@@ -1081,7 +1081,7 @@ class TestRos2Camera(ROS2TestCase):
         stage_utils.define_prim(camera_path_2, type_name="Camera")
         cam2_xform = XformPrim(camera_path_2, reset_xform_op_properties=True)
         cam2_local_quat = transform_utils.euler_angles_to_quaternion(
-            [0.0, 180.0, -cam2_tilt_deg], degrees=True, extrinsic=True
+            [-cam2_tilt_deg, 180.0, 0.0], degrees=True, extrinsic=True
         )
         cam2_xform.set_local_poses(
             translations=[[0.0, cam2_vertical_offset, 0.0]],

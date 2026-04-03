@@ -771,7 +771,7 @@ class TestRos2CameraInfo(ROS2TestCase):
             prim_path="/World/Camera",
             position=np.array([4.0, 0, 0.0]),
             resolution=resolution,
-            orientation=transform_utils.euler_angles_to_quaternion([0, 0, 180], degrees=True, extrinsic=True)
+            orientation=transform_utils.euler_angles_to_quaternion([180, 0, 0], degrees=True, extrinsic=True)
             .numpy()
             .flatten(),
         )

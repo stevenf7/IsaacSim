@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.4] - 2026-04-03
+### Changed
+- Adapt rotation test helpers to new `[roll, pitch, yaw]` euler angle input convention
+
 ## [2.6.3] - 2026-03-26
 ### Changed
 - Update the test dependencies to use the new experimental wheeled robots extension
