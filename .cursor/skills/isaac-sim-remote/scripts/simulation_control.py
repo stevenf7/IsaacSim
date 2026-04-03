@@ -9,7 +9,6 @@ Injected globals (via isaacsim_send.py --arg):
     dt: float — Physics timestep in seconds for setup (default: None, uses current).
 """
 
-
 if "action" not in dir():
     action = "status"
 if "num_steps" not in dir():

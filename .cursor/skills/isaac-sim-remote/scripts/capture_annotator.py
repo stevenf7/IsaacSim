@@ -17,7 +17,6 @@ if "output_path" not in dir():
 
 async def _capture():
     import omni.kit.viewport.utility as viewport_utils
-
     from isaacsim.test.utils.image_capture import capture_viewport_annotator_data_async
     from isaacsim.test.utils.image_io import save_annotator_data
 

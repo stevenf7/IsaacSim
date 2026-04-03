@@ -15,6 +15,7 @@
 
 """Module for standalone doctest support in Isaac Sim test environments."""
 
+from __future__ import annotations
 
 import doctest
 import sys
@@ -126,8 +127,8 @@ class StandaloneDocTestCase(unittest.TestCase):
         expr: object,
         msg: str = "",
         flags: int = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS | doctest.FAIL_FAST,
-        order: list[tuple[object, int]] = [],
-        exclude: list[object] = [],
+        order: list[tuple[object, int]] | None = None,
+        exclude: list[object] | None = None,
         stop_on_failure: bool = False,
     ):
         """Check that the examples in docstrings pass for all class/module's members (names).
@@ -152,6 +153,10 @@ class StandaloneDocTestCase(unittest.TestCase):
             >>> tester.assertDocTests(StandaloneDocTestCase, exclude=[StandaloneDocTestCase.assertDocTests])
             ... # doctest: +NO_CHECK
         """
+        if order is None:
+            order = []
+        if exclude is None:
+            exclude = []
         objects = self._doctest_checker.get_members(expr, order, exclude, {})
         print(f"class/module members to check: {len(objects)}")
         # test docstrings examples

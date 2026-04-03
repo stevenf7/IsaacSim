@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.5] - 2026-04-02
+### Fixed
+- `SystemExit` and `BaseException` subclasses in user code are now caught and returned as errors instead of crashing the application
+- Replace mutable default arguments in `Executor.__init__` with `None` defaults
+- Fix `from __future__ import annotations` shadowing the `__future__` module
+
 ## [1.1.4] - 2026-03-25
 ### Changed
 - Replace deprecated onclick_fn with onclick_action for menu registration

@@ -11,7 +11,6 @@ Injected globals (via isaacsim_send.py --arg):
     attr_type: str — Optional USD type name for create-on-set (e.g. "float", "double3", "string").
 """
 
-
 if "prim_path" not in dir():
     raise ValueError("prim_path is required (e.g. --arg prim_path=/World/Cube)")
 if "action" not in dir():

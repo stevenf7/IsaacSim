@@ -22,7 +22,7 @@ from typing import Any
 import numpy as np
 
 
-def save_rgb_image(rgb_data: np.ndarray, out_dir: str, file_name: str):
+def save_rgb_image(rgb_data: np.ndarray, out_dir: str, file_name: str) -> None:
     """Save RGB image data to a file on disk.
 
     This function converts numpy array RGB data to a PIL Image and saves it to the
@@ -91,7 +91,7 @@ def save_depth_image(
     out_dir: str,
     file_name: str,
     normalize: bool = False,
-):
+) -> None:
     """Save depth data as TIFF (float32) or grayscale visualization.
 
     This function supports two primary modes:

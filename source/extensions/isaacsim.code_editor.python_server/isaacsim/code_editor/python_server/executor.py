@@ -137,10 +137,27 @@ class Executor:
                 is_coroutine = self._coroutine_flag != -1 and bool(code.co_flags & self._coroutine_flag)
                 if not is_coroutine and is_exec:
                     result = _SENTINEL
+        except SystemExit as exc:
+            return ExecutionResult(
+                output=output.getvalue(),
+                exception=RuntimeError(f"SystemExit({exc.code}) intercepted — use raise RuntimeError() instead"),
+                traceback_str=f"SystemExit({exc.code}): The python_server caught SystemExit to prevent application shutdown.\n",
+            )
         except Exception as exc:
             return ExecutionResult(
                 output=output.getvalue(),
                 exception=exc,
+                traceback_str=traceback.format_exc(),
+            )
+        except BaseException as exc:
+            # Catch remaining BaseException subclasses (GeneratorExit, KeyboardInterrupt,
+            # custom subclasses) to prevent them from crashing the host application.
+            return ExecutionResult(
+                output=output.getvalue(),
+                exception=RuntimeError(
+                    f"{type(exc).__name__}({exc}) intercepted — "
+                    "BaseException subclasses must not propagate out of user code"
+                ),
                 traceback_str=traceback.format_exc(),
             )
 

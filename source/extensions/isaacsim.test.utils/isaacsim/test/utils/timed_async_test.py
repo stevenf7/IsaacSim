@@ -50,7 +50,7 @@ class TimedAsyncTestCase(omni.kit.test.AsyncTestCase):
         >>> # [TEST TIMING] test_example: 0.100 seconds
     """
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test timing before each test method.
 
         This method is called before each test method execution to record the start time.
@@ -69,7 +69,7 @@ class TimedAsyncTestCase(omni.kit.test.AsyncTestCase):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up and display test timing after each test method.
 
         This method is called after each test method execution to calculate and display

@@ -72,40 +72,36 @@ if action == "get":
         from isaacsim.core.experimental.objects import Camera
 
         cam_obj = Camera(paths=cam_str)
-        fl = cam_obj.get_focal_lengths()
-        cr = cam_obj.get_clipping_ranges()
-        print(f"Focal length: {fl[0]} mm")
-        print(f"Clipping range: {cr[0]}")
+        print(f"Focal length: {cam_obj.get_focal_lengths()[0]} mm")
+        print(f"Clipping range: {cam_obj.get_clipping_ranges()[0]}")
     except Exception:
-        try:
-            fl = prim_utils.get_prim_attribute_value(cam_str, "focalLength")
+        fl = prim_utils.get_prim_attribute_value(cam_str, "focalLength")
+        if fl is not None:
             print(f"Focal length: {fl} mm")
-        except Exception:
-            pass
 
 elif action == "set":
-    from isaacsim.core.experimental.prims import XformPrim
+    from isaacsim.core.rendering_manager import ViewportManager
 
     cam = _resolve_camera()
     cam_str = str(cam)
-    xp = XformPrim(paths=cam_str)
-    xp.reset_xform_op_properties()
-    cur_poses = xp.get_world_poses()
-    cur_pos = np.array(cur_poses[0].numpy())[0]
-    cur_rot = np.array(cur_poses[1].numpy())[0]
 
-    new_pos = _parse_vec(position) if position is not None else cur_pos
-    new_rot = _parse_vec(orientation) if orientation is not None else cur_rot
+    new_pos = _parse_vec(position)
+    new_target = _parse_vec(target)
 
-    xp.set_world_poses(
-        positions=np.array(new_pos, dtype=np.float32).reshape(1, 3),
-        orientations=np.array(new_rot, dtype=np.float32).reshape(1, 4),
-    )
-    app_utils.update_app(steps=3)
+    if new_pos is not None or new_target is not None:
+        kwargs = {}
+        if new_pos is not None:
+            kwargs["eye"] = new_pos.tolist()
+        if new_target is not None:
+            kwargs["target"] = new_target.tolist()
+        ViewportManager.set_camera_view(cam_str, **kwargs)
+        app_utils.update_app(steps=30)
 
-    print(f"Camera: {cam}")
-    print(f"Position set to: {new_pos}")
-    print(f"Orientation set to: {new_rot}")
+    print(f"Camera: {cam_str}")
+    if new_pos is not None:
+        print(f"Position set to: {new_pos}")
+    if new_target is not None:
+        print(f"Looking at: {new_target}")
 
     if focal_length is not None:
         from isaacsim.core.experimental.objects import Camera
@@ -118,34 +114,23 @@ elif action == "look_at":
     if not target:
         raise ValueError("target required for 'look_at' (e.g. --arg target=0,0,0)")
 
-    from isaacsim.core.experimental.prims import XformPrim
-    from isaacsim.core.experimental.utils.transform import look_at_quaternion
+    from isaacsim.core.rendering_manager import ViewportManager
 
     cam = _resolve_camera()
     cam_str = str(cam)
     target_pos = _parse_vec(target)
+    eye_pos = _parse_vec(position)
 
-    if position is not None:
-        eye_pos = _parse_vec(position)
-    else:
-        wp_pos = xform.get_world_pose(cam_str)[0]
-        eye_pos = np.array(wp_pos.numpy()).flatten()
-
-    quat_wp = look_at_quaternion(eye=eye_pos, target=target_pos)
-    quat = np.array(quat_wp.numpy()).flatten()
-
-    xp = XformPrim(paths=cam_str)
-    xp.reset_xform_op_properties()
-    xp.set_world_poses(
-        positions=np.array(eye_pos, dtype=np.float32).reshape(1, 3),
-        orientations=np.array(quat, dtype=np.float32).reshape(1, 4),
-    )
-    app_utils.update_app(steps=3)
+    kwargs = {"target": target_pos.tolist()}
+    if eye_pos is not None:
+        kwargs["eye"] = eye_pos.tolist()
+    ViewportManager.set_camera_view(cam_str, **kwargs)
+    app_utils.update_app(steps=30)
 
     print(f"Camera: {cam_str}")
-    print(f"Position: {eye_pos}")
+    if eye_pos is not None:
+        print(f"Position: {eye_pos}")
     print(f"Looking at: {target_pos}")
-    print(f"Orientation: {quat}")
 
 elif action == "list_cameras":
     stage = stage_utils.get_current_stage()

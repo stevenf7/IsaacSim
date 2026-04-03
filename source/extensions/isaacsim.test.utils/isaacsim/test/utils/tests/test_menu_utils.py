@@ -17,8 +17,6 @@
 
 from __future__ import annotations
 
-import unittest
-
 import omni.kit.app
 import omni.kit.ui_test as ui_test
 from isaacsim.core.experimental.utils import stage as stage_utils
@@ -29,6 +27,7 @@ from isaacsim.test.utils.menu_utils import (
     get_all_menu_paths,
     list_menu_paths,
     menu_click_with_retry,
+    navigate_menu_visual,
     perform_widget_action,
 )
 from isaacsim.test.utils.timed_async_test import TimedAsyncTestCase
@@ -264,3 +263,84 @@ class TestMenuClickWithRetry(TimedAsyncTestCase):
         stage = stage_utils.get_current_stage()
         cube_found = any(prim.GetTypeName() == "Cube" for prim in stage.Traverse())
         self.assertTrue(cube_found, "No Cube prim found on stage after menu click")
+
+
+class TestNavigateMenuVisual(TimedAsyncTestCase):
+    """Tests for navigate_menu_visual (visual menu navigation with cursor tracking)."""
+
+    async def setUp(self) -> None:
+        """Set up a new stage and wait for menus."""
+        await super().setUp()
+        await stage_utils.create_new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+
+    async def test_navigate_create_mesh_cube(self) -> None:
+        """Verify that navigate_menu_visual successfully clicks Create/Mesh/Cube."""
+        if not _has_menubar():
+            self.skipTest("No menubar available (minimal test harness)")
+        result = await navigate_menu_visual("Create/Mesh/Cube")
+        self.assertTrue(result, "navigate_menu_visual returned False")
+        stage = stage_utils.get_current_stage()
+        cube_found = any(prim.GetTypeName() == "Cube" for prim in stage.Traverse())
+        self.assertTrue(cube_found, "No Cube prim found on stage after visual navigation")
+
+    async def test_on_frame_callback_invoked(self) -> None:
+        """Verify that the on_frame callback is called with cursor positions."""
+        if not _has_menubar():
+            self.skipTest("No menubar available (minimal test harness)")
+        positions = []
+
+        async def on_frame(x: float, y: float) -> None:
+            positions.append((x, y))
+
+        result = await navigate_menu_visual("Create/Mesh/Sphere", on_frame=on_frame)
+        self.assertTrue(result)
+        self.assertGreater(len(positions), 0, "on_frame callback was never called")
+        # All positions should be finite numbers
+        for x, y in positions:
+            self.assertTrue(isinstance(x, (int, float)), f"x is not a number: {x}")
+            self.assertTrue(isinstance(y, (int, float)), f"y is not a number: {y}")
+
+    async def test_callback_receives_multiple_positions(self) -> None:
+        """Verify that the callback receives positions for each menu level."""
+        if not _has_menubar():
+            self.skipTest("No menubar available (minimal test harness)")
+        positions = []
+
+        async def on_frame(x: float, y: float) -> None:
+            positions.append((x, y))
+
+        await navigate_menu_visual("Create/Mesh/Cube", hover_frames=2, leaf_hover_frames=2, on_frame=on_frame)
+        # Should have positions from at least 3 levels: Create, Mesh, Cube
+        # plus interpolation steps and hover frames
+        unique_rounded = {(round(x), round(y)) for x, y in positions}
+        self.assertGreaterEqual(len(unique_rounded), 3, f"Expected at least 3 distinct positions, got {unique_rounded}")
+
+    async def test_invalid_menu_returns_false(self) -> None:
+        """Verify that navigating a non-existent menu returns False."""
+        if not _has_menubar():
+            self.skipTest("No menubar available (minimal test harness)")
+        result = await navigate_menu_visual("NonExistent/Menu/Item")
+        self.assertFalse(result)
+
+    async def test_custom_hover_frames(self) -> None:
+        """Verify that hover_frames and leaf_hover_frames affect callback count."""
+        if not _has_menubar():
+            self.skipTest("No menubar available (minimal test harness)")
+        short_positions = []
+        long_positions = []
+
+        async def on_short(x: float, y: float) -> None:
+            short_positions.append((x, y))
+
+        async def on_long(x: float, y: float) -> None:
+            long_positions.append((x, y))
+
+        await navigate_menu_visual("File/New", hover_frames=2, leaf_hover_frames=2, on_frame=on_short)
+        # New stage for second test
+        await stage_utils.create_new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        await navigate_menu_visual("File/New", hover_frames=8, leaf_hover_frames=12, on_frame=on_long)
+        self.assertGreater(
+            len(long_positions), len(short_positions), "More hover frames should produce more callback invocations"
+        )

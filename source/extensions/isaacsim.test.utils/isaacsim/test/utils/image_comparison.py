@@ -145,7 +145,7 @@ def _compute_difference_metrics_impl(
     }
 
 
-def print_difference_statistics(metrics: dict[str, object]):
+def print_difference_statistics(metrics: dict[str, object]) -> None:
     """Pretty-print image difference metrics.
 
     Prints a stable summary of the metrics computed by ``compute_difference_metrics``.
@@ -403,7 +403,7 @@ def compare_images_in_directories(
     print_all_stats: bool = False,
     print_per_file_results: bool = True,
 ) -> dict[str, object]:
-    """Compare matching image files in two directories against tolerance-based criteria.
+    r"""Compare matching image files in two directories against tolerance-based criteria.
 
     This function finds all image files matching the specified pattern in both directories,
     compares them pairwise, and returns comprehensive results for all comparisons.
@@ -451,7 +451,7 @@ def compare_images_in_directories(
         >>> result = compare_images_in_directories(
         ...     golden_dir="/path/to/golden",
         ...     test_dir="/path/to/test",
-        ...     path_pattern=r"^rgb.*\\.png$",
+        ...     path_pattern=r"^rgb.*\.png$",
         ...     mean_tolerance=10.0,
         ... )
         ...

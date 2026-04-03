@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.13.0] - 2026-03-27
+### Added
+- Add `button_utils` module with `get_widget_screen_center`, `deferred_click`, `deferred_click_widget`, and `discover_template_buttons` for UI button discovery and deferred click automation
+- Add `viewport_utils` module with `project_world_to_screen` for world-to-screen coordinate projection
+- Add `capture_frame_sequence_async` to `image_capture` for capturing multi-frame sequences in app, viewport, or replicator modes
+- Add `navigate_menu_visual` to `menu_utils` for visual menu navigation via mouse emulation
+- Add `_poll_async` helper to `menu_utils` to consolidate frame-polling patterns
+- Add `layout_utils` module with `ensure_dock_height`, `ensure_window_visible`, `close_windows`, and `reset_to_default_layout` for layout and dock management
+- Add `stage_utils` module with `poll_until`, `wait_for_prim`, and `wait_for_stage_prims` for stage polling during UI automation
+
+### Changed
+- Add type annotations throughout all modules
+
 ## [0.12.0] - 2026-03-25
 ### Added
 - Add `capture_app_screenshot_async` to `image_capture` for full-application swapchain screenshots (headless and windowed)
