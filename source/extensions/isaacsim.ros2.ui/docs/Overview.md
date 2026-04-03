@@ -25,4 +25,4 @@ Each graph class encapsulates the OmniGraph node configuration and connections r
 
 The extension adds a shortcuts menu to Isaac Sim that provides quick access to ROS 2 graph creation functionality. This menu integration uses **omni.kit.menu.utils** to register menu items that instantiate the graph templates, allowing users to add ROS 2 publishing capabilities to their scenes without writing code.
 
-The graph templates depend on isaacsim.ros2.nodes, which provides the underlying OmniGraph nodes used within each template. The templates act as a convenience layer that assembles these nodes into functional publishing pipelines.
+The graph templates depend on isaacsim.ros2.nodes, which provides the underlying OmniGraph nodes used within each template. The templates act as a convenience layer that assembles these nodes into functional publishing pipelines. The extension uses **isaacsim.core.experimental.utils** for stage path generation and **isaacsim.core.rendering_manager** for viewport camera control.

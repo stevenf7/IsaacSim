@@ -22,11 +22,12 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.viewport.utility
 import omni.usd
-from isaacsim.core.utils.physics import simulate_async
-from isaacsim.core.utils.prims import delete_prim, get_prim_at_path
-from isaacsim.core.utils.stage import create_new_stage_async, get_next_free_path
+from isaacsim.core.experimental.utils import prim as prim_utils
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Gf, UsdGeom
+
+from .common import simulate_async
 
 WAYPOINT_SCRIPT = """
 import rclpy
@@ -491,7 +492,7 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
         ]
         self._number_of_waypoints = len(self._waypoints)
 
-        await create_new_stage_async()
+        await stage_utils.create_new_stage_async()
 
     async def tearDown(self):
         await super().tearDown()
@@ -502,7 +503,7 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
         keys = og.Controller.Keys
 
         if self._enable_multi_robot:
-            self._og_path = get_next_free_path(self._og_path, "")
+            self._og_path = stage_utils.generate_next_free_path(self._og_path, prepend_default_prim=False)
         try:
             og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},
@@ -656,7 +657,7 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
 
         self.assertFalse(self._create_ros_action_graph(), "Duplicate ActionGraph is generated")
 
-        delete_prim(self._og_path)
+        stage_utils.delete_prim(self._og_path)
         self.assertTrue(self._create_ros_action_graph(), "ActionGraph is not created after deleting old graph.")
 
         self._enable_multi_robot = True
@@ -688,7 +689,7 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
         _prim_path = f"{self._goal_parent_prim}/waypoint_0"
         self.assertTrue(self._create_waypoints(_dummy_waypoint, _prim_path), "Waypoint is not created!")
 
-        xform_prim = get_prim_at_path(_prim_path)
+        xform_prim = prim_utils.get_prim_at_path(_prim_path)
         self.assertIsNotNone(xform_prim)
 
         self.assertFalse(self._create_waypoints(_dummy_waypoint, _prim_path), "Waypoint with same name is created!")

@@ -18,8 +18,8 @@ import os
 import threading
 
 import carb
-import isaacsim.core.utils.prims as prim_utils
-import isaacsim.core.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.prim as prim_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import nest_asyncio
 import numpy as np
 import omni
@@ -637,7 +637,7 @@ class SimulationControl:
             response.result.error_message = ""
 
             # Get usdrt stage for traversing
-            usdrt_stage = stage_utils.get_current_stage(fabric=True)
+            usdrt_stage = stage_utils.get_current_stage(backend="fabric")
             if not usdrt_stage:
                 response.result.result = Result.RESULT_OPERATION_FAILED
                 response.result.error_message = "usdrt Stage not available for traversing"
@@ -683,23 +683,22 @@ class SimulationControl:
             from simulation_interfaces.msg import Result
 
             # First check if the entity exists
-            if not prim_utils.is_prim_path_valid(request.entity):
+            prim = prim_utils.get_prim_at_path(request.entity)
+            if not prim.IsValid():
                 response.result = Result(
                     result=Result.RESULT_NOT_FOUND,
                     error_message=f"Entity '{request.entity}' does not exist",
                 )
                 return response
 
-            # Check if prim can be deleted
-            if prim_utils.is_prim_no_delete(request.entity):
+            if prim.GetMetadata("no_delete"):
                 response.result = Result(
                     result=Result.RESULT_OPERATION_FAILED,
                     error_message=f"Entity '{request.entity}' is protected and cannot be deleted",
                 )
                 return response
 
-            # Delete the prim - Note: delete_prim returns True if prim was protected, False if successfully deleted
-            if not prim_utils.delete_prim(request.entity):
+            if stage_utils.delete_prim(request.entity):
                 response.result = Result(result=Result.RESULT_OK, error_message="")
                 carb.log_info(f"Successfully deleted entity: {request.entity}")
             else:
@@ -731,7 +730,7 @@ class SimulationControl:
         try:
             from simulation_interfaces.msg import EntityCategory, EntityInfo, Result
 
-            if not prim_utils.is_prim_path_valid(request.entity):
+            if not prim_utils.get_prim_at_path(request.entity).IsValid():
                 response.result = Result(
                     result=Result.RESULT_NOT_FOUND, error_message=f"Entity '{request.entity}' does not exist"
                 )
@@ -826,7 +825,7 @@ class SimulationControl:
                 # Generate a unique name by counting existing spawned entities
                 spawned_count = 0
                 # Get usdrt stage for traversing to count spawned entities
-                usdrt_stage = stage_utils.get_current_stage(fabric=True)
+                usdrt_stage = stage_utils.get_current_stage(backend="fabric")
                 if usdrt_stage:
                     for prim in usdrt_stage.Traverse():
                         if prim.HasAttribute("simulationInterfacesSpawned"):
@@ -843,7 +842,7 @@ class SimulationControl:
                 carb.log_info(f"Using entity name as is: /{entity_name}")
 
             # Check if name already exists
-            if stage.GetPrimAtPath(entity_name):
+            if prim_utils.get_prim_at_path(entity_name).IsValid():
                 if not request.allow_renaming:
                     response.result.result = response.NAME_NOT_UNIQUE
                     response.result.error_message = f"Entity '{entity_name}' already exists and allow_renaming is false"
@@ -851,7 +850,7 @@ class SimulationControl:
                 # Generate a unique name
                 base_name = entity_name
                 suffix = 1
-                while stage.GetPrimAtPath(f"{base_name}_{suffix}"):
+                while prim_utils.get_prim_at_path(f"{base_name}_{suffix}").IsValid():
                     suffix += 1
                 entity_name = f"{base_name}_{suffix}"
 
@@ -914,7 +913,7 @@ class SimulationControl:
                 carb.log_info(f"Successfully spawned empty Xform entity: {entity_name}")
 
             # Track the spawned entities by adding an attribute to mark it as spawned via this service
-            prim = stage.GetPrimAtPath(entity_name)
+            prim = prim_utils.get_prim_at_path(entity_name)
             attr1 = prim.CreateAttribute("simulationInterfacesSpawned", Sdf.ValueTypeNames.Bool, custom=True)
             attr1.Set(True)
 
@@ -965,7 +964,7 @@ class SimulationControl:
             carb.log_info("Resetting simulation with SCOPE_DEFAULT (full reset)")
 
             # Get usdrt stage for traversing to find spawned entities
-            usdrt_stage = stage_utils.get_current_stage(fabric=True)
+            usdrt_stage = stage_utils.get_current_stage(backend="fabric")
             if not usdrt_stage:
                 response.result.result = Result.RESULT_OPERATION_FAILED
                 response.result.error_message = "usdrt Stage not available for traversing"
@@ -993,7 +992,7 @@ class SimulationControl:
 
             # Delete the spawned entities
             for entity_path in spawned_entities:
-                prim_utils.delete_prim(entity_path)
+                stage_utils.delete_prim(entity_path)
                 carb.log_info(f"Removed spawned entity: {entity_path}")
 
             await omni.kit.app.get_app().next_update_async()
@@ -1147,7 +1146,7 @@ class SimulationControl:
             response.states = []
 
             # Get usdrt stage for traversing
-            usdrt_stage = stage_utils.get_current_stage(fabric=True)
+            usdrt_stage = stage_utils.get_current_stage(backend="fabric")
             if not usdrt_stage:
                 response.result = Result(
                     result=Result.RESULT_OPERATION_FAILED, error_message="usdrt Stage not available for traversing"
@@ -1210,8 +1209,14 @@ class SimulationControl:
 
             from simulation_interfaces.msg import Result
 
+            stage = stage_utils.get_current_stage()
+            if not stage:
+                response.result = Result(result=Result.RESULT_OPERATION_FAILED, error_message="Stage not available")
+                return response
+
             # Check if the entity exists
-            if not prim_utils.is_prim_path_valid(request.entity):
+            prim = prim_utils.get_prim_at_path(request.entity)
+            if not prim.IsValid():
                 response.result = Result(
                     result=Result.RESULT_NOT_FOUND, error_message=f"Entity '{request.entity}' does not exist"
                 )
@@ -1225,19 +1230,6 @@ class SimulationControl:
             angular_velocity = entity_state.twist.angular
 
             try:
-                # Get regular stage for prim operations
-                stage = stage_utils.get_current_stage()
-                if not stage:
-                    response.result = Result(result=Result.RESULT_OPERATION_FAILED, error_message="Stage not available")
-                    return response
-
-                prim = stage.GetPrimAtPath(request.entity)
-                if not prim:
-                    response.result = Result(
-                        result=Result.RESULT_NOT_FOUND, error_message=f"Entity '{request.entity}' not found in stage"
-                    )
-                    return response
-
                 # Check for PhysicsRigidBodyAPI
                 applied_apis = prim.GetAppliedSchemas()
                 has_rigid_body = "PhysicsRigidBodyAPI" in applied_apis
@@ -1543,7 +1535,7 @@ class SimulationControl:
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
 
-            stage = stage_utils.get_current_stage(fabric=True)
+            stage = stage_utils.get_current_stage(backend="fabric")
             if not stage:
                 response.result.result = Result.RESULT_OPERATION_FAILED
                 response.result.error_message = "Failed to get loaded stage"
@@ -1596,7 +1588,7 @@ class SimulationControl:
                 )
                 return response
 
-            usdrt_stage = stage_utils.get_current_stage(fabric=True)
+            usdrt_stage = stage_utils.get_current_stage(backend="fabric")
             if not usdrt_stage:
                 carb.log_warn("No stage currently loaded")
                 response.result.result = response.NO_WORLD_LOADED

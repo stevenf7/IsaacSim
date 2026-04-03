@@ -832,3 +832,70 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         expected_forward = (target - eye).GetNormalized()
         for i in range(3):
             self.assertAlmostEqual(neg_z[i], expected_forward[i], places=5)
+
+    # ----------------------------------------------------------------
+    # compute_relative_transform
+    # ----------------------------------------------------------------
+
+    async def test_compute_relative_transform_identity_inputs(self):
+        """Both transforms are identity — result should be identity."""
+        result = transform_utils.compute_relative_transform(np.eye(4), np.eye(4))
+        np.testing.assert_allclose(result, np.eye(4), atol=1e-10)
+
+    async def test_compute_relative_transform_same_transform(self):
+        """Same non-trivial transform for source and target — result should be identity."""
+        t = np.eye(4)
+        t[3, :3] = [5.0, -3.0, 2.0]  # row-major translation
+        result = transform_utils.compute_relative_transform(t, t)
+        np.testing.assert_allclose(result, np.eye(4), atol=1e-10)
+
+    async def test_compute_relative_transform_translation_only(self):
+        """Pure translation offset between source and target."""
+        source = np.eye(4)
+        source[3, :3] = [1.0, 2.0, 3.0]
+
+        target = np.eye(4)
+        target[3, :3] = [4.0, 6.0, 8.0]
+
+        result = transform_utils.compute_relative_transform(source, target)
+        np.testing.assert_allclose(result[:3, 3], [-3.0, -4.0, -5.0], atol=1e-10)
+        np.testing.assert_allclose(result[:3, :3], np.eye(3), atol=1e-10)
+
+    async def test_compute_relative_transform_inverse(self):
+        """A->B composed with B->A should give identity."""
+        source = np.eye(4)
+        source[3, :3] = [1.0, 0.0, 0.0]
+
+        # 90-degree rotation around Z in row-major
+        target = np.array(
+            [
+                [0.0, 1.0, 0.0, 0.0],
+                [-1.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [0.0, 2.0, 0.0, 1.0],
+            ]
+        )
+
+        ab = transform_utils.compute_relative_transform(source, target)
+        ba = transform_utils.compute_relative_transform(target, source)
+        np.testing.assert_allclose(ab @ ba, np.eye(4), atol=1e-10)
+
+    async def test_compute_relative_transform_accepts_list(self):
+        """Should accept plain Python lists."""
+        source = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [3, 0, 0, 1]]
+        target = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+        result = transform_utils.compute_relative_transform(source, target)
+        np.testing.assert_allclose(result[:3, 3], [3.0, 0.0, 0.0], atol=1e-10)
+
+    async def test_compute_relative_transform_accepts_warp(self):
+        """Should accept warp arrays."""
+        source_np = np.eye(4)
+        source_np[3, :3] = [1.0, 2.0, 3.0]
+        target_np = np.eye(4)
+
+        source_wp = wp.array(source_np, dtype=wp.float64)
+        target_wp = wp.array(target_np, dtype=wp.float64)
+
+        result_np = transform_utils.compute_relative_transform(source_np, target_np)
+        result_wp = transform_utils.compute_relative_transform(source_wp, target_wp)
+        np.testing.assert_allclose(result_wp, result_np, atol=1e-10)

@@ -36,6 +36,6 @@ These query services allow ROS 2 nodes to inspect the current simulation state a
 
 ## Integration
 
-The extension integrates with `isaacsim.ros2.bridge` to establish ROS 2 communication channels and uses `isaacsim.core.experimental.prims` for USD prim operations. It translates between ROS 2 service messages and Isaac Sim's internal APIs, handling coordinate system conversions and data format transformations.
+The extension integrates with `isaacsim.ros2.bridge` to establish ROS 2 communication channels, uses `isaacsim.core.experimental.prims` for USD prim operations, and `isaacsim.core.experimental.utils` for stage and prim utility functions. It translates between ROS 2 service messages and Isaac Sim's internal APIs, handling coordinate system conversions and data format transformations.
 
 Service callbacks process incoming ROS 2 requests, execute the corresponding Isaac Sim operations, and return responses following the ROS 2 Simulation Interface standard. This allows Isaac Sim to participate in ROS 2-based simulation orchestration systems.

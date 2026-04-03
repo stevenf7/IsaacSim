@@ -28,9 +28,9 @@ import omni.graph.core as og
 import omni.kit.commands
 import omni.ui as ui
 import usdrt.Sdf
-from isaacsim.core.api import PhysicsContext
-from isaacsim.core.utils.prims import create_prim
-from isaacsim.core.utils.viewports import set_camera_view
+from isaacsim.core.experimental.utils import stage as stage_utils
+from isaacsim.core.rendering_manager import ViewportManager
+from isaacsim.core.simulation_manager import PhysicsScene
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.ui_utils import setup_ui_headers
 from isaacsim.storage.native import get_assets_root_path
@@ -141,16 +141,17 @@ class Extension(omni.ext.IExt):
     async def _create_moveit_sample(self):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        set_camera_view(eye=[1.20, 1.20, 0.80], target=[0, 0, 0.50], camera_prim_path="/OmniverseKit_Persp")
+        ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[1.20, 1.20, 0.80], target=[0, 0, 0.50])
         self._stage = self._usd_context.get_stage()
 
         self.create_franka(FRANKA_STAGE_PATH)
         await omni.kit.app.get_app().next_update_async()
-        create_prim(
-            prim_path="/background", usd_path=self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd"
+        stage_utils.add_reference_to_stage(
+            usd_path=self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd", path="/background"
         )
         await omni.kit.app.get_app().next_update_async()
-        PhysicsContext(physics_dt=1.0 / 60.0)
+        physics_scene = PhysicsScene("/physicsScene")
+        physics_scene.set_dt(1.0 / 60.0)
         await omni.kit.app.get_app().next_update_async()
         self.create_ros_action_graph(FRANKA_STAGE_PATH)
         await omni.kit.app.get_app().next_update_async()

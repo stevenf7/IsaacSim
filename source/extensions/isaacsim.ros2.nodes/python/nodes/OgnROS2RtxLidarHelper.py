@@ -23,8 +23,7 @@ import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.replicator.core as rep
 import omni.syntheticdata
 from isaacsim.core.nodes import BaseWriterNode
-from isaacsim.core.utils.carb import get_carb_setting
-from isaacsim.core.utils.render_product import get_camera_prim_path
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.ros2.core import collect_namespace
 from isaacsim.ros2.nodes import build_rtx_sensor_pointcloud_writer
 from isaacsim.ros2.nodes.impl.ros2_common import (
@@ -159,7 +158,7 @@ class OgnROS2RtxLidarHelper:
         if sensor_type == "laser_scan":
             from isaacsim.ros2.nodes.bindings._ros2_nodes import create_laser_scan_publisher_capsule
 
-            prim = stage.GetPrimAtPath(get_camera_prim_path(render_product_path))
+            prim = ViewportManager.get_camera(render_product_path).GetPrim()
             scan_meta = OgnROS2RtxLidarHelper._read_laser_scan_metadata(prim)
             if scan_meta is None:
                 carb.log_error("Failed to read laser scan metadata from lidar prim")
@@ -212,7 +211,7 @@ class OgnROS2RtxLidarHelper:
             # Invalid Render Product Path
             carb.log_warn(f"Render product '{render_product_path}' not created yet, retrying on next call")
             return False
-        prim = stage.GetPrimAtPath(get_camera_prim_path(render_product_path))
+        prim = ViewportManager.get_camera(render_product_path).GetPrim()
         if not (prim.IsA(UsdGeom.Camera) and prim.HasAPI(IsaacSensorSchema.IsaacRtxLidarSensorAPI)) and not (
             prim.GetTypeName() == "OmniLidar" and prim.HasAPI("OmniSensorGenericLidarCoreAPI")
         ):
@@ -271,7 +270,7 @@ class OgnROS2RtxLidarHelper:
                             carb.log_warn(
                                 "enableObjectIdMap is True, but 'ObjectId' is not in the selected metadata. Disabling object ID map output."
                             )
-                        elif not get_carb_setting(carb.settings.get_settings(), "/rtx-transient/stableIds/enabled"):
+                        elif not carb.settings.get_settings().get("/rtx-transient/stableIds/enabled"):
                             carb.log_warn(
                                 "enableObjectIdMap is True, but --/rtx-transient/stableIds/enabled is either unset or False. Disabling object ID map output."
                             )

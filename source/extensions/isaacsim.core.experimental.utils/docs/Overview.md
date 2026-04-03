@@ -74,6 +74,9 @@ quaternion = transform_utils.euler_angles_to_quaternion([0, np.pi/2, 0])
 result = transform_utils.quaternion_multiplication(quat1, quat2)
 conjugate = transform_utils.quaternion_conjugate(quaternion)
 
+# Compute relative transform between two world matrices
+relative = transform_utils.compute_relative_transform(source_to_world, target_to_world)
+
 # Compute camera look-at transform
 matrix = transform_utils.look_at_matrix(eye=[5.0, 5.0, 5.0], target=[0.0, 0.0, 0.0])
 ```
@@ -94,6 +97,9 @@ world_translation, world_orientation = xform_utils.get_world_pose("/World/Cube")
 # Set poses (USDRT/Fabric backends)
 xform_utils.set_local_pose("/World/Cube", translation=[1, 2, 3])
 xform_utils.set_world_pose("/World/Cube", position=[5, 6, 7])
+
+# Compute relative transform between two prims
+relative_tf = xform_utils.get_relative_transform("/World/Source", "/World/Target")
 ```
 
 ## Key Components

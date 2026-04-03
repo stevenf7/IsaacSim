@@ -18,7 +18,7 @@ import json
 import numpy as np
 import omni.graph.core as og
 import omni.kit.test
-from isaacsim.core.utils.stage import create_new_stage_async
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 
 
@@ -26,7 +26,7 @@ class TestRos2Publisher(ROS2TestCase):
     async def setUp(self):
         await super().setUp()
 
-        await create_new_stage_async()
+        await stage_utils.create_new_stage_async()
 
     async def tearDown(self):
         await super().tearDown()

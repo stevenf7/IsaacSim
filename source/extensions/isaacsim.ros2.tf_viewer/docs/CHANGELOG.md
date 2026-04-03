@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.0] - 2026-04-01
+### Changed
+- Added `isaacsim.core.experimental.utils` dependency
+- Migrated test utilities to use `stage_utils` from `isaacsim.core.experimental.utils`
+
 ## [2.2.1] - 2026-03-26
 ### Changed
 - Moved Python binding module to `bindings/` subdirectory

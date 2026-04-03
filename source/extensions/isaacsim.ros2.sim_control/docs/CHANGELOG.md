@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0] - 2026-04-01
+### Changed
+- Removed deprecated `isaacsim.core.utils` dependency
+- Migrated to `isaacsim.core.experimental.utils` for stage and prim operations
+- Replaced direct `GetPrimAtPath` calls with `prim_utils.get_prim_at_path`
+- Use `backend="fabric"` for Fabric stage access
+
 ## [1.4.1] - 2026-03-26
 ### Changed
 - Update the test dependencies to use the new experimental wheeled robots extension

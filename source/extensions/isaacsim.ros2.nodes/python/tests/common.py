@@ -16,11 +16,18 @@
 
 import numpy as np
 import omni
-from isaacsim.core.api.materials import OmniPBR
-from isaacsim.core.api.objects import VisualCuboid
-from isaacsim.core.utils.stage import add_reference_to_stage, open_stage_async
+from isaacsim.core.experimental.materials import OmniPbrMaterial
+from isaacsim.core.experimental.objects import Cube
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.sensors.rtx import apply_nonvisual_material, get_material_id
 from pxr import UsdPhysics
+
+
+async def simulate_async(seconds, steps_per_sec=60, callback=None):
+    for _ in range(int(seconds * steps_per_sec)):
+        await omni.kit.app.get_app().next_update_async()
+        if callback:
+            callback()
 
 
 def set_translate(prim, new_loc):
@@ -83,7 +90,9 @@ async def add_cube(path, size, offset):
 async def add_carter(assets_root_path, prim_path="/Carter"):
     from pxr import Gf, PhysicsSchemaTools
 
-    add_reference_to_stage(assets_root_path + "/Isaac/Robots/NVIDIA/Carter/carter_v1_physx_lidar.usd", prim_path)
+    stage_utils.add_reference_to_stage(
+        assets_root_path + "/Isaac/Robots/NVIDIA/Carter/carter_v1_physx_lidar.usd", prim_path
+    )
     stage = omni.usd.get_context().get_stage()
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -0.25), Gf.Vec3f(0.5))
     await omni.kit.app.get_app().next_update_async()
@@ -93,7 +102,7 @@ async def add_carter(assets_root_path, prim_path="/Carter"):
 async def add_carter_ros(assets_root_path, prim_path="/Carter"):
     from pxr import Gf, PhysicsSchemaTools
 
-    add_reference_to_stage(assets_root_path + "/Isaac/Samples/ROS2/Robots/Carter_ROS.usd", prim_path)
+    stage_utils.add_reference_to_stage(assets_root_path + "/Isaac/Samples/ROS2/Robots/Carter_ROS.usd", prim_path)
     await omni.kit.app.get_app().next_update_async()
     # Disabling cameras by default
     import omni.graph.core as og
@@ -120,12 +129,16 @@ async def add_carter_ros(assets_root_path, prim_path="/Carter"):
 
 
 async def add_nova_carter_ros(assets_root_path):
-    (result, error) = await open_stage_async(assets_root_path + "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd")
+    (result, error) = await stage_utils.open_stage_async(
+        assets_root_path + "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd"
+    )
     await omni.kit.app.get_app().next_update_async()
 
 
 async def add_franka(assets_root_path):
-    (result, error) = await open_stage_async(assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd")
+    (result, error) = await stage_utils.open_stage_async(
+        assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+    )
 
 
 def get_qos_profile(depth: int = 1, history: str = "keep_last"):
@@ -172,23 +185,21 @@ def _create_cube_with_material(
 ) -> dict:
     """Helper to create a cube with optional material."""
     cube_path = f"/World/cube_{index}"
-    cube = VisualCuboid(
-        prim_path=cube_path,
-        name=f"cube_{index}",
-        position=position,
-        scale=scale,
+    cube = Cube(
+        cube_path,
+        sizes=1.0,
+        positions=position,
+        scales=scale,
     )
 
     cube_info = {}
     if enable_material:
-        material = OmniPBR(
-            prim_path=f"{cube_path}/material",
-            name=f"cube_{index}_material",
-            color=color,
-        )
-        apply_nonvisual_material(material.prim, *material_props)
-        cube.apply_visual_material(material)
-        cube_info = {"material_id": get_material_id(material.prim)}
+        material = OmniPbrMaterial(f"{cube_path}/material")
+        material.set_input_values("diffuse_color_constant", color)
+        material_prim = material.materials[0].GetPrim()
+        apply_nonvisual_material(material_prim, *material_props)
+        cube.apply_visual_materials(material)
+        cube_info = {"material_id": get_material_id(material_prim)}
 
     return {cube_path: cube_info} if cube_info else {}
 

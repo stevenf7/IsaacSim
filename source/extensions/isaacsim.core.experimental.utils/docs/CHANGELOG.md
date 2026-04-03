@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.15.0] - 2026-04-01
+### Added
+- Add `get_relative_transform` to xform utils for computing relative transforms between USD prims
+- Add `compute_relative_transform` to transform utils for computing relative transforms from world matrices (accepts `list`, `np.ndarray`, or `wp.array`)
+
 ## [0.14.0] - 2026-03-25
 ### Added
 - Add `look_at_matrix` to `transform` to compute a USD camera transform (`Gf.Matrix4d`) from eye and target positions, with automatic collinearity fallback

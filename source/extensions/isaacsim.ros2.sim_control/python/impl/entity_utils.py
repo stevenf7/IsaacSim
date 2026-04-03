@@ -16,7 +16,7 @@
 import re
 
 import carb
-import isaacsim.core.utils.prims as prim_utils
+import isaacsim.core.experimental.utils.prim as prim_utils
 from geometry_msgs.msg import Accel, Point, Pose, Quaternion, Twist, Vector3
 from isaacsim.core.experimental.prims import RigidPrim, XformPrim
 from simulation_interfaces.msg import EntityState, Result
@@ -82,10 +82,9 @@ async def get_entity_state(entity_path):
         Exception: If entity state retrieval fails due to invalid paths or physics errors.
     """
     # Check if entity exists
-    if not prim_utils.is_prim_path_valid(entity_path):
-        return None, f"Entity '{entity_path}' does not exist", Result.RESULT_NOT_FOUND
-    # Get the prim
     prim = prim_utils.get_prim_at_path(entity_path)
+    if not prim.IsValid():
+        return None, f"Entity '{entity_path}' does not exist", Result.RESULT_NOT_FOUND
 
     # Instance Proxy prims are currently not supported
     if prim.IsInstanceProxy():

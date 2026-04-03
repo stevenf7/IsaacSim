@@ -21,9 +21,10 @@ import omni.graph.core as og
 import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
-from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.utils.stage import open_stage_async
-from isaacsim.core.utils.xforms import get_world_pose
+from isaacsim.core.experimental.objects import Cube
+from isaacsim.core.experimental.prims import RigidPrim
+from isaacsim.core.experimental.utils import stage as stage_utils
+from isaacsim.core.experimental.utils import xform as xform_utils
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
@@ -544,7 +545,8 @@ class TestRos2Subscribers(ROS2TestCase):
         scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
         scene.CreateGravityMagnitudeAttr().Set(9.81)
 
-        cube = DynamicCuboid(prim_path="/World/cube", position=np.array([0, 0, 5]))
+        Cube("/World/cube", positions=np.array([[0, 0, 5]]))
+        RigidPrim("/World/cube")
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -581,7 +583,10 @@ class TestRos2Subscribers(ROS2TestCase):
 
             # Wait until pose condition is met or timeout
             def pose_condition():
-                x, r = get_world_pose("/World/cube")
+                _prim = self._stage.GetPrimAtPath("/World/cube")
+                _pos_wp, _rot_wp = xform_utils.get_world_pose(_prim)
+                x = _pos_wp.numpy().flatten()
+                r = _rot_wp.numpy().flatten()
                 pos_match = np.linalg.norm(x - pos) < 1e-5
                 rot_match = np.linalg.norm(r - rot) < 1e-5 or np.linalg.norm(r + rot) < 1e-5
                 return pos_match and rot_match
@@ -593,7 +598,10 @@ class TestRos2Subscribers(ROS2TestCase):
                 msg=f"Transform tree test failed for iteration {i}: Pose condition not met within time limit",
             )
 
-            x, r = get_world_pose("/World/cube")
+            _prim = self._stage.GetPrimAtPath("/World/cube")
+            _pos_wp, _rot_wp = xform_utils.get_world_pose(_prim)
+            x = _pos_wp.numpy().flatten()
+            r = _rot_wp.numpy().flatten()
 
             # NOTE : a quaterion q and -q represent the same rotation
             self.assertTrue(np.linalg.norm(x - pos) < 1e-5)
@@ -610,7 +618,7 @@ class TestRos2Subscribers(ROS2TestCase):
 
         # Load our Nova Carter ROS stage
         stage_path = "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
-        await open_stage_async(self._assets_root_path + stage_path)
+        await stage_utils.open_stage_async(self._assets_root_path + stage_path)
 
         self._stage = omni.usd.get_context().get_stage()
 
@@ -680,7 +688,10 @@ class TestRos2Subscribers(ROS2TestCase):
 
             # Wait until pose condition is met or timeout
             def pose_condition():
-                x, r = get_world_pose("/nova_carter/chassis_link")
+                _prim = self._stage.GetPrimAtPath("/nova_carter/chassis_link")
+                _pos_wp, _rot_wp = xform_utils.get_world_pose(_prim)
+                x = _pos_wp.numpy().flatten()
+                r = _rot_wp.numpy().flatten()
                 pos_match = np.linalg.norm(x - pos) < 1e-5
                 rot_match = np.linalg.norm(r - rot) < 1e-5 or np.linalg.norm(r + rot) < 1e-5
                 return pos_match and rot_match
@@ -694,7 +705,10 @@ class TestRos2Subscribers(ROS2TestCase):
                 msg=f"Nova Carter transform tree test failed for iteration {i}: Pose condition not met within time limit",
             )
 
-            x, r = get_world_pose("/nova_carter/chassis_link")
+            _prim = self._stage.GetPrimAtPath("/nova_carter/chassis_link")
+            _pos_wp, _rot_wp = xform_utils.get_world_pose(_prim)
+            x = _pos_wp.numpy().flatten()
+            r = _rot_wp.numpy().flatten()
 
             # NOTE : a quaterion q and -q represent the same rotation
             self.assertTrue(np.linalg.norm(x - pos) < 1e-5)

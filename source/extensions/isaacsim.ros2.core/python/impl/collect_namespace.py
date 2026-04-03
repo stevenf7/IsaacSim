@@ -16,7 +16,7 @@
 
 import omni
 import omni.syntheticdata
-from isaacsim.core.utils.render_product import get_camera_prim_path
+from isaacsim.core.rendering_manager import ViewportManager
 
 
 def collect_namespace(namespace_input: str, render_product_path: str) -> str:
@@ -45,10 +45,7 @@ def collect_namespace(namespace_input: str, render_product_path: str) -> str:
 
     namespace_string = ""
 
-    start_prim_path = get_camera_prim_path(render_product_path)
-
-    stage = omni.usd.get_context().get_stage()
-    start_prim = stage.GetPrimAtPath(start_prim_path)
+    start_prim = ViewportManager.get_camera(render_product_path).GetPrim()
 
     current_prim = start_prim
 
