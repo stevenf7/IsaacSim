@@ -1,4 +1,7 @@
 # Changelog
+## [0.2.2] - 2026-04-03
+### Fixed
+- instance_segmentation tests correctly cross-check dictionary values without assuming fixed IDs for prims
 
 ## [0.2.1] - 2026-03-24
 ### Fixed

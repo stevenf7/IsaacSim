@@ -285,24 +285,28 @@ class TestSingleViewDepthCameraSensor(omni.kit.test.AsyncTestCase):
                         msg=f"Annotator info mismatch for '{annotator}' ({set(id_to_labels.values())})",
                     )
                 elif annotator == "instance_segmentation":
-                    expected_info = {
-                        "idToLabels": {
-                            0: "BACKGROUND",
-                            1: "UNLABELLED",
-                            2: "/World/Cone",
-                            3: "/World/Cube",
-                            4: "/World/Sphere",
-                        },
-                        "idToSemantics": {
-                            0: {"class": "BACKGROUND"},
-                            1: {"class": "UNLABELLED"},
-                            2: {"shape": "cone"},
-                            3: {"shape": "cube"},
-                            4: {"shape": "sphere", "class": "label_a,label_b"},
-                        },
-                    }
                     cprint(f"  |    |    |-- {info}")
-                    self.assertDictEqual(expected_info, info, msg=f"Annotator info mismatch for '{annotator}'")
+                    self.assertIn("idToLabels", info)
+                    self.assertIn("idToSemantics", info)
+                    self.assertEqual(set(info["idToLabels"].keys()), {0, 1, 2, 3, 4})
+                    self.assertEqual(set(info["idToSemantics"].keys()), {0, 1, 2, 3, 4})
+                    idToLabels = info["idToLabels"]
+                    idToSemantics = info["idToSemantics"]
+                    expected_label_to_semantics = {
+                        "BACKGROUND": {"class": "BACKGROUND"},
+                        "UNLABELLED": {"class": "UNLABELLED"},
+                        "/World/Cone": {"shape": "cone"},
+                        "/World/Cube": {"shape": "cube"},
+                        "/World/Sphere": {"shape": "sphere", "class": "label_a,label_b"},
+                    }
+                    for expected_label, expected_semantics in expected_label_to_semantics.items():
+                        id = None
+                        for key, label in idToLabels.items():
+                            if label == expected_label:
+                                id = key
+                                break
+                        self.assertIsNotNone(id, f"Label '{expected_label}' not found in idToLabels")
+                        self.assertEqual(idToSemantics[id], expected_semantics)
                 elif annotator == "semantic_segmentation":
                     expected_values = [
                         {"class": "BACKGROUND"},
