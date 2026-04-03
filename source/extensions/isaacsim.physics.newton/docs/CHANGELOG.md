@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.0] - 2026-04-01
+### Changed
+- get_simulation_time_steps_per_second returns int rather than float to comply with omni.physics.core bindings
+
 ## [0.6.2] - 2026-03-17
 ### Fixed
 - Newton contact tensor API: apply force sign convention in net and matrix kernels (add for shape0, subtract for shape1) so net contact forces match PhysX expectations.

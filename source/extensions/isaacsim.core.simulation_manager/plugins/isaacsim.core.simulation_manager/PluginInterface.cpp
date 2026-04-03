@@ -75,6 +75,14 @@ size_t g_numPhysicsSteps = 0;
 bool g_simulating = false;
 bool g_paused = false;
 
+/// Monotonic time tracking across simulation stop/start cycles and rate changes.
+/// g_monotonicTimeAccumulated stores the monotonic time from previous segments
+/// (prior simulation runs or prior rate periods). g_monotonicStepCount tracks
+/// steps within the current segment. g_lastStepsPerSecond detects rate changes.
+double g_monotonicTimeAccumulated = 0.0;
+uint64_t g_monotonicStepCount = 0;
+uint32_t g_lastStepsPerSecond = 0;
+
 void updateMultiTickExternalSimulationTime()
 {
     auto settings = carb::getCachedInterface<carb::settings::ISettings>();
@@ -629,8 +637,27 @@ void onResume(float currentTime, void* userData)
  */
 void onPhysicsStep(float timeElapsed, const omni::physics::PhysicsStepContext& context)
 {
-    g_simulationTime += timeElapsed;
-    g_simulationTimeMonotonic += timeElapsed;
+    // Derive simulation time from integer step count and steps-per-second to avoid
+    // accumulated floating-point drift from repeated addition of float dt.
+    // All physics backends must implement getSimulationStepCount() and
+    // getSimulationTimeStepsPerSecond() on IPhysicsSimulation.
+    uint32_t stepsPerSecond = g_physicsSimulationInterface->getSimulationTimeStepsPerSecond(
+        context.simulationId, g_stageId.id, context.scenePath);
+    uint64_t stepCount = g_physicsSimulationInterface->getSimulationStepCount(context.simulationId);
+
+    g_simulationTime = static_cast<double>(stepCount) / static_cast<double>(stepsPerSecond);
+
+    // Monotonic time: accumulate across simulation restarts and rate changes.
+    if (stepsPerSecond != g_lastStepsPerSecond && g_lastStepsPerSecond != 0)
+    {
+        g_monotonicTimeAccumulated = g_simulationTimeMonotonic;
+        g_monotonicStepCount = 0;
+    }
+    g_lastStepsPerSecond = stepsPerSecond;
+    g_monotonicStepCount++;
+    g_simulationTimeMonotonic =
+        g_monotonicTimeAccumulated + static_cast<double>(g_monotonicStepCount) / static_cast<double>(stepsPerSecond);
+
     g_numPhysicsSteps += 1;
     g_systemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
     g_simulating = true;
@@ -697,6 +724,9 @@ void onStop(void* userData)
     // Reset simulation state
     g_simulationTime = 0;
     g_numPhysicsSteps = 0;
+    // Preserve monotonic time across stop/start; reset segment counter
+    g_monotonicTimeAccumulated = g_simulationTimeMonotonic;
+    g_monotonicStepCount = 0;
     updateMultiTickExternalSimulationTime();
 }
 
@@ -714,6 +744,11 @@ void onAttach(long int stageId, double metersPerUnit, void* userData)
     // Reset simulation state
     g_simulationTime = 0;
     g_numPhysicsSteps = 0;
+    // New stage: reset all monotonic time tracking
+    g_simulationTimeMonotonic = 0.0;
+    g_monotonicTimeAccumulated = 0.0;
+    g_monotonicStepCount = 0;
+    g_lastStepsPerSecond = 0;
 
     // Find the USD stage to validate it exists
     pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
@@ -785,6 +820,9 @@ public:
         g_simulationTime = 0;
         g_simulationTimeMonotonic = 0;
         g_numPhysicsSteps = 0;
+        g_monotonicTimeAccumulated = 0.0;
+        g_monotonicStepCount = 0;
+        g_lastStepsPerSecond = 0;
 
         // Set the initial simulation time to zero
         updateMultiTickExternalSimulationTime();
