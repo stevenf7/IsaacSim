@@ -1007,6 +1007,11 @@ cpp.files.exclude = [
   "tools/container/**",
 ]
 
+python.files.include = [
+  "**",
+  ".cursor/**",
+]
+
 python.files.exclude = [
   "_build/*",
   "_compiler/*",

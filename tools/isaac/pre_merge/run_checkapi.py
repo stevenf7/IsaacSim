@@ -273,8 +273,8 @@ def run(extension_names: list[str], config: str, check: bool, verbose: bool, lis
     analyzer = APIAnalyzer(
         search_paths,
         public_modules=public_modules,
-        skip_packages=[],
-        skip_toplevel_packages=[],
+        skip_packages=["tests"],
+        skip_toplevel_packages=["pxr", "pip_requests", "pip_debugpy", "debugpy", "ext_template", "idl"],
         strict_mode=False,
     )
 

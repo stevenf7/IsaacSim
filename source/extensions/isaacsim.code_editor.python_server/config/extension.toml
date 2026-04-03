@@ -1,5 +1,5 @@
 [package]
-version = "1.1.0"
+version = "1.2.1"
 category = "Utility"
 title = "Python Server"
 description = "TCP socket server for remote Python code execution in Isaac Sim"
@@ -26,6 +26,12 @@ exts."isaacsim.code_editor.python_server".port = 8226
 # Whether to publish incoming carb logging messages.
 # Warning: enabling this feature may cause the application to freeze in certain circumstances.
 exts."isaacsim.code_editor.python_server".carb_logs = false
+# Global default execution timeout in seconds. 0 = no timeout.
+# Individual requests can override this via the JSON envelope "timeout" field.
+exts."isaacsim.code_editor.python_server".execution_timeout = 0
+# Keepalive interval in seconds. When non-zero, responses for executions that exceed
+# this duration include an "elapsed_seconds" field. 0 = disabled.
+exts."isaacsim.code_editor.python_server".keepalive_interval = 0
 
 [[test]]
 timeout = 300

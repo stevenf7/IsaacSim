@@ -23,6 +23,8 @@ This script:
 5. Returns appropriate status code (nonzero if exceptions, zero otherwise)
 """
 
+from __future__ import annotations
+
 import argparse
 import asyncio
 import csv
@@ -133,7 +135,6 @@ def parse_expected_failures_csv(csv_path, base_dir, snippets_root=None):
     if snippets_root is None:
         snippets_root = base_dir
     entries = []
-    resolve_dir = snippets_dir if snippets_dir is not None else base_dir
     csv_file = Path(csv_path)
     if not csv_file.is_absolute():
         csv_file = base_dir / csv_file
@@ -309,6 +310,12 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app):
         # Execute the module
         spec.loader.exec_module(module)
 
+    except SystemExit as e:
+        # Snippets must not call sys.exit(); treat as a test failure.
+        exceptions.append(RuntimeError(f"Snippet called sys.exit({e.code!r}). Snippets must not call sys.exit()."))
+    except KeyboardInterrupt:
+        # Don't let a stray KeyboardInterrupt from a snippet kill the whole harness.
+        exceptions.append(RuntimeError("KeyboardInterrupt raised during snippet execution."))
     except Exception as e:
         exceptions.append(e)
     finally:

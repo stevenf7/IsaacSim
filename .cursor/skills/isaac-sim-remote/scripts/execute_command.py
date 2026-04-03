@@ -11,7 +11,6 @@ Injected globals (via isaacsim_send.py --arg):
     undo_last: str — If "true", undo the last command instead of running one.
 """
 
-
 if "action" not in dir():
     action = "run"
 if "command_name" not in dir():

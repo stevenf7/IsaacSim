@@ -9,7 +9,6 @@ Injected globals (via isaacsim_send.py --arg):
     template: str — Stage template for "new" action (default: "empty"). Options: "empty", "default".
 """
 
-
 if "action" not in dir():
     action = "open"
 if "usd_path" not in dir():

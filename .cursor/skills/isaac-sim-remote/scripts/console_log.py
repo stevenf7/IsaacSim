@@ -10,7 +10,6 @@ Injected globals (via isaacsim_send.py --arg):
     level: str — Filter by log level for "errors": "error" (default), "warn", "all".
 """
 
-
 if "action" not in dir():
     action = "tail"
 if "num_lines" not in dir():

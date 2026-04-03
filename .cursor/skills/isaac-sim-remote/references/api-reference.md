@@ -272,31 +272,61 @@ xp.set_local_scales(np.array([[2, 2, 2]], dtype=np.float32))
 xp.reset_xform_op_properties()
 ```
 
-**Note:** `xform.set_world_pose()` raises `NotImplementedError` for USD backend.
-Use `XformPrim.set_world_poses()` instead.
+**Notes:**
+- `xform.set_world_pose()` raises `NotImplementedError` for USD backend. Use `XformPrim.set_world_poses()`.
+- Parameter name is `positions` for `set_world_poses()` but `translations` for `set_local_poses()`:
+  - `xp.set_world_poses(positions=..., orientations=...)`
+  - `xp.set_local_poses(translations=..., orientations=...)`
+- Both take `np.ndarray` with shape `(N, 3)` for positions/translations and `(N, 4)` for orientations (wxyz).
 
 ## Camera Control
 
+### ViewportManager (recommended)
+
+Use `ViewportManager.set_camera_view()` for reliable camera positioning. It handles
+the viewport's center-of-interest (COI) attribute correctly and works with the
+viewport camera controller (which overrides raw xform ops on perspective cameras).
+
 ```python
-from omni.kit.viewport.utility import get_active_viewport
+from isaacsim.core.rendering_manager import ViewportManager
+import isaacsim.core.experimental.utils.app as app_utils
+
+# Set eye (camera position) and target (look-at point)
+ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[2.5, -2.0, 1.8], target=[0, 0, 0.4])
+app_utils.update_app(steps=30)
+
+# Other viewport operations
+ViewportManager.get_resolution()                        # (1280, 720)
+ViewportManager.set_resolution((1920, 1080))
+ViewportManager.set_camera("/OmniverseKit_Top")         # switch to top view
+ViewportManager.get_camera()                            # UsdGeom.Camera
+```
+
+### Camera properties
+
+```python
 from isaacsim.core.experimental.objects import Camera
-from isaacsim.core.experimental.prims import XformPrim
+import numpy as np
 
-# Get active camera
-vp = get_active_viewport()
-cam_path = vp.camera_path  # Sdf.Path, e.g. /OmniverseKit_Persp
-
-# Move camera
-xp = XformPrim(paths=str(cam_path))
-xp.reset_xform_op_properties()
-xp.set_world_poses(positions=np.array([[10, 10, 10]], dtype=np.float32),
-                    orientations=np.array([[1, 0, 0, 0]], dtype=np.float32))
-
-# Camera properties
-cam = Camera(paths=str(cam_path))
+cam = Camera(paths="/OmniverseKit_Persp")
 cam.set_focal_lengths(np.array([35.0]))
 cam.get_clipping_ranges()
 ```
+
+### 3D-to-screen projection
+
+Convert world coordinates to app screen pixels (for cursor tracking in recordings).
+Uses `isaacsim.test.utils.viewport_utils.project_world_to_screen`:
+
+```python
+from isaacsim.test.utils.viewport_utils import project_world_to_screen
+
+# Project a world point to app-window screen coordinates
+screen_x, screen_y = project_world_to_screen((0.0, 0.0, 0.5))
+```
+
+The function handles viewport view/projection matrix transposition, NDC conversion,
+render-to-window pixel scaling, and toolbar height offset automatically.
 
 ## Kit Commands
 
@@ -336,6 +366,181 @@ log_file = carb.settings.get_settings().get("/log/file")
 # Read log_file for debugging errors
 ```
 
+## Interactive Examples Browser
+
+### High-level API
+
+```python
+from isaacsim.examples.browser import (
+    get_examples,
+    find_example,
+    get_example_sample,
+)
+
+# List all registered examples (dict of category -> list of names)
+for cat, names in get_examples().items():
+    print(f"{cat}: {names}")
+
+# Find a specific example (returns ExampleDetailItem or None)
+item = find_example("General", "Hello World")
+if item:
+    # Execute its entrypoint
+    item.example.execute_entrypoint()
+
+# Get the BaseSample object for BaseSampleUITemplate-based examples
+sample = get_example_sample("General", "Hello World")
+if sample:
+    await sample.load_world_async()
+    await sample.reset_async()
+    await sample.clear_async()
+```
+
+### Button discovery and deferred clicks (isaacsim.test.utils.button_utils)
+
+Generic utilities for discovering and clicking UI buttons. These work with any
+`BaseSampleUITemplate` example regardless of specific button names.
+
+```python
+from isaacsim.test.utils.button_utils import (
+    discover_template_buttons,
+    deferred_click,
+    deferred_click_widget,
+    get_widget_screen_center,
+)
+
+# Discover all buttons on a template (merges _buttons + task_ui_elements)
+template = detail.example.ui_hook.__self__
+buttons = discover_template_buttons(template)
+for name in buttons:
+    print(name)  # e.g. "Load World", "Reset", "Start Party", etc.
+
+# Get screen coordinates for any widget
+cx, cy = get_widget_screen_center(buttons["Load World"])
+
+# Deferred click — fires on the NEXT event loop cycle
+deferred_click_widget(buttons["Load World"])
+# RETURN from the server call — click fires after the server releases the loop
+
+# Or click by raw coordinates
+deferred_click(400, 300)
+```
+
+Button callbacks use `asyncio.ensure_future()` internally. The python_server holds
+the event loop, so the callback cannot run during the same TCP call. Deferred clicks
+schedule via `asyncio.ensure_future()` to fire after the server returns — exactly
+how a real human mouse click arrives via the OS event queue.
+
+**What doesn't need deferred clicks:** `await sample.load_world_async()` runs in the
+same event loop task (no reentrancy) — this is the code path used by `example_browser.py`.
+
+## Asset Root Configuration
+
+```python
+import carb.settings
+
+s = carb.settings.get_settings()
+
+# Read current asset root
+current = s.get("/persistent/isaac/asset_root/default")
+
+# Set to staging (recommended for 6.x builds)
+s.set("/persistent/isaac/asset_root/default",
+      "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0")
+
+# Set to production
+s.set("/persistent/isaac/asset_root/default",
+      "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.0")
+
+# Verify
+from isaacsim.storage.native import get_assets_root_path
+result = get_assets_root_path()
+```
+
+## Frame Sequence Capture
+
+```python
+from isaacsim.test.utils.image_capture import capture_frame_sequence_async
+
+# Capture 60 frames of the full app (including UI chrome)
+paths = await capture_frame_sequence_async("/tmp/recording", num_frames=60)
+
+# Capture viewport-only frames with more simulation steps between captures
+paths = await capture_frame_sequence_async(
+    "/tmp/recording", num_frames=30, updates_per_frame=4, mode="viewport"
+)
+
+# Capture RGB at 1080p from a specific camera via replicator
+paths = await capture_frame_sequence_async(
+    "/tmp/recording",
+    num_frames=60,
+    mode="replicator",
+    resolution=(1920, 1080),
+    camera_prim_path="/World/Camera",
+)
+
+# Capture depth frames via replicator (saves as .npy)
+paths = await capture_frame_sequence_async(
+    "/tmp/depth_recording",
+    num_frames=30,
+    mode="replicator",
+    annotator_name="distance_to_camera",
+)
+
+# Reuse an existing render product
+import omni.replicator.core as rep
+rp = rep.create.render_product("/World/Camera", (1920, 1080))
+paths = await capture_frame_sequence_async(
+    "/tmp/recording",
+    num_frames=60,
+    mode="replicator",
+    render_product=rp,
+)
+rp.destroy()  # caller owns the render product
+```
+
+## Visual Menu Navigation (for video capture)
+
+```python
+from isaacsim.test.utils.menu_utils import navigate_menu_visual
+
+# Simple navigation and click
+await navigate_menu_visual("Create/Mesh/Cube")
+
+# With per-frame callback for recording
+positions = []
+async def on_frame(x, y):
+    positions.append((x, y))
+    # Capture screenshot, log cursor, etc.
+
+await navigate_menu_visual(
+    "Create/Physics/Ground Plane",
+    hover_frames=6,          # intermediate menu items
+    leaf_hover_frames=12,    # final item before click
+    on_frame=on_frame,
+)
+```
+
+Uses L-shaped cursor movement (horizontal then vertical) to keep submenus open.
+Diagonal movement causes the cursor to exit the menu bounds, closing submenus.
+
+## Mouse Drag and Gizmo Interaction
+
+```python
+from omni.kit.ui_test import Vec2, emulate_mouse_drag_and_drop, emulate_mouse_move_and_click
+
+# Click to select an object (e.g. in viewport)
+await emulate_mouse_move_and_click(Vec2(screen_x, screen_y))
+
+# Drag transform gizmo (reliable for all gizmo axes)
+start = Vec2(gizmo_x, gizmo_y)       # gizmo handle position
+end = Vec2(gizmo_x, gizmo_y - 100)   # drag upward for Z axis
+await emulate_mouse_drag_and_drop(start, end)
+```
+
+For gizmo screen positions, either:
+1. Use 3D-to-screen projection (see Camera Control section above)
+2. Place cursor at known object position + offset for the axis handle
+
 ## Common Menu Paths
 
 These are typical paths in Isaac Sim (may vary by configuration):
@@ -349,5 +554,5 @@ These are typical paths in Isaac Sim (may vary by configuration):
 - `Create/Physics/Ground Plane` — Add ground plane
 - `Create/Physics/Physics Scene` — Add physics scene
 - `Edit/Capture Screenshot` — Built-in screenshot (F10)
-- `Isaac Examples/...` — Various Isaac Sim example scenes
+- `Window/Examples/Robotics Examples` — Open the examples browser
 - `Tools/...` — Various tool windows

@@ -15,6 +15,9 @@
 
 """Utilities for testing Isaac Sim applications including image comparison, file validation, and UI testing."""
 
+from __future__ import annotations
+
+from typing import Any
 
 import carb.settings
 
@@ -36,7 +39,7 @@ def _is_pycoverage_enabled() -> bool:
         return False
 
 
-def _apply_numpy_copymode_coverage_patch():
+def _apply_numpy_copymode_coverage_patch() -> None:
     """Wrap ``np.array`` to translate ``_CopyMode`` enum values for ``copy``.
 
     When coverage is enabled, scipy's ``array_api_compat`` layer passes
@@ -71,7 +74,7 @@ def _apply_numpy_copymode_coverage_patch():
 
         _original_array = np.array
 
-        def _patched_array(*args, **kwargs):
+        def _patched_array(*args: Any, **kwargs: Any) -> Any:
             if "copy" in kwargs and isinstance(kwargs["copy"], _CopyMode):
                 kwargs["copy"] = _COPYMODE_MAP.get(kwargs["copy"], kwargs["copy"])
             return _original_array(*args, **kwargs)
@@ -82,7 +85,7 @@ def _apply_numpy_copymode_coverage_patch():
         pass
 
 
-def _apply_numpy_coverage_patch():
+def _apply_numpy_coverage_patch() -> None:
     """Apply patches to NumPy methods to handle coverage.py's _NoValueType sentinels.
 
     This patches NumPy's core methods (_amax, _amin, _sum, _prod) to properly handle
@@ -104,11 +107,13 @@ def _apply_numpy_coverage_patch():
     original_sum = npm._sum
     original_prod = npm._prod
 
-    def _is_no_value_type(obj) -> bool:
+    def _is_no_value_type(obj: Any) -> bool:
         """Check if an object is coverage.py's _NoValueType sentinel."""
         return hasattr(obj, "__class__") and obj.__class__.__name__ == "_NoValueType"
 
-    def _coverage_amax(a, axis=None, out=None, keepdims=False, initial=None, where=True):
+    def _coverage_amax(
+        a: Any, axis: Any = None, out: Any = None, keepdims: Any = False, initial: Any = None, where: Any = True
+    ) -> Any:
         """Handle coverage.py _NoValueType sentinels in max operations."""
         try:
             result = original_amax(a, axis, out, keepdims, initial, where)
@@ -124,7 +129,9 @@ def _apply_numpy_coverage_patch():
                 return np.array([max(row) for row in np.atleast_2d(a)])
             raise
 
-    def _coverage_amin(a, axis=None, out=None, keepdims=False, initial=None, where=True):
+    def _coverage_amin(
+        a: Any, axis: Any = None, out: Any = None, keepdims: Any = False, initial: Any = None, where: Any = True
+    ) -> Any:
         """Handle coverage.py _NoValueType sentinels in min operations."""
         try:
             result = original_amin(a, axis, out, keepdims, initial, where)
@@ -140,7 +147,15 @@ def _apply_numpy_coverage_patch():
                 return np.array([min(row) for row in np.atleast_2d(a)])
             raise
 
-    def _coverage_sum(a, axis=None, dtype=None, out=None, keepdims=False, initial=0, where=True):
+    def _coverage_sum(
+        a: Any,
+        axis: Any = None,
+        dtype: Any = None,
+        out: Any = None,
+        keepdims: Any = False,
+        initial: Any = 0,
+        where: Any = True,
+    ) -> Any:
         """Handle coverage.py _NoValueType sentinels in sum operations."""
         try:
             result = original_sum(a, axis, dtype, out, keepdims, initial, where)
@@ -156,7 +171,15 @@ def _apply_numpy_coverage_patch():
                 return np.array([sum(row) for row in np.atleast_2d(a)])
             raise
 
-    def _coverage_prod(a, axis=None, dtype=None, out=None, keepdims=False, initial=1, where=True):
+    def _coverage_prod(
+        a: Any,
+        axis: Any = None,
+        dtype: Any = None,
+        out: Any = None,
+        keepdims: Any = False,
+        initial: Any = 1,
+        where: Any = True,
+    ) -> Any:
         """Handle coverage.py _NoValueType sentinels in prod operations."""
         try:
             result = original_prod(a, axis, dtype, out, keepdims, initial, where)
@@ -190,15 +213,23 @@ if _is_pycoverage_enabled():
     _apply_numpy_copymode_coverage_patch()
     _apply_numpy_coverage_patch()
 
+from .button_utils import *
 from .file_validation import *
 from .image_capture import *
 from .image_comparison import *
 from .image_io import *
+from .layout_utils import *
 from .menu_ui_test import *
 from .menu_utils import *
+from .stage_utils import *
 from .timed_async_test import *
+from .viewport_utils import *
 
 __all__ = [
+    "get_widget_screen_center",
+    "deferred_click",
+    "deferred_click_widget",
+    "discover_template_buttons",
     "validate_folder_contents",
     "get_folder_file_summary",
     "validate_file_list",
@@ -208,6 +239,7 @@ __all__ = [
     "capture_viewport_annotator_data_async",
     "capture_app_screenshot_async",
     "capture_viewport_screenshot_async",
+    "capture_frame_sequence_async",
     "compute_difference_metrics",
     "print_difference_statistics",
     "compare_arrays_within_tolerances",
@@ -217,6 +249,13 @@ __all__ = [
     "save_depth_image",
     "save_annotator_data",
     "read_image_as_array",
+    "close_windows",
+    "ensure_dock_height",
+    "ensure_dock_height_async",
+    "ensure_window_visible",
+    "ensure_window_visible_async",
+    "reset_to_default_layout",
+    "reset_to_default_layout_async",
     "MenuUITestCase",
     "find_widget_with_retry",
     "find_enabled_widget_with_retry",
@@ -226,5 +265,13 @@ __all__ = [
     "perform_widget_action",
     "get_all_menu_paths",
     "count_menu_items",
+    "navigate_menu_visual",
+    "poll_until",
+    "poll_until_async",
+    "wait_for_prim",
+    "wait_for_prim_async",
+    "wait_for_stage_prims",
+    "wait_for_stage_prims_async",
+    "project_world_to_screen",
     "TimedAsyncTestCase",
 ]

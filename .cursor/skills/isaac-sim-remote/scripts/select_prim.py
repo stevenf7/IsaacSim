@@ -8,7 +8,6 @@ Injected globals (via isaacsim_send.py --arg):
     prim_path: str — Prim path to select (for "set" action). Comma-separated for multiple.
 """
 
-
 if "action" not in dir():
     action = "get"
 if "prim_path" not in dir():

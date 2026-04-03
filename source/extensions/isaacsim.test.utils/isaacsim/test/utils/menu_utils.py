@@ -15,19 +15,48 @@
 
 """Utilities for navigating and testing UI menus in Isaac Sim."""
 
+from __future__ import annotations
+
+from typing import Any
 
 import carb
 import omni.kit.app
 import omni.kit.ui_test as ui_test
 from omni import ui
-from omni.kit.ui_test import Vec2, emulate_mouse_move, get_menubar, wait_n_updates
+from omni.kit.ui_test import Vec2, emulate_mouse_move, emulate_mouse_move_and_click, get_menubar, wait_n_updates
 
 # Maximum number of frames to poll when waiting for a widget to become
 # findable, enabled, or for a submenu to become visible after clicking.
 _DEFAULT_MAX_WAIT_FRAMES = 100
 
 
-async def find_widget_with_retry(query: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES, parent=None):
+async def _poll_async(check_fn: callable, max_frames: int, label: str = "") -> Any:
+    """Poll *check_fn* each frame until it returns a truthy value.
+
+    Args:
+        check_fn: Callable returning a truthy value on success, falsy on failure.
+        max_frames: Maximum number of app-update frames to poll.
+        label: Label for log messages.
+
+    Returns:
+        The first truthy value from *check_fn*, or ``None`` if timed out.
+    """
+    for frame in range(max_frames):
+        result = check_fn()
+        if result:
+            if frame > 0:
+                carb.log_info(f"[{label}] succeeded after {frame} extra frame(s)")
+            return result
+        await omni.kit.app.get_app().next_update_async()
+    return None
+
+
+def _ui_find(query: str, parent: Any = None) -> Any:
+    """Find a widget, optionally scoped to *parent*."""
+    return parent.find(query) if parent is not None else ui_test.find(query)
+
+
+async def find_widget_with_retry(query: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES, parent: Any = None) -> Any:
     """Poll ``ui_test.find`` until the widget is found or *max_frames* is exceeded.
 
     This is useful when a UI element may not be immediately available after a
@@ -47,18 +76,13 @@ async def find_widget_with_retry(query: str, max_frames: int = _DEFAULT_MAX_WAIT
     Raises:
         TimeoutError: If the widget is not found within *max_frames*.
     """
-    for frame in range(max_frames):
-        result = parent.find(query) if parent is not None else ui_test.find(query)
-        if result is not None:
-            if frame > 0:
-                carb.log_info(f"[find_widget_with_retry] find('{query}') succeeded after {frame} extra frame(s)")
-            return result
-        await omni.kit.app.get_app().next_update_async()
-
-    raise TimeoutError(f"Widget '{query}' not found after {max_frames} frames")
+    result = await _poll_async(lambda: _ui_find(query, parent), max_frames, "find_widget_with_retry")
+    if result is None:
+        raise TimeoutError(f"Widget '{query}' not found after {max_frames} frames")
+    return result
 
 
-async def wait_for_widget_enabled(widget, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES) -> bool:
+async def wait_for_widget_enabled(widget: Any, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES) -> bool:
     """Poll until ``widget.widget.enabled`` becomes True.
 
     Args:
@@ -69,16 +93,13 @@ async def wait_for_widget_enabled(widget, max_frames: int = _DEFAULT_MAX_WAIT_FR
     Returns:
         True if the widget became enabled within *max_frames*, False otherwise.
     """
-    for frame in range(max_frames):
-        if widget.widget.enabled:
-            if frame > 0:
-                carb.log_info(f"[wait_for_widget_enabled] widget became enabled after {frame} extra frame(s)")
-            return True
-        await omni.kit.app.get_app().next_update_async()
-    return False
+    result = await _poll_async(lambda: widget.widget.enabled or None, max_frames, "wait_for_widget_enabled")
+    return result is not None
 
 
-async def find_enabled_widget_with_retry(query: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES, parent=None):
+async def find_enabled_widget_with_retry(
+    query: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES, parent: Any = None
+) -> Any:
     """Poll ``ui_test.find`` until the widget is found **and** enabled.
 
     Combines :func:`find_widget_with_retry` with an enabled check in a single
@@ -96,17 +117,15 @@ async def find_enabled_widget_with_retry(query: str, max_frames: int = _DEFAULT_
     Raises:
         TimeoutError: If the widget is not found and enabled within *max_frames*.
     """
-    for frame in range(max_frames):
-        result = parent.find(query) if parent is not None else ui_test.find(query)
-        if result is not None and result.widget.enabled:
-            if frame > 0:
-                carb.log_info(
-                    f"[find_enabled_widget_with_retry] find('{query}') succeeded after {frame} extra frame(s)"
-                )
-            return result
-        await omni.kit.app.get_app().next_update_async()
 
-    raise TimeoutError(f"Widget '{query}' not found or not enabled after {max_frames} frames")
+    def _check() -> Any:
+        r = _ui_find(query, parent)
+        return r if r is not None and r.widget.enabled else None
+
+    result = await _poll_async(_check, max_frames, "find_enabled_widget_with_retry")
+    if result is None:
+        raise TimeoutError(f"Widget '{query}' not found or not enabled after {max_frames} frames")
+    return result
 
 
 async def perform_widget_action(
@@ -181,7 +200,7 @@ async def perform_widget_action(
     return {}
 
 
-async def _wait_for_menu_item(parent_widget, menu_name: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES):
+async def _wait_for_menu_item(parent_widget: Any, menu_name: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES) -> Any:
     """Poll until ``parent_widget.find_menu(menu_name)`` returns a non-None result.
 
     Args:
@@ -192,19 +211,10 @@ async def _wait_for_menu_item(parent_widget, menu_name: str, max_frames: int = _
     Returns:
         The found ``MenuRef``, or ``None`` if not found within *max_frames*.
     """
-    for frame in range(max_frames):
-        result = parent_widget.find_menu(menu_name)
-        if result is not None:
-            if frame > 0:
-                carb.log_info(
-                    f"[menu_click_with_retry] find_menu('{menu_name}') " f"succeeded after {frame} extra frame(s)"
-                )
-            return result
-        await omni.kit.app.get_app().next_update_async()
-    return None
+    return await _poll_async(lambda: parent_widget.find_menu(menu_name), max_frames, "menu_click_with_retry")
 
 
-async def _wait_for_shown(menu_widget, menu_name: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES) -> bool:
+async def _wait_for_shown(menu_widget: Any, menu_name: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES) -> bool:
     """Poll until ``menu_widget.widget.shown`` becomes True.
 
     Args:
@@ -215,13 +225,10 @@ async def _wait_for_shown(menu_widget, menu_name: str, max_frames: int = _DEFAUL
     Returns:
         True if the menu became shown, False if timed out.
     """
-    for frame in range(max_frames):
-        if menu_widget.widget.shown:
-            if frame > 0:
-                carb.log_info(f"[menu_click_with_retry] '{menu_name}' became shown " f"after {frame} extra frame(s)")
-            return True
-        await omni.kit.app.get_app().next_update_async()
-    return False
+    result = await _poll_async(
+        lambda: True if menu_widget.widget.shown else None, max_frames, f"menu_click_with_retry/{menu_name}"
+    )
+    return result is not None
 
 
 async def _navigate_menu(menu_path: str, human_delay_speed: int = 10) -> bool:
@@ -290,7 +297,7 @@ async def _navigate_menu(menu_path: str, human_delay_speed: int = 10) -> bool:
 
 async def menu_click_with_retry(
     menu_path: str, delays: list[int] = None, window_name: str = None, wait_n_frames: int = 10
-):
+) -> Any:
     """Click a menu item with retry at different delay speeds.
 
     First attempts a direct programmatic click via ``omni.kit.ui_test.menu_click``
@@ -423,7 +430,7 @@ def list_menu_paths(max_depth: int = 3) -> list[str]:
 
     paths: list[str] = []
 
-    def _walk(widget_ref, prefix: str, depth: int) -> None:
+    def _walk(widget_ref: Any, prefix: str, depth: int) -> None:
         if depth > max_depth:
             return
         for child in widget_ref.find_all("*"):
@@ -488,6 +495,134 @@ def get_all_menu_paths(menu_dict: dict, current_path: str = "", root_path: str =
             path = f"{current_path}/{key}/{value}" if current_path else f"{key}/{value}"
             paths.append(f"{root_path}/{path}" if root_path else path)
     return paths
+
+
+async def navigate_menu_visual(
+    menu_path: str,
+    *,
+    hover_frames: int = 5,
+    leaf_hover_frames: int = 10,
+    on_frame: callable = None,
+) -> bool:
+    """Navigate a menu hierarchy with visual cursor movement suitable for video capture.
+
+    Unlike :func:`menu_click_with_retry`, this function moves the emulated mouse through
+    each menu level using an L-shaped path (horizontal then vertical) that keeps the
+    cursor inside menu bounds and prevents submenus from closing prematurely. At each
+    step, an optional callback is invoked to allow frame capture or cursor logging.
+
+    Args:
+        menu_path: Slash-separated menu path (e.g. ``"Create/Mesh/Cube"``).
+        hover_frames: Number of frames to dwell on intermediate menu items.
+        leaf_hover_frames: Number of frames to dwell on the final item before clicking.
+        on_frame: Optional async callback ``async def(x, y)`` invoked after each
+            mouse move or hover frame, receiving the current cursor position.
+            Use this to capture screenshots or log cursor positions.
+
+    Returns:
+        True if the menu was successfully navigated and clicked, False otherwise.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from isaacsim.test.utils.menu_utils import navigate_menu_visual
+        >>>
+        >>> positions = []
+        >>> async def log_pos(x, y):
+        ...     positions.append((x, y))
+        >>>
+        >>> await navigate_menu_visual("Create/Mesh/Cube", on_frame=log_pos)
+        True
+    """
+    menu_widget = get_menubar()
+    if menu_widget is None:
+        carb.log_error("[navigate_menu_visual] No menubar found")
+        return False
+
+    segments = menu_path.split("/")
+    current_widget = menu_widget
+    cursor_x, cursor_y = 0.0, 0.0
+
+    async def _notify(x: float, y: float) -> None:
+        nonlocal cursor_x, cursor_y
+        cursor_x, cursor_y = x, y
+        if on_frame is not None:
+            await on_frame(x, y)
+
+    for idx, name in enumerate(segments):
+        # Find the menu item
+        child = await _wait_for_menu_item(current_widget, name)
+        if child is None:
+            carb.log_info(f"[navigate_menu_visual] could not find '{name}' in '{menu_path}'")
+            return False
+
+        cx, cy = child.center.x, child.center.y
+        is_last = idx == len(segments) - 1
+
+        if idx == 0:
+            # Top-level: smooth move from current position
+            steps = 5
+            sx, sy = cursor_x, cursor_y
+            for s in range(1, steps + 1):
+                t = s / steps
+                ix = sx + (cx - sx) * t
+                iy = sy + (cy - sy) * t
+                await emulate_mouse_move(Vec2(ix, iy))
+                await omni.kit.app.get_app().next_update_async()
+                await _notify(ix, iy)
+        else:
+            # Submenu: L-shaped move (horizontal first, then vertical)
+            old_x, old_y = cursor_x, cursor_y
+            h_steps = 2
+            for s in range(1, h_steps + 1):
+                t = s / h_steps
+                ix = old_x + (cx - old_x) * t
+                await emulate_mouse_move(Vec2(ix, old_y))
+                await omni.kit.app.get_app().next_update_async()
+                await _notify(ix, old_y)
+            v_steps = 2
+            for s in range(1, v_steps + 1):
+                t = s / v_steps
+                iy = old_y + (cy - old_y) * t
+                await emulate_mouse_move(Vec2(cx, iy))
+                await omni.kit.app.get_app().next_update_async()
+                await _notify(cx, iy)
+
+        # Keep mouse on the item
+        await emulate_mouse_move(Vec2(cx, cy))
+
+        n_hover = leaf_hover_frames if is_last else hover_frames
+        for _ in range(n_hover):
+            await omni.kit.app.get_app().next_update_async()
+            await _notify(cx, cy)
+
+        if is_last:
+            # Click the leaf item
+            await emulate_mouse_move_and_click(Vec2(cx, cy))
+            for _ in range(5):
+                await omni.kit.app.get_app().next_update_async()
+        else:
+            # Open the submenu
+            if isinstance(child.widget, ui.Menu):
+                if not child.widget.shown:
+                    await emulate_mouse_move_and_click(Vec2(cx, cy))
+                    await omni.kit.app.get_app().next_update_async()
+                    await emulate_mouse_move(Vec2(cx, cy))
+                for _ in range(30):
+                    if child.widget.shown:
+                        break
+                    await omni.kit.app.get_app().next_update_async()
+                # Keep mouse on parent to stabilize submenu
+                for _ in range(3):
+                    await emulate_mouse_move(Vec2(cx, cy))
+                    await omni.kit.app.get_app().next_update_async()
+
+        current_widget = child
+        await _notify(cx, cy)
+
+    carb.log_info(f"[navigate_menu_visual] completed: '{menu_path}'")
+    return True
 
 
 def count_menu_items(menu_dict: dict) -> int:
