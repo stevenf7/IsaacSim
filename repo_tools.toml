@@ -193,4 +193,12 @@ entry_point = "${config_root}/tools/isaac/format_lua.py:setup_repo_tool"
 command = "run_python_linting"
 entry_point = "${config_root}/tools/isaac/pre_merge/run_python_linting.py:setup_repo_tool"
 
+########################################################################################################################
+# Extension Templates
+########################################################################################################################
+
+[repo_kit_template]
+command = "template"
+entry_point = "omni.repo.kit_template.main:setup_repo_tool"
+
 # AUTOREMOVE: END

@@ -66,7 +66,7 @@ Extensions and the GUI
 
 The **GUI workflow** uses a collection of extensions that are loaded by default at the start of |isaac-sim_short|. These are general tools that are frequently used when building virtual worlds, robots, examining physics, rendering, material properties, profiling performance, and include tools for visual programming, for managing USD stage and assets, and for Robotics applications. 
 
-**Next steps**: Learn how an extension is built with :ref:`isaac_sim_app_custom_interactive_examples`, as well as our interactive examples in the :ref:`Examples Browser <isaac_sim_app_intro_examples>`, all of which are extension-based. 
+**Next steps**: Learn how to build your own extension with our :ref:`Templates <isaac_sim_templates>`, and explore our interactive examples in the :ref:`Examples Browser <isaac_sim_app_intro_examples>`, all of which are extension-based. 
 
 Python Standalone and in an Extension 
 -------------------------------------------
