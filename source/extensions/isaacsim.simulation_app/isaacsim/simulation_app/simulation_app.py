@@ -427,7 +427,61 @@ class SimulationApp:
         """Automatically close the application during interpreter shutdown if close() was not called."""
         if not self._exiting:
             carb.log_warn("SimulationApp.close() was not called explicitly. Shutting down automatically")
-            self.close()
+            self.close(wait_for_replicator=False)
+
+    @staticmethod
+    def _start_watchdog(timeout_s: int, reason: str):
+        """Start a watchdog that forcibly kills this process after *timeout_s* seconds.
+
+        On Linux a forked child process is used because it is immune to GIL
+        starvation and signal masking — exactly the conditions that cause the
+        native-thread deadlocks we are guarding against (NVBug 5948099).
+
+        On Windows ``os.fork`` is unavailable, so a daemon thread is used
+        instead.  The glibc destructor deadlocks that motivate the fork do not
+        apply on Windows, so a thread is sufficient.
+
+        Returns an opaque handle to pass to ``_cancel_watchdog``.
+        """
+        import threading
+
+        parent_pid = os.getpid()
+
+        def _kill_parent():
+            print(
+                f"\033[91mSimulationApp: {reason} hung for {timeout_s}s, " f"force-killing pid {parent_pid}\033[0m",
+                flush=True,
+            )
+            os._exit(1)
+
+        if hasattr(os, "fork"):
+            child_pid = os.fork()
+            if child_pid == 0:
+                try:
+                    time.sleep(timeout_s)
+                    _kill_parent()
+                except OSError:
+                    pass
+                os._exit(0)
+            return ("fork", child_pid)
+
+        timer = threading.Timer(timeout_s, _kill_parent)
+        timer.daemon = True
+        timer.start()
+        return ("timer", timer)
+
+    @staticmethod
+    def _cancel_watchdog(handle) -> None:
+        """Cancel a watchdog previously started by ``_start_watchdog``."""
+        kind, ref = handle
+        if kind == "fork":
+            try:
+                os.kill(ref, signal.SIGKILL)
+                os.waitpid(ref, 0)
+            except OSError:
+                pass
+        else:
+            ref.cancel()
 
     ### Private methods
 
@@ -881,6 +935,16 @@ class SimulationApp:
             carb.log_info("SimulationApp.close: app already stopped, skipping framework shutdown")
             if self.config.get("fast_shutdown", False):
                 self._app.print_and_log("Simulation App Shutting Down")
+                # Unload plugins before os._exit() so native thread pools are
+                # torn down cleanly — a bare os._exit(0) triggers glibc
+                # destructors that deadlock on blocked threads (NVBug 5948099).
+                _watchdog = self._start_watchdog(30, "plugin unload")
+                try:
+                    self._framework.unload_all_plugins()
+                except Exception:
+                    pass
+                finally:
+                    self._cancel_watchdog(_watchdog)
                 os._exit(0)
             return
 
@@ -919,22 +983,26 @@ class SimulationApp:
         self._exiting = True
         self._app.print_and_log("Simulation App Shutting Down")
 
-        # Cleanup any running tracy intances so data is not lost
+        # The entire shutdown sequence (tracy cleanup + shutdown_and_release_framework)
+        # can deadlock when native thread pools block during teardown (NVBug 5948099).
+        _watchdog = self._start_watchdog(120, "shutdown")
         try:
-            _profiler_tracy = carb.profiler.acquire_profiler_interface(plugin_name="carb.profiler-tracy.plugin")
-            if _profiler_tracy:
-                _profiler_tracy.set_capture_mask(0)
-                _profiler_tracy.end(0)
-                _profiler_tracy.shutdown()
-        except RuntimeError:
-            # Tracy plugin was not loaded, so profiler never started - skip checks.
-            pass
-        carb.log_info("SimulationApp.close: shutting down app and releasing framework")
-        # Disable logging before shutdown to keep the log clean
-        # Warnings at this point don't matter as the python process is about to be terminated
-        _logging = carb.logging.acquire_logging()
-        _logging.set_log_enabled(False)
-        self._app.shutdown_and_release_framework()
+            # Cleanup any running tracy instances so data is not lost
+            try:
+                _profiler_tracy = carb.profiler.acquire_profiler_interface(plugin_name="carb.profiler-tracy.plugin")
+                if _profiler_tracy:
+                    _profiler_tracy.set_capture_mask(0)
+                    _profiler_tracy.end(0)
+                    _profiler_tracy.shutdown()
+            except RuntimeError:
+                pass
+
+            carb.log_info("SimulationApp.close: shutting down app and releasing framework")
+            _logging = carb.logging.acquire_logging()
+            _logging.set_log_enabled(False)
+            self._app.shutdown_and_release_framework()
+        finally:
+            self._cancel_watchdog(_watchdog)
 
     def is_running(self) -> bool:
         """Check if the simulation application is currently running.
