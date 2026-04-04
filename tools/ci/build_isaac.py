@@ -9,11 +9,12 @@
 # its affiliates is strictly prohibited.
 import argparse
 import os
+import platform
 import sys
 from typing import Callable, Dict
 
-
 import omni.repo.ci
+
 from tools.ci.upstream_kit_build.arbitrate_kit_upstream import arbitrate_kit_upstream
 
 
@@ -31,8 +32,6 @@ def main(args: argparse.Namespace):
 
     downstream_pipeline = os.getenv("CI_PIPELINE_SOURCE", "") == "pipeline"
 
-
-
     build_config = args.build_config
 
     extra_flags = []
@@ -43,11 +42,11 @@ def main(args: argparse.Namespace):
     if not omni.repo.ci.is_windows():
         extra_flags.append("--no-docker")
 
-
     if os.getenv("USE_VS_2026") == "true":
         # First we need to inject a new packman xml file to pull msvc
         with open("./deps/msvc.packman.xml", "w") as f:
-            f.write("""
+            f.write(
+                """
 <project toolsVersion="5.0">
   <dependency name="msvc" linkPath="../_build/host-deps/msvc" tags="non-redist">
     <package name="msvc" version="2026-18.3.0" platforms="windows-x86_64" />
@@ -57,17 +56,20 @@ def main(args: argparse.Namespace):
     <package name="winsdk" version="10.0.17763.0" platforms="windows-x86_64" />
   </dependency>
 </project>
-""")
+"""
+            )
 
         with open("./repo.toml", "r") as repo_toml_in:
             repo_toml_data = repo_toml_in.read()
         with open("./repo.toml", "w") as repo_toml_out:
-            repo_toml_data = repo_toml_data.replace("fetch.packman_target_files_to_pull = [\n", 'fetch.packman_target_files_to_pull = [\n  "${root}/deps/msvc.packman.xml",\n')
+            repo_toml_data = repo_toml_data.replace(
+                "fetch.packman_target_files_to_pull = [\n",
+                'fetch.packman_target_files_to_pull = [\n  "${root}/deps/msvc.packman.xml",\n',
+            )
             # repo_toml_data = repo_toml_data.replace('"token:in_ci==true".vs_version = "vs2019"', '"token:in_ci==true".vs_version = "18"\n"token:in_ci==true".msvc_version = "14.50.35717"')
             # repo_toml_data = repo_toml_data.replace('"token:in_ci==true".vs_path = "C:\\\\vs2019"', '')
 
             repo_toml_out.write(repo_toml_data)
-
 
     build_cmd = ["${root}/repo${shell_ext}", "build", "-x"] + extra_flags
 
@@ -93,7 +95,6 @@ def main(args: argparse.Namespace):
     if build_config == "debug":
         repo_docs_enabled = False
 
-
     develop_kit_tot_pipeline = (
         os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME", "") == "develop-kit-tot"
         or os.getenv("CI_COMMIT_REF_NAME", "") == "develop-kit-tot"
@@ -111,8 +112,19 @@ def main(args: argparse.Namespace):
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "extension_toc"])
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "extension_docs"])
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "examples_list"])
-        omni.repo.ci.launch(["${root}/repo${shell_ext}", "docs", "--project", "api", "--config", build_config, "--warn-as-error=0"])
+        omni.repo.ci.launch(
+            ["${root}/repo${shell_ext}", "docs", "--project", "api", "--config", build_config, "--warn-as-error=0"]
+        )
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "docs", "-c", build_config])
+
+    # If docs were not built on linux-x86_64 release, create the expected docs output dir so packaging doesn't break.
+    if (
+        not repo_docs_enabled
+        and not omni.repo.ci.is_windows()
+        and build_config == "release"
+        and platform.machine() == "x86_64"
+    ):
+        os.makedirs("_build/docs/isaac-sim/latest/py", exist_ok=True)
 
     # store the debugging symbols for release builds only.
     if build_config == "release":
@@ -120,8 +132,6 @@ def main(args: argparse.Namespace):
         if os.getenv("CI_COMMIT_REF_PROTECTED") == "true":
             omni.repo.ci.launch(["${root}/repo${shell_ext}", "symstore", "--ttl-seconds", "259200"])
         omni.repo.ci.launch(["${root}/repo${shell_ext}", "symstore", "--process-mrs"], warning_only=True)
-
-
 
     # Package release
     omni.repo.ci.launch(["${root}/repo${shell_ext}", "package", "-m", "isaac-sim-standalone", "-c", build_config])
