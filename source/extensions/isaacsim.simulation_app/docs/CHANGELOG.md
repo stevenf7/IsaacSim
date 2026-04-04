@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.17.1] - 2026-04-02
+### Changed
+- Atexit handler now calls close(wait_for_replicator=False) to avoid hanging during interpreter shutdown
+- Added forked watchdog process in close() that sends SIGKILL on timeout to prevent indefinite hangs from native thread deadlocks
+- Unload plugins before os._exit() in fast_shutdown path to avoid glibc destructor deadlocks
+
 ## [2.17.0] - 2026-03-23
 ### Added
 - Emit telemetry event for app startup duration via isaacsim.core.telemetry
