@@ -286,6 +286,7 @@ sphinx_exclude_patterns = [
 
 doxygen_input = [
   "source/deprecated/isaacsim.core.utils/include/isaacsim/core/utils/PrimUtils.h",
+  "source/deprecated/isaacsim.robot.wheeled_robots/include/isaacsim/robot/wheeled_robots/IWheeledRobots.h",
   "source/deprecated/isaacsim.sensors.physics/include/isaacsim/sensors/physics/ContactManager.h",
   "source/deprecated/isaacsim.sensors.physics/include/isaacsim/sensors/physics/ContactSensor.h",
   "source/deprecated/isaacsim.sensors.physics/include/isaacsim/sensors/physics/IPhysicsSensor.h",
@@ -295,7 +296,6 @@ doxygen_input = [
   "source/deprecated/isaacsim.sensors.physics/include/isaacsim/sensors/physics/IsaacSensorTypes.h",
   "source/deprecated/isaacsim.sensors.rtx/include/isaacsim/sensors/rtx/IIsaacSimSensorsRtx.h",
   "source/deprecated/isaacsim.sensors.rtx/nodes/LidarConfigHelper.h",
-  "source/deprecated/isaacsim.robot.wheeled_robots/include/isaacsim/robot/wheeled_robots/IWheeledRobots.h",
   "source/extensions/isaacsim.asset.gen.conveyor/include/isaacsim/asset/gen/conveyor/IOmniIsaacConveyor.h",
   "source/extensions/isaacsim.asset.gen.omap/include/isaacsim/asset/gen/omap/IOccupancyMap.h",
   "source/extensions/isaacsim.asset.gen.omap/include/isaacsim/asset/gen/omap/MapGenerator.h",
@@ -303,6 +303,7 @@ doxygen_input = [
   "source/extensions/isaacsim.core.experimental.prims/include/isaacsim/core/experimental/prims/IPrimDataReader.h",
   "source/extensions/isaacsim.core.experimental.prims/include/isaacsim/core/experimental/prims/IPrimDataReaderManager.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/BaseResetNode.h",
+  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/BindingsPythonUtils.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Buffer.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Color.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Component.h",
@@ -914,9 +915,6 @@ exts_autosearch_paths = [
   "${root}/_build/${platform}/${config}/extsInternal",
 ]
 exts_exclude = [
-  "omni.usd.schema.omni_lens_distortion*",
-  "isaacsim.asset.exporter.urdf*",
-  "isaacsim.app.compatibility_check*",
   "omni.pip.compute",
   "omni.pip.cloud",
   "omni.isaac.core_archive",
@@ -924,8 +922,7 @@ exts_exclude = [
   "isaacsim.kit.xr.teleop.bridge",
 ]
 kit_extra_args = [
-  "--/app/extensions/isaacsim.asset.exporter.urdf/enabled=false",
-  "--/app/extensions/isaacsim.app.compatibility_check/enabled=false",
+  "--/app/extensions/fastImporter/enabled=1",
 ]
 stubgen_exclude = [
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle/torch",
@@ -934,7 +931,6 @@ stubgen_exclude = [
 ext_folders = [
   "${root}/_build/${platform}/${config}/exts",
   "${root}/_build/${platform}/${config}/extsDeprecated",
-  # "${root}/_build/${platform}/${config}/extsbuild",
   "${root}/_build/${platform}/${config}/extscache",
   "${root}/_build/${platform}/${config}/extsInternal",
 ]

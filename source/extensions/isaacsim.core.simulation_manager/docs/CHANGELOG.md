@@ -1,12 +1,13 @@
 # Changelog
 
+## [1.14.1] - 2026-04-03
+### Changed
+- Use local `BindingsPythonUtils.h` from `isaacsim.core.includes` instead of `carb/BindingsPythonUtils.h`
+- Refactored stage event subscription to be lazily initialized with null-safety checks for USD context and stage
+
 ## [1.14.0] - 2026-04-01
 ### Changed
 - When available, use integer time steps per second and step count to compute simulation time in onPhysicsStep callback to eliminate accumulated bias due to floating-point timestep precision
-
-## [1.13.2] - 2026-03-26
-### Changed
-- Moved Python binding module to `bindings/` subdirectory
 
 ## [1.13.1] - 2026-03-17
 ### Fixed

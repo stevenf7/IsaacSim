@@ -182,9 +182,6 @@ fetch.after_pull_commands = [
 
 # Extensions precache before build to pick up headers/binaries for linking
 post_build.commands = [
-  # ["${root}/repo${shell_ext}", "stubgen", "-c", "${config}"],
-  # ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
-  # ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"], # disabled to reduce local build times
   [
     "${root}/repo${shell_ext}",
     "generate_vscode_settings",
@@ -211,6 +208,82 @@ post_build.commands = [
   #   "${config}",
   # ],
 ]
+
+# AUTOREMOVE: BEGIN
+"platform:linux-x86_64".post_build.commands = [
+  [
+    "${root}/repo${shell_ext}",
+    "generate_vscode_settings",
+    "-c",
+    "${config}",
+  ],
+  [
+    "${root}/repo${shell_ext}",
+    "edit_sysconfig",
+    "-c",
+    "${config}",
+  ],
+  [
+    "${root}/schemas/generate-schema${shell_ext}",
+    "-c",
+    "${config}",
+    "-p",
+    "${platform}",
+  ],
+  # Linux: Create libcuda.so.1 symlink for Docker builds (stubs provide minimal CUDA driver API)
+  [
+    "ln",
+    "-sf",
+    "libcuda.so",
+    "${root}/_build/target-deps/cuda/lib64/stubs/libcuda.so.1"
+  ],
+  [
+    "env",
+    "LD_LIBRARY_PATH=${root}/_build/target-deps/cuda/lib64/stubs",
+    "${root}/repo${shell_ext}",
+    "stubgen",
+    "-c",
+    "${config}",
+  ],
+]
+"platform:linux-aarch64".post_build.commands = [
+  [
+    "${root}/repo${shell_ext}",
+    "generate_vscode_settings",
+    "-c",
+    "${config}",
+  ],
+  [
+    "${root}/repo${shell_ext}",
+    "edit_sysconfig",
+    "-c",
+    "${config}",
+  ],
+  [
+    "${root}/schemas/generate-schema${shell_ext}",
+    "-c",
+    "${config}",
+    "-p",
+    "${platform}",
+  ],
+  # Linux: Create libcuda.so.1 symlink for Docker builds (stubs provide minimal CUDA driver API)
+  [
+    "ln",
+    "-sf",
+    "libcuda.so",
+    "${root}/_build/target-deps/cuda/lib64/stubs/libcuda.so.1"
+  ],
+  [
+    "env",
+    "LD_LIBRARY_PATH=${root}/_build/target-deps/cuda/lib64/stubs",
+    "${root}/repo${shell_ext}",
+    "stubgen",
+    "-c",
+    "${config}",
+  ],
+]
+# AUTOREMOVE: END
+
 pre_build.commands = [
   [
     "${root}/repo${shell_ext}",
@@ -1090,6 +1163,7 @@ sections = [
   "description",
   "preview",
   "enable-extension",
+  "toctree",
   { "usage" = "usage.rst" },
   { "api" = "api.rst" },
   { "actions" = "../config/actions_api.md" },

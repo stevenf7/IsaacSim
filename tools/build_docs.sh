@@ -104,6 +104,7 @@ rm -f "$SCRIPT_DIR/../_repo/repo.log"
 REPO_ROOT="$SCRIPT_DIR/.."
 
 # Run each step with timing
+run_timed_step "Copy PYI Stubs" "$REPO_ROOT/repo.sh" copy_pyi_stubs -c release
 run_timed_step "Generate Doxygen Input" "$REPO_ROOT/repo.sh" -v generate_doxygen_input
 run_timed_step "Extension Docs" "$REPO_ROOT/repo.sh" -v extension_docs --error-as-warn "$@"
 run_timed_step "Extension TOC" "$REPO_ROOT/repo.sh" -v extension_toc --error-as-warn "$@"

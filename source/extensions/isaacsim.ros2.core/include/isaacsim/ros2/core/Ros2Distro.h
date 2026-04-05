@@ -48,6 +48,7 @@ enum class Ros2Distro
     eCount // Keep this last
 };
 
+/// @cond DOXYGEN_SHOULD_SKIP_THIS
 namespace
 {
 
@@ -115,6 +116,7 @@ inline std::optional<Ros2Distro> stringToRos2Distro(const std::string& lowerDist
 }
 
 } // namespace
+/// @endcond
 
 /**
  * @brief Checks if a ROS 2 distribution name is valid

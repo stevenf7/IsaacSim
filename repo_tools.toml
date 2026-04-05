@@ -178,6 +178,14 @@ command = "run_python_linting"
 entry_point = "${config_root}/tools/isaac/pre_merge/run_python_linting.py:setup_repo_tool"
 
 ########################################################################################################################
+# Copy .pyi stub files from build to source directories
+########################################################################################################################
+
+[copy_pyi_stubs]
+command = "copy_pyi_stubs"
+entry_point = "${config_root}/tools/isaac/copy_pyi_stubs.py:setup_repo_tool"
+
+########################################################################################################################
 # Extension Templates
 ########################################################################################################################
 

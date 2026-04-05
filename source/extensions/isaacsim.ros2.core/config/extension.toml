@@ -1,5 +1,5 @@
 [package]
-version = "1.7.0"
+version = "1.7.1"
 category = "Simulation"
 title = "ROS 2 Core"
 description = "The ROS 2 core extension containing backend libraries required to run the ROS 2 bridge."
@@ -93,7 +93,7 @@ dependencies = [
     "isaacsim.robot.wheeled_robots",
     "isaacsim.test.utils",
     "omni.graph.ui",
-    "omni.isaac.ml_archive"
+    "omni.isaac.ml_archive",
 ]
 
 stdoutFailPatterns.exclude = [
