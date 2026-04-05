@@ -27,11 +27,14 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import atexit
 import csv
 import importlib.util
 import os
 import re
+import signal
 import sys
+import time
 import traceback
 import unittest
 from collections import defaultdict
@@ -45,6 +48,7 @@ def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Test script that loads doc snippets and checks for errors.")
     parser.add_argument(
+        "-f",
         "--filter",
         type=str,
         nargs="*",
@@ -67,6 +71,13 @@ def parse_args():
         help="Path to a CSV file listing snippets expected to fail. "
         "First column is the snippet path (relative to the doc_snippets directory), "
         "second column is an optional exception message regex pattern.",
+    )
+    parser.add_argument(
+        "--snippet-timeout",
+        type=int,
+        default=120,
+        help="Per-snippet timeout in seconds. If a snippet takes longer than this, "
+        "it is aborted and reported as a failure. Default: 120.",
     )
     return parser.parse_known_args()
 
@@ -252,18 +263,28 @@ def _task_belongs_to_snippets(task, snippets_root):
         return False
 
 
-def _wait_for_snippet_tasks(simulation_app, tasks, settle_frames=10):
+class SnippetTimeoutError(Exception):
+    """Raised when a snippet exceeds its per-snippet time limit."""
+
+
+def _wait_for_snippet_tasks(simulation_app, tasks, settle_frames=10, deadline=None):
     """Give snippet-created async tasks a chance to complete."""
     if not tasks:
         return
     for _ in range(settle_frames):
         if all(task.done() for task in tasks):
             break
+        if deadline is not None and time.monotonic() > deadline:
+            break
         simulation_app.update()
 
 
-def load_snippet_module(file_path, snippets_root, index, simulation_app):
-    """Load a snippet module and return any exception that occurred."""
+def load_snippet_module(file_path, snippets_root, index, simulation_app, snippet_timeout=120):
+    """Load a snippet module and return any exception that occurred.
+
+    Returns:
+        Tuple of (file_path_str, exception_or_None, elapsed_seconds).
+    """
     import gc
 
     import isaacsim.core.utils.stage as stage_utils
@@ -276,10 +297,30 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app):
     captured_loop_exceptions = []
     # Snapshot of modules before loading
     modules_before = set(sys.modules.keys())
+    start_time = time.monotonic()
+    deadline = start_time + snippet_timeout
 
     def loop_exception_handler(loop, context):
         """Capture unhandled loop exceptions as test failures."""
         captured_loop_exceptions.append(context)
+
+    def _check_deadline(phase):
+        """Raise SnippetTimeoutError if the per-snippet deadline has been exceeded."""
+        if time.monotonic() > deadline:
+            raise SnippetTimeoutError(f"Snippet timed out after {snippet_timeout}s during {phase}: {file_path}")
+
+    # Use SIGALRM as a hard backstop to interrupt blocking C/C++ calls that
+    # cannot be interrupted by a Python-level deadline check.
+    prev_alarm_handler = None
+    prev_alarm_remaining = 0
+
+    def _alarm_handler(signum, frame):
+        raise SnippetTimeoutError(f"Snippet timed out after {snippet_timeout}s (SIGALRM): {file_path}")
+
+    if hasattr(signal, "SIGALRM"):
+        prev_alarm_handler = signal.signal(signal.SIGALRM, _alarm_handler)
+        # Add a few extra seconds so the soft deadline check fires first when possible.
+        prev_alarm_remaining = signal.alarm(snippet_timeout + 5)
 
     try:
         loop = asyncio.get_event_loop()
@@ -289,11 +330,13 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app):
 
         # Clean up the current stage before creating a new one
         cleanup_before_new_stage(simulation_app, file_path)
+        _check_deadline("cleanup")
 
         # Open a new stage and wait for it to finish loading
         stage_utils.create_new_stage()
         simulation_app.update()
         while stage_utils.is_stage_loading():
+            _check_deadline("stage_loading")
             simulation_app.update()
 
         # Add the snippets root to sys.path if not already there
@@ -309,6 +352,7 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app):
         module = importlib.util.module_from_spec(spec)
         # Execute the module
         spec.loader.exec_module(module)
+        _check_deadline("exec_module")
 
     except SystemExit as e:
         # Snippets must not call sys.exit(); treat as a test failure.
@@ -316,6 +360,8 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app):
     except KeyboardInterrupt:
         # Don't let a stray KeyboardInterrupt from a snippet kill the whole harness.
         exceptions.append(RuntimeError("KeyboardInterrupt raised during snippet execution."))
+    except SnippetTimeoutError as e:
+        exceptions.append(e)
     except Exception as e:
         exceptions.append(e)
     finally:
@@ -326,14 +372,17 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app):
                 task for task in (current_tasks - baseline_tasks) if _task_belongs_to_snippets(task, snippets_root)
             ]
 
-            # Let snippet-created tasks finish naturally first.
-            _wait_for_snippet_tasks(simulation_app, snippet_tasks, settle_frames=30)
+            timed_out = time.monotonic() > deadline
+
+            if not timed_out:
+                # Let snippet-created tasks finish naturally first.
+                _wait_for_snippet_tasks(simulation_app, snippet_tasks, settle_frames=30, deadline=deadline)
 
             # Cancel still-pending snippet tasks so they do not leak across snippets.
             pending_snippet_tasks = [task for task in snippet_tasks if not task.done()]
             for task in pending_snippet_tasks:
                 task.cancel()
-            _wait_for_snippet_tasks(simulation_app, pending_snippet_tasks, settle_frames=5)
+            _wait_for_snippet_tasks(simulation_app, pending_snippet_tasks, settle_frames=5, deadline=deadline)
 
             # Retrieve task exceptions explicitly so they become deterministic test failures.
             for task in snippet_tasks:
@@ -354,6 +403,14 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app):
                 loop.set_exception_handler(previous_exception_handler)
             except Exception:
                 pass
+
+        # Disarm the SIGALRM backstop.
+        if hasattr(signal, "SIGALRM"):
+            signal.alarm(0)
+            if prev_alarm_handler is not None:
+                signal.signal(signal.SIGALRM, prev_alarm_handler)
+            if prev_alarm_remaining > 0:
+                signal.alarm(prev_alarm_remaining)
 
         # Promote unhandled loop-level async exceptions to snippet failures.
         for context in captured_loop_exceptions:
@@ -384,11 +441,16 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app):
         # Force garbage collection to clean up unreferenced objects
         gc.collect()
 
+    elapsed = time.monotonic() - start_time
     if not exceptions:
-        return (str(file_path), None)
+        return (str(file_path), None, elapsed)
     if len(exceptions) == 1:
-        return (str(file_path), exceptions[0])
-    return (str(file_path), ExceptionGroup(f"Multiple exceptions while testing snippet {file_path}", exceptions))
+        return (str(file_path), exceptions[0], elapsed)
+    return (
+        str(file_path),
+        ExceptionGroup(f"Multiple exceptions while testing snippet {file_path}", exceptions),
+        elapsed,
+    )
 
 
 # Parse command line arguments
@@ -466,13 +528,14 @@ def is_in_expected_failures(file_path, expected_failures):
     return False
 
 
-def _make_snippet_test(file_path, snippets_root, snippet_index, total_count, expected_failures_list):
+def _make_snippet_test(file_path, snippets_root, snippet_index, total_count, expected_failures_list, snippet_timeout):
     """Create a test method for a single doc snippet."""
 
     def test_snippet(self):
-        result_path, exception = load_snippet_module(
-            file_path, snippets_root, snippet_index, self.__class__._simulation_app
+        result_path, exception, elapsed = load_snippet_module(
+            file_path, snippets_root, snippet_index, self.__class__._simulation_app, snippet_timeout=snippet_timeout
         )
+        print(f" [{elapsed:.1f}s]", end="", flush=True)
         if exception is None:
             if is_in_expected_failures(result_path, expected_failures_list):
                 self.fail(
@@ -491,6 +554,7 @@ def _make_snippet_test(file_path, snippets_root, snippet_index, total_count, exp
     return test_snippet
 
 
+_simulation_app = None
 _test_classes = []
 _snippet_counter = 0
 
@@ -506,36 +570,30 @@ for _exp_idx, _experience in enumerate(experience_names):
         _class_name = f"{_base_name}_{_dedup}"
         _dedup += 1
 
-    _is_last_group = _exp_idx == len(experience_names) - 1
-
-    def _make_class_methods(exp_value, group_files, defer_close):
+    def _make_class_methods(exp_value, group_files):
         @classmethod
         def setUpClass(cls):
-            from isaacsim import SimulationApp
+            global _simulation_app
+            if _simulation_app is None:
+                from isaacsim import SimulationApp
+
+                launch_config = {"headless": True}
+                _simulation_app = SimulationApp(launch_config=launch_config)
+
+            cls._simulation_app = _simulation_app
 
             exp_disp = exp_value if exp_value else "(default)"
             print(f"\n{'=' * 80}")
             print(f"Processing experience group: {exp_disp} ({len(group_files)} files)")
             print("=" * 80)
 
-            launch_config = {"headless": True}
-            if exp_value:
-                launch_config["experience"] = os.environ["EXP_PATH"] + "/" + exp_value
-            cls._simulation_app = SimulationApp(launch_config=launch_config)
-
         @classmethod
         def tearDownClass(cls):
-            if defer_close:
-                return
-            if hasattr(cls, "_simulation_app") and cls._simulation_app is not None:
-                sys.stdout.flush()
-                cls._simulation_app.close()
-                exp_disp = exp_value if exp_value else "(default)"
-                print(f"Closed SimulationApp for experience: {exp_disp}")
+            pass
 
         return setUpClass, tearDownClass
 
-    _setup, _teardown = _make_class_methods(_experience, _group, _is_last_group)
+    _setup, _teardown = _make_class_methods(_experience, _group)
 
     _TestClass = type(
         _class_name,
@@ -552,7 +610,9 @@ for _exp_idx, _experience in enumerate(experience_names):
         _safe_name = re.sub(r"[^a-zA-Z0-9]", "_", str(_rel))
         _test_name = f"test_{_snippet_counter:04d}_{_safe_name}"
 
-        _func = _make_snippet_test(_file_path, snippets_dir, _snippet_counter, _total_snippets, expected_failures)
+        _func = _make_snippet_test(
+            _file_path, snippets_dir, _snippet_counter, _total_snippets, expected_failures, args.snippet_timeout
+        )
         _func.__name__ = _test_name
         _func.__doc__ = str(_rel)
         setattr(_TestClass, _test_name, _func)
@@ -574,21 +634,43 @@ print("=" * 40)
 _runner = unittest.TextTestRunner(stream=sys.stdout, verbosity=2)
 _result = _runner.run(_suite)
 
-# Print summary before closing the last SimulationApp (close may exit the process).
-print("=" * 40)
-if _result.wasSuccessful():
-    print("[ ok ] Test passed.")
-else:
-    _fail_count = len(_result.failures) + len(_result.errors)
-    print(f"[ FAIL ] Test failed. ({_fail_count} failure(s))")
+# SimulationApp.close() may terminate the process (e.g. fastShutdown), so register
+# the summary as an atexit handler to guarantee it prints regardless.
+_summary_printed = False
 
-sys.stdout.flush()
 
-# Now close the last SimulationApp whose tearDownClass was deferred.
-if _test_classes:
-    _last_cls = _test_classes[-1]
-    if hasattr(_last_cls, "_simulation_app") and _last_cls._simulation_app is not None:
-        _last_cls._simulation_app.close()
+def _print_summary():
+    global _summary_printed
+    if _summary_printed:
+        return
+    _summary_printed = True
+    print("=" * 40)
+    if _result.wasSuccessful():
+        print("[ ok ] Test passed.")
+    else:
+        _fail_count = len(_result.failures) + len(_result.errors)
+        print(f"[ FAIL ] Test failed. ({_fail_count} failure(s))")
+        if _result.failures:
+            print(f"\n{'=' * 40}")
+            print("Failed tests:")
+            print("=" * 40)
+            for _test, _tb in _result.failures:
+                print(f"  FAIL: {_test}")
+        if _result.errors:
+            print(f"\n{'=' * 40}")
+            print("Error tests:")
+            print("=" * 40)
+            for _test, _tb in _result.errors:
+                print(f"  ERROR: {_test}")
+    sys.stdout.flush()
+
+
+atexit.register(_print_summary)
+_print_summary()
+
+# Close the single SimulationApp after the summary has been printed.
+if _simulation_app is not None:
+    _simulation_app.close()
 
 if not _result.wasSuccessful():
     sys.exit(1)

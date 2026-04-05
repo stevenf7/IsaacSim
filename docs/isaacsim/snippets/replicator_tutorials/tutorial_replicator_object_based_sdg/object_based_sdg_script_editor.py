@@ -329,7 +329,7 @@ async def run_example_async(config: dict) -> None:
 
     # RANDOMIZERS
     def on_overlap_hit(hit) -> bool:
-        prim = stage.GetPrimAtPath(Sdf.Path(hit.rigid_body))
+        prim = omni.usd.get_context().get_stage().GetPrimAtPath(str(hit.rigid_body))
         if prim not in camera_colliders:
             rand_vel = (random.uniform(-2, 2), random.uniform(-2, 2), random.uniform(4, 8))
             prim.GetAttribute("physics:velocity").Set(rand_vel)
