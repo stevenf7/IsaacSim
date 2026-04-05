@@ -27,7 +27,7 @@ def on_interval(interval):
     Returns:
         The OmniGraph node for interval filtering.
     """
-    node = create_node("isaacsim.replicator.experimental.domain_randomization.OgnIntervalFiltering")
+    node = create_node("isaacsim.replicator.domain_randomization.OgnIntervalFiltering")
     trigger_node = ReplicatorItem._get_context()
 
     node.get_attribute("inputs:interval").set(interval)
@@ -44,7 +44,7 @@ def on_env_reset():
     Returns:
         The OmniGraph node for reset filtering.
     """
-    node = create_node("isaacsim.replicator.experimental.domain_randomization.OgnIntervalFiltering")
+    node = create_node("isaacsim.replicator.domain_randomization.OgnIntervalFiltering")
     trigger_node = ReplicatorItem._get_context()
 
     node.get_attribute("inputs:ignoreInterval").set(True)

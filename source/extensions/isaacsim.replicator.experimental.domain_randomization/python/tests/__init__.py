@@ -13,18 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
+"""Tests for the experimental domain randomization extension."""
 
 
-class OgnCountIndices:
-    @staticmethod
-    def compute(db) -> bool:
-        indices = np.array(db.inputs.indices)
-
-        # WAR because omni.replicator.core.distributions don't accept num_samples=0
-        if len(indices) != 0:
-            db.outputs.count = len(indices)
-        else:
-            db.outputs.count = 1
-
-        return True
+scan_for_test_modules = True

@@ -124,7 +124,7 @@ Extensions
 
    isaacsim.replicator.behavior <source/extensions/isaacsim.replicator.behavior/docs/index>
    isaacsim.replicator.behavior.ui <source/extensions/isaacsim.replicator.behavior.ui/docs/index>
-   isaacsim.replicator.domain_randomization <source/extensions/isaacsim.replicator.domain_randomization/docs/index>
+   isaacsim.replicator.domain_randomization <source/deprecated/isaacsim.replicator.domain_randomization/docs/index>
    isaacsim.replicator.experimental.domain_randomization <source/extensions/isaacsim.replicator.experimental.domain_randomization/docs/index>
    isaacsim.replicator.examples <source/extensions/isaacsim.replicator.examples/docs/index>
    isaacsim.replicator.grasping <source/extensions/isaacsim.replicator.grasping/docs/index>

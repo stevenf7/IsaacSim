@@ -466,7 +466,7 @@ inventory.includes.all = [
     # extensions
     "exts/isaacsim.replicator.behavior",
     "exts/isaacsim.replicator.behavior.ui",
-    "exts/isaacsim.replicator.domain_randomization",
+    "extsDeprecated/isaacsim.replicator.domain_randomization",
     "exts/isaacsim.replicator.experimental.domain_randomization",
     "exts/isaacsim.replicator.examples",
     "exts/isaacsim.replicator.grasping",
