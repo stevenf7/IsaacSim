@@ -1,11 +1,5 @@
 # Changelog
 
-## [3.3.0] - 2026-03-31
-### Changed
-- Added `omni.usd.schema.mujoco` dependency for mujoco schema support
-- Added `omni.hydra.usdrt_delegate` test dependency
-- Removed docstring tests
-
 ## [3.2.1] - 2026-03-21
 ### Fixed
 - Fixed test teardown to stop the timeline and flush run-loop frames before the next stage is created, preventing a SIGSEGV crash in `UsdStage::~UsdStage`
