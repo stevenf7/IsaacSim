@@ -1197,6 +1197,28 @@ class XFormPrim(Prim):
             )
         return self._fabric_hierarchy
 
+    def _on_physics_ready(self, event):
+        """Handle physics ready events and re-convert default state to the active backend.
+
+        When the backend changes between __init__ and physics start (e.g. the automatic
+        numpy-to-torch switch for GPU pipelines), the cached _default_state tensors become
+        stale.  Re-converting here keeps them consistent with _backend_utils so that
+        _on_post_reset can pass them to set_world_poses without a type mismatch.
+
+        Subclasses like Articulation reset _default_state to None/None in their __init__
+        and populate it later in their own _on_physics_ready, so we skip None values.
+        """
+        Prim._on_physics_ready(self, event)
+        if self._default_state is not None and not self._non_root_link:
+            positions = self._default_state.positions
+            orientations = self._default_state.orientations
+            if positions is not None or orientations is not None:
+                convert = self._backend_utils.convert
+                self._default_state = XFormPrimViewState(
+                    positions=convert(positions, device=self._device) if positions is not None else None,
+                    orientations=convert(orientations, device=self._device) if orientations is not None else None,
+                )
+
     def _on_post_reset(self, event) -> None:
         """Handles post-reset event by restoring prims to their default states.
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.3] - 2026-04-03
+### Fixed
+- Fix XFormPrim default state not being re-converted when backend changes after initialization (e.g. automatic numpy-to-torch switch for GPU pipelines)
+
 ## [0.9.2] - 2026-03-22
 ### Fixed
 - Fix carb.log_error calls passing multiple arguments instead of a single formatted string
