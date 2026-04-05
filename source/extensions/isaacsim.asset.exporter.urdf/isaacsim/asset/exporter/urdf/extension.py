@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""URDF Exporter Kit extension registration and UI delegate."""
+
 import gc
-from typing import List
 
 import omni.ext
 import omni.kit.actions.core
@@ -30,9 +31,16 @@ EXTENSION_TITLE = "URDF Exporter"
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self, ext_id):
+    """Kit extension that registers the URDF export menu item and dialog."""
+
+    def on_startup(self, ext_id: str) -> None:
+        """Register the export action and menu item.
+
+        Args:
+            ext_id: Unique identifier of the extension instance.
+        """
         self._ext_name = omni.ext.get_extension_name(ext_id)
-        self._export_options = None
+        self._export_options: UrdfExporterDelegate | None = None
 
         action_registry = omni.kit.actions.core.get_action_registry()
         action_registry.register_action(
@@ -48,7 +56,7 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "File")
 
-    def _show_dialog(self):
+    def _show_dialog(self) -> None:
         # File Exporter Dialog setup
         file_exporter = get_file_exporter()
         if not file_exporter:
@@ -65,12 +73,13 @@ class Extension(omni.ext.IExt):
         # UrdfExporter specific options inside the file exporter dialog
         file_exporter.add_export_options_frame("Export Options", self._export_options)
 
-    def _hide_dialog(self):
+    def _hide_dialog(self) -> None:
         file_exporter = get_file_exporter()
         if file_exporter:
             file_exporter.hide_window()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
+        """Clean up the exporter delegate, menu items, and registered actions."""
         if self._export_options:
             self._export_options.cleanup()
         self._hide_dialog()
@@ -81,32 +90,43 @@ class Extension(omni.ext.IExt):
 
 
 class UrdfExporterDelegate(ExportOptionsDelegate):
-    def __init__(self):
+    """Delegate that provides URDF export options inside the file-exporter dialog."""
+
+    def __init__(self) -> None:
         # Initialize the delegate
         super().__init__(
             build_fn=self._build_ui_impl,
             destroy_fn=self._destroy_impl,
         )
-        self._widget = None
+        self._widget: ui.Frame | None = None
         self._exporter = UrdfExporter()
 
-    def _build_ui_impl(self):
+    def _build_ui_impl(self) -> None:
         self._widget = ui.Frame()
         with self._widget:
             self._exporter.build_exporter_options()
 
-    def export(self, filename: str, dirname: str, extension: str = "", selections: List[str] = []):
+    def export(self, filename: str, dirname: str, extension: str = "", selections: list[str] | None = None) -> None:
+        """Export the current stage to a URDF file.
+
+        Args:
+            filename: Base name for the exported file (without extension).
+            dirname: Directory path where the URDF will be written.
+            extension: File extension override (unused, kept for delegate API).
+            selections: Optional list of selected prim paths to export.
+        """
         result = self._exporter._on_export_button_clicked_fn(dirname, filename)
         if result:
             print(f"Export to URDF successful")
         else:
             print(f"Error: Failed to export to URDF")
 
-    def _destroy_impl(self):
+    def _destroy_impl(self) -> None:
         if self._widget:
             self._widget.destroy()
         self._widget = None
 
-    def cleanup(self):
+    def cleanup(self) -> None:
+        """Clean up the exporter and destroy the options widget."""
         self._exporter.cleanup()
         self._destroy_impl()

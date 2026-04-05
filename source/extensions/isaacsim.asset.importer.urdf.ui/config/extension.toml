@@ -25,6 +25,7 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.asset.importer.urdf" = {}
 "isaacsim.core.experimental.utils" = {}
+"isaacsim.gui.components" = {}
 "omni.kit.helper.file_utils" = {}
 "omni.kit.notification_manager" = {}
 "omni.kit.tool.asset_importer" = {}

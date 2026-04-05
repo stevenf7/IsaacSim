@@ -29,9 +29,8 @@ import omni.kit.test
 import omni.kit.ui_test as ui_test
 from isaacsim.asset.importer.mjcf import MJCFImporter
 from isaacsim.asset.importer.mjcf.ui.impl import extension as mjcf_ui_extension
-from isaacsim.asset.importer.utils import test_utils
 from isaacsim.core.experimental.utils import stage as stage_utils
-from isaacsim.test.utils import MenuUITestCase
+from isaacsim.test.utils import MenuUITestCase, usd_utils
 from pxr import Sdf
 
 
@@ -276,7 +275,7 @@ class TestImporterUI(MenuUITestCase):
         carb.log_info(f"ui_mjcf_path: {ui_mjcf_path}")
         carb.log_info(f"mjcf_importer_output_path: {mjcf_importer_output_path}")
 
-        result = await test_utils.compare_usd_files([ui_mjcf_path, mjcf_importer_output_path])
+        result = await usd_utils.compare_usd_files([ui_mjcf_path, mjcf_importer_output_path])
         self.assertTrue(result, "USD comparison failed")
 
         try:

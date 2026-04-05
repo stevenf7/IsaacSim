@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.0] - 2026-03-09
+### Changed
+- Updated import path to use isaacsim.gui.components ui utils when the util function is available
+
 ## [2.1.0] - 2026-03-17
 ### Changed
 - Updated documentation with AI agent.

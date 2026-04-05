@@ -1,5 +1,5 @@
 [package]
-version = "1.4.4"
+version = "1.4.5"
 category = "Simulation"
 title = "Isaac Sim USD to URDF exporter"
 description = "Extension that exports USD files to URDF"
@@ -16,6 +16,7 @@ writeTarget.platform = true # pip prebundle makes this extension os specific
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.gui.components" = {}
+"omni.isaac.core_archive" = {}
 "omni.kit.pip_archive" = {}
 "omni.physics.physx" = {}
 
@@ -31,7 +32,6 @@ name = "isaacsim.asset.exporter.urdf.tests"
 [[test]]
 name = "startup"
 dependencies = [
-    "omni.isaac.core_archive",
 ]
 
 [[test]]
@@ -40,6 +40,8 @@ dependencies = [
     "isaacsim.asset.importer.urdf",
     "isaacsim.asset.importer.utils",
     "isaacsim.storage.native",
+    "isaacsim.core.experimental.utils",
+    "isaacsim.test.utils",
 ]
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
@@ -49,5 +51,6 @@ stdoutFailPatterns.exclude = [
     '*Converted USD to URDF.*',
     '*Invalid Imu sensor prim*',
     '*parent prim is missing contact report API*',
-    '*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*'
+    '*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*',
+    '*SyntheticData extension needs at least a stageFrameHistoryCount of 3*'
 ]

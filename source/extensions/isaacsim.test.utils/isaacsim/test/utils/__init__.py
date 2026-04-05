@@ -223,6 +223,7 @@ from .menu_ui_test import *
 from .menu_utils import *
 from .stage_utils import *
 from .timed_async_test import *
+from .usd_utils import *
 from .viewport_utils import *
 
 __all__ = [
@@ -274,4 +275,6 @@ __all__ = [
     "wait_for_stage_prims_async",
     "project_world_to_screen",
     "TimedAsyncTestCase",
+    "compare_usd_files",
+    "check",
 ]

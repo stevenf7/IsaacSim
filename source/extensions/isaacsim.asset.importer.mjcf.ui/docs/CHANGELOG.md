@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.0] - 2026-03-31
+### Changed
+- use shared ui library from isaacsim.gui.components
+- updated import for compare usd function
+
 ## [1.1.1] - 2026-03-21
 ### Fixed
 - Fixed test setUp to call `super().setUp()`, ensuring menus are rebuilt before UI tests run so `File/Import` navigation succeeds on first test invocation

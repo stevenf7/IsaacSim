@@ -1,5 +1,5 @@
 [package]
-version = "2.1.0"
+version = "2.2.0"
 category = "Simulation"
 title = "Ros2 Robot Description URDF Importer"
 description = "This extensions expands the URDF Importer by enabling importing the robot description from a given ROS node"
@@ -15,6 +15,7 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.asset.importer.urdf.ui" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.gui.components" = {}
 "isaacsim.ros2.bridge" = {}
 "omni.kit.pip_archive" = {} # import the base kit python archive
 "omni.ui" = {}

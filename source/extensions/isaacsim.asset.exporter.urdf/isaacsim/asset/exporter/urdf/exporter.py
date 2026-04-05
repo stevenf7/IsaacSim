@@ -20,7 +20,7 @@ import os
 import pathlib
 import re
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 
 # Third Party
 import numpy as np
@@ -36,7 +36,7 @@ from pxr import Gf, PhysicsSchemaTools, Sdf, Usd, UsdPhysics, UsdUtils
 if os.name == "nt":
     file_dir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
     exporter_urdf_dir = file_dir.joinpath(pathlib.Path("../../../../pip_prebundle")).resolve()
-    os.add_dll_directory(exporter_urdf_dir.__str__())
+    os.add_dll_directory(exporter_urdf_dir.__str__())  # type: ignore[attr-defined]
 
 import nvidia.srl.tools.logger as logger
 import nvidia.srl.usd.prim_helper as prim_helper
@@ -47,21 +47,23 @@ from .style import get_option_style
 
 
 class UrdfExporter:
-    def __init__(self):
+    """Handles USD-to-URDF export logic and builds the exporter options UI."""
+
+    def __init__(self) -> None:
         self.log_level = logger.level_from_name("ERROR")
-        # Initialize parameters as direct attributes
-        self._mesh_dir = "meshes"
+        self._mesh_dir: str | None = "meshes"
         self._mesh_path_prefix = "file://"
         self._root = None
         self._visualize_collision_meshes = False
 
-    def cleanup(self):
+    def cleanup(self) -> None:
+        """Reset exporter state to defaults."""
         self._mesh_dir = None
         self._mesh_path_prefix = ""
         self._root = None
         self._visualize_collision_meshes = False
 
-    def _on_value_changed(self, param_name: str, new_value):
+    def _on_value_changed(self, param_name: str, new_value: Any) -> None:
         """Generic handler for value changes in UI elements.
 
         Args:
@@ -70,7 +72,8 @@ class UrdfExporter:
         """
         setattr(self, f"_{param_name}", new_value)
 
-    def build_exporter_options(self):
+    def build_exporter_options(self) -> None:
+        """Build the URDF exporter options UI widgets."""
         with ui.VStack(style=get_option_style(), spacing=5, height=0):
             mesh_field = StringField(
                 "Mesh Folder Name",
@@ -84,14 +87,14 @@ class UrdfExporter:
             self._mesh_path_prefix = "file://"
             self._package_name = ""
 
-            def on_mesh_path_prefix_changed(new_value):
+            def on_mesh_path_prefix_changed(new_value: str) -> None:
                 self._on_value_changed("mesh_path_prefix", new_value)
                 self._mesh_path_prefix = new_value
                 self._package_name_frame.visible = new_value == "package://"
                 # ui.refresh()
 
             # Replaced ComboBoxField with DropDown
-            def populate_mesh_prefix_options():
+            def populate_mesh_prefix_options() -> list[str]:
                 return mesh_path_prefix_options
 
             dropdown = DropDown(
@@ -131,8 +134,9 @@ class UrdfExporter:
                 on_click_fn=lambda v: self._on_value_changed("visualize_collision_meshes", v),
             )
 
-    def _on_export_button_clicked_fn(self, export_dir: str, export_filename: str):
+    def _on_export_button_clicked_fn(self, export_dir: str, export_filename: str) -> bool:
         sanitized_export_dir = os.path.normpath(export_dir)
+        assert self._mesh_dir is not None
         self._mesh_dir = os.path.join(sanitized_export_dir, os.path.basename(self._mesh_dir))
 
         # check if all the necessary fields have been filled out
@@ -167,6 +171,10 @@ class UrdfExporter:
         for prim in inertia_prims:
             inertia_data = InertiaData.init_from_prim(prim)
             mass_api = UsdPhysics.MassAPI(prim)
+
+            assert inertia_data.ref_point is not None
+            assert inertia_data.inertia_diag is not None
+            assert inertia_data.prin_axes is not None
 
             # Set the mass
             mass_api.GetMassAttr().Set(inertia_data.mass)
@@ -222,7 +230,7 @@ class UrdfExporter:
 
         # Override the URI file prefix to be relative path if the mesh path prefix is "./"
         if mesh_prefix == "./":
-            with open(export_path, "r") as f:
+            with open(export_path) as f:
                 urdf_content = f.read()
             urdf_content = urdf_content.replace(self._mesh_dir, "./")
             with open(export_path, "w") as f:
@@ -245,10 +253,18 @@ class InertiaData:
     prin_axes: Optional[Rotation] = None
 
     @classmethod
-    def get_physx_queried_inertia_data(cls, prim) -> "InertiaData":
+    def get_physx_queried_inertia_data(cls, prim: Usd.Prim) -> "InertiaData":
+        """Query PhysX for the rigid-body inertia properties of a prim.
+
+        Args:
+            prim: The USD prim with a rigid body to query.
+
+        Returns:
+            Populated inertia data from the PhysX property query.
+        """
         inertia_data = cls()
 
-        def rigid_body_fn(rigid_info, prim_path: str):
+        def rigid_body_fn(rigid_info: Any, prim_path: str) -> None:
             nonlocal inertia_data
 
             if rigid_info.result == PhysxPropertyQueryResult.VALID:
@@ -287,7 +303,15 @@ class InertiaData:
         return inertia_data
 
     @classmethod
-    def init_from_prim(cls, prim):
+    def init_from_prim(cls, prim: Usd.Prim) -> "InertiaData":
+        """Build inertia data from authored USD mass attributes, falling back to PhysX queries.
+
+        Args:
+            prim: The USD prim to extract inertia data from.
+
+        Returns:
+            Inertia data populated from authored attributes or PhysX queries.
+        """
         inertia_data = cls.get_physx_queried_inertia_data(prim)
 
         mass_api = UsdPhysics.MassAPI(prim)
@@ -316,12 +340,24 @@ class InertiaData:
         return inertia_data
 
 
-def create_new_stage_with_inertia_data(stage):
+def create_new_stage_with_inertia_data(stage: Usd.Stage) -> Usd.Stage:
+    """Write PhysX-queried inertia data onto all rigid-body prims in the stage.
+
+    Args:
+        stage: The USD stage whose rigid-body prims will be updated.
+
+    Returns:
+        The same stage with inertia attributes written.
+    """
     link_prims = prim_helper.get_prims(stage, has_apis=[UsdPhysics.MassAPI, UsdPhysics.RigidBodyAPI])
 
     for prim in link_prims:
         inertia_data = InertiaData.init_from_prim(prim)
         mass_api = UsdPhysics.MassAPI(prim)
+
+        assert inertia_data.ref_point is not None
+        assert inertia_data.inertia_diag is not None
+        assert inertia_data.prin_axes is not None
 
         # Set the mass
         mass_api.GetMassAttr().Set(inertia_data.mass)

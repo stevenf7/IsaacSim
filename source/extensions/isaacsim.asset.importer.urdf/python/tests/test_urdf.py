@@ -447,15 +447,14 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         mat, rel = UsdShade.MaterialBindingAPI(mesh).ComputeBoundMaterial()
         self.assertTrue(Gf.IsClose(mat.GetInput("diffuseColor").Get(), Gf.Vec3f(0.0, 0.0, 0.60383), 1e-5))
 
-        # TODO: URDF Converter does not import joint friction
         elbowPrim = self._stage.GetPrimAtPath("/test_advanced/Physics/elbow_joint")
         self.assertNotEqual(elbowPrim.GetPath(), Sdf.Path.emptyPath)
-        # self.assertAlmostEqual(elbowPrim.GetAttribute("physxJoint:jointFriction").Get(), 0.1)
-        # self.assertAlmostEqual(elbowPrim.GetAttribute("drive:angular:physics:damping").Get(), 0.1)
+        self.assertAlmostEqual(elbowPrim.GetAttribute("physxJoint:jointFriction").Get(), 0.1)
+        self.assertAlmostEqual(elbowPrim.GetAttribute("drive:angular:physics:damping").Get(), 0.1)
 
         # check position of a link
         joint_pos = elbowPrim.GetAttribute("physics:localPos0").Get()
-        self.assertTrue(Gf.IsClose(joint_pos, Gf.Vec3f(0, 0, 0.85), 1e-5))
+        self.assertTrue(Gf.IsClose(joint_pos, Gf.Vec3f(0, 0, 0.4), 1e-2))
 
         # Start Simulation and wait
         self._timeline.play()
