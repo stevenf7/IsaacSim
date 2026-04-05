@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.5] - 2026-04-02
+### Changed
+- Update imports for compare usd function as it's moved
+
 ## [1.4.4] - 2026-03-25
 ### Changed
 - Replace deprecated onclick_fn with onclick_action for menu registration

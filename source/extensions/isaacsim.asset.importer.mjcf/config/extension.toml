@@ -16,6 +16,7 @@ writeTarget.kit = true
 "isaacsim.asset.importer.utils" = {}
 "isaacsim.asset.transformer.rules" = {}
 "isaacsim.pip.newton" = {}
+"omni.usd.schema.mujoco" = {}
 "omni.usdex.libs" = {}
 
 [[python.module]]
@@ -25,7 +26,8 @@ name = "isaacsim.asset.importer.mjcf"
 name = "isaacsim.asset.importer.mjcf.tests"
 
 [[test]]
-dependencies = [ 
+dependencies = [
+    "omni.hydra.usdrt_delegate",
 ]
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',

@@ -65,16 +65,16 @@ async def compare_usd_files(paths: list[str]) -> bool:
     carb.log_info("Checking common properties...")
     carb.log_info("-----------------------------")
 
-    status &= check(prims, Articulation.num_dofs)
-    status &= check(prims, Articulation.dof_names)
-    status &= check(prims, Articulation.dof_types)
+    status &= compare_articulation_properties(prims, Articulation.num_dofs)
+    status &= compare_articulation_properties(prims, Articulation.dof_names)
+    status &= compare_articulation_properties(prims, Articulation.dof_types)
     # - joints
-    status &= check(prims, Articulation.num_joints)
-    status &= check(prims, Articulation.joint_names)
-    status &= check(prims, Articulation.joint_types)
+    status &= compare_articulation_properties(prims, Articulation.num_joints)
+    status &= compare_articulation_properties(prims, Articulation.joint_names)
+    status &= compare_articulation_properties(prims, Articulation.joint_types)
     # - links
-    status &= check(prims, Articulation.num_links)
-    status &= check(prims, Articulation.link_names)
+    status &= compare_articulation_properties(prims, Articulation.num_links)
+    status &= compare_articulation_properties(prims, Articulation.link_names)
 
     # Check per-DOF values
     carb.log_info("\n--------------------------")
@@ -89,14 +89,24 @@ async def compare_usd_files(paths: list[str]) -> bool:
         indices = [{"dof_indices": prim.get_dof_indices(dof_name)} for prim in prims]
         msg = [f"{dof_name}:{index['dof_indices']}" for index in indices]
         # methods
-        status &= check(prims, Articulation.get_dof_armatures, member_kwargs=indices, msg=msg)
-        status &= check(prims, Articulation.get_dof_drive_model_properties, member_kwargs=indices, msg=msg)
-        status &= check(prims, Articulation.get_dof_drive_types, member_kwargs=indices, msg=msg)
-        status &= check(prims, Articulation.get_dof_friction_properties, member_kwargs=indices, msg=msg)
-        status &= check(prims, Articulation.get_dof_gains, member_kwargs=indices, msg=msg)
-        status &= check(prims, Articulation.get_dof_limits, member_kwargs=indices, msg=msg)
-        status &= check(prims, Articulation.get_dof_max_efforts, member_kwargs=indices, msg=msg)
-        status &= check(prims, Articulation.get_dof_max_velocities, member_kwargs=indices, msg=msg)
+        status &= compare_articulation_properties(prims, Articulation.get_dof_armatures, member_kwargs=indices, msg=msg)
+        status &= compare_articulation_properties(
+            prims, Articulation.get_dof_drive_model_properties, member_kwargs=indices, msg=msg
+        )
+        status &= compare_articulation_properties(
+            prims, Articulation.get_dof_drive_types, member_kwargs=indices, msg=msg
+        )
+        status &= compare_articulation_properties(
+            prims, Articulation.get_dof_friction_properties, member_kwargs=indices, msg=msg
+        )
+        status &= compare_articulation_properties(prims, Articulation.get_dof_gains, member_kwargs=indices, msg=msg)
+        status &= compare_articulation_properties(prims, Articulation.get_dof_limits, member_kwargs=indices, msg=msg)
+        status &= compare_articulation_properties(
+            prims, Articulation.get_dof_max_efforts, member_kwargs=indices, msg=msg
+        )
+        status &= compare_articulation_properties(
+            prims, Articulation.get_dof_max_velocities, member_kwargs=indices, msg=msg
+        )
 
     # Check per-link values
     carb.log_info("\n---------------------------")
@@ -111,26 +121,28 @@ async def compare_usd_files(paths: list[str]) -> bool:
         indices = [{"link_indices": prim.get_link_indices(link_name)} for prim in prims]
         msg = [f"{link_name}:{index['link_indices']}" for index in indices]
         # methods
-        status &= check(prims, Articulation.get_link_coms, member_kwargs=indices, msg=msg)
-        status &= check(prims, Articulation.get_link_enabled_gravities, member_kwargs=indices, msg=msg)
-        status &= check(prims, Articulation.get_link_inertias, member_kwargs=indices, msg=msg)
-        status &= check(prims, Articulation.get_link_masses, member_kwargs=indices, msg=msg)
+        status &= compare_articulation_properties(prims, Articulation.get_link_coms, member_kwargs=indices, msg=msg)
+        status &= compare_articulation_properties(
+            prims, Articulation.get_link_enabled_gravities, member_kwargs=indices, msg=msg
+        )
+        status &= compare_articulation_properties(prims, Articulation.get_link_inertias, member_kwargs=indices, msg=msg)
+        status &= compare_articulation_properties(prims, Articulation.get_link_masses, member_kwargs=indices, msg=msg)
 
     # Check other values
     carb.log_info("\n------------------------")
     carb.log_info("Checking other values...")
     carb.log_info("------------------------")
-    status &= check(prims, Articulation.get_enabled_self_collisions)
-    status &= check(prims, Articulation.get_sleep_thresholds)
-    status &= check(prims, Articulation.get_solver_iteration_counts)
-    status &= check(prims, Articulation.get_stabilization_thresholds)
+    status &= compare_articulation_properties(prims, Articulation.get_enabled_self_collisions)
+    status &= compare_articulation_properties(prims, Articulation.get_sleep_thresholds)
+    status &= compare_articulation_properties(prims, Articulation.get_solver_iteration_counts)
+    status &= compare_articulation_properties(prims, Articulation.get_stabilization_thresholds)
 
     stage = None
     gc.collect()
     return status
 
 
-def check(
+def compare_articulation_properties(
     prims: list[Articulation],
     member: property | Callable[..., Any],
     member_args: list[tuple] | None = None,
@@ -151,6 +163,7 @@ def check(
     """
 
     def show_mismatch(member_name: str, *, i: int, x: Any, j: int, y: Any) -> None:
+        """Log a property mismatch between two articulation prims."""
         if msg is None:
             carb.log_info(f"\n'{member_name}' mismatch")
         else:
@@ -159,6 +172,7 @@ def check(
         carb.log_info(f"  - {y}")
 
     def check_values(x: Any, y: Any) -> tuple[bool, Any, Any]:
+        """Recursively compare two values, handling tuples and warp arrays."""
         # tuple
         if isinstance(x, tuple):
             status = True

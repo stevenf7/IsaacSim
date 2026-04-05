@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.3.0] - 2026-03-31
+### Changed
+- use shared ui library from isaacsim.gui.components
+- version bump to urdf-usd-converter 0.1.1
+
 ## [3.2.2] - 2026-03-21
 ### Fixed
 - Fixed test teardown to stop the timeline and flush run-loop frames before the next stage is created, preventing a SIGSEGV crash in `UsdStage::~UsdStage`

@@ -18,15 +18,10 @@
 import typing
 
 import omni.ui as ui
+from isaacsim.gui.components.ui_utils import checkbox_builder, dropdown_builder, string_filed_builder
 
 from .style import get_option_style
-from .ui_utils import (
-    RosPackageDelegate,
-    RosPackageModel,
-    checkbox_builder,
-    dropdown_builder,
-    string_filed_builder,
-)
+from .ui_utils import RosPackageDelegate, RosPackageModel
 
 
 def option_header(collapsed: bool, title: str) -> None:

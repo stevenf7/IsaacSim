@@ -247,6 +247,7 @@ def str_builder(
     bookmark_path: str | None = None,
     folder_dialog_title: str = "Select Output Folder",
     folder_button_title: str = "Select Folder",
+    identifier=None,
 ) -> ui.AbstractValueModel:
     """Creates a Stylized Stringfield Widget
 
@@ -263,14 +264,23 @@ def str_builder(
         bookmark_path: bookmark path to pass to the FilePicker
         folder_dialog_title: Title for the folder picker dialog.
         folder_button_title: Title for the folder picker button.
+        identifier: Optional identifier to simplify UI queries.
 
     Returns:
         model of Stringfield
     """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
+        sf_kwargs = {}
+        if identifier is not None:
+            sf_kwargs["identifier"] = identifier
         str_field = ui.StringField(
-            name="StringField", width=ui.Fraction(1), height=0, alignment=ui.Alignment.LEFT_CENTER, read_only=read_only
+            name="StringField",
+            width=ui.Fraction(1),
+            height=0,
+            alignment=ui.Alignment.LEFT_CENTER,
+            read_only=read_only,
+            **sf_kwargs,
         ).model
         str_field.set_value(default_val)
         str_field.add_value_changed_fn(on_clicked_fn)
@@ -408,7 +418,13 @@ def combo_cb_str_builder(
 
 
 def dropdown_builder(
-    label="", type="dropdown", default_val=0, items=["Option 1", "Option 2", "Option 3"], tooltip="", on_clicked_fn=None
+    label="",
+    type="dropdown",
+    default_val=0,
+    items=["Option 1", "Option 2", "Option 3"],
+    tooltip="",
+    on_clicked_fn=None,
+    identifier=None,
 ):
     """Creates a Stylized Dropdown Combobox
 
@@ -419,14 +435,23 @@ def dropdown_builder(
         items: List of items for dropdown box.
         tooltip: Tooltip to display over the Label.
         on_clicked_fn: Call-back function when clicked.
+        identifier: Optional identifier to simplify UI queries.
 
     Returns:
         AbstractItemModel: model
     """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
+        cb_kwargs = {}
+        if identifier is not None:
+            cb_kwargs["identifier"] = identifier
         combo_box = ui.ComboBox(
-            default_val, *items, name="ComboBox", width=ui.Fraction(1), alignment=ui.Alignment.LEFT_CENTER
+            default_val,
+            *items,
+            name="ComboBox",
+            width=ui.Fraction(1),
+            alignment=ui.Alignment.LEFT_CENTER,
+            **cb_kwargs,
         ).model
         add_line_rect_flourish(False)
 
@@ -437,6 +462,123 @@ def dropdown_builder(
             combo_box.add_item_changed_fn(on_clicked_wrapper)
 
     return combo_box
+
+
+def checkbox_builder(
+    label="",
+    type="checkbox",
+    default_val=False,
+    tooltip="",
+    on_clicked_fn=None,
+    identifier=None,
+):
+    """Creates a Stylized Checkbox using ui.CheckBox.
+
+    Unlike :func:`cb_builder` which uses ``SimpleCheckBox``, this builder uses
+    ``ui.CheckBox`` directly and supports an ``identifier`` for UI testing.
+
+    Args:
+        label: Label to the right of the checkbox.
+        type: Type of UI element.
+        default_val: Initial state of the checkbox.
+        tooltip: Tooltip to display over the label.
+        on_clicked_fn: Call-back function when clicked.
+        identifier: Optional identifier to simplify UI queries.
+
+    Returns:
+        ui.SimpleBoolModel: Checkbox model.
+    """
+    with ui.HStack():
+        chk_kwargs = {}
+        if identifier is not None:
+            chk_kwargs["identifier"] = identifier
+        check_box = ui.CheckBox(width=10, height=0, **chk_kwargs)
+        ui.Spacer(width=8)
+        check_box.model.set_value(default_val)
+
+        if on_clicked_fn is not None:
+
+            def on_click(value_model, cb=on_clicked_fn):
+                cb(value_model.get_value_as_bool())
+
+            check_box.model.add_value_changed_fn(on_click)
+        ui.Label(label, width=0, height=0, tooltip=tooltip)
+        return check_box.model
+
+
+def string_filed_builder(
+    default_val=" ",
+    tooltip="",
+    read_only=False,
+    item_filter_fn=None,
+    folder_dialog_title="Select Output Folder",
+    folder_button_title="Select Folder",
+    bookmark_label=None,
+    bookmark_path=None,
+    use_folder_picker=True,
+    identifier=None,
+):
+    """Creates a Stylized String Field with an optional folder picker.
+
+    Unlike :func:`str_builder`, this builder omits the label column and always
+    opens the folder picker when the field is clicked.
+
+    Args:
+        default_val: Text to initialize in the string field.
+        tooltip: Tooltip to display over the UI elements.
+        read_only: Prevents editing.
+        item_filter_fn: Filter function to pass to the FilePicker.
+        folder_dialog_title: Title for the folder picker dialog.
+        folder_button_title: Label for the folder picker button.
+        bookmark_label: Bookmark label to pass to the FilePicker.
+        bookmark_path: Bookmark path to pass to the FilePicker.
+        use_folder_picker: Whether to show the folder picker button.
+        identifier: Optional identifier to simplify UI queries.
+
+    Returns:
+        ui.AbstractValueModel: model of the string field.
+    """
+    with ui.HStack():
+        sfb_kwargs = {}
+        if identifier is not None:
+            sfb_kwargs["identifier"] = identifier
+        str_field = ui.StringField(
+            name="StringField",
+            tooltip=format_tt(tooltip),
+            width=ui.Fraction(1),
+            height=0,
+            alignment=ui.Alignment.LEFT_CENTER,
+            read_only=read_only,
+            **sfb_kwargs,
+        )
+        str_field.enabled = False
+        str_field.model.set_value(default_val)
+        if use_folder_picker:
+
+            def update_field(filename, path):
+                if filename == "":
+                    val = path
+                elif filename[0] != "/" and path[-1] != "/":
+                    val = path + "/" + filename
+                elif filename[0] == "/" and path[-1] == "/":
+                    val = path + filename[1:]
+                else:
+                    val = path + filename
+                str_field.model.set_value(val)
+
+            ui.Spacer(width=4)
+            file_pick_fn = add_folder_picker_icon(
+                update_field,
+                item_filter_fn,
+                bookmark_label=bookmark_label,
+                bookmark_path=bookmark_path,
+                dialog_title=folder_dialog_title,
+                button_title=folder_button_title,
+                size=16,
+            )
+            ui.Spacer(width=2)
+            str_field.set_mouse_pressed_fn(lambda a, b, c, d: file_pick_fn())
+        return str_field.model
 
 
 def combo_intfield_slider_builder(
@@ -1227,6 +1369,7 @@ def add_folder_picker_icon(
     bookmark_path: str | None = None,
     dialog_title: str = "Select Output Folder",
     button_title: str = "Select Folder",
+    size: int = 24,
 ):
     """Creates a folder picker icon button that opens a file dialog with advanced options.
 
@@ -1238,6 +1381,10 @@ def add_folder_picker_icon(
         bookmark_path: Bookmark path to pass to the FilePicker.
         dialog_title: Title for the folder picker dialog.
         button_title: Title for the folder picker button.
+        size: Size of the icon button in pixels.
+
+    Returns:
+        Callable that opens the file picker when invoked.
     """
 
     def open_file_picker():
@@ -1263,12 +1410,14 @@ def add_folder_picker_icon(
     with ui.Frame(width=0, tooltip=button_title):
         ui.Button(
             name="IconButton",
-            width=24,
-            height=24,
+            width=size,
+            height=size,
             clicked_fn=open_file_picker,
             style=get_style()["IconButton.Image::FolderPicker"],
             alignment=ui.Alignment.RIGHT_TOP,
         )
+
+    return open_file_picker
 
 
 def add_folder_picker_btn(on_click_fn):

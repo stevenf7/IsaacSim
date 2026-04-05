@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the URDF exporter extension."""
+
 # Standard library imports
 import asyncio
 import os
@@ -26,22 +28,22 @@ import omni.kit.actions.core
 import omni.kit.commands
 import omni.kit.test
 from isaacsim.asset.importer.urdf import URDFImporter, URDFImporterConfig
-from isaacsim.asset.importer.utils import test_utils
 from isaacsim.storage.native import get_assets_root_path
+from isaacsim.test.utils import usd_utils
 from nvidia.srl.from_usd.to_urdf import UsdToUrdf
 
 
-# Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestUrdfExporter(omni.kit.test.AsyncTestCase):
-    # Before running each test
-    async def setUp(self):
+    """Async test cases for USD-to-URDF export round-trips."""
+
+    async def setUp(self) -> None:
+        """Set up a fresh stage before each test."""
         self._timeline = omni.timeline.get_timeline_interface()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        pass
 
-    # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Wait for pending loads and create a clean stage after each test."""
         # Wait for any pending stage loading operations to complete
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
@@ -57,16 +59,26 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-        pass
-
     @staticmethod
     def check(
-        prims,
-        member,
+        prims: list,
+        member: Any,
         member_args: list[tuple] | None = None,
         member_kwargs: list[dict] | None = None,
         msg: list[str] | None = None,
     ) -> bool:
+        """Compare a property or method result across multiple prims for consistency.
+
+        Args:
+            prims: List of prim objects to compare.
+            member: Property or method to evaluate on each prim.
+            member_args: Per-prim positional arguments for the method call.
+            member_kwargs: Per-prim keyword arguments for the method call.
+            msg: Optional labels for each prim used in mismatch messages.
+
+        Returns:
+            True if all pairwise comparisons match.
+        """
         import itertools
 
         def show_mismatch(member_name: str, *, i: int, x: Any, j: int, y: Any) -> None:
@@ -96,7 +108,7 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
                     x_np = x.numpy()
                     y_np = y.numpy()
                     return np.allclose(x_np, y_np, rtol=1e-03, atol=1e-05), x_np, y_np
-                except:
+                except Exception:
                     pass
             # generic Python types
             elif x != y:
@@ -131,8 +143,8 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
                     show_mismatch(member_name, i=i, x=x, j=j, y=y)
         return status
 
-    async def test_exporter_ur10e(self):
-        """Test exporting the UR10e robot from USD to URDF and validate the exported URDF"""
+    async def test_exporter_ur10e(self) -> None:
+        """Test exporting the UR10e robot from USD to URDF and validate the exported URDF."""
         assets_root_path = get_assets_root_path()[: len(get_assets_root_path())] + "/"
         robot_path = "Isaac/Robots/UniversalRobots/ur10e/ur10e.usd"
         robot_path = os.path.join(assets_root_path, robot_path)
@@ -158,8 +170,8 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
             await stage_utils.create_new_stage_async()
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_exporter_2f_140_base(self):
-        """Test exporting the 2F-140 base robot from USD to URDF and validate the exported URDF"""
+    async def test_exporter_2f_140_base(self) -> None:
+        """Test exporting the 2F-140 base robot from USD to URDF and validate the exported URDF."""
         assets_root_path = get_assets_root_path()[: len(get_assets_root_path())] + "/"
         robot_path = "Isaac/Robots/Robotiq/2F-140/Robotiq_2F_140_base.usd"
         robot_path = os.path.join(assets_root_path, robot_path)
@@ -186,9 +198,8 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     @unittest.skip("urdf converter bug")
-    async def test_exporter_nova_carter(self):
-        """Test exporting the NovaCarter robot from USD to URDF and validate the exported URDF"""
-
+    async def test_exporter_nova_carter(self) -> None:
+        """Test exporting the NovaCarter robot from USD to URDF and validate the exported URDF."""
         assets_root_path = get_assets_root_path()[: len(get_assets_root_path())] + "/"
         robot_path = "Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
         robot_path = os.path.join(assets_root_path, robot_path)
@@ -234,17 +245,15 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
             print(f"original usd path: {usd_to_check}")
             await stage_utils.create_new_stage_async()
 
-            comparison_result = await test_utils.compare_usd_files([usd_to_check, urdf_to_check])
+            comparison_result = await usd_utils.compare_usd_files([usd_to_check, urdf_to_check])
             self.assertTrue(comparison_result, "USD comparison failed")
 
             # Ensure stage is cleared before temp directory cleanup
             await stage_utils.create_new_stage_async()
             await omni.kit.app.get_app().next_update_async()
 
-        return
-
-    async def test_exporter_tien_kung(self):
-        """Test exporting the TienKung robot from USD to URDF and validate the exported URDF"""
+    async def test_exporter_tien_kung(self) -> None:
+        """Test exporting the TienKung robot from USD to URDF and validate the exported URDF."""
         assets_root_path = get_assets_root_path()[: len(get_assets_root_path())] + "/"
         robot_path = "Isaac/Robots/XHumanoid/Tien Kung/tienkung.usd"
         robot_path = os.path.join(assets_root_path, robot_path)
@@ -271,8 +280,8 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     @unittest.skip("urdf converter bug")
-    async def test_exporter_unitree_go2(self):
-        """Test exporting the Unitree Go2 robot from USD to URDF and validate the exported URDF"""
+    async def test_exporter_unitree_go2(self) -> None:
+        """Test exporting the Unitree Go2 robot from USD to URDF and validate the exported URDF."""
         assets_root_path = get_assets_root_path()[: len(get_assets_root_path())] + "/"
         robot_path = "Isaac/Robots/Unitree/Go2/go2.usd"
         robot_path = os.path.join(assets_root_path, robot_path)
@@ -317,11 +326,9 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
 
             await stage_utils.create_new_stage_async()
 
-            comparison_result = await test_utils.compare_usd_files([usd_to_check, urdf_to_check])
+            comparison_result = await usd_utils.compare_usd_files([usd_to_check, urdf_to_check])
             self.assertTrue(comparison_result, "USD comparison failed")
 
             # Ensure stage is cleared before temp directory cleanup
             await stage_utils.create_new_stage_async()
             await omni.kit.app.get_app().next_update_async()
-
-        return

@@ -30,9 +30,8 @@ import omni.kit.test
 import omni.kit.ui_test as ui_test
 from isaacsim.asset.importer.urdf import URDFImporter, URDFImporterConfig
 from isaacsim.asset.importer.urdf.ui.impl import extension as urdf_ui_extension
-from isaacsim.asset.importer.utils import test_utils
 from isaacsim.core.experimental.utils import stage as stage_utils
-from isaacsim.test.utils import MenuUITestCase
+from isaacsim.test.utils import MenuUITestCase, usd_utils
 from pxr import Sdf
 
 
@@ -300,7 +299,7 @@ class TestImporterUI(MenuUITestCase):
         urdf_importer_output_path = os.path.normpath(urdf_importer.import_urdf())
         print(f"urdf_importer_output_path: {urdf_importer_output_path}")
         print(f"ui_ur10_path: {ui_ur10_path}")
-        result = await test_utils.compare_usd_files([ui_ur10_path, urdf_importer_output_path])
+        result = await usd_utils.compare_usd_files([ui_ur10_path, urdf_importer_output_path])
         self.assertTrue(result, "USD comparison failed")
 
         await omni.kit.app.get_app().next_update_async()

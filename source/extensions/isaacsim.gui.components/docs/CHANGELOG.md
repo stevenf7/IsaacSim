@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.8.0] - 2026-03-09
+### Changed
+- Update UI utils functions based on requriements from isaac sim importers
+
 ## [1.7.3] - 2026-03-20
 ### Fixed
 - Duplicate import

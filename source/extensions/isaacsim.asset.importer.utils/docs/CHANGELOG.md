@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.2] - 2026-04-02
+### Changed
+- Moved compare usd util funciton isaacsim.test.util
+
 ## [1.1.1] - 2026-03-05
 ### Changed
 - Fix api and docs syntax issues

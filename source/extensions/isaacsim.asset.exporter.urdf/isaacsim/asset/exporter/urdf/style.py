@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""UI style constants and helpers for the URDF exporter options panel."""
+
 import pathlib
 
 import omni
@@ -43,7 +45,12 @@ HEADER_FONT_SIZE = 16
 FONT_SIZE = 14
 
 
-def get_option_style():
+def get_option_style() -> dict:
+    """Return the omni.ui style dictionary for the exporter options panel.
+
+    Returns:
+        Style dictionary mapping widget selectors to their visual properties.
+    """
     style = {
         "Button::reset": {"background_color": 0x0, "border_radius": 1},
         "Button::reset:disabled": {"background_color": 0x0, "color": 0x0, "border_radius": 1},
