@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.14.0] - 2026-03-31
+### Added
+- Add `usd_utils` module with `compare_usd_files` for loading and comparing articulation properties across USD files
+- Add `compare_articulation_properties` for pairwise comparison of articulation member values
+- Add `isaacsim.core.experimental.prims` as a dependency
+
 ## [0.13.0] - 2026-03-27
 ### Added
 - Add `button_utils` module with `get_widget_screen_center`, `deferred_click`, `deferred_click_widget`, and `discover_template_buttons` for UI button discovery and deferred click automation

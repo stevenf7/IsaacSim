@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0] - 2026-03-31
+### Changed
+- Use shared UI library from isaacsim.gui.components
+- Replaced local style definitions with shared base style from `isaacsim.gui.components.style`
+- Moved `checkbox_builder`, `dropdown_builder`, `string_filed_builder` imports to `isaacsim.gui.components.ui_utils`
+
 ## [1.0.5] - 2026-03-21
 ### Fixed
 - Fixed test setUp to call `super().setUp()`, ensuring menus are rebuilt before UI tests run so `File/Import` navigation succeeds on first test invocation
