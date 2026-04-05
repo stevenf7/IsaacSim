@@ -13,4 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .bindings import _path_planner  # noqa: F401
 from .impl import *

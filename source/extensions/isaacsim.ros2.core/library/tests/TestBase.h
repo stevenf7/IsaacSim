@@ -275,10 +275,10 @@ public:
     }
 
 protected:
-    std::string m_distro;
-    std::shared_ptr<isaacsim::ros2::core::Ros2Factory> m_factory;
-    std::shared_ptr<isaacsim::ros2::core::Ros2ContextHandle> m_context;
-    std::shared_ptr<isaacsim::ros2::core::Ros2NodeHandle> m_node;
+    std::string m_distro; ///< Active ROS 2 distribution name.
+    std::shared_ptr<isaacsim::ros2::core::Ros2Factory> m_factory; ///< ROS 2 factory for creating contexts and nodes.
+    std::shared_ptr<isaacsim::ros2::core::Ros2ContextHandle> m_context; ///< ROS 2 context handle for the test.
+    std::shared_ptr<isaacsim::ros2::core::Ros2NodeHandle> m_node; ///< ROS 2 node handle for the test.
 };
 
 /**

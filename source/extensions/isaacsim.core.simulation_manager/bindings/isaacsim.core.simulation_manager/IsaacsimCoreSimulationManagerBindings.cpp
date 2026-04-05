@@ -17,8 +17,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include <carb/BindingsPythonUtils.h>
-
+#include <isaacsim/core/includes/BindingsPythonUtils.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
 #include <isaacsim/core/simulation_manager/PhysicsScene.h>
 #include <pybind11/functional.h>

@@ -74,6 +74,7 @@ project_ext_bindings {
 add_files("bindings", "bindings/*.*")
 includedirs {
     "%{root}/source/extensions/isaacsim.sensors.physics.nodes/include",
+    "%{root}/source/extensions/isaacsim.core.includes/include",
 }
 
 -- Python files

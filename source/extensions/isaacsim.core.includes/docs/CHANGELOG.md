@@ -1,4 +1,12 @@
 # Changelog
+## [2.8.0] - 2026-03-20
+### Added
+- Added `BindingsPythonUtils.h` header for pybind11 bindings utilities
+
+### Fixed
+- Fixed brace initialization for `g_kIsaacNameOveride` in `UsdUtilities.h`
+- Added Doxygen `@cond` to hide internal template `QuatFromAxisAngle` in `Quat.h`
+
 ## [2.7.0] - 2026-03-04
 ### Changed
 - Added Overview.md

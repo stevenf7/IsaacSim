@@ -124,37 +124,7 @@ public:
     {
         m_usdNoticeListenerKey =
             pxr::TfNotice::Register(pxr::TfCreateWeakPtr(m_usdNoticeListener.get()), &UsdNoticeListener::handle);
-        auto ed = carb::getCachedInterface<carb::eventdispatcher::IEventDispatcher>();
-        static const carb::RStringKey s_kEventName("IsaacSimStageOpenedUsdNoticeListener");
-        auto usdContext = omni::usd::UsdContext::getContext();
-        m_stageEventSubscription = ed->observeEvent(
-            s_kEventName, 1000, usdContext->stageEventName(omni::usd::StageEventType::eOpened),
-            [this, usdContext](const auto&)
-            {
-                auto stage = usdContext->getStage();
-                PXR_NS::UsdStageCache& cache = PXR_NS::UsdUtilsStageCache::Get();
-                omni::fabric::UsdStageId stageId = { static_cast<uint64_t>(cache.GetId(stage).ToLongInt()) };
-                omni::fabric::IStageReaderWriter* iStageReaderWriter =
-                    carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
-                omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(stageId);
-                usdrt::UsdStageRefPtr usdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
-                for (auto& usdrtPath : usdrtStage->GetPrimsWithTypeName(usdrt::TfToken("UsdPhysicsScene")))
-                {
-                    const omni::fabric::Path path(usdrtPath);
-                    const pxr::SdfPath primPath = omni::fabric::toSdfPath(path);
-                    pxr::UsdPrim prim = stage->GetPrimAtPath(primPath);
-                    if (m_usdNoticeListener->getPhysicsScenes().count(primPath) == 0)
-                    {
-                        m_usdNoticeListener->getPhysicsScenes().emplace(
-                            primPath, pxr::PhysxSchemaPhysxSceneAPI::Apply(prim));
-                        for (auto const& [key, AdditionFunc] : m_usdNoticeListener->getPhysicsSceneAdditionCallbacks())
-                        {
-                            (void)key;
-                            AdditionFunc(primPath.GetString());
-                        }
-                    }
-                }
-            });
+        _initializeStageEventSubscription();
     }
 
     /**
@@ -178,6 +148,7 @@ public:
      */
     int registerDeletionCallback(const std::function<void(std::string)>& callback) override
     {
+        _initializeStageEventSubscription();
         int& callbackIter = m_usdNoticeListener->getCallbackIter();
         m_usdNoticeListener->getDeletionCallbacks().emplace(callbackIter, callback);
         callbackIter += 1;
@@ -194,6 +165,7 @@ public:
      */
     int registerPhysicsSceneAdditionCallback(const std::function<void(std::string)>& callback) override
     {
+        _initializeStageEventSubscription();
         int& callbackIter = m_usdNoticeListener->getCallbackIter();
         m_usdNoticeListener->getPhysicsSceneAdditionCallbacks().emplace(callbackIter, callback);
         callbackIter += 1;
@@ -589,6 +561,59 @@ public:
     }
 
 private:
+    void _initializeStageEventSubscription()
+    {
+        if (m_stageEventSubscription)
+        {
+            return;
+        }
+
+        auto usdContext = omni::usd::UsdContext::getContext();
+        if (!usdContext)
+        {
+            CARB_LOG_WARN("USD context is not available; stage-opened subscription is deferred");
+            return;
+        }
+
+        auto stage = usdContext->getStage();
+        if (!stage)
+        {
+            CARB_LOG_WARN("USD stage is not available; stage-opened subscription is deferred");
+            return;
+        }
+
+        auto ed = carb::getCachedInterface<carb::eventdispatcher::IEventDispatcher>();
+        static const carb::RStringKey s_kEventName("IsaacSimStageOpenedUsdNoticeListener");
+        m_stageEventSubscription = ed->observeEvent(
+            s_kEventName, 1000, usdContext->stageEventName(omni::usd::StageEventType::eOpened),
+            [this, usdContext](const auto&)
+            {
+                auto stage = usdContext->getStage();
+                PXR_NS::UsdStageCache& cache = PXR_NS::UsdUtilsStageCache::Get();
+                omni::fabric::UsdStageId stageId = { static_cast<uint64_t>(cache.GetId(stage).ToLongInt()) };
+                omni::fabric::IStageReaderWriter* iStageReaderWriter =
+                    carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
+                omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(stageId);
+                usdrt::UsdStageRefPtr usdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
+                for (auto& usdrtPath : usdrtStage->GetPrimsWithTypeName(usdrt::TfToken("UsdPhysicsScene")))
+                {
+                    const omni::fabric::Path path(usdrtPath);
+                    const pxr::SdfPath primPath = omni::fabric::toSdfPath(path);
+                    pxr::UsdPrim prim = stage->GetPrimAtPath(primPath);
+                    if (m_usdNoticeListener->getPhysicsScenes().count(primPath) == 0)
+                    {
+                        m_usdNoticeListener->getPhysicsScenes().emplace(
+                            primPath, pxr::PhysxSchemaPhysxSceneAPI::Apply(prim));
+                        for (auto const& [key, AdditionFunc] : m_usdNoticeListener->getPhysicsSceneAdditionCallbacks())
+                        {
+                            (void)key;
+                            AdditionFunc(primPath.GetString());
+                        }
+                    }
+                }
+            });
+    }
+
     /**
      * @brief USD notice listener object that handles USD notices.
      */

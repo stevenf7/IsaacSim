@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.1] - 2026-04-03
+### Fixed
+- Added explicit import of `_ros2_core` bindings module for stubgen discoverability
+- Added Doxygen `@cond` to hide internal anonymous namespace in `Ros2Distro.h`
+
 ## [1.7.0] - 2026-04-01
 ### Changed
 - Removed deprecated `isaacsim.core.api` and `isaacsim.core.utils` dependencies

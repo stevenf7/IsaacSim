@@ -208,6 +208,11 @@ ext_conflicts.json
 # Temp folders created by doc snippets tests
 xarm_antipodal
 
+# Generated .pyi stub files (copied from build directory for mypy)
+source/extensions/**/*.pyi
+source/internal_extensions/**/*.pyi
+source/deprecated/**/*.pyi
+
 # Temp files for slack posting stuff
 pipeline_test_chart_heatmap.html
 pipeline_test_chart_heatmap.png
