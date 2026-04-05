@@ -1,7 +1,7 @@
 {
-    "Random3f": {
+    "isaacsim.replicator.domain_randomization.Random3f": {
         "version": 1,
-        "description": "This node outputs the poses of assets with semantic labels",
+        "description": "Generates a random float3 value within specified min/max ranges",
         "language": "Python",
         "metadata": {
             "uiName": "Random 3f"
@@ -9,11 +9,11 @@
         "inputs": {
             "minimum": {
                 "type": "float[3]",
-                "description": "minimum range for randomization"
+                "description": "Minimum range for randomization"
             },
             "maximum": {
                 "type": "float[3]",
-                "description": "minimum range for randomization"
+                "description": "Maximum range for randomization"
             }
         },
         "outputs": {

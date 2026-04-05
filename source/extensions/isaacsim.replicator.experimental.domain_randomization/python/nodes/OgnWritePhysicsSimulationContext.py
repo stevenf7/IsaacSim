@@ -84,7 +84,7 @@ class OgnWritePhysicsSimulationContext:
         on_reset = db.inputs.on_reset
 
         try:
-            physics_sim_view = physics._physics_sim_view
+            physics_sim_view = physics.resolve_physics_sim_view()
             if physics_sim_view is None:
                 raise ValueError("Expected a registered simulation context with physics_sim_view")
             if attribute_name not in SIMULATION_CONTEXT_ATTRIBUTES:

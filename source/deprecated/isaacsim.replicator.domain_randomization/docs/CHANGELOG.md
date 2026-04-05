@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2026-04-01
+### Changed
+- Added extension structure validation README.md, isaac-sim.svg and ogn node CategoryDefinition.json files
+
 ## [1.2.0] - 2026-03-04
 ### Changed
 - Added python_api.md and updated docstrings

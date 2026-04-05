@@ -1205,7 +1205,6 @@ extsbuild_exts_includes = [
 build_path = "${root}/_build/${platform}/release/exts"
 home_path = "${root}/source/extensions"
 ogn_exts_includes = [
-  "isaacsim.replicator.domain_randomization",
   "isaacsim.replicator.experimental.domain_randomization",
   "isaacsim.replicator.examples",
   "isaacsim.replicator.writers",

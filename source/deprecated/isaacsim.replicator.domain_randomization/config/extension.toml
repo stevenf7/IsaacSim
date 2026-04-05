@@ -1,22 +1,26 @@
 [package]
-version = "1.2.0"
+version = "1.2.1"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Domain Randomization"
 description="The extension provides various Domain Randomization scripts and OmniGraph nodes for randomizing simulation environments."
 authors = ["hmazhar@nvidia.com", "ahaidu@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.replicator.domain_randomization"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/isaacsim.replicator.domain_randomization"
 keywords = ["Synthetic", "Data", "Randomization", "Generator", "Domain Randomization", "DR"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
+writeTarget.platform = true
 
-writeTarget.platform = true # Build separate extensions for Windows and Linux so appropriate libraries are bundled
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 6.0.0 in favor of isaacsim.replicator.experimental.domain_randomization"
 
 [dependencies]
 "isaacsim.core.api" = {}
+"isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.prims" = {}
+"isaacsim.replicator.experimental.domain_randomization" = {}
 "omni.graph" = {}
 "omni.graph.core" = {}
 "omni.replicator.core" = {}
@@ -24,9 +28,11 @@ writeTarget.platform = true # Build separate extensions for Windows and Linux so
 [[python.module]]
 name = "isaacsim.replicator.domain_randomization"
 
-# Watch the .ogn files for hot reloading (only works for Python files)
+[[python.module]]
+name = "isaacsim.replicator.domain_randomization.tests"
+
 [fswatcher.patterns]
-include = ["*.ogn", "*.py"]
+include = ["*.py"]
 exclude = ["Ogn*Database.py"]
 
 [[test]]

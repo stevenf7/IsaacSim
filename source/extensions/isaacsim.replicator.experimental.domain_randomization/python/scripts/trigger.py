@@ -32,7 +32,7 @@ def on_rl_frame(num_envs: int):
     Returns:
         The OmniGraph node for RL frame triggers.
     """
-    node = create_node("isaacsim.replicator.experimental.domain_randomization.OgnOnRLFrame")
+    node = create_node("isaacsim.replicator.domain_randomization.OgnOnRLFrame")
     node.get_attribute("inputs:num_envs").set(num_envs)
 
     initialize_context(num_envs, node)
