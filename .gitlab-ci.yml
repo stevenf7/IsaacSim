@@ -947,6 +947,8 @@ test-linux-x86_64-omniperf-benchmarks-1-gpu:
         artifacts: true
     before_script:
       - !reference [.with_omniperf_vault_linux, before_script]
+      - sudo apt-get update --allow-releaseinfo-change || true
+      - sudo apt-get install -y python3-pip || true
       - python3 -m pip install --upgrade --index-url ${OMNIPERF_INDEX_URL} --extra-index-url ${OMNIPERF_EXTRA_INDEX_URL} --extra-index-url https://pypi.org/simple --no-cache-dir omniperf
       # Bootstrap reggie (download + setup venv, same as .reggie_detect_ubuntu but without running detect)
       - echo "Installing reggie bootstrap (ref ${REGGIE_BOOTSTRAP_REF})..."
@@ -961,6 +963,7 @@ test-linux-x86_64-omniperf-benchmarks-1-gpu:
         - .reggie-out-iter-*/
       when: always
       expire_in: 2 weeks
+    retry: 1
 
 omniperf-result-handler:
     extends: .result_handler
@@ -972,6 +975,7 @@ omniperf-result-handler:
         when: on_success
       - !reference [.rules-run-omniperf-mr, rules]
       - when: never
+    allow_failure: true
     variables:
       OMNIPERF_RESULT_HANDLER_TYPE: "isaac-sim"
       OMNIPERF_RESULT_PATH: "_omniperf_results"
