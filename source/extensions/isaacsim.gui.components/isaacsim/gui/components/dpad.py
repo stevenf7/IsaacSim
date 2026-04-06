@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Directional pad (D-Pad) UI widget for controlling movement in Isaac Sim."""
+
 from pathlib import Path
 from typing import Callable
 
@@ -198,6 +200,7 @@ class Dpad:
         return
 
     def shutdown(self):
+        """Clean up the D-Pad window and release resources."""
         self._window = None
         self.name = None
         self.width = None

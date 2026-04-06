@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Functions for performing transform operations.
-"""
+"""Functions for performing transform operations."""
 
 from __future__ import annotations
 

@@ -28,13 +28,13 @@ torch = import_module("torch")
 
 @torch.jit.script
 def normalize(x, eps: float = 1e-9):
+    """Normalize a tensor along the last dimension."""
     return x / x.norm(p=2, dim=-1).clamp(min=eps, max=None).unsqueeze(-1)
 
 
 @torch.jit.script
 def scale_transform(x: torch.Tensor, lower: torch.Tensor, upper: torch.Tensor) -> torch.Tensor:
-    """
-    Normalizes a given input tensor to a range of [-1, 1].
+    """Normalizes a given input tensor to a range of [-1, 1].
 
     @note It uses pytorch broadcasting functionality to deal with batched input.
 
@@ -54,8 +54,7 @@ def scale_transform(x: torch.Tensor, lower: torch.Tensor, upper: torch.Tensor) -
 
 @torch.jit.script
 def unscale_transform(x: torch.Tensor, lower: torch.Tensor, upper: torch.Tensor) -> torch.Tensor:
-    """
-    Denormalizes a given input tensor from range of [-1, 1] to (lower, upper).
+    """Denormalizes a given input tensor from range of [-1, 1] to (lower, upper).
 
     @note It uses pytorch broadcasting functionality to deal with batched input.
 
@@ -75,6 +74,7 @@ def unscale_transform(x: torch.Tensor, lower: torch.Tensor, upper: torch.Tensor)
 
 @torch.jit.script
 def copysign(a, b):
+    """Return a tensor with magnitude of a and sign of b."""
     # type: (float, Tensor) -> Tensor
     a = torch.tensor(a, device=b.device, dtype=torch.float).repeat(b.shape[0])
     return torch.abs(a) * torch.sign(b)
@@ -82,12 +82,14 @@ def copysign(a, b):
 
 @torch.jit.script
 def torch_rand_float(lower, upper, shape, device):
+    """Generate random floats uniformly distributed in [lower, upper]."""
     # type: (float, float, Tuple[int, int], str) -> Tensor
     return (upper - lower) * torch.rand(*shape, device=device) + lower
 
 
 @torch.jit.script
 def torch_random_dir_2(shape, device):
+    """Generate random 2D unit direction vectors."""
     # type: (Tuple[int, int], str) -> Tensor
     angle = torch_rand_float(-np.pi, np.pi, shape, device).squeeze(-1)
     return torch.stack([torch.cos(angle), torch.sin(angle)], dim=-1)
@@ -95,16 +97,19 @@ def torch_random_dir_2(shape, device):
 
 @torch.jit.script
 def tensor_clamp(t, min_t, max_t):
+    """Clamp tensor values element-wise between min and max tensors."""
     return torch.max(torch.min(t, max_t), min_t)
 
 
 @torch.jit.script
 def scale(x, lower, upper):
+    """Scale a tensor from [-1, 1] to [lower, upper] range."""
     return 0.5 * (x + 1.0) * (upper - lower) + lower
 
 
 @torch.jit.script
 def unscale(x, lower, upper):
+    """Scale a tensor from [lower, upper] range to [-1, 1]."""
     return (2.0 * x - upper - lower) / (upper - lower)
 
 

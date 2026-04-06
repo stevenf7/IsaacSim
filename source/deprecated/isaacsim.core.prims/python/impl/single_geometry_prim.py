@@ -145,7 +145,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return self._geometry_prim_view.geoms[0]
 
     def set_contact_offset(self, offset: float) -> None:
-        """Set the contact offset
+        """Set the contact offset.
 
         Shapes whose distance is less than the sum of their contact offset values will generate contacts
 
@@ -170,7 +170,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return
 
     def get_contact_offset(self) -> float:
-        """Get the contact offset
+        """Get the contact offset.
 
         Shapes whose distance is less than the sum of their contact offset values will generate contacts
 
@@ -189,7 +189,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return self._geometry_prim_view.get_contact_offsets()[0]
 
     def set_rest_offset(self, offset: float) -> None:
-        """Set the rest offset
+        """Set the rest offset.
 
         Two shapes will come to rest at a distance equal to the sum of their rest offset values.
         If the rest offset is 0, they should converge to touching exactly
@@ -215,7 +215,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return
 
     def get_rest_offset(self) -> float:
-        """Get the rest offset
+        """Get the rest offset.
 
         Two shapes will come to rest at a distance equal to the sum of their rest offset values.
         If the rest offset is 0, they should converge to touching exactly
@@ -235,7 +235,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return self._geometry_prim_view.get_rest_offsets()[0]
 
     def set_torsional_patch_radius(self, radius: float) -> None:
-        """Set the radius of the contact patch used to apply torsional friction
+        """Set the radius of the contact patch used to apply torsional friction.
 
         Search for *"Torsional Patch Radius"* in |physx_docs| for more details
 
@@ -253,7 +253,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return
 
     def get_torsional_patch_radius(self) -> float:
-        """Get the radius of the contact patch used to apply torsional friction
+        """Get the radius of the contact patch used to apply torsional friction.
 
         Search for *"Torsional Patch Radius"* in |physx_docs| for more details
 
@@ -270,7 +270,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return self._geometry_prim_view.get_torsional_patch_radii()[0]
 
     def set_min_torsional_patch_radius(self, radius: float) -> None:
-        """Set the minimum radius of the contact patch used to apply torsional friction
+        """Set the minimum radius of the contact patch used to apply torsional friction.
 
         Search for *"Torsional Patch Radius"* in |physx_docs| for more details
 
@@ -288,7 +288,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return
 
     def get_min_torsional_patch_radius(self) -> float:
-        """Get the minimum radius of the contact patch used to apply torsional friction
+        """Get the minimum radius of the contact patch used to apply torsional friction.
 
         Search for *"Torsional Patch Radius"* in |physx_docs| for more details
 
@@ -305,7 +305,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return self._geometry_prim_view.get_min_torsional_patch_radii()[0]
 
     def set_collision_approximation(self, approximation_type: str) -> None:
-        """Set the collision approximation
+        """Set the collision approximation.
 
         .. list-table::
             :header-rows: 1
@@ -360,7 +360,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return
 
     def get_collision_approximation(self) -> str:
-        """Get the collision approximation
+        """Get the collision approximation.
 
         .. list-table::
             :header-rows: 1
@@ -406,7 +406,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return self._geometry_prim_view.get_collision_approximations()[0]
 
     def set_collision_enabled(self, enabled: bool) -> None:
-        """Enable/disable the Collision API
+        """Enable/disable the Collision API.
 
         Args:
             enabled: Whether to enable or disable the Collision API
@@ -425,7 +425,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return
 
     def get_collision_enabled(self) -> bool:
-        """Check if the Collision API is enabled
+        """Check if the Collision API is enabled.
 
         Returns:
             True if the Collision API is enabled. Otherwise False
@@ -489,7 +489,8 @@ class SingleGeometryPrim(_SinglePrimWrapper):
 
     def get_net_contact_forces(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
         """Return the net contact forces on the prim if contact forces are tracked.
-        i.e., a matrix of dimension (1, 3)
+
+        i.e., a matrix of dimension (1, 3).
 
         Args:
             dt: Time step multiplier to convert the underlying impulses to forces.
@@ -502,6 +503,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
 
     def get_contact_force_matrix(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
         """Return contact forces between the prim and filter prims if the object is initialized with filter_paths_expr.
+
         i.e., a matrix of dimension (self._contact_view.num_filters, 3) where num_filters is determined according to
         the filter_paths_expr parameter.
 
@@ -515,7 +517,8 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return self._geometry_prim_view._contact_view.get_contact_force_matrix(dt=dt)[0]
 
     def get_contact_force_data(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
-        """Return detailed contact forces between the prim and filter prims if the object is initialized with
+        """Return detailed contact forces between the prim and filter prims if the object is initialized with.
+
         filter_paths_expr. This includes normal contact forces, normal directions, contact points, separations.
         The number of contacts per pair is determined from a static tensor of dimension (self._contact_view.num_filters)
         while the starting index of the associated contact in the above tensors is determined from another static tensor
@@ -534,7 +537,8 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         return self._geometry_prim_view._contact_view.get_contact_force_data(dt=dt)[0]
 
     def get_friction_data(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
-        """Return detailed friction forces between the prim and filter prims if the object is initialized with
+        """Return detailed friction forces between the prim and filter prims if the object is initialized with.
+
         filter_paths_expr. This includes tangential forces and points.
         The number of points per pair is determined from a static tensor of dimension (self._contact_view.num_filters)
         while the starting index of the associated contact in the above tensors is determined from another static tensor

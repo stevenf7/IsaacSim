@@ -79,7 +79,6 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
 
     async def test_rigid_body(self):
         """Test rigid body physics equations of motion under gravity."""
-
         dt = 1.0 / self._physics_rate
 
         # add scene

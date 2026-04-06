@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Extension for registering the Go2 locomotion example in the examples browser."""
+
 import os
 
 import omni.ext
@@ -22,7 +24,14 @@ from isaacsim.robot.policy.examples.interactive.go2 import Go2Example
 
 
 class Go2ExampleExtension(omni.ext.IExt):
+    """Register the Go2 locomotion example in the examples browser."""
+
     def on_startup(self, ext_id: str):
+        """Register the Go2 example on extension startup.
+
+        Args:
+            ext_id: Extension identifier.
+        """
         self.example_name = "Go2"
         self.category = "Policy"
 
@@ -56,4 +65,5 @@ class Go2ExampleExtension(omni.ext.IExt):
         )
 
     def on_shutdown(self):
+        """Deregister the Go2 example on extension shutdown."""
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)

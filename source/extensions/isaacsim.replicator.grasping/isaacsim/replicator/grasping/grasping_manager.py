@@ -1407,7 +1407,6 @@ class GraspingManager:
         Returns:
             True if grasp generation was successful, False otherwise.
         """
-
         object_prim = self.get_object_prim()
         if not object_prim:
             carb.log_warn(

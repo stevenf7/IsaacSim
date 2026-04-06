@@ -29,7 +29,8 @@ from .interface_helper import LulaInterfaceHelper
 
 
 class LulaKinematicsSolver(KinematicsSolver):
-    """A Lula-based implementation of the KinematicsSolver interface. Lula uses a URDF file describing the robot and
+    """A Lula-based implementation of the KinematicsSolver interface. Lula uses a URDF file describing the robot and.
+
     a custom yaml file that specifies the cspace of the robot and other parameters.
 
     This class provides functions beyond the KinematicsSolver interface for getting and setting solver parameters.
@@ -308,7 +309,7 @@ class LulaKinematicsSolver(KinematicsSolver):
     def compute_forward_kinematics(
         self, frame_name: str, joint_positions: np.array, position_only: Optional[bool] = False
     ) -> Tuple[np.array, np.array]:
-        """Compute the position of a given frame in the robot relative to the USD stage global frame
+        """Compute the position of a given frame in the robot relative to the USD stage global frame.
 
         Args:
             frame_name: Name of robot frame on which to calculate forward kinematics
@@ -320,7 +321,6 @@ class LulaKinematicsSolver(KinematicsSolver):
             translation of the frame relative to the USD stage origin and frame_rotation is a (3x3) rotation matrix
             describing the rotation of the frame relative to the USD stage global frame.
         """
-
         return LulaInterfaceHelper.get_end_effector_pose(self, joint_positions, frame_name)
 
     def compute_inverse_kinematics(
@@ -333,8 +333,9 @@ class LulaKinematicsSolver(KinematicsSolver):
         orientation_tolerance: float = None,
     ) -> Tuple[np.array, bool]:
         """Compute joint positions such that the specified robot frame will reach the desired translations and rotations.
+
         Lula Kinematics interpret the orientation tolerance as being the maximum rotation separating any standard axes.
-        e.g. For a tolerance of .1: The X axes, Y axes, and Z axes of the rotation matrices may independently be as far as .1 radians apart
+        e.g. For a tolerance of .1: The X axes, Y axes, and Z axes of the rotation matrices may independently be as far as .1 radians apart.
 
         Default values for position and orientation tolerances may be seen and changed with setter and getter functions.
 
@@ -351,7 +352,6 @@ class LulaKinematicsSolver(KinematicsSolver):
         Returns:
             A tuple containing (joint_positions, success) where joint_positions are in the order specified by get_joint_names() which result in the target frame achieving the desired position and success is True if the solver converged to a solution within the given tolerances.
         """
-
         if position_tolerance is None:
             self._ik_config.position_tolerance = self._default_position_tolerance
         else:
@@ -392,26 +392,24 @@ class LulaKinematicsSolver(KinematicsSolver):
         return results.cspace_position, results.success
 
     def supports_collision_avoidance(self) -> bool:
-        """Lula Inverse Kinematics do not support collision avoidance with USD obstacles
+        """Lula Inverse Kinematics do not support collision avoidance with USD obstacles.
 
         Returns:
             Always False
         """
-
         return False
 
     def set_default_orientation_tolerance(self, tolerance: float):
-        """Default orientation tolerance to be used when calculating IK when none is specified
+        """Default orientation tolerance to be used when calculating IK when none is specified.
 
         Args:
             tolerance: magnitude of rotation (in radians) separating the target orientation from the achieved orienatation.
                 orientation_tolerance is well defined for values between 0 and pi.
         """
-
         self._default_orientation_tolerance = tolerance
 
     def set_default_position_tolerance(self, tolerance: float):
-        """Default position tolerance to be used when calculating IK when none is specified
+        """Default position tolerance to be used when calculating IK when none is specified.
 
         Args:
             tolerance: l-2 norm of acceptable position error (in stage units) between the target and achieved translations
@@ -419,7 +417,7 @@ class LulaKinematicsSolver(KinematicsSolver):
         self._default_position_tolerance = tolerance * self._meters_per_unit
 
     def set_default_cspace_seeds(self, seeds: np.array):
-        """Set a list of cspace seeds that the solver may use as starting points for solutions
+        """Set a list of cspace seeds that the solver may use as starting points for solutions.
 
         Args:
             seeds: An N x num_dof list of cspace seeds
@@ -427,7 +425,7 @@ class LulaKinematicsSolver(KinematicsSolver):
         self._default_cspace_seeds = seeds
 
     def get_default_orientation_tolerance(self) -> float:
-        """Default orientation tolerance to be used when calculating IK when none is specified
+        """Default orientation tolerance to be used when calculating IK when none is specified.
 
         Returns:
             magnitude of rotation (in radians) separating the target orientation from the achieved orienatation.
@@ -436,7 +434,7 @@ class LulaKinematicsSolver(KinematicsSolver):
         return self._default_orientation_tolerance
 
     def get_default_position_tolerance(self) -> float:
-        """Default position tolerance to be used when calculating IK when none is specified
+        """Default position tolerance to be used when calculating IK when none is specified.
 
         Returns:
             l-2 norm of acceptable position error (in stage units) between the target and achieved translations
@@ -444,7 +442,7 @@ class LulaKinematicsSolver(KinematicsSolver):
         return self._default_position_tolerance / self._meters_per_unit
 
     def get_default_cspace_seeds(self) -> List[np.array]:
-        """List of cspace seeds that the solver may use as starting points for solutions
+        """List of cspace seeds that the solver may use as starting points for solutions.
 
         Returns:
             An N x num_dof list of cspace seeds
@@ -472,7 +470,7 @@ class LulaKinematicsSolver(KinematicsSolver):
         return c_space_position_lower_limits, c_space_position_upper_limits
 
     def get_cspace_velocity_limits(self) -> np.array:
-        """Default velocity limits of the active joints
+        """Default velocity limits of the active joints.
 
         Returns:
             Default velocity limits of the active joints
@@ -486,6 +484,7 @@ class LulaKinematicsSolver(KinematicsSolver):
 
     def get_cspace_acceleration_limits(self) -> np.array:
         """Get the default acceleration limits of the active joints.
+
         Default acceleration limits are read from the robot_description YAML file.
         Any acceleration limits that are not specified in the robot_description YAML file will
         be None.
@@ -504,6 +503,7 @@ class LulaKinematicsSolver(KinematicsSolver):
 
     def get_cspace_jerk_limits(self) -> np.array:
         """Get the default jerk limits of the active joints.
+
         Default jerk limits are read from the robot_description YAML file.
         Any jerk limits that are not specified in the robot_description YAML file will
         be None.
@@ -522,6 +522,7 @@ class LulaKinematicsSolver(KinematicsSolver):
 
     def _lula_orientation_tol_to_rad_tol(self, tol: float):
         """Convert from lula IK orientation tolerance to radian magnitude tolerance.
+
         This function is the inverse of _rad_tol_to_lula_orientation_tol.
 
         Args:
@@ -537,6 +538,7 @@ class LulaKinematicsSolver(KinematicsSolver):
 
     def _rad_tol_to_lula_orientation_tol(self, tol: float):
         """Convert from radian magnitude tolerance to lula IK orientation tolerance.
+
         Orientation tolerance in Lula is defined as the maximum l2-norm between rotation matrix columns
         paired by index. For example, rotating pi rad about the z axis maps to a norm of 2.0 when
         comparing the x columns.

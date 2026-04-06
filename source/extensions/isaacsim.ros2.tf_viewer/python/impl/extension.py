@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""TF Viewer extension for visualizing ROS 2 TF frames."""
+
 import os
 import sys
 import threading
@@ -27,7 +29,10 @@ from . import ui_builder, viewport_scene
 
 
 class Extension(omni.ext.IExt):
+    """Extension for the ROS 2 TF Viewer."""
+
     def on_startup(self, ext_id):
+        """Initialize the extension."""
         self._extension_manager = omni.kit.app.get_app().get_extension_manager()
         ext_path = self._extension_manager.get_extension_path(ext_id)
 
@@ -81,6 +86,7 @@ class Extension(omni.ext.IExt):
         self._frames = set(["World", "world", "map"])
 
     def on_shutdown(self):
+        """Clean up resources when the extension shuts down."""
         self._running = False
         self._ui_builder.shutdown()
         # destroy viewport scene

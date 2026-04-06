@@ -31,7 +31,8 @@ from .shape import Shape
 
 
 class Cylinder(Shape):
-    """High level class for creating/wrapping USD Cylinder (primitive cylinder with closed ends, centered at the origin,
+    """High level class for creating/wrapping USD Cylinder (primitive cylinder with closed ends, centered at the origin,.
+
     whose spine is along the specified axis) prims.
 
     .. note::

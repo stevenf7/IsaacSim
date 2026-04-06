@@ -13,5 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Application compatibility check extension for Isaac Sim."""
+
 from .bindings import _compatibility_check  # noqa: F401
 from .impl import *

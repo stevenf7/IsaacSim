@@ -13,17 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""ROS 2 UI extension entry point."""
+
 import omni.ext
 from isaacsim.ros2.ui.og_shortcuts_menu import Ros2ShortcutsMenuExtension
 
 
 class Extension(omni.ext.IExt):
+    """Extension entry point for the ROS 2 UI shortcuts menu."""
+
     def on_startup(self, ext_id):
+        """Initialize the extension."""
         print("ROS2 UI extension startup")
 
         self.shortcuts_menu = Ros2ShortcutsMenuExtension()
         self.shortcuts_menu.on_startup(ext_id)
 
     def on_shutdown(self):
+        """Clean up resources when the extension shuts down."""
         if hasattr(self, "shortcuts_menu"):
             self.shortcuts_menu.on_shutdown()

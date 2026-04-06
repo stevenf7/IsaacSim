@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Sensor icon model for viewport scene management."""
+
+
 __all__ = ["IconModel"]
 
 from pathlib import Path
@@ -312,7 +315,6 @@ class IconModel(sc.AbstractManipulatorModel):
         Args:
             e: The frame update event.
         """
-
         # Clear the transform cache so position queries are up-to-date.
         self._xform_cache = None
 

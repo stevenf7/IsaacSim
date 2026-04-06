@@ -31,7 +31,8 @@ from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 
 class PhysicsContext(object):
-    """Provides high level functions to deal with a physics scene and its settings. This will create a
+    """Provides high level functions to deal with a physics scene and its settings. This will create a.
+
     a PhysicsScene prim at the specified prim path in case there is no PhysicsScene present in the current
     stage.
     If there is a PhysicsScene present, it will discard the prim_path specified and sets the
@@ -289,7 +290,7 @@ class PhysicsContext(object):
         return scene
 
     def set_physics_dt(self, dt: float = 1.0 / 60.0, substeps: int = 1) -> None:
-        """Sets the physics dt on the PhysicsScene
+        """Sets the physics dt on the PhysicsScene.
 
         Args:
             dt: Physics dt.
@@ -343,7 +344,8 @@ class PhysicsContext(object):
         SimulationManager.enable_fabric(enable=enable)
 
     def enable_ccd(self, flag: bool) -> None:
-        """Enables a second broad phase after integration that makes it possible to prevent objects from tunneling
+        """Enables a second broad phase after integration that makes it possible to prevent objects from tunneling.
+
                through each other. If GPU is enabled, CCD is not supported and the request will be ignored. If CCD is enabled and then the GPU pipeline is requested, CCD will be disabled automatically.
 
         Args:
@@ -441,7 +443,7 @@ class PhysicsContext(object):
         return SimulationManager.get_broadphase_type()
 
     def set_solver_type(self, solver_type: str) -> None:
-        """solver used for simulation.
+        """Solver used for simulation.
 
         Args:
             solver_type: can be "TGS" or "PGS". for references look at..
@@ -471,7 +473,7 @@ class PhysicsContext(object):
         return self._physx_scene_api.GetSolverTypeAttr().Get()
 
     def set_gravity(self, value: float) -> None:
-        """sets the gravity direction and magnitude.
+        """Sets the gravity direction and magnitude.
 
         Args:
             value: gravity value to be used in simulation.
@@ -689,7 +691,7 @@ class PhysicsContext(object):
         return self._physx_scene_api.GetFrictionCorrelationDistanceAttr().Get()
 
     def set_enable_scene_query_support(self, enable_scene_query_support: bool) -> None:
-        """Sets the Enable Scene Query Support attribute in Physx Scene
+        """Sets the Enable Scene Query Support attribute in Physx Scene.
 
         Args:
             enable_scene_query_support: Whether to enable scene query support

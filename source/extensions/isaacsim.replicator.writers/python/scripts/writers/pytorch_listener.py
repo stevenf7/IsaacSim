@@ -24,7 +24,8 @@ torch = import_module("torch")
 
 
 class PytorchListener:
-    """An Observer/Listener that keeps track of updated data sent by the writer. Is passed in the
+    """An Observer/Listener that keeps track of updated data sent by the writer. Is passed in the.
+
     itialization of a PytorchWriter at which point it is pinged by the writer after any data is
     passed to the writer.
     """

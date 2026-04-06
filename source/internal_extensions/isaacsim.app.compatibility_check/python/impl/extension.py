@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Extension entry point for the application compatibility check."""
+
 import asyncio
 
 import carb
@@ -23,7 +25,10 @@ from . import compatibility_checker
 
 
 class Extension(omni.ext.IExt):
+    """Extension for running application compatibility checks on startup."""
+
     def on_startup(self, ext_id):
+        """Initialize the extension and run compatibility checks."""
         # extension metadata
         import omni  # FIXME: UnboundLocalError: local variable 'omni' referenced before assignment
 
@@ -111,6 +116,7 @@ class Extension(omni.ext.IExt):
         await omni.kit.app.get_app().next_update_async()
 
     def on_shutdown(self):
+        """Clean up resources when the extension shuts down."""
         if self._window:
             self._window.destroy()
             self._window = None

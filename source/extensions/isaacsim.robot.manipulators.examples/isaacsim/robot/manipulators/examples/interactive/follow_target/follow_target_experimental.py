@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-UR10 Follow Target Interactive Example
+"""UR10 Follow Target Interactive Example.
 
 This interactive example demonstrates the UR10 robot following a target cube
 without complex layers or RL concepts. Users can move the target cube and watch

@@ -23,6 +23,7 @@ import numpy as np
 
 class Trajectory:
     """Interface class for defining a continuous-time trajectory for a robot in Isaac Sim.
+
     A Trajectory may be passed to an ArticulationTrajectory to have its continuous-time output discretized and converted
     to an ArticulationActions.
     """
@@ -61,7 +62,8 @@ class Trajectory:
         return []
 
     def get_joint_targets(self, time: float) -> Tuple[np.array, np.array]:
-        """Return joint targets for the robot at the given time. The Trajectory interface assumes trajectories to
+        """Return joint targets for the robot at the given time. The Trajectory interface assumes trajectories to.
+
         be represented continuously between a start time and end time. In instance of this class that internally generates discrete time
         trajectories will need to implement some form of interpolation for times that have not been computed.
 

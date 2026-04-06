@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test UCX clock publishing node functionality."""
+
 import asyncio
 import struct
 import time
@@ -39,9 +41,10 @@ CLOCK_MESSAGE_SIZE_BYTES = 8
 
 
 class TestUCXPublishClock(UCXTestCase):
-    """Test UCX clock publishing"""
+    """Test UCX clock publishing."""
 
     async def setUp(self):
+        """Set up a new stage for clock publishing tests."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
@@ -98,8 +101,7 @@ class TestUCXPublishClock(UCXTestCase):
         return timestamp
 
     async def test_sim_clock(self):
-        """Test clock publishing with simulation time"""
-
+        """Test clock publishing with simulation time."""
         # Create graph with clock publisher using manual trigger (like test_manual_clock)
         try:
             og.Controller.edit(
@@ -161,8 +163,7 @@ class TestUCXPublishClock(UCXTestCase):
         self.assertGreater(timestamp, 0.0, "Timestamp should be greater than 0.0 seconds")
 
     async def test_clock_progression(self):
-        """Test that clock values increase over time"""
-
+        """Test that clock values increase over time."""
         # Create graph with manual trigger to control when messages are sent
         try:
             og.Controller.edit(
@@ -232,8 +233,7 @@ class TestUCXPublishClock(UCXTestCase):
             )
 
     async def test_multiple_nodes_same_port(self):
-        """Test that multiple nodes can share the same port (listener is reused)"""
-
+        """Test that multiple nodes can share the same port (listener is reused)."""
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
@@ -289,8 +289,7 @@ class TestUCXPublishClock(UCXTestCase):
         self.assertAlmostEqual(timestamp1, timestamp2, delta=0.1)
 
     async def test_no_connection(self):
-        """Test node behavior when no client is connected"""
-
+        """Test node behavior when no client is connected."""
         another_port = find_available_port()
         try:
             og.Controller.edit(

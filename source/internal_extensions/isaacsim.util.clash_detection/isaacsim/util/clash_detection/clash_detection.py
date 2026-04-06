@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Clash detection engine for identifying overlapping 3D meshes."""
+
 from collections import namedtuple
 
 import carb
@@ -29,7 +31,7 @@ from pxr import Usd, UsdUtils
 
 
 class ClashDetector:
-    """This class is designed to perform clash detection on 3D meshes.
+    """Perform clash detection on 3D meshes.
 
     It supports checking Prims and Prim Views. Option to export clash detection results
     to JSON format for further analysis.
@@ -43,6 +45,7 @@ class ClashDetector:
         clash_data_layer: If True, saves clash detection info to data layer to support exporting
             results to JSON for further analysis. Defaults to True.
         logging: If True, logs info & perf results to console. Defaults to False.
+
     """
 
     def __init__(
@@ -53,6 +56,16 @@ class ClashDetector:
         clash_data_layer: bool = True,
         logging: bool = False,
     ) -> None:
+        """Initialize the clash detector.
+
+        Args:
+            stage: The USD stage to perform clash detection on.
+            searchset_path: Path to the searchset prim defining detection scope.
+            tolerance: Distance tolerance for overlap detection.
+            clash_data_layer: If True, write clash results to a USD data layer.
+            logging: If True, log info and performance results to console.
+
+        """
         self._stage = stage
         UsdUtils.StageCache.Get().Insert(self._stage)
         self._object_b_path = searchset_path
@@ -87,26 +100,29 @@ class ClashDetector:
         self._prim_view_queries = {}
 
     def set_scope(self, searchset_path: str):
-        """Sets the searchset defining the scope of the clash detection.
+        """Set the searchset defining the scope of the clash detection.
 
         Args:
             searchset_path: Absolute prim path to define the scope of the clash detection search.
+
         """
         self._object_b_path = searchset_path
 
     def get_scope(self):
-        """Gets the current searchset used for clash detection.
+        """Get the current searchset used for clash detection.
 
         Returns:
             searchset_path (str): The current searchset used for clash detection.
+
         """
         return self._object_b_path
 
     def get_current_query_id(self):
-        """Gets the query ID of the most recent clash detection run.
+        """Get the query ID of the most recent clash detection run.
 
         Returns:
             query.identifier (int): The unique identifier of the clash detection query.
+
         """
         if self._is_prim_view:
             return self._prim_view_counter
@@ -114,13 +130,14 @@ class ClashDetector:
             return self._query.identifier
 
     def get_query_id_by_query_name(self, query_name: str) -> int:
-        """Gets the query ID associated with any named query from completed clash detection runs.
+        """Get the query ID associated with any named query from completed clash detection runs.
 
         Args:
             query_name: Unique query name assigned to a clash detection run.
 
         Returns:
             The unique identifier associated with the given query name.
+
         """
         if not query_name:
             carb.log_warn("No query name provided. Returning invalid query id.")
@@ -135,7 +152,7 @@ class ClashDetector:
                 return 0
 
     def export_to_json(self, json_path_name: str, query_id: int = 0, prim_view: bool = False) -> bool:
-        """Exports detailed clash detection data to JSON format.
+        """Export detailed clash detection data to JSON format.
 
         Args:
             json_path_name: Absolute file path to export data.
@@ -146,8 +163,8 @@ class ClashDetector:
 
         Returns:
             True on success, False otherwise.
-        """
 
+        """
         if not self._clash_data_layer:
             carb.log_warn("No clash data layer created. JSON export failed.")
             return False
@@ -211,7 +228,7 @@ class ClashDetector:
         return True
 
     def is_prim_clashing(self, prim: Usd.Prim, query_name: str = "") -> bool:
-        """Checks if the input prim is clashing with any mesh in the searchset.
+        """Check if the input prim is clashing with any mesh in the searchset.
 
         Args:
             prim: The prim to be checked for clashes.
@@ -220,6 +237,7 @@ class ClashDetector:
 
         Returns:
             True if clash detected, False otherwise.
+
         """
         self._is_prim_view = False
         stage = self._stage
@@ -264,7 +282,7 @@ class ClashDetector:
         return True
 
     def detect_prim_view_clashes(self, prim_view: object, prim_view_query_name: str = "") -> list:
-        """Checks if any prims in the input prim view are clashing with any mesh in the searchset.
+        """Check if any prims in the input prim view are clashing with any mesh in the searchset.
 
         Args:
             prim_view: The prim view to be checked for clashes.
@@ -275,6 +293,7 @@ class ClashDetector:
         Returns:
             List of namedtuple('Clash', 'prim_path query_name'): Clashing prims and corresponding prim query ID.
             Empty list if no clashes detected.
+
         """
         self._is_prim_view = True
         self._clashing_view_prims = []
@@ -321,7 +340,7 @@ class ClashDetector:
         return self._clashing_view_prims
 
     def _run(self, stage: Usd.Stage, prim_view_id: int = 0) -> bool:
-        """Performs the clash detection.
+        """Perform the clash detection.
 
         Args:
             stage: The stage on which the clash detection is run.
@@ -329,6 +348,7 @@ class ClashDetector:
 
         Returns:
             True if run was successful, False otherwise.
+
         """
         if self._clash_data_layer:
             new_query_id = self._clash_data.insert_query(self._query, True, True)
@@ -357,20 +377,22 @@ class ClashDetector:
         return True
 
     def _store_query_name(self, query_name: str, query_id: int) -> None:
-        """Stores query names with their associated IDs for data retrieval.
+        """Store query names with their associated IDs for data retrieval.
 
         Args:
             query_name: The query name to store.
             query_id: The query ID to associate with the name.
+
         """
         self._prim_queries[str(query_name)] = query_id
 
     def _store_query_id_to_view_group(self, prim_view_id: int, new_query_id: int) -> None:
-        """Stores prim view query names with their associated prim query names and IDs for data retrieval.
+        """Store prim view query names with their associated prim query names and IDs for data retrieval.
 
         Args:
             prim_view_id: The prim view ID to group queries under.
             new_query_id: The new query ID to add to the view group.
+
         """
         if not self._prim_view_query_name:
             self._prim_view_query_name = f"Prim_view_{prim_view_id}_query"
@@ -391,7 +413,7 @@ class ClashDetector:
     def _fetch_overlaps(
         self, stage: Usd.Stage, clash_detect: ClashDetection, clash_query: ClashQuery, num_overlaps: int
     ) -> bool:
-        """Fetches overlaps and writes the clash info to log file. Used if clash data layer is not created.
+        """Fetch overlaps and writes the clash info to log file. Used if clash data layer is not created.
 
         Args:
             stage: The stage on which the clash detection is run.
@@ -401,6 +423,7 @@ class ClashDetector:
 
         Returns:
             True if fetching overlaps is a success.
+
         """
         setting_tolerance = clash_query.clash_detect_settings.get(SettingId.SETTING_TOLERANCE.name, 0.0)
         setting_depth_epsilon = clash_query.clash_detect_settings.get(SettingId.SETTING_DEPTH_EPSILON.name, -1.0)
@@ -435,7 +458,7 @@ class ClashDetector:
         return True
 
     def _detect_overlaps(self, stage: Usd.Stage, clash_detect: ClashDetection) -> int:
-        """Runs clash detection engine, fetches results and serializes them.
+        """Run clash detection engine, fetches results and serializes them.
 
         Args:
             stage: The stage on which the clash detection is run.
@@ -443,6 +466,7 @@ class ClashDetector:
 
         Returns:
             Number of overlaps found.
+
         """
         progress_update = OptimizedProgressUpdate()
         num_steps = clash_detect.create_pipeline()

@@ -190,7 +190,6 @@ class ParticleMaterialView:
         Returns:
             True if all prim paths specified in the view correspond to a valid prim in stage. False otherwise.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = True
         for index in indices:

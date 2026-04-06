@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Experimental follow-target scenario for the UR10 robot."""
+
 from typing import Optional
 
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -46,7 +48,6 @@ class UR10FollowTarget:
         Args:
             target_position: Initial target position. If None, uses default.
         """
-
         # Set default target position if none provided
         if target_position is None:
             self.target_position = [0.5, 0.0, 0.3]

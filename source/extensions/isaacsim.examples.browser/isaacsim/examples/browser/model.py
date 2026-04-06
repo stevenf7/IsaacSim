@@ -110,7 +110,7 @@ class ExampleDetailItem(DetailItem):
 
 
 class ExampleBrowserModel(TreeFolderBrowserModel):
-    """Represent asset browser model
+    """Represent asset browser model.
 
     Args:
         *args: Variable length argument list passed to the parent class.
@@ -149,7 +149,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
         return
 
     def get_category_items(self, item: CollectionItem) -> List[CategoryItem]:
-        """Override to get list of category items
+        """Override to get list of category items.
 
         Args:
             item: Collection item to get categories for.
@@ -181,7 +181,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
         return category_items
 
     def get_detail_items(self, item: ExampleCategoryItem) -> List[ExampleDetailItem]:
-        """Override to get list of detail items
+        """Override to get list of detail items.
 
         Args:
             item: Category item to get examples for.

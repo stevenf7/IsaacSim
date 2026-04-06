@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test importer utils functionality."""
+
 import omni.kit.test
 import omni.usd
 from isaacsim.asset.importer.utils.impl import importer_utils

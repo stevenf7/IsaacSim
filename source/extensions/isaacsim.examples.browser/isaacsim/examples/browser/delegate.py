@@ -34,7 +34,7 @@ ICON_PATH = CURRENT_PATH.parent.parent.parent.parent.joinpath("isaacsim.examples
 
 
 class AssetDetailDelegate(FolderDetailDelegate):
-    """Delegate to show asset item in detail view
+    """Delegate to show asset item in detail view.
 
     Args:
         model: Example browser model

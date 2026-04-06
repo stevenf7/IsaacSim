@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for ROS 2 object ID map OmniGraph node."""
+
 import json
 from uuid import uuid4
 
@@ -28,8 +30,10 @@ from .common import create_sarcophagus, get_qos_profile
 
 
 class TestROS2ObjectIdMap(ROS2TestCase):
+    """Test suite for r o s2 object id map."""
 
     async def setUp(self):
+        """Set up test fixtures."""
         await super().setUp()
 
         await omni.usd.get_context().new_stage_async()
@@ -83,6 +87,7 @@ class TestROS2ObjectIdMap(ROS2TestCase):
         self._writer.attach(self._render_product)
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         if self._annotator is not None:
             self._annotator.detach()
         if self._writer is not None:
@@ -90,9 +95,11 @@ class TestROS2ObjectIdMap(ROS2TestCase):
         await super().tearDown()
 
     def spin(self):
+        """Handle spin operation."""
         rclpy.spin_once(self._ros_node, timeout_sec=0.01)
 
     async def test_object_id_map(self):
+        """Test object id map."""
         # Run the timeline to populate data
         self._timeline.play()
         condition_met = await self.simulate_until_condition(

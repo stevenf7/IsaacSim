@@ -40,7 +40,7 @@ class _SinglePrimWrapper(object):
         return
 
     def initialize(self, physics_sim_view: object = None) -> None:
-        """Create a physics simulation view if not passed and using PhysX tensor API
+        """Create a physics simulation view if not passed and using PhysX tensor API.
 
         .. note::
 
@@ -88,7 +88,7 @@ class _SinglePrimWrapper(object):
 
     @property
     def non_root_articulation_link(self) -> bool:
-        """Used to query if the prim is a non root articulation link
+        """Used to query if the prim is a non root articulation link.
 
         Returns:
             True if the prim itself is a non root link
@@ -104,7 +104,7 @@ class _SinglePrimWrapper(object):
         return self._prim_view._non_root_link
 
     def set_visibility(self, visible: bool) -> None:
-        """Set the visibility of the prim in stage
+        """Set the visibility of the prim in stage.
 
         Args:
             visible: Flag to set the visibility of the usd prim in stage.
@@ -240,7 +240,8 @@ class _SinglePrimWrapper(object):
         return
 
     def get_applied_visual_material(self) -> "VisualMaterial":
-        """Return the current applied visual material in case it was applied using apply_visual_material
+        """Return the current applied visual material in case it was applied using apply_visual_material.
+
         or it's one of the following materials that was already applied before: PreviewSurface, OmniPBR and OmniGlass.
 
         Returns:
@@ -257,7 +258,7 @@ class _SinglePrimWrapper(object):
         return self._prim_view.get_applied_visual_materials()[0]
 
     def is_visual_material_applied(self) -> bool:
-        """Check if there is a visual material applied
+        """Check if there is a visual material applied.
 
         Returns:
             True if there is a visual material applied. False otherwise.
@@ -275,7 +276,7 @@ class _SinglePrimWrapper(object):
     def set_world_pose(
         self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
     ) -> None:
-        """Set prim's pose with respect to the world's frame
+        """Set prim's pose with respect to the world's frame.
 
         .. warning::
 
@@ -306,7 +307,7 @@ class _SinglePrimWrapper(object):
         return
 
     def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Get prim's pose with respect to the world's frame
+        """Get prim's pose with respect to the world's frame.
 
         Returns:
             First index is the position in the world frame (with shape (3, )).
@@ -330,7 +331,7 @@ class _SinglePrimWrapper(object):
             return positions[0], orientations[0]
 
     def get_local_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Get prim's pose with respect to the local frame (the prim's parent frame)
+        """Get prim's pose with respect to the local frame (the prim's parent frame).
 
         Returns:
             First index is the position in the local frame (with shape (3, )).
@@ -387,7 +388,7 @@ class _SinglePrimWrapper(object):
         return
 
     def get_world_scale(self) -> np.ndarray:
-        """Get prim's scale with respect to the world's frame
+        """Get prim's scale with respect to the world's frame.
 
         Returns:
             Scale applied to the prim's dimensions in the world frame. shape is (3, ).
@@ -420,7 +421,7 @@ class _SinglePrimWrapper(object):
         return
 
     def get_local_scale(self) -> np.ndarray:
-        """Get prim's scale with respect to the local frame (the parent's frame)
+        """Get prim's scale with respect to the local frame (the parent's frame).
 
         Returns:
             Scale applied to the prim's dimensions in the local frame. shape is (3, ).
@@ -438,7 +439,7 @@ class _SinglePrimWrapper(object):
             return self._prim_view.get_local_scales()[0]
 
     def is_valid(self) -> bool:
-        """Check if the prim path has a valid USD Prim at it
+        """Check if the prim path has a valid USD Prim at it.
 
         Returns:
             True is the current prim path corresponds to a valid prim in stage. False otherwise.

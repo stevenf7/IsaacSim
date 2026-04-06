@@ -58,7 +58,7 @@ class OgnIsaacCreateRenderProductInternalState(BaseResetNode):
 
 
 class OgnIsaacCreateRenderProduct:
-    """Isaac Sim Create Render Product"""
+    """Isaac Sim Create Render Product."""
 
     @staticmethod
     def internal_state() -> OgnIsaacCreateRenderProductInternalState:

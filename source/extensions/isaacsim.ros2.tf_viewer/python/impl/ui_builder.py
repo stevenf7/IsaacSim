@@ -59,13 +59,16 @@ class UIBuilder:
 
     @property
     def root_frame(self):
+        """Return the root frame name."""
         return self._root_frame
 
     @property
     def update_frequency(self):
+        """Return the update frequency."""
         return self._update_frequency
 
     def show_window(self, value):
+        """Show or hide the TF Viewer window."""
         self._build_ui()
         self._window.visible = value
 
@@ -349,6 +352,7 @@ class UIBuilder:
             self._window.set_visibility_changed_fn(self._on_visibility_changed)
 
     def update(self, frames):
+        """Update the UI with the current TF frames."""
         # TODO: update only if different
         frames = sorted(frames)
         root_frame = self._root_frame
@@ -363,7 +367,7 @@ class UIBuilder:
         self._root_frame = root_frame
 
     def shutdown(self):
-        """Clean up menu item"""
+        """Clean up menu item."""
         ui.Workspace.set_show_window_fn(self._window_title, None)
         if self._window:
             self._window.destroy()

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test for shape."""
+
 from typing import Literal
 
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -23,6 +25,7 @@ from isaacsim.core.experimental.prims.tests.common import cprint, draw_choice, d
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
+    """Populate stage."""
     # create new stage
     await stage_utils.create_new_stage_async()
     # define prims
@@ -32,17 +35,20 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
 
 
 class TestShape(omni.kit.test.AsyncTestCase):
+    """Test shape."""
+
     async def setUp(self):
-        """Method called to prepare the test fixture"""
+        """Method called to prepare the test fixture."""
         super().setUp()
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
     async def test_fetch_instances(self):
+        """Test fetch instances."""
         await stage_utils.create_new_stage_async()
         # create shapes
         Capsule("/World/shape_01")
@@ -75,6 +81,7 @@ class TestShape(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Sphere, populate_stage_func=populate_stage)
     async def test_display_colors(self, prim, num_prims, device, backend):
+        """Test display colors."""
         choices = [
             (0.1, 0.2, 0.3),  # RGB tuple
             "#aBc",  # case-insensitive short hex RGB

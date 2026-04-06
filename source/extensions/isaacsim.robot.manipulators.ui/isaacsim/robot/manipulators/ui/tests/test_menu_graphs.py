@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test suite for articulation controller graph creation and execution."""
+
 import asyncio
 import os
 import tempfile
@@ -34,17 +36,20 @@ from pxr import Gf
 
 
 class TestArticulationGraphs(MenuUITestCase):
+    """Test articulation controller graph creation and execution."""
+
     async def setUp(self):
+        """Set up test fixtures."""
         await super().setUp()
 
     async def tearDown(self):
+        """Clean up after each test."""
         self._timeline.stop()
         await self.wait_for_stage_loading()
         await super().tearDown()
 
     async def test_position_graph_creation(self) -> None:
         """Test creation of articulation position controller graph."""
-
         # Add robot to stage (Franka)
         robot_path = "/World/test_robot"
         robot_prim = self._stage.DefinePrim(robot_path, "Xform")
@@ -94,7 +99,6 @@ class TestArticulationGraphs(MenuUITestCase):
 
     async def test_position_control_golden(self) -> None:
         """Test position control with golden values."""
-
         # Add robot to stage (Franka)
         robot_path = "/World/test_robot"
         robot_prim = self._stage.DefinePrim(robot_path, "Xform")
@@ -316,7 +320,6 @@ class TestArticulationGraphs(MenuUITestCase):
 
     async def test_velocity_graph_creation(self) -> None:
         """Test creation of articulation velocity controller graph."""
-
         # Add robot to stage (Jetbot)
         robot_path = "/World/test_robot"
         robot_prim = self._stage.DefinePrim(robot_path, "Xform")
@@ -595,7 +598,6 @@ class TestArticulationGraphs(MenuUITestCase):
 
     async def test_gripper_control_golden(self) -> None:
         """Test gripper control with golden values."""
-
         # Add robot to stage (Franka)
         robot_path = "/World/test_robot"
         robot_prim = self._stage.DefinePrim(robot_path, "Xform")

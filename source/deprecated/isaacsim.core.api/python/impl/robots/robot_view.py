@@ -26,7 +26,7 @@ torch = import_module("torch")
 
 
 class RobotView(Articulation):
-    """Implementation (on ``Articulation`` class) to deal with articulation prims as robots
+    """Implementation (on ``Articulation`` class) to deal with articulation prims as robots.
 
     This class wraps all matching articulations found at the regex provided at the ``prim_paths_expr`` argument
 
@@ -106,7 +106,7 @@ class RobotView(Articulation):
         return
 
     def post_reset(self) -> None:
-        """Reset the robots to their default states
+        """Reset the robots to their default states.
 
         .. note::
 

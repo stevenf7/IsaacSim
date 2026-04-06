@@ -115,7 +115,6 @@ class WheeledMobilityGenRobot(MobilityGenRobot):
         Returns:
             The configured wheeled robot instance.
         """
-
         world = get_world()
 
         robot = world.scene.add(

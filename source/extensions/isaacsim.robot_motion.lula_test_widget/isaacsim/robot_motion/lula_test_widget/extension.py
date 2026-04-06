@@ -136,7 +136,6 @@ class Extension(omni.ext.IExt):
         Args:
             ext_id: The extension identifier.
         """
-
         # Events
         self._usd_context = omni.usd.get_context()
         self._physics_simulation_interface = omni.physics.core.get_physics_simulation_interface()
@@ -190,6 +189,7 @@ class Extension(omni.ext.IExt):
         self._visualize_end_effector = True
 
     def on_shutdown(self):
+        """Clean up resources when the extension is unloaded."""
         self._test_scenarios.full_reset()
         self.articulation = None
         self._usd_context = None
@@ -282,6 +282,7 @@ class Extension(omni.ext.IExt):
 
     def _on_selection(self, prim_path: str) -> None:
         """Creates an Articulation Object from the selected articulation prim path.
+
            Updates the UI with the Selected articulation.
 
         Args:
@@ -373,6 +374,7 @@ class Extension(omni.ext.IExt):
 
     def get_articulation_values(self, articulation: object):
         """Get and store the latest dof_properties from the articulation.
+
            Update the Properties UI.
 
         Args:
@@ -540,7 +542,8 @@ class Extension(omni.ext.IExt):
         setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
     def _build_selection_ui(self):
-        """Builds the selection panel UI with articulation dropdown, file pickers for robot description and URDF,
+        """Builds the selection panel UI with articulation dropdown, file pickers for robot description and URDF,.
+
         and end effector frame selection controls.
         """
         frame = ui.CollapsableFrame(
@@ -702,7 +705,8 @@ class Extension(omni.ext.IExt):
                 )
 
     def _build_trajectory_generation_ui(self):
-        """Builds the Lula Trajectory Generator UI panel with custom trajectory creation and waypoint
+        """Builds the Lula Trajectory Generator UI panel with custom trajectory creation and waypoint.
+
         management controls.
         """
         frame = ui.CollapsableFrame(
@@ -779,7 +783,8 @@ class Extension(omni.ext.IExt):
                         )
 
     def _build_rmpflow_ui(self):
-        """Builds the RmpFlow UI panel with configuration file selection, target following controls,
+        """Builds the RmpFlow UI panel with configuration file selection, target following controls,.
+
         and sinusoidal trajectory parameters.
         """
         frame = ui.CollapsableFrame(
@@ -934,7 +939,8 @@ class Extension(omni.ext.IExt):
         self._models["load_config_btn"].enabled = True
 
     def _enable_lula_dropdowns(self) -> None:
-        """Enables the Lula kinematics, trajectory, and RmpFlow UI panels when articulation and
+        """Enables the Lula kinematics, trajectory, and RmpFlow UI panels when articulation and.
+
         configuration files are loaded.
         """
         if self.articulation is None or self._robot_description_file is None or self._robot_urdf_file is None:
@@ -971,8 +977,6 @@ class Extension(omni.ext.IExt):
         self._models["rmpflow_follow_sinusoid_btn"].enabled = enable
 
     def _get_selected_ee_frame(self) -> str:
-        """Returns:
-        The selected end effector frame name from the dropdown options.
-        """
+        """Get the selected end effector frame name from the dropdown options."""
         name = "ee_frame"
         return self._ee_frame_options[self._models[name].get_item_value_model().as_int]

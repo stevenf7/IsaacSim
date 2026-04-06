@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test rtx context menu functionality."""
+
 import carb
 import omni.kit.app
 import omni.kit.ui_test as ui_test
@@ -40,7 +42,10 @@ KNOWN_UI_TEST_FAILURES = {
 
 
 class TestRTXContextMenu(MenuUITestCase):
+    """Test r t x context menu."""
+
     async def setUp(self):
+        """Set up test fixtures."""
         await super().setUp()
         self.carb_settings = carb.settings.get_settings()
         self.carb_settings.set("/rtx/rendermode", "RealTimePathTracing")

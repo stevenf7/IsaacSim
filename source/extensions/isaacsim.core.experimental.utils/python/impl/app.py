@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Functions for interacting with the application and its available extensions.
-"""
+"""Functions for interacting with the application and its available extensions."""
 
 from __future__ import annotations
 

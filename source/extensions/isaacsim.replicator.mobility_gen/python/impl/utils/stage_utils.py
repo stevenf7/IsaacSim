@@ -45,7 +45,6 @@ def stage_add_camera(
     Returns:
         The created USD camera.
     """
-
     camera = UsdGeom.Camera.Define(stage, path)
     camera.CreateFocalLengthAttr().Set(focal_length)
     camera.CreateHorizontalApertureAttr().Set(horizontal_aperature)

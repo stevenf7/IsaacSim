@@ -59,7 +59,6 @@ def join_sdf_paths(*subpaths: str) -> str:
     Returns:
         The joined SDF path as a string.
     """
-
     path = Sdf.Path(subpaths[0])
 
     for subpath in subpaths[1:]:

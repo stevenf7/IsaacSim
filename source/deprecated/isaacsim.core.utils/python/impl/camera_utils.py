@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated camera utility functions."""
+
 import omni
 from isaacsim.core.utils.rotations import lookat_to_quatf
 from pxr import Gf, Usd, UsdGeom

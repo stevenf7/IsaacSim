@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for single-view depth sensor functionality."""
+
 import os
 
 import carb
@@ -47,6 +49,7 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
     GOLDEN_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "golden", "single_view_depth_sensor")
 
     async def setUp(self):
+        """Set up test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         await create_new_stage_async()
         await omni.kit.app.get_app().next_update_async()
@@ -54,6 +57,7 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
         self.test_dir = carb.tokens.get_tokens_interface().resolve("${temp}/test_camera_view_sensor")
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
         omni.usd.get_context().close_stage()

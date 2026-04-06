@@ -20,6 +20,7 @@ from __future__ import annotations
 import os
 import sys
 from cmath import inf
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import carb.settings
@@ -131,7 +132,7 @@ def state_btn_builder(
 def cb_builder(
     label: str = "", type: str = "checkbox", default_val: bool = False, tooltip: str = "", on_clicked_fn: object = None
 ) -> ui.SimpleBoolModel:
-    """Creates a Stylized Checkbox
+    """Creates a Stylized Checkbox.
 
     Args:
         label: Label to the left of the UI element.
@@ -143,7 +144,6 @@ def cb_builder(
     Returns:
         model
     """
-
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         model = ui.SimpleBoolModel()
@@ -164,7 +164,7 @@ def multi_btn_builder(
     tooltip: list = ["", "", ""],
     on_clicked_fn: list = [None, None],
 ) -> list[ui.Button]:
-    """Creates a Row of Stylized Buttons
+    """Creates a Row of Stylized Buttons.
 
     Args:
         label: Label to the left of the UI element.
@@ -252,9 +252,9 @@ def str_builder(
     bookmark_path: str | None = None,
     folder_dialog_title: str = "Select Output Folder",
     folder_button_title: str = "Select Folder",
-    identifier=None,
+    identifier: str | None = None,
 ) -> ui.AbstractValueModel:
-    """Creates a Stylized Stringfield Widget
+    """Creates a Stylized Stringfield Widget.
 
     Args:
         label: Label to the left of the UI element.
@@ -324,7 +324,7 @@ def int_builder(
     min: int = sys.maxsize * -1,
     max: int = sys.maxsize,
 ) -> ui.AbstractValueModel:
-    """Creates a Stylized Intfield Widget
+    """Creates a Stylized Intfield Widget.
 
     Args:
         label: Label to the left of the UI element.
@@ -357,7 +357,7 @@ def float_builder(
     step: float = 0.1,
     format: str = "%.2f",
 ):
-    """Creates a Stylized Floatfield Widget
+    """Creates a Stylized Floatfield Widget.
 
     Args:
         label: Label to the left of the UI element.
@@ -400,7 +400,7 @@ def combo_cb_str_builder(
     folder_dialog_title: str = "Select Output Folder",
     folder_button_title: str = "Select Folder",
 ):
-    """Creates a Stylized Checkbox + Stringfield Widget
+    """Creates a Stylized Checkbox + Stringfield Widget.
 
     Args:
         label: Label to the left of the UI element.
@@ -437,15 +437,15 @@ def combo_cb_str_builder(
 
 
 def dropdown_builder(
-    label="",
-    type="dropdown",
-    default_val=0,
-    items=["Option 1", "Option 2", "Option 3"],
-    tooltip="",
-    on_clicked_fn=None,
-    identifier=None,
-):
-    """Creates a Stylized Dropdown Combobox
+    label: str = "",
+    type: str = "dropdown",
+    default_val: int = 0,
+    items: list[str] | None = None,
+    tooltip: str = "",
+    on_clicked_fn: Callable | None = None,
+    identifier: str | None = None,
+) -> ui.AbstractItemModel:
+    """Creates a Stylized Dropdown Combobox.
 
     Args:
         label: Label to the left of the UI element.
@@ -459,6 +459,8 @@ def dropdown_builder(
     Returns:
         AbstractItemModel: model
     """
+    if items is None:
+        items = ["Option 1", "Option 2", "Option 3"]
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         cb_kwargs = {}
@@ -484,13 +486,13 @@ def dropdown_builder(
 
 
 def checkbox_builder(
-    label="",
-    type="checkbox",
-    default_val=False,
-    tooltip="",
-    on_clicked_fn=None,
-    identifier=None,
-):
+    label: str = "",
+    type: str = "checkbox",
+    default_val: bool = False,
+    tooltip: str = "",
+    on_clicked_fn: Callable | None = None,
+    identifier: str | None = None,
+) -> ui.SimpleBoolModel:
     """Creates a Stylized Checkbox using ui.CheckBox.
 
     Unlike :func:`cb_builder` which uses ``SimpleCheckBox``, this builder uses
@@ -526,17 +528,17 @@ def checkbox_builder(
 
 
 def string_filed_builder(
-    default_val=" ",
-    tooltip="",
-    read_only=False,
-    item_filter_fn=None,
-    folder_dialog_title="Select Output Folder",
-    folder_button_title="Select Folder",
-    bookmark_label=None,
-    bookmark_path=None,
-    use_folder_picker=True,
-    identifier=None,
-):
+    default_val: str = " ",
+    tooltip: str = "",
+    read_only: bool = False,
+    item_filter_fn: Callable | None = None,
+    folder_dialog_title: str = "Select Output Folder",
+    folder_button_title: str = "Select Folder",
+    bookmark_label: str | None = None,
+    bookmark_path: str | None = None,
+    use_folder_picker: bool = True,
+    identifier: str | None = None,
+) -> ui.AbstractValueModel:
     """Creates a Stylized String Field with an optional folder picker.
 
     Unlike :func:`str_builder`, this builder omits the label column and always
@@ -609,7 +611,7 @@ def combo_intfield_slider_builder(
     step: float = 0.01,
     tooltip: list = ["", ""],
 ):
-    """Creates a Stylized IntField + Stringfield Widget
+    """Creates a Stylized IntField + Stringfield Widget.
 
     Args:
         label: Label to the left of the UI element.
@@ -647,7 +649,7 @@ def combo_floatfield_slider_builder(
     step: float = 0.01,
     tooltip: list = ["", ""],
 ):
-    """Creates a Stylized FloatField + FloatSlider Widget
+    """Creates a Stylized FloatField + FloatSlider Widget.
 
     Args:
         label: Label to the left of the UI element.
@@ -685,7 +687,7 @@ def multi_dropdown_builder(
     tooltip: str = "",
     on_clicked_fn: list = [None, None],
 ):
-    """Creates a Stylized Multi-Dropdown Combobox
+    """Creates a Stylized Multi-Dropdown Combobox.
 
     Args:
         label: Label to the left of the UI element.
@@ -726,7 +728,7 @@ def combo_cb_dropdown_builder(
     tooltip: str = "",
     on_clicked_fn: list = [lambda x: None, None],
 ):
-    """Creates a Stylized Dropdown Combobox with an Enable Checkbox
+    """Creates a Stylized Dropdown Combobox with an Enable Checkbox.
 
     Args:
         label: Label to the left of the UI element.
@@ -761,7 +763,7 @@ def combo_cb_dropdown_builder(
 def scrolling_frame_builder(
     label: str = "", type: str = "scrolling_frame", default_val: str = "No Data", tooltip: str = ""
 ):
-    """Creates a Labeled Scrolling Frame with CopyToClipboard button
+    """Creates a Labeled Scrolling Frame with CopyToClipboard button.
 
     Args:
         label: Label to the left of the UI element.
@@ -772,7 +774,6 @@ def scrolling_frame_builder(
     Returns:
         ui.Label: label
     """
-
     with ui.VStack(style=get_style(), spacing=5):
         with ui.HStack():
             ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
@@ -808,7 +809,7 @@ def combo_cb_scrolling_frame_builder(
     tooltip: str = "",
     on_clicked_fn: object = lambda x: None,
 ):
-    """Creates a Labeled, Checkbox-enabled Scrolling Frame with CopyToClipboard button
+    """Creates a Labeled, Checkbox-enabled Scrolling Frame with CopyToClipboard button.
 
     Args:
         label: Label to the left of the UI element.
@@ -820,7 +821,6 @@ def combo_cb_scrolling_frame_builder(
     Returns:
         (model, label)
     """
-
     with ui.VStack(style=get_style(), spacing=5):
         with ui.HStack():
             ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
@@ -879,7 +879,6 @@ def xyz_builder(
     Returns:
         List of value models for each axis.
     """
-
     # These styles & colors are taken from omni.kit.property.transform_builder.py _create_multi_float_drag_matrix_with_labels
     if axis_count <= 0 or axis_count > 4:
         import builtins
@@ -928,7 +927,7 @@ def xyz_builder(
 def color_picker_builder(
     label: str = "", type: str = "color_picker", default_val: list = [1.0, 1.0, 1.0, 1.0], tooltip: str = "Color Picker"
 ):
-    """Creates a Color Picker Widget
+    """Creates a Color Picker Widget.
 
     Args:
         label: Label to the left of the UI element.
@@ -950,7 +949,7 @@ def color_picker_builder(
 def progress_bar_builder(
     label: str = "", type: str = "progress_bar", default_val: float = 0, tooltip: str = "Progress"
 ):
-    """Creates a Progress Bar Widget
+    """Creates a Progress Bar Widget.
 
     Args:
         label: Label to the left of the UI element.
@@ -979,7 +978,7 @@ def plot_builder(
     color: object = None,
     tooltip: str = "",
 ):
-    """Creates a stylized static plot
+    """Creates a stylized static plot.
 
     Args:
         label: Label to the left of the UI element.
@@ -1043,7 +1042,7 @@ def plot_builder(
 
 
 def xyz_plot_builder(label: str = "", data: list = [], min: int = -1, max: int = 1, tooltip: str = "") -> list[ui.Plot]:
-    """Creates a stylized static XYZ plot
+    """Creates a stylized static XYZ plot.
 
     Args:
         label: Label to the left of the UI element.
@@ -1134,7 +1133,7 @@ def combo_cb_plot_builder(
     color: object = None,
     tooltip: str = "",
 ):
-    """Creates a Checkbox-Enabled dyanamic plot
+    """Creates a Checkbox-Enabled dyanamic plot.
 
     Args:
         label: Label to the left of the UI element.
@@ -1554,7 +1553,7 @@ def build_header(
     """
 
     def build_icon_bar():
-        """Adds the Utility Buttons to the Title Header"""
+        """Adds the Utility Buttons to the Title Header."""
         with ui.Frame(style=get_style(), width=0):
             with ui.VStack():
                 with ui.HStack():
@@ -1601,7 +1600,7 @@ def build_header(
 
 
 def build_info_frame(overview: str = "", info_collapse: bool = True) -> None:
-    """Info Frame with Overview, Instructions, and Metadata for an Extension
+    """Info Frame with Overview, Instructions, and Metadata for an Extension.
 
     Args:
         overview: Overview text explaining the Extension.
@@ -1727,7 +1726,8 @@ class SearchListItem(ui.AbstractItem):
 
 
 class SearchListItemModel(ui.AbstractItemModel):
-    """Represents the model for lists. It's very easy to initialize it
+    """Represents the model for lists. It's very easy to initialize it.
+
     with any string list:
 
     .. code-block:: python
@@ -1762,6 +1762,11 @@ class SearchListItemModel(ui.AbstractItemModel):
         return self._filtered
 
     def filter_text(self, text):
+        """Filter the list items by the given text pattern.
+
+        Args:
+            text: Text pattern to filter items by.
+        """
         import fnmatch
 
         self._filtered = []
@@ -1811,7 +1816,8 @@ class SearchListItemModel(ui.AbstractItemModel):
 
 
 class SearchListItemDelegate(ui.AbstractItemDelegate):
-    """Delegate is the representation layer. TreeView calls the methods
+    """Delegate is the representation layer. TreeView calls the methods.
+
     of the delegate to create custom widgets for each item.
 
     Args:
@@ -1888,7 +1894,6 @@ def build_simple_search(
     Returns:
         Tuple(Search Widget, Treeview):
     """
-
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
 

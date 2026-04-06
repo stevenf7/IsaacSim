@@ -13,10 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Backend of "Add Joints and Drives"
-
-"""
+"""Backend of "Add Joints and Drives"."""
 
 import omni.usd
 from pxr import PhysxSchema, UsdPhysics

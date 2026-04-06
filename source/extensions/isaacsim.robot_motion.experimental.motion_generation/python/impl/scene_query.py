@@ -183,7 +183,6 @@ class SceneQuery:
             ...     tracked_api=TrackableApi.PHYSICS_COLLISION,
             ... )
         """
-
         # Convert single include path to list if it exists:
         if include_prim_paths is not None:
             if isinstance(include_prim_paths, str):

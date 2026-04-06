@@ -251,7 +251,6 @@ class AddRobot:
         Returns:
             True if the robot was successfully added.
         """
-
         # get parameters from UI: robot name, type, and output folder, also parent prim path
         robot_name = self._robot_name_widget.model.get_value_as_string()
         robot_type = self._robot_type_model.get_current_string()
@@ -294,6 +293,12 @@ class AddRobot:
             self._parent_xform_widget.model.set_value(self._selected_paths[0])
 
     def select_parent_xform(self, model, title):
+        """Open the asset picker window to select a parent transform prim.
+
+        Args:
+            model: The model associated with the path widget.
+            title: Title for the asset picker window.
+        """
         if not self._select_parent_xform_window:
             stage = omni.usd.get_context().get_stage()
             self._select_parent_xform_window = RobotAssetPicker(
@@ -567,9 +572,7 @@ class AddRobot:
                     open_button.set_clicked_fn(isaac_robot_explorer)
 
     def _highlight_tool(self):
-        """
-        highlight importer tools external to the wizard
-        """
+        """Highlight importer tools external to the wizard."""
         _highlight_tool_frame = ui.CollapsableFrame("Use a Importer", build_header_fn=custom_header, visible=False)
         self._add_robot_frames.append(_highlight_tool_frame)
         with _highlight_tool_frame:
@@ -612,6 +615,15 @@ class AddRobot:
     #             open_button.set_clicked_fn(onshape_explorer)
 
     def setup_external_drag_drop(self, window_name: str, title, drop_area, path_widget, button):
+        """Set up external drag and drop support for a drop area.
+
+        Args:
+            window_name: Name of the parent window.
+            title: Identifier for this drag-drop area.
+            drop_area: The UI drop area widget.
+            path_widget: Widget to update with the dropped file path.
+            button: Button to enable when a valid file is dropped.
+        """
         if title in self.external_drag_drops:
             dd = self.external_drag_drops[title]
             dd.destroy()
@@ -631,6 +643,7 @@ class AddRobot:
             pass
 
     def destroy_external_drag_drop(self):
+        """Destroy all external drag and drop handlers."""
         if self.external_drag_drops:
             for _, d in self.external_drag_drops.items():
                 d.destroy()

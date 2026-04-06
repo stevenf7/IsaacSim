@@ -235,7 +235,8 @@ class AssembledBodies:
 
     @property
     def root_joints(self) -> List[UsdPhysics.Joint]:
-        """Root joints that tie the floating body to the USD stage. These are disabled in an assembled body,
+        """Root joints that tie the floating body to the USD stage. These are disabled in an assembled body,.
+
             and will be re-enabled by the disassemble() function.
 
         Returns:
@@ -305,7 +306,7 @@ class AssembledRobot:
 
     @property
     def base_path(self) -> str:
-        """Prim path of the base body
+        """Prim path of the base body.
 
         Returns:
             Prim path of the base body.
@@ -314,7 +315,7 @@ class AssembledRobot:
 
     @property
     def attach_path(self) -> str:
-        """Prim path of the floating (attach) body
+        """Prim path of the floating (attach) body.
 
         Returns:
             Prim path of the floating (attach) body.
@@ -323,7 +324,7 @@ class AssembledRobot:
 
     @property
     def fixed_joint(self) -> UsdPhysics.FixedJoint:
-        """USD fixed joint linking base and floating body together
+        """USD fixed joint linking base and floating body together.
 
         Returns:
             USD fixed joint linking base and floating body together.
@@ -332,7 +333,8 @@ class AssembledRobot:
 
     @property
     def root_joints(self) -> List[UsdPhysics.Joint]:
-        """Root joints that tie the floating body to the USD stage.  These are disabled in an assembled body,
+        """Root joints that tie the floating body to the USD stage.  These are disabled in an assembled body,.
+
         and will be re-enabled by the disassemble() function.
 
         Returns:
@@ -342,7 +344,7 @@ class AssembledRobot:
 
     @property
     def collision_mask(self) -> Usd.Relationship:
-        """A Usd Relationship masking collisions between the two assembled robots
+        """A Usd Relationship masking collisions between the two assembled robots.
 
         Returns:
             A Usd Relationship masking collisions between the two assembled robots.
@@ -363,6 +365,7 @@ class AssemblyStatus(IntEnum):
 
 class RobotAssembler:
     """RobotAssembler is a class to assemble robots from a base robot and an attachment robot. It will create a new USD stage with the assembly and configure a variant selection to enable the attachment robot to be selected.
+
     If the variant set already exists in the source asset, it creates a new entry to it, otherwise it creates a new variant set.
     """
 
@@ -559,7 +562,6 @@ class RobotAssembler:
 
     def finish_assemble(self):
         """Finalize the assembly process by configuring variant sets and saving the assembly to a USD file."""
-
         if self._direct_edit:
 
             async def stop_sublayer():
@@ -626,7 +628,7 @@ class RobotAssembler:
         mask_all_collisions: bool = True,
         refresh_asset_paths: bool = False,
     ) -> AssembledBodies:
-        """Assemble two rigid bodies into one physical structure
+        """Assemble two rigid bodies into one physical structure.
 
         Args:
             base_path: Path to base robot.
@@ -645,7 +647,6 @@ class RobotAssembler:
             An object representing the assembled bodies. This object can detach the composed robots and edit
             the fixed joint transform.
         """
-
         # Make mount_frames if they are not specified
         if base_mount_frame == "":
             base_mount_path = base_path + "/assembler_mount_frame"
@@ -713,7 +714,7 @@ class RobotAssembler:
         target0: str = None,
         target1: str = None,
     ) -> UsdPhysics.FixedJoint:
-        """Create a fixed joint between two bodies
+        """Create a fixed joint between two bodies.
 
         Args:
             prim_path: Prim path at which to place new fixed joint.
@@ -723,7 +724,6 @@ class RobotAssembler:
         Returns:
             A USD fixed joint
         """
-
         stage = stage_utils.get_current_stage()
 
         fixed_joint_path = prim_path + "/AssemblerFixedJoint"

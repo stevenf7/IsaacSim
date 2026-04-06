@@ -20,7 +20,8 @@ import omni.ui as ui
 
 
 class UIWidgetWrapper:
-    """Base class for creating wrappers around any subclass of omni.ui.Widget in order to provide an easy interface
+    """Base class for creating wrappers around any subclass of omni.ui.Widget in order to provide an easy interface.
+
     for creating and managing specific types of widgets such as state buttons or file pickers.
 
     Args:

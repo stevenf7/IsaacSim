@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test UCX odometry publishing node functionality."""
+
 import struct
 
 import numpy as np
@@ -116,9 +118,10 @@ def unpack_odometry_message(buffer: object):
 
 
 class TestUCXPublishOdometry(UCXTestCase):
-    """Test UCX odometry publishing"""
+    """Test UCX odometry publishing."""
 
     async def setUp(self):
+        """Set up a new stage for odometry publishing tests."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
@@ -201,8 +204,7 @@ class TestUCXPublishOdometry(UCXTestCase):
         )
 
     async def test_odometry_input_mode(self):
-        """Test odometry publishing with direct inputs (ROS2-aligned mode)"""
-
+        """Test odometry publishing with direct inputs (ROS2-aligned mode)."""
         # Create graph with input-based odometry node
         try:
             og.Controller.edit(
@@ -260,8 +262,7 @@ class TestUCXPublishOdometry(UCXTestCase):
         self.assertAlmostEqual(position[2], 0.0, places=2)
 
     async def test_odometry_with_cube(self):
-        """Test odometry publishing with a dynamic cube (input mode)"""
-
+        """Test odometry publishing with a dynamic cube (input mode)."""
         # Create a dynamic cube with physics enabled
         await add_cube("/World/Cube", 1.0, (0, 0, 1.0))
 
@@ -328,8 +329,7 @@ class TestUCXPublishOdometry(UCXTestCase):
         self.assertEqual(len(position), 3, "Position should be a 3D vector")
 
     async def test_odometry_multiple_messages(self):
-        """Test receiving multiple odometry messages over time"""
-
+        """Test receiving multiple odometry messages over time."""
         # Create simple test setup
         try:
             og.Controller.edit(

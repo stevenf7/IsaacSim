@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utility functions for USD scene manipulation used by behavior scripts."""
+
 import carb
 import carb.settings
 import omni.kit.app

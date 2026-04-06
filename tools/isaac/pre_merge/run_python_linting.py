@@ -33,6 +33,8 @@ Tools:
           simplify (SIM)
         - Also enabled by default: unused imports (F401), unnecessary pass (PIE790)
           (disable with --no-ruff-clean)
+        - Use --ruff-select to run specific rule groups (e.g., --ruff-select D ANN)
+        - Use --ruff-list-groups to see all available groups
 
 Usage (via repo.sh):
     # Run all tools on all extensions
@@ -49,6 +51,18 @@ Usage (via repo.sh):
 
     # Run ruff with cleanup rules disabled
     ./repo.sh run_python_linting --ruff --no-ruff-clean
+
+    # Run ruff checking only docstring rules
+    ./repo.sh run_python_linting --ruff --ruff-select D
+
+    # Run ruff checking only type annotation rules
+    ./repo.sh run_python_linting --ruff --ruff-select ANN
+
+    # Run ruff checking multiple specific groups
+    ./repo.sh run_python_linting --ruff --ruff-select D ANN UP
+
+    # List all available ruff rule groups
+    ./repo.sh run_python_linting --ruff-list-groups
 
     # Run pydoclint to check docstrings don't contain types
     ./repo.sh run_python_linting --pydoclint
@@ -205,6 +219,24 @@ RUFF_CLEANUP_SELECT = [
     "F401",  # unused-import
     "PIE790",  # unnecessary-pass
 ]
+
+# Named rule groups for --ruff-select (prefix -> human-readable description).
+# Each key is matched as a prefix against the rules in RUFF_CONFIG["select"] and
+# RUFF_CLEANUP_SELECT so users can test one category at a time.
+RUFF_RULE_GROUPS: dict[str, str] = {
+    "D": "pydocstyle – docstring style (Google convention)",
+    "ANN": "flake8-annotations – type annotations on functions/methods",
+    "UP": "pyupgrade – modern type annotations, syntax, f-strings",
+    "E": "pycodestyle errors – None comparisons, bare except",
+    "W": "pycodestyle warnings – invalid escape sequences",
+    "B": "flake8-bugbear – mutable argument defaults",
+    "N": "pep8-naming – PascalCase classes, snake_case functions",
+    "C4": "flake8-comprehensions – unnecessary generators/comprehensions",
+    "RET": "flake8-return – return statement hygiene",
+    "SIM": "flake8-simplify – code simplifications",
+    "F": "pyflakes – unused imports (cleanup)",
+    "PIE": "flake8-pie – unnecessary pass (cleanup)",
+}
 
 
 # =============================================================================
@@ -824,6 +856,7 @@ def run_ruff(
     cwd: Path,
     fix: bool = False,
     cleanup: bool = False,
+    ruff_select: list[str] | None = None,
 ) -> ToolResult:
     """Run ruff on a directory.
 
@@ -848,6 +881,8 @@ def run_ruff(
         cwd: Current working directory for running the command.
         fix: If True, automatically fix issues.
         cleanup: If True, include cleanup rules.
+        ruff_select: If provided, only include rules whose code starts with one of
+            these prefixes (e.g. ``["D", "ANN"]``).
 
     Returns:
         ToolResult with errors, warnings, and messages.
@@ -864,6 +899,18 @@ def run_ruff(
     if cleanup:
         select_rules.extend(RUFF_CLEANUP_SELECT)
     select_rules = sorted(set(select_rules))
+
+    # Filter to only the requested rule groups
+    if ruff_select:
+        prefixes = [p.upper() for p in ruff_select]
+        select_rules = [r for r in select_rules if any(r.startswith(p) for p in prefixes)]
+        if not select_rules:
+            result.skipped = True
+            result.skip_reason = (
+                f"No rules match --ruff-select {' '.join(ruff_select)}. "
+                "Use --ruff-list-groups to see available groups."
+            )
+            return result
     select_rules_arg = ",".join(select_rules)
     select_rules_set = set(select_rules)
 
@@ -939,6 +986,7 @@ def run_tools_on_extension(
     fix: bool = False,
     cleanup: bool = False,
     diff_files: set[Path] | None = None,
+    ruff_select: list[str] | None = None,
 ) -> ExtensionResult:
     """Run all enabled tools on a single extension.
 
@@ -952,6 +1000,7 @@ def run_tools_on_extension(
         fix: If True, automatically fix issues where supported.
         cleanup: If True, include ruff cleanup rules.
         diff_files: Set of changed Python file paths, or None to check all files.
+        ruff_select: If provided, only run these ruff rule groups.
 
     Returns:
         ExtensionResult with results from all enabled tools.
@@ -1011,7 +1060,9 @@ def run_tools_on_extension(
         result.tool_results["pydoclint"] = run_pydoclint(python_dir, python_files, tools["pydoclint"], cwd)
 
     if "ruff" in enabled_tools:
-        result.tool_results["ruff"] = run_ruff(python_dir, python_files, tools["ruff"], cwd, fix=fix, cleanup=cleanup)
+        result.tool_results["ruff"] = run_ruff(
+            python_dir, python_files, tools["ruff"], cwd, fix=fix, cleanup=cleanup, ruff_select=ruff_select
+        )
 
     result.duration_seconds = time.time() - start_time
     return result
@@ -1026,6 +1077,7 @@ def run_tools_on_directory(
     vendor_dir: str | None,
     fix: bool = False,
     cleanup: bool = False,
+    ruff_select: list[str] | None = None,
 ) -> ExtensionResult:
     """Run all enabled tools directly on an arbitrary directory or file.
 
@@ -1042,6 +1094,7 @@ def run_tools_on_directory(
         vendor_dir: Vendor directory for tools.
         fix: If True, automatically fix issues where supported.
         cleanup: If True, include ruff cleanup rules.
+        ruff_select: If provided, only run these ruff rule groups.
 
     Returns:
         ExtensionResult with results from all enabled tools.
@@ -1079,7 +1132,9 @@ def run_tools_on_directory(
         result.tool_results["pydoclint"] = run_pydoclint(python_dir, python_files, tools["pydoclint"], cwd)
 
     if "ruff" in enabled_tools:
-        result.tool_results["ruff"] = run_ruff(python_dir, python_files, tools["ruff"], cwd, fix=fix, cleanup=cleanup)
+        result.tool_results["ruff"] = run_ruff(
+            python_dir, python_files, tools["ruff"], cwd, fix=fix, cleanup=cleanup, ruff_select=ruff_select
+        )
 
     result.duration_seconds = time.time() - start_time
     return result
@@ -1365,6 +1420,18 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
         action="store_false",
         help="Disable ruff cleanup rules",
     )
+    parser.add_argument(
+        "--ruff-select",
+        nargs="+",
+        metavar="GROUP",
+        help="Only check specific ruff rule groups (e.g., D ANN UP). "
+        "Use --ruff-list-groups to see available groups.",
+    )
+    parser.add_argument(
+        "--ruff-list-groups",
+        action="store_true",
+        help="List available ruff rule groups and exit",
+    )
 
     # Configuration
     parser.add_argument(
@@ -1422,6 +1489,21 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
         """
         repo_root = Path(config.get("root", os.getcwd()))
         use_color = not args.no_color
+
+        # Handle --ruff-list-groups: print groups and exit
+        if args.ruff_list_groups:
+            print("\nAvailable ruff rule groups (use with --ruff-select):\n")
+            all_rules = list(RUFF_CONFIG["select"]) + RUFF_CLEANUP_SELECT
+            for prefix, description in sorted(RUFF_RULE_GROUPS.items()):
+                matching = sorted(r for r in all_rules if r.startswith(prefix))
+                rules_str = ", ".join(matching) if len(matching) <= 8 else f"{len(matching)} rules"
+                print(f"  {prefix:5s}  {description}")
+                print(f"         rules: {rules_str}")
+            return 0
+
+        # --ruff-select implies --ruff
+        if args.ruff_select:
+            args.ruff = True
 
         # Determine which tools to run
         tool_flags = {
@@ -1486,6 +1568,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
                 print(colorize("Fix mode enabled: ruff will auto-fix issues", Colors.YELLOW, use_color))
                 if args.ruff_clean:
                     print(colorize("Ruff cleanup enabled: unused imports and pass removal", Colors.DIM, use_color))
+            if args.ruff_select and "ruff" in enabled_tools:
+                print(colorize(f"Ruff rule groups: {' '.join(args.ruff_select)}", Colors.DIM, use_color))
             if mypy_config and "mypy" in enabled_tools:
                 print(colorize(f"Using mypy config: {mypy_config}", Colors.DIM, use_color))
 
@@ -1503,6 +1587,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
                     vendor_dir=vendor_dir,
                     fix=args.fix,
                     cleanup=args.ruff_clean,
+                    ruff_select=args.ruff_select,
                 )
                 results.append(result)
 
@@ -1572,6 +1657,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
             print(colorize("Fix mode enabled: ruff will auto-fix issues", Colors.YELLOW, use_color))
             if args.ruff_clean:
                 print(colorize("Ruff cleanup enabled: unused imports and pass removal", Colors.DIM, use_color))
+        if args.ruff_select and "ruff" in enabled_tools:
+            print(colorize(f"Ruff rule groups: {' '.join(args.ruff_select)}", Colors.DIM, use_color))
         if mypy_config and "mypy" in enabled_tools:
             print(colorize(f"Using mypy config: {mypy_config}", Colors.DIM, use_color))
 
@@ -1590,6 +1677,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
                 fix=args.fix,
                 cleanup=args.ruff_clean,
                 diff_files=diff_files,
+                ruff_select=args.ruff_select,
             )
             results.append(result)
 

@@ -84,10 +84,12 @@ class EffortSensorBackend:
         return reading
 
     def on_timeline_stop(self) -> None:
+        """Handle timeline stop event."""
         self._sensor_created = False
         self._iface = None
 
     def reset(self) -> None:
+        """Reset the sensor state."""
         if self._iface is not None and self._sensor_created:
             self._iface.remove_sensor(self._joint_prim_path)
         self._sensor_created = False

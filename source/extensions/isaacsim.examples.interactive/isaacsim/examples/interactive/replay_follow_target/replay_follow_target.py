@@ -1,3 +1,5 @@
+"""Replay follow-target sample for replaying recorded robot trajectories and scene data."""
+
 # SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #

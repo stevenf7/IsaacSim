@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Custom IPython kernel launcher for Isaac Sim Jupyter integration."""
+
 import asyncio
 import json
 import os
@@ -57,7 +59,7 @@ def _get_line_column(code, cursor_pos):
 
 
 class EmbeddedKernel(Kernel):
-    """Omniverse Kit Python wrapper kernels
+    """Omniverse Kit Python wrapper kernels.
 
     It re-use the IPython's kernel machinery
     https://jupyter-client.readthedocs.io/en/latest/wrapperkernels.html
@@ -81,7 +83,7 @@ class EmbeddedKernel(Kernel):
     ]
 
     async def do_execute(self, code, silent, store_history=True, user_expressions=None, allow_stdin=False):
-        """Execute user code"""
+        """Execute user code."""
         # https://jupyter-client.readthedocs.io/en/latest/messaging.html#execute
         execute_reply = {"status": "ok", "execution_count": self.execution_count, "payload": [], "user_expressions": {}}
         # no code
@@ -127,10 +129,11 @@ class EmbeddedKernel(Kernel):
         return execute_reply
 
     def do_debug_request(self, msg):
+        """Handle a debug request message."""
         return {}
 
     async def do_complete(self, code, cursor_pos):
-        """Code completation"""
+        """Code completation."""
         # https://jupyter-client.readthedocs.io/en/latest/messaging.html#msging-completion
         complete_reply = {"status": "ok", "matches": [], "cursor_start": 0, "cursor_end": cursor_pos, "metadata": {}}
 
@@ -158,7 +161,7 @@ class EmbeddedKernel(Kernel):
         return complete_reply
 
     async def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
-        """Object introspection"""
+        """Object introspection."""
         # https://jupyter-client.readthedocs.io/en/latest/messaging.html#msging-inspection
         inspect_reply = {"status": "ok", "found": False, "data": {}, "metadata": {}}
 

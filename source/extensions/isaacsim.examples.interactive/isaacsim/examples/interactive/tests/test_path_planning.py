@@ -1,3 +1,5 @@
+"""Tests for the path planning interactive example."""
+
 # SPDX-FileCopyrightText: Copyright (c) 2018-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -28,9 +30,11 @@ from isaacsim.examples.interactive.path_planning import PathPlanning
 
 
 class TestPathPlanningExampleExtension(omni.kit.test.AsyncTestCase):
+    """Test cases for the path planning example."""
 
     # Before running each test
     async def setUp(self):
+        """Set up the path planning sample and load the world."""
         self._sample = PathPlanning()
         self._sample.set_world_settings(physics_dt=1.0 / 60.0, stage_units_in_meters=1.0)
         await self._sample.load_world_async()
@@ -41,6 +45,7 @@ class TestPathPlanningExampleExtension(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down by waiting for assets and clearing the sample."""
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while is_stage_loading():
             print("tearDown, assets still loading, waiting to finish...")
@@ -52,6 +57,7 @@ class TestPathPlanningExampleExtension(omni.kit.test.AsyncTestCase):
 
     # Run all functions with simulation enabled
     async def test_follow_target(self):
+        """Test the follow-target behavior for path planning."""
         await self._sample.reset_async()
         await update_stage_async()
         await self._sample._on_follow_target_event_async()
@@ -63,6 +69,7 @@ class TestPathPlanningExampleExtension(omni.kit.test.AsyncTestCase):
 
     # Run all functions with simulation enabled
     async def test_add_obstacle(self):
+        """Test adding obstacles during path planning simulation."""
         await self._sample.reset_async()
         await update_stage_async()
 
@@ -80,6 +87,7 @@ class TestPathPlanningExampleExtension(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_reset(self):
+        """Test that resetting the sample works without errors."""
         await self._sample.reset_async()
         await update_stage_async()
         pass

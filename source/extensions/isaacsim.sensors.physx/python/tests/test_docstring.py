@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test docstring functionality."""
+
 import isaacsim.core.utils.stage as stage_utils
 import isaacsim.test.docstring
 import omni
@@ -20,17 +22,20 @@ from isaacsim.sensors.physx import _range_sensor
 
 
 class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
+    """Test extension docstrings."""
+
     async def setUp(self):
-        """Method called to prepare the test fixture"""
+        """Method called to prepare the test fixture."""
         super().setUp()
         # create new stage
         await stage_utils.create_new_stage_async()
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        """Method called immediately after the test method has been called."""
         super().tearDown()
 
     async def test_lidar_docstrings(self):
+        """Test lidar docstrings."""
 
         # Add lidar
         result, lidar = omni.kit.commands.execute(

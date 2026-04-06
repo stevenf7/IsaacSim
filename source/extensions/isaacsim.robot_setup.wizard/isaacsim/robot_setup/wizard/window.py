@@ -103,7 +103,7 @@ class RobotWizardWindow:
         ProgressRegistry().set_steps(self._progress)
 
     def destroy(self):
-        """Destroy function. Class cleanup function"""
+        """Destroy function. Class cleanup function."""
         self._visibility_changed_listener = None
 
         for p in self.pages.values():
@@ -159,7 +159,7 @@ class RobotWizardWindow:
         self._visibility_changed_listener = listener
 
     def _on_help_button_clicked(self):
-        """Opens an extension's documentation in a Web Browser"""
+        """Opens an extension's documentation in a Web Browser."""
         import webbrowser
 
         doc_link = "https://docs.isaacsim.omniverse.nvidia.com/latest/robot_setup/robot_wizard.html"
@@ -239,6 +239,7 @@ class RobotWizardWindow:
         # self.robot_picker_model.add_item_changed_fn(_configuring_robot_update)
 
     def on_build_steps(self):
+        """Build the left panel with wizard steps and additional tools."""
         with ui.ScrollingFrame():
             with ui.ZStack():
                 ui.Rectangle(name="step_background")
@@ -268,6 +269,7 @@ class RobotWizardWindow:
                     self._build_tools()
 
     def on_build_content(self):
+        """Build the right panel with all wizard page content."""
         with ui.ZStack():
             self.pages[self._add_robot_page_name] = AddRobot(visible=True, window_title=self.window_title)
             self.pages[self._prepare_files_page_name] = PrepareFiles(visible=False)
@@ -283,6 +285,11 @@ class RobotWizardWindow:
                 self._splitter = Splitter(build_left_fn=self.on_build_steps, build_right_fn=self.on_build_content)
 
     def update_page(self, page_name):
+        """Switch the active wizard page and update progress tracking.
+
+        Args:
+            page_name: Name of the page to navigate to.
+        """
         # set the current page to activea
         ProgressRegistry().set_step_progress(page_name, ProgressColorState.ACTIVE)
         try:

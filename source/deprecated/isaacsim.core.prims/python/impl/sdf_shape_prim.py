@@ -137,7 +137,6 @@ class SdfShapePrim(GeometryPrim):
         Args:
             prim_at_path: The prim to apply SDF schema to.
         """
-
         if not prim_at_path.HasAPI(UsdPhysics.CollisionAPI):
             UsdPhysics.CollisionAPI.Apply(prim_at_path)
         if not prim_at_path.HasAPI(UsdPhysics.MeshCollisionAPI):
@@ -183,7 +182,7 @@ class SdfShapePrim(GeometryPrim):
         indices: Optional[Union[np.ndarray, torch.Tensor]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor]:
-        """Get the SDF values and gradients of the query points
+        """Get the SDF values and gradients of the query points.
 
         Args:
             points: Points (represented in the local frames of meshes) to be queried for sdf and gradients.
@@ -334,7 +333,6 @@ class SdfShapePrim(GeometryPrim):
             indices: Indices to specify which prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
         read_idx = 0
@@ -357,7 +355,6 @@ class SdfShapePrim(GeometryPrim):
             indices: Indices to specify which prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
         read_idx = 0
@@ -380,7 +377,6 @@ class SdfShapePrim(GeometryPrim):
             indices: Indices to specify which prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
         read_idx = 0
@@ -403,7 +399,6 @@ class SdfShapePrim(GeometryPrim):
             indices: Indices to specify which prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
         read_idx = 0

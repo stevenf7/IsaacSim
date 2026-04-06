@@ -121,7 +121,6 @@ class TFListener:
 
         Unregisters the tf2 listener if using tf2 implementation and releases listener resources.
         """
-
         if self._listener:
             if self._use_tf2:
                 self._listener.unregister()

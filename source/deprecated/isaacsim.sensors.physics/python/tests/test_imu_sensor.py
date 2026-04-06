@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test imu sensor functionality."""
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
@@ -51,8 +53,11 @@ from .common import (
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestIMUSensor(omni.kit.test.AsyncTestCase):
+    """Test i m u sensor."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         self._sensor_rate = 60
         self._is = _sensor.acquire_imu_sensor_interface()
         self._assets_root_path = await get_assets_root_path_async()
@@ -72,18 +77,22 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     # Convenience properties for ant configuration
     @property
     def leg_paths(self):
+        """Return leg paths."""
         return self._ant_config.leg_paths
 
     @property
     def sphere_path(self):
+        """Perform sphere path operation."""
         return self._ant_config.sphere_path
 
     @property
     def sensor_offsets(self):
+        """Return sensor offsets."""
         return self._ant_config.imu_sensor_offsets
 
     @property
     def sensor_quatd(self):
+        """Perform sensor quatd operation."""
         return self._ant_config.sensor_quatd
 
     async def _setup_simple_articulation(self, physics_rate=60):
@@ -105,6 +114,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         if self._timeline.is_playing():
             self._timeline.stop()
         SimulationManager.invalidate_physics()
@@ -142,10 +152,12 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self.assertIsNotNone(sensor)
 
     async def test_add_sensor_prim(self):
+        """Test add sensor prim."""
         await self._setup_ant()
         await self._add_sensor_prims()
 
     async def test_orientation_imu(self):
+        """Test orientation imu."""
         await self._setup_simple_articulation()
 
         result, sensor = omni.kit.commands.execute(
@@ -187,6 +199,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             ang += 5
 
     async def test_ang_vel_imu(self):
+        """Test ang vel imu."""
         await self._setup_simple_articulation()
 
         result, sensor = omni.kit.commands.execute(
@@ -283,6 +296,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             x += 1000
 
     async def test_gravity_m(self):
+        """Test gravity m."""
         await self._setup_ant()
         await self._add_sensor_prims()
         self.ant.set_world_poses(positions=[0, 0, 1])
@@ -310,6 +324,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(sensor_reading_no_gravity.lin_acc_z, 0, delta=GRAVITY_TOLERANCE)
 
     async def test_gravity_moon_m(self):
+        """Test gravity moon m."""
         await self._setup_ant()
         await self._add_sensor_prims()
         self.ant.set_world_poses(positions=[0, 0, 1])
@@ -329,6 +344,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(sensor_reading.lin_acc_z, MOON_GRAVITY, delta=GRAVITY_TOLERANCE)
 
     async def test_gravity_cm(self):
+        """Test gravity cm."""
         await self._setup_ant()
         await self._add_sensor_prims()
 
@@ -345,6 +361,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(sensor_reading.lin_acc_z, CM_GRAVITY, delta=GRAVITY_TOLERANCE)
 
     async def test_stop_start(self):
+        """Test stop start."""
         await self._setup_ant()
         await self._add_sensor_prims()
 
@@ -367,6 +384,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(sensor_reading.lin_acc_z, init_reading.lin_acc_z, delta=ORIENTATION_TOLERANCE)
 
     async def test_no_physics_scene(self):
+        """Test no physics scene."""
         await stage_utils.open_stage_async(self._assets_root_path + "/Isaac/Environments/Grid/default_environment.usd")
         await omni.kit.app.get_app().next_update_async()
         self._stage = stage_utils.get_current_stage()
@@ -504,6 +522,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self.assertGreaterEqual(low_rolling_avg_size_diff[i], high_rolling_avg_size_diff[i])
 
     async def test_sensor_period(self):
+        """Test sensor period."""
         await self._setup_ant()
         await self._add_sensor_prims()
         result, sensor = omni.kit.commands.execute(
@@ -538,6 +557,8 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     # verify that the measurement time are the same as not using the custom function
     # verify that the measuremnt using and not using the custom function are not the same
     async def test_custom_interpolation_function(self):
+        """Test custom interpolation function."""
+
         def custom_function(sensorReadings: List[_sensor.IsSensorReading], time: float) -> _sensor.IsSensorReading:
             override_sensor_reading = _sensor.IsSensorReading()
             override_sensor_reading.lin_acc_x = -100
@@ -577,6 +598,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self.assertNotEqual(custom_reading.lin_acc_x, sensor_reading.lin_acc_x)
 
     async def test_sensor_latest_data(self):
+        """Test sensor latest data."""
         await self._setup_ant()
         await self._add_sensor_prims()
         result, sensor = omni.kit.commands.execute(
@@ -602,6 +624,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             old_time = latest_sensor_reading.time
 
     async def test_wrong_sensor_path(self):
+        """Test wrong sensor path."""
         await self._setup_ant()
         await self._add_sensor_prims()
         await omni.kit.app.get_app().next_update_async()
@@ -716,6 +739,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(custom_reading.orientation.w, -custom_reading.orientation.y, delta=ORIENTATION_TOLERANCE)
 
     async def test_invalid_imu(self):
+        """Test invalid imu."""
         # goal is to make sure an invalid imu doesn't crash the sim
         result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateImuSensor",

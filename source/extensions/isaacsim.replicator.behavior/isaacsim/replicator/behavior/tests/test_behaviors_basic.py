@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Basic functionality tests for behavior scripts."""
+
 import importlib
 import os
 
@@ -31,21 +33,22 @@ SCRIPTS_ATTR = "omni:scripting:scripts"
 
 
 class TestBehaviorsBasic(omni.kit.test.AsyncTestCase):
-    """
-    Test the basic functionality of the behavior scripts.
-    """
+    """Test the basic functionality of the behavior scripts."""
 
     async def setUp(self):
+        """Set up a new stage before each test."""
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Close the stage after each test."""
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
 
     async def check_exposed_variables(self, behavior_class):
+        """Verify exposed variables are correctly created and removed for a behavior class."""
         # Make sure behavior_class is of type BehaviorScript
         self.assertTrue(
             issubclass(behavior_class, BehaviorScript),
@@ -164,6 +167,7 @@ class TestBehaviorsBasic(omni.kit.test.AsyncTestCase):
             )
 
     async def test_exposed_variables(self):
+        """Test that all behavior classes correctly expose and remove their variables."""
         # Get the behavior classes to test from the behaviors module __all__ list
         BEHAVIOR_CLASSES = [getattr(behaviors_module, class_name) for class_name in behaviors_module.__all__]
         carb.log_info(f"BEHAVIOR_CLASSES: {BEHAVIOR_CLASSES}")

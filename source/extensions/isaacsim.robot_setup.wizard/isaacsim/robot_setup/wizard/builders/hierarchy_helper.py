@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Backend of "applying hierarchy"
+"""Backend of "applying hierarchy".
 
 The two windows in robot hierarchy page ultimates provides a lookup table of old paths and new paths.
 when applying hierarchy, we look up the new path for the old path move that prim and its children to the new path.
@@ -255,7 +254,6 @@ def process_mesh(stage: object, robot_prim: object, reference_mesh: dict) -> Non
         reference_mesh: Dictionary mapping link paths to reference mesh prim paths.
 
     """
-
     robot = RobotRegistry().get()
 
     if not stage or not robot or not robot_prim:
@@ -342,7 +340,8 @@ def recursive_physics_removal(prim: object):
 
 
 def relocate_parent_to_child_origin(parent_prim_path: str, reference_child_prim_path: str) -> bool | None:
-    """Moves the parent's transform to the reference child's origin and updates all children's
+    """Moves the parent's transform to the reference child's origin and updates all children's.
+
     transforms to remain in their current global positions.
 
     Args:
@@ -617,5 +616,4 @@ def clean_up(robot_stage: object):
     Args:
         robot_stage: The USD stage containing the robot to clean up.
     """
-
     pass

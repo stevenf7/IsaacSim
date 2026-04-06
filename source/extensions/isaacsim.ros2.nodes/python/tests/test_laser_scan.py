@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for ROS 2 laser scan publisher OmniGraph node."""
+
 import copy
 
 import omni.kit.commands
@@ -27,7 +29,10 @@ from .common import get_qos_profile, simulate_async
 
 
 class TestRos2LaserScan(ROS2TestCase):
+    """Test suite for ros2 laser scan."""
+
     async def test_physx_lidar(self):
+        """Test physx lidar."""
         # Test Lidar buffer with replicator activated
         import omni.graph.core as og
         import rclpy

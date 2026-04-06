@@ -76,7 +76,6 @@ class Extension(omni.ext.IExt):
         Args:
             ext_id: The extension identifier.
         """
-
         self._ext_id = ext_id
 
         # Loads interfaces
@@ -95,9 +94,11 @@ class Extension(omni.ext.IExt):
         self._physics_callback_id = None
 
     def build_window(self) -> None:
+        """Build the extension window (no-op, UI is built in `build_ui`)."""
         pass
 
     def build_ui(self) -> None:
+        """Build the surface gripper example UI panel."""
         self._usd_context = omni.usd.get_context()
         if self._usd_context is not None:
             self._stage_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
@@ -155,6 +156,7 @@ class Extension(omni.ext.IExt):
                     add_separator()
 
     def on_shutdown(self) -> None:
+        """Clean up resources when the extension is unloaded."""
         if self._physics_callback_id is not None:
             SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None

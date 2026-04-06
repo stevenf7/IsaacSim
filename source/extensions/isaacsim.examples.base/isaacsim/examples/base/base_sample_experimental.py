@@ -29,6 +29,8 @@ from isaacsim.core.simulation_manager import PhysicsScene, PhysxScene, Simulatio
 
 
 class BaseSample(object):
+    """Base class for Isaac Sim example samples with simulation and rendering management."""
+
     def __init__(self) -> None:
         self._physics_sim_interface = omni.physics.core.get_physics_simulation_interface()
         self._world_settings = {
@@ -132,14 +134,16 @@ class BaseSample(object):
 
     @abstractmethod
     async def setup_post_load(self):
-        """Called after first reset of the world when pressing load,
+        """Called after first reset of the world when pressing load,.
+
         intializing private variables happen here.
         """
         pass
 
     @abstractmethod
     async def setup_pre_reset(self):
-        """Called in reset button before resetting the world
+        """Called in reset button before resetting the world.
+
         to remove a physics callback for instance or a controller reset.
         """
         pass
@@ -151,7 +155,8 @@ class BaseSample(object):
 
     @abstractmethod
     async def setup_post_clear(self):
-        """Called after clicking clear button
+        """Called after clicking clear button.
+
         or after creating a new stage and clearing the instance of the world with its callbacks.
         """
         pass
@@ -165,17 +170,17 @@ class BaseSample(object):
         self._logging_info += str(info) + "\n"
 
     def _physics_cleanup(self):
-        """Cleanup physics resources"""
+        """Cleanup physics resources."""
         if app_utils.is_playing():
             app_utils.stop()
         self.physics_cleanup()
 
     def physics_cleanup(self):
-        """Function called when extension shutdowns and starts again, (hot reloading feature)"""
+        """Function called when extension shutdowns and starts again, (hot reloading feature)."""
         pass
 
     async def clear_async(self):
-        """Function called when clicking clear button"""
+        """Function called when clicking clear button."""
         await stage_utils.create_new_stage_async()
         self._physics_cleanup()
         gc.collect()

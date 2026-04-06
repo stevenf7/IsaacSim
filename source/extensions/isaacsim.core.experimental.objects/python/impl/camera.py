@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Camera module."""
+
 from __future__ import annotations
 
 from typing import Any, Literal
@@ -27,7 +29,8 @@ from pxr import Usd, UsdGeom
 
 
 class Camera(XformPrim):
-    """High level class for creating/wrapping USD Camera (that describes optical properties of a camera
+    """High level class for creating/wrapping USD Camera (that describes optical properties of a camera.
+
     via a common set of attributes) prims.
 
     .. note::

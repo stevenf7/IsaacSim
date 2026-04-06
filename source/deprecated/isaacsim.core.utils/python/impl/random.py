@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated random utility functions."""
+
 import math
 import random
 from typing import Tuple
@@ -40,7 +42,6 @@ def get_random_values_in_range(min_range: np.ndarray, max_range: np.ndarray) -> 
     Returns:
         Array of random values. Shape is (num_values, ).
     """
-
     return np.array([random.uniform(min_val, max_val) for min_val, max_val in zip(min_range, max_range)])
 
 
@@ -66,7 +67,6 @@ def get_random_translation_from_camera(
         Random translation from the camera, in the camera's frame, that's in view of the camera. Shape
             is (3, ).
     """
-
     # Randomly select distance away from camera (along the optical axis)
     random_z_distance = random.uniform(min_distance, max_distance)
 
@@ -123,7 +123,6 @@ def get_random_world_pose_in_view(
             quaternion orientation in the world frame. Quaternion is scalar-first
             (w, x, y, z). Shape is (4, ).
     """
-
     random_translation_from_camera = get_random_translation_from_camera(
         min_distance, max_distance, fov_x, fov_y, fraction_to_screen_edge
     )

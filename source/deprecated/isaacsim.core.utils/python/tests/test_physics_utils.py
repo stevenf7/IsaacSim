@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for physics utility functions."""
+
 import numpy as np
 import omni.kit.commands
 import omni.kit.test
@@ -21,17 +23,22 @@ from pxr import UsdPhysics
 
 
 class TestPhysics(omni.kit.test.AsyncTestCase):
+    """Test cases for Physics."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         pass
 
     async def test_rigid_body_enabled(self):
+        """Test rigid body enabled."""
         from isaacsim.core.utils.prims import create_prim
         from isaacsim.core.utils.stage import clear_stage
 

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""ROS 2 sample scene extension for navigation examples."""
+
 import asyncio
 import os
 import weakref
@@ -27,6 +29,8 @@ from isaacsim.storage.native import get_assets_root_path
 
 
 class Extension(omni.ext.IExt):
+    """Extension providing ROS 2 navigation sample scenes."""
+
     # Example names and categories as class constants for easier maintenance
     NOVA_CARTER_NAME = "Nova Carter"
     NOVA_CARTER_JOINT_STATES_NAME = "Nova Carter Joint States"
@@ -122,7 +126,6 @@ class Extension(omni.ext.IExt):
             name: Display name for the example.
             file_path: USD file path for the example scene.
         """
-
         # check if ros2 bridge is enabled before proceeding
         extension_enabled = omni.kit.app.get_app().get_extension_manager().is_extension_enabled("isaacsim.ros2.bridge")
         if not extension_enabled:

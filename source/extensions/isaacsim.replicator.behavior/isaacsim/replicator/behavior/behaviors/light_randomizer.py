@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Behavior script that randomizes light properties such as intensity and color."""
+
 import carb
 import numpy as np
 import omni.kit.commands
@@ -30,9 +32,7 @@ from pxr import Gf, Sdf, Usd, UsdLux
 
 
 class LightRandomizer(BehaviorScript):
-    """
-    Behavior script that randomizes light properties such as intensity and color for light prim(s).
-    """
+    """Behavior script that randomizes light properties such as intensity and color for light prim(s)."""
 
     BEHAVIOR_NS = "lightRandomizer"
     VARIABLES_TO_EXPOSE = [

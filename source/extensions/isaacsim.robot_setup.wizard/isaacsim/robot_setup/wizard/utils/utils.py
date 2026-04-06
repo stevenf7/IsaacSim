@@ -81,7 +81,8 @@ def copy_prim_hierarchy(src_prim: object, dst_stage: object, dst_path: object, f
 
 
 def copy_prim(src_prim: object, dst_stage: object, dst_path: object):
-    """Recursively copy src_prim along with its attributes, relationships, and children
+    """Recursively copy src_prim along with its attributes, relationships, and children.
+
     to dst_stage at the specified dst_path.
 
     Args:

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Occupancy map generation extension implementation."""
+
+
 import omni.ext
 
 from ..bindings import _omap

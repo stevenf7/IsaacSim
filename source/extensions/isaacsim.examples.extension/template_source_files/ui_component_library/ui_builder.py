@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""UI builder for the UI component library template."""
+
+
 import os
 from typing import List
 
@@ -34,6 +37,8 @@ from isaacsim.gui.components.ui_utils import get_style
 
 
 class UIBuilder:
+    """Build and manage the UI for the UI component library."""
+
     def __init__(self):
         # Frames are sub-windows that can contain multiple UI elements
         self.frames = []
@@ -47,12 +52,13 @@ class UIBuilder:
 
     def on_menu_callback(self):
         """Callback for when the UI is opened from the toolbar.
+
         This is called directly after build_ui().
         """
         pass
 
     def on_timeline_event(self, event):
-        """Callback for Timeline events (Play, Pause, Stop)
+        """Callback for Timeline events (Play, Pause, Stop).
 
         Args:
             event (omni.timeline.TimelineEventType): Event Type
@@ -61,7 +67,8 @@ class UIBuilder:
 
     def on_physics_step(self, step):
         """Callback for Physics Step.
-        Physics steps only occur when the timeline is playing
+
+        Physics steps only occur when the timeline is playing.
 
         Args:
             step (float): Size of physics step
@@ -69,7 +76,7 @@ class UIBuilder:
         pass
 
     def on_stage_event(self, event):
-        """Callback for Stage Events
+        """Callback for Stage Events.
 
         Args:
             event (omni.usd.StageEventType): Event Type
@@ -79,8 +86,9 @@ class UIBuilder:
     def cleanup(self):
         """
         Called when the stage is closed or the extension is hot reloaded.
+
         Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called
+        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called.
         """
         # None of the UI elements in this template actually have any internal state that needs to be cleaned up.
         # But it is best practice to call cleanup() on all wrapped UI elements to simplify development.
@@ -90,6 +98,7 @@ class UIBuilder:
     def build_ui(self):
         """
         Build a custom UI tool to run your extension.
+
         This function will be called any time the UI window is closed and reopened.
         """
         # Create a UI frame that prints the latest UI event.

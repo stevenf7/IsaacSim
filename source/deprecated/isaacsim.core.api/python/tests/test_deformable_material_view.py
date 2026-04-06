@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+"""Test for deformable material view."""
+
 import numpy as np
 
 # NOTE:
@@ -31,7 +33,10 @@ torch = import_module("torch")
 
 
 class TestDeformableMaterialView(CoreTestCase):
+    """Test deformable material view."""
+
     async def setUp(self):
+        """Set up test environment."""
         await super().setUp()
         World.clear_instance()
         await create_new_stage_async()
@@ -42,12 +47,14 @@ class TestDeformableMaterialView(CoreTestCase):
         pass
 
     async def tearDown(self):
+        """Tear down test environment."""
         self.my_world.clear_instance()
         await update_stage_async()
         await super().tearDown()
         pass
 
     async def test_deformable_material_view(self):
+        """Test deformable material view."""
         self.isclose = torch.isclose
         self._array_container = lambda x: torch.tensor(x, device=self._device, dtype=torch.float32)
         self.stage = get_current_stage()
@@ -84,6 +91,7 @@ class TestDeformableMaterialView(CoreTestCase):
         await self.my_world.stop_async()
 
     async def dynamic_friction_test(self):
+        """Dynamic friction test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.deformable_material_view.get_dynamic_frictions(indices)
@@ -100,6 +108,7 @@ class TestDeformableMaterialView(CoreTestCase):
         print(expected_shape)
 
     async def poissons_ratio_test(self):
+        """Poissons ratio test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.deformable_material_view.get_poissons_ratios(indices) / 2
@@ -116,6 +125,7 @@ class TestDeformableMaterialView(CoreTestCase):
         print(expected_shape)
 
     async def youngs_modululs_test(self):
+        """Youngs modululs test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.deformable_material_view.get_youngs_moduli(indices)
@@ -132,6 +142,7 @@ class TestDeformableMaterialView(CoreTestCase):
         print(expected_shape)
 
     async def damping_scale_test(self):
+        """Damping scale test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.deformable_material_view.get_damping_scales(indices) / 2
@@ -148,6 +159,7 @@ class TestDeformableMaterialView(CoreTestCase):
         print(expected_shape)
 
     async def elasticity_damping_test(self):
+        """Elasticity damping test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.deformable_material_view.get_elasticity_dampings(indices)

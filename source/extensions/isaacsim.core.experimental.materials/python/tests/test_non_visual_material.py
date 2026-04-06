@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test for non visual material."""
+
 from typing import Literal
 
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -35,6 +37,7 @@ from pxr import UsdShade
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"]) -> None:
+    """Populate stage."""
     # create new stage
     stage = await stage_utils.create_new_stage_async()
     # define prims
@@ -44,22 +47,26 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
 
 
 class TestNonVisualMaterial(omni.kit.test.AsyncTestCase):
+    """Test non visual material."""
+
     async def setUp(self):
-        """Method called to prepare the test fixture"""
+        """Method called to prepare the test fixture."""
         super().setUp()
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
     @parametrize(backends=["usd"], prim_class=NonVisualMaterial, populate_stage_func=populate_stage)
     async def test_len(self, prim, num_prims, device, backend):
+        """Test len."""
         self.assertEqual(len(prim), num_prims, f"Invalid len ({num_prims} prims)")
 
     @parametrize(backends=["usd"], prim_class=NonVisualMaterial, populate_stage_func=populate_stage)
     async def test_bases(self, prim, num_prims, device, backend):
+        """Test bases."""
         choices = list(BASE_SPEC.keys())
         # test cases
         # - check before applying any values
@@ -82,6 +89,7 @@ class TestNonVisualMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=NonVisualMaterial, populate_stage_func=populate_stage)
     async def test_coatings(self, prim, num_prims, device, backend):
+        """Test coatings."""
         choices = list(COATING_SPEC.keys())
         # test cases
         # - check before applying any values
@@ -104,6 +112,7 @@ class TestNonVisualMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=NonVisualMaterial, populate_stage_func=populate_stage)
     async def test_attributes(self, prim, num_prims, device, backend):
+        """Test attributes."""
         choices = list(ATTRIBUTE_SPEC.keys())
         # test cases
         # - check before applying any values
@@ -126,6 +135,7 @@ class TestNonVisualMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=NonVisualMaterial, populate_stage_func=populate_stage)
     async def test_encode_decode_material_ids(self, prim, num_prims, device, backend):
+        """Test encode decode material ids."""
         self.assertTrue(len(BASE_SPEC) > 0, "BASE_SPEC is empty")
         self.assertTrue(len(COATING_SPEC) > 0, "COATING_SPEC is empty")
         self.assertTrue(len(ATTRIBUTE_SPEC) > 0, "ATTRIBUTE_SPEC is empty")

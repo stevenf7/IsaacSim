@@ -61,7 +61,6 @@ class OccupancyMapDataValue(enum.IntEnum):
         Returns:
             The pixel value to use in ROS image format (0, 127, or 255).
         """
-
         values = [0, 127, 255]
 
         if negate:
@@ -270,7 +269,7 @@ resolution, origin, negate flag, occupied threshold, and free threshold."""
     def from_masks(
         freespace_mask: np.ndarray, occupied_mask: np.ndarray, resolution: int, origin: tp.Tuple[float, float, float]
     ) -> "OccupancyMap":
-        """Creates an occupancy map from binary masks and other data
+        """Creates an occupancy map from binary masks and other data.
 
         This method is intended as a utility by other methods, but not necessarily
         useful for end use cases.
@@ -284,7 +283,6 @@ resolution, origin, negate flag, occupied threshold, and free threshold."""
         Returns:
             The occupancy map.
         """
-
         data = np.zeros(freespace_mask.shape, dtype=np.uint8)
         data[...] = OccupancyMapDataValue.UNKNOWN
         data[freespace_mask] = OccupancyMapDataValue.FREESPACE
@@ -379,7 +377,6 @@ resolution, origin, negate flag, occupied threshold, and free threshold."""
         Returns:
             The buffered (aka: dilated / padded) occupancy map.
         """
-
         buffer_distance_pixels = int(buffer_distance_pixels)
 
         radius = buffer_distance_pixels
@@ -468,7 +465,6 @@ resolution, origin, negate flag, occupied threshold, and free threshold."""
         Returns:
             True if the coordinate is inside the bounds of the occupancy map. False otherwise.
         """
-
         pixel = self.world_to_pixel_numpy(np.array([[point.x, point.y]]))
         x_px = int(pixel[0, 0])
         y_px = int(pixel[0, 1])

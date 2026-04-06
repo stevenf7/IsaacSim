@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated type definitions for simulation data structures."""
+
 from typing import List, Optional, Union
 
 import numpy as np

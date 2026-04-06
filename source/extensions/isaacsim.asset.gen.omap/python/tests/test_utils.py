@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for occupancy map utility functions."""
+
+
 import omni.kit.test
 from isaacsim.asset.gen.omap.utils import compute_coordinates, generate_image, update_location
 

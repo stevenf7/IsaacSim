@@ -91,7 +91,6 @@ class TestIw_hub(omni.kit.test.AsyncTestCase):
 
     async def test_loading(self):
         """Test that the iW Hub robot loads and can move forward."""
-
         stage_utils.delete_prim("/ActionGraph")
         # Start Simulation and wait
         self._timeline.play()
@@ -121,7 +120,6 @@ class TestIw_hub(omni.kit.test.AsyncTestCase):
     # general, slowly building up speed testcase
     async def test_accel(self):
         """Test acceleration behavior with gradually increasing velocities."""
-
         odom_velocity = og.Controller.attribute("outputs:linearVelocity", self.odom_node)
         odom_ang_vel = og.Controller.attribute("outputs:angularVelocity", self.odom_node)
 
@@ -153,7 +151,6 @@ class TestIw_hub(omni.kit.test.AsyncTestCase):
     # braking from different init speeds
     async def test_brake(self):
         """Test braking behavior from various initial velocities."""
-
         odom_velocity = og.Controller.attribute("outputs:linearVelocity", self.odom_node)
         odom_ang_vel = og.Controller.attribute("outputs:angularVelocity", self.odom_node)
 

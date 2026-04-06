@@ -1,3 +1,5 @@
+"""Conveyor system module for building and managing conveyor track layouts."""
+
 # SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -25,6 +27,7 @@ from .conveyor_track import Angle, ConveyorTrack, Curvature, Ramp, Style, Type
 
 
 def set_pose_from_transform(prim, pose, scale=Gf.Vec3d(1, 1, 1)):
+    """Set the pose of a prim from a transform matrix."""
     xform = UsdGeom.Xformable(prim)
     xform.ClearXformOpOrder()
     xform_op_t = xform.AddXformOp(UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, "")
@@ -41,6 +44,7 @@ def set_pose_from_transform(prim, pose, scale=Gf.Vec3d(1, 1, 1)):
 
 
 def remove_scale_from_matrix(matrix):
+    """Remove scale component from a 4x4 transformation matrix."""
     out = Gf.Matrix4d()
     x = Gf.Vec3d(0)
     y = Gf.Vec3d(0)
@@ -64,6 +68,16 @@ def remove_scale_from_matrix(matrix):
 
 
 class ConveyorFilter:
+    """Filter criteria for selecting conveyor tracks.
+
+    Args:
+        styles: List of conveyor styles to filter by.
+        angles: List of angle configurations to filter by.
+        curvatures: List of curvature values to filter by.
+        ramps: List of ramp configurations to filter by.
+        types: List of track types to filter by.
+    """
+
     def __init__(
         self,
         styles: List[Style] = [],
@@ -79,6 +93,7 @@ class ConveyorFilter:
         self.type = types
 
     def clear_filter(self):
+        """Reset all filter criteria to empty lists."""
         self.style = []
         self.angle = []
         self.curvature = []
@@ -87,6 +102,13 @@ class ConveyorFilter:
 
 
 class ConveyorSelector:
+    """Manage available conveyor track assets and provide filtered selection.
+
+    Args:
+        config_file: Configuration dictionary containing asset definitions.
+        **kwargs: Additional keyword arguments including `thumb_loaded_callback`.
+    """
+
     def __init__(self, config_file, **kwargs):
         preferences = ConveyorBuilderPreferences()
         # config_file = preferences.config_file
@@ -102,10 +124,12 @@ class ConveyorSelector:
         self._thumb_loaded_callback = kwargs.get("thumb_loaded_callback", None)
 
     def on_thumb_loaded(self, track):
+        """Handle thumbnail loaded event for a track."""
         if self._thumb_loaded_callback:
             self._thumb_loaded_callback(track)
 
     def list_tracks(self, config: ConveyorFilter):
+        """Return a list of track names matching the given filter criteria."""
         v = list(self.tracks.values())
         tracks = [
             a
@@ -121,6 +145,13 @@ class ConveyorSelector:
 
 
 class ConveyorBuilder:
+    """Build and manage a system of connected conveyor tracks on a USD stage.
+
+    Args:
+        stage: The USD stage to build conveyor tracks on.
+        conveyor_selector: Selector providing available conveyor track assets.
+    """
+
     def __init__(self, stage, conveyor_selector=None):
         self.stage = stage
         if conveyor_selector:
@@ -130,9 +161,11 @@ class ConveyorBuilder:
         self._parent_anchor = {}  # usd path, anchor ID
 
     def clear_system(self, stage):
+        """Reset the conveyor system and reinitialize with the given stage."""
         self.__init__(stage)
 
     def get_available_connections(self, track_path):
+        """Get unconnected anchor points for the specified track."""
         if track_path in self._tracks:
             available_connections = [
                 a
@@ -142,6 +175,7 @@ class ConveyorBuilder:
             return available_connections
 
     def is_track(self, prim_path):
+        """Check if the prim at the given path is a conveyor track asset."""
         sel = self.stage.GetPrimAtPath(prim_path)
         if sel.GetReferences():
             refs = []
@@ -154,6 +188,7 @@ class ConveyorBuilder:
         return False
 
     def add_track(self, track, track_anchor="", x_direction=1, y_direction=1, parent=None, parent_anchor=""):
+        """Add a new conveyor track to the system and connect it to a parent track."""
         # print("adding", track_anchor, parent_anchor)
 
         next_pose = self.get_next_pose(track, track_anchor, x_direction, y_direction, parent, parent_anchor)
@@ -216,6 +251,7 @@ class ConveyorBuilder:
         return new_track
 
     def remove_track(self, usd_path):
+        """Remove a track from the system and return the previous connected track path."""
         previous_track = ""
         parent_anchor = self._parent_anchor[usd_path]
         if parent_anchor in self._anchor_connections[usd_path]:
@@ -233,6 +269,7 @@ class ConveyorBuilder:
         return previous_track
 
     def get_direction(self, usd_path):
+        """Get the direction multiplier for the specified track."""
         if usd_path in self._tracks:
             if self._tracks[usd_path].ramp == Ramp.FLAT:
                 return 1
@@ -242,6 +279,7 @@ class ConveyorBuilder:
         return 1
 
     def get_next_pose(self, track, track_anchor="", x_direction=1, y_direction=1, parent=None, parent_anchor=""):
+        """Compute the world-space pose for placing the next track segment."""
         base_pose = Gf.Matrix4d()
         x_scale = 1
         y_scale = 1

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated xform operation utility functions."""
+
 import numpy as np
 import usdrt
 from isaacsim.core.utils.prims import (
@@ -43,7 +45,7 @@ def clear_xform_ops(prim: Usd.Prim):
 def reset_and_set_xform_ops(
     prim: Usd.Prim, translation: Gf.Vec3d, orientation: Gf.Quatd, scale: Gf.Vec3d = Gf.Vec3d([1.0, 1.0, 1.0])
 ):
-    """Reset xform ops to isaac sim defaults, and set their values
+    """Reset xform ops to isaac sim defaults, and set their values.
 
     Args:
         prim: Prim to reset

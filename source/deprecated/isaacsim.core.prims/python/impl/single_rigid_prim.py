@@ -135,7 +135,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return
 
     def set_linear_velocity(self, velocity: np.ndarray) -> None:
-        """Set the linear velocity of the rigid body in stage
+        """Set the linear velocity of the rigid body in stage.
 
         .. warning::
 
@@ -149,7 +149,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return
 
     def get_linear_velocity(self) -> np.ndarray:
-        """Get the linear velocity of the rigid body
+        """Get the linear velocity of the rigid body.
 
         Returns:
             current linear velocity of the the rigid prim. Shape (3,).
@@ -165,7 +165,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return velocities[0]
 
     def set_angular_velocity(self, velocity: np.ndarray) -> None:
-        """Set the angular velocity of the rigid body in stage
+        """Set the angular velocity of the rigid body in stage.
 
         .. warning::
 
@@ -179,7 +179,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return
 
     def get_angular_velocity(self) -> np.ndarray:
-        """Get the angular velocity of the rigid body
+        """Get the angular velocity of the rigid body.
 
         Returns:
             current angular velocity of the the rigid prim. Shape (3,).
@@ -188,7 +188,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return velocities[0]
 
     def set_com(self, position: np.ndarray, orientation: np.ndarray) -> None:
-        """Set the center of mass pose of the rigid body
+        """Set the center of mass pose of the rigid body.
 
         Args:
             position: center of mass position. Shape (3,).
@@ -200,7 +200,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return
 
     def get_com(self) -> tuple[np.ndarray, np.ndarray]:
-        """Get the center of mass pose of the rigid body
+        """Get the center of mass pose of the rigid body.
 
         Returns:
             A tuple of (position, orientation) where position is the center of mass position and orientation is the center of mass orientation.
@@ -209,7 +209,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return positions[0], orientations[0]
 
     def set_mass(self, mass: float) -> None:
-        """Set the mass of the rigid body
+        """Set the mass of the rigid body.
 
         Args:
             mass: mass of the rigid body in kg.
@@ -225,7 +225,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return
 
     def get_mass(self) -> float:
-        """Get the mass of the rigid body
+        """Get the mass of the rigid body.
 
         Returns:
             mass of the rigid body in kg.
@@ -241,7 +241,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return masses[0]
 
     def set_density(self, density: float) -> None:
-        """Set the density of the rigid body
+        """Set the density of the rigid body.
 
         Args:
             density: density of the rigid body.
@@ -257,7 +257,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return
 
     def get_density(self) -> float:
-        """Get the density of the rigid body
+        """Get the density of the rigid body.
 
         Returns:
             density of the rigid body.
@@ -272,7 +272,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return self._rigid_prim_view.get_densities()[0]
 
     def set_sleep_threshold(self, threshold: float) -> None:
-        """Set the threshold for the rigid body to enter a sleep state
+        """Set the threshold for the rigid body to enter a sleep state.
 
         Search for *Rigid Body Dynamics* > *Sleeping* in |physx_docs| for more details
 
@@ -293,7 +293,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return
 
     def get_sleep_threshold(self) -> float:
-        """Get the threshold for the rigid body to enter a sleep state
+        """Get the threshold for the rigid body to enter a sleep state.
 
         Search for *Rigid Body Dynamics* > *Sleeping* in |physx_docs| for more details
 
@@ -313,7 +313,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return self._rigid_prim_view.get_sleep_thresholds()[0]
 
     def enable_rigid_body_physics(self) -> None:
-        """Enable the rigid body physics
+        """Enable the rigid body physics.
 
         When enabled, the object will be moved by external forces such as gravity and collisions
 
@@ -327,7 +327,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return
 
     def disable_rigid_body_physics(self) -> None:
-        """Disable the rigid body physics
+        """Disable the rigid body physics.
 
         When disabled, the object will not be moved by external forces such as gravity and collisions
 
@@ -347,8 +347,9 @@ class SingleRigidPrim(_SinglePrimWrapper):
         linear_velocity: Optional[np.ndarray] = None,
         angular_velocity: Optional[np.ndarray] = None,
     ) -> None:
-        """Set the default state of the prim (position, orientation and linear and angular velocities),
-        that will be used after each reset
+        """Set the default state of the prim (position, orientation and linear and angular velocities),.
+
+        that will be used after each reset.
 
         .. note::
 
@@ -397,7 +398,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return
 
     def get_default_state(self) -> DynamicState:
-        """Get the default rigid body state (position, orientation and linear and angular velocities)
+        """Get the default rigid body state (position, orientation and linear and angular velocities).
 
         Returns:
             returns the default state of the prim that is used after each reset
@@ -423,7 +424,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         return default_state
 
     def get_current_dynamic_state(self) -> DynamicState:
-        """Get the current rigid body state (position, orientation and linear and angular velocities)
+        """Get the current rigid body state (position, orientation and linear and angular velocities).
 
         Returns:
             the dynamic state of the rigid body prim

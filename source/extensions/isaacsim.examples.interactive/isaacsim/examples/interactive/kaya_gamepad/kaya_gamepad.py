@@ -89,5 +89,5 @@ class KayaGamepad(BaseSample):
         pass
 
     def physics_cleanup(self) -> None:
-        """Function called when extension shutdowns and starts again, (hot reloading feature)"""
+        """Function called when extension shutdowns and starts again, (hot reloading feature)."""
         pass

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test camera context menu functionality."""
+
 import omni.kit.app
 import omni.kit.ui_test as ui_test
 import omni.usd
@@ -21,6 +23,8 @@ from isaacsim.test.utils import MenuUITestCase, count_menu_items, get_all_menu_p
 
 
 class TestCameraContextMenu(MenuUITestCase):
+    """Test camera context menu."""
+
     async def test_camera_context_menu_count(self):
         """Test that all the Camera and Depth Sensor menu items are added correctly.
 

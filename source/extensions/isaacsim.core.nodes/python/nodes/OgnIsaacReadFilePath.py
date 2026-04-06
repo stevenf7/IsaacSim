@@ -17,9 +17,7 @@ from os.path import exists
 
 
 class OgnIsaacReadFilePath:
-    """
-    look for file at path given, and return its contents
-    """
+    """look for file at path given, and return its contents."""
 
     @staticmethod
     def compute(db) -> bool:

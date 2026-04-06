@@ -416,7 +416,6 @@ def verify_asset_root_path(path: str) -> typing.Tuple[omni.client.Result, str]:
         Tuple containing the result (OK if assets verified) and the version string
         of the Isaac Sim assets.
     """
-
     # omni.client is a singleton, import locally to allow to run with multiprocessing
     import omni.client
 
@@ -477,7 +476,6 @@ def get_full_asset_path(path: str) -> typing.Union[str, None]:
     Returns:
         URL or full path to assets, or None if assets not found.
     """
-
     # 1 - Check /persistent/isaac/asset_root/default setting
     default_asset_root = carb.settings.get_settings().get(DEFAULT_ASSET_ROOT_PATH_SETTING)
     if default_asset_root:
@@ -513,7 +511,6 @@ async def get_full_asset_path_async(path: str) -> typing.Union[str, None]:
     Returns:
         URL or full path to assets, or None if assets not found.
     """
-
     # 1 - Check /persistent/isaac/asset_root/default setting
     default_asset_root = carb.settings.get_settings().get(DEFAULT_ASSET_ROOT_PATH_SETTING)
     if default_asset_root:
@@ -575,7 +572,6 @@ def get_assets_root_path(*, skip_check: bool = False) -> str:
     Returns:
         URL of Nucleus server with root path to assets folder.
     """
-
     # get timeout
     timeout = carb.settings.get_settings().get(DEFAULT_ASSET_ROOT_TIMEOUT_SETTING)
     if not isinstance(timeout, (int, float)):
@@ -613,7 +609,6 @@ async def get_assets_root_path_async(*, skip_check: bool = False) -> str:
     Returns:
         URL of Nucleus server with root path to assets folder.
     """
-
     # get timeout
     timeout = carb.settings.get_settings().get(DEFAULT_ASSET_ROOT_TIMEOUT_SETTING)
     if not isinstance(timeout, (int, float)):

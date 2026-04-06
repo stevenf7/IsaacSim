@@ -8,7 +8,7 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
-"""Isaac Kit XR Teleop Bridge
+"""Isaac Kit XR Teleop Bridge.
 
 This module provides OpenXR handle functions that may be missing from older versions
 of omni.kit.xr.system.openxr. It polyfills missing functions into that module

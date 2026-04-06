@@ -128,7 +128,8 @@ class SmoothedCommand:
         self.interpolation_alpha = self.init_interpolation_alpha
 
     def update(self, target: TargetAdapter, posture_config: np.ndarray, eff_x: np.ndarray, eff_R: np.ndarray) -> None:
-        """Update the smoothed target given the current command (target, posture_config) and the
+        """Update the smoothed target given the current command (target, posture_config) and the.
+
         current end-effector frame (eff_{x,R}).
 
         Args:

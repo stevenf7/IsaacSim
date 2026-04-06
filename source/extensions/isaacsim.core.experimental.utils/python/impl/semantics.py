@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Functions for creating, accessing and deleting semantic labels.
-"""
+"""Functions for creating, accessing and deleting semantic labels."""
 
 from __future__ import annotations
 

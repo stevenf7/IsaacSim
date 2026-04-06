@@ -23,7 +23,8 @@ from isaacsim.robot_motion.motion_generation.world_interface import WorldInterfa
 
 
 class PathPlanner(WorldInterface):
-    """Interface for implementing a PathPlanner: An algorithm that outputs a series of configuration space waypoints, which
+    """Interface for implementing a PathPlanner: An algorithm that outputs a series of configuration space waypoints, which.
+
     when linearly interpolated, produce a collision-free path from a starting c-space pose to a c-space or task-space target pose.
     """
 
@@ -41,7 +42,8 @@ class PathPlanner(WorldInterface):
         pass
 
     def compute_path(self, active_joint_positions: np.array, watched_joint_positions: np.array) -> np.array:
-        """Compute a set of c-space waypoints, which when linearly interpolated,
+        """Compute a set of c-space waypoints, which when linearly interpolated,.
+
             produce a collision-free path from a starting c-space pose to a c-space or task-space target pose.
 
         Args:
@@ -52,11 +54,10 @@ class PathPlanner(WorldInterface):
             An (N x m) sequence of joint positions for the active joints in the robot where N is the path length and
                 m is the number of active joints in the robot. If no plan is found, or no target positions have been set, None is returned
         """
-
         return active_joint_positions
 
     def get_active_joints(self) -> List[str]:
-        """Active joints are directly controlled by this PathPlanner
+        """Active joints are directly controlled by this PathPlanner.
 
             Some articulated robot joints may be ignored by some policies. E.g., the gripper of the Franka arm is not used
             to follow targets, and the RMPflow config files excludes the joints in the gripper from the list of articulated
@@ -70,6 +71,7 @@ class PathPlanner(WorldInterface):
 
     def get_watched_joints(self) -> List[str]:
         """Watched joints are joints whose position matters to the PathPlanner, but are not directly controlled.
+
             e.g. A robot may have a watched joint in the middle of its kinematic chain. Watched joints will be assumed
             to remain watched during the rollout of a path.
 

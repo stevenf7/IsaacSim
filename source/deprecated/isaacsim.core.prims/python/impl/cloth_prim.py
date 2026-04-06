@@ -208,7 +208,6 @@ class ClothPrim(XFormPrim):
         Args:
             physics_sim_view: Current physics simulation view.
         """
-
         if physics_sim_view is None:
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
             physics_sim_view.set_subspace_roots("/")

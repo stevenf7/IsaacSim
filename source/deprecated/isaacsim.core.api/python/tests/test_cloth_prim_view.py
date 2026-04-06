@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+"""Test for cloth prim view."""
+
 import omni.kit.test
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.particle_material import ParticleMaterial
@@ -33,7 +35,10 @@ torch = import_module("torch")
 
 
 class TestClothPrim(CoreTestCase):
+    """Test cloth prim."""
+
     async def setUp(self):
+        """Set up test environment."""
         await super().setUp()
         World.clear_instance()
         await create_new_stage_async()
@@ -42,9 +47,11 @@ class TestClothPrim(CoreTestCase):
         self._test_cfg = dict()
 
     async def tearDown(self):
+        """Tear down test environment."""
         await super().tearDown()
 
     async def test_cloth_prim_view_gpu_pipeline(self):
+        """Test cloth prim view gpu pipeline."""
         self.isclose = torch.isclose
         self._array_container = lambda x: torch.tensor(x, device=self._device, dtype=torch.float32)
         await update_stage_async()
@@ -109,6 +116,7 @@ class TestClothPrim(CoreTestCase):
         self.my_world.clear_instance()
 
     async def position_test(self):
+        """Position test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.cloth_view.get_world_positions()
@@ -124,6 +132,7 @@ class TestClothPrim(CoreTestCase):
         self.assertTrue(cur_values.shape == expected_shape)
 
     async def velocity_test(self):
+        """Velocity test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.cloth_view.get_velocities()
@@ -141,6 +150,7 @@ class TestClothPrim(CoreTestCase):
         self.assertTrue(cur_values.shape == expected_shape)
 
     async def paticle_masses_test(self):
+        """Paticle masses test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.cloth_view.get_particle_masses()
@@ -158,6 +168,7 @@ class TestClothPrim(CoreTestCase):
         self.assertTrue(cur_values.shape == expected_shape)
 
     async def spring_stiffness_test(self):
+        """Spring stiffness test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.cloth_view.get_stretch_stiffnesses()
@@ -175,6 +186,7 @@ class TestClothPrim(CoreTestCase):
         self.assertTrue(cur_values.shape == expected_shape)
 
     async def spring_damping_test(self):
+        """Spring damping test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.cloth_view.get_spring_dampings()

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test docstrings functionality."""
+
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.test.docstring
@@ -20,15 +22,17 @@ from isaacsim.sensors.experimental.rtx import RtxLidarSensor, parse_generic_mode
 
 
 class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
+    """Test extension docstrings."""
+
     async def setUp(self):
-        """Method called to prepare the test fixture"""
+        """Method called to prepare the test fixture."""
         super().setUp()
         # create new stage
         await stage_utils.create_new_stage_async()
         stage_utils.define_prim(f"/World", "Xform")
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        """Method called immediately after the test method has been called."""
         super().tearDown()
         app_utils.stop(commit=True)
         await app_utils.update_app_async()
@@ -36,6 +40,7 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
     # --------------------------------------------------------------------
 
     async def test_rtx_lidar_sensor_docstrings(self):
+        """Test rtx lidar sensor docstrings."""
         # define prims
         stage_utils.define_prim(f"/World/cube", "Cube")
         prim = stage_utils.define_prim(f"/World/prim_0", "OmniLidar")
@@ -44,7 +49,9 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
         await self.assertDocTests(RtxLidarSensor)
 
     async def test_parse_generic_model_output_data_docstrings(self):
+        """Test parse generic model output data docstrings."""
         self.assertDocTest(parse_generic_model_output_data)
 
     async def test_parse_stable_id_map_data_docstrings(self):
+        """Test parse stable id map data docstrings."""
         self.assertDocTest(parse_stable_id_map_data)

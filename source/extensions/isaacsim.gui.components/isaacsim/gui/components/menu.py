@@ -13,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Menu utility functions for creating Isaac Sim extension menu items."""
+
 import omni.ext
 from omni.kit.menu.utils import MenuItemDescription
 
 
 def make_menu_item_description(ext_id: str, name: str, onclick_fun: object, action_name: str = "") -> None:
-    """Easily replace the onclick_fn with onclick_action when creating a menu description
+    """Easily replace the onclick_fn with onclick_action when creating a menu description.
 
     Args:
         ext_id: The extension you are adding the menu item to.

@@ -98,7 +98,7 @@ class EmptyPropertyDelegate(BrowserPropertyDelegate):
     """A delegate to show when no asset is selected."""
 
     def accepted(self, items: Optional[FileDetailItem]) -> bool:
-        """BrowserPropertyDelegate method override
+        """BrowserPropertyDelegate method override.
 
         Determines if this delegate can handle the given items. Returns True when no items are selected.
 
@@ -111,7 +111,7 @@ class EmptyPropertyDelegate(BrowserPropertyDelegate):
         return len(items) == 0
 
     def build_widgets(self, items: Optional[FileDetailItem]):
-        """BrowserPropertyDelegate method override
+        """BrowserPropertyDelegate method override.
 
         Builds the UI widgets to display when no asset is selected.
 

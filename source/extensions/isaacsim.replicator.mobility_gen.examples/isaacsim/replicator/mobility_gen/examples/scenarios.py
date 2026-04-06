@@ -77,7 +77,6 @@ class KeyboardTeleoperationScenario(MobilityGenScenario):
         Returns:
             Always returns True indicating the scenario continues running.
         """
-
         self.update_state()
 
         buttons = self.keyboard.buttons.get_value()
@@ -147,7 +146,6 @@ class GamepadTeleoperationScenario(MobilityGenScenario):
         Returns:
             Always returns True indicating the scenario continues running.
         """
-
         self.gamepad.update_state()
 
         axes = self.gamepad.axes.get_value()
@@ -211,7 +209,6 @@ class RandomAccelerationScenario(MobilityGenScenario):
         Returns:
             True if the robot is still alive (no collision or out-of-bounds), False otherwise.
         """
-
         self.update_state()
 
         current_action = self.robot.action.get_value()
@@ -332,7 +329,6 @@ class RandomPathFollowingScenario(MobilityGenScenario):
         Returns:
             True if the robot is still alive (no collision, in bounds, not at target), False otherwise.
         """
-
         self.update_state()
         target_path = self.target_path.get_value()
         current_pose = self.robot.get_pose_2d()

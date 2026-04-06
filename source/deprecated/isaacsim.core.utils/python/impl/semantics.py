@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated semantic labeling utility functions."""
+
 import carb
 import Semantics
 from isaacsim.core.utils.stage import get_current_stage
@@ -124,7 +126,8 @@ def check_missing_labels(prim_path: str | None = None) -> list[str]:
 
 
 def check_incorrect_labels(prim_path: str | None = None) -> list[list[str]]:
-    """Returns a list of [prim_path, label] for meshes where at least one semantic label (LabelsAPI)
+    """Returns a list of [prim_path, label] for meshes where at least one semantic label (LabelsAPI).
+
     is not found within the prim's path string (case-insensitive, ignoring '_' and '-').
 
     Args:
@@ -208,7 +211,8 @@ def count_labels_in_scene(prim_path: str | None = None) -> dict[str, int]:
 
 
 def upgrade_prim_semantics_to_labels(prim: Usd.Prim, include_descendants: bool = False) -> int:
-    """Upgrades a prim and optionally its descendants from the deprecated SemanticsAPI
+    """Upgrades a prim and optionally its descendants from the deprecated SemanticsAPI.
+
     to the new UsdSemantics.LabelsAPI.
 
     Converts each found SemanticsAPI instance on the processed prim(s) to a corresponding

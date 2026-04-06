@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test for light."""
+
 from typing import Literal
 
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -42,6 +44,7 @@ TargetLight = SphereLight
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
+    """Populate stage."""
     # create new stage
     await stage_utils.create_new_stage_async()
     # define prims
@@ -57,17 +60,20 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
 
 
 class TestLight(omni.kit.test.AsyncTestCase):
+    """Test light."""
+
     async def setUp(self):
-        """Method called to prepare the test fixture"""
+        """Method called to prepare the test fixture."""
         super().setUp()
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
     async def test_fetch_instances(self):
+        """Test fetch instances."""
         await stage_utils.create_new_stage_async()
         # create lights
         CylinderLight("/World/light_01")
@@ -102,6 +108,7 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_intensities(self, prim, num_prims, device, backend):
+        """Test intensities."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
@@ -112,6 +119,7 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_exposures(self, prim, num_prims, device, backend):
+        """Test exposures."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
@@ -122,6 +130,7 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_multipliers(self, prim, num_prims, device, backend):
+        """Test multipliers."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for (v0, expected_v0), (v1, expected_v1) in zip(
@@ -135,6 +144,7 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_enabled_normalizations(self, prim, num_prims, device, backend):
+        """Test enabled normalizations."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.bool):
@@ -145,6 +155,7 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_enabled_color_temperatures(self, prim, num_prims, device, backend):
+        """Test enabled color temperatures."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.bool):
@@ -155,6 +166,7 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_color_temperatures(self, prim, num_prims, device, backend):
+        """Test color temperatures."""
         prim.set_enabled_color_temperatures([True])  # enable use of color temperatures
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -166,6 +178,7 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_colors(self, prim, num_prims, device, backend):
+        """Test colors."""
         choices = [
             (0.1, 0.2, 0.3),  # RGB tuple
             "#aBc",  # case-insensitive short hex RGB

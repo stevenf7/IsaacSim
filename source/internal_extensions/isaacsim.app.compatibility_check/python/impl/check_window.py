@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Window UI for displaying compatibility check results."""
+
 import os
 import subprocess
 import sys
@@ -50,7 +52,18 @@ WINDOW_STYLE = {}
 
 
 class CheckWindow:
+    """Window for displaying compatibility check results."""
+
     def __init__(self, ext_path, title, checker, test_config={}) -> None:
+        """Initialize the check window.
+
+        Args:
+            ext_path: Path to the extension directory.
+            title: Window title.
+            checker: Compatibility checker instance.
+            test_config: Optional test configuration dictionary.
+
+        """
         self._ext_path = ext_path
         self._title = title
         self._checker = checker
@@ -63,6 +76,7 @@ class CheckWindow:
         self._build_window()
 
     def destroy(self):
+        """Destroy the window and release resources."""
         self._window = None
 
     def _exit(self):

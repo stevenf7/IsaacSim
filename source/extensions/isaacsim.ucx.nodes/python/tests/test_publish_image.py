@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test UCX image publishing node functionality."""
+
 import isaacsim.core.experimental.utils.app as app_utils
 import numpy as np
 import omni
@@ -23,15 +25,16 @@ from ucxx._lib.arr import Array
 
 
 class TestUCXPublishImage(UCXTestCase):
-    """Test UCX image publishing"""
+    """Test UCX image publishing."""
 
     async def setUp(self):
+        """Set up a new stage for image publishing tests."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
     async def setup_ucx_client_with_listener(self):
-        """Setup UCX client"""
+        """Setup UCX client."""
         for _ in range(5):
             await omni.kit.app.get_app().next_update_async()
         self.create_ucx_client(self.port)
@@ -68,8 +71,7 @@ class TestUCXPublishImage(UCXTestCase):
         return unpack_image_message(buffer)
 
     async def test_image_basic_data(self):
-        """Test basic image publishing with raw data input"""
-
+        """Test basic image publishing with raw data input."""
         # Create a simple test image (10x10 RGB)
         test_width = 10
         test_height = 10

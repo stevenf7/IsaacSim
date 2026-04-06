@@ -1114,7 +1114,6 @@ class SpatialState:
             A 2D warp array containing valid data for the specified dimension.
             Returns None if no valid data exists for the dimension.
         """
-
         if dimension == "position":
             column_index = 0
             data_array = self.__position_data

@@ -64,7 +64,6 @@ class HawkCamera(Module):
         Returns:
             A new HawkCamera instance with left and right cameras configured.
         """
-
         stage = get_current_stage()
 
         add_reference_to_stage(usd_path=cls.usd_url, prim_path=prim_path)
@@ -81,7 +80,6 @@ class HawkCamera(Module):
         Returns:
             A new HawkCamera instance connected to the existing prim's left and right cameras.
         """
-
         left_camera = MobilityGenCamera(join_sdf_paths(prim_path, cls.left_camera_path), cls.resolution)
         right_camera = MobilityGenCamera(join_sdf_paths(prim_path, cls.right_camera_path), cls.resolution)
 

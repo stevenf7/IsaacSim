@@ -25,6 +25,7 @@ from .world_interface import WorldInterface
 
 class KinematicsSolver(WorldInterface):
     """A limited interface for computing robot kinematics that includes forward and inverse kinematics.
+
     This interface omits more advanced kinematics such as Jacobians, as they are not required for most use-cases.
 
     This interface inherits from the WorldInterface to standardize the inputs to collision-aware IK solvers, but it is not necessary for
@@ -45,9 +46,10 @@ class KinematicsSolver(WorldInterface):
         pass
 
     def get_joint_names(self) -> List[str]:
-        """Return a list containing the names of all joints in the given kinematic structure. The order of this list
+        """Return a list containing the names of all joints in the given kinematic structure. The order of this list.
+
         determines the order in which the joint positions are expected in compute_forward_kinematics(joint_positions,...) and
-        the order in which they are returned in compute_inverse_kinematics()
+        the order in which they are returned in compute_inverse_kinematics().
 
         Returns:
             Names of all joints in the robot.
@@ -55,7 +57,7 @@ class KinematicsSolver(WorldInterface):
         return []
 
     def get_all_frame_names(self) -> List[str]:
-        """Return a list of all the frame names in the given kinematic structure
+        """Return a list of all the frame names in the given kinematic structure.
 
         Returns:
             All frame names in the kinematic structure. Any of which can be used to compute forward or inverse kinematics.
@@ -65,7 +67,7 @@ class KinematicsSolver(WorldInterface):
     def compute_forward_kinematics(
         self, frame_name: str, joint_positions: np.array, position_only: Optional[bool] = False
     ) -> Tuple[np.array, np.array]:
-        """Compute the position of a given frame in the robot relative to the USD stage global frame
+        """Compute the position of a given frame in the robot relative to the USD stage global frame.
 
         Args:
             frame_name: Name of robot frame on which to calculate forward kinematics
@@ -77,7 +79,6 @@ class KinematicsSolver(WorldInterface):
             of the frame relative to the USD stage origin and frame_rotation is a (3x3) rotation matrix describing the
             rotation of the frame relative to the USD stage global frame.
         """
-
         return np.zeros(3), np.eye(3)
 
     def compute_inverse_kinematics(
@@ -89,7 +90,7 @@ class KinematicsSolver(WorldInterface):
         position_tolerance: Optional[float] = None,
         orientation_tolerance: Optional[float] = None,
     ) -> Tuple[np.array, bool]:
-        """Compute joint positions such that the specified robot frame will reach the desired translations and rotations
+        """Compute joint positions such that the specified robot frame will reach the desired translations and rotations.
 
         Args:
             frame_name: Name of the target frame for inverse kinematics
@@ -105,15 +106,14 @@ class KinematicsSolver(WorldInterface):
             which result in the target frame achieving the desired position and success is True if the solver converged to
             a solution within the given tolerances.
         """
-
         return np.empty()
 
     def supports_collision_avoidance(self) -> bool:
-        """Returns a bool describing whether the inverse kinematics support collision avoidance. If the policy does not support collision
+        """Returns a bool describing whether the inverse kinematics support collision avoidance. If the policy does not support collision.
+
         avoidance, none of the obstacle add/remove/enable/disable functions need to be implemented.
 
         Returns:
             True if the IK solver will avoid any obstacles that have been added.
         """
-
         return False

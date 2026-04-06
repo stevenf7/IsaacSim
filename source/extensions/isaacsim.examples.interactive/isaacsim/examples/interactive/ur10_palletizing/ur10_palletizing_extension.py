@@ -50,7 +50,6 @@ class BinStackingExtension(omni.ext.IExt):
         Args:
             ext_id: The extension identifier.
         """
-
         self.example_name = "UR10 Palletizing"
         self.category = "Cortex"
 

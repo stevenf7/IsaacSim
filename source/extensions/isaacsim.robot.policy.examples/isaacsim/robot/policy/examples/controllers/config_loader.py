@@ -27,8 +27,8 @@ import yaml
 
 
 def parse_env_config(env_config_path: str = "env.yaml") -> dict[str, Any]:
-    """
-    Loads and parses an environment configuration YAML file with custom handling for Python tuples
+    """Loads and parses an environment configuration YAML file with custom handling for Python tuples.
+
     and unknown tags. Uses a safe YAML loader that ignores unknown tags and properly constructs
     Python tuples from YAML sequences.
 
@@ -60,8 +60,8 @@ def parse_env_config(env_config_path: str = "env.yaml") -> dict[str, Any]:
 def get_robot_joint_properties(
     data: dict[str, Any], joint_names: list[str]
 ) -> tuple[list[float], list[float], list[float], list[float], list[float], list[float], list[float]]:
-    """
-    Extracts and processes robot joint properties from environment configuration.
+    """Extracts and processes robot joint properties from environment configuration.
+
     Handles both scalar and per-joint property specifications, with pattern matching
     for joint names. Provides default values for missing properties.
 
@@ -244,8 +244,8 @@ def get_robot_joint_properties(
 
 
 def get_articulation_props(data: dict[str, Any]) -> dict[str, Any]:
-    """
-    Retrieves articulation properties from the robot spawn configuration.
+    """Retrieves articulation properties from the robot spawn configuration.
+
     These properties define the physical characteristics and simulation
     parameters for the robot's articulated joints and links.
 
@@ -259,8 +259,8 @@ def get_articulation_props(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def get_physics_properties(data: dict[str, Any]) -> tuple[int, float, int]:
-    """
-    Extracts simulation timing parameters from the environment configuration.
+    """Extracts simulation timing parameters from the environment configuration.
+
     These parameters control the simulation's temporal resolution and rendering.
 
     Args:
@@ -275,8 +275,8 @@ def get_physics_properties(data: dict[str, Any]) -> tuple[int, float, int]:
 
 
 def get_observations(data: dict[str, Any]) -> dict[str, Any]:
-    """
-    Retrieves policy observation specifications from the configuration.
+    """Retrieves policy observation specifications from the configuration.
+
     These define what state information is provided to the policy
     for decision making.
 
@@ -290,8 +290,8 @@ def get_observations(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def get_action(data: dict[str, Any]) -> dict[str, Any]:
-    """
-    Retrieves policy action specifications from the configuration.
+    """Retrieves policy action specifications from the configuration.
+
     These define the control interface and action space available
     to the policy for controlling the robot.
 
@@ -305,8 +305,8 @@ def get_action(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def get_physx_settings(data: dict[str, Any]) -> dict[str, Any]:
-    """
-    Retrieves PhysX simulation engine configuration parameters.
+    """Retrieves PhysX simulation engine configuration parameters.
+
     These settings control physics simulation quality, stability,
     and performance characteristics.
 

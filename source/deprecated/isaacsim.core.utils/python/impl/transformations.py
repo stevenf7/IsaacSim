@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated transformation utility functions."""
+
 from typing import Sequence, Tuple, Union
 
 import numpy as np
@@ -111,7 +113,6 @@ def get_relative_transform(source_prim: Usd.Prim, target_prim: Usd.Prim) -> np.n
     Returns:
         Column-major transformation matrix with shape (4, 4).
     """
-
     # Row-major transformation matrix
     source_to_world_row_major_tf = UsdGeom.Xformable(source_prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
     target_to_world_row_major_tf = UsdGeom.Xformable(target_prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
@@ -141,7 +142,6 @@ def get_translation_from_target(
     Returns:
         translation with respect to the target's frame. Shape is (3, ).
     """
-
     translation_from_source_homogenous = np.pad(translation_from_source, ((0, 1)), constant_values=1.0)
 
     source_to_target = get_relative_transform(source_prim, target_prim)
@@ -168,7 +168,6 @@ def get_world_pose_from_relative(
         quaternion orientation in the world frame. Quaternion is scalar-first
         (w, x, y, z). Shape is (4, ).
     """
-
     # Row-major transformation matrix from the prim's coordinate system to the world coordinate system
     prim_transform_matrix = UsdGeom.Xformable(coord_prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
 

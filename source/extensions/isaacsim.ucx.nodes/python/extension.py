@@ -65,7 +65,6 @@ class UCXBridgeExtension(omni.ext.IExt):
 
     def register_nodes(self):
         """Register the nodes for the UCX Bridge Extension."""
-
         # For Simulation and System time. Removed first S char in keys to account for both upper and lower cases.
         TIME_TYPES = [("imulationTime", ""), ("ystemTime", "SystemTime")]
 

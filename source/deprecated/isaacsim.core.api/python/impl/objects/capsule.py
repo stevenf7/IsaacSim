@@ -30,7 +30,7 @@ from pxr import Gf, UsdGeom
 
 
 class VisualCapsule(SingleGeometryPrim):
-    """High level wrapper to create/encapsulate a visual capsule
+    """High level wrapper to create/encapsulate a visual capsule.
 
     .. note::
 
@@ -132,7 +132,7 @@ class VisualCapsule(SingleGeometryPrim):
         return
 
     def set_radius(self, radius: float) -> None:
-        """Set the capsule radius
+        """Set the capsule radius.
 
         Args:
             radius: capsule radius
@@ -147,7 +147,7 @@ class VisualCapsule(SingleGeometryPrim):
         return
 
     def get_radius(self) -> float:
-        """Capsule radius
+        """Capsule radius.
 
         Returns:
             Capsule radius.
@@ -162,7 +162,7 @@ class VisualCapsule(SingleGeometryPrim):
         return self.geom.GetRadiusAttr().Get()
 
     def set_height(self, height: float) -> None:
-        """Set the capsule height
+        """Set the capsule height.
 
         Args:
             height: capsule height
@@ -177,7 +177,7 @@ class VisualCapsule(SingleGeometryPrim):
         return
 
     def get_height(self) -> float:
-        """Capsule height
+        """Capsule height.
 
         Returns:
             Capsule height.
@@ -193,7 +193,7 @@ class VisualCapsule(SingleGeometryPrim):
 
 
 class FixedCapsule(VisualCapsule):
-    """High level wrapper to create/encapsulate a fixed capsule
+    """High level wrapper to create/encapsulate a fixed capsule.
 
     .. note::
 
@@ -289,7 +289,7 @@ class FixedCapsule(VisualCapsule):
 
 
 class DynamicCapsule(SingleRigidPrim, FixedCapsule):
-    """High level wrapper to create/encapsulate a dynamic capsule
+    """High level wrapper to create/encapsulate a dynamic capsule.
 
     .. note::
 

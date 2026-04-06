@@ -152,7 +152,6 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
 
     async def test_cameras(self):
         """Test that RGB and depth cameras publish valid data via ROS2."""
-
         import rclpy
         from sensor_msgs.msg import Image
 

@@ -1,3 +1,5 @@
+"""Conveyor builder UI extension for Isaac Sim."""
+
 # SPDX-FileCopyrightText: Copyright (c) 2022-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -34,7 +36,7 @@ EXTENSION_NAME = "Conveyor Utility"
 
 
 def make_menu_item_description(ext_id: str, name: str, onclick_fun: object, action_name: str = "") -> None:
-    """Easily replace the onclick_fn with onclick_action when creating a menu description
+    """Easily replace the onclick_fn with onclick_action when creating a menu description.
 
     Args:
         ext_id: The extension you are adding the menu item to.
@@ -54,13 +56,21 @@ def make_menu_item_description(ext_id: str, name: str, onclick_fun: object, acti
 
 
 class Extension(omni.ext.IExt):
+    """Conveyor builder extension providing UI tools for conveyor track layout."""
+
     def __init___(self):
+        """Initialize the extension."""
         try:
             super().__init__()
         except:
             carb.log.error(f"Error loading {EXTENSION_NAME}")
 
     def on_startup(self, ext_id: str):
+        """Initialize the extension when it is loaded.
+
+        Args:
+            ext_id: Extension identifier provided by the extension manager.
+        """
         self.widget = None
         menu_items = [
             MenuItemDescription(
@@ -109,6 +119,7 @@ class Extension(omni.ext.IExt):
             self._conveyor_preferences = None
 
     def create_ui(self):
+        """Create the conveyor builder UI window and widget."""
         ext_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(self.ext_id)
 
         self.ext_path = ext_path + "/omni/isaac/conveyor"
@@ -125,10 +136,12 @@ class Extension(omni.ext.IExt):
             self._window.visible = True
 
     def on_visibility_changed(self, value):
+        """Handle window visibility change and shut down widget when hidden."""
         if not value:
             self.widget.shutdown()
 
     def on_shutdown(self):
+        """Clean up resources when the extension is unloaded."""
         remove_menu_items(self._menu_items, "Create")
         remove_menu_items(self._menu_items_2, "Tools")
         if self.widget:

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utility functions for managing exposed behavior variables on USD prims."""
+
 import carb
 import carb.events
 import omni.kit.app

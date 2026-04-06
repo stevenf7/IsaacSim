@@ -13,25 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test for semantics."""
+
 import isaacsim.core.experimental.utils.semantics as semantics_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
 
 
 class TestSemantics(omni.kit.test.AsyncTestCase):
+    """Test semantics."""
+
     async def setUp(self):
-        """Method called to prepare the test fixture"""
+        """Method called to prepare the test fixture."""
         super().setUp()
         # create new stage
         await stage_utils.create_new_stage_async()
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
     async def test_add_labels(self):
+        """Test add labels."""
         prim = stage_utils.define_prim("/World/A", "Cube")
         self.assertDictEqual(semantics_utils.get_labels(prim), {})
         # test cases
@@ -47,6 +52,7 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
         self.assertDictEqual(semantics_utils.get_labels(prim), match)
 
     async def test_get_labels(self):
+        """Test get labels."""
         stage_utils.define_prim("/World/A", "Cube")
         stage_utils.define_prim("/World/B", "Xform")
         self.assertDictEqual(semantics_utils.get_labels("/World/A"), {})
@@ -67,6 +73,7 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
         self.assertDictEqual(semantics_utils.get_labels("/World", include_descendants=True), match)
 
     async def test_remove_labels(self):
+        """Test remove labels."""
         prim = stage_utils.define_prim("/World/A", "Cube")
         self.assertDictEqual(semantics_utils.get_labels(prim), {})
         # add labels
@@ -93,6 +100,7 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
         self.assertDictEqual(semantics_utils.get_labels(prim), match)
 
     async def test_remove_all_labels(self):
+        """Test remove all labels."""
         prim = stage_utils.define_prim("/World/A", "Cube")
         self.assertDictEqual(semantics_utils.get_labels(prim), {})
         # add labels

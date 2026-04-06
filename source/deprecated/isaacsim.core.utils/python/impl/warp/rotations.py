@@ -38,7 +38,6 @@ def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternio
     Returns:
         Quaternion tensor.
     """
-
     quat = torch.zeros(4, dtype=torch.float32, device=device)
     quat[1:] = torch.tensor(orientation.GetImaginary(), dtype=torch.float32, device=device)
     quat[0] = orientation.GetReal()
@@ -50,7 +49,7 @@ def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternio
 def euler_angles_to_quats(
     euler_angles: wp.array, degrees: bool = False, extrinsic: bool = True, device: object = None
 ) -> wp.array:
-    """Vectorized version of converting euler angles to quaternion (scalar first)
+    """Vectorized version of converting euler angles to quaternion (scalar first).
 
     Args:
         euler_angles: Euler angles with shape (N, 3).
@@ -85,7 +84,6 @@ def rad2deg(radian_value: wp.array, device: object = None) -> wp.array:
     Returns:
         Array containing the converted degree values.
     """
-
     rad_torch = wp.to_torch(radian_value)
     rad_deg = torch.rad2deg(rad_torch).float().to(device)
     return wp.from_torch(rad_deg)
@@ -101,7 +99,6 @@ def deg2rad(degree_value: wp.array, device: object = None) -> wp.array:
     Returns:
         Array containing the converted radian values.
     """
-
     degree_torch = wp.to_torch(degree_value)
     rad_torch = torch.deg2rad(degree_torch).float().to(device)
     return wp.from_torch(rad_torch)

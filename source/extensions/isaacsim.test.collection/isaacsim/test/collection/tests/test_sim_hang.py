@@ -117,7 +117,6 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
 
     async def test_segfault_bug(self):
         """Test that recreating cuboids with different scales does not segfault."""
-
         # Bug Report:
         #     A strange combination of events has to take place.
 

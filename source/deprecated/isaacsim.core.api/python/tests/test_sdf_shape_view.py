@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+"""Test for sdf shape view."""
+
 import carb
 import numpy as np
 import omni.kit.test
@@ -77,17 +79,22 @@ default_sim_params = {
 
 
 class TestRigidPrimView(CoreTestCase):
+    """Test rigid prim view."""
+
     async def setUp(self):
+        """Set up test environment."""
         await super().setUp()
         World.clear_instance()
         self._sim_params = default_sim_params
         self._test_cfg = dict()
 
     async def tearDown(self):
+        """Tear down test environment."""
         carb.settings.get_settings().set_bool("/physics/suppressReadback", False)
         await super().tearDown()
 
     async def test_sdf_shape_view_gpu_pipeline(self):
+        """Test sdf shape view gpu pipeline."""
         test_configs = {"use_gpu": True, "use_gpu_pipeline": True, "device": "gpu"}
         for backend in ["torch", "warp"]:
             test_configs["backend"] = backend
@@ -148,6 +155,7 @@ class TestRigidPrimView(CoreTestCase):
         self._my_world.clear_instance()
 
     async def signed_distance_test(self):
+        """Signed distance test."""
         await self._my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else [0, 1, 2]
         self._my_world.step_async()

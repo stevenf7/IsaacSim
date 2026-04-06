@@ -32,14 +32,17 @@ from isaacsim.core.simulation_manager import SimulationManager
 
 
 class TestSimulationTimeDrift(omni.kit.test.AsyncTestCase):
+    """Test simulation time drift."""
 
     async def setUp(self):
+        """Set up test environment."""
         super().setUp()
         await create_new_stage_async()
         SimulationManager.set_physics_dt(1.0 / 60.0)
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Tear down test environment."""
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
         await omni.kit.app.get_app().next_update_async()

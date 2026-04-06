@@ -32,7 +32,10 @@ from .og_utils import Ros2ClockGraph, Ros2GenericPubGraph, Ros2JointStatesGraph,
 
 
 class Ros2ShortcutsMenuExtension(omni.ext.IExt, MenuHelperExtensionFull):
+    """Extension providing ROS 2 OmniGraph shortcut menu items."""
+
     def on_startup(self, ext_id: str):
+        """Initialize the extension."""
         self._ext_id = ext_id
         carb.log_info("ROS2 Shortcuts Menu startup")
 
@@ -150,7 +153,7 @@ class Ros2ShortcutsMenuExtension(omni.ext.IExt, MenuHelperExtensionFull):
         # add_layout(self.__ros_menu_layout)
 
     def create_asset(self, usd_path, stage_path, camera_position=None, camera_target=None):
-
+        """Create a USD asset reference on the stage."""
         self._assets_root_path = get_assets_root_path()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
@@ -172,6 +175,7 @@ class Ros2ShortcutsMenuExtension(omni.ext.IExt, MenuHelperExtensionFull):
         pass
 
     def on_shutdown(self):
+        """Clean up resources when the extension shuts down."""
         carb.log_info("ROS2 Shortcuts Menu shutdown")
         self.menu_shutdown()
         remove_menu_items(self._ros_assets_menu, "Create")

@@ -1,3 +1,5 @@
+"""Tests for the OmniGraph keyboard interactive example."""
+
 # SPDX-FileCopyrightText: Copyright (c) 2022-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -28,9 +30,11 @@ from isaacsim.examples.interactive.omnigraph_keyboard import OmnigraphKeyboard
 
 
 class TestOmnigraphKeyboardExampleExtension(omni.kit.test.AsyncTestCase):
+    """Test cases for the OmniGraph keyboard example."""
 
     # Before running each test
     async def setUp(self):
+        """Set up the OmniGraph keyboard sample and load the world."""
         self._sample = OmnigraphKeyboard()
         self._sample.set_world_settings(physics_dt=1.0 / 60.0, stage_units_in_meters=1.0)
         await self._sample.load_world_async()
@@ -40,6 +44,7 @@ class TestOmnigraphKeyboardExampleExtension(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down by waiting for assets and clearing the sample."""
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while is_stage_loading():
             print("tearDown, assets still loading, waiting to finish...")
@@ -49,6 +54,7 @@ class TestOmnigraphKeyboardExampleExtension(omni.kit.test.AsyncTestCase):
         self._sample = None
 
     async def test_reset(self):
+        """Test that resetting the sample twice works without errors."""
         await self._sample.reset_async()
         await update_stage_async()
         await update_stage_async()

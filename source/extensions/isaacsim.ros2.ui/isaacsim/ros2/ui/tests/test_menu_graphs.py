@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for ROS 2 OmniGraph menu shortcuts."""
+
 import copy
 
 import numpy as np
@@ -40,11 +42,12 @@ class ROS2MenuTestBase(ROS2TestCase):
     """Base class for ROS2 OmniGraph Menu tests."""
 
     async def setUp(self):
+        """Set up test fixtures."""
         await super().setUp()
         self.node = self.create_node("test_omnigraph_node")
 
     async def setup_test_environment(self, robot_path: str = "/World/test_robot", add_test_cubes: bool = False):
-        """Helper function to set up a standard test environment with a Nova Carter robot.
+        """Set up a standard test environment with a Nova Carter robot.
 
         Args:
             robot_path: Path where the robot should be placed.
@@ -52,6 +55,7 @@ class ROS2MenuTestBase(ROS2TestCase):
 
         Returns:
             The robot prim and base_link path.
+
         """
         from pxr import UsdLux
 
@@ -88,11 +92,10 @@ class ROS2MenuTestBase(ROS2TestCase):
 
 
 class TestMenuROS2CameraGraph(ROS2MenuTestBase):
-    """Test ROS2 Camera OmniGraph creation from menu"""
+    """Test ROS2 Camera OmniGraph creation from menu."""
 
     async def test_camera_graph_creation(self):
-        """Test creation of camera graph structure via menu"""
-
+        """Test creation of camera graph structure via menu."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -163,8 +166,7 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
     async def test_camera_null_conditions(self):
-        """Test camera graph with null target prim"""
-
+        """Test camera graph with null target prim."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -197,8 +199,7 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
         self.assertFalse(self._timeline.is_playing())
 
     async def test_camera_data_flow(self):
-        """Test camera data is being properly published to ROS2 topics"""
-
+        """Test camera data is being properly published to ROS2 topics."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment(add_test_cubes=True)
 
@@ -303,11 +304,10 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
 
 
 class TestMenuROS2LidarGraph(ROS2MenuTestBase):
-    """Test ROS2 Lidar OmniGraph creation from menu"""
+    """Test ROS2 Lidar OmniGraph creation from menu."""
 
     async def test_lidar_graph_creation(self):
-        """Test creation of RTX Lidar graph structure via menu"""
-
+        """Test creation of RTX Lidar graph structure via menu."""
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
@@ -355,8 +355,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
     async def test_lidar_null_conditions(self):
-        """Test lidar graph with null target prim"""
-
+        """Test lidar graph with null target prim."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -392,8 +391,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
         self.assertFalse(self._timeline.is_playing())
 
     async def test_lidar_data_flow(self):
-        """Test RTX Lidar data is being properly published to ROS2 topics with detailed data validation"""
-
+        """Test RTX Lidar data is being properly published to ROS2 topics with detailed data validation."""
         from pxr import Sdf
 
         # Creating environment and Carter Robot
@@ -509,8 +507,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
                     self.assertIn("z", field_names, "PointCloud missing 'z' field")
 
     async def test_lidar_point_cloud_with_metadata(self):
-        """Test creation of RTX Lidar graph with point cloud metadata config node"""
-
+        """Test creation of RTX Lidar graph with point cloud metadata config node."""
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
@@ -602,8 +599,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
         self.assertIsNotNone(helper_metadata_attr, "selectedMetadata input attribute not found")
 
     async def test_lidar_metadata_without_point_cloud(self):
-        """Test that metadata options are ignored when point cloud is disabled"""
-
+        """Test that metadata options are ignored when point cloud is disabled."""
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
         # Click through the menu to create the graph
@@ -669,11 +665,10 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
 
 
 class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
-    """Test ROS2 Joint States OmniGraph creation from menu"""
+    """Test ROS2 Joint States OmniGraph creation from menu."""
 
     async def test_joint_states_graph_creation(self):
-        """Test creation of Joint States graph structure via menu"""
-
+        """Test creation of Joint States graph structure via menu."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -729,8 +724,7 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
     async def test_joint_states_null_conditions(self):
-        """Test robot state graph with null target prim"""
-
+        """Test robot state graph with null target prim."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -768,8 +762,7 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
         self.assertFalse(self._timeline.is_playing())
 
     async def test_joint_states_data_flow(self):
-        """Test Joint States data is being properly published to ROS2 topics"""
-
+        """Test Joint States data is being properly published to ROS2 topics."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -924,11 +917,10 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
 
 
 class TestMenuROS2TFGraph(ROS2MenuTestBase):
-    """Test ROS2 TF OmniGraph creation from menu"""
+    """Test ROS2 TF OmniGraph creation from menu."""
 
     async def test_tf_graph_creation(self):
-        """Test creation of TF graph structure via menu"""
-
+        """Test creation of TF graph structure via menu."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -974,8 +966,7 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
     async def test_tf_null_conditions(self):
-        """Test TF graph with null target prim"""
-
+        """Test TF graph with null target prim."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -1013,8 +1004,7 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
         self.assertFalse(self._timeline.is_playing())
 
     async def test_tf_data_flow(self):
-        """Test TF transform data is being properly published to ROS2 topics"""
-
+        """Test TF transform data is being properly published to ROS2 topics."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -1106,11 +1096,10 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
 
 
 class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
-    """Test ROS2 Odometry OmniGraph creation from menu"""
+    """Test ROS2 Odometry OmniGraph creation from menu."""
 
     async def test_odometry_graph_creation(self):
-        """Test creation of Odometry graph structure via menu"""
-
+        """Test creation of Odometry graph structure via menu."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -1163,8 +1152,7 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
     async def test_odometry_null_conditions(self):
-        """Test odometry graph with null chassis prim"""
-
+        """Test odometry graph with null chassis prim."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -1207,8 +1195,7 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
         self.assertFalse(self._timeline.is_playing())
 
     async def test_odometry_data_flow(self):
-        """Test odometrydata is being properly published to ROS2 topics"""
-
+        """Test odometrydata is being properly published to ROS2 topics."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -1369,11 +1356,10 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
 
 
 class TestMenuROS2ClockGraph(ROS2MenuTestBase):
-    """Test ROS2 Clock OmniGraph creation from menu"""
+    """Test ROS2 Clock OmniGraph creation from menu."""
 
     async def test_clock_graph_creation(self):
-        """Test creation of Clock graph structure via menu"""
-
+        """Test creation of Clock graph structure via menu."""
         # Create environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -1413,8 +1399,7 @@ class TestMenuROS2ClockGraph(ROS2MenuTestBase):
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
     async def test_clock_data_flow(self):
-        """Test Clock data is being properly published to ROS2 topics with data validation"""
-
+        """Test Clock data is being properly published to ROS2 topics with data validation."""
         # Create environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -1544,9 +1529,10 @@ class TestMenuROS2ClockGraph(ROS2MenuTestBase):
 
 
 class TestMenuROS2GenericPublisherGraph(ROS2MenuTestBase):
-    async def test_generic_publisher_graph_creation(self):
-        """Test generic publisher graph creation from menu"""
+    """Test suite for menu r o s2 generic publisher graph."""
 
+    async def test_generic_publisher_graph_creation(self):
+        """Test generic publisher graph creation from menu."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -1588,8 +1574,7 @@ class TestMenuROS2GenericPublisherGraph(ROS2MenuTestBase):
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
     async def test_generic_publisher_data_flow(self):
-        """Test Generic Publisher data is properly publishing RTF as Float32 to ROS2 topics"""
-
+        """Test Generic Publisher data is properly publishing RTF as Float32 to ROS2 topics."""
         # Create environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 

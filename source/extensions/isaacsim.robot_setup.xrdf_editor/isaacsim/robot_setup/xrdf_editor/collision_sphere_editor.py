@@ -93,7 +93,7 @@ class CollisionSphereEditor:
             )
 
     def _ensure_collision_sphere_visual_material(self):
-        """Make sure that the visual materials for sphere visualization have been created and are valid"""
+        """Make sure that the visual materials for sphere visualization have been created and are valid."""
         if not is_prim_path_valid(self._filter_in_surface_prim_path):
             self._filter_in_surface = PreviewSurface(
                 prim_path=self._filter_in_surface_prim_path, color=self.filter_in_sphere_color
@@ -116,7 +116,7 @@ class CollisionSphereEditor:
 
     @staticmethod
     def _path_generator(path: str) -> Generator[str, None, None]:
-        """Get a generator that incrementally adds integers to `path` forever
+        """Get a generator that incrementally adds integers to `path` forever.
 
         Args:
             path: Base path to append incremental integers to.
@@ -270,6 +270,7 @@ class CollisionSphereEditor:
             self._operations.append(deleted_spheres)
 
     def undo(self):
+        """Undo the last sphere operation."""
         if len(self._operations) == 0:
             return
 
@@ -319,6 +320,7 @@ class CollisionSphereEditor:
             self._redo.append(redo)
 
     def redo(self):
+        """Redo the last undone sphere operation."""
         if len(self._redo) == 0:
             return
 
@@ -356,6 +358,17 @@ class CollisionSphereEditor:
                     sphere.set_radius(rad)
 
     def generate_spheres(self, link_path, points, face_inds, vert_cts, num_spheres, radius_offset, is_preview):
+        """Generate collision spheres from mesh geometry for the specified link.
+
+        Args:
+            link_path: Path to the robot link.
+            points: Mesh vertex positions.
+            face_inds: Mesh face indices.
+            vert_cts: Vertex counts per face.
+            num_spheres: Number of spheres to generate.
+            radius_offset: Offset to apply to sphere radii.
+            is_preview: Whether to generate preview spheres instead of permanent ones.
+        """
         if not is_preview and self._preview_spheres:
             # If preview spheres exist, change them to permanent spheres
             added_sphere_paths = ["ADD"]
@@ -406,6 +419,7 @@ class CollisionSphereEditor:
             self.clear_preview()
 
     def clear_preview(self):
+        """Remove all preview spheres from the scene."""
         self._preview_path_generator = {}
 
         for sphere in self._preview_spheres:
@@ -413,6 +427,17 @@ class CollisionSphereEditor:
         self._preview_spheres = []
 
     def add_sphere(self, link_path, center, radius, store_op=True):
+        """Add a collision sphere to the specified link.
+
+        Args:
+            link_path: Path to the robot link.
+            center: Sphere center position.
+            radius: Sphere radius.
+            store_op: Whether to store this operation for undo functionality.
+
+        Returns:
+            Path to the created sphere prim.
+        """
         if not is_prim_path_valid(link_path):
             carb.log_warn("Attempted to add sphere nested under non-existent path")
 
@@ -484,6 +509,12 @@ class CollisionSphereEditor:
         return spheres
 
     def load_xrdf_spheres(self, robot_prim_path, parsed_file: dict):
+        """Load collision spheres from a parsed XRDF file.
+
+        Args:
+            robot_prim_path: Path to the robot prim.
+            parsed_file: Parsed XRDF file contents as a dictionary.
+        """
         self.clear_spheres(store_op=False)
 
         self._redo = []
@@ -554,6 +585,12 @@ class CollisionSphereEditor:
                     sphere.set_radius(rad + v)
 
     def load_spheres(self, robot_prim_path, robot_description_file_path):
+        """Load collision spheres from a robot description YAML file.
+
+        Args:
+            robot_prim_path: Path to the robot prim.
+            robot_description_file_path: Path to the robot description YAML file.
+        """
         self.clear_spheres(store_op=False)
 
         self._redo = []
@@ -589,6 +626,13 @@ class CollisionSphereEditor:
         self._operations.append(added_sphere_paths)
 
     def interpolate_spheres(self, path1, path2, num_spheres):
+        """Create interpolated spheres between two existing spheres.
+
+        Args:
+            path1: Path to the first sphere.
+            path2: Path to the second sphere.
+            num_spheres: Number of interpolated spheres to create.
+        """
         if not is_prim_path_valid(path1):
             carb.log_warn("{} is not a valid Prim path to a sphere".format(path1))
             return
@@ -638,6 +682,12 @@ class CollisionSphereEditor:
         self._operations.append(added_sphere_paths)
 
     def scale_spheres(self, path, factor):
+        """Scale all spheres under the specified path by a factor.
+
+        Args:
+            path: Path prefix to match spheres against.
+            factor: Scale factor to apply to sphere radii.
+        """
         scaled_spheres = ["SCALE"]
         path_len = len(path)
 

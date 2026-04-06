@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the clash detection engine."""
+
 import carb
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -26,8 +28,11 @@ from pxr import Gf, UsdGeom
 
 
 class TestClashDetection(omni.kit.test.AsyncTestCase):
+    """Test suite for the clash detection engine."""
+
     # Before running each test
     async def setUp(self):
+        """Set up the test environment with a new stage."""
         await stage_utils.create_new_stage_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await app_utils.update_app_async()
@@ -41,11 +46,13 @@ class TestClashDetection(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Clean up after each test by waiting for stage loading to complete."""
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await app_utils.update_app_async()
         await app_utils.update_app_async()
 
     async def add_carters_view(self):
+        """Add multiple Carter robots to the stage for prim view testing."""
         asset_path = self._assets_root_path + "/Isaac/Robots/NVIDIA/Carter/carter_v1.usd"
         locations = [0.0, 0.1, 0.4]
         for idx, location in enumerate(locations):
@@ -57,6 +64,7 @@ class TestClashDetection(omni.kit.test.AsyncTestCase):
         self._carter_prim_view = XformPrim("/World/Carter_.*")
 
     async def add_mesh_cube(self, position):
+        """Add a mesh cube at the given position and return its prim."""
         # run a test without Isaac Core dependence
         result, cube_path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
         cube_prim = self._stage.GetPrimAtPath(cube_path)
@@ -69,6 +77,7 @@ class TestClashDetection(omni.kit.test.AsyncTestCase):
         return cube_prim
 
     async def test_carter_prim_view_clash(self):
+        """Test clash detection with Carter robot prim views."""
         GroundPlane("/World/GroundPlane")
         clash_detector = ClashDetector(stage=self._stage, logging=False, clash_data_layer=False)
         await self.add_carters_view()
@@ -76,6 +85,7 @@ class TestClashDetection(omni.kit.test.AsyncTestCase):
         self.assertEqual(len(clashes), 2)
 
     async def test_mesh_cubes_clash(self):
+        """Test clash detection between overlapping and non-overlapping mesh cubes."""
         clash_detector = ClashDetector(stage=self._stage, logging=False, clash_data_layer=False)
         cube_prim_0 = await self.add_mesh_cube([0.0, 0.0, 0.0])
         self.assertFalse(clash_detector.is_prim_clashing(cube_prim_0))
@@ -85,6 +95,7 @@ class TestClashDetection(omni.kit.test.AsyncTestCase):
         self.assertFalse(clash_detector.is_prim_clashing(cube_prim_2))
 
     async def test_clash_data_layer_query_prim(self):
+        """Test clash data layer query tracking for individual prims."""
         GroundPlane("/World/GroundPlane")
         clash_detector = ClashDetector(stage=self._stage, logging=False, clash_data_layer=True)
         # First query
@@ -103,6 +114,7 @@ class TestClashDetection(omni.kit.test.AsyncTestCase):
         self.assertEqual(current_query_id, cube_1_query_id)
 
     async def test_clash_data_layer_query_prim_view(self):
+        """Test clash data layer query tracking for prim views."""
         GroundPlane("/World/GroundPlane")
         clash_detector = ClashDetector(stage=self._stage, logging=False, clash_data_layer=True)
         await self.add_carters_view()

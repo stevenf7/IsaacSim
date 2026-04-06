@@ -27,10 +27,11 @@ from isaacsim.robot_motion.motion_generation.kinematics_interface import Kinemat
 
 
 class ArticulationKinematicsSolver:
-    """Wrapper class for computing robot kinematics in a way that is easily transferable to the simulated robot Articulation.  A KinematicsSolver
+    """Wrapper class for computing robot kinematics in a way that is easily transferable to the simulated robot Articulation.  A KinematicsSolver.
+
     computes FK and IK at any frame, possibly only using a subset of joints available on the simulated robot.
     This wrapper simplifies computing the current position of the simulated robot's end effector, as well as wrapping an IK result in an ArticulationAction that is
-    recognized by the robot Articulation
+    recognized by the robot Articulation.
 
     Args:
         robot_articulation: Initialized robot Articulation object representing the simulated USD robot.
@@ -77,8 +78,8 @@ class ArticulationKinematicsSolver:
         position_tolerance: Optional[float] = None,
         orientation_tolerance: Optional[float] = None,
     ) -> Tuple[ArticulationAction, bool]:
-        """
-        Compute inverse kinematics for the end effector frame using the current robot position as a warm start.  The result is returned
+        """Compute inverse kinematics for the end effector frame using the current robot position as a warm start.  The result is returned.
+
         in an articulation action that can be directly applied to the robot.
 
         Args:
@@ -94,7 +95,6 @@ class ArticulationKinematicsSolver:
             the robot to move the end effector frame to the desired position and success indicates if solver
             converged successfully.
         """
-
         warm_start = self._joints_view.get_joint_positions()
         if warm_start is None:
             carb.log_error(
@@ -108,7 +108,8 @@ class ArticulationKinematicsSolver:
         return self._joints_view.make_articulation_action(ik_result, None), succ
 
     def set_end_effector_frame(self, end_effector_frame_name: str):
-        """Set the name for the end effector frame. If the frame is not recognized by the internal KinematicsSolver
+        """Set the name for the end effector frame. If the frame is not recognized by the internal KinematicsSolver.
+
         instance, an error will be thrown.
 
         Args:

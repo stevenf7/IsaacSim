@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated prim utility functions."""
 
 # python
 import typing
@@ -34,7 +35,7 @@ from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics  # noqa: F401 -- Gf is used in
 
 
 def get_prim_at_path(prim_path: str, fabric: bool = False) -> typing.Union[Usd.Prim, usdrt.Usd._Usd.Prim]:
-    """Get the USD or Fabric Prim at a given path string
+    """Get the USD or Fabric Prim at a given path string.
 
     Args:
         prim_path: path of the prim in the stage.
@@ -52,7 +53,6 @@ def get_prim_at_path(prim_path: str, fabric: bool = False) -> typing.Union[Usd.P
         >>> prims_utils.get_prim_at_path("/World/Cube")
         Usd.Prim(</World/Cube>)
     """
-
     current_stage = get_current_stage(fabric=fabric)
     if current_stage:
         return current_stage.GetPrimAtPath(prim_path)
@@ -61,7 +61,7 @@ def get_prim_at_path(prim_path: str, fabric: bool = False) -> typing.Union[Usd.P
 
 
 def is_prim_path_valid(prim_path: str, fabric: bool = False) -> bool:
-    """Check if a path has a valid USD Prim at it
+    """Check if a path has a valid USD Prim at it.
 
     Args:
         prim_path: path of the prim in the stage
@@ -92,7 +92,7 @@ def is_prim_path_valid(prim_path: str, fabric: bool = False) -> bool:
 
 
 def get_prim_attribute_names(prim_path: str, fabric: bool = False) -> typing.List[str]:
-    """Get all the attribute names of a prim at the path
+    """Get all the attribute names of a prim at the path.
 
     Args:
         prim_path: path of the prim in the stage
@@ -118,7 +118,7 @@ def get_prim_attribute_names(prim_path: str, fabric: bool = False) -> typing.Lis
 
 
 def get_prim_attribute_value(prim_path: str, attribute_name: str, fabric: bool = False) -> typing.Any:
-    """Get a prim attribute value
+    """Get a prim attribute value.
 
     Args:
         prim_path: path of the prim in the stage
@@ -152,7 +152,7 @@ def get_prim_attribute_value(prim_path: str, attribute_name: str, fabric: bool =
 
 
 def set_prim_attribute_value(prim_path: str, attribute_name: str, value: typing.Any, fabric: bool = False):
-    """Set a prim attribute value
+    """Set a prim attribute value.
 
     Args:
         prim_path: path of the prim in the stage
@@ -187,7 +187,7 @@ def set_prim_attribute_value(prim_path: str, attribute_name: str, value: typing.
 
 
 def define_prim(prim_path: str, prim_type: str = "Xform", fabric: bool = False) -> Usd.Prim:
-    """Create a USD Prim at the given prim_path of type prim_type unless one already exists
+    """Create a USD Prim at the given prim_path of type prim_type unless one already exists.
 
     .. note::
 
@@ -221,7 +221,7 @@ def define_prim(prim_path: str, prim_type: str = "Xform", fabric: bool = False) 
 
 
 def get_prim_type_name(prim_path: str, fabric: bool = False) -> str:
-    """Get the TypeName of the USD Prim at the path if it is valid
+    """Get the TypeName of the USD Prim at the path if it is valid.
 
     Args:
         prim_path: path of the prim in the stage
@@ -252,7 +252,7 @@ def get_prim_type_name(prim_path: str, fabric: bool = False) -> str:
 
 
 def move_prim(path_from: str, path_to: str):
-    """Run the Move command to change a prims USD Path in the stage
+    """Run the Move command to change a prims USD Path in the stage.
 
     Args:
         path_from: Path of the USD Prim you wish to move
@@ -273,7 +273,7 @@ def move_prim(path_from: str, path_to: str):
 def get_first_matching_child_prim(
     prim_path: str, predicate: typing.Callable[[str], bool], fabric: bool = False
 ) -> Usd.Prim:
-    """Recursively get the first USD Prim at the path string that passes the predicate function
+    """Recursively get the first USD Prim at the path string that passes the predicate function.
 
     Args:
         prim_path: path of the prim in the stage
@@ -309,7 +309,7 @@ def get_first_matching_child_prim(
 
 
 def get_first_matching_parent_prim(prim_path: str, predicate: typing.Callable[[str], bool]) -> Usd.Prim:
-    """Recursively get the first USD Prim at the parent path string that passes the predicate function
+    """Recursively get the first USD Prim at the parent path string that passes the predicate function.
 
     Args:
         prim_path: path of the prim in the stage
@@ -408,7 +408,7 @@ def find_matching_prim_paths(prim_path_regex: str, prim_type: typing.Optional[st
 
 
 def get_prim_children(prim: Usd.Prim) -> typing.List[Usd.Prim]:
-    """Return the call of the USD Prim's GetChildren member function
+    """Return the call of the USD Prim's GetChildren member function.
 
     Args:
         prim: The parent USD Prim
@@ -432,7 +432,7 @@ def get_prim_children(prim: Usd.Prim) -> typing.List[Usd.Prim]:
 
 
 def get_prim_parent(prim: Usd.Prim) -> Usd.Prim:
-    """Return the call of the USD Prim's GetParent member function
+    """Return the call of the USD Prim's GetParent member function.
 
     Args:
         prim: The USD Prim to call GetParent on
@@ -455,7 +455,7 @@ def get_prim_parent(prim: Usd.Prim) -> Usd.Prim:
 
 
 def query_parent_path(prim_path: str, predicate: typing.Callable[[str], bool]) -> bool:
-    """Check if one of the ancestors of the prim at the prim_path can pass the predicate
+    """Check if one of the ancestors of the prim at the prim_path can pass the predicate.
 
     Args:
         prim_path: path to the USD Prim for which to check the ancestors
@@ -484,7 +484,7 @@ def query_parent_path(prim_path: str, predicate: typing.Callable[[str], bool]) -
 
 
 def is_prim_ancestral(prim_path: str) -> bool:
-    """Check if any of the prims ancestors were brought in as a reference
+    """Check if any of the prims ancestors were brought in as a reference.
 
     Args:
         prim_path: The path to the USD prim.
@@ -759,7 +759,7 @@ def create_prim(
 
 
 def delete_prim(prim_path: str):
-    """Remove the USD Prim and its descendants from the scene if able
+    """Remove the USD Prim and its descendants from the scene if able.
 
     Args:
         prim_path: path of the prim in the stage
@@ -776,7 +776,7 @@ def delete_prim(prim_path: str):
 
 
 def get_prim_property(prim_path: str, property_name: str) -> typing.Any:
-    """Get the attribute of the USD Prim at the given path
+    """Get the attribute of the USD Prim at the given path.
 
     Args:
         prim_path: path of the prim in the stage
@@ -799,7 +799,7 @@ def get_prim_property(prim_path: str, property_name: str) -> typing.Any:
 
 
 def set_prim_property(prim_path: str, property_name: str, property_value: typing.Any):
-    """Set the attribute of the USD Prim at the path
+    """Set the attribute of the USD Prim at the path.
 
     Args:
         prim_path: path of the prim in the stage
@@ -911,7 +911,7 @@ def is_prim_non_root_articulation_link(prim_path: str) -> bool:
 
 
 def set_prim_hide_in_stage_window(prim: Usd.Prim, hide: bool):
-    """Set ``hide_in_stage_window`` metadata for a prim
+    """Set ``hide_in_stage_window`` metadata for a prim.
 
     .. warning ::
 
@@ -935,7 +935,7 @@ def set_prim_hide_in_stage_window(prim: Usd.Prim, hide: bool):
 
 
 def set_prim_no_delete(prim: Usd.Prim, no_delete: bool):
-    """Set ``no_delete`` metadata for a prim
+    """Set ``no_delete`` metadata for a prim.
 
     .. note ::
 
@@ -986,7 +986,7 @@ def set_targets(prim: Usd.Prim, attribute: str, target_prim_paths: list):
 
 
 def get_articulation_root_api_prim_path(prim_path: str) -> str:
-    """Get the prim path that has the Articulation Root API
+    """Get the prim path that has the Articulation Root API.
 
     .. note::
 

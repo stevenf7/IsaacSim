@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utility functions for asset validation."""
+
 
 def is_relationship_prepended(relationship: object) -> bool:
     """Check if a relationship is prepended in the layer stack.
@@ -46,7 +48,6 @@ def make_relationship_prepended(relationship: object) -> bool:
     Returns:
         True if the operation was successful.
     """
-
     rel_stack = relationship.GetPropertyStack()
     for spec in rel_stack:
         if spec.targetPathList.isExplicit:

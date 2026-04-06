@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This script gives an example of a behavior programmed entirely as a decider network (no state
+"""This script gives an example of a behavior programmed entirely as a decider network (no state.
+
 machines). The behavior will monitor the blocks for movement, and whenever a block moves it will
 reach down and peck it. It will always switch to the most recently moved block, aborting its
 previous peck behavior if a new block is moved.
@@ -45,6 +46,12 @@ from isaacsim.cortex.framework.motion_commander import ApproachParams, PosePq
 
 
 class PeckContext(DfRobotApiContext):
+    """Context for the reactive peck game behavior with block movement monitoring.
+
+    Args:
+        robot: The robot API instance.
+    """
+
     def __init__(self, robot):
         super().__init__(robot)
         self.diagnostics_message = ""
@@ -59,6 +66,7 @@ class PeckContext(DfRobotApiContext):
         )
 
     def reset(self):
+        """Reset the context state and block tracking."""
         self.blocks = []
         for _, block in self.robot.registered_obstacles.items():
             self.blocks.append(block)
@@ -72,13 +80,16 @@ class PeckContext(DfRobotApiContext):
 
     @property
     def has_active_block(self):
+        """Check whether there is an active block to peck."""
         return self.active_block is not None
 
     def clear_active_block(self):
+        """Clear the active block and its target position."""
         self.active_block = None
         self.active_target_p = None
 
     def get_latest_block_positions(self):
+        """Return a list of current world positions for all blocks."""
         block_positions = []
         for block in self.blocks:
             block_p, _ = block.get_world_pose()
@@ -86,6 +97,7 @@ class PeckContext(DfRobotApiContext):
         return block_positions
 
     def monitor_block_movement(self):
+        """Detect block movement and set the most recently moved block as active."""
         block_positions = self.get_latest_block_positions()
         for i in range(len(block_positions)):
             if np.linalg.norm(block_positions[i] - self.block_positions[i]) > 0.01:
@@ -93,11 +105,13 @@ class PeckContext(DfRobotApiContext):
                 self.active_block = self.blocks[i]
 
     def monitor_active_target_p(self):
+        """Update the active target position to track the active block."""
         if self.active_block is not None:
             p, _ = self.active_block.get_world_pose()
             self.active_target_p = p + np.array([0.0, 0.0, 0.0325])
 
     def monitor_active_block(self):
+        """Clear the active block when the end-effector reaches the target."""
         if self.active_target_p is not None:
             eff_p = self.robot.arm.get_fk_p()
             dist = np.linalg.norm(eff_p - self.active_target_p)
@@ -105,6 +119,7 @@ class PeckContext(DfRobotApiContext):
                 self.clear_active_block()
 
     def monitor_eff_block_proximity(self):
+        """Check whether the end-effector is close to any inactive block."""
         self.is_eff_close_to_inactive_block = False
 
         eff_p = self.robot.arm.get_fk_p()
@@ -116,6 +131,7 @@ class PeckContext(DfRobotApiContext):
                     return
 
     def monitor_diagnostics(self):
+        """Periodically update the diagnostics message."""
         now = time.time()
         if self.time_at_last_diagnostics_print is None or (now - self.time_at_last_diagnostics_print) >= 1.0:
             if self.active_block is not None:
@@ -126,11 +142,15 @@ class PeckContext(DfRobotApiContext):
 
 
 class PeckAction(DfAction):
+    """Action that pecks at the active block target."""
+
     def enter(self):
+        """Disable collision avoidance for the active block and begin pecking."""
         self.block = self.context.active_block
         self.context.robot.arm.disable_obstacle(self.block)
 
     def step(self):
+        """Send the end-effector toward the active target each cycle."""
         target_p = self.context.active_target_p
         target_q = math_util.matrix_to_quat(
             math_util.make_rotation_matrix(az_dominant=np.array([0.0, 0.0, -1.0]), ax_suggestion=-target_p)
@@ -143,16 +163,21 @@ class PeckAction(DfAction):
         target_dist = np.linalg.norm(self.context.robot.arm.get_fk_p() - target.p)
 
     def exit(self):
+        """Re-enable collision avoidance for the block on exit."""
         self.context.robot.arm.enable_obstacle(self.block)
 
 
 class Dispatch(DfDecider):
+    """Top-level decider that dispatches between peck, lift, and go home."""
+
     def enter(self):
+        """Add child behaviors for pecking, lifting, and going home."""
         self.add_child("peck", PeckAction())
         self.add_child("lift", DfLift(height=0.1))
         self.add_child("go_home", make_go_home())
 
     def decide(self):
+        """Decide to lift, peck, or go home based on the current state."""
         if self.context.is_eff_close_to_inactive_block:
             return DfDecision("lift")
 
@@ -164,4 +189,5 @@ class Dispatch(DfDecider):
 
 
 def make_decider_network(robot):
+    """Create the peck game decider network for the given robot."""
     return DfNetwork(Dispatch(), context=PeckContext(robot))

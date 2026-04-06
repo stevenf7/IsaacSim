@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A commander implements an abstraction of a policy controlling a subset of joints. Each commander
+"""A commander implements an abstraction of a policy controlling a subset of joints. Each commander.
+
 defines its own command API accessed by the decision layer. This abstract base class defines the
 methods used by the cortex framework behind the scenes for processing, resetting, etc. the
 commanders.
@@ -87,7 +88,8 @@ class Commander(ABC):
         return self.latest_command
 
     def send(self, command: Any) -> None:
-        """Send a command to this commander. The command is cached off in the member
+        """Send a command to this commander. The command is cached off in the member.
+
         latest_command.
 
         The type of the command is defined by the deriving class.
@@ -120,7 +122,8 @@ class Commander(ABC):
         pass
 
     def post_reset(self) -> None:
-        """Clear the command and reset the commander. This method is called automatically at the
+        """Clear the command and reset the commander. This method is called automatically at the.
+
         right time by the CortexWorld after the simulation is reset (hence the post_ prefix).
         """
         self.clear()

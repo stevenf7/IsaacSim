@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for camera lifecycle management."""
+
 import math
 
 import carb
@@ -23,7 +25,10 @@ from isaacsim.sensors.camera import Camera
 
 
 class TestCameraLifecycle(omni.kit.test.AsyncTestCase):
+    """Test cases for CameraLifecycle."""
+
     async def setUp(self):
+        """Set up test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
@@ -34,12 +39,14 @@ class TestCameraLifecycle(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
     async def test_destroy_cleans_up_observers_and_annotators(self):
+        """Test destroy cleans up observers and annotators."""
         camera = Camera(prim_path="/World/Camera", resolution=(64, 64))
         camera.initialize()
 
@@ -73,6 +80,7 @@ class TestCameraLifecycle(omni.kit.test.AsyncTestCase):
         self.assertIsNone(camera.get_render_product_path())
 
     async def test_dt_and_clipping_range_edge_cases(self):
+        """Test dt and clipping range edge cases."""
         camera = Camera(prim_path="/World/Camera", resolution=(64, 64))
 
         # Ensure 0.0 is not treated as "unset"

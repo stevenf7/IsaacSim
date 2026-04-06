@@ -44,7 +44,6 @@ def get_style() -> dict[str, dict[str, any]]:
         A dictionary mapping UI component selectors to their style properties including colors,
         fonts, borders, and layout attributes.
     """
-
     icons_path = get_icons_path()
 
     KIT_GREEN = 0xFF8A8777

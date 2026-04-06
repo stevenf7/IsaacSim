@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the exposed variables property widget UI."""
+
 import omni.kit.app
 import omni.kit.commands
 import omni.kit.test
@@ -29,13 +31,18 @@ BEHAVIOR_SCRIPT_PATH = "/isaacsim/replicator/behavior/behaviors/example_behavior
 
 
 class TestExposedVariablesWidgetUI(omni.kit.test.AsyncTestCase):
+    """Test the exposed variables property widget UI registration and building."""
+
     async def setup(self):
+        """Set up test fixtures."""
         pass
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         pass
 
     async def test_widget_registered(self):
+        """Verify the exposed variables widget is registered in the property window."""
         await omni.usd.get_context().new_stage_async()
 
         # Get the widget from the property window
@@ -58,6 +65,7 @@ class TestExposedVariablesWidgetUI(omni.kit.test.AsyncTestCase):
         )
 
     async def test_widget_built(self):
+        """Verify the widget is built for prims with behavior scripts and not for those without."""
         await omni.usd.get_context().new_stage_async()
         stage = omni.usd.get_context().get_stage()
         prim_path = "/World/MyPrim"

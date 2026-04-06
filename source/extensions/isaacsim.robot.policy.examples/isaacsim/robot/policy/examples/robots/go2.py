@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Go2 robot flat terrain policy wrapper for locomotion control."""
+
 import isaacsim.core.experimental.utils.transform as transform_utils
 import warp as wp
 from isaacsim.core.deprecation_manager import import_module

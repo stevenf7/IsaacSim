@@ -37,7 +37,7 @@ from pxr import Gf, PhysicsSchemaTools, Usd
 
 
 class GroundPlane(object):
-    """High level wrapper to create/encapsulate a ground plane
+    """High level wrapper to create/encapsulate a ground plane.
 
     Args:
         prim_path: Prim path of the Prim to encapsulate or create.
@@ -224,7 +224,7 @@ class GroundPlane(object):
         return self._collision_prim
 
     def initialize(self, physics_sim_view: object = None) -> None:
-        """Create a physics simulation view if not passed and using PhysX tensor API
+        """Create a physics simulation view if not passed and using PhysX tensor API.
 
         .. note::
 
@@ -258,7 +258,7 @@ class GroundPlane(object):
         return
 
     def is_valid(self) -> bool:
-        """Check if the prim path has a valid USD Prim at it
+        """Check if the prim path has a valid USD Prim at it.
 
         Returns:
             True is the current prim path corresponds to a valid prim in stage. False otherwise.
@@ -321,7 +321,7 @@ class GroundPlane(object):
     def set_world_pose(
         self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
     ) -> None:
-        """Sets prim's pose with respect to the world's frame
+        """Sets prim's pose with respect to the world's frame.
 
         .. warning::
 
@@ -347,7 +347,7 @@ class GroundPlane(object):
         return
 
     def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Get prim's pose with respect to the world's frame
+        """Get prim's pose with respect to the world's frame.
 
         Returns:
             First index is the position in the world frame (with shape (3, )).

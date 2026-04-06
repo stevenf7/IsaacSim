@@ -18,9 +18,7 @@ from isaacsim.core.rendering_manager import ViewportManager
 
 
 class OgnIsaacSetCameraOnRenderProduct:
-    """
-    Isaac Sim Set Camera On Render Product
-    """
+    """Isaac Sim Set Camera On Render Product."""
 
     @staticmethod
     def compute(db) -> bool:

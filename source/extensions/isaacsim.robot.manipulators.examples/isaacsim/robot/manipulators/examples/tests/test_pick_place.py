@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for pick-and-place examples."""
+
 import asyncio
 
 import isaacsim.core.experimental.utils.app as app_utils
@@ -83,7 +85,6 @@ class TestPickPlace(omni.kit.test.AsyncTestCase):
 
     async def test_load_button_click(self):
         """Test that the Load button properly sets up the scene."""
-
         self.ui_template._on_load_world()
 
         await app_utils.update_app_async()

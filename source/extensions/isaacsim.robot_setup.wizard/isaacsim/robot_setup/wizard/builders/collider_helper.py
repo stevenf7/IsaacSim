@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Backend of "Add Colliders"
+"""Backend of "Add Colliders".
 
 - parse colliders that are already on stage
 - update colliders if users made changes in the UI

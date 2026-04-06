@@ -234,7 +234,6 @@ class MobilityGenReader:
         Returns:
             Complete state dictionary containing common state, RGB, segmentation, depth, and normals data.
         """
-
         state_dict = self.read_state_dict_common(index)
         rgb_dict = self.read_state_dict_rgb(index)
         segmentation_dict = self.read_state_dict_segmentation(index)

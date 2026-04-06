@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for ROS 2 simulation control services."""
+
 import asyncio
 import gc
 import time
@@ -25,8 +27,11 @@ from pxr import Gf, UsdGeom, UsdLux, UsdPhysics
 
 
 class TestSimControlServices(omni.kit.test.AsyncTestCase):
+    """Test suite for sim control services."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         import rclpy
 
         await stage_utils.create_new_stage_async()
@@ -40,6 +45,7 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
@@ -52,6 +58,7 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         gc.collect()
 
     def create_test_stage(self):
+        """Handle create test stage operation."""
         stage = omni.usd.get_context().get_stage()
 
         # Create World xform
@@ -91,7 +98,7 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         return stage
 
     async def _call_service_async(self, service_type, service_name, request):
-        """Helper method to call ROS2 services asynchronously."""
+        """Call ROS2 services asynchronously."""
         import concurrent.futures
 
         import rclpy
@@ -149,7 +156,7 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
                 self.fail(f"Test execution failed: {e}")
 
     async def _call_action_async(self, action_type, action_name, goal):
-        """Helper method to call ROS2 actions asynchronously."""
+        """Call ROS2 actions asynchronously."""
         import concurrent.futures
 
         import rclpy
@@ -222,7 +229,7 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
                 self.fail(f"Test execution failed: {e}")
 
     async def test_get_simulator_features_service(self):
-
+        """Test get simulator features service."""
         from simulation_interfaces.srv import GetSimulatorFeatures
 
         self.create_test_stage()
@@ -252,7 +259,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         This test verifies the service correctly reports simulation state changes made through
         the timeline interface by testing play, pause, and stop transitions.
         """
-
         # fmt: off
         from simulation_interfaces.msg import SimulationState
 
@@ -857,7 +863,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
 
         This test first deletes an existing object, then spawns a robot entity using a USD file at the default position.
         """
-
         # fmt: off
         from simulation_interfaces.msg import Result
 
@@ -1076,7 +1081,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
 
         This test creates an empty Xform prim without loading any USD content.
         """
-
         # fmt: off
         from simulation_interfaces.msg import Result
 
@@ -1112,7 +1116,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         This test spawns two entities with the same name, with auto-renaming enabled
         for the second one to verify unique name generation.
         """
-
         # fmt: off
         from simulation_interfaces.msg import Result
 
@@ -1238,7 +1241,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
 
         This test validates error handling for various invalid spawn scenarios.
         """
-
         # fmt: off
         from simulation_interfaces.msg import Result
 

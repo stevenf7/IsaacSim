@@ -1,3 +1,5 @@
+"""Robo party sample combining Franka stacking, UR10 stacking, Kaya, and Jetbot."""
+
 # SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #

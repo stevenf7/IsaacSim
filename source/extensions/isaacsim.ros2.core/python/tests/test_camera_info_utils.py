@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for ROS 2 camera info utility functions."""
+
 import numpy as np
 import omni.kit.test
 import omni.usd
@@ -26,8 +28,11 @@ from .common import ROS2TestCase
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestCameraInfoUtils(ROS2TestCase):
+    """Test suite for camera info utils."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
 
@@ -62,6 +67,7 @@ class TestCameraInfoUtils(ROS2TestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         await omni.usd.get_context().new_stage_async()
         self._timeline.stop()
         # Clean up the camera
@@ -71,7 +77,7 @@ class TestCameraInfoUtils(ROS2TestCase):
         await super().tearDown()
 
     async def test_read_camera_info_pinhole(self):
-        """Test reading camera info for a pinhole camera with no distortion"""
+        """Test reading camera info for a pinhole camera with no distortion."""
         camera_info, camera_prim = read_camera_info(self._render_product_path)
 
         # Verify the camera info
@@ -110,7 +116,7 @@ class TestCameraInfoUtils(ROS2TestCase):
         self.assertAlmostEqual(camera_info.p[6], height * 0.5, delta=1.0)
 
     async def test_read_camera_info_fisheye_unset_distortion(self):
-        """Test reading camera info for a fisheye camera with unset distortion attributes"""
+        """Test reading camera info for a fisheye camera with unset distortion attributes."""
         self._camera.set_lens_distortion_model("OmniLensDistortionFthetaAPI")
 
         self._camera.set_focal_length(24.0)
@@ -137,7 +143,7 @@ class TestCameraInfoUtils(ROS2TestCase):
         self.assertEqual(camera_info.height, height)
 
     async def test_read_camera_info_fisheye_plumb_bob_distortion(self):
-        """Test reading camera info for a fisheye camera with plumb_bob distortion model"""
+        """Test reading camera info for a fisheye camera with plumb_bob distortion model."""
         # Set the camera to be a fisheye camera
         self._camera.set_lens_distortion_model("OmniLensDistortionFthetaAPI")
         self._camera.set_focal_length(24.0)
@@ -178,7 +184,7 @@ class TestCameraInfoUtils(ROS2TestCase):
         )
 
     async def test_read_camera_info_fisheye_rational_polynomial_distortion(self):
-        """Test reading camera info for a fisheye camera with rational_polynomial distortion model"""
+        """Test reading camera info for a fisheye camera with rational_polynomial distortion model."""
         # Set the camera to be a fisheye camera
         self._camera.set_lens_distortion_model("OmniLensDistortionFthetaAPI")
         self._camera.set_focal_length(24.0)
@@ -216,7 +222,7 @@ class TestCameraInfoUtils(ROS2TestCase):
             self.assertAlmostEqual(actual, expected, delta=1e-5, msg=f"Coefficient {j} mismatch for {distortion_model}")
 
     async def test_read_camera_info_fisheye_equidistant_distortion(self):
-        """Test reading camera info for a fisheye camera with equidistant distortion model"""
+        """Test reading camera info for a fisheye camera with equidistant distortion model."""
         # Set the camera to be a fisheye camera
         self._camera.set_lens_distortion_model("OmniLensDistortionFthetaAPI")
         self._camera.set_focal_length(24.0)
@@ -254,7 +260,7 @@ class TestCameraInfoUtils(ROS2TestCase):
             self.assertAlmostEqual(actual, expected, delta=1e-5, msg=f"Coefficient {j} mismatch for {distortion_model}")
 
     async def test_read_camera_info_fisheye_unsupported_distortion(self):
-        """Test reading camera info for a fisheye camera with an unsupported distortion model"""
+        """Test reading camera info for a fisheye camera with an unsupported distortion model."""
         # Set the camera to be a fisheye camera
         self._camera.set_lens_distortion_model("OmniLensDistortionFthetaAPI")
         self._camera.set_focal_length(24.0)
@@ -293,7 +299,7 @@ class TestCameraInfoUtils(ROS2TestCase):
         )
 
     async def test_read_camera_info_opencv_pinhole_distortion(self):
-        """Test reading camera info with OpenCV pinhole distortion model (5, 8, and 12 parameters)"""
+        """Test reading camera info with OpenCV pinhole distortion model (5, 8, and 12 parameters)."""
         # Get current camera dimensions for calculating center and focal length
         width, height = self._camera.get_resolution()
         cx, cy = width / 2, height / 2
@@ -368,7 +374,7 @@ class TestCameraInfoUtils(ROS2TestCase):
             )
 
     async def test_read_camera_info_opencv_fisheye_distortion(self):
-        """Test reading camera info with OpenCV fisheye distortion model"""
+        """Test reading camera info with OpenCV fisheye distortion model."""
         # Get current camera dimensions for calculating center and focal length
         width, height = self._camera.get_resolution()
         cx, cy = width / 2, height / 2
@@ -407,7 +413,7 @@ class TestCameraInfoUtils(ROS2TestCase):
             self.assertAlmostEqual(actual, expected, delta=1e-5, msg=f"Coefficient {i} mismatch for opencv fisheye")
 
     async def test_compute_relative_pose(self):
-        """Test computing relative pose between two camera prims"""
+        """Test computing relative pose between two camera prims."""
         # Create two cameras with known relative pose
         left_camera = Camera(
             prim_path="/left_camera",

@@ -44,7 +44,7 @@ def gf_quat_to_tensor(
 def euler_angles_to_quats(
     euler_angles: np.ndarray, degrees: bool = False, extrinsic: bool = True, device: object = None
 ) -> np.ndarray:
-    """Vectorized version of converting euler angles to quaternion (scalar first)
+    """Vectorized version of converting euler angles to quaternion (scalar first).
 
     Args:
         euler_angles: euler angles with shape (N, 3) or (3,) representation XYZ in extrinsic coordinates
@@ -73,7 +73,7 @@ def euler_angles_to_quats(
 def quats_to_euler_angles(
     quaternions: np.ndarray, degrees: bool = False, extrinsic: bool = True, device: object = None
 ) -> np.ndarray:
-    """Vectorized version of converting quaternions (scalar first) to euler angles
+    """Vectorized version of converting quaternions (scalar first) to euler angles.
 
     Args:
         quaternions: quaternions with shape (N, 4) or (4,) - scalar first
@@ -100,7 +100,7 @@ def quats_to_euler_angles(
 
 
 def rot_matrices_to_quats(rotation_matrices: np.ndarray, device: object = None) -> np.ndarray:
-    """Vectorized version of converting rotation matrices to quaternions
+    """Vectorized version of converting rotation matrices to quaternions.
 
     Args:
         rotation_matrices: N Rotation matrices with shape (N, 3, 3) or (3, 3)
@@ -119,7 +119,7 @@ def rot_matrices_to_quats(rotation_matrices: np.ndarray, device: object = None) 
 
 
 def quats_to_rot_matrices(quaternions: np.ndarray, device: object = None) -> np.ndarray:
-    """Vectorized version of converting quaternions to rotation matrices
+    """Vectorized version of converting quaternions to rotation matrices.
 
     Args:
         quaternions: quaternions with shape (N, 4) or (4,) and scalar first
@@ -138,7 +138,7 @@ def quats_to_rot_matrices(quaternions: np.ndarray, device: object = None) -> np.
 
 
 def rotvecs_to_quats(rotation_vectors: np.ndarray, degrees: bool = False, device: object = None) -> np.ndarray:
-    """Vectorized version of converting rotation vectors to quaternions
+    """Vectorized version of converting rotation vectors to quaternions.
 
     Args:
         rotation_vectors: N rotation vectors with shape (N, 3) or (3,).  The magnitude of the rotation vector describes the magnitude of the rotation.
@@ -159,7 +159,7 @@ def rotvecs_to_quats(rotation_vectors: np.ndarray, degrees: bool = False, device
 
 
 def quats_to_rotvecs(quaternions: np.ndarray, device: object = None) -> np.ndarray:
-    """Vectorized version of converting quaternions to rotation vectors
+    """Vectorized version of converting quaternions to rotation vectors.
 
     Args:
         quaternions: quaternions with shape (N, 4) or (4,) and scalar first

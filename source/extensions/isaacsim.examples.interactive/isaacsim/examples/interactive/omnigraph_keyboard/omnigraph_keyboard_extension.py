@@ -44,7 +44,6 @@ class OmnigraphKeyboardExtension(omni.ext.IExt):
         Args:
             ext_id: The extension identifier.
         """
-
         self.example_name = "Omnigraph Keyboard"
         self.category = "Input Devices"
 

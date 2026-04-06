@@ -78,7 +78,6 @@ class MobilityGenCamera(Module):
 
     def enable_rendering(self):
         """Creates a render product for the camera to enable rendering capabilities."""
-
         self._render_product = rep.create.render_product(self._prim_path, self._resolution, force_new=False)
 
     def disable_rendering(self) -> None:

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Grid cloner module."""
+
 __all__ = ["GridCloner"]
 
 from typing import List
@@ -239,7 +241,6 @@ class GridCloner(Cloner):
             >>> len(positions)
             9
         """
-
         num_clones = len(prim_paths)
 
         positions, orientations = self.get_clone_transforms(num_clones, position_offsets, orientation_offsets)

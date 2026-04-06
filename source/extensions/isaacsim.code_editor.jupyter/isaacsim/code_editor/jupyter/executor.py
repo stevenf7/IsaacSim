@@ -30,7 +30,7 @@ except ImportError:
 
 
 class Executor:
-    """Execute Python statements or expressions from strings
+    """Execute Python statements or expressions from strings.
 
     Args:
         globals: Global namespace.

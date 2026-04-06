@@ -131,7 +131,8 @@ class DfLogicalState:
 
     @abstractmethod
     def reset(self):
-        """This method is left unimplemented (no default version) in the base class because it's
+        """This method is left unimplemented (no default version) in the base class because it's.
+
         important that deriving classes don't forget implement it to reset the logical state when
         the simulation is reset.
         """
@@ -139,7 +140,8 @@ class DfLogicalState:
 
 
 class DfDecision:
-    """Represents a decision made by the decider. It names the child to take and provides it
+    """Represents a decision made by the decider. It names the child to take and provides it.
+
     parameters.
 
     Args:
@@ -166,7 +168,8 @@ class DfDecision:
 
 
 class DfBindable(object):
-    """A bindable object is an object that an algorithm can bind the context object and any sent to
+    """A bindable object is an object that an algorithm can bind the context object and any sent to.
+
     it parameters to. Both of these are then accessible from within the object as self.context and
     self.params at runtime. For instance, DfDecider nodes and DfState are both DfBindable objects,
     so when used within decider networks (DfNetwork) their API methods (enter(), decide() and exit()
@@ -186,7 +189,8 @@ class DfBindable(object):
 
 
 class DfDecider(DfBindable):
-    """A decider node of a decider network. The descent algorithm handles automatically setting the
+    """A decider node of a decider network. The descent algorithm handles automatically setting the.
+
     internal context member and passing down the parameters both of which can be accessed from
     enter(), decide() and exit() through self.{context,params}.
 
@@ -226,6 +230,7 @@ class DfDecider(DfBindable):
         self.children = {}
 
     def __str__(self):
+        """Return the name of this decider node."""
         return self.name
 
     def add_child(self, name: str, child: "DfDecider") -> None:
@@ -245,7 +250,8 @@ class DfDecider(DfBindable):
         self.children[name] = child
 
     def enter(self) -> None:
-        """Decider node API method called when this decider node is reached for the first time by a
+        """Decider node API method called when this decider node is reached for the first time by a.
+
         a unique path from the root. enter() is called before decide().
 
         Use this method for any setup to prepare as a new decision session is started.
@@ -253,7 +259,8 @@ class DfDecider(DfBindable):
         pass
 
     def decide(self) -> DfDecision:
-        """Decider node API method called every time this decider node is reached by a decider
+        """Decider node API method called every time this decider node is reached by a decider.
+
         network descent from the root. decide() is called after enter() if this is the first call.
 
         This method is called every step of a given decision session. It chooses among its children
@@ -272,7 +279,8 @@ class DfDecider(DfBindable):
         pass
 
     def exit(self) -> None:
-        """Decider node API method called the first time this decider node is no longer reached by
+        """Decider node API method called the first time this decider node is no longer reached by.
+
         a path from the root. Decider node exit() methods are called in reverse order from the
         previous leaf for all nodes no longer reached by the current decider network descent trace.
 
@@ -296,7 +304,8 @@ class DfAction(DfDecider):
         pass
 
     def decide(self) -> None:
-        """This decider node automatically calls step() each cycle. Deriving classes should not
+        """This decider node automatically calls step() each cycle. Deriving classes should not.
+
         override this decide() method. Instead, override the step() method to define the operation
         of this action.
         """
@@ -307,7 +316,8 @@ class DfAction(DfDecider):
 def df_descend(
     root: DfDecider, root_params: Any, context: DfLogicalState, prev_stack: List[DfDecider]
 ) -> List[DfDecider]:
-    """Descend the decider network from the root to a leaf. Uses the prev_stack to check when or if
+    """Descend the decider network from the root to a leaf. Uses the prev_stack to check when or if.
+
     branches occure. Returns the current stack representing the path from the root to the leaf.
 
     When a branch is detected, nodes are popped off the previous stack from the leaf to first child
@@ -333,7 +343,6 @@ def df_descend(
         The decision stack from this descent, the list of decider nodes encountered tracing from the
         root to the leaf.
     """
-
     stack = [root]
     if prev_stack is not None:
         # Step through the stack in reverse order from the leaf to the root checking for the most
@@ -374,7 +383,8 @@ def df_descend(
 
 
 class DfState(DfBindable):
-    """Interface for a state in a state machine. The main work of the state is done by step(). That
+    """Interface for a state in a state machine. The main work of the state is done by step(). That.
+
     method should also return the next state to be executed (which could be self for a self
     transition).
 
@@ -396,6 +406,7 @@ class DfState(DfBindable):
     """
 
     def __str__(self) -> str:
+        """Return a string representation of this state."""
         out = ""
         if hasattr(self, "name"):
             out = self.name
@@ -410,7 +421,8 @@ class DfState(DfBindable):
         pass
 
     def step(self) -> "DfState":
-        """Deriving classes should use this API call to step the state. This is where the main work
+        """Deriving classes should use this API call to step the state. This is where the main work.
+
         is done.
 
         Step should return the next state transition as represented by a reference to the next state
@@ -423,13 +435,15 @@ class DfState(DfBindable):
         return None
 
     def exit(self) -> None:
-        """Deriving classes should use this API call to clean up the state as needed before
+        """Deriving classes should use this API call to clean up the state as needed before.
+
         transitioning to another state.
         """
         pass
 
     def process_step(self) -> "DfState":
-        """This method can be used to both process the step and correct exit from the current state
+        """This method can be used to both process the step and correct exit from the current state.
+
         and enter the next state if a new state transition (non-self) is detected.
 
         See the workflow described in the top level comment above.
@@ -474,10 +488,12 @@ class DfStateSequence(DfState):
         self.state = None
 
     def __str__(self):
+        """Return a string representation of the sequence and its current state."""
         return f"{type(self).__name__}[{self.state}]"
 
     def bind(self, context: DfLogicalState, params: Any) -> None:
         """This method can be used to bind the underlying state to the given context and params.
+
         Both states the support bind() and those that don't can be used in a DfStateSequence. If
         it's supported, then bind() is called, otherwise it's ignored.
 
@@ -492,7 +508,8 @@ class DfStateSequence(DfState):
                 state.bind(context, params)
 
     def enter(self) -> None:
-        """Entry into this state initializes the underlying state back to the first state in the
+        """Entry into this state initializes the underlying state back to the first state in the.
+
         provided sequence.
         """
         if len(self.sequence) == 0:
@@ -540,6 +557,7 @@ class DfStateSequence(DfState):
             return None
 
     def exit(self):
+        """Exit the sequence by exiting the currently active state."""
         if self.state is not None:
             self.state.exit()
 
@@ -565,10 +583,12 @@ class DfHierarchicalState(DfState):
         self.active_state = None
 
     def __str__(self):
+        """Return a string representation of this hierarchical state."""
         return f"{type(self).__name__}[{self.active_state}]"
 
     def enter(self) -> None:
-        """Entering the hierarchical state sets the active state back to the initial state provided
+        """Entering the hierarchical state sets the active state back to the initial state provided.
+
         on construction.
 
         If there was a previously active state, that state is exited before we re-activate and enter
@@ -611,7 +631,8 @@ class DfHierarchicalState(DfState):
 
 
 class DfHsmAction(DfAction):
-    """Interfaces a Hierarchical State Machine (HSM) to a decision framework action so it can be
+    """Interfaces a Hierarchical State Machine (HSM) to a decision framework action so it can be.
+
     used as a DfAction leaf in the decider network.
 
     On enter, step, and exit, the HSM calls its own enter, step, and exit methods. Note that if the
@@ -631,18 +652,19 @@ class DfHsmAction(DfAction):
         self.hsm = hsm
 
     def __str__(self):
+        """Return a string representation by delegating to the internal HSM."""
         return self.hsm.__str__()
 
     def enter(self) -> None:
-        """Pass through to the internal state's enter()."""
+        """Pass through to the internal state's ``enter()``."""
         self.hsm.enter()
 
     def step(self) -> None:
-        """Pass through to the internal state's step()."""
+        """Pass through to the internal state's ``step()``."""
         self.hsm.step()
 
     def exit(self) -> None:
-        """Pass through to the internal state's exit()."""
+        """Pass through to the internal state's ``exit()``."""
         self.hsm.exit()
 
 
@@ -651,6 +673,7 @@ class DfRate(ABC):
 
     @abstractmethod
     def sleep(self):
+        """Sleep for the appropriate duration between steps."""
         raise NotImplementedError()
 
 
@@ -658,6 +681,7 @@ class DfFastestRate(DfRate):
     """A rate class that simply loops as fast as possible."""
 
     def sleep(self):
+        """Return immediately without sleeping."""
         pass
 
 
@@ -705,10 +729,12 @@ class DfDeciderState(DfState):
         self.stack = []
 
     def __str__(self) -> str:
+        """Return a string showing the decider name and current decision stack."""
         return f"{self.decider.name}[{'->'.join(str(i) for i in self.stack)}]"
 
     def bind(self, context: DfLogicalState, params: Any) -> None:
-        """Binding a context and parameters to this state passes the information into the
+        """Binding a context and parameters to this state passes the information into the.
+
         underlying decider network.
 
         Uses the root decider's context and params members to store the information since
@@ -721,13 +747,15 @@ class DfDeciderState(DfState):
         self.decider.bind(context, params)
 
     def enter(self) -> None:
-        """On entry to this state the decision stack is cleared. It's reset during the first step's
+        """On entry to this state the decision stack is cleared. It's reset during the first step's.
+
         call to df_descend().
         """
         self.stack = []
 
     def step(self) -> DfState:
-        """Step the state machine by descending the decider network. This state machine always
+        """Step the state machine by descending the decider network. This state machine always.
+
         transitions back to itself.
 
         Returns:
@@ -737,7 +765,8 @@ class DfDeciderState(DfState):
         return self
 
     def exit(self) -> None:
-        """On exit from this state, all active decision sessions from the decision stack are exited
+        """On exit from this state, all active decision sessions from the decision stack are exited.
+
         in reverse order from leaf to the root.
         """
         if self.stack is not None:
@@ -746,7 +775,8 @@ class DfDeciderState(DfState):
 
 
 class DfTimedDeciderState(DfDeciderState):
-    """A state which steps a decider network from its step() method for a predefined
+    """A state which steps a decider network from its step() method for a predefined.
+
     activity_duration number of seconds.
 
     Note the number of seconds is measured in wallclock time using the system time.time().
@@ -764,10 +794,12 @@ class DfTimedDeciderState(DfDeciderState):
         self.activity_duration = activity_duration
 
     def __str__(self) -> str:
+        """Return a string showing the timed decider stack and activity duration."""
         return f"TimedDecider[{'->'.join([str(i) for i in self.stack])}]({self.activity_duration})"
 
     def enter(self) -> None:
-        """On entry, records the current time for measuring how long the internal decider network
+        """On entry, records the current time for measuring how long the internal decider network.
+
         has been stepped.
         """
         super().enter()
@@ -803,6 +835,7 @@ class DfWaitState(DfState):
         self.wait_time = wait_time
 
     def __str__(self):
+        """Return a string showing the wait time."""
         return f"Wait({self.wait_time})"
 
     def enter(self) -> None:
@@ -810,7 +843,8 @@ class DfWaitState(DfState):
         self.entry_time = time.time()
 
     def step(self) -> DfState:
-        """Does nothing, but self transitions while waiting and terminal transitions (to None) once
+        """Does nothing, but self transitions while waiting and terminal transitions (to None) once.
+
         the wait time has passed.
 
         Returns:
@@ -828,7 +862,8 @@ class DfWaitState(DfState):
 
 
 class DfStateMachineDecider(DfDecider):
-    """This decider steps a state machine each step during a given decision session. The state
+    """This decider steps a state machine each step during a given decision session. The state.
+
     machine can be any state machine, but if a given state has a bind() method, bind() will be
     called to give the state access to the context and current params.
 
@@ -842,6 +877,7 @@ class DfStateMachineDecider(DfDecider):
         self.state = None
 
     def __str__(self):
+        """Return a string showing the decider name and current state."""
         return f"{self.name}[{self.state}]"
 
     def enter(self):
@@ -871,7 +907,8 @@ class DfStateMachineDecider(DfDecider):
             self.state.exit()
 
     def _bind_state(self) -> None:
-        """If the underlying state is bindable (has a bind() method), this decider's context and
+        """If the underlying state is bindable (has a bind() method), this decider's context and.
+
         parameters are bound to it. This internal method is called before each call to the
         underlying state's API methods so every API call has access to the decider's context and
         params.
@@ -881,7 +918,8 @@ class DfStateMachineDecider(DfDecider):
 
 
 class DfSetLockState(DfState):
-    """On entry, this state sets the given decider node's is_locked attribute to the specified
+    """On entry, this state sets the given decider node's is_locked attribute to the specified.
+
     value.
 
     Args:
@@ -895,6 +933,7 @@ class DfSetLockState(DfState):
         self.decider = decider
 
     def __str__(self):
+        """Return a string showing the lock state and decider name."""
         return f"SetLockState(set_locked_to:{self.set_locked_to}, {self.decider.name})"
 
     def enter(self) -> None:
@@ -920,6 +959,7 @@ class DfWriteContextState(DfState):
         self.write_method = write_method
 
     def __str__(self):
+        """Return a string showing the write method name."""
         return f"WriteContextState({self.write_method.__name__})"
 
     def enter(self):
@@ -935,7 +975,8 @@ class DfBehavior(ABC):
 
     @abstractmethod
     def step(self):
-        """Stepping the behavior runs it. It'll step generally at the rate of physics, which is
+        """Stepping the behavior runs it. It'll step generally at the rate of physics, which is.
+
         often 60hz.
         """
         raise NotImplementedError()
@@ -1002,6 +1043,7 @@ class DfNetwork(DfBehavior):
         self.reset()
 
     def __str__(self):
+        """Return a string showing the network type and decider state."""
         return f"{type(self).__name__}[{self._decider_state}]"
 
     def reset(self) -> None:
@@ -1009,7 +1051,8 @@ class DfNetwork(DfBehavior):
         self._decider_state.enter()
 
     def bind_context(self, context: DfLogicalState) -> None:
-        """Bind the provided context to this decider network. This bound context will be bound into
+        """Bind the provided context to this decider network. This bound context will be bound into.
+
         each decider node on descent.
 
         Note that the bound context can be overridden by passing in a context object to the step()
@@ -1023,7 +1066,8 @@ class DfNetwork(DfBehavior):
 
     @property
     def context(self) -> DfLogicalState:
-        """Returns the bound context object. This is the context object supplied either on
+        """Returns the bound context object. This is the context object supplied either on.
+
         construction or through an explicit call to bind_context().
 
         Note that passing a context object to step() doesn't bind the context to this object and
@@ -1102,7 +1146,8 @@ class DfRldsNode(DfDecider):
         pass
 
     def is_enterable(self):
-        """Is enterable can be overriden to specify a slightly different enterable condition than
+        """Is enterable can be overriden to specify a slightly different enterable condition than.
+
         the runnable condition. For instance, it's common to choose the enterable condition to be
         more stringent than the runnable condition so the system is robustly satisfying the runnable
         condition before the enterable condition is triggered.
@@ -1158,6 +1203,7 @@ class DfRldsDecider(DfDecider):
         self.sequence = []
 
     def __str__(self):
+        """Return the class name of this RLDS decider."""
         return type(self).__name__
 
     class NamedRldsNode:
@@ -1173,6 +1219,7 @@ class DfRldsDecider(DfDecider):
             self.rlds_node = rlds_node
 
         def __str__(self):
+            """Return the name of this RLDS node."""
             return self.name
 
     def append_rlds_node(self, name: str, rlds_node: DfRldsNode) -> None:
@@ -1186,7 +1233,8 @@ class DfRldsDecider(DfDecider):
         self.add_child(name, rlds_node)
 
     def enter(self) -> None:
-        """Entry into this decision session reset the internal RLDS state so there's no recorded
+        """Entry into this decision session reset the internal RLDS state so there's no recorded.
+
         previous node. On the first call to decide() all nodes will be checked for their enterable
         condition (no runnable condition because there's no active node).
         """

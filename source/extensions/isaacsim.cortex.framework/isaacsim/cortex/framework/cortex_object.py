@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Cortex object wrappers for measured pose tracking and synchronization."""
+
 import time
 from typing import Optional, Sequence, Tuple
 
@@ -52,7 +54,8 @@ class CortexMeasuredPose(object):
 
 
 class CortexObject(object):
-    """A CortexObject is an object (derived from the core API SingleXFormPrim) which may have measurement
+    """A CortexObject is an object (derived from the core API SingleXFormPrim) which may have measurement.
+
     information from perception.
 
     It handles recording that measurement information and providing an API to both access it and
@@ -121,7 +124,7 @@ class CortexObject(object):
         return self.get_transform()
 
     def set_measured_pose(self, measured_pose: CortexMeasuredPose) -> None:
-        """Set the measured pose of this object
+        """Set the measured pose of this object.
 
         Args:
             measured_pose: The measurement information.
@@ -199,7 +202,8 @@ class CortexObject(object):
         self.time_at_last_sync = current_time
 
     def _sync_tensor_api_to_usd(self, p: np.ndarray, q: np.ndarray) -> None:
-        """Internal method used to synchronize the tensor API to the USD for this object. The Isaac
+        """Internal method used to synchronize the tensor API to the USD for this object. The Isaac.
+
         Sim core API goes through the tensor API, but the tensor API is only synced to USD when the
         object is active. If we receive a measured pose, we want to sync to USD regardless of
         whether the object is active so it's visualized correctly.

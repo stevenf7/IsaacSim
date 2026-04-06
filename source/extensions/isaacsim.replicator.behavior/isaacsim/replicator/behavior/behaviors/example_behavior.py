@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Example standalone behavior script that applies a dummy behavior to prims."""
+
 import carb
 import omni.kit.window.property
 from isaacsim.replicator.behavior.global_variables import EXPOSED_ATTR_NS
@@ -27,8 +29,8 @@ from pxr import Sdf, Usd
 
 
 class ExampleBehavior(BehaviorScript):
-    """
-    Example behavior script that applies a dummy behavior to prims.
+    """Example behavior script that applies a dummy behavior to prims.
+
     The behavior can be applied to multiple prims at once.
     """
 
@@ -70,6 +72,7 @@ class ExampleBehavior(BehaviorScript):
             omni.kit.window.property.get_window().request_rebuild()
 
     def on_play(self):
+        """Handle play event by setting up and optionally applying the behavior."""
         print(f"[ExampleBehavior][{self.prim_path}] on_play()")
         self._setup()
         # Make sure the initial behavior is applied if the interval is larger than 0
@@ -77,6 +80,7 @@ class ExampleBehavior(BehaviorScript):
             self._apply_behavior()
 
     def on_stop(self):
+        """Handle stop event by resetting the behavior state."""
         print(f"[ExampleBehavior][{self.prim_path}] on_stop()")
         self._reset()
 

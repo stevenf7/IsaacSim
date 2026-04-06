@@ -113,7 +113,7 @@ class ColliderModel(TreeViewWithPlacerHolderModel):
         super().destroy()
 
     def get_item_value_model_count(self, item: object) -> int:
-        """The number of columns
+        """The number of columns.
 
         Args:
             item: The collider item to get column count for.
@@ -125,6 +125,7 @@ class ColliderModel(TreeViewWithPlacerHolderModel):
 
     def get_item_value_model(self, item: object, column_id: int) -> ui.AbstractValueModel:
         """Return value model.
+
             It's the object that tracks the specific value.
             In our case we use ui.SimpleStringModel for the first column
             and SimpleFloatModel for the second column.

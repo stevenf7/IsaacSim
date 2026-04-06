@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test the grasping workflow end-to-end."""
+
 import os
 
 import omni.kit.app
@@ -25,12 +27,16 @@ from .common import check_grasp_pose_generation_dependencies
 
 
 class TestGraspingWorkflow((omni.kit.test.AsyncTestCase)):
+    """Test the grasping workflow with configuration and evaluation."""
+
     async def setUp(self):
+        """Set up test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
@@ -38,6 +44,8 @@ class TestGraspingWorkflow((omni.kit.test.AsyncTestCase)):
             await omni.kit.app.get_app().next_update_async()
 
     async def test_grasping_workflow_example(self):
+        """Test the full grasping workflow with config loading and pose evaluation."""
+
         async def run_example_async(
             stage_path,
             config_path=None,

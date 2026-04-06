@@ -40,6 +40,7 @@ class TestEnvironmentGolden(omni.kit.test.AsyncTestCase):
     """Validate environment USD assets against golden reference images."""
 
     async def setUp(self):
+        """Set up test fixtures."""
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
@@ -56,6 +57,7 @@ class TestEnvironmentGolden(omni.kit.test.AsyncTestCase):
         self._usd_selection = omni.usd.get_context().get_selection()
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         await self._wait_for_stage_loading()
 
     async def _wait_for_stage_loading(self):

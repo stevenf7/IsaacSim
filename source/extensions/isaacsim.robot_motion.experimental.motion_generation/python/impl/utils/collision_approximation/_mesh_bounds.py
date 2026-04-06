@@ -37,7 +37,6 @@ def _core_mesh_to_trimesh(input_mesh: Mesh) -> trimesh.Trimesh:
     Raises:
         ValueError: Raised when the input mesh has no triangulated faces or points.
     """
-
     # triangulate the input mesh:
     triangulated_mesh_lists = triangulate_mesh(input_mesh)
     if len(triangulated_mesh_lists) < 1:
@@ -124,7 +123,6 @@ def compute_world_aabb_mesh(input_mesh: Mesh) -> AABB:
         >>> mesh = Mesh("/World/SomeMesh")
         >>> _ = compute_world_aabb_mesh(mesh)  # doctest: +SKIP
     """
-
     # First, apply the translation, rotation and scaling to the points.
     mesh_points_list = input_mesh.get_points(indices=0)
     if len(mesh_points_list) < 1:

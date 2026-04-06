@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test UCX IMU publishing node functionality."""
+
 import struct
 import time
 
@@ -84,9 +86,10 @@ def unpack_imu_message(buffer: object):
 
 
 class TestUCXPublishImu(UCXTestCase):
-    """Test UCX IMU publishing"""
+    """Test UCX IMU publishing."""
 
     async def setUp(self):
+        """Set up a new stage for IMU publishing tests."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
@@ -118,8 +121,7 @@ class TestUCXPublishImu(UCXTestCase):
         return unpack_imu_message(buffer)
 
     async def test_imu_basic(self):
-        """Test basic IMU publishing"""
-
+        """Test basic IMU publishing."""
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},

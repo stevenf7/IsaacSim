@@ -13,13 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""OmniGraph node for toggling surface gripper open and close states."""
+
 from isaacsim.robot.surface_gripper import _surface_gripper as surface_gripper
 
 
 class OgnSurfaceGripper:
+    """OmniGraph node that toggle a surface gripper between open and closed states."""
 
     @staticmethod
     def compute(db) -> bool:
+        """Compute the gripper toggle action based on current gripper status."""
         gripper_interface = surface_gripper.acquire_surface_gripper_interface()
         if db.inputs.enabled and len(db.inputs.SurfaceGripper) > 0:
             input_prim = db.inputs.SurfaceGripper[0].pathString

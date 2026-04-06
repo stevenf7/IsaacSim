@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test UCX joint state publishing node functionality."""
+
 import struct
 import time
 
@@ -82,7 +84,7 @@ def unpack_joint_state_message(buffer: object):
 
 
 class TestUCXPublishJointState(UCXTestCase):
-    """Test UCX joint state publishing"""
+    """Test UCX joint state publishing."""
 
     async def setup_ucx_client_with_listener(self):
         """Setup UCX client to connect to the OmniGraph node's listener.
@@ -103,6 +105,7 @@ class TestUCXPublishJointState(UCXTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     async def setUp(self):
+        """Set up stage with an articulation and UCX joint state publisher."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
@@ -212,7 +215,7 @@ class TestUCXPublishJointState(UCXTestCase):
         )
 
     async def test_joint_state_publisher(self):
-        """Test that joint state messages are published via UCX"""
+        """Test that joint state messages are published via UCX."""
         # Receive joint state message
         timestamp, num_joints, positions, velocities, efforts = await self.receive_joint_state_message()
 
@@ -230,7 +233,7 @@ class TestUCXPublishJointState(UCXTestCase):
         self.assertGreater(timestamp, 0.0, "Timestamp should be positive")
 
     async def test_joint_state_values(self):
-        """Test that joint state values match simulation"""
+        """Test that joint state values match simulation."""
         # Simulate to initialize physics
         await app_utils.update_app_async(steps=30)
 

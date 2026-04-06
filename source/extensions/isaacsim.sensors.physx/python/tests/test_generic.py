@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test generic functionality."""
+
 import numpy as np
 import omni.kit.commands
 import omni.kit.test
@@ -24,8 +26,11 @@ from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestGeneric(omni.kit.test.AsyncTestCase):
+    """Test generic."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         self._sensor = _range_sensor.acquire_generic_sensor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         await omni.usd.get_context().new_stage_async()
@@ -48,10 +53,12 @@ class TestGeneric(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         self._timeline.stop()
         pass
 
     async def add_cube(self, path, size, offset):
+        """Perform add cube operation."""
 
         cubeGeom = UsdGeom.Cube.Define(self._stage, path)
         cubePrim = self._stage.GetPrimAtPath(path)
@@ -64,6 +71,7 @@ class TestGeneric(omni.kit.test.AsyncTestCase):
 
     # Tests a static sensor with a cube in front of it
     async def test_set_pattern_generic(self):
+        """Test set pattern generic."""
 
         # Add a cube
         cubePath = "/World/Cube"
@@ -115,6 +123,7 @@ class TestGeneric(omni.kit.test.AsyncTestCase):
 
     # Tests a static sensor with a cube in front of it
     async def test_offset_generic(self):
+        """Test offset generic."""
 
         # Add a cube
         cubePath = "/World/Cube"

@@ -42,7 +42,6 @@ def get_shape_type(prim_path: str) -> Type[Shape]:
         >>> prim_path = "/World/SomeShape"
         >>> _ = get_shape_type(prim_path)  # doctest: +SKIP
     """
-
     if Sphere.are_of_type(prim_path).numpy().item():
         return Sphere
 

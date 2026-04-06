@@ -65,8 +65,9 @@ from pxr import Sdf, Usd, UsdGeom
 
 
 class Scene(object):
-    """Provide methods to add objects of interest in the stage to retrieve their information and set their
-    reset default state in an easy way
+    """Provide methods to add objects of interest in the stage to retrieve their information and set their.
+
+    reset default state in an easy way.
 
     Example:
 
@@ -539,7 +540,7 @@ class Scene(object):
         return
 
     def compute_object_AABB(self, name: str) -> Tuple[np.ndarray, np.ndarray]:
-        """Compute the bounding box points (minimum and maximum) of a registered object given its name
+        """Compute the bounding box points (minimum and maximum) of a registered object given its name.
 
         .. warning::
 
@@ -578,7 +579,7 @@ class Scene(object):
         return np.array([np.array(prim_range.GetMin()), np.array(prim_range.GetMax())])
 
     def enable_bounding_boxes_computations(self) -> None:
-        """Enable the bounding boxes computations
+        """Enable the bounding boxes computations.
 
         Example:
 
@@ -593,7 +594,7 @@ class Scene(object):
         return
 
     def disable_bounding_boxes_computations(self) -> None:
-        """Disable the bounding boxes computations
+        """Disable the bounding boxes computations.
 
         Example:
 

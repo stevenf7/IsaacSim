@@ -74,7 +74,8 @@ class ProgressRegistry:
     """
 
     class _Event(set):
-        """A list of callable objects. Calling an instance of this will cause a
+        """A list of callable objects. Calling an instance of this will cause a.
+
         call to each item in the list in ascending order by index.
         """
 
@@ -127,11 +128,11 @@ class ProgressRegistry:
         self._steps_dict = {}
 
     def destroy(self):
-        """Called to cancel current search"""
+        """Called to cancel current search."""
         pass
 
     def set_steps(self, steps: dict):
-        """Set the steps
+        """Set the steps.
 
         Args:
             steps: The steps to set in the registry.
@@ -139,7 +140,7 @@ class ProgressRegistry:
         self._steps_dict = steps
 
     def get_progress_by_name(self, step_name: str):
-        """Get the steps
+        """Get the steps.
 
         Args:
             step_name: Name of the step to retrieve.
@@ -152,7 +153,7 @@ class ProgressRegistry:
         return None
 
     def _progress_changed(self, step_name: str, state: object):
-        """Call the event object that has the list of functions
+        """Call the event object that has the list of functions.
 
         Args:
             step_name: Name of the step that changed.
@@ -184,7 +185,7 @@ class ProgressRegistry:
                 self._progress_changed(step_name, state)
 
     def get_active_step(self):
-        """Return the name of the currently active step
+        """Return the name of the currently active step.
 
         Returns:
             Name of the step with ACTIVE state, or None if no step is active.

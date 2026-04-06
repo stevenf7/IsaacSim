@@ -1,3 +1,5 @@
+"""Tests for the conveyor builder UI extension."""
+
 # SPDX-FileCopyrightText: Copyright (c) 2024-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -24,7 +26,10 @@ import omni.timeline
 
 
 class TestConveyorBuilderUI(omni.kit.test.AsyncTestCase):
+    """Test cases for the conveyor builder UI."""
+
     async def setup(self):
+        """Set up test environment and wait for material preloading."""
         # wait for material to be preloaded so create menu is complete & menus don't rebuild during tests
         await omni.kit.material.library.get_mdl_list_async()
         await ui_test.human_delay()
@@ -34,6 +39,7 @@ class TestConveyorBuilderUI(omni.kit.test.AsyncTestCase):
         # self._stage_event_handler = StageEventHandler("omni.kit.stage_templates")
 
     async def tearDown(self):
+        """Tear down test environment and wait for assets to finish loading."""
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
@@ -43,6 +49,7 @@ class TestConveyorBuilderUI(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_loading(self):
+        """Test that the conveyor builder UI can be loaded from the Tools menu."""
         await omni.usd.get_context().new_stage_async()
         menu_widget = ui_test.get_menubar()
         try:

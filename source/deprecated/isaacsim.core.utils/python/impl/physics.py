@@ -14,6 +14,9 @@
 # limitations under the License.
 
 # python
+
+"""Deprecated physics utility functions."""
+
 from typing import Callable, Union
 
 import omni.kit
@@ -27,7 +30,7 @@ from pxr import Sdf
 
 
 def get_rigid_body_enabled(prim_path: str) -> Union[bool, None]:
-    """Get the ``physics:rigidBodyEnabled`` attribute from the USD Prim at the given path
+    """Get the ``physics:rigidBodyEnabled`` attribute from the USD Prim at the given path.
 
     Args:
         prim_path: The path to the USD Prim
@@ -53,7 +56,7 @@ def get_rigid_body_enabled(prim_path: str) -> Union[bool, None]:
 
 
 def set_rigid_body_enabled(_value: bool, prim_path: str):
-    """If it exists, set the ``physics:rigidBodyEnabled`` attribute on the USD Prim at the given path
+    """If it exists, set the ``physics:rigidBodyEnabled`` attribute on the USD Prim at the given path.
 
     .. note::
 

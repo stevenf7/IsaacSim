@@ -24,7 +24,8 @@ import omni.ui as ui
 
 
 class TreeViewIDColumn:
-    """This is the ID (first) column of the TreeView. It's not part of the treeview delegate, because it's cheaper to do
+    """This is the ID (first) column of the TreeView. It's not part of the treeview delegate, because it's cheaper to do.
+
     item remove in this way. And we don't need to update it when the treeview list is smaller than DEFAULT_ITEM_NUM.
     """
 
@@ -323,7 +324,8 @@ class TreeViewWithPlacerHolderModel(ui.AbstractItemModel):
 
 
 class TreeViewWithPlacerHolderDelegate(ui.AbstractItemDelegate):
-    """Delegate is the representation layer. TreeView calls the methods
+    """Delegate is the representation layer. TreeView calls the methods.
+
     of the delegate to create custom widgets for each item.
 
     Args:

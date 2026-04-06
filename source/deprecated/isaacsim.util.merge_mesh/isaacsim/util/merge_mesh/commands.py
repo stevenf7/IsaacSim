@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Command for merging multiple meshes into a single mesh."""
+
 import omni
 
 from .mesh_merger import MeshMerger
@@ -51,6 +53,7 @@ class MergeMeshesCommand(omni.kit.commands.Command):
         ...     combine_materials=True,
         ...     materials_destination="/World/Looks",
         ... )
+
     """
 
     def __init__(
@@ -61,6 +64,16 @@ class MergeMeshesCommand(omni.kit.commands.Command):
         combine_materials: bool = False,
         materials_destination: str = "/World/Looks",
     ) -> None:
+        """Initialize the merge meshes command.
+
+        Args:
+            source: List of prim paths to merge.
+            clear_transform: If True, set merged mesh origin at world origin.
+            deactivate_source: If True, deactivate source prims after merging.
+            combine_materials: If True, redirect all materials to a single folder.
+            materials_destination: Prim path where combined materials will be stored.
+
+        """
         self._stage = omni.usd.get_context().get_stage()
         self.mesh_merger = MeshMerger(self._stage)
         self.mesh_merger.clear_parent_xform = clear_transform
@@ -76,6 +89,7 @@ class MergeMeshesCommand(omni.kit.commands.Command):
 
         Returns:
             The prim path of the merged mesh.
+
         """
         self.mesh_merger.merge_meshes()
 

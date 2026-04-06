@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for UI widget wrapper components."""
+
 # This import is included for visualization of UI elements as demonstrated in testXYPlotWrapper
 
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -42,21 +44,27 @@ from isaacsim.storage.native import get_assets_root_path
 
 
 async def update_stage_async():
+    """Wait for the next stage update."""
     await omni.kit.app.get_app().next_update_async()
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestUI(omni.kit.test.AsyncTestCase):
+    """Test suite for UI widget wrapper components."""
+
     # Before running each test
     async def setUp(self):
+        """Set up the test environment."""
         pass
 
     # After running each test
     async def tearDown(self):
+        """Clean up after each test."""
         await update_stage_async()
         pass
 
     async def _create_window(self, title, width, height):
+        """Create a scrolling window for testing."""
         window = ScrollingWindow(
             title=title,
             width=width,
@@ -68,6 +76,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         return window
 
     async def testButtonWrapper(self):
+        """Test the Button widget wrapper click behavior."""
         # Width and height chosen such that Button is visible in UI Window
         window_title = "UI_Widget_Wrapper_Test_Window_Button_Test"
         width = 500
@@ -94,6 +103,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         window.destroy()
 
     async def testCheckBoxWrapper(self):
+        """Test the CheckBox widget wrapper toggle behavior."""
         # There is buggy behavior of the ui_test.find(...).click() function
         # where it clicks the wrong place on the screen for checkboxes
         # The width and height chosen here happen to get it to click the right part of the screen
@@ -128,6 +138,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         window.destroy()
 
     async def testColorPickerWrapper(self):
+        """Test the ColorPicker widget wrapper color selection."""
         # This test emulates clicking on the widget wrapper and choosing a new color through clicking and through API
         window_title = "UI_Widget_Wrapper_Test_Window_ColorPicker_Test"
         width = 500
@@ -161,6 +172,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         window.destroy()
 
     async def testDropDownWrapperBasicFunctionality(self):
+        """Test the DropDown widget wrapper basic selection functionality."""
         # This test emulates selecting an item from a DropDown and setting one manually using the API
         window_title = "UI_Widget_Wrapper_Test_Window_DropDown_Test"
         width = 500
@@ -212,6 +224,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         window.destroy()
 
     async def testDropDownWrapperArticulationSelection(self):
+        """Test the DropDown widget wrapper with articulation selection."""
         window_title = "UI_Widget_Wrapper_Test_Window_DropDown_Articulation_Selection_Test"
         width = 500
         height = 200
@@ -261,6 +274,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         self.assertTrue(self._no_path_ct == 2)
 
     async def testFloatFieldWrapper(self):
+        """Test the FloatField widget wrapper value changes."""
         # This test emulates modifying a FloatField by dragging
         window_title = "UI_Widget_Wrapper_Test_Window_Float_Test"
         width = 500
@@ -317,6 +331,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         window.destroy()
 
     async def testIntFieldWrapper(self):
+        """Test the IntField widget wrapper value changes."""
         # This test emulates modifying a IntField by dragging
         window_title = "UI_Widget_Wrapper_Test_Window_Int_Test"
         width = 500
@@ -371,6 +386,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         window.destroy()
 
     async def testFrameWrapper(self):
+        """Test the Frame widget wrapper build and rebuild behavior."""
         window_title = "UI_Widget_Wrapper_Test_Window_Frame_Test"
         width = 500
         height = 200
@@ -412,6 +428,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         window.destroy()
 
     async def testScrollingFrameWrapper(self):
+        """Test the ScrollingFrame widget wrapper."""
         window_title = "UI_Widget_Wrapper_Test_Window_ScrollingFrame_Test"
         width = 500
         height = 200
@@ -455,6 +472,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         window.destroy()
 
     async def testStateButtonWrapper(self):
+        """Test the StateButton widget wrapper state toggling."""
         # Width and height chosen such that Button is visible in UI Window
         window_title = "UI_Widget_Wrapper_Test_Window_StateButton_Test"
         width = 500
@@ -523,6 +541,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         window.destroy()
 
     async def testStringFieldWrapper(self):
+        """Test the StringField widget wrapper."""
         # There is no easy way to rigorously test this one using ui_test
         # Significant functionality is missing from this test
 
@@ -547,6 +566,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         window.destroy()
 
     async def testTextBlockWrapper(self):
+        """Test the TextBlock widget wrapper."""
         # TextBlock does not allow user interaction, so this test is complete
 
         window_title = "UI_Widget_Wrapper_Test_Window_TextBlock_Test"
@@ -563,6 +583,7 @@ class TestUI(omni.kit.test.AsyncTestCase):
         window.destroy()
 
     async def testXYPlotWrapper(self):
+        """Test the XYPlot widget wrapper data display."""
         window_title = "UI_Widget_Wrapper_Test_Window_XYPlot_Test"
         width = 800
         height = 1000

@@ -2433,7 +2433,8 @@ class Articulation(XformPrim):
         indices: int | list | np.ndarray | wp.array | None = None,
         dof_indices: int | list | np.ndarray | wp.array | None = None,
     ) -> None:
-        """Set the default state (root positions, orientations, linear velocities and angular velocities,
+        """Set the default state (root positions, orientations, linear velocities and angular velocities,.
+
         and DOF positions, velocities and efforts) of the prims.
 
         Backends: :guilabel:`usd`.
@@ -2529,7 +2530,8 @@ class Articulation(XformPrim):
         wp.array | None,
         wp.array | None,
     ]:
-        """Get the default state (root positions, orientations, linear velocities and angular velocities,
+        """Get the default state (root positions, orientations, linear velocities and angular velocities,.
+
         and DOF positions, velocities and efforts) of the prims.
 
         Backends: :guilabel:`usd`.
@@ -2706,6 +2708,7 @@ class Articulation(XformPrim):
         Returns:
             The drive types. Possible values are ``acceleration`` or ``force`` (shape ``(N, D)``).
             If the drive type is not set, ``None`` is returned.
+
         Raises:
             AssertionError: Wrapped prims are not valid.
 
@@ -3016,7 +3019,8 @@ class Articulation(XformPrim):
         dof_indices: int | list | np.ndarray | wp.array | None = None,
         update_default_gains: bool = True,
     ) -> None:
-        """Set the implicit Proportional-Derivative (PD) controller's gains (stiffnesses and dampings)
+        """Set the implicit Proportional-Derivative (PD) controller's gains (stiffnesses and dampings).
+
         of the degrees of freedom (DOFs) of the prims.
 
         Backends: :guilabel:`tensor`, :guilabel:`usd`.
@@ -3108,7 +3112,8 @@ class Articulation(XformPrim):
         indices: int | list | np.ndarray | wp.array | None = None,
         dof_indices: int | list | np.ndarray | wp.array | None = None,
     ) -> tuple[wp.array, wp.array]:
-        """Get the implicit Proportional-Derivative (PD) controller's gains (stiffnesses and dampings)
+        """Get the implicit Proportional-Derivative (PD) controller's gains (stiffnesses and dampings).
+
         of the degrees of freedom (DOFs) of the prims.
 
         Backends: :guilabel:`tensor`, :guilabel:`usd`.
@@ -3657,8 +3662,9 @@ class Articulation(XformPrim):
         indices: int | list | np.ndarray | wp.array | None = None,
         dof_indices: int | list | np.ndarray | wp.array | None = None,
     ) -> wp.array:
-        """Get the Coriolis and centrifugal compensation forces (DOF forces required to counteract Coriolis and
-        centrifugal forces for the given articulation state) of the prims
+        """Get the Coriolis and centrifugal compensation forces (DOF forces required to counteract Coriolis and.
+
+        centrifugal forces for the given articulation state) of the prims.
 
         Backends: :guilabel:`tensor`.
 
@@ -3702,8 +3708,9 @@ class Articulation(XformPrim):
         indices: int | list | np.ndarray | wp.array | None = None,
         dof_indices: int | list | np.ndarray | wp.array | None = None,
     ) -> wp.array:
-        """Get the gravity compensation forces (DOF forces required to counteract gravitational
-        forces for the given articulation pose) of the prims
+        """Get the gravity compensation forces (DOF forces required to counteract gravitational.
+
+        forces for the given articulation pose) of the prims.
 
         Backends: :guilabel:`tensor`.
 

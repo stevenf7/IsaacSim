@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test for cloth prim."""
+
 import omni.kit.test
 from isaacsim.core.api import World
 from isaacsim.core.api.materials.particle_material import ParticleMaterial
@@ -35,7 +37,10 @@ torch = import_module("torch")
 
 
 class TestSingleClothPrim(CoreTestCase, TestProperties):
+    """Test single cloth prim."""
+
     async def setUp(self):
+        """Set up test environment."""
         await super().setUp()
         World.clear_instance()
         await create_new_stage_async()
@@ -43,11 +48,13 @@ class TestSingleClothPrim(CoreTestCase, TestProperties):
         await self.my_world.initialize_simulation_context_async()
 
     async def tearDown(self):
+        """Tear down test environment."""
         self.my_world.clear_instance()
         await update_stage_async()
         await super().tearDown()
 
     async def test_cloth_prim(self):
+        """Test cloth prim."""
         await update_stage_async()
         self.stage = omni.usd.get_context().get_stage()
         env_path = "/World/Env"

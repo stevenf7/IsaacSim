@@ -28,7 +28,7 @@ from isaacsim.core.simulation_manager import _simulation_manager
 
 class TestAnnotators(omni.kit.test.AsyncTestCase):
     async def setUp(self):
-        """Set up  test environment, to be torn down when done"""
+        """Set up  test environment, to be torn down when done."""
         await omni.usd.get_context().new_stage_async()
         self._render_product_path = prim_utils.get_prim_path(ViewportManager.get_render_product())
 

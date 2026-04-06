@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Bin-filling task definition for the UR10 robot."""
+
 import random
 
 import carb
@@ -162,7 +164,7 @@ class BinFilling(BaseTask):
         return
 
     def post_reset(self) -> None:
-        """Executed after reseting the scene"""
+        """Executed after reseting the scene."""
         self._cubes_to_add = 0
         self._active_cubes = 0
         return
@@ -208,9 +210,10 @@ class BinFilling(BaseTask):
         return
 
     def get_params(self) -> dict:
-        """Task parameters are
+        """Task parameters are.
+
             - bin_name
-            - robot_name
+            - robot_name.
 
         Returns:
             Defined parameters of the task.

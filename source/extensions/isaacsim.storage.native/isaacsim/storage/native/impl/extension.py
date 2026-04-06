@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Extension for Omniverse client authentication in Isaac Sim storage."""
+
 import os
 
 import omni.client

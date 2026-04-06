@@ -14,6 +14,9 @@
 # limitations under the License.
 
 # python
+
+"""Deprecated viewport utility functions."""
+
 from typing import Any, List
 
 # omniverse
@@ -173,7 +176,7 @@ def set_camera_view(
 
 
 def get_viewport_names(usd_context_name: str = None) -> List[str]:
-    """Get list of all viewport names
+    """Get list of all viewport names.
 
     Args:
         usd_context_name:  usd context to use.
@@ -210,7 +213,8 @@ def get_viewport_names(usd_context_name: str = None) -> List[str]:
 
 def get_id_from_index(index: int):
     """Get the viewport id for a given index.
-    This function was added for backwards compatibility for VP2 as viewport IDs are not the same as the viewport index
+
+    This function was added for backwards compatibility for VP2 as viewport IDs are not the same as the viewport index.
 
     Args:
         index: viewport index to retrieve ID for
@@ -248,7 +252,7 @@ def get_id_from_index(index: int):
 
 
 def get_window_from_id(id: object, usd_context_name: str = None):
-    """Find window that matches a given viewport id
+    """Find window that matches a given viewport id.
 
     Args:
         id: Viewport ID to get window for
@@ -289,7 +293,7 @@ def get_window_from_id(id: object, usd_context_name: str = None):
 
 
 def destroy_all_viewports(usd_context_name: str = None, destroy_main_viewport: bool = True):
-    """Destroys all viewport windows
+    """Destroys all viewport windows.
 
     Args:
         usd_context_name: usd context to use.
@@ -349,7 +353,7 @@ def add_aov_to_viewport(viewport_api: object, aov_name: str) -> bool:
 
 
 def get_intrinsics_matrix(viewport_api: Any) -> np.ndarray:
-    """Get intrinsic matrix for the camera attached to a specific viewport
+    """Get intrinsic matrix for the camera attached to a specific viewport.
 
     Args:
         viewport_api: Handle to viewport api
@@ -389,7 +393,6 @@ def set_intrinsics_matrix(viewport_api: Any, intrinsics_matrix: np.ndarray, foca
         ValueError: If intrinsic matrix is not a 3x3 matrix.
         ValueError: If camera prim is not valid
     """
-
     if intrinsics_matrix.shape != (3, 3):
         raise ValueError("intrinsics_matrix must be 3x3")
 
@@ -420,7 +423,7 @@ def set_intrinsics_matrix(viewport_api: Any, intrinsics_matrix: np.ndarray, foca
 
 
 def backproject_depth(depth_image: np.array, viewport_api: Any, max_clip_depth: float) -> np.array:
-    """Backproject depth image to image space
+    """Backproject depth image to image space.
 
     Args:
         depth_image: Depth image buffer
@@ -430,7 +433,6 @@ def backproject_depth(depth_image: np.array, viewport_api: Any, max_clip_depth: 
     Returns:
         3D point cloud with shape (height * width, 3) in camera space.
     """
-
     intrinsics_matrix = get_intrinsics_matrix(viewport_api)
     fx = intrinsics_matrix[0][0]
     fy = intrinsics_matrix[1][1]
@@ -452,7 +454,7 @@ def backproject_depth(depth_image: np.array, viewport_api: Any, max_clip_depth: 
 
 
 def project_depth_to_worldspace(depth_image: np.array, viewport_api: Any, max_clip_depth: float) -> List[carb.Float3]:
-    """Project depth image to world space
+    """Project depth image to world space.
 
     Args:
         depth_image: Depth image buffer

@@ -177,7 +177,7 @@ def _rotation_to_np_quat(r: Gf.Rotation) -> np.ndarray:
 
 
 def prim_get_local_transform(prim: Usd.Prim) -> Tuple[np.ndarray, np.ndarray]:
-    """From: https://docs.omniverse.nvidia.com/dev-guide/latest/programmer_ref/usd/transforms/get-local-transforms.html
+    """From: https://docs.omniverse.nvidia.com/dev-guide/latest/programmer_ref/usd/transforms/get-local-transforms.html.
 
     Get the local transformation of a prim using Xformable.
     See https://openusd.org/release/api/class_usd_geom_xformable.html
@@ -198,7 +198,7 @@ def prim_get_local_transform(prim: Usd.Prim) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def prim_get_world_transform(prim: Usd.Prim) -> Tuple[np.ndarray, np.ndarray]:
-    """From: https://docs.omniverse.nvidia.com/dev-guide/latest/programmer_ref/usd/transforms/get-world-transforms.html
+    """From: https://docs.omniverse.nvidia.com/dev-guide/latest/programmer_ref/usd/transforms/get-world-transforms.html.
 
     Get the world transformation of a prim using Xformable.
     See https://openusd.org/release/api/class_usd_geom_xformable.html

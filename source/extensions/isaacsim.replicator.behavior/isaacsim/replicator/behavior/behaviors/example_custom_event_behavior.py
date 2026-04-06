@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Example behavior script controlled via custom event dispatching."""
+
 import carb
 import carb.events
 import omni.kit.app
@@ -29,6 +31,8 @@ from pxr import Sdf, Usd
 
 
 class ExampleCustomEventBehavior(BehaviorScript):
+    """Example behavior script controlled via custom event dispatching."""
+
     BEHAVIOR_NS = "exampleCustomEventBehavior"
     EVENT_NAME_IN = f"{EXTENSION_NAME}.{BEHAVIOR_NS}.in"
     EVENT_NAME_OUT = f"{EXTENSION_NAME}.{BEHAVIOR_NS}.out"
@@ -92,6 +96,7 @@ class ExampleCustomEventBehavior(BehaviorScript):
             omni.kit.window.property.get_window().request_rebuild()
 
     def setup(self):
+        """Set up the behavior and publish a setup completion event."""
         print(f"[ExampleCustomEventBehavior][{self.prim_path}] setup()")
         self._setup()
         self._event_stream.dispatch_event(
@@ -99,6 +104,7 @@ class ExampleCustomEventBehavior(BehaviorScript):
         )
 
     def update(self):
+        """Apply the behavior and publish an update completion event."""
         print(f"[ExampleCustomEventBehavior][{self.prim_path}] update()")
         self._apply_behavior()
         self._event_stream.dispatch_event(
@@ -106,6 +112,7 @@ class ExampleCustomEventBehavior(BehaviorScript):
         )
 
     def reset(self):
+        """Reset the behavior and publish a reset completion event."""
         print(f"[ExampleCustomEventBehavior][{self.prim_path}] reset()")
         self._reset()
         self._event_stream.dispatch_event(

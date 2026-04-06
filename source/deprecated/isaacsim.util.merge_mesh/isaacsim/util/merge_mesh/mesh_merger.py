@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Mesh merger utility for combining USD mesh geometry and materials."""
 
 import carb
 import omni
@@ -27,9 +28,16 @@ class MeshMerger(object):
 
     Args:
         stage: The USD stage containing the meshes to merge.
+
     """
 
     def __init__(self, stage: object) -> None:
+        """Initialize the mesh merger.
+
+        Args:
+            stage: The USD stage containing the meshes to merge.
+
+        """
         self._clear_parent_xform = False
         self._combine_materials = False
         self._deactivate_source = False
@@ -78,6 +86,7 @@ class MeshMerger(object):
         Args:
             value: If True, the merged mesh origin is at world origin.
                 Otherwise, it keeps the origin at the parent's origin.
+
         """
         self._clear_parent_xform = value
 
@@ -92,6 +101,7 @@ class MeshMerger(object):
 
         Args:
             value: If True, deactivates all source meshes after merge.
+
         """
         self._deactivate_source = value
 
@@ -111,6 +121,7 @@ class MeshMerger(object):
 
         Args:
             value: If True, materials are combined into the materials destination path.
+
         """
         self._combine_materials = value
 
@@ -125,6 +136,7 @@ class MeshMerger(object):
 
         Args:
             value: The prim path where combined materials will be stored.
+
         """
         changed = value != self._materials_destination
         self._materials_destination = value
@@ -144,6 +156,7 @@ class MeshMerger(object):
 
         Args:
             value: The desired prim path for the merged mesh.
+
         """
         self._output_mesh = omni.usd.get_stage_next_free_path(self._stage, value, False)
 
@@ -155,6 +168,7 @@ class MeshMerger(object):
 
         Args:
             mat: The UsdShade.Material to fix connections for.
+
         """
         shader_path = mat.GetPrim().GetChildren()[0].GetPath()
 
@@ -184,6 +198,7 @@ class MeshMerger(object):
         Args:
             selection: List of prim paths to process for merging.
             stage: Optional USD stage to use. If None, uses the current stage.
+
         """
         self._selected_objects = selection
         if stage:

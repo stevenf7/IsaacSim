@@ -207,7 +207,6 @@ class DeformablePrim(XFormPrim):
         Args:
             physics_sim_view: Current physics simulation view.
         """
-
         if physics_sim_view is None:
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
             physics_sim_view.set_subspace_roots("/")
@@ -1151,8 +1150,9 @@ class DeformablePrim(XFormPrim):
         self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
     ) -> np.ndarray | torch.Tensor:
         """Gets the simulation mesh rest points of the deformable bodies indicated by the indices.
+
         rest point are the nodal positions with respect to the local prim transform, while the values returned by get_simulation_mesh_nodal_positions
-        are the nodal positions with respect to the origin
+        are the nodal positions with respect to the origin.
 
         Args:
             indices: Indices to specify which deformable prims to query. Shape (M,).
@@ -1217,7 +1217,8 @@ class DeformablePrim(XFormPrim):
         self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
     ) -> np.ndarray | torch.Tensor:
         """Gets the simulation mesh rest poses for the deformable bodies indicated by the indices.
-        This method will return the 3x3 matrix inv([x1-x0, x2-x0, x3-x0]) where x0, x1, x2, x3 are the rest points of the simulation mesh elements
+
+        This method will return the 3x3 matrix inv([x1-x0, x2-x0, x3-x0]) where x0, x1, x2, x3 are the rest points of the simulation mesh elements.
 
         Args:
             indices: Indices to specify which deformable prims to query. Shape (M,).
@@ -1246,7 +1247,8 @@ class DeformablePrim(XFormPrim):
         self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
     ) -> np.ndarray | torch.Tensor:
         """Gets the collision mesh rest poses for the deformable bodies indicated by the indices.
-        This method will return the 3x3 matrix inv([x1-x0, x2-x0, x3-x0]) where x0, x1, x2, x3 are the rest points of collision mesh elements
+
+        This method will return the 3x3 matrix inv([x1-x0, x2-x0, x3-x0]) where x0, x1, x2, x3 are the rest points of collision mesh elements.
 
         Args:
             indices: Indices to specify which deformable prims to query. Shape (M,).
@@ -1329,7 +1331,8 @@ class DeformablePrim(XFormPrim):
         self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
     ) -> np.ndarray | torch.Tensor:
         """Gets the simulation mesh element-wise second-order deformation gradient tensors for the deformable bodies indicated by the indices.
-        This method will return the simulation mesh element-wise deformation gradient of the deformable bodies
+
+        This method will return the simulation mesh element-wise deformation gradient of the deformable bodies.
 
         Args:
             indices: Indices to specify which deformable prims to query. Shape (M,).
@@ -1414,7 +1417,8 @@ class DeformablePrim(XFormPrim):
         self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
     ) -> np.ndarray | torch.Tensor:
         """Gets the collision mesh element-wise second-order stress tensors for bodies indicated by the indices.
-        This method will return the collision mesh element-wise stresses of the deformable bodies
+
+        This method will return the collision mesh element-wise stresses of the deformable bodies.
 
         Args:
             indices: Indices to specify which deformable prims to query. Shape (M,).

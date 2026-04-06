@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Vive tracker device interface."""
+
 import sys
 from typing import Dict
 

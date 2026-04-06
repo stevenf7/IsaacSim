@@ -235,6 +235,7 @@ class SingleClothPrim(_SinglePrimWrapper):
 
     def set_stretch_stiffness(self, stiffness: Union[np.ndarray, torch.Tensor]):
         """Sets stretch stiffness values of spring constraints in the cloth.
+
             It represents a stiffness for linear springs placed between particles to counteract stretching.
 
         Args:

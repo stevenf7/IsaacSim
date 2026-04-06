@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Stacking controller for Universal Robots arms."""
+
 from typing import List, Optional
 
 import isaacsim.robot.manipulators.controllers as manipulators_controllers

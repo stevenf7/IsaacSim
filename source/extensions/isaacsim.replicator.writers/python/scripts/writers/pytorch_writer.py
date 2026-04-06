@@ -29,7 +29,8 @@ __version__ = "0.0.1"
 
 
 class PytorchWriter(Writer):
-    """A custom writer that uses omni.replicator API to retrieve RGB data via render products
+    """A custom writer that uses omni.replicator API to retrieve RGB data via render products.
+
             and formats them as tensor batches. The writer takes a PytorchListener which is able
             to retrieve pytorch tensors for the user directly after each writer call.
 
@@ -66,7 +67,8 @@ class PytorchWriter(Writer):
         self.version = __version__
 
     def write(self, data: dict):
-        """Sends data captured by the attached render products to the PytorchListener and will write data to
+        """Sends data captured by the attached render products to the PytorchListener and will write data to.
+
         the output directory if specified during initialization.
 
         Args:

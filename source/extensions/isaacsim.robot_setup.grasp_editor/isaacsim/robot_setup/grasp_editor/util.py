@@ -102,7 +102,8 @@ def mask_collisions(prim_path_a: str, prim_path_b: str) -> Usd.Relationship:
 
 
 def convert_prim_to_collidable_rigid_body(prim_path: str, articulation_paths: List[str]) -> str | None:
-    """Convert a prim to a rigid body by applying the UsdPhysics.RigidBodyAPI
+    """Convert a prim to a rigid body by applying the UsdPhysics.RigidBodyAPI.
+
     Also sets physics:kinematicEnabled property to true to prevent falling from gravity without needing a fixed joint.
 
     Args:

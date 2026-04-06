@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for camera sensor warmup behavior."""
+
 from unittest.mock import patch
 
 import omni.replicator.core as rep
@@ -23,12 +25,16 @@ from isaacsim.sensors.camera import Camera
 
 
 class TestCameraSensor(omni.kit.test.AsyncTestCase):
+    """Test cases for CameraSensor."""
+
     async def setUp(self):
+        """Set up test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
@@ -36,6 +42,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     async def test_camera_sensor_no_warmup(self):
+        """Test camera sensor no warmup."""
         # Test constants
         RESOLUTION = (720, 480)
         MAX_WARMUP_FRAMES = 20

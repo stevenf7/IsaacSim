@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""OmniGraph node for ROS 2 RTX lidar publishers."""
+
 from __future__ import annotations
 
 import traceback
@@ -42,6 +44,7 @@ class OgnROS2RtxLidarHelperInternalState(BaseWriterNode):
     """Internal state for the ROS2RtxLidarHelper OmniGraph node."""
 
     def __init__(self) -> None:
+        """Initialize the ROS2 RTX lidar helper internal state."""
         self.viewport = None
         self.viewport_name = ""
         self.resetSimulationTimeOnStop = False
@@ -53,10 +56,12 @@ class OgnROS2RtxLidarHelperInternalState(BaseWriterNode):
         super().__init__(initialize=False)
 
     def custom_reset(self) -> None:
+        """Reset the internal state."""
         cleanup_srtx_state(self)
         super().custom_reset()
 
     def post_attach(self, writer, render_product) -> None:
+        """Configure writer attributes after attaching to a render product."""
         try:
             omni.syntheticdata.SyntheticData.Get().set_node_attributes(
                 "PostProcessDispatch" + "IsaacSimulationGate", {"inputs:step": self.publishStepSize}, render_product
@@ -73,6 +78,7 @@ class OgnROS2RtxLidarHelper:
 
     @staticmethod
     def internal_state() -> OgnROS2RtxLidarHelperInternalState:
+        """Return the internal state object for this node."""
         return OgnROS2RtxLidarHelperInternalState()
 
     @staticmethod
@@ -87,6 +93,7 @@ class OgnROS2RtxLidarHelper:
             depth_range_min, depth_range_max, rotation_rate,
             horizontal_resolution, horizontal_fov.
             Returns None on failure.
+
         """
         if prim.IsA(UsdGeom.Camera):
             carb.log_warn(
@@ -191,6 +198,7 @@ class OgnROS2RtxLidarHelper:
 
     @staticmethod
     def compute(db) -> bool:
+        """Compute the node outputs."""
         state = db.per_instance_state
         if not db.inputs.enabled:
             if state.initialized:
@@ -310,6 +318,7 @@ class OgnROS2RtxLidarHelper:
 
     @staticmethod
     def release_instance(node, graph_instance_id) -> None:
+        """Release resources for a graph instance."""
         try:
             state = OgnROS2RtxLidarHelperInternalState.per_instance_internal_state(node)
         except Exception:

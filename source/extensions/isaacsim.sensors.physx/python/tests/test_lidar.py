@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test lidar functionality."""
+
 import carb
 import numpy as np
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
@@ -28,8 +30,11 @@ from pxr import Gf, PhysicsSchemaTools, Sdf, UsdGeom, UsdLux, UsdPhysics
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestLidar(omni.kit.test.AsyncTestCase):
+    """Test lidar."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         self._lidar = _range_sensor.acquire_lidar_sensor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
         await omni.usd.get_context().new_stage_async()
@@ -56,10 +61,12 @@ class TestLidar(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         self._timeline.stop()
         pass
 
     async def sweep_parameter(self, parameter, min_v, max_v, step):
+        """Perform sweep parameter operation."""
         print(parameter.GetName())
         for value in np.arange(min_v, max_v, step):
             # print(value)
@@ -68,6 +75,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     async def add_cube(self, path, size, offset):
+        """Perform add cube operation."""
 
         cubeGeom = UsdGeom.Cube.Define(self._stage, path)
         cubePrim = self._stage.GetPrimAtPath(path)
@@ -83,6 +91,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
 
     # Tests a static lidar with a cube in front of it
     async def test_static_lidar(self):
+        """Test static lidar."""
         # Plane
         PhysicsSchemaTools.addGroundPlane(
             self._stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5)
@@ -127,6 +136,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
 
     # Tests a lidar on a falling cube, with a cube in front of it after it lands
     async def test_dynamic_lidar(self):
+        """Test dynamic lidar."""
         # Plane
         PhysicsSchemaTools.addGroundPlane(
             self._stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5)
@@ -175,6 +185,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         self.assertEqual(depth[450, 0], 65535)
 
     async def test_parameter_ranges(self):
+        """Test parameter ranges."""
         # Plane
         PhysicsSchemaTools.addGroundPlane(
             self._stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5)
@@ -216,6 +227,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         lidar.GetHighLodAttr().Set(False)
 
     async def test_carter_lidar(self):
+        """Test carter lidar."""
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
@@ -264,6 +276,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
 
     # Tests a static lidar with a cube in front of it and get semantic id for hit points
     async def test_static_lidar_semantic(self):
+        """Test static lidar semantic."""
         # Plane
         PhysicsSchemaTools.addGroundPlane(
             self._stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, 0), Gf.Vec3f(0.5)

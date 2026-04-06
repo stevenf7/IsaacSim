@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Stacking task definition for the Franka robot."""
+
 from typing import Optional
 
 import numpy as np

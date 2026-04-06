@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-RoboFactory Interactive Example
+"""RoboFactory Interactive Example.
 
 This interactive example demonstrates multiple robots performing stacking tasks
 in the same scene using experimental APIs.

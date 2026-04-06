@@ -150,7 +150,8 @@ class SelectionWatch:
             self._on_selection_changed_fn(self._last_selected_prim_paths)
 
     def enable_filtering_checking(self, enable: bool):
-        """It is used to prevent selecting the prims that are filtered out but
+        """It is used to prevent selecting the prims that are filtered out but.
+
             still displayed when such prims have filtered children. When `enable`
             is True, SelectionWatch should consider filtering when changing Kit's
             selection.

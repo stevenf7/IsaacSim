@@ -899,7 +899,6 @@ class TestJointWidget(TableWidget):
 
     def build_tree_view(self):
         """Builds the tree view widget for joint test parameters."""
-
         self.list = ui.TreeView(
             self.model,
             delegate=self.delegate,

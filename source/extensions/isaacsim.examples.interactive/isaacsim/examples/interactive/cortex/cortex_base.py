@@ -35,6 +35,7 @@ class CortexBase(base_sample.BaseSample):
 
     async def load_world_async(self) -> None:
         """Function called when clicking load button.
+
         The difference between this class and Base Sample is that we initialize a CortexWorld specialization.
         """
         if CortexWorld.instance() is None:

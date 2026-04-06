@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for basic UI components and helper callbacks."""
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
@@ -26,18 +27,23 @@ from isaacsim.gui.components.callbacks import (
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestUI(omni.kit.test.AsyncTestCase):
+    """Test suite for basic UI components."""
+
     # Before running each test
     async def setUp(self):
+        """Set up the test environment."""
         await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
     async def tearDown(self):
+        """Clean up after each test."""
         await omni.kit.app.get_app().next_update_async()
         pass
 
     # Run for a single frame and exit
     async def test_ui(self):
+        """Test basic UI frame update."""
         await omni.kit.app.get_app().next_update_async()
         pass
 
@@ -53,11 +59,13 @@ class TestUI(omni.kit.test.AsyncTestCase):
     #         return
 
     async def test_ide(self):
+        """Test opening IDE from the UI."""
         import os
 
         on_open_IDE_clicked(os.path.dirname(__file__), __file__)
 
     # TODO: this test causes TC to hang on exit, disabling
     async def test_docs(self):
+        """Test opening documentation link."""
         # on_open_folder_clicked(os.path.dirname(__file__)) # TODO: this test fails on TC due to permissions
         on_docs_link_clicked("https://docs.omniverse.nvidia.com")

@@ -233,7 +233,7 @@ class Extension(omni.ext.IExt):
         self.on_shutdown()
 
     async def _create_socket(self):
-        """Create a socket server to listen for incoming connections"""
+        """Create a socket server to listen for incoming connections."""
 
         class ServerProtocol(asyncio.Protocol):
             def __init__(self, parent) -> None:
@@ -282,7 +282,7 @@ class Extension(omni.ext.IExt):
             self._server = None
 
     async def _process_code(self, source: str, transport: asyncio.Transport):
-        """Execute the source code in the Kit Python scope and send the result back to the client
+        """Execute the source code in the Kit Python scope and send the result back to the client.
 
         Args:
             source: Python source code to execute.
@@ -305,7 +305,7 @@ class Extension(omni.ext.IExt):
         transport.close()
 
     async def _complete_code_async(self, source: str, transport: asyncio.Transport):
-        """Complete objects under the cursor and send the result back to the client
+        """Complete objects under the cursor and send the result back to the client.
 
         Args:
             source: Python source code for completion.
@@ -324,7 +324,7 @@ class Extension(omni.ext.IExt):
         transport.close()
 
     async def _introspect_code_async(self, source: str, line: int, column: int, transport: asyncio.Transport):
-        """Introspect code under the cursor and send the result back to the client
+        """Introspect code under the cursor and send the result back to the client.
 
         Args:
             source: Python source code for introspection.
@@ -349,7 +349,7 @@ class Extension(omni.ext.IExt):
     # Jupyter Notebook methods
 
     def _launch_jupyter_process(self):
-        """Launch the Jupyter notebook in a separate process"""
+        """Launch the Jupyter notebook in a separate process."""
         # get packages path
         paths = [p for p in sys.path if "pip3-envs" in p]
         packages_txt = os.path.join(self._extension_path, "data", "launchers", "packages.txt")
@@ -380,7 +380,7 @@ class Extension(omni.ext.IExt):
             self._process = None
 
     def _get_display_url(self) -> str:
-        """Get the Jupyter notebook app.display_url
+        """Get the Jupyter notebook app.display_url.
 
         Returns:
             The display URL for the Jupyter notebook or empty string if not available.

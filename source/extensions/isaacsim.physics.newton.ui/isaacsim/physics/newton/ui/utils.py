@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utility classes and functions for Newton physics UI property builders."""
+
 import carb
 import omni.ui as ui
 from omni.kit.property.usd.usd_attribute_model import UsdAttributeModel
@@ -24,6 +26,8 @@ except ImportError:
     from enum import IntEnum
 
     class PrimType(IntEnum):  # Stub matching newton.PrimType values
+        """Stub enum matching newton.PrimType values for use when Newton is not available."""
+
         SCENE = 0
         JOINT = 1
         SHAPE = 2
@@ -128,7 +132,11 @@ def make_hide_cb(own_resolver_name: str, prim_type: "PrimType", key: str | list,
 
 
 class DisableByCallbackBuilder(UsdPropertiesWidgetBuilder):
+    """Widget builder that disable a property based on a callback result."""
+
     def __new__(cls, stage, prop, prim_paths, label_kwargs, widget_kwargs, disable_callback):
+        """Create a new widget with an overlay that disables based on a callback."""
+
         def _tooltip(resolver_name, attr_name):
             if not resolver_name:
                 return ""
@@ -160,7 +168,10 @@ class DisableByCallbackBuilder(UsdPropertiesWidgetBuilder):
 
 
 class HideByCallbackBuilder(UsdPropertiesWidgetBuilder):
+    """Widget builder that hide a property based on a callback result."""
+
     def __new__(cls, stage, prop, prim_paths, label_kwargs, widget_kwargs, hide_callback):
+        """Create a new widget that is hidden when the callback returns True."""
         hidden = hide_callback(stage, prim_paths)
         if not hidden:
             model = cls.build(

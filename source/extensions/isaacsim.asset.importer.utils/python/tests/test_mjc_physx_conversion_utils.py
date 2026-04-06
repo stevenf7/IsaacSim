@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test mjc physx conversion utils functionality."""
+
 import omni.kit.test
 from isaacsim.asset.importer.utils.impl import mjc_to_physx_conversion_utils, urdf_to_mjc_physx_conversion_utils
 from pxr import PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics

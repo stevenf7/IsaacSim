@@ -13,18 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Schema tests."""
+
 import omni.kit.test
 from pxr import Plug, Usd
 
 
 class NewtonSchemaTests(omni.kit.test.AsyncTestCaseFailOnLogError):
+    """Newton schema tests."""
+
     async def setUp(self):
+        """Set up test fixtures."""
         pass
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         pass
 
     async def test_schema_api_types(self):
+        """Test schema api types."""
         physics_plugin = Plug.Registry().GetPluginWithName("newton")
         self.assertTrue(physics_plugin != None)
 

@@ -25,7 +25,7 @@ __version__ = "0.1.0"
 
 
 class DataVisualizationWriter(Writer):
-    """Data Visualization Writer
+    """Data Visualization Writer.
 
     This writer can be used to visualize various annotator data.
 

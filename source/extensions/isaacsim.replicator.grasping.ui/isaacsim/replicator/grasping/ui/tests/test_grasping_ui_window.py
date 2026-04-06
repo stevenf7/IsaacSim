@@ -13,18 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the grasping UI window."""
+
 import omni.kit.app
 import omni.usd
 from omni.ui.tests.test_base import OmniUiTest
 
 
 class TestGraspingUIWindow(OmniUiTest):
+    """Test the grasping UI window lifecycle."""
+
     async def setUp(self):
+        """Set up test environment with a new stage."""
         await omni.kit.app.get_app().next_update_async()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Tear down test environment and wait for asset loading to complete."""
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
@@ -32,4 +38,5 @@ class TestGraspingUIWindow(OmniUiTest):
             await omni.kit.app.get_app().next_update_async()
 
     async def test_window_ui(self):
+        """Verify the grasping UI window renders without errors."""
         await omni.kit.app.get_app().next_update_async()

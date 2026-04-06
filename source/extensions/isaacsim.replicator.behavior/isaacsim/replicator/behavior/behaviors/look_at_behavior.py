@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Behavior script that orients prims to look at a target location or prim."""
 
 import carb
 import omni.kit.window.property
@@ -35,8 +36,8 @@ from pxr import Gf, Sdf, Usd, UsdGeom
 
 
 class LookAtBehavior(BehaviorScript):
-    """
-    Behavior script that orients prims to look at a target location or prim.
+    """Behavior script that orients prims to look at a target location or prim.
+
     The behavior can be applied to multiple prims at once, and the target can be a location or a prim.
     The behavior can be updated every frame or at a specified interval.
     """

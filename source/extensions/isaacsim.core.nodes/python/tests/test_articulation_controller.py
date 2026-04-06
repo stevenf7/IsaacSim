@@ -27,7 +27,7 @@ from isaacsim.storage.native import get_assets_root_path_async
 
 class TestArticulationControllerNode(ogts.OmniGraphTestCase):
     async def setUp(self):
-        """Set up  test environment, to be torn down when done"""
+        """Set up  test environment, to be torn down when done."""
         await omni.usd.get_context().new_stage_async()
         # add franka robot for test
         assets_root_path = await get_assets_root_path_async()
@@ -38,7 +38,7 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
 
     # ----------------------------------------------------------------------
     async def tearDown(self):
-        """Get rid of temporary data used by the test"""
+        """Get rid of temporary data used by the test."""
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")

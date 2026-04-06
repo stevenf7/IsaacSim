@@ -105,7 +105,7 @@ class Extension(omni.ext.IExt):
         self.build_window()
 
     def on_shutdown(self):
-        """Cleanup objects on extension shutdown"""
+        """Cleanup objects on extension shutdown."""
         self._app_event_subscription = None
         remove_menu_items(self._menu_items, "Window")
         self._window = None
@@ -121,7 +121,7 @@ class Extension(omni.ext.IExt):
         gc.collect()
 
     def _menu_callback(self):
-        """Call the UI builder once selected from the drop down menu"""
+        """Call the UI builder once selected from the drop down menu."""
         self.build_window()
 
         # Add Dpads on Top
@@ -134,7 +134,7 @@ class Extension(omni.ext.IExt):
             self._app_event_sub = None
 
     def build_window(self):
-
+        """Build the main UI window for the example extension."""
         # Add Dpads on Top
         self.dpads = []
         for i in range(4):
@@ -176,7 +176,7 @@ class Extension(omni.ext.IExt):
             self._window.visible = True
 
     def build_example_gui_grid(self):
-
+        """Build the example GUI grid with various UI controls."""
         test_gui = {
             "Test_0": {
                 "label": "CB_0",
@@ -428,6 +428,7 @@ class Extension(omni.ext.IExt):
                 ui.Spacer()
 
     def toggle_app_step(self, val=None):
+        """Toggle the app step subscription for time series plot data."""
         print("You've clicked time_series_plot_data:", val)
         if val and self._app_event_sub is None:
             self._app_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
@@ -448,6 +449,7 @@ class Extension(omni.ext.IExt):
         self._models["timeseries_plot"].set_data(*self._plot_data)
 
     def toggle_app_step_1(self, val=None):
+        """Toggle the app step subscription for histogram plot data."""
         print("You've clicked time_series_plot_data:", val)
         if val and self._app_event_sub is None:
             self._app_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
@@ -468,6 +470,7 @@ class Extension(omni.ext.IExt):
         self._models["timeseries_plot_hist"].set_data(*self._plot_data)
 
     def toggle_app_step_2(self, val=None):
+        """Toggle the app step subscription for XYZ plot data."""
         print("You've clicked time_series_plot_data:", val)
         if val and self._app_event_sub is None:
             self._app_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
@@ -654,7 +657,8 @@ class Extension(omni.ext.IExt):
 
     def build_custom_ui(self):
         """This is where the User creates their main GUI.
-        Use a Group Frame to help visually differente user-generated vs core Isaac UI elements
+
+        Use a Group Frame to help visually differente user-generated vs core Isaac UI elements.
         """
         self._my_ui = ui.CollapsableFrame(
             title="My Custom UI",
@@ -696,7 +700,7 @@ class Extension(omni.ext.IExt):
                 )
 
     def _on_dummy_callable_0(self, val: object = None, val2: object = None):
-        """Dummy Callable for testing the GUI
+        """Dummy Callable for testing the GUI.
 
         Args:
             val: First test value.
@@ -706,7 +710,7 @@ class Extension(omni.ext.IExt):
             print("You've cliked DUMMY CALLABLE 0:", val)
 
     def _on_dummy_callable_1(self, val: object = None):
-        """Dummy Callable for testing the GUI
+        """Dummy Callable for testing the GUI.
 
         Args:
             val: Test value.
@@ -715,7 +719,7 @@ class Extension(omni.ext.IExt):
             print("You've cliked DUMMY CALLABLE 1:", val)
 
     def _on_dummy_callable_2(self, val: object = None):
-        """Dummy Callable for testing the GUI
+        """Dummy Callable for testing the GUI.
 
         Args:
             val: Value passed from the GUI element callback.
@@ -724,7 +728,7 @@ class Extension(omni.ext.IExt):
             print("You've cliked DUMMY CALLABLE 2:", val)
 
     def _on_dummy_callable_3(self, val: object = None):
-        """Dummy Callable for testing the GUI
+        """Dummy Callable for testing the GUI.
 
         Args:
             val: Value passed from the GUI element callback.
@@ -733,7 +737,7 @@ class Extension(omni.ext.IExt):
             print("You've cliked DUMMY CALLABLE 3. Item Selected: ", val)
 
     def _on_dummy_callable_4(self, model: object, button: object, val: object = None):
-        """Dummy Callable for testing the GUI
+        """Dummy Callable for testing the GUI.
 
         Args:
             model: The model associated with the GUI element.

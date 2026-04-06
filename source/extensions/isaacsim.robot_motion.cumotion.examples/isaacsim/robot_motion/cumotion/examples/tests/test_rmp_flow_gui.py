@@ -34,12 +34,14 @@ class TestRmpFlowGui(omni.kit.test.AsyncTestCase):
     """Test suite for the RmpFlow GUI."""
 
     async def setUp(self):
+        """Set up the UI builder before each test."""
         await omni.kit.app.get_app().next_update_async()
         self.ui_builder = UIBuilder()
         self.ui_builder.build_ui()
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Clean up the UI builder after each test."""
         self.ui_builder.cleanup()
         await omni.kit.app.get_app().next_update_async()
 
@@ -54,7 +56,6 @@ class TestRmpFlowGui(omni.kit.test.AsyncTestCase):
 
     async def test_load_button_creates_cube_and_articulation(self):
         """After calling load button, there should be a cube and an Articulation added to the stage."""
-
         # There is initially no controller:
         self.assertIsNone(self.ui_builder._scenario._controller)
 
@@ -98,7 +99,6 @@ class TestRmpFlowGui(omni.kit.test.AsyncTestCase):
 
     async def test_button_clicks(self):
         """After calling reset button, the scenario should be reset."""
-
         # First, load the scenario
         self.ui_builder._load_btn.trigger_click()
         await omni.kit.app.get_app().next_update_async()

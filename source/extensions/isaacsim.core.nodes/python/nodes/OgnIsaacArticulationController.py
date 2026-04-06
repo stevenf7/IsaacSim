@@ -20,9 +20,7 @@ from isaacsim.core.nodes.ogn.OgnIsaacArticulationControllerDatabase import OgnIs
 
 
 class OgnIsaacArticulationControllerInternalState(BaseResetNode):
-    """
-    nodes for moving an articulated robot with joint commands
-    """
+    """nodes for moving an articulated robot with joint commands."""
 
     def __init__(self):
         self.prim_path = None
@@ -74,9 +72,7 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
 
 
 class OgnIsaacArticulationController:
-    """
-    nodes for moving an articulated robot with joint commands
-    """
+    """nodes for moving an articulated robot with joint commands."""
 
     @staticmethod
     def init_instance(node, graph_instance_id):

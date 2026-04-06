@@ -161,22 +161,26 @@ def normalise_quat_in_pose(pose: object):
 
 @torch.jit.script
 def tf_inverse(q, t):
+    """Compute the inverse of a transform given by quaternion and translation."""
     q_inv = quat_conjugate(q)
     return q_inv, -quat_apply(q_inv, t)
 
 
 @torch.jit.script
 def tf_apply(q, t, v):
+    """Apply a rigid transform (quaternion + translation) to a vector."""
     return quat_apply(q, v) + t
 
 
 @torch.jit.script
 def tf_vector(q, v):
+    """Rotate a vector by a quaternion without translation."""
     return quat_apply(q, v)
 
 
 @torch.jit.script
 def tf_combine(q1, t1, q2, t2):
+    """Combine two rigid transforms into a single transform."""
     return quat_mul(q1, q2), quat_apply(q1, t2) + t1
 
 

@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated extension utility functions."""
+
 import omni.kit.app
 
 
 def get_extension_id(extension_name: str) -> str:
-    """Get extension id for a loaded extension
+    """Get extension id for a loaded extension.
 
     Args:
         extension_name: name of the extension
@@ -39,7 +41,7 @@ def get_extension_id(extension_name: str) -> str:
 
 
 def get_extension_path(ext_id: str) -> str:
-    """Get extension path for a loaded extension by its full id
+    """Get extension path for a loaded extension by its full id.
 
     Args:
         ext_id: full id of extension
@@ -62,7 +64,7 @@ def get_extension_path(ext_id: str) -> str:
 
 
 def get_extension_path_from_name(extension_name: str) -> str:
-    """Get extension path for a loaded extension by its name
+    """Get extension path for a loaded extension by its name.
 
     Args:
         extension_name: name of the extension

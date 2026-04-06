@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for camera sensor functionality."""
+
 import numpy as np
 import omni.kit.app
 import omni.kit.test
@@ -36,11 +38,13 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
     NUM_WARMUP_FRAMES = 10  # Frame dict data availability warmup frames, depends on the camera frequency
 
     async def setUp(self):
+        """Set up test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         await create_new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
         omni.usd.get_context().close_stage()

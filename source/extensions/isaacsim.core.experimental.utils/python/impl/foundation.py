@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Functions for working with USD/USDRT foundations, e.g.: Scene Description Foundations (Sdf), Graphics Foundations (Gf).
-"""
+"""Functions for working with USD/USDRT foundations, e.g.: Scene Description Foundations (Sdf), Graphics Foundations (Gf)."""
 
 from __future__ import annotations
 
@@ -85,7 +83,7 @@ def resolve_value_type_name(
         ValueError: If the backend is not supported.
         ValueError: If the type name is invalid.
 
-     Example:
+    Example:
 
     .. code-block:: python
 

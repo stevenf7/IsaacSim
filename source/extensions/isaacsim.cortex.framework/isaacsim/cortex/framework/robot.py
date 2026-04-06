@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module provides the base classes for representing robots and building their command APIs by
+"""This module provides the base classes for representing robots and building their command APIs by.
+
 adding commanders.
 
 The Cortex collaborative systems functional pipeline includes:
@@ -50,7 +51,7 @@ provide some base classes with built in common commanders such as MotionCommande
 some robot-specific cortex robot classes with full collections of relevant commanders, such as
 CortexFranka and CortexUr10.
 
-See also:
+See Also:
 - commander.py for the Commander base class interface.
 - motion_commander.py and GripperCommander (below) for example commanders.
 - standalone_examples/api/isaacsim.cortex.framework for complete examples.
@@ -77,7 +78,8 @@ from isaacsim.robot_motion.motion_generation.lula.motion_policies import RmpFlow
 
 
 class CortexGripper(Commander):
-    """Base class for a commander representing a parallel gripper. Creates a command API mimicking
+    """Base class for a commander representing a parallel gripper. Creates a command API mimicking.
+
     standard parallel gripper commands.
 
     The two main commands are:
@@ -139,7 +141,8 @@ class CortexGripper(Commander):
 
     @abstractmethod
     def joints_to_width(self, joint_positions: Sequence[float]) -> float:
-        """Implemented by the deriving class to define how to map the joints in the articulation
+        """Implemented by the deriving class to define how to map the joints in the articulation.
+
         subset to the width value.
 
         Args:
@@ -152,7 +155,8 @@ class CortexGripper(Commander):
 
     @abstractmethod
     def width_to_joints(self, width: float) -> np.ndarray:
-        """Implemented by the deriving class to define how to map the width value to the joints in
+        """Implemented by the deriving class to define how to map the width value to the joints in.
+
         the articulation subset.
 
         Note that this is a one to many map, but we assume the width value is a generalized
@@ -193,7 +197,8 @@ class CortexGripper(Commander):
         self.send(CortexGripper.Command(self.closed_width, speed=speed))
 
     def close_to_grasp(self, speed: Optional[float] = 0.2, force: Optional[float] = 40.0) -> None:
-        """Close-to-grasp command: Close the gripper toward the closed width until a desired force
+        """Close-to-grasp command: Close the gripper toward the closed width until a desired force.
+
         is measured.
 
         Note that in simulation, this command is processed the same as close(), but the physics
@@ -265,7 +270,8 @@ class CortexGripper(Commander):
         self.articulation_subset.apply_action(joint_positions=self.width_to_joints(width_action))
 
     def _get_applied_width_action(self) -> float:
-        """Helper method to retrieve the latest applied width action from the underlying
+        """Helper method to retrieve the latest applied width action from the underlying.
+
         articulation subset.
 
         Returns:
@@ -317,7 +323,8 @@ class FrankaGripper(CortexGripper):
 
 
 class CortexRobot(CommandableArticulation):
-    """A robot is an Articulation with a collection of commanders commanding in combination the
+    """A robot is an Articulation with a collection of commanders commanding in combination the.
+
     collection of all joints.
 
     This class provides an API for adding commanders that are made available via named attributes.
@@ -369,7 +376,8 @@ class CortexRobot(CommandableArticulation):
         self.commanders = OrderedDict()
 
     def add_commander(self, name: str, commander: Commander, make_attr: Optional[bool] = True) -> None:
-        """Add a commander with the specified name. If make_attr is specified (default), it
+        """Add a commander with the specified name. If make_attr is specified (default), it.
+
         additionally creates an attribute with the name given in the name field for referencing the
         commander.
 
@@ -388,7 +396,8 @@ class CortexRobot(CommandableArticulation):
         self.commanders[name] = commander
 
     def set_commanders_step_dt(self, commanders_step_dt: float) -> None:
-        """Set the internal dt member which is passed to each commander during their step(dt)
+        """Set the internal dt member which is passed to each commander during their step(dt).
+
         calls.
 
         Args:
@@ -397,7 +406,7 @@ class CortexRobot(CommandableArticulation):
         self.commanders_step_dt = commanders_step_dt
 
     def flag_commanders_for_reset(self) -> None:
-        """Flag the commanders to be reset on the next call to step_commanders()"""
+        """Flag the commanders to be reset on the next call to step_commanders()."""
         self.commanders_reset_needed = True
 
     def step_commanders(self) -> None:
@@ -425,12 +434,14 @@ class CortexRobot(CommandableArticulation):
 
 
 class DirectSubsetCommander(Commander):
-    """A simple commander which just passes a position and velocity joint-space command directly
+    """A simple commander which just passes a position and velocity joint-space command directly.
+
     through to the commanded joints as defined by the underlying articulation subset.
     """
 
     class Command:
-        """The command is the desired joint positons and velocities for the commanded joints
+        """The command is the desired joint positons and velocities for the commanded joints.
+
         defined by the underlying articulation subset.
 
         Args:
@@ -443,7 +454,8 @@ class DirectSubsetCommander(Commander):
             self.qd = qd
 
     def step(self, dt: float) -> None:
-        """Step the commander by passing the command directly into the underlying articulation
+        """Step the commander by passing the command directly into the underlying articulation.
+
         subset.
 
         Args:
@@ -454,7 +466,8 @@ class DirectSubsetCommander(Commander):
 
 
 class MotionCommandedRobot(CortexRobot):
-    """A motion commanded robot is a Cortex robot with a built in motion commander accessible
+    """A motion commanded robot is a Cortex robot with a built in motion commander accessible.
+
     both as arm_commander and through a semantically nice 'arm' member.
 
     Args:
@@ -519,7 +532,8 @@ class MotionCommandedRobot(CortexRobot):
         self.add_commander("arm", self.arm_commander)
 
     def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
-        """On initialization, gravity is disabled (mimicking gravity compensation) and the default
+        """On initialization, gravity is disabled (mimicking gravity compensation) and the default.
+
         joints state is set to the motion policy's default cspace position target (its default posture
         config).
 
@@ -535,7 +549,8 @@ class MotionCommandedRobot(CortexRobot):
 
     @property
     def default_config(self) -> np.ndarray:
-        """Accessor for the default posture config from the underlying motion policy. All
+        """Accessor for the default posture config from the underlying motion policy. All.
+
         dimensions not commanded by the motion commander are set to 0.
 
         Returns: The default posture config as a full dimensional vector of joints.
@@ -566,7 +581,8 @@ class MotionCommandedRobot(CortexRobot):
 
 
 class CortexFranka(MotionCommandedRobot):
-    """The Cortex Franka contains commanders for commanding the end-effector (a MotionCommander
+    """The Cortex Franka contains commanders for commanding the end-effector (a MotionCommander.
+
     governing the full arm) and the gripper (a FrankaGripper governing the fingers).
 
     Each of these commanders are accessible via members arm and gripper.
@@ -609,8 +625,7 @@ class CortexFranka(MotionCommandedRobot):
         self.add_commander("gripper", self.gripper_commander)
 
     def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
-        """Initializes using MotionCommandedRobot's initialize() and also adds custom setting of the
-        gains.
+        """Initialize using MotionCommandedRobot and add custom gain settings.
 
         Users generally don't need to call this method explicitly. It's handled automatically on
         reset() when this robot is added to the CortexWorld.
@@ -662,8 +677,7 @@ def add_franka_to_stage(
 
 
 class CortexUr10(MotionCommandedRobot):
-    """The Cortex Franka contains commanders for commanding the end-effector (a MotionCommander
-    governing the full arm) and the gripper (a FrankaGripper governing the fingers).
+    """Cortex UR10 robot with commanders for the end-effector and suction gripper.
 
     Each of these commanders are accessible via members commander and gripper.
 
@@ -703,8 +717,7 @@ class CortexUr10(MotionCommandedRobot):
         )
 
     def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
-        """Initializes using MotionCommandedRobot's initialize() and also initializes the suction
-        gripper.
+        """Initialize using MotionCommandedRobot and also initialize the suction gripper.
 
         Users generally don't need to call this method explicitly. It's handled automatically on
         reset() when this robot is added to the CortexWorld.
@@ -716,7 +729,7 @@ class CortexUr10(MotionCommandedRobot):
         self.suction_gripper.initialize(physics_sim_view=physics_sim_view, articulation_num_dofs=self.num_dof)
 
     def post_reset(self) -> None:
-        """Add a post_reset() call on the suction gripper to the post_reset().
+        """Add a ``post_reset()`` call on the suction gripper.
 
         Users generally don't need to call this method explicitly. It's handled automatically on
         reset() when this robot is added to the CortexWorld.

@@ -77,7 +77,6 @@ class Extension(omni.ext.IExt):
         Args:
             ext_id: Extension identifier string.
         """
-
         self.ext_id = ext_id
         self._usd_context = omni.usd.get_context()
 

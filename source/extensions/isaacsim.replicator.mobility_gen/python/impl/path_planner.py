@@ -98,7 +98,6 @@ def generate_paths(start: Tuple[int, int], freespace: np.ndarray) -> GeneratePat
     Returns:
         Path generation results containing visited nodes, distances, and predecessor information.
     """
-
     start = np.array([start[0], start[1]], dtype=np.int64)
     freespace = freespace.astype(np.uint8)
     visited = np.zeros(freespace.shape, dtype=np.uint8)

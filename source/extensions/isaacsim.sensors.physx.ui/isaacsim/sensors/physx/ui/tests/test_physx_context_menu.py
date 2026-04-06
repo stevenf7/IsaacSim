@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test physx context menu functionality."""
+
 import carb
 import omni.kit.app
 import omni.kit.ui_test as ui_test
@@ -43,6 +45,8 @@ LIGHTBEAM_SENSORS = {
 
 
 class TestPhysxContextMenu(MenuUITestCase):
+    """Test physx context menu."""
+
     async def test_physx_sensors_context_menu_count(self):
         """Test all the PhysX sensors are added to context menus correctly."""
         viewport_context_menu = await self.get_viewport_context_menu()

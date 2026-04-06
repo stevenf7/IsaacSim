@@ -13,11 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test suite for verifying Newton pip archive imports."""
+
 import omni.kit.test
 
 
 class TestPipArchive(omni.kit.test.AsyncTestCase):
+    """Test that all Newton pip archive packages can be imported."""
+
     async def test_import_all(self):
+        """Test importing all Newton-related packages."""
         import cbor2
         import mujoco
         import mujoco_warp

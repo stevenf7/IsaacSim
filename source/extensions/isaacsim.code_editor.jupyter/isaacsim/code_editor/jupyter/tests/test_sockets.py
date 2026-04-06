@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for Jupyter socket communication."""
+
 import asyncio
 import json
 
@@ -23,16 +25,21 @@ message = "Hello World!"
 
 
 class TestSockets(omni.kit.test.AsyncTestCase):
+    """Test suite for Jupyter socket communication."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures before each test."""
         settings = carb.settings.get_settings()
         self._socket_port = settings.get("/exts/isaacsim.code_editor.jupyter/port")
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures after each test."""
         pass
 
     async def test_tcp_socket(self):
+        """Test TCP socket code execution and response parsing."""
         # open TCP socket (code execution)
         reader, writer = await asyncio.open_connection("127.0.0.1", self._socket_port)
         writer.write(f'print("{message}")'.encode())

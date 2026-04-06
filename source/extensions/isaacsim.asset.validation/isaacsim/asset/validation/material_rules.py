@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Validation rules for USD material organization."""
+
+
 from collections.abc import Iterator
 
 import omni.asset_validator.core as av_core

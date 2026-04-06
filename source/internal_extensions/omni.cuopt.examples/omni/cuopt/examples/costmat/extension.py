@@ -507,9 +507,7 @@ class cuOptSampleExtension(omni.ext.IExt):
             current_index += 1
 
     def distance_matrix_from_point_list(self, point_list, scale):
-        """
-        Create a distance matrix from a point list
-        """
+        """Create a distance matrix from a point list."""
         return scale * squareform(pdist(point_list, metric="euclidean"))
 
     def get_routes(self, raw_routes):

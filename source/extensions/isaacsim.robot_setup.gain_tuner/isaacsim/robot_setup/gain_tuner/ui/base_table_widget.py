@@ -287,7 +287,7 @@ class TableModel(ui.AbstractItemModel):
             return item.get_item_value(column_id)
 
     def get_item_value_model_count(self, item: object) -> int:
-        """The number of columns
+        """The number of columns.
 
         Args:
             item: The item to get the column count for.
@@ -299,6 +299,7 @@ class TableModel(ui.AbstractItemModel):
 
     def get_item_value_model(self, item: object, column_id: int):
         """Return value model.
+
             It's the object that tracks the specific value.
 
         Args:

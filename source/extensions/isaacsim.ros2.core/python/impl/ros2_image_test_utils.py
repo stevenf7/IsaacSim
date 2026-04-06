@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utility functions for creating ROS 2 image messages in tests."""
+
 import re
 
 import numpy as np

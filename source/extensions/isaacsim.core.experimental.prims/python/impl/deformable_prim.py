@@ -468,7 +468,8 @@ class DeformablePrim(XformPrim):
     def get_element_indices(
         self, *, indices: int | list | np.ndarray | wp.array | None = None
     ) -> tuple[wp.array, wp.array, wp.array]:
-        """Get the element (triangular faces for surface, tetrahedrons for volume) indices
+        """Get the element (triangular faces for surface, tetrahedrons for volume) indices.
+
         of the simulation, collision and rest meshes of the prims.
 
         Backends: :guilabel:`tensor`. |br|

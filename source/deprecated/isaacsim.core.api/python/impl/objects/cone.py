@@ -30,7 +30,7 @@ from pxr import Gf, UsdGeom
 
 
 class VisualCone(SingleGeometryPrim):
-    """High level wrapper to create/encapsulate a visual cone
+    """High level wrapper to create/encapsulate a visual cone.
 
     .. note::
 
@@ -132,7 +132,7 @@ class VisualCone(SingleGeometryPrim):
         return
 
     def set_radius(self, radius: float) -> None:
-        """Set the base radius
+        """Set the base radius.
 
         Args:
             radius: base radius
@@ -147,7 +147,7 @@ class VisualCone(SingleGeometryPrim):
         return
 
     def get_radius(self) -> float:
-        """Get the base radius
+        """Get the base radius.
 
         Returns:
             base radius
@@ -162,7 +162,7 @@ class VisualCone(SingleGeometryPrim):
         return self.geom.GetRadiusAttr().Get()
 
     def set_height(self, height: float) -> None:
-        """Set the cone height
+        """Set the cone height.
 
         Args:
             height: cone height
@@ -177,7 +177,7 @@ class VisualCone(SingleGeometryPrim):
         return
 
     def get_height(self) -> float:
-        """Get the cone height
+        """Get the cone height.
 
         Returns:
             cone height
@@ -193,7 +193,7 @@ class VisualCone(SingleGeometryPrim):
 
 
 class FixedCone(VisualCone):
-    """High level wrapper to create/encapsulate a fixed cone
+    """High level wrapper to create/encapsulate a fixed cone.
 
     .. note::
 
@@ -289,7 +289,7 @@ class FixedCone(VisualCone):
 
 
 class DynamicCone(SingleRigidPrim, FixedCone):
-    """High level wrapper to create/encapsulate a dynamic cone
+    """High level wrapper to create/encapsulate a dynamic cone.
 
     .. note::
 

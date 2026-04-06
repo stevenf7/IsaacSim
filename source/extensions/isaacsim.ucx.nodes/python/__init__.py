@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-UCX Bridge Extension
+"""UCX Bridge Extension.
 
 This module provides Python bindings for UCX (Unified Communication X) functionality
 in Isaac Sim, enabling high-performance, low-latency communication for distributed

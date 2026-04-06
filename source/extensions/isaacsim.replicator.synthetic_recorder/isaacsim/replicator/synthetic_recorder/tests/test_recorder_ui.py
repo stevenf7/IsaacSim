@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the Synthetic Data Recorder UI interactions."""
+
 import os
 import shutil
 
@@ -57,11 +59,13 @@ class TestRecorderUI(omni.kit.test.AsyncTestCase):
     """Test the Synthetic Data Recorder through UI interactions."""
 
     async def setUp(self):
+        """Set up a new stage before each test."""
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Stop timeline, close stage, and wait for assets after each test."""
         timeline = omni.timeline.get_timeline_interface()
         if timeline.is_playing():
             timeline.stop()
@@ -74,6 +78,7 @@ class TestRecorderUI(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     async def test_ui_record_rgb_no_control_timeline(self):
+        """Test recording RGB output through UI without timeline control."""
         out_dir = os.path.join(os.getcwd(), OUT_DIR_RGB_NO_CONTROL_TIMELINE)
         if os.path.exists(out_dir):
             shutil.rmtree(out_dir)
@@ -189,6 +194,7 @@ class TestRecorderUI(omni.kit.test.AsyncTestCase):
         )
 
     async def test_ui_record_depth_control_timeline(self):
+        """Test recording depth output through UI with timeline control enabled."""
         # This test mirrors the RGB test with only two intentional differences:
         # - control timeline enabled
         # - depth annotator enabled (no RGB)

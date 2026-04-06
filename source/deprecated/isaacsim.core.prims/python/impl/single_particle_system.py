@@ -369,7 +369,8 @@ class SingleParticleSystem:
         self._particle_system_view.set_solver_position_iteration_counts(value)
 
     def set_max_depenetration_velocity(self, value: float) -> None:
-        """Set the maximum velocity permitted to be introduced by the solver to
+        """Set the maximum velocity permitted to be introduced by the solver to.
+
             depenetrate intersecting particles.
 
         Args:

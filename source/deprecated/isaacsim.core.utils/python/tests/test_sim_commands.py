@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for simulation command utilities."""
+
 import asyncio
 import gc
 
@@ -30,8 +32,11 @@ from isaacsim.storage.native import get_assets_root_path_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
+    """Test cases for IsaacSimCommands."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()
@@ -45,6 +50,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
@@ -55,6 +61,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_spawn_command(self):
+        """Test spawn command."""
         articulation_usd = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         static_usd = self._assets_root_path + "/Isaac/Props/KLT_Bin/small_KLT.usd"
         physics_usd = self._assets_root_path + "/Isaac/Props/Blocks/basic_block.usd"
@@ -88,6 +95,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
         )
 
     async def test_teleport_command(self):
+        """Test teleport command."""
         articulation_usd = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         omni.kit.commands.execute(
             "IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka", translation=None, rotation=None
@@ -101,6 +109,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
         )
 
     async def test_scale(self):
+        """Test scale."""
         from pxr import Gf
 
         articulation_usd = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
@@ -117,6 +126,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
         )
 
     async def test_destroy_command(self):
+        """Test destroy command."""
         articulation_usd = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         omni.kit.commands.execute("IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka")
         [await omni.kit.app.get_app().next_update_async() for _ in range(10)]

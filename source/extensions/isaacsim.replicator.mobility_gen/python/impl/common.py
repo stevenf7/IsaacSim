@@ -152,7 +152,6 @@ class Module:
         Returns:
             The dictionary of all nested modules with expanded names as keys.
         """
-
         named_modules = OrderedDict()
 
         named_modules[prefix] = self
@@ -180,7 +179,6 @@ class Module:
         Returns:
             The dictionary of all nested buffers with expanded names as keys.
         """
-
         named_buffers = OrderedDict()
 
         for name, module in self.named_modules(prefix).items():
@@ -328,7 +326,7 @@ class Module:
             child.enable_normals_rendering()
 
     def write_replay_data(self):
-        """Write module state to Isaac Sim for replay
+        """Write module state to Isaac Sim for replay.
 
         This method writes the module state to Isaac Sim for replaying.
         It is intended to be used along with module.load_state_dict(...)
@@ -359,7 +357,7 @@ class Module:
             child.write_replay_data()
 
     def update_state(self):
-        """Update the module state by reading data from Isaac Sim
+        """Update the module state by reading data from Isaac Sim.
 
         This method reads data from Isaac Sim to update the module state.
 

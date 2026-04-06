@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Base behavior script with common functionality for exposing variables as USD attributes."""
+
 import omni.kit.window.property
 from isaacsim.replicator.behavior.utils.behavior_utils import (
     check_if_exposed_variables_should_be_removed,
@@ -27,8 +29,7 @@ from .global_variables import EXPOSED_ATTR_NS
 
 
 class BaseBehavior(BehaviorScript):
-    """
-    Base class for behavior scripts, providing common functionality for exposing variables as USD attributes.
+    """Base class for behavior scripts, providing common functionality for exposing variables as USD attributes.
 
     Attributes:
         BEHAVIOR_NS (str): Namespace for the behavior, to be defined by subclasses.

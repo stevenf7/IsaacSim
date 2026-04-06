@@ -51,7 +51,6 @@ class ReplayFollowTargetExtension(omni.ext.IExt):
         Args:
             ext_id: The extension identifier string.
         """
-
         self.example_name = "Replay Follow Target"
         self.category = "Manipulation"
 

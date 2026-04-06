@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Stacking controller for the Franka robot."""
+
 from typing import List
 
 import isaacsim.robot.manipulators.controllers as manipulators_controllers

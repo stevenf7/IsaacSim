@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Validation rules for physics joint transforms and states."""
+
+
 import omni.asset_validator.core as av_core
 from omni.asset_validator.core import registerRule
 from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
@@ -49,6 +52,7 @@ class JointHasCorrectTransformAndState(av_core.BaseRuleChecker):
     }
 
     def CheckPrim(self, prim: Usd.Prim) -> None:
+        """Check if a prim has correct joint transform and state configuration."""
         # print(f"JointHasCorrectTransform: {prim.GetPath()}")
 
         joint = UsdPhysics.Joint(prim)

@@ -87,7 +87,6 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
 
     async def test_enable_physics_collision_convex(self):
         """Test enabling physics collision with convex hull approximation."""
-
         ###
         import omni
         from omni.physx.scripts import utils

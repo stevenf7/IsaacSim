@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+"""Test for particle material view."""
+
 import numpy as np
 
 # NOTE:
@@ -31,7 +33,10 @@ torch = import_module("torch")
 
 
 class TestParticleMaterialView(CoreTestCase):
+    """Test particle material view."""
+
     async def setUp(self):
+        """Set up test environment."""
         await super().setUp()
         World.clear_instance()
         await create_new_stage_async()
@@ -42,10 +47,12 @@ class TestParticleMaterialView(CoreTestCase):
         pass
 
     async def tearDown(self):
+        """Tear down test environment."""
         await super().tearDown()
         pass
 
     async def test_particle_material_view(self):
+        """Test particle material view."""
         self.isclose = torch.isclose
         self._array_container = lambda x: torch.tensor(x, device=self._device, dtype=torch.float32)
         self.stage = get_current_stage()
@@ -77,6 +84,7 @@ class TestParticleMaterialView(CoreTestCase):
         await self.my_world.stop_async()
 
     async def friction_test(self):
+        """Friction test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_material_view.get_frictions(indices)
@@ -93,6 +101,7 @@ class TestParticleMaterialView(CoreTestCase):
         print(expected_shape)
 
     async def damping_test(self):
+        """Damping test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_material_view.get_dampings(indices)
@@ -109,6 +118,7 @@ class TestParticleMaterialView(CoreTestCase):
         print(expected_shape)
 
     async def damping_test(self):
+        """Damping test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_material_view.get_dampings(indices)
@@ -125,6 +135,7 @@ class TestParticleMaterialView(CoreTestCase):
         print(expected_shape)
 
     async def lift_test(self):
+        """Lift test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_material_view.get_lifts(indices)
@@ -141,6 +152,7 @@ class TestParticleMaterialView(CoreTestCase):
         print(expected_shape)
 
     async def drag_test(self):
+        """Drag test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_material_view.get_drags(indices)
@@ -157,6 +169,7 @@ class TestParticleMaterialView(CoreTestCase):
         print(expected_shape)
 
     async def gravity_scale_test(self):
+        """Gravity scale test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         prev_values = self.particle_material_view.get_gravity_scales(indices)

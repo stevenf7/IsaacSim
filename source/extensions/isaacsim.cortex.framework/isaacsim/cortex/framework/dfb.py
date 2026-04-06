@@ -61,6 +61,7 @@ class DfBasicContext(DfRobotApiContext):
     """
 
     def reset(self) -> None:
+        """Reset the context. No-op for the basic context."""
         pass
 
 
@@ -146,7 +147,8 @@ class DfDiagnosticsMonitor(ABC):
 
 
 class DfGoTarget(DfAction):
-    """A DfAction taking as input (params) a MotionCommand and passing it to the MotionCommander
+    """A DfAction taking as input (params) a MotionCommand and passing it to the MotionCommander.
+
     API of the robot.
 
     The robot motion commander is accessed through the robot's arm field and the command is expected
@@ -168,17 +170,20 @@ class DfGoTarget(DfAction):
         self.set_target_only_on_entry = set_target_only_on_entry
 
     def __str__(self):
+        """Return a string representation including the set_target_only_on_entry flag."""
         return f"{super().__str__()}({self.set_target_only_on_entry})"
 
     def enter(self) -> None:
-        """If set_target_only_on_entry is True, sends on the command once on entry. Otherwise, does
+        """If set_target_only_on_entry is True, sends on the command once on entry. Otherwise, does.
+
         nothing.
         """
         if self.set_target_only_on_entry:
             self.context.robot.arm.send(self.params)
 
     def step(self) -> None:
-        """If set_target_only_on_entry is False, sends the command every cycle. Otherwise, does
+        """If set_target_only_on_entry is False, sends the command every cycle. Otherwise, does.
+
         nothing.
         """
         if not self.set_target_only_on_entry:
@@ -186,7 +191,8 @@ class DfGoTarget(DfAction):
 
 
 class DfApproachTarget(DfDecider):
-    """Takes a target transform as input (passed parameter) and approaches it as specified on
+    """Takes a target transform as input (passed parameter) and approaches it as specified on.
+
     construction.
 
     The approach parameters are defined in one of two ways:
@@ -228,6 +234,7 @@ class DfApproachTarget(DfDecider):
         self.add_child("go_target", DfGoTarget())
 
     def __str__(self):
+        """Return a string representation including approach axis and direction length."""
         return f"{super().__str__()}({self.approach_along_axis},{self.direction_length})"
 
     def decide(self) -> DfDecision:
@@ -282,7 +289,8 @@ DfApproachGrasp = DfApproachTarget
 
 
 class DfApproachTargetLinearly(DfDecider):
-    """A decider node for calculating interpolated targets to make the end-effector move straight
+    """A decider node for calculating interpolated targets to make the end-effector move straight.
+
     toward a desired target.
 
     Generally, a motion policy cares about reaching a given target only at the end, and lets other
@@ -303,10 +311,12 @@ class DfApproachTargetLinearly(DfDecider):
         self.add_child("go_target", DfGoTarget())
 
     def __str__(self):
+        """Return a string representation including the step length."""
         return f"{super().__str__()}({self.step_length})"
 
     def enter(self) -> None:
-        """Records the current end-effector configuration and calculates how much to increment the
+        """Records the current end-effector configuration and calculates how much to increment the.
+
         (0, 1) interpolation betwene that end-effector configuration and the target based on the
         linear distance between the end-effector and target origins so steps have the desired step_length.
         """
@@ -320,7 +330,8 @@ class DfApproachTargetLinearly(DfDecider):
         self.current_alpha = 0.0
 
     def decide(self) -> DfDecision:
-        """Calculates the current interpolated target and sends it down to the child as
+        """Calculates the current interpolated target and sends it down to the child as.
+
         MotionCommand parameters.
 
         Returns:
@@ -363,6 +374,7 @@ class DfLift(DfDecider):
         self.add_child("go_target", DfGoTarget())
 
     def __str__(self):
+        """Return a string representation including the lift height and axis."""
         return f"{super().__str__()}({self.height}, {self.axis})"
 
     def enter(self) -> None:
@@ -400,10 +412,12 @@ class DfMoveEndEffectorRel(DfDecider):
         self.add_child("go_target", DfGoTarget())
 
     def __str__(self):
+        """Return a string representation including the local offset."""
         return f"{super().__str__()}({self.p_local})"
 
     def enter(self) -> None:
-        """Calculate the target based on the current end-effector pose and the relative p_local
+        """Calculate the target based on the current end-effector pose and the relative p_local.
+
         offset passed in on construction.
 
         The target orientation remains constant.
@@ -416,7 +430,8 @@ class DfMoveEndEffectorRel(DfDecider):
         self.target_pq = PosePq(target_p, target_q)
 
     def decide(self) -> DfDecision:
-        """Sends the calculated target down to the child DfGoTarget node as a MotionCommand
+        """Sends the calculated target down to the child DfGoTarget node as a MotionCommand.
+
         parameter.
 
         Returns:
@@ -429,6 +444,7 @@ class DfOpenGripper(DfAction):
     """A simple gripper action that opens the gripper."""
 
     def enter(self) -> None:
+        """Open the gripper on entry."""
         self.context.robot.gripper.open()
 
 
@@ -443,6 +459,7 @@ class DfCloseGripper(DfAction):
         super().__init__()
 
     def enter(self):
+        """Close the gripper on entry."""
         self.context.robot.gripper.close()
 
 
@@ -495,7 +512,8 @@ class GoHomeState(DfState):
         self.context.robot.arm.send(command)
 
     def step(self) -> DfState:
-        """Each step monitor the progress toward the home target. Self transition until the target
+        """Each step monitor the progress toward the home target. Self transition until the target.
+
         is reached, then terminate.
 
         Returns:
