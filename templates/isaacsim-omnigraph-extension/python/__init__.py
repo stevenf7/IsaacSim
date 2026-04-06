@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .impl import Extension  # noqa: F401
+from .bindings._{{ python_module_path | replace("/", "_") }} import *  # noqa: F401
+from .impl import *
 
 __all__ = []

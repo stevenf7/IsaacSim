@@ -30,5 +30,10 @@ recursive = false
 include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
 
+[[test]]
+name = "startup"
+
+[[test]]
+
 [documentation]
 pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

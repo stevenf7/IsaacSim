@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
+import carb
 import omni.ext
 
 from ..bindings._{{binding_module}} import acquire_example_interface, release_example_interface
@@ -21,11 +24,11 @@ from ..bindings._{{binding_module}} import acquire_example_interface, release_ex
 class Extension(omni.ext.IExt):
     """{{title}} extension."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         self._interface = acquire_example_interface()
-        print("[{{extension_name}}] Extension startup")
+        carb.log_info("[{{extension_name}}] Extension startup")
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         release_example_interface(self._interface)
         self._interface = None
-        print("[{{extension_name}}] Extension shutdown")
+        carb.log_info("[{{extension_name}}] Extension shutdown")

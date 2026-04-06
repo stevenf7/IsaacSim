@@ -13,14 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
+import carb
 import omni.ext
 
 
 class Extension(omni.ext.IExt):
     """{{title}} extension."""
 
-    def on_startup(self, ext_id: str):
-        print("[{{extension_name}}] Extension startup")
+    def on_startup(self, ext_id: str) -> None:
+        carb.log_info("[{{extension_name}}] Extension startup")
 
-    def on_shutdown(self):
-        print("[{{extension_name}}] Extension shutdown")
+    def on_shutdown(self) -> None:
+        carb.log_info("[{{extension_name}}] Extension shutdown")

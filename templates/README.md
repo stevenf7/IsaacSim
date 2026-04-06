@@ -7,8 +7,9 @@ Create new Isaac Sim extensions from standardized templates using the `repo temp
 | Template | Description |
 |----------|-------------|
 | **Isaac Sim Python Extension** | Python-only extension with `omni.ext.IExt` lifecycle, tests, and docs |
+| **Isaac Sim UI Extension** | Python extension with Examples Browser integration, scene management, physics callbacks, and custom UI |
 | **Isaac Sim C++ and Python Extension** | C++ Carbonite plugin with pybind11 bindings and Python wrapper |
-| **Isaac Sim OmniGraph Node Extension** | C++ and Python OmniGraph nodes with `.ogn` definitions |
+| **Isaac Sim OmniGraph Node Extension** | C++ and Python OmniGraph nodes with `.ogn` definitions, Carbonite plugin, and pybind11 bindings |
 
 ## Usage
 
@@ -21,7 +22,7 @@ Create new Isaac Sim extensions from standardized templates using the `repo temp
 This launches an interactive prompt that walks you through:
 
 1. Choosing **Extension** as the template type
-2. Selecting one of the three templates above
+2. Selecting one of the four templates above
 3. Entering variable values (extension name, title, version, etc.)
 
 The generated extension is placed in `source/extensions/<extension_name>/` and is automatically discovered by the build system.
@@ -37,6 +38,14 @@ Each template prompts for the following variables:
 | `version` | `0.1.0` | Initial semantic version |
 | `description` | *(varies)* | One-line description for `extension.toml` |
 | `category` | `Simulation` | Extension category |
+
+The C++ template additionally prompts for:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `binding_module` | `my_extension` | pybind11 module name (produces `_<name>.so`) |
+
+The OmniGraph template does not need a `binding_module` — it is derived automatically from the extension name by the OGN build system.
 
 The following variables are derived automatically from `extension_name`:
 
@@ -78,12 +87,17 @@ category = "Sensors"
 ./repo.sh template list
 ```
 
-## Build the new extension
+## Build and verify
 
-After creating an extension, build as usual:
+After creating an extension:
 
 ```bash
-./build.sh --no-docker
+# Build
+./build.sh
+
+# Run tests
+cd _build/linux-x86_64/release
+./tests/tests-<extension_name>.sh
 ```
 
 The new extension's `premake5.lua` is auto-discovered under `source/extensions/`.

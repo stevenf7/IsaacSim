@@ -24,5 +24,10 @@ writeTarget.kit = true
 [[python.module]]
 name = "{{extension_name}}"
 
+[[test]]
+name = "startup"
+
+[[test]]
+
 [documentation]
 pages = ["docs/Overview.md", "docs/CHANGELOG.md"]
