@@ -16,7 +16,7 @@
 ROS 2 Launch
 ===============================
 
-.. note:: ROS 2 Launch with |isaac-sim_short| is only supported in Linux. The ``isaacsim`` package is not supported in WSL2.
+.. note:: ROS 2 Launch with |isaac-sim_short| is only supported in Linux and Windows with Pixi-based installation. The ``isaacsim`` package is not supported in WSL2.
 
 Learning Objectives
 =======================
@@ -25,14 +25,14 @@ In this tutorial, we are demonstrating running |isaac-sim| from a ROS 2 launch f
 
 **Prerequisite**
 
-- ROS 2 Launch for |isaac-sim_short| is only supported on Linux.
+- ROS 2 Launch for |isaac-sim_short| is only supported on Linux and Windows with Pixi-based installation.
 
 - Completed :ref:`isaac_sim_app_tutorial_ros2_navigation` for ROS 2 Nav2 with a single robot. So that
 
     - ROS 2 and Nav2 are installed.
     - ROS 2 bridge is enabled.
 
-- This tutorial requires the ``carter_navigation``, ``isaac_ros_navigation_goal``, and ``isaacsim`` ROS 2 packages that are provided as part of your |isaac-sim| download. These ROS 2 packages are located inside the appropriate ``ros2_ws``. They contain the required launch files, navigation parameters, and robot model. Complete :ref:`isaac_sim_app_install_ros`, make sure the ROS 2 workspace environment is set up correctly.
+- This tutorial requires the ``carter_navigation``, ``isaac_ros_navigation_goal``, and ``isaacsim`` ROS 2 packages that are provided as part of your |isaac-sim| download. These ROS 2 packages are located inside the appropriate ``ros2_ws``. They contain the required launch files, navigation parameters, and robot model. Complete :ref:`isaac_sim_app_install_ros`, specifically the :ref:`isaac_sim_ros_workspace_setup` steps, to make sure the ROS 2 workspace is built and sourced correctly.
 
 
 
