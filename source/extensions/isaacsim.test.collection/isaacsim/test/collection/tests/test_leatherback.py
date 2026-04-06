@@ -65,7 +65,7 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
     """Tests for the Leatherback Ackermann-steering robot with ROS2 integration."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment with Leatherback robot and ROS2."""
         import rclpy
 

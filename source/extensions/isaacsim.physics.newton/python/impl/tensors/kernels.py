@@ -1138,7 +1138,7 @@ def update_joint_coords_from_root(
     # outputs
     joint_q: wp.array(dtype=wp.float32),
     joint_X_p: wp.array(dtype=wp.transform),
-):
+) -> None:
     """Update joint coordinates from root body transforms.
 
     For floating-base articulations: copies root transform into joint_q[0:7]
@@ -1249,7 +1249,7 @@ def assign_articulation_root_states(
     joint_q: wp.array(dtype=float),
     joint_qd: wp.array(dtype=float),
     joint_X_p: wp.array(dtype=wp.transform),
-):
+) -> None:
     """Assign articulation root states from body transforms and velocities.
 
     Updates joint coordinates for floating-base or fixed-base articulations.
@@ -1326,7 +1326,7 @@ def apply_body_forces_at_position(
     has_position: bool,
     # outputs
     body_f: wp.array(dtype=wp.spatial_vector),
-):
+) -> None:
     """Apply forces and torques to rigid bodies at specified positions.
 
     Args:
@@ -1437,7 +1437,7 @@ def apply_link_forces_at_position(
     has_position: bool,
     # outputs
     body_f: wp.array(dtype=wp.spatial_vector),
-):
+) -> None:
     """Apply forces and torques to articulation links at specified positions.
 
     Args:
@@ -1543,7 +1543,7 @@ def sync_ctrl_direct_targets(
     ctrls_per_world: wp.int32,
     # output
     mujoco_ctrl: wp.array(dtype=wp.float32),
-):
+) -> None:
     """Sync joint_target_pos to control.mujoco.ctrl for CTRL_DIRECT joint actuators.
 
     Args:
@@ -1570,7 +1570,7 @@ def sync_ctrl_direct_gains(
     # output
     actuator_gainprm: wp.array(dtype=vec10),
     actuator_biasprm: wp.array(dtype=vec10),
-):
+) -> None:
     """Sync joint_target_ke/kd to actuator gainprm/biasprm for CTRL_DIRECT joint actuators.
 
     Reads from template DOF (world 0). Only updates when kp > 0 or kd > 0.

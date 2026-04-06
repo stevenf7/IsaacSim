@@ -153,7 +153,11 @@ class CumotionWorldInterfaceExample:
         self.setup()
 
     def update(self, dt: float) -> None:
-        """Use different styles of updating the world binding."""
+        """Use different styles of updating the world binding.
+
+        Args:
+            dt: The physics time step in seconds.
+        """
         if self._world_binding is None:
             return
 

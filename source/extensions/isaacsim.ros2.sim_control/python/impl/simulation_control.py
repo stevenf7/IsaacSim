@@ -88,14 +88,13 @@ class ROS2ServiceManager:
 
     This class is a singleton to ensure there's only one ROS2 node running
     that handles all simulation control services.
+
+    Sets up the initial state for managing ROS2 services and action servers
+    for Isaac Sim simulation control.
     """
 
     def __init__(self):
-        """Initialize the ROS2ServiceManager.
 
-        Sets up the initial state for managing ROS2 services and action servers
-        for Isaac Sim simulation control.
-        """
         self.node_name = "isaac_sim_control"
         self.node = None
         self.services = {}
@@ -107,7 +106,7 @@ class ROS2ServiceManager:
         # Single callback group for parallel execution of both services and actions
         self.callback_group = None
 
-    def initialize(self):
+    def initialize(self) -> None:
         """Initialize the ROS2 node for simulation control services.
 
         Creates a ROS2 node and starts a separate thread for spinning the node.
@@ -163,7 +162,7 @@ class ROS2ServiceManager:
             carb.log_error(f"Error initializing ROS2 ServiceManager: {e}")
             self.is_initialized = False
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Shutdown the ROS2 node and clean up resources.
 
         Stops the spinning thread, destroys all registered services and action servers,
@@ -206,11 +205,11 @@ class ROS2ServiceManager:
         self.is_initialized = False
         carb.log_info("ROS2 ServiceManager shutdown completed")
 
-    def register_service(self, service_name, service_type, callback):
+    def register_service(self, service_name: str, service_type: object, callback: callable) -> bool:
         """Register a new ROS2 service
 
         Args:
-            service_name (str): Name of the service
+            service_name: Name of the service
             service_type: ROS2 service type
             callback: Async callback function to handle service requests
 
@@ -237,7 +236,7 @@ class ROS2ServiceManager:
             carb.log_error(f"Failed to register service '{service_name}': {e}")
             return False
 
-    def unregister_service(self, service_name, remove_from_dict=True):
+    def unregister_service(self, service_name: str, remove_from_dict: bool = True) -> bool:
         """Unregister a ROS2 service.
 
         Cleanly destroys a ROS2 service and optionally removes it from the internal
@@ -245,8 +244,8 @@ class ROS2ServiceManager:
         for service cleanup operations.
 
         Args:
-            service_name (str): Name of the service to unregister.
-            remove_from_dict (bool): Whether to remove the service from the internal services
+            service_name: Name of the service to unregister.
+            remove_from_dict: Whether to remove the service from the internal services
                 dictionary. Set to False when iterating over services during bulk
                 cleanup operations like shutdown to avoid modifying dictionary during
                 iteration. Defaults to True for individual service cleanup.
@@ -286,12 +285,17 @@ class ROS2ServiceManager:
             return False
 
     def register_action_server(
-        self, action_name, action_type, execute_callback, goal_callback=None, cancel_callback=None
-    ):
+        self,
+        action_name: str,
+        action_type: object,
+        execute_callback: callable,
+        goal_callback: callable = None,
+        cancel_callback: callable = None,
+    ) -> bool:
         """Register a new ROS2 action server
 
         Args:
-            action_name (str): Name of the action
+            action_name: Name of the action
             action_type: ROS2 action type
             execute_callback: Async callback function to handle action execution
             goal_callback: Callback to accept/reject goals (optional)
@@ -330,14 +334,14 @@ class ROS2ServiceManager:
             carb.log_error(f"Failed to register action server '{action_name}': {e}")
             return False
 
-    def _wrap_async_callback(self, async_callback):
+    def _wrap_async_callback(self, async_callback: callable) -> callable:
         """Wrap any async callback to work with ROS2 services and actions
 
         Args:
             async_callback: Async callback function
 
         Returns:
-            function: Wrapped callback that handles the event loop
+            callable: Wrapped callback that handles the event loop
         """
 
         def wrapper(*args, **kwargs):
@@ -349,7 +353,7 @@ class ROS2ServiceManager:
 
         return wrapper
 
-    def unregister_action_server(self, action_name, remove_from_dict=True):
+    def unregister_action_server(self, action_name: str, remove_from_dict: bool = True) -> bool:
         """Unregister a ROS2 action server.
 
         Cleanly destroys a ROS2 action server and optionally removes it from the internal
@@ -357,8 +361,8 @@ class ROS2ServiceManager:
         for action server cleanup operations.
 
         Args:
-            action_name (str): Name of the action server to unregister.
-            remove_from_dict (bool): Whether to remove the action server from the internal
+            action_name: Name of the action server to unregister.
+            remove_from_dict: Whether to remove the action server from the internal
                 action_servers dictionary. Set to False when iterating over action servers
                 during bulk cleanup operations like shutdown to avoid modifying dictionary
                 during iteration. Defaults to True for individual action server cleanup.
@@ -415,8 +419,14 @@ class ROS2ServiceManager:
 
 
 class SimulationControl:
+    """Controller for Isaac Sim simulation via ROS2 services.
 
-    def _import_interfaces(self, interface_types, interface_kind):
+    Sets up the timeline interface, ROS2 service manager, and imports
+    all available simulation interface service and action types.
+    Services are registered automatically during initialization.
+    """
+
+    def _import_interfaces(self, interface_types: list, interface_kind: str) -> None:
         """Import ROS2 interfaces with graceful fallback.
 
         Args:
@@ -436,12 +446,7 @@ class SimulationControl:
                 setattr(self, f"{class_name}_{interface_kind}_name", None)
 
     def __init__(self):
-        """Initialize the SimulationControl instance.
 
-        Sets up the timeline interface, ROS2 service manager, and imports
-        all available simulation interface service and action types.
-        Services are registered automatically during initialization.
-        """
         self.timeline = omni.timeline.get_timeline_interface()
         self.service_manager = ROS2ServiceManager()
         self.is_initialized = False
@@ -453,11 +458,11 @@ class SimulationControl:
         # Initialize and register services
         self._initialize_ros2_services()
 
-    def _register_service_if_available(self, service_class_name, handler):
+    def _register_service_if_available(self, service_class_name: str, handler: callable) -> None:
         """Register a service if its type is available.
 
         Args:
-            service_class_name (str): Name of the service class attribute (e.g., 'GetSimulationState').
+            service_class_name: Name of the service class attribute (e.g., 'GetSimulationState').
             handler: The handler function for the service.
         """
         if hasattr(self, service_class_name):
@@ -469,12 +474,16 @@ class SimulationControl:
                 carb.log_error(f"{service_class_name} service type not available")
 
     def _register_action_server_if_available(
-        self, action_class_name, execute_handler, goal_callback=None, cancel_callback=None
-    ):
+        self,
+        action_class_name: str,
+        execute_handler: callable,
+        goal_callback: callable = None,
+        cancel_callback: callable = None,
+    ) -> None:
         """Register an action server if its type is available.
 
         Args:
-            action_class_name (str): Name of the action class attribute (e.g., 'SimulateSteps').
+            action_class_name: Name of the action class attribute (e.g., 'SimulateSteps').
             execute_handler: The execute callback function for the action server.
             goal_callback: Callback to accept/reject goals (optional).
             cancel_callback: Callback to handle cancellation (optional).
@@ -493,7 +502,7 @@ class SimulationControl:
             else:
                 carb.log_error(f"{action_class_name} action type not available")
 
-    def _initialize_ros2_services(self):
+    def _initialize_ros2_services(self) -> None:
         """Initialize ROS2 services for simulation control.
 
         Registers all available simulation interface services and action servers
@@ -550,8 +559,16 @@ class SimulationControl:
             carb.log_error(f"Error initializing ROS2 services: {e}")
             self.is_initialized = False
 
-    async def _handle_get_simulation_state(self, request, response):
-        """Handle simulation state query request"""
+    async def _handle_get_simulation_state(self, request: object, response: object) -> object:
+        """Handle simulation state query request.
+
+        Args:
+            request: GetSimulationState request.
+            response: GetSimulationState response.
+
+        Returns:
+            object: Completed GetSimulationState response.
+        """
         try:
             from simulation_interfaces.msg import Result, SimulationState
 
@@ -574,8 +591,16 @@ class SimulationControl:
 
         return response
 
-    async def _handle_set_simulation_state(self, request, response):
-        """Handle request to set simulation state"""
+    async def _handle_set_simulation_state(self, request: object, response: object) -> object:
+        """Handle request to set simulation state.
+
+        Args:
+            request: SetSimulationState request with target state.
+            response: SetSimulationState response.
+
+        Returns:
+            object: Completed SetSimulationState response.
+        """
         try:
             from simulation_interfaces.msg import Result, SimulationState
 
@@ -614,7 +639,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_get_entities(self, request, response):
+    async def _handle_get_entities(self, request: object, response: object) -> object:
         """Handle GetEntities service request
 
         This service returns a list of entities (prims) in the simulation,
@@ -625,7 +650,7 @@ class SimulationControl:
             response: GetEntities response with entities list and result
 
         Returns:
-            response: Completed GetEntities response
+            object: Completed GetEntities response
         """
 
         try:
@@ -666,7 +691,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_delete_entity(self, request, response):
+    async def _handle_delete_entity(self, request: object, response: object) -> object:
         """Handle DeleteEntity service request
 
         This service deletes a specified entity (prim) from the simulation if it exists
@@ -677,7 +702,7 @@ class SimulationControl:
             response: DeleteEntity response with result status
 
         Returns:
-            response: Completed DeleteEntity response
+            object: Completed DeleteEntity response
         """
         try:
             from simulation_interfaces.msg import Result
@@ -713,7 +738,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_get_entity_info(self, request, response):
+    async def _handle_get_entity_info(self, request: object, response: object) -> object:
         """Handle GetEntityInfo service request
 
         This service provides detailed information about a specific entity in the simulation.
@@ -724,7 +749,7 @@ class SimulationControl:
             response: GetEntityInfo response with entity information
 
         Returns:
-            response: Completed GetEntityInfo response
+            object: Completed GetEntityInfo response
         """
 
         try:
@@ -751,7 +776,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_spawn_entity(self, request, response):
+    async def _handle_spawn_entity(self, request: object, response: object) -> object:
         """Handle SpawnEntity service request
 
         This service spawns a new entity in the simulation.
@@ -764,7 +789,7 @@ class SimulationControl:
             response: SpawnEntity response with result status
 
         Returns:
-            response: Completed SpawnEntity response
+            object: Completed SpawnEntity response
         """
 
         try:
@@ -940,7 +965,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_reset_simulation(self, request, response):
+    async def _handle_reset_simulation(self, request: object, response: object) -> object:
         """Handle ResetSimulation service request
 
         This service resets the simulation environment to its initial state.
@@ -951,7 +976,7 @@ class SimulationControl:
             response: ResetSimulation response with result status
 
         Returns:
-            response: Completed ResetSimulation response
+            object: Completed ResetSimulation response
         """
 
         try:
@@ -1008,7 +1033,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_step_simulation(self, request, response):
+    async def _handle_step_simulation(self, request: object, response: object) -> object:
         """Handle StepSimulation service request
 
         This service steps the simulation forward by a specific number of frames,
@@ -1022,7 +1047,7 @@ class SimulationControl:
             response: StepSimulation response with result
 
         Returns:
-            response: Completed StepSimulation response
+            object: Completed StepSimulation response
         """
 
         try:
@@ -1083,7 +1108,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_get_entity_state(self, request, response):
+    async def _handle_get_entity_state(self, request: object, response: object) -> object:
         """Handle GetEntityState service request
 
         This service retrieves the state (pose, twist, acceleration) of a specific entity.
@@ -1095,7 +1120,7 @@ class SimulationControl:
             response: GetEntityState response with state information
 
         Returns:
-            response: Completed GetEntityState response
+            object: Completed GetEntityState response
         """
 
         try:
@@ -1123,7 +1148,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_get_entities_states(self, request, response):
+    async def _handle_get_entities_states(self, request: object, response: object) -> object:
         """Handle GetEntitiesStates service request
 
         This service retrieves the states (pose, twist, acceleration) of multiple entities
@@ -1135,7 +1160,7 @@ class SimulationControl:
             response: GetEntitiesStates response with entities and their states
 
         Returns:
-            response: Completed GetEntitiesStates response
+            object: Completed GetEntitiesStates response
         """
 
         try:
@@ -1190,7 +1215,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_set_entity_state(self, request, response):
+    async def _handle_set_entity_state(self, request: object, response: object) -> object:
         """Handle SetEntityState service request
 
         This service sets the state (pose, twist) of a specific entity in the simulation.
@@ -1202,7 +1227,7 @@ class SimulationControl:
             response: SetEntityState response with result status
 
         Returns:
-            response: Completed SetEntityState response
+            object: Completed SetEntityState response
         """
 
         try:
@@ -1332,7 +1357,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_simulate_steps_action(self, goal_handle):
+    async def _handle_simulate_steps_action(self, goal_handle: object) -> object:
         """Handle SimulateSteps action request
 
         This action steps the simulation forward by a specific number of frames,
@@ -1344,7 +1369,7 @@ class SimulationControl:
                          to publish feedback and set result
 
         Returns:
-            result: Result message for the SimulateSteps action
+            object: Result message for the SimulateSteps action
         """
 
         try:
@@ -1437,7 +1462,7 @@ class SimulationControl:
 
         return result_msg
 
-    def _handle_simulate_steps_cancel_callback(self, goal_handle):
+    def _handle_simulate_steps_cancel_callback(self, goal_handle: object) -> object:
         """Handle cancellation requests for SimulateSteps action.
 
         This callback is invoked when a client requests to cancel the SimulateSteps action.
@@ -1447,7 +1472,7 @@ class SimulationControl:
             goal_handle: ROS2 action goal handle for the cancellation request.
 
         Returns:
-            rclpy.action.CancelResponse: Response indicating if cancellation is accepted.
+            object: Response indicating if cancellation is accepted.
         """
         try:
             from rclpy.action import CancelResponse
@@ -1473,7 +1498,7 @@ class SimulationControl:
 
             return CancelResponse.ACCEPT
 
-    async def _handle_load_world(self, request, response):
+    async def _handle_load_world(self, request: object, response: object) -> object:
         """Handle LoadWorld service request.
 
         This service loads a world or environment file into the simulation,
@@ -1485,7 +1510,7 @@ class SimulationControl:
             response: LoadWorld response with result status and world info.
 
         Returns:
-            response: Completed LoadWorld response.
+            object: Completed LoadWorld response.
         """
         try:
             from simulation_interfaces.msg import Result, WorldResource
@@ -1560,7 +1585,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_unload_world(self, request, response):
+    async def _handle_unload_world(self, request: object, response: object) -> object:
         """Handle UnloadWorld service request.
 
         This service unloads the current world from the simulation,
@@ -1572,7 +1597,7 @@ class SimulationControl:
             response: UnloadWorld response with result status
 
         Returns:
-            response: Completed UnloadWorld response
+            object: Completed UnloadWorld response
         """
         try:
             from simulation_interfaces.msg import Result
@@ -1617,7 +1642,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_get_current_world(self, request, response):
+    async def _handle_get_current_world(self, request: object, response: object) -> object:
         """Handle GetCurrentWorld service request.
 
         This service returns information about the currently loaded world,
@@ -1628,7 +1653,7 @@ class SimulationControl:
             response: GetCurrentWorld response with world information.
 
         Returns:
-            response: Completed GetCurrentWorld response.
+            object: Completed GetCurrentWorld response.
         """
         try:
 
@@ -1672,7 +1697,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_get_available_worlds(self, request, response):
+    async def _handle_get_available_worlds(self, request: object, response: object) -> object:
         """Handle GetAvailableWorlds service request.
 
         This service returns a list of available world files that can be loaded into the simulation.
@@ -1683,7 +1708,7 @@ class SimulationControl:
             response: GetAvailableWorlds response with list of available worlds.
 
         Returns:
-            response: Completed GetAvailableWorlds response.
+            object: Completed GetAvailableWorlds response.
         """
         try:
             from simulation_interfaces.msg import Result, TagsFilter, WorldResource
@@ -1788,7 +1813,7 @@ class SimulationControl:
 
         return response
 
-    async def _handle_get_simulator_features(self, request, response):
+    async def _handle_get_simulator_features(self, request: object, response: object) -> object:
         """Handle GetSimulatorFeatures service request
 
         This service lists the subset of services and actions supported by Isaac Sim
@@ -1799,7 +1824,7 @@ class SimulationControl:
             response: GetSimulatorFeatures response with list of supported features
 
         Returns:
-            response: Completed GetSimulatorFeatures response
+            object: Completed GetSimulatorFeatures response
         """
         try:
             from simulation_interfaces.msg import SimulatorFeatures

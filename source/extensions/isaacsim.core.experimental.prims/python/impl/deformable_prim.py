@@ -1288,7 +1288,7 @@ class DeformablePrim(XformPrim):
     Internal callbacks.
     """
 
-    def _on_physics_ready(self, event):
+    def _on_physics_ready(self, event: object) -> None:
         """Handle physics ready event.
 
         Args:
@@ -1345,7 +1345,7 @@ class DeformablePrim(XformPrim):
         # precompute the rest pose inverse matrices for rotations
         self._precompute_rotations = True
 
-    def _on_timeline_stop(self, event):
+    def _on_timeline_stop(self, event: object) -> None:
         """Handle timeline stop event.
 
         Args:

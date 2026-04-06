@@ -36,8 +36,12 @@ UNRESOLVED_BODY = -2
 resolved to any body or world shape."""
 
 
-def _resolve_filter_path_to_body_index(filter_path: str, model) -> int:
+def _resolve_filter_path_to_body_index(filter_path: str, model: object) -> int:
     """Resolve a filter prim path to a body index.
+
+    Args:
+        filter_path: The prim path to resolve.
+        model: The Newton model containing body labels and shape data.
 
     Returns:
         body index (>=0), -1 for world body shapes (``shape_body == -1``),

@@ -67,7 +67,7 @@ class Extension(omni.ext.IExt):
         _range_sensor.release_generic_sensor_interface(self._generic)
         _range_sensor.release_lightbeam_sensor_interface(self._lightbeam)
 
-    def _on_update(self, dt, context):
+    def _on_update(self, dt: float, context: object):
         """Updates the proximity sensor manager on each physics step.
 
         Args:

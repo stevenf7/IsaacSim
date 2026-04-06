@@ -25,7 +25,7 @@ from isaacsim.core.deprecation_manager import import_module
 torch = import_module("torch")
 
 
-def get_type(dtype):
+def get_type(dtype: str):
     """Convert string data type to Warp data type.
 
     Maps string representations of data types to their corresponding Warp data type constants.
@@ -54,7 +54,7 @@ def get_type(dtype):
         print(f"Type {dtype} not supported.")
 
 
-def convert(data, device, dtype="float32", indexed=False):
+def convert(data: object, device: object, dtype: str = "float32", indexed: bool = False):
     """Convert data to Warp array format with specified properties.
 
     Converts input data to a Warp array with the specified device, data type, and indexing mode.
@@ -79,7 +79,7 @@ def convert(data, device, dtype="float32", indexed=False):
         return arr
 
 
-def create_zeros_tensor(shape, dtype, device=None):
+def create_zeros_tensor(shape: object, dtype: str, device: object = None):
     """Create a Warp array filled with zeros.
 
     Creates a new Warp array with the specified shape and data type, initialized with zero values.
@@ -95,7 +95,7 @@ def create_zeros_tensor(shape, dtype, device=None):
     return wp.zeros(shape=tuple(shape), device=device, dtype=get_type(dtype))
 
 
-def create_tensor_from_list(data, dtype, device=None):
+def create_tensor_from_list(data: list, dtype: str, device: object = None):
     """Create a Warp array from a list of data.
 
     Creates a Warp array from the provided list data with the specified data type and device.
@@ -111,7 +111,7 @@ def create_tensor_from_list(data, dtype, device=None):
     return wp.array(data, device=device, dtype=get_type(dtype))
 
 
-def clone_tensor(data, device):
+def clone_tensor(data: object, device: object):
     """Create a copy of the array on the specified device.
 
     Creates a deep copy of the input array and moves it to the target device.
@@ -142,7 +142,7 @@ def _arange_k(a: wp.array(dtype=wp.int32)):
     a[tid] = tid
 
 
-def arange(n, device="cpu"):
+def arange(n: int, device: str = "cpu"):
     """Creates an array with sequential integer values from 0 to n-1.
 
     Args:
@@ -189,7 +189,7 @@ def resolve_indices(indices: Optional[Union[list[int], wp.array]], count: int, d
     return result
 
 
-def move_data(data, device):
+def move_data(data: object, device: object):
     """Move array data to the specified device.
 
     Transfers array data to the target device, handling both regular and indexed arrays.
@@ -234,7 +234,7 @@ def tensor_cat(data: list, device: str | None = None, dim: int = -1) -> wp.array
     return wp.from_torch(torch_cat)
 
 
-def expand_dims(data, axis):
+def expand_dims(data: object, axis: int):
     """Add a new dimension to the array at the specified axis.
 
     Expands the dimensions of the input array by inserting a new axis at the specified position.
@@ -418,7 +418,7 @@ wp.overload(_assign33, {"src": wp.array(dtype=float, ndim=3)})
 wp.overload(_assign33, {"src": wp.indexedarray(dtype=float, ndim=3)})
 
 
-def assign(src, dst, indices):
+def assign(src: object, dst: object, indices: object):
     """Assign values from source array to destination array at specified indices.
 
     Assigns values from the source array to the destination array using the provided indices.
@@ -538,7 +538,7 @@ def _finite_diff2(
     result[i, j] = (a[i, j] - b[i, j]) / dt
 
 
-def finite_diff2(a, b, dt):
+def finite_diff2(a: object, b: object, dt: float):
     """Compute finite difference between two arrays.
 
     Calculates the finite difference (a - b) / dt for each element pair in the input arrays.

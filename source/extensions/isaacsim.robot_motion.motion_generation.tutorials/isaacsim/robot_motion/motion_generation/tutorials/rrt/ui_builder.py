@@ -72,7 +72,7 @@ class UIBuilder:
         """
         pass
 
-    def on_timeline_event(self, event):
+    def on_timeline_event(self, event: object) -> None:
         """Callback for Timeline events (Play, Pause, Stop).
 
         Note: With Events 2.0, this is called only for STOP events from the extension.
@@ -96,7 +96,7 @@ class UIBuilder:
         """
         pass
 
-    def on_stage_event(self, event):
+    def on_stage_event(self, event: object) -> None:
         """Callback for Stage Events.
 
         Note: With Events 2.0, this is called only for OPENED events from the extension.

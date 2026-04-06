@@ -87,17 +87,22 @@ def get_world_block_grasp_Ts(
     return world_grasp_Ts
 
 
-def get_best_obj_grasp(obj_T, obj_grasp_Ts, eff_T, other_obj_Ts):
+def get_best_obj_grasp(
+    obj_T: np.ndarray, obj_grasp_Ts: list, eff_T: np.ndarray, other_obj_Ts: list
+) -> np.ndarray | None:
     """Uses a manually defined score-based classifier for choosing which grasp to use on a given
     block.
 
     It chooses a grasp that's simultaneoulsy natural for the arm and avoids any nearby blocks.
 
-    args:
+    Args:
         obj_T: The block object being grasped.
         obj_grasp_Ts: The grasp transforms in coordinates local to the block.
         eff_T: The current end-effector transform.
         other_obj_Ts: The transforms of all other surrounding blocks we want to consider.
+
+    Returns:
+        The best grasp transform, or None if no valid grasps are found.
     """
     Ts = get_world_block_grasp_Ts(obj_T, obj_grasp_Ts, axis_z_filter=np.array([0.0, 0.0, -1.0]))
 
@@ -690,9 +695,10 @@ class LiftState(DfState):
             position every cycle.
         success_delta_z: The delta offset up from the original end-effector position measured on
             entry required for exiting the state.
+        cautious_command_delta_z: Optional smaller delta offset used when close to another block.
     """
 
-    def __init__(self, command_delta_z, success_delta_z, cautious_command_delta_z=None):
+    def __init__(self, command_delta_z: float, success_delta_z: float, cautious_command_delta_z: float | None = None):
         self.command_delta_z = command_delta_z
         self.cautious_command_delta_z = cautious_command_delta_z
         self.success_delta_z = success_delta_z

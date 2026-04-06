@@ -89,7 +89,7 @@ class StandaloneDocTestCase(unittest.TestCase):
         **kwargs: Additional keyword arguments passed to the parent unittest.TestCase class.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object):
         super().__init__(*args, **kwargs)
         self._doctest_checker = _doctest.DocTest()
 

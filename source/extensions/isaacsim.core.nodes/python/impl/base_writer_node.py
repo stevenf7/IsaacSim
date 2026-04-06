@@ -18,6 +18,7 @@
 
 import copy
 
+import carb.eventdispatcher
 import carb.events
 import omni.replicator.core as rep
 import omni.usd
@@ -76,7 +77,7 @@ class BaseWriterNode(BaseResetNode):
         self._writers = []
         self.initialized = False
 
-    def append_writer(self, writer):
+    def append_writer(self, writer: rep.Writer) -> None:
         """Appends deepcopy of provided writer to internal writer list.
 
         Args:
@@ -84,7 +85,7 @@ class BaseWriterNode(BaseResetNode):
         """
         self._writers.append(copy.deepcopy(writer))
 
-    def attach_writers(self, render_product_path):
+    def attach_writers(self, render_product_path: str | list[str]) -> None:
         """Creates writer request for all stored writers using provided render product,
             and activates them.
 
@@ -94,7 +95,7 @@ class BaseWriterNode(BaseResetNode):
         for w in self._writers:
             self._append_request(WriterRequest(w, render_product_path, True))
 
-    def attach_writer(self, writer, render_product_path):
+    def attach_writer(self, writer: rep.Writer, render_product_path: str | list[str]) -> None:
         """Creates writer request for deepcopy of provided writer to provided render_product_path, and activates it.
 
         Args:
@@ -121,7 +122,7 @@ class BaseWriterNode(BaseResetNode):
                 observer_name="BaseWriterNode._process_activation_requests",
             )
 
-    def _process_activation_requests(self, event):
+    def _process_activation_requests(self, event: carb.eventdispatcher.Event) -> None:
         """Processes all pending writer activation requests by attaching or detaching writers.
 
         Args:
@@ -154,7 +155,7 @@ class BaseWriterNode(BaseResetNode):
             self._event_stream = None
 
     # Defined by subclass
-    def post_attach(self, writer, render_product):
+    def post_attach(self, writer: rep.Writer, render_product: str | list[str]) -> None:
         """Hook method called after a writer is attached to a render product.
 
         Args:

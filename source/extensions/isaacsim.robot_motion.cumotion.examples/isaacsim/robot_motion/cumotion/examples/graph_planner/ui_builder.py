@@ -55,7 +55,6 @@ class UIBuilder:
     """
 
     def __init__(self) -> None:
-        """Initialize the UIBuilder with default state and UI element containers."""
         self.frames = []
         self.wrapped_ui_elements = []
         self._timeline = omni.timeline.get_timeline_interface()
@@ -394,8 +393,8 @@ class UIBuilder:
 
         Args:
             step: The physics step.
-            args: Additional positional arguments.
-            kwargs: Additional keyword arguments.
+            *args: Additional positional arguments (unused).
+            **kwargs: Additional keyword arguments (unused).
 
         """
         # Check if physics tensors are valid before updating

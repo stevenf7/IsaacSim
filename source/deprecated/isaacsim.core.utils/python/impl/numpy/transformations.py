@@ -23,7 +23,7 @@ from pxr import Gf
 from scipy.spatial.transform import Rotation
 
 
-def tf_matrices_from_poses(translations: np.ndarray, orientations: np.ndarray, device=None) -> np.ndarray:
+def tf_matrices_from_poses(translations: np.ndarray, orientations: np.ndarray, device: object = None) -> np.ndarray:
     """Compute transformation matrices from translation and orientation arrays.
 
     Args:
@@ -43,7 +43,9 @@ def tf_matrices_from_poses(translations: np.ndarray, orientations: np.ndarray, d
     return result
 
 
-def get_local_from_world(parent_transforms, positions, orientations, device=None):
+def get_local_from_world(
+    parent_transforms: np.ndarray, positions: np.ndarray, orientations: np.ndarray, device: object = None
+):
     """Convert world space poses to local space relative to parent transformations.
 
     Args:
@@ -68,7 +70,9 @@ def get_local_from_world(parent_transforms, positions, orientations, device=None
     return calculated_translations, calculated_orientations
 
 
-def get_world_from_local(parent_transforms, translations, orientations, device=None):
+def get_world_from_local(
+    parent_transforms: np.ndarray, translations: np.ndarray, orientations: np.ndarray, device: object = None
+):
     """Convert local space poses to world space using parent transformations.
 
     Args:
@@ -93,7 +97,7 @@ def get_world_from_local(parent_transforms, translations, orientations, device=N
     return calculated_positions, calculated_orientations
 
 
-def get_pose(positions, orientations, device=None):
+def get_pose(positions: np.ndarray, orientations: np.ndarray, device: object = None):
     """Concatenate position and orientation arrays into a single pose array.
 
     Args:
@@ -108,7 +112,15 @@ def get_pose(positions, orientations, device=None):
     return pose
 
 
-def assign_pose(current_positions, current_orientations, positions, orientations, indices, device=None, pose=None):
+def assign_pose(
+    current_positions: np.ndarray,
+    current_orientations: np.ndarray,
+    positions: object,
+    orientations: object,
+    indices: object,
+    device: object = None,
+    pose: object = None,
+):
     """Update pose arrays by assigning new positions and orientations at specified indices.
 
     Args:

@@ -27,7 +27,9 @@ from isaacsim.core.utils.xforms import get_world_pose
 from pxr import PhysxSchema, Sdf, Usd, UsdPhysics
 
 
-def move_rb_subframe_to_position(rb_xform_view, rb_subframe, desired_translation, desired_orientation):
+def move_rb_subframe_to_position(
+    rb_xform_view: object, rb_subframe: object, desired_translation: object, desired_orientation: object
+) -> None:
     """Move a rigid body by positioning its subframe at the desired location and orientation.
 
     Calculates the required transformation to place the subframe at the target pose and applies it to the rigid body.
@@ -72,7 +74,7 @@ def show_physics_colliders(show: bool):
     settings.set_int("/persistent/physics/visualizationDisplayColliders", num)
 
 
-def unmask_collisions(collision_mask):
+def unmask_collisions(collision_mask: object) -> None:
     """Remove all collision filtering targets from a collision mask relationship.
 
     Clears all targets from the provided collision mask to restore normal collision behavior.
@@ -99,13 +101,16 @@ def mask_collisions(prim_path_a: str, prim_path_b: str) -> Usd.Relationship:
     return rel
 
 
-def convert_prim_to_collidable_rigid_body(prim_path: str, articulation_paths: List[str]):
+def convert_prim_to_collidable_rigid_body(prim_path: str, articulation_paths: List[str]) -> str | None:
     """Convert a prim to a rigid body by applying the UsdPhysics.RigidBodyAPI
     Also sets physics:kinematicEnabled property to true to prevent falling from gravity without needing a fixed joint.
 
     Args:
         prim_path: Path to prim to convert.
         articulation_paths: List of articulation root paths to check against for validation.
+
+    Returns:
+        str | None: Error message string if conversion fails, None on success.
     """
     prim_to_convert = get_prim_at_path(prim_path)
     for art_path in articulation_paths:
@@ -207,7 +212,7 @@ def find_all_articulations():
     return art_base_paths
 
 
-def adjust_text_block_num_lines(text_block):
+def adjust_text_block_num_lines(text_block: object) -> None:
     """Adjust the number of lines in a text block based on its content length.
 
     Calculates the required number of lines assuming 80 characters per line and updates the text block accordingly.

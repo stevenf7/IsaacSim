@@ -46,7 +46,7 @@ class PathPlanningExtension(omni.ext.IExt):
     motion planning in robotic applications.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initializes the Path Planning extension when it starts up.
 
         Sets up the example configuration, creates the UI handler, and registers the example with the browser
@@ -79,7 +79,7 @@ class PathPlanningExtension(omni.ext.IExt):
 
         return
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up the Path Planning extension when it shuts down.
 
         Deregisters the example from the browser instance to remove it from the interface.
@@ -105,10 +105,10 @@ class PathPlanningUI(BaseSampleUITemplate):
         **kwargs: Additional keyword arguments passed to the parent class.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
 
-    def build_extra_frames(self):
+    def build_extra_frames(self) -> None:
         """Builds additional UI frames for task controls and data logging.
 
         Creates collapsible frames for task control operations and data logging functionality
@@ -142,7 +142,7 @@ class PathPlanningUI(BaseSampleUITemplate):
 
                 self.build_data_logging_ui()
 
-    def _on_follow_target_button_event(self):
+    def _on_follow_target_button_event(self) -> None:
         """Handles the follow target button click event.
 
         Initiates asynchronous path planning and movement to the target position.
@@ -150,7 +150,7 @@ class PathPlanningUI(BaseSampleUITemplate):
         asyncio.ensure_future(self.sample._on_follow_target_event_async())
         return
 
-    def _on_add_wall_button_event(self):
+    def _on_add_wall_button_event(self) -> None:
         """Handles the add wall button click event.
 
         Adds a wall obstacle to the planning environment and enables the remove wall button.
@@ -159,7 +159,7 @@ class PathPlanningUI(BaseSampleUITemplate):
         self.task_ui_elements["Remove Wall"].enabled = True
         return
 
-    def _on_remove_wall_button_event(self):
+    def _on_remove_wall_button_event(self) -> None:
         """Handles the remove wall button click event.
 
         Removes wall obstacles from the planning environment and disables the remove wall button
@@ -172,7 +172,7 @@ class PathPlanningUI(BaseSampleUITemplate):
             self.task_ui_elements["Remove Wall"].enabled = False
         return
 
-    def _on_logging_button_event(self, val):
+    def _on_logging_button_event(self, val: bool) -> None:
         """Handles the logging button state change event.
 
         Starts or stops data logging based on the button state and enables the save data button.
@@ -184,7 +184,7 @@ class PathPlanningUI(BaseSampleUITemplate):
         self.task_ui_elements["Save Data"].enabled = True
         return
 
-    def _on_save_data_button_event(self):
+    def _on_save_data_button_event(self) -> None:
         """Handles the save data button click event.
 
         Saves logged path planning data to the specified output directory.
@@ -192,7 +192,7 @@ class PathPlanningUI(BaseSampleUITemplate):
         self.sample._on_save_data_event(self.task_ui_elements["Output Directory"].get_value_as_string())
         return
 
-    def post_reset_button_event(self):
+    def post_reset_button_event(self) -> None:
         """Updates UI element states after the reset button is pressed.
 
         Enables movement and wall controls while resetting logging controls to their initial state.
@@ -204,7 +204,7 @@ class PathPlanningUI(BaseSampleUITemplate):
         self.task_ui_elements["Save Data"].enabled = False
         return
 
-    def post_load_button_event(self):
+    def post_load_button_event(self) -> None:
         """Updates UI element states after the load button is pressed.
 
         Enables task control buttons and resets data logging controls to their initial state.
@@ -215,7 +215,7 @@ class PathPlanningUI(BaseSampleUITemplate):
         self.task_ui_elements["Save Data"].enabled = False
         return
 
-    def post_clear_button_event(self):
+    def post_clear_button_event(self) -> None:
         """Updates UI element states after the clear button is pressed.
 
         Disables all task control and data logging UI elements.
@@ -227,7 +227,7 @@ class PathPlanningUI(BaseSampleUITemplate):
         self.task_ui_elements["Save Data"].enabled = False
         return
 
-    def build_task_controls_ui(self):
+    def build_task_controls_ui(self) -> None:
         """Builds the task control UI elements.
 
         Creates buttons for moving to target, adding walls, and removing walls in the path planning
@@ -266,7 +266,7 @@ class PathPlanningUI(BaseSampleUITemplate):
             self.task_ui_elements["Remove Wall"] = btn_builder(**dict)
             self.task_ui_elements["Remove Wall"].enabled = False
 
-    def build_data_logging_ui(self):
+    def build_data_logging_ui(self) -> None:
         """Builds the data logging UI controls.
 
         Creates UI elements for output directory selection, data logging control, and data saving functionality.

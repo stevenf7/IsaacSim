@@ -101,6 +101,9 @@ def _canonicalize_orient_quats(layer: Sdf.Layer) -> None:
     """Canonicalize every xformOp:orient (Quatd) in the layer for idempotent round-trip.
 
     Near-zero components are clamped to 0 and the sign is normalized (real >= 0).
+
+    Args:
+        layer: The USD layer whose orient quaternions should be canonicalized.
     """
     for prim_spec in layer.rootPrims.values():
         _canonicalize_orient_quats_recursive(prim_spec)

@@ -45,7 +45,7 @@ class PreviewSurface(VisualMaterial):
         color: Optional[np.ndarray] = None,
         roughness: Optional[float] = None,
         metallic: Optional[float] = None,
-    ):
+    ) -> None:
         stage = stage_utils.get_current_stage()
         if stage.GetPrimAtPath(prim_path).IsValid():
             carb.log_info("Material Prim already defined at path: {}".format(prim_path))
@@ -80,7 +80,7 @@ class PreviewSurface(VisualMaterial):
         material.CreateSurfaceOutput().ConnectToSource(shader.ConnectableAPI(), "surface")
         return
 
-    def set_color(self, color: np.ndarray):
+    def set_color(self, color: np.ndarray) -> None:
         """Set the diffuse color.
 
         Args:
@@ -104,7 +104,7 @@ class PreviewSurface(VisualMaterial):
         else:
             return np.array(self.shaders_list[0].GetInput("diffuseColor").Get())
 
-    def set_roughness(self, roughness: float):
+    def set_roughness(self, roughness: float) -> None:
         """Set the surface roughness.
 
         Args:
@@ -128,7 +128,7 @@ class PreviewSurface(VisualMaterial):
         else:
             return self.shaders_list[0].GetInput("roughness").Get()
 
-    def set_metallic(self, metallic: float):
+    def set_metallic(self, metallic: float) -> None:
         """Set the metallic value.
 
         Args:

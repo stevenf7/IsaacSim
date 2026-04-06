@@ -985,7 +985,7 @@ def set_targets(prim: Usd.Prim, attribute: str, target_prim_paths: list):
         print(e, prim.GetPath())
 
 
-def get_articulation_root_api_prim_path(prim_path) -> str:
+def get_articulation_root_api_prim_path(prim_path: str) -> str:
     """Get the prim path that has the Articulation Root API
 
     .. note::

@@ -70,7 +70,7 @@ class TestPhysxContextMenu(MenuUITestCase):
             f"There are {n_items_lightbeam_menu} items in the LightBeam Sensor context menu, expected {expected_lightbeam_count}.",
         )
 
-    async def test_physx_lidar_context_menu_click(self):
+    async def test_physx_lidar_context_menu_click(self) -> None:
         """Test the PhysX Lidar sensors are created correctly via context menu.
 
         Note: All PhysX Lidar sensors are currently skipped due to a known bug in

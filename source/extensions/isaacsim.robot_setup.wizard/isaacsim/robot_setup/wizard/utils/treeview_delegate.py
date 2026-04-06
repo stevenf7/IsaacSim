@@ -144,7 +144,7 @@ class TreeViewWithPlacerHolderModel(ui.AbstractItemModel):
         *args: Additional positional arguments passed to the parent class.
     """
 
-    def __init__(self, items, *args):
+    def __init__(self, items: list, *args: object):
         super().__init__()
 
         self._children = items
@@ -164,7 +164,7 @@ class TreeViewWithPlacerHolderModel(ui.AbstractItemModel):
         """Clears all the children from the model."""
         self._children = []
 
-    def get_item_value_model_count(self, item):
+    def get_item_value_model_count(self, item: object):
         """The number of columns.
 
         Args:
@@ -175,7 +175,7 @@ class TreeViewWithPlacerHolderModel(ui.AbstractItemModel):
         """
         return 8
 
-    def get_item_children(self, item):
+    def get_item_children(self, item: object):
         """Returns all the children when the widget asks it.
 
         Args:
@@ -206,7 +206,7 @@ class TreeViewWithPlacerHolderModel(ui.AbstractItemModel):
 
         return children
 
-    def add_item(self, item):
+    def add_item(self, item: object):
         """Adds an item to the model, replacing any existing item with the same name.
 
         Args:
@@ -232,12 +232,15 @@ class TreeViewWithPlacerHolderModel(ui.AbstractItemModel):
         # trigger the delegate update
         self._item_changed(None)
 
-    def remove_item(self, item, enabled):
+    def remove_item(self, item: object, enabled: bool):
         """Removes an item from the model if enabled.
 
         Args:
             item: The item to remove from the model.
             enabled: Whether the removal operation is enabled.
+
+        Returns:
+            None if the removal operation is not enabled.
         """
         if not enabled:
             return
@@ -248,7 +251,7 @@ class TreeViewWithPlacerHolderModel(ui.AbstractItemModel):
                 self._children.append(PlacerHolderItem())
             self._item_changed(None)
 
-    def edit_item(self, item):
+    def edit_item(self, item: object):
         """Initiates editing of an item.
 
         Args:
@@ -256,11 +259,14 @@ class TreeViewWithPlacerHolderModel(ui.AbstractItemModel):
         """
         pass
 
-    def filter_by_text(self, filter_texts):
+    def filter_by_text(self, filter_texts: list):
         """Filters items by text, showing only items that contain all filter texts.
 
         Args:
             filter_texts: List of text strings to filter by.
+
+        Returns:
+            None if there are no children or the filter texts have not changed.
         """
         if not self._children:
             return
@@ -280,7 +286,7 @@ class TreeViewWithPlacerHolderModel(ui.AbstractItemModel):
 
         self._item_changed(None)
 
-    def filter_by_conditions(self, conditions):
+    def filter_by_conditions(self, conditions: list):
         """Filters items by multiple conditions.
 
         Args:
@@ -292,7 +298,7 @@ class TreeViewWithPlacerHolderModel(ui.AbstractItemModel):
             self.filter_by_condition(condition)
         self._item_changed(None)
 
-    def filter_by_condition(self, condition):
+    def filter_by_condition(self, condition: object):
         """Filters items by a single condition. Should be implemented in subclass.
 
         Args:
@@ -300,7 +306,7 @@ class TreeViewWithPlacerHolderModel(ui.AbstractItemModel):
         """
         print("should implement the logic in subclass")
 
-    def sort_by_name(self, policy, column_id):
+    def sort_by_name(self, policy: object, column_id: int):
         """Sorts items by name according to the specified policy.
 
         Args:
@@ -327,7 +333,7 @@ class TreeViewWithPlacerHolderDelegate(ui.AbstractItemDelegate):
         model: The tree view model instance.
     """
 
-    def __init__(self, headers, combo_lists, combo_ids, model):
+    def __init__(self, headers: list, combo_lists: list, combo_ids: list, model: object):
         super().__init__()
         self.subscription = None
         self.headers = headers
@@ -341,7 +347,7 @@ class TreeViewWithPlacerHolderDelegate(ui.AbstractItemDelegate):
         """Cleans up resources and references held by the delegate."""
         self.__name_sort_options_menu = None
 
-    def build_branch(self, model, item, column_id, level, expanded):
+    def build_branch(self, model: object, item: object, column_id: int, level: int, expanded: bool):
         """Create a branch widget that opens or closes subtree.
 
         Args:
@@ -353,7 +359,7 @@ class TreeViewWithPlacerHolderDelegate(ui.AbstractItemDelegate):
         """
         pass
 
-    def __build_rename_field(self, item, item_model, label, value, parent_stack):
+    def __build_rename_field(self, item: object, item_model: object, label: object, value: str, parent_stack: object):
         """Creates a rename field widget that allows editing item names on double-click.
 
         Args:
@@ -395,7 +401,7 @@ class TreeViewWithPlacerHolderDelegate(ui.AbstractItemDelegate):
         field.model.set_value(value)
         parent_stack.set_mouse_double_clicked_fn(lambda x, y, b, _: on_mouse_double_clicked(b, label, field))
 
-    def build_widget(self, model, item, column_id, level, expanded):
+    def build_widget(self, model: object, item: object, column_id: int, level: int, expanded: bool):
         """Create a widget per column per item.
 
         Args:
@@ -451,12 +457,15 @@ class TreeViewWithPlacerHolderDelegate(ui.AbstractItemDelegate):
                                 if column_id == 1:
                                     self.__build_rename_field(item, item_model, label, value, stack)
 
-    def sort_button_pressed_fn(self, b, column_id):
+    def sort_button_pressed_fn(self, b: int, column_id: int):
         """Handles sort button press events to display sorting options menu.
 
         Args:
             b: The mouse button that was pressed.
             column_id: The column identifier for the sort button.
+
+        Returns:
+            None if the mouse button is not the primary button.
         """
         if b != 0:
             return

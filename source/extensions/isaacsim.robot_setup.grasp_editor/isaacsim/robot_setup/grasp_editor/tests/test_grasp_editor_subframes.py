@@ -122,7 +122,7 @@ class TestGraspSubframes(omni.kit.test.AsyncTestCase):
         self._grasp_spec = import_grasps_from_file(self._grasp_file)
         await update_stage_async()
 
-    def assertAlmostEqual(self, a, b, msg: str = "", tol: float = 1e-6):
+    def assertAlmostEqual(self, a: object, b: object, msg: str = "", tol: float = 1e-6):
         """Assert that two arrays are almost equal within tolerance.
 
         Overrides the default method to support array comparisons by converting inputs to NumPy
@@ -161,7 +161,7 @@ class TestGraspSubframes(omni.kit.test.AsyncTestCase):
 
     # Each ground truth pose for the representative subframes was captured when creating the imported
     # grasp file.  The information in the file should be enough to exactly recover the ground truth pose
-    def compareRigidBodyPoseToGroundTruth(self, grasp_index: int, translation, orientation):
+    def compareRigidBodyPoseToGroundTruth(self, grasp_index: int, translation: object, orientation: object) -> None:
         """Compare rigid body pose against recorded ground truth values.
 
         Validates that the computed pose matches the expected ground truth pose for the
@@ -175,7 +175,7 @@ class TestGraspSubframes(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(self._ground_truth_rb_translations[grasp_index], translation)
         self.assertAlmostEqual(self._ground_truth_rb_quats[grasp_index], orientation, tol=1e-3)
 
-    def compareGripperPoseToGroundTruth(self, translation, orientation):
+    def compareGripperPoseToGroundTruth(self, translation: object, orientation: object) -> None:
         """Compare gripper pose against recorded ground truth values.
 
         Validates that the computed gripper pose matches the expected ground truth pose

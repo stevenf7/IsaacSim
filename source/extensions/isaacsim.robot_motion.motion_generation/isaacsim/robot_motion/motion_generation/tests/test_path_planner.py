@@ -171,7 +171,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         sphereLight.CreateIntensityAttr(100000)
         SingleXFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
 
-    async def _prepare_stage(self, robot):
+    async def _prepare_stage(self, robot: object):
         """Prepare the simulation stage for testing.
 
         Stops the timeline, initializes the simulation context, creates lighting, starts the timeline,
@@ -200,7 +200,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._robot.post_reset()
         await update_stage_async()
 
-    async def reset_robot(self, robot):
+    async def reset_robot(self, robot: object):
         """To make motion_generation outputs more deterministic, this method may be used to
         teleport the robot to specified position targets, setting velocity to 0
 
@@ -524,7 +524,9 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         await self.follow_plan(actions, 0.01)
 
-    async def _test_traj_gen_with_rrt(self, rrt_plan, interpolation_max_dist, path_dist_thresh=0.01):
+    async def _test_traj_gen_with_rrt(
+        self, rrt_plan: object, interpolation_max_dist: float, path_dist_thresh: float = 0.01
+    ):
         """Test trajectory generation from RRT path.
 
         Interpolates the RRT path, generates a trajectory using the c-space trajectory planner,
@@ -559,7 +561,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(np.all(min_path_dists < path_dist_thresh))
 
-    async def follow_plan(self, plan, interpolation_max_dist, path_dist_thresh=0.02):
+    async def follow_plan(self, plan: object, interpolation_max_dist: float, path_dist_thresh: float = 0.02):
         """Executes a planned path by generating trajectory and applying actions to the robot.
 
         Interpolates the RRT path, generates a trajectory, and applies the resulting actions to the robot.
@@ -624,7 +626,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
             "Generated Trajectory was too far from ideal RRT trajectory to be used",
         )
 
-    async def assertAlmostEqual(self, a, b, dbg_msg=""):
+    async def assertAlmostEqual(self, a: object, b: object, dbg_msg: str = ""):
         """Asserts that two arrays are almost equal element-wise within tolerance.
 
         Compares numpy arrays element by element, ignoring None values, and asserts that the absolute

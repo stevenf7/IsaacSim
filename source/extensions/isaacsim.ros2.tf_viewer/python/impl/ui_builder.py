@@ -16,15 +16,34 @@
 """Provides UI management for the ROS 2 TF viewer extension."""
 
 
+from typing import Callable
+
 import isaacsim.gui.components.ui_utils as ui_utils
 import omni.kit.menu.utils
 import omni.ui as ui
 
+from .viewport_scene import ViewportScene
+
 
 class UIBuilder:
-    """Manage extension UI"""
+    """Manage extension UI.
 
-    def __init__(self, menu_path, window_title, viewport_scene, on_visibility_changed_callback, on_reset_callback):
+    Args:
+        menu_path: The menu path where the window menu item is placed.
+        window_title: The title of the TF Viewer window.
+        viewport_scene: The viewport scene used for rendering TF frames.
+        on_visibility_changed_callback: Callback invoked when window visibility changes.
+        on_reset_callback: Callback invoked when the reset button is clicked.
+    """
+
+    def __init__(
+        self,
+        menu_path: str,
+        window_title: str,
+        viewport_scene: ViewportScene,
+        on_visibility_changed_callback: Callable[[bool], None],
+        on_reset_callback: Callable[[], None],
+    ):
         self._window_title = window_title
         self._viewport_scene = viewport_scene
         self._on_visibility_changed_callback = on_visibility_changed_callback

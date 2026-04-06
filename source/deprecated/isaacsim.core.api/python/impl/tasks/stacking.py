@@ -48,7 +48,7 @@ class Stacking(ABC, BaseTask):
         stack_target_position: Optional[np.ndarray] = None,
         cube_size: Optional[np.ndarray] = None,
         offset: Optional[np.ndarray] = None,
-    ):
+    ) -> None:
         BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
         self._num_of_cubes = cube_initial_positions.shape[0]
@@ -66,7 +66,7 @@ class Stacking(ABC, BaseTask):
         self._cubes = []
         return
 
-    def set_up_scene(self, scene: Scene):
+    def set_up_scene(self, scene: Scene) -> None:
         """Set up the scene with cubes and robot.
 
         Args:
@@ -103,7 +103,7 @@ class Stacking(ABC, BaseTask):
         return
 
     @abstractmethod
-    def set_robot(self):
+    def set_robot(self) -> None:
         """Create and return the robot for this task.
 
         Raises:
@@ -117,7 +117,7 @@ class Stacking(ABC, BaseTask):
         cube_position: Optional[str] = None,
         cube_orientation: Optional[str] = None,
         stack_target_position: Optional[str] = None,
-    ):
+    ) -> None:
         """Set task parameters.
 
         Args:
@@ -172,7 +172,7 @@ class Stacking(ABC, BaseTask):
             }
         return observations
 
-    def pre_step(self, time_step_index: int, simulation_time: float):
+    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
         """Called before each physics step.
 
         Args:
@@ -181,7 +181,7 @@ class Stacking(ABC, BaseTask):
         """
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Called after world reset to open gripper."""
         from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 

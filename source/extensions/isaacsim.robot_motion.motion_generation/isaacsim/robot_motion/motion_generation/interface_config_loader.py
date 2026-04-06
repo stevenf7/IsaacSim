@@ -81,7 +81,7 @@ def get_supported_robot_path_planner_pairs() -> dict:
     return supported_planner_names_by_robot
 
 
-def load_supported_lula_kinematics_solver_config(robot_name: str, policy_config_dir=None) -> dict:
+def load_supported_lula_kinematics_solver_config(robot_name: str, policy_config_dir: str = None) -> dict:
     """Load lula kinematics solver for a supported robot.
     Use get_supported_robots_with_lula_kinematics() to get a list of robots with supported kinematics.
 
@@ -203,7 +203,7 @@ def load_supported_path_planner_config(robot_name: str, planner_name: str, polic
     return config
 
 
-def _process_policy_config(mg_config_file) -> dict:
+def _process_policy_config(mg_config_file: str) -> dict:
     """Process a motion generation config file by resolving relative asset paths.
 
     Args:

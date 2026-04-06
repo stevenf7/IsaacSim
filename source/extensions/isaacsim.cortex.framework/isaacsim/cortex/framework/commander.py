@@ -51,15 +51,15 @@ class Commander(ABC):
 
     In particular, this command API supports both discrete commands and continuous streams of
     commands.
+
+    All commanders command a subset of the robot's joints which is specified on
+    construction.
+
+    Args:
+        articulation_subset: The subset of joints being controlled by this commander.
     """
 
     def __init__(self, articulation_subset: ArticulationSubset):
-        """All commanders command a subset of the robot's joints which is specified on
-        construction.
-
-        Args:
-            articulation_subset: The subset of joints being controlled by this commander.
-        """
         self.articulation_subset = articulation_subset
         self.latest_command = None
 
@@ -91,6 +91,9 @@ class Commander(ABC):
         latest_command.
 
         The type of the command is defined by the deriving class.
+
+        Args:
+            command: The command to send.
         """
         self.latest_command = command
 
@@ -103,6 +106,9 @@ class Commander(ABC):
         """Steps the commander to process the latest command.
 
         Override this method to define how the underlying policy is processed.
+
+        Args:
+            dt: The time step for this step.
         """
         raise NotImplementedError()
 

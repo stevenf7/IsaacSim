@@ -38,7 +38,7 @@ _RESOLVER_INDEX = None
 _RESOLVER_NAMES = None
 
 
-def make_hide_cb(own_resolver_name: str, prim_type, key, default=None):
+def make_hide_cb(own_resolver_name: str, prim_type: "PrimType", key: str | list, default: object = None):
     """Create a disable callback for a property covered by both Newton and Mjc resolvers.
 
     Resolvers are ordered by priority (Newton first, Mjc second). The *preferred* resolver is
@@ -68,8 +68,16 @@ def make_hide_cb(own_resolver_name: str, prim_type, key, default=None):
     """
     keys = key if isinstance(key, list) else [key]
 
-    def _resolver_authored_attr(r, prim):
-        """Returns the USD attribute name of the first authored key, or None."""
+    def _resolver_authored_attr(r: object, prim: object) -> str | None:
+        """Returns the USD attribute name of the first authored key, or None.
+
+        Args:
+            r: The schema resolver to query for authored values.
+            prim: The USD prim to check for authored attributes.
+
+        Returns:
+            The USD attribute name of the first authored key, or None.
+        """
         for k in keys:
             if r.get_value(prim, prim_type, k) is not None:
                 spec = r.mapping.get(prim_type, {}).get(k)

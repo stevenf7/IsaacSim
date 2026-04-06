@@ -77,7 +77,7 @@ wp.overload(
 )
 
 
-def get_local_from_world(parent_transforms, positions, orientations, device):
+def get_local_from_world(parent_transforms: object, positions: object, orientations: object, device: object):
     """Converts world-space poses to local coordinates relative to parent transforms.
 
     Transforms world positions and orientations to local space using parent transformation matrices.
@@ -127,7 +127,7 @@ def get_local_from_world(parent_transforms, positions, orientations, device):
     return world_pos, world_rot
 
 
-def get_world_from_local(parent_transforms, translations, orientations, device):
+def get_world_from_local(parent_transforms: object, translations: object, orientations: object, device: object):
     """Transforms local poses to world coordinates using parent transformations.
 
     Converts local translations and orientations to world space by applying parent transformation
@@ -203,7 +203,7 @@ wp.overload(
 )
 
 
-def get_pose(positions, orientations, device):
+def get_pose(positions: object, orientations: object, device: object):
     """Combines position and orientation arrays into a unified pose representation.
 
     Creates a pose array containing both position and orientation data in a single structure.
@@ -310,7 +310,15 @@ wp.overload(
 )
 
 
-def assign_pose(current_positions, current_orientations, positions, orientations, indices, device, pose):
+def assign_pose(
+    current_positions: object,
+    current_orientations: object,
+    positions: object,
+    orientations: object,
+    indices: object,
+    device: object,
+    pose: object,
+):
     """Assigns pose data by combining current poses with selective updates.
 
     First populates the pose array with current position and orientation data, then selectively

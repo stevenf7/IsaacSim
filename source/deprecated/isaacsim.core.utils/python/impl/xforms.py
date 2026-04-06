@@ -85,7 +85,7 @@ def reset_xform_ops(prim: Usd.Prim):
     reset_and_set_xform_ops(current_translation, current_orientation)
 
 
-def _get_world_pose_transform_w_scale(prim_path, fabric=False):
+def _get_world_pose_transform_w_scale(prim_path: str, fabric: bool = False):
     """Get the world transformation matrix including scale for a prim.
 
     Args:
@@ -147,7 +147,7 @@ def _get_world_pose_transform_w_scale(prim_path, fabric=False):
         return _get_from_usd_prim(prim_path)
 
 
-def get_local_pose(prim_path):
+def get_local_pose(prim_path: str):
     """Get the local pose of a prim relative to its parent.
 
     Args:
@@ -197,7 +197,7 @@ def get_local_pose(prim_path):
         )
 
 
-def get_world_pose(prim_path, fabric=False):
+def get_world_pose(prim_path: str, fabric: bool = False):
     """Get the world pose of a prim.
 
     Args:

@@ -83,12 +83,8 @@ class UtilitiesMenuExtension:
         """
         return self._asset_check.is_visible() if self._asset_check else False
 
-    def _on_asset_check_visibility_changed(self):
-        """Notify the visibility changed callback.
-
-        Args:
-            _visible: The visibility state of the window.
-        """
+    def _on_asset_check_visibility_changed(self) -> None:
+        """Notify the visibility changed callback."""
         refresh_menu_items("Utilities")
 
     def shutdown(self):

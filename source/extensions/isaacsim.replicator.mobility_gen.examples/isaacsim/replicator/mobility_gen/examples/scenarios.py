@@ -66,7 +66,7 @@ class KeyboardTeleoperationScenario(MobilityGenScenario):
         self.robot.set_pose_2d(pose)
         self.update_state()
 
-    def step(self, step_size):
+    def step(self, step_size: float):
         """Executes one step of keyboard teleoperation control.
 
         Reads keyboard input for WASD keys to control robot movement, calculates linear and angular velocities based on the input, and applies the action to the robot.

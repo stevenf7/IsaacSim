@@ -40,7 +40,7 @@ class CustomCollapsableFrame(CollapsableFrame):
             the frame header, and other arguments passed to the parent CollapsableFrame.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object):
         self._show_copy_button = kwargs.get("show_copy_button", False)
         kwargs.pop("show_copy_button", None)
         self._copy_content = None

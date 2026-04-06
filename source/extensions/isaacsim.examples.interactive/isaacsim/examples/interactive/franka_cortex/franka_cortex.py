@@ -36,7 +36,7 @@ class CubeSpec:
         color: RGB color values for the cube's appearance.
     """
 
-    def __init__(self, name, color):
+    def __init__(self, name: str, color: list) -> None:
         self.name = name
         self.color = np.array(color)
 
@@ -51,11 +51,11 @@ class ContextStateMonitor(DfDiagnosticsMonitor):
         diagnostic_fn: Optional function to call with the context for diagnostics.
     """
 
-    def __init__(self, print_dt, diagnostic_fn=None):
+    def __init__(self, print_dt: float, diagnostic_fn: callable = None) -> None:
         super().__init__(print_dt=print_dt)
         self.diagnostic_fn = diagnostic_fn
 
-    def print_diagnostics(self, context):
+    def print_diagnostics(self, context: object) -> None:
         """Prints diagnostic information from the context.
 
         Calls the diagnostic function if one is provided to display context information.
@@ -89,14 +89,14 @@ class FrankaCortex(CortexBase):
             information. Called with two string arguments: diagnostic_message and decision_stack.
     """
 
-    def __init__(self, monitor_fn=None):
+    def __init__(self, monitor_fn: callable = None) -> None:
         super().__init__()
         self._monitor_fn = monitor_fn
         self.behavior = None
         self.robot = None
         self.context_monitor = ContextStateMonitor(print_dt=0.25, diagnostic_fn=self._on_monitor_update)
 
-    def setup_scene(self):
+    def setup_scene(self) -> None:
         """Sets up the simulation scene with a Franka robot and colored cube obstacles.
 
         Adds a Franka robot to the world and creates four colored cubes (Red, Blue, Yellow, Green) as obstacles that the robot must navigate around. Also adds a default ground plane to the scene.
@@ -124,7 +124,7 @@ class FrankaCortex(CortexBase):
             self.robot.register_obstacle(obj)
         world.scene.add_default_ground_plane()
 
-    async def load_behavior(self, behavior):
+    async def load_behavior(self, behavior: object) -> None:
         """Loads a behavior module and creates its decider network for the robot.
 
         Args:
@@ -136,13 +136,13 @@ class FrankaCortex(CortexBase):
         self.decider_network.context.add_monitor(self.context_monitor.monitor)
         world.add_decider_network(self.decider_network)
 
-    def clear_behavior(self):
+    def clear_behavior(self) -> None:
         """Clears all loaded behaviors and logical state monitors from the world."""
         world = self.get_world()
         world._logical_state_monitors.clear()
         world._behaviors.clear()
 
-    async def setup_post_load(self, soft=False):
+    async def setup_post_load(self, soft: bool = False) -> None:
         """Sets up the decider network after loading a behavior module.
 
         Creates and configures the decider network from the loaded behavior module, adds monitoring capabilities, and integrates it with the world.
@@ -159,7 +159,7 @@ class FrankaCortex(CortexBase):
         world.add_decider_network(self.decider_network)
         await omni.kit.app.get_app().next_update_async()
 
-    def _on_monitor_update(self, context):
+    def _on_monitor_update(self, context: object) -> None:
         """Handles context updates from the behavior monitoring system.
 
         Extracts diagnostic messages and decision stack information from the context and passes them to the registered monitor function for UI display.
@@ -182,7 +182,7 @@ class FrankaCortex(CortexBase):
         if self._monitor_fn:
             self._monitor_fn(diagnostic, decision_stack)
 
-    def _on_physics_step(self, step_size):
+    def _on_physics_step(self, step_size: float) -> None:
         """Handles physics simulation step updates.
 
         Called during each physics simulation step to advance the world state without rendering.
@@ -194,7 +194,7 @@ class FrankaCortex(CortexBase):
 
         world.step(False, False)
 
-    async def on_event_async(self):
+    async def on_event_async(self) -> None:
         """Handles asynchronous event processing for simulation control.
 
         Resets the Cortex world, registers physics step callbacks, and starts the simulation playback.
@@ -205,7 +205,7 @@ class FrankaCortex(CortexBase):
         world.add_physics_callback("sim_step", self._on_physics_step)
         await world.play_async()
 
-    async def setup_pre_reset(self):
+    async def setup_pre_reset(self) -> None:
         """Prepares the world for reset by cleaning up physics callbacks.
 
         Removes any existing physics step callbacks before performing a world reset.
@@ -214,6 +214,6 @@ class FrankaCortex(CortexBase):
         if world.physics_callback_exists("sim_step"):
             world.remove_physics_callback("sim_step")
 
-    def world_cleanup(self):
+    def world_cleanup(self) -> None:
         """Performs cleanup operations when the world is being destroyed."""
         pass

@@ -35,7 +35,6 @@ class TrajectoryFollower(BaseController):
     """
 
     def __init__(self):
-        """Initialize a TrajectoryFollower controller."""
         self._trajectory = None
 
         # Time when the trajectory starts to run in the sim/real world.

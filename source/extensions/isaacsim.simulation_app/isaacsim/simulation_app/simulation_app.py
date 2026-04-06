@@ -41,8 +41,12 @@ class SimulationApp:
     the Toolkit is already running. Thus, it is necessary to launch the Toolkit first from
     your python application and then import everything else.
 
+    Launches the Omniverse Toolkit with the provided configuration settings.
+    The settings in DEFAULT_LAUNCHER_CONFIG are overwritten by those in launch_config.
+
     Args:
         launch_config: A dictionary containing the configuration for the app.
+            See DEFAULT_LAUNCHER_CONFIG for available options.
         experience: Path to the application config loaded by the launcher.
             If not specified, the launcher will load one of the following experience files in order
             (where ``$EXP_PATH`` points to the ``apps`` folder in a default Isaac Sim setup):
@@ -70,6 +74,20 @@ class SimulationApp:
 
     Note:
             The settings in :obj:`DEFAULT_LAUNCHER_CONFIG` are overwritten by those in :obj:`config`.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from isaacsim.simulation_app import SimulationApp
+        >>> config = {
+        ...     "width": 1280,
+        ...     "height": 720,
+        ...     "headless": False,
+        ... }
+        >>> simulation_app = SimulationApp(config)
+        >>> # Rest of the code follows
+        >>> simulation_app.close()
     """
 
     DEFAULT_LAUNCHER_CONFIG = {
@@ -155,31 +173,6 @@ class SimulationApp:
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
-        """Initialize the SimulationApp with specified configuration.
-
-        Launches the Omniverse Toolkit with the provided configuration settings.
-        The settings in DEFAULT_LAUNCHER_CONFIG are overwritten by those in launch_config.
-
-        Args:
-            launch_config: A dictionary containing the configuration for the app.
-                See DEFAULT_LAUNCHER_CONFIG for available options.
-            experience: Path to the application config loaded by the launcher.
-                If not specified, loads one of the default experience files in order.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> from isaacsim.simulation_app import SimulationApp
-            >>> config = {
-            ...     "width": 1280,
-            ...     "height": 720,
-            ...     "headless": False,
-            ... }
-            >>> simulation_app = SimulationApp(config)
-            >>> # Rest of the code follows
-            >>> simulation_app.close()
-        """
         # Enable callstack on crash
         faulthandler.enable()
         # Sanity check to see if any extra omniverse modules are loaded
@@ -430,7 +423,7 @@ class SimulationApp:
             self.close(wait_for_replicator=False)
 
     @staticmethod
-    def _start_watchdog(timeout_s: int, reason: str):
+    def _start_watchdog(timeout_s: int, reason: str) -> tuple:
         """Start a watchdog that forcibly kills this process after *timeout_s* seconds.
 
         On Linux a forked child process is used because it is immune to GIL
@@ -441,7 +434,12 @@ class SimulationApp:
         instead.  The glibc destructor deadlocks that motivate the fork do not
         apply on Windows, so a thread is sufficient.
 
-        Returns an opaque handle to pass to ``_cancel_watchdog``.
+        Args:
+            timeout_s: Number of seconds before the watchdog kills the process.
+            reason: Human-readable reason for the watchdog, used in the log message.
+
+        Returns:
+            An opaque handle to pass to ``_cancel_watchdog``.
         """
         import threading
 
@@ -471,8 +469,12 @@ class SimulationApp:
         return ("timer", timer)
 
     @staticmethod
-    def _cancel_watchdog(handle) -> None:
-        """Cancel a watchdog previously started by ``_start_watchdog``."""
+    def _cancel_watchdog(handle: tuple) -> None:
+        """Cancel a watchdog previously started by ``_start_watchdog``.
+
+        Args:
+            handle: Opaque handle returned by ``_start_watchdog``.
+        """
         kind, ref = handle
         if kind == "fork":
             try:

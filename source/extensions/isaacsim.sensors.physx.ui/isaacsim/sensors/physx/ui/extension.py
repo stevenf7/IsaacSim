@@ -67,7 +67,7 @@ class Extension(omni.ext.IExt):
         _range_sensor.release_lidar_sensor_interface(self._lidar)
         _range_sensor.release_generic_sensor_interface(self._generic)
 
-    def _register_property_menu(self):
+    def _register_property_menu(self) -> None:
         """Registers the property menu for the extension.
 
         Marks the menu as registered and sets up context menu items if the context menu is available.
@@ -80,7 +80,7 @@ class Extension(omni.ext.IExt):
             carb.log_error("context_menu is disabled!")
             return None
 
-    def _unregister_property_menu(self):
+    def _unregister_property_menu(self) -> None:
         """Unregisters the property menu for the extension.
 
         Marks the menu as unregistered and prevents multiple unregistration attempts.
@@ -90,7 +90,7 @@ class Extension(omni.ext.IExt):
             return
         self._registered = False
 
-    def _is_material(self, objects) -> bool:
+    def _is_material(self, objects: dict) -> bool:
         """Checks if any of the provided objects contains material prims.
 
         Args:

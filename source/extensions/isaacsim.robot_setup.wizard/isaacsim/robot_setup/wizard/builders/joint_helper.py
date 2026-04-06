@@ -27,7 +27,7 @@ ACTUATOR_TYPES = ["linear", "angular"]
 AXIS_LIST = ["X", "Y", "Z"]
 
 
-def get_joint_handle(joint_prim):
+def get_joint_handle(joint_prim: object):
     """Get the joint handle.
 
     Args:
@@ -55,7 +55,7 @@ def get_joint_handle(joint_prim):
     return joint_handle
 
 
-def define_joints(joint_path, joint_type, axis, parent, child, **kwargs):
+def define_joints(joint_path: str, joint_type: str, axis: str, parent: str, child: str, **kwargs: object) -> None:
     """Define the joints for the robot, or update the existing joint.
 
     Args:
@@ -65,6 +65,9 @@ def define_joints(joint_path, joint_type, axis, parent, child, **kwargs):
         parent: USD path of the parent body for the joint.
         child: USD path of the child body for the joint.
         **kwargs: Additional keyword arguments passed to the function.
+
+    Returns:
+        None if the input is invalid or the joint creation fails.
     """
     if joint_type is None or parent is None or child is None or axis is None:
         print("joint_type, parent, child, axis are required")
@@ -149,13 +152,16 @@ def define_joints(joint_path, joint_type, axis, parent, child, **kwargs):
     return
 
 
-def apply_joint_settings(joint_path, **kwargs):
+def apply_joint_settings(joint_path: str, **kwargs: object) -> None:
     """Apply the joint settings to the joint.
 
     Args:
         joint_path: USD path of the joint to apply settings to.
         **kwargs: Additional keyword arguments for joint configuration including break_force, break_torque,
             lower_limit, and upper_limit.
+
+    Returns:
+        None if the joint prim or stage is invalid, or if the joint is a fixed joint.
     """
     stage = omni.usd.get_context().get_stage()
     joint_prim = stage.GetPrimAtPath(joint_path)
@@ -195,13 +201,16 @@ def apply_joint_settings(joint_path, **kwargs):
             joint_handle.CreateUpperLimitAttr(upper_limit)
 
 
-def apply_drive_settings(joint_path, **kwargs):
+def apply_drive_settings(joint_path: str, **kwargs: object) -> None:
     """Define the drive for the joint.
 
     Args:
         joint_path: USD path of the joint to apply drive settings to.
         **kwargs: Additional keyword arguments for drive configuration including drive_type, max_force,
             target_velocity, target_position, damping, and stiffness.
+
+    Returns:
+        None if the joint prim or stage is invalid, or if the joint type is unsupported.
     """
     stage = omni.usd.get_context().get_stage()
     joint_prim = stage.GetPrimAtPath(joint_path)
@@ -272,7 +281,7 @@ def apply_drive_settings(joint_path, **kwargs):
         drive_handle.CreateStiffnessAttr(stiffness)
 
 
-def get_all_settings(joint_path) -> dict:
+def get_all_settings(joint_path: str) -> dict:
     """Get all the settings for the joint.
 
     Args:
@@ -315,7 +324,7 @@ def get_all_settings(joint_path) -> dict:
     return settings_dict
 
 
-def apply_joint_apis(robot_path):
+def apply_joint_apis(robot_path: str):
     """Apply the APIs to the joint (joint state, robot joint, articulation root).
 
     Args:

@@ -63,7 +63,7 @@ class Prim(object):
         print(f"Prim paths: {prims.prim_paths}")
     """
 
-    def __init__(self, prim_paths_expr: str, name: str = "prim_view"):
+    def __init__(self, prim_paths_expr: str, name: str = "prim_view") -> None:
         if not isinstance(prim_paths_expr, list):
             prim_paths_expr = [prim_paths_expr]
         self._prim_paths = []
@@ -184,7 +184,7 @@ class Prim(object):
         """
         return SimulationManager.get_physics_sim_view() is not None
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Reset the prims to its default state.
 
         Example:
@@ -216,7 +216,7 @@ class Prim(object):
         """
         return self._is_valid
 
-    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None):
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
         """Create a physics simulation view if not passed and set other properties using the PhysX tensor API.
 
         .. note::
@@ -235,7 +235,7 @@ class Prim(object):
         self._on_physics_ready(None)
         return
 
-    def _on_prim_deletion(self, prim_path):
+    def _on_prim_deletion(self, prim_path: str) -> None:
         """Handle prim deletion events.
 
         Invalidates the view and removes callbacks when a matching prim is deleted from the stage.
@@ -262,7 +262,7 @@ class Prim(object):
                 return
         return
 
-    def _on_physics_ready(self, event):
+    def _on_physics_ready(self, event: object) -> None:
         """Handle physics ready events.
 
         Updates backend references when physics simulation is ready.
@@ -275,7 +275,7 @@ class Prim(object):
         self._backend_utils = SimulationManager._get_backend_utils()
         return
 
-    def _on_post_reset(self, event):
+    def _on_post_reset(self, event: object) -> None:
         """Handle post-reset events.
 
         Called after simulation reset to reinitialize prim state.
@@ -285,7 +285,7 @@ class Prim(object):
         """
         return
 
-    def _remove_callbacks(self):
+    def _remove_callbacks(self) -> None:
         """Remove all registered simulation callbacks.
 
         Deregisters callbacks for physics ready, post-reset, and prim deletion events.

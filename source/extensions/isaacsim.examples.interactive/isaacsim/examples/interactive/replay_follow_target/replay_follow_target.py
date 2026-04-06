@@ -47,7 +47,7 @@ class ReplayFollowTarget(BaseSample):
     setup_scene, setup_post_load, setup_post_reset, and cleanup methods.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._robot = None
         self._target_cube = None
@@ -57,7 +57,7 @@ class ReplayFollowTarget(BaseSample):
         self._current_time_step_index = 0
         self._physics_callback_id = None
 
-    def setup_scene(self):
+    def setup_scene(self) -> None:
         """Set up the scene with Franka robot and target cube."""
         # Add ground plane environment for physics simulation
         stage = stage_utils.get_current_stage()
@@ -93,7 +93,7 @@ class ReplayFollowTarget(BaseSample):
 
         self._data_logger = DataLogger()
 
-    async def setup_post_load(self):
+    async def setup_post_load(self) -> None:
         """Called after the scene is loaded."""
         # Set camera view
         ViewportManager.set_camera_view(eye=[1.5, 1.5, 1.5], target=[0.01, 0.01, 0.01], camera="/OmniverseKit_Persp")
@@ -101,7 +101,7 @@ class ReplayFollowTarget(BaseSample):
         # Reset time step index
         self._current_time_step_index = 0
 
-    async def setup_pre_reset(self):
+    async def setup_pre_reset(self) -> None:
         """Called before world reset."""
         # Deregister physics callbacks
         if self._physics_callback_id is not None:
@@ -111,7 +111,7 @@ class ReplayFollowTarget(BaseSample):
         # Reset time step index
         self._current_time_step_index = 0
 
-    async def setup_post_reset(self):
+    async def setup_post_reset(self) -> None:
         """Called after world reset."""
         # Reset robot to default pose
         if self._robot:
@@ -120,7 +120,7 @@ class ReplayFollowTarget(BaseSample):
         # Reset time step index
         self._current_time_step_index = 0
 
-    async def setup_post_clear(self):
+    async def setup_post_clear(self) -> None:
         """Called after clearing the scene."""
         # Deregister physics callbacks
         if self._physics_callback_id is not None:
@@ -132,13 +132,13 @@ class ReplayFollowTarget(BaseSample):
         self._data_logger = None
         self._current_time_step_index = 0
 
-    def physics_cleanup(self):
+    def physics_cleanup(self) -> None:
         """Clean up physics resources."""
         if self._physics_callback_id is not None:
             SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
-    async def _on_replay_trajectory_event_async(self, data_file):
+    async def _on_replay_trajectory_event_async(self, data_file: str) -> None:
         """Load and replay trajectory data.
 
         Args:
@@ -156,7 +156,7 @@ class ReplayFollowTarget(BaseSample):
             self._on_replay_trajectory_step, event=SimulationEvent.PHYSICS_POST_STEP
         )
 
-    async def _on_replay_scene_event_async(self, data_file):
+    async def _on_replay_scene_event_async(self, data_file: str) -> None:
         """Load and replay scene data (robot + target).
 
         Args:
@@ -174,7 +174,7 @@ class ReplayFollowTarget(BaseSample):
             self._on_replay_scene_step, event=SimulationEvent.PHYSICS_POST_STEP
         )
 
-    def _on_replay_trajectory_step(self, dt, context):
+    def _on_replay_trajectory_step(self, dt: float, context: object) -> None:
         """Physics callback for replaying trajectory (robot only).
 
         Args:
@@ -202,7 +202,7 @@ class ReplayFollowTarget(BaseSample):
                 SimulationManager.deregister_callback(self._physics_callback_id)
                 self._physics_callback_id = None
 
-    def _on_replay_scene_step(self, dt, context):
+    def _on_replay_scene_step(self, dt: float, context: object) -> None:
         """Physics callback for replaying scene (robot + target).
 
         Args:

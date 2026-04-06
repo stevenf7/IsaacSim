@@ -268,7 +268,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         self.assertGreater(xpos_1, 2)
         self.assertGreater(xpos_2, 2)
 
-    async def test_delete(self):
+    async def test_delete(self) -> None:
         """Test deleting articulations during simulation does not crash."""
         self._timeline = omni.timeline.get_timeline_interface()
         self._assets_root_path = await get_assets_root_path_async()

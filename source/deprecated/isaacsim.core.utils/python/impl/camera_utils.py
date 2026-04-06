@@ -38,7 +38,13 @@ class SpringDamperFollower:
     """
 
     def __init__(
-        self, mass, stiffness, damping, current=Gf.Vec3d(0, 0, 0), target=Gf.Vec3d(0, 0, 0), vel=Gf.Vec3d(0, 0, 0)
+        self,
+        mass: float,
+        stiffness: float,
+        damping: float,
+        current: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
+        target: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
+        vel: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
     ):
         self.m = mass
         self.k = stiffness
@@ -79,7 +85,15 @@ class DynamicCamera:
         focus_distance: Initial focus distance for the camera.
     """
 
-    def __init__(self, stage, base_path: str, camera_name: str, focal_length=24, f_stop=5, focus_distance=0):
+    def __init__(
+        self,
+        stage: Usd.Stage,
+        base_path: str,
+        camera_name: str,
+        focal_length: float = 24,
+        f_stop: float = 5,
+        focus_distance: float = 0,
+    ):
         self._stage = stage
         self.target_follower = SpringDamperFollower(mass=5, stiffness=5, damping=10)
         self.position_follower = SpringDamperFollower(mass=20, stiffness=5, damping=20)
@@ -110,7 +124,7 @@ class DynamicCamera:
         self.target_follower.current = self.target_follower.target
         self.update(1.0 / 60.0)
 
-    def update(self, step: float, timecode=Usd.TimeCode.Default()):
+    def update(self, step: float, timecode: Usd.TimeCode = Usd.TimeCode.Default()):
         """Updates the camera position, orientation, and focus based on spring-damper physics.
 
         Args:

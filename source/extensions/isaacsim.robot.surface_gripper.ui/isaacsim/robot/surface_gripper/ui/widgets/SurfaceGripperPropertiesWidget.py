@@ -51,7 +51,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         **kwargs: Additional keyword arguments passed to the parent UsdPropertiesWidget.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
         self._old_payload = []
         self._listener = None
@@ -111,7 +111,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         selection.set_selected_prim_paths(selected_paths, True)
         window.frame.rebuild()
 
-    def _on_usd_changed(self, notice, stage):
+    def _on_usd_changed(self, notice: Usd.Notice.ObjectsChanged, stage: Usd.Stage) -> None:
         """Handles USD change notifications.
 
         Args:
@@ -127,7 +127,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         else:
             super()._on_usd_changed(notice, stage)
 
-    def _get_prim(self, prim_path):
+    def _get_prim(self, prim_path: str) -> Usd.Prim | None:
         """Gets a Surface Gripper prim from the specified path.
 
         Args:
@@ -144,7 +144,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
                     return prim
         return None
 
-    def on_new_payload(self, payload):
+    def on_new_payload(self, payload: list) -> "list | bool":
         """See PropertyWidget.on_new_payload
 
         Args:
@@ -168,7 +168,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
 
         return self._prims
 
-    def build_items(self):
+    def build_items(self) -> None:
         """Build the property widget items for the Surface Gripper."""
         # Reset the widget state
         self.reset()
@@ -247,7 +247,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
             frame = ui.Frame(visible=False)
             asyncio.ensure_future(self._build_schema_group_frames(frame, stage, grouped_props, last_prim))
 
-    def _customize_props_layout(self, props):
+    def _customize_props_layout(self, props: list) -> list:
         """Customize the properties layout with specific display names and tooltips.
 
         Args:

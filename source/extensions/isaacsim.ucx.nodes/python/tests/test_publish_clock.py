@@ -63,8 +63,16 @@ class TestUCXPublishClock(UCXTestCase):
         for _ in range(CONNECTION_ESTABLISH_FRAMES):
             await omni.kit.app.get_app().next_update_async()
 
-    async def receive_clock_message(self, tag=DEFAULT_TEST_TAG, timeout_frames=RECEIVE_TIMEOUT_FRAMES):
-        """Receive and unpack a clock message from the client endpoint"""
+    async def receive_clock_message(self, tag: int = DEFAULT_TEST_TAG, timeout_frames: int = RECEIVE_TIMEOUT_FRAMES):
+        """Receive and unpack a clock message from the client endpoint.
+
+        Args:
+            tag: UCX tag to receive on.
+            timeout_frames: Maximum number of frames to wait.
+
+        Returns:
+            The unpacked timestamp value.
+        """
         # Clock message format: double timestamp (8 bytes)
         buffer = np.zeros(CLOCK_MESSAGE_SIZE_BYTES, dtype=np.uint8)  # Initialize with zeros instead of empty
 

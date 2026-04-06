@@ -49,7 +49,7 @@ class GripperView(XformPrim):
                       Defaults to None, which means left unchanged.
         scales: Local scales to be applied to the prim's dimensions. Shape is (N, 3).
                 Defaults to None, which means left unchanged.
-        reset_xform_properties: True if the prims don't have the right set of xform properties (i.e: translate,
+        reset_xform_op_properties: True if the prims don't have the right set of xform properties (i.e: translate,
                                 orient and scale) ONLY and in that order. Set this parameter to False if the object
                                 were cloned using using the cloner api in isaacsim.core.cloner. Defaults to True.
 
@@ -160,7 +160,7 @@ class GripperView(XformPrim):
         self,
         values: list[float],
         indices: list | np.ndarray | wp.array | None = None,
-    ):
+    ) -> None:
         """Set up the status for the surface grippers.
 
         Args:
@@ -190,7 +190,7 @@ class GripperView(XformPrim):
         shear_force_limit: list[float] | None = None,
         retry_interval: list[float] | None = None,
         indices: list | np.ndarray | wp.array | None = None,
-    ):
+    ) -> None:
         """Set up the properties for the surface grippers.
 
         Args:

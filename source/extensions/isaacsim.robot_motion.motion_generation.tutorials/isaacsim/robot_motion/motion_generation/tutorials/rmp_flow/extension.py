@@ -128,7 +128,7 @@ class Extension(omni.ext.IExt):
         self.ui_builder.cleanup()
         gc.collect()
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: bool) -> None:
         """Handle window visibility changes and manage event subscriptions.
 
         Args:
@@ -197,7 +197,7 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
         self.ui_builder.on_menu_callback()
 
-    def _on_timeline_play(self, event):
+    def _on_timeline_play(self, event: object) -> None:
         """Timeline play event callback.
 
         Args:
@@ -208,7 +208,7 @@ class Extension(omni.ext.IExt):
                 pre_step=False, order=0, on_update=self._on_physics_step
             )
 
-    def _on_timeline_stop(self, event):
+    def _on_timeline_stop(self, event: object) -> None:
         """Timeline stop event callback.
 
         Args:
@@ -217,7 +217,7 @@ class Extension(omni.ext.IExt):
         self._physics_subscription = None
         self.ui_builder.on_timeline_event(event)
 
-    def _on_physics_step(self, step, context):
+    def _on_physics_step(self, step: float, context: object) -> None:
         """Forward physics step events to the UI builder.
 
         Args:
@@ -226,7 +226,7 @@ class Extension(omni.ext.IExt):
         """
         self.ui_builder.on_physics_step(step)
 
-    def _on_stage_opened(self, event):
+    def _on_stage_opened(self, event: object) -> None:
         """Stage opened event callback.
 
         Args:
@@ -236,7 +236,7 @@ class Extension(omni.ext.IExt):
         self.ui_builder.cleanup()
         self.ui_builder.on_stage_event(event)
 
-    def _on_stage_closed(self, event):
+    def _on_stage_closed(self, event: object) -> None:
         """Stage closed event callback.
 
         Args:

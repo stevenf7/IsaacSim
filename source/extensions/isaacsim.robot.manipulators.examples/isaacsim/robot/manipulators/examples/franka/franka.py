@@ -121,7 +121,7 @@ class Franka(Robot):
         """
         return self._gripper
 
-    def initialize(self, physics_sim_view=None):
+    def initialize(self, physics_sim_view: object = None) -> None:
         """Initialize the robot and its components.
 
         Args:
@@ -139,7 +139,7 @@ class Franka(Robot):
         )
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Reset callback to configure gripper control modes."""
         super().post_reset()
         self._gripper.post_reset()

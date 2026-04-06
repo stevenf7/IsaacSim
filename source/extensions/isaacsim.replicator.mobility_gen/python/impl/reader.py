@@ -162,7 +162,7 @@ class MobilityGenReader:
             segmentation_dict[name] = data
         return segmentation_dict
 
-    def read_depth(self, name: str, index: int, eps=1e-6):
+    def read_depth(self, name: str, index: int, eps: float = 1e-6):
         """Reads depth image data for a specific camera at a given step index.
 
         Args:

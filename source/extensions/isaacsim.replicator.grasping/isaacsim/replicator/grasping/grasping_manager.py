@@ -437,7 +437,7 @@ class GraspingManager:
         file_path: str,
         components: list[str] | None = None,
         overwrite: bool = False,
-    ):
+    ) -> None:
         """Saves the current GraspingManager state to a YAML configuration file.
 
         Args:
@@ -1188,7 +1188,7 @@ class GraspingManager:
         physics_scene_path: str | None = None,
         isolate_simulation: bool = False,
         simulate_using_timeline: bool = False,
-    ):
+    ) -> None:
         """Evaluate a single grasp pose.
 
         Args:
@@ -1221,7 +1221,7 @@ class GraspingManager:
         physics_scene_path: str | None = None,
         isolate_simulation: bool = False,
         simulate_using_timeline: bool = False,
-    ):
+    ) -> None:
         """Evaluate a single grasp pose by index.
 
         Args:
@@ -1255,7 +1255,7 @@ class GraspingManager:
         )
 
     # --- Results ---
-    def write_grasp_results(self, location: Gf.Vec3d, orientation: Gf.Quatd):
+    def write_grasp_results(self, location: Gf.Vec3d, orientation: Gf.Quatd) -> None:
         """Write the grasp results to the results output path.
 
         Args:
@@ -1317,7 +1317,7 @@ class GraspingManager:
             carb.log_warn(f"Failed to write grasp results to {full_output_path}: {e}")
 
     # --- Utilities ---
-    def set_gripper_pose(self, location: Gf.Vec3d, orientation: Gf.Quatd):
+    def set_gripper_pose(self, location: Gf.Vec3d, orientation: Gf.Quatd) -> None:
         """Set the internal gripper prim's pose to the given location and orientation.
 
         Args:
@@ -1544,7 +1544,7 @@ class GraspingManager:
                 )
                 return None
 
-    def update_joint_pregrasp_states_from_current(self, joint_info_list: list[dict] | None = None):
+    def update_joint_pregrasp_states_from_current(self, joint_info_list: list[dict] | None = None) -> None:
         """Updates the internal joint_pregrasp_states by querying the current state of joints.
 
         Uses the currently set gripper path to find joints and populates the

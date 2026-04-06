@@ -83,7 +83,7 @@ class LulaTestScenarios:
         self._ee_frame_prim = None
         self.art_ik = None
 
-    def visualize_ee_frame(self, articulation, ee_frame):
+    def visualize_ee_frame(self, articulation: object, ee_frame: str) -> None:
         """Visualizes the end effector frame for the given articulation.
 
         Args:
@@ -108,7 +108,7 @@ class LulaTestScenarios:
         self._ee_frame_prim = None
         self.art_ik = None
 
-    def toggle_rmpflow_debug_mode(self):
+    def toggle_rmpflow_debug_mode(self) -> None:
         """Toggles the RMPFlow debug mode on or off.
 
         When enabled, visualization of collision spheres is activated and state updates are ignored.
@@ -125,7 +125,7 @@ class LulaTestScenarios:
             self.rmpflow.set_ignore_state_updates(False)
             self.rmpflow.stop_visualizing_collision_spheres()
 
-    def initialize_ik_solver(self, robot_description_path, urdf_path):
+    def initialize_ik_solver(self, robot_description_path: str, urdf_path: str):
         """Initializes the Lula inverse kinematics solver.
 
         Args:
@@ -144,7 +144,7 @@ class LulaTestScenarios:
             return []
         return self.lula_ik.get_all_frame_names()
 
-    def on_ik_follow_target(self, articulation, ee_frame_name):
+    def on_ik_follow_target(self, articulation: object, ee_frame_name: str) -> None:
         """Sets up an inverse kinematics scenario where the robot follows a target.
 
         Args:
@@ -159,7 +159,7 @@ class LulaTestScenarios:
 
         self._create_target()
 
-    def on_custom_trajectory(self, robot_description_path, urdf_path):
+    def on_custom_trajectory(self, robot_description_path: str, urdf_path: str) -> None:
         """Sets up a custom trajectory scenario with waypoints forming a rectangular path.
 
         Args:
@@ -182,7 +182,7 @@ class LulaTestScenarios:
             frame_prim = self._create_frame_prim(rect_path[i], orientation, f"/Trajectory/Target_{i+1}")
             self._trajectory_targets.append(frame_prim)
 
-    def create_trajectory_controller(self, articulation, ee_frame):
+    def create_trajectory_controller(self, articulation: object, ee_frame: str) -> None:
         """Creates a trajectory controller for following waypoints in the custom trajectory scenario.
 
         Args:
@@ -227,7 +227,7 @@ class LulaTestScenarios:
             )
             self._trajectory_targets.append(waypoint)
 
-    def on_rmpflow_follow_target_obstacles(self, articulation, **rmp_config):
+    def on_rmpflow_follow_target_obstacles(self, articulation: object, **rmp_config: object):
         """Sets up RmpFlow scenario for target following with obstacle avoidance.
 
         Creates a motion policy controller using RmpFlow for the articulation to follow a target
@@ -254,7 +254,7 @@ class LulaTestScenarios:
         for obstacle in self._obstacles:
             self.rmpflow.add_obstacle(obstacle)
 
-    def on_rmpflow_follow_sinusoidal_target(self, articulation, **rmp_config):
+    def on_rmpflow_follow_sinusoidal_target(self, articulation: object, **rmp_config: object):
         """Sets up RmpFlow scenario for following a sinusoidal target trajectory.
 
         Creates a motion policy controller using RmpFlow for the articulation to follow a target
@@ -284,7 +284,7 @@ class LulaTestScenarios:
         """
         return self.rmpflow
 
-    def _create_target(self, position=None, orientation=None):
+    def _create_target(self, position: object = None, orientation: object = None):
         """Creates a red target cube for motion control scenarios.
 
         Args:
@@ -299,7 +299,7 @@ class LulaTestScenarios:
             "/World/Target", size=0.05, position=position, orientation=orientation, color=np.array([1.0, 0, 0])
         )
 
-    def _create_frame_prim(self, position, orientation, parent_prim_path):
+    def _create_frame_prim(self, position: object, orientation: object, parent_prim_path: str):
         """Creates a coordinate frame visualization with colored axes.
 
         The frame consists of X (red), Y (green), and Z (blue) axes represented by
@@ -373,7 +373,7 @@ class LulaTestScenarios:
 
         return frame_xform
 
-    def _create_wall(self, position=None, orientation=None):
+    def _create_wall(self, position: object = None, orientation: object = None):
         """Creates a blue wall obstacle and adds it to the obstacles list.
 
         Args:
@@ -397,7 +397,7 @@ class LulaTestScenarios:
         )
         self._obstacles.append(cube)
 
-    def set_use_orientation(self, use_orientation):
+    def set_use_orientation(self, use_orientation: bool):
         """Sets whether orientation constraints are used in motion control.
 
         Args:
@@ -446,7 +446,7 @@ class LulaTestScenarios:
         self.timestep = 0
         self.scenario_name = ""
 
-    def update_scenario(self, **scenario_params):
+    def update_scenario(self, **scenario_params: object):
         """Updates the current scenario based on its type and provided parameters.
 
         For "Sinusoidal Target" scenarios, moves the target in a sinusoidal pattern
@@ -478,7 +478,7 @@ class LulaTestScenarios:
             self._target.set_world_pose(target_position, target_orientation)
         self.timestep += 1
 
-    def get_next_action(self, **scenario_params):
+    def get_next_action(self, **scenario_params: object):
         """Computes the next articulation action for the current scenario.
 
         Updates the end effector visualization if active, advances the scenario state, and generates the

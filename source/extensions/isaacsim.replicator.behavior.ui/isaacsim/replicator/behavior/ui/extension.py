@@ -36,7 +36,7 @@ class Extension(omni.ext.IExt):
         super().__init__()
         self._registered = False
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension is starting up.
 
         Args:

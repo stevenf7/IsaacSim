@@ -25,11 +25,11 @@ class BaseController(ABC):
         name: Name identifier for the controller.
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self._name = name
 
     @abstractmethod
-    def forward(self, *args, **kwargs) -> ArticulationAction:
+    def forward(self, *args: object, **kwargs: object) -> ArticulationAction:
         """A controller should take inputs and returns an ArticulationAction to be then passed to the
         ArticulationController.
 
@@ -45,6 +45,6 @@ class BaseController(ABC):
         """
         raise NotImplementedError
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets state of the controller."""
         return

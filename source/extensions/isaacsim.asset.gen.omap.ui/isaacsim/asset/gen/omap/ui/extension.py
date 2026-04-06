@@ -197,14 +197,12 @@ class OccupancyMapWindow(MenuHelperWindow):
     This window provides the user interface for configuring and generating occupancy maps.
     It includes controls for setting the map origin, bounds, cell size, and other parameters,
     as well as buttons for calculating and visualizing the occupancy map.
+
+    Sets up the window UI, initializes internal variables, and establishes connections
+    to the occupancy map interface and USD stage.
     """
 
     def __init__(self):
-        """Initializes the occupancy map window.
-
-        Sets up the window UI, initializes internal variables, and establishes connections
-        to the occupancy map interface and USD stage.
-        """
         super().__init__(
             Extension.EXTENSION_NAME, width=WINDOW_DEFAULT_WIDTH, height=WINDOW_DEFAULT_HEIGHT, focused=True
         )
@@ -298,7 +296,7 @@ class OccupancyMapWindow(MenuHelperWindow):
                 observer_name="isaacsim.asset.gen.omap.ui._stage_open_callback_fn",
             )
 
-    def _stage_open_callback_fn(self, event) -> None:
+    def _stage_open_callback_fn(self, event: object) -> None:
         """Callback when a new stage is opened.
 
         Updates the cell size to match the new stage's units.
@@ -759,7 +757,14 @@ class OccupancyMapWindow(MenuHelperWindow):
         from omni.kit.window.filepicker import FilePickerDialog
 
         def _on_filter_png_files(item: FileBrowserItem) -> bool:
-            """Callback to filter the choices of file names in the open or save dialog"""
+            """Callback to filter the choices of file names in the open or save dialog.
+
+            Args:
+                item: The file browser item to check.
+
+            Returns:
+                True if the item should be shown, False otherwise.
+            """
             if not item or item.is_folder:
                 return True
             # Show only files with listed extensions

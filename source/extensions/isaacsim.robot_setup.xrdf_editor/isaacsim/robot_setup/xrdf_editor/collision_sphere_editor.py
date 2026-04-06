@@ -149,7 +149,7 @@ class CollisionSphereEditor:
             sphere_path = next(sphere_path_generator)
         return sphere_path
 
-    def clear_spheres(self, store_op: bool = True):
+    def clear_spheres(self, store_op: bool = True) -> None:
         """Removes all collision spheres from the editor.
 
         Args:
@@ -230,7 +230,7 @@ class CollisionSphereEditor:
             for sphere_path in self.path_2_spheres.keys():
                 self.set_sphere_color(sphere_path, False)
 
-    def set_sphere_color(self, sphere_path: str, ensure_visual_material: bool = True):
+    def set_sphere_color(self, sphere_path: str, ensure_visual_material: bool = True) -> None:
         """Sets the color of a specific collision sphere based on filter matching.
 
         Args:
@@ -693,7 +693,7 @@ class CollisionSphereEditor:
                 link_to_spheres[link_name] = link_spheres
 
     # Used for Robot Description Files
-    def save_spheres(self, robot_prim_path: str, f):
+    def save_spheres(self, robot_prim_path: str, f: object) -> None:
         """Saves collision sphere data to a robot description file.
 
         Writes collision spheres in YAML format grouped by link names to the provided file handle.

@@ -1878,7 +1878,7 @@ class RigidPrim(XformPrim):
     Internal callbacks.
     """
 
-    def _on_physics_ready(self, event):
+    def _on_physics_ready(self, event: object) -> None:
         """Handle physics ready event.
 
         Args:
@@ -1930,7 +1930,7 @@ class RigidPrim(XformPrim):
         # C++ data view setup is intentionally opt-in to avoid affecting
         # existing Python-only workflows/tests unless explicitly requested.
 
-    def _setup_cpp_data_view(self):
+    def _setup_cpp_data_view(self) -> None:
         """Set up C++ read-only data view for this rigid body.
 
         For PhysX: C++ sets up TensorApi callbacks internally -- no Python work needed.
@@ -1967,7 +1967,7 @@ class RigidPrim(XformPrim):
         if is_newton:
             self._setup_newton_rigid_body_callbacks(rb_view)
 
-    def _setup_newton_rigid_body_callbacks(self, rb_view):
+    def _setup_newton_rigid_body_callbacks(self, rb_view: object) -> None:
         """Register Python fill callbacks for Newton-backed rigid body fields.
 
         Args:
@@ -2018,7 +2018,7 @@ class RigidPrim(XformPrim):
             self._cpp_data_view = None
             self._cpp_data_view_id = None
 
-    def _on_timeline_stop(self, event) -> None:
+    def _on_timeline_stop(self, event: object) -> None:
         """Handle timeline stop event.
 
         Args:

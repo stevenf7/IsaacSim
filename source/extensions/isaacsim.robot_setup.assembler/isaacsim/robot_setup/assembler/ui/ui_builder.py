@@ -84,7 +84,7 @@ class UIBuilder:
 
         pass
 
-    def on_timeline_event(self, event):
+    def on_timeline_event(self, event: object):
         """Callback for Timeline events (Play, Pause, Stop)
 
         Args:
@@ -124,7 +124,7 @@ class UIBuilder:
 
         self._repopulate_all_dropdowns()
 
-    def on_stage_event(self, event):
+    def on_stage_event(self, event: object):
         """Callback for Stage Events
 
         Args:
@@ -302,7 +302,7 @@ class UIBuilder:
 
         self._make_assemble_frame(names)
 
-    def apply_rotation(self, axis, angle):
+    def apply_rotation(self, axis: tuple, angle: float):
         """Apply rotation to the attachment robot.
 
         Args:
@@ -349,7 +349,7 @@ class UIBuilder:
         """Rotates the attachment robot 90 degrees negative around the Z-axis."""
         self.apply_rotation((0, 0, 1), -90)
 
-    def _make_assemble_frame(self, names):
+    def _make_assemble_frame(self, names: list):
         """Creates the robot assembly frame with transformation controls and simulation buttons.
 
         Args:
@@ -468,7 +468,7 @@ class UIBuilder:
                         )
                 ui.Spacer(width=12)
 
-    def _build_set_robot_position_frame(self, idx):
+    def _build_set_robot_position_frame(self, idx: int):
         """Builds the UI frame for setting robot position controls.
 
         Args:
@@ -480,7 +480,7 @@ class UIBuilder:
     #                              Robot Assembler Frame Functions
     ##########################################################################################
 
-    def _get_attach_point(self, ind):
+    def _get_attach_point(self, ind: int):
         """Gets the attach point path for the specified robot.
 
         Args:
@@ -597,7 +597,7 @@ class UIBuilder:
         attach_points = [p for p in self._attach_map[art_ind].keys()]
         return attach_points
 
-    def _get_attach_points(self, selected_robot):
+    def _get_attach_points(self, selected_robot: str):
         """Retrieves all available attach points for the specified robot.
 
         Args:
@@ -737,7 +737,7 @@ class UIBuilder:
 
         return robots
 
-    def _make_heading(self, heading_title: str, width=0):
+    def _make_heading(self, heading_title: str, width: int = 0):
         """Create a heading with title text and a horizontal line.
 
         Args:
@@ -780,7 +780,7 @@ class UIBuilder:
         self._make_info_display(info_text)
 
     # handle loading robot assets
-    def _robot_file_asset_selected(self, filepicker, dirname: str, filename: str, index: int):
+    def _robot_file_asset_selected(self, filepicker: object, dirname: str, filename: str, index: int):
         """Handle selection of a robot asset file from the file picker dialog.
 
         Args:

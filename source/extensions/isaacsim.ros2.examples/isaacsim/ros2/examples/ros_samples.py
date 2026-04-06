@@ -41,8 +41,12 @@ class Extension(omni.ext.IExt):
     ROS2_ISAAC_ROS_CATEGORY = "ROS2/Isaac ROS"
     ROS2_MULTIPLE_ROBOTS_CATEGORY = "ROS2/Navigation/Multiple Robots"
 
-    def on_startup(self, ext_id: str):
-        """Initialize the extension and register all examples."""
+    def on_startup(self, ext_id: str) -> None:
+        """Initialize the extension and register all examples.
+
+        Args:
+            ext_id: The extension identifier.
+        """
         self._ext_id = ext_id
         self._registered_examples = []  # Track registered examples for cleanup
 
@@ -95,8 +99,14 @@ class Extension(omni.ext.IExt):
             category=self.ROS2_MULTIPLE_ROBOTS_CATEGORY,
         )
 
-    def _register_example(self, name: str, file_path: str, category: str):
-        """Register a single example and track it for cleanup."""
+    def _register_example(self, name: str, file_path: str, category: str) -> None:
+        """Register a single example and track it for cleanup.
+
+        Args:
+            name: Display name of the example.
+            file_path: USD file path for the example scene.
+            category: Menu category for the example.
+        """
         get_browser_instance().register_example(
             name=name,
             ui_hook=lambda a=weakref.proxy(self), n=name, f=file_path: a.build_ui(n, f),
@@ -105,8 +115,13 @@ class Extension(omni.ext.IExt):
         # Track the registered example for proper cleanup
         self._registered_examples.append((name, category))
 
-    def build_ui(self, name, file_path):
-        """Build the UI for the example."""
+    def build_ui(self, name: str, file_path: str) -> None:
+        """Build the UI for the example.
+
+        Args:
+            name: Display name for the example.
+            file_path: USD file path for the example scene.
+        """
 
         # check if ros2 bridge is enabled before proceeding
         extension_enabled = omni.kit.app.get_app().get_extension_manager().is_extension_enabled("isaacsim.ros2.bridge")
@@ -128,8 +143,12 @@ class Extension(omni.ext.IExt):
                     "Load Sample Scene", clicked_fn=lambda a=weakref.proxy(self): a._on_environment_setup(file_path)
                 )
 
-    def _on_environment_setup(self, stage_path):
-        """Load the specified USD stage asynchronously."""
+    def _on_environment_setup(self, stage_path: str) -> None:
+        """Load the specified USD stage asynchronously.
+
+        Args:
+            stage_path: Path to the USD stage to load.
+        """
 
         async def load_stage(path):
             await omni.usd.get_context().open_stage_async(path)

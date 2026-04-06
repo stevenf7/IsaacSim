@@ -47,7 +47,7 @@ class Ur10Assets:
     - Rubik's cube props for manipulation tasks
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.assets_root_path = get_assets_root_path()
 
         self.ur10_table_usd = (
@@ -105,7 +105,7 @@ class BinStackingTask(BaseTask):
         assets: Asset manager containing USD file paths for bin models and other required assets.
     """
 
-    def __init__(self, env_path, assets):
+    def __init__(self, env_path: str, assets: object) -> None:
         super().__init__("bin_stacking")
         self.assets = assets
 
@@ -114,7 +114,7 @@ class BinStackingTask(BaseTask):
         self.stashed_bins = []
         self.on_conveyor = None
 
-    def _spawn_bin(self, rigid_bin: CortexRigidPrim):
+    def _spawn_bin(self, rigid_bin: CortexRigidPrim) -> None:
         """Spawns a bin at a random position and orientation on the conveyor.
 
         Sets the bin's world pose with random position and orientation, applies initial velocity,
@@ -128,7 +128,7 @@ class BinStackingTask(BaseTask):
         rigid_bin.set_linear_velocity(np.array([0, -0.30, 0]))
         rigid_bin.set_visibility(True)
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Resets the task state after a reset event.
 
         Removes all existing bins from the scene, clears the bins list, and resets the conveyor state.
@@ -140,7 +140,7 @@ class BinStackingTask(BaseTask):
 
         self.on_conveyor = None
 
-    def pre_step(self, time_step_index: int, simulation_time: float):
+    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
         """Spawn a new randomly oriented bin if the previous bin has been placed.
 
         Args:
@@ -165,7 +165,7 @@ class BinStackingTask(BaseTask):
             self._spawn_bin(self.on_conveyor)
             self.bins.append(self.on_conveyor)
 
-    def world_cleanup(self):
+    def world_cleanup(self) -> None:
         """Cleans up all task-related objects and resets internal state.
 
         Clears the bins list, stashed bins list, and resets the conveyor reference.
@@ -209,12 +209,12 @@ class BinStacking(CortexBase):
             updates during simulation execution.
     """
 
-    def __init__(self, monitor_fn=None):
+    def __init__(self, monitor_fn: callable = None) -> None:
         super().__init__()
         self._monitor_fn = monitor_fn
         self.robot = None
 
-    def setup_scene(self):
+    def setup_scene(self) -> None:
         """Sets up the bin stacking scene with the UR10 robot, obstacles, and environment.
 
         Creates the robot workspace including the UR10 table, background environment, and collision obstacles
@@ -281,7 +281,7 @@ class BinStacking(CortexBase):
         )
         self.robot.register_obstacle(obs)
 
-    async def setup_post_load(self):
+    async def setup_post_load(self) -> None:
         """Configures the bin stacking task and decision network after scene loading.
 
         Initializes the BinStackingTask, sets up the scene components, and creates the behavior decision
@@ -303,7 +303,7 @@ class BinStacking(CortexBase):
         world.add_decider_network(self.decider_network)
         return
 
-    def _on_monitor_update(self, diagnostics):
+    def _on_monitor_update(self, diagnostics: object) -> None:
         """Handles updates from the decision network monitoring system.
 
         Formats the decision stack information and forwards diagnostics data to the registered monitor
@@ -324,7 +324,7 @@ class BinStacking(CortexBase):
         if self._monitor_fn:
             self._monitor_fn(diagnostics, decision_stack)
 
-    def _on_physics_step(self, step_size):
+    def _on_physics_step(self, step_size: float) -> None:
         """Executes a single physics simulation step.
 
         Advances the world simulation by one step without rendering to maintain physics calculations
@@ -337,7 +337,7 @@ class BinStacking(CortexBase):
         world.step(False, False)
         return
 
-    async def on_event_async(self):
+    async def on_event_async(self) -> None:
         """Handles asynchronous event processing for the bin stacking scenario.
 
         Resets the Cortex system, registers the physics step callback, and starts the simulation
@@ -350,7 +350,7 @@ class BinStacking(CortexBase):
         await world.play_async()
         return
 
-    async def setup_pre_reset(self):
+    async def setup_pre_reset(self) -> None:
         """Prepares the scene for reset by cleaning up physics callbacks.
 
         Removes the physics step callback to ensure proper cleanup before the simulation reset.
@@ -360,7 +360,7 @@ class BinStacking(CortexBase):
             world.remove_physics_callback("sim_step")
         return
 
-    def world_cleanup(self):
+    def world_cleanup(self) -> None:
         """Performs cleanup operations for the bin stacking world.
 
         Clears any remaining world state and prepares for scene teardown or reinitialization.

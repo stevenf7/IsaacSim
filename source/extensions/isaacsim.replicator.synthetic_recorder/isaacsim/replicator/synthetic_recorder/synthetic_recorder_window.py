@@ -266,7 +266,7 @@ class SyntheticRecorderWindow(MenuHelperWindow):
 
         super().destroy()
 
-    def _on_collapsed_changed(self, key, collapsed):
+    def _on_collapsed_changed(self, key: str, collapsed: bool) -> None:
         """Keep track in a dict of the collapsed state of the frames.
 
         Args:
@@ -292,7 +292,7 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         self._recorder.clear_recorder()
         self._save_config(self._last_config_path)
 
-    def _open_dir(self, path):
+    def _open_dir(self, path: str) -> None:
         """Open the directory through the editor.
 
         Args:
@@ -338,7 +338,7 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         else:
             backend_params.pop("endpoint_url", None)
 
-    def _load_config(self, path):
+    def _load_config(self, path: str) -> None:
         """Load the json config file and set the recorder parameters.
 
         Args:
@@ -412,7 +412,7 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         self._custom_params_path = config.get("custom_params_path", self._custom_params_path)
         self._custom_writer_name = config.get("custom_writer_name", self._custom_writer_name)
 
-    def _load_config_and_refresh_ui(self, directory, filename):
+    def _load_config_and_refresh_ui(self, directory: str, filename: str) -> None:
         """Load the config file and refresh the UI to reflect the changes.
 
         Args:
@@ -432,7 +432,7 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         if self._control_params_frame:
             self._control_params_frame.rebuild()
 
-    def _save_config(self, path):
+    def _save_config(self, path: str) -> None:
         """Save the current recorder parameters to a json config file.
 
         Args:
@@ -737,7 +737,7 @@ class SyntheticRecorderWindow(MenuHelperWindow):
             )
             self._s3_frame.set_collapsed_changed_fn(lambda collapsed: self._on_collapsed_changed(frame_name, collapsed))
 
-    def _update_rp_entry(self, idx, field, value):
+    def _update_rp_entry(self, idx: int, field: int, value: object) -> None:
         """Callback function to update the render product entry.
 
         Args:
@@ -747,7 +747,7 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         """
         self._recorder.rp_data[idx][field] = value
 
-    def _remove_rp_entry(self, idx):
+    def _remove_rp_entry(self, idx: int) -> None:
         """Callback function to remove the render product entry.
 
         Args:

@@ -93,7 +93,11 @@ class FrankaTrajectoryOptimizerExample:
                 pass
 
     def setup_world_and_optimizer(self) -> tuple[Any, Any, Any]:
-        """Set up world binding and trajectory optimizer (shared by both target types)."""
+        """Set up world binding and trajectory optimizer (shared by both target types).
+
+        Returns:
+            Tuple of robot config, world binding, and trajectory optimizer.
+        """
         # Load robot configuration
         robot_config = load_cumotion_supported_robot("franka")
 
@@ -274,7 +278,11 @@ class FrankaTrajectoryOptimizerExample:
         return None
 
     def update(self, step: float) -> None:
-        """Update trajectory execution on each physics step."""
+        """Update trajectory execution on each physics step.
+
+        Args:
+            step: The physics time step in seconds.
+        """
         if self._trajectory is None:
             return
 

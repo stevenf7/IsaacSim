@@ -30,6 +30,15 @@ class MergeMeshesCommand(omni.kit.commands.Command):
       that shares a same material name uses the same material, each geom subset uses the original
       material from the source assets.
 
+    Args:
+        source: List of prim paths to merge.
+        clear_transform: If True, sets the merged mesh origin at world origin.
+            Otherwise, the origin is the same as the first element.
+        deactivate_source: If True, deactivates source prims after merging.
+        combine_materials: If True, redirects all materials to a single folder
+            and shares materials with the same name.
+        materials_destination: The prim path where combined materials will be stored.
+
     Example:
 
     .. code-block:: python
@@ -51,18 +60,7 @@ class MergeMeshesCommand(omni.kit.commands.Command):
         deactivate_source: bool = False,
         combine_materials: bool = False,
         materials_destination: str = "/World/Looks",
-    ):
-        """Initialize the MergeMeshesCommand.
-
-        Args:
-            source: List of prim paths to merge.
-            clear_transform: If True, sets the merged mesh origin at world origin.
-                Otherwise, the origin is the same as the first element.
-            deactivate_source: If True, deactivates source prims after merging.
-            combine_materials: If True, redirects all materials to a single folder
-                and shares materials with the same name.
-            materials_destination: The prim path where combined materials will be stored.
-        """
+    ) -> None:
         self._stage = omni.usd.get_context().get_stage()
         self.mesh_merger = MeshMerger(self._stage)
         self.mesh_merger.clear_parent_xform = clear_transform

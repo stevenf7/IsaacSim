@@ -140,7 +140,7 @@ class KeyboardDriver(object):
         return instance
 
     @staticmethod
-    def disconnect():
+    def disconnect() -> None:
         """Disconnects the keyboard driver singleton instance if it exists."""
         if KeyboardDriver._instance is None:
             return
@@ -322,7 +322,7 @@ class GamepadDriver(object):
         return instance
 
     @staticmethod
-    def disconnect():
+    def disconnect() -> None:
         """Disconnects the gamepad driver instance if it exists."""
         if GamepadDriver._instance is None:
             return

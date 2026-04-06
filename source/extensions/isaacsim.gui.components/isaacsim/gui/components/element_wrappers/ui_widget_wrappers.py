@@ -91,7 +91,7 @@ class ScrollingWindow(ui.Window):
         **kwargs: Additional keyword arguments passed to the parent ui.Window class.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: object):
         super().__init__(**kwargs)
         original_frame = ui.Window.frame.fget(self)
         with original_frame:
@@ -148,7 +148,7 @@ class Frame(UIWidgetWrapper):
         """Enter the context manager for this Frame."""
         self.frame.__enter__()
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: object):
         """Exit the context manager for this Frame.
 
         Args:
@@ -270,7 +270,7 @@ class ScrollingFrame(Frame):
             take no arguments. Return values will not be used.
     """
 
-    def __init__(self, num_lines=None, enabled: bool = True, visible: bool = True, build_fn: Callable = None):
+    def __init__(self, num_lines: int = None, enabled: bool = True, visible: bool = True, build_fn: Callable = None):
         self._bottom_line_buffer_size = 4
 
         # Create a Frame UI element
@@ -404,7 +404,7 @@ class IntField(UIWidgetWrapper):
         """Set the value in the IntField
 
         Args:
-            val (int): Value to fill IntField
+            val: Value to fill IntField
         """
         self.int_field.model.set_value(int(val))
 
@@ -413,7 +413,7 @@ class IntField(UIWidgetWrapper):
         If current value is higher than upper_limit, the current value will be clipped to upper_limit
 
         Args:
-            upper_limit (int): Upper limit of IntField
+            upper_limit: Upper limit of IntField
         """
         upper_limit = int(upper_limit)
         self._upper_limit = upper_limit
@@ -425,7 +425,7 @@ class IntField(UIWidgetWrapper):
         If current value is lower than lower_limit, the current value will be clipped to lower_limit
 
         Args:
-            lower_limit (int): lower limit of IntField
+            lower_limit: lower limit of IntField
         """
         lower_limit = int(lower_limit)
         self._lower_limit = lower_limit
@@ -436,7 +436,7 @@ class IntField(UIWidgetWrapper):
         """Set function that is called when the value of the IntField is modified
 
         Args:
-            on_value_changed_fn (Callable): Function that is called when the value of the IntField is modified.
+            on_value_changed_fn: Function that is called when the value of the IntField is modified.
                 Function should take a int as the argument. The return value will not be used.
         """
         self._on_value_changed_fn = on_value_changed_fn
@@ -576,7 +576,7 @@ class FloatField(UIWidgetWrapper):
         """Set the value in the FloatField
 
         Args:
-            val (float): Value to fill FloatField
+            val: Value to fill FloatField
         """
         self.float_field.model.set_value(float(val))
 
@@ -585,7 +585,7 @@ class FloatField(UIWidgetWrapper):
         If current value is higher than upper_limit, the current value will be clipped to upper_limit
 
         Args:
-            upper_limit (float): Upper limit of FloatField
+            upper_limit: Upper limit of FloatField
         """
         upper_limit = float(upper_limit)
         self._upper_limit = upper_limit
@@ -597,7 +597,7 @@ class FloatField(UIWidgetWrapper):
         If current value is lower than lower_limit, the current value will be clipped to lower_limit
 
         Args:
-            lower_limit (float): lower limit of FloatField
+            lower_limit: lower limit of FloatField
         """
         lower_limit = float(lower_limit)
         self._lower_limit = lower_limit
@@ -608,7 +608,7 @@ class FloatField(UIWidgetWrapper):
         """Set function that is called when the value of the FloatField is modified
 
         Args:
-            on_value_changed_fn (Callable): Function that is called when the value of the FloatField is modified.
+            on_value_changed_fn: Function that is called when the value of the FloatField is modified.
                 Function should take a float as the argument. The return value will not be used.
         """
         self._on_value_changed_fn = on_value_changed_fn
@@ -617,12 +617,12 @@ class FloatField(UIWidgetWrapper):
         """Set function that is called when the user finishes editing the FloatField
 
         Args:
-            on_end_edit_fn (Callable): Function that is called when the user finishes editing the FloatField.
+            on_end_edit_fn: Function that is called when the user finishes editing the FloatField.
                 Function should take a float as the argument. The return value will not be used.
         """
         self._on_end_edit_fn = on_end_edit_fn
 
-    def _on_value_changed_fn_wrapper(self, model):
+    def _on_value_changed_fn_wrapper(self, model: object) -> None:
         """Handle value changes in the float field model with limit enforcement.
 
         Enforces upper and lower limits and calls the user-defined callback if set.
@@ -648,7 +648,7 @@ class FloatField(UIWidgetWrapper):
         elif self._on_value_changed_fn is not None:
             self._on_value_changed_fn(val)
 
-    def _create_ui_widget(self, label, tooltip, default_value, step, format):
+    def _create_ui_widget(self, label: str, tooltip: str, default_value: float, step: float, format: str):
         """Create the UI widget components for the FloatField.
 
         Sets up the containing frame, label, float drag widget, and event handlers.
@@ -722,15 +722,15 @@ class StringField(UIWidgetWrapper):
         label: str,
         tooltip: str = "",
         default_value: str = "",
-        read_only=False,
-        multiline_okay=False,
+        read_only: bool = False,
+        multiline_okay: bool = False,
         on_value_changed_fn: Callable = None,
-        use_folder_picker=False,
-        item_filter_fn=None,
-        bookmark_label=None,
-        bookmark_path=None,
-        folder_dialog_title="Select Output Folder",
-        folder_button_title="Select Folder",
+        use_folder_picker: bool = False,
+        item_filter_fn: Callable = None,
+        bookmark_label: str = None,
+        bookmark_path: str = None,
+        folder_dialog_title: str = "Select Output Folder",
+        folder_button_title: str = "Select Folder",
     ):
         self._default_value = default_value
 
@@ -844,16 +844,19 @@ class StringField(UIWidgetWrapper):
         """
         self.string_field.multiline = multiline_okay
 
-    def _item_filter_fn_wrapper(self, file):
+    def _item_filter_fn_wrapper(self, file: object) -> object:
         """Internal wrapper for the file filter function used in the folder picker.
 
         Args:
             file: File object to filter in the file picker dialog.
+
+        Returns:
+            The result of the filter function, or None if no filter is set.
         """
         if self._item_filter_fn is not None:
             return self._item_filter_fn(file.path)
 
-    def _on_value_changed_fn_wrapper(self, model):
+    def _on_value_changed_fn_wrapper(self, model: object):
         """Internal wrapper for the value changed callback function.
 
         Args:
@@ -865,16 +868,16 @@ class StringField(UIWidgetWrapper):
 
     def _create_ui_widget(
         self,
-        label="",
-        default_val=" ",
-        tooltip="",
-        use_folder_picker=False,
-        read_only=False,
-        multiline_okay=True,
-        bookmark_label=None,
-        bookmark_path=None,
-        folder_dialog_title="Select Output Folder",
-        folder_button_title="Select Folder",
+        label: str = "",
+        default_val: str = " ",
+        tooltip: str = "",
+        use_folder_picker: bool = False,
+        read_only: bool = False,
+        multiline_okay: bool = True,
+        bookmark_label: str = None,
+        bookmark_path: str = None,
+        folder_dialog_title: str = "Select Output Folder",
+        folder_button_title: str = "Select Folder",
     ):
         """Create the UI widget components for the StringField.
 
@@ -938,12 +941,12 @@ class StringField(UIWidgetWrapper):
 
     def add_folder_picker_icon(
         self,
-        on_click_fn,
-        item_filter_fn=None,
-        bookmark_label=None,
-        bookmark_path=None,
-        dialog_title="Select Output Folder",
-        button_title="Select Folder",
+        on_click_fn: Callable,
+        item_filter_fn: Callable = None,
+        bookmark_label: str = None,
+        bookmark_path: str = None,
+        dialog_title: str = "Select Output Folder",
+        button_title: str = "Select Folder",
     ):
         """Add a folder picker icon button to the StringField.
 
@@ -1004,7 +1007,7 @@ class Button(UIWidgetWrapper):
             Function should take no arguments.  The return value will not be used.
     """
 
-    def __init__(self, label: str, text: str, tooltip="", on_click_fn=None):
+    def __init__(self, label: str, text: str, tooltip: str = "", on_click_fn: Callable = None):
         self._on_click_fn = on_click_fn
 
         button_frame = self._create_ui_widget(label, text, tooltip)
@@ -1105,7 +1108,7 @@ class StateButton(UIWidgetWrapper):
         label: str,
         a_text: str,
         b_text: str,
-        tooltip="",
+        tooltip: str = "",
         on_a_click_fn: Callable = None,
         on_b_click_fn: Callable = None,
         physics_callback_fn: Callable = None,
@@ -1226,7 +1229,7 @@ class StateButton(UIWidgetWrapper):
         """Remove the physics callback subscription."""
         self._physics_subscription = None
 
-    def _on_clicked_fn_wrapper(self, value):
+    def _on_clicked_fn_wrapper(self, value: object):
         """Handle button click events and manage state transitions.
 
         Args:
@@ -1305,7 +1308,7 @@ class CheckBox(UIWidgetWrapper):
             Function should take a single bool argument.  The return value will not be used.
     """
 
-    def __init__(self, label: str, default_value: bool = False, tooltip: str = "", on_click_fn=None):
+    def __init__(self, label: str, default_value: bool = False, tooltip: str = "", on_click_fn: Callable = None):
         self._on_click_fn = on_click_fn
 
         checkbox_frame = self._create_ui_widget(label, bool(default_value), tooltip)
@@ -1354,7 +1357,7 @@ class CheckBox(UIWidgetWrapper):
         """
         self._on_click_fn = on_click_fn
 
-    def _on_click_fn_wrapper(self, model):
+    def _on_click_fn_wrapper(self, model: object):
         """Internal wrapper that handles CheckBox click events and calls the user-defined callback.
 
         Args:
@@ -1450,7 +1453,7 @@ class DropDown(UIWidgetWrapper):
         """
         return self._combobox
 
-    def repopulate(self):
+    def repopulate(self) -> None:
         """A function that the user can call to make the DropDown menu repopulate.
         This will call the populate_fn set by the user.
         """
@@ -1558,8 +1561,8 @@ class DropDown(UIWidgetWrapper):
         """Set the function that gets called when a new item is selected from the DropDown
 
         Args:
-            on_selection_fn (Callable): A function that is called when a new item is selected from the DropDown.
-                he function should take in a string argument of the selection.  Its return value is not used.
+            on_selection_fn: A function that is called when a new item is selected from the DropDown.
+                The function should take in a string argument of the selection.  Its return value is not used.
         """
         self._on_selection_fn = on_selection_fn
 
@@ -1567,23 +1570,23 @@ class DropDown(UIWidgetWrapper):
         """Set keep_old_selection flag to determine behavior when repopulating the DropDown
 
         Args:
-            val (bool): When the DropDown is repopulated with the user-defined populate_fn,
+            val: When the DropDown is repopulated with the user-defined populate_fn,
                 the default behavior is to reset the selection in the DropDown to be at index 0.  If the user
                 sets keep_old_selections=True, when the DropDown is repopulated and the old selection is still one of
                 the options, the new selection will match the old selection, and the on_selection_fn() will not be called.
         """
         self._keep_old_selection = val
 
-    def set_populate_fn_to_find_all_usd_objects_of_type(self, object_type: str, repopulate=True):
-        """
-        Set the populate_fn to find all objects of a specified type on the USD stage.  This is
-        included as a convenience function to fulfill one common use-case for a DropDown menu.
+    def set_populate_fn_to_find_all_usd_objects_of_type(self, object_type: str, repopulate: bool = True):
+        """Set the populate_fn to find all objects of a specified type on the USD stage.
+
+        This is included as a convenience function to fulfill one common use-case for a DropDown menu.
         This overrides the populate_fn set by the user.
 
         Args:
-            object_type (str): A string name of the type of USD object matching the output of
+            object_type: A string name of the type of USD object matching the output of
                 get_prim_object_type(prim_path)
-            repopulate (bool, optional): Repopulate the DropDown immediately. Defaults to True.
+            repopulate: Repopulate the DropDown immediately. Defaults to True.
         """
         self.set_populate_fn(lambda: self._find_all_usd_objects_of_type(object_type), repopulate=repopulate)
 
@@ -1703,7 +1706,7 @@ class ColorPicker(UIWidgetWrapper):
         """
         self._on_color_picked_fn = on_color_picked_fn
 
-    def _on_color_picked_fn_wrapper(self, *worthless_args):
+    def _on_color_picked_fn_wrapper(self, *worthless_args: object):
         """Internal wrapper that calls the user-defined color picker callback function.
 
         Args:
@@ -1821,7 +1824,7 @@ class TextBlock(UIWidgetWrapper):
         """
         self.scrolling_frame.set_num_lines(num_lines)
 
-    def _create_ui_widget(self, num_lines, label, text, tooltip, include_copy_btn):
+    def _create_ui_widget(self, num_lines: int, label: str, text: str, tooltip: str, include_copy_btn: bool):
         """Create the UI widget components for the TextBlock.
 
         Args:
@@ -1906,29 +1909,6 @@ class XYPlot(UIWidgetWrapper):
         legends: List[str] = None,
         plot_colors: List[List[int]] = None,
     ):
-        """Create an XY plot UI Widget with axis scaling, legends, and support for multiple plots.
-        Overlapping data is most accurately plotted when centered in the frame with reasonable axis scaling.
-        Pressing down the mouse gives the x and y values of each function at an x coordinate.
-
-        Args:
-            label (str): Short descriptve text to the left of the plot
-            tooltip (str, optional): Tooltip to appear when hovering the mouse over the plot label. Defaults to "".
-            x_data (Union[List[List],List], optional): A possibly ragged list of lists where each ith inner list is the x coordinates for plot i.
-                For a single plot, the data may be provided as a list of floats.  x_data must have exactly the same shape as y_data.  Defaults to [].
-            y_data (Union[List[List],List], optional): A possibly ragged list of lists where each ith inner list is the y coordinates for plot i.
-                For a single plot, the data may be provided as a list of floats.  y_data must have exactly the same shape as x_data.  Defaults to [].
-            x_min (float, optional): Minimum value of x shown on the plot. If not specified, the minimum value found in x_data will be uesd. Defaults to None.
-            x_max (float, optional): Maximum value of x shown on the plot.  If not specified, the maximum value found in x_data will be used. Defaults to None.
-            y_min (float, optional): Minimum value of y shown on the plot. If not specified, the minimum value found in y_data will be uesd. Defaults to None.
-            y_max (float, optional): Maximum value of y shown on the plot.  If not specified, the maximum value found in y_data will be used. Defaults to None.
-            x_label (str, optional): Label of X axis. Defaults to "X".
-            y_label (str, optional): Label of Y axis. Defaults to "Y".
-            plot_height (int, optional): Height of the plot, proportional to the height of a line of text. Defaults to 10.
-            show_legend (bool, optional): Show a legend on the plot. Defaults to False.
-            legends (List[str], optional): Legend for the plotted data.  If not specified, names 'F_i(x)' will be automatically generated. Defaults to None.
-            plot_colors (List[List], optional): Colors of the plotted data.  The ith entry in plot_colors is considered to be a list of [r,g,b] values in [0,255] for the ith plot color.
-                If not specified, colors will be automatically generated.  Defaults to None.
-        """
         self._has_built = False
 
         self._x_min = float(x_min) if x_min is not None else None
@@ -2073,7 +2053,7 @@ class XYPlot(UIWidgetWrapper):
         else:
             return [self._convert_hex_to_rgb(data_color) for data_color in self._data_colors]
 
-    def set_plot_color_by_index(self, index: int, r: int, g: int, b: int):
+    def set_plot_color_by_index(self, index: int, r: int, g: int, b: int) -> None:
         """Set the color of a specific plot.
 
         Args:
@@ -2218,7 +2198,7 @@ class XYPlot(UIWidgetWrapper):
         if self._has_built:
             self._show_legend_cb.model.set_value(show_legend)
 
-    def set_data(self, x_data: Union[List[List], List], y_data: Union[List[List], List]):
+    def set_data(self, x_data: Union[List[List], List], y_data: Union[List[List], List]) -> None:
         """Set the data to plot
 
         Args:
@@ -2258,7 +2238,7 @@ class XYPlot(UIWidgetWrapper):
         if self._has_built:
             self.container_frame.rebuild()
 
-    def set_plot_visible_by_index(self, index: int, visible: bool):
+    def set_plot_visible_by_index(self, index: int, visible: bool) -> None:
         """Hide or show a specific plot.
 
         Args:
@@ -2277,7 +2257,7 @@ class XYPlot(UIWidgetWrapper):
             else:
                 self._show_plot_cbs[index].model.set_value(visible)
 
-    def _get_data_colors(self, num_colors) -> List[int]:
+    def _get_data_colors(self, num_colors: int) -> List[int]:
         """Get hex colors to use in the plot.
 
         Args:
@@ -2295,7 +2275,7 @@ class XYPlot(UIWidgetWrapper):
         else:
             return self._data_colors
 
-    def _get_ragged_data_min(self, data) -> float:
+    def _get_ragged_data_min(self, data: object) -> float:
         """Get the minimum value in a set of ragged data.
 
         Args:
@@ -2317,7 +2297,7 @@ class XYPlot(UIWidgetWrapper):
             return 0
         return float(data_min)
 
-    def _get_ragged_data_max(self, data) -> float:
+    def _get_ragged_data_max(self, data: object) -> float:
         """Get the maximum value in a set of ragged data.
 
         Args:
@@ -2339,7 +2319,7 @@ class XYPlot(UIWidgetWrapper):
             return 0
         return float(data_max)
 
-    def _get_interpolated_data(self, x_min=None, x_max=None):
+    def _get_interpolated_data(self, x_min: float = None, x_max: float = None):
         """Get all data necessary for plotting.
 
         Args:
@@ -2403,7 +2383,7 @@ class XYPlot(UIWidgetWrapper):
 
         return x_fracs, y_vals, x_min, x_max
 
-    def _convert_rgb_to_hex(self, r, g, b) -> int:
+    def _convert_rgb_to_hex(self, r: int, g: int, b: int) -> int:
         """Convert an RGB color to a hex value.
 
         Args:
@@ -2417,7 +2397,7 @@ class XYPlot(UIWidgetWrapper):
         # convert an rgb color to a hex value
         return 0xFF * 16**6 + b * 16**4 + g * 16**2 + r
 
-    def _convert_hex_to_rgb(self, hex_color) -> Tuple[int]:
+    def _convert_hex_to_rgb(self, hex_color: int) -> Tuple[int]:
         """Convert a hex color value to RGB components.
 
         Args:
@@ -2437,7 +2417,7 @@ class XYPlot(UIWidgetWrapper):
         b = residue(int(hex_color / 16**4))
         return r, g, b
 
-    def _get_distinct_colors(self, num_colors) -> List[int]:
+    def _get_distinct_colors(self, num_colors: int) -> List[int]:
         """This function returns a list of distinct colors for plotting.
 
         Args:
@@ -2469,7 +2449,7 @@ class XYPlot(UIWidgetWrapper):
 
         return colors
 
-    def _get_fn_y_value(self, idx, x_value, decimals) -> float:
+    def _get_fn_y_value(self, idx: int, x_value: float, decimals: int) -> float:
         """Get value of each plot evaluated at x_value using linear interpolation if needed.
 
         Args:
@@ -2494,7 +2474,7 @@ class XYPlot(UIWidgetWrapper):
 
         return ""
 
-    def _mouse_moved_on_plot(self, x, y, *args):
+    def _mouse_moved_on_plot(self, x: float, y: float, *args: object) -> None:
         """Show a tooltip with x,y and function values when mouse moves over the plot.
 
         Args:
@@ -2540,7 +2520,7 @@ class XYPlot(UIWidgetWrapper):
             tt_string += f"{self._get_fn_y_value(i,x_value,num_decimals_y)}\n"
         tt_frame.set_tooltip(tt_string)
 
-    def _on_mouse_released(self, *args):
+    def _on_mouse_released(self, *args: object):
         """Handles mouse release events to hide the plot tooltip.
 
         Args:
@@ -2868,12 +2848,13 @@ class XYPlot(UIWidgetWrapper):
 
             set_y_axis_values(y_min, y_max)
 
-        def build_plot(x_fracs, y_data, color_idx):
+        def build_plot(x_fracs: object, y_data: object, color_idx: int) -> None:
             """Build the frame for a plot
 
             Args:
-                x_fracs (np.array (2,)): Fraction of available space that the plot should cover
-                y_data (np.array): data with which to fill the plot
+                x_fracs: Fraction of available space that the plot should cover
+                y_data: data with which to fill the plot
+                color_idx: Index of the color to use for this plot
             """
 
             color = self._data_colors[color_idx]

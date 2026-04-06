@@ -136,7 +136,7 @@ class Extension(omni.ext.IExt):
                     self.mesh_merger.on_materials_changed_fn = self.on_mat_changed
                     btn_builder(label="Merge Selected Prim", text="Merge", on_clicked_fn=self._merge_mesh)
 
-    def on_mat_changed(self, value):
+    def on_mat_changed(self, value: object) -> None:
         """Handle material change events from the mesh merger.
 
         Args:
@@ -145,7 +145,7 @@ class Extension(omni.ext.IExt):
         if type(value) == str:
             self.override_looks_directory[1].set_value(value)
 
-    def on_mat_dest_changed(self, value):
+    def on_mat_dest_changed(self, value: str) -> None:
         """Handle material destination path change events from the UI.
 
         Args:
@@ -158,7 +158,7 @@ class Extension(omni.ext.IExt):
         """Toggle the visibility of the Mesh Merge Tool window."""
         self._window.visible = not self._window.visible
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: bool) -> None:
         """Handle window visibility change events.
 
         Args:
@@ -177,7 +177,7 @@ class Extension(omni.ext.IExt):
         else:
             self._stage_event_sub = None
 
-    def _on_stage_event(self, event=None):
+    def _on_stage_event(self, event: object = None) -> None:
         """Handle stage events such as selection changes.
 
         Updates the UI to reflect the currently selected prims and their mesh properties.

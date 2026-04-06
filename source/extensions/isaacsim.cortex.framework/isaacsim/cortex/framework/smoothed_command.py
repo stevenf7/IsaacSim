@@ -42,7 +42,8 @@ class TargetAdapter(ABC):
     def get_position(self) -> np.array:
         """Retrieve the position target.
 
-        Returns: The postion target in robot base coordinates.
+        Returns:
+            The postion target in robot base coordinates.
         """
         raise NotImplementedError()
 
@@ -50,7 +51,8 @@ class TargetAdapter(ABC):
     def has_rotation(self) -> bool:
         """Reports whether a the target has a rotational component.
 
-        Returns: True if the target has a rotation component, False otherwise.
+        Returns:
+            True if the target has a rotation component, False otherwise.
         """
         raise NotImplementedError()
 
@@ -61,7 +63,8 @@ class TargetAdapter(ABC):
         If has_rotation() returns true, this method should return the target rotation matrix in
         robot base coordinates. Otherwise, the behavior is undefined.
 
-        Returns: The rotation matrix.
+        Returns:
+            The rotation matrix.
         """
         raise NotImplementedError()
 

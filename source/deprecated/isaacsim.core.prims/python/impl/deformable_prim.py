@@ -36,7 +36,40 @@ torch = import_module("torch")
 
 
 class DeformablePrim(XFormPrim):
-    """The view class for deformable prims."""
+    """The view class for deformable prims.
+
+    Provides high level functions to deal with deformable bodies (1 or more deformable bodies)
+    as well as its attributes/ properties. This object wraps all matching deformable bodies found at the regex provided at the prim_paths_expr.
+
+    Note: - if the underlying UsdGeom.Mesh.Get does not already have appropriate USD deformable body apis applied to it before init, this class will apply it.
+
+    Args:
+        prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
+        deformable_materials: Deformable materials to be applied to prims in the view.
+        name: Shortname to be used as a key by Scene class.
+        reset_xform_properties: Whether to reset the transformation operation attributes of the prims to a standard
+            set.
+        positions: Default positions in the world frame of the prim. shape is (N, 3).
+        translations: Default translations in the local frame of the prims (with respect to its parent prims).
+            shape is (N, 3).
+        orientations: Default quaternion orientations in the world/ local frame of the prim (depends if translation
+            or position is specified). quaternion is scalar-first (w, x, y, z). shape is (N, 4).
+        scales: Local scales to be applied to the prim's dimensions. shape is (N, 3).
+        visibilities: Set to false for an invisible prim in the stage while rendering. shape is (N,).
+        vertex_velocity_dampings: Velocity damping parameter controlling how much after every time step the nodal
+            velocity is reduced.
+        sleep_dampings: Damping value that damps the motion of bodies that move slow enough to be candidates for
+            sleeping (see sleep_threshold).
+        sleep_thresholds: Threshold that defines the maximal magnitude of the linear motion a soft body can move
+            in one second such that it can go to sleep in the next frame.
+        settling_thresholds: Threshold that defines the maximal magnitude of the linear motion a fem body can move
+            in one second before it becomes a candidate for sleeping.
+        self_collisions: Enables the self collision for the deformable body based on the rest position distances.
+        self_collision_filter_distances: Penetration value that needs to get exceeded before contacts for self
+            collision are generated. Will only have an effect if self collisions are enabled based on the rest
+            position distances.
+        solver_position_iteration_counts: Number of the solver's positional iteration counts.
+    """
 
     def __init__(
         self,
@@ -57,39 +90,6 @@ class DeformablePrim(XFormPrim):
         self_collision_filter_distances: Optional[Union[np.ndarray, torch.Tensor]] = None,
         solver_position_iteration_counts: Optional[Union[np.ndarray, torch.Tensor]] = None,
     ):
-        """
-        Provides high level functions to deal with deformable bodies (1 or more deformable bodies)
-        as well as its attributes/ properties. This object wraps all matching deformable bodies found at the regex provided at the prim_paths_expr.
-
-        Note: - if the underlying UsdGeom.Mesh.Get does not already have appropriate USD deformable body apis applied to it before init, this class will apply it.
-
-        Args:
-            prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
-            deformable_materials: Deformable materials to be applied to prims in the view.
-            name: Shortname to be used as a key by Scene class.
-            reset_xform_properties: Whether to reset the transformation operation attributes of the prims to a standard
-                set.
-            positions: Default positions in the world frame of the prim. shape is (N, 3).
-            translations: Default translations in the local frame of the prims (with respect to its parent prims).
-                shape is (N, 3).
-            orientations: Default quaternion orientations in the world/ local frame of the prim (depends if translation
-                or position is specified). quaternion is scalar-first (w, x, y, z). shape is (N, 4).
-            scales: Local scales to be applied to the prim's dimensions. shape is (N, 3).
-            visibilities: Set to false for an invisible prim in the stage while rendering. shape is (N,).
-            vertex_velocity_dampings: Velocity damping parameter controlling how much after every time step the nodal
-                velocity is reduced.
-            sleep_dampings: Damping value that damps the motion of bodies that move slow enough to be candidates for
-                sleeping (see sleep_threshold).
-            sleep_thresholds: Threshold that defines the maximal magnitude of the linear motion a soft body can move
-                in one second such that it can go to sleep in the next frame.
-            settling_thresholds: Threshold that defines the maximal magnitude of the linear motion a fem body can move
-                in one second before it becomes a candidate for sleeping.
-            self_collisions: Enables the self collision for the deformable body based on the rest position distances.
-            self_collision_filter_distances: Penetration value that needs to get exceeded before contacts for self
-                collision are generated. Will only have an effect if self collisions are enabled based on the rest
-                position distances.
-            solver_position_iteration_counts: Number of the solver's positional iteration counts.
-        """
 
         self._physics_view = None
         self._device = None
@@ -136,7 +136,7 @@ class DeformablePrim(XFormPrim):
             "Please note that support for deformable prims in the current form is now deprecated. Some features including stress/strain APIs may be removed in the future."
         )
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Cleans up resources when the DeformablePrim instance is destroyed."""
         XFormPrim.__del__(self)
         if hasattr(self, "_physics_view"):
@@ -226,7 +226,7 @@ class DeformablePrim(XFormPrim):
         carb.log_info("Deformable Prim View Device: {}".format(self._device))
         return
 
-    def _invalidate_physics_handle_callback(self, event):
+    def _invalidate_physics_handle_callback(self, event: object) -> None:
         """Callback to invalidate the physics handle when timeline stops.
 
         Args:
@@ -235,7 +235,7 @@ class DeformablePrim(XFormPrim):
         self._physics_view = None
         return
 
-    def _apply_deformable_body_api(self, index):
+    def _apply_deformable_body_api(self, index: int):
         """Applies the PhysxDeformableBodyAPI to the prim at the specified index.
 
         Args:

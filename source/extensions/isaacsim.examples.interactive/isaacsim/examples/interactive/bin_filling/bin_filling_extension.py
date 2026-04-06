@@ -42,7 +42,7 @@ class BinFillingExtension(omni.ext.IExt):
     between robotic systems and objects in a bin filling context.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initializes the Bin Filling extension when it starts up.
 
         Registers the bin filling example with the browser instance, setting up the UI components
@@ -74,7 +74,7 @@ class BinFillingExtension(omni.ext.IExt):
 
         return
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up the Bin Filling extension when it shuts down.
 
         Deregisters the bin filling example from the browser instance to ensure proper cleanup.
@@ -101,7 +101,7 @@ class BinFillingUI(BaseSampleUITemplate):
             parameters such as ext_id, file_path, title, doc_link, overview, and sample instance.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
 
     def build_extra_frames(self):
@@ -126,7 +126,7 @@ class BinFillingUI(BaseSampleUITemplate):
             ):
                 self.build_task_controls_ui()
 
-    def _on_fill_bin_button_event(self):
+    def _on_fill_bin_button_event(self) -> None:
         """Handles the fill bin button click event.
 
         Triggers the asynchronous bin filling operation and disables the start button
@@ -136,7 +136,7 @@ class BinFillingUI(BaseSampleUITemplate):
         self.task_ui_elements["Start Bin Filling"].enabled = False
         return
 
-    def post_reset_button_event(self):
+    def post_reset_button_event(self) -> None:
         """Handles post-reset operations for the UI.
 
         Re-enables the "Start Bin Filling" button after a reset operation.
@@ -144,7 +144,7 @@ class BinFillingUI(BaseSampleUITemplate):
         self.task_ui_elements["Start Bin Filling"].enabled = True
         return
 
-    def post_load_button_event(self):
+    def post_load_button_event(self) -> None:
         """Handles post-load operations for the UI.
 
         Re-enables the "Start Bin Filling" button after a load operation.
@@ -152,7 +152,7 @@ class BinFillingUI(BaseSampleUITemplate):
         self.task_ui_elements["Start Bin Filling"].enabled = True
         return
 
-    def post_clear_button_event(self):
+    def post_clear_button_event(self) -> None:
         """Handles post-clear operations for the UI.
 
         Disables the "Start Bin Filling" button after a clear operation.

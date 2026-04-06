@@ -30,7 +30,7 @@ class BaseGripperController(BaseController):
         name: Name identifier for the controller.
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self._name = name
         return
 
@@ -84,6 +84,6 @@ class BaseGripperController(BaseController):
         """
         raise NotImplementedError
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the gripper controller state."""
         return

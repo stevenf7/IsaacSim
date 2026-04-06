@@ -78,7 +78,9 @@ class Extension(omni.ext.IExt):
             carb.log_warn(f"Could not unregister node templates {e}")
         gc.collect()
 
-    def _update_upstream_node_attributes(self, upstream_node_type_name: str, attribute: str, value: Any, node: og.Node):
+    def _update_upstream_node_attributes(
+        self, upstream_node_type_name: str, attribute: str, value: Any, node: og.Node
+    ) -> None:
         """Update attributes on upstream nodes of a specific type.
 
         Traverses the upstream graph to find nodes of the specified type and sets
@@ -114,7 +116,7 @@ class Extension(omni.ext.IExt):
 
     def _on_attach_callback_base(
         self, annotator_name: str, connections: list[tuple[str, str, str, str]], node: og.Node
-    ):
+    ) -> None:
         """Connect upstream nodes when an annotator is attached.
 
         Callback function for annotator attachment. Will connect ancestral upstream node(s)

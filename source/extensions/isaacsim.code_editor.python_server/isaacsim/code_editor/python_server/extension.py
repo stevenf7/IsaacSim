@@ -311,6 +311,9 @@ class Extension(omni.ext.IExt):
             Incoming data is buffered until the client signals EOF (half-close),
             ensuring that TCP-fragmented payloads are fully reassembled before
             execution.
+
+            Args:
+                parent: The owning Extension instance.
             """
 
             def __init__(self, parent: Extension) -> None:

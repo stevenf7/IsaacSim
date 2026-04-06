@@ -72,7 +72,11 @@ class PolicyController(ABC):
     _ENGINE_TO_VARIANT = {"physx": "physx", "newton": "mujoco"}
 
     def _set_physics_variant(self, prim_path: str) -> None:
-        """Set the Physics variant on the multi-physics asset to match the active engine."""
+        """Set the Physics variant on the multi-physics asset to match the active engine.
+
+        Args:
+            prim_path: The USD prim path of the robot asset.
+        """
         stage = omni.usd.get_context().get_stage()
         prim = stage.GetPrimAtPath(prim_path)
         if not prim.IsValid():
@@ -86,7 +90,7 @@ class PolicyController(ABC):
         variant = self._ENGINE_TO_VARIANT.get(engine, engine)
         variant_sets.GetVariantSet("Physics").SetVariantSelection(variant)
 
-    def load_policy(self, policy_file_path, policy_env_path):
+    def load_policy(self, policy_file_path: str, policy_env_path: str) -> None:
         """Loads a policy from a file.
 
         Args:
@@ -191,13 +195,16 @@ class PolicyController(ABC):
             action = self.policy(obs).detach().view(-1)
         return action
 
-    def _compute_observation(self) -> NotImplementedError:
+    def _compute_observation(self) -> torch.Tensor:
         """Compute the current observation vector for the policy.
 
         This method must be implemented by derived classes to construct
         the observation vector in the format specified by env.yaml.
         The observation typically includes robot state like joint positions,
         velocities, base pose, etc.
+
+        Returns:
+            torch.Tensor: The observation tensor.
 
         Raises:
             NotImplementedError: This base method must be overridden
@@ -206,7 +213,7 @@ class PolicyController(ABC):
             "Compute observation needs to be implemented, expects observation tensor in the structure specified by env.yaml"
         )
 
-    def forward(self) -> NotImplementedError:
+    def forward(self) -> None:
         r"""Execute one step of the policy controller.
 
         This method must be implemented by derived classes to\:
@@ -216,6 +223,9 @@ class PolicyController(ABC):
 
         The specific implementation depends on the robot and control mode
         (position, velocity, torque, etc.).
+
+        Returns:
+            None: This base method raises NotImplementedError.
 
         Raises:
             NotImplementedError: This base method must be overridden

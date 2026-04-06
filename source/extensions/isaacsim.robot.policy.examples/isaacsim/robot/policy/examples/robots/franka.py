@@ -50,17 +50,7 @@ class FrankaOpenDrawerPolicy(PolicyController):
         position: list[float] | None = None,
         orientation: list[float] | None = None,
     ):
-        """
-        Initialize franka robot and import flat terrain policy.
 
-        Args:
-            prim_path: The prim path of the robot on the stage
-            cabinet: The cabinet articulation
-            root_path: The path to the articulation root of the robot
-            usd_path: The robot usd filepath in the directory
-            position: The position of the robot
-            orientation: The orientation of the robot
-        """
         assets_root_path = get_assets_root_path()
 
         policy_path = assets_root_path + "/Isaac/Samples/Policies/Franka_Policies/Open_Drawer_Policy/"
@@ -172,7 +162,7 @@ class FrankaOpenDrawerPolicy(PolicyController):
 
         return obs
 
-    def forward(self, dt):
+    def forward(self, dt: float) -> None:
         """Computes and applies joint position targets for the Franka arm to execute the drawer opening task.
         The control runs at a decimated rate and applies position control to the first 8 joints
         (excluding the mimic joint). Actions are scaled and added to the default pose.

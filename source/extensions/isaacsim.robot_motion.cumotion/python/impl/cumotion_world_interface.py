@@ -95,12 +95,9 @@ class CollisionData:
     been added to the cuMotion world for collision checking.
 
     Args:
-        transform_world_to_object: Transform from world frame to the object frame.
-        cumotion_colliders: List of collision primitives representing this object.
-
-    Attributes:
-        transform_world_to_object: Current transform of the object in world space.
-        cumotion_colliders: List of collision primitives for this object.
+        transform_world_to_object_index: Index into the world-to-object transform array.
+        obstacle_handle_starting_index: Starting index into the obstacle handles array.
+        n_colliders: Number of collision primitives representing this object.
     """
 
     def __init__(
@@ -130,7 +127,10 @@ class CumotionWorldInterface(mg.WorldInterface):
             where the quaternion is in the form (w, x, y, z).
         visualize_debug_prims: Whether to create visual debug primitives for collision
             geometry. Defaults to False.
-        visual_debug_prim_rgb: RGB color for debug visualization. Defaults to None (red).
+        visual_debug_enabled_prim_rgb: RGB color for enabled obstacle debug visualization.
+            Defaults to None (red).
+        visual_debug_disabled_prim_rgb: RGB color for disabled obstacle debug visualization.
+            Defaults to None (green).
         visual_debug_prim_alpha: Alpha transparency for debug visualization. Defaults to 0.3.
 
     Attributes:
@@ -142,8 +142,8 @@ class CumotionWorldInterface(mg.WorldInterface):
 
             world_interface = CumotionWorldInterface(
                 visualize_debug_prims=True,
-                visual_debug_prim_rgb=[0.0, 1.0, 0.0],
-                visual_debug_prim_alpha=0.5
+                visual_debug_enabled_prim_rgb=[0.0, 1.0, 0.0],
+                visual_debug_prim_alpha=0.5,
             )
     """
 
@@ -250,7 +250,16 @@ class CumotionWorldInterface(mg.WorldInterface):
         poses: tuple[wp.array, wp.array],
         enabled_array: wp.array,
     ) -> None:
-        """Add sphere collision obstacles to the cuMotion world."""
+        """Add sphere collision obstacles to the cuMotion world.
+
+        Args:
+            prim_paths: USD prim paths for each sphere.
+            radii: Sphere radii.
+            scales: Local scale factors for each sphere.
+            safety_tolerances: Safety margin around each sphere.
+            poses: Tuple of (positions, orientations) arrays.
+            enabled_array: Collision enabled state for each sphere.
+        """
         positions, quaternions = poses
         positions_np = positions.numpy()
         quaternions_np = quaternions.numpy()
@@ -348,7 +357,16 @@ class CumotionWorldInterface(mg.WorldInterface):
         poses: tuple[wp.array, wp.array],
         enabled_array: wp.array,
     ) -> None:
-        """Add cuboid collision obstacles to the cuMotion world."""
+        """Add cuboid collision obstacles to the cuMotion world.
+
+        Args:
+            prim_paths: USD prim paths for each cube.
+            sizes: Cube side lengths.
+            scales: Local scale factors for each cube.
+            safety_tolerances: Safety margin around each cube.
+            poses: Tuple of (positions, orientations) arrays.
+            enabled_array: Collision enabled state for each cube.
+        """
         positions, quaternions = poses
         positions_np = positions.numpy()
         quaternions_np = quaternions.numpy()
@@ -458,7 +476,17 @@ class CumotionWorldInterface(mg.WorldInterface):
         poses: tuple[wp.array, wp.array],
         enabled_array: wp.array,
     ) -> None:
-        """Add triangulated mesh collision obstacles to the cuMotion world using sphere decomposition."""
+        """Add triangulated mesh collision obstacles to the cuMotion world using sphere decomposition.
+
+        Args:
+            prim_paths: USD prim paths for each mesh.
+            points: List of vertex position arrays for each mesh.
+            face_vertex_indices: List of triangle index arrays for each mesh.
+            scales: Local scale factors for each mesh.
+            safety_tolerances: Safety margin around each mesh.
+            poses: Tuple of (positions, orientations) arrays.
+            enabled_array: Collision enabled state for each mesh.
+        """
 
         def _to_cumotion_sphere_collider(
             prim_name: str, i_sphere: int, sphere: Any, enabled: bool
@@ -596,7 +624,18 @@ class CumotionWorldInterface(mg.WorldInterface):
         poses: tuple[wp.array, wp.array],
         enabled_array: wp.array,
     ) -> None:
-        """Add plane collision obstacles to the cuMotion world as thin cuboids."""
+        """Add plane collision obstacles to the cuMotion world as thin cuboids.
+
+        Args:
+            prim_paths: USD prim paths for each plane.
+            axes: Plane normal axis for each plane.
+            lengths: Plane lengths.
+            widths: Plane widths.
+            scales: Local scale factors for each plane.
+            safety_tolerances: Safety margin around each plane.
+            poses: Tuple of (positions, orientations) arrays.
+            enabled_array: Collision enabled state for each plane.
+        """
         positions, quaternions = poses
         positions_np = positions.numpy()
         quaternions_np = quaternions.numpy()
@@ -714,7 +753,18 @@ class CumotionWorldInterface(mg.WorldInterface):
         poses: tuple[wp.array, wp.array],
         enabled_array: wp.array,
     ) -> None:
-        """Add capsule collision obstacles to the cuMotion world."""
+        """Add capsule collision obstacles to the cuMotion world.
+
+        Args:
+            prim_paths: USD prim paths for each capsule.
+            axes: Capsule axis for each capsule.
+            radii: Capsule radii.
+            lengths: Capsule lengths.
+            scales: Local scale factors for each capsule.
+            safety_tolerances: Safety margin around each capsule.
+            poses: Tuple of (positions, orientations) arrays.
+            enabled_array: Collision enabled state for each capsule.
+        """
         positions, quaternions = poses
         positions_np = positions.numpy()
         quaternions_np = quaternions.numpy()
@@ -856,7 +906,18 @@ class CumotionWorldInterface(mg.WorldInterface):
         poses: tuple[wp.array, wp.array],
         enabled_array: wp.array,
     ) -> None:
-        """Add oriented bounding box collision obstacles to the cuMotion world as cuboids."""
+        """Add oriented bounding box collision obstacles to the cuMotion world as cuboids.
+
+        Args:
+            prim_paths: USD prim paths for each oriented bounding box.
+            centers: OBB centers relative to the object frame.
+            rotations: OBB rotation quaternions relative to the object frame.
+            half_side_lengths: Half side lengths of each OBB.
+            scales: Local scale factors for each OBB.
+            safety_tolerances: Safety margin around each OBB.
+            poses: Tuple of (positions, orientations) arrays.
+            enabled_array: Collision enabled state for each OBB.
+        """
         positions, quaternions = poses
         positions_np = positions.numpy()
         quaternions_np = quaternions.numpy()

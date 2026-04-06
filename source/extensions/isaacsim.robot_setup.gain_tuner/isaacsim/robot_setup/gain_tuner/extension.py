@@ -129,7 +129,7 @@ class Extension(omni.ext.IExt):
         self.ui_builder.cleanup()
         gc.collect()
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: bool):
         """Handle window visibility changes and manage event subscriptions.
 
         Args:
@@ -219,7 +219,7 @@ class Extension(omni.ext.IExt):
                 observer_name="isaacsim.robot_setup.gain_tuner.Extension._on_render_step",
             )
 
-    def _on_timeline_play(self, event):
+    def _on_timeline_play(self, event: object):
         """Handle timeline play event and set up physics and render subscriptions.
 
         Args:
@@ -237,7 +237,7 @@ class Extension(omni.ext.IExt):
             )
         self.ui_builder.on_timeline_event(event)
 
-    def _on_timeline_stop(self, event):
+    def _on_timeline_stop(self, event: object):
         """Handle timeline stop event and clean up physics subscriptions.
 
         Args:
@@ -246,7 +246,7 @@ class Extension(omni.ext.IExt):
         self._physics_subscription = None
         self.ui_builder.on_timeline_event(event)
 
-    def _on_physics_step(self, step, context):
+    def _on_physics_step(self, step: float, context: object):
         """Handle physics step events during simulation.
 
         Args:
@@ -255,7 +255,7 @@ class Extension(omni.ext.IExt):
         """
         self.ui_builder.on_physics_step(step)
 
-    def _on_stage_opened(self, event):
+    def _on_stage_opened(self, event: object):
         """Handle stage opened event and reset UI builder state.
 
         Args:
@@ -267,7 +267,7 @@ class Extension(omni.ext.IExt):
         self.ui_builder.reset()
         self.ui_builder.on_stage_event(event)
 
-    def _on_assets_loaded(self, event):
+    def _on_assets_loaded(self, event: object):
         """Handle assets loaded event and notify UI builder.
 
         Args:
@@ -275,7 +275,7 @@ class Extension(omni.ext.IExt):
         """
         self.ui_builder.on_stage_event(event)
 
-    def _on_stage_closed(self, event):
+    def _on_stage_closed(self, event: object):
         """Handles stage closure events and performs cleanup operations.
 
         Cleans up physics and render subscriptions, resets the UI builder state, and forwards the

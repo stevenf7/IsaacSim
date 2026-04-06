@@ -78,11 +78,11 @@ class DropDownWithPicker(DropDown):
             Special keyword arguments include on_selection_fn for handling picker button clicks.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object):
         super().__init__(*args, **kwargs)
         self.selection_fn = kwargs.get("on_selection_fn", None)
 
-    def _create_ui_widget(self, label, tooltip):
+    def _create_ui_widget(self, label: str, tooltip: str):
         """Creates the UI widget for the dropdown with picker.
 
         Creates a horizontal layout containing a label, a picker image button, and a combobox.
@@ -116,7 +116,7 @@ class DropDownWithPicker(DropDown):
 
         return containing_frame
 
-    def _on_pressed_fn(self, b):
+    def _on_pressed_fn(self, b: int) -> None:
         """Handles mouse button press events on the picker image.
 
         Executes the selection function if it exists and the left mouse button was pressed.
@@ -147,7 +147,7 @@ class DropDownWithSelect(DropDown):
         **kwargs: Additional keyword arguments passed to the parent DropDown class.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object):
         super().__init__(*args, **kwargs)
         self._articulation_path_to = None
         self.selection_fn = kwargs.get("on_selection_fn", None)
@@ -166,7 +166,7 @@ class DropDownWithSelect(DropDown):
     def articulation_path_to(self, path):
         self._articulation_path_to = path
 
-    def _create_ui_widget(self, label, tooltip):
+    def _create_ui_widget(self, label: str, tooltip: str):
         """Creates the UI widget components for the dropdown with select functionality.
 
         Args:
@@ -197,7 +197,7 @@ class DropDownWithSelect(DropDown):
 
         return containing_frame
 
-    def _on_pressed_fn(self, b):
+    def _on_pressed_fn(self, b: int) -> None:
         """Handles mouse press events on the select button.
 
         Args:

@@ -35,7 +35,7 @@ def load_behavior_module(behavior_filepath: str, module_name: str = "behavior") 
         decider network representing the behavior.
 
     Raises:
-        RuntimeError if the module doesn't have a make_decider_network() method.
+        RuntimeError: If the module doesn't have a make_decider_network() method.
     """
     from importlib.machinery import SourceFileLoader
 
@@ -50,9 +50,11 @@ def load_behavior_module(behavior_filepath: str, module_name: str = "behavior") 
 def get_assets_root_path_or_die() -> str:
     """Find the assets root path and check for errors.
 
-    Returns: The root path.
+    Returns:
+        The root path.
 
-    Raises: RuntimeError if the assets folder could not be found.
+    Raises:
+        RuntimeError: If the assets folder could not be found.
     """
     assets_root_path = get_assets_root_path()
     if assets_root_path is None:

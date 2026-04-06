@@ -181,11 +181,11 @@ class CortexWorld(World):
     pipeline as well as stopping, pausing, and playing the simulation.
 
     Args:
-        See isaacsim.core.api.world.world.py The args are the same as those available from the
-        underlying core API World.
+        *args: Positional arguments passed to the underlying core API World.
+        **kwargs: Keyword arguments passed to the underlying core API World.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object):
         super().__init__(*args, **kwargs)
         self._logical_state_monitors = OrderedDict()
         self._behaviors = OrderedDict()
@@ -233,6 +233,9 @@ class CortexWorld(World):
 
         Args:
             robot: The commandable robot being added.
+
+        Returns:
+            The robot that was added.
         """
         self._robots[robot.name] = robot
         self.scene.add(robot)
@@ -282,6 +285,9 @@ class CortexWorld(World):
     def reset(self, soft: bool = False) -> None:
         """Resets both the underlying world and the Cortex pipeline. The world is reset before the
         cortex pipeline is. See reset_cortex() for documentation on Cortex resetting.
+
+        Args:
+            soft: If True, performs a soft reset. Defaults to False.
         """
         super().reset(soft)
         self.reset_cortex()

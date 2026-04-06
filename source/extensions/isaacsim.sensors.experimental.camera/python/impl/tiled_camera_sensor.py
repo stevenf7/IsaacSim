@@ -367,7 +367,11 @@ class TiledCameraSensor:
         self._hydra_texture = None
 
     def _initialize_sensor(self, annotators: str | list[str]) -> None:
-        """Initialize sensor by creating the hydra texture and attaching annotators."""
+        """Initialize sensor by creating the hydra texture and attaching annotators.
+
+        Args:
+            annotators: Annotator/sensor types to configure.
+        """
         # compute tiled resolution
         num_rows = round(len(self._camera) ** 0.5)
         num_columns = (len(self._camera) + num_rows - 1) // num_rows
@@ -382,7 +386,14 @@ class TiledCameraSensor:
         self.attach_annotators(annotators)
 
     def _get_annotator_spec(self, annotator: str) -> dict[str, Any]:
-        """Get the specification of the given annotator."""
+        """Get the specification of the given annotator.
+
+        Args:
+            annotator: Name of the annotator.
+
+        Returns:
+            Dictionary containing the annotator specification.
+        """
         try:
             return self._annotators_spec[annotator]
         except KeyError:
@@ -391,7 +402,11 @@ class TiledCameraSensor:
             )
 
     def _validate_annotators(self, annotators: str | list[str]) -> None:
-        """Validate the given annotators."""
+        """Validate the given annotators.
+
+        Args:
+            annotators: Annotator/sensor types to validate.
+        """
         annotators = [annotators] if isinstance(annotators, str) else annotators
         for annotator in annotators:
             if annotator not in self._annotators_spec:

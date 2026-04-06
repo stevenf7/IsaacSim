@@ -29,8 +29,15 @@ ASSETS_LOCATION = f"{SETTINGS_PATH}/assets_location"
 CONFIG_LOCATION = f"{SETTINGS_PATH}/config_location"
 
 
-def Singleton(class_):
-    """A singleton decorator"""
+def Singleton(class_: type) -> object:
+    """A singleton decorator.
+
+    Args:
+        class_: The class to make a singleton.
+
+    Returns:
+        A wrapper function that returns the singleton instance.
+    """
     instances = {}
 
     def getinstance(*args, **kwargs):
@@ -87,12 +94,11 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
         self._settings.set(ASSETS_LOCATION, f"{path}/Isaac/Props/Conveyors/")
 
     def cleanup_slashes(self, path: str, is_directory: bool = False) -> str:
-        """
-        Makes path/slashes uniform
+        """Makes path/slashes uniform.
 
         Args:
             path: path
-            is_directory is path a directory, so final slash can be added
+            is_directory: is path a directory, so final slash can be added
 
         Returns:
             path
@@ -163,8 +169,14 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
                         )
         ui.Spacer(height=ui.Fraction(1))
 
-    def _on_browse_button_fn(self, path, widget, setting):
-        """Called when the user picks the Browse button."""
+    def _on_browse_button_fn(self, path: str, widget: object, setting: str) -> None:
+        """Called when the user picks the Browse button.
+
+        Args:
+            path: The current path value.
+            widget: The UI widget to update.
+            setting: The settings key to update.
+        """
         file_pick = create_filepicker(
             title="Select Directory" if setting == ASSETS_LOCATION else "Select Config File",
             click_apply_fn=lambda p=self.cleanup_slashes(path), w=widget: self._on_file_pick(
@@ -173,8 +185,14 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
         )
         # file_pick.show(path)
 
-    def _on_file_pick(self, full_path, widget, setting):
-        """Called when the user accepts directory in the Select Directory dialog."""
+    def _on_file_pick(self, full_path: str, widget: object, setting: str) -> None:
+        """Called when the user accepts directory in the Select Directory dialog.
+
+        Args:
+            full_path: The selected file path.
+            widget: The UI widget to update.
+            setting: The settings key to update.
+        """
         directory = self.cleanup_slashes(full_path, not full_path.endswith(".json"))
         self._settings.set(setting, directory)
         widget.model.set_value(directory)

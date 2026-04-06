@@ -132,15 +132,15 @@ class TestEnvironmentMenuAssets(MenuUITestCase):
                     # Reset stage for next iteration
                     await self.new_stage()
 
-    def _get_prims(self, stage, exclude_list=[]) -> list[str]:
+    def _get_prims(self, stage: object, exclude_list: list = []) -> list[str]:
         """Retrieve prims by traversing the stage and excluding specified prims.
 
         Args:
-            stage (Usd.Stage): Stage to traverse for prims.
-            exclude_list (list): List of prims to exclude.
+            stage: Stage to traverse for prims.
+            exclude_list: List of prims to exclude.
 
         Returns:
-            list: A list of prims found during traversal.
+            A list of prims found during traversal.
         """
         prims = []
         for p in stage.Traverse(

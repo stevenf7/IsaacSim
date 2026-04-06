@@ -52,7 +52,15 @@ async def _poll_async(check_fn: callable, max_frames: int, label: str = "") -> A
 
 
 def _ui_find(query: str, parent: Any = None) -> Any:
-    """Find a widget, optionally scoped to *parent*."""
+    """Find a widget, optionally scoped to *parent*.
+
+    Args:
+        query: The widget query string.
+        parent: Optional parent widget to search within.
+
+    Returns:
+        The found widget, or None if not found.
+    """
     return parent.find(query) if parent is not None else ui_test.find(query)
 
 

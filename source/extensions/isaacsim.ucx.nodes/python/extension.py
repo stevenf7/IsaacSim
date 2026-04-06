@@ -31,7 +31,7 @@ BRIDGE_PREFIX = "UCX"
 class UCXBridgeExtension(omni.ext.IExt):
     """UCX Bridge Extension class."""
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str):
         """Called when the extension is loaded.
 
         Args:

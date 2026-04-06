@@ -24,8 +24,12 @@ SENSOR_ROOT_PATH = "Create/Sensors/RTX Lidar"
 class TestMenuAssets(MenuUITestCase):
     """Test class for verifying RTX Lidar sensor menu functionality."""
 
-    async def _test_menu_option(self, test_path):
-        """Test a specific menu option."""
+    async def _test_menu_option(self, test_path: str) -> None:
+        """Test a specific menu option.
+
+        Args:
+            test_path: The menu path to test.
+        """
         await self.menu_click_with_retry(test_path)
         await self.run_timeline_frames(5)
 

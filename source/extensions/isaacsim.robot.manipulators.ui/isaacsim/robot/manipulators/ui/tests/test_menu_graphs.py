@@ -42,8 +42,8 @@ class TestArticulationGraphs(MenuUITestCase):
         await self.wait_for_stage_loading()
         await super().tearDown()
 
-    async def test_position_graph_creation(self):
-        """Test creation of articulation position controller graph"""
+    async def test_position_graph_creation(self) -> None:
+        """Test creation of articulation position controller graph."""
 
         # Add robot to stage (Franka)
         robot_path = "/World/test_robot"
@@ -92,8 +92,8 @@ class TestArticulationGraphs(MenuUITestCase):
         for expected in expected_nodes:
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
-    async def test_position_control_golden(self):
-        """Test position control with golden values"""
+    async def test_position_control_golden(self) -> None:
+        """Test position control with golden values."""
 
         # Add robot to stage (Franka)
         robot_path = "/World/test_robot"
@@ -193,8 +193,8 @@ class TestArticulationGraphs(MenuUITestCase):
             joint_positions[7], desired_joint_positions[7], places=1, msg="Joint[7] did not reach target position"
         )
 
-    async def test_position_control_after_reload(self):
-        """Test JointCommandArray position control after saving, closing, and reopening the usd file"""
+    async def test_position_control_after_reload(self) -> None:
+        """Test JointCommandArray position control after saving, closing, and reopening the usd file."""
         # Add robot to stage (Franka)
         robot_path = "/World/test_robot"
         robot_prim = self._stage.DefinePrim(robot_path, "Xform")
@@ -314,8 +314,8 @@ class TestArticulationGraphs(MenuUITestCase):
             await omni.usd.get_context().new_stage_async()
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_velocity_graph_creation(self):
-        """Test creation of articulation velocity controller graph"""
+    async def test_velocity_graph_creation(self) -> None:
+        """Test creation of articulation velocity controller graph."""
 
         # Add robot to stage (Jetbot)
         robot_path = "/World/test_robot"
@@ -362,8 +362,8 @@ class TestArticulationGraphs(MenuUITestCase):
         for expected in expected_nodes:
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
-    async def test_velocity_control_golden(self):
-        """Test velocity control with golden values"""
+    async def test_velocity_control_golden(self) -> None:
+        """Test velocity control with golden values."""
         # Add robot to stage (Jetbot)
         robot_path = "/World/test_robot"
         robot_prim = self._stage.DefinePrim(robot_path, "Xform")
@@ -435,8 +435,8 @@ class TestArticulationGraphs(MenuUITestCase):
         self.assertAlmostEqual(robot_position[1], golden_final_positions[1], delta=0.02)
         self.assertAlmostEqual(robot_position[2], golden_final_positions[2], delta=0.02)
 
-    async def test_velocity_control_after_reload(self):
-        """Test velocity control after saving, closing, and reopening the usd file"""
+    async def test_velocity_control_after_reload(self) -> None:
+        """Test velocity control after saving, closing, and reopening the usd file."""
         # Add robot to stage (Jetbot)
         robot_path = "/World/test_robot"
         robot_prim = self._stage.DefinePrim(robot_path, "Xform")
@@ -525,8 +525,8 @@ class TestArticulationGraphs(MenuUITestCase):
             await omni.usd.get_context().new_stage_async()
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_gripper_graph_creation(self):
-        """Test creation of gripper controller graph"""
+    async def test_gripper_graph_creation(self) -> None:
+        """Test creation of gripper controller graph."""
         # Add robot to stage (Franka)
         robot_path = "/World/test_robot"
         robot_prim = self._stage.DefinePrim(robot_path, "Xform")
@@ -593,8 +593,8 @@ class TestArticulationGraphs(MenuUITestCase):
         for expected in expected_nodes:
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
-    async def test_gripper_control_golden(self):
-        """Test gripper control with golden values"""
+    async def test_gripper_control_golden(self) -> None:
+        """Test gripper control with golden values."""
 
         # Add robot to stage (Franka)
         robot_path = "/World/test_robot"
@@ -698,8 +698,8 @@ class TestArticulationGraphs(MenuUITestCase):
         self.assertAlmostEqual(gripper_stop_position[0], 0.01, delta=0.02)
         self.assertAlmostEqual(gripper_stop_position[1], 0.01, delta=0.02)
 
-    async def test_gripper_control_after_reload(self):
-        """Test gripper control after saving, closing, and reopening the usd file"""
+    async def test_gripper_control_after_reload(self) -> None:
+        """Test gripper control after saving, closing, and reopening the usd file."""
         # Add robot to stage (Franka)
         robot_path = "/World/test_robot"
         robot_prim = self._stage.DefinePrim(robot_path, "Xform")

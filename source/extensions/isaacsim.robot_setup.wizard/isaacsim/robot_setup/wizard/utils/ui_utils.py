@@ -28,7 +28,7 @@ from ..progress import ProgressColorState, ProgressRegistry
 from .utils import Singleton
 
 
-def custom_header(collapsed, title):
+def custom_header(collapsed: bool, title: str):
     """Creates a custom collapsible header with a triangle indicator and title.
 
     Args:
@@ -52,7 +52,7 @@ def custom_header(collapsed, title):
         #     ui.Image(name="help", width=28, height=28, mouse_pressed_fn=lambda x, y, b, a: print("Help button clicked"))
 
 
-def info_header(collapsed, title):
+def info_header(collapsed: bool, title: str):
     """Creates an information header with a triangle indicator, title, and info icon.
 
     Args:
@@ -75,7 +75,7 @@ def info_header(collapsed, title):
             ui.Image(name="info", width=20, height=20)
 
 
-def separator(text):
+def separator(text: str):
     """Creates a visual separator with text label and horizontal line.
 
     Args:
@@ -86,7 +86,7 @@ def separator(text):
         ui.Line()
 
 
-def info_frame(infos, collapse_fn):
+def info_frame(infos: list, collapse_fn: callable):
     """Creates a collapsible information frame displaying a list of info items with bullet points.
 
     Args:
@@ -116,10 +116,7 @@ class ComboListItem(ui.AbstractItem):
         item: The string value to be wrapped as a combo box item.
     """
 
-    def __init__(self, item):
-        """
-        item is a string
-        """
+    def __init__(self, item: str):
         super().__init__()
         self.model = ui.SimpleStringModel(item)
         self.item = item
@@ -137,7 +134,7 @@ class ComboListModel(ui.AbstractItemModel):
         default_index: Index of the item to select by default.
     """
 
-    def __init__(self, item_list, default_index):
+    def __init__(self, item_list: list, default_index: int):
         super().__init__()
         self._default_index = default_index
         self._current_index = ui.SimpleIntModel(default_index)
@@ -148,7 +145,7 @@ class ComboListModel(ui.AbstractItemModel):
             for item in item_list:
                 self._items.append(ComboListItem(item))
 
-    def get_item_children(self, item):
+    def get_item_children(self, item: object):
         """Returns all child items of the given item.
 
         Args:
@@ -159,7 +156,7 @@ class ComboListModel(ui.AbstractItemModel):
         """
         return self._items
 
-    def get_item_value_model(self, item, column_id):
+    def get_item_value_model(self, item: object, column_id: int):
         """Returns the value model for a specific item and column.
 
         Args:
@@ -181,7 +178,7 @@ class ComboListModel(ui.AbstractItemModel):
         """
         return self._current_index.get_value_as_int()
 
-    def set_current_index(self, index):
+    def set_current_index(self, index: int):
         """Sets the current selected index.
 
         Args:
@@ -197,7 +194,7 @@ class ComboListModel(ui.AbstractItemModel):
         """
         return self._items[self._current_index.get_value_as_int()].model.get_value_as_string()
 
-    def set_current_string(self, string):
+    def set_current_string(self, string: str):
         """Sets the current selection by matching the provided string.
 
         Args:
@@ -224,7 +221,7 @@ class ComboListModel(ui.AbstractItemModel):
         """
         return self.get_current_index() == self._default_index
 
-    def add_item(self, item):
+    def add_item(self, item: str):
         """Adds a new item to the combo list.
 
         Args:
@@ -233,7 +230,7 @@ class ComboListModel(ui.AbstractItemModel):
         self._items.append(ComboListItem(item))
         self._item_changed(None)
 
-    def selection_changed(self, index):
+    def selection_changed(self, index: object):
         """Handles selection change events.
 
         Args:
@@ -256,7 +253,7 @@ class ComboListModel(ui.AbstractItemModel):
         return len(self._items) > 0
 
 
-def create_combo_list_model(items_list, index):
+def create_combo_list_model(items_list: list, index: int):
     """Creates a combo box list model for UI selection.
 
     Args:
@@ -269,7 +266,7 @@ def create_combo_list_model(items_list, index):
     return ComboListModel(items_list, index)
 
 
-def next_step(curret_step_name, next_step_name, verify_fn=None):
+def next_step(curret_step_name: str, next_step_name: str, verify_fn: callable = None):
     """Advances to the next step in the wizard workflow.
 
     Marks the current step as complete and navigates to the specified next step.
@@ -287,7 +284,7 @@ def next_step(curret_step_name, next_step_name, verify_fn=None):
     isaacsim.robot_setup.wizard.get_window().update_page(next_step_name)
 
 
-def text_with_dot(text):
+def text_with_dot(text: str):
     """Creates a text label with a bullet point indicator.
 
     Args:
@@ -440,7 +437,7 @@ class FileSorter:
         return classification == FileSorter.SIM_READY or classification == FileSorter.MODEL
 
 
-def open_extension(ext_name, action_id=None):
+def open_extension(ext_name: str, action_id: str = None):
     """Opens the extension with the given name.
 
     Enables the extension if it's not already enabled and executes its action.
@@ -528,7 +525,7 @@ class FilteredFileDialog:
         self._filepicker.hide()
 
 
-def open_folder_picker(on_click_fn):
+def open_folder_picker(on_click_fn: callable):
     """Opens a folder picker dialog for selecting an output directory.
 
     Args:

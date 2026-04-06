@@ -31,7 +31,22 @@ from pxr import Usd, UsdShade
 
 
 class DeformableMaterial:
-    """A wrapper around deformable material used to simulate soft bodies."""
+    """A wrapper around deformable material used to simulate soft bodies.
+
+    Applies the PhysxSchema.PhysxDeformableSurfaceMaterialAPI to the prim at path.
+
+    Note:
+        If a prim does not exist at specified path, then a new UsdShade.Material prim is created.
+
+    Args:
+        prim_path: The prim path to create/apply deformable material properties.
+        name: Name given to the prim when instantiating it.
+        dynamic_friction: The dynamic friction coefficient in range [0, inf).
+        youngs_modulus: The Young's modulus coefficient controlling stiffness of the bodies in range [0, inf).
+        poissons_ratio: The Poisson's ratio coefficient that is related to volume preservation in range [0, 0.5).
+        elasticity_damping: Material damping parameter in [0, inf).
+        damping_scale: The damping scale coefficient in [0, 1].
+    """
 
     def __init__(
         self,
@@ -42,20 +57,7 @@ class DeformableMaterial:
         poissons_ratio: Optional[float] = None,
         elasticity_damping: Optional[float] = None,
         damping_scale: Optional[float] = None,
-    ):
-        """Applies the PhysxSchema.PhysxDeformableSurfaceMaterialAPI to the prim at path
-        Note:
-            If a prim does not exist at specified path, then a new UsdShade.Material prim is created.
-
-        Args:
-            prim_path: The prim path to create/apply deformable material properties.
-            name: Name given to the prim when instantiating it.
-            dynamic_friction: The dynamic friction coefficient in range [0, inf).
-            youngs_modulus: The Young's modulus coefficient controlling stiffness of the bodies in range [0, inf).
-            poissons_ratio: The Poisson's ratio coefficient that is related to volume preservation in range [0, 0.5).
-            elasticity_damping: Material damping parameter in [0, inf).
-            damping_scale: The damping scale coefficient in [0, 1].
-        """
+    ) -> None:
         stage = stage_utils.get_current_stage()
         self._name = name
         self._prim_path = prim_path
@@ -149,7 +151,7 @@ class DeformableMaterial:
         """
         return self._name
 
-    def initialize(self, physics_sim_view=None):
+    def initialize(self, physics_sim_view: object = None) -> None:
         """Initializes the deformable material view.
 
         Args:
@@ -166,7 +168,7 @@ class DeformableMaterial:
         """
         return self._deformable_material_view.is_valid()
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Resets the prim to its default state."""
         self._deformable_material_view.post_reset()
         return
@@ -175,7 +177,7 @@ class DeformableMaterial:
     Operations - Setters.
     """
 
-    def set_dynamic_friction(self, value: float):
+    def set_dynamic_friction(self, value: float) -> None:
         """Sets the dynamic_friction coefficient.
 
         The dynamic_friction takes effect in all interactions between particles and rigids or deformables.
@@ -190,7 +192,7 @@ class DeformableMaterial:
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_youngs_modululs(self, value: float):
+    def set_youngs_modululs(self, value: float) -> None:
         """Sets the youngs_modululs for fluid particles.
 
         Args:
@@ -202,7 +204,7 @@ class DeformableMaterial:
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_poissons_ratio(self, value: float):
+    def set_poissons_ratio(self, value: float) -> None:
         """Sets the poissons ratio coefficient
 
         Args:
@@ -212,7 +214,7 @@ class DeformableMaterial:
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_damping_scale(self, value: float):
+    def set_damping_scale(self, value: float) -> None:
         """Sets the damping scale coefficient.
 
         Args:
@@ -224,7 +226,7 @@ class DeformableMaterial:
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )
 
-    def set_elasticity_damping(self, value: float):
+    def set_elasticity_damping(self, value: float) -> None:
         """Sets the global velocity elasticity damping coefficient.
 
         Args:

@@ -149,11 +149,19 @@ def get_bin_under(p, stacked_bins):
     return None
 
 
-def adjust_about_x_if_opposite(eff_R, target_R, threshold=-0.9):
+def adjust_about_x_if_opposite(eff_R: np.ndarray, target_R: np.ndarray, threshold: float = -0.9) -> np.ndarray:
     """Rotate target_R by 180 degrees about its X axis if X axes are nearly opposite.
 
     This avoids a configuration where the end-effector's X axis is nearly anti-parallel
     to the target pose's X axis, which can cause undesirable wrist flips.
+
+    Args:
+        eff_R: The current end-effector rotation matrix.
+        target_R: The target rotation matrix.
+        threshold: Dot product threshold below which axes are considered opposite.
+
+    Returns:
+        The adjusted target rotation matrix.
     """
     target_x = target_R[:3, 0]
     eff_x = eff_R[:3, 0]

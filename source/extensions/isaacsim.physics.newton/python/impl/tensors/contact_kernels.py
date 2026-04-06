@@ -49,7 +49,7 @@ def populate_contact_points_kernel(
     # outputs
     contact_point0: wp.array(dtype=wp.vec3),  # body-local contact point on first shape
     contact_point1: wp.array(dtype=wp.vec3),  # body-local contact point on second shape
-):
+) -> None:
     """Populate body-local contact points from MuJoCo world-space contact positions.
 
     Used when Newton Contacts do not provide rigid_contact_point0/1; transforms
@@ -105,7 +105,7 @@ def count_contacts_per_pair_kernel(
     world_body_idx: int,
     # outputs
     contact_counts: wp.array2d(dtype=wp.uint32),  # per sensor-filter pair (uint32 to match PhysX API)
-):
+) -> None:
     """Count how many contacts exist for each sensor-filter pair (for prefix scan).
 
     body_filter_map is indexed directly by body index (dimension body_count + 1),
@@ -179,7 +179,7 @@ def net_contact_forces_kernel(
     dt: float,
     # outputs
     net_forces: wp.array2d(dtype=wp.float32),  # shape: (sensor_count, 3)
-):
+) -> None:
     """Compute net contact force per sensor (force * dt) with PhysX sign convention.
 
     Newton stores force on shape0 (from shape1 toward shape0). Sensor for shape0
@@ -260,7 +260,7 @@ def contact_force_matrix_kernel(
     filter_count: int,
     # outputs
     force_matrix: wp.array3d(dtype=wp.float32),  # shape: (sensor_count, filter_count, 3)
-):
+) -> None:
     """Compute per-filter contact force matrix (force * dt) with PhysX sign convention.
 
     Same sign rule as net_contact_forces_kernel, organized into a sensor x filter matrix.
@@ -357,7 +357,7 @@ def contact_data_kernel(
     contact_separations: wp.array2d(dtype=wp.float32),  # penetration depth (N, 1)
     contact_counts: wp.array2d(dtype=wp.uint32),  # per sensor-filter pair (uint32 to match PhysX API)
     contact_start_indices: wp.array2d(dtype=wp.uint32),  # start index per sensor-filter pair
-):
+) -> None:
     """Gather detailed contact data per sensor-filter pair using pre-computed forces.
 
     Gathers geometric information (contact points, normals, separations) and force
@@ -499,7 +499,7 @@ def count_raw_contacts_per_sensor_kernel(
     world_body_idx: int,
     # outputs
     contact_counts: wp.array(dtype=wp.uint32),  # per sensor (1D, no filter dimension)
-):
+) -> None:
     """Count contacts per sensor without filter matching (for raw contact data prefix scan).
 
     Unlike count_contacts_per_pair_kernel, this accumulates into a 1D array
@@ -581,7 +581,7 @@ def raw_contact_data_kernel(
     contact_counts: wp.array(dtype=wp.uint32),  # per sensor (1D)
     contact_start_indices: wp.array(dtype=wp.uint32),  # start index per sensor (1D)
     other_actor_ids: wp.array(dtype=wp.uint64),  # body index of the other body in the pair
-):
+) -> None:
     """Gather raw contact data per sensor without filter matching.
 
     Unlike contact_data_kernel, this does not use body_filter_map. All contacts

@@ -41,7 +41,7 @@ class PhysicsMaterial(object):
         static_friction: Optional[float] = None,
         dynamic_friction: Optional[float] = None,
         restitution: Optional[float] = None,
-    ):
+    ) -> None:
         self._name = name
         self._prim_path = prim_path
 
@@ -100,7 +100,7 @@ class PhysicsMaterial(object):
         """
         return self._material
 
-    def set_dynamic_friction(self, friction: float):
+    def set_dynamic_friction(self, friction: float) -> None:
         """Set the dynamic friction coefficient.
 
         Args:
@@ -124,7 +124,7 @@ class PhysicsMaterial(object):
         else:
             return self._material_api.GetDynamicFrictionAttr().Get()
 
-    def set_static_friction(self, friction: float):
+    def set_static_friction(self, friction: float) -> None:
         """Set the static friction coefficient.
 
         Args:
@@ -148,7 +148,7 @@ class PhysicsMaterial(object):
         else:
             return self._material_api.GetStaticFrictionAttr().Get()
 
-    def set_restitution(self, restitution: float):
+    def set_restitution(self, restitution: float) -> None:
         """Set the restitution (bounciness) coefficient.
 
         Args:

@@ -31,7 +31,7 @@ from isaacsim.robot.manipulators.examples.franka.stacking import Stacking
 class RoboFactory(BaseSample):
     """Interactive sample for multiple robots performing stacking tasks."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._stackings = []
         self._robots = []
@@ -39,7 +39,7 @@ class RoboFactory(BaseSample):
         self._physics_callback_id = None
         self._is_executing = False
 
-    def setup_scene(self):
+    def setup_scene(self) -> None:
         """Set up the scene with multiple robots and cubes."""
         # Create multiple stackings with different offsets
         for i in range(self._num_of_tasks):
@@ -60,13 +60,13 @@ class RoboFactory(BaseSample):
             self._stackings.append(stacking)
             self._robots.append(stacking.robot)
 
-    async def setup_post_load(self):
+    async def setup_post_load(self) -> None:
         """Called after the scene is loaded."""
         # Set camera view
         ViewportManager.set_camera_view(eye=[10.0, 0.0, 5.0], target=[0.0, 0.0, 0.0], camera="/OmniverseKit_Persp")
         print(f"Scene loaded with {self._num_of_tasks} robots")
 
-    async def setup_pre_reset(self):
+    async def setup_pre_reset(self) -> None:
         """Called before world reset."""
         # Stop any ongoing execution and remove callbacks
         if self._physics_callback_id is not None:
@@ -79,13 +79,13 @@ class RoboFactory(BaseSample):
 
         self._is_executing = False
 
-    async def setup_post_reset(self):
+    async def setup_post_reset(self) -> None:
         """Called after world reset."""
         # Reset all robots to default poses
         for stacking in self._stackings:
             stacking.reset_robot()
 
-    async def setup_post_clear(self):
+    async def setup_post_clear(self) -> None:
         """Called after clearing the scene."""
         # Stop any ongoing execution and remove callbacks
         if self._physics_callback_id is not None:
@@ -96,7 +96,7 @@ class RoboFactory(BaseSample):
         self._robots = []
         self._is_executing = False
 
-    def physics_cleanup(self):
+    def physics_cleanup(self) -> None:
         """Clean up world resources."""
         # Stop any ongoing execution and remove callbacks
         if self._physics_callback_id is not None:
@@ -107,7 +107,7 @@ class RoboFactory(BaseSample):
         self._robots = []
         self._is_executing = False
 
-    def _stacking_physics_callback(self, dt, context):
+    def _stacking_physics_callback(self, dt: float, context: object) -> None:
         """Physics callback to execute stacking operations step by step.
 
         Args:
@@ -131,7 +131,7 @@ class RoboFactory(BaseSample):
                 SimulationManager.deregister_callback(self._physics_callback_id)
                 self._physics_callback_id = None
 
-    async def _on_start_stacking_event_async(self):
+    async def _on_start_stacking_event_async(self) -> None:
         """Start the stacking execution."""
         if self._is_executing:
             print("Stacking already in progress...")

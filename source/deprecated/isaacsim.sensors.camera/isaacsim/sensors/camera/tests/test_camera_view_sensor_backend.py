@@ -42,8 +42,17 @@ class TestCameraViewSensorBackend(omni.kit.test.AsyncTestCase):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
-    async def run_test_async(self, backend="numpy", device=None, gpu_dynamics=False, app_warmup=False):
-        """Run the camera capture test with specified backend configuration."""
+    async def run_test_async(
+        self, backend: str = "numpy", device: object = None, gpu_dynamics: bool = False, app_warmup: bool = False
+    ):
+        """Run the camera capture test with specified backend configuration.
+
+        Args:
+            backend: Backend to use for simulation.
+            device: Device to use for physics simulation.
+            gpu_dynamics: Whether to enable GPU dynamics.
+            app_warmup: Whether to warm up the application.
+        """
         await omni.usd.get_context().new_stage_async()
         stage = omni.usd.get_context().get_stage()
         timeline = omni.timeline.get_timeline_interface()

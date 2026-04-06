@@ -47,7 +47,6 @@ class FrankaGraphPlannerExample:
     """
 
     def __init__(self) -> None:
-        """Initialize the FrankaGraphPlannerExample with default attribute values."""
         self._articulation = None
         self._trajectory = None
         self._trajectory_time = 0.0
@@ -91,7 +90,11 @@ class FrankaGraphPlannerExample:
                 pass
 
     def setup_world_and_planner(self) -> tuple:
-        """Set up world binding and graph-based motion planner (shared by both target types)."""
+        """Set up world binding and graph-based motion planner (shared by both target types).
+
+        Returns:
+            Tuple of robot config, world binding, and planner.
+        """
         # Load robot configuration
         robot_config = load_cumotion_supported_robot("franka")
 
@@ -246,7 +249,11 @@ class FrankaGraphPlannerExample:
         return None
 
     def update(self, step: float) -> None:
-        """Update trajectory execution on each physics step."""
+        """Update trajectory execution on each physics step.
+
+        Args:
+            step: The physics time step in seconds.
+        """
         if self._trajectory is None:
             return
 

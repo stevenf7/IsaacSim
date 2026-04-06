@@ -49,7 +49,7 @@ def _singleton(class_: type):  # noqa: N802
     return getinstance
 
 
-def _prim_has_robot_schema(prim):
+def _prim_has_robot_schema(prim: object):
     """Checks if a USD prim has any robot schema API applied.
 
     Args:
@@ -151,7 +151,7 @@ class NameOverrideWidget(UsdPropertiesWidget):
         selection.set_selected_prim_paths(selected_paths, True)
         window.frame.rebuild()
 
-    def _on_usd_changed(self, notice, stage):
+    def _on_usd_changed(self, notice: object, stage: object):
         """Handles USD stage change notifications by refreshing the widget if needed.
 
         Args:
@@ -166,7 +166,7 @@ class NameOverrideWidget(UsdPropertiesWidget):
         else:
             super()._on_usd_changed(notice, stage)
 
-    def _get_prim(self, prim_path) -> Usd.Prim | None:
+    def _get_prim(self, prim_path: object) -> Usd.Prim | None:
         """Retrieves a prim if it exists, lacks robot schema, and has a name override attribute.
 
         Args:
@@ -217,7 +217,7 @@ class NameOverrideWidget(UsdPropertiesWidget):
             if prim and prim.HasAttribute(robot_schema.Attributes.NAME_OVERRIDE.name):
                 prim.RemoveProperty(robot_schema.Attributes.NAME_OVERRIDE.name)
 
-    def _filter_props_to_build(self, props) -> list[Usd.Attribute]:
+    def _filter_props_to_build(self, props: list) -> list[Usd.Attribute]:
         """Filters properties to only include name override attributes and sets their display properties.
 
         Args:

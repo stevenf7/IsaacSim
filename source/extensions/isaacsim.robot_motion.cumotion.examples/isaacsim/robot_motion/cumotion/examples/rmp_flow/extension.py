@@ -186,14 +186,22 @@ class Extension(omni.ext.IExt):
         self.ui_builder.on_menu_callback()
 
     def _on_timeline_play(self, event: Any) -> None:
-        """Handle timeline play event callback."""
+        """Handle timeline play event callback.
+
+        Args:
+            event: The timeline event.
+        """
         if not self._physics_subscription:
             self._physics_subscription = self._physics_simulation_interface.subscribe_physics_on_step_events(
                 pre_step=False, order=0, on_update=self._on_physics_step
             )
 
     def _on_timeline_stop(self, event: Any) -> None:
-        """Handle timeline stop event callback."""
+        """Handle timeline stop event callback.
+
+        Args:
+            event: The timeline event.
+        """
         self._physics_subscription = None
         self.ui_builder.on_timeline_event(event)
 
@@ -201,13 +209,21 @@ class Extension(omni.ext.IExt):
         self.ui_builder.on_physics_step(step)
 
     def _on_stage_opened(self, event: Any) -> None:
-        """Handle stage opened event callback."""
+        """Handle stage opened event callback.
+
+        Args:
+            event: The stage event.
+        """
         self._physics_subscription = None
         self.ui_builder.cleanup()
         self.ui_builder.on_stage_event(event)
 
     def _on_stage_closed(self, event: Any) -> None:
-        """Handle stage closed event callback."""
+        """Handle stage closed event callback.
+
+        Args:
+            event: The stage event.
+        """
         self._physics_subscription = None
         self.ui_builder.cleanup()
 

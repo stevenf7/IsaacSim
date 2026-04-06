@@ -55,7 +55,7 @@ class BaseSensor(SingleXFormPrim):
         orientation: Optional[Sequence[float]] = None,
         scale: Optional[Sequence[float]] = None,
         visible: Optional[bool] = None,
-    ):
+    ) -> None:
         SingleXFormPrim.__init__(
             self,
             prim_path=prim_path,
@@ -68,7 +68,7 @@ class BaseSensor(SingleXFormPrim):
         )
         return
 
-    def initialize(self, physics_sim_view=None):
+    def initialize(self, physics_sim_view: object = None) -> None:
         """Create a physics simulation view if not passed and using PhysX tensor API
 
         .. note::
@@ -88,7 +88,7 @@ class BaseSensor(SingleXFormPrim):
         SingleXFormPrim.initialize(self, physics_sim_view=physics_sim_view)
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Resets the sensor to its initial state after a simulation reset."""
         # SingleXFormPrim.post_reset(self)
         return

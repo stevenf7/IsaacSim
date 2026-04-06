@@ -30,7 +30,7 @@ from isaacsim.gui.components.ui_utils import btn_builder
 class RoboFactoryExtension(omni.ext.IExt):
     """Extension for RoboFactory interactive example."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension is starting up.
 
         Initializes the RoboFactory extension by setting up the UI template and registering
@@ -59,7 +59,7 @@ class RoboFactoryExtension(omni.ext.IExt):
             category=self.category,
         )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension is shutting down.
 
         Cleans up by deregistering the RoboFactory example from the browser.
@@ -75,11 +75,11 @@ class RoboFactoryUI(BaseSampleUITemplate):
         **kwargs: Additional keyword arguments passed to the parent class.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
         self.task_ui_elements = {}
 
-    def build_extra_frames(self):
+    def build_extra_frames(self) -> None:
         """Build additional UI frames for task control."""
         extra_stacks = self.get_extra_frames_handle()
 
@@ -95,24 +95,24 @@ class RoboFactoryUI(BaseSampleUITemplate):
             ):
                 self.build_task_controls_ui()
 
-    def _on_start_stacking_button_event(self):
+    def _on_start_stacking_button_event(self) -> None:
         """Handle start stacking button click."""
         asyncio.ensure_future(self.sample._on_start_stacking_event_async())
         self.task_ui_elements["Start Stacking"].enabled = False
 
-    def post_reset_button_event(self):
+    def post_reset_button_event(self) -> None:
         """Called after the reset button is pressed."""
         self.task_ui_elements["Start Stacking"].enabled = True
 
-    def post_load_button_event(self):
+    def post_load_button_event(self) -> None:
         """Called after the load button is pressed."""
         self.task_ui_elements["Start Stacking"].enabled = True
 
-    def post_clear_button_event(self):
+    def post_clear_button_event(self) -> None:
         """Called after the clear button is pressed."""
         self.task_ui_elements["Start Stacking"].enabled = False
 
-    def build_task_controls_ui(self):
+    def build_task_controls_ui(self) -> None:
         """Build the task control UI elements."""
         with ui.VStack(spacing=5):
             start_stacking_dict = {

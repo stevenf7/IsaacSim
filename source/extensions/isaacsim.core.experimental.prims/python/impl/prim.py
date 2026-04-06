@@ -288,7 +288,7 @@ class Prim(ABC):
     Internal callbacks.
     """
 
-    def _on_physics_ready(self, event) -> None:
+    def _on_physics_ready(self, event: object) -> None:
         """Handle physics ready event.
 
         Args:

@@ -47,14 +47,12 @@ class HeightmapImporter:
 
     This class handles the conversion of 2D heightmap images into 3D terrain
     in USD stages using point instancers for efficient rendering.
+
+    Args:
+        stage: USD stage to create heightmap in. If None, uses the current stage.
     """
 
     def __init__(self, stage: Optional[any] = None):
-        """Initialize the heightmap importer.
-
-        Args:
-            stage: USD stage to create heightmap in. If None, uses the current stage.
-        """
         self._stage = stage
 
     def create_heightmap(

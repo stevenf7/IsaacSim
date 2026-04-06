@@ -46,7 +46,7 @@ class FrankaCortexExtension(omni.ext.IExt):
     the robot's behavior execution through diagnostic panels that display decision stacks and real-time feedback.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initializes the Franka Cortex extension on startup.
 
         Registers the extension with the examples browser, sets up the UI template with
@@ -80,7 +80,7 @@ class FrankaCortexExtension(omni.ext.IExt):
 
         return
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up the extension on shutdown.
 
         Deregisters the extension from the examples browser to prevent memory leaks
@@ -102,7 +102,7 @@ class FrankaCortexUI(BaseSampleUITemplate):
         **kwargs: Additional keyword arguments passed to the parent class.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -123,7 +123,7 @@ class FrankaCortexUI(BaseSampleUITemplate):
         self.selected_behavior = "Block Stacking"
         self.loaded = False
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Builds the user interface for the Franka Cortex example.
 
         Creates the main UI elements including behavior selection dropdown, load world button,
@@ -169,7 +169,7 @@ class FrankaCortexUI(BaseSampleUITemplate):
 
         self.build_extra_frames()
 
-    def build_extra_frames(self):
+    def build_extra_frames(self) -> None:
         """Builds additional UI frames for task control and diagnostics.
 
         Creates collapsible frames containing task control buttons and diagnostic displays
@@ -203,7 +203,7 @@ class FrankaCortexUI(BaseSampleUITemplate):
 
                 self.build_diagnostic_ui()
 
-    def _on_load_world(self):
+    def _on_load_world(self) -> None:
         """Handles loading the world with the selected behavior.
 
         Sets the behavior for the sample based on the current selection and marks
@@ -213,7 +213,7 @@ class FrankaCortexUI(BaseSampleUITemplate):
         self.loaded = True
         super()._on_load_world()
 
-    def on_diagnostics(self, diagnostic, decision_stack):
+    def on_diagnostics(self, diagnostic: str, decision_stack: str) -> None:
         """Handles diagnostic updates from the Cortex framework.
 
         Updates the diagnostic and decision stack displays in the UI and controls
@@ -245,7 +245,7 @@ class FrankaCortexUI(BaseSampleUITemplate):
         """
         return self.behavior_map[self.selected_behavior]
 
-    def _on_start_button_event(self):
+    def _on_start_button_event(self) -> None:
         """Handles the start button click event.
 
         Starts the Cortex behavior execution asynchronously and disables the start button
@@ -255,7 +255,7 @@ class FrankaCortexUI(BaseSampleUITemplate):
         self.task_ui_elements["Start"].enabled = False
         return
 
-    def post_reset_button_event(self):
+    def post_reset_button_event(self) -> None:
         """Handles post-reset button event processing.
 
         Re-enables the start button after a reset operation to allow starting
@@ -264,7 +264,7 @@ class FrankaCortexUI(BaseSampleUITemplate):
         self.task_ui_elements["Start"].enabled = True
         return
 
-    def post_load_button_event(self):
+    def post_load_button_event(self) -> None:
         """Handles post-load button event processing.
 
         Re-enables the start button after the world has been loaded to allow
@@ -273,7 +273,7 @@ class FrankaCortexUI(BaseSampleUITemplate):
         self.task_ui_elements["Start"].enabled = True
         return
 
-    def post_clear_button_event(self):
+    def post_clear_button_event(self) -> None:
         """Handles post-clear button event processing.
 
         Disables the start button after clearing the world to prevent starting
@@ -282,7 +282,7 @@ class FrankaCortexUI(BaseSampleUITemplate):
         self.task_ui_elements["Start"].enabled = False
         return
 
-    def __on_selected_behavior_changed(self, selected_index: str):
+    def __on_selected_behavior_changed(self, selected_index: str) -> None:
         """Handles behavior selection changes in the dropdown.
 
         Updates the selected behavior and reloads it if a world is already loaded.
@@ -296,7 +296,7 @@ class FrankaCortexUI(BaseSampleUITemplate):
             asyncio.ensure_future(self._sample.load_behavior(self.get_behavior()))
             self.on_diagnostics("", "")
 
-    def build_task_controls_ui(self):
+    def build_task_controls_ui(self) -> None:
         """Builds the task control UI elements.
 
         Creates a Start button for initiating the selected Cortex behavior.
@@ -312,7 +312,7 @@ class FrankaCortexUI(BaseSampleUITemplate):
             self.task_ui_elements["Start"] = btn_builder(**dict)
             self.task_ui_elements["Start"].enabled = False
 
-    def build_diagnostic_ui(self):
+    def build_diagnostic_ui(self) -> None:
         """Builds the diagnostic UI elements.
 
         Creates text fields for displaying the decision stack and diagnostic messages

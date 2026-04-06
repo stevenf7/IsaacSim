@@ -122,7 +122,7 @@ class FrankaExample(BaseSample):
         self._physics_ready = False
         self._time_elapsed = 0.0
 
-    def on_physics_step(self, dt, context):
+    def on_physics_step(self, dt: float, context: object) -> None:
         """Physics step callback - initialize on first step, then run policy.
 
         Args:

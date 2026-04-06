@@ -51,7 +51,7 @@ class FollowTarget(ABC, BaseTask):
         target_position: Optional[np.ndarray] = None,
         target_orientation: Optional[np.ndarray] = None,
         offset: Optional[np.ndarray] = None,
-    ):
+    ) -> None:
         BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
         self._target_name = target_name
@@ -65,7 +65,7 @@ class FollowTarget(ABC, BaseTask):
             self._target_position = np.array([0, 0.1, 0.7]) / get_stage_units()
         return
 
-    def set_up_scene(self, scene: Scene):
+    def set_up_scene(self, scene: Scene) -> None:
         """Set up the scene with target and robot.
 
         Args:
@@ -96,7 +96,7 @@ class FollowTarget(ABC, BaseTask):
         return
 
     @abstractmethod
-    def set_robot(self):
+    def set_robot(self) -> None:
         """Create and return the robot for this task.
 
         Raises:
@@ -110,7 +110,7 @@ class FollowTarget(ABC, BaseTask):
         target_name: Optional[str] = None,
         target_position: Optional[np.ndarray] = None,
         target_orientation: Optional[np.ndarray] = None,
-    ):
+    ) -> None:
         """Set task parameters including target pose.
 
         Args:
@@ -193,6 +193,9 @@ class FollowTarget(ABC, BaseTask):
 
         Raises:
             NotImplementedError: Must be implemented by subclass.
+
+        Returns:
+            Dictionary containing calculated task metrics.
         """
         raise NotImplementedError
 
@@ -201,6 +204,9 @@ class FollowTarget(ABC, BaseTask):
 
         Raises:
             NotImplementedError: Must be implemented by subclass.
+
+        Returns:
+            Whether the task is complete.
         """
         raise NotImplementedError
 
@@ -217,7 +223,7 @@ class FollowTarget(ABC, BaseTask):
         else:
             return False
 
-    def pre_step(self, time_step_index: int, simulation_time: float):
+    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
         """Called before each physics step to update target visual.
 
         Args:
@@ -233,11 +239,11 @@ class FollowTarget(ABC, BaseTask):
 
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Called after world reset."""
         return
 
-    def add_obstacle(self, position: np.ndarray = None):
+    def add_obstacle(self, position: np.ndarray = None) -> None:
         """Add an obstacle cube to the scene.
 
         Args:
@@ -265,7 +271,7 @@ class FollowTarget(ABC, BaseTask):
         self._obstacle_cubes[cube.name] = cube
         return cube
 
-    def remove_obstacle(self, name: Optional[str] = None):
+    def remove_obstacle(self, name: Optional[str] = None) -> None:
         """Remove an obstacle from the scene.
 
         Args:
@@ -300,7 +306,7 @@ class FollowTarget(ABC, BaseTask):
         else:
             return False
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Remove all obstacles from the scene."""
         obstacles_to_delete = list(self._obstacle_cubes.keys())
         for obstacle_to_delete in obstacles_to_delete:

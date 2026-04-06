@@ -170,7 +170,7 @@ class LulaInterfaceHelper(LulaWorld):
         self._robot_base_moved = False
         self._robot_pos, self._robot_rot = np.zeros(3), np.eye(3)
 
-    def _get_prim_pose_rel_robot_base(self, prim):
+    def _get_prim_pose_rel_robot_base(self, prim: object):
         """Get the pose of a prim relative to the robot base position.
 
         Args:
@@ -184,7 +184,7 @@ class LulaInterfaceHelper(LulaWorld):
             prim, self._meters_per_unit, self._robot_pos, self._robot_rot
         )
 
-    def _get_pose_rel_robot_base(self, trans, rot):
+    def _get_pose_rel_robot_base(self, trans: object, rot: object):
         """Transforms a pose from world coordinates to robot base relative coordinates.
 
         Args:

@@ -85,7 +85,7 @@ class ColorJointItem(TableItem):
         elif col_id == 1:
             return self.name
 
-    def set_item_value(self, col_id: int, value):
+    def set_item_value(self, col_id: int, value: object):
         """Sets the value for the specified column.
 
         Args:
@@ -127,7 +127,7 @@ class ColorJointItemDelegate(TableItemDelegate):
     header = ["", "Joint"]
     """Header labels for each column in the color joint table."""
 
-    def __init__(self, model):
+    def __init__(self, model: object):
         super().__init__(model)
         self.column_headers = {}
 
@@ -166,7 +166,7 @@ class ColorJointItemDelegate(TableItemDelegate):
         pass
 
     def build_widget(
-        self, model, item: ColorJointItem | None = None, index: int = 0, level: int = 0, expanded: bool = False
+        self, model: object, item: ColorJointItem | None = None, index: int = 0, level: int = 0, expanded: bool = False
     ):
         """Build the widget for a table item at the specified column.
 
@@ -202,7 +202,7 @@ class ColorJointItemDelegate(TableItemDelegate):
                             ui.Spacer(width=1)
                         ui.Spacer()
 
-    def select_changed(self, selection):
+    def select_changed(self, selection: list):
         """Handle changes in item selection by updating the visual state of color cells.
 
         Args:
@@ -229,7 +229,7 @@ class ColorJointModel(TableModel):
         **kwargs: Additional keyword arguments passed to the parent TableModel class.
     """
 
-    def __init__(self, gains_tuner, value_changed_fn, **kwargs):
+    def __init__(self, gains_tuner: object, value_changed_fn: callable, **kwargs: object):
         super().__init__(value_changed_fn)
         self.gains_tuner = gains_tuner
         colors = generate_distinct_colors(self.gains_tuner.get_articulation().num_dofs)
@@ -242,7 +242,7 @@ class ColorJointModel(TableModel):
             for joint_index in range(self.gains_tuner.get_articulation().num_dofs)
         ]
 
-    def get_item_value_model_count(self, item) -> int:
+    def get_item_value_model_count(self, item: object) -> int:
         """The number of columns.
 
         Args:
@@ -272,7 +272,7 @@ class ColorJointWidget(TableWidget):
         selected_changed_fn: Callback function called when joint selection changes.
     """
 
-    def __init__(self, gains_tuner, value_changed_fn=None, selected_changed_fn=None):
+    def __init__(self, gains_tuner: object, value_changed_fn: callable = None, selected_changed_fn: callable = None):
         self.gains_tuner = gains_tuner
         model = ColorJointModel(gains_tuner, self._on_value_changed)
         delegate = ColorJointItemDelegate(model)
@@ -318,7 +318,7 @@ class ColorJointWidget(TableWidget):
         default_item = self.model.get_item_children()[0]
         self.list.selection = [default_item]
 
-    def __selection_changed(self, selection):
+    def __selection_changed(self, selection: list) -> None:
         """Handles selection changes in the joint tree view.
 
         Updates the visual selection state of color cells and notifies the parent widget

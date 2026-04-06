@@ -94,11 +94,19 @@ class PosePq:
         self.q = q
 
     def as_tuple(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Returns the pose as a (p,q) tuple"""
+        """Returns the pose as a (p,q) tuple.
+
+        Returns:
+            A tuple (p, q) of position and quaternion.
+        """
         return self.p, self.q
 
     def to_T(self) -> np.ndarray:
-        """Returns the pose as a homogeneous transform matrix T."""
+        """Returns the pose as a homogeneous transform matrix T.
+
+        Returns:
+            A 4x4 homogeneous transform matrix.
+        """
         return math_util.pack_Rp(quat_to_rot_matrix(self.q), self.p)
 
 
@@ -125,7 +133,7 @@ class MotionCommand:
             motion in the null space of the target.
 
     Raises:
-        TypeError if either both target_pose and target_position are set or neither of them are set.
+        TypeError: If either both target_pose and target_position are set or neither of them are set.
     """
 
     def __init__(
@@ -173,7 +181,8 @@ def calc_shifted_approach_target(target_T: np.ndarray, eff_T: np.ndarray, approa
         eff_T: Current end effector pose as a homogeneous transform matrix.
         approach_params: The approach parameters.
 
-    Returns: The shifted target position.
+    Returns:
+        The shifted target position.
     """
     target_R, target_p = math_util.unpack_T(target_T)
     eff_R, eff_p = math_util.unpack_T(eff_T)
@@ -206,14 +215,16 @@ class MotionCommandAdapter(TargetAdapter):
     def get_position(self) -> np.ndarray:
         """Extract the position vector from the target pose.
 
-        Returns: The position vector.
+        Returns:
+            The position vector.
         """
         return self.command.target_pose.p
 
     def has_rotation(self) -> bool:
         """Determines whether there's a specified orientation in the target pose.
 
-        Returns: True if the commanded target orientation has been set, False otherwise.
+        Returns:
+            True if the commanded target orientation has been set, False otherwise.
         """
         return self.command.target_pose.q is not None
 
@@ -223,7 +234,8 @@ class MotionCommandAdapter(TargetAdapter):
         Note that this method doesn't verify whether the rotation is set. Use has_rotation() to
         verify it's been set before calling this method.
 
-        Returns: The 3x3 rotation matrix for the target orientation.
+        Returns:
+            The 3x3 rotation matrix for the target orientation.
         """
         return quat_to_rot_matrix(self.command.target_pose.q)
 
@@ -313,6 +325,9 @@ class MotionCommander(Commander):
 
         To manually control the target prim, make sure the latest command has been cleared by
         calling clear() on this MotionCommander (defined in the Commander base class).
+
+        Args:
+            target_prim: The target prim to register.
         """
         self.target_prim = CortexObject(target_prim)  # Target prim will be in units of meters.
         self._reset_target_print_to_eff = True
@@ -335,7 +350,8 @@ class MotionCommander(Commander):
                 only, as defined by the underlying articulation_subset. If it's not provided, the
                 latest applied action is used.
 
-        Returns: The pose as a pair (p, R) where p is the position vector and R is the rotation
+        Returns:
+            The pose as a pair (p, R) where p is the position vector and R is the rotation
             matrix.
         """
         if config is None:
@@ -351,6 +367,12 @@ class MotionCommander(Commander):
         """Returns the end-effector transform as a 4x4 homogeneous matrix T.
 
         Calls get_end_effector_pose() internally; see that method's docstring for details.
+
+        Args:
+            config: An optional joint configuration to evaluate at.
+
+        Returns:
+            A 4x4 homogeneous transform matrix.
         """
         p, R = self.get_end_effector_pose(config)
         return math_util.pack_Rp(R, p)
@@ -359,6 +381,12 @@ class MotionCommander(Commander):
         """Returns the end-effector transform as a (<position>,<quaternion>) pair.
 
         Calls get_end_effector_pose(config) internally; see that method's docstring for details.
+
+        Args:
+            config: An optional joint configuration to evaluate at.
+
+        Returns:
+            A PosePq containing the position and quaternion.
         """
         p, R = self.get_end_effector_pose(config)
         return PosePq(p, math_util.matrix_to_quat(R))
@@ -368,6 +396,12 @@ class MotionCommander(Commander):
         control frame.
 
         Calls get_end_effector_pose(config) internally; see that method's docstring for details.
+
+        Args:
+            config: An optional joint configuration to evaluate at.
+
+        Returns:
+            The 3D position vector.
         """
         p, _ = self.get_end_effector_pose(config)
         return p
@@ -376,13 +410,23 @@ class MotionCommander(Commander):
         """Returns the rotational portion of the end-effector pose as a rotation matrix.
 
         Calls get_end_effector_pose(config) internally; see that method's docstring for details.
+
+        Args:
+            config: An optional joint configuration to evaluate at.
+
+        Returns:
+            The 3x3 rotation matrix.
         """
         _, R = self.get_end_effector_pose(config)
         return R
 
-    def send_end_effector(self, *args, **kwargs) -> None:
+    def send_end_effector(self, *args: object, **kwargs: object) -> None:
         """An alias for sending an explicit MotionCommand object via send(). The arguments should
         match those of MotionCommand. This is for convenience only.
+
+        Args:
+            *args: Positional arguments passed to MotionCommand.
+            **kwargs: Keyword arguments passed to MotionCommand.
         """
         self.send(MotionCommand(*args, **kwargs))
 

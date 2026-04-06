@@ -32,7 +32,7 @@ CONNECTION_WAIT_FRAMES = 60  # Frames to wait for node listener to initialize
 CONNECTION_ESTABLISH_FRAMES = 20  # Additional frames for connection to establish
 
 
-async def add_cube(path, size, offset):
+async def add_cube(path: str, size: float, offset: list):
     """Create a cube using experimental API.
 
     Args:
@@ -62,7 +62,7 @@ async def add_cube(path, size, offset):
     return cube
 
 
-def unpack_odometry_message(buffer):
+def unpack_odometry_message(buffer: object):
     """Unpack a UCX odometry message.
 
     Message format:
@@ -143,7 +143,7 @@ class TestUCXPublishOdometry(UCXTestCase):
         for _ in range(CONNECTION_ESTABLISH_FRAMES):
             await omni.kit.app.get_app().next_update_async()
 
-    async def receive_odometry_message(self, tag=7, timeout_frames=1000, retry_count=3):
+    async def receive_odometry_message(self, tag: int = 7, timeout_frames: int = 1000, retry_count: int = 3):
         """Receive and unpack an odometry message from the client endpoint.
 
         Args:

@@ -138,7 +138,7 @@ class Extension(omni.ext.IExt):
         self.ui_builder.cleanup()
         gc.collect()
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: bool):
         """Handle window visibility changes to manage event subscriptions and UI state.
 
         Args:
@@ -214,7 +214,7 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
         self.ui_builder.on_menu_callback()
 
-    def _on_timeline_play(self, event):
+    def _on_timeline_play(self, event: object):
         """Handle timeline play events by subscribing to physics step updates.
 
         Args:
@@ -226,7 +226,7 @@ class Extension(omni.ext.IExt):
             )
         self.ui_builder.on_timeline_event(event)
 
-    def _on_timeline_stop(self, event):
+    def _on_timeline_stop(self, event: object):
         """Handle timeline stop events by unsubscribing from physics step updates.
 
         Args:
@@ -235,7 +235,7 @@ class Extension(omni.ext.IExt):
         self._physics_subscription = None
         self.ui_builder.on_timeline_event(event)
 
-    def _on_physics_step(self, step, context):
+    def _on_physics_step(self, step: float, context: object):
         """Handle physics step events during simulation.
 
         Args:
@@ -244,7 +244,7 @@ class Extension(omni.ext.IExt):
         """
         self.ui_builder.on_physics_step(step)
 
-    def _on_stage_opened(self, event):
+    def _on_stage_opened(self, event: object):
         """Handle stage opened events by cleaning up physics subscriptions and UI state.
 
         Args:
@@ -255,7 +255,7 @@ class Extension(omni.ext.IExt):
         self.ui_builder.cleanup()
         self.ui_builder.on_stage_event(event)
 
-    def _on_assets_loaded(self, event):
+    def _on_assets_loaded(self, event: object):
         """Handle stage assets loaded events.
 
         Args:
@@ -263,7 +263,7 @@ class Extension(omni.ext.IExt):
         """
         self.ui_builder.on_stage_event(event)
 
-    def _on_stage_closed(self, event):
+    def _on_stage_closed(self, event: object):
         """Handles stage closure events by cleaning up resources and notifying the UI builder.
 
         Args:

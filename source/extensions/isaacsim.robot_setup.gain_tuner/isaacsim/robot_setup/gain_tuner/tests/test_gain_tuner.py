@@ -68,6 +68,14 @@ def _compute_stiffness_damping_prismatic(
     For m*x'' + D*x' + K*x = 0:
     w_n = sqrt(K/m) => K = m * w_n^2
     zeta = D / (2*sqrt(m*K)) => D = 2*zeta*sqrt(m*K) = 2*zeta*m*w_n
+
+    Args:
+        mass: Mass of the prismatic joint link.
+        natural_freq_hz: Natural frequency in Hz.
+        damping_ratio: Damping ratio.
+
+    Returns:
+        Tuple of stiffness and damping values.
     """
     w_n = 2.0 * math.pi * natural_freq_hz
     stiffness = mass * (w_n**2)
@@ -83,6 +91,14 @@ def _compute_stiffness_damping_revolute(
     For I*theta'' + D*theta' + K*theta = 0:
     w_n = sqrt(K/I) => K = I * w_n^2
     zeta = D / (2*sqrt(I*K)) => D = 2*zeta*I*w_n
+
+    Args:
+        inertia: Moment of inertia for the revolute joint.
+        natural_freq_hz: Natural frequency in Hz.
+        damping_ratio: Damping ratio.
+
+    Returns:
+        Tuple of stiffness and damping values.
     """
     w_n = 2.0 * math.pi * natural_freq_hz
     stiffness = inertia * (w_n**2)
@@ -94,6 +110,14 @@ def _compute_natural_freq_damping_revolute(stiffness: float, damping: float, ine
     """Compute natural frequency (Hz) and damping ratio from revolute drive gains.
 
     Inverse of _compute_stiffness_damping_revolute: w_n = sqrt(K/I), zeta = D/(2*sqrt(I*K)).
+
+    Args:
+        stiffness: Stiffness value of the revolute joint drive.
+        damping: Damping value of the revolute joint drive.
+        inertia: Moment of inertia.
+
+    Returns:
+        Tuple of natural frequency in Hz and damping ratio.
     """
     if inertia <= 0 or stiffness <= 0:
         return 0.0, 0.0
@@ -107,6 +131,14 @@ def _compute_natural_freq_damping_prismatic(stiffness: float, damping: float, ma
     """Compute natural frequency (Hz) and damping ratio from prismatic drive gains.
 
     Inverse of _compute_stiffness_damping_prismatic: w_n = sqrt(K/m), zeta = D/(2*sqrt(m*K)).
+
+    Args:
+        stiffness: Stiffness value of the prismatic joint drive.
+        damping: Damping value of the prismatic joint drive.
+        mass: Mass of the link.
+
+    Returns:
+        Tuple of natural frequency in Hz and damping ratio.
     """
     if mass <= 0 or stiffness <= 0:
         return 0.0, 0.0
@@ -391,7 +423,12 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         return robot_path
 
     async def _run_setup_and_compute_inertia(self, robot_path: str, num_physics_steps: int = 60):
-        """Setup gain tuner, run physics so mass query completes, then compute joint inertias."""
+        """Setup gain tuner, run physics so mass query completes, then compute joint inertias.
+
+        Args:
+            robot_path: USD path to the robot prim.
+            num_physics_steps: Number of physics steps to run before computing inertia.
+        """
         self._gain_tuner.setup(robot_path)
         for _ in range(2):
             await app_utils.update_app_async()
@@ -410,7 +447,19 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         damping_ratio: float,
         second_axis_z: bool = True,
     ) -> Tuple[str, List[float]]:
-        """Create fixed base -> revolute0 -> link0 -> revolute1 -> link1. Same plane if second_axis_z True."""
+        """Create fixed base -> revolute0 -> link0 -> revolute1 -> link1. Same plane if second_axis_z True.
+
+        Args:
+            distance: Distance between links.
+            mass: Mass of each link.
+            inertia_diag: Diagonal inertia component for each link.
+            natural_freq_hz: Natural frequency in Hz for the drive.
+            damping_ratio: Damping ratio for the drive.
+            second_axis_z: Whether the second joint axis is Z (True) or Y (False).
+
+        Returns:
+            Tuple of robot path and list of expected equivalent inertias.
+        """
         robot_path = self._create_articulation(
             [JointModality.REVOLUTE, JointModality.REVOLUTE],
             DriveSubmodality.FORCE,
@@ -437,7 +486,18 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         damping_ratio: float,
         same_axis: bool = True,
     ) -> Tuple[str, List[float]]:
-        """Create fixed base -> prism0 -> link0 -> prism1 -> link1. Same axis X if same_axis else second Y."""
+        """Create fixed base -> prism0 -> link0 -> prism1 -> link1. Same axis X if same_axis else second Y.
+
+        Args:
+            distance: Distance between links.
+            mass: Mass of each link.
+            natural_freq_hz: Natural frequency in Hz for the drive.
+            damping_ratio: Damping ratio for the drive.
+            same_axis: Whether both joints share the same X axis.
+
+        Returns:
+            Tuple of robot path and list of expected equivalent inertias.
+        """
         link_positions = None if same_axis else [(distance, 0, 0.5), (distance, distance, 0.5)]
         robot_path = self._create_articulation(
             [JointModality.PRISMATIC, JointModality.PRISMATIC],
@@ -465,7 +525,21 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         natural_freq_hz: float,
         damping_ratio: float,
     ) -> Tuple[str, List[float]]:
-        """Create floating base -> single joint -> link. No fixed joint. ArticulationRootAPI on base."""
+        """Create floating base -> single joint -> link. No fixed joint. ArticulationRootAPI on base.
+
+        Args:
+            joint_revolute: Whether the joint is revolute (True) or prismatic (False).
+            distance: Distance between links.
+            base_mass: Mass of the base link.
+            base_inertia: Inertia of the base link.
+            link_mass: Mass of the child link.
+            link_inertia_diag: Diagonal inertia component for the child link.
+            natural_freq_hz: Natural frequency in Hz for the drive.
+            damping_ratio: Damping ratio for the drive.
+
+        Returns:
+            Tuple of robot path and list of expected equivalent inertias.
+        """
         modality = JointModality.REVOLUTE if joint_revolute else JointModality.PRISMATIC
         robot_path = self._create_articulation(
             [modality],
@@ -493,7 +567,18 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         natural_freq_hz: float,
         damping_ratio: float,
     ) -> Tuple[str, List[float]]:
-        """Create fixed base -> revolute -> link0 -> prismatic -> link1."""
+        """Create fixed base -> revolute -> link0 -> prismatic -> link1.
+
+        Args:
+            distance: Distance between links.
+            mass: Mass of each link.
+            inertia_diag: Diagonal inertia component for each link.
+            natural_freq_hz: Natural frequency in Hz for the drive.
+            damping_ratio: Damping ratio for the drive.
+
+        Returns:
+            Tuple of robot path and list of expected equivalent inertias.
+        """
         robot_path = self._create_articulation(
             [JointModality.REVOLUTE, JointModality.PRISMATIC],
             DriveSubmodality.FORCE,

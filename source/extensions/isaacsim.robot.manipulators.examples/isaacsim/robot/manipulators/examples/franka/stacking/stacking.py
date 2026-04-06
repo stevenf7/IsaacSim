@@ -25,7 +25,7 @@ from isaacsim.storage.native import get_assets_root_path
 
 
 class Stacking:
-    """Initialize the stacking scene setup and controller.
+    """Stacking scene setup and controller using FrankaExperimental and experimental APIs.
 
     Args:
         robot_path: USD path where the robot should be created.
@@ -47,17 +47,6 @@ class Stacking:
         events_dt: Optional[List[int]] = None,
         robot_name: str = "",
     ):
-        """Initialize the stacking scene setup and controller.
-
-        Args:
-            robot_path: USD path where the robot should be created. Defaults to '/World/robot'.
-            cube_positions: List of initial cube positions. Defaults to two cubes.
-            cube_size: Size of each cube. Defaults to [0.05, 0.05, 0.05].
-            stack_target_position: Target position for stacking. Defaults to [0.5, 0.5, 0.12].
-            offset: Additional offset to apply to positions. Defaults to [0, 0, 0].
-            events_dt: List of step counts for each phase. If None, uses default values.
-            robot_name: Optional name/identifier for this robot (for logging purposes).
-        """
         self.robot_path = robot_path
         self.robot = None
         self.cubes = []

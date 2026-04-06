@@ -29,7 +29,7 @@ from .vive_tracker import IsaacSimViveTracker
 _handtracker_available = True
 
 
-def get_manus_vive_integration(handtracker_lib_override=None):
+def get_manus_vive_integration(handtracker_lib_override: str = None):
     """Return a shared `ManusViveIntegration` instance.
 
     If the extension is loaded, returns its singleton instance; otherwise creates
@@ -71,10 +71,12 @@ def get_manus_vive_integration(handtracker_lib_override=None):
 
 
 class ManusTracker:
-    def __init__(self):
-        """Thin wrapper around the C++ bindings for the hand-tracker plugin."""
+    """Thin wrapper around the C++ bindings for the hand-tracker plugin."""
 
-    def update(self):
+    def __init__(self):
+        pass
+
+    def update(self) -> None:
         """No-op placeholder for symmetry with Vive tracker update cadence."""
         return
 
@@ -86,7 +88,8 @@ class ManusTracker:
         - `position`: `[x, y, z]` in meters
         - `orientation`: quaternion `[x, y, z, w]`
 
-        Returns an empty dict when no data is available.
+        Returns:
+            Dict mapping joint keys to pose dicts, or empty dict when no data is available.
         """
         ok, hands = handtracker_get_data()
         if not ok or not hands:
@@ -110,8 +113,9 @@ class ManusTracker:
 
 
 class ManusViveIntegration:
+    """Initialize hand-tracker plugin, Vive tracker, and device status."""
+
     def __init__(self):
-        """Initialize hand-tracker plugin, Vive tracker, and device status."""
         # Hand tracker plugin state
         self._handtracker_loaded = False
         self._handtracker_initialized = False
@@ -129,12 +133,15 @@ class ManusViveIntegration:
             "right_hand_connected": False,
         }
 
-    def register_devices(self, handtracker_lib_override=None):
+    def register_devices(self, handtracker_lib_override: str = None) -> None:
         """Register the hand-tracker plugin and Vive trackers.
 
         Updates connectivity flags in `device_status` and reports status via logs.
         Honors `handtracker_lib_override` and environment variables when loading
         the hand-tracker library.
+
+        Args:
+            handtracker_lib_override: Optional library path or name for the hand tracker.
         """
         try:
             # Initialize Hand Tracker plugin (replacing Manus glove tracker)

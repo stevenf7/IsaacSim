@@ -641,7 +641,7 @@ def get_gripper_joints_info(gripper_prim_path: str) -> list[dict]:
     return joint_info_list
 
 
-def apply_joint_pregrasp_state(joint_path: str, position_value: float):
+def apply_joint_pregrasp_state(joint_path: str, position_value: float) -> None:
     """Applies the pregrasp state to the given joint prim.
 
     Args:
@@ -711,7 +711,7 @@ def isolate_prims_to_scene(prims_to_isolate: list[Usd.Prim], physics_scene: UsdP
     return isolated_rigid_body_prims
 
 
-def clear_isolated_simulation_owners(rigid_body_prims: list[Usd.Prim], physics_scene: UsdPhysics.Scene | None):
+def clear_isolated_simulation_owners(rigid_body_prims: list[Usd.Prim], physics_scene: UsdPhysics.Scene | None) -> None:
     """Clears the simulation owners for the given rigid body prims from the specified physics scene.
 
     Args:

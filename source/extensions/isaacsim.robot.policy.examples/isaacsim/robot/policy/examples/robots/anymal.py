@@ -42,6 +42,8 @@ class AnymalFlatTerrainPolicy(PolicyController):
         usd_path: The robot usd filepath in the directory.
         position: The position of the robot.
         orientation: The orientation of the robot.
+        policy_path: Path to the policy file. If None, uses default policy.
+        env_config_path: Path to the environment config file. If None, uses default config.
     """
 
     def __init__(
@@ -54,18 +56,7 @@ class AnymalFlatTerrainPolicy(PolicyController):
         policy_path: str | None = None,
         env_config_path: str | None = None,
     ) -> None:
-        """
-        Initialize anymal robot, import policy and actuator network.
 
-        Args:
-            prim_path: The prim path of the robot on the stage
-            root_path: The path to the articulation root of the robot
-            usd_path: The robot usd filepath in the directory
-            position: The position of the robot
-            orientation: The orientation of the robot
-            policy_path: Path to the policy file. If None, uses default policy.
-            env_config_path: Path to the environment config file. If None, uses default config.
-        """
         assets_root_path = get_assets_root_path()
         if usd_path is None:
             usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/anybotics_anymal_c/anymal_c/anymal_c.usda"
@@ -82,7 +73,7 @@ class AnymalFlatTerrainPolicy(PolicyController):
         self._previous_action = torch.zeros(12)
         self._policy_counter = 0
 
-    def _compute_observation(self, command):
+    def _compute_observation(self, command: object) -> object:
         """Compute the observation vector for the policy.
 
         The observation includes base linear/angular velocities, gravity direction,
@@ -92,7 +83,7 @@ class AnymalFlatTerrainPolicy(PolicyController):
             command: The robot command velocities (v_x, v_y, w_z) in m/s and rad/s
 
         Returns:
-            A 48-dimensional observation vector containing:
+            object: A 48-dimensional observation vector containing:
             - [0:3]: Base linear velocity in body frame
             - [3:6]: Base angular velocity in body frame
             - [6:9]: Gravity direction in body frame
@@ -128,7 +119,7 @@ class AnymalFlatTerrainPolicy(PolicyController):
         obs[36:48] = self._previous_action
         return obs
 
-    def forward(self, dt, command):
+    def forward(self, dt: float, command: object) -> None:
         """Computes and applies joint torques for ANYmal locomotion based on the policy output.
         The control runs at a decimated rate and uses an actuator network to convert
         policy actions into joint torques. Joint order is:

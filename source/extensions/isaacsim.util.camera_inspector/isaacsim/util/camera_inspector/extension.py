@@ -119,7 +119,7 @@ class Extension(omni.ext.IExt):
         self._camera_state_subscriber = None
         gc.collect()
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: bool) -> None:
         """Handle window visibility changes.
 
         When the window becomes visible, subscribes to stage events and builds the UI.
@@ -171,7 +171,7 @@ class Extension(omni.ext.IExt):
     # Callbacks
     ##################################
 
-    def _on_refresh(self, width=None):
+    def _on_refresh(self, width: object = None) -> None:
         """Get all cameras in the scene and add them to the camera manager.
 
         Args:
@@ -194,7 +194,7 @@ class Extension(omni.ext.IExt):
                     observer_name="CameraInspectorExtension._on_refresh._update_camera_stats_ui",
                 )
 
-    def _on_camera_changed_event(self, option):
+    def _on_camera_changed_event(self, option: int) -> None:
         """Handle camera selection changes from the dropdown.
 
         Updates the selected camera based on the dropdown selection and refreshes the camera statistics display.
@@ -211,7 +211,7 @@ class Extension(omni.ext.IExt):
 
         self._update_camera_stats_ui()
 
-    def _on_viewport_changed_event(self, option):
+    def _on_viewport_changed_event(self, option: int) -> None:
         """Handle viewport selection changes from the dropdown.
 
         Updates the selected viewport based on the dropdown selection.
@@ -229,7 +229,7 @@ class Extension(omni.ext.IExt):
             err = f"Selected option {option} not available; available cameras: {[viewport.name for viewport in self._all_viewports]}"
             raise ValueError(err)
 
-    def _on_axis_changed_event(self, option):
+    def _on_axis_changed_event(self, option: int) -> None:
         """Handle axis selection changes for both world and local coordinate systems.
 
         Updates the selected axis for world and local camera coordinate systems and refreshes the camera statistics display.
@@ -356,11 +356,11 @@ class Extension(omni.ext.IExt):
 
     def _build_camera_viewport_dropdown(
         self,
-        button_text,
-        label_text,
-        button_fn=None,
-        dropdown_fn=None,
-    ):
+        button_text: str,
+        label_text: str,
+        button_fn: object = None,
+        dropdown_fn: object = None,
+    ) -> None:
         """Builds a combined UI element with a dropdown and button for camera-viewport operations.
 
         Args:
@@ -394,13 +394,13 @@ class Extension(omni.ext.IExt):
 
     def _build_single_dropdown(
         self,
-        label="",
-        default_val=0,
-        items=[],
-        tooltip="",
-        on_clicked_fn=None,
-        add_line=False,
-        label_width=LABEL_WIDTH,
+        label: str = "",
+        default_val: int = 0,
+        items: list = [],
+        tooltip: str = "",
+        on_clicked_fn: object = None,
+        add_line: bool = False,
+        label_width: int = LABEL_WIDTH,
     ):
         """Builds a single dropdown UI element with label.
 
@@ -429,7 +429,7 @@ class Extension(omni.ext.IExt):
 
         return combo_box
 
-    def _build_pos_quat_display(self, label="World"):
+    def _build_pos_quat_display(self, label: str = "World"):
         """Builds position and quaternion display UI elements for camera transform visualization.
 
         Args:
@@ -494,7 +494,7 @@ class Extension(omni.ext.IExt):
         for viewport in self._all_viewports:
             self._task_ui_elements["Combo Viewport"].append_child_item(None, ui.SimpleStringModel(viewport.name))
 
-    def _update_camera_stats_ui(self, e: carb.events.IEvent = None):
+    def _update_camera_stats_ui(self, e: carb.events.IEvent = None) -> None:
         """Updates the camera statistics UI with current transform data from the selected camera.
 
         Args:

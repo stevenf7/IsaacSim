@@ -52,7 +52,7 @@ class GettingStartedRobot(BaseSample):
     robot simulation application, including proper initialization, scene management, and cleanup procedures.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._timeline = omni.timeline.get_timeline_interface()
         self.print_state = False
@@ -60,7 +60,7 @@ class GettingStartedRobot(BaseSample):
         self.arm_handle = None
         self._physics_callback_id = None
 
-    def setup_scene(self):
+    def setup_scene(self) -> None:
         """Set up the scene with ground plane using experimental API."""
         # Add default environment using experimental stage utils
         stage_utils.add_reference_to_stage(
@@ -68,7 +68,7 @@ class GettingStartedRobot(BaseSample):
             path="/World/ground",
         )
 
-    async def setup_post_load(self):
+    async def setup_post_load(self) -> None:
         """Sets up the scene after loading.
 
         Moves the camera to a better vantage point, registers physics callbacks, and performs a quick
@@ -87,7 +87,7 @@ class GettingStartedRobot(BaseSample):
         time.sleep(1)
         self._timeline.stop()
 
-    def on_physics_step(self, step_size, context):
+    def on_physics_step(self, step_size: float, context: object) -> None:
         """Physics callback - note the signature includes context parameter.
 
         Args:
@@ -100,7 +100,7 @@ class GettingStartedRobot(BaseSample):
             if self.car_handle:
                 print("car joint state: ", self.car_handle.get_dof_positions())
 
-    async def setup_pre_reset(self):
+    async def setup_pre_reset(self) -> None:
         """Prepares the scene before reset.
 
         Removes the physics callback to ensure clean reset state.
@@ -110,7 +110,7 @@ class GettingStartedRobot(BaseSample):
             SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
-    async def setup_post_reset(self):
+    async def setup_post_reset(self) -> None:
         """Sets up the scene after reset.
 
         Re-registers the physics callback and stops the timeline to ensure proper reset state.
@@ -121,14 +121,14 @@ class GettingStartedRobot(BaseSample):
         )
         self._timeline.stop()
 
-    async def setup_post_clear(self):
+    async def setup_post_clear(self) -> None:
         """Called after clearing the scene."""
         # Remove physics callback on clear
         if self._physics_callback_id is not None:
             SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
-    def physics_cleanup(self):
+    def physics_cleanup(self) -> None:
         """Clean up physics resources."""
         if self._physics_callback_id is not None:
             SimulationManager.deregister_callback(self._physics_callback_id)

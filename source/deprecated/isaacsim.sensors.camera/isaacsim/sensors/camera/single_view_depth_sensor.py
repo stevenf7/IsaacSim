@@ -53,7 +53,7 @@ This prim has the OmniSensorDepthSensorSingleViewAPI applied to it and contains 
 configuration attributes. It is used to set and get depth sensor parameters such as baseline distance,
 confidence threshold, focal length, and other sensor properties."""
 
-    def initialize(self, physics_sim_view=None, attach_rgb_annotator=False):
+    def initialize(self, physics_sim_view: object = None, attach_rgb_annotator: bool = False):
         """Initialize the depth camera.
 
         Calls the parent class's initialize method, then retrieves the render product prim
@@ -493,7 +493,7 @@ class SingleViewDepthSensorAsset:
             resolution=resolution,
         )
 
-    def initialize(self, physics_sim_view=None, attach_rgb_annotator=False):
+    def initialize(self, physics_sim_view: object = None, attach_rgb_annotator: bool = False):
         """Initialize all child depth sensors in the asset.
 
         This method initializes each depth sensor template and copies depth sensor

@@ -130,7 +130,7 @@ class UR10(Robot):
         """
         return self._gripper
 
-    def initialize(self, physics_sim_view=None):
+    def initialize(self, physics_sim_view: object = None) -> None:
         """Initialize the robot and its components.
 
         Args:
@@ -144,7 +144,7 @@ class UR10(Robot):
         self._end_effector.initialize(physics_sim_view)
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Reset callback for end effector and gripper."""
         Robot.post_reset(self)
         self._end_effector.post_reset()

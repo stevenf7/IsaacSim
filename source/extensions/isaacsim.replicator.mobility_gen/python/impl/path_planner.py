@@ -111,7 +111,7 @@ def generate_paths(start: Tuple[int, int], freespace: np.ndarray) -> GeneratePat
     return GeneratePathsOutput(visited=visited, distance_to_start=distance_to_start, prev_i=prev_i, prev_j=prev_j)
 
 
-def compress_path(path: np.ndarray, eps=1e-3):
+def compress_path(path: np.ndarray, eps: float = 1e-3):
     """Compress a path by removing redundant points that lie approximately on a straight line.
 
     The function identifies path points that deviate minimally from the line connecting their neighbors

@@ -44,18 +44,18 @@ class FollowTarget(BaseSample):
     debugging. Obstacles can be dynamically added to test collision avoidance capabilities.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._controller = None
         self._articulation_controller = None
 
-    def setup_scene(self):
+    def setup_scene(self) -> None:
         """Sets up the scene by adding the FollowTarget task to the world."""
         world = self.get_world()
         world.add_task(FollowTargetTask())
         return
 
-    async def setup_pre_reset(self):
+    async def setup_pre_reset(self) -> None:
         """Prepares the scene for reset by removing physics callbacks and resetting the controller."""
         world = self.get_world()
         if world.physics_callback_exists("sim_step"):
@@ -63,12 +63,12 @@ class FollowTarget(BaseSample):
         self._controller.reset()
         return
 
-    def world_cleanup(self):
+    def world_cleanup(self) -> None:
         """Cleans up the world by resetting the controller reference."""
         self._controller = None
         return
 
-    async def setup_post_load(self):
+    async def setup_post_load(self) -> None:
         """Sets up the controller and articulation controller after the world has loaded."""
         self._franka_task = list(self._world.get_current_tasks().values())[0]
         self._task_params = self._franka_task.get_params()
@@ -77,7 +77,7 @@ class FollowTarget(BaseSample):
         self._articulation_controller = my_franka.get_articulation_controller()
         return
 
-    async def _on_follow_target_event_async(self, val):
+    async def _on_follow_target_event_async(self, val: bool) -> None:
         """Handles the follow target event by starting or stopping the simulation and physics callbacks.
 
         Args:
@@ -91,7 +91,7 @@ class FollowTarget(BaseSample):
             world.remove_physics_callback("sim_step")
         return
 
-    def _on_follow_target_simulation_step(self, step_size):
+    def _on_follow_target_simulation_step(self, step_size: float) -> None:
         """Executes a simulation step for target following by computing and applying control actions.
 
         Args:
@@ -105,7 +105,7 @@ class FollowTarget(BaseSample):
         self._articulation_controller.apply_action(actions)
         return
 
-    def _on_add_obstacle_event(self):
+    def _on_add_obstacle_event(self) -> None:
         """Handles adding an obstacle to the scene and controller."""
         world = self.get_world()
         current_task = list(world.get_current_tasks().values())[0]
@@ -113,7 +113,7 @@ class FollowTarget(BaseSample):
         self._controller.add_obstacle(cube)
         return
 
-    def _on_remove_obstacle_event(self):
+    def _on_remove_obstacle_event(self) -> None:
         """Handles removing an obstacle from the scene and controller."""
         world = self.get_world()
         current_task = list(world.get_current_tasks().values())[0]
@@ -122,7 +122,7 @@ class FollowTarget(BaseSample):
         current_task.remove_obstacle()
         return
 
-    def _on_logging_event(self, val):
+    def _on_logging_event(self, val: bool) -> None:
         """Handles data logging events by starting or pausing the data logger.
 
         Args:
@@ -150,7 +150,7 @@ class FollowTarget(BaseSample):
             data_logger.pause()
         return
 
-    def _on_save_data_event(self, log_path):
+    def _on_save_data_event(self, log_path: str) -> None:
         """Handles saving logged data to the specified path and resets the data logger.
 
         Args:

@@ -31,7 +31,16 @@ async def wait_until(
     timeout_sec: float = 90.0,
     poll_sec: float = 0.25,
 ) -> bool:
-    """Poll until ``predicate()`` is true or ``timeout_sec`` elapses."""
+    """Poll until ``predicate()`` is true or ``timeout_sec`` elapses.
+
+    Args:
+        predicate: Callable that returns True when the condition is met.
+        timeout_sec: Maximum time to wait in seconds.
+        poll_sec: Time between polling attempts in seconds.
+
+    Returns:
+        True if predicate returned True before timeout, False otherwise.
+    """
     deadline = time.monotonic() + timeout_sec
     while time.monotonic() < deadline:
         if predicate():
@@ -42,7 +51,12 @@ async def wait_until(
 
 
 def assert_xyz_and_unit_quaternion_wxyz(position: object, orientation: object) -> None:
-    """Assert ``position`` is a 3-vector and ``orientation`` is a unit quaternion in wxyz order."""
+    """Assert ``position`` is a 3-vector and ``orientation`` is a unit quaternion in wxyz order.
+
+    Args:
+        position: Position as a 3-vector.
+        orientation: Orientation as a unit quaternion in wxyz order.
+    """
     p = np.asarray(position, dtype=np.float64).reshape(-1)
     if p.shape != (3,):
         raise AssertionError(f"expected position with shape (3,), got {p.shape}")

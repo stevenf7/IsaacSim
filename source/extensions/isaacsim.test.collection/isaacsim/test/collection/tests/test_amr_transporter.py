@@ -44,7 +44,7 @@ class TestIw_hub(omni.kit.test.AsyncTestCase):
     """Tests for the iW Hub AMR transporter robot simulation."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment with iW Hub robot."""
         self._timeline = omni.timeline.get_timeline_interface()
 

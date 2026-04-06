@@ -139,7 +139,8 @@ class ObstacleMonitor(ABC):
         It should specify whether this obstacle monitor's obstacles are needed at any given time.
         It will be queried only when autotoggle is active.
 
-        Returns: True if the obstacle is needed (and should be enabled), False if it's not needed
+        Returns:
+            True if the obstacle is needed (and should be enabled), False if it's not needed
             (and should be disabled).
         """
         raise NotImplementedError()
@@ -230,6 +231,9 @@ class ObstacleMonitorContext(DfLogicalState):
         as logical state monitors.
 
         The obstacle monitors' monitor methods will be called in the order provided.
+
+        Args:
+            obstacle_monitors: The sequence of obstacle monitors to add.
         """
         for obs_monitor in obstacle_monitors:
             obs_monitor.set_motion_commander(self.motion_commander)

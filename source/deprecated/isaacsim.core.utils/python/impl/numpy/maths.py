@@ -19,7 +19,7 @@
 import numpy as np
 
 
-def matmul(matrix_a, matrix_b):
+def matmul(matrix_a: np.ndarray, matrix_b: np.ndarray):
     """Perform matrix multiplication between two matrices.
 
     Args:
@@ -32,7 +32,7 @@ def matmul(matrix_a, matrix_b):
     return np.matmul(matrix_a, matrix_b)
 
 
-def sin(data):
+def sin(data: np.ndarray):
     """Compute the sine of the input data.
 
     Args:
@@ -44,7 +44,7 @@ def sin(data):
     return np.sin(data)
 
 
-def cos(data):
+def cos(data: np.ndarray):
     """Compute the cosine of the input data.
 
     Args:
@@ -56,7 +56,7 @@ def cos(data):
     return np.cos(data)
 
 
-def transpose_2d(data):
+def transpose_2d(data: np.ndarray):
     """Transpose the input 2D array.
 
     Args:
@@ -68,7 +68,7 @@ def transpose_2d(data):
     return np.transpose(data)
 
 
-def inverse(data):
+def inverse(data: np.ndarray):
     """Compute the matrix inverse of the input data.
 
     Args:

@@ -184,7 +184,6 @@ class JointHasJointStateAPI(av_core.BaseRuleChecker):
         """Apply the appropriate JointStateAPI to a joint prim.
 
         Args:
-            stage: The USD stage containing the joint.
             joint_prim: The joint prim to apply the API to.
         """
         actuator_type = None
@@ -378,7 +377,7 @@ class MimicAPICheck(av_core.BaseRuleChecker):
 # RG - Modified the code below to return the world transform of the joint computed from the body 0 or body 1
 
 
-def get_world_body_transform(stage, cache, joint, body0base):
+def get_world_body_transform(stage: object, cache: object, joint: object, body0base: bool):
     """Get the world transform of a joint computed from either body 0 or body 1.
 
     Args:

@@ -81,7 +81,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
         """Placeholder method for building the extension window."""
         pass
 
-    def _on_stage_closed(self, event):
+    def _on_stage_closed(self, event: object) -> None:
         """Stage closed event callback.
 
         Args:
@@ -226,7 +226,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
             self._window.destroy()
             self._window = None
 
-    def _on_update(self, dt: float, context):
+    def _on_update(self, dt: float, context: object) -> None:
         """Updates the UI with real-time LightBeam sensor data during simulation.
 
         Retrieves linear depth, hit position, and beam hit data from the sensor and updates
@@ -251,7 +251,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
                     f"hitPos x: {hit_pos[i][0]}, hitPos y: {hit_pos[i][1]}, hitPos z: {hit_pos[i][2]}"
                 )
 
-    async def create_scenario(self):
+    async def create_scenario(self) -> None:
         """Creates the demonstration scenario with a cube target and LightBeam sensor.
 
         Sets up a new USD stage with physics scene, creates a cube with collision properties,

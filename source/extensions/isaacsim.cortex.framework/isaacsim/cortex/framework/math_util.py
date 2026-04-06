@@ -60,11 +60,13 @@ def transform_dist(T1: np.ndarray, T2: np.ndarray, position_scalar: float, rotat
       dist = position_scalar * |o1 - o2| + rotation_matrix_scalar * |R1 - R2|
 
     Args:
-        T1, T2: The transforms to be compared. These should both be 4x4 homogeneous transform matrices.
+        T1: The first transform to be compared as a 4x4 homogeneous transform matrix.
+        T2: The second transform to be compared as a 4x4 homogeneous transform matrix.
         position_scalar: The scalar weight on the position distance.
         rotation_matrix_scalar: the scalar weight on the rotation matrix distance.
 
-    Returns: The distance between T1 and T2 as given by the above equation.
+    Returns:
+        The distance between T1 and T2 as given by the above equation.
     """
     R1, p1 = unpack_T(T1)
     R2, p2 = unpack_T(T2)
@@ -90,12 +92,14 @@ def transforms_are_close(
     matrices.
 
     Args:
-        T1, T2: The two transforms being compared as 4x4 homogeneous transform matrices.
+        T1: The first transform being compared as a 4x4 homogeneous transform matrix.
+        T2: The second transform being compared as a 4x4 homogeneous transform matrix.
         p_thresh: The positional threshold defining "close" in position space.
         R_thresh: The rotational threshold defining "close" in rotation space.
         verbose: An optional flag to turn on diagnostic prints.
 
-    Returns: True if the T1 and T2 are close per the thresholds {p,R}_thresh. False otherwise.
+    Returns:
+        True if the T1 and T2 are close per the thresholds {p,R}_thresh. False otherwise.
     """
     Te = T1 - T2
     Re, pe = unpack_T(Te)
@@ -117,7 +121,8 @@ def matrix_to_quat(mat: np.ndarray) -> np.ndarray:
     Args:
         mat: A 3x3 rotation matrix.
 
-    Returns: The quaternion corresponding to the provided rotation matrix.
+    Returns:
+        The quaternion corresponding to the provided rotation matrix.
     """
     return rot_matrix_to_quat(mat)
 
@@ -142,7 +147,8 @@ class Quaternion:
         Args:
             other: The other quaternion multiplying this on the right.
 
-        Returns: A Quaternion abstracting the resulting product quaternion.
+        Returns:
+            A Quaternion abstracting the resulting product quaternion.
         """
         w0, x0, y0, z0 = self.vals
         w1, x1, y1, z1 = other.vals
@@ -162,7 +168,8 @@ def reorder_q_xyzw2wxyz(q: np.ndarray) -> np.ndarray:
     Args:
         q: The quaternion in (x,y,z,w) order.
 
-    Returns: The quaternion in (w,x,y,z) order.
+    Returns:
+        The quaternion in (w,x,y,z) order.
     """
     return np.array([q[3], q[0], q[1], q[2]])
 
@@ -174,7 +181,8 @@ def reorder_q_wxyz2xyzw(q: np.ndarray) -> np.ndarray:
     Args:
         q: The quaternion in (w,x,y,z) order.
 
-    Returns: The quaternion in (x,y,z,w) order.
+    Returns:
+        The quaternion in (x,y,z,w) order.
     """
     return np.array([q[1], q[2], q[3], q[0]])
 
@@ -186,7 +194,8 @@ def to_homogeneous_vec(v: np.ndarray) -> np.ndarray:
     Args:
         v: The 3d vector to convert.
 
-    Returns: A 4d vector with the first 3 components containing v and a 1 in the final component.
+    Returns:
+        A 4d vector with the first 3 components containing v and a 1 in the final component.
     """
     hv = np.ones(4)
     hv[:3] = v
@@ -201,7 +210,8 @@ def apply_T(T: np.ndarray, v: np.ndarray) -> np.ndarray:
         T: The 4x4 homogeneous transform matrix to apply to the vector v.
         v: The 3d vector v which will be transformed.
 
-    Returns: A 3d vector representing the first 3 components of T * [v;1].
+    Returns:
+        A 3d vector representing the first 3 components of T * [v;1].
     """
     return T.dot(to_homogeneous_vec(v))[:3]
 
@@ -212,7 +222,8 @@ def T2pq(T: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     Args:
         T: A 4x4 homogeneous transform matrix.
 
-    Returns: (p,q) where p is a 3D position vector and q is a 4D quaternion vector.
+    Returns:
+        A tuple (p,q) where p is a 3D position vector and q is a 4D quaternion vector.
     """
     R, p = unpack_T(T)
     return p, matrix_to_quat(R)
@@ -225,7 +236,8 @@ def pq2T(p: np.ndarray, q: np.ndarray) -> np.ndarray:
         p: 3D position vector
         q: 4D quaternion vector
 
-    Returns: A 4x4 homogeneous transform matrix.
+    Returns:
+        A 4x4 homogeneous transform matrix.
     """
     return pack_Rp(quat_to_rot_matrix(q), p)
 
@@ -237,7 +249,8 @@ def R2T(R: np.ndarray) -> np.ndarray:
     Args:
         R: A 3x3 rotation matrix.
 
-    Returns: A zero padded 4x4 homogeneous transform matrix T = [R, 0; 0, 1].
+    Returns:
+        A zero padded 4x4 homogeneous transform matrix T = [R, 0; 0, 1].
     """
     T = np.eye(4)
     T[:3, :3] = R
@@ -255,7 +268,8 @@ def proj_orth(v1: np.ndarray, v2: np.ndarray, normalize_res: Optional[bool] = Fa
         eps: If the norm of v2 is smaller than this, we consider it to be the zero vector and simply
             return v1. (It considers all vectors to be already orthogonal to zero.)
 
-    Returns: The projected (and potentially normalized) copy of v1.
+    Returns:
+        The projected (and potentially normalized) copy of v1.
     """
     v2_norm = norm(v2)
     if v2_norm < eps:
@@ -276,7 +290,8 @@ def unpack_T(T: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     Args:
         T: The 4x4 homogeneous transform matrix to split.
 
-    Returns: (R, p) where R is the 3x3 rotation matrix and p is the 3d position vector.
+    Returns:
+        A tuple (R, p) where R is the 3x3 rotation matrix and p is the 3d position vector.
     """
     return T[:3, :3], T[:3, 3]
 
@@ -287,20 +302,23 @@ def unpack_R(R: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     Args:
         R: A 3x3 rotation matrix to be split.
 
-    Returns: (ax, ay, az) where R = [ax, ay, az]. Each vector is an axis of the frame represented by R.
+    Returns:
+        A tuple (ax, ay, az) where R = [ax, ay, az]. Each vector is an axis of the frame represented by R.
     """
     return R[:3, 0], R[:3, 1], R[:3, 2]
 
 
-def pack_R(ax: np.ndarray, ay: np.ndarray, az: np.ndarray, as_homogeneous=False):
+def pack_R(ax: np.ndarray, ay: np.ndarray, az: np.ndarray, as_homogeneous: bool = False):
     """Pack a rotation matrix with the supplied axis columns.
 
     Args:
         ax: The x-axis of a rotation matrix (column 1).
         ay: The y-axis of a rotation matrix (column 2).
         az: The z-axis of a rotation matrix (column 3).
+        as_homogeneous: If True, returns a 4x4 homogeneous matrix instead of 3x3.
 
-    Returns: A rotation matrix R = [ax, ay, az] with the axes as columns.
+    Returns:
+        A rotation matrix R = [ax, ay, az] with the axes as columns.
     """
     if as_homogeneous:
         R = np.eye(4)
@@ -320,7 +338,8 @@ def pack_Rp(R: np.ndarray, p: np.ndarray) -> np.ndarray:
         R: A 3x3 rotation matrix.
         p: a 3D position vector.
 
-    Returns: A 4x4 homogeneous transform matrix T = [R, p; 0, 1] formed from the frame (R,p).
+    Returns:
+        A 4x4 homogeneous transform matrix T = [R, p; 0, 1] formed from the frame (R,p).
     """
     T = np.eye(4)
     T[:3, :3] = R
@@ -340,7 +359,8 @@ def invert_T(T: np.ndarray) -> np.ndarray:
     Args:
         T: A 4x4 homogeneous transform matrix.
 
-    Returns: inv(T) using the computation outlined above.
+    Returns:
+        inv(T) using the computation outlined above.
     """
     R, t = unpack_T(T)
     R_trans = R.T
@@ -395,7 +415,8 @@ class ExpAvg(object):
     def is_ready(self) -> bool:
         """Query if at least one value has been consumed, and false otherwise.
 
-        Returns: True if at least one value has been consumed (after construction or the latest reset).
+        Returns:
+            True if at least one value has been consumed (after construction or the latest reset).
         """
         return self.val_avg is not None
 
@@ -422,7 +443,8 @@ def proj_R(R: np.ndarray) -> np.ndarray:
     Args:
         R: The 3x3 matrix representing an approximate rotation matrix.
 
-    Returns: The projected version of R.
+    Returns:
+        The projected version of R.
     """
 
     q = matrix_to_quat(R)
@@ -445,7 +467,9 @@ def proj_T(T: np.ndarray) -> np.ndarray:
     Args:
         T: The unprojected 4x4 homogeneous transform matrix. The rotation portion need not be an
             exact rotation matrix. It will be projected.
-    Returns: The projected copy of the 4x4 homogeneous transform matrix.
+
+    Returns:
+        The projected copy of the 4x4 homogeneous transform matrix.
     """
     T = copy.deepcopy(T)
     T[:3, :3] = proj_R(T[:3, :3])
@@ -463,7 +487,8 @@ def make_rotation_matrix(az_dominant: np.ndarray, ax_suggestion: np.ndarray) -> 
         ax_suggestion: A x-axis suggestion vector. This axis will be projected to be orthogonal to
             the az_dominant axis, then normalized.
 
-    Returns: A 3x3 rotation matrix constructed from the args as described above.
+    Returns:
+        A 3x3 rotation matrix constructed from the args as described above.
     """
     az = normalized(az_dominant)
     ax = proj_orth(ax_suggestion, az)
@@ -479,7 +504,8 @@ def to_meters(p_stage: np.ndarray):
     Args:
         p_stage: The position vector in stage units.
 
-    Returns: The position vector in meters.
+    Returns:
+        The position vector in meters.
     """
     return p_stage * get_stage_units()
 
@@ -491,7 +517,8 @@ def T_to_meters(T_stage: np.ndarray):
     Args:
         T_stage: A 4x4 homogeneous transform matrix with position components in stage units.
 
-    Returns: A copy of the 4x4 homogeneous transform matrix with position components in meters.
+    Returns:
+        A copy of the 4x4 homogeneous transform matrix with position components in meters.
     """
     T_meters = copy.deepcopy(T_stage)
     T_meters[:3, 3] = to_meters(T_meters[:3, 3])
@@ -504,6 +531,7 @@ def to_stage_units(p_meters: np.ndarray):
     Args:
         p_meters: A position vector in meters.
 
-    Returns: The position vector in stage units.
+    Returns:
+        The position vector in stage units.
     """
     return p_meters / get_stage_units()

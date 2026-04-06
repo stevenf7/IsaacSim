@@ -45,16 +45,6 @@ class FrankaExperimental(Articulation):
         create_robot: bool = True,
         end_effector_link: Optional[RigidPrim] = None,
     ):
-        """Initialize the Franka controller.
-
-        Args:
-            robot_path: USD path where the robot should be created or exists. Defaults to "/World/robot".
-            create_robot: Whether to create a new robot from USD assets.
-            end_effector_link: The end effector rigid body link. If None, creates from robot_path.
-
-        Raises:
-            ValueError: If create_robot is False but no robot exists at robot_path.
-        """
         if create_robot:
             # Load Franka Panda robot from USD asset with specific gripper and mesh variants
             robot_prim = stage_utils.add_reference_to_stage(

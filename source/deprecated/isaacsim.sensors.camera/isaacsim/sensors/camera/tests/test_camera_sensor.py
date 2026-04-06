@@ -49,7 +49,11 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     async def _create_test_environment(self):
-        """Create the test environment with ground plane, cubes, and camera."""
+        """Create the test environment with ground plane, cubes, and camera.
+
+        Returns:
+            None.
+        """
         await create_new_stage_async()
 
         # Create ground plane and dome light

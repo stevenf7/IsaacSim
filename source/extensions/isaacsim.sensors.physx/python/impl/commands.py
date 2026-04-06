@@ -27,7 +27,15 @@ from isaacsim.core.utils.xforms import reset_and_set_xform_ops
 from pxr import Gf, UsdGeom
 
 
-def setup_base_prim(prim, schema_type, enabled, draw_points, draw_lines, min_range, max_range):
+def setup_base_prim(
+    prim: object,
+    schema_type: type,
+    enabled: bool,
+    draw_points: bool,
+    draw_lines: bool,
+    min_range: float,
+    max_range: float,
+):
     """Set up base attributes for a range sensor prim.
 
     Args:
@@ -79,7 +87,7 @@ class RangeSensorCreatePrim(omni.kit.commands.Command):
         self,
         path: str = "",
         parent: str = "",
-        schema_type=RangeSensorSchema.Lidar,  # Default to Lidar instead of non-existent RangeSensor
+        schema_type: type = RangeSensorSchema.Lidar,  # Default to Lidar instead of non-existent RangeSensor
         translation: Optional[Gf.Vec3d] = Gf.Vec3d(0, 0, 0),
         orientation: Optional[Gf.Quatd] = Gf.Quatd(1, 0, 0, 0),
         visibility: Optional[bool] = False,
@@ -189,7 +197,7 @@ class RangeSensorCreateLidar(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/Lidar",
-        parent=None,
+        parent: object = None,
         translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
         orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
         min_range: float = 0.4,
@@ -298,7 +306,7 @@ class RangeSensorCreateGeneric(omni.kit.commands.Command):
     def __init__(
         self,
         path: str = "/GenericSensor",
-        parent=None,
+        parent: object = None,
         translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
         orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
         min_range: float = 0.4,

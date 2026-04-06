@@ -62,7 +62,9 @@ class BaseSample(object):
         """
         return self._world
 
-    def set_world_settings(self, physics_dt=None, stage_units_in_meters=None, rendering_dt=None):
+    def set_world_settings(
+        self, physics_dt: float = None, stage_units_in_meters: float = None, rendering_dt: float = None
+    ) -> None:
         """Updates the world settings configuration.
 
         Args:
@@ -78,8 +80,8 @@ class BaseSample(object):
             self._world_settings["rendering_dt"] = rendering_dt
         return
 
-    async def load_world_async(self):
-        """Function called when clicking load buttton"""
+    async def load_world_async(self) -> None:
+        """Function called when clicking load buttton."""
         await create_new_stage_async()
         self._world = World(**self._world_settings)
         await self._world.initialize_simulation_context_async()
@@ -93,8 +95,8 @@ class BaseSample(object):
             self._world.add_physics_callback("tasks_step", self._world.step_async)
         return
 
-    async def reset_async(self):
-        """Function called when clicking reset buttton"""
+    async def reset_async(self) -> None:
+        """Function called when clicking reset buttton."""
         if self._world.is_tasks_scene_built() and len(self._current_tasks) > 0:
             if self._world.physics_callback_exists("tasks_step"):
                 self._world.remove_physics_callback("tasks_step")
@@ -118,36 +120,30 @@ class BaseSample(object):
         return
 
     @abstractmethod
-    async def setup_post_load(self):
-        """Called after first reset of the world when pressing load,
-        intializing provate variables happen here.
-        """
+    async def setup_post_load(self) -> None:
+        """Called after first reset of the world when pressing load, intializing provate variables happen here."""
         return
 
     @abstractmethod
-    async def setup_pre_reset(self):
-        """Called in reset button before resetting the world
-        to remove a physics callback for instance or a controller reset
-        """
+    async def setup_pre_reset(self) -> None:
+        """Called in reset button before resetting the world to remove a physics callback for instance or a controller reset."""
         return
 
     @abstractmethod
-    async def setup_post_reset(self):
-        """Called in reset button after resetting the world which includes one step with rendering"""
+    async def setup_post_reset(self) -> None:
+        """Called in reset button after resetting the world which includes one step with rendering."""
         return
 
     @abstractmethod
-    async def setup_post_clear(self):
-        """Called after clicking clear button
-        or after creating a new stage and clearing the instance of the world with its callbacks
-        """
+    async def setup_post_clear(self) -> None:
+        """Called after clicking clear button or after creating a new stage and clearing the instance of the world with its callbacks."""
         return
 
     # def log_info(self, info):
     #     self._logging_info += str(info) + "\n"
     #     return
 
-    def _world_cleanup(self):
+    def _world_cleanup(self) -> None:
         """Cleans up the world instance by stopping simulation and clearing callbacks."""
         if self._world is not None:
             self._world.stop()
@@ -156,11 +152,11 @@ class BaseSample(object):
         self.world_cleanup()
         return
 
-    def world_cleanup(self):
+    def world_cleanup(self) -> None:
         """Function called when extension shutdowns and starts again, (hot reloading feature)."""
         return
 
-    async def clear_async(self):
+    async def clear_async(self) -> None:
         """Function called when clicking clear button."""
         if self._world is not None:
             # Ensure the simulation is fully stopped and the app processes at least one update

@@ -36,18 +36,18 @@ class PreventOthers(sc.GestureManager):
     def __init__(self):
         super().__init__()
 
-    def can_be_prevented(self, gesture) -> bool:
+    def can_be_prevented(self, gesture: object) -> bool:
         """Determines if this gesture can be prevented by other gestures.
 
         Args:
             gesture: The gesture to check for prevention capability.
 
         Returns:
-            Always returns False to prevent this gesture from being hidden by others.
+            bool: Always returns False to prevent this gesture from being hidden by others.
         """
         return False
 
-    def should_prevent(self, gesture, preventer) -> bool:
+    def should_prevent(self, gesture: object, preventer: object) -> bool:
         """Determines if a preventer gesture should prevent the given gesture.
 
         Args:
@@ -55,7 +55,7 @@ class PreventOthers(sc.GestureManager):
             preventer: The gesture that might do the preventing.
 
         Returns:
-            True if the preventer is in BEGAN or CHANGED state, otherwise delegates to parent implementation.
+            bool: True if the preventer is in BEGAN or CHANGED state, otherwise delegates to parent implementation.
         """
         if preventer.state == sc.GestureState.BEGAN or preventer.state == sc.GestureState.CHANGED:
             return True
@@ -85,14 +85,14 @@ class IconManipulator(sc.Manipulator):
         self._icon_panel = None
         self._icon_scale = icon_scale
 
-    def on_build(self):
+    def on_build(self) -> None:
         """Builds the icon panel and populates it with icons for all prims in the model."""
         if not self.model:
             return
         self._icon_panel = sc.Transform(transform=sc.Matrix44.get_translation_matrix(0, 0, 0))
         self.rebuild_icons()
 
-    def rebuild_icons(self, need_check=False):
+    def rebuild_icons(self, need_check: bool = False) -> None:
         """Rebuilds all icons by clearing existing ones and creating new ones for all prims in the model.
 
         Args:
@@ -112,14 +112,14 @@ class IconManipulator(sc.Manipulator):
             for prim_path in self.model.get_prim_paths():
                 self.build_icon_by_path(prim_path, need_check)
 
-    def check_viewport_pos(self, position) -> bool:
+    def check_viewport_pos(self, position: object) -> bool:
         """Check if the world position is within the viewport screen space.
 
         Args:
             position: The world position to check.
 
         Returns:
-            True if the position is within the viewport screen space.
+            bool: True if the position is within the viewport screen space.
         """
         viewport_api = vpUtil.get_active_viewport()
         if not viewport_api:
@@ -137,7 +137,7 @@ class IconManipulator(sc.Manipulator):
         pos, viewport = viewport_api.map_ndc_to_texture([ndc_pos[0], ndc_pos[1]])
         return viewport is not None
 
-    def build_icon_by_path(self, prim_path, need_check):
+    def build_icon_by_path(self, prim_path: object, need_check: bool) -> None:
         """Build the UI elements for a single icon at the given path.
 
         Args:
@@ -184,7 +184,7 @@ class IconManipulator(sc.Manipulator):
         if item is not None:
             icon_trans.visible = item.visible
 
-    def update_icon_position(self, prim_path):
+    def update_icon_position(self, prim_path: object) -> None:
         """Update the transform of an existing icon UI element.
 
         Args:
@@ -196,7 +196,7 @@ class IconManipulator(sc.Manipulator):
         if prim_path in self._icons:
             self._icons[prim_path].transform = sc.Matrix44.get_translation_matrix(*icon_pos)
 
-    def on_model_updated(self, item):
+    def on_model_updated(self, item: object) -> None:
         """Callback when the model signals an item has changed.
 
         Args:

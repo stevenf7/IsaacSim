@@ -37,7 +37,7 @@ class ROS2NodesExtension(omni.ext.IExt):
     extension for foundational ROS 2 functionality.
     """
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the ROS 2 nodes extension.
 
         Args:

@@ -39,7 +39,7 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
     """Tests for the O3dyn omnidirectional robot simulation."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment with O3dyn robot asset path."""
         self._timeline = omni.timeline.get_timeline_interface()
 

@@ -21,7 +21,7 @@ import os
 from pxr import Sdf, UsdGeom, UsdLux
 
 
-def Singleton(class_):
+def Singleton(class_: type):
     """A singleton decorator that ensures only one instance of a class is created.
 
     Args:
@@ -40,7 +40,7 @@ def Singleton(class_):
     return getinstance
 
 
-def get_stage_default_prim_path(stage):
+def get_stage_default_prim_path(stage: object):
     """Helper function used for getting default prim path for any given stage.
 
     Args:
@@ -57,7 +57,7 @@ def get_stage_default_prim_path(stage):
         return Sdf.Path.absoluteRootPath
 
 
-def copy_prim_hierarchy(src_prim, dst_stage, dst_path, filter_fn=None):
+def copy_prim_hierarchy(src_prim: object, dst_stage: object, dst_path: object, filter_fn: callable = None):
     """Recursively copy only the hierarchy of src_prim to dst_stage at the specified dst_path.
 
     Args:
@@ -80,7 +80,7 @@ def copy_prim_hierarchy(src_prim, dst_stage, dst_path, filter_fn=None):
         copy_prim_hierarchy(child, dst_stage, child_dst_path, filter_fn)
 
 
-def copy_prim(src_prim, dst_stage, dst_path):
+def copy_prim(src_prim: object, dst_stage: object, dst_path: object):
     """Recursively copy src_prim along with its attributes, relationships, and children
     to dst_stage at the specified dst_path.
 
@@ -114,7 +114,7 @@ def copy_prim(src_prim, dst_stage, dst_path):
         copy_prim(child, dst_stage, child_dst_path)
 
 
-def find_unique_filename(filename):
+def find_unique_filename(filename: str):
     """Find a unique filename by adding incrementing numbers to the end of the filename.
 
     Args:
@@ -131,7 +131,7 @@ def find_unique_filename(filename):
     return filename
 
 
-def apply_standard_stage_settings(stage):
+def apply_standard_stage_settings(stage: object):
     """Apply standard settings to a USD stage including Z-up axis, meters unit, and default lighting.
 
     Args:
@@ -181,7 +181,7 @@ def can_create_dir(path: str) -> bool:
     return os.access(parent, os.W_OK)
 
 
-def stage_is_dirty(stage):
+def stage_is_dirty(stage: object):
     """Check if any layer in the USD stage has unsaved changes.
 
     Args:

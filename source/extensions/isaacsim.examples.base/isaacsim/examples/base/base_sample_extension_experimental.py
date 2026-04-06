@@ -43,7 +43,7 @@ class BaseSampleUITemplate:
         **kwargs: Additional keyword arguments for configuring the UI template.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         self._ext_id = kwargs.get("ext_id")
         self._file_path = kwargs.get("file_path", "")
         self._title = kwargs.get("title", "Isaac Sim Example")
@@ -225,7 +225,7 @@ class BaseSampleUITemplate:
         self._buttons = {}
         self._sample = None
 
-    def on_stage_event(self, event):
+    def on_stage_event(self, event: carb.eventdispatcher.Event) -> None:
         """Stage closed event callback.
 
         Note: With Events 2.0, this is called only for CLOSED events.
@@ -239,7 +239,7 @@ class BaseSampleUITemplate:
                 self._enable_all_buttons(False)
                 self._buttons["Load World"].enabled = True
 
-    def _reset_on_stop_event(self, event):
+    def _reset_on_stop_event(self, event: carb.eventdispatcher.Event) -> None:
         """Timeline stop event callback.
 
         Note: With Events 2.0, this is called only for STOP events.

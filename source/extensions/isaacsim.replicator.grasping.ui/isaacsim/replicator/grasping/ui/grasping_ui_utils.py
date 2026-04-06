@@ -43,7 +43,7 @@ def get_selected_prim_path() -> str | None:
     return selected_prim_paths[0]
 
 
-def select_prim_in_stage(path):
+def select_prim_in_stage(path: str):
     """Select/highlight a prim in the stage by its path.
 
     Args:
@@ -227,6 +227,9 @@ def draw_trimesh(prim: Usd.Prim, world_frame: bool = False, clear_existing: bool
         world_frame: If True, transform vertices to world coordinates.
         clear_existing: If True, clear previous drawings first.
         verbose: If True, enables verbose logging during mesh conversion.
+
+    Returns:
+        None.
     """
     mesh_schema = None
     if prim.IsA(UsdGeom.Mesh):
@@ -270,7 +273,7 @@ def clear_debug_draw():
     draw_iface.clear_lines()
 
 
-def move_grasp_phase_up(grasping_manager, phase_identifier: str | int) -> bool:
+def move_grasp_phase_up(grasping_manager: object, phase_identifier: str | int) -> bool:
     """Move a grasp phase up in the sequence (earlier execution).
 
     Args:
@@ -298,7 +301,7 @@ def move_grasp_phase_up(grasping_manager, phase_identifier: str | int) -> bool:
     return True
 
 
-def move_grasp_phase_down(grasping_manager, phase_identifier: str | int) -> bool:
+def move_grasp_phase_down(grasping_manager: object, phase_identifier: str | int) -> bool:
     """Move a grasp phase down in the sequence (later execution).
 
     Args:

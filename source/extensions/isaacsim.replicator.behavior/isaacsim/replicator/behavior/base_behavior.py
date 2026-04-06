@@ -46,7 +46,11 @@ class BaseBehavior(BehaviorScript):
     ]
 
     def on_init(self):
-        """Called when the script is assigned to a prim."""
+        """Called when the script is assigned to a prim.
+
+        Returns:
+            None.
+        """
         # Workaround to prevent base class instantiation by the ScriptManager
         if self.__class__.__name__ == "BaseBehavior":
             return
@@ -79,7 +83,15 @@ class BaseBehavior(BehaviorScript):
         self._update_counter = 0
 
     def on_update(self, current_time: float, delta_time: float):
-        """Called on per frame update events that occur when `playing`"""
+        """Called on per frame update events that occur when `playing`.
+
+        Args:
+            current_time: The current simulation time.
+            delta_time: The time elapsed since the last update.
+
+        Returns:
+            None.
+        """
         if delta_time <= 0:
             return
         if self._interval <= 0:
@@ -94,7 +106,14 @@ class BaseBehavior(BehaviorScript):
         """Pure virtual method that must be implemented by subclasses."""
         raise NotImplementedError
 
-    def _get_exposed_variable(self, attr_name):
-        """Helper function to get the value of an exposed attribute."""
+    def _get_exposed_variable(self, attr_name: str):
+        """Helper function to get the value of an exposed attribute.
+
+        Args:
+            attr_name: The name of the attribute to retrieve.
+
+        Returns:
+            The value of the exposed attribute.
+        """
         full_attr_name = f"{EXPOSED_ATTR_NS}:{self.BEHAVIOR_NS}:{attr_name}"
         return get_exposed_variable(self.prim, full_attr_name)

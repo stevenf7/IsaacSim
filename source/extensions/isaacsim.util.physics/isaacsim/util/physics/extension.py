@@ -193,7 +193,9 @@ class Extension(omni.ext.IExt):
 
         pass
 
-    def traverse_prims(self, selection, include_xform=False, ignore_rigid=True, visible_only=True) -> list:
+    def traverse_prims(
+        self, selection: list, include_xform: bool = False, ignore_rigid: bool = True, visible_only: bool = True
+    ) -> list:
         """Traverse and collect valid prims from the given selection.
 
         Iterates through the selected prim paths and their children (if enabled), filtering
@@ -244,7 +246,7 @@ class Extension(omni.ext.IExt):
                     prims.append(curr_prim)
         return prims
 
-    def prim_is_valid(self, prim, include_xform=False, visible_only=True) -> bool:
+    def prim_is_valid(self, prim: Usd.Prim, include_xform: bool = False, visible_only: bool = True) -> bool:
         """Check if a prim is valid for physics API application.
 
         A prim is considered valid if it is a geometric primitive (Cylinder, Capsule, Cone,
@@ -278,7 +280,7 @@ class Extension(omni.ext.IExt):
         return False
         pass
 
-    def apply_collision_to_prim(self, prim, approximationShape="none"):
+    def apply_collision_to_prim(self, prim: Usd.Prim, approximationShape: str = "none") -> None:
         """Apply collision API to a single prim.
 
         For instanceable prims, applies CollisionAPI and MeshCollisionAPI directly.
@@ -297,7 +299,7 @@ class Extension(omni.ext.IExt):
         else:
             utils.setCollider(prim, approximationShape)
 
-    def unapply_collision_on_prim(self, prim):
+    def unapply_collision_on_prim(self, prim: Usd.Prim) -> None:
         """Remove collision API from a single prim.
 
         Args:
@@ -305,7 +307,7 @@ class Extension(omni.ext.IExt):
         """
         utils.removeCollider(prim)
 
-    def remove_physics_apis_on_prim(self, prim):
+    def remove_physics_apis_on_prim(self, prim: Usd.Prim) -> None:
         """Remove all physics-related APIs from a single prim.
 
         Removes a comprehensive list of physics APIs including rigid body, collision,

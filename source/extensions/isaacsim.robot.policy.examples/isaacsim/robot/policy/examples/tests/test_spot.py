@@ -224,7 +224,7 @@ class TestSpotCPU(omni.kit.test.AsyncTestCase):
         )
         await omni.kit.app.get_app().next_update_async()
 
-    def on_physics_step(self, step_size, context):
+    def on_physics_step(self, step_size: float, context: object) -> None:
         """Physics step callback to control the Spot robot.
 
         Called on each physics simulation step to send movement commands to the robot.

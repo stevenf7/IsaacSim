@@ -49,7 +49,7 @@ def get_world() -> isaacsim.core.api.World:
     return isaacsim.core.api.World.instance()
 
 
-def join_sdf_paths(*subpaths) -> str:
+def join_sdf_paths(*subpaths: str) -> str:
     """Join multiple subpaths into a single SDF path.
 
     Args:

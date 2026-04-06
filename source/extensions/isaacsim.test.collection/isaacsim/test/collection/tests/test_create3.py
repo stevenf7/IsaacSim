@@ -40,7 +40,7 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
     """Tests for the iRobot Create3 robot simulation."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment with Create3 robot."""
         self._timeline = omni.timeline.get_timeline_interface()
 

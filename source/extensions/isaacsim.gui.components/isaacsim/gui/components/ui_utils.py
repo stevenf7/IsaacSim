@@ -39,7 +39,7 @@ from .style import BUTTON_WIDTH, COLOR_W, COLOR_X, COLOR_Y, COLOR_Z, get_style
 
 
 def btn_builder(
-    label: str = "", type: str = "button", text: str = "button", tooltip: str = "", on_clicked_fn=None
+    label: str = "", type: str = "button", text: str = "button", tooltip: str = "", on_clicked_fn: object = None
 ) -> ui.Button:
     """Creates a stylized button.
 
@@ -82,7 +82,7 @@ def state_btn_builder(
     a_text: str = "STATE A",
     b_text: str = "STATE B",
     tooltip: str = "",
-    on_clicked_fn=None,
+    on_clicked_fn: object = None,
 ) -> ui.Button:
     """Creates a State Change Button that changes text when pressed.
 
@@ -129,7 +129,7 @@ def state_btn_builder(
 
 
 def cb_builder(
-    label: str = "", type: str = "checkbox", default_val: bool = False, tooltip: str = "", on_clicked_fn=None
+    label: str = "", type: str = "checkbox", default_val: bool = False, tooltip: str = "", on_clicked_fn: object = None
 ) -> ui.SimpleBoolModel:
     """Creates a Stylized Checkbox
 
@@ -157,7 +157,12 @@ def cb_builder(
 
 
 def multi_btn_builder(
-    label="", type="multi_button", count=2, text=["button", "button"], tooltip=["", "", ""], on_clicked_fn=[None, None]
+    label: str = "",
+    type: str = "multi_button",
+    count: int = 2,
+    text: list = ["button", "button"],
+    tooltip: list = ["", "", ""],
+    on_clicked_fn: list = [None, None],
 ) -> list[ui.Button]:
     """Creates a Row of Stylized Buttons
 
@@ -193,13 +198,13 @@ def multi_btn_builder(
 
 
 def multi_cb_builder(
-    label="",
-    type="multi_checkbox",
-    count=2,
-    text=[" ", " "],
-    default_val=[False, False],
-    tooltip=["", "", ""],
-    on_clicked_fn=[None, None],
+    label: str = "",
+    type: str = "multi_checkbox",
+    count: int = 2,
+    text: list = [" ", " "],
+    default_val: list = [False, False],
+    tooltip: list = ["", "", ""],
+    on_clicked_fn: list = [None, None],
 ) -> list[ui.SimpleBoolModel]:
     """Creates a Row of Stylized Checkboxes.
 
@@ -239,10 +244,10 @@ def str_builder(
     type: str = "stringfield",
     default_val: str = " ",
     tooltip: str = "",
-    on_clicked_fn=None,
+    on_clicked_fn: object = None,
     use_folder_picker: bool = False,
     read_only: bool = False,
-    item_filter_fn=None,
+    item_filter_fn: object = None,
     bookmark_label: str | None = None,
     bookmark_path: str | None = None,
     folder_dialog_title: str = "Select Output Folder",
@@ -312,7 +317,12 @@ def str_builder(
 
 
 def int_builder(
-    label="", type="intfield", default_val=0, tooltip="", min=sys.maxsize * -1, max=sys.maxsize
+    label: str = "",
+    type: str = "intfield",
+    default_val: int = 0,
+    tooltip: str = "",
+    min: int = sys.maxsize * -1,
+    max: int = sys.maxsize,
 ) -> ui.AbstractValueModel:
     """Creates a Stylized Intfield Widget
 
@@ -337,7 +347,16 @@ def int_builder(
     return int_field
 
 
-def float_builder(label="", type="floatfield", default_val=0, tooltip="", min=-inf, max=inf, step=0.1, format="%.2f"):
+def float_builder(
+    label: str = "",
+    type: str = "floatfield",
+    default_val: float = 0,
+    tooltip: str = "",
+    min: float = -inf,
+    max: float = inf,
+    step: float = 0.1,
+    format: str = "%.2f",
+):
     """Creates a Stylized Floatfield Widget
 
     Args:
@@ -375,7 +394,7 @@ def combo_cb_str_builder(
     type: str = "checkbox_stringfield",
     default_val: list = [False, " "],
     tooltip: str = "",
-    on_clicked_fn=lambda x: None,
+    on_clicked_fn: object = lambda x: None,
     use_folder_picker: bool = False,
     read_only: bool = False,
     folder_dialog_title: str = "Select Output Folder",
@@ -582,7 +601,13 @@ def string_filed_builder(
 
 
 def combo_intfield_slider_builder(
-    label="", type="intfield_stringfield", default_val=0.5, min=0, max=1, step=0.01, tooltip=["", ""]
+    label: str = "",
+    type: str = "intfield_stringfield",
+    default_val: float = 0.5,
+    min: int = 0,
+    max: int = 1,
+    step: float = 0.01,
+    tooltip: list = ["", ""],
 ):
     """Creates a Stylized IntField + Stringfield Widget
 
@@ -652,13 +677,13 @@ def combo_floatfield_slider_builder(
 
 
 def multi_dropdown_builder(
-    label="",
-    type="multi_dropdown",
-    count=2,
-    default_val=[0, 0],
-    items=[["Option 1", "Option 2", "Option 3"], ["Option A", "Option B", "Option C"]],
-    tooltip="",
-    on_clicked_fn=[None, None],
+    label: str = "",
+    type: str = "multi_dropdown",
+    count: int = 2,
+    default_val: list = [0, 0],
+    items: list = [["Option 1", "Option 2", "Option 3"], ["Option A", "Option B", "Option C"]],
+    tooltip: str = "",
+    on_clicked_fn: list = [None, None],
 ):
     """Creates a Stylized Multi-Dropdown Combobox
 
@@ -733,7 +758,9 @@ def combo_cb_dropdown_builder(
         return cb, combo_box
 
 
-def scrolling_frame_builder(label="", type="scrolling_frame", default_val="No Data", tooltip=""):
+def scrolling_frame_builder(
+    label: str = "", type: str = "scrolling_frame", default_val: str = "No Data", tooltip: str = ""
+):
     """Creates a Labeled Scrolling Frame with CopyToClipboard button
 
     Args:
@@ -779,7 +806,7 @@ def combo_cb_scrolling_frame_builder(
     type: str = "cb_scrolling_frame",
     default_val: list = [False, "No Data"],
     tooltip: str = "",
-    on_clicked_fn=lambda x: None,
+    on_clicked_fn: object = lambda x: None,
 ):
     """Creates a Labeled, Checkbox-enabled Scrolling Frame with CopyToClipboard button
 
@@ -920,7 +947,9 @@ def color_picker_builder(
     return model
 
 
-def progress_bar_builder(label="", type="progress_bar", default_val=0, tooltip="Progress"):
+def progress_bar_builder(
+    label: str = "", type: str = "progress_bar", default_val: float = 0, tooltip: str = "Progress"
+):
     """Creates a Progress Bar Widget
 
     Args:
@@ -940,7 +969,16 @@ def progress_bar_builder(label="", type="progress_bar", default_val=0, tooltip="
     return model
 
 
-def plot_builder(label="", data=None, min=-1, max=1, type=ui.Type.LINE, value_stride=1, color=None, tooltip=""):
+def plot_builder(
+    label: str = "",
+    data: object = None,
+    min: float = -1,
+    max: float = 1,
+    type: object = ui.Type.LINE,
+    value_stride: int = 1,
+    color: object = None,
+    tooltip: str = "",
+):
     """Creates a stylized static plot
 
     Args:
@@ -1087,13 +1125,13 @@ def xyz_plot_builder(label: str = "", data: list = [], min: int = -1, max: int =
 def combo_cb_plot_builder(
     label: str = "",
     default_val: bool = False,
-    on_clicked_fn=lambda x: None,
-    data=None,
+    on_clicked_fn: object = lambda x: None,
+    data: object = None,
     min: int = -1,
     max: int = 1,
-    type=ui.Type.LINE,
+    type: object = ui.Type.LINE,
     value_stride: int = 1,
-    color=None,
+    color: object = None,
     tooltip: str = "",
 ):
     """Creates a Checkbox-Enabled dyanamic plot
@@ -1183,11 +1221,11 @@ def combo_cb_plot_builder(
 def combo_cb_xyz_plot_builder(
     label: str = "",
     default_val: bool = False,
-    on_clicked_fn=lambda x: None,
+    on_clicked_fn: object = lambda x: None,
     data: list = [],
     min: int = -1,
     max: int = 1,
-    type=ui.Type.LINE,
+    type: object = ui.Type.LINE,
     value_stride: int = 1,
     tooltip: str = "",
 ):
@@ -1363,8 +1401,8 @@ def add_separator():
 
 
 def add_folder_picker_icon(
-    on_click_fn,
-    item_filter_fn=None,
+    on_click_fn: object,
+    item_filter_fn: object = None,
     bookmark_label: str | None = None,
     bookmark_path: str | None = None,
     dialog_title: str = "Select Output Folder",
@@ -1420,7 +1458,7 @@ def add_folder_picker_icon(
     return open_file_picker
 
 
-def add_folder_picker_btn(on_click_fn):
+def add_folder_picker_btn(on_click_fn: object):
     """Creates a folder picker button that opens a file dialog.
 
     Args:
@@ -1448,7 +1486,7 @@ def add_folder_picker_btn(on_click_fn):
         ui.Button("SELECT", width=BUTTON_WIDTH, clicked_fn=open_folder_picker, tooltip="Select Folder")
 
 
-def format_tt(tt):
+def format_tt(tt: str):
     """Format tooltip text by capitalizing words appropriately.
 
     Converts all-uppercase words to title case, capitalizes longer words and the first word,
@@ -1562,7 +1600,7 @@ def build_header(
             ui.Spacer(width=5)
 
 
-def build_info_frame(overview: str = "", info_collapse: bool = True):
+def build_info_frame(overview: str = "", info_collapse: bool = True) -> None:
     """Info Frame with Overview, Instructions, and Metadata for an Extension
 
     Args:
@@ -1667,7 +1705,7 @@ class SearchListItem(ui.AbstractItem):
         text: The text content of the search list item.
     """
 
-    def __init__(self, text):
+    def __init__(self, text: str):
         super().__init__()
         self.name_model = ui.SimpleStringModel(text)
 
@@ -1702,13 +1740,20 @@ class SearchListItemModel(ui.AbstractItemModel):
         *args: String items to populate the list model.
     """
 
-    def __init__(self, *args):
+    def __init__(self, *args: str):
         super().__init__()
         self._children = [SearchListItem(t) for t in args]
         self._filtered = [SearchListItem(t) for t in args]
 
-    def get_item_children(self, item):
-        """Returns all the children when the widget asks it."""
+    def get_item_children(self, item: object):
+        """Returns all the children when the widget asks it.
+
+        Args:
+            item: The parent item to get children for. If None, returns root children.
+
+        Returns:
+            List of child items.
+        """
         if item is not None:
             # Since we are doing a flat list, we return the children of root only.
             # If it's not root we return.
@@ -1738,15 +1783,29 @@ class SearchListItemModel(ui.AbstractItemModel):
         # This tells the Delegate to update the TreeView
         self._item_changed(None)
 
-    def get_item_value_model_count(self, item):
-        """The number of columns"""
+    def get_item_value_model_count(self, item: object):
+        """The number of columns.
+
+        Args:
+            item: The item to get the column count for.
+
+        Returns:
+            Number of columns.
+        """
         return 1
 
-    def get_item_value_model(self, item, column_id):
-        """
-        Return value model.
+    def get_item_value_model(self, item: object, column_id: int):
+        """Return value model.
+
         It's the object that tracks the specific value.
         In our case we use ui.SimpleStringModel.
+
+        Args:
+            item: The item to get the value model for.
+            column_id: The column identifier.
+
+        Returns:
+            The value model for the item.
         """
         return item.name_model
 
@@ -1759,11 +1818,11 @@ class SearchListItemDelegate(ui.AbstractItemDelegate):
         on_double_click_fn: Callback function for double-click events.
     """
 
-    def __init__(self, on_double_click_fn=None):
+    def __init__(self, on_double_click_fn: object = None):
         super().__init__()
         self._on_double_click_fn = on_double_click_fn
 
-    def build_branch(self, model, item, column_id, level, expanded):
+    def build_branch(self, model: object, item: object, column_id: int, level: int, expanded: bool):
         """Create a branch widget that opens or closes subtree.
 
         Args:
@@ -1775,7 +1834,7 @@ class SearchListItemDelegate(ui.AbstractItemDelegate):
         """
         pass
 
-    def build_widget(self, model, item, column_id, level, expanded):
+    def build_widget(self, model: object, item: object, column_id: int, level: int, expanded: bool):
         """Create a widget per column per item.
 
         Args:
@@ -1798,7 +1857,7 @@ class SearchListItemDelegate(ui.AbstractItemDelegate):
         # Set a double click function
         stack.set_mouse_double_clicked_fn(lambda x, y, b, m, l=label: self._on_double_click_fn(b, m, l))
 
-    def on_double_click(self, button, model, label):
+    def on_double_click(self, button: int, model: object, label: object) -> None:
         """Called when the user double-clicked the item in TreeView.
 
         Args:
@@ -1811,7 +1870,7 @@ class SearchListItemDelegate(ui.AbstractItemDelegate):
 
 
 def build_simple_search(
-    label="", type="search", model=None, delegate=None, tooltip=""
+    label: str = "", type: str = "search", model: object = None, delegate: object = None, tooltip: str = ""
 ) -> tuple[SearchWidget, ui.TreeView]:
     """A Simple Search Bar + TreeView Widget.
 

@@ -114,7 +114,7 @@ class UIBuilder:
         if not self._timeline.is_stopped():
             self._selection_frame.rebuild()
 
-    def on_timeline_event(self, event):
+    def on_timeline_event(self, event: object) -> None:
         """Callback for Timeline events (Play, Pause, Stop)
 
         Args:
@@ -230,7 +230,7 @@ class UIBuilder:
             )
             self._warning_box.visible = False
 
-    def build_reference_frame(self):
+    def build_reference_frame(self) -> None:
         """Builds the UI frame for selecting gripper and rigid body reference frames.
 
         Provides dropdowns with filtering capabilities for selecting specific subframes within
@@ -346,7 +346,7 @@ class UIBuilder:
                     num_lines=11,
                 )
 
-    def build_settings_frame(self):
+    def build_settings_frame(self) -> None:
         """Builds the UI frame for configuring grasp test parameters.
 
         Creates joint configuration controls for each DOF, collision masking utilities,
@@ -590,7 +590,7 @@ class UIBuilder:
                         num_lines=4,
                     )
 
-    def build_test_frame(self):
+    def build_test_frame(self) -> None:
         """Builds the UI frame for testing grasps.
 
         Creates controls for simulating grasps with physics or exporting the current gripper state as-is.
@@ -795,7 +795,7 @@ class UIBuilder:
 
         self.reset_extension()
 
-    def _on_finished_selection_frame(self):
+    def _on_finished_selection_frame(self) -> None:
         """Handles the completion of the selection frame.
 
         Validates selections, converts the selected prim to a collidable rigid body, initializes the articulation
@@ -979,7 +979,7 @@ class UIBuilder:
 
         return grasp_test_settings
 
-    def _update_test(self, step: float, context):
+    def _update_test(self, step: float, context: object) -> None:
         """Updates the grasp test simulation during physics steps.
 
         Processes test results and updates the status display. When the test completes, prepares the export frame
@@ -1092,7 +1092,7 @@ class UIBuilder:
 
     #################################### Export To File ###########################################
 
-    def ready_to_export_grasp(self, suggested_confidence, export_txt):
+    def ready_to_export_grasp(self, suggested_confidence: float, export_txt: str) -> None:
         """Prepare the export frame for grasp export.
 
         Enables the export frame, updates the status text, and sets the suggested confidence
@@ -1147,14 +1147,14 @@ class JointFrameUIState:
         articulation: The articulation to store joint frame UI state for.
     """
 
-    def __init__(self, articulation):
+    def __init__(self, articulation: object):
         self._fixed_dof_settings = {}
         self._active_dof_settings = {}
 
         for dof_name in articulation.dof_names:
             self.set_fixed_dof(articulation, dof_name)
 
-    def _get_default_close_position(self, upper_limit, lower_limit, open_position):
+    def _get_default_close_position(self, upper_limit: float, lower_limit: float, open_position: float) -> float:
         """Calculate the default close position for a joint based on its limits and open position.
 
         Args:
@@ -1163,109 +1163,109 @@ class JointFrameUIState:
             open_position: The open position of the joint.
 
         Returns:
-            The default close position (opposite limit from the open position).
+            float: The default close position (opposite limit from the open position).
         """
         if np.abs(open_position - upper_limit) < np.abs(open_position - lower_limit):
             return lower_limit
         else:
             return upper_limit
 
-    def is_active(self, dof_name):
+    def is_active(self, dof_name: str) -> bool:
         """Whether the degree of freedom is part of the active gripper.
 
         Args:
             dof_name: Name of the degree of freedom to check.
 
         Returns:
-            True if the DOF is active (part of the gripper), False if fixed.
+            bool: True if the DOF is active (part of the gripper), False if fixed.
         """
         return dof_name in self._active_dof_settings
 
-    def get_fixed_position(self, dof_name):
+    def get_fixed_position(self, dof_name: str) -> float:
         """Fixed position of the degree of freedom.
 
         Args:
             dof_name: Name of the degree of freedom.
 
         Returns:
-            The fixed position value for the DOF.
+            float: The fixed position value for the DOF.
         """
         if dof_name in self._fixed_dof_settings:
             return self._fixed_dof_settings[dof_name]["fixed_position"]
         else:
             carb.log_error("Attempted to access fixed joint setting for an active dof")
 
-    def get_open_position(self, dof_name):
+    def get_open_position(self, dof_name: str) -> float:
         """Open position of the active degree of freedom.
 
         Args:
             dof_name: Name of the degree of freedom.
 
         Returns:
-            The open position value for the DOF.
+            float: The open position value for the DOF.
         """
         if dof_name in self._active_dof_settings:
             return self._active_dof_settings[dof_name]["open_position"]
         else:
             carb.log_error("Attempted to access active joint setting for a fixed dof")
 
-    def get_close_position(self, dof_name):
+    def get_close_position(self, dof_name: str) -> float:
         """Close position of the active degree of freedom.
 
         Args:
             dof_name: Name of the degree of freedom.
 
         Returns:
-            The close position value for the DOF.
+            float: The close position value for the DOF.
         """
         if dof_name in self._active_dof_settings:
             return self._active_dof_settings[dof_name]["close_position"]
         else:
             carb.log_error("Attempted to access active joint setting for a fixed dof")
 
-    def get_max_speed(self, dof_name):
+    def get_max_speed(self, dof_name: str) -> float:
         """Maximum speed of the active degree of freedom.
 
         Args:
             dof_name: Name of the degree of freedom.
 
         Returns:
-            The maximum speed value for the DOF.
+            float: The maximum speed value for the DOF.
         """
         if dof_name in self._active_dof_settings:
             return self._active_dof_settings[dof_name]["max_speed"]
         else:
             carb.log_error("Attempted to access active joint setting for a fixed dof")
 
-    def get_max_effort(self, dof_name):
+    def get_max_effort(self, dof_name: str) -> float:
         """Maximum effort of the active degree of freedom.
 
         Args:
             dof_name: Name of the degree of freedom.
 
         Returns:
-            The maximum effort value for the DOF.
+            float: The maximum effort value for the DOF.
         """
         if dof_name in self._active_dof_settings:
             return self._active_dof_settings[dof_name]["max_effort"]
         else:
             carb.log_error("Attempted to access active joint setting for a fixed dof")
 
-    def get_joint_position(self, dof_name):
+    def get_joint_position(self, dof_name: str) -> float:
         """Current joint position of the degree of freedom.
 
         Args:
             dof_name: Name of the degree of freedom.
 
         Returns:
-            The open position if active, or the fixed position if fixed.
+            float: The open position if active, or the fixed position if fixed.
         """
         if self.is_active(dof_name):
             return self.get_open_position(dof_name)
         else:
             return self.get_fixed_position(dof_name)
 
-    def set_fixed_position(self, dof_name, position):
+    def set_fixed_position(self, dof_name: str, position: float) -> None:
         """Set the fixed position for a fixed degree of freedom.
 
         Args:
@@ -1277,7 +1277,7 @@ class JointFrameUIState:
         else:
             carb.log_error("Attempted to set fixed joint setting for an active dof")
 
-    def set_open_position(self, dof_name, position):
+    def set_open_position(self, dof_name: str, position: float) -> None:
         """Set the open position for an active degree of freedom.
 
         Args:
@@ -1289,7 +1289,7 @@ class JointFrameUIState:
         else:
             carb.log_error("Attempted to set active joint setting for a fixed dof")
 
-    def set_close_position(self, dof_name, position):
+    def set_close_position(self, dof_name: str, position: float) -> None:
         """Sets the close position for an active degree of freedom.
 
         Args:
@@ -1301,7 +1301,7 @@ class JointFrameUIState:
         else:
             carb.log_error("Attempted to set active joint setting for a fixed dof")
 
-    def set_max_speed(self, dof_name, max_speed):
+    def set_max_speed(self, dof_name: str, max_speed: float) -> None:
         """Sets the maximum speed for an active degree of freedom.
 
         Args:
@@ -1313,7 +1313,7 @@ class JointFrameUIState:
         else:
             carb.log_error("Attempted to set active joint setting for a fixed dof")
 
-    def set_max_effort(self, dof_name, max_effort):
+    def set_max_effort(self, dof_name: str, max_effort: float) -> None:
         """Sets the maximum effort for an active degree of freedom.
 
         Args:
@@ -1326,8 +1326,14 @@ class JointFrameUIState:
             carb.log_error("Attempted to set active joint setting for a fixed dof")
 
     def set_active_dof(
-        self, articulation, dof_name, open_position=None, close_position=None, max_speed=None, max_effort=None
-    ):
+        self,
+        articulation: object,
+        dof_name: str,
+        open_position: float = None,
+        close_position: float = None,
+        max_speed: float = None,
+        max_effort: float = None,
+    ) -> None:
         """Configures a degree of freedom as active with specified parameters.
 
         Args:
@@ -1367,7 +1373,7 @@ class JointFrameUIState:
 
         d["max_effort"] = max_effort
 
-    def set_fixed_dof(self, articulation, dof_name, fixed_position=None):
+    def set_fixed_dof(self, articulation: object, dof_name: str, fixed_position: float = None) -> None:
         """Configures a degree of freedom as fixed at a specified position.
 
         Args:

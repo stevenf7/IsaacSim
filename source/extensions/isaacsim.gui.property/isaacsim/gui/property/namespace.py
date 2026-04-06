@@ -49,7 +49,7 @@ def _singleton(class_: type):  # noqa: N802
     return getinstance
 
 
-def _prim_has_robot_schema(prim) -> bool:
+def _prim_has_robot_schema(prim: object) -> bool:
     """Check if a prim has any Isaac Sim robot schema API applied.
 
     Examines the prim to determine if it has ROBOT_API, LINK_API, or JOINT_API schemas from Isaac Sim's robot schema.
@@ -153,7 +153,7 @@ class NamespaceWidget(UsdPropertiesWidget):
         selection.set_selected_prim_paths(selected_paths, True)
         window.frame.rebuild()
 
-    def _on_usd_changed(self, notice, stage):
+    def _on_usd_changed(self, notice: object, stage: object):
         """Handles USD stage change notifications and refreshes the widget when needed.
 
         Args:
@@ -168,7 +168,7 @@ class NamespaceWidget(UsdPropertiesWidget):
         else:
             super()._on_usd_changed(notice, stage)
 
-    def _get_prim(self, prim_path) -> Usd.Prim | None:
+    def _get_prim(self, prim_path: object) -> Usd.Prim | None:
         """Retrieves a prim that is eligible for namespace attribute management.
 
         Args:
@@ -219,7 +219,7 @@ class NamespaceWidget(UsdPropertiesWidget):
             if prim and prim.HasAttribute(robot_schema.Attributes.NAMESPACE.name):
                 prim.RemoveProperty(robot_schema.Attributes.NAMESPACE.name)
 
-    def _filter_props_to_build(self, props) -> list[Usd.Attribute]:
+    def _filter_props_to_build(self, props: list) -> list[Usd.Attribute]:
         """Filters properties to only include namespace attributes and sets their display properties.
 
         Args:

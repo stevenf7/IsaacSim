@@ -25,7 +25,7 @@ from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.types import ArticulationAction, JointsState
 
 
-def require_initialized(func):
+def require_initialized(func: callable):
     """Decorator that ensures the underlying articulation is initialized before function execution.
 
     Prints a warning if the underlying articulation isn't initialized and returns None. If it

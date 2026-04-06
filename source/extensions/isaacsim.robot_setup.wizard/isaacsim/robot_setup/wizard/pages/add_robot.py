@@ -58,7 +58,7 @@ class AddRobot:
         **kwargs: Additional keyword arguments including window_title for customizing the wizard window title.
     """
 
-    def __init__(self, visible, *args, **kwargs):
+    def __init__(self, visible: bool, *args: object, **kwargs: object):
         self.visible = visible
         self.window_title = kwargs.pop("window_title", "Robot Wizard")
         self._select_robot_asset_window = None
@@ -174,7 +174,7 @@ class AddRobot:
                 ## robot type selection
                 self._robot_type_model.add_item_changed_fn(_update_robot_type)
 
-    def _on_robot_name_changed(self, m):
+    def _on_robot_name_changed(self, m: object):
         """Handles changes to the robot name input field.
 
         Args:
@@ -199,7 +199,7 @@ class AddRobot:
                 self._update_widgets()
             self.frame.visible = visible
 
-    def __next_step(self, verify_fn=None):
+    def __next_step(self, verify_fn: callable = None):
         """Creates the next step button for the robot configuration wizard.
 
         Args:
@@ -222,8 +222,12 @@ class AddRobot:
             )
         return button
 
-    def _preprocess_params(self):
-        """Preprocesses parameters from the registered robot for display in the UI."""
+    def _preprocess_params(self) -> None:
+        """Preprocesses parameters from the registered robot for display in the UI.
+
+        Returns:
+            None if no robot is registered.
+        """
         self._robot = RobotRegistry().get()
         if not self._robot:
             return
@@ -633,7 +637,9 @@ class AddRobot:
                 d = None
             self.external_drag_drops = {}
 
-    def _on_ext_drag_drop(self, e, payload: List[str], drop_area, title, path_widget, button):
+    def _on_ext_drag_drop(
+        self, e: object, payload: List[str], drop_area: object, title: str, path_widget: object, button: object
+    ):
         """Handles external drag and drop operations for robot file imports.
 
         Validates and processes dropped files based on the drop area title and file type compatibility.
@@ -646,10 +652,14 @@ class AddRobot:
             title: Title identifying the drop area type (e.g., "Sim-Ready", "Robot Mesh").
             path_widget: The UI string field widget to update with the file path.
             button: The UI button widget to enable when a valid file is dropped.
+
+        Returns:
+            None if the drop area is not hovered.
         """
         # if drop_area is not hovered, we dont want to do anything
         if not drop_area.checked:
             return
+
         path = payload[0]
         if "Sim-Ready" in title and FileSorter.is_sim_ready(path):
             path_widget.model.set_value(path)

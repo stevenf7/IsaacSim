@@ -93,7 +93,7 @@ def is_local_path(path: str) -> bool:
     return True
 
 
-def find_files_recursive(abs_path, filter_fn=lambda a: True):
+def find_files_recursive(abs_path: list, filter_fn: object = lambda a: True):
     """Recursively list all files under given path(s) that match the filter function.
 
     Args:
@@ -237,7 +237,7 @@ def find_filtered_files(
     return usd_files
 
 
-def get_stage_references(stage_path, resolve_relatives=True):
+def get_stage_references(stage_path: str, resolve_relatives: bool = True):
     """List all references in a USD stage.
 
     Args:
@@ -273,7 +273,7 @@ def get_stage_references(stage_path, resolve_relatives=True):
     return paths
 
 
-def is_absolute_path(path):
+def is_absolute_path(path: str):
     """Check if a path is absolute, including Omniverse URLs.
 
     Handles standard filesystem absolute paths as well as omniverse://,
@@ -368,7 +368,7 @@ def is_mdl_file(item: str) -> bool:
     return ext in [".mdl"]
 
 
-async def find_absolute_paths_in_usds(base_path):
+async def find_absolute_paths_in_usds(base_path: str):
     """Check for absolute paths in USD files.
 
     Recursively searches for USD files and identifies any absolute path references
@@ -436,7 +436,7 @@ def is_path_external(path: str, base_path: str) -> bool:
         raise Exception("Error comparing paths")
 
 
-async def find_external_references(base_path):
+async def find_external_references(base_path: str):
     """Check for external references in USD files.
 
     Recursively searches for USD files and identifies references that point
@@ -470,7 +470,7 @@ async def find_external_references(base_path):
     return abs_items
 
 
-async def count_asset_references(base_path):
+async def count_asset_references(base_path: str):
     """Get reference counts for all assets in a base path.
 
     Recursively searches for all files and counts how many times each file
@@ -508,7 +508,7 @@ async def count_asset_references(base_path):
     return items
 
 
-def find_missing_references(base_path):
+def find_missing_references(base_path: str):
     """Check for missing references in USD files.
 
     Recursively searches for USD files and prints any files that have
@@ -607,7 +607,7 @@ def layer_has_missing_references(layer_identifier: str) -> bool:
     return False
 
 
-def prim_spec_has_missing_references(prim_spec) -> bool:
+def prim_spec_has_missing_references(prim_spec: object) -> bool:
     """Check if a prim specification has any missing references.
 
     Checks all references in the prim specification's reference list and
@@ -647,7 +647,7 @@ def prim_spec_has_missing_references(prim_spec) -> bool:
     return False
 
 
-def prim_has_missing_references(prim) -> bool:
+def prim_has_missing_references(prim: object) -> bool:
     """Check if a prim has any missing references.
 
     Checks all prim specs in the prim's stack for missing references.

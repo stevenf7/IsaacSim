@@ -127,10 +127,12 @@ def _does_plane_intersect_aabb(plane: Plane, aabb: bound_utils.AABB) -> bool:
 
 
 class SceneQuery:
-    """Interface for searching the USD world for objects with a given TrackableApi."""
+    """Interface for searching the USD world for objects with a given TrackableApi.
+
+    Initializes the scene query cache and stage handles.
+    """
 
     def __init__(self):
-        """Initialize the scene query cache and stage handles."""
         # to cache the bounding box of collision objects:
         self._bb_cache = bound_utils.create_bbox_cache()
 

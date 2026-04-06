@@ -102,20 +102,20 @@ class TestJointItem(TableItem):
 
     def __init__(
         self,
-        name,
-        joint_index,
-        test,
-        sequence,
-        dof_type,
-        amplitude,
-        offset,
-        period,
-        phase,
-        step_max,
-        step_min,
-        user_provided,
-        model,
-        value_changed_fn=None,
+        name: str,
+        joint_index: int,
+        test: bool,
+        sequence: int,
+        dof_type: object,
+        amplitude: float,
+        offset: float,
+        period: float,
+        phase: float,
+        step_max: float,
+        step_min: float,
+        user_provided: str,
+        model: object,
+        value_changed_fn: callable = None,
     ):
         super().__init__(joint_index, value_changed_fn)
         self.model = model
@@ -201,7 +201,7 @@ class TestJointItem(TableItem):
         self.value_field = {}
         self.mode = GainsTestMode.SINUSOIDAL
 
-    def on_update_position(self, model, *args):
+    def on_update_position(self, model: object, *args: object):
         """Updates the joint position value in the model.
 
         Args:
@@ -210,7 +210,7 @@ class TestJointItem(TableItem):
         """
         self.model.joint_positions[self.joint_index] = model.get_value_as_float()
 
-    def on_update_velocity(self, model, *args):
+    def on_update_velocity(self, model: object, *args: object):
         """Updates the maximum velocity value in the model.
 
         Args:
@@ -219,7 +219,7 @@ class TestJointItem(TableItem):
         """
         self.model.v_max[self.joint_index] = model.get_value_as_float()
 
-    def on_update_step_max(self, model, *args):
+    def on_update_step_max(self, model: object, *args: object):
         """Updates the maximum step value for the joint test.
 
         Args:
@@ -228,7 +228,7 @@ class TestJointItem(TableItem):
         """
         pass
 
-    def on_update_step_min(self, model, *args):
+    def on_update_step_min(self, model: object, *args: object):
         """Updates the minimum step value for the joint test.
 
         Args:
@@ -237,7 +237,7 @@ class TestJointItem(TableItem):
         """
         pass
 
-    def on_update_sequence(self, model, *args):
+    def on_update_sequence(self, model: object, *args: object):
         """Updates the test sequence value for the joint.
 
         Args:
@@ -246,7 +246,7 @@ class TestJointItem(TableItem):
         """
         pass
 
-    def on_update_amplitude(self, model, *args):
+    def on_update_amplitude(self, model: object, *args: object):
         """Updates the amplitude value for the joint test.
 
         Args:
@@ -255,7 +255,7 @@ class TestJointItem(TableItem):
         """
         pass
 
-    def on_update_period(self, model, *args):
+    def on_update_period(self, model: object, *args: object):
         """Updates the period value for the joint test.
 
         Args:
@@ -264,7 +264,7 @@ class TestJointItem(TableItem):
         """
         pass
 
-    def on_update_offset(self, model, *args):
+    def on_update_offset(self, model: object, *args: object):
         """Updates the offset value for the joint test.
 
         Args:
@@ -273,7 +273,7 @@ class TestJointItem(TableItem):
         """
         pass
 
-    def on_update_phase(self, model, *args):
+    def on_update_phase(self, model: object, *args: object):
         """Updates the phase value for the joint test.
 
         Args:
@@ -282,7 +282,7 @@ class TestJointItem(TableItem):
         """
         pass
 
-    def on_update_test(self, model, *args):
+    def on_update_test(self, model: object, *args: object):
         """Updates the test enable/disable state for the joint.
 
         Args:
@@ -291,7 +291,7 @@ class TestJointItem(TableItem):
         """
         pass
 
-    def on_update_user_provided(self, model, *args):
+    def on_update_user_provided(self, model: object, *args: object):
         """Handles updates to the user-provided data source parameter.
 
         Args:
@@ -433,7 +433,7 @@ class TestJointItem(TableItem):
             return self.model_cols[col_id].get_value_as_bool()
         return self.model_cols[col_id].get_value_as_float()
 
-    def set_item_value(self, col_id: int, value):
+    def set_item_value(self, col_id: int, value: object):
         """Sets the value for the specified column.
 
         Args:
@@ -498,7 +498,7 @@ class TestJointItemDelegate(TableItemDelegate):
     }
     """Dictionary mapping column indices to their display text shown in the table header."""
 
-    def __init__(self, model):
+    def __init__(self, model: object):
 
         self.column_headers = {}
         super().__init__(model)
@@ -520,7 +520,9 @@ class TestJointItemDelegate(TableItemDelegate):
     def mode(self, mode):
         self._model.mode = mode
 
-    def build_branch(self, model, item=None, column_id=0, level=0, expanded=False):
+    def build_branch(
+        self, model: object, item: object = None, column_id: int = 0, level: int = 0, expanded: bool = False
+    ):
         """Builds branch widgets for tree view items.
 
         Args:
@@ -532,7 +534,7 @@ class TestJointItemDelegate(TableItemDelegate):
         """
         pass
 
-    def model_col_id(self, column_id):
+    def model_col_id(self, column_id: int):
         """Maps display column ID to model column ID based on current mode.
 
         Args:
@@ -545,7 +547,7 @@ class TestJointItemDelegate(TableItemDelegate):
             return self._model.column_id_map[self.mode][column_id]
         return None
 
-    def build_header(self, column_id=0):
+    def build_header(self, column_id: int = 0) -> None:
         """Builds header widgets for table columns.
 
         Args:
@@ -590,7 +592,9 @@ class TestJointItemDelegate(TableItemDelegate):
                 if field:
                     field.update_default_value()
 
-    def build_widget(self, model, item=None, index=0, level=0, expanded=False):
+    def build_widget(
+        self, model: object, item: object = None, index: int = 0, level: int = 0, expanded: bool = False
+    ) -> None:
         """Builds UI widgets for table cells based on column type and test mode.
 
         Args:
@@ -717,7 +721,7 @@ class TestJointModel(TableModel):
         **kwargs: Additional keyword arguments passed to the parent TableModel class.
     """
 
-    def __init__(self, gains_tuner, value_changed_fn, **kwargs):
+    def __init__(self, gains_tuner: object, value_changed_fn: callable, **kwargs: object):
         self.column_id_map = {
             TestMode.SINUSOIDAL: [
                 ColumnIndex.JOINT,
@@ -800,7 +804,7 @@ class TestJointModel(TableModel):
         """Initializes the model by setting the test mode to sinusoidal."""
         self.mode = GainsTestMode.SINUSOIDAL
 
-    def get_item_value_model_count(self, item) -> int:
+    def get_item_value_model_count(self, item: object) -> int:
         """The number of columns based on the current test mode.
 
         Args:
@@ -835,7 +839,7 @@ class TestJointWidget(TableWidget):
         value_changed_fn: Callback function invoked when joint test parameters are modified.
     """
 
-    def __init__(self, gains_tuner, value_changed_fn=None):
+    def __init__(self, gains_tuner: object, value_changed_fn: callable = None):
         self.column_widths = [
             ui.Fraction(1),
             ui.Pixel(50),
@@ -855,7 +859,7 @@ class TestJointWidget(TableWidget):
             super().__init__(value_changed_fn, model, delegate, mode)
             self._enable_bulk_edit = True
 
-    def switch_mode(self, mode):
+    def switch_mode(self, mode: object):
         """Switches the test mode and updates the tree view column widths.
 
         Args:
@@ -869,7 +873,7 @@ class TestJointWidget(TableWidget):
     #     # TODO: Implement this
     #     carb.log_error("switch_radian_degree is not implemented")
 
-    def _on_value_changed(self, joint_item, col_id=1, adjusted_col_id=None):
+    def _on_value_changed(self, joint_item: object, col_id: int = 1, adjusted_col_id: int = None):
         """Handles value changes in joint test parameters.
 
         Args:

@@ -39,6 +39,9 @@ def _has_menubar() -> bool:
     The menubar exists in both windowed and ``--no-window`` headless modes.
     It may be absent only in minimal test harnesses that do not load the
     main window extension.
+
+    Returns:
+        True if the menubar exists and has items, False otherwise.
     """
     try:
         menubar = ui_test.get_menubar()

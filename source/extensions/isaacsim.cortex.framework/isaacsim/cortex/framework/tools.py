@@ -19,7 +19,7 @@ from collections import OrderedDict
 from typing import Optional
 
 
-def write(s) -> None:
+def write(s: str) -> None:
     """A convenient utility method for writing a string to sys.stdout with a buffer flush but no
     newline.
 
@@ -188,7 +188,7 @@ class Profiler(object):
         self.end_cycle().
 
         Args:
-            tage: The string tag assigned to the capture on start_capture(tag).
+            tag: The string tag assigned to the capture on start_capture(tag).
         """
         if not self.is_active:
             return
@@ -212,7 +212,8 @@ class Profiler(object):
         Args:
             tag: The string tag given to the capture on start_capture(tag).
 
-        Returns: True if there is an active average capture duration available for the given tag.
+        Returns:
+            True if there is an active average capture duration available for the given tag.
         """
         return tag in self.capture_avg_durations
 
@@ -223,13 +224,17 @@ class Profiler(object):
 
         Args:
             tag: The string tag of the requested capture.
+
+        Returns:
+            The average capture duration for the specified tag.
         """
         return self.capture_avg_durations[tag]
 
     def get_avg_cycle(self) -> float:
         """Get the average cycle duration.
 
-        Returns: The cycle average.
+        Returns:
+            The cycle average.
         """
         return self.capture_avg_durations["cycle"]
 

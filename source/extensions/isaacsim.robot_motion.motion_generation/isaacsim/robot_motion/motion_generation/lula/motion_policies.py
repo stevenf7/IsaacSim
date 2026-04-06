@@ -66,7 +66,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         rmpflow_config_path: str,
         end_effector_frame_name: str,
         maximum_substep_size: float,
-        ignore_robot_state_updates=False,
+        ignore_robot_state_updates: bool = False,
     ):
 
         self.maximum_substep_size = maximum_substep_size
@@ -101,7 +101,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         self._collision_spheres = []
         self._ee_visual = None
 
-    def set_ignore_state_updates(self, ignore_robot_state_updates):
+    def set_ignore_state_updates(self, ignore_robot_state_updates: bool):
         """An RmpFlow specific method; set an internal flag in RmpFlow: ignore_robot_state_updates
 
         Args:
@@ -115,7 +115,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         """
         self.ignore_robot_state_updates = ignore_robot_state_updates
 
-    def set_cspace_target(self, active_joint_targets):
+    def set_cspace_target(self, active_joint_targets: object):
         """Set a cspace target for RmpFlow.  RmpFlow always has a cspace target, and setting a new cspace target does not override a position target.
         RmpFlow uses the cspace target to help resolve null space behavior when a position target can be acheived in a variety of ways.
         If the end effector target is explicitly set to None, RmpFlow will move the robot to the cspace target
@@ -291,6 +291,9 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
                 This will always be empty for RmpFlow.
             watched_joint_velocities: current velocities of joints specified by get_watched_joints()
                 This will always be empty for RmpFlow.
+
+        Returns:
+            None.
         """
 
         self._robot_joint_positions = active_joint_positions
@@ -373,7 +376,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         return solver
 
-    def set_end_effector_target(self, target_position=None, target_orientation=None):
+    def set_end_effector_target(self, target_position: object = None, target_orientation: object = None):
         """Sets the end effector target position and orientation for RMPflow motion planning.
 
         Args:
@@ -512,6 +515,9 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         Transforms the stored end effector targets to the robot base frame and configures the internal
         RMPflow attractors. Clears attractors if no targets are set.
+
+        Returns:
+            None.
         """
         target_position = self._end_effector_position_target
         target_rotation = self._end_effector_rotation_target
@@ -585,6 +591,9 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         Moves the visual sphere prims to match the current positions of RMPflow's internal
         collision spheres based on the current robot joint positions.
+
+        Returns:
+            None.
         """
         if len(self._collision_spheres) == 0:
             return
@@ -603,6 +612,9 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         Moves the visual cuboid to match the current end effector pose based on the robot's
         joint positions.
+
+        Returns:
+            None.
         """
         if self._ee_visual is None:
             return
@@ -711,7 +723,7 @@ class RmpFlowSmoothed(RmpFlow):
         **kwargs: Additional keyword arguments passed to the parent RmpFlow class.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object):
         super().__init__(*args, **kwargs)
 
         self.desired_speed_scalar = 1.0
@@ -729,7 +741,7 @@ class RmpFlowSmoothed(RmpFlow):
         self.speed_scalar_alpha_blend = 0.985  # Used for real world experiments.
         self.verbose = False
 
-    def _eval_speed_scaled_accel(self, joint_positions, joint_velocities):
+    def _eval_speed_scaled_accel(self, joint_positions: object, joint_velocities: object):
         """Evaluate speed-scaled acceleration for the robot joints.
 
         Args:
@@ -744,7 +756,7 @@ class RmpFlowSmoothed(RmpFlow):
 
         return qdd_eval
 
-    def _euler_integration(self, joint_positions, joint_velocities, frame_duration):
+    def _euler_integration(self, joint_positions: object, joint_velocities: object, frame_duration: float):
         """Perform Euler integration with jerk monitoring and speed scaling.
 
         This method extends the base Euler integration with jerk reduction and truncation mechanisms

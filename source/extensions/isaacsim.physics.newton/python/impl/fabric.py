@@ -59,7 +59,7 @@ class FabricManager:
         self._first_update_done = False
         self._no_prims_warning_logged = False
 
-    def update_fabric(self, model: "newton.Model", state: "newton.State", scene_scale: float, device: str):
+    def update_fabric(self, model: "newton.Model", state: "newton.State", scene_scale: float, device: str) -> None:
         """Sync Newton body transforms to Fabric.
 
         Args:

@@ -76,7 +76,7 @@ class VisualCuboid(SingleGeometryPrim):
         color: Optional[np.ndarray] = None,
         size: Optional[float] = None,
         visual_material: Optional[VisualMaterial] = None,
-    ):
+    ) -> None:
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Cube):
@@ -120,7 +120,7 @@ class VisualCuboid(SingleGeometryPrim):
         )
         return
 
-    def set_size(self, size: float):
+    def set_size(self, size: float) -> None:
         """Set the length of each cube edge
 
         Args:
@@ -203,7 +203,7 @@ class FixedCuboid(VisualCuboid):
         size: Optional[float] = None,
         visual_material: Optional[VisualMaterial] = None,
         physics_material: Optional[PhysicsMaterial] = None,
-    ):
+    ) -> None:
         set_offsets = False
         if not is_prim_path_valid(prim_path):
             # set default values if no physics material given
@@ -307,7 +307,7 @@ class DynamicCuboid(SingleRigidPrim, FixedCuboid):
         density: Optional[float] = None,
         linear_velocity: Optional[Sequence[float]] = None,
         angular_velocity: Optional[Sequence[float]] = None,
-    ):
+    ) -> None:
         if not is_prim_path_valid(prim_path):
             if mass is None:
                 mass = 0.02

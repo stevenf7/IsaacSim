@@ -41,7 +41,7 @@ class BinStackingExtension(omni.ext.IExt):
     actions and status.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initializes the UR10 Palletizing extension and registers it with the examples browser.
 
         Sets up the UI template, creates the BinStacking sample instance, and registers the example
@@ -74,7 +74,7 @@ class BinStackingExtension(omni.ext.IExt):
 
         return
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up the extension by deregistering the UR10 Palletizing example from the examples browser."""
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)
         return
@@ -97,11 +97,11 @@ class BinStackingUI(BaseSampleUITemplate):
         **kwargs: Additional keyword arguments passed to the parent class.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
         self.decision_stack = ""
 
-    def build_extra_frames(self):
+    def build_extra_frames(self) -> None:
         """Builds additional UI frames for task control and diagnostics.
 
         Creates two collapsible frames: Task Control and Diagnostic frames with their respective UI elements.
@@ -135,7 +135,7 @@ class BinStackingUI(BaseSampleUITemplate):
 
                 self.build_diagnostic_ui()
 
-    def on_diagnostics(self, diagnostic, decision_stack):
+    def on_diagnostics(self, diagnostic: object, decision_stack: str) -> None:
         """Handles diagnostic updates from the bin stacking task.
 
         Updates the UI with current bin selection, decision stack, and various diagnostic states including grasp status and attachment information.
@@ -175,7 +175,7 @@ class BinStackingUI(BaseSampleUITemplate):
         """
         return CortexWorld.instance()
 
-    def _on_start_button_event(self):
+    def _on_start_button_event(self) -> None:
         """Handles the start button click event.
 
         Starts the palletizing task asynchronously and disables the start button to prevent multiple starts.
@@ -184,7 +184,7 @@ class BinStackingUI(BaseSampleUITemplate):
         self.task_ui_elements["Start Palletizing"].enabled = False
         return
 
-    def post_reset_button_event(self):
+    def post_reset_button_event(self) -> None:
         """Handles the post-reset button event.
 
         Re-enables the start palletizing button after the scene has been reset.
@@ -192,7 +192,7 @@ class BinStackingUI(BaseSampleUITemplate):
         self.task_ui_elements["Start Palletizing"].enabled = True
         return
 
-    def post_load_button_event(self):
+    def post_load_button_event(self) -> None:
         """Handles the post-load button event.
 
         Re-enables the start palletizing button after the scene has been loaded.
@@ -200,7 +200,7 @@ class BinStackingUI(BaseSampleUITemplate):
         self.task_ui_elements["Start Palletizing"].enabled = True
         return
 
-    def post_clear_button_event(self):
+    def post_clear_button_event(self) -> None:
         """Handles the post-clear button event.
 
         Disables the start palletizing button after the scene has been cleared.
@@ -208,7 +208,7 @@ class BinStackingUI(BaseSampleUITemplate):
         self.task_ui_elements["Start Palletizing"].enabled = False
         return
 
-    def build_task_controls_ui(self):
+    def build_task_controls_ui(self) -> None:
         """Builds the task controls UI elements.
 
         Creates the start palletizing button within a vertical stack layout. The button is initially disabled.
@@ -226,7 +226,7 @@ class BinStackingUI(BaseSampleUITemplate):
             self.task_ui_elements["Start Palletizing"] = btn_builder(**dict)
             self.task_ui_elements["Start Palletizing"].enabled = False
 
-    def build_diagnostic_ui(self):
+    def build_diagnostic_ui(self) -> None:
         """Builds the diagnostic UI elements.
 
         Creates UI components to display decision stack, selected bin information, bin base path, and various boolean states like grasp reached, attachment status, and flip requirement.

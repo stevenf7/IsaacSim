@@ -312,12 +312,13 @@ class CustomXYPlot(XYPlot):
 
             set_y_axis_values(y_min, y_max)
 
-        def build_plot(x_fracs, y_data, color_idx):
+        def build_plot(x_fracs: object, y_data: object, color_idx: int) -> None:
             """Build the frame for a plot
 
             Args:
-                x_fracs (np.array (2,)): Fraction of available space that the plot should cover
-                y_data (np.array): data with which to fill the plot
+                x_fracs: Fraction of available space that the plot should cover.
+                y_data: Data with which to fill the plot.
+                color_idx: Index into the data colors array.
             """
 
             color = self._data_colors[color_idx]

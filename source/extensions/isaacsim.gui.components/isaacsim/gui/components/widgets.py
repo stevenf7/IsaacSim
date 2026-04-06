@@ -35,7 +35,7 @@ class DynamicComboBoxItem(ui.AbstractItem):
         text: The display text for this combo box item.
     """
 
-    def __init__(self, text):
+    def __init__(self, text: str):
         super().__init__()
         self.model = ui.SimpleStringModel(text)
 
@@ -51,7 +51,7 @@ class DynamicComboBoxModel(ui.AbstractItemModel):
         args: List of string values to populate the combo box options.
     """
 
-    def __init__(self, args):
+    def __init__(self, args: list):
         super().__init__()
 
         self._current_index = ui.SimpleIntModel()
@@ -60,7 +60,7 @@ class DynamicComboBoxModel(ui.AbstractItemModel):
         for i in range(len(args)):
             self._items.append(DynamicComboBoxItem(args[i]))
 
-    def get_item_children(self, item):
+    def get_item_children(self, item: object):
         """Returns the list of all combo box items.
 
         Args:
@@ -149,7 +149,7 @@ class SelectPrimWidget:
         )
         self.stage_picker.show(1, on_targets_selected=self._on_target_selected)
 
-    def _on_target_selected(self, paths):
+    def _on_target_selected(self, paths: list):
         """Updates the string field with the selected prim path.
 
         Args:
@@ -188,7 +188,7 @@ class ParamWidget:
         self._field = None
         self._build_ui(field_def)
 
-    def _build_ui(self, field_def):
+    def _build_ui(self, field_def: object):
         """Creates the user interface for the parameter widget.
 
         Builds a horizontal layout with a label, spacer, and input field based on the field definition.

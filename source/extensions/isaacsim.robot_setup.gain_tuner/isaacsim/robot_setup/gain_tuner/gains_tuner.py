@@ -19,7 +19,7 @@
 import asyncio
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Dict, List, Set, Tuple
+from typing import Dict, Generator, List, Set, Tuple
 
 import carb
 import numpy as np
@@ -368,10 +368,11 @@ class GainTuner:
     - Run sinusoidal or step response tests.
     - Compute inertia properties for gain estimation.
     - Record and analyze joint state data.
+
+    Initializes the gain tuner with default values.
     """
 
     def __init__(self):
-        """Initialize the gain tuner with default values."""
         self._timeline = timeline.get_timeline_interface()
         self._test_duration = 5.0
         self.reset()
@@ -411,7 +412,7 @@ class GainTuner:
             self.setup(None)
         self.step = 0
 
-    def setup(self, robot_path: str):
+    def setup(self, robot_path: str) -> None:
         """Configure the gain tuner for a specific robot.
 
         Args:
@@ -767,7 +768,7 @@ class GainTuner:
 
         return (total_mass, accumulated_inertia, False)
 
-    def compute_joints_accumulated_inertia(self):
+    def compute_joints_accumulated_inertia(self) -> None:
         """Compute the effective inertia for each joint about its motion axis.
 
         For revolute joints (rotational spring-damper):
@@ -1149,7 +1150,8 @@ class GainTuner:
     def _gains_test_generator_fn(self):
         """Generator function that runs the gains test sequence.
 
-        Yields control back to the simulation loop after each physics step.
+        Yields:
+            Control back to the simulation loop after each physics step.
         """
         if self._articulation is None:
             return
@@ -1175,7 +1177,7 @@ class GainTuner:
         self._articulation.reset_to_default_state()
         self._finalize_test_data()
 
-    def _run_test_sequence(self, sequence_index: int, step_fn):
+    def _run_test_sequence(self, sequence_index: int, step_fn: callable) -> Generator:
         """Run a single test sequence.
 
         Args:

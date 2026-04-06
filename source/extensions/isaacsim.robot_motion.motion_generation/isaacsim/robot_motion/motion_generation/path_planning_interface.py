@@ -88,7 +88,7 @@ class PathPlanner(WorldInterface):
         """
         pass
 
-    def set_end_effector_target(self, target_translation, target_orientation=None):
+    def set_end_effector_target(self, target_translation: object, target_orientation: object = None):
         """Set end effector target.
 
         Args:

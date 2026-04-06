@@ -30,13 +30,14 @@ except ImportError as e:
 
 
 class IsaacSimViveTracker:
-    def __init__(self):
-        """Initialize the Vive tracker interface and state.
+    """Initialize the Vive tracker interface and state.
 
-        Creates a `pysurvive.SimpleContext` when `pysurvive` is available.
-        When initialization succeeds, `is_connected` is set to True. Device
-        poses are collected in `device_data` keyed by device identifiers.
-        """
+    Creates a `pysurvive.SimpleContext` when `pysurvive` is available.
+    When initialization succeeds, `is_connected` is set to True. Device
+    poses are collected in `device_data` keyed by device identifiers.
+    """
+
+    def __init__(self):
         self.device_data = {}
         self.is_connected = False
 
@@ -52,7 +53,7 @@ class IsaacSimViveTracker:
         else:
             self._ctx = None
 
-    def update(self):
+    def update(self) -> None:
         """Poll the Vive tracking system and update device poses.
 
         Reads updated poses from the `pysurvive` context, converts them to Isaac
@@ -96,9 +97,8 @@ class IsaacSimViveTracker:
     def get_data(self) -> Dict:
         """Return the latest Vive tracker device data.
 
-        Returns a mapping from device identifiers to dicts with:
-        - `position`: `[x, y, z]` in meters
-        - `orientation`: quaternion `[w, x, y, z]`
+        Returns:
+            Mapping from device identifiers to dicts with position and orientation.
         """
         return self.device_data
 

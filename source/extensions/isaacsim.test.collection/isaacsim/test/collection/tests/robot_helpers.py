@@ -21,7 +21,7 @@ import usdrt.Sdf
 from isaacsim.core.experimental.prims import Articulation
 
 
-async def init_robot_sim(art_path: str, graph_path: str = "/ActionGraph"):
+async def init_robot_sim(art_path: str, graph_path: str = "/ActionGraph") -> None:
     """Initialize robot simulation by resetting pose and velocities.
 
     Creates an articulation at the given path, resets its position, orientation,

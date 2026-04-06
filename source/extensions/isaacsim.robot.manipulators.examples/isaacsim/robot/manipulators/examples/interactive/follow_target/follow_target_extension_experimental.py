@@ -84,7 +84,7 @@ class UR10FollowTargetUI(BaseSampleUITemplate):
     IK_METHODS = ["damped-least-squares", "pseudoinverse", "transpose", "singular-value-decomposition"]
     """Available inverse kinematics methods for the UR10 robot arm."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object):
         super().__init__(*args, **kwargs)
         self.task_ui_elements = {}
 
@@ -270,7 +270,7 @@ class UR10FollowTargetUI(BaseSampleUITemplate):
             }
             self.task_ui_elements["Update Status"] = btn_builder(**update_dict)
 
-    def _on_follow_target_button_event(self, val):
+    def _on_follow_target_button_event(self, val: bool) -> None:
         """Handle follow target button toggle event.
 
         Args:
@@ -283,7 +283,7 @@ class UR10FollowTargetUI(BaseSampleUITemplate):
             asyncio.ensure_future(self.sample.stop_following_async())
             self._update_status("Stopped")
 
-    def _on_ik_method_change(self, selection):
+    def _on_ik_method_change(self, selection: object) -> None:
         """Handle IK method selection change.
 
         Args:

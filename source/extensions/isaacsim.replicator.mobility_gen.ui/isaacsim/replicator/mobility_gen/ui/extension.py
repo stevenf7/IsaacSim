@@ -83,7 +83,7 @@ class MobilityGenExtension(omni.ext.IExt):
     - Physics-based simulation with configurable time steps
     """
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str):
         """Initialize the MobilityGen extension.
 
         Sets up keyboard and gamepad drivers, UI windows for occupancy map visualization and teleop controls,

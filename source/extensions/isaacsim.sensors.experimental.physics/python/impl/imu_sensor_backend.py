@@ -90,9 +90,13 @@ class ImuSensorBackend(_PhysicsSensorBase):
     def get_sensor_reading(self, read_gravity: bool = True) -> object:
         """Get the current IMU sensor reading.
 
-        Returns the C++ ImuSensorReading struct directly. Access fields via
-        ``reading.linear_acceleration_x``, ``reading.orientation_w``, etc.
-        An ``orientation`` property returns ``(w, x, y, z)`` as a tuple.
+        Args:
+            read_gravity: Whether to include gravity in the reading.
+
+        Returns:
+            The C++ ImuSensorReading struct directly. Access fields via
+            ``reading.linear_acceleration_x``, ``reading.orientation_w``, etc.
+            An ``orientation`` property returns ``(w, x, y, z)`` as a tuple.
         """
         if not self._sensor_created and not self._ensure_sensor():
             return _get_invalid_imu_reading()

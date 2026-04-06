@@ -117,7 +117,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
         **kwargs: Additional keyword arguments passed to the parent class.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object):
         settings = carb.settings.get_settings()
         self._examples = {}
         super().__init__(
@@ -129,7 +129,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
             **kwargs,
         )
 
-    def register_example(self, **kwargs):
+    def register_example(self, **kwargs: object) -> None:
         """Registers a new example in the browser.
 
         Args:
@@ -234,7 +234,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
                 del self._examples[category]
         self.refresh_browser()
 
-    def refresh_browser(self):
+    def refresh_browser(self) -> None:
         """Refreshes the browser display to reflect current examples."""
         collections = self.get_item_children(None)
         if collections:

@@ -78,7 +78,7 @@ class VisualSphere(SingleGeometryPrim):
         color: Optional[np.ndarray] = None,
         radius: Optional[float] = None,
         visual_material: Optional[VisualMaterial] = None,
-    ):
+    ) -> None:
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Sphere):
@@ -116,7 +116,7 @@ class VisualSphere(SingleGeometryPrim):
         sphereGeom.GetExtentAttr().Set([Gf.Vec3f([-radius, -radius, -radius]), Gf.Vec3f([radius, radius, radius])])
         return
 
-    def set_radius(self, radius: float):
+    def set_radius(self, radius: float) -> None:
         """Set the sphere radius
 
         Args:
@@ -199,7 +199,7 @@ class FixedSphere(VisualSphere):
         radius: Optional[np.ndarray] = None,
         visual_material: Optional[VisualMaterial] = None,
         physics_material: Optional[PhysicsMaterial] = None,
-    ):
+    ) -> None:
         if not is_prim_path_valid(prim_path):
             # set default values if no physics material given
             if physics_material is None:
@@ -295,7 +295,7 @@ class DynamicSphere(SingleRigidPrim, FixedSphere):
         density: Optional[float] = None,
         linear_velocity: Optional[Sequence[float]] = None,
         angular_velocity: Optional[Sequence[float]] = None,
-    ):
+    ) -> None:
         if not is_prim_path_valid(prim_path):
             if mass is None:
                 mass = 0.02

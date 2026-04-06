@@ -48,7 +48,7 @@ class QuadrupedExampleExtension(omni.ext.IExt):
     documentation about policy deployment in Isaac Lab.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the quadruped example extension.
 
         Sets up the UI template with keyboard controls for Boston Dynamics Spot robot movement
@@ -92,7 +92,7 @@ class QuadrupedExampleExtension(omni.ext.IExt):
 
         return
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up the quadruped example extension.
 
         Deregisters the example from the examples browser when the extension shuts down.

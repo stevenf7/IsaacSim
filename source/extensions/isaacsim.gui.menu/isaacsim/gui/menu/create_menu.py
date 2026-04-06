@@ -37,7 +37,7 @@ def create_asset(
     stage_path: str,
     camera_position: Sequence[float] | None = None,
     camera_target: Sequence[float] | None = None,
-):
+) -> None:
     """Create a reference to an Isaac Sim asset in the stage.
 
     Args:
@@ -73,7 +73,7 @@ def create_asset(
 # -----------------------------------------------------------------------------
 # Global create_apriltag function
 # -----------------------------------------------------------------------------
-def create_apriltag(usd_path: str, shader_name: str, stage_path: str, tag_path: str):
+def create_apriltag(usd_path: str, shader_name: str, stage_path: str, tag_path: str) -> None:
     """Create an AprilTag material with a selected tag texture.
 
     Args:

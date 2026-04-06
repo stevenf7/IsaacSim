@@ -80,7 +80,7 @@ def is_urdf_file(path: str) -> bool:
     return ext in [".urdf", ".URDF"]
 
 
-def on_filter_yaml_item(item) -> bool:
+def on_filter_yaml_item(item: object) -> bool:
     """Filter function for YAML file browser items.
 
     Args:
@@ -94,7 +94,7 @@ def on_filter_yaml_item(item) -> bool:
     return is_yaml_file(item.path)
 
 
-def on_filter_urdf_item(item) -> bool:
+def on_filter_urdf_item(item: object) -> bool:
     """Filter function for URDF file browser items.
 
     Args:
@@ -131,7 +131,11 @@ class Extension(omni.ext.IExt):
     """
 
     def on_startup(self, ext_id: str):
-        """Initialize extension and UI elements"""
+        """Initialize extension and UI elements.
+
+        Args:
+            ext_id: The extension identifier.
+        """
 
         # Events
         self._usd_context = omni.usd.get_context()
@@ -276,12 +280,12 @@ class Extension(omni.ext.IExt):
 
         self._task = asyncio.ensure_future(dock_window())
 
-    def _on_selection(self, prim_path):
+    def _on_selection(self, prim_path: str) -> None:
         """Creates an Articulation Object from the selected articulation prim path.
            Updates the UI with the Selected articulation.
 
         Args:
-            prim_path (string): path to selected articulation
+            prim_path: path to selected articulation
         """
         if prim_path == self._prev_art_prim_path:
             return
@@ -367,12 +371,12 @@ class Extension(omni.ext.IExt):
 
         return articulations
 
-    def get_articulation_values(self, articulation):
+    def get_articulation_values(self, articulation: object):
         """Get and store the latest dof_properties from the articulation.
            Update the Properties UI.
 
         Args:
-            articulation (SingleArticulation): Selected Articulation
+            articulation: Selected Articulation
         """
         # Update static dof properties on new selection
         if self.new_selection:
@@ -408,11 +412,11 @@ class Extension(omni.ext.IExt):
         if self.articulation is not None:
             self.articulation.post_reset()
 
-    def _refresh_ui(self, articulation):
+    def _refresh_ui(self, articulation: object):
         """Updates the GUI with a new Articulation's properties.
 
         Args:
-            articulation (SingleArticulation): The articulation to display in the UI.
+            articulation: The articulation to display in the UI.
         """
         # Get the latest articulation values and update the Properties UI
         self.get_articulation_values(articulation)
@@ -432,58 +436,58 @@ class Extension(omni.ext.IExt):
     # Callbacks
     ##################################
 
-    def _on_stage_selection_changed(self, event):
-        """Callback for Stage Selection Changed Event
+    def _on_stage_selection_changed(self, event: object):
+        """Callback for Stage Selection Changed Event.
 
         Args:
-            event (carb.eventdispatcher.Event): Event
+            event: Event
         """
         # On every stage event check if any articulations have been added/removed from the Stage
         self._refresh_selection_combobox()
 
-    def _on_stage_opened(self, event):
-        """Callback for Stage Opened Event
+    def _on_stage_opened(self, event: object):
+        """Callback for Stage Opened Event.
 
         Args:
-            event (carb.eventdispatcher.Event): Event
+            event: Event
         """
         # On every stage event check if any articulations have been added/removed from the Stage
         self._refresh_selection_combobox()
         # stage was opened, cleanup
         self._physics_subscription = None
 
-    def _on_stage_closed(self, event):
-        """Callback for Stage Closed Event
+    def _on_stage_closed(self, event: object):
+        """Callback for Stage Closed Event.
 
         Args:
-            event (carb.eventdispatcher.Event): Event
+            event: Event
         """
         # On every stage event check if any articulations have been added/removed from the Stage
         self._refresh_selection_combobox()
         # stage was closed, cleanup
         self._physics_subscription = None
 
-    def _on_timeline_play(self, event):
-        """Callback for Timeline Played Event
+    def _on_timeline_play(self, event: object):
+        """Callback for Timeline Played Event.
 
         Args:
-            event (carb.eventdispatcher.Event): Event
+            event: Event
         """
         self._refresh_selection_combobox()
         index = self._models["ar_selection_model"].get_item_value_model().as_int
         selected_articulation = self.articulation_list[index]
         self._on_selection(selected_articulation)
 
-    def _on_timeline_stop(self, event):
-        """Callback for Timeline Stopped Event
+    def _on_timeline_stop(self, event: object):
+        """Callback for Timeline Stopped Event.
 
         Args:
-            event (carb.eventdispatcher.Event): Event
+            event: Event
         """
         if self._timeline.is_stopped():
             self._on_selection("None")
 
-    def _on_physics_step(self, step, context):
+    def _on_physics_step(self, step: float, context: object) -> None:
         """Callback for Physics Step.
 
         Args:
@@ -929,7 +933,7 @@ class Extension(omni.ext.IExt):
         """Enables the config file load button when valid robot description file is selected."""
         self._models["load_config_btn"].enabled = True
 
-    def _enable_lula_dropdowns(self):
+    def _enable_lula_dropdowns(self) -> None:
         """Enables the Lula kinematics, trajectory, and RmpFlow UI panels when articulation and
         configuration files are loaded.
         """

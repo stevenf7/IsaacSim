@@ -25,8 +25,12 @@ LIGHTBEAM_ROOT_PATH = "Create/Sensors/LightBeam Sensor"
 class TestPhysxMenuAssets(MenuUITestCase):
     """Test class for verifying PhysX sensor menu functionality."""
 
-    async def _test_physx_lidar_option(self, test_path):
-        """Test a PhysX Lidar menu option."""
+    async def _test_physx_lidar_option(self, test_path: str) -> None:
+        """Test a PhysX Lidar menu option.
+
+        Args:
+            test_path: The menu path to test.
+        """
         await self.menu_click_with_retry(test_path)
         await self.run_timeline_frames(5)
 
@@ -43,8 +47,12 @@ class TestPhysxMenuAssets(MenuUITestCase):
         self.assertGreater(num_prims, 0, "No prims added to stage.")
         self.assertTrue(sensor_passed, f"{test_path} did not pass, missing prim or wrong prim type")
 
-    async def _test_lightbeam_option(self, test_path):
-        """Test a LightBeam Sensor menu option."""
+    async def _test_lightbeam_option(self, test_path: str) -> None:
+        """Test a LightBeam Sensor menu option.
+
+        Args:
+            test_path: The menu path to test.
+        """
         await self.menu_click_with_retry(test_path)
         await self.run_timeline_frames(5)
 

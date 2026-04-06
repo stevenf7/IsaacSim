@@ -887,7 +887,7 @@ class WorldBinding(Generic[TWorldInterface]):
         self._collision_enabled_token: Any = None
         self._initialized = False
 
-    def initialize(self):
+    def initialize(self) -> None:
         """Initialize tracking and populate the planning world from tracked prims.
 
         Raises:
@@ -1026,7 +1026,7 @@ class WorldBinding(Generic[TWorldInterface]):
         self.synchronize_transforms()
         self.synchronize_properties()
 
-    def synchronize_transforms(self):
+    def synchronize_transforms(self) -> None:
         """Synchronize tracked prim transforms into the planning world.
 
         Updates only the world poses of tracked obstacles without checking for property changes.
@@ -1050,7 +1050,7 @@ class WorldBinding(Generic[TWorldInterface]):
         with backend_utils.use_backend("fabric"):
             self._world_interface.update_obstacle_transforms(self._tracked_prims, self._xform.get_world_poses())
 
-    def synchronize_properties(self):
+    def synchronize_properties(self) -> None:
         """Synchronize tracked prim property changes into the planning world.
 
         Uses USDRT change tracking to efficiently detect and update only the properties

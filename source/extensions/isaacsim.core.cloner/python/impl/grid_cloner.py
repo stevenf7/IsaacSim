@@ -28,6 +28,13 @@ class GridCloner(Cloner):
     This class extends :class:`Cloner` to provide automatic grid-based positioning
     of clones, simplifying the creation of environments arranged in a regular grid.
 
+    Args:
+        spacing: Spacing between clones in the grid.
+        num_per_row: Number of clones to place in a row. Defaults to sqrt(num_clones)
+            if set to -1.
+        stage: USD stage where source prim and clones are added to.
+            Defaults to the current stage from the USD context.
+
     Example:
 
     .. code-block:: python
@@ -41,30 +48,19 @@ class GridCloner(Cloner):
         ...     source_prim_path="/World/envs/env_0",
         ...     prim_paths=prim_paths,
         ... )
+
+    .. code-block:: python
+
+        >>> from isaacsim.core.cloner import GridCloner
+        >>>
+        >>> # Create a grid cloner with 2.0 spacing
+        >>> cloner = GridCloner(spacing=2.0)
+        >>>
+        >>> # Create a grid cloner with 3 clones per row
+        >>> cloner = GridCloner(spacing=1.5, num_per_row=3)
     """
 
     def __init__(self, spacing: float, num_per_row: int = -1, stage: Usd.Stage = None):
-        """Initialize the GridCloner instance.
-
-        Args:
-            spacing: Spacing between clones in the grid.
-            num_per_row: Number of clones to place in a row. Defaults to sqrt(num_clones)
-                if set to -1.
-            stage: USD stage where source prim and clones are added to.
-                Defaults to the current stage from the USD context.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> from isaacsim.core.cloner import GridCloner
-            >>>
-            >>> # Create a grid cloner with 2.0 spacing
-            >>> cloner = GridCloner(spacing=2.0)
-            >>>
-            >>> # Create a grid cloner with 3 clones per row
-            >>> cloner = GridCloner(spacing=1.5, num_per_row=3)
-        """
         self._spacing = spacing
         self._num_per_row = num_per_row
 

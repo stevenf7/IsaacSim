@@ -100,7 +100,7 @@ class LoadButton(UIWidgetWrapper):
         world.scene.add(usd_object) # Add the user-loaded usd object to the scene
 
         Args:
-            setup_scene_fn (Callable): A function that will be called when the LoadButton is clicked.
+            setup_scene_fn: A function that will be called when the LoadButton is clicked.
                 the user should use this function to add their assets to the USD stage and to add their assets
                 to the World. This function should take 0 arguments.  The return value will not be used.
                 Defaults to None.
@@ -119,7 +119,7 @@ class LoadButton(UIWidgetWrapper):
         world.scene.add(usd_object) # Add the user-loaded usd object to the scene
 
         Args:
-            setup_scene_fn (Callable): A function that will be called when the LoadButton is clicked.
+            setup_scene_fn: A function that will be called when the LoadButton is clicked.
                 The user should use this function to add their assets to the USD stage and to add their assets
                 to the World. This function should take 0 arguments.  The return value will not be used.
                 Defaults to None.
@@ -131,7 +131,7 @@ class LoadButton(UIWidgetWrapper):
         Set the setup_post_load_fn that will be called when the LoadButton is clicked.
 
         Args:
-            setup_post_load_fn (Callable): A function that will be called when the LoadButton is clicked.
+            setup_post_load_fn: A function that will be called when the LoadButton is clicked.
                 The function is called with the gurantees that the World has been created, the
                 setup_scene_fn() has already been called, all objects that the user added to the World have been properly
                 initialized, and the timeline will be paused at timestep 0.  This function should take 0 arguments.
@@ -139,7 +139,7 @@ class LoadButton(UIWidgetWrapper):
         """
         self.setup_post_load_fn = setup_post_load_fn
 
-    def set_world_settings(self, **kwargs):
+    def set_world_settings(self, **kwargs: object):
         """
         Pressing a Load Button will create a new instance of the isaacsim.core.api.World.
         The default settings will be used unless the user specifies new settings at runtime before the Load Button is clicked.
@@ -149,30 +149,21 @@ class LoadButton(UIWidgetWrapper):
         I.e. physics and render dts will adjust automatically if the simulation is running too fast or slow.
 
         Args:
-            physics_dt (Optional[float], optional): dt between physics steps. Defaults to None.
-            rendering_dt (Optional[float], optional): dt between rendering steps. Note: rendering means
-                rendering a frame of the current application and not
-                only rendering a frame to the viewports/ cameras. So UI
-                elements of Isaac Sim will be refereshed with this dt
-                as well if running non-headless.
-                Defaults to None.
-            stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
-                Defaults to None.
-            physics_prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at,
-                only in the case where no PhysicsScene already defined.
-                Defaults to "/physicsScene".
-            set_defaults (bool, optional): set to True to use the defaults settings
-                [physics_dt = 1.0/ 60.0,
-                stage units in meters = 1 (i.e in meters),
-                rendering_dt = 1.0 / 60.0,
-                gravity = -9.81 m / s
-                ccd_enabled,
-                stabilization_enabled,
-                gpu dynamics turned off,
-                broadphase type is MBP,
-                solver type is TGS]. Defaults to True.
-            backend (str, optional): specifies the backend to be used (numpy or torch). Defaults to numpy.
-            device (Optional[str], optional): specifies the device to be used if running on the gpu with torch backend.
+            **kwargs: Keyword arguments passed to the World constructor. Supported keys include:
+                physics_dt: dt between physics steps. Defaults to None.
+                rendering_dt: dt between rendering steps. Note: rendering means
+                    rendering a frame of the current application and not
+                    only rendering a frame to the viewports/ cameras. So UI
+                    elements of Isaac Sim will be refreshed with this dt
+                    as well if running non-headless. Defaults to None.
+                stage_units_in_meters: The metric units of assets. This will affect gravity value..etc.
+                    Defaults to None.
+                physics_prim_path: specifies the prim path to create a PhysicsScene at,
+                    only in the case where no PhysicsScene already defined.
+                    Defaults to "/physicsScene".
+                set_defaults: set to True to use the defaults settings. Defaults to True.
+                backend: specifies the backend to be used (numpy or torch). Defaults to numpy.
+                device: specifies the device to be used if running on the gpu with torch backend.
         """
         self._world_settings = kwargs
 

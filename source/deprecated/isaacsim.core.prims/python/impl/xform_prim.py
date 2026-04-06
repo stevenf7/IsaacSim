@@ -861,7 +861,7 @@ class XFormPrim(Prim):
         translations: np.ndarray | torch.Tensor | wp.array | None = None,
         orientations: np.ndarray | torch.Tensor | wp.array | None = None,
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
-    ):
+    ) -> None:
         """Set prim poses in the view with respect to the local frame (the prim's parent frame)
 
         .. warning::
@@ -989,7 +989,7 @@ class XFormPrim(Prim):
         self,
         scales: np.ndarray | torch.Tensor | wp.array | None,
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
-    ):
+    ) -> None:
         """Set prim scales in the view with respect to the local frame (the prim's parent frame)
 
         Args:
@@ -1102,7 +1102,7 @@ class XFormPrim(Prim):
             if not xformable_prim.HasWorldXform():
                 xformable_prim.SetWorldXformFromUsd()
 
-    def _reset_fabric_selection(self, dt, context=None):
+    def _reset_fabric_selection(self, dt: float, context: object = None):
         """Reset fabric selection and invalidate cached fabric data arrays.
 
         Args:
@@ -1113,7 +1113,7 @@ class XFormPrim(Prim):
         for data_tensor_name in self._fabric_data_valid.keys():
             self._fabric_data_valid[data_tensor_name] = False
 
-    def _warp2backend(self, data) -> wp.indexedarray | torch.Tensor | np.ndarray:
+    def _warp2backend(self, data: object) -> wp.indexedarray | torch.Tensor | np.ndarray:
         """Convert Warp array data to the current backend format.
 
         Args:
@@ -1133,7 +1133,7 @@ class XFormPrim(Prim):
                 "utils to convert warp arrays to the specified backend doesn't exist or the data passed is not using the backend specified"
             )
 
-    def _backend2warp(self, data, dtype=None) -> wp.array | torch.Tensor | np.ndarray:
+    def _backend2warp(self, data: object, dtype: object = None) -> wp.array | torch.Tensor | np.ndarray:
         """Convert backend-specific data to Warp array format.
 
         Args:
@@ -1219,7 +1219,7 @@ class XFormPrim(Prim):
                     orientations=convert(orientations, device=self._device) if orientations is not None else None,
                 )
 
-    def _on_post_reset(self, event) -> None:
+    def _on_post_reset(self, event: object) -> None:
         """Handles post-reset event by restoring prims to their default states.
 
         Sets world poses to the default positions and orientations for non-articulation link prims.

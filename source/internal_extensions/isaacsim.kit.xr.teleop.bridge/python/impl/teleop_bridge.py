@@ -16,6 +16,8 @@ functions into ``omni.kit.xr.system.openxr`` so that OpenXRSessionHandles
 can be fully constructed for use with IsaacTeleop's DeviceIO.
 """
 
+from collections.abc import Callable
+
 from ..bindings._bridge import acquire_teleop_bridge_interface
 
 # Acquire the interface on import
@@ -90,7 +92,7 @@ def get_instance_proc_addr() -> int:
     return _interface.get_instance_proc_addr()
 
 
-def subscribe_required_extensions(callback):
+def subscribe_required_extensions(callback: Callable[[], list[str]]):
     """Subscribe a callback that can contribute OpenXR required extensions.
 
     The callback should return an iterable of extension strings. The C++ layer

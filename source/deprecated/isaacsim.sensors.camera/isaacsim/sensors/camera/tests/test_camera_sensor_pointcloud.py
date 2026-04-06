@@ -54,7 +54,11 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     async def _create_test_environment(self):
-        """Create test environment with ground plane, cubes, and camera."""
+        """Create test environment with ground plane, cubes, and camera.
+
+        Returns:
+            None.
+        """
         await create_new_stage_async()
 
         # Create a plane and dome light
@@ -95,7 +99,11 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
         return camera, cube_1, cube_2, cube_3
 
     async def _start_data_capture(self, num_warm_up_frames: int = 0):
-        """Start the timeline and optionally wait for valid data to be available."""
+        """Start the timeline and optionally wait for valid data to be available.
+
+        Args:
+            num_warm_up_frames: Number of warm-up frames to render before capturing data.
+        """
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
         timeline.commit()
@@ -104,13 +112,21 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
 
     async def _compare_pointcloud_data_resolution(
         self,
-        camera,
-        resolution=(64, 64),
+        camera: object,
+        resolution: object = (64, 64),
         output_dir: str | None = None,
         save_debug_imgs: bool = True,
         print_stats: bool = False,
     ):
-        """Compare pointcloud data from depth and pointcloud annotators against golden data."""
+        """Compare pointcloud data from depth and pointcloud annotators against golden data.
+
+        Args:
+            camera: The camera instance to capture data from.
+            resolution: Resolution to set for the camera.
+            output_dir: Output directory for saving debug images.
+            save_debug_imgs: Whether to save debug images.
+            print_stats: Whether to print statistics.
+        """
         res_str = f"{resolution[0]}_{resolution[1]}"
         camera.set_resolution(resolution)
         resolution = camera.get_resolution()

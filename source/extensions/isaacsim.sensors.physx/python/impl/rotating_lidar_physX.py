@@ -107,7 +107,7 @@ class RotatingLidarPhysX(BaseSensor):
         self._current_frame["physics_step"] = 0
         return
 
-    def initialize(self, physics_sim_view=None):
+    def initialize(self, physics_sim_view: object = None) -> None:
         """Initialize the rotating lidar sensor with physics simulation callbacks.
 
         Sets up physics step callbacks for data acquisition and event observers for stage
@@ -134,7 +134,7 @@ class RotatingLidarPhysX(BaseSensor):
         )
         return
 
-    def _stage_open_callback_fn(self, event):
+    def _stage_open_callback_fn(self, event: object) -> None:
         """Handle stage open events by cleaning up callbacks.
 
         Args:
@@ -145,7 +145,7 @@ class RotatingLidarPhysX(BaseSensor):
         self._stage_open_callback = None
         return
 
-    def _timeline_stop_callback_fn(self, event):
+    def _timeline_stop_callback_fn(self, event: object) -> None:
         """Handle timeline stop events by resetting time and physics step counters.
 
         Args:
@@ -155,7 +155,7 @@ class RotatingLidarPhysX(BaseSensor):
         self._number_of_physics_steps = 0
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Reset the lidar sensor state after simulation reset.
 
         Resets time and physics step counters to zero.
@@ -165,7 +165,7 @@ class RotatingLidarPhysX(BaseSensor):
         self._number_of_physics_steps = 0
         return
 
-    def add_depth_data_to_frame(self):
+    def add_depth_data_to_frame(self) -> None:
         """Enable depth data collection in the sensor frame.
 
         Adds a 'depth' key to the current frame dictionary for storing depth measurements.
@@ -173,7 +173,7 @@ class RotatingLidarPhysX(BaseSensor):
         self._current_frame["depth"] = None
         return
 
-    def remove_depth_data_from_frame(self):
+    def remove_depth_data_from_frame(self) -> None:
         """Disable depth data collection in the sensor frame.
 
         Removes the 'depth' key from the current frame dictionary.
@@ -181,7 +181,7 @@ class RotatingLidarPhysX(BaseSensor):
         del self._current_frame["depth"]
         return
 
-    def add_linear_depth_data_to_frame(self):
+    def add_linear_depth_data_to_frame(self) -> None:
         """Enable linear depth data collection in the sensor frame.
 
         Adds a 'linear_depth' key to the current frame dictionary for storing linear depth measurements.
@@ -189,7 +189,7 @@ class RotatingLidarPhysX(BaseSensor):
         self._current_frame["linear_depth"] = None
         return
 
-    def remove_linear_depth_data_from_frame(self):
+    def remove_linear_depth_data_from_frame(self) -> None:
         """Disable linear depth data collection in the sensor frame.
 
         Removes the 'linear_depth' key from the current frame dictionary.
@@ -197,7 +197,7 @@ class RotatingLidarPhysX(BaseSensor):
         del self._current_frame["linear_depth"]
         return
 
-    def add_intensity_data_to_frame(self):
+    def add_intensity_data_to_frame(self) -> None:
         """Enable intensity data collection in the sensor frame.
 
         Adds an 'intensity' key to the current frame dictionary for storing intensity measurements.
@@ -205,7 +205,7 @@ class RotatingLidarPhysX(BaseSensor):
         self._current_frame["intensity"] = None
         return
 
-    def remove_intensity_data_from_frame(self):
+    def remove_intensity_data_from_frame(self) -> None:
         """Disable intensity data collection in the sensor frame.
 
         Removes the 'intensity' key from the current frame dictionary.
@@ -213,37 +213,37 @@ class RotatingLidarPhysX(BaseSensor):
         del self._current_frame["intensity"]
         return
 
-    def add_zenith_data_to_frame(self):
+    def add_zenith_data_to_frame(self) -> None:
         """Adds zenith angle data to the current lidar frame for collection during data acquisition."""
         self._current_frame["zenith"] = None
         return
 
-    def remove_zenith_data_from_frame(self):
+    def remove_zenith_data_from_frame(self) -> None:
         """Removes zenith angle data from the current lidar frame to stop collecting this data type."""
         del self._current_frame["zenith"]
         return
 
-    def add_azimuth_data_to_frame(self):
+    def add_azimuth_data_to_frame(self) -> None:
         """Adds azimuth angle data to the current lidar frame for collection during data acquisition."""
         self._current_frame["azimuth"] = None
         return
 
-    def remove_azimuth_data_from_frame(self):
+    def remove_azimuth_data_from_frame(self) -> None:
         """Removes azimuth angle data from the current lidar frame to stop collecting this data type."""
         del self._current_frame["azimuth"]
         return
 
-    def add_point_cloud_data_to_frame(self):
+    def add_point_cloud_data_to_frame(self) -> None:
         """Adds point cloud data to the current lidar frame for collection during data acquisition."""
         self._current_frame["point_cloud"] = None
         return
 
-    def remove_point_cloud_data_from_frame(self):
+    def remove_point_cloud_data_from_frame(self) -> None:
         """Removes point cloud data from the current lidar frame to stop collecting this data type."""
         del self._current_frame["point_cloud"]
         return
 
-    def add_semantics_data_to_frame(self):
+    def add_semantics_data_to_frame(self) -> None:
         """Adds semantic segmentation data to the current lidar frame for collection during data acquisition.
 
         Automatically enables semantics on the lidar sensor if not already enabled.
@@ -253,13 +253,13 @@ class RotatingLidarPhysX(BaseSensor):
         self._current_frame["semantics"] = None
         return
 
-    def remove_semantics_data_from_frame(self):
+    def remove_semantics_data_from_frame(self) -> None:
         """Removes semantic segmentation data from the current lidar frame and disables semantics on the sensor."""
         self.disable_semantics()
         del self._current_frame["semantics"]
         return
 
-    def _data_acquisition_callback(self, step_size: float, context):
+    def _data_acquisition_callback(self, step_size: float, context: object) -> None:
         """Physics callback that updates lidar data each simulation step.
 
         Collects all enabled data types from the lidar sensor interface and updates the current frame with
@@ -323,7 +323,7 @@ class RotatingLidarPhysX(BaseSensor):
         """
         return self._current_frame
 
-    def resume(self):
+    def resume(self) -> None:
         """Resumes lidar data acquisition.
 
         Unpauses the sensor to continue collecting data during physics steps.
@@ -331,7 +331,7 @@ class RotatingLidarPhysX(BaseSensor):
         self._pause = False
         return
 
-    def pause(self):
+    def pause(self) -> None:
         """Pauses lidar data acquisition.
 
         Stops the sensor from collecting new data while keeping it initialized.
@@ -412,7 +412,7 @@ class RotatingLidarPhysX(BaseSensor):
         """
         return self.prim.GetAttribute("rotationRate").Get()
 
-    def set_valid_range(self, value: Tuple[float, float]):
+    def set_valid_range(self, value: Tuple[float, float]) -> None:
         """Sets the valid range of the lidar sensor.
 
         Args:
@@ -458,7 +458,7 @@ class RotatingLidarPhysX(BaseSensor):
         """
         return self.prim.GetAttribute("enableSemantics").Get()
 
-    def enable_visualization(self, high_lod: bool = False, draw_points: bool = True, draw_lines: bool = True):
+    def enable_visualization(self, high_lod: bool = False, draw_points: bool = True, draw_lines: bool = True) -> None:
         """Enables visualization of the lidar sensor data.
 
         Args:
@@ -482,7 +482,7 @@ class RotatingLidarPhysX(BaseSensor):
             self.prim.GetAttribute("drawLines").Set(draw_lines)
         return
 
-    def disable_visualization(self):
+    def disable_visualization(self) -> None:
         """Disables visualization of the lidar sensor data."""
         self.enable_visualization(high_lod=False, draw_points=False, draw_lines=False)
         return

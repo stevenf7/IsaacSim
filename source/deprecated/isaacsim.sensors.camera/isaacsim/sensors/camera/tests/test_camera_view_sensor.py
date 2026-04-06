@@ -113,14 +113,22 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def _start_data_capture(self, num_warm_up_frames: int = 0):
-        """Start the timeline and optionally wait for valid data to be available."""
+        """Start the timeline and optionally wait for valid data to be available.
+
+        Args:
+            num_warm_up_frames: Number of warm-up frames to render before capturing data.
+        """
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
         for _ in range(num_warm_up_frames):
             await omni.kit.app.get_app().next_update_async()
 
     async def _setup_default_camera_view(self):
-        """Set up the default square resolution camera view used by most tests."""
+        """Set up the default square resolution camera view used by most tests.
+
+        Returns:
+            The configured CameraView instance.
+        """
         await self._create_test_environment()
         # Warmup frames
         for _ in range(5):
