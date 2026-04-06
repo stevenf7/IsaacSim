@@ -1553,6 +1553,8 @@ publish-extensions:
     script:
       - ./repo.sh build --fetch-only -r
       - ./repo.sh publish_exts -a --from-package
+    needs:
+      - !reference [.publish-extensions-common, needs]
     rules:
       - !reference [.publish-extensions-common, rules]
       - !reference [.rules-version-changed, rules]
