@@ -13,33 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#define CARB_EXPORTS
-
-#include <carb/Framework.h>
-#include <carb/PluginUtils.h>
-
 #include <{{python_module_path}}/IExampleNodes.h>
-#include <omni/graph/core/ogn/Registration.h>
 
-const struct carb::PluginImplDesc g_kPluginDesc = { "{{extension_name}}.plugin",
-                                                    "{{title}} OmniGraph Plugin", "NVIDIA",
-                                                    carb::PluginHotReload::eEnabled, "dev" };
+#include <carb/BindingsPythonUtils.h>
 
-CARB_PLUGIN_IMPL(g_kPluginDesc, {{ extension_name.replace(".", "::") }}::IExampleNodes)
+CARB_BINDINGS("{{extension_name}}.python")
 
-DECLARE_OGN_NODES()
-
-void fillInterface({{ extension_name.replace(".", "::") }}::IExampleNodes& iface)
+PYBIND11_MODULE(_{{ python_module_path | replace("/", "_") }}, m)
 {
-    iface = {};
-}
+    using namespace {{ extension_name.replace(".", "::") }};
 
-CARB_EXPORT void carbOnPluginStartup()
-{
-    INITIALIZE_OGN_NODES()
-}
+    m.doc() = "Python bindings for {{extension_name}}";
 
-CARB_EXPORT void carbOnPluginShutdown()
-{
-    RELEASE_OGN_NODES()
+    carb::defineInterfaceClass<IExampleNodes>(
+        m, "IExampleNodes", "acquire_example_nodes_interface", "release_example_nodes_interface");
 }

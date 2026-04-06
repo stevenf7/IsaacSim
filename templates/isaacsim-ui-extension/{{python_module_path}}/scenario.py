@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 import isaacsim.core.experimental.utils.stage as stage_utils
 from isaacsim.core.simulation_manager import IsaacEvents, SimulationManager
 from isaacsim.examples.base.base_sample_experimental import BaseSample
@@ -26,11 +28,11 @@ class ExampleScenario(BaseSample):
     Add your simulation assets and physics logic here.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._physics_callback_id = None
 
-    def setup_scene(self):
+    def setup_scene(self) -> None:
         """Set up the scene with a ground plane and any initial assets.
 
         This is called when the user clicks Load World. Add USD references,
@@ -51,7 +53,7 @@ class ExampleScenario(BaseSample):
             self.on_physics_step, event=IsaacEvents.POST_PHYSICS_STEP
         )
 
-    def on_physics_step(self, step_size, context):
+    def on_physics_step(self, step_size: float, context: object) -> None:
         """Called on every physics step while the simulation is running.
 
         Args:
@@ -78,7 +80,7 @@ class ExampleScenario(BaseSample):
             SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
-    def physics_cleanup(self):
+    def physics_cleanup(self) -> None:
         """Called on extension shutdown or hot-reload."""
         if self._physics_callback_id is not None:
             SimulationManager.deregister_callback(self._physics_callback_id)

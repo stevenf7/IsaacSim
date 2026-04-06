@@ -15,11 +15,17 @@ writeTarget.platform = true
 [dependencies]
 "omni.kit.uiapp" = {}
 
-[[native.plugin]]
-recursive = false
-
 [[python.module]]
 name = "{{extension_name}}"
+
+[[native.plugin]]
+path = "bin/*.plugin"
+recursive = false
+
+[[test]]
+name = "startup"
+
+[[test]]
 
 [documentation]
 pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

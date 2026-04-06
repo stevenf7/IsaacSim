@@ -49,6 +49,10 @@ add_files("bindings", "bindings/*.*")
 add_files("python", "python/*.py")
 add_files("python/tests", "python/tests/*.py")
 
+includedirs {
+    "%{root}/source/extensions/{{extension_name}}/include",
+}
+
 -- Add the standard dependencies all OGN projects have
 repo_build.prebuild_copy {
     { "python/__init__.py", ogn.python_target_path },

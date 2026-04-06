@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 import os
 
 import omni.ext
@@ -29,7 +31,7 @@ class Extension(omni.ext.IExt):
     a UI with Load/Reset world controls and custom action buttons.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         self.example_name = "{{title}}"
         self.category = "{{category}}"
 
@@ -50,6 +52,6 @@ class Extension(omni.ext.IExt):
             category=self.category,
         )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         self._ui_handle.on_shutdown()
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)

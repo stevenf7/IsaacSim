@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
+import carb
 import omni.ui as ui
 from isaacsim.examples.base.base_sample_extension_experimental import BaseSampleUITemplate
 from isaacsim.gui.components.ui_utils import btn_builder, get_style
@@ -25,10 +28,10 @@ class ExampleUI(BaseSampleUITemplate):
     Add your custom controls in build_extra_frames().
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
 
-    def build_extra_frames(self):
+    def build_extra_frames(self) -> None:
         """Build custom UI controls below the World Controls frame.
 
         This is where you add buttons, sliders, and other UI elements
@@ -58,21 +61,21 @@ class ExampleUI(BaseSampleUITemplate):
                     )
                     self._task_buttons["Run"].enabled = False
 
-    def _on_run_action(self):
+    def _on_run_action(self) -> None:
         """Handle the Run button click. Add your custom logic here."""
-        print("[{{extension_name}}] Run action triggered")
+        carb.log_info("[{{extension_name}}] Run action triggered")
 
-    def post_load_button_event(self):
+    def post_load_button_event(self) -> None:
         """Called after Load World completes. Enable custom controls here."""
         for btn in self._task_buttons.values():
             btn.enabled = True
 
-    def post_reset_button_event(self):
+    def post_reset_button_event(self) -> None:
         """Called after Reset completes. Re-enable custom controls here."""
         for btn in self._task_buttons.values():
             btn.enabled = True
 
-    def post_clear_button_event(self):
+    def post_clear_button_event(self) -> None:
         """Called when the timeline stops. Disable custom controls here."""
         for btn in self._task_buttons.values():
             btn.enabled = False
