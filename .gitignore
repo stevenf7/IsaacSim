@@ -221,3 +221,6 @@ tools/docker/.env
 
 # Template tool metadata (auto-generated, machine-local)
 source/rendered_template_metadata.json
+
+# Local repo tool overrides
+user.repo.toml
