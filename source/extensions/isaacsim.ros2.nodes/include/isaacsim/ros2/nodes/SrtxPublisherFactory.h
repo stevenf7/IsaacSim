@@ -46,9 +46,9 @@ using SrtxFrameCallbackFn = void (*)(void* userData,
 /// and omni.replicator.srtx (consumer).
 struct SrtxFrameCallbackDescriptor
 {
-    SrtxFrameCallbackFn fn;
-    void* userData;
-    void (*destructor)(void*);
+    SrtxFrameCallbackFn fn; ///< Function pointer called per frame.
+    void* userData; ///< Opaque pointer forwarded to @c fn.
+    void (*destructor)(void*); ///< Cleanup function for @c userData (may be null).
 };
 
 /// Create an image publisher callback descriptor.

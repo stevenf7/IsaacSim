@@ -21,7 +21,7 @@ generated automatically by the CI pipeline and published to GitLab Pages.
 
 ### Pipeline flow
 
-```
+```text
 test-linux-x86_64-isaaclab-integration
   └─ produces _isaaclab/tests/full_report.xml (JUnit XML)
 

@@ -54,6 +54,7 @@ pipeline and the Kit user experience.
     :alt: Extension relationship.
 
 |
+
 * **Agent Planner Examples** window helps users load bundled demo stages such as
   ``simple`` and ``warehouse``.
 
@@ -63,6 +64,7 @@ pipeline and the Kit user experience.
     :alt: Extension relationship.
 
 |
+
 * Connects scene and cache data to the planner runtime so actor and object context, node catalogs,
   blackboard data, and model configuration files are available to the planner.
 * Coordinates the end-to-end planner workflow inside Isaac Sim.

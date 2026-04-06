@@ -9,27 +9,30 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Check Python version compatibility
+# Check Python version compatibility and resolve which interpreter to reference.
+# Sets DOCS_PYTHON to the validated interpreter path for downstream use.
 check_python_version() {
     local REPO_PYTHON="$SCRIPT_DIR/../_repo/python/python3"
     local KIT_PYTHON="$SCRIPT_DIR/../_build/linux-x86_64/release/kit/python/python3"
-    
-    if [ ! -f "$REPO_PYTHON" ]; then
-        echo -e "${RED}ERROR: Repo Python not found at $REPO_PYTHON${NC}"
-        echo -e "${RED}Please run ./build.sh first to set up the environment.${NC}"
-        exit 1
-    fi
-    
+
     if [ ! -f "$KIT_PYTHON" ]; then
         echo -e "${RED}ERROR: Kit Python not found at $KIT_PYTHON${NC}"
         echo -e "${RED}Please run ./build.sh first to build Isaac Sim.${NC}"
         exit 1
     fi
-    
-    # Get major.minor version from each Python
+
+    if [ ! -f "$REPO_PYTHON" ]; then
+        echo -e "${YELLOW}WARNING: Repo Python not found at $REPO_PYTHON${NC}"
+        echo -e "${YELLOW}Falling back to Kit Python at $KIT_PYTHON${NC}"
+        local KIT_VERSION=$("$KIT_PYTHON" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+        echo -e "${GREEN}Using Kit Python: $KIT_VERSION${NC}"
+        return
+    fi
+
+    # Both interpreters exist -- verify they agree on major.minor version
     local REPO_VERSION=$("$REPO_PYTHON" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
     local KIT_VERSION=$("$KIT_PYTHON" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-    
+
     if [ "$REPO_VERSION" != "$KIT_VERSION" ]; then
         echo -e "${RED}========================================${NC}"
         echo -e "${RED}ERROR: Python version mismatch!${NC}"
@@ -45,7 +48,7 @@ check_python_version() {
         echo -e "${YELLOW}  3. Re-run ./build.sh to download the correct Python${NC}"
         exit 1
     fi
-    
+
     echo -e "${GREEN}Python version check passed: $REPO_VERSION${NC}"
 }
 

@@ -57,35 +57,68 @@ struct IXformDataView
 {
     virtual ~IXformDataView() = default;
 
-    // Transform getters (native device pointers)
+    /// @name Transform getters (native device pointers)
+    /// @{
+
+    /// Get world positions (float[3] per prim, device memory).
     virtual const float* getWorldPositions(int* outCount) = 0;
+    /// Get world orientations (quaternion float[4] per prim, device memory).
     virtual const float* getWorldOrientations(int* outCount) = 0;
+    /// Get local translations (float[3] per prim, device memory).
     virtual const float* getLocalTranslations(int* outCount) = 0;
+    /// Get local orientations (quaternion float[4] per prim, device memory).
     virtual const float* getLocalOrientations(int* outCount) = 0;
+    /// Get local scales (float[3] per prim, device memory).
     virtual const float* getLocalScales(int* outCount) = 0;
+    /// @}
 
-    // Host variants (always CPU pointers, copy from GPU if needed)
+    /// @name Host-memory transform getters (always CPU pointers, copied from GPU if needed)
+    /// @{
+
+    /// Get world positions (float[3] per prim, host memory).
     virtual const float* getWorldPositionsHost(int* outCount) = 0;
+    /// Get world orientations (quaternion float[4] per prim, host memory).
     virtual const float* getWorldOrientationsHost(int* outCount) = 0;
+    /// Get local translations (float[3] per prim, host memory).
     virtual const float* getLocalTranslationsHost(int* outCount) = 0;
+    /// Get local orientations (quaternion float[4] per prim, host memory).
     virtual const float* getLocalOrientationsHost(int* outCount) = 0;
+    /// Get local scales (float[3] per prim, host memory).
     virtual const float* getLocalScalesHost(int* outCount) = 0;
+    /// @}
 
-    // Combined pose getters — invoke the shared fill callback only once instead of twice.
-    // Prefer these over calling getWorldPositions + getWorldOrientations separately.
+    /// @name Combined pose getters
+    /// @{
+
+    /// Get combined world positions and orientations (device memory).
+    /// Prefer this over calling getWorldPositions + getWorldOrientations separately
+    /// as it invokes the shared fill callback only once instead of twice.
     virtual Poses getWorldPoses() = 0;
+    /// Get combined world positions and orientations (host memory).
+    /// Prefer this over calling getWorldPositionsHost + getWorldOrientationsHost separately
+    /// as it invokes the shared fill callback only once instead of twice.
     virtual Poses getWorldPosesHost() = 0;
+    /// @}
 
-    // Batch pre-fetch all fields for this view
+    /// Batch pre-fetch all fields for this view
     virtual bool update() = 0;
 
-    // Buffer / callback management (used by Python during setup)
+    /// @name Buffer and callback management (used by Python during setup)
+    /// @{
+
+    /// Allocate a named float buffer of the given element count.
     virtual bool allocateBufferFloat(const char* fieldName, size_t count) = 0;
+    /// Allocate a named uint8 buffer of the given element count.
     virtual bool allocateBufferUint8(const char* fieldName, size_t count) = 0;
+    /// Get the raw pointer to a named buffer.
     virtual uintptr_t getBufferPtr(const char* fieldName) = 0;
+    /// Get the byte size of a named buffer.
     virtual size_t getBufferSize(const char* fieldName) = 0;
+    /// Get the CUDA device ordinal of the data buffers (-1 for CPU).
     virtual int getBufferDevice() = 0;
+    /// Register a callback invoked when the named field is updated.
     virtual void registerFieldCallback(const char* fieldName, std::function<void()> callback) = 0;
+    /// @}
 
     /// Resolve frame name for any prim in the stage: checks isaac:nameOverride, falls back to prim name.
     /// outName: caller buffer of maxLen bytes. Returns false if prim not found or stage unavailable.
@@ -103,11 +136,14 @@ struct IXformDataView
  */
 struct IRigidBodyDataView : public IXformDataView
 {
+    /// Get linear velocities (float[3] per body, device memory).
     virtual const float* getLinearVelocities(int* outCount) = 0;
+    /// Get angular velocities (float[3] per body, device memory).
     virtual const float* getAngularVelocities(int* outCount) = 0;
 
-    // Host variants
+    /// Get linear velocities (float[3] per body, host memory).
     virtual const float* getLinearVelocitiesHost(int* outCount) = 0;
+    /// Get angular velocities (float[3] per body, host memory).
     virtual const float* getAngularVelocitiesHost(int* outCount) = 0;
 };
 
@@ -128,19 +164,30 @@ struct LinkInfo
  */
 struct IArticulationDataView : public IXformDataView
 {
+    /// Get DOF positions (device memory).
     virtual const float* getDofPositions(int* outCount) = 0;
+    /// Get DOF velocities (device memory).
     virtual const float* getDofVelocities(int* outCount) = 0;
+    /// Get DOF efforts / forces (device memory).
     virtual const float* getDofEfforts(int* outCount) = 0;
+    /// Get root link transforms (float[7] per articulation, device memory).
     virtual const float* getRootTransforms(int* outCount) = 0;
+    /// Get root link velocities (float[6] per articulation, device memory).
     virtual const float* getRootVelocities(int* outCount) = 0;
+    /// Get DOF types (0 = rotation, 1 = translation, device memory).
     virtual const uint8_t* getDofTypes(int* outCount) = 0;
 
-    // Host variants
+    /// Get DOF positions (host memory).
     virtual const float* getDofPositionsHost(int* outCount) = 0;
+    /// Get DOF velocities (host memory).
     virtual const float* getDofVelocitiesHost(int* outCount) = 0;
+    /// Get DOF efforts / forces (host memory).
     virtual const float* getDofEffortsHost(int* outCount) = 0;
+    /// Get root link transforms (float[7] per articulation, host memory).
     virtual const float* getRootTransformsHost(int* outCount) = 0;
+    /// Get root link velocities (float[6] per articulation, host memory).
     virtual const float* getRootVelocitiesHost(int* outCount) = 0;
+    /// Get DOF types (0 = rotation, 1 = translation, host memory).
     virtual const uint8_t* getDofTypesHost(int* outCount) = 0;
 
     /**

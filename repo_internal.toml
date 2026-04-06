@@ -120,15 +120,22 @@ name = "Isaac Sim API"
 version_selector_enabled = false
 output_path_template = "isaac-sim/latest${dash_build}/py"
 
+# Use Kit Python so that native .cpython-312 extension modules are loadable.
+# The default packman Python (3.10) cannot see .cpython-312-*.so files at all.
+python_path = "$root/_build/$platform/$config/kit/python/python3"
+
 library_paths = [
   "$root/_build/$platform/$config/kit",
+  "$root/_build/$platform/$config/kit/python/lib",
   "$root/_build/$platform/$config/extscache/omni.usd*/bin",
+  "$root/_build/$platform/$config/extscache/omni.usd.core*/bin",
+  "$root/_build/$platform/$config/extscache/omni.usd.schema*/bin",
   "$root/_build/$platform/$config/extscache/omni.usd.schema*/lib",
 ]
 python_paths = [
   "${root}/_build/${platform}/${config}/exts/*",
-  "${root}/_build/${platform}/${config}/extsbuild/*",
   "${root}/_build/${platform}/${config}/extsInternal/*",
+  "${root}/_build/${platform}/${config}/extsbuild/*",
   "${root}/_build/${platform}/${config}/extsDeprecated/*",
   "${root}/_build/${platform}/${config}/exts/isaacsim.asset.importer.urdf/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.lula/pip_prebundle",
@@ -270,12 +277,15 @@ sphinx_exclude_patterns = [
   ".vscode",
   ".nvidia-omniverse",
   "_build",
+  ".claude",
   ".cursor",
+  "CLAUDE.md",
   "CODING.md",
   "_container_temp/extscache",
   "_container_temp/kit",
-  # Deprecated extension docs are represented by thin-wrapper stubs in source/extensions/
-  "source/deprecated",
+  "templates",
+  # Internal docs not included in public API toctree
+  "docs/internal",
   # Internal extension docs not included in public API toctree
   "source/internal_extensions/isaacsim.app.compatibility_check",
   "source/internal_extensions/isaacsim.util.clash_detection",
@@ -403,6 +413,7 @@ doxygen_predefined = [
   "double4=struct double4",
   "cudaStream_t=void*",
   "ISAACSIM_EXPORT=",
+  "ISAACSIM_ROS2_NODES_API=",
 ]
 
 

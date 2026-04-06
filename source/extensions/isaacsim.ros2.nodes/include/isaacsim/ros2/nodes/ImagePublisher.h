@@ -73,6 +73,7 @@ public:
                            int cudaDeviceIndex,
                            carb::Format format = carb::Format::eUnknown);
 
+    /// @copydoc PublisherBase::reset()
     void reset() override;
 
 protected:

@@ -15,7 +15,7 @@ This guide explains the context-file format used by Isaac Agent Planner example 
   ``metadata`` dictionary inside each context entry.
 
 Base Context Entry Format
-------------------------
+-------------------------
 
 Planner context entries are built on two base models:
 
