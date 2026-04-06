@@ -344,15 +344,18 @@ class Articulation(XFormPrim):
         """
         return SimulationManager.get_physics_sim_view() is not None and self._physics_view is not None
 
-    def _convert_joint_names_to_indices(self, joint_names: object):
-        """Convert joint names to joint indices.
+    def _convert_joint_names_to_indices(self, joint_names: object, dof_indices: bool = True):
+        """Convert joint names to joint indices (or DOF indices if ``dof_indices`` is True).
 
         Args:
             joint_names: List of joint names to convert to indices.
+            dof_indices: True to convert to DOF indices, False to convert to joint indices.
 
         Returns:
-            List of joint indices corresponding to the provided joint names.
+            List of joint (or DOF) indices corresponding to the provided joint names.
         """
+        if dof_indices:
+            return [self._dof_indices[joint_name] for joint_name in joint_names]
         return [self._joint_names_to_idx[joint_name] for joint_name in joint_names]
 
     def get_body_index(self, body_name: str) -> int:

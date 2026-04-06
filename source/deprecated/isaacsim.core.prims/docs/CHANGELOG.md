@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.10.0] - 2026-04-06
+### Changed
+- Allow to specify joint or DOF indices and set the last one as the default option when accessing data using the `joint_names` parameter
+
 ## [0.9.3] - 2026-04-03
 ### Fixed
 - Fix XFormPrim default state not being re-converted when backend changes after initialization (e.g. automatic numpy-to-torch switch for GPU pipelines)
