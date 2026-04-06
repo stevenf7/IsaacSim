@@ -352,21 +352,17 @@ osec:sonarqube:
     rules:
       # Publish release docs for release/x.y branches on push pipelines
       - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+$/'
-        when: always
         variables:
           PAGES_PATH_PREFIX: "$CI_COMMIT_REF_NAME"
       # Publish release docs for release/x.y branches on scheduled docs builds
       - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+$/ && $RUN_DOCS_BUILD == "true"'
-        when: always
         variables:
           PAGES_PATH_PREFIX: "$CI_COMMIT_REF_NAME"
       # Publish root docs from develop on push pipelines
       - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "develop"
-        when: always
         variables:
           PAGES_PATH_PREFIX: "develop"
       - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE =~ /^(nightly|post_merge)$/ && $CI_COMMIT_REF_NAME =~ /^kit-integration\//
-        when: always
         variables:
           PAGES_PATH_PREFIX: "$CI_COMMIT_REF_NAME"
 
@@ -374,10 +370,8 @@ osec:sonarqube:
     rules:
       # allow docs build on push pipelines
       - if: $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_REF_PROTECTED == "true" || $CI_COMMIT_BRANCH =~ $OFFICIAL_BRANCH_REGEX)
-        when: always
       # allow schedule pipeline if RUN_DOCS_BUILD is set to "true"
       - if: $CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_BUILD == "true"
-        when: always
       - when: never
 
 .rules-build-docs-mr:
@@ -478,7 +472,6 @@ check-python-packages:
       - .ipp_lnx_x86_64_cpu_small
     rules:
       - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE =~ /^(nightly|post_merge)$/ && $CI_COMMIT_REF_NAME =~ /^kit-integration\//
-        when: always
       - !reference [.check-common, rules]
     script:
       - ./repo.sh validate_python_packages --gitlab
@@ -924,10 +917,9 @@ test-linux-x86_64-omniperf-benchmarks-1-gpu:
       - if: $RUN_BUMP_VERSION == "true"
         when: never
       - !reference [.disable_on_downstream_of_mr, rules]
-      - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^kit-integration\// || $CI_COMMIT_BRANCH =~ /^release\//
-        when: on_success
+      - if: $CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"
+      - if: $CI_PIPELINE_SOURCE == "pipeline" && ( $CI_COMMIT_BRANCH =~ /^kit-integration\// || $CI_COMMIT_BRANCH =~ /^release\// )
       - !reference [.rules-run-omniperf-mr, rules]
-      - when: never
     stage: test
     timeout: 3 hour
     interruptible: true
@@ -971,10 +963,9 @@ omniperf-result-handler:
       - if: $RUN_BUMP_VERSION == "true"
         when: never
       - !reference [.disable_on_downstream_of_mr, rules]
-      - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH =~ /^kit-integration\// || $CI_COMMIT_BRANCH =~ /^release\//
-        when: on_success
+      - if: $CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"
+      - if: $CI_PIPELINE_SOURCE == "pipeline" && ( $CI_COMMIT_BRANCH =~ /^kit-integration\// || $CI_COMMIT_BRANCH =~ /^release\// )
       - !reference [.rules-run-omniperf-mr, rules]
-      - when: never
     allow_failure: true
     variables:
       OMNIPERF_RESULT_HANDLER_TYPE: "isaac-sim"
@@ -1142,7 +1133,6 @@ get-isaaclab-historical-data:
         when: never
       # Allow explicitly in IsaacLab-triggered pipelines before the downstream-of-MR block fires.
       - if: $CI_PIPELINE_SOURCE == "pipeline"
-        when: on_success
       - !reference [.disable_on_downstream_of_mr, rules]
       - !reference [.test-common, rules]
     artifacts:
@@ -2127,7 +2117,6 @@ check-python-packages-dependencies-linux-x86_64:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
       when: never
     - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE =~ /^(nightly|post_merge)$/ && $CI_COMMIT_REF_NAME =~ /^kit-integration\//
-      when: always
     # TEMPORARY : REMOVE LATER
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - !reference [.check-common, rules]
@@ -2147,7 +2136,6 @@ check-python-packages-dependencies-linux-aarch64:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
       when: never
     - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE =~ /^(nightly|post_merge)$/ && $CI_COMMIT_REF_NAME =~ /^kit-integration\//
-      when: always
     - !reference [.check-common, rules]
   script:
     - ./repo.sh validate_python_packages --gitlab --validate
@@ -2164,7 +2152,6 @@ check-python-packages-dependencies-windows-x86_64:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
       when: never
     - if: $CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE =~ /^(nightly|post_merge)$/ && $CI_COMMIT_REF_NAME =~ /^kit-integration\//
-      when: always
     - !reference [.check-common, rules]
   script:
     # install Python 3.12 for --validate
