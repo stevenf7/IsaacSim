@@ -39,7 +39,7 @@ class Buffer:
         tags: List of string tags for categorizing and filtering the buffer.
     """
 
-    def __init__(self, value=None, tags: List[str] | None = None):
+    def __init__(self, value: object = None, tags: List[str] | None = None):
         self.value = value
         if tags is None:
             tags = []
@@ -53,7 +53,7 @@ class Buffer:
         """
         return self.value
 
-    def set_value(self, value):
+    def set_value(self, value: object) -> None:
         """Set the buffer value.
 
         Args:
@@ -375,7 +375,7 @@ class Module:
         for child in self.children().values():
             child.update_state()
 
-    def load_state_dict(self, state_dict):
+    def load_state_dict(self, state_dict: dict) -> None:
         """Load a state dictionary.
 
         This method updates all state buffers by reading the state dictionary.

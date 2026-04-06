@@ -184,13 +184,13 @@ def get_initial_collider_pairs(stage: Usd.Stage) -> typing.Set[typing.Tuple[str,
     5. Restores original physics settings
 
     Args:
-        stage (Usd.Stage): The USD stage containing the physics scene to analyze.
+        stage: The USD stage containing the physics scene to analyze.
 
     Returns:
-        typing.Set[typing.Tuple[str, str]]: A set of tuples, where each tuple contains
-            the paths of two colliders that are in contact. The paths in each tuple are
-            sorted alphabetically to ensure consistent ordering regardless of which collider
-            initiated the contact.
+        A set of tuples, where each tuple contains the paths of two colliders
+            that are in contact. The paths in each tuple are sorted alphabetically
+            to ensure consistent ordering regardless of which collider initiated
+            the contact.
 
     Note:
         This function temporarily modifies physics settings and runs a simulation step.

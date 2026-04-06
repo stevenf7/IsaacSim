@@ -101,7 +101,7 @@ class World(SimulationContext):
         set_defaults: bool = True,
         backend: str = "numpy",
         device: Optional[str] = None,
-    ):
+    ) -> None:
         SimulationContext.__init__(
             self,
             physics_dt=physics_dt,
@@ -127,7 +127,7 @@ class World(SimulationContext):
     """
 
     @classmethod
-    def clear_instance(cls):
+    def clear_instance(cls) -> None:
         """Delete the world object, if it was instantiated before, and destroy any subscribed callback
 
         Example:
@@ -165,7 +165,7 @@ class World(SimulationContext):
     Operations - Tasks management.
     """
 
-    def add_task(self, task: BaseTask):
+    def add_task(self, task: BaseTask) -> None:
         """Add a task to the task registry
 
         .. note::
@@ -347,7 +347,7 @@ class World(SimulationContext):
     Operations.
     """
 
-    def initialize_physics(self):
+    def initialize_physics(self) -> None:
         """Initialize the physics simulation view and each added object to the Scene
 
         Example:
@@ -360,7 +360,7 @@ class World(SimulationContext):
         self._scene._finalize(self.physics_sim_view)
         return
 
-    def reset(self, soft: bool = False):
+    def reset(self, soft: bool = False) -> None:
         """Reset the stage to its initial state and each object included in the Scene to its default state
             as specified by the ``set_default_state`` and ``__init__`` methods
 
@@ -404,7 +404,7 @@ class World(SimulationContext):
         for task in self._current_tasks.values():
             task.post_reset()
 
-    async def reset_async_set_up_scene(self, soft: bool = False):
+    async def reset_async_set_up_scene(self, soft: bool = False) -> None:
         """Reset the stage to its initial state and each object included in the Scene to its default state
             as specified by the ``set_default_state`` and ``__init__`` methods
 
@@ -437,7 +437,7 @@ class World(SimulationContext):
         for task in self._current_tasks.values():
             task.set_up_scene(self.scene)
 
-    async def reset_async_no_set_up_scene(self, soft: bool = False):
+    async def reset_async_no_set_up_scene(self, soft: bool = False) -> None:
         """Reset the stage to its initial state and each object included in the Scene to its default state
             as specified by the ``set_default_state`` and ``__init__`` methods
 
@@ -479,7 +479,7 @@ class World(SimulationContext):
             task.post_reset()
         return
 
-    async def reset_async(self, soft: bool = False):
+    async def reset_async(self, soft: bool = False) -> None:
         """Reset the stage to its initial state and each object included in the Scene to its default state
             as specified by the ``set_default_state`` and ``__init__`` methods
 
@@ -515,7 +515,7 @@ class World(SimulationContext):
         await self.reset_async_no_set_up_scene(soft=soft)
         return
 
-    def step(self, render: bool = True, step_sim: bool = True, update_fabric: bool = False):
+    def step(self, render: bool = True, step_sim: bool = True, update_fabric: bool = False) -> None:
         """Step the physics simulation while rendering or without.
 
         .. note::
@@ -560,7 +560,7 @@ class World(SimulationContext):
             )
         return
 
-    def step_async(self, step_size: Optional[float] = None):
+    def step_async(self, step_size: Optional[float] = None) -> None:
         """Call all functions that should be called pre stepping the physics
 
         .. note::
@@ -596,7 +596,7 @@ class World(SimulationContext):
             )
         return
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear the current stage leaving the PhysicsScene and /World
 
         Example:

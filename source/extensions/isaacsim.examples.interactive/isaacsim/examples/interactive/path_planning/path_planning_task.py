@@ -59,7 +59,7 @@ class PathPlanningTask(BaseTask):
         target_position: Optional[np.ndarray] = None,
         target_orientation: Optional[np.ndarray] = None,
         offset: Optional[np.ndarray] = None,
-    ):
+    ) -> None:
 
         BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
@@ -74,7 +74,7 @@ class PathPlanningTask(BaseTask):
             self._target_position = np.array([0.65, 0.3, 0.4]) / get_stage_units()
         return
 
-    def set_up_scene(self, scene: Scene):
+    def set_up_scene(self, scene: Scene) -> None:
         """Set up the scene with target and robot.
 
         Args:
@@ -110,7 +110,7 @@ class PathPlanningTask(BaseTask):
         target_name: Optional[str] = None,
         target_position: Optional[np.ndarray] = None,
         target_orientation: Optional[np.ndarray] = None,
-    ):
+    ) -> None:
         """Set task parameters including target pose.
 
         Args:
@@ -204,7 +204,7 @@ class PathPlanningTask(BaseTask):
         else:
             return False
 
-    def pre_step(self, time_step_index: int, simulation_time: float):
+    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
         """Called before each physics step to update target visual.
 
         Args:
@@ -220,7 +220,7 @@ class PathPlanningTask(BaseTask):
 
         return
 
-    def add_obstacle(self, position: np.ndarray = None, orientation=None):
+    def add_obstacle(self, position: np.ndarray = None, orientation: np.ndarray = None):
         """Add an obstacle wall to the scene.
 
         Args:
@@ -253,7 +253,7 @@ class PathPlanningTask(BaseTask):
         self._obstacle_walls[cube.name] = cube
         return cube
 
-    def remove_obstacle(self, name: Optional[str] = None):
+    def remove_obstacle(self, name: Optional[str] = None) -> None:
         """Remove an obstacle from the scene.
 
         Args:
@@ -296,7 +296,7 @@ class PathPlanningTask(BaseTask):
         else:
             return False
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Remove all obstacles from the scene."""
         obstacles_to_delete = list(self._obstacle_walls.keys())
         for obstacle_to_delete in obstacles_to_delete:
@@ -346,7 +346,7 @@ class FrankaPathPlanningTask(PathPlanningTask):
         offset: Optional[np.ndarray] = None,
         franka_prim_path: Optional[str] = None,
         franka_robot_name: Optional[str] = None,
-    ):
+    ) -> None:
         PathPlanningTask.__init__(
             self,
             name=name,

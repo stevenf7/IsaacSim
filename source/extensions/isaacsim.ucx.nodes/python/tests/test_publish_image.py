@@ -38,8 +38,16 @@ class TestUCXPublishImage(UCXTestCase):
         for _ in range(10):
             await omni.kit.app.get_app().next_update_async()
 
-    async def receive_image_message(self, tag=10, timeout_frames=1000):
-        """Receive and unpack an image message"""
+    async def receive_image_message(self, tag: int = 10, timeout_frames: int = 1000):
+        """Receive and unpack an image message.
+
+        Args:
+            tag: UCX tag to receive on.
+            timeout_frames: Maximum number of frames to wait.
+
+        Returns:
+            Tuple of unpacked image message data.
+        """
         # Allocate buffer for image (640x480 RGB = ~1MB to be safe)
         max_buffer_size = 1024 * 1024
         buffer = np.empty(max_buffer_size, dtype=np.uint8)

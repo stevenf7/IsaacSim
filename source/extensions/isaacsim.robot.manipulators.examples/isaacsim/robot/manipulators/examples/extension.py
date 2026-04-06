@@ -24,7 +24,7 @@ class Extension(omni.ext.IExt):
     interactions that can be used as reference implementations or starting points for robotics applications.
     """
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension starts up.
 
         Args:

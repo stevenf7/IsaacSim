@@ -520,7 +520,7 @@ class LulaKinematicsSolver(KinematicsSolver):
 
         return np.array(c_space_jerk_limits)
 
-    def _lula_orientation_tol_to_rad_tol(self, tol):
+    def _lula_orientation_tol_to_rad_tol(self, tol: float):
         """Convert from lula IK orientation tolerance to radian magnitude tolerance.
         This function is the inverse of _rad_tol_to_lula_orientation_tol.
 
@@ -535,7 +535,7 @@ class LulaKinematicsSolver(KinematicsSolver):
 
         return np.arccos(1 - tol**2 / 2)
 
-    def _rad_tol_to_lula_orientation_tol(self, tol):
+    def _rad_tol_to_lula_orientation_tol(self, tol: float):
         """Convert from radian magnitude tolerance to lula IK orientation tolerance.
         Orientation tolerance in Lula is defined as the maximum l2-norm between rotation matrix columns
         paired by index. For example, rotating pi rad about the z axis maps to a norm of 2.0 when

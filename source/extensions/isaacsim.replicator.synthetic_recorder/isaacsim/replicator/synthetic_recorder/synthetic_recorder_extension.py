@@ -36,7 +36,7 @@ class SyntheticRecorderExtension(omni.ext.IExt, MenuHelperExtensionFull):
     MENU_GROUP = "Tools/Replicator"
     """The menu group path where the extension appears in the application menu."""
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the Synthetic Data Recorder extension is starting up.
 
         Adds the Synthetic Data Recorder window to the Tools/Replicator menu group.

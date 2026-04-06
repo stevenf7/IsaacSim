@@ -169,7 +169,7 @@ class Extension(omni.ext.IExt):
             curr_prim = None
         return curr_prim
 
-    def _create_lidar(self, sensor_name, sensor_config):
+    def _create_lidar(self, sensor_name: str, sensor_config: str) -> None:
         """Creates an RTX Lidar sensor at the selected location.
 
         Generates a unique path based on the sensor name and executes the IsaacSensorCreateRtxLidar

@@ -27,12 +27,12 @@ from isaacsim.core.utils.types import DataFrame
 class DataLogger:
     """This class takes care of collecting data as well as reading already saved data in order to replay it for instance."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._pause = True
         self._data_frames = []
         self._data_frame_logging_func = None
 
-    def add_data(self, data: dict, current_time_step: float, current_time: float):
+    def add_data(self, data: dict, current_time_step: float, current_time: float) -> None:
         """Adds data to the log
 
         Args:
@@ -51,12 +51,12 @@ class DataLogger:
         """
         return len(self._data_frames)
 
-    def pause(self):
+    def pause(self) -> None:
         """Pauses data collection."""
         self._pause = True
         return
 
-    def start(self):
+    def start(self) -> None:
         """Resumes or starts data collection."""
         self._pause = False
         return
@@ -69,7 +69,7 @@ class DataLogger:
         """
         return not self._pause
 
-    def reset(self):
+    def reset(self) -> None:
         """Clears the data in the logger."""
         self._pause = True
         self._data_frames = []
@@ -86,7 +86,7 @@ class DataLogger:
         """
         return self._data_frames[data_frame_index]
 
-    def add_data_frame_logging_func(self, func: Callable[[List[BaseTask], Scene], Dict]):
+    def add_data_frame_logging_func(self, func: Callable[[List[BaseTask], Scene], Dict]) -> None:
         """Adds a data collection function to be called at every step when the logger is started.
 
         Args:
@@ -101,7 +101,7 @@ class DataLogger:
         self._data_frame_logging_func = func
         return
 
-    def save(self, log_path: str):
+    def save(self, log_path: str) -> None:
         """Saves the current data in the logger to a json file
 
         Args:
@@ -113,7 +113,7 @@ class DataLogger:
             json.dump(data, outfile)
         return
 
-    def load(self, log_path: str):
+    def load(self, log_path: str) -> None:
         """Loads data from a json file to read back a previous saved data or to resume recording data from another time step.
 
         Args:

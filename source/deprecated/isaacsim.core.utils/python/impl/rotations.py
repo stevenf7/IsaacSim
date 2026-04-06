@@ -30,10 +30,10 @@ def rot_matrix_to_quat(mat: np.ndarray) -> np.ndarray:
     """Convert rotation matrix to Quaternion.
 
     Args:
-        mat (np.ndarray): A 3x3 rotation matrix.
+        mat: A 3x3 rotation matrix.
 
     Returns:
-        np.ndarray: quaternion (w, x, y, z).
+        quaternion (w, x, y, z).
     """
     if mat.shape == (3, 3):
         tmp = np.eye(4)
@@ -66,10 +66,10 @@ def quat_to_rot_matrix(quat: np.ndarray) -> np.ndarray:
     """Convert input quaternion to rotation matrix.
 
     Args:
-        quat (np.ndarray): Input quaternion (w, x, y, z).
+        quat: Input quaternion (w, x, y, z).
 
     Returns:
-        np.ndarray: A 3x3 rotation matrix.
+        A 3x3 rotation matrix.
     """
     q = np.array(quat, dtype=np.float64, copy=True)
     nq = np.dot(q, q)
@@ -91,15 +91,15 @@ def matrix_to_euler_angles(mat: np.ndarray, degrees: bool = False, extrinsic: bo
     """Convert rotation matrix to Euler XYZ extrinsic or intrinsic angles.
 
     Args:
-        mat (np.ndarray): A 3x3 rotation matrix.
-        degrees (bool, optional): Whether returned angles should be in degrees.
-        extrinsic (bool, optional): True if the rotation matrix follows the extrinsic matrix
+        mat: A 3x3 rotation matrix.
+        degrees: Whether returned angles should be in degrees.
+        extrinsic: True if the rotation matrix follows the extrinsic matrix
                    convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
                    the intrinsic matrix conventions (equivalent to XYZ ordering).
                    Defaults to True.
 
     Returns:
-        np.ndarray: Euler XYZ angles (intrinsic form) if extrinsic is False and Euler XYZ angles (extrinsic form) if extrinsic is True.
+        Euler XYZ angles (intrinsic form) if extrinsic is False and Euler XYZ angles (extrinsic form) if extrinsic is True.
     """
     if extrinsic:
         if mat[2, 0] > _POLE_LIMIT:
@@ -149,15 +149,15 @@ def euler_to_rot_matrix(euler_angles: np.ndarray, degrees: bool = False, extrins
     """Convert Euler XYZ or ZYX angles to rotation matrix.
 
     Args:
-        euler_angles (np.ndarray): Euler angles.
-        degrees (bool, optional): Whether passed angles are in degrees.
-        extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
+        euler_angles: Euler angles.
+        degrees: Whether passed angles are in degrees.
+        extrinsic: True if the euler angles follows the extrinsic angles
                    convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
                    the intrinsic angles conventions (equivalent to XYZ ordering).
                    Defaults to True.
 
     Returns:
-        np.ndarray:  A 3x3 rotation matrix in its extrinsic or intrinsic form depends on the extrinsic argument.
+        A 3x3 rotation matrix in its extrinsic or intrinsic form depends on the extrinsic argument.
     """
     if extrinsic:
         yaw, pitch, roll = euler_angles
@@ -195,16 +195,16 @@ def quat_to_euler_angles(quat: np.ndarray, degrees: bool = False, extrinsic: boo
     """Convert input quaternion to Euler XYZ or ZYX angles.
 
     Args:
-        quat (np.ndarray): Input quaternion (w, x, y, z).
-        degrees (bool, optional): Whether returned angles should be in degrees. Defaults to False.
-        extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
+        quat: Input quaternion (w, x, y, z).
+        degrees: Whether returned angles should be in degrees. Defaults to False.
+        extrinsic: True if the euler angles follows the extrinsic angles
                    convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
                    the intrinsic angles conventions (equivalent to XYZ ordering).
                    Defaults to True.
 
 
     Returns:
-        np.ndarray: Euler XYZ angles (intrinsic form) if extrinsic is False and Euler XYZ angles (extrinsic form) if extrinsic is True.
+        Euler XYZ angles (intrinsic form) if extrinsic is False and Euler XYZ angles (extrinsic form) if extrinsic is True.
     """
     return matrix_to_euler_angles(quat_to_rot_matrix(quat), degrees=degrees, extrinsic=extrinsic)
 
@@ -213,15 +213,15 @@ def euler_angles_to_quat(euler_angles: np.ndarray, degrees: bool = False, extrin
     """Convert Euler angles to quaternion.
 
     Args:
-        euler_angles (np.ndarray):  Euler XYZ angles.
-        degrees (bool, optional): Whether input angles are in degrees. Defaults to False.
-        extrinsic (bool, optional): True if the euler angles follows the extrinsic angles
+        euler_angles: Euler XYZ angles.
+        degrees: Whether input angles are in degrees. Defaults to False.
+        extrinsic: True if the euler angles follows the extrinsic angles
                    convention (equivalent to ZYX ordering but returned in the reverse) and False if it follows
                    the intrinsic angles conventions (equivalent to XYZ ordering).
                    Defaults to True.
 
     Returns:
-        np.ndarray: quaternion (w, x, y, z).
+        quaternion (w, x, y, z).
     """
     mat = np.array(euler_to_rot_matrix(euler_angles, degrees=degrees, extrinsic=extrinsic))
     return rot_matrix_to_quat(mat)
@@ -264,10 +264,10 @@ def gf_quat_to_np_array(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quatern
     """Converts a pxr Quaternion type to a numpy array following [w, x, y, z] convention.
 
     Args:
-        orientation (typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion]): Input quaternion object.
+        orientation: Input quaternion object.
 
     Returns:
-        np.ndarray: A (4,) quaternion array in (w, x, y, z).
+        A (4,) quaternion array in (w, x, y, z).
     """
     quat = np.zeros(4)
     quat[1:] = orientation.GetImaginary()
@@ -279,9 +279,9 @@ def gf_rotation_to_np_array(orientation: Gf.Rotation) -> np.ndarray:
     """Converts a pxr Rotation type to a numpy array following [w, x, y, z] convention.
 
     Args:
-        orientation (Gf.Rotation): Pxr rotation object.
+        orientation: Pxr rotation object.
 
     Returns:
-        np.ndarray: A (4,) quaternion array in (w, x, y, z).
+        A (4,) quaternion array in (w, x, y, z).
     """
     return gf_quat_to_np_array(orientation.GetQuat())

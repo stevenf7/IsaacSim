@@ -21,11 +21,13 @@ ancestor transforms, specifically checking that no parent prims have non-identit
 scaling that would cause issues with world-space operations.
 """
 
+from __future__ import annotations
+
 import isaacsim.core.experimental.utils.prim as prim_utils
 import numpy as np
 
 
-def _prim_scaling_is_valid(prim) -> bool:
+def _prim_scaling_is_valid(prim: Usd.Prim) -> bool:
     """Check if a prim has valid (identity) scaling.
 
     Validates that the prim has identity local scaling [1,1,1] and, if present,

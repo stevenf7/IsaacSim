@@ -29,12 +29,14 @@ torch = import_module("torch")
 
 
 class Go2Example(BaseSample):
-    def __init__(self) -> None:
-        """Initialize Go2 example.
+    """Go2 robot locomotion example with keyboard control.
 
-        The physics engine is determined by the currently active engine in SimulationManager.
-        Users can switch engines using the Physics Engine menu in the viewport before loading.
-        """
+    The physics engine is determined by the currently active engine in SimulationManager.
+    Users can switch engines using the Physics Engine menu in the viewport before loading.
+    """
+
+    def __init__(self) -> None:
+
         super().__init__()
 
         # Configure simulation settings matching Isaac Lab training
@@ -168,8 +170,13 @@ class Go2Example(BaseSample):
         self.go2 = None
         self._physics_ready = False
 
-    def on_physics_step(self, dt, context) -> None:
-        """Physics step callback - initialize on first step, then run policy at decimated rate."""
+    def on_physics_step(self, dt: float, context: object) -> None:
+        """Physics step callback - initialize on first step, then run policy at decimated rate.
+
+        Args:
+            dt: Time delta for the physics step.
+            context: Physics step context information.
+        """
         if not self.go2:
             return
 
@@ -184,8 +191,17 @@ class Go2Example(BaseSample):
             self.go2.initialize()
             self.go2.post_reset()
 
-    def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:
-        """Handle keyboard input for robot control."""
+    def _sub_keyboard_event(self, event: object, *args: object, **kwargs: object) -> bool:
+        """Handle keyboard input for robot control.
+
+        Args:
+            event: Keyboard event data.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            bool: True to indicate event was handled.
+        """
         if event.type == carb.input.KeyboardEventType.KEY_PRESS:
             if event.input.name in self._input_keyboard_mapping:
                 self._base_command += torch.tensor(

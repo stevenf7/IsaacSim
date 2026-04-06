@@ -32,7 +32,61 @@ torch = import_module("torch")
 
 
 class SingleDeformablePrim(_SinglePrimWrapper):
-    """Deformable primitive object provides functionalities to create and control deformable objects."""
+    """Deformable primitive object provides functionalities to create and control deformable objects.
+
+    Creates a deformable body at prim_path given the deformable parameters.
+
+    Note that although this class provide methods for retrieving the rest points and element indices of the underlying mesh, using the constructor of the class is the only way to set the rest points and element indices of the underlying mesh. This is to ensure the compatibility of the relevant input parameters and to avoid corrupting the mesh.
+
+    Note also that this class does not provide methods to change USD attributes related to meshing, because once those are used for constructing the mesh, changing the parameters at runtime does not have any effect. Using the constructor of the class is the only way to set desired values for such parameters.
+
+    Args:
+        prim_path: The absolute path that the prim is supposed to be registered in.
+        deformable_material: The deformable material to apply to the prim.
+        name: Name given to the prim, this can be different than the prim path.
+        position: The position of the center of the deformable.
+        orientation: The initial orientation of the deformable, assuming deformable is flat.
+        scale: The scale of the deformable.
+        visible: True if the deformable is supposed to be visible, False otherwise.
+        vertex_velocity_damping: Velocity damping parameter controlling how much after every time step the nodal
+            velocity is reduced.
+        sleep_damping: Damping value that damps the motion of bodies that move slow enough to be candidates for
+            sleeping (see sleep_threshold).
+        sleep_threshold: Threshold that defines the maximal magnitude of the linear motion a soft body can move in
+            one second such that it can go to sleep in the next frame.
+        settling_threshold: Threshold that defines the maximal magnitude of the linear motion a fem body can move
+            in one second before it becomes a candidate for sleeping.
+        self_collision: Enables the self collision for the deformable body based on the rest position distances.
+        self_collision_filter_distance: Penetration value that needs to get exceeded before contacts for self
+            collision are generated. Will only have an effect if self collisions are enabled based on the rest
+            position distances.
+        solver_position_iteration_count: Number of the solver's positional iteration counts.
+        kinematic_enabled: Enables kinematic body.
+        simulation_rest_points: List of vertices of the simulation tetrahedral mesh at rest. If a simulation mesh
+            is provided, the collision mesh needs to be provided too. If no simulation mesh is provided it will be
+            computed implicitly based on simulation_hexahedral_resolution.
+        simulation_indices: List of indices of the simulation tetrahedral mesh. It is mandatory to provide this
+            list if simulation_rest_points is specified as well.
+        simulation_hexahedral_resolution: The parameter controlling the resolution of the soft body simulation mesh.
+        collision_rest_points: List of vertices of the collision tetrahedral mesh at rest. If a simulation mesh is
+            provided, the collision mesh needs to be provided too.
+        collision_indices: List of indices of the simulation tetrahedral mesh. It is mandatory to provide this
+            list if collision_rest_points is specified as well.
+        collision_simplification: Flag indicating if simplification should be applied to the mesh before creating
+            a soft body out of it. This is ignored if simulation mesh has been provided.
+        collision_simplification_remeshing: Flag indicating if the simplification should be based on remeshing.
+            This is ignored if collision_simplification is False.
+        collision_simplification_remeshing_resolution: The resolution used for remeshing. A value of 0 indicates
+            that a heuristic is used to determine the resolution. Ignored if collision_simplification_remeshing is
+            False.
+        collision_simplification_target_triangle_count: The target triangle count used for the simplification.
+            A value of 0 indicates that a heuristic based on the simulation_hexahedral_resolution is to determine
+            the target count. This is ignored if collision_simplification equals False.
+        collision_simplification_force_conforming: Flag indicating that the tetrahedralizer used to generate the
+            collision mesh should produce tetrahedra that conform to the triangle mesh. If False the implementation
+            chooses the tetrahedralizer used.
+        embedding: Embedding information mapping collision points to the containing simulation tetrahedra.
+    """
 
     def __init__(
         self,
@@ -63,61 +117,6 @@ class SingleDeformablePrim(_SinglePrimWrapper):
         collision_simplification_force_conforming: Optional[bool] = False,
         embedding: Optional[Sequence[int]] = None,
     ):
-        """Creates a deformable body at prim_path given the deformable parameters.
-
-        Note that although this class provide methods for retrieving the rest points and element indices of the underlying mesh, using the constructor of the class is the only way to set the rest points and element indices of the underlying mesh. This is to ensure the compatibility of the relevant input parameters and to avoid corrupting the mesh.
-
-        Note also that this class does not provide methods to change USD attributes related to meshing, because once those are used for constructing the mesh, changing the parameters at runtime does not have any effect. Using the constructor of the class is the only way to set desired values for such parameters.
-
-        TODO: indicated the range and dimensions of the input parameters
-
-        Args:
-            prim_path: The absolute path that the prim is supposed to be registered in.
-            deformable_material: The deformable material to apply to the prim.
-            name: Name given to the prim, this can be different than the prim path.
-            position: The position of the center of the deformable.
-            orientation: The initial orientation of the deformable, assuming deformable is flat.
-            scale: The scale of the deformable.
-            visible: True if the deformable is supposed to be visible, False otherwise.
-            vertex_velocity_damping: Velocity damping parameter controlling how much after every time step the nodal
-                velocity is reduced.
-            sleep_damping: Damping value that damps the motion of bodies that move slow enough to be candidates for
-                sleeping (see sleep_threshold).
-            sleep_threshold: Threshold that defines the maximal magnitude of the linear motion a soft body can move in
-                one second such that it can go to sleep in the next frame.
-            settling_threshold: Threshold that defines the maximal magnitude of the linear motion a fem body can move
-                in one second before it becomes a candidate for sleeping.
-            self_collision: Enables the self collision for the deformable body based on the rest position distances.
-            self_collision_filter_distance: Penetration value that needs to get exceeded before contacts for self
-                collision are generated. Will only have an effect if self collisions are enabled based on the rest
-                position distances.
-            solver_position_iteration_count: Number of the solver's positional iteration counts.
-            kinematic_enabled: Enables kinematic body.
-            simulation_rest_points: List of vertices of the simulation tetrahedral mesh at rest. If a simulation mesh
-                is provided, the collision mesh needs to be provided too. If no simulation mesh is provided it will be
-                computed implicitly based on simulation_hexahedral_resolution.
-            simulation_indices: List of indices of the simulation tetrahedral mesh. It is mandatory to provide this
-                list if simulation_rest_points is specified as well.
-            simulation_hexahedral_resolution: The parameter controlling the resolution of the soft body simulation mesh.
-            collision_rest_points: List of vertices of the collision tetrahedral mesh at rest. If a simulation mesh is
-                provided, the collision mesh needs to be provided too.
-            collision_indices: List of indices of the simulation tetrahedral mesh. It is mandatory to provide this
-                list if collision_rest_points is specified as well.
-            collision_simplification: Flag indicating if simplification should be applied to the mesh before creating
-                a soft body out of it. This is ignored if simulation mesh has been provided.
-            collision_simplification_remeshing: Flag indicating if the simplification should be based on remeshing.
-                This is ignored if collision_simplification is False.
-            collision_simplification_remeshing_resolution: The resolution used for remeshing. A value of 0 indicates
-                that a heuristic is used to determine the resolution. Ignored if collision_simplification_remeshing is
-                False.
-            collision_simplification_target_triangle_count: The target triangle count used for the simplification.
-                A value of 0 indicates that a heuristic based on the simulation_hexahedral_resolution is to determine
-                the target count. This is ignored if collision_simplification equals False.
-            collision_simplification_force_conforming: Flag indicating that the tetrahedralizer used to generate the
-                collision mesh should produce tetrahedra that conform to the triangle mesh. If False the implementation
-                chooses the tetrahedralizer used.
-            embedding: Embedding information mapping collision points to the containing simulation tetrahedra.
-        """
         self._stage = get_current_stage()
         self._prim = self._stage.GetPrimAtPath(prim_path)
         self._mesh = UsdGeom.Mesh.Get(self._stage, prim_path)

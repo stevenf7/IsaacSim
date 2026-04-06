@@ -42,7 +42,7 @@ class ReplayFollowTargetExtension(omni.ext.IExt):
     activated.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initializes the Replay Follow Target extension.
 
         Sets up the example configuration and registers it with the browser instance to make it available
@@ -74,7 +74,7 @@ class ReplayFollowTargetExtension(omni.ext.IExt):
 
         return
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up the Replay Follow Target extension.
 
         Deregisters the example from the browser instance when the extension is shut down.
@@ -104,10 +104,10 @@ class ReplayFollowTargetUI(BaseSampleUITemplate):
         **kwargs: Additional keyword arguments passed to the parent class.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
 
-    def build_extra_frames(self):
+    def build_extra_frames(self) -> None:
         """Builds the additional UI frames for the replay follow target interface.
 
         Creates a collapsable frame containing task control elements including data logging UI components.
@@ -128,7 +128,7 @@ class ReplayFollowTargetUI(BaseSampleUITemplate):
             ):
                 self.build_data_logging_ui()
 
-    def _on_replay_trajectory_button_event(self):
+    def _on_replay_trajectory_button_event(self) -> None:
         """Handles the replay trajectory button click event.
 
         Starts asynchronous replay of trajectory data from the specified file and disables both replay buttons during execution.
@@ -140,7 +140,7 @@ class ReplayFollowTargetUI(BaseSampleUITemplate):
         self.task_ui_elements["Replay Scene"].enabled = False
         return
 
-    def _on_replay_scene_button_event(self):
+    def _on_replay_scene_button_event(self) -> None:
         """Handles the replay scene button click event.
 
         Starts asynchronous replay of scene data from the specified file and disables both replay buttons during execution.
@@ -152,7 +152,7 @@ class ReplayFollowTargetUI(BaseSampleUITemplate):
         self.task_ui_elements["Replay Scene"].enabled = False
         return
 
-    def post_reset_button_event(self):
+    def post_reset_button_event(self) -> None:
         """Handles post-reset button event actions.
 
         Re-enables both replay trajectory and replay scene buttons after a reset operation.
@@ -161,7 +161,7 @@ class ReplayFollowTargetUI(BaseSampleUITemplate):
         self.task_ui_elements["Replay Scene"].enabled = True
         return
 
-    def post_load_button_event(self):
+    def post_load_button_event(self) -> None:
         """Handles post-load button event actions.
 
         Re-enables both replay trajectory and replay scene buttons after a load operation.
@@ -170,7 +170,7 @@ class ReplayFollowTargetUI(BaseSampleUITemplate):
         self.task_ui_elements["Replay Scene"].enabled = True
         return
 
-    def post_clear_button_event(self):
+    def post_clear_button_event(self) -> None:
         """Handles post-clear button event actions.
 
         Disables both replay trajectory and replay scene buttons after a clear operation.
@@ -179,7 +179,7 @@ class ReplayFollowTargetUI(BaseSampleUITemplate):
         self.task_ui_elements["Replay Scene"].enabled = False
         return
 
-    def build_data_logging_ui(self):
+    def build_data_logging_ui(self) -> None:
         """Builds the data logging user interface components.
 
         Creates UI elements including a data file input field and replay buttons for trajectory and scene replay functionality. Both replay buttons are initially disabled.

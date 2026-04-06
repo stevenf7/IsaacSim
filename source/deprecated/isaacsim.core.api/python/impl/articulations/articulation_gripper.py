@@ -38,7 +38,7 @@ class ArticulationGripper(object):
         gripper_dof_names: list,
         gripper_open_position: Optional[np.ndarray] = None,
         gripper_closed_position: Optional[np.ndarray] = None,
-    ):
+    ) -> None:
         self._articulation = None
         self._grippers_dof_names = gripper_dof_names
         self._grippers_dof_indices = [None] * len(self._grippers_dof_names)
@@ -74,7 +74,7 @@ class ArticulationGripper(object):
         """
         return self._grippers_dof_indices
 
-    def initialize(self, root_prim_path: str, articulation_controller: ArticulationController):
+    def initialize(self, root_prim_path: str, articulation_controller: ArticulationController) -> None:
         """Initialize the gripper with an articulation.
 
         Args:
@@ -98,7 +98,7 @@ class ArticulationGripper(object):
         self._articulation_controller = articulation_controller
         return
 
-    def set_positions(self, positions: np.ndarray):
+    def set_positions(self, positions: np.ndarray) -> None:
         """Set the gripper joint positions.
 
         Args:
@@ -139,7 +139,7 @@ class ArticulationGripper(object):
         # return gripper_velocities
         return self._articulation.get_joint_velocities(self._grippers_dof_indices)
 
-    def set_velocities(self, velocities: np.ndarray):
+    def set_velocities(self, velocities: np.ndarray) -> None:
         """Set the gripper joint velocities.
 
         Args:
@@ -158,7 +158,7 @@ class ArticulationGripper(object):
         )
         return
 
-    def apply_action(self, action: ArticulationAction):
+    def apply_action(self, action: ArticulationAction) -> None:
         """Apply an articulation action to the gripper.
 
         Args:

@@ -34,9 +34,32 @@ torch = import_module("torch")
 
 class ParticleMaterialView:
     """The view class to deal with particle material prims.
+
     Provides high level functions to deal with particle material (1 or more particle materials)
     as well as its attributes/ properties. This object wraps all matching materials found at the regex provided at the prim_paths_expr.
     This object wraps all matching materials Prims found at the regex provided at the prim_paths_expr.
+
+    Args:
+        prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
+        name: Shortname to be used as a key by Scene class.
+        frictions: The friction coefficient tensor, shape is (N, ).
+        particle_friction_scales: The coefficient that scales friction for
+            solid particle-particle interactions, shape is (N, ).
+        dampings: The global velocity damping tensor, shape is (N, ).
+        viscosities: The viscosity tensor of fluid particles, shape is (N, ).
+        vorticity_confinements: The vorticity confinement tensor for fluid particles, shape is (N, ).
+        surface_tensions: The surface tension tensor, shape is (N, ).
+        cohesions: The cohesion tensor for interaction between fluid particles, shape is (N, ).
+        adhesions: The adhesion tensor for interaction between particles (solid or fluid),
+            and rigid or deformable objects, shape is (N, ).
+        particle_adhesion_scales: The coefficient tensor that scales adhesion for solid
+            particle-particle iterations, shape is (N, ).
+        adhesion_offset_scales: The offset scale tensor defines at which adhesion ceases
+            to take effect, shape is (N, ).
+        gravity_scales: The gravitational acceleration scaling tensor. It can be used
+            to approximate lighter-than-air inflatables, shape is (N, ).
+        lifts: The lift coefficient tensor for cloth and inflatable particle objects, shape is (N, ).
+        drags: The drag coefficient tensor for cloth and inflatable particle objects, shape is (N, ).
     """
 
     def __init__(
@@ -56,30 +79,7 @@ class ParticleMaterialView:
         gravity_scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
         lifts: Optional[Union[np.ndarray, torch.Tensor]] = None,
         drags: Optional[Union[np.ndarray, torch.Tensor]] = None,
-    ):
-        """
-        Args:
-            prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
-            name: Shortname to be used as a key by Scene class.
-            frictions: The friction coefficient tensor, shape is (N, ).
-            particle_friction_scales: The coefficient that scales friction for
-                solid particle-particle interactions, shape is (N, ).
-            dampings: The global velocity damping tensor, shape is (N, ).
-            viscosities: The viscosity tensor of fluid particles, shape is (N, ).
-            vorticity_confinements: The vorticity confinement tensor for fluid particles, shape is (N, ).
-            surface_tensions: The surface tension tensor, shape is (N, ).
-            cohesions: The cohesion tensor for interaction between fluid particles, shape is (N, ).
-            adhesions: The adhesion tensor for interaction between particles (solid or fluid),
-                and rigid or deformable objects, shape is (N, ).
-            particle_adhesion_scales: The coefficient tensor that scales adhesion for solid
-                particle-particle iterations, shape is (N, ).
-            adhesion_offset_scales: The offset scale tensor defines at which adhesion ceases
-                to take effect, shape is (N, ).
-            gravity_scales: The gravitational acceleration scaling tensor. It can be used
-                to approximate lighter-than-air inflatables, shape is (N, ).
-            lifts: The lift coefficient tensor for cloth and inflatable particle objects, shape is (N, ).
-            drags: The drag coefficient tensor for cloth and inflatable particle objects, shape is (N, ).
-        """
+    ) -> None:
         self._name = name
         self._physics_view = None
         self._prim_paths = find_matching_prim_paths(prim_paths_expr)
@@ -158,7 +158,7 @@ class ParticleMaterialView:
         """
         return self._name
 
-    def _apply_material_api(self, index):
+    def _apply_material_api(self, index: int) -> None:
         """Applies the PhysX PBD material API to the prim at the specified index.
 
         Args:
@@ -197,11 +197,11 @@ class ParticleMaterialView:
             result = result and is_prim_path_valid(self._prim_paths[index.tolist()])
         return result
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Resets the particles to their initial states."""
         return
 
-    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None):
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
         """Create a physics simulation view if not passed and creates a rigid body view in physX.
 
         Args:
@@ -223,7 +223,7 @@ class ParticleMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the friction for the material prims indicated by the indices.
 
         Args:
@@ -288,7 +288,7 @@ class ParticleMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the dampings for the material prims indicated by the indices.
 
         Args:
@@ -352,7 +352,7 @@ class ParticleMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the gravity scale for the material prims indicated by the indices.
 
         Args:
@@ -414,7 +414,7 @@ class ParticleMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the lifts for the material prims indicated by the indices.
 
         Args:
@@ -476,7 +476,7 @@ class ParticleMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the drags for the material prims indicated by the indices.
 
         Args:
@@ -538,7 +538,7 @@ class ParticleMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the particle viscosity for the material prims indicated by the indices.
 
         Args:
@@ -585,7 +585,7 @@ class ParticleMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the particle cohesion for the material prims indicated by the indices.
 
         Args:
@@ -633,7 +633,7 @@ class ParticleMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the particle adhesion for the material prims indicated by the indices.
 
         Args:
@@ -682,7 +682,7 @@ class ParticleMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the particle adhesion for the material prims indicated by the indices.
 
         Args:
@@ -731,7 +731,7 @@ class ParticleMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the adhesion offset scale for the material prims indicated by the indices.
 
         Args:
@@ -780,7 +780,7 @@ class ParticleMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the particle surface tension for the material prims indicated by the indices.
 
         Args:
@@ -829,7 +829,7 @@ class ParticleMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the vorticity confinement for the material prims indicated by the indices.
 
         Args:
@@ -877,7 +877,7 @@ class ParticleMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the particle friction scale for the material prims indicated by the indices.
 
         Args:

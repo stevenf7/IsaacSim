@@ -153,9 +153,11 @@ class DfDecision:
         self.name = name
         self.params = params
 
-    def __str__(self):
-        """
-        Returns a printable version of the Decision
+    def __str__(self) -> str:
+        """Returns a printable version of the Decision.
+
+        Returns:
+            A string representation of the decision.
         """
         if self.params:
             return f"{self.name}({self.params})"
@@ -415,7 +417,8 @@ class DfState(DfBindable):
         object being transtitioned to. A transition to None is considered a terminal transition.
         Note returning self is a self transition and is pretty common during processing.
 
-        Returns: The next state reference (or None as a terminal transition).
+        Returns:
+            The next state reference (or None as a terminal transition).
         """
         return None
 
@@ -431,7 +434,8 @@ class DfState(DfBindable):
 
         See the workflow described in the top level comment above.
 
-        Returns: The next state reference (or None as a terminal transition).
+        Returns:
+            The next state reference (or None as a terminal transition).
         """
         next_state = self.step()
         if next_state != self:
@@ -582,6 +586,9 @@ class DfHierarchicalState(DfState):
 
         The hierarchical state transitions back to itelf while running the internal state machine.
         Once the internal state machine terminates, this state terminates as well by returning None.
+
+        Returns:
+            Self while the internal state machine is running, None when it terminates.
         """
         # If there's no active state transition to None (stop)
         if self.active_state is None:
@@ -611,17 +618,15 @@ class DfHsmAction(DfAction):
     state machine exits (such as a hierarchical state's internal state machine finishes), it will
     keep calling step (and do nothing) until a higher-level decider decides not to run this action
     any more.
+
+    The state machine is anything that's stepped until completion. E.g. HierarchicalState or
+    SequenceState.
+
+    Args:
+        hsm: The state object stepped internally.
     """
 
     def __init__(self, hsm: DfState):
-        """Create with state machine.
-
-        The state machine is anything that's stepped until completion. E.g. HierarchicalState or
-        SequenceState.
-
-        Args:
-            hsm: The state object stepped internally.
-        """
         super(DfHsmAction, self).__init__()
         self.hsm = hsm
 
@@ -661,7 +666,7 @@ def run_state_machine(
     rate: DfRate,
     cb: Optional[Callable[[], None]] = None,
     is_shutdown_cb: Optional[Callable[[], bool]] = None,
-):
+) -> None:
     """Run the given state machine. Exits when there are no more transitions.
 
     Args:
@@ -708,6 +713,10 @@ class DfDeciderState(DfState):
 
         Uses the root decider's context and params members to store the information since
         df_descend() binds it there anyway at the start of the descent.
+
+        Args:
+            context: The context object being bound.
+            params: The param object being bound.
         """
         self.decider.bind(context, params)
 
@@ -721,7 +730,8 @@ class DfDeciderState(DfState):
         """Step the state machine by descending the decider network. This state machine always
         transitions back to itself.
 
-        Returns: A reference to itself representing a self transition.
+        Returns:
+            A reference to itself representing a self transition.
         """
         self.stack = df_descend(self.decider, self.decider.params, self.decider.context, self.stack)
         return self
@@ -766,8 +776,9 @@ class DfTimedDeciderState(DfDeciderState):
     def step(self) -> DfState:
         """Steps the internal decider network until self.activity_duration seconds have passed.
 
-        Returns: Self transitions until the requisite number of seconds have passed, then None
-        (terminal transition).
+        Returns:
+            Self transitions until the requisite number of seconds have passed, then None
+            (terminal transition).
         """
         next_state = super().step()
         elapse_time = time.time() - self.entry_time
@@ -802,8 +813,9 @@ class DfWaitState(DfState):
         """Does nothing, but self transitions while waiting and terminal transitions (to None) once
         the wait time has passed.
 
-        Returns: Self while less than the wait time number of seconds have passed, and None
-        otherwise.
+        Returns:
+            Self while less than the wait time number of seconds have passed, and None
+            otherwise.
         """
         if time.time() - self.entry_time < self.wait_time:
             return self
@@ -840,7 +852,11 @@ class DfStateMachineDecider(DfDecider):
             self.state.enter()
 
     def decide(self):
-        """On decide, the internal state machine is processed."""
+        """On decide, the internal state machine is processed.
+
+        Returns:
+            None, as this decider processes an internal state machine rather than choosing children.
+        """
         if self.state == None:
             return None
 
@@ -992,13 +1008,16 @@ class DfNetwork(DfBehavior):
         """Reset the decider network back to the state on construction (empty decision stack)."""
         self._decider_state.enter()
 
-    def bind_context(self, context) -> None:
+    def bind_context(self, context: DfLogicalState) -> None:
         """Bind the provided context to this decider network. This bound context will be bound into
         each decider node on descent.
 
         Note that the bound context can be overridden by passing in a context object to the step()
         method, in which case that passed context object will be bound into each decider node on
         descent.
+
+        Args:
+            context: The context object to bind.
         """
         self._bound_context = context
 
@@ -1089,6 +1108,9 @@ class DfRldsNode(DfDecider):
         condition before the enterable condition is triggered.
 
         The enterable condition defaults to being equivalent to the enterable condition.
+
+        Returns:
+            True if the node is enterable, False otherwise.
         """
         return self.is_runnable()
 
@@ -1177,6 +1199,9 @@ class DfRldsDecider(DfDecider):
         first node (lowest priority). If the node is the active node, it's runnability condition is
         checked, otherwise the node's enterability condition is checked. Chooses the first node
         (highest priority node) whose condition is satisfied.
+
+        Returns:
+            The decision for the chosen child, or None if no condition is satisfied.
         """
         for named_rlds_node in reversed(self.sequence):
             rlds_node = named_rlds_node.rlds_node

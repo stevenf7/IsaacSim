@@ -20,7 +20,11 @@ from isaacsim.core.simulation_manager import SimulationManager
 
 
 def get_device_ordinal() -> int:
-    """Get the simulation device ordinal (-1 for CPU, >=0 for GPU)."""
+    """Get the simulation device ordinal (-1 for CPU, >=0 for GPU).
+
+    Returns:
+        The device ordinal.
+    """
     device = SimulationManager.get_device()
     if device.is_cuda:
         return device.ordinal

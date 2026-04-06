@@ -100,7 +100,7 @@ class NewtonPhysicsInterface:
         """
 
     @carb.profiler.profile
-    def fetch_results(self):
+    def fetch_results(self) -> None:
         """Fetch simulation results after stepping."""
         return
 

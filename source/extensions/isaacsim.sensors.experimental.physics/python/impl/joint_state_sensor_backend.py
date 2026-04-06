@@ -69,8 +69,9 @@ class JointStateSensorBackend:
     def get_sensor_reading(self) -> object:
         """Get the complete joint state reading.
 
-        Returns the C++ JointStateSensorReading struct with dof_count, dof_names,
-        positions, velocities, and efforts populated when is_valid is True.
+        Returns:
+            The C++ JointStateSensorReading struct with dof_count, dof_names,
+            positions, velocities, and efforts populated when is_valid is True.
         """
         if not self._sensor_created and not self._ensure_sensor():
             return _get_invalid_reading()

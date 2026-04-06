@@ -79,7 +79,7 @@ class PickPlace(tasks.PickPlace):
         )
         return self._ur10_robot
 
-    def pre_step(self, time_step_index: int, simulation_time: float):
+    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
         """Called before each physics step to update gripper.
 
         Args:

@@ -25,7 +25,7 @@ from isaacsim.ucx.nodes.tests.common import UCXTestCase
 from ucxx._lib.arr import Array
 
 
-def unpack_imu_message(buffer):
+def unpack_imu_message(buffer: object):
     """Unpack a UCX IMU message.
 
     Message format (from OgnUCXPublishImu.cpp):
@@ -91,8 +91,16 @@ class TestUCXPublishImu(UCXTestCase):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def receive_imu_message(self, tag=2, timeout_frames=1000):
-        """Receive and unpack an IMU message"""
+    async def receive_imu_message(self, tag: int = 2, timeout_frames: int = 1000):
+        """Receive and unpack an IMU message.
+
+        Args:
+            tag: UCX tag to receive on.
+            timeout_frames: Maximum number of frames to wait.
+
+        Returns:
+            Tuple of unpacked IMU message data.
+        """
         max_buffer_size = 512
         buffer = np.empty(max_buffer_size, dtype=np.uint8)
 

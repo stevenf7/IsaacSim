@@ -27,7 +27,17 @@ class Go2FlatTerrainPolicy(PolicyController):
     """Policy controller for the Unitree Go2 quadruped robot executing flat terrain locomotion.
 
     This controller implements a learned policy for stable walking on flat terrain,
-    handling velocity commands for forward/backward motion, lateral motion, and turning."""
+    handling velocity commands for forward/backward motion, lateral motion, and turning.
+
+    Args:
+        prim_path: The prim path of the robot on the stage.
+        root_path: The path to the articulation root of the robot.
+        usd_path: The robot usd filepath in the directory.
+        position: The position of the robot.
+        orientation: The orientation of the robot.
+        policy_path: Path to the policy file. If None, auto-detected from active engine.
+        env_config_path: Path to the environment config file. If None, auto-detected from active engine.
+    """
 
     def __init__(
         self,
@@ -39,18 +49,7 @@ class Go2FlatTerrainPolicy(PolicyController):
         policy_path: str | None = None,
         env_config_path: str | None = None,
     ) -> None:
-        """
-        Initialize robot and load RL policy.
 
-        Args:
-            prim_path: The prim path of the robot on the stage
-            root_path: The path to the articulation root of the robot
-            usd_path: The robot usd filepath in the directory
-            position: The position of the robot
-            orientation: The orientation of the robot
-            policy_path: Path to the policy file. If None, auto-detected from active engine.
-            env_config_path: Path to the environment config file. If None, auto-detected from active engine.
-        """
         assets_root_path = get_assets_root_path()
         if usd_path is None:
             usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/unitree_go2/go2.usda"
@@ -72,9 +71,8 @@ class Go2FlatTerrainPolicy(PolicyController):
         self._current_action = None
         self._policy_counter = 0
 
-    def _compute_observation(self, command):
-        """
-        Compute the observation vector for the policy.
+    def _compute_observation(self, command: object) -> object:
+        """Compute the observation vector for the policy.
 
         The observation includes base linear/angular velocities, gravity direction,
         command velocities, joint positions/velocities, and previous actions.
@@ -122,9 +120,8 @@ class Go2FlatTerrainPolicy(PolicyController):
             obs[36:48] = self._previous_action
         return obs
 
-    def forward(self, dt, command):
-        """
-        Compute the desired joint positions and apply them to the articulation.
+    def forward(self, dt: float, command: object) -> None:
+        """Compute the desired joint positions and apply them to the articulation.
 
         Policy runs at decimated rate, but control commands are applied every physics step.
 

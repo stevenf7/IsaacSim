@@ -34,7 +34,9 @@ from .session_layer_util import start_assembly_session_sublayer, stop_assembly_s
 AXES_INDICES = {"X": 0, "Y": 1, "Z": 2}
 
 
-def set_opposite_body_transform(stage, cache, prim, body0base, fixpos, fixrot):
+def set_opposite_body_transform(
+    stage: object, cache: object, prim: object, body0base: bool, fixpos: bool, fixrot: bool
+):
     """Set the transform of one joint body to align with the opposite body.
 
     This function updates the local position and rotation attributes of a joint body to match the
@@ -87,7 +89,7 @@ def set_opposite_body_transform(stage, cache, prim, body0base, fixpos, fixrot):
     omni.kit.undo.end_group()
 
 
-def get_aligned_body_transform(stage, cache, joint, body0base):
+def get_aligned_body_transform(stage: object, cache: object, joint: object, body0base: bool):
     """Calculate the relative transform between two bodies connected by a joint.
 
     This function computes the transform needed to align one body frame with another based on their world
@@ -183,18 +185,8 @@ class AssembledBodies:
         fixed_joint: UsdPhysics.FixedJoint,
         root_joints: List[UsdPhysics.Joint],
         attach_body_articulation_root: Usd.Prim,
-        collision_mask=None,
+        collision_mask: object = None,
     ):
-        """Initialize an AssembledBodies instance.
-
-        Args:
-            base_path (str): Prim path of the base body
-            attach_path (str): Prim path of the attach body
-            fixed_joint (UsdPhysics.FixedJoint): Fixed joint connecting the bodies
-            root_joints (List[UsdPhysics.Joint]): Root joints of the attach body
-            attach_body_articulation_root (Usd.Prim): Articulation root of attach body
-            collision_mask (Optional[Usd.Relationship]): Collision mask between bodies
-        """
         self._base_path = base_path
         self._attach_path = attach_path
         self._fixed_joint = fixed_joint
@@ -375,15 +367,6 @@ class RobotAssembler:
     """
 
     def __init__(self):
-        """
-        Initialize the RobotAssembler
-
-        Args:
-            None
-
-        Returns:
-            None
-        """
 
         self._timeline = omni.timeline.get_timeline_interface()
         self._status = AssemblyStatus.IDLE
@@ -410,7 +393,7 @@ class RobotAssembler:
         # Destination file where the assembly will be saved
         self._configuration_destination = None
 
-    def is_root_joint(self, prim) -> bool:
+    def is_root_joint(self, prim: object) -> bool:
         """Check if a prim is a root joint (has no body0 or body1 target).
 
         Args:
@@ -473,13 +456,13 @@ class RobotAssembler:
 
     def begin_assembly(
         self,
-        stage,
-        base_prim_path,
-        base_mount_path,
-        attachment_prim_path,
-        attachment_mount_path,
-        variant_set,
-        variant_name,
+        stage: object,
+        base_prim_path: str,
+        base_mount_path: str,
+        attachment_prim_path: str,
+        attachment_mount_path: str,
+        variant_set: str,
+        variant_name: str,
     ):
         """Start the robot assembly process.
 
@@ -759,7 +742,7 @@ class RobotAssembler:
 
         return fixed_joint
 
-    def _refresh_asset(self, prim_path):
+    def _refresh_asset(self, prim_path: str):
         """Refresh asset payloads and references to update the articulation immediately.
 
         This manually refreshes payloads to get the articulation to update while the timeline is still

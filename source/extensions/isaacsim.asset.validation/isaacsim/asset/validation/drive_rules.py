@@ -19,7 +19,7 @@ from omni.asset_validator.core import registerRule
 from pxr import PhysxSchema, Usd, UsdPhysics
 
 
-def GetJointDrivesAndJointStates(joint):
+def GetJointDrivesAndJointStates(joint: object):
     """Get the drive APIs and joint state APIs for a joint.
 
     Args:

@@ -91,7 +91,7 @@ class RobotView(Articulation):
         orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
         scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
         visibilities: Optional[Union[np.ndarray, torch.Tensor]] = None,
-    ):
+    ) -> None:
         Articulation.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
@@ -105,7 +105,7 @@ class RobotView(Articulation):
         self._sensors = list()
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Reset the robots to their default states
 
         .. note::

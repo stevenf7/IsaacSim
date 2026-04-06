@@ -37,7 +37,7 @@ CONNECTION_ESTABLISH_FRAMES = 20  # Additional frames for connection to establis
 RECEIVE_TIMEOUT_FRAMES = 1000  # Maximum frames to wait for a message
 
 
-def unpack_joint_state_message(buffer):
+def unpack_joint_state_message(buffer: object):
     """Unpack a UCX joint state message.
 
     Message format (updated to use doubles):
@@ -155,7 +155,9 @@ class TestUCXPublishJointState(UCXTestCase):
         # Setup client with proper connection establishment
         await self.setup_ucx_client_with_listener()
 
-    async def receive_joint_state_message(self, tag=1, timeout_frames=RECEIVE_TIMEOUT_FRAMES, retry_count=3):
+    async def receive_joint_state_message(
+        self, tag: int = 1, timeout_frames: int = RECEIVE_TIMEOUT_FRAMES, retry_count: int = 3
+    ):
         """Receive and unpack a joint state message from the client endpoint.
 
         Args:

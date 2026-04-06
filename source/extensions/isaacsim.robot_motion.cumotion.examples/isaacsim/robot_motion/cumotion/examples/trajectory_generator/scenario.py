@@ -249,7 +249,11 @@ class UR10TrajectoryGeneratorExample:
         self._trajectory_time = 0.0
 
     def update(self, step: float) -> None:
-        """Update trajectory execution on each physics step."""
+        """Update trajectory execution on each physics step.
+
+        Args:
+            step: The physics time step in seconds.
+        """
         if self._trajectory is None:
             return
 

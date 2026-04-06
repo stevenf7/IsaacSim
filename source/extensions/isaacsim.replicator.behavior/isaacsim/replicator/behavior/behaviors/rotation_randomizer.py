@@ -110,7 +110,15 @@ class RotationRandomizer(BehaviorScript):
         self._reset()
 
     def on_update(self, current_time: float, delta_time: float):
-        """Called on per frame update events that occur when `playing`."""
+        """Called on per frame update events that occur when `playing`.
+
+        Args:
+            current_time: The current simulation time.
+            delta_time: The time elapsed since the last update.
+
+        Returns:
+            None.
+        """
         if delta_time <= 0:
             return
         if self._interval <= 0:

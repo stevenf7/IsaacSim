@@ -29,7 +29,9 @@ from isaacsim.core.utils.stage import get_current_stage
 from pxr import Gf, Sdf, Usd, UsdGeom
 
 
-def set_camera_view(eye: np.array, target: np.array, camera_prim_path: str = "/OmniverseKit_Persp", viewport_api=None):
+def set_camera_view(
+    eye: np.array, target: np.array, camera_prim_path: str = "/OmniverseKit_Persp", viewport_api: object = None
+) -> None:
     """Set the location and target for a camera prim in the stage given its path.
 
     Args:
@@ -206,7 +208,7 @@ def get_viewport_names(usd_context_name: str = None) -> List[str]:
     return viewport_names
 
 
-def get_id_from_index(index):
+def get_id_from_index(index: int):
     """Get the viewport id for a given index.
     This function was added for backwards compatibility for VP2 as viewport IDs are not the same as the viewport index
 
@@ -245,7 +247,7 @@ def get_id_from_index(index):
     return None
 
 
-def get_window_from_id(id, usd_context_name: str = None):
+def get_window_from_id(id: object, usd_context_name: str = None):
     """Find window that matches a given viewport id
 
     Args:
@@ -286,7 +288,7 @@ def get_window_from_id(id, usd_context_name: str = None):
     return None
 
 
-def destroy_all_viewports(usd_context_name: str = None, destroy_main_viewport=True):
+def destroy_all_viewports(usd_context_name: str = None, destroy_main_viewport: bool = True):
     """Destroys all viewport windows
 
     Args:
@@ -302,7 +304,7 @@ def destroy_all_viewports(usd_context_name: str = None, destroy_main_viewport=Tr
             window.destroy()
 
 
-def add_aov_to_viewport(viewport_api, aov_name: str) -> bool:
+def add_aov_to_viewport(viewport_api: object, aov_name: str) -> bool:
     """Add an arbitrary output variable (AOV) to the specified viewport for rendering.
 
     Args:
@@ -523,7 +525,7 @@ def create_viewport_for_camera(
     return viewport_window
 
 
-def set_active_viewport_camera(camera_prim_path: str):
+def set_active_viewport_camera(camera_prim_path: str) -> None:
     """Sets the camera for the active viewport.
 
     This method sets the active viewport to display the camera at the specified prim path.

@@ -96,7 +96,7 @@ class SyntheticRecorder:
         """
         return self._state
 
-    def subscribe_state_changed(self, callback):
+    def subscribe_state_changed(self, callback: object) -> None:
         """Subscribe to the recorder state changes.
 
         Args:
@@ -280,7 +280,7 @@ class SyntheticRecorder:
         else:
             print(f"[SDR][Warn] Recorder is in an unexpected state ({self._state.name}), try again.")
 
-    def _check_if_valid_camera(self, path) -> bool:
+    def _check_if_valid_camera(self, path: str) -> bool:
         """Check if the camera path is valid for the render product.
 
         Args:
@@ -321,7 +321,7 @@ class SyntheticRecorder:
             print(f"[SDR][Warn] Invalid resolution: {width}x{height}. Width and height must be larger than 0.")
         return False
 
-    def _check_if_valid_rp_entry(self, entry):
+    def _check_if_valid_rp_entry(self, entry: object) -> bool:
         """Check if the render product entry is valid.
 
         Args:
@@ -364,7 +364,7 @@ class SyntheticRecorder:
                 return True
         return False
 
-    def _disable_semantics_annotators(self, writer_params):
+    def _disable_semantics_annotators(self, writer_params: dict) -> None:
         """Disable semantics related annotators if the stage does not have semantically labeled prims.
 
         Args:
@@ -381,7 +381,7 @@ class SyntheticRecorder:
         if disabled_annotators:
             print(f"[SDR][Warn] Disabled the following semantics related annotators: {disabled_annotators}.")
 
-    async def _run_recording_loop_async(self, num_frames):
+    async def _run_recording_loop_async(self, num_frames: int) -> None:
         """Run the recording loop for the specified number of frames.
 
         Args:

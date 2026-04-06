@@ -604,7 +604,7 @@ class NewtonRigidBodyView:
         indices: Any,
         is_global: bool = True,
         indices_mask: Any | None = None,
-    ):
+    ) -> None:
         """Apply forces and torques to rigid bodies at specified positions.
 
         This function provides flexible force application with the following capabilities:

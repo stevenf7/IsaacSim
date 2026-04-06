@@ -41,11 +41,11 @@ class KayaGamepad(BaseSample):
     testing robot behaviors, and interactive demonstrations.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._kaya_prim_path = "/kaya"
 
-    def setup_scene(self):
+    def setup_scene(self) -> None:
         """Sets up the simulation scene with Kaya robot, ground plane, and lighting.
 
         Loads the Kaya robot with gamepad controller, adds a ground plane environment,
@@ -72,22 +72,22 @@ class KayaGamepad(BaseSample):
         dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")
         dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(450.0)
 
-    async def setup_post_load(self):
+    async def setup_post_load(self) -> None:
         """Called after the scene is loaded."""
         pass
 
-    async def setup_pre_reset(self):
+    async def setup_pre_reset(self) -> None:
         """Called before world reset."""
         pass
 
-    async def setup_post_reset(self):
+    async def setup_post_reset(self) -> None:
         """Called after world reset."""
         pass
 
-    async def setup_post_clear(self):
+    async def setup_post_clear(self) -> None:
         """Called after clearing the scene."""
         pass
 
-    def physics_cleanup(self):
+    def physics_cleanup(self) -> None:
         """Function called when extension shutdowns and starts again, (hot reloading feature)"""
         pass

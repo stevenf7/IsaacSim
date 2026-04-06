@@ -49,12 +49,12 @@ class TableItem(ui.AbstractItem):
         value_changed_fn: Callback function invoked when item values change.
     """
 
-    def __init__(self, joint_index, value_changed_fn=None):
+    def __init__(self, joint_index: int, value_changed_fn: callable = None):
         super().__init__()
         self.joint_index = joint_index
         self._value_changed_fn = value_changed_fn
 
-    def _on_value_changed(self, model, col_id=None, adjusted_col_id=None):
+    def _on_value_changed(self, model: object, col_id: int = None, adjusted_col_id: int = None):
         """Handles value changes for the table item.
 
         Args:
@@ -73,7 +73,7 @@ class TableItem(ui.AbstractItem):
         """
         pass
 
-    def set_item_value(self, col_id, value):
+    def set_item_value(self, col_id: int, value: object):
         """Sets the value for the specified column.
 
         Args:
@@ -102,7 +102,7 @@ class TableItemDelegate(ui.AbstractItemDelegate):
         model: The table model that provides data and manages table items.
     """
 
-    def __init__(self, model):
+    def __init__(self, model: object):
         super().__init__()
         self._model = model
         self.__name_sort_options_menu = None
@@ -114,7 +114,7 @@ class TableItemDelegate(ui.AbstractItemDelegate):
         """Initializes the table model for the delegate."""
         pass
 
-    def set_mode(self, mode):
+    def set_mode(self, mode: object):
         """Sets the operating mode for the table delegate.
 
         Args:
@@ -122,7 +122,9 @@ class TableItemDelegate(ui.AbstractItemDelegate):
         """
         self.__mode = mode
 
-    def build_branch(self, model, item=None, column_id=0, level=0, expanded=False):
+    def build_branch(
+        self, model: object, item: object = None, column_id: int = 0, level: int = 0, expanded: bool = False
+    ):
         """Builds the branch widget for tree view items.
 
         Args:
@@ -134,7 +136,7 @@ class TableItemDelegate(ui.AbstractItemDelegate):
         """
         pass
 
-    def build_sort_button(self, column_id=0):
+    def build_sort_button(self, column_id: int = 0):
         """Builds a sort button for the specified column.
 
         Args:
@@ -147,7 +149,7 @@ class TableItemDelegate(ui.AbstractItemDelegate):
             mouse_pressed_fn=lambda x, y, b, a, column_id=column_id: self.sort_button_pressed_fn(b, column_id),
         )
 
-    def build_header(self, column_id=0):
+    def build_header(self, column_id: int = 0):
         """Builds the header widget for the specified column.
 
         Args:
@@ -159,7 +161,7 @@ class TableItemDelegate(ui.AbstractItemDelegate):
         """Updates the default values for the table delegate."""
         pass
 
-    def build_widget(self, model, item=None, index=0, level=0, expanded=False):
+    def build_widget(self, model: object, item: object = None, index: int = 0, level: int = 0, expanded: bool = False):
         """Builds the widget for displaying table items.
 
         Args:
@@ -179,7 +181,7 @@ class TableItemDelegate(ui.AbstractItemDelegate):
         """
         return self._model._children
 
-    def sort_button_pressed_fn(self, b, column_id):
+    def sort_button_pressed_fn(self, b: int, column_id: int) -> None:
         """Handles sort button press events to display sorting options.
 
         Args:
@@ -229,7 +231,7 @@ class TableModel(ui.AbstractItemModel):
         **kwargs: Additional keyword arguments passed to the parent class.
     """
 
-    def __init__(self, value_changed_fn, **kwargs):
+    def __init__(self, value_changed_fn: callable, **kwargs: object):
         super().__init__()
         self._joint_changed_fn = value_changed_fn
         self._items_sort_func = None
@@ -242,7 +244,7 @@ class TableModel(ui.AbstractItemModel):
         """Initializes the table model by resetting the mode to None."""
         self._mode = None
 
-    def _on_joint_changed(self, joint, col_id=None, adjusted_col_id=None):
+    def _on_joint_changed(self, joint: object, col_id: int = None, adjusted_col_id: int = None):
         """Handles joint change events by invoking the registered callback function.
 
         Args:
@@ -253,7 +255,7 @@ class TableModel(ui.AbstractItemModel):
         if self._joint_changed_fn:
             self._joint_changed_fn(joint, col_id, adjusted_col_id)
 
-    def get_item_children(self, item=None):
+    def get_item_children(self, item: object = None):
         """Returns all the children when the widget asks it.
 
         Args:
@@ -271,7 +273,7 @@ class TableModel(ui.AbstractItemModel):
 
             return children
 
-    def get_item_value(self, item, column_id):
+    def get_item_value(self, item: object, column_id: int):
         """Gets the value of a specific column for the given item.
 
         Args:
@@ -284,7 +286,7 @@ class TableModel(ui.AbstractItemModel):
         if item:
             return item.get_item_value(column_id)
 
-    def get_item_value_model_count(self, item) -> int:
+    def get_item_value_model_count(self, item: object) -> int:
         """The number of columns
 
         Args:
@@ -295,7 +297,7 @@ class TableModel(ui.AbstractItemModel):
         """
         return 0
 
-    def get_item_value_model(self, item, column_id):
+    def get_item_value_model(self, item: object, column_id: int):
         """Return value model.
             It's the object that tracks the specific value.
 
@@ -309,7 +311,7 @@ class TableModel(ui.AbstractItemModel):
         if item:
             return item.get_value_model(column_id)
 
-    def sort_by_name(self, policy, column_id):
+    def sort_by_name(self, policy: object, column_id: int):
         """Sorts items by name according to the specified policy.
 
         Args:
@@ -323,7 +325,7 @@ class TableModel(ui.AbstractItemModel):
         self._items_sort_func = lambda item: self.get_item_value(item, column_id)
         self._item_changed(None)
 
-    def set_mode(self, mode):
+    def set_mode(self, mode: object):
         """Sets the mode for the table model and updates all child items.
 
         Args:
@@ -348,11 +350,11 @@ class TreeViewIDItem(ui.AbstractItem):
         item: The identifier or value to wrap as a tree view item.
     """
 
-    def __init__(self, item):
+    def __init__(self, item: object):
         super().__init__()
         self.model = ui.SimpleStringModel(str(item))
 
-    def get_item_value(self, item, column_id):
+    def get_item_value(self, item: object, column_id: int):
         """Returns the string value for display in the tree view.
 
         Args:
@@ -364,7 +366,7 @@ class TreeViewIDItem(ui.AbstractItem):
         """
         return self.model.get_value_as_string()
 
-    def get_item_value_model_count(self, item):
+    def get_item_value_model_count(self, item: object):
         """Returns the number of columns available for this item.
 
         Args:
@@ -375,7 +377,7 @@ class TreeViewIDItem(ui.AbstractItem):
         """
         return 1
 
-    def get_value_model(self, item, column_id):
+    def get_value_model(self, item: object, column_id: int):
         """Returns the underlying value model for the specified column.
 
         Args:
@@ -387,7 +389,7 @@ class TreeViewIDItem(ui.AbstractItem):
         """
         return self.model
 
-    def get_item_children(self, item=None):
+    def get_item_children(self, item: object = None):
         """Returns the child items for the tree view.
 
         Args:
@@ -410,11 +412,11 @@ class TreeViewIDListModel(ui.AbstractItemModel):
         length: The number of items to create in the list.
     """
 
-    def __init__(self, length):
+    def __init__(self, length: int):
         super().__init__()
         self._children = [TreeViewIDItem(item + 1) for item in range(length)]
 
-    def get_item_children(self, item=None):
+    def get_item_children(self, item: object = None):
         """Child items for the tree view.
 
         Args:
@@ -428,7 +430,7 @@ class TreeViewIDListModel(ui.AbstractItemModel):
         else:
             return self._children
 
-    def get_item_value(self, item, column_id):
+    def get_item_value(self, item: object, column_id: int):
         """String value for the specified item and column.
 
         Args:
@@ -440,7 +442,7 @@ class TreeViewIDListModel(ui.AbstractItemModel):
         """
         return self._children[item].model.get_value_as_string()
 
-    def get_item_value_model_count(self, item):
+    def get_item_value_model_count(self, item: object):
         """Number of columns in the tree view model.
 
         Args:
@@ -465,7 +467,9 @@ class TreeViewIDColumnDelegate(ui.AbstractItemDelegate):
         super().__init__()
         self.column_headers = []
 
-    def build_branch(self, model, item=None, column_id=0, level=0, expanded=False):
+    def build_branch(
+        self, model: object, item: object = None, column_id: int = 0, level: int = 0, expanded: bool = False
+    ):
         """Builds the branch widget for tree view items.
 
         Args:
@@ -477,7 +481,7 @@ class TreeViewIDColumnDelegate(ui.AbstractItemDelegate):
         """
         pass
 
-    def build_header(self, column_id=0):
+    def build_header(self, column_id: int = 0):
         """Builds the header widget for the ID column.
 
         Args:
@@ -485,7 +489,7 @@ class TreeViewIDColumnDelegate(ui.AbstractItemDelegate):
         """
         ui.Rectangle(name="Header", style_type_name_override="TreeView", width=15, height=19)
 
-    def build_widget(self, model, item=None, index: int = 0, level: int = 0, expanded: bool = False):
+    def build_widget(self, model: object, item: object = None, index: int = 0, level: int = 0, expanded: bool = False):
         """Builds the widget for displaying tree view ID items.
 
         Args:
@@ -520,7 +524,14 @@ class TableWidget:
         width: The width of the table widget.
     """
 
-    def __init__(self, value_changed_fn=None, model=None, delegate=None, mode=None, width=None):
+    def __init__(
+        self,
+        value_changed_fn: callable = None,
+        model: object = None,
+        delegate: object = None,
+        mode: object = None,
+        width: object = None,
+    ):
         self.model = model
         self.delegate = delegate
         self.id_model = TreeViewIDListModel(len(self.model._children))
@@ -570,7 +581,7 @@ class TableWidget:
         """
         self._enable_bulk_edit = enable_bulk_edit
 
-    def switch_mode(self, switch):
+    def switch_mode(self, switch: object):
         """Switches the table widget to a different operational mode.
 
         Args:
@@ -580,7 +591,7 @@ class TableWidget:
         self.model.set_mode(switch)
         self.mode = switch
 
-    def _on_value_changed(self, joint_item, col_id=1, adjusted_col_id=None):
+    def _on_value_changed(self, joint_item: object, col_id: int = 1, adjusted_col_id: int = None):
         """Handles value changes in table cells and propagates changes in bulk edit mode.
 
         Args:

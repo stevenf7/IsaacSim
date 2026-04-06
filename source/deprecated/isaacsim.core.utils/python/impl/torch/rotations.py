@@ -27,7 +27,9 @@ from scipy.spatial.transform import Rotation
 torch = import_module("torch")
 
 
-def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion], device=None) -> torch.Tensor:
+def gf_quat_to_tensor(
+    orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion], device: object = None
+) -> torch.Tensor:
     """Converts a pxr Quaternion type to a torch array (scalar first).
 
     Args:
@@ -44,7 +46,7 @@ def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternio
 
 
 def euler_angles_to_quats(
-    euler_angles: torch.Tensor, degrees: bool = False, extrinsic: bool = True, device=None
+    euler_angles: torch.Tensor, degrees: bool = False, extrinsic: bool = True, device: object = None
 ) -> torch.Tensor:
     """Vectorized version of converting euler angles to quaternion (scalar first)
 
@@ -74,7 +76,7 @@ def euler_angles_to_quats(
     return result
 
 
-def rot_matrices_to_quats(rotation_matrices: torch.Tensor, device=None) -> torch.Tensor:
+def rot_matrices_to_quats(rotation_matrices: torch.Tensor, device: object = None) -> torch.Tensor:
     """Vectorized version of converting rotation matrices to quaternions
 
     Args:
@@ -94,7 +96,7 @@ def rot_matrices_to_quats(rotation_matrices: torch.Tensor, device=None) -> torch
     return result
 
 
-def rad2deg(radian_value: torch.Tensor, device=None) -> torch.Tensor:
+def rad2deg(radian_value: torch.Tensor, device: object = None) -> torch.Tensor:
     """Converts radians to degrees.
 
     Args:
@@ -107,7 +109,7 @@ def rad2deg(radian_value: torch.Tensor, device=None) -> torch.Tensor:
     return torch.rad2deg(radian_value).float().to(device)
 
 
-def deg2rad(degree_value: float, device=None) -> torch.Tensor:
+def deg2rad(degree_value: float, device: object = None) -> torch.Tensor:
     """Converts degrees to radians.
 
     Args:
@@ -353,7 +355,7 @@ def quat_diff_rad(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
 
 
 # NB: do not make this function jit, since it is passed around as an argument.
-def normalise_quat_in_pose(pose):
+def normalise_quat_in_pose(pose: object):
     """Takes a pose and normalises the quaternion portion of it.
 
     Args:
@@ -396,7 +398,7 @@ def compute_rot(torso_quat, velocity, ang_velocity, targets, torso_positions, ex
     return vel_loc, angvel_loc, roll, pitch, yaw, angle_to_target
 
 
-def xyzw2wxyz(q):
+def xyzw2wxyz(q: object):
     """Converts quaternion from [x, y, z, w] to [w, x, y, z] format.
 
     Args:
@@ -408,7 +410,7 @@ def xyzw2wxyz(q):
     return torch.roll(q, 1, -1)
 
 
-def wxyz2xyzw(q):
+def wxyz2xyzw(q: object):
     """Converts quaternion from [w, x, y, z] to [x, y, z, w] format.
 
     Args:

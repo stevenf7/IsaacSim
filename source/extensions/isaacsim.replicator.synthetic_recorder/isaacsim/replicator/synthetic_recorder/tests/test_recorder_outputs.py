@@ -117,8 +117,20 @@ EXPECTED_FILES_PER_FRAME_BY_ANNOTATOR = {
 }
 
 
-def compute_expected_file_counts(num_frames, include_semantics=True, include_skeleton=False, include_metadata=True):
-    """Compute expected file counts by extension for validation."""
+def compute_expected_file_counts(
+    num_frames: int, include_semantics: bool = True, include_skeleton: bool = False, include_metadata: bool = True
+) -> dict:
+    """Compute expected file counts by extension for validation.
+
+    Args:
+        num_frames: Number of frames to compute counts for.
+        include_semantics: Whether to include semantics-dependent annotators.
+        include_skeleton: Whether to include skeleton data annotators.
+        include_metadata: Whether to include metadata files.
+
+    Returns:
+        Dictionary mapping file extensions to expected counts.
+    """
     expected_counts = {}
 
     for annotator, per_frame_counts in EXPECTED_FILES_PER_FRAME_BY_ANNOTATOR.items():

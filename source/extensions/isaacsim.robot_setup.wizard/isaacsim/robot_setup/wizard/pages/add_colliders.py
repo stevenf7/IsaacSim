@@ -50,7 +50,7 @@ class ColliderItem(SearchableItem):
         editable: Whether the collider item can be modified in the UI.
     """
 
-    def __init__(self, name, approx="None", editable=True):
+    def __init__(self, name: str, approx: str = "None", editable: bool = True):
         super().__init__()
         self.name = ui.SimpleStringModel(name)
         self.approx = ui.SimpleStringModel(approx)
@@ -100,7 +100,7 @@ class ColliderModel(TreeViewWithPlacerHolderModel):
         items: Initial list of collider items to populate the model.
     """
 
-    def __init__(self, items):
+    def __init__(self, items: list):
         super().__init__(items)
         self._edit_window = None
 
@@ -112,7 +112,7 @@ class ColliderModel(TreeViewWithPlacerHolderModel):
 
         super().destroy()
 
-    def get_item_value_model_count(self, item) -> int:
+    def get_item_value_model_count(self, item: object) -> int:
         """The number of columns
 
         Args:
@@ -123,7 +123,7 @@ class ColliderModel(TreeViewWithPlacerHolderModel):
         """
         return 4
 
-    def get_item_value_model(self, item, column_id) -> ui.AbstractValueModel:
+    def get_item_value_model(self, item: object, column_id: int) -> ui.AbstractValueModel:
         """Return value model.
             It's the object that tracks the specific value.
             In our case we use ui.SimpleStringModel for the first column
@@ -142,7 +142,7 @@ class ColliderModel(TreeViewWithPlacerHolderModel):
             elif column_id == 2:
                 return item.approx
 
-    def edit_item(self, item):
+    def edit_item(self, item: object):
         """Opens the edit window for the specified collider item.
 
         Args:
@@ -170,7 +170,7 @@ class AddColliderWindow:
         item: The ColliderItem to edit when opening in edit mode.
     """
 
-    def __init__(self, window_title, model, item=None):
+    def __init__(self, window_title: str, model: object, item: object = None):
         self._is_edit = window_title == "Edit Colliders"
         self._window_height = 335
         self._collapsed_height = 235
@@ -199,7 +199,7 @@ class AddColliderWindow:
             self._window.destroy()
         self._window = None
 
-    def _model_changed(self, model, item):
+    def _model_changed(self, model: object, item: object):
         """Handle changes to the collider model.
 
         Updates the UI when the collider model changes and the window is visible.
@@ -212,7 +212,7 @@ class AddColliderWindow:
         if item and self._window.visible:
             self._update_ui(item)
 
-    def _update_ui(self, item):
+    def _update_ui(self, item: object):
         """Update the UI elements based on the current collider item.
 
         Sets the collider name field, checkbox state, and approximation dropdown based on the provided item.
@@ -256,13 +256,16 @@ class AddColliderWindow:
         else:
             self._window.height = self._window_height
 
-    def _update_collider_name(self, model):
+    def _update_collider_name(self, model: object) -> None:
         """Handle changes to the collider name field.
 
         Updates UI state and creates a new ColliderItem when a valid name is entered. Only active in non-edit mode.
 
         Args:
             model: The string model containing the collider name.
+
+        Returns:
+            None if in edit mode.
         """
         if self._is_edit:
             return
@@ -280,7 +283,7 @@ class AddColliderWindow:
         else:
             self._current_collider = None
 
-    def _update_collider_approx(self, model, root_item):
+    def _update_collider_approx(self, model: object, root_item: object) -> None:
         """Handle changes to the collider approximation dropdown.
 
         Updates the current collider's approximation type when the dropdown selection changes. Only active in non-edit mode.
@@ -288,6 +291,9 @@ class AddColliderWindow:
         Args:
             model: The combo box model.
             root_item: The root item of the model.
+
+        Returns:
+            None if in edit mode.
         """
         if self._is_edit:
             return
@@ -319,10 +325,13 @@ class AddColliderWindow:
         # clear the current collider from the pop up window
         self._update_ui(None)
 
-    def _on_save_clicked(self):
+    def _on_save_clicked(self) -> None:
         """Handle the Save button click in edit mode.
 
         Updates the current collider item with UI values and closes the window.
+
+        Returns:
+            None if no current collider is set.
         """
         if not self._current_collider:
             return
@@ -432,7 +441,7 @@ class AddColliderWindow:
                                     )
                                 ui.Spacer(width=5)
 
-    def select(self, selected_paths):
+    def select(self, selected_paths: list):
         """Handles selection of collider target paths from the asset picker.
 
         Updates the collider name field with the first selected path and marks the field as checked.
@@ -483,7 +492,7 @@ class AddColliders:
         **kwargs: Additional keyword arguments.
     """
 
-    def __init__(self, visible, *args, **kwargs):
+    def __init__(self, visible: bool, *args: object, **kwargs: object):
         self.visible = visible
         self._add_collider_window = None
         self._tree_view = None
@@ -565,7 +574,7 @@ class AddColliders:
                         enabled=True,
                     )
 
-    def _filter_by_text(self, filters):
+    def _filter_by_text(self, filters: object):
         """Filters the collider model items by text search.
 
         Args:
@@ -587,11 +596,14 @@ class AddColliders:
                 self._preprocess_page()
             self.frame.visible = visible
 
-    def _preprocess_page(self):
+    def _preprocess_page(self) -> None:
         """Preprocesses the page by loading colliders from the robot on stage.
 
         Recursively searches through the /colliders scope prim to find mesh primitives
         and adds them as collider items to the model.
+
+        Returns:
+            None if the stage or robot is not available.
         """
         # get the colliders from the robot on stage
         self._robot = RobotRegistry().get()
@@ -638,7 +650,7 @@ class AddColliders:
             self._add_collider_window = AddColliderWindow("Add Colliders", self._collider_model)
         self._add_collider_window._window.visible = True
 
-    def _model_changed(self, model, item):
+    def _model_changed(self, model: object, item: object) -> None:
         """Handles changes to the collider model.
 
         Updates the UI state based on the number of items in the model, including enabling/disabling
@@ -647,6 +659,9 @@ class AddColliders:
         Args:
             model: The collider model that changed.
             item: The specific item that was modified.
+
+        Returns:
+            None if item or model is not provided.
         """
         if not item or not model:
             return

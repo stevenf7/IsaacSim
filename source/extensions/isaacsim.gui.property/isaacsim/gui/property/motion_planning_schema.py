@@ -88,7 +88,7 @@ class MotionPlanningAPIWidget(_RobotSchemaWidgetBase):
             exclusive_classes=(_MOTION_PLANNING_SCHEMA_CLASS,),
         )
 
-    def _prim_has_schema(self, prim) -> bool:
+    def _prim_has_schema(self, prim: object) -> bool:
         """Checks if the prim has the IsaacMotionPlanningAPI schema applied.
 
         Args:
@@ -101,7 +101,7 @@ class MotionPlanningAPIWidget(_RobotSchemaWidgetBase):
             return False
         return MOTION_PLANNING_API_NAME in prim.GetAppliedSchemas()
 
-    def _get_prim(self, prim_path) -> Usd.Prim | None:
+    def _get_prim(self, prim_path: object) -> Usd.Prim | None:
         """Retrieves a prim at the given path if it has the IsaacMotionPlanningAPI schema applied.
 
         Args:
@@ -118,7 +118,7 @@ class MotionPlanningAPIWidget(_RobotSchemaWidgetBase):
                     return prim
         return None
 
-    def _has_exclusive_schema(self, prim) -> bool:
+    def _has_exclusive_schema(self, prim: object) -> bool:
         """Checks if the prim has the exclusive IsaacMotionPlanningAPI schema.
 
         Args:

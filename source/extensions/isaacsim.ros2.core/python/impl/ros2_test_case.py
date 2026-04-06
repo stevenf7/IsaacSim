@@ -65,7 +65,7 @@ class ROS2TestCase(TimedAsyncTestCase):
         except:
             pass
 
-    def create_node(self, node_name):
+    def create_node(self, node_name: str):
         """Create a ROS2 node and track it for automatic cleanup.
 
         Args:
@@ -80,7 +80,7 @@ class ROS2TestCase(TimedAsyncTestCase):
         self._ros2_nodes.append(node)
         return node
 
-    def create_publisher(self, node, msg_type, topic_name, qos_profile=10):
+    def create_publisher(self, node: object, msg_type: type, topic_name: str, qos_profile: int = 10):
         """Create a ROS2 publisher and track it for automatic cleanup.
 
         Args:
@@ -96,7 +96,9 @@ class ROS2TestCase(TimedAsyncTestCase):
         self._ros2_publishers.append((node, publisher))
         return publisher
 
-    def create_subscription(self, node, msg_type, topic_name, callback, qos_profile=10):
+    def create_subscription(
+        self, node: object, msg_type: type, topic_name: str, callback: object, qos_profile: int = 10
+    ):
         """Create a ROS2 subscription and track it for automatic cleanup.
 
         When the node has a background executor (via start_async_spinning), a
@@ -118,7 +120,7 @@ class ROS2TestCase(TimedAsyncTestCase):
         self._ros2_subscribers.append((node, subscription))
         return subscription
 
-    def destroy_subscription(self, node, subscription):
+    def destroy_subscription(self, node: object, subscription: object) -> None:
         """Manually destroy a subscription and remove it from tracking.
 
         Args:
@@ -133,7 +135,7 @@ class ROS2TestCase(TimedAsyncTestCase):
         except Exception as e:
             print(f"Warning: Failed to destroy subscription: {e}")
 
-    def destroy_publisher(self, node, publisher):
+    def destroy_publisher(self, node: object, publisher: object) -> None:
         """Manually destroy a publisher and remove it from tracking.
 
         Args:
@@ -148,7 +150,7 @@ class ROS2TestCase(TimedAsyncTestCase):
         except Exception as e:
             print(f"Warning: Failed to destroy publisher: {e}")
 
-    def start_async_spinning(self, node):
+    def start_async_spinning(self, node: object) -> None:
         """Start a background executor that continuously spins the node.
 
         Callbacks on this node will fire automatically in a background thread,
@@ -174,7 +176,7 @@ class ROS2TestCase(TimedAsyncTestCase):
         thread.start()
         self._ros2_executors[node] = (executor, thread)
 
-    def stop_async_spinning(self, node):
+    def stop_async_spinning(self, node: object) -> None:
         """Stop the background executor for a node.
 
         Args:
@@ -188,7 +190,7 @@ class ROS2TestCase(TimedAsyncTestCase):
         thread.join(timeout=5.0)
 
     async def simulate_until_condition(
-        self, condition_func, max_frames=180, frames_per_step=1, per_frame_callback=None
+        self, condition_func: object, max_frames: int = 180, frames_per_step: int = 1, per_frame_callback: object = None
     ):
         """Simulate until condition is met or maximum frames reached.
 

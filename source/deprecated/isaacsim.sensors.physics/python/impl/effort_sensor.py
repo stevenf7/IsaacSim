@@ -133,7 +133,7 @@ class EffortSensor(SingleArticulation):
         """
         return start + ((end - start) * time)
 
-    def _stage_open_callback_fn(self, event=None):
+    def _stage_open_callback_fn(self, event: object = None) -> None:
         """Handle stage open events by clearing all registered callbacks.
 
         Args:
@@ -145,7 +145,7 @@ class EffortSensor(SingleArticulation):
         self._stage_open_callback = None
         return
 
-    def _timeline_stop_callback_fn(self, event):
+    def _timeline_stop_callback_fn(self, event: object) -> None:
         """Handle timeline stop events by resetting sensor state and buffers.
 
         Args:
@@ -158,7 +158,7 @@ class EffortSensor(SingleArticulation):
         self.physics_num_steps = 0
         return
 
-    def _timeline_play_callback_fn(self, event):
+    def _timeline_play_callback_fn(self, event: object) -> None:
         """Handle timeline play events by marking the sensor as uninitialized.
 
         Args:
@@ -167,7 +167,7 @@ class EffortSensor(SingleArticulation):
         self.is_initialized = False
         return
 
-    def _data_acquisition_callback(self, step_size: float, context):
+    def _data_acquisition_callback(self, step_size: float, context: object) -> None:
         """Acquire joint effort data during physics steps.
 
         Reads joint effort measurements and updates the sensor buffer with timestamped readings.
@@ -213,7 +213,9 @@ class EffortSensor(SingleArticulation):
                 self.interpolation_buffer = copy.deepcopy(self.sensor_reading_buffer)
                 self.sensor_time += self.sensor_period
 
-    def get_sensor_reading(self, interpolation_function=None, use_latest_data=False) -> EsSensorReading:
+    def get_sensor_reading(
+        self, interpolation_function: object = None, use_latest_data: bool = False
+    ) -> EsSensorReading:
         """Get the current sensor reading with optional interpolation.
 
         Returns either the latest reading or an interpolated value based on sensor period and timing.
@@ -287,7 +289,7 @@ class EffortSensor(SingleArticulation):
                         sensor_reading = EsSensorReading()
         return sensor_reading
 
-    def update_dof_name(self, dof_name: str):
+    def update_dof_name(self, dof_name: str) -> None:
         """Update the degree of freedom name for effort measurement.
 
         Changes which joint the sensor monitors for effort data. Requires at least 3 physics steps

@@ -50,7 +50,7 @@ class ProximitySensor:
             Objects at these paths will not trigger sensor events or appear in overlap data.
     """
 
-    def __init__(self, parent: Usd.Prim, callback_fns=[None, None, None], exclusions=[]):
+    def __init__(self, parent: Usd.Prim, callback_fns: list = [None, None, None], exclusions: list = []):
         self.parent = parent
         self._callback_fns = callback_fns
         self._exclusions = exclusions
@@ -68,7 +68,7 @@ class ProximitySensor:
         self.distance = 0
         self.stage = omni.usd.get_context().get_stage()
 
-    def update(self):
+    def update(self) -> None:
         """Updates the proximity sensor state by checking for overlaps and triggering callbacks.
 
         Checks for overlap with collision meshes, updates active zones, determines entered and exited zones,
@@ -133,7 +133,7 @@ class ProximitySensor:
 
         return
 
-    def report_hit(self, hit) -> bool:
+    def report_hit(self, hit: object) -> bool:
         """Reports a hit from the physics overlap query.
 
         Processes a collision hit by adding the collided prim to active zones and starting a timer
@@ -275,14 +275,11 @@ class ProximitySensorManager(object):
     _instance = None
     """Singleton instance of the ProximitySensorManager class."""
 
-    def __new__(cls):
+    def __new__(cls: type):
         """Creates or returns the singleton instance of ProximitySensorManager.
 
         Implements the singleton pattern to ensure only one instance of the manager exists.
         Initializes an empty sensors list on first instantiation.
-
-        Args:
-            cls: The class being instantiated.
 
         Returns:
             The singleton instance of ProximitySensorManager.

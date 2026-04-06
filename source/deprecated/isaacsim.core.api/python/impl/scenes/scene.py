@@ -79,13 +79,13 @@ class Scene(object):
         <isaacsim.core.api.scenes.scene.Scene object at 0x...>
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._scene_registry = SceneRegistry()
         self._enable_bounding_box_computations = False
         self._bbox_cache = None
         return
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Clean up the scene registry and trigger garbage collection."""
         self.clear(registry_only=True)
         gc.collect()
@@ -187,7 +187,7 @@ class Scene(object):
         self,
         size: Optional[float] = None,
         z_position: float = 0,
-        name="ground_plane",
+        name: str = "ground_plane",
         prim_path: str = "/World/groundPlane",
         static_friction: float = 0.5,
         dynamic_friction: float = 0.5,
@@ -243,7 +243,7 @@ class Scene(object):
     def add_default_ground_plane(
         self,
         z_position: float = 0,
-        name="default_ground_plane",
+        name: str = "default_ground_plane",
         prim_path: str = "/World/defaultGroundPlane",
         static_friction: float = 0.5,
         dynamic_friction: float = 0.5,
@@ -292,7 +292,7 @@ class Scene(object):
         Scene.add(self, plane)
         return plane
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Call the ``post_reset`` method on all added objects to the scene registry.
 
         Example:
@@ -336,7 +336,7 @@ class Scene(object):
         gc.collect()
         return
 
-    def _finalize(self, physics_sim_view):
+    def _finalize(self, physics_sim_view: object) -> None:
         """Initialize all registered objects with the physics simulation view.
 
         Args:
@@ -385,7 +385,7 @@ class Scene(object):
             rigid_contact_view.initialize(physics_sim_view)
         return
 
-    def remove_object(self, name: str, registry_only: bool = False):
+    def remove_object(self, name: str, registry_only: bool = False) -> None:
         """Remove and object from the scene registry and the USD stage if specified (enable by default).
 
         Args:
@@ -476,7 +476,7 @@ class Scene(object):
         else:
             return False
 
-    def clear(self, registry_only: bool = False):
+    def clear(self, registry_only: bool = False) -> None:
         """Clear the stage from all added objects to the scene registry.
 
         Args:
@@ -577,7 +577,7 @@ class Scene(object):
         prim_range = bounds.ComputeAlignedRange()
         return np.array([np.array(prim_range.GetMin()), np.array(prim_range.GetMax())])
 
-    def enable_bounding_boxes_computations(self):
+    def enable_bounding_boxes_computations(self) -> None:
         """Enable the bounding boxes computations
 
         Example:
@@ -592,7 +592,7 @@ class Scene(object):
         self._enable_bounding_box_computations = True
         return
 
-    def disable_bounding_boxes_computations(self):
+    def disable_bounding_boxes_computations(self) -> None:
         """Disable the bounding boxes computations
 
         Example:

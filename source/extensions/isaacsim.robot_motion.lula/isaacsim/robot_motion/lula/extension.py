@@ -41,7 +41,7 @@ class Extension(omni.ext.IExt):
     of robot motion planning operations.
     """
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str):
         """Called when the extension is starting up.
 
         Sets up the Lula logging configuration with warning level and prefix.

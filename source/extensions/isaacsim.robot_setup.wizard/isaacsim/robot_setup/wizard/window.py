@@ -55,7 +55,7 @@ class RobotWizardWindow:
         window_title: Title displayed in the window header.
     """
 
-    def __init__(self, window_title):
+    def __init__(self, window_title: str):
         window_flags = ui.WINDOW_FLAGS_NO_SCROLLBAR
         self._launch_on_startup = carb.settings.get_settings().get_as_bool(
             "/persistent/exts/isaacsim.robot_setup.wizard/launch_on_startup"
@@ -135,7 +135,7 @@ class RobotWizardWindow:
             if visible:
                 asyncio.ensure_future(self._dock_windows())
 
-    def _visibility_changed_fn(self, visible):
+    def _visibility_changed_fn(self, visible: bool):
         """Handles window visibility changes.
 
         Rebuilds the window frame when hidden and notifies registered listeners of visibility state changes.
@@ -168,7 +168,7 @@ class RobotWizardWindow:
         except Exception as e:
             carb.log_warn(f"Could not open browswer with url: {doc_link}, {e}")
 
-    def _on_launch_on_startup_clicked(self, model):
+    def _on_launch_on_startup_clicked(self, model: object):
         """Handles the launch on startup checkbox toggle.
 
         Updates the application setting to reflect the user's preference for launching the wizard at startup.
@@ -394,7 +394,7 @@ class ProgressState(object):
         visible: Initial visibility state of the progress step.
     """
 
-    def __init__(self, name, handle, visible):
+    def __init__(self, name: str, handle: object, visible: bool):
         self.step_name = name
         self.step_frame_handle = handle
         self.step_visible = visible
@@ -408,7 +408,7 @@ class ProgressState(object):
         """
         return f"Progress Step: name:{self.step_name}, completed:{self.completed}, visibibility:{self.step_visible}"
 
-    def set_frame_handle(self, frame_handle):
+    def set_frame_handle(self, frame_handle: object):
         """Sets the frame handle for the progress step.
 
         Args:

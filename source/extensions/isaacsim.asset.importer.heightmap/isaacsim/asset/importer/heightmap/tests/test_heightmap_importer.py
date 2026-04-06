@@ -45,8 +45,12 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
         self.assertIsNone(importer._stage)
 
     @patch("isaacsim.asset.importer.heightmap.importer.omni.usd.get_context")
-    def test_create_heightmap_with_none_image(self, mock_get_context):
-        """Test that create_heightmap raises ValueError when image is None."""
+    def test_create_heightmap_with_none_image(self, mock_get_context: object) -> None:
+        """Test that create_heightmap raises ValueError when image is None.
+
+        Args:
+            mock_get_context: Mock for omni.usd.get_context.
+        """
         with self.assertRaises(ValueError) as context:
             self.importer.create_heightmap(None, 0.05)
         self.assertIn("Image cannot be None", str(context.exception))
@@ -65,8 +69,12 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
         self.assertIn("Cell scale must be positive", str(context.exception))
 
     @patch("isaacsim.asset.importer.heightmap.importer.omni.usd.get_context")
-    def test_create_heightmap_no_stage_available(self, mock_get_context):
-        """Test that create_heightmap raises RuntimeError when stage is not available."""
+    def test_create_heightmap_no_stage_available(self, mock_get_context: object) -> None:
+        """Test that create_heightmap raises RuntimeError when stage is not available.
+
+        Args:
+            mock_get_context: Mock for omni.usd.get_context.
+        """
         # Setup importer without a stage
         importer = HeightmapImporter(None)
         mock_context = Mock()
@@ -85,9 +93,22 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
     @patch("isaacsim.asset.importer.heightmap.importer.GroundPlane")
     @patch("isaacsim.asset.importer.heightmap.importer.UsdLux")
     def test_create_heightmap_success(
-        self, mock_usd_lux, mock_ground_plane, mock_usd_geom, mock_stage_utils, mock_usd_physics
-    ):
-        """Test successful heightmap creation."""
+        self,
+        mock_usd_lux: object,
+        mock_ground_plane: object,
+        mock_usd_geom: object,
+        mock_stage_utils: object,
+        mock_usd_physics: object,
+    ) -> None:
+        """Test successful heightmap creation.
+
+        Args:
+            mock_usd_lux: Mock for UsdLux module.
+            mock_ground_plane: Mock for GroundPlane class.
+            mock_usd_geom: Mock for UsdGeom module.
+            mock_stage_utils: Mock for stage_utils module.
+            mock_usd_physics: Mock for UsdPhysics module.
+        """
         # Create a simple test image with some black pixels
         test_image = Image.new("RGBA", (5, 5), color=(255, 255, 255, 255))
         pixels = test_image.load()
@@ -255,8 +276,12 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
             self.assertEqual(pos[2], 0.0)
 
     @patch("isaacsim.asset.importer.heightmap.importer.carb")
-    def test_generate_occupied_positions_with_invalid_image(self, mock_carb):
-        """Test position generation with invalid image data."""
+    def test_generate_occupied_positions_with_invalid_image(self, mock_carb: object) -> None:
+        """Test position generation with invalid image data.
+
+        Args:
+            mock_carb: Mock for the carb module.
+        """
         # Create a grayscale image (2D array instead of 3D)
         test_image = Image.new("L", (5, 5), color=0)
 

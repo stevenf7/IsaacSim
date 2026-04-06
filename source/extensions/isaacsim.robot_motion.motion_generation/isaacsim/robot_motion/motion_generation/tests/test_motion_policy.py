@@ -122,7 +122,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         sphereLight.CreateIntensityAttr(100000)
         SingleXFormPrim(sphereLight.GetPath().pathString).set_world_pose([6.5, 0, 12])
 
-    async def _prepare_stage(self, robot):
+    async def _prepare_stage(self, robot: object):
         """Prepare the simulation stage with the specified robot.
 
         Initializes the world simulation context, creates lighting, starts the timeline,
@@ -457,11 +457,11 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def _simple_robot_rmpflow_test(
         self,
-        usd_path,
-        prim_path,
-        robot_name,
-        target_pos=np.array([0.6, 0.3, 0.5]),
-        obstacle_pos=np.array([0.3, 0.1, 0.5]),
+        usd_path: str,
+        prim_path: str,
+        robot_name: str,
+        target_pos: object = np.array([0.6, 0.3, 0.5]),
+        obstacle_pos: object = np.array([0.3, 0.1, 0.5]),
     ):
         """Helper method to test RMPflow motion policy on a robot.
 
@@ -954,7 +954,9 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         pass
 
-    async def reached_end_effector_target(self, target_trans, target_orient, trans_thresh=0.02, rot_thresh=0.1):
+    async def reached_end_effector_target(
+        self, target_trans: object, target_orient: object, trans_thresh: float = 0.02, rot_thresh: float = 0.1
+    ):
         """Check if the end effector has reached the target pose.
 
         Args:
@@ -988,7 +990,9 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
             rot_dist = distance_metrics.rotational_distance_angle(ee_rot, target_rot)
             return trans_dist < trans_thresh and rot_dist < rot_thresh
 
-    async def add_block(self, path, offset, size=np.array([0.01, 0.01, 0.01]), collidable=True):
+    async def add_block(
+        self, path: str, offset: object, size: object = np.array([0.01, 0.01, 0.01]), collidable: bool = True
+    ):
         """Add a block cuboid to the scene.
 
         Args:
@@ -1008,7 +1012,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         return cuboid
 
-    async def assertAlmostEqual(self, a, b, msg=""):
+    async def assertAlmostEqual(self, a: object, b: object, msg: str = ""):
         """Assert that two arrays are almost equal within a tolerance.
 
         Args:
@@ -1022,7 +1026,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self.assertFalse(np.any(abs((a[a != np.array(None)] - b[b != np.array(None)])) > 1e-3), msg)
         pass
 
-    async def simulate_until_target_reached(self, timeout, target_trans, target_orient=None):
+    async def simulate_until_target_reached(self, timeout: float, target_trans: object, target_orient: object = None):
         """Simulate robot motion until the target is reached or timeout occurs.
 
         Args:
@@ -1041,7 +1045,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
                 return True, frame * self._physics_dt
         return False, timeout
 
-    async def verify_policy_outputs(self, robot, ground_truths, dbg=False):
+    async def verify_policy_outputs(self, robot: object, ground_truths: dict, dbg: bool = False):
         """Verify motion policy outputs against ground truth values.
 
         The ground truths are obtained by running this method in dbg mode
@@ -1056,6 +1060,9 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
             robot: The robot instance to test.
             ground_truths: Dictionary containing ground truth values for comparison.
             dbg: Enable debug mode to print outputs without assertions.
+
+        Returns:
+            None.
         """
 
         # outputs of mg in different scenarios
@@ -1177,7 +1184,14 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         delete_prim(target_cube.prim_path)
         return
 
-    async def verify_robot_convergence(self, target_pos, timeout, target_orient=None, obs_pos=None, static=False):
+    async def verify_robot_convergence(
+        self,
+        target_pos: object,
+        timeout: float,
+        target_orient: object = None,
+        obs_pos: object = None,
+        static: bool = False,
+    ):
         """Assert that the robot can reach the target within a given timeout.
 
         Args:
@@ -1186,6 +1200,9 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
             target_orient: Target orientation quaternion.
             obs_pos: Position for obstacle placement.
             static: Whether obstacles should be treated as static.
+
+        Returns:
+            None.
         """
         # Assert that the robot can reach the target within a given timeout
 

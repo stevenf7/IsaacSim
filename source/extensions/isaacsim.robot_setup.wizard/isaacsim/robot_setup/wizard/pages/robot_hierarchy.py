@@ -54,7 +54,7 @@ class RobotHierarchy:
         **kwargs: Additional keyword arguments passed to parent initialization.
     """
 
-    def __init__(self, visible, *args, **kwargs):
+    def __init__(self, visible: bool, *args: object, **kwargs: object):
         self._robot = None
         self._next_step_button = None
         self._links_selected = []  # the staging area for new hierarchy
@@ -216,7 +216,7 @@ class RobotHierarchy:
         self._populate_link_stage()
         self._populate_robot_stage()
 
-    def _on_link_splitter_dragged(self, position_y):
+    def _on_link_splitter_dragged(self, position_y: object):
         """Handle dragging of the link splitter to adjust the link stage window height.
 
         Args:
@@ -224,7 +224,7 @@ class RobotHierarchy:
         """
         self._links_splitter.offset_y = max(self._initial_link_window_height, position_y.value)
 
-    def _on_robot_splitter_dragged(self, position_y):
+    def _on_robot_splitter_dragged(self, position_y: object):
         """Handle dragging of the robot splitter to adjust the robot stage window height.
 
         Args:
@@ -245,8 +245,12 @@ class RobotHierarchy:
             robot_prim = self._robot_temp_stage.GetPrimAtPath(Sdf.Path(self._robot.parent_prim_path))
             copy_prim_hierarchy(robot_prim, self._links_temp_stage, Sdf.Path(self._robot.parent_prim_path))
 
-    def _populate_link_stage(self):
-        """Populate the link stage with the robot prim and registered links."""
+    def _populate_link_stage(self) -> None:
+        """Populate the link stage with the robot prim and registered links.
+
+        Returns:
+            None if no robot is registered.
+        """
         if not self._robot:
             return
         self._new_link_stage()
@@ -264,8 +268,12 @@ class RobotHierarchy:
         )
         self._links_stage_widget.set_selection_watch(self._links_selection_watch)
 
-    def _populate_robot_stage(self):
-        """Populate the robot stage by copying the selected robot prim to a temporary stage."""
+    def _populate_robot_stage(self) -> None:
+        """Populate the robot stage by copying the selected robot prim to a temporary stage.
+
+        Returns:
+            None if no robot is registered.
+        """
         # make a copy of the selected robot prim on this stage, copy only path names, no attributes
         if not self._robot:
             return
@@ -286,7 +294,7 @@ class RobotHierarchy:
         )
         self._robot_stage_widget.set_selection_watch(self._robot_selection_watch)
 
-    def _attach_stage(self, stage):
+    def _attach_stage(self, stage: object):
         """Attaches a USD stage to the current USD context asynchronously.
 
         Args:
@@ -298,7 +306,7 @@ class RobotHierarchy:
             usd_context.attach_stage_async(stage)
         )  ## seems necessary for the copy and clear buttons to work
 
-    def set_visible(self, visible):
+    def set_visible(self, visible: bool):
         """Sets the visibility of the robot hierarchy widget.
 
         Args:
@@ -309,11 +317,14 @@ class RobotHierarchy:
             if visible:
                 self._robot = RobotRegistry().get()
 
-    def _add_link_item(self, link_name=None):
+    def _add_link_item(self, link_name: str = None) -> None:
         """Opens a dialog to add a new link to the robot hierarchy.
 
         Args:
             link_name: Initial name for the link.
+
+        Returns:
+            None if the links temp stage is not available.
         """
         if not self._links_temp_stage:
             return
@@ -353,8 +364,12 @@ class RobotHierarchy:
         )
         self._link_popup_window.show()
 
-    def _delete_link_item(self):
-        """Deletes the currently selected links from the temporary stage."""
+    def _delete_link_item(self) -> None:
+        """Deletes the currently selected links from the temporary stage.
+
+        Returns:
+            None if no links are selected.
+        """
         if len(self._links_selected) == 0:
             return
 
@@ -412,7 +427,7 @@ class RobotHierarchy:
         # delete them from the link stage
         self._delete_link_item()
 
-    def _on_links_selection_changed(self, selection):
+    def _on_links_selection_changed(self, selection: list):
         """Handles selection changes in the links stage widget.
 
         Args:
@@ -430,7 +445,7 @@ class RobotHierarchy:
             self._parent_button.enabled = False
             self._unparent_button.enabled = False
 
-    def _on_robot_selection_changed(self, selection):
+    def _on_robot_selection_changed(self, selection: list):
         """Handles selection changes in the robot stage widget.
 
         Args:
@@ -439,8 +454,12 @@ class RobotHierarchy:
         self._step_selected = selection
         self._update_parent_button_enabled()
 
-    def _apply_new_structure(self):
-        """Applies the new link structure to the robot by updating links and applying the hierarchy changes."""
+    def _apply_new_structure(self) -> None:
+        """Applies the new link structure to the robot by updating links and applying the hierarchy changes.
+
+        Returns:
+            None if no robot is registered or no history of changes exists.
+        """
         self._robot = RobotRegistry().get()
 
         if not self._robot or not self._history:

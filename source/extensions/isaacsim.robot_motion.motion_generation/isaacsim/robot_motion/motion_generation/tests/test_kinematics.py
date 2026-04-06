@@ -114,7 +114,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         sphereLight.CreateIntensityAttr(100000)
         SingleXFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
 
-    async def _prepare_stage(self, robot):
+    async def _prepare_stage(self, robot: object):
         """Prepare the stage for testing with the given robot.
 
         Stops timeline, initializes world and simulation context, creates lighting, starts timeline,
@@ -190,13 +190,13 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
 
     async def _test_lula_fk(
         self,
-        usd_path,
-        robot_name,
-        robot_prim_path,
-        robot_root_path=None,
-        joint_target=None,
-        base_pose=np.zeros(3),
-        base_orient=np.array([1, 0, 0, 0]),
+        usd_path: str,
+        robot_name: str,
+        robot_prim_path: str,
+        robot_root_path: str = None,
+        joint_target: object = None,
+        base_pose: object = np.zeros(3),
+        base_orient: object = np.array([1, 0, 0, 0]),
     ):
         """Test forward kinematics by comparing Lula solver results with USD frame poses.
 
@@ -343,16 +343,16 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
 
     async def _test_lula_ik(
         self,
-        usd_path,
-        robot_name,
-        robot_prim_path,
-        frame,
-        position_target,
-        orientation_target,
-        position_tolerance,
-        orientation_tolerance,
-        base_pose=np.zeros(3),
-        base_orient=np.array([0, 0, 0, 1]),
+        usd_path: str,
+        robot_name: str,
+        robot_prim_path: str,
+        frame: str,
+        position_target: object,
+        orientation_target: object,
+        position_tolerance: float,
+        orientation_tolerance: float,
+        base_pose: object = np.zeros(3),
+        base_orient: object = np.array([0, 0, 0, 1]),
     ):
         """Test inverse kinematics by solving for target pose and verifying solution accuracy.
 
@@ -544,7 +544,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         jerk_lim = lk.get_cspace_jerk_limits()
         self.assertTrue(np.allclose(jerk_lim, [7500, 3750, 5000, 6250, 7500, 10000, 10000], 0.0001))
 
-    async def move_until_still(self, robot, timeout=500) -> int:
+    async def move_until_still(self, robot: object, timeout: int = 500) -> int:
         """Move the robot until it reaches a stable position.
 
         Waits for the robot to stop moving by monitoring joint position stability across multiple frames.

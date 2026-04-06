@@ -140,7 +140,7 @@ class NewtonStage:
             raise ValueError(f"Invalid solver type: {solver_type}")
 
     @carb.profiler.profile
-    def on_update(self, event: "carb.events.IEvent", dt: float):
+    def on_update(self, event: "carb.events.IEvent", dt: float) -> None:
         """Update callback for stage update events.
 
         Args:
@@ -172,7 +172,7 @@ class NewtonStage:
         self.update_fabric()
 
     @carb.profiler.profile
-    def step_sim(self, dt: float):
+    def step_sim(self, dt: float) -> None:
         """Step the simulation by the given time delta.
 
         Args:
@@ -274,7 +274,7 @@ class NewtonStage:
                 self.device,
             )
 
-    def _restore_fabric_transforms(self):
+    def _restore_fabric_transforms(self) -> None:
         """Restore Fabric body transforms to the initial USD state.
 
         Called on timeline STOP to ensure nested rigid body hierarchies return
@@ -295,7 +295,7 @@ class NewtonStage:
             xformable = usdrt.Rt.Xformable(prim)
             xformable.SetWorldXformFromUsd()
 
-    def initialize_newton(self, device: str | None):
+    def initialize_newton(self, device: str | None) -> None:
         """Initialize Newton simulation from the current USD stage.
 
         Args:
@@ -455,7 +455,7 @@ class NewtonStage:
         self.initialized = True
         self._initializing = False
 
-    def simulate(self, num_substeps: int | None = None, dt: float | None = None):
+    def simulate(self, num_substeps: int | None = None, dt: float | None = None) -> None:
         """Simulate the world with the given number of substeps.
 
         Args:

@@ -108,13 +108,32 @@ def _apply_numpy_coverage_patch() -> None:
     original_prod = npm._prod
 
     def _is_no_value_type(obj: Any) -> bool:
-        """Check if an object is coverage.py's _NoValueType sentinel."""
+        """Check if an object is coverage.py's _NoValueType sentinel.
+
+        Args:
+            obj: The object to check.
+
+        Returns:
+            True if the object is a _NoValueType sentinel.
+        """
         return hasattr(obj, "__class__") and obj.__class__.__name__ == "_NoValueType"
 
     def _coverage_amax(
         a: Any, axis: Any = None, out: Any = None, keepdims: Any = False, initial: Any = None, where: Any = True
     ) -> Any:
-        """Handle coverage.py _NoValueType sentinels in max operations."""
+        """Handle coverage.py _NoValueType sentinels in max operations.
+
+        Args:
+            a: Input array.
+            axis: Axis along which to operate.
+            out: Output array.
+            keepdims: Whether to keep dimensions.
+            initial: Initial value.
+            where: Condition for elements to include.
+
+        Returns:
+            Maximum value(s) of the array.
+        """
         try:
             result = original_amax(a, axis, out, keepdims, initial, where)
             if _is_no_value_type(result):
@@ -132,7 +151,19 @@ def _apply_numpy_coverage_patch() -> None:
     def _coverage_amin(
         a: Any, axis: Any = None, out: Any = None, keepdims: Any = False, initial: Any = None, where: Any = True
     ) -> Any:
-        """Handle coverage.py _NoValueType sentinels in min operations."""
+        """Handle coverage.py _NoValueType sentinels in min operations.
+
+        Args:
+            a: Input array.
+            axis: Axis along which to operate.
+            out: Output array.
+            keepdims: Whether to keep dimensions.
+            initial: Initial value.
+            where: Condition for elements to include.
+
+        Returns:
+            Minimum value(s) of the array.
+        """
         try:
             result = original_amin(a, axis, out, keepdims, initial, where)
             if _is_no_value_type(result):
@@ -156,7 +187,20 @@ def _apply_numpy_coverage_patch() -> None:
         initial: Any = 0,
         where: Any = True,
     ) -> Any:
-        """Handle coverage.py _NoValueType sentinels in sum operations."""
+        """Handle coverage.py _NoValueType sentinels in sum operations.
+
+        Args:
+            a: Input array.
+            axis: Axis along which to operate.
+            dtype: Data type of the output.
+            out: Output array.
+            keepdims: Whether to keep dimensions.
+            initial: Initial value.
+            where: Condition for elements to include.
+
+        Returns:
+            Sum of array elements.
+        """
         try:
             result = original_sum(a, axis, dtype, out, keepdims, initial, where)
             if _is_no_value_type(result):
@@ -180,7 +224,20 @@ def _apply_numpy_coverage_patch() -> None:
         initial: Any = 1,
         where: Any = True,
     ) -> Any:
-        """Handle coverage.py _NoValueType sentinels in prod operations."""
+        """Handle coverage.py _NoValueType sentinels in prod operations.
+
+        Args:
+            a: Input array.
+            axis: Axis along which to operate.
+            dtype: Data type of the output.
+            out: Output array.
+            keepdims: Whether to keep dimensions.
+            initial: Initial value.
+            where: Condition for elements to include.
+
+        Returns:
+            Product of array elements.
+        """
         try:
             result = original_prod(a, axis, dtype, out, keepdims, initial, where)
             if _is_no_value_type(result):

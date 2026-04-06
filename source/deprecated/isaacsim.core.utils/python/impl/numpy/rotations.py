@@ -23,7 +23,9 @@ from pxr import Gf
 from scipy.spatial.transform import Rotation
 
 
-def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion], device=None) -> np.ndarray:
+def gf_quat_to_tensor(
+    orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion], device: object = None
+) -> np.ndarray:
     """Converts a pxr Quaternion type to a numpy array following [w, x, y, z] convention.
 
     Args:
@@ -40,7 +42,7 @@ def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternio
 
 
 def euler_angles_to_quats(
-    euler_angles: np.ndarray, degrees: bool = False, extrinsic: bool = True, device=None
+    euler_angles: np.ndarray, degrees: bool = False, extrinsic: bool = True, device: object = None
 ) -> np.ndarray:
     """Vectorized version of converting euler angles to quaternion (scalar first)
 
@@ -69,7 +71,7 @@ def euler_angles_to_quats(
 
 
 def quats_to_euler_angles(
-    quaternions: np.ndarray, degrees: bool = False, extrinsic: bool = True, device=None
+    quaternions: np.ndarray, degrees: bool = False, extrinsic: bool = True, device: object = None
 ) -> np.ndarray:
     """Vectorized version of converting quaternions (scalar first) to euler angles
 
@@ -97,7 +99,7 @@ def quats_to_euler_angles(
     return result
 
 
-def rot_matrices_to_quats(rotation_matrices: np.ndarray, device=None) -> np.ndarray:
+def rot_matrices_to_quats(rotation_matrices: np.ndarray, device: object = None) -> np.ndarray:
     """Vectorized version of converting rotation matrices to quaternions
 
     Args:
@@ -116,7 +118,7 @@ def rot_matrices_to_quats(rotation_matrices: np.ndarray, device=None) -> np.ndar
     return result
 
 
-def quats_to_rot_matrices(quaternions: np.ndarray, device=None) -> np.ndarray:
+def quats_to_rot_matrices(quaternions: np.ndarray, device: object = None) -> np.ndarray:
     """Vectorized version of converting quaternions to rotation matrices
 
     Args:
@@ -135,7 +137,7 @@ def quats_to_rot_matrices(quaternions: np.ndarray, device=None) -> np.ndarray:
     return result
 
 
-def rotvecs_to_quats(rotation_vectors: np.ndarray, degrees: bool = False, device=None) -> np.ndarray:
+def rotvecs_to_quats(rotation_vectors: np.ndarray, degrees: bool = False, device: object = None) -> np.ndarray:
     """Vectorized version of converting rotation vectors to quaternions
 
     Args:
@@ -156,7 +158,7 @@ def rotvecs_to_quats(rotation_vectors: np.ndarray, degrees: bool = False, device
     return result
 
 
-def quats_to_rotvecs(quaternions: np.ndarray, device=None) -> np.ndarray:
+def quats_to_rotvecs(quaternions: np.ndarray, device: object = None) -> np.ndarray:
     """Vectorized version of converting quaternions to rotation vectors
 
     Args:
@@ -176,7 +178,7 @@ def quats_to_rotvecs(quaternions: np.ndarray, device=None) -> np.ndarray:
     return result
 
 
-def rad2deg(radian_value: np.ndarray, device=None) -> np.ndarray:
+def rad2deg(radian_value: np.ndarray, device: object = None) -> np.ndarray:
     """Converts angles from radians to degrees.
 
     Args:
@@ -189,7 +191,7 @@ def rad2deg(radian_value: np.ndarray, device=None) -> np.ndarray:
     return np.rad2deg(radian_value)
 
 
-def deg2rad(degree_value: np.ndarray, device=None) -> np.ndarray:
+def deg2rad(degree_value: np.ndarray, device: object = None) -> np.ndarray:
     """Converts angles from degrees to radians.
 
     Args:
@@ -215,7 +217,7 @@ def xyzw2wxyz(q: np.ndarray, ret_torch: bool = False) -> np.ndarray:
     return np.roll(q, 1, -1)
 
 
-def wxyz2xyzw(q, ret_torch=False) -> np.ndarray:
+def wxyz2xyzw(q: np.ndarray, ret_torch: bool = False) -> np.ndarray:
     """Converts quaternion from WXYZ order to XYZW order.
 
     Args:

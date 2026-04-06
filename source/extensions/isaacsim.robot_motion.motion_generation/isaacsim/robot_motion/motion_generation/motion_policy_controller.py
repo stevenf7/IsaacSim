@@ -71,6 +71,9 @@ class MotionPolicyController(BaseController):
         Args:
             obstacle: Dynamic, Visual, or Fixed object from isaacsim.core.api.objects.
             static: If True, the obstacle may be assumed by the MotionPolicy to remain stationary over time.
+
+        Returns:
+            None.
         """
         self._motion_policy.add_obstacle(obstacle, static=static)
         return
@@ -80,12 +83,19 @@ class MotionPolicyController(BaseController):
 
         Args:
             obstacle: Object from isaacsim.core.api.objects that has been added to the motion_policy.
+
+        Returns:
+            None.
         """
         self._motion_policy.remove_obstacle(obstacle)
         return
 
     def reset(self):
-        """Reset the motion policy state."""
+        """Reset the motion policy state.
+
+        Returns:
+            None.
+        """
         self._motion_policy.reset()
         return
 

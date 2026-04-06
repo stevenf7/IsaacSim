@@ -28,8 +28,8 @@ def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value
 
     Arguments:
         carb_settings: Carb settings interface.
-        setting (str): Name of setting to change.
-        value (Any): New value for the setting.
+        setting: Name of setting to change.
+        value: New value for the setting.
 
     Raises:
         TypeError: If the type of value does not match setting type.
@@ -50,7 +50,10 @@ def open_stage(usd_path: str) -> bool:
     """Open the given usd file and replace currently opened stage.
 
     Args:
-        usd_path (str): Path to open.
+        usd_path: Path to open.
+
+    Returns:
+        True if the stage was opened successfully, False otherwise.
     """
     import omni.usd
     from pxr import Usd
@@ -79,7 +82,10 @@ def save_stage(usd_path: str) -> bool:
     """Save usd file to path, it will be overwritten with the current stage.
 
     Args:
-        usd_path (str): Path to save the current stage to.
+        usd_path: Path to save the current stage to.
+
+    Returns:
+        True if the stage was saved successfully, False otherwise.
     """
     import omni.usd
     from pxr import Usd
@@ -117,7 +123,11 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
 
 
 def is_stage_loading() -> bool:
-    """Convenience function to see if any files are being loaded. True if loading, False otherwise."""
+    """Convenience function to see if any files are being loaded.
+
+    Returns:
+        True if loading, False otherwise.
+    """
     import omni.usd
 
     context = omni.usd.get_context()

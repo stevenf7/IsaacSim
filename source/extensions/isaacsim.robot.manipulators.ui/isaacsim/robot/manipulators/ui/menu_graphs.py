@@ -66,7 +66,7 @@ class ArticulationPositionWindow(MenuHelperWindow):
         # build UI
         self._build_ui()
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         """Builds the user interface for the articulation position controller window.
 
         Creates the UI components including graph path input, robot prim selector, instruction text,
@@ -337,7 +337,7 @@ class ArticulationPositionWindow(MenuHelperWindow):
         """
         self.visible = False
 
-    def _on_use_existing_graph(self, check_state):
+    def _on_use_existing_graph(self, check_state: bool) -> None:
         """Handles the checkbox state change for using an existing graph.
 
         Args:
@@ -377,7 +377,7 @@ class ArticulationVelocityWindow(MenuHelperWindow):
         # build UI
         self._build_ui()
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         """Constructs the user interface elements for the velocity controller window.
 
         Creates input fields for graph path and robot prim selection, instruction text,
@@ -635,7 +635,7 @@ class ArticulationVelocityWindow(MenuHelperWindow):
         """Handles the Cancel button click to close the window without creating a graph."""
         self.visible = False
 
-    def _on_use_existing_graph(self, check_state):
+    def _on_use_existing_graph(self, check_state: bool) -> None:
         """Updates the flag for adding to an existing graph based on checkbox state.
 
         Args:
@@ -676,7 +676,7 @@ class GripperWindow(MenuHelperWindow):
         # build UI
         self._build_ui()
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         """Builds the gripper controller configuration UI.
 
         Creates the user interface elements for configuring gripper parameters including graph path,
@@ -1028,7 +1028,7 @@ class GripperWindow(MenuHelperWindow):
         """
         self.visible = False
 
-    def _on_checked_box(self, check_state):
+    def _on_checked_box(self, check_state: bool) -> None:
         """Handles checkbox state change for keyboard control option.
 
         Args:
@@ -1037,7 +1037,7 @@ class GripperWindow(MenuHelperWindow):
         self._use_keyboard = check_state
         print(f"using keyboard set to {self._use_keyboard}\n O-open, C-close, N-stop")
 
-    def _on_use_existing_graph(self, check_state):
+    def _on_use_existing_graph(self, check_state: bool) -> None:
         """Handles checkbox state change for using existing graph option.
 
         Args:

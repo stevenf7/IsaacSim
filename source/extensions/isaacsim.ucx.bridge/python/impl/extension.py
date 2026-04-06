@@ -26,7 +26,7 @@ class UCXBridgeExtension(omni.ext.IExt):
     This extension brings together all UCX extensions required for the UCX bridge extension.
     """
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str):
         """Initializes the UCX Bridge extension.
 
         Args:

@@ -54,7 +54,7 @@ class PrepareFiles:
         **kwargs: Additional keyword arguments passed to parent initialization.
     """
 
-    def __init__(self, visible, *args, **kwargs):
+    def __init__(self, visible: bool, *args: object, **kwargs: object):
         self.visible = visible
 
         self._next_step_button = None
@@ -110,7 +110,7 @@ class PrepareFiles:
         self._robot_name = ""
         self._robot = None
 
-    def __next_step(self, verfiy_fn=None):
+    def __next_step(self, verfiy_fn: callable = None):
         """Create the next step button for navigating to Robot Hierarchy page.
 
         Args:
@@ -317,7 +317,7 @@ class PrepareFiles:
                 self._preprocess_page()
                 self._update_widgets()
 
-    def _overwrite_current_stage_widget_changed(self, value):
+    def _overwrite_current_stage_widget_changed(self, value: object):
         """Handle changes to the overwrite current stage checkbox.
 
         Args:
@@ -328,7 +328,7 @@ class PrepareFiles:
         else:
             self._overwrite_stage_frame.visible = False
 
-    def _save_copy_in_robot_root_folder_widget_changed(self, value):
+    def _save_copy_in_robot_root_folder_widget_changed(self, value: object):
         """Handle changes to the save copy in robot root folder checkbox.
 
         Args:
@@ -411,7 +411,7 @@ class PrepareFiles:
         else:
             self._save_current_stage_widget_frame.visible = False
 
-    def select_robot_folder(self, widget):
+    def select_robot_folder(self, widget: object):
         """Open a folder picker dialog to select a robot folder.
 
         Args:
@@ -419,10 +419,13 @@ class PrepareFiles:
         """
         open_folder_picker(lambda filename, path: widget.model.set_value(path))
 
-    def _preprocess_page(self):
+    def _preprocess_page(self) -> None:
         """Processes to run every time the page is shown.
 
         Gets data from the registry and updates the widgets with current robot information, stage path, and original robot file path.
+
+        Returns:
+            None if the stage or robot is not available.
         """
         stage = omni.usd.get_context().get_stage()
         self._robot = RobotRegistry().get()

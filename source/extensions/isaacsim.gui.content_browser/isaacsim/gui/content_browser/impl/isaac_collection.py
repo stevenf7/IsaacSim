@@ -18,7 +18,7 @@
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 import carb.settings
 import omni.client
@@ -100,7 +100,7 @@ class IsaacCollection(CollectionItem):
         """
         return IsaacConnectionItem(name, path)
 
-    async def populate_children_async(self) -> Any:
+    async def populate_children_async(self) -> None:
         """Populates the Isaac Sim collection with configured folder connections.
 
         Adds child items for each folder configured in the Isaac Sim asset root settings,

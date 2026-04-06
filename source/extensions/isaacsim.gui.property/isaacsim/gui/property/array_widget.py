@@ -52,7 +52,17 @@ class _BaseMultiField:
         default: Default value to use when creating new items or initializing empty fields.
     """
 
-    def __init__(self, model, index, count, frame, button_style, callback, field_type, default):
+    def __init__(
+        self,
+        model: object,
+        index: object,
+        count: int,
+        frame: object,
+        button_style: dict,
+        callback: str,
+        field_type: type,
+        default: object,
+    ):
         self._model = model
         self._index = index
         self._frame = frame
@@ -129,7 +139,7 @@ class _CustomMultiIntField(_BaseMultiField):
         callback: The callback method name to execute when the button is clicked.
     """
 
-    def __init__(self, model, index, count, frame, button_style, callback):
+    def __init__(self, model: object, index: object, count: int, frame: object, button_style: dict, callback: str):
         super().__init__(model, index, count, frame, button_style, callback, ui.MultiIntField, 0)
 
     def get_field_value(self, index: int) -> int:
@@ -161,7 +171,7 @@ class _CustomMultiFloatField(_BaseMultiField):
         callback: Name of the callback method to invoke when the button is clicked (e.g., 'remove' or 'append').
     """
 
-    def __init__(self, model, index, count, frame, button_style, callback):
+    def __init__(self, model: object, index: object, count: int, frame: object, button_style: dict, callback: str):
         super().__init__(model, index, count, frame, button_style, callback, ui.MultiFloatField, 0.0)
 
     def get_field_value(self, index: int) -> float:
@@ -196,14 +206,14 @@ class _ArrayBaseItem:
             structure changes.
     """
 
-    def __init__(self, type_name, model, index=None, frame=None):
+    def __init__(self, type_name: object, model: object, index: object = None, frame: object = None):
         self._value = None
         self._type_name = type_name
         self._model = model
         self._index = index
         self._frame = frame
 
-    def create_list_item(self, button_style, callback):
+    def create_list_item(self, button_style: dict, callback: str):
         """Creates a list item UI element based on the array type.
 
         Creates an appropriate input field (int or float, single or multi-field) with an action button based on the
@@ -251,7 +261,7 @@ class _ArrayWidgetBuilder:
         model: The UsdArrayAttributeModel that manages the attribute data.
     """
 
-    def __init__(self, stage, attr_name, type_name, model):
+    def __init__(self, stage: object, attr_name: str, type_name: object, model: object):
         self._model = model
         self._stage = stage
         self._attr_name = attr_name
@@ -337,7 +347,7 @@ class _UsdArrayAttributeModel(UsdAttributeModel):
         """
         return self._value[index]
 
-    def set_item(self, index: int, item):
+    def set_item(self, index: int, item: object):
         """Updates an item in the USD array attribute at the specified index.
 
         Args:
@@ -348,7 +358,7 @@ class _UsdArrayAttributeModel(UsdAttributeModel):
         new_list[index] = item
         self.set_value(new_list)
 
-    def add_item(self, item):
+    def add_item(self, item: object):
         """Appends a new item to the end of the USD array attribute.
 
         Args:
@@ -418,7 +428,7 @@ class ArrayPropertiesWidget(UsdPropertiesWidget):
 
         return True
 
-    def _filter_props_to_build(self, props):
+    def _filter_props_to_build(self, props: list):
         """Filters properties to include only array-based USD attributes.
 
         Args:
@@ -458,13 +468,13 @@ class ArrayPropertiesWidget(UsdPropertiesWidget):
     @classmethod
     def _array_builder(
         cls,
-        stage,
-        attr_name,
-        type_name,
-        metadata,
+        stage: object,
+        attr_name: str,
+        type_name: object,
+        metadata: dict,
         prim_paths: list[Sdf.Path],
-        additional_label_kwargs=None,
-        additional_widget_kwargs=None,
+        additional_label_kwargs: object = None,
+        additional_widget_kwargs: object = None,
     ):
         """Creates an array widget builder for USD array attributes.
 

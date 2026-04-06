@@ -62,7 +62,11 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     async def _create_test_environment(self):
-        """Create test environment with ground plane, cubes, cone, and depth camera."""
+        """Create test environment with ground plane, cubes, cone, and depth camera.
+
+        Returns:
+            None.
+        """
         await create_new_stage_async()
 
         # Create a plane and dome light

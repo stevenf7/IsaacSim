@@ -14,17 +14,17 @@
 # limitations under the License.
 
 
-def is_relationship_prepended(relationship):
+def is_relationship_prepended(relationship: object) -> bool:
     """Check if a relationship is prepended in the layer stack.
 
     Examines the property stack of the relationship to determine if it uses
     prepended items rather than explicit items in the target path list.
 
     Args:
-        relationship (Usd.Relationship): The USD relationship to check.
+        relationship: The USD relationship to check.
 
     Returns:
-        bool: True if the relationship is prepended, False if it uses explicit items.
+        True if the relationship is prepended, False if it uses explicit items.
     """
     rel_stack = relationship.GetPropertyStack()
     for spec in rel_stack:
@@ -34,17 +34,17 @@ def is_relationship_prepended(relationship):
     return True
 
 
-def make_relationship_prepended(relationship):
+def make_relationship_prepended(relationship: object) -> bool:
     """Convert a relationship to use prepended items in the layer stack.
 
     Modifies the relationship's property specs to use prepended items instead of
     explicit items, which allows for composition with stronger layers.
 
     Args:
-        relationship (Usd.Relationship): The USD relationship to convert.
+        relationship: The USD relationship to convert.
 
     Returns:
-        bool: True if the operation was successful.
+        True if the operation was successful.
     """
 
     rel_stack = relationship.GetPropertyStack()

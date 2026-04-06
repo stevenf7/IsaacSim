@@ -294,7 +294,7 @@ class SingleArticulation(_SinglePrimWrapper):
         """
         return self._articulation_view.dof_names
 
-    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None):
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
         """Create a physics simulation view if not passed and an articulation view using PhysX tensor API.
 
         .. note::
@@ -354,7 +354,7 @@ class SingleArticulation(_SinglePrimWrapper):
         """
         return self._articulation_view.get_articulation_body_count()
 
-    def disable_gravity(self):
+    def disable_gravity(self) -> None:
         """Keep gravity from affecting the robot.
 
         Example:
@@ -369,7 +369,7 @@ class SingleArticulation(_SinglePrimWrapper):
         )
         return
 
-    def enable_gravity(self):
+    def enable_gravity(self) -> None:
         """Allow gravity to affect the robot.
 
         Example:
@@ -383,7 +383,7 @@ class SingleArticulation(_SinglePrimWrapper):
         )
         return
 
-    def set_world_velocity(self, velocity: np.ndarray):
+    def set_world_velocity(self, velocity: np.ndarray) -> None:
         """Set the articulation root velocity
 
         Args:
@@ -1000,7 +1000,7 @@ class SingleArticulation(_SinglePrimWrapper):
         """
         return self._articulation_view.get_solver_position_iteration_counts()[0]
 
-    def set_solver_velocity_iteration_count(self, count: int):
+    def set_solver_velocity_iteration_count(self, count: int) -> None:
         """Set the solver (velocity) iteration count for the articulation
 
         The solver iteration count determines how accurately contacts, drives, and limits are resolved.

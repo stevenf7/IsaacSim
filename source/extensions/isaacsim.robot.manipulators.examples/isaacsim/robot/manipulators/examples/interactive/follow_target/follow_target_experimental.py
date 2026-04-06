@@ -87,7 +87,7 @@ class UR10FollowTargetInteractive(BaseSample):
         self.controller = None
         self._is_following = False
 
-    def _follow_target_physics_callback(self, dt, context):
+    def _follow_target_physics_callback(self, dt: float, context: object) -> None:
         """Physics callback to execute follow target step by step.
 
         Args:

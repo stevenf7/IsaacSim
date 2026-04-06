@@ -28,7 +28,7 @@ class RobotSelfCollisionWindow(ui.Window):
     """Dockable window wrapping :class:`CollisionDetectorWidget`.
 
     Args:
-        usd_context_name (str): Name of the USD context. Empty string uses the default.
+        usd_context_name: Name of the USD context. Empty string uses the default.
     """
 
     WINDOW_NAME = "Robot Self-Collision Detector"

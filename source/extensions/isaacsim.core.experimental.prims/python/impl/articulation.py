@@ -4618,7 +4618,7 @@ class Articulation(XformPrim):
     Internal callbacks.
     """
 
-    def _on_physics_ready(self, event):
+    def _on_physics_ready(self, event: object) -> None:
         """Handle physics ready event.
 
         Initializes the physics articulation view and sets up internal physics tensor entity properties
@@ -4738,7 +4738,7 @@ class Articulation(XformPrim):
         # C++ data view setup is intentionally opt-in to avoid affecting
         # existing Python-only workflows/tests unless explicitly requested.
 
-    def _setup_cpp_data_view(self):
+    def _setup_cpp_data_view(self) -> None:
         """Set up C++ read-only data view for this articulation.
 
         For PhysX: C++ sets up TensorApi callbacks internally -- no Python work needed.
@@ -4773,7 +4773,7 @@ class Articulation(XformPrim):
         if is_newton:
             self._setup_newton_articulation_callbacks(art_view)
 
-    def _setup_newton_articulation_callbacks(self, art_view):
+    def _setup_newton_articulation_callbacks(self, art_view: object) -> None:
         """Register Python fill callbacks for Newton-backed articulation fields.
 
         Args:
@@ -4844,7 +4844,7 @@ class Articulation(XformPrim):
             self._cpp_data_view = None
             self._cpp_data_view_id = None
 
-    def _on_timeline_stop(self, event):
+    def _on_timeline_stop(self, event: object) -> None:
         """Handle timeline stop event.
 
         Invalidates the physics articulation view when the timeline stops to clean up physics resources.

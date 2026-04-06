@@ -49,7 +49,6 @@ class UIBuilder:
     """
 
     def __init__(self) -> None:
-        """Initialize the UIBuilder with default state and UI element containers."""
         # Frames are sub-windows that can contain multiple UI elements
         self.frames = []
         # UI elements created using a UIElementWrapper instance

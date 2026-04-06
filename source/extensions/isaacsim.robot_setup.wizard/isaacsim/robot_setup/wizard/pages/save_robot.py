@@ -47,7 +47,7 @@ class SaveRobot:
         **kwargs: Additional keyword arguments.
     """
 
-    def __init__(self, visible, *args, **kwargs):
+    def __init__(self, visible: bool, *args: object, **kwargs: object):
         self.visible = visible
         self.frame = ui.Frame(visible=visible)
         self.frame.set_build_fn(self._build_frame)

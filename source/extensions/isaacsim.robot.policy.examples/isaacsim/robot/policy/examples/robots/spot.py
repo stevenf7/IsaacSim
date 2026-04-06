@@ -76,7 +76,11 @@ class SpotFlatTerrainPolicy(PolicyController):
         self._policy_counter = 0
 
     def _set_physics_variant(self, prim_path: str) -> None:
-        """Set the Physics variant on the multi-physics asset to match the active engine."""
+        """Set the Physics variant on the multi-physics asset to match the active engine.
+
+        Args:
+            prim_path: The USD prim path of the robot asset.
+        """
         stage = omni.usd.get_context().get_stage()
         prim = stage.GetPrimAtPath(prim_path)
         if not prim.IsValid():
@@ -87,7 +91,7 @@ class SpotFlatTerrainPolicy(PolicyController):
         engine = SimulationManager.get_active_physics_engine()
         variant_sets.GetVariantSet("Physics").SetVariantSelection(engine)
 
-    def _compute_observation(self, command):
+    def _compute_observation(self, command: object) -> object:
         """Compute the observation vector for the policy.
 
         The observation includes base linear/angular velocities, gravity direction,
@@ -97,7 +101,7 @@ class SpotFlatTerrainPolicy(PolicyController):
             command: The robot command velocities (v_x, v_y, w_z) in m/s and rad/s
 
         Returns:
-            A 48-dimensional observation vector containing:
+            object: A 48-dimensional observation vector containing:
             - [0:3]: Base linear velocity in body frame
             - [3:6]: Base angular velocity in body frame
             - [6:9]: Gravity direction in body frame
@@ -135,7 +139,7 @@ class SpotFlatTerrainPolicy(PolicyController):
             obs[36:48] = self._previous_action
         return obs
 
-    def forward(self, dt, command):
+    def forward(self, dt: float, command: object) -> None:
         """Compute the desired joint positions and apply them to the articulation.
 
         Policy runs at decimated rate, but control commands are applied every physics step.

@@ -39,7 +39,7 @@ class ProgressColorState(Enum):
     """Indicates a step that has been finished successfully."""
 
 
-def Singleton(class_):
+def Singleton(class_: type):
     """A singleton decorator that ensures only one instance of a class exists.
 
     When applied to a class, this decorator maintains a single instance across all instantiation attempts.
@@ -78,15 +78,13 @@ class ProgressRegistry:
         call to each item in the list in ascending order by index.
         """
 
-        def __call__(self, *args, **kwargs):
+        def __call__(self, *args: object, **kwargs: object):
             """Called when the instance is "called" as a function.
 
             Calls all saved functions with the provided arguments.
 
             Args:
                 *args: Variable length argument list passed to each callback function.
-
-            Keyword Args:
                 **kwargs: Arbitrary keyword arguments passed to each callback function.
             """
             # Call all the saved functions
@@ -111,10 +109,7 @@ class ProgressRegistry:
             fn: The callback function to register with the event.
         """
 
-        def __init__(self, event, fn):
-            """
-            Save the function, the event, and add the function to the event.
-            """
+        def __init__(self, event: object, fn: callable):
             self._fn = fn
             self._event = event
             event.add(self._fn)
@@ -135,7 +130,7 @@ class ProgressRegistry:
         """Called to cancel current search"""
         pass
 
-    def set_steps(self, steps):
+    def set_steps(self, steps: dict):
         """Set the steps
 
         Args:
@@ -143,7 +138,7 @@ class ProgressRegistry:
         """
         self._steps_dict = steps
 
-    def get_progress_by_name(self, step_name):
+    def get_progress_by_name(self, step_name: str):
         """Get the steps
 
         Args:
@@ -156,7 +151,7 @@ class ProgressRegistry:
             return self._steps_dict[step_name]
         return None
 
-    def _progress_changed(self, step_name, state):
+    def _progress_changed(self, step_name: str, state: object):
         """Call the event object that has the list of functions
 
         Args:
@@ -165,7 +160,7 @@ class ProgressRegistry:
         """
         self.__on_progress_changed(step_name, state)
 
-    def subscribe_progress_changed(self, fn):
+    def subscribe_progress_changed(self, fn: callable):
         """Return the object that will automatically unsubscribe when destroyed.
 
         Args:
@@ -176,7 +171,7 @@ class ProgressRegistry:
         """
         return self._EventSubscription(self.__on_progress_changed, fn)
 
-    def set_step_progress(self, step_name, state):
+    def set_step_progress(self, step_name: str, state: object):
         """Updates the progress state of a step and triggers change notifications.
 
         Args:

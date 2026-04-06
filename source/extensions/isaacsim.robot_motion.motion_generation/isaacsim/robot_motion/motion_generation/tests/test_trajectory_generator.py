@@ -112,7 +112,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         sphereLight.CreateIntensityAttr(100000)
         SingleXFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
 
-    async def _prepare_stage(self, robot):
+    async def _prepare_stage(self, robot: object):
         """Prepare the USD stage for trajectory testing.
 
         Initializes the simulation context, creates lighting, configures the robot with
@@ -244,15 +244,15 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
     async def _test_lula_c_space_traj_gen(
         self,
-        usd_path,
-        robot_name,
-        robot_prim_path,
-        ee_frame,
-        task_space_targets,
-        orientation_target,
-        timestamps=None,
-        interp_type="cubic_spline",
-        distance_thresh=0.01,
+        usd_path: str,
+        robot_name: str,
+        robot_prim_path: str,
+        ee_frame: str,
+        task_space_targets: object,
+        orientation_target: object,
+        timestamps: object = None,
+        interp_type: str = "cubic_spline",
+        distance_thresh: float = 0.01,
     ):
         """Test Lula C-space trajectory generation for a specified robot configuration.
 
@@ -629,7 +629,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         ee_frame: str,
         task_space_targets: np.ndarray,
         orientation_targets: np.ndarray,
-        built_path=None,
+        built_path: object = None,
         distance_thresh: float = 0.01,
     ):
         """Tests the Lula task space trajectory generator for a specified robot configuration.

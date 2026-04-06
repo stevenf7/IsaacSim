@@ -35,7 +35,9 @@ class CellLabelField:
         alignment: Text alignment within the field.
     """
 
-    def __init__(self, value_model, field_type, format, alignment=ui.Alignment.LEFT_CENTER):
+    def __init__(
+        self, value_model: object, field_type: object, format: str, alignment: object = ui.Alignment.LEFT_CENTER
+    ):
         self._value_model = value_model
         self._init_value = format % (self.get_model_value(value_model))
         self._field_type = field_type
@@ -85,7 +87,7 @@ class CellLabelField:
         """
         return self._field
 
-    def get_model_value(self, model):
+    def get_model_value(self, model: object):
         """Extracts the value from a UI model based on its type.
 
         Args:
@@ -118,7 +120,7 @@ class CellLabelField:
             # it used to bulk edit, we need the field hook with the value model' value
             self._value_model.add_value_changed_fn(lambda m: self._update_field(m))
 
-    def _update_value(self, model):
+    def _update_value(self, model: object):
         """Updates the value model when the field value changes.
 
         Args:
@@ -129,7 +131,7 @@ class CellLabelField:
         if new_value != current_value:
             self._value_model.set_value(new_value)
 
-    def _update_field(self, model):
+    def _update_field(self, model: object):
         """Updates the field display when the value model changes.
 
         Args:
@@ -140,7 +142,7 @@ class CellLabelField:
         if new_value != current_value:
             self._field.model.set_value(new_value)
 
-    def _end_edit(self, model):
+    def _end_edit(self, model: object):
         """Handles the end of an edit operation on the field.
 
         Args:
@@ -148,7 +150,7 @@ class CellLabelField:
         """
         pass
 
-    def _begin_edit(self):
+    def _begin_edit(self) -> None:
         """Initiates an edit operation on the field if the field is enabled."""
         if not self._enable:
             return
@@ -169,7 +171,7 @@ class CellColor:
             used. When selected, up to three colors are displayed as separate rectangles.
     """
 
-    def __init__(self, colors):
+    def __init__(self, colors: list):
         self._colors = colors
         self._selected = ui.SimpleBoolModel(False)
         self._selected.add_value_changed_fn(lambda m: self._update_value(m))
@@ -237,7 +239,7 @@ class CellColor:
                     style={"background_color": self._colors[0], "border_radius": 0},
                 )
 
-    def _update_value(self, model):
+    def _update_value(self, model: object):
         """Updates the color cell display when the selection state changes.
 
         Clears the current frame and rebuilds the UI to reflect the new selection state.

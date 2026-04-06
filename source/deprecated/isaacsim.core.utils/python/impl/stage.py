@@ -36,11 +36,14 @@ _context = threading.local()  # thread-local storage to handle nested contexts a
 
 
 @contextlib.contextmanager
-def use_stage(stage: Usd.Stage) -> None:
+def use_stage(stage: Usd.Stage) -> typing.Generator[None, None, None]:
     """Context manager that sets a thread-local stage.
 
     Args:
         stage: The stage to set in the context.
+
+    Returns:
+        A context manager for the specified stage.
 
     Raises:
         AssertionError: If the stage is not a USD stage instance.
@@ -485,7 +488,7 @@ async def open_stage_async(usd_path: str) -> typing.Tuple[bool, int]:
     return (result, error)
 
 
-def save_stage(usd_path: str, save_and_reload_in_place=True) -> bool:
+def save_stage(usd_path: str, save_and_reload_in_place: bool = True) -> bool:
     """Save usd file to path, it will be overwritten with the current stage
 
     Args:
@@ -601,11 +604,14 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
         return False
 
 
-def traverse_stage(fabric=False) -> typing.Iterable:
+def traverse_stage(fabric: bool = False) -> typing.Iterable:
     """Traverse through prims (hidden or not) in the opened Usd stage.
 
+    Args:
+        fabric: If True, use the Fabric stage instead of the USD stage.
+
     Returns:
-        typing.Iterable: Generator which yields prims from the stage in depth-first-traversal order.
+        Generator which yields prims from the stage in depth-first-traversal order.
 
     Example:
 

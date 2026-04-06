@@ -32,10 +32,7 @@ class ComboListItem(ui.AbstractItem):
         item: The string value to display in the combo box item.
     """
 
-    def __init__(self, item):
-        """
-        item is a string
-        """
+    def __init__(self, item: str):
         super().__init__()
         self.model = ui.SimpleStringModel(item)
         self.item = item
@@ -54,7 +51,7 @@ class ComboListModel(ui.AbstractItemModel):
         default_index: Index of the default selected item in the list.
     """
 
-    def __init__(self, item_list, default_index):
+    def __init__(self, item_list: list, default_index: int):
         super().__init__()
         self._default_index = default_index
         self._current_index = ui.SimpleIntModel(default_index)
@@ -65,7 +62,7 @@ class ComboListModel(ui.AbstractItemModel):
             for item in item_list:
                 self._items.append(ComboListItem(item))
 
-    def get_item_children(self, item):
+    def get_item_children(self, item: object):
         """Returns the list of child items.
 
         Args:
@@ -76,7 +73,7 @@ class ComboListModel(ui.AbstractItemModel):
         """
         return self._items
 
-    def get_item_value_model(self, item, column_id):
+    def get_item_value_model(self, item: object, column_id: int):
         """Returns the value model for the specified item and column.
 
         Args:
@@ -161,7 +158,7 @@ class ComboListModel(ui.AbstractItemModel):
             self._items.append(ComboListItem(item))
         self._item_changed(None)
 
-    def selection_changed(self, model):
+    def selection_changed(self, model: object):
         """Handles selection changes in the combo list model.
 
         Triggered when the current index changes and notifies listeners of the model change.

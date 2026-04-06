@@ -137,7 +137,7 @@ class GPUFrametimeRecorder(MeasurementDataRecorder):
         """
         self.sample_gpu_time()
 
-    def sample_gpu_time(self):
+    def sample_gpu_time(self) -> None:
         """Sample GPU frametime for the current frame.
 
         Example:

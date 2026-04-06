@@ -233,8 +233,8 @@ class LidarRtx(BaseSensor):
             "StableIdMap",
             "GenericModelOutput",
         ],
-        **kwargs,
-    ):
+        **kwargs: object,
+    ) -> None:
         """Attach an annotator to the Lidar sensor.
 
         Args:
@@ -262,7 +262,7 @@ class LidarRtx(BaseSensor):
         self._annotators[annotator_name] = annotator
         return
 
-    def detach_annotator(self, annotator_name: str):
+    def detach_annotator(self, annotator_name: str) -> None:
         """Detach an annotator from the Lidar sensor.
 
         Args:
@@ -284,7 +284,7 @@ class LidarRtx(BaseSensor):
             carb.log_warn(f"Annotator {annotator_name} not attached to {self._render_product_path}")
         return
 
-    def detach_all_annotators(self):
+    def detach_all_annotators(self) -> None:
         """Detach all annotators from the Lidar sensor.
 
         Example:
@@ -320,7 +320,7 @@ class LidarRtx(BaseSensor):
         """
         return self._writers
 
-    def attach_writer(self, writer_name: str, **kwargs):
+    def attach_writer(self, writer_name: str, **kwargs: object) -> None:
         """Attach a writer to the Lidar sensor.
 
         Args:
@@ -343,7 +343,7 @@ class LidarRtx(BaseSensor):
         writer.attach([self._render_product_path])
         self._writers[writer_name] = writer
 
-    def detach_writer(self, writer_name: str):
+    def detach_writer(self, writer_name: str) -> None:
         """Detach a writer from the Lidar sensor.
 
         Args:
@@ -365,7 +365,7 @@ class LidarRtx(BaseSensor):
             carb.log_warn(f"Writer {writer_name} not attached to {self._render_product_path}")
         return
 
-    def detach_all_writers(self):
+    def detach_all_writers(self) -> None:
         """Detach all writers from the Lidar sensor.
 
         Example:
@@ -471,12 +471,12 @@ class LidarRtx(BaseSensor):
         """
         self.resume()
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Perform post-reset operations for the Lidar sensor."""
         BaseSensor.post_reset(self)
         return
 
-    def resume(self):
+    def resume(self) -> None:
         """Resume data acquisition for the Lidar sensor.
 
         Example:
@@ -497,7 +497,7 @@ class LidarRtx(BaseSensor):
             )
         return
 
-    def pause(self):
+    def pause(self) -> None:
         """Pause data acquisition for the Lidar sensor.
 
         Example:
@@ -681,7 +681,7 @@ class LidarRtx(BaseSensor):
             return self._current_frame["IsaacComputeRTXLidarFlatScan"].get("azimuthRange")
         return None
 
-    def enable_visualization(self):
+    def enable_visualization(self) -> None:
         """Enable visualization of the Lidar point cloud data.
 
         Example:
@@ -695,7 +695,7 @@ class LidarRtx(BaseSensor):
         self.attach_writer("RtxLidar" + "DebugDrawPointCloud")
         return
 
-    def disable_visualization(self):
+    def disable_visualization(self) -> None:
         """Disable visualization of the Lidar point cloud data.
 
         Example:

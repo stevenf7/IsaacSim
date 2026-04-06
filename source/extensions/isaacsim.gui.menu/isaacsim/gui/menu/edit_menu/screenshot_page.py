@@ -89,7 +89,7 @@ class ScreenshotPreferences(PreferenceBuilder):
                     # Show Ansel super resolution configuration, only when Ansel enabled
                     self._create_ansel_super_resolution_settings()
 
-    def _add_ansel_settings(self):  # pragma: no cover
+    def _add_ansel_settings(self) -> None:  # pragma: no cover
         """Add Ansel quality settings when Ansel is enabled."""
         # check if Ansel enabled. If not, do not show Ansel settings
         if not self._is_ansel_enabled():
@@ -99,7 +99,7 @@ class ScreenshotPreferences(PreferenceBuilder):
             "Quality", PERSISTENT_SETTINGS_PREFIX + "/exts/omni.ansel/quality", ["Low", "Medium", "High"]
         )
 
-    def _create_ansel_super_resolution_settings(self):  # pragma: no cover
+    def _create_ansel_super_resolution_settings(self) -> None:  # pragma: no cover
         """Add Ansel super resolution settings when available."""
         # check if Ansel enabled. If not, do not show Ansel settings
         if not self._is_ansel_enabled():
@@ -138,7 +138,7 @@ class ScreenshotPreferences(PreferenceBuilder):
             show_only_folders=True,
         )
 
-    def _on_dir_pick(self, real_path: str):
+    def _on_dir_pick(self, real_path: str) -> None:
         """Handle directory selection from the file importer.
 
         Args:

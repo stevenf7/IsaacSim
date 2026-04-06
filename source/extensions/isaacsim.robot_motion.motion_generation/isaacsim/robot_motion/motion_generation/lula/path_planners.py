@@ -60,7 +60,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         self._taskspace_target_position = None
         self._taskspace_target_rotation = None
 
-    def compute_path(self, active_joint_positions, watched_joint_positions) -> np.array:
+    def compute_path(self, active_joint_positions: object, watched_joint_positions: object) -> np.array:
         """Compute a path from the current robot configuration to the target.
 
         Args:
@@ -105,7 +105,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         self._taskspace_target_position = None
         self._taskspace_target_rotation = None
 
-    def set_end_effector_target(self, target_translation, target_orientation=None) -> None:
+    def set_end_effector_target(self, target_translation: object, target_orientation: object = None) -> None:
         """Set an end effector target for task space path planning.
 
         Args:
@@ -490,11 +490,14 @@ class RRT(LulaInterfaceHelper, PathPlanner):
 
         return self._rrt.set_param(param_name, value)
 
-    def _generate_plan_to_cspace_target(self, joint_positions):
+    def _generate_plan_to_cspace_target(self, joint_positions: object):
         """Generates a motion plan from the current joint positions to a configuration space target.
 
         Args:
             joint_positions: Current joint positions to plan from.
+
+        Returns:
+            None.
         """
         if self._cspace_target is None:
             self._plan = None
@@ -505,7 +508,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         else:
             self._plan = None
 
-    def _generate_plan_to_taskspace_target(self, joint_positions):
+    def _generate_plan_to_taskspace_target(self, joint_positions: object):
         """Generates a motion plan to reach a task space target.
 
         Uses the RRT algorithm to find a path from the current joint positions to the target end effector
@@ -514,6 +517,9 @@ class RRT(LulaInterfaceHelper, PathPlanner):
 
         Args:
             joint_positions: Current joint positions to start planning from.
+
+        Returns:
+            None.
         """
         if self._taskspace_target_position is None:
             self._plan = None

@@ -37,7 +37,7 @@ def get_prim_pose_in_meters(prim: SingleXFormPrim, meters_per_unit: float):
     return pos, rot
 
 
-def get_prim_pose_in_meters_rel_robot_base(prim, meters_per_unit, robot_pos, robot_rot):
+def get_prim_pose_in_meters_rel_robot_base(prim: object, meters_per_unit: float, robot_pos: object, robot_rot: object):
     """Get prim pose in meters relative to robot base coordinate frame.
 
     Args:
@@ -54,7 +54,7 @@ def get_prim_pose_in_meters_rel_robot_base(prim, meters_per_unit, robot_pos, rob
     return get_pose_rel_robot_base(trans, rot, robot_pos, robot_rot)
 
 
-def get_pose_rel_robot_base(trans, rot, robot_pos, robot_rot):
+def get_pose_rel_robot_base(trans: object, rot: object, robot_pos: object, robot_rot: object):
     """Get pose relative to robot base coordinate frame.
 
     Args:
@@ -81,7 +81,7 @@ def get_pose_rel_robot_base(trans, rot, robot_pos, robot_rot):
     return trans_rel, rot_rel
 
 
-def get_pose3(trans=None, rot_mat=None, rot_quat=None) -> lula.Pose3:
+def get_pose3(trans: object = None, rot_mat: object = None, rot_quat: object = None) -> lula.Pose3:
     """Get lula.Pose3 type representing a transformation.
     rot_mat will take precedence over rot_quat if both are supplied.
 

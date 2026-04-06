@@ -30,7 +30,47 @@ torch = import_module("torch")
 
 
 class ClothPrim(XFormPrim):
-    """The view class for cloth prims."""
+    """The view class for cloth prims.
+
+    Provides high level functions to deal with cloths (1 or more cloths)
+    as well as its attributes/ properties. This object wraps all matching cloths found at the regex provided at the prim_paths_expr.
+    This object wraps all matching Cloth Prims found at the regex provided at the prim_paths_expr.
+
+    Note: - if the prim does not already have a rigid body api applied to it before init, it will apply it.
+
+    Args:
+        prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
+        particle_systems: Particle systems to be applied to each prim.
+        particle_materials: Particle materials to be applied to each prim.
+        name: Shortname to be used as a key by Scene class.
+        reset_xform_properties: Whether to reset the transformation operation attributes of the prims to a standard
+            set.
+        positions: Default positions in the world frame of the prim. Shape is (N, 3).
+        translations: Default translations in the local frame of the prims (with respect to its parent prims).
+            Shape is (N, 3).
+        orientations: Default quaternion orientations in the world/local frame of the prim (depends if translation
+            or position is specified). Quaternion is scalar-first (w, x, y, z). Shape is (N, 4).
+        scales: Local scales to be applied to the prim's dimensions. Shape is (N, 3).
+        visibilities: Set to false for an invisible prim in the stage while rendering. Shape is (N,).
+        particle_masses: Particle masses to be applied to each prim.
+        pressures: Pressures to be applied to each prim. If > 0, a particle cloth has an additional pressure
+            constraint that provides inflatable (i.e. balloon-like) dynamics. The pressure times the rest volume
+            defines the volume the inflatable tries to match. Pressure only works well for closed or approximately
+            closed meshes, range: [0, inf), units: dimensionless.
+        particle_groups: Group Id of the particles of each prim, range: [0, 2^20).
+        self_collisions: Enable self collision of the particles of each prim.
+        self_collision_filters: Whether the simulation should filter particle-particle collisions based on the
+            rest position distances of each prim. Shape is (N,).
+        stretch_stiffnesses: Represents the stretch spring stiffnesses for linear springs placed between particles
+            to counteract stretching, shape is (N,). Range: [0, inf), units: force / distance = mass / second /
+            second.
+        bend_stiffnesses: Represents the spring bend stiffnesses for linear springs placed in a way to counteract
+            bending, shape is (N,). Range: [0, inf), units: force / distance = mass / second / second.
+        shear_stiffnesses: Represents the shear stiffnesses for linear springs placed in a way to counteract shear,
+            shape is (N,). Range: [0, inf), units: force / distance = mass / second / second.
+        spring_dampings: Damping on cloth spring constraints. Applies to all constraints parameterized by stiffness
+            attributes, range: [0, inf), shape is (N,). Units: force * second / distance = mass / second.
+    """
 
     def __init__(
         self,
@@ -54,46 +94,6 @@ class ClothPrim(XFormPrim):
         shear_stiffnesses: np.ndarray | torch.Tensor | None = None,
         spring_dampings: np.ndarray | torch.Tensor | None = None,
     ):
-        """
-        Provides high level functions to deal with cloths (1 or more cloths)
-        as well as its attributes/ properties. This object wraps all matching cloths found at the regex provided at the prim_paths_expr.
-        This object wraps all matching Cloth Prims found at the regex provided at the prim_paths_expr.
-
-        Note: - if the prim does not already have a rigid body api applied to it before init, it will apply it.
-
-        Args:
-            prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
-            particle_systems: Particle systems to be applied to each prim.
-            particle_materials: Particle materials to be applied to each prim.
-            name: Shortname to be used as a key by Scene class.
-            reset_xform_properties: Whether to reset the transformation operation attributes of the prims to a standard
-                set.
-            positions: Default positions in the world frame of the prim. Shape is (N, 3).
-            translations: Default translations in the local frame of the prims (with respect to its parent prims).
-                Shape is (N, 3).
-            orientations: Default quaternion orientations in the world/local frame of the prim (depends if translation
-                or position is specified). Quaternion is scalar-first (w, x, y, z). Shape is (N, 4).
-            scales: Local scales to be applied to the prim's dimensions. Shape is (N, 3).
-            visibilities: Set to false for an invisible prim in the stage while rendering. Shape is (N,).
-            particle_masses: Particle masses to be applied to each prim.
-            pressures: Pressures to be applied to each prim. If > 0, a particle cloth has an additional pressure
-                constraint that provides inflatable (i.e. balloon-like) dynamics. The pressure times the rest volume
-                defines the volume the inflatable tries to match. Pressure only works well for closed or approximately
-                closed meshes, range: [0, inf), units: dimensionless.
-            particle_groups: Group Id of the particles of each prim, range: [0, 2^20).
-            self_collisions: Enable self collision of the particles of each prim.
-            self_collision_filters: Whether the simulation should filter particle-particle collisions based on the
-                rest position distances of each prim. Shape is (N,).
-            stretch_stiffnesses: Represents the stretch spring stiffnesses for linear springs placed between particles
-                to counteract stretching, shape is (N,). Range: [0, inf), units: force / distance = mass / second /
-                second.
-            bend_stiffnesses: Represents the spring bend stiffnesses for linear springs placed in a way to counteract
-                bending, shape is (N,). Range: [0, inf), units: force / distance = mass / second / second.
-            shear_stiffnesses: Represents the shear stiffnesses for linear springs placed in a way to counteract shear,
-                shape is (N,). Range: [0, inf), units: force / distance = mass / second / second.
-            spring_dampings: Damping on cloth spring constraints. Applies to all constraints parameterized by stiffness
-                attributes, range: [0, inf), shape is (N,). Units: force * second / distance = mass / second.
-        """
         carb.log_warn(
             "Please note that support for particle cloth and related APIs is now deprecated. These features will be removed in future releases."
         )
@@ -155,7 +155,7 @@ class ClothPrim(XFormPrim):
             observer_name="isaacsim.core.prims.ClothPrim.initialize._invalidate_physics_handle_callback",
         )
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Clean up the ClothPrim instance by calling the parent destructor and releasing physics resources."""
         XFormPrim.__del__(self)
         if hasattr(self, "_physics_view"):
@@ -225,7 +225,7 @@ class ClothPrim(XFormPrim):
         carb.log_info("Cloth Prim View Device: {}".format(self._device))
         return
 
-    def _invalidate_physics_handle_callback(self, event):
+    def _invalidate_physics_handle_callback(self, event: object) -> None:
         """Callback to invalidate the physics handle when timeline stops.
 
         Args:
@@ -234,7 +234,7 @@ class ClothPrim(XFormPrim):
         self._physics_view = None
         return
 
-    def _apply_cloth_auto_api(self, index):
+    def _apply_cloth_auto_api(self, index: int):
         """Apply PhysxAutoParticleClothAPI to the cloth prim at the specified index.
 
         Args:
@@ -247,7 +247,7 @@ class ClothPrim(XFormPrim):
                 cloth_api = PhysxSchema.PhysxAutoParticleClothAPI.Apply(self._prims[index])
             self._cloth_auto_apis[index] = cloth_api
 
-    def _apply_cloth_api(self, index):
+    def _apply_cloth_api(self, index: int):
         """Apply PhysxParticleClothAPI to the cloth prim at the specified index.
 
         Args:
@@ -260,7 +260,7 @@ class ClothPrim(XFormPrim):
                 cloth_api = PhysxSchema.PhysxParticleClothAPI.Apply(self._prims[index])
             self._cloth_apis[index] = cloth_api
 
-    def _apply_particle_api(self, index):
+    def _apply_particle_api(self, index: int):
         """Apply PhysxParticleAPI to the cloth prim at the specified index.
 
         Args:

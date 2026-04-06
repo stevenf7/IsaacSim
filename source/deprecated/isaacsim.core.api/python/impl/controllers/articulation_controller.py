@@ -28,14 +28,14 @@ class ArticulationController(object):
     Checkout the required tutorials at https://docs.isaacsim.omniverse.nvidia.com/latest/index.html
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._dof_controllers = list()
         self._articulation_view = None
         self._default_kps = None
         self._default_kds = None
         return
 
-    def initialize(self, articulation_view):
+    def initialize(self, articulation_view: object) -> None:
         """Initialize the controller with an articulation view.
 
         Args:
@@ -44,7 +44,7 @@ class ArticulationController(object):
         self._articulation_view = articulation_view
         return
 
-    def apply_action(self, control_actions: ArticulationAction):
+    def apply_action(self, control_actions: ArticulationAction) -> None:
         """Apply control actions to the articulation for the next physics step.
 
         Args:
@@ -100,7 +100,9 @@ class ArticulationController(object):
         )
         return
 
-    def set_gains(self, kps: Optional[np.ndarray] = None, kds: Optional[np.ndarray] = None, save_to_usd: bool = False):
+    def set_gains(
+        self, kps: Optional[np.ndarray] = None, kds: Optional[np.ndarray] = None, save_to_usd: bool = False
+    ) -> None:
         """Set the PD controller gains.
 
         Args:
@@ -130,7 +132,7 @@ class ArticulationController(object):
         kps, kds = self._articulation_view.get_gains()
         return kps[0], kds[0]
 
-    def switch_control_mode(self, mode: str):
+    def switch_control_mode(self, mode: str) -> None:
         """Switch the control mode for all DOFs.
 
         Args:
@@ -142,7 +144,7 @@ class ArticulationController(object):
         self._articulation_view.switch_control_mode(mode=mode)
         return
 
-    def switch_dof_control_mode(self, dof_index: int, mode: str):
+    def switch_dof_control_mode(self, dof_index: int, mode: str) -> None:
         """Switch the control mode for a specific DOF.
 
         Args:
@@ -154,7 +156,7 @@ class ArticulationController(object):
         """
         self._articulation_view.switch_dof_control_mode(dof_index=dof_index, mode=mode)
 
-    def set_max_efforts(self, values: np.ndarray, joint_indices: Optional[Union[np.ndarray, list]] = None):
+    def set_max_efforts(self, values: np.ndarray, joint_indices: Optional[Union[np.ndarray, list]] = None) -> None:
         """Set maximum efforts for specified joints.
 
         Args:
@@ -185,7 +187,7 @@ class ArticulationController(object):
         else:
             return None
 
-    def set_effort_modes(self, mode: str, joint_indices: Optional[Union[np.ndarray, list]] = None):
+    def set_effort_modes(self, mode: str, joint_indices: Optional[Union[np.ndarray, list]] = None) -> None:
         """Set effort modes for specified joints.
 
         Args:

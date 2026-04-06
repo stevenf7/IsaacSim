@@ -22,7 +22,7 @@ from pxr import Gf
 
 
 # TODO: The functionality here should be replaced with appropriate omni.physics public extension
-def loadTetFile(path) -> tuple:
+def loadTetFile(path: str) -> tuple:
     """Loads tetrahedral mesh data from a .tet file format.
 
     Parses vertex positions (v lines) and tetrahedron connectivity (t lines) from a text-based .tet file,
@@ -61,7 +61,7 @@ def loadTetFile(path) -> tuple:
     return (points, indices)
 
 
-def calculateTetraVolume(a, b, c, d) -> float:
+def calculateTetraVolume(a: Gf.Vec3f, b: Gf.Vec3f, c: Gf.Vec3f, d: Gf.Vec3f) -> float:
     """Calculate the signed volume of a tetrahedron defined by four vertices.
 
     Args:
@@ -78,7 +78,7 @@ def calculateTetraVolume(a, b, c, d) -> float:
     return volume
 
 
-def fixupTetraMeshVolumes(points, indices) -> list:
+def fixupTetraMeshVolumes(points: list, indices: list) -> list:
     """Fixes tetrahedron orientation to ensure positive volumes.
 
     Corrects tetrahedral mesh topology by reordering vertex indices of tetrahedra with negative or zero
@@ -104,7 +104,7 @@ def fixupTetraMeshVolumes(points, indices) -> list:
     return fixed_indices
 
 
-def verifyTetraMesh(points, indices):
+def verifyTetraMesh(points: list, indices: list) -> None:
     """Validates tetrahedral mesh integrity and logs warnings for issues.
 
     Checks for proper index count (multiple of 4), valid vertex references, and positive tetrahedron
@@ -151,7 +151,7 @@ def cubeTetrahedra() -> list:
     return tetra
 
 
-def createTetraVoxels(voxel_dim, occupancy_filter_func) -> tuple:
+def createTetraVoxels(voxel_dim: int, occupancy_filter_func: callable) -> tuple:
     """Create a tetrahedral mesh from voxels using a custom occupancy filter function.
 
     Args:
@@ -219,7 +219,7 @@ def createTetraVoxels(voxel_dim, occupancy_filter_func) -> tuple:
     return points, indices
 
 
-def voxel_sphere_test(x, y, z, dimx, dimy, dimz) -> bool:
+def voxel_sphere_test(x: int, y: int, z: int, dimx: int, dimy: int, dimz: int) -> bool:
     """Voxel occupancy test for spherical shapes.
 
     Determines if a voxel position falls within a sphere centered in the grid. Used as an occupancy
@@ -242,7 +242,7 @@ def voxel_sphere_test(x, y, z, dimx, dimy, dimz) -> bool:
     return (v - c).GetLength() < r
 
 
-def voxel_pass_all_test(x, y, z, dimx, dimy, dimz) -> bool:
+def voxel_pass_all_test(x: int, y: int, z: int, dimx: int, dimy: int, dimz: int) -> bool:
     """Voxel occupancy test that includes all voxels.
 
     Always returns True, effectively including every voxel position in the grid when used as an
@@ -262,7 +262,7 @@ def voxel_pass_all_test(x, y, z, dimx, dimy, dimz) -> bool:
     return True
 
 
-def createTetraVoxelBox(voxel_dim) -> tuple:
+def createTetraVoxelBox(voxel_dim: int) -> tuple:
     """Create a tetrahedral mesh representing a box using voxel-based tetrahedralization.
 
     Args:
@@ -278,7 +278,7 @@ def createTetraVoxelBox(voxel_dim) -> tuple:
     return points, indices
 
 
-def createTetraVoxelSphere(voxel_dim) -> tuple:
+def createTetraVoxelSphere(voxel_dim: int) -> tuple:
     """Create a tetrahedral mesh representing a sphere using voxel-based tetrahedralization.
 
     Args:
@@ -294,7 +294,7 @@ def createTetraVoxelSphere(voxel_dim) -> tuple:
     return points, indices
 
 
-def addTriangle(points, indices, p0, p1, p2):
+def addTriangle(points: list, indices: list, p0: Gf.Vec3f, p1: Gf.Vec3f, p2: Gf.Vec3f):
     """Add a triangle to the mesh by appending three vertices and their indices.
 
     Args:
@@ -309,7 +309,7 @@ def addTriangle(points, indices, p0, p1, p2):
     points.extend([p0, p1, p2])
 
 
-def addTetra(points, indices, p0, p1, p2, p3):
+def addTetra(points: list, indices: list, p0: Gf.Vec3f, p1: Gf.Vec3f, p2: Gf.Vec3f, p3: Gf.Vec3f):
     """Add a tetrahedron to the mesh by appending four vertices and their indices.
 
     Args:
@@ -325,7 +325,7 @@ def addTetra(points, indices, p0, p1, p2, p3):
     points.extend([p0, p1, p2, p3])
 
 
-def convertTetraToTriangleSoup(points_in, indices_in) -> tuple:
+def convertTetraToTriangleSoup(points_in: list, indices_in: list) -> tuple:
     """Convert a tetrahedral mesh to a triangle soup by creating triangular faces for each tetrahedron.
 
     Args:
@@ -348,7 +348,7 @@ def convertTetraToTriangleSoup(points_in, indices_in) -> tuple:
     return (points, indices)
 
 
-def explodeTriangleMesh(points_in, indices_in, factor) -> tuple:
+def explodeTriangleMesh(points_in: list, indices_in: list, factor: float) -> tuple:
     """Explodes a triangle mesh by scaling each triangle away from its centroid.
 
     Creates a new triangle mesh where each triangle is displaced from its center point by the specified
@@ -375,7 +375,7 @@ def explodeTriangleMesh(points_in, indices_in, factor) -> tuple:
     return (points, indices)
 
 
-def explodeTetraMesh(points_in, indices_in, factor) -> tuple:
+def explodeTetraMesh(points_in: list, indices_in: list, factor: float) -> tuple:
     """Create an exploded view of a tetrahedral mesh by scaling tetrahedra around their centroids.
 
     Args:

@@ -51,7 +51,7 @@ class BaseSampleUITemplate:
             file_path, title, doc_link, overview, and sample.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         self._ext_id = kwargs.get("ext_id")
         self._file_path = kwargs.get("file_path", "")
         self._title = kwargs.get("title", "Isaac Sim Example")
@@ -96,7 +96,7 @@ class BaseSampleUITemplate:
         # return self._window
         pass
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Builds the complete user interface by constructing the default frame and extra frames."""
         # separating out building default frame and extra frames, so examples can override the extra frames function
 
@@ -104,7 +104,7 @@ class BaseSampleUITemplate:
         self.build_extra_frames()
         return
 
-    def build_default_frame(self):
+    def build_default_frame(self) -> None:
         """Builds the default UI frame containing world controls and basic buttons.
 
         Creates the main vertical stack with headers, a collapsible frame for world controls,
@@ -158,14 +158,14 @@ class BaseSampleUITemplate:
         return self.extra_stacks
 
     @abstractmethod
-    def build_extra_frames(self):
+    def build_extra_frames(self) -> None:
         """Builds additional custom frames for the sample UI.
 
         This abstract method must be implemented by subclasses to define sample-specific UI elements.
         """
         return
 
-    def _on_load_world(self):
+    def _on_load_world(self) -> None:
         """Handles the Load World button click event.
 
         Asynchronously loads the world, sets up event subscriptions for stage and timeline events,
@@ -196,7 +196,7 @@ class BaseSampleUITemplate:
         asyncio.ensure_future(_on_load_world_async())
         return
 
-    def _on_reset(self):
+    def _on_reset(self) -> None:
         """Handles the Reset button click event.
 
         Asynchronously resets the sample and triggers post-reset button event handling.
@@ -211,7 +211,7 @@ class BaseSampleUITemplate:
         return
 
     @abstractmethod
-    def post_reset_button_event(self):
+    def post_reset_button_event(self) -> None:
         """Handles actions to perform after the reset button is clicked.
 
         This abstract method must be implemented by subclasses to define sample-specific
@@ -220,7 +220,7 @@ class BaseSampleUITemplate:
         return
 
     @abstractmethod
-    def post_load_button_event(self):
+    def post_load_button_event(self) -> None:
         """Called after the Load World button is pressed and world loading is complete.
 
         This method is executed after the sample world is loaded and UI buttons are enabled.
@@ -228,14 +228,14 @@ class BaseSampleUITemplate:
         return
 
     @abstractmethod
-    def post_clear_button_event(self):
+    def post_clear_button_event(self) -> None:
         """Called after the timeline is stopped and UI state is reset.
 
         This method is executed when the timeline stop event occurs and buttons are reconfigured.
         """
         return
 
-    def _enable_all_buttons(self, flag: bool):
+    def _enable_all_buttons(self, flag: bool) -> None:
         """Enables or disables all UI buttons in the sample interface.
 
         Args:
@@ -246,7 +246,7 @@ class BaseSampleUITemplate:
                 btn.enabled = flag
         return
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up resources when the sample UI is being shut down.
 
         Resets event subscriptions, UI components, buttons, and sample references.
@@ -260,7 +260,7 @@ class BaseSampleUITemplate:
         self._sample = None
         return
 
-    def on_stage_event(self, event):
+    def on_stage_event(self, event: object) -> None:
         """Stage closed event callback.
 
         Note: With Events 2.0, this is called only for CLOSED events.
@@ -280,7 +280,7 @@ class BaseSampleUITemplate:
                     self._buttons["Load World"].enabled = True
         return
 
-    def _reset_on_stop_event(self, event):
+    def _reset_on_stop_event(self, event: object) -> None:
         """Timeline stop event callback.
 
         Note: With Events 2.0, this is called only for STOP events.

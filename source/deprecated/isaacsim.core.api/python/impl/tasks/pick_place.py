@@ -48,7 +48,7 @@ class PickPlace(ABC, BaseTask):
         target_position: Optional[np.ndarray] = None,
         cube_size: Optional[np.ndarray] = None,
         offset: Optional[np.ndarray] = None,
-    ):
+    ) -> None:
         BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
         self._target_cube = None
@@ -69,7 +69,7 @@ class PickPlace(ABC, BaseTask):
         self._target_position = self._target_position + self._offset
         return
 
-    def set_up_scene(self, scene: Scene):
+    def set_up_scene(self, scene: Scene) -> None:
         """Set up the scene with cube and robot.
 
         Args:
@@ -100,7 +100,7 @@ class PickPlace(ABC, BaseTask):
         return
 
     @abstractmethod
-    def set_robot(self):
+    def set_robot(self) -> None:
         """Create and configure the robot for the task."""
         raise NotImplementedError
 
@@ -109,7 +109,7 @@ class PickPlace(ABC, BaseTask):
         cube_position: Optional[np.ndarray] = None,
         cube_orientation: Optional[np.ndarray] = None,
         target_position: Optional[np.ndarray] = None,
-    ):
+    ) -> None:
         """Set task parameters for cube position, orientation, and target position.
 
         Args:
@@ -159,7 +159,7 @@ class PickPlace(ABC, BaseTask):
             },
         }
 
-    def pre_step(self, time_step_index: int, simulation_time: float):
+    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
         """Called before each physics step.
 
         Args:
@@ -168,7 +168,7 @@ class PickPlace(ABC, BaseTask):
         """
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Reset the robot gripper to open position after task reset."""
         from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
 
@@ -177,9 +177,17 @@ class PickPlace(ABC, BaseTask):
         return
 
     def calculate_metrics(self) -> dict:
-        """Calculate task metrics."""
+        """Calculate task metrics.
+
+        Returns:
+            Dictionary containing calculated task metrics.
+        """
         raise NotImplementedError
 
     def is_done(self) -> bool:
-        """Check if task is complete."""
+        """Check if task is complete.
+
+        Returns:
+            Whether the task is complete.
+        """
         raise NotImplementedError

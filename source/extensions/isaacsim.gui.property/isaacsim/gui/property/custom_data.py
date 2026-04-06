@@ -40,7 +40,7 @@ def iterate_custom_data(custom_data: dict):
 class CustomDataWidget(SimplePropertyWidget):
     """Property widget for displaying and editing prim custom data as JSON."""
 
-    def _get_prim(self, prim_path):
+    def _get_prim(self, prim_path: object):
         """Gets the prim at the specified path from the current stage.
 
         Args:

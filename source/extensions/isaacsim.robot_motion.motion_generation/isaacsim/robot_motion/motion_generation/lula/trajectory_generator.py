@@ -35,7 +35,7 @@ class LulaTrajectory(Trajectory):
         active_joints: List of joint names that are controllable by the trajectory
     """
 
-    def __init__(self, trajectory, active_joints):
+    def __init__(self, trajectory: object, active_joints: list):
         self.trajectory = trajectory
         self.active_joints = active_joints
 
@@ -68,7 +68,7 @@ class LulaTrajectory(Trajectory):
         __doc__ = Trajectory.get_active_joints.__doc__
         return self.active_joints
 
-    def get_joint_targets(self, time) -> Tuple[np.array, np.array]:
+    def get_joint_targets(self, time: float) -> Tuple[np.array, np.array]:
         """Computes joint positions and velocities at a specified time.
 
         Args:

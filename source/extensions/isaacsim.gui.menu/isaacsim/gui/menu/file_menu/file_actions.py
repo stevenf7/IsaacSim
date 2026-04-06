@@ -64,7 +64,7 @@ def quit_kit(fast: bool = False):
     omni.kit.app.get_app().post_quit()
 
 
-def open_stage_with_new_edit_layer():
+def open_stage_with_new_edit_layer() -> None:
     """Open the current USD stage with a new edit layer.
 
     This posts a notification if no valid stage is available.

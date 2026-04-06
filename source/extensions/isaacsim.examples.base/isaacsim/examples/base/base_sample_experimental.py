@@ -39,7 +39,13 @@ class BaseSample(object):
         }
         self._logging_info = ""
 
-    def set_world_settings(self, physics_dt=None, stage_units_in_meters=None, rendering_dt=None, device=None):
+    def set_world_settings(
+        self,
+        physics_dt: float | None = None,
+        stage_units_in_meters: float | None = None,
+        rendering_dt: float | None = None,
+        device: str | None = None,
+    ) -> None:
         """Updates the world settings with the provided values.
 
         Args:
@@ -150,7 +156,7 @@ class BaseSample(object):
         """
         pass
 
-    def log_info(self, info):
+    def log_info(self, info: str) -> None:
         """Appends information to the logging string.
 
         Args:

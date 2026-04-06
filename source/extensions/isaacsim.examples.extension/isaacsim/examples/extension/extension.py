@@ -18,6 +18,7 @@
 
 import asyncio
 import gc
+from typing import Callable
 
 import omni
 import omni.kit.actions.core
@@ -105,7 +106,7 @@ class Extension(omni.ext.IExt):
     def _is_visible(self) -> bool:
         return self._window.visible if self._window else False
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: bool):
         """Handle window visibility changes.
 
         Args:
@@ -176,7 +177,7 @@ class Extension(omni.ext.IExt):
         with self._status_frame:
             self._status_block = TextBlock("Status", "", num_lines=3, include_copy_button=False)
 
-    def _build_template_ui(self, template_name, generate_fun):
+    def _build_template_ui(self, template_name: str, generate_fun: Callable):
         """Build the UI for a specific extension template with input fields and generation controls.
 
         Args:
@@ -251,7 +252,7 @@ class Extension(omni.ext.IExt):
                 )
                 self._models[generate_btn].enabled = False
 
-    def write_status(self, status, collapsed=False, visible=True):
+    def write_status(self, status: str, collapsed: bool = False, visible: bool = True):
         """Update the status panel with a message and control its visibility.
 
         Args:

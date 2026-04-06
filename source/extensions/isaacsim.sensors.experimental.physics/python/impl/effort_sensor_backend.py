@@ -69,7 +69,8 @@ class EffortSensorBackend:
     def get_sensor_reading(self) -> object:
         """Get the current effort sensor reading.
 
-        Returns the C++ EffortSensorReading struct directly.
+        Returns:
+            The C++ EffortSensorReading struct directly.
         """
         if not self._sensor_created and not self._ensure_sensor():
             return _get_invalid_effort_reading()

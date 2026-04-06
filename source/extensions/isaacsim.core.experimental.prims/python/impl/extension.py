@@ -27,7 +27,11 @@ _provider_setting_path = "/exts/isaacsim.core.experimental.prims/prim_data_reade
 
 
 def _get_provider_extension_name() -> str:
-    """Resolve the configured prim data reader provider extension name."""
+    """Resolve the configured prim data reader provider extension name.
+
+    Returns:
+        The provider extension name.
+    """
     settings = carb.settings.get_settings()
     configured_name = settings.get(_provider_setting_path) if settings is not None else None
     if isinstance(configured_name, str) and configured_name.strip():
@@ -49,7 +53,11 @@ def _ensure_provider_enabled() -> None:
 
 
 def _acquire_reader_interface() -> object | None:
-    """Acquire and cache IPrimDataReader, enabling provider extension if needed."""
+    """Acquire and cache IPrimDataReader, enabling provider extension if needed.
+
+    Returns:
+        The acquired IPrimDataReader interface, or None if unavailable.
+    """
     global _reader_interface
     if _reader_interface is not None:
         return _reader_interface
@@ -72,7 +80,11 @@ class Extension(omni.ext.IExt):
     """Extension lifecycle handler for the C++ prim data reader plugin."""
 
     def on_startup(self, ext_id: str) -> None:
-        """Acquire the IPrimDataReader Carbonite interface on extension load."""
+        """Acquire the IPrimDataReader Carbonite interface on extension load.
+
+        Args:
+            ext_id: The extension identifier.
+        """
         _acquire_reader_interface()
 
     def on_shutdown(self) -> None:

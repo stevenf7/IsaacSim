@@ -333,7 +333,7 @@ class UR10TrajectoryGenerationExample:
             # Get a sequence of ArticulationActions that are intended to be passed to the robot at 1/60 second intervals
             self._action_sequence = articulation_trajectory.get_action_sequence()
 
-    def update(self, step: float):
+    def update(self, step: float) -> None:
         """Updates the trajectory execution by applying the next action in the sequence.
 
         Teleports the robot to the initial position when starting a trajectory and applies actions sequentially.
@@ -372,7 +372,7 @@ class UR10TrajectoryGenerationExample:
         self._action_sequence = []
         self._action_sequence_index = 0
 
-    def _teleport_robot_to_position(self, articulation_action):
+    def _teleport_robot_to_position(self, articulation_action: object) -> None:
         """Teleports the robot to the specified joint configuration instantly.
 
         Sets joint positions and velocities based on the articulation action to position the robot

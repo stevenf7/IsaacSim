@@ -23,9 +23,13 @@ from isaacsim.asset.gen.omap.ui.extension import ROS_FREE_THRESHOLD, ROS_OCCUPIE
 
 
 class _StringModel:
-    """Minimal stand-in for a ui.StringField model."""
+    """Minimal stand-in for a ui.StringField model.
 
-    def __init__(self, value=""):
+    Args:
+        value: Initial string value.
+    """
+
+    def __init__(self, value: str = ""):
         self.as_string = value
 
     def set_value(self, value):
@@ -38,9 +42,13 @@ class _ItemValueModel:
 
 
 class _DropdownModel:
-    """Minimal stand-in for a dropdown (ComboBox) model."""
+    """Minimal stand-in for a dropdown (ComboBox) model.
 
-    def __init__(self, index=0):
+    Args:
+        index: Initial selected index.
+    """
+
+    def __init__(self, index: int = 0):
         self._index = index
 
     def get_item_value_model(self):
@@ -150,8 +158,14 @@ class TestOccupancyMapUI(omni.kit.test.AsyncTestCase):
         finally:
             window.destroy()
 
-    def _setup_update_yaml_models(self, window, stem, config_type_index=0):
-        """Injects the minimal model mocks needed for _update_yaml into a window instance."""
+    def _setup_update_yaml_models(self, window: OccupancyMapWindow, stem: str, config_type_index: int = 0) -> None:
+        """Injects the minimal model mocks needed for _update_yaml into a window instance.
+
+        Args:
+            window: The OccupancyMapWindow instance to configure.
+            stem: The image filename stem to set.
+            config_type_index: Index for the config type dropdown.
+        """
         window._map_bottom_left = [1.0, 2.0]
         window._map_scale = 0.05
         window._map_scale_to_meters = 1.0

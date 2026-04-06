@@ -58,7 +58,7 @@ class Version(namedtuple("Version", "major minor patch")):
         '1.2.3'
     """
 
-    def __new__(cls, s):
+    def __new__(cls, s: str):
         """Create a new Version instance from a version string.
 
         Args:
@@ -172,7 +172,7 @@ async def _list_files(url: str) -> typing.Tuple[str, typing.List]:
 async def download_assets_async(
     src: str,
     dst: str,
-    progress_callback,
+    progress_callback: object,
     concurrency: int = 10,
     copy_behaviour: omni.client.CopyBehavior = CopyBehavior.OVERWRITE,
     copy_after_delete: bool = True,

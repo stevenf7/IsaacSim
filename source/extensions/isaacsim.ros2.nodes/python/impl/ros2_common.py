@@ -64,13 +64,18 @@ class SrtxCaptureState:
             CompressedImageManager.reset()
             self._stage_id = current_stage_id
 
-    def start_or_extend(self, srtx_instance, sensor_set_name: str, output_path: str) -> None:
+    def start_or_extend(self, srtx_instance: object, sensor_set_name: str, output_path: str) -> None:
         """Add *output_path* to the SRTX continuous capture for *sensor_set_name*.
 
         Because ``start_continuous_capture`` replaces (rather than merges)
         output paths and silently ignores subsequent calls while active,
         we track the accumulated paths and do a stop/restart cycle when
         a new path needs to be added.
+
+        Args:
+            srtx_instance: The SRTX instance to control.
+            sensor_set_name: Name of the sensor set.
+            output_path: Output path to add to the capture.
         """
         self._refresh_stage()
 
@@ -81,12 +86,17 @@ class SrtxCaptureState:
         srtx_instance.stop_continuous_capture(sensor_set_name)
         srtx_instance.start_continuous_capture(sensor_set_name, paths)
 
-    def stop_or_shrink(self, srtx_instance, sensor_set_name: str, output_paths_to_remove: list[str]) -> None:
+    def stop_or_shrink(self, srtx_instance: object, sensor_set_name: str, output_paths_to_remove: list[str]) -> None:
         """Remove *output_paths_to_remove* from the SRTX continuous capture for *sensor_set_name*.
 
         If other output paths remain active on the same sensor set the capture is
         restarted with only those paths.  If no paths remain, continuous capture is
         simply stopped.
+
+        Args:
+            srtx_instance: The SRTX instance to control.
+            sensor_set_name: Name of the sensor set.
+            output_paths_to_remove: Output paths to remove from the capture.
         """
         paths = self._output_paths.get(sensor_set_name)
         if paths is None:
@@ -117,7 +127,7 @@ def _stop_or_shrink_continuous_capture(srtx_instance, sensor_set_name: str, outp
     _srtx_capture_state.stop_or_shrink(srtx_instance, sensor_set_name, output_paths_to_remove)
 
 
-def _add_render_var(stage, rendervar_path: str, aov_name: str) -> bool:
+def _add_render_var(stage: object, rendervar_path: str, aov_name: str) -> bool:
     """Create a RenderVar USD prim at *rendervar_path* for *aov_name* if it does not already exist.
 
     Args:
@@ -140,7 +150,7 @@ def _add_render_var(stage, rendervar_path: str, aov_name: str) -> bool:
 
 
 def ensure_render_var_on_product(
-    stage, render_product_path: str, aov_name: str, compression_type: str | None = None, is_image: bool = False
+    stage: object, render_product_path: str, aov_name: str, compression_type: str | None = None, is_image: bool = False
 ) -> tuple[bool, str | None]:
     """Ensure a RenderVar for the given AOV exists as a child of the render product and is in orderedVars.
 
@@ -186,11 +196,14 @@ def ensure_render_var_on_product(
     return True, rendervar_path
 
 
-def cleanup_srtx_state(state) -> None:
+def cleanup_srtx_state(state: object) -> None:
     """Unregister SRTX frame callbacks and clean up capture state on an OG node's internal state object.
 
     Expects the state object to have ``_srtx_callback_handle``, ``_srtx_sensor_set``,
     ``_srtx_output_path``, and ``_srtx_capsule`` attributes (initialised to ``None``).
+
+    Args:
+        state: The OG node internal state object to clean up.
     """
     handle = state._srtx_callback_handle
     sensor_set = state._srtx_sensor_set

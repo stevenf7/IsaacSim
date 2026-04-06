@@ -154,7 +154,7 @@ class TestFrankaExampleExtension(omni.kit.test.AsyncTestCase):
         # to at least 0.3
         self.assertGreater(max_drawer_opening, 0.3)
 
-    async def spawn_franka(self, name="franka", add_physics_callback=True):
+    async def spawn_franka(self, name: str = "franka", add_physics_callback: bool = True):
         """Spawn a Franka robot with drawer opening policy in the simulation.
 
         Args:
@@ -177,7 +177,7 @@ class TestFrankaExampleExtension(omni.kit.test.AsyncTestCase):
             )
         await omni.kit.app.get_app().next_update_async()
 
-    def on_physics_step(self, step_size, context):
+    def on_physics_step(self, step_size: float, context: object) -> None:
         """Physics step callback that advances the Franka robot's policy.
 
         Args:

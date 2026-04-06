@@ -21,7 +21,7 @@ from isaacsim.core.deprecation_manager import import_module
 torch = import_module("torch")
 
 
-def as_type(data, dtype):
+def as_type(data: object, dtype: str):
     """Convert tensor data to the specified data type.
 
     Args:
@@ -47,7 +47,7 @@ def as_type(data, dtype):
         print(f"Type {dtype} not supported.")
 
 
-def convert(data, device, dtype="float32", indexed=None):
+def convert(data: object, device: object, dtype: str = "float32", indexed: object = None):
     """Convert data to tensor format with specified device and data type.
 
     Args:
@@ -65,7 +65,7 @@ def convert(data, device, dtype="float32", indexed=None):
         return as_type(data.to(device=device), dtype)
 
 
-def create_zeros_tensor(shape, dtype, device=None):
+def create_zeros_tensor(shape: object, dtype: str, device: object = None):
     """Create a tensor filled with zeros of the specified shape and data type.
 
     Args:
@@ -79,7 +79,7 @@ def create_zeros_tensor(shape, dtype, device=None):
     return as_type(torch.zeros(shape, device=device), dtype)
 
 
-def create_tensor_from_list(data, dtype, device=None):
+def create_tensor_from_list(data: list, dtype: str, device: object = None):
     """Create a tensor from list data with specified data type and device.
 
     Args:
@@ -93,7 +93,7 @@ def create_tensor_from_list(data, dtype, device=None):
     return as_type(torch.tensor(data, device=device), dtype=dtype)
 
 
-def clone_tensor(data, device):
+def clone_tensor(data: object, device: object):
     """Clone tensor data to the specified device.
 
     Args:
@@ -107,7 +107,7 @@ def clone_tensor(data, device):
     return torch.clone(data)
 
 
-def resolve_indices(indices, count, device):
+def resolve_indices(indices: object, count: int, device: object):
     """Resolve and convert indices to a proper tensor format.
 
     Args:
@@ -126,7 +126,7 @@ def resolve_indices(indices, count, device):
     return result.to(dtype=torch.long, device=device)
 
 
-def move_data(data, device):
+def move_data(data: object, device: object):
     """Move tensor data to the specified device.
 
     Args:
@@ -139,7 +139,7 @@ def move_data(data, device):
     return data.to(device=device)
 
 
-def tensor_cat(data, device=None, dim=-1):
+def tensor_cat(data: object, device: object = None, dim: int = -1):
     """Concatenates tensors along a specified dimension.
 
     Args:
@@ -153,7 +153,7 @@ def tensor_cat(data, device=None, dim=-1):
     return torch.cat(data, dim=dim)
 
 
-def expand_dims(data, axis):
+def expand_dims(data: object, axis: int):
     """Add a new dimension to the tensor at the specified axis.
 
     Args:
@@ -166,7 +166,7 @@ def expand_dims(data, axis):
     return torch.unsqueeze(data, axis)
 
 
-def pad(data, pad_width, mode="constant", value=None):
+def pad(data: object, pad_width: object, mode: str = "constant", value: object = None):
     """Add padding to tensor data.
 
     Args:
@@ -183,7 +183,7 @@ def pad(data, pad_width, mode="constant", value=None):
     return torch.nn.functional.pad(data, pad_width, mode, value)
 
 
-def tensor_stack(data, dim=0):
+def tensor_stack(data: object, dim: int = 0):
     """Stacks tensors along a new dimension.
 
     Args:
@@ -196,7 +196,7 @@ def tensor_stack(data, dim=0):
     return torch.stack(data, dim=dim)
 
 
-def to_list(data):
+def to_list(data: object):
     """Converts tensor data to a Python list.
 
     Args:
@@ -210,7 +210,7 @@ def to_list(data):
     return data
 
 
-def to_numpy(data):
+def to_numpy(data: object):
     """Converts tensor data to a NumPy array.
 
     Args:
@@ -224,7 +224,7 @@ def to_numpy(data):
     return data
 
 
-def assign(src, dst, indices):
+def assign(src: object, dst: object, indices: object):
     """Assign source values to destination tensor at specified indices.
 
     Args:

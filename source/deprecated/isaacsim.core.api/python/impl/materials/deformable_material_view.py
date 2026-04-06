@@ -34,9 +34,19 @@ torch = import_module("torch")
 
 class DeformableMaterialView:
     """The view class to deal with deformableMaterial prims.
+
     Provides high level functions to deal with deformable material (1 or more deformable materials)
     as well as its attributes/ properties. This object wraps all matching materials found at the regex provided at the prim_paths_expr.
     This object wraps all matching materials Prims found at the regex provided at the prim_paths_expr.
+
+    Args:
+        prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
+        name: Shortname to be used as a key by Scene class.
+        dynamic_frictions: The dynamic friction coefficient tensor, shape is (N, ).
+        youngs_moduli: The Young's modulus coefficient tensor, shape is (N, ).
+        poissons_ratios: The Poisson ratio coefficient tensor, shape is (N, ).
+        elasticity_dampings: Material damping parameter tensor, shape is (N, ).
+        damping_scales: The damping scale coefficient tensor, shape is (N, ).
     """
 
     def __init__(
@@ -48,17 +58,7 @@ class DeformableMaterialView:
         poissons_ratios: Optional[Union[np.ndarray, torch.Tensor]] = None,
         elasticity_dampings: Optional[Union[np.ndarray, torch.Tensor]] = None,
         damping_scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
-    ):
-        """
-        Args:
-            prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
-            name: Shortname to be used as a key by Scene class.
-            dynamic_frictions: The dynamic friction coefficient tensor, shape is (N, ).
-            youngs_moduli: The Young's modulus coefficient tensor, shape is (N, ).
-            poissons_ratios: The Poisson ratio coefficient tensor, shape is (N, ).
-            elasticity_dampings: Material damping parameter tensor, shape is (N, ).
-            damping_scales: The damping scale coefficient tensor, shape is (N, ).
-        """
+    ) -> None:
         self._name = name
         self._physics_view = None
         self._prim_paths = find_matching_prim_paths(prim_paths_expr)
@@ -121,7 +121,7 @@ class DeformableMaterialView:
         """
         return self._name
 
-    def _apply_material_api(self, index):
+    def _apply_material_api(self, index: int) -> None:
         """Applies PhysxDeformableBodyMaterialAPI to the material prim at the specified index.
 
         Args:
@@ -160,11 +160,11 @@ class DeformableMaterialView:
             result = result and is_prim_path_valid(self._prim_paths[index.tolist()])
         return result
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Resets the deformables to their initial states."""
         return
 
-    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None):
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
         """Create a physics simulation view if not passed and creates a rigid body view in physX.
 
         Args:
@@ -186,7 +186,7 @@ class DeformableMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the dynamic friction for the material prims indicated by the indices.
 
         Args:
@@ -247,7 +247,7 @@ class DeformableMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the elasticity_dampings for the material prims indicated by the indices.
 
         Args:
@@ -308,7 +308,7 @@ class DeformableMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the damping scale for the material prims indicated by the indices.
 
         Args:
@@ -368,7 +368,7 @@ class DeformableMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the poissons ratios for the material prims indicated by the indices.
 
         Args:
@@ -428,7 +428,7 @@ class DeformableMaterialView:
         self,
         values: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
+    ) -> None:
         """Sets the youngs moduli for the material prims indicated by the indices.
 
         Args:

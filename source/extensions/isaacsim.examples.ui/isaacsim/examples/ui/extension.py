@@ -57,7 +57,11 @@ class Extension(omni.ext.IExt):
     """
 
     def on_startup(self, ext_id: str):
-        """Initialize extension and UI elements"""
+        """Initialize extension and UI elements.
+
+        Args:
+            ext_id: The extension identifier.
+        """
         self._ext_id = ext_id
         self._settings = carb.settings.get_settings()
 
@@ -592,7 +596,7 @@ class Extension(omni.ext.IExt):
                 }
                 str_builder(**kwargs)
 
-    def handle_connect(self, val=False):
+    def handle_connect(self, val: bool = False):
         """Handles connection state changes for communications.
 
         Args:
@@ -691,7 +695,7 @@ class Extension(omni.ext.IExt):
                     vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                 )
 
-    def _on_dummy_callable_0(self, val=None, val2=None):
+    def _on_dummy_callable_0(self, val: object = None, val2: object = None):
         """Dummy Callable for testing the GUI
 
         Args:
@@ -701,7 +705,7 @@ class Extension(omni.ext.IExt):
         if PRINT_DEBUG:
             print("You've cliked DUMMY CALLABLE 0:", val)
 
-    def _on_dummy_callable_1(self, val=None):
+    def _on_dummy_callable_1(self, val: object = None):
         """Dummy Callable for testing the GUI
 
         Args:
@@ -710,7 +714,7 @@ class Extension(omni.ext.IExt):
         if PRINT_DEBUG:
             print("You've cliked DUMMY CALLABLE 1:", val)
 
-    def _on_dummy_callable_2(self, val=None):
+    def _on_dummy_callable_2(self, val: object = None):
         """Dummy Callable for testing the GUI
 
         Args:
@@ -719,7 +723,7 @@ class Extension(omni.ext.IExt):
         if PRINT_DEBUG:
             print("You've cliked DUMMY CALLABLE 2:", val)
 
-    def _on_dummy_callable_3(self, val=None):
+    def _on_dummy_callable_3(self, val: object = None):
         """Dummy Callable for testing the GUI
 
         Args:
@@ -728,7 +732,7 @@ class Extension(omni.ext.IExt):
         if PRINT_DEBUG:
             print("You've cliked DUMMY CALLABLE 3. Item Selected: ", val)
 
-    def _on_dummy_callable_4(self, model, button, val=None):
+    def _on_dummy_callable_4(self, model: object, button: object, val: object = None):
         """Dummy Callable for testing the GUI
 
         Args:

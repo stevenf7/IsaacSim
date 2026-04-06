@@ -30,8 +30,15 @@ from .preferences import ConveyorBuilderPreferences
 from .selected_conveyor import SelectedConveyorWidget
 
 
-def Singleton(class_):
-    """A singleton decorator"""
+def Singleton(class_: type) -> object:
+    """A singleton decorator.
+
+    Args:
+        class_: The class to make a singleton.
+
+    Returns:
+        A wrapper function that returns the singleton instance.
+    """
     instances = {}
 
     def getinstance(*args, **kwargs):
@@ -164,12 +171,20 @@ class ConveyorBuilderWidget:
                         stage.RemovePrim(temp_prim.GetPath())
                     stage.RemovePrim(temp_prim.GetPath())
 
-    def _on_selection_changed(self, event):
-        """Stage selection changed event callback."""
+    def _on_selection_changed(self, event: object) -> None:
+        """Stage selection changed event callback.
+
+        Args:
+            event: The stage event data.
+        """
         self._on_kit_selection_changed()
 
-    def _on_stage_closed(self, event):
-        """Stage closed event callback."""
+    def _on_stage_closed(self, event: object) -> None:
+        """Stage closed event callback.
+
+        Args:
+            event: The stage event data.
+        """
         self.shutdown()
 
     def get_selection(self):

@@ -23,10 +23,12 @@ from pxr import Gf, UsdPhysics
 class CortexRigidPrim(SingleXFormPrim):
     """A simple API access to the RigidBodyAPI USD schema of an object.
 
-    Args: The arguments are the same as SingleXFormPrim. See isaacsim.core.api/isaacsim/core/api/prims/xform_prim.py
+    Args:
+        *args: Positional arguments passed to SingleXFormPrim.
+        **kwargs: Keyword arguments passed to SingleXFormPrim.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object):
         super().__init__(*args, **kwargs)
         if not self.prim.HasAPI(UsdPhysics.RigidBodyAPI):
             raise RuntimeError("Prim does not have the UsdPhysics.RigidBodyAPI schema.")
@@ -43,7 +45,8 @@ class CortexRigidPrim(SingleXFormPrim):
     def get_linear_velocity(self) -> np.ndarray:
         """Retrieve the linear velocity of this object.
 
-        Returns: Linear velocity as a 3d vector.
+        Returns:
+            Linear velocity as a 3d vector.
         """
         gf_velocity = self.rigid_api.GetVelocityAttr().Get()
         return np.array([gf_velocity[0], gf_velocity[1], gf_velocity[2]])
@@ -60,7 +63,8 @@ class CortexRigidPrim(SingleXFormPrim):
     def get_angular_velocity(self) -> np.ndarray:
         """Retrieve the angular velocity of this object.
 
-        Returns: Angular velocity as a 3d vector.
+        Returns:
+            Angular velocity as a 3d vector.
         """
         gf_ang_vel = self.rigid_api.GetAngularVelocityAttr().Get()
         return np.array([gf_ang_vel[0], gf_ang_vel[1], gf_ang_vel[2]])

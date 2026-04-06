@@ -200,7 +200,7 @@ class RigidPrim(XFormPrim):
             RigidPrim._on_physics_ready(self, None)
         return
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Clean up resources when the object is destroyed."""
         XFormPrim.__del__(self)
         if hasattr(self, "_physics_view"):
@@ -208,7 +208,7 @@ class RigidPrim(XFormPrim):
         self._invalidation_callback = None
         return
 
-    def _invalidate_physics_handle_callback(self, event):
+    def _invalidate_physics_handle_callback(self, event: object):
         """Callback to invalidate the physics handle when physics simulation stops.
 
         Args:
@@ -526,7 +526,7 @@ class RigidPrim(XFormPrim):
         self,
         velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
-    ):
+    ) -> None:
         """Set the linear velocities of the prims in the view
 
         The method does this through the PhysX API only. It has to be called after initialization.
@@ -2217,7 +2217,7 @@ class RigidPrim(XFormPrim):
             self._on_physics_ready(None)
         return
 
-    def _on_physics_ready(self, event):
+    def _on_physics_ready(self, event: object):
         """Initialize the physics simulation view for rigid body operations.
 
         Creates a rigid body view from the simulation manager, sets up default states, and initializes
@@ -2249,7 +2249,7 @@ class RigidPrim(XFormPrim):
         if self._track_contact_forces:
             self._contact_view.initialize(simulation_view)
 
-    def _apply_rigid_body_apis(self, prepare_contact_reporter: bool = False):
+    def _apply_rigid_body_apis(self, prepare_contact_reporter: bool = False) -> None:
         """Apply Rigid Body API to all prims in the view.
 
         Ensures each prim has the UsdPhysics.RigidBodyAPI applied and optionally configures
@@ -2272,7 +2272,7 @@ class RigidPrim(XFormPrim):
                 rb_api.CreateSleepThresholdAttr().Set(0)
         return
 
-    def _on_post_reset(self, event):
+    def _on_post_reset(self, event: object) -> None:
         """Reset the rigid prims to their default states (positions, orientations and linear and angular velocities)
 
         Args:

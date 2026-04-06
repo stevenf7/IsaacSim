@@ -24,10 +24,13 @@ torch = import_module("torch")
 
 
 class LstmSeaNetwork:
-    """Implements an SEA network with LSTM hidden layers."""
+    """Implements an SEA network with LSTM hidden layers.
+
+    Initializes the network with zeroed hidden and cell states for the LSTM.
+    """
 
     def __init__(self):
-        """Initialize the LSTM SEA network."""
+
         # define the network
         self._network = None
         self._hidden_state = torch.zeros((2, 12, 8), requires_grad=False)
@@ -46,7 +49,7 @@ class LstmSeaNetwork:
         else:
             return self._hidden_state[1].detach()
 
-    def setup(self, path_or_buffer, default_joint_pos: torch.Tensor):
+    def setup(self, path_or_buffer: object, default_joint_pos: torch.Tensor):
         """Set up the network by loading weights and configuring default positions.
 
         Args:
@@ -68,7 +71,9 @@ class LstmSeaNetwork:
             self._cell_state[:, :, :] = 0.0
 
     @torch.no_grad()
-    def compute_torques(self, joint_pos, joint_vel, actions) -> tuple[torch.Tensor, torch.Tensor]:
+    def compute_torques(
+        self, joint_pos: object, joint_vel: object, actions: object
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Compute joint torques based on current joint states and desired actions.
 
         Args:
@@ -77,7 +82,7 @@ class LstmSeaNetwork:
             actions: Desired joint actions
 
         Returns:
-            Tuple of (computed torques, hidden state)
+            tuple[torch.Tensor, torch.Tensor]: Tuple of (computed torques, hidden state)
         """
         # create sea network input obs
         actions = actions.clone()
@@ -93,10 +98,13 @@ class LstmSeaNetwork:
 
 
 class SeaNetwork(torch.nn.Module):
-    """Implements a SEA network with MLP hidden layers."""
+    """Implements a SEA network with MLP hidden layers.
+
+    Initializes the MLP SEA network with 6-32-32-1 architecture.
+    """
 
     def __init__(self):
-        """Initialize the MLP SEA network with 6-32-32-1 architecture."""
+
         super().__init__()
         # define layer architecture
         self._sea_network = torch.nn.Sequential(
@@ -142,7 +150,7 @@ class SeaNetwork(torch.nn.Module):
         self._joint_pos_history.fill(0.0)
         self._joint_vel_history.fill(0.0)
 
-    def compute_torques(self, joint_pos, joint_vel, actions) -> torch.Tensor:
+    def compute_torques(self, joint_pos: object, joint_vel: object, actions: object) -> torch.Tensor:
         """Compute joint torques based on current joint states and desired actions.
 
         Args:
@@ -187,7 +195,7 @@ class SeaNetwork(torch.nn.Module):
         # set the module in eval mode
         self.eval()
 
-    def _update_joint_history(self, joint_pos, joint_vel, actions):
+    def _update_joint_history(self, joint_pos: object, joint_vel: object, actions: object) -> None:
         """Update the joint position and velocity history buffers with current values.
 
         Args:

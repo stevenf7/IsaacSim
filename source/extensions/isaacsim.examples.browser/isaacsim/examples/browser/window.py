@@ -60,7 +60,7 @@ class ExampleBrowserWindow(ui.Window):
     WINDOW_TITLE = "Robotics Examples"
     """Window title displayed for the robotics examples browser."""
 
-    def __init__(self, model: ExampleBrowserModel, visible=True):
+    def __init__(self, model: ExampleBrowserModel, visible: bool = True):
         super().__init__(self.WINDOW_TITLE, visible=visible)
 
         self.frame.set_build_fn(self._build_ui)

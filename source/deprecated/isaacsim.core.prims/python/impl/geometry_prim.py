@@ -212,7 +212,7 @@ class GeometryPrim(XFormPrim):
         """
         return self._geoms
 
-    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView | None = None):
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView | None = None) -> None:
         """Create a physics simulation view if not passed and set other properties using the PhysX tensor API
 
         .. note::
@@ -242,7 +242,7 @@ class GeometryPrim(XFormPrim):
         self,
         offsets: np.ndarray | torch.Tensor | wp.array,
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
-    ):
+    ) -> None:
         """Set contact offsets for prims in the view.
 
         Shapes whose distance is less than the sum of their contact offset values will generate contacts
@@ -331,7 +331,7 @@ class GeometryPrim(XFormPrim):
         self,
         offsets: np.ndarray | torch.Tensor | wp.array,
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
-    ):
+    ) -> None:
         """Set rest offsets for prims in the view.
 
         Two shapes will come to rest at a distance equal to the sum of their rest offset values.
@@ -426,7 +426,7 @@ class GeometryPrim(XFormPrim):
         self,
         radii: np.ndarray | torch.Tensor | wp.array,
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
-    ):
+    ) -> None:
         """Set torsional patch radii for prims in the view.
 
         Search for *"Torsional Patch Radius"* in |physx_docs| for more details
@@ -510,7 +510,7 @@ class GeometryPrim(XFormPrim):
         self,
         radii: np.ndarray | torch.Tensor | wp.array,
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
-    ):
+    ) -> None:
         """Set minimum torsional patch radii for prims in the view.
 
         Search for *"Torsional Patch Radius"* in |physx_docs| for more details

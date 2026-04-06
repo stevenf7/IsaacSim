@@ -117,7 +117,7 @@ class UIBuilder:
         #     # self._stop_text.visible = True
         pass
 
-    def on_timeline_event(self, event):
+    def on_timeline_event(self, event: object) -> None:
         """Callback for Timeline events (Play, Pause, Stop)
 
         Args:
@@ -145,7 +145,7 @@ class UIBuilder:
         """
         pass
 
-    def on_render_step(self, e: carb.events.IEvent):
+    def on_render_step(self, e: carb.events.IEvent) -> None:
         """Render event set up to cancel physics subscriptions that run the gains test.
 
         Args:
@@ -167,7 +167,7 @@ class UIBuilder:
             self._test_gains_frame.enabled = True
             self._reset_ui_next_frame = False
 
-    def on_stage_event(self, event):
+    def on_stage_event(self, event: object):
         """Callback for Stage Events
 
         Args:
@@ -210,7 +210,7 @@ class UIBuilder:
         self._gains_table_widget = None
         self._test_table_widget = None
 
-    def _on_help_click(self, b):
+    def _on_help_click(self, b: int):
         """Opens an extension's documentation in a Web Browser
 
         Args:
@@ -398,7 +398,7 @@ class UIBuilder:
         if self._gains_splitter.offset_y.value < self._initial_table_height:
             self._gains_splitter.offset_y = ui.Pixel(self._initial_table_height)
 
-    def _on_save_gains_to_physics_layer(self, *args):
+    def _on_save_gains_to_physics_layer(self, *args: object):
         """Saves gain values to the physics layer.
 
         Collects joint gain data from the table widget and attempts to save the values to the appropriate USD
@@ -461,7 +461,7 @@ class UIBuilder:
         else:
             self._no_permision_frame.visible = True
 
-    def _on_save_file(self, *args):
+    def _on_save_file(self, *args: object):
         """Handles saving the USD stage file.
 
         Identifies writable layers in the stage and shows the stage save dialog. Displays a warning if no
@@ -487,7 +487,7 @@ class UIBuilder:
 
         self._save_stage_prompt.show(writable_layers)
 
-    def _switch_tuning_mode(self, switch):
+    def _switch_tuning_mode(self, switch: object):
         """Switches the tuning mode between stiffness and natural frequency.
 
         Updates the gains table widget to display the appropriate tuning parameters based on the selected mode.
@@ -498,7 +498,7 @@ class UIBuilder:
         if self._gains_table_widget:
             self._gains_table_widget.switch_mode(JointSettingMode(switch.get_value_as_int()))
 
-    def _on_test_duration_changed(self, model):
+    def _on_test_duration_changed(self, model: object):
         """Handles changes to the test duration field.
 
         Updates the gains tuner's test duration when the user modifies the duration field value.
@@ -508,7 +508,7 @@ class UIBuilder:
         """
         self._gains_tuner.test_duration = model.get_value_as_float()
 
-    def _build_test_gains_frame(self):
+    def _build_test_gains_frame(self) -> None:
         """Builds the UI frame for testing gains settings.
 
         Constructs the test gains interface including test duration controls, test mode selection (sinewave or step
@@ -670,7 +670,7 @@ class UIBuilder:
             self._test_button.reset()
         self._gains_tuner.stop_test()
 
-    def _switch_test_mode(self, switch):
+    def _switch_test_mode(self, switch: object):
         """Switches the test mode between different gain testing options.
 
         Args:
@@ -685,7 +685,7 @@ class UIBuilder:
     #     if self._test_table_widget:
     #         self._test_table_widget.switch_radian_degree(radian_degree_mode)
 
-    def _build_charts_frame(self):
+    def _build_charts_frame(self) -> None:
         """Builds the charts frame UI with joint color selection and position/velocity plots."""
         if not self._gains_tuner.initialized:
             return
@@ -704,7 +704,7 @@ class UIBuilder:
                 self._velocity_frame = CollapsableFrame("Velocity charts", collapsed=False, show_copy_button=False)
                 self._velocity_frame.set_build_fn(self._build_velocity_plot)
 
-    def _on_color_joint_selection(self, selection):
+    def _on_color_joint_selection(self, selection: list):
         """Handles joint selection changes for plotting and updates the chart colors.
 
         Args:
@@ -721,7 +721,7 @@ class UIBuilder:
         if self._velocity_frame:
             self._velocity_frame.rebuild()
 
-    def _build_position_plot(self):
+    def _build_position_plot(self) -> None:
         """Builds the position plot chart with command and observed position data from the gains test."""
         if len(self._plotting_indices) == 0:
             return
@@ -757,7 +757,7 @@ class UIBuilder:
         )
         plot.set_data_colors(self._plotting_colors)
 
-    def _build_velocity_plot(self):
+    def _build_velocity_plot(self) -> None:
         """Builds the velocity plot chart with command and observed velocity data from the gains test."""
         if len(self._plotting_indices) == 0:
             return
@@ -796,7 +796,7 @@ class UIBuilder:
         self._gains_tuner.reset()
         self._gains_tuning_frame.rebuild()
 
-    def _on_articulation_selection(self, articulation_path):
+    def _on_articulation_selection(self, articulation_path: str) -> None:
         """Handles articulation selection changes and updates the gains tuner with the new robot.
 
         Args:
@@ -818,7 +818,7 @@ class UIBuilder:
 
             self._reset_ui_next_frame = True
 
-    def _update_gains_test(self, step: float, context):
+    def _update_gains_test(self, step: float, context: object) -> None:
         """Updates the running gains test and handles test completion.
 
         Args:
@@ -836,7 +836,7 @@ class UIBuilder:
                 self._test_running = False
                 self._test_button.reset()
 
-    def _on_run_gains_test(self, gains_test_mode):
+    def _on_run_gains_test(self, gains_test_mode: object):
         """Starts the gains test with the configured parameters from the test table.
 
         Args:

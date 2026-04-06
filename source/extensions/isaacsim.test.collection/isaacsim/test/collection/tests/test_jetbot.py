@@ -40,7 +40,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
     """Tests for the NVIDIA JetBot robot simulation."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment with JetBot robot."""
         self._timeline = omni.timeline.get_timeline_interface()
 

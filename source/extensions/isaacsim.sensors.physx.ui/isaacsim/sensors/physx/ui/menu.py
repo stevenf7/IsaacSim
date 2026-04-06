@@ -160,7 +160,7 @@ class RangeSensorMenu:
             curr_prim = None
         return curr_prim
 
-    def _add_lidar(self, *args, **kwargs):
+    def _add_lidar(self, *args: object, **kwargs: object) -> None:
         """Creates a PhysX Lidar sensor with predefined configuration.
 
         Args:
@@ -185,7 +185,7 @@ class RangeSensorMenu:
             enable_semantics=False,
         )
 
-    def _add_generic(self, *args, **kwargs):
+    def _add_generic(self, *args: object, **kwargs: object) -> None:
         """Creates a generic range sensor with predefined configuration.
 
         Args:
@@ -203,7 +203,7 @@ class RangeSensorMenu:
             sampling_rate=60,
         )
 
-    def _add_lightbeam_sensor(self, *args, **kargs):
+    def _add_lightbeam_sensor(self, *args: object, **kargs: object) -> None:
         """Creates a LightBeam sensor with predefined configuration.
 
         Args:

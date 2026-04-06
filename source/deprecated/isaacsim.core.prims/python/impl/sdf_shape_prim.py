@@ -131,7 +131,7 @@ class SdfShapePrim(GeometryPrim):
         """
         return self._num_query_points
 
-    def _apply_sdf_schema(self, prim_at_path):
+    def _apply_sdf_schema(self, prim_at_path: object):
         """Apply appropriate sdf schemas to prims.
 
         Args:

@@ -19,6 +19,7 @@
 import os
 import weakref
 import webbrowser
+from collections.abc import Callable
 
 import carb
 
@@ -35,7 +36,15 @@ class UIBuilder:
         get_url_callback: Callback function to retrieve the display URL.
     """
 
-    def __init__(self, ext_name, menu_name, menu_item_name, host, port, get_url_callback):
+    def __init__(
+        self,
+        ext_name: str,
+        menu_name: str,
+        menu_item_name: str,
+        host: str,
+        port: int,
+        get_url_callback: Callable[[], str],
+    ) -> None:
         self._menu_items = []
 
         self._ext_name = ext_name
@@ -88,7 +97,7 @@ class UIBuilder:
             pass
         self._menu_items = []
 
-    def _launch(self, *args, **kwargs):
+    def _launch(self, *args: object, **kwargs: object) -> None:
         """Open Jupyter in the default browser.
 
         Args:

@@ -106,7 +106,7 @@ def is_xrdf_file(path: str) -> bool:
     return ext in [".yaml", ".yml", ".xrdf"]
 
 
-def on_filter_xrdf_item(item) -> bool:
+def on_filter_xrdf_item(item: object) -> bool:
     """Filter function for file browser to show XRDF files and non-Omniverse folders.
 
     Args:
@@ -120,7 +120,7 @@ def on_filter_xrdf_item(item) -> bool:
     return is_xrdf_file(item.path)
 
 
-def on_filter_item(item) -> bool:
+def on_filter_item(item: object) -> bool:
     """Filter function for file browser to show YAML files and non-Omniverse folders.
 
     Args:
@@ -238,7 +238,7 @@ class Extension(omni.ext.IExt):
             self._window = None
         gc.collect()
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: bool) -> None:
         """Handle window visibility changes and manage event subscriptions.
 
         Args:
@@ -325,7 +325,7 @@ class Extension(omni.ext.IExt):
 
         self._task = asyncio.ensure_future(dock_window())
 
-    def _on_selection(self, prim_path: str):
+    def _on_selection(self, prim_path: str) -> None:
         """Creates an Articulation Object from the selected articulation prim path.
                    Updates the UI with the Selected articulation.
 
@@ -370,7 +370,7 @@ class Extension(omni.ext.IExt):
             self._articulation_base_path = None
             self.articulation = None
 
-    def _on_combobox_selection(self, model=None, val=None):
+    def _on_combobox_selection(self, model: object = None, val: object = None) -> None:
         """Handle articulation selection from the dropdown combobox.
 
         Args:
@@ -419,7 +419,7 @@ class Extension(omni.ext.IExt):
             self._on_select_sphere_gen_link
         )
 
-    def _on_select_sphere_gen_link(self, model, val):
+    def _on_select_sphere_gen_link(self, model: object, val: object) -> None:
         """Handles sphere generation link selection from the combobox.
 
         Args:
@@ -463,7 +463,7 @@ class Extension(omni.ext.IExt):
 
         self._refresh_collision_sphere_comboboxes()
 
-    def _refresh_collision_sphere_comboboxes(self, keep_sphere_selection=False):
+    def _refresh_collision_sphere_comboboxes(self, keep_sphere_selection: bool = False) -> None:
         """Refreshes the collision sphere selection comboboxes for the selected link.
 
         Args:
@@ -485,7 +485,7 @@ class Extension(omni.ext.IExt):
 
         self._on_collision_sphere_select_0(None, None)
 
-    def _on_collision_sphere_select_0(self, model, val):
+    def _on_collision_sphere_select_0(self, model: object, val: object) -> None:
         """Handles first collision sphere selection from the combobox.
 
         Args:
@@ -509,7 +509,7 @@ class Extension(omni.ext.IExt):
         if sphere_1_name in pruned_names:
             self._models[name].get_item_value_model().set_value(int(pruned_names.index(sphere_1_name)))
 
-    def get_all_sphere_gen_meshes(self):
+    def get_all_sphere_gen_meshes(self) -> None:
         """Identifies and maps all meshes within each link of the selected articulation for sphere generation."""
         stage = self._usd_context.get_stage()
         self._sphere_gen_link_2_mesh = OrderedDict()
@@ -711,7 +711,7 @@ class Extension(omni.ext.IExt):
             self._reset_ui()
             self._on_selection("None")
 
-    def _on_physics_step(self, step: float, context):
+    def _on_physics_step(self, step: float, context: object) -> None:
         """Callback for Physics Step.
 
         Args:
@@ -729,7 +729,7 @@ class Extension(omni.ext.IExt):
                 self._set_joint_positions(step)
         return
 
-    def _set_joint_positions(self, step: float):
+    def _set_joint_positions(self, step: float) -> None:
         """Sets joint positions for the articulation and resets joint velocities to zero.
 
         Args:
@@ -1506,7 +1506,7 @@ class Extension(omni.ext.IExt):
 
         self._refresh_collision_sphere_comboboxes()
 
-    def _update_command_ui(self):
+    def _update_command_ui(self) -> None:
         """Updates the command UI with the current articulation properties.
 
         Enables the joint properties frame, rebuilds the UI with current joint data, and applies
@@ -1520,7 +1520,7 @@ class Extension(omni.ext.IExt):
 
         self.articulation.set_joint_positions(self._joint_positions)
 
-    def _trigger_preview_generate_spheres_for_link(self, model=None, val=None):
+    def _trigger_preview_generate_spheres_for_link(self, model: object = None, val: object = None) -> None:
         """Triggers sphere generation preview for the selected link.
 
         Args:
@@ -1529,7 +1529,7 @@ class Extension(omni.ext.IExt):
         """
         self._generate_spheres_for_link()
 
-    def _generate_spheres_for_link(self, preview: bool = True):
+    def _generate_spheres_for_link(self, preview: bool = True) -> None:
         """Generates collision spheres for the selected link based on its mesh geometry.
 
         Extracts mesh points and face data, transforms coordinates to the link frame, and generates
@@ -1708,7 +1708,7 @@ class Extension(omni.ext.IExt):
         if self._hiding_link:
             self._models["hide_link_btn"].call_clicked_fn()
 
-    def _load_xrdf(self):
+    def _load_xrdf(self) -> None:
         """Loads robot configuration from a cuMotion XRDF file and updates the editor state."""
         if self.articulation is None:
             return
@@ -1782,7 +1782,7 @@ class Extension(omni.ext.IExt):
 
         self._update_command_ui()
 
-    def _load_robot_description_file(self, model: ui.AbstractValueModel | None = None):
+    def _load_robot_description_file(self, model: ui.AbstractValueModel | None = None) -> None:
         """Loads robot configuration from a Lula Robot Description YAML file and updates the editor state.
 
         Args:
@@ -2027,7 +2027,7 @@ class Extension(omni.ext.IExt):
 
         return extended_ignore_dict
 
-    def _export_xrdf(self, model: ui.AbstractValueModel | None = None):
+    def _export_xrdf(self, model: ui.AbstractValueModel | None = None) -> None:
         """Exports robot collision spheres and joint configuration to an XRDF file for cuMotion.
 
         Builds an XRDF file containing the robot's collision sphere representation, active joint
@@ -2187,7 +2187,7 @@ class Extension(omni.ext.IExt):
                     if key != key_order[-1]:
                         f.write("\n")
 
-    def _save_robot_description_file(self, model: ui.AbstractValueModel | None = None):
+    def _save_robot_description_file(self, model: ui.AbstractValueModel | None = None) -> None:
         """Saves robot collision spheres and joint configuration to a Lula Robot Description YAML file.
 
         Exports the current robot configuration including collision spheres, active joint definitions,

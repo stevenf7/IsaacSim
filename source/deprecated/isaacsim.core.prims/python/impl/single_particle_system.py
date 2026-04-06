@@ -36,12 +36,45 @@ class SingleParticleSystem:
     associated with the system. The particle system's solver parameters cannot be changed once the scene
     is playing.
 
+    Initializes and Applies PhysxSchema.PhysxParticleSystem to the prim at prim_path.
+
+    All arguments are accepted as :obj:`None`. In this case, they either have the default values from
+    `PhysxParticleSystem` schema (in case a new particle system is created), or the values present in the
+    existing particle system.
+
     Note:
         CPU simulation of particles is not supported. PhysX must be simulated with GPU enabled.
 
     Reference:
         [1] https://mmacklin.com/pbf_sig_preprint.pdf
         [2] https://docs.omniverse.nvidia.com/prod_extensions/prod_extensions/ext_physics.html#particle-simulation
+
+    Args:
+        prim_path: The path to the particle system.
+        name: Name given to the prim when instantiating it.
+        particle_system_enabled: Whether to enable or disable the particle system.
+        simulation_owner: Single PhysicsScene that simulates this particle system.
+        contact_offset: Contact offset used for collisions with non-particle objects such as rigid or deformable
+            bodies.
+        rest_offset: Rest offset used for collisions with non-particle objects such as rigid or deformable bodies.
+        particle_contact_offset: Contact offset used for interactions between particles.
+            Must be larger than solid and fluid rest offsets.
+        solid_rest_offset: Rest offset used for solid-solid or solid-fluid particle interactions.
+            Must be smaller than particle contact offset.
+        fluid_rest_offset: Rest offset used for fluid-fluid particle interactions.
+            Must be smaller than particle contact offset.
+        enable_ccd: Enable continuous collision detection for particles to help avoid tunneling effects.
+        solver_position_iteration_count: Number of solver iterations for position.
+        max_depenetration_velocity: The maximum velocity permitted to be introduced by the solver to depenetrate
+            intersecting particles.
+        wind: The wind applied to the current particle system.
+        max_neighborhood: The particle neighborhood size.
+        max_velocity: Maximum particle velocity.
+        global_self_collision_enabled: If True, self collisions follow particle-object-specific settings.
+            If False, all particle self collisions are disabled, regardless of any other settings.
+            Improves performance if self collisions are not needed.
+        non_particle_collision_enabled: Enable or disable particle collision with non-particle objects for all
+            particles in the system. Improves performance if non-particle collisions are not needed.
     """
 
     def __init__(
@@ -64,39 +97,6 @@ class SingleParticleSystem:
         global_self_collision_enabled: bool | None = None,
         non_particle_collision_enabled: bool | None = None,
     ):
-        """Initializes and Applies PhysxSchema.PhysxParticleSystem to the prim at prim_path
-
-        All arguments are accepted as :obj:`None`. In this case, they either have the default values from
-        `PhysxParticleSystem` schema (in case a new particle system is created), or the values present in the
-        existing particle system.
-
-        Args:
-            prim_path: The path to the particle system.
-            name: Name given to the prim when instantiating it.
-            particle_system_enabled: Whether to enable or disable the particle system.
-            simulation_owner: Single PhysicsScene that simulates this particle system.
-            contact_offset: Contact offset used for collisions with non-particle objects such as rigid or deformable
-                bodies.
-            rest_offset: Rest offset used for collisions with non-particle objects such as rigid or deformable bodies.
-            particle_contact_offset: Contact offset used for interactions between particles.
-                Must be larger than solid and fluid rest offsets.
-            solid_rest_offset: Rest offset used for solid-solid or solid-fluid particle interactions.
-                Must be smaller than particle contact offset.
-            fluid_rest_offset: Rest offset used for fluid-fluid particle interactions.
-                Must be smaller than particle contact offset.
-            enable_ccd: Enable continuous collision detection for particles to help avoid tunneling effects.
-            solver_position_iteration_count: Number of solver iterations for position.
-            max_depenetration_velocity: The maximum velocity permitted to be introduced by the solver to depenetrate
-                intersecting particles.
-            wind: The wind applied to the current particle system.
-            max_neighborhood: The particle neighborhood size.
-            max_velocity: Maximum particle velocity.
-            global_self_collision_enabled: If True, self collisions follow particle-object-specific settings.
-                If False, all particle self collisions are disabled, regardless of any other settings.
-                Improves performance if self collisions are not needed.
-            non_particle_collision_enabled: Enable or disable particle collision with non-particle objects for all
-                particles in the system. Improves performance if non-particle collisions are not needed.
-        """
         # store constants
         from isaacsim.core.simulation_manager import SimulationManager
 
@@ -229,7 +229,7 @@ class SingleParticleSystem:
         """
         return self._name
 
-    def initialize(self, physics_sim_view=None) -> None:
+    def initialize(self, physics_sim_view: object = None) -> None:
         """Initializes the particle system.
 
         Args:

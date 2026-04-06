@@ -35,7 +35,7 @@ class BaseTask(object):
         offset: offset applied to all assets of the task.
     """
 
-    def __init__(self, name: str, offset: Optional[np.ndarray] = None):
+    def __init__(self, name: str, offset: Optional[np.ndarray] = None) -> None:
         self._scene = None
         self._name = name
         self._offset = offset
@@ -84,7 +84,7 @@ class BaseTask(object):
         self._scene = scene
         return
 
-    def _move_task_objects_to_their_frame(self):
+    def _move_task_objects_to_their_frame(self) -> None:
         """Move all registered task objects to their final position using the task offset."""
 
         # if self._task_path:
@@ -151,7 +151,7 @@ class BaseTask(object):
         """
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Calls while doing a .reset() on the world."""
         return
 
@@ -163,13 +163,13 @@ class BaseTask(object):
         """
         return ""
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Called before calling a reset() on the world to removed temporary objects that were added during
         simulation for instance.
         """
         return
 
-    def set_params(self, *args, **kwargs):
+    def set_params(self, *args: object, **kwargs: object) -> None:
         """Changes the modifiable parameters of the task
 
         Args:

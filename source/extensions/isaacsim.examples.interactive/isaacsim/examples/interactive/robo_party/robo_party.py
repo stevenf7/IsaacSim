@@ -178,8 +178,13 @@ class RoboParty(BaseSample):
             SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
-    def _party_physics_callback(self, dt, context) -> None:
-        """Run stacking and time-based wheeled robot commands."""
+    def _party_physics_callback(self, dt: float, context: object) -> None:
+        """Run stacking and time-based wheeled robot commands.
+
+        Args:
+            dt: Time delta for the physics step.
+            context: Physics simulation context.
+        """
         if not self._is_executing:
             return
 

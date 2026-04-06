@@ -605,5 +605,3 @@ def _get_joint_targets_kernel(
     )
     out_desired_position[i_joint] = pos + p0
     out_desired_velocity[i_joint] = vel
-
-    return

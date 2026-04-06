@@ -46,7 +46,7 @@ class SensorIconExtension(omni.ext.IExt):
 
     # ext_id is current extension id. It can be used with extension manager to query additional information, like where
     # this extension is located on filesystem.
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension is enabled.
 
         Sets up the sensor icon system including viewport scene registration, stage widget icons,

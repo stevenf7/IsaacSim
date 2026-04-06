@@ -69,7 +69,7 @@ Example:
 class _Checker(doctest.OutputChecker):
     """Custom doctest's output checker to support the NO_CHECK option."""
 
-    def check_output(self, want, got, optionflags):
+    def check_output(self, want: str, got: str, optionflags: int) -> bool:
         """Check if the actual output matches the expected output.
 
         Extends the default doctest output checking by supporting the NO_CHECK flag.
@@ -107,11 +107,11 @@ class DocTest:
         **kwargs: Arbitrary keyword arguments for configuring the doctest runner.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object):
         self._globs = {"__name__": "__main__"}
         self._checker = _Checker()
 
-    def _get_names(self, obj, privates: bool = False) -> list[str]:
+    def _get_names(self, obj: object, privates: bool = False) -> list[str]:
         """Get class/module names without including special methods
 
         Args:
@@ -223,7 +223,7 @@ class DocTest:
                 return False
         return True
 
-    def _is_pybind11_module(self, obj) -> bool:
+    def _is_pybind11_module(self, obj: object) -> bool:
         """Check if this is a pybind11 module
 
         Args:
@@ -245,7 +245,7 @@ class DocTest:
 
         return False
 
-    def _is_function_like(self, obj) -> bool:
+    def _is_function_like(self, obj: object) -> bool:
         """Check if object is function-like (including pybind11 functions)
 
         Args:

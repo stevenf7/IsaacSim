@@ -49,17 +49,6 @@ class UR10Experimental(Articulation):
         end_effector_link: Optional[RigidPrim] = None,
         attach_gripper: bool = True,
     ):
-        """Initialize the UR10 controller.
-
-        Args:
-            robot_path: USD path where the robot should be created or exists. Defaults to "/World/robot".
-            create_robot: Whether to create a new robot from USD assets.
-            end_effector_link: The end effector rigid body link. If None, creates from robot_path.
-            attach_gripper: Whether to attach a gripper to the robot.
-
-        Raises:
-            ValueError: If create_robot is False but no robot exists at robot_path.
-        """
         if create_robot:
             # Load UR10 robot from USD asset with gripper variant if requested
             variants = [("Gripper", "Short_Suction")] if attach_gripper else []

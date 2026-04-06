@@ -48,7 +48,7 @@ class Extension(omni.ext.IExt):
     ensuring optimal performance during simulation while maintaining good usability during scene editing.
     """
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the throttling extension.
 
         Sets up timeline event subscriptions, frame counting for async rendering, and applies initial
@@ -113,7 +113,7 @@ class Extension(omni.ext.IExt):
             except Exception:
                 pass
 
-    def _on_frame_update(self, event: carb.events.IEvent):
+    def _on_frame_update(self, event: carb.events.IEvent) -> None:
         """Frame update callback for async toggle frame delay.
 
         Args:
@@ -140,7 +140,7 @@ class Extension(omni.ext.IExt):
             if self._frame_update_subscription is not None:
                 self._frame_update_subscription = None
 
-    def _start_frame_counting(self):
+    def _start_frame_counting(self) -> None:
         """Start counting frames for async rendering delay."""
         if self._waiting_for_async_reenable:
             return

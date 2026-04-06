@@ -77,7 +77,7 @@ class GroundPlane(object):
         color: Optional[np.ndarray] = None,
         physics_material: Optional[PhysicsMaterial] = None,
         visual_material: Optional[VisualMaterial] = None,
-    ):
+    ) -> None:
         # wrap two object the xform and the collision plane
         if not is_prim_path_valid(prim_path):
             carb.log_info("Creating a new Ground Plane prim at path {}".format(prim_path))
@@ -223,7 +223,7 @@ class GroundPlane(object):
         """
         return self._collision_prim
 
-    def initialize(self, physics_sim_view=None):
+    def initialize(self, physics_sim_view: object = None) -> None:
         """Create a physics simulation view if not passed and using PhysX tensor API
 
         .. note::
@@ -244,7 +244,7 @@ class GroundPlane(object):
         self._collision_prim.initialize(physics_sim_view=physics_sim_view)
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Reset the prim to its default state (position and orientation).
 
         Example:
@@ -273,7 +273,7 @@ class GroundPlane(object):
         """
         return self._xform_prim.is_valid()
 
-    def apply_physics_material(self, physics_material: PhysicsMaterial, weaker_than_descendants: bool = False):
+    def apply_physics_material(self, physics_material: PhysicsMaterial, weaker_than_descendants: bool = False) -> None:
         """Used to apply physics material to the held prim and optionally its descendants.
 
         Args:
@@ -318,7 +318,9 @@ class GroundPlane(object):
         """
         return self._collision_prim.get_applied_physics_material()
 
-    def set_world_pose(self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None):
+    def set_world_pose(
+        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+    ) -> None:
         """Sets prim's pose with respect to the world's frame
 
         .. warning::
@@ -387,7 +389,7 @@ class GroundPlane(object):
 
     def set_default_state(
         self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
-    ):
+    ) -> None:
         """Sets the default state of the prim (position and orientation), that will be used after each reset.
 
         Args:

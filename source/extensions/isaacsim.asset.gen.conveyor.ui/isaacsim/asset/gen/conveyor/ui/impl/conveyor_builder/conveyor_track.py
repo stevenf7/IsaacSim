@@ -63,13 +63,25 @@ class Type(CheckEnum):
 
 
 class ConveyorTrack:
-    """
-    Base Conveyor track class, every track type should derive from this.
+    """Base Conveyor track class, every track type should derive from this.
+
+    Args:
+        base_usd: Path to the base USD file for the conveyor track.
+        style: Visual style of the conveyor.
+        angle: Angle configuration for curved sections.
+        curvature: Curvature amount for curved sections.
+        ramp: Ramp configuration for inclined sections.
+        type: Track type (start, straight, merge, end, etc.).
+        start_level: Starting level for the conveyor belt.
+        direction: Direction modifier for curves and ramps.
+        anchors: List of anchor point names.
+        thumb_loaded_callback: Callback when the thumbnail is loaded.
+        **kwargs: Additional keyword arguments including conveyor_nodes.
     """
 
     def __init__(
         self,
-        base_usd,
+        base_usd: str,
         style: Style = Style.BELT,
         angle: Angle = Angle.NONE,
         curvature: Curvature = Curvature.SMALL,
@@ -78,8 +90,8 @@ class ConveyorTrack:
         start_level: int = 0,
         direction: int = 1,
         anchors: List[str] = [""],
-        thumb_loaded_callback=None,
-        **kwargs,
+        thumb_loaded_callback: object = None,
+        **kwargs: object,
     ):
         self._style = Style[style]
         self._angle = Angle[angle]

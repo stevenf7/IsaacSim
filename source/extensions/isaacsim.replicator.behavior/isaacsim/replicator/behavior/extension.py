@@ -26,7 +26,7 @@ class Extension(omni.ext.IExt):
     advanced simulation scenarios with dynamic object behaviors and interactions.
     """
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str):
         """Called when the extension is started.
 
         Args:

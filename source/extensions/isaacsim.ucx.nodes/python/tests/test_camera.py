@@ -54,7 +54,7 @@ class TestUCXCamera(UCXTestCase):
         viewport_api.set_texture_resolution((1280, 720))
         await omni.kit.app.get_app().next_update_async()
 
-    async def setup_ucx_client_with_listener(self, port):
+    async def setup_ucx_client_with_listener(self, port: int):
         """Setup UCX client.
 
         Args:
@@ -65,7 +65,7 @@ class TestUCXCamera(UCXTestCase):
 
         self.create_ucx_client(port)
 
-    async def receive_image_message(self, tag=10, timeout_frames=1000, retry_count=15):
+    async def receive_image_message(self, tag: int = 10, timeout_frames: int = 1000, retry_count: int = 15):
         """Receive and unpack an image message.
 
         Args:

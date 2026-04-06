@@ -23,7 +23,7 @@ import sys
 import carb
 
 
-def on_copy_to_clipboard(to_copy: str):
+def on_copy_to_clipboard(to_copy: str) -> None:
     """Copy text to system clipboard.
 
     Args:

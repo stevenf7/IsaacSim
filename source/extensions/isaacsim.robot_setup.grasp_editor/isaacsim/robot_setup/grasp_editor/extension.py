@@ -124,7 +124,7 @@ class Extension(omni.ext.IExt):
         self.ui_builder.cleanup()
         gc.collect()
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: bool) -> None:
         """Handle window visibility changes and manage event subscriptions.
 
         Args:
@@ -205,7 +205,7 @@ class Extension(omni.ext.IExt):
         self._window.visible = not self._window.visible
         self.ui_builder.on_menu_callback()
 
-    def _on_timeline_play(self, event):
+    def _on_timeline_play(self, event: object) -> None:
         """Handle timeline play events and subscribe to physics step updates.
 
         Args:
@@ -217,7 +217,7 @@ class Extension(omni.ext.IExt):
             )
         self.ui_builder.on_timeline_event(event)
 
-    def _on_timeline_stop(self, event):
+    def _on_timeline_stop(self, event: object) -> None:
         """Handle timeline stop events and cleanup physics subscriptions.
 
         Args:
@@ -226,7 +226,7 @@ class Extension(omni.ext.IExt):
         self._physics_subscription = None
         self.ui_builder.on_timeline_event(event)
 
-    def _on_physics_step(self, step, context):
+    def _on_physics_step(self, step: float, context: object) -> None:
         """Handle physics simulation step events.
 
         Args:
@@ -235,7 +235,7 @@ class Extension(omni.ext.IExt):
         """
         self.ui_builder.on_physics_step(step)
 
-    def _on_stage_opened(self, event):
+    def _on_stage_opened(self, event: object) -> None:
         """Handle stage opened events and cleanup previous state.
 
         Args:
@@ -245,7 +245,7 @@ class Extension(omni.ext.IExt):
         self._physics_subscription = None
         self.ui_builder.cleanup()
 
-    def _on_stage_closed(self, event):
+    def _on_stage_closed(self, event: object) -> None:
         """Handle stage closed events and cleanup resources.
 
         Args:
@@ -255,7 +255,7 @@ class Extension(omni.ext.IExt):
         self._physics_subscription = None
         self.ui_builder.cleanup()
 
-    def _on_assets_loaded(self, event):
+    def _on_assets_loaded(self, event: object) -> None:
         """Handles the stage assets loaded event.
 
         Called when all assets in the stage have finished loading.
@@ -265,7 +265,7 @@ class Extension(omni.ext.IExt):
         """
         self.ui_builder.on_assets_loaded()
 
-    def _on_simulation_stop_play(self, event):
+    def _on_simulation_stop_play(self, event: object) -> None:
         """Handles the simulation stop play event.
 
         Called when the simulation transitions from play to stop state.

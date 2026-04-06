@@ -27,7 +27,7 @@ def debug_draw_clear_points():
     draw_iface.clear_points()
 
 
-def debug_draw_pointcloud(pointcloud_data, color, size, clear_existing=False):
+def debug_draw_pointcloud(pointcloud_data: object, color: object, size: float, clear_existing: bool = False):
     """Draw a pointcloud in the viewport for visual debugging.
 
     Args:
@@ -35,6 +35,9 @@ def debug_draw_pointcloud(pointcloud_data, color, size, clear_existing=False):
         color: RGBA tuple for the point color (e.g., (1, 0, 0, 1) for red).
         size: Size of the points to draw.
         clear_existing: If True, clear existing points before drawing.
+
+    Returns:
+        None.
     """
     if not (isinstance(pointcloud_data, np.ndarray) and pointcloud_data.ndim == 2 and pointcloud_data.shape[1] == 3):
         print("Warning: pointcloud_data must be a NumPy array with shape (N, 3).")

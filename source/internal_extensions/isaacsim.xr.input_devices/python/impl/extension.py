@@ -33,8 +33,12 @@ from .manus_vive_integration import ManusViveIntegration
 class Extension(omni.ext.IExt):
     _instance = None
 
-    def on_startup(self, ext_id):
-        """Create the integration and register devices when the extension loads."""
+    def on_startup(self, ext_id: str) -> None:
+        """Create the integration and register devices when the extension loads.
+
+        Args:
+            ext_id: The unique identifier of the extension being started.
+        """
         carb.log_info("IsaacSim XR Input Devices extension startup")
         Extension._instance = self
         self.manus_vive_integration = ManusViveIntegration()
@@ -53,5 +57,9 @@ class Extension(omni.ext.IExt):
 
     @classmethod
     def get_instance(cls):
-        """Return the active extension instance or `None` if not started."""
+        """Return the active extension instance or `None` if not started.
+
+        Returns:
+            The active extension instance, or None if not started.
+        """
         return cls._instance

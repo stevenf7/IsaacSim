@@ -240,7 +240,7 @@ class EditMenuExtension:
         all_kinds = set(Kind.Registry.GetAllKinds())
         return all_kinds - set(self._usd_kinds())
 
-    def _create_selection_set(self):
+    def _create_selection_set(self) -> None:
         """Create or show the selection set naming dialog."""
         paths = omni.usd.get_context().get_selection().get_selected_prim_paths()
         if not paths:
@@ -287,7 +287,7 @@ class EditMenuExtension:
 
         asyncio.ensure_future(select_func())
 
-    def _add_to_selection_set(self, description: str):
+    def _add_to_selection_set(self, description: str) -> None:
         """Add the current selection to the named selection set.
 
         Args:
@@ -788,7 +788,7 @@ class EditMenuExtension:
         return True
 
     @staticmethod
-    def instance_prim():
+    def instance_prim() -> None:
         """Create instances for the selected prims.
 
         Example:
@@ -808,7 +808,7 @@ class EditMenuExtension:
 
     # When combine_layers is True, it means to duplicate with flattening references.
     @staticmethod
-    def duplicate_prim(duplicate_layers: bool, combine_layers: bool):
+    def duplicate_prim(duplicate_layers: bool, combine_layers: bool) -> None:
         """Duplicate selected prims with layer options.
 
         Args:
@@ -843,7 +843,7 @@ class EditMenuExtension:
             )
 
     @staticmethod
-    def parent_prims():
+    def parent_prims() -> None:
         """Parent selected prims to the last selected prim.
 
         Example:
@@ -904,7 +904,7 @@ class EditMenuExtension:
             omni.usd.get_context().get_selection().set_selected_prim_paths(paths, True)
 
     @staticmethod
-    def unparent_prims():
+    def unparent_prims() -> None:
         """Unparent selected prims.
 
         Example:
@@ -1003,7 +1003,7 @@ class EditMenuExtension:
         return False
 
     @staticmethod
-    def delete_prim(destructive: bool):
+    def delete_prim(destructive: bool) -> None:
         """Delete selected prims from the stage.
 
         Args:
@@ -1118,7 +1118,7 @@ class EditMenuExtension:
         frame_viewport_selection()
 
     @staticmethod
-    def toggle_visibillity():
+    def toggle_visibillity() -> None:
         """Toggle visibility of selected prims in the viewport.
 
         Example:
@@ -1134,7 +1134,7 @@ class EditMenuExtension:
         omni.kit.commands.execute("ToggleVisibilitySelectedPrims", selected_paths=paths)
 
     @staticmethod
-    def deactivate_prims():
+    def deactivate_prims() -> None:
         """Deactivate selected prims.
 
         Example:
@@ -1199,7 +1199,7 @@ class EditMenuExtension:
         return screenshot_path
 
     @staticmethod
-    def capture_screenshot(on_complete_fn: Callable[[bool, str], None] | None = None):
+    def capture_screenshot(on_complete_fn: Callable[[bool, str], None] | None = None) -> None:
         """Capture a screenshot of the active viewport or the app.
 
         Args:

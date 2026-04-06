@@ -110,7 +110,7 @@ class ExtendedNewtonSceneWidget(ExtensionSchemaWidget):
     used by the Newton physics system.
     """
 
-    def _filter_props_to_build(self, prim):
+    def _filter_props_to_build(self, prim: "Usd.Prim") -> list:
         """Filters properties to build for Newton scene widgets.
 
         Adds Newton solver property to the filtered properties when Newton simulation is active.

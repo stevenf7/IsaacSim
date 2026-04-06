@@ -165,7 +165,7 @@ class Extension(omni.ext.IExt):
                     self._filepath = str_builder(**dict)
                     btn_builder("", "button", "Save Pattern Image", "", self._on_save_pattern)
 
-    async def _spawn_generic_function(self, task):
+    async def _spawn_generic_function(self, task: object) -> None:
         """Create a Generic Range Sensor in the stage with physics scene setup.
 
         Args:
@@ -228,7 +228,7 @@ class Extension(omni.ext.IExt):
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._spawn_generic_function(task))
 
-    def _on_spawn_obstacles_button(self):
+    def _on_spawn_obstacles_button(self) -> None:
         """Handle the Load Scene button click to create obstacles and lighting for the Range Sensor to detect."""
         stage = omni.usd.get_context().get_stage()
         self.CubePath = "/World/Wall"
@@ -332,7 +332,7 @@ class Extension(omni.ext.IExt):
 
         return sensor_pattern, origin_offsets
 
-    def _on_editor_step(self, step):
+    def _on_editor_step(self, step: object) -> None:
         """Updates the range sensor data processing during timeline playback.
 
         This method is called on each editor update step and handles sending new sensor pattern data batches when the
@@ -370,7 +370,7 @@ class Extension(omni.ext.IExt):
                 else:
                     print("sensor not added or pattern not set")
 
-    def _on_save_pattern(self):
+    def _on_save_pattern(self) -> None:
         """Initiates the collection and saving of sensor pattern data.
 
         Starts recording point cloud data from the range sensor for the configured plot duration. The collected data
@@ -384,7 +384,7 @@ class Extension(omni.ext.IExt):
         self._plot = True
         self._record_start = time.perf_counter()
 
-    def _plot_pattern(self, data):
+    def _plot_pattern(self, data: object) -> None:
         """Creates and saves a visual representation of the sensor scanning pattern.
 
         Processes the collected point cloud data to generate a 2D image showing where the sensor rays hit the wall,
@@ -425,7 +425,7 @@ class Extension(omni.ext.IExt):
         filename = self._filepath.get_value_as_string() + "sensor_pattern.png"
         im.save(filename)
 
-    def data_processing(self, data):
+    def data_processing(self, data: object):
         """Filters point cloud data to extract points that hit the wall surface.
 
         Calculates the wall surface location and filters the input data to return only the Y and Z coordinates

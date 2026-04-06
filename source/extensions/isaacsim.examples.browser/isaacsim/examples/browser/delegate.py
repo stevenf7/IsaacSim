@@ -107,7 +107,7 @@ class AssetDetailDelegate(FolderDetailDelegate):
                     break
         return item.url
 
-    def _on_drop_accepted(self, url):
+    def _on_drop_accepted(self, url: str):
         """Determines if a drop operation should be accepted.
 
         Args:
@@ -119,7 +119,7 @@ class AssetDetailDelegate(FolderDetailDelegate):
         # Only handle dragging from asset browser
         return url == self._dragging_url
 
-    def _on_drop(self, url, target, viewport_name, context_name):  # pylint: disable=useless-return
+    def _on_drop(self, url: str, target: str, viewport_name: str, context_name: str):  # pylint: disable=useless-return
         """Handles the drop operation by temporarily enabling instanceable references for specific categories.
 
         Args:

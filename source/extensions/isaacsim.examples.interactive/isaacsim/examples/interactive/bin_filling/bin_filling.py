@@ -48,7 +48,7 @@ class BinFilling(BaseSample):
         self._articulation_controller = None
         self._added_cubes = False
 
-    def setup_scene(self):
+    def setup_scene(self) -> None:
         """Sets up the bin filling task in the world scene.
 
         Adds the BinFillingTask to the world with the name "bin_filling".
@@ -57,7 +57,7 @@ class BinFilling(BaseSample):
         world.add_task(BinFillingTask(name="bin_filling"))
         return
 
-    async def setup_post_load(self):
+    async def setup_post_load(self) -> None:
         """Configures the bin filling task components after scene loading.
 
         Initializes the UR10 task, retrieves task parameters, sets up the pick and place controller
@@ -72,7 +72,7 @@ class BinFilling(BaseSample):
         self._articulation_controller = my_ur10.get_articulation_controller()
         return
 
-    def _on_fill_bin_physics_step(self, step_size: float):
+    def _on_fill_bin_physics_step(self, step_size: float) -> None:
         """Handles physics step calculations for the bin filling process.
 
         Executes the pick and place controller, manages cube addition when the controller reaches event 6,
@@ -98,7 +98,7 @@ class BinFilling(BaseSample):
         self._articulation_controller.apply_action(actions)
         return
 
-    async def on_fill_bin_event_async(self):
+    async def on_fill_bin_event_async(self) -> None:
         """Starts the bin filling simulation by registering physics callbacks and beginning world playback.
 
         Adds the physics step callback for bin filling and starts asynchronous world simulation.
@@ -108,7 +108,7 @@ class BinFilling(BaseSample):
         await world.play_async()
         return
 
-    async def setup_pre_reset(self):
+    async def setup_pre_reset(self) -> None:
         """Prepares the scene for reset by cleaning up physics callbacks and controller state.
 
         Removes the physics step callback if it exists, resets the controller, and clears the
@@ -121,7 +121,7 @@ class BinFilling(BaseSample):
         self._added_cubes = False
         return
 
-    def world_cleanup(self):
+    def world_cleanup(self) -> None:
         """Cleans up world resources by clearing controller references and resetting state flags."""
         self._controller = None
         self._added_cubes = False

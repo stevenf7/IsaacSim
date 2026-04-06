@@ -67,7 +67,7 @@ class AssetCheck:
             return True
         return False
 
-    def _notify_visibility_changed(self, _visible=None) -> None:
+    def _notify_visibility_changed(self, _visible: bool | None = None) -> None:
         """Notify the visibility changed callback.
 
         Args:
@@ -150,7 +150,7 @@ class AssetCheck:
 
         await omni.kit.app.get_app().next_update_async()
 
-    async def _assets_check_window(self):
+    async def _assets_check_window(self) -> None:
         """Perform the actual asset root path check and show results."""
         if self._assets_check is False and self._startup_run:
             self._startup_run = False

@@ -28,6 +28,15 @@ class Stacking:
     This class sets up a stacking scene with a UR10 robot and cubes for demonstration,
     and provides control logic for stacking operations.
     It uses experimental APIs and does not rely on old World/Scene/Tasks APIs.
+
+    Args:
+        robot_path: USD path to the robot prim.
+        cube_positions: List of initial cube positions.
+        cube_size: Size of the cubes as a numpy array.
+        stack_target_position: Target position for stacking.
+        offset: Position offset applied to cubes and target.
+        events_dt: Step counts for each phase of the stacking operation.
+        robot_name: Name identifier for the robot.
     """
 
     def __init__(
@@ -40,17 +49,6 @@ class Stacking:
         events_dt: list[int] | None = None,
         robot_name: str = "",
     ):
-        """Initialize the stacking scene setup and controller.
-
-        Args:
-            robot_path: USD path where the robot should be created. Defaults to '/World/robot'.
-            cube_positions: List of initial cube positions. Defaults to two cubes.
-            cube_size: Size of each cube. Defaults to [0.05, 0.05, 0.05].
-            stack_target_position: Target position for stacking. Defaults to [0.5, 0.5, 0.12].
-            offset: Additional offset to apply to positions. Defaults to [0, 0, 0].
-            events_dt: List of step counts for each phase. If None, uses default values.
-            robot_name: Optional name/identifier for this robot (for logging purposes).
-        """
         self.robot_path = robot_path
         self.robot = None
         self.cubes = []

@@ -450,7 +450,11 @@ class GeometriesRoutingRule(RuleInterface):
     ) -> tuple[Gf.Vec3d, Gf.Quatd, Gf.Vec3d] | None:
         """Read TOS values directly from a prim's xformOps, bypassing matrix decomposition.
 
-        Returns None if the prim doesn't use canonical TOS ordering.
+        Args:
+            prim: The USD prim to read xformOps from.
+
+        Returns:
+            Tuple of (translate, orient, scale) or None if the prim doesn't use canonical TOS ordering.
         """
         xformable = UsdGeom.Xformable(prim)
         if not xformable:
@@ -535,7 +539,14 @@ class GeometriesRoutingRule(RuleInterface):
 
     @staticmethod
     def _is_subtree_empty(prim: Usd.Prim) -> bool:
-        """True when *prim* and all its descendants have no authored properties."""
+        """True when *prim* and all its descendants have no authored properties.
+
+        Args:
+            prim: The USD prim to check.
+
+        Returns:
+            True if the subtree is empty.
+        """
         if prim.GetAuthoredProperties():
             return False
         return all(GeometriesRoutingRule._is_subtree_empty(c) for c in prim.GetChildren())
@@ -615,7 +626,15 @@ class GeometriesRoutingRule(RuleInterface):
 
     @staticmethod
     def _quantize_double(v: float, sig: int = 10) -> float:
-        """Round *v* to *sig* significant digits to remove matrix-decomposition noise."""
+        """Round *v* to *sig* significant digits to remove matrix-decomposition noise.
+
+        Args:
+            v: The value to quantize.
+            sig: Number of significant digits.
+
+        Returns:
+            The quantized value.
+        """
         if v == 0.0:
             return 0.0
         d = sig - 1 - int(math.floor(math.log10(abs(v))))
@@ -630,6 +649,13 @@ class GeometriesRoutingRule(RuleInterface):
         then normalized so that q and -q always produce the same result:
         prefer real > 0; when real == 0, prefer the first non-zero imaginary
         component positive.
+
+        Args:
+            orient: The quaternion to canonicalize.
+            zero_thresh: Threshold below which components are clamped to zero.
+
+        Returns:
+            The canonicalized quaternion.
         """
 
         def _z(v: float) -> float:

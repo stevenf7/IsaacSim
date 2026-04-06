@@ -70,14 +70,14 @@ class H1FlatTerrainPolicy(PolicyController):
         self._current_action = None
         self._policy_counter = 0
 
-    def _compute_observation(self, command):
+    def _compute_observation(self, command: object) -> object:
         """Compute the observation vector for the policy.
 
         Args:
             command: The robot command velocities (v_x, v_y, w_z) in m/s and rad/s
 
         Returns:
-            Observation vector of shape [12 + 3*num_dofs] containing base lin/ang velocity,
+            object: Observation vector of shape [12 + 3*num_dofs] containing base lin/ang velocity,
             gravity direction, commands, joint position error, joint velocities, and previous action.
         """
         lin_vel_I, ang_vel_I = self.robot.get_velocities()
@@ -111,7 +111,7 @@ class H1FlatTerrainPolicy(PolicyController):
             obs[12 + 2 * num_dofs : 12 + 3 * num_dofs] = self._previous_action
         return obs
 
-    def forward(self, dt, command):
+    def forward(self, dt: float, command: object) -> None:
         """Compute the desired joint positions and apply them to the robot.
 
         Policy runs at decimated rate, but control commands are applied every physics step.

@@ -51,7 +51,7 @@ class OmniGlass(VisualMaterial):
         ior: Optional[float] = None,
         depth: Optional[float] = None,
         thin_walled: Optional[bool] = None,
-    ):
+    ) -> None:
         stage = stage_utils.get_current_stage()
         if is_prim_path_valid(prim_path=prim_path):
             material = UsdShade.Material(get_prim_at_path(prim_path))
@@ -100,7 +100,7 @@ class OmniGlass(VisualMaterial):
 
         return
 
-    def set_color(self, color: np.ndarray):
+    def set_color(self, color: np.ndarray) -> None:
         """Set the glass tint color.
 
         Args:
@@ -124,7 +124,7 @@ class OmniGlass(VisualMaterial):
         else:
             return np.array(self.shaders_list[0].GetInput("glass_color").Get())
 
-    def set_ior(self, ior: float):
+    def set_ior(self, ior: float) -> None:
         """Set the index of refraction for the glass material.
 
         Args:
@@ -148,7 +148,7 @@ class OmniGlass(VisualMaterial):
         else:
             return self.shaders_list[0].GetInput("glass_ior").Get()
 
-    def set_depth(self, depth: float):
+    def set_depth(self, depth: float) -> None:
         """Set the glass depth/thickness.
 
         Args:
@@ -172,7 +172,7 @@ class OmniGlass(VisualMaterial):
         else:
             return self.shaders_list[0].GetInput("depth").Get()
 
-    def set_thin_walled(self, thin_walled: float):
+    def set_thin_walled(self, thin_walled: float) -> None:
         """Set the thin-walled mode for the glass material.
 
         Args:

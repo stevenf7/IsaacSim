@@ -82,7 +82,7 @@ U_W_TRANSFORM = np.array([[0, -1, 0, 0], [0, 0, 1, 0], [-1, 0, 0, 0], [0, 0, 0, 
 USD_CAMERA_TENTHS_TO_STAGE_UNIT = 10.0
 
 
-def point_to_theta(camera_matrix, x, y) -> float:
+def point_to_theta(camera_matrix: object, x: object, y: object) -> float:
     """This helper function returns the theta angle of the point.
 
     Args:
@@ -100,7 +100,9 @@ def point_to_theta(camera_matrix, x, y) -> float:
     return theta
 
 
-def distort_point_rational_polynomial(camera_matrix, distortion_model, x, y) -> np.ndarray:
+def distort_point_rational_polynomial(
+    camera_matrix: object, distortion_model: object, x: object, y: object
+) -> np.ndarray:
     """[DEPRECATED] This helper function distorts point(s) using rational polynomial model.
     It should be equivalent to the following reference that uses OpenCV:
 
@@ -155,7 +157,7 @@ def distort_point_rational_polynomial(camera_matrix, distortion_model, x, y) -> 
     return np.array([fx * r_x + cx, fy * r_y + cy])
 
 
-def distort_point_kannala_brandt(camera_matrix, distortion_model, x, y) -> np.ndarray:
+def distort_point_kannala_brandt(camera_matrix: object, distortion_model: object, x: object, y: object) -> np.ndarray:
     """[DEPRECATED] This helper function distorts point(s) using Kannala Brandt fisheye model.
     It should be equivalent to the following reference that uses OpenCV:
 
@@ -360,6 +362,9 @@ class Camera(BaseSensor):
 
         Args:
             value: The frequency to acquire new data frames.
+
+        Returns:
+            None.
         """
         current_rendering_frequency = get_carb_setting(
             carb.settings.get_settings(), "/app/runLoops/main/rateLimitFrequency"
@@ -386,6 +391,9 @@ class Camera(BaseSensor):
 
         Args:
             value: The dt to acquire new data frames.
+
+        Returns:
+            None.
         """
         current_rendering_frequency = get_carb_setting(
             carb.settings.get_settings(), "/app/runLoops/main/rateLimitFrequency"
@@ -407,7 +415,7 @@ class Camera(BaseSensor):
         """
         return 1.0 / self._frequency
 
-    def get_current_frame(self, clone=False) -> dict:
+    def get_current_frame(self, clone: bool = False) -> dict:
         """Gets the current frame of data.
 
         Args:
@@ -421,12 +429,15 @@ class Camera(BaseSensor):
         else:
             return self._current_frame
 
-    def initialize(self, physics_sim_view=None, attach_rgb_annotator=True):
+    def initialize(self, physics_sim_view: object = None, attach_rgb_annotator: bool = True):
         """To be called before using this class after a reset of the world
 
         Args:
             physics_sim_view: Current physics simulation view.
             attach_rgb_annotator: True to attach the rgb annotator to the camera. Set to False to improve performance.
+
+        Returns:
+            None.
         """
         BaseSensor.initialize(self, physics_sim_view=physics_sim_view)
         if self._render_product_path:
@@ -474,17 +485,23 @@ class Camera(BaseSensor):
         """Reset camera's elapsed time and previous time after simulation reset.
 
         Resets internal timing state used for data collection frequency control.
+
+        Returns:
+            None.
         """
         BaseSensor.post_reset(self)
         self._elapsed_time = 0
         self._previous_time = None
         return
 
-    def _stage_open_callback_fn(self, event):
+    def _stage_open_callback_fn(self, event: object):
         """Handle stage open events by clearing all event callbacks.
 
         Args:
             event: The stage open event.
+
+        Returns:
+            None.
         """
         self._acquisition_callback = None
         self._stage_open_callback = None
@@ -492,26 +509,36 @@ class Camera(BaseSensor):
         self._timer_reset_callback_play = None
         return
 
-    def _timeline_stop_callback_fn(self, event):
+    def _timeline_stop_callback_fn(self, event: object):
         """Handle timeline stop events by pausing the camera.
 
         Args:
             event: The timeline stop event.
+
+        Returns:
+            None.
         """
         self.pause()
         return
 
-    def _timeline_play_callback_fn(self, event):
+    def _timeline_play_callback_fn(self, event: object):
         """Handle timeline play events by resuming the camera.
 
         Args:
             event: The timeline play event.
+
+        Returns:
+            None.
         """
         self.resume()
         return
 
     def resume(self):
-        """Resumes data collection and updating the data frame."""
+        """Resumes data collection and updating the data frame.
+
+        Returns:
+            None.
+        """
         self._acquisition_callback = carb.eventdispatcher.get_eventdispatcher().observe_event(
             event_name=omni.usd.get_context().stage_rendering_event_name(
                 omni.usd.StageRenderingEventType.NEW_FRAME, True
@@ -522,7 +549,11 @@ class Camera(BaseSensor):
         return
 
     def pause(self):
-        """Pauses data collection and updating the data frame."""
+        """Pauses data collection and updating the data frame.
+
+        Returns:
+            None.
+        """
         self._acquisition_callback = None
         return
 
@@ -539,6 +570,9 @@ class Camera(BaseSensor):
 
         Args:
             event: The rendering event containing product path handle and results.
+
+        Returns:
+            None.
         """
         parsed_payload = self._sdg_interface.parse_rendered_simulation_event(
             event["product_path_handle"], event["results"]
@@ -597,6 +631,9 @@ class Camera(BaseSensor):
         Args:
             value: width and height respectively.
             maintain_square_pixels: If True, keep apertures in sync for square pixels.
+
+        Returns:
+            None.
         """
         self._resolution = value
         set_resolution(self._render_product_path, self._resolution)
@@ -670,6 +707,9 @@ class Camera(BaseSensor):
             orientation: quaternion orientation in the world frame of the prim.
                 quaternion is scalar-first (w, x, y, z). shape is (4, ).
             camera_axes: camera axes, world is (+Z up, +X forward), ros is (+Y up, +Z forward) and usd is (+Y up and -Z forward).
+
+        Returns:
+            None.
         """
         if camera_axes not in ["world", "ros", "usd"]:
             raise Exception(
@@ -752,6 +792,9 @@ class Camera(BaseSensor):
             orientation: quaternion orientation in the local frame of the prim.
                 quaternion is scalar-first (w, x, y, z). shape is (4, ).
             camera_axes: camera axes, world is (+Z up, +X forward), ros is (+Y up, +Z forward) and usd is (+Y up and -Z forward).
+
+        Returns:
+            None.
         """
         if camera_axes not in ["world", "ros", "usd"]:
             raise Exception(
@@ -796,6 +839,9 @@ class Camera(BaseSensor):
 
         Raises:
             rep.annotators.AnnotatorRegistryError: If the annotator is not found.
+
+        Returns:
+            None.
         """
         # Normalize key by removing variant suffixes for consistent frame data access
         frame_key = annotator_name.replace("_fast", "")
@@ -916,6 +962,9 @@ class Camera(BaseSensor):
                 np.array
                 shape: (num_objects, 1)
                 dtype: np.dtype([("instanceId", "<u4"), ("semanticId", "<u4"), ("occlusionRatio", "<f4")])
+
+        Returns:
+            None.
         """
         self.attach_annotator(annotator_name="occlusion", **init_params)
         return
@@ -940,6 +989,9 @@ class Camera(BaseSensor):
                 dtype: np.float32
 
             See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#distance-to-image-plane
+
+        Returns:
+            None.
         """
         self.attach_annotator(annotator_name="distance_to_image_plane", **init_params)
         return
@@ -1055,6 +1107,9 @@ class Camera(BaseSensor):
             dtype: np.uint32 or np.uint8 if `colorize` is set to true (e.g. init_params={"colorize": True})
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#semantic-segmentation
+
+        Returns:
+            None.
         """
         self.attach_annotator(annotator_name="semantic_segmentation", **init_params)
         return
@@ -1118,6 +1173,9 @@ class Camera(BaseSensor):
             dtype: np.float32
 
         See more details: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html#point-cloud
+
+        Returns:
+            None.
         """
         if "includeUnlabelled" not in init_params:
             init_params["includeUnlabelled"] = include_unlabelled
@@ -1345,6 +1403,9 @@ class Camera(BaseSensor):
 
         Args:
             value: Desired focal length of camera prim, in stage units.
+
+        Returns:
+            None.
         """
         self.prim.GetAttribute("focalLength").Set(value * USD_CAMERA_TENTHS_TO_STAGE_UNIT)
         return
@@ -1363,6 +1424,9 @@ class Camera(BaseSensor):
 
         Args:
             value: Sets value of camera prim focusDistance attribute (in stage units).
+
+        Returns:
+            None.
         """
         self.prim.GetAttribute("focusDistance").Set(value)
         return
@@ -1382,6 +1446,9 @@ class Camera(BaseSensor):
 
         Args:
             value: Sets value of camera prim fStop attribute. 0 turns off focusing.
+
+        Returns:
+            None.
         """
         self.prim.GetAttribute("fStop").Set(value)
         return
@@ -1404,6 +1471,9 @@ class Camera(BaseSensor):
         Args:
             value: Horizontal aperture in stage units.
             maintain_square_pixels: If True, keep apertures in sync for square pixels.
+
+        Returns:
+            None.
         """
         self.prim.GetAttribute("horizontalAperture").Set(value * USD_CAMERA_TENTHS_TO_STAGE_UNIT)
         if maintain_square_pixels:
@@ -1429,6 +1499,9 @@ class Camera(BaseSensor):
         Args:
             value: Vertical aperture in stage units.
             maintain_square_pixels: If True, keep apertures in sync for square pixels.
+
+        Returns:
+            None.
         """
         self.prim.GetAttribute("verticalAperture").Set(value * USD_CAMERA_TENTHS_TO_STAGE_UNIT)
         if maintain_square_pixels:
@@ -1450,6 +1523,9 @@ class Camera(BaseSensor):
         Args:
             near_distance: Value to be used for near clipping (in stage units).
             far_distance: Value to be used for far clipping (in stage units).
+
+        Returns:
+            None.
         """
         near, far = self.prim.GetAttribute("clippingRange").Get()
         if near_distance is not None:
@@ -1478,6 +1554,9 @@ class Camera(BaseSensor):
 
         Args:
             value: Name of the projection type to apply, or "pinhole" to remove any distortion schemas and unset `omni:lensdistortion:model`.
+
+        Returns:
+            None.
         """
         carb.log_warn(
             "Camera.set_projection_type is deprecated and will be removed in a future release. Please use Camera.set_lens_distortion_model instead."
@@ -1513,6 +1592,9 @@ class Camera(BaseSensor):
 
         Args:
             value: Name of the distortion schema to apply, or "pinhole" to remove any distortion schemas and unset `omni:lensdistortion:model`.
+
+        Returns:
+            None.
         """
         if value == "pinhole":
             for schema in self.prim.GetAppliedSchemas():
@@ -1558,6 +1640,9 @@ class Camera(BaseSensor):
 
         Args:
             value: "perspective" or "orthographic".
+
+        Returns:
+            None.
         """
         if value not in ["perspective", "orthographic"]:
             carb.log_warn(f"'{value}' is not a supported projection mode. Please use 'perspective' or 'orthographic'.")
@@ -1578,6 +1663,9 @@ class Camera(BaseSensor):
 
         Args:
             value: "mono", "left" or "right".
+
+        Returns:
+            None.
         """
         if value not in ["mono", "left", "right"]:
             carb.log_warn(f"'{value}' is not a supported stereo role. Please use 'mono', 'left' or 'right'.")
@@ -1603,6 +1691,9 @@ class Camera(BaseSensor):
             optical_centre_y: Vertical Render Position (pixels)
             max_fov: maximum field of view (pixels)
             polynomial: polynomial equation coefficients (sequence of 5 numbers) starting from A0, A1, A2, A3, A4
+
+        Returns:
+            None.
         """
         omni.kit.app.log_deprecation(
             "Camera.set_matching_fisheye_polynomial_properties is deprecated."
@@ -1650,6 +1741,9 @@ class Camera(BaseSensor):
             max_fov: maximum field of view (pixels)
             distortion_model: distortion model coefficients
             distortion_fn: distortion function that takes points and returns distorted points
+
+        Returns:
+            None.
         """
         omni.kit.app.log_deprecation(
             "Camera.set_matching_fisheye_polynomial_properties is deprecated."
@@ -1705,6 +1799,9 @@ class Camera(BaseSensor):
             optical_centre_y: Vertical Render Position (pixels)
             max_fov: DEPRECATED. maximum field of view (pixels)
             distortion_model: rational polynomial distortion model coefficients (k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4)
+
+        Returns:
+            None.
         """
         omni.kit.app.log_deprecation(
             'Camera.set_rational_polynomial_properties is deprecated. Please use the the "pinholeOpenCV" distortion model to directly specify OpenCV pinhole camera model distortion parameters.'
@@ -1745,6 +1842,9 @@ class Camera(BaseSensor):
             optical_centre_y: Vertical Render Position (pixels)
             max_fov: DEPRECATED. maximum field of view (pixels)
             distortion_model: kannala brandt generic distortion model coefficients (k1, k2, k3, k4)
+
+        Returns:
+            None.
         """
         omni.kit.app.log_deprecation(
             'Camera.set_kannala_brandt_properties is deprecated. Please use the the "fisheyeOpenCV" distortion model to directly specify OpenCV fisheye camera model distortion parameters.'
@@ -1791,6 +1891,9 @@ class Camera(BaseSensor):
         Args:
             delay_open: Used with Motion Blur to control blur amount, increased values delay shutter opening.
             delay_close: Used with Motion Blur to control blur amount, increased values forward the shutter close.
+
+        Returns:
+            None.
         """
         if delay_open:
             self.prim.GetAttribute("shutter:open").Set(delay_open)
@@ -1912,7 +2015,7 @@ class Camera(BaseSensor):
         return self._backend_utils.transpose_2d(points[:2, :])
 
     def get_camera_points_from_image_coords(
-        self, points_2d, depth, device: str = None, backend_utils_cls: type = None
+        self, points_2d: object, depth: object, device: str = None, backend_utils_cls: type = None
     ) -> np.ndarray | torch.Tensor | wp.array:
         """Using pinhole perspective projection, this method does the inverse projection given the depth of the
             pixels to get 3D points in camera frame.
@@ -1957,7 +2060,7 @@ class Camera(BaseSensor):
         return backend_utils.transpose_2d(points_in_camera_axes)
 
     def get_world_points_from_image_coords(
-        self, points_2d, depth, device: str = None, backend_utils_cls: type = None
+        self, points_2d: object, depth: object, device: str = None, backend_utils_cls: type = None
     ) -> np.ndarray | torch.Tensor | wp.array:
         """Using pinhole perspective projection, this method does the inverse projection given the depth of the
             pixels to get 3D points in world frame.
@@ -2038,6 +2141,9 @@ class Camera(BaseSensor):
             coefficient_map: List of coefficient names to map to the distortion model.
             coefficients: List of coefficient values to set for the distortion model.
             **kwargs: Additional keyword arguments passed to the parent class.
+
+        Returns:
+            None.
         """
         self.prim.ApplyAPI(f"OmniLensDistortion{distortion_model}API")
         self.prim.GetAttribute("omni:lensdistortion:model").Set(distortion_model_attr)
@@ -2254,6 +2360,9 @@ class Camera(BaseSensor):
             optical_center: Optical center (x, y) in pixels.
             ray_enter_direction_texture: Path to ray enter direction texture.
             ray_exit_position_texture: Path to ray exit position texture.
+
+        Returns:
+            None.
         """
         return self._set_lens_distortion_properties(
             distortion_model="Lut",
@@ -2302,6 +2411,9 @@ class Camera(BaseSensor):
             fx: Horizontal Focal Length (pixels).
             fy: Vertical Focal Length (pixels).
             pinhole: OpenCV pinhole parameters [k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4].
+
+        Returns:
+            None.
         """
         image_size = Gf.Vec2i(self.get_resolution())
         return self._set_lens_distortion_properties(
@@ -2345,6 +2457,9 @@ class Camera(BaseSensor):
             fx: Horizontal Focal Length (pixels).
             fy: Vertical Focal Length (pixels).
             fisheye: OpenCV fisheye parameters [k1, k2, k3, k4].
+
+        Returns:
+            None.
         """
         image_size = Gf.Vec2i(self.get_resolution())
         return self._set_lens_distortion_properties(

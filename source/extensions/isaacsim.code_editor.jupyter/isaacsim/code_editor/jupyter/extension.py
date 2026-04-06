@@ -65,7 +65,7 @@ class Extension(omni.ext.IExt):
     extensions, ensuring seamless integration between Jupyter notebooks and the simulation environment.
     """
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
         """Initializes the Jupyter extension and starts all necessary components.
 
         Sets up socket server for code execution, configures Jedi autocompletion, launches Jupyter notebook process,
@@ -224,7 +224,7 @@ class Extension(omni.ext.IExt):
             self._process.wait()
             self._process = None
 
-    def _on_shutdown_event(self, event):
+    def _on_shutdown_event(self, event: carb.eventdispatcher.Event) -> None:
         """Handles shutdown event from the application.
 
         Args:

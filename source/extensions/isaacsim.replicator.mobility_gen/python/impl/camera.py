@@ -81,7 +81,7 @@ class MobilityGenCamera(Module):
 
         self._render_product = rep.create.render_product(self._prim_path, self._resolution, force_new=False)
 
-    def disable_rendering(self):
+    def disable_rendering(self) -> None:
         """Disables rendering by detaching all annotators and destroying the render product."""
         if self._render_product is None:
             return
@@ -101,7 +101,7 @@ class MobilityGenCamera(Module):
         self._render_product.destroy()
         self._render_product = None
 
-    def enable_rgb_rendering(self):
+    def enable_rgb_rendering(self) -> None:
         """Enables RGB rendering by attaching the LdrColor annotator to the render product."""
         if self._render_product is None:
             self.enable_rendering()
@@ -110,7 +110,7 @@ class MobilityGenCamera(Module):
         self._rgb_annotator = rep.AnnotatorRegistry.get_annotator("LdrColor")
         self._rgb_annotator.attach(self._render_product)
 
-    def enable_segmentation_rendering(self):
+    def enable_segmentation_rendering(self) -> None:
         """Enables semantic segmentation rendering by attaching the semantic_segmentation annotator."""
         if self._render_product is None:
             self.enable_rendering()
@@ -121,7 +121,7 @@ class MobilityGenCamera(Module):
         )
         self._segmentation_annotator.attach(self._render_product)
 
-    def enable_instance_id_segmentation_rendering(self):
+    def enable_instance_id_segmentation_rendering(self) -> None:
         """Enables instance ID segmentation rendering by attaching the instance_id_segmentation annotator."""
         if self._render_product is None:
             self.enable_rendering()
@@ -132,7 +132,7 @@ class MobilityGenCamera(Module):
         )
         self._instance_id_segmentation_annotator.attach(self._render_product)
 
-    def enable_depth_rendering(self):
+    def enable_depth_rendering(self) -> None:
         """Enables depth rendering by attaching the distance_to_camera annotator."""
         if self._render_product is None:
             self.enable_rendering()
@@ -141,7 +141,7 @@ class MobilityGenCamera(Module):
         self._depth_annotator = rep.AnnotatorRegistry.get_annotator("distance_to_camera")
         self._depth_annotator.attach(self._render_product)
 
-    def enable_normals_rendering(self):
+    def enable_normals_rendering(self) -> None:
         """Enables surface normals rendering by attaching the normals annotator."""
         if self._render_product is None:
             self.enable_rendering()

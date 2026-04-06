@@ -40,14 +40,6 @@ class FrankaPickPlace:
         events_dt: Optional[List[float]] = None,
         robot_name: str = "",
     ):
-        """Initialize the FrankaPickPlace controller.
-
-        Sets up initial state variables for the state machine.
-
-        Args:
-            events_dt: List of step counts for each phase. If None, uses default values.
-            robot_name: Optional name/identifier for this robot (e.g. "Robot 0"). Used in phase log messages.
-        """
         self.cube = None
         self.robot = None
         self.robot_name = robot_name

@@ -161,6 +161,7 @@ def sample_antipodal(object_mesh: trimesh.Trimesh, **kwargs) -> list[np.ndarray]
 
     Args:
         object_mesh: A trimesh.Trimesh object to sample grasp poses from.
+        **kwargs: Additional keyword arguments for configuring the sampling.
 
     Keyword Args:
         num_candidates: Target number of grasp candidates to attempt to sample.

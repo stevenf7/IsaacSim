@@ -83,7 +83,7 @@ class FrankaPickPlaceInteractive(BaseSample):
         self.controller = None
         self._is_executing = False
 
-    def _pick_place_physics_callback(self, dt, context):
+    def _pick_place_physics_callback(self, dt: float, context: object) -> None:
         """Physics callback to execute pick-and-place step by step.
 
         Args:

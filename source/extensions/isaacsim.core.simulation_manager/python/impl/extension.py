@@ -60,7 +60,7 @@ class Extension(omni.ext.IExt):
     components including physics scenes, simulation events, and GPU-accelerated physics configurations.
     """
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str):
         """Called when the extension is started.
 
         Acquires the pybind simulation manager interface and initializes the SimulationManager.

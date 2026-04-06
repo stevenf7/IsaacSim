@@ -134,7 +134,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         _SinglePrimWrapper.__init__(self, view=self._rigid_prim_view)
         return
 
-    def set_linear_velocity(self, velocity: np.ndarray):
+    def set_linear_velocity(self, velocity: np.ndarray) -> None:
         """Set the linear velocity of the rigid body in stage
 
         .. warning::
@@ -448,7 +448,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         view_default_state = self._rigid_prim_view.get_current_dynamic_state()
         return self._dynamics_view_state_conversion(view_default_state)
 
-    def _dynamics_view_state_conversion(self, view_state):
+    def _dynamics_view_state_conversion(self, view_state: object):
         """Convert view state from the rigid prim view to a DynamicState object.
 
         Args:

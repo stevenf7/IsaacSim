@@ -38,9 +38,8 @@ class TestUCXSubscribeJointCommand(UCXTestCase):
             await omni.kit.app.get_app().next_update_async()
         self.create_ucx_client(self.port)
 
-    def pack_joint_command_message(self, timestamp, positions, velocities, efforts):
-        """
-        Pack a joint command message for UCX.
+    def pack_joint_command_message(self, timestamp: float, positions: list, velocities: list, efforts: list):
+        """Pack a joint command message for UCX.
 
         Message format (updated to use doubles):
         - timestamp (double, 8 bytes)
@@ -49,6 +48,15 @@ class TestUCXSubscribeJointCommand(UCXTestCase):
           - position (double, 8 bytes)
           - velocity (double, 8 bytes)
           - effort (double, 8 bytes)
+
+        Args:
+            timestamp: Timestamp value for the message.
+            positions: List of joint position values.
+            velocities: List of joint velocity values.
+            efforts: List of joint effort values.
+
+        Returns:
+            Packed binary buffer containing the joint command message.
         """
         num_joints = len(positions)
         buffer = struct.pack("<d", timestamp)
@@ -64,8 +72,18 @@ class TestUCXSubscribeJointCommand(UCXTestCase):
 
         return buffer
 
-    async def send_joint_command(self, timestamp, positions, velocities, efforts, tag=3):
-        """Send a joint command message via UCX"""
+    async def send_joint_command(
+        self, timestamp: float, positions: list, velocities: list, efforts: list, tag: int = 3
+    ):
+        """Send a joint command message via UCX.
+
+        Args:
+            timestamp: Timestamp value for the message.
+            positions: List of joint position values.
+            velocities: List of joint velocity values.
+            efforts: List of joint effort values.
+            tag: UCX tag to send on.
+        """
         message = self.pack_joint_command_message(timestamp, positions, velocities, efforts)
         buffer = np.frombuffer(message, dtype=np.uint8)
 

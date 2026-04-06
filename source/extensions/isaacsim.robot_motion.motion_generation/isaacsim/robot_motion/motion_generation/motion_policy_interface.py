@@ -97,7 +97,7 @@ class MotionPolicy(WorldInterface):
         """
         pass
 
-    def set_end_effector_target(self, target_translation=None, target_orientation=None):
+    def set_end_effector_target(self, target_translation: object = None, target_orientation: object = None):
         """Set end effector target.
 
         Args:

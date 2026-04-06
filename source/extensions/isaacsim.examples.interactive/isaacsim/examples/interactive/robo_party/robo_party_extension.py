@@ -38,7 +38,7 @@ class RoboPartyExtension(omni.ext.IExt):
     under the "Multi-Robot" category.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the RoboParty extension.
 
         Sets up the extension by configuring UI parameters, creating the RoboPartyUI instance,
@@ -70,7 +70,7 @@ class RoboPartyExtension(omni.ext.IExt):
 
         return
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up the RoboParty extension.
 
         Deregisters the example from the browser instance.
@@ -98,10 +98,10 @@ class RoboPartyUI(BaseSampleUITemplate):
             Common kwargs include ext_id, file_path, title, doc_link, overview, and sample.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
 
-    def build_extra_frames(self):
+    def build_extra_frames(self) -> None:
         """Builds the additional UI frames for the RoboParty example.
 
         Creates a collapsible task control frame containing the party control elements.
@@ -122,7 +122,7 @@ class RoboPartyUI(BaseSampleUITemplate):
             ):
                 self.build_task_controls_ui()
 
-    def _on_start_party_button_event(self):
+    def _on_start_party_button_event(self) -> None:
         """Handles the Start Party button click event.
 
         Starts the robot party asynchronously and disables the Start Party button.
@@ -131,7 +131,7 @@ class RoboPartyUI(BaseSampleUITemplate):
         self.task_ui_elements["Start Party"].enabled = False
         return
 
-    def post_reset_button_event(self):
+    def post_reset_button_event(self) -> None:
         """Handles post-reset operations for the UI.
 
         Re-enables the Start Party button after a reset operation.
@@ -139,7 +139,7 @@ class RoboPartyUI(BaseSampleUITemplate):
         self.task_ui_elements["Start Party"].enabled = True
         return
 
-    def post_load_button_event(self):
+    def post_load_button_event(self) -> None:
         """Handles post-load operations for the UI.
 
         Enables the Start Party button after the scene has been loaded.
@@ -147,7 +147,7 @@ class RoboPartyUI(BaseSampleUITemplate):
         self.task_ui_elements["Start Party"].enabled = True
         return
 
-    def post_clear_button_event(self):
+    def post_clear_button_event(self) -> None:
         """Handles post-clear operations for the UI.
 
         Disables the Start Party button after the scene has been cleared.
@@ -155,7 +155,7 @@ class RoboPartyUI(BaseSampleUITemplate):
         self.task_ui_elements["Start Party"].enabled = False
         return
 
-    def build_task_controls_ui(self):
+    def build_task_controls_ui(self) -> None:
         """Builds the task control UI elements.
 
         Creates the Start Party button and configures its initial state as disabled.

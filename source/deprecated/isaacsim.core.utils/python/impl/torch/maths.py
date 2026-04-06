@@ -108,7 +108,7 @@ def unscale(x, lower, upper):
     return (2.0 * x - upper - lower) / (upper - lower)
 
 
-def unscale_np(x, lower, upper):
+def unscale_np(x: np.ndarray, lower: np.ndarray, upper: np.ndarray):
     """Denormalizes values from [-1, 1] range back to original [lower, upper] range using NumPy operations.
 
     Args:
@@ -122,7 +122,7 @@ def unscale_np(x, lower, upper):
     return (2.0 * x - upper - lower) / (upper - lower)
 
 
-def set_seed(seed, torch_deterministic=False):
+def set_seed(seed: int, torch_deterministic: bool = False):
     """Set seed across modules.
 
     Sets random seeds for Python, NumPy, PyTorch, Warp, and environment variables to ensure
@@ -163,7 +163,7 @@ def set_seed(seed, torch_deterministic=False):
     return seed
 
 
-def matmul(matrix_a, matrix_b):
+def matmul(matrix_a: object, matrix_b: object):
     """Performs matrix multiplication between two tensors.
 
     Args:
@@ -176,7 +176,7 @@ def matmul(matrix_a, matrix_b):
     return torch.matmul(matrix_a, matrix_b)
 
 
-def sin(data):
+def sin(data: object):
     """Computes the sine of the input tensor.
 
     Args:
@@ -188,7 +188,7 @@ def sin(data):
     return torch.sin(data)
 
 
-def cos(data):
+def cos(data: object):
     """Computes the cosine of the input tensor.
 
     Args:
@@ -200,7 +200,7 @@ def cos(data):
     return torch.cos(data)
 
 
-def transpose_2d(data):
+def transpose_2d(data: object):
     """Transposes a 2D tensor by swapping dimensions 0 and 1.
 
     Args:
@@ -212,7 +212,7 @@ def transpose_2d(data):
     return torch.transpose(data, 1, 0)
 
 
-def inverse(data):
+def inverse(data: object):
     """Computes the matrix inverse of the input tensor.
 
     Args:

@@ -30,7 +30,7 @@ class Extension(omni.ext.IExt):
     viewport interactions in Isaac Sim applications.
     """
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str):
         """Called when the extension starts up.
 
         Args:

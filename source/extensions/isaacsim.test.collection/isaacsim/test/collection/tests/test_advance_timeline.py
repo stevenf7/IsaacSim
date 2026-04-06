@@ -268,7 +268,7 @@ class TestAdvanceTimelineAndPhysics(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(frame_after, 1.0, 3, msg=f"Frame after should be 1.0, got {frame_after}")
         self.assertAlmostEqual(time_after, 0.0167, 3, msg=f"Time after should be 0.0167, got {time_after}")
 
-    async def step_simulation_method(self, step_method: str, no_replicator: bool = False):
+    async def step_simulation_method(self, step_method: str, no_replicator: bool = False) -> None:
         """Run simulation stepping test with specified method.
 
         Args:

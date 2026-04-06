@@ -140,7 +140,7 @@ class IMUSensor(BaseSensor):
         self._current_frame["orientation"][0] = 1
         return
 
-    def initialize(self, physics_sim_view=None):
+    def initialize(self, physics_sim_view: object = None) -> None:
         """Initialize the IMU sensor.
 
         Args:
@@ -148,7 +148,7 @@ class IMUSensor(BaseSensor):
         """
         BaseSensor.initialize(self, physics_sim_view=physics_sim_view)
 
-    def get_current_frame(self, read_gravity=True) -> dict:
+    def get_current_frame(self, read_gravity: bool = True) -> dict:
         """Gets the current sensor reading frame containing IMU data.
 
         Args:
@@ -196,12 +196,12 @@ class IMUSensor(BaseSensor):
             self._current_frame["physics_step"] = float(SimulationManager.get_num_physics_steps())
         return self._current_frame
 
-    def resume(self):
+    def resume(self) -> None:
         """Resume the IMU sensor by enabling it."""
         self._isaac_sensor_prim.GetEnabledAttr().Set(True)
         return
 
-    def pause(self):
+    def pause(self) -> None:
         """Pause the IMU sensor by disabling it."""
         self._isaac_sensor_prim.GetEnabledAttr().Set(False)
         return
@@ -216,7 +216,7 @@ class IMUSensor(BaseSensor):
             return True
         return False
 
-    def set_frequency(self, value: int):
+    def set_frequency(self, value: int) -> None:
         """Set the IMU sensor sampling frequency.
 
         Args:
@@ -241,7 +241,7 @@ class IMUSensor(BaseSensor):
         """
         return self._isaac_sensor_prim.GetSensorPeriodAttr().Get()
 
-    def set_dt(self, value: float):
+    def set_dt(self, value: float) -> None:
         """Set the IMU sensor sampling period.
 
         Args:

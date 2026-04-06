@@ -31,7 +31,7 @@ class ResetButton:
         on_reset_fn: Callback function to execute when the reset button is clicked.
     """
 
-    def __init__(self, init_value, on_reset_fn):
+    def __init__(self, init_value: object, on_reset_fn: callable):
         self._init_value = init_value
         self._on_reset_fn = on_reset_fn
         self._enable = True
@@ -47,7 +47,7 @@ class ResetButton:
         self._enable = enable
         self._reset_button.enabled = enable
 
-    def refresh(self, new_value):
+    def refresh(self, new_value: object):
         """Updates the visibility of the reset button based on value changes.
 
         Args:
@@ -89,7 +89,7 @@ class ResetButton:
             # self._reset_button.set_mouse_pressed_fn(lambda x, y, m, w: self._restore_defaults())
             ui.Spacer()
 
-    def _restore_defaults(self):
+    def _restore_defaults(self) -> None:
         """Restores the value to its initial state and triggers the reset callback."""
         if not self._enable:
             return
@@ -113,7 +113,9 @@ class ResetableLabelField:
         alignment: Text alignment within the field.
     """
 
-    def __init__(self, value_model, field_type, format, alignment=ui.Alignment.RIGHT_CENTER):
+    def __init__(
+        self, value_model: object, field_type: object, format: str, alignment: object = ui.Alignment.RIGHT_CENTER
+    ):
         self._value_model = value_model
         self._init_value = self.get_model_value(value_model)
         self._field_type = field_type
@@ -167,7 +169,7 @@ class ResetableLabelField:
         self._field.enabled = enable
         self._reset_button.enable = enable
 
-    def get_model_value(self, model):
+    def get_model_value(self, model: object):
         """Extracts the appropriate value from a UI model based on its type.
 
         Args:
@@ -212,7 +214,7 @@ class ResetableLabelField:
             self._field.model.set_value(self._init_value)
             self._value_model.set_value(self._init_value)
 
-    def _update_value(self, model):
+    def _update_value(self, model: object):
         """Updates the value model when the field value changes and refreshes the reset button visibility.
 
         Args:
@@ -224,7 +226,7 @@ class ResetableLabelField:
             self._value_model.set_value(new_value)
             self._reset_button.refresh(new_value)
 
-    def _update_field(self, model):
+    def _update_field(self, model: object):
         """Updates the field value when the value model changes and refreshes the reset button visibility.
 
         Args:
@@ -236,7 +238,7 @@ class ResetableLabelField:
             self._field.model.set_value(new_value)
             self._reset_button.refresh(new_value)
 
-    def _end_edit(self, model):
+    def _end_edit(self, model: object):
         """Called when field editing ends.
 
         Args:
@@ -244,7 +246,7 @@ class ResetableLabelField:
         """
         pass
 
-    def _begin_edit(self):
+    def _begin_edit(self) -> None:
         """Initiates the editing state for the field.
 
         Checks if the field is enabled before allowing edit operations to proceed.

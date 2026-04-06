@@ -120,7 +120,8 @@ class DfDiagnosticsMonitor(ABC):
     def time_since_start(self) -> float:
         """The amount of time since the first call to this class's monitor.
 
-        Returns: The time interval.
+        Returns:
+            The time interval.
         """
         return self.current_time - self.time_at_start
 
@@ -374,7 +375,11 @@ class DfLift(DfDecider):
         self.target_pq.p[self.axis] += self.height
 
     def decide(self) -> DfDecision:
-        """Passes the target to the DfGoTarget child as a MotionCommand parameter."""
+        """Passes the target to the DfGoTarget child as a MotionCommand parameter.
+
+        Returns:
+            The DfGoTarget decision with the lift target as parameter.
+        """
         return DfDecision("go_target", MotionCommand(self.target_pq))
 
 
@@ -413,6 +418,9 @@ class DfMoveEndEffectorRel(DfDecider):
     def decide(self) -> DfDecision:
         """Sends the calculated target down to the child DfGoTarget node as a MotionCommand
         parameter.
+
+        Returns:
+            The DfGoTarget decision with the calculated target as parameter.
         """
         return DfDecision("go_target", MotionCommand(self.target_pq))
 
@@ -429,10 +437,6 @@ class DfCloseGripper(DfAction):
 
     Supports sending this decider node the width parameter from a parent. If it comes from a parent
     node, that overrides any default width value set on entry.
-
-    Args:
-        width: The width to close the gripper to. If None (default), it closes the gripper all the
-            way.
     """
 
     def __init__(self):
@@ -493,6 +497,9 @@ class GoHomeState(DfState):
     def step(self) -> DfState:
         """Each step monitor the progress toward the home target. Self transition until the target
         is reached, then terminate.
+
+        Returns:
+            Self while moving toward home, None when the target is reached.
         """
         eff_T = self.context.robot.arm.get_fk_T()
         if np.linalg.norm(eff_T - self.target_T) < 0.01:
@@ -502,5 +509,9 @@ class GoHomeState(DfState):
 
 
 def make_go_home():
-    """Make a decider node wrapping the GoHomeState."""
+    """Make a decider node wrapping the GoHomeState.
+
+    Returns:
+        A DfStateMachineDecider wrapping the GoHomeState.
+    """
     return DfStateMachineDecider(GoHomeState())

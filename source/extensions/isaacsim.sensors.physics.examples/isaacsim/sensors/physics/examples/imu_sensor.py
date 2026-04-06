@@ -242,6 +242,9 @@ class Extension(omni.ext.IExt):
             .. code-block:: python
 
                 await extension.create_scenario()
+
+        Returns:
+            None. Exits early if the assets root path cannot be found.
         """
         self._assets_root_path = get_assets_root_path()
         if self._assets_root_path is None:

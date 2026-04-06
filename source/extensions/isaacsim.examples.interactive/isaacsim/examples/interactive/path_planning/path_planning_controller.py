@@ -59,9 +59,9 @@ class PathPlannerController(BaseController):
         name: str,
         path_planner_visualizer: PathPlannerVisualizer,
         cspace_trajectory_generator: LulaCSpaceTrajectoryGenerator,
-        physics_dt=1 / 60.0,
-        rrt_interpolation_max_dist=0.01,
-    ):
+        physics_dt: float = 1 / 60.0,
+        rrt_interpolation_max_dist: float = 0.01,
+    ) -> None:
         BaseController.__init__(self, name)
 
         self._robot = path_planner_visualizer.get_robot_articulation()
@@ -76,7 +76,7 @@ class PathPlannerController(BaseController):
         self._physics_dt = physics_dt
         self._rrt_interpolation_max_dist = rrt_interpolation_max_dist
 
-    def _convert_rrt_plan_to_trajectory(self, rrt_plan):
+    def _convert_rrt_plan_to_trajectory(self, rrt_plan: object):
         """Converts RRT path waypoints to a smooth articulation trajectory using spline interpolation.
 
         Args:
@@ -174,7 +174,7 @@ class PathPlannerController(BaseController):
         """
         self._path_planner.remove_obstacle(obstacle)
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the controller state by clearing the current plan and last solution."""
         # PathPlannerController will make one plan per reset
         self._path_planner.reset()
@@ -209,9 +209,9 @@ class FrankaRrtController(PathPlannerController):
 
     def __init__(
         self,
-        name,
+        name: str,
         robot_articulation: SingleArticulation,
-    ):
+    ) -> None:
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("isaacsim.examples.interactive")
         examples_extension_path = ext_manager.get_extension_path(ext_id)

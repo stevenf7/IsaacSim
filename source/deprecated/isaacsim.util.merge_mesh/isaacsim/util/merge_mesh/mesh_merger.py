@@ -24,14 +24,12 @@ class MeshMerger(object):
 
     This class handles the merging of mesh geometry, materials, geometry subsets,
     and texture coordinates from multiple source meshes into a single output mesh.
+
+    Args:
+        stage: The USD stage containing the meshes to merge.
     """
 
-    def __init__(self, stage):
-        """Initialize the MeshMerger.
-
-        Args:
-            stage: The USD stage containing the meshes to merge.
-        """
+    def __init__(self, stage: object) -> None:
         self._clear_parent_xform = False
         self._combine_materials = False
         self._deactivate_source = False
@@ -74,7 +72,7 @@ class MeshMerger(object):
         return self._clear_parent_xform
 
     @clear_parent_xform.setter
-    def clear_parent_xform(self, value):
+    def clear_parent_xform(self, value: bool) -> None:
         """Set whether to clear the parent transform when merging.
 
         Args:
@@ -89,7 +87,7 @@ class MeshMerger(object):
         return self._deactivate_source
 
     @deactivate_source.setter
-    def deactivate_source(self, value):
+    def deactivate_source(self, value: bool) -> None:
         """Set whether to deactivate source prims after merging.
 
         Args:
@@ -108,7 +106,7 @@ class MeshMerger(object):
         return self._combine_materials
 
     @combine_materials.setter
-    def combine_materials(self, value):
+    def combine_materials(self, value: bool) -> None:
         """Set whether to combine materials into a single destination.
 
         Args:
@@ -122,7 +120,7 @@ class MeshMerger(object):
         return self._materials_destination
 
     @materials_destination.setter
-    def materials_destination(self, value):
+    def materials_destination(self, value: str) -> None:
         """Set the destination path for combined materials.
 
         Args:
@@ -139,7 +137,7 @@ class MeshMerger(object):
         return self._output_mesh
 
     @output_mesh.setter
-    def output_mesh(self, value):
+    def output_mesh(self, value: str) -> None:
         """Set the output path for the merged mesh.
 
         The path is automatically adjusted to avoid conflicts with existing prims.
@@ -149,7 +147,7 @@ class MeshMerger(object):
         """
         self._output_mesh = omni.usd.get_stage_next_free_path(self._stage, value, False)
 
-    def fix_material_sources(self, mat):
+    def fix_material_sources(self, mat: object) -> None:
         """Fix material output connections after copying a material to a new location.
 
         When a material is copied, its shader connections need to be updated to point
@@ -177,7 +175,7 @@ class MeshMerger(object):
             for path in connected_sources:
                 output.ConnectToSource(path)
 
-    def update_selection(self, selection, stage=None):
+    def update_selection(self, selection: list, stage: object = None) -> None:
         """Update the selection of prims to merge and compute mesh statistics.
 
         Traverses the selected prims and their children to find all visible meshes,

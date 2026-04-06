@@ -55,7 +55,7 @@ def _core_mesh_to_trimesh(input_mesh: Mesh) -> trimesh.Trimesh:
     return _trimesh
 
 
-def _clean_mesh(input_mesh: trimesh.Trimesh):
+def _clean_mesh(input_mesh: trimesh.Trimesh) -> None:
     """Clean an Trimesh triangle mesh in-place.
 
     Args:

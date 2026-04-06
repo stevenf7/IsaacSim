@@ -33,8 +33,6 @@ class UR10FollowTarget:
     """
 
     def __init__(self):
-        """Initialize the UR follow target task."""
-
         # Initialize robot and target references
         self.robot = None
         self.target_cube = None

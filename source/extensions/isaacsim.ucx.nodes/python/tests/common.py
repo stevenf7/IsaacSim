@@ -118,7 +118,7 @@ class UCXTestCase(TimedAsyncTestCase):
         return self.client_context, self.client_worker, self.client_endpoint
 
 
-def unpack_image_message(buffer):
+def unpack_image_message(buffer: object):
     """Unpack a UCX image message.
 
     Message format:

@@ -63,7 +63,7 @@ class BinFilling(BaseTask):
         """
         return self._cubes_to_add
 
-    def set_up_scene(self, scene: Scene):
+    def set_up_scene(self, scene: Scene) -> None:
         """Loads the stage USD and adds the robot and packing bin to the World's scene.
 
         Args:
@@ -91,7 +91,7 @@ class BinFilling(BaseTask):
         self._create_cube_pool()
         return
 
-    def _create_cube_pool(self):
+    def _create_cube_pool(self) -> None:
         """Create the cube pool as dynamic cubes (hidden + rigid body physics disabled)."""
         if len(self._cubes) > 0:
             return
@@ -149,7 +149,7 @@ class BinFilling(BaseTask):
             },
         }
 
-    def pre_step(self, time_step_index: int, simulation_time: float):
+    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
         """Executed before the physics step.
 
         Args:
@@ -161,13 +161,13 @@ class BinFilling(BaseTask):
             self._add_cube()
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Executed after reseting the scene"""
         self._cubes_to_add = 0
         self._active_cubes = 0
         return
 
-    def add_cubes(self, cubes_number: int = 10):
+    def add_cubes(self, cubes_number: int = 10) -> None:
         """Adds number of cubes to be added by the pipe.
 
         Args:
@@ -176,7 +176,7 @@ class BinFilling(BaseTask):
         self._cubes_to_add += cubes_number
         return
 
-    def _add_cube(self):
+    def _add_cube(self) -> None:
         """Activates and spawns the next cube from the pool at the pipe position with random orientation."""
         if self._active_cubes >= len(self._cubes):
             self._cubes_to_add = 0
@@ -191,7 +191,7 @@ class BinFilling(BaseTask):
         self._cubes_to_add -= 1
         return
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Deactivate spawned cubes when resetting (hide + disable rigid bodies)."""
         count = self._active_cubes
         if count <= 0:

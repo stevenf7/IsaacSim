@@ -85,7 +85,13 @@ class HumanoidExample(BaseSample):
         }
 
     def _apply_ground_material(self, static_friction: float, dynamic_friction: float, restitution: float) -> None:
-        """Apply physics material to the ground plane."""
+        """Apply physics material to the ground plane.
+
+        Args:
+            static_friction: Static friction coefficient.
+            dynamic_friction: Dynamic friction coefficient.
+            restitution: Restitution coefficient.
+        """
         stage = omni.usd.get_context().get_stage()
         material_path = "/World/ground/Looks/PhysicsMaterial"
 
@@ -167,7 +173,7 @@ class HumanoidExample(BaseSample):
         self.h1 = None
         self._physics_ready = False
 
-    def on_physics_step(self, dt, context):
+    def on_physics_step(self, dt: float, context: object) -> None:
         """Physics step callback - initialize on first step, then run policy.
 
         Args:
@@ -190,7 +196,7 @@ class HumanoidExample(BaseSample):
             self.h1.initialize()  # This already sets default state internally
             self.h1.post_reset()
 
-    def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:
+    def _sub_keyboard_event(self, event: object, *args: object, **kwargs: object) -> bool:
         """Handle keyboard input for robot control.
 
         Args:
@@ -199,7 +205,7 @@ class HumanoidExample(BaseSample):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            True to indicate the event was handled.
+            bool: True to indicate the event was handled.
         """
         if event.type == carb.input.KeyboardEventType.KEY_PRESS:
             # On pressing, the command is incremented

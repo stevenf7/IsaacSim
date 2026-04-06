@@ -31,7 +31,9 @@ from scipy.spatial.transform import Rotation
 torch = import_module("torch")
 
 
-def tf_matrices_from_poses(translations: torch.Tensor, orientations: torch.Tensor, device=None) -> torch.Tensor:
+def tf_matrices_from_poses(
+    translations: torch.Tensor, orientations: torch.Tensor, device: object = None
+) -> torch.Tensor:
     """Compute transformation matrices from translation and orientation tensors.
 
     Args:
@@ -50,7 +52,7 @@ def tf_matrices_from_poses(translations: torch.Tensor, orientations: torch.Tenso
     return result
 
 
-def get_local_from_world(parent_transforms, positions, orientations, device):
+def get_local_from_world(parent_transforms: object, positions: object, orientations: object, device: object):
     """Converts world-space positions and orientations to local-space relative to parent transforms.
 
     Args:
@@ -77,7 +79,7 @@ def get_local_from_world(parent_transforms, positions, orientations, device):
     return calculated_translations, calculated_orientations
 
 
-def get_world_from_local(parent_transforms, translations, orientations, device):
+def get_world_from_local(parent_transforms: object, translations: object, orientations: object, device: object):
     """Converts local-space translations and orientations to world-space using parent transforms.
 
     Args:
@@ -102,7 +104,7 @@ def get_world_from_local(parent_transforms, translations, orientations, device):
     return calculated_positions, calculated_orientations
 
 
-def get_pose(positions, orientations, device):
+def get_pose(positions: object, orientations: object, device: object):
     """Combines position and orientation arrays into a single pose tensor.
 
     Args:
@@ -142,7 +144,7 @@ def get_world_from_local_position(pos_offset_local: torch.Tensor, pose_global: t
 
 
 # NB: do not make this function jit, since it is passed around as an argument.
-def normalise_quat_in_pose(pose):
+def normalise_quat_in_pose(pose: object):
     """Takes a pose and normalises the quaternion portion of it.
 
     Args:
@@ -178,7 +180,15 @@ def tf_combine(q1, t1, q2, t2):
     return quat_mul(q1, q2), quat_apply(q1, t2) + t1
 
 
-def assign_pose(current_positions, current_orientations, positions, orientations, indices, device, pose=None):
+def assign_pose(
+    current_positions: object,
+    current_orientations: object,
+    positions: object,
+    orientations: object,
+    indices: object,
+    device: object,
+    pose: object = None,
+):
     """Assigns new pose values to specific indices in current pose arrays.
 
     Args:

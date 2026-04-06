@@ -62,7 +62,11 @@ class ExampleBaseBehavior(BaseBehavior):
         self._valid_prims = []
 
     def _setup(self):
-        """Setup the randomizer."""
+        """Setup the randomizer.
+
+        Returns:
+            None.
+        """
         # Read the exposed attribute values
         include_children = self._get_exposed_variable("includeChildren")
 

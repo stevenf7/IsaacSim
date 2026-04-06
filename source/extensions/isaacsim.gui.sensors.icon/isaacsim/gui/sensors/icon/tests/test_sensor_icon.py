@@ -66,8 +66,14 @@ class TestSensorIcon(OmniUiTest):
         self._icon_scene.destroy()
         await super().tearDown()
 
-    async def _dock_viewport(self, width=1200, height=900, block_device=False):
-        """Utility function to dock viewport window and focus on turntable panel."""
+    async def _dock_viewport(self, width: int = 1200, height: int = 900, block_device: bool = False):
+        """Utility function to dock viewport window and focus on turntable panel.
+
+        Args:
+            width: Width of the viewport window.
+            height: Height of the viewport window.
+            block_device: Whether to block input devices.
+        """
         viewport = get_active_viewport_window()
         await self.docked_test_window(window=viewport, width=width, height=height, block_devices=block_device)
         await ui_test.wait_n_updates()

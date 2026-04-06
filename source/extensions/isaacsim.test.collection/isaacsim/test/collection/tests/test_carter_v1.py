@@ -63,7 +63,7 @@ class TestCarterv1(omni.kit.test.AsyncTestCase):
     """Tests for the Carter v1 robot simulation."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment with Carter v1 robot."""
         self._timeline = omni.timeline.get_timeline_interface()
 

@@ -131,7 +131,7 @@ class ContactSensor(BaseSensor):
         self._current_frame["physics_step"] = 0
         return
 
-    def initialize(self, physics_sim_view=None):
+    def initialize(self, physics_sim_view: object = None) -> None:
         """Initialize the contact sensor.
 
         Args:
@@ -191,22 +191,22 @@ class ContactSensor(BaseSensor):
             self._current_frame["physics_step"] = float(SimulationManager.get_num_physics_steps())
         return self._current_frame
 
-    def add_raw_contact_data_to_frame(self):
+    def add_raw_contact_data_to_frame(self) -> None:
         """Add raw contact data to the current frame for detailed contact information."""
         self._current_frame["contacts"] = []
         return
 
-    def remove_raw_contact_data_from_frame(self):
+    def remove_raw_contact_data_from_frame(self) -> None:
         """Remove raw contact data from the current frame."""
         del self._current_frame["contacts"]
         return
 
-    def resume(self):
+    def resume(self) -> None:
         """Resume sensor data collection by enabling the contact sensor."""
         self._isaac_sensor_prim.GetEnabledAttr().Set(True)
         return
 
-    def pause(self):
+    def pause(self) -> None:
         """Pause sensor data collection by disabling the contact sensor."""
         self._isaac_sensor_prim.GetEnabledAttr().Set(False)
         return
@@ -221,7 +221,7 @@ class ContactSensor(BaseSensor):
             return True
         return False
 
-    def set_frequency(self, value: float):
+    def set_frequency(self, value: float) -> None:
         """Set the sensor sampling frequency.
 
         Args:
@@ -246,7 +246,7 @@ class ContactSensor(BaseSensor):
         """
         return self._isaac_sensor_prim.GetSensorPeriodAttr().Get()
 
-    def set_dt(self, value: float):
+    def set_dt(self, value: float) -> None:
         """Sets the sensor period (time step) for the contact sensor.
 
         Args:
@@ -263,7 +263,7 @@ class ContactSensor(BaseSensor):
         """
         return self.prim.GetAttribute("radius").Get()
 
-    def set_radius(self, value: float):
+    def set_radius(self, value: float) -> None:
         """Sets the radius of the contact sensor detection area.
 
         Args:
@@ -287,7 +287,7 @@ class ContactSensor(BaseSensor):
         else:
             return None
 
-    def set_min_threshold(self, value: float):
+    def set_min_threshold(self, value: float) -> None:
         """Sets the minimum force threshold for contact detection.
 
         Args:
@@ -311,7 +311,7 @@ class ContactSensor(BaseSensor):
         else:
             return None
 
-    def set_max_threshold(self, value: float):
+    def set_max_threshold(self, value: float) -> None:
         """Sets the maximum force threshold for contact detection.
 
         Args:

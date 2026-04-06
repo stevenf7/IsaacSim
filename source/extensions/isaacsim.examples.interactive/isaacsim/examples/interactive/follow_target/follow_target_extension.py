@@ -50,7 +50,7 @@ class FollowTargetExtension(omni.ext.IExt):
     and an interactive UI through the FollowTargetUI template.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension is enabled.
 
         Initializes the Follow Target example by setting up UI components and registering the example with the browser.
@@ -81,7 +81,7 @@ class FollowTargetExtension(omni.ext.IExt):
 
         return
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension is disabled.
 
         Cleans up by deregistering the Follow Target example from the browser.
@@ -109,10 +109,10 @@ class FollowTargetUI(BaseSampleUITemplate):
         **kwargs: Additional keyword arguments passed to the parent BaseSampleUITemplate class.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
 
-    def build_extra_frames(self):
+    def build_extra_frames(self) -> None:
         """Creates additional UI frames for task controls and data logging.
 
         Builds the Task Control frame containing buttons for follow target, add obstacle, and remove obstacle operations.
@@ -148,7 +148,7 @@ class FollowTargetUI(BaseSampleUITemplate):
 
         return
 
-    def _on_follow_target_button_event(self, val):
+    def _on_follow_target_button_event(self, val: bool) -> None:
         """Handles the follow target button click event.
 
         Args:
@@ -157,7 +157,7 @@ class FollowTargetUI(BaseSampleUITemplate):
         asyncio.ensure_future(self.sample._on_follow_target_event_async(val))
         return
 
-    def _on_add_obstacle_button_event(self):
+    def _on_add_obstacle_button_event(self) -> None:
         """Handles the add obstacle button click event.
 
         Adds a new obstacle to the scene and enables the Remove Obstacle button.
@@ -166,7 +166,7 @@ class FollowTargetUI(BaseSampleUITemplate):
         self.task_ui_elements["Remove Obstacle"].enabled = True
         return
 
-    def _on_remove_obstacle_button_event(self):
+    def _on_remove_obstacle_button_event(self) -> None:
         """Handles the remove obstacle button click event.
 
         Removes the most recently added obstacle from the scene and disables the Remove Obstacle button if no obstacles remain.
@@ -178,7 +178,7 @@ class FollowTargetUI(BaseSampleUITemplate):
             self.task_ui_elements["Remove Obstacle"].enabled = False
         return
 
-    def _on_logging_button_event(self, val):
+    def _on_logging_button_event(self, val: bool) -> None:
         """Handles the logging button click event.
 
         Args:
@@ -188,7 +188,7 @@ class FollowTargetUI(BaseSampleUITemplate):
         self.task_ui_elements["Save Data"].enabled = True
         return
 
-    def _on_save_data_button_event(self):
+    def _on_save_data_button_event(self) -> None:
         """Handles the save data button click event.
 
         Saves the logged data to the file path specified in the Output Directory field.
@@ -196,7 +196,7 @@ class FollowTargetUI(BaseSampleUITemplate):
         self.sample._on_save_data_event(self.task_ui_elements["Output Directory"].get_value_as_string())
         return
 
-    def post_reset_button_event(self):
+    def post_reset_button_event(self) -> None:
         """Updates UI control states after the reset button is pressed.
 
         Enables follow target, add obstacle, and start logging controls while resetting button states to their default values.
@@ -210,7 +210,7 @@ class FollowTargetUI(BaseSampleUITemplate):
             self.task_ui_elements["Follow Target"].text = "START"
         return
 
-    def post_load_button_event(self):
+    def post_load_button_event(self) -> None:
         """Updates UI control states after the load button is pressed.
 
         Enables follow target, add obstacle, and start logging controls to allow interaction with the loaded scene.
@@ -221,7 +221,7 @@ class FollowTargetUI(BaseSampleUITemplate):
         self.task_ui_elements["Save Data"].enabled = False
         return
 
-    def post_clear_button_event(self):
+    def post_clear_button_event(self) -> None:
         """Updates UI control states after the clear button is pressed.
 
         Disables all task control buttons and resets the follow target button text to START state.
@@ -235,7 +235,7 @@ class FollowTargetUI(BaseSampleUITemplate):
             self.task_ui_elements["Follow Target"].text = "START"
         return
 
-    def build_task_controls_ui(self):
+    def build_task_controls_ui(self) -> None:
         """Builds the task control UI elements.
 
         Creates Follow Target toggle button, Add Obstacle button, and Remove Obstacle button within a vertical stack layout.
@@ -274,7 +274,7 @@ class FollowTargetUI(BaseSampleUITemplate):
             self.task_ui_elements["Remove Obstacle"] = btn_builder(**dict)
             self.task_ui_elements["Remove Obstacle"].enabled = False
 
-    def build_data_logging_ui(self):
+    def build_data_logging_ui(self) -> None:
         """Builds the data logging UI controls.
 
         Creates UI elements for configuring output directory, starting/pausing data logging,

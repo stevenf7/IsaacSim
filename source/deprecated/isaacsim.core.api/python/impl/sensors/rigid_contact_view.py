@@ -105,7 +105,7 @@ class RigidContactView(object):
         prepare_contact_sensors: bool = True,
         disable_stablization: bool = True,
         max_contact_count: int = 0,
-    ):
+    ) -> None:
         self._name = name
         if not isinstance(prim_paths_expr, list):
             prim_paths_expr = [prim_paths_expr]
@@ -180,7 +180,7 @@ class RigidContactView(object):
         """
         return self._num_filters
 
-    def _prepare_contact_reporter(self, prim_at_path):
+    def _prepare_contact_reporter(self, prim_at_path: object) -> None:
         """Prepares the contact reporter by removing the contact thresholds.
 
         Args:
@@ -212,7 +212,7 @@ class RigidContactView(object):
         """
         return self._physics_view is not None
 
-    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None):
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
         """Create a physics simulation view if not passed and set other properties using the PhysX tensor API
 
         .. note::

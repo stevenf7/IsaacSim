@@ -48,7 +48,7 @@ class OmniPBR(VisualMaterial):
         texture_scale: Optional[np.ndarray] = None,
         texture_translate: Optional[np.ndarray] = None,
         color: Optional[np.ndarray] = None,
-    ):
+    ) -> None:
         stage = get_current_stage()
         if is_prim_path_valid(prim_path=prim_path):
             carb.log_info("Material Prim already defined at path: {}".format(prim_path))
@@ -100,7 +100,7 @@ class OmniPBR(VisualMaterial):
         self.set_reflection_roughness(0.5)
         return
 
-    def set_color(self, color: np.ndarray):
+    def set_color(self, color: np.ndarray) -> None:
         """Set the diffuse color.
 
         Args:
@@ -126,7 +126,7 @@ class OmniPBR(VisualMaterial):
         else:
             return np.array(self.shaders_list[0].GetInput("diffuse_color_constant").Get())
 
-    def set_texture(self, path: str):
+    def set_texture(self, path: str) -> None:
         """Set the diffuse texture path.
 
         Args:
@@ -150,7 +150,7 @@ class OmniPBR(VisualMaterial):
         else:
             return self.shaders_list[0].GetInput("diffuse_texture").Get()
 
-    def set_texture_scale(self, x: float, y: float):
+    def set_texture_scale(self, x: float, y: float) -> None:
         """Set the texture UV scale.
 
         Args:
@@ -163,7 +163,7 @@ class OmniPBR(VisualMaterial):
             self.shaders_list[0].GetInput("texture_scale").Set(Gf.Vec2f([x, y]))
         return
 
-    def set_texture_translate(self, x: float, y: float):
+    def set_texture_translate(self, x: float, y: float) -> None:
         """Set the texture UV translation.
 
         Args:
@@ -200,7 +200,7 @@ class OmniPBR(VisualMaterial):
         else:
             return np.array(self.shaders_list[0].GetInput("texture_translate").Get())
 
-    def set_project_uvw(self, flag: bool):
+    def set_project_uvw(self, flag: bool) -> None:
         """Enable or disable UVW projection.
 
         Args:
@@ -224,7 +224,7 @@ class OmniPBR(VisualMaterial):
         else:
             return self.shaders_list[0].GetInput("project_uvw").Get()
 
-    def set_reflection_roughness(self, amount: float):
+    def set_reflection_roughness(self, amount: float) -> None:
         """Set the reflection roughness.
 
         Args:
@@ -248,7 +248,7 @@ class OmniPBR(VisualMaterial):
         else:
             return self.shaders_list[0].GetInput("reflection_roughness_constant").Get()
 
-    def set_metallic_constant(self, amount: float):
+    def set_metallic_constant(self, amount: float) -> None:
         """Set the metallic constant.
 
         Args:

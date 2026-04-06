@@ -30,7 +30,7 @@ from .isaac_collection import IsaacCollection
 class Extension(omni.ext.IExt):
     """The Extension class"""
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str):
         """Method called when the extension is loaded/enabled.
 
         Args:
@@ -41,7 +41,7 @@ class Extension(omni.ext.IExt):
 
         self._add_isim_content()
 
-    def _add_isim_content(self):
+    def _add_isim_content(self) -> None:
         """Adds Isaac Sim content to the content browser.
 
         Registers the Isaac collection, expands collections, and populates asset information.
@@ -55,7 +55,7 @@ class Extension(omni.ext.IExt):
         self._expand_collections()
         self._populate_asset_info()
 
-    def _populate_asset_info(self):
+    def _populate_asset_info(self) -> None:
         """Populates asset information in the content browser.
 
         Adds an extended file info detail frame to display additional asset information.

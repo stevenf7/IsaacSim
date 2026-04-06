@@ -130,7 +130,11 @@ class CortexGripper(Commander):
             self.force = force
 
     def get_width(self) -> float:
-        """Returns the current width of the gripper based on the joint positions (not the command)."""
+        """Returns the current width of the gripper based on the joint positions (not the command).
+
+        Returns:
+            The current gripper width.
+        """
         return self.joints_to_width(self.articulation_subset.get_joint_positions())
 
     @abstractmethod
@@ -587,7 +591,7 @@ class CortexFranka(MotionCommandedRobot):
         prim_path: str,
         position: Optional[Sequence[float]] = None,
         orientation: Optional[Sequence[float]] = None,
-        use_motion_commander=True,
+        use_motion_commander: bool = True,
     ):
         motion_policy_config = icl.load_supported_motion_policy_config("Franka", "RMPflowCortex")
         super().__init__(
@@ -632,18 +636,21 @@ def add_franka_to_stage(
     usd_path: Optional[str] = None,
     position: Optional[Sequence[float]] = None,
     orientation: Optional[Sequence[float]] = None,
-    use_motion_commander=True,
+    use_motion_commander: bool = True,
 ):
     """Adds a Franka to the stage at the specified prim_path, then wrap it as a CortexFranka object.
 
     Args:
-        For name, prim_path, position, orientation, and motion_commander, see the CortexFranka doc
-        string.
-
+        name: A name for the Franka robot.
+        prim_path: The path to the Franka prim in the USD stage.
         usd_path: An optional path to the Franka USD asset to add. If a specific path is not
             provided, a default Franka USD path is used.
+        position: The position of the robot.
+        orientation: The orientation of the robot.
+        use_motion_commander: When True (default), uses the motion commander.
 
-    Returns: The constructed CortexFranka object.
+    Returns:
+        The constructed CortexFranka object.
     """
     if usd_path is not None:
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
@@ -695,7 +702,7 @@ class CortexUr10(MotionCommandedRobot):
             surface_gripper_path=self._end_effector_prim_path + "/SurfaceGripper",
         )
 
-    def initialize(self, physics_sim_view=None):
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
         """Initializes using MotionCommandedRobot's initialize() and also initializes the suction
         gripper.
 
@@ -728,12 +735,15 @@ def add_ur10_to_stage(
     """Adds a UR10 to the stage at the specified prim_path, then wrap it as a CortexUr10 object.
 
     Args:
-        For name, prim_path, position, and orientation, see the CortexUr10 doc string.
+        name: A name for the UR10 robot.
+        prim_path: The path to the UR10 prim in the USD stage.
+        usd_path: An optional path to the UR10 USD asset to add. If a specific path is not
+            provided, a default UR10 USD path is used.
+        position: The position of the robot.
+        orientation: The orientation of the robot.
 
-        usd_path: An optional path to the Franka USD asset to add. If a specific path is not
-            provided, a default Franka USD path is used.
-
-    Returns: The constructed CortexUr10 object.
+    Returns:
+        The constructed CortexUr10 object.
     """
     if usd_path is not None:
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)

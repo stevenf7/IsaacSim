@@ -47,7 +47,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
     """Tests for Nova Carter goal-driven navigation with path planning."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment with Nova Carter and navigation graph."""
         self._timeline = omni.timeline.get_timeline_interface()
 

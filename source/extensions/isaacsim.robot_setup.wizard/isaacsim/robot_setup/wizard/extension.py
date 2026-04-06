@@ -56,11 +56,10 @@ class WizardExtension(omni.ext.IExt, MenuHelperExtension):
     """Isaac Sim robot menu group"""
 
     def __init__(self):
-        """Initialize WizardExtension"""
         super().__init__()
         self._window = None
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str):
         """Initializes the robot wizard extension on startup.
 
         Sets up the window functionality, menu integration, and handles launch-on-startup settings.
@@ -109,7 +108,7 @@ class WizardExtension(omni.ext.IExt, MenuHelperExtension):
         elif self._window:
             self._window.set_visible(value)
 
-    def _visiblity_changed_fn(self, visible):
+    def _visiblity_changed_fn(self, visible: bool):
         """Handles robot wizard window visibility changes.
 
         Refreshes the menu state when the window visibility changes.

@@ -66,7 +66,7 @@ class ExampleBrowserExtension(omni.ext.IExt):
         """
         return self._window._widget
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str):
         """Called when the extension starts up.
 
         Sets up the example browser model, window registration, menu items, and visibility based on settings.
@@ -109,7 +109,7 @@ class ExampleBrowserExtension(omni.ext.IExt):
         global _extension_instance
         _extension_instance = None
 
-    def register_example(self, **kwargs):
+    def register_example(self, **kwargs: object):
         """Register an example to the browser.
 
         Args:
@@ -125,7 +125,7 @@ class ExampleBrowserExtension(omni.ext.IExt):
             raise ValueError("Missing required parameter 'category' for register_example")
         self._browser_model.register_example(**kwargs)
 
-    def deregister_example(self, **kwargs):
+    def deregister_example(self, **kwargs: object):
         """Deregister an example from the browser.
 
         Args:
@@ -162,7 +162,7 @@ class ExampleBrowserExtension(omni.ext.IExt):
         # If all validations pass, call the inner deregister_example function
         self._browser_model.deregister_example(**kwargs)
 
-    def _show_window(self, visible):
+    def _show_window(self, visible: bool):
         """Shows or hides the example browser window.
 
         Creates the window if it doesn't exist when showing, or toggles visibility of existing window.

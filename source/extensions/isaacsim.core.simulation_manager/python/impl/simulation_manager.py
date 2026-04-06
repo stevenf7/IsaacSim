@@ -260,7 +260,7 @@ class SimulationManager:
         cls._warmup_needed = True
 
     @classmethod
-    def _sync_engine_state(cls):
+    def _sync_engine_state(cls) -> None:
         """Sync the _engine variable with the actual active physics engine.
 
         This should be called at initialization to ensure the cached engine name
@@ -301,7 +301,7 @@ class SimulationManager:
             cls._engine = "physx"
             carb.log_warn("No physics engines found, defaulting to PhysX")
 
-    def _on_simulation_registry_event(event_type: SimulationRegistryEventType, simulation_id: int, name: str):
+    def _on_simulation_registry_event(event_type: SimulationRegistryEventType, simulation_id: int, name: str) -> None:
         """Handle simulation registry events to keep _engine in sync.
 
         Args:
@@ -540,8 +540,12 @@ class SimulationManager:
         def _assets_loading(event):
             SimulationManager._assets_loaded = False
 
-        def _assets_loaded(event):
-            """Flag indicating whether stage assets have finished loading."""
+        def _assets_loaded(event: object) -> None:
+            """Flag indicating whether stage assets have finished loading.
+
+            Args:
+                event: The stage event indicating assets have loaded.
+            """
             SimulationManager._assets_loaded = True
 
         SimulationManager._reset(
@@ -572,7 +576,7 @@ class SimulationManager:
             track_physics_scenes=True,
         )
 
-    def _on_play(event):
+    def _on_play(event) -> None:
         """Handle timeline play events to initialize physics simulation."""
         if SimulationManager._carb_settings.get_as_bool(_SETTING_PLAY_SIMULATION):
             # Verify the stage is valid before attempting any physics operations
@@ -610,7 +614,7 @@ class SimulationManager:
     """
 
     @classmethod
-    def initialize_physics(cls):
+    def initialize_physics(cls) -> None:
         """Initialize Physics.
 
         .. important::
@@ -1018,7 +1022,7 @@ class SimulationManager:
         return ops_utils.parse_device("cpu", raise_on_invalid=True)
 
     @classmethod
-    def enable_fabric(cls, enable: bool):
+    def enable_fabric(cls, enable: bool) -> None:
         """Enable or disable physics fabric integration and associated settings.
 
         .. note::
@@ -1249,7 +1253,7 @@ class SimulationManager:
         cls._simulation_manager_interface.enable_usd_notice_handler(enable)
 
     @classmethod
-    def enable_fabric_usd_notice_handler(cls, stage_id, enable: bool):
+    def enable_fabric_usd_notice_handler(cls, stage_id: int, enable: bool):
         """Enable or disable the fabric USD notice handler.
 
         Args:
@@ -1269,7 +1273,7 @@ class SimulationManager:
         cls._simulation_manager_interface.enable_fabric_usd_notice_handler(stage_id, enable)
 
     @classmethod
-    def is_fabric_usd_notice_handler_enabled(cls, stage_id):
+    def is_fabric_usd_notice_handler_enabled(cls, stage_id: int):
         """Check if the fabric USD notice handler is enabled.
 
         Args:
@@ -1582,7 +1586,7 @@ class SimulationManager:
         return cls._physics_sim_view
 
     @classmethod
-    def set_default_physics_scene(cls, physics_scene_prim_path: str):
+    def set_default_physics_scene(cls, physics_scene_prim_path: str) -> None:
         """Set the default physics scene.
 
         .. deprecated:: 1.8.0
@@ -1626,7 +1630,7 @@ class SimulationManager:
         return None
 
     @classmethod
-    def set_physics_sim_device(cls, val):
+    def set_physics_sim_device(cls, val: str) -> None:
         """Set the physics simulation device.
 
         .. deprecated:: 1.8.0
@@ -1761,7 +1765,7 @@ class SimulationManager:
                 _physics_scene.set_broadphase_type(val)
 
     @classmethod
-    def enable_ccd(cls, flag: bool, physics_scene: str | None = None):
+    def enable_ccd(cls, flag: bool, physics_scene: str | None = None) -> None:
         """Enables Continuous Collision Detection (CCD).
 
         .. deprecated:: 1.8.0

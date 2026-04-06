@@ -29,10 +29,20 @@ from pxr import Usd, UsdUtils
 
 
 class ClashDetector:
-    """
-    This class is designed to perform clash detection on 3D meshes.
+    """This class is designed to perform clash detection on 3D meshes.
+
     It supports checking Prims and Prim Views. Option to export clash detection results
     to JSON format for further analysis.
+
+    Args:
+        stage: Usd stage to be processed.
+        searchset_path: Absolute prim path to define the scope of the clash detection search.
+            Defaults to full current scene.
+        tolerance: Tolerance distance for overlap queries. Use zero for hard clashes, non-zero
+            for soft (clearance) clashes. Defaults to 0.0.
+        clash_data_layer: If True, saves clash detection info to data layer to support exporting
+            results to JSON for further analysis. Defaults to True.
+        logging: If True, logs info & perf results to console. Defaults to False.
     """
 
     def __init__(
@@ -42,18 +52,7 @@ class ClashDetector:
         tolerance: float = 0.0,
         clash_data_layer: bool = True,
         logging: bool = False,
-    ):
-        """
-        Args:
-            stage (Usd.Stage): Usd stage to be processed.
-            searchset_path (str, optional): Absolute prim path to define the scope of the clash detection search.
-                Defaults to full current scene.
-            tolerance (float, optional): Tolerance distance for overlap queries. Use zero for hard clashes, non-zero
-                for soft (clearance) clashes. Defaults to 0.0.
-            clash_detect_layer (bool, optional): If True, saves clash detection info to data layer to support exporting
-                results to JSON for further analysis. Defaults to True.
-            logging (bool, optional): If True, logs info & perf results to console. Defaults to False.
-        """
+    ) -> None:
         self._stage = stage
         UsdUtils.StageCache.Get().Insert(self._stage)
         self._object_b_path = searchset_path
@@ -91,7 +90,7 @@ class ClashDetector:
         """Sets the searchset defining the scope of the clash detection.
 
         Args:
-            searchset_path (str): Absolute prim path to define the scope of the clash detection search.
+            searchset_path: Absolute prim path to define the scope of the clash detection search.
         """
         self._object_b_path = searchset_path
 
@@ -118,10 +117,10 @@ class ClashDetector:
         """Gets the query ID associated with any named query from completed clash detection runs.
 
         Args:
-            query_name (str): Unique query name assigned to a clash detection run.
+            query_name: Unique query name assigned to a clash detection run.
 
         Returns:
-            query.identifier (int): The unique identifier associated with the given query name.
+            The unique identifier associated with the given query name.
         """
         if not query_name:
             carb.log_warn("No query name provided. Returning invalid query id.")
@@ -139,10 +138,10 @@ class ClashDetector:
         """Exports detailed clash detection data to JSON format.
 
         Args:
-            json_path_name (str): Absolute file path to export data.
-            query_id (int, optional): Unique query ID of clash detection results to export. Defaults to most recent
+            json_path_name: Absolute file path to export data.
+            query_id: Unique query ID of clash detection results to export. Defaults to most recent
                 clash detection run.
-            prim_view (bool, optional): If True, export clash info for all clashing prims in the prim view.
+            prim_view: If True, export clash info for all clashing prims in the prim view.
                 Defaults to False.
 
         Returns:
@@ -215,8 +214,8 @@ class ClashDetector:
         """Checks if the input prim is clashing with any mesh in the searchset.
 
         Args:
-            prim (Usd.Prim): The prim to be checked for clashes.
-            query_name (str, optional): Unique query name for this clash detection run. Required if not storing
+            prim: The prim to be checked for clashes.
+            query_name: Unique query name for this clash detection run. Required if not storing
                 query IDs and need to search query ID after subsequent run(s). Defaults to empty string.
 
         Returns:
@@ -264,12 +263,12 @@ class ClashDetector:
 
         return True
 
-    def detect_prim_view_clashes(self, prim_view, prim_view_query_name: str = "") -> list:
+    def detect_prim_view_clashes(self, prim_view: object, prim_view_query_name: str = "") -> list:
         """Checks if any prims in the input prim view are clashing with any mesh in the searchset.
 
         Args:
-            prim_view (PrimView): The prim view to be checked for clashes.
-            query_name (str, optional): Unique query name for this clash detection run. Required if not storing
+            prim_view: The prim view to be checked for clashes.
+            prim_view_query_name: Unique query name for this clash detection run. Required if not storing
                 query IDs and need to search query ID after subsequent run(s). Note: A top level prim view ID; each
                 prim in the view has own unique query ID, reported with results. Defaults to empty string.
 
@@ -325,8 +324,8 @@ class ClashDetector:
         """Performs the clash detection.
 
         Args:
-            stage (Usd.Stage): The stage on which the clash detection is run.
-            prim_view_id (int): Tracks prim view queries for data storage/retrieval.
+            stage: The stage on which the clash detection is run.
+            prim_view_id: Tracks prim view queries for data storage/retrieval.
 
         Returns:
             True if run was successful, False otherwise.
@@ -357,14 +356,22 @@ class ClashDetector:
 
         return True
 
-    def _store_query_name(self, query_name: str, query_id: int):
-        """Stores query names with their associated IDs for data retrieval."""
+    def _store_query_name(self, query_name: str, query_id: int) -> None:
+        """Stores query names with their associated IDs for data retrieval.
+
+        Args:
+            query_name: The query name to store.
+            query_id: The query ID to associate with the name.
+        """
         self._prim_queries[str(query_name)] = query_id
 
-        return
+    def _store_query_id_to_view_group(self, prim_view_id: int, new_query_id: int) -> None:
+        """Stores prim view query names with their associated prim query names and IDs for data retrieval.
 
-    def _store_query_id_to_view_group(self, prim_view_id: int, new_query_id: int):
-        """Stores prim view query names with their associated prim query names and IDs for data retrieval."""
+        Args:
+            prim_view_id: The prim view ID to group queries under.
+            new_query_id: The new query ID to add to the view group.
+        """
         if not self._prim_view_query_name:
             self._prim_view_query_name = f"Prim_view_{prim_view_id}_query"
 
@@ -382,9 +389,15 @@ class ClashDetector:
         return
 
     def _fetch_overlaps(
-        self, stage: Usd.Stage, clash_detect: ClashDetection, clash_query: ClashQuery, num_overlaps
+        self, stage: Usd.Stage, clash_detect: ClashDetection, clash_query: ClashQuery, num_overlaps: int
     ) -> bool:
         """Fetches overlaps and writes the clash info to log file. Used if clash data layer is not created.
+
+        Args:
+            stage: The stage on which the clash detection is run.
+            clash_detect: The clash detection engine instance.
+            clash_query: The clash query containing detection parameters.
+            num_overlaps: The number of overlaps to fetch.
 
         Returns:
             True if fetching overlaps is a success.
@@ -423,6 +436,10 @@ class ClashDetector:
 
     def _detect_overlaps(self, stage: Usd.Stage, clash_detect: ClashDetection) -> int:
         """Runs clash detection engine, fetches results and serializes them.
+
+        Args:
+            stage: The stage on which the clash detection is run.
+            clash_detect: The clash detection engine instance.
 
         Returns:
             Number of overlaps found.

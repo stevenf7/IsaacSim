@@ -384,8 +384,8 @@ class UIBuilder:
 
         Args:
             step: The physics step.
-            args: The arguments.
-            kwargs: The keyword arguments.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
         """
         # Check if physics tensors are valid before updating
         if self._scenario._articulation is not None:

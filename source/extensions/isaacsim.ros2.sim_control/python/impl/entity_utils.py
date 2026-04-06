@@ -23,7 +23,7 @@ from simulation_interfaces.msg import EntityState, Result
 from std_msgs.msg import Header
 
 
-def get_filtered_entities(usdrt_stage, filter_pattern=None):
+def get_filtered_entities(usdrt_stage: object, filter_pattern: str | None = None):
     """Get filtered entities based on regex pattern.
 
     This function retrieves all prim paths from the usdrt stage for efficient traversing and optionally filters them using a regular expression pattern.
@@ -63,7 +63,7 @@ def get_filtered_entities(usdrt_stage, filter_pattern=None):
     return filtered_paths, ""
 
 
-async def get_entity_state(entity_path):
+async def get_entity_state(entity_path: str):
     """Get state for a single entity.
 
     This function retrieves the complete state information for a specified entity,

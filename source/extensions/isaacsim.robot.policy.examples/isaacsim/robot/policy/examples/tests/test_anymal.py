@@ -200,7 +200,7 @@ class TestAnymalCPU(omni.kit.test.AsyncTestCase):
         )
         await omni.kit.app.get_app().next_update_async()
 
-    def on_physics_step(self, step_size, context):
+    def on_physics_step(self, step_size: float, context: object) -> None:
         """Physics step callback that applies base commands to the Anymal robot.
 
         Args:

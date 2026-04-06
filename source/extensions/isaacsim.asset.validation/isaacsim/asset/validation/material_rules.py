@@ -13,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Iterator
+
 import omni.asset_validator.core as av_core
 from omni.asset_validator.core import registerRule
 from pxr import Usd, UsdShade
 
 
-def traverse_without_references_payloads(prim):
+def traverse_without_references_payloads(prim: "Usd.Prim") -> Iterator:
     """Recursively traverse prim hierarchy excluding references and payloads.
 
     Args:

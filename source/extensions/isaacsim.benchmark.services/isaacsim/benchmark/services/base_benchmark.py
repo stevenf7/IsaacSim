@@ -280,7 +280,7 @@ class _BaseIsaacBenchmarkCore:
         # Clear active recorders after storing measurements
         self._active_recorders.clear()
 
-    def _finalize_impl(self):
+    def _finalize_impl(self) -> None:
         """Finalize metrics collection and write output files."""
         if not os.path.exists(self._metrics_output_folder):
             os.mkdir(path=self._metrics_output_folder)
@@ -474,7 +474,7 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
         report_generation: bool = False,
         workflow_metadata: dict | None = None,
         recorders: list[str] | None = None,
-    ):
+    ) -> None:
         """Must be awaited by derived benchmarks to properly set up the benchmark.
 
         Args:

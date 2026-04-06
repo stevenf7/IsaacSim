@@ -44,11 +44,14 @@ class RobotContextMenu(ContextMenu):
     track prims marked for deletion.
     """
 
-    def on_mouse_event(self, event):
+    def on_mouse_event(self, event: object):
         """Handles mouse events to display context menu for robot prims.
 
         Args:
             event: Mouse event containing stage, prim path, and other context data.
+
+        Returns:
+            None if the event type is not ACTIVATE, context menu is not available, or stage is not available.
         """
         import omni.kit.menu.core
 
@@ -127,7 +130,7 @@ class RobotContextMenu(ContextMenu):
         except Exception as e:
             print(f"Error showing context menu: {str(e)}")
 
-    def _can_align_parent_link_origin(self, objects) -> bool:
+    def _can_align_parent_link_origin(self, objects: dict) -> bool:
         """Checks if the selected prim can be aligned to parent link origin.
 
         Args:
@@ -146,7 +149,7 @@ class RobotContextMenu(ContextMenu):
         else:
             return True
 
-    def _align_parent_link_origin(self, objects) -> bool:
+    def _align_parent_link_origin(self, objects: dict) -> bool:
         """Marks the selected prim as reference mesh for aligning parent link origin.
 
         Args:
@@ -218,7 +221,7 @@ class RobotContextMenu(ContextMenu):
                 return False
         return True
 
-    def _delete_prims(self, objects: dict, destructive=True) -> bool:
+    def _delete_prims(self, objects: dict, destructive: bool = True) -> bool:
         """Removes prims from the robot stage and marks them for deletion during reorg.
 
         Args:

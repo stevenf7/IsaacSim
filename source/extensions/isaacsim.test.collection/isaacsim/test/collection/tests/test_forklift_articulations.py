@@ -32,7 +32,7 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
     """Tests for forklift robot articulation and movement."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment with forklift robot and action graph."""
         await stage_utils.create_new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()

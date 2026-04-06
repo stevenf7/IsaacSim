@@ -28,7 +28,7 @@ from scipy.spatial.transform import Rotation
 torch = import_module("torch")
 
 
-def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion], device=None) -> wp.array:
+def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion], device: object = None) -> wp.array:
     """Converts a pxr Quaternion type to a torch array (scalar first).
 
     Args:
@@ -48,7 +48,7 @@ def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternio
 
 
 def euler_angles_to_quats(
-    euler_angles: wp.array, degrees: bool = False, extrinsic: bool = True, device=None
+    euler_angles: wp.array, degrees: bool = False, extrinsic: bool = True, device: object = None
 ) -> wp.array:
     """Vectorized version of converting euler angles to quaternion (scalar first)
 
@@ -75,7 +75,7 @@ def euler_angles_to_quats(
     return result
 
 
-def rad2deg(radian_value: wp.array, device=None) -> wp.array:
+def rad2deg(radian_value: wp.array, device: object = None) -> wp.array:
     """Converts radian values to degrees.
 
     Args:
@@ -91,7 +91,7 @@ def rad2deg(radian_value: wp.array, device=None) -> wp.array:
     return wp.from_torch(rad_deg)
 
 
-def deg2rad(degree_value: wp.array, device=None) -> wp.array:
+def deg2rad(degree_value: wp.array, device: object = None) -> wp.array:
     """Converts degree values to radians.
 
     Args:

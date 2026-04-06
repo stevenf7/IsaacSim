@@ -40,9 +40,35 @@ torch = import_module("torch")
 
 class ParticleSystem:
     """Provides high level functions to deal with particle systems (1 or more particle systems) as well as its attributes/ properties.
+
     This object wraps all matching particle systems found at the regex provided at the prim_paths_expr.
     Note: not all the attributes of the PhysxSchema.PhysxParticleSystem is currently controlled with this view class
     Tensor API support will be added in the future to extend the functionality of this class to applications beyond cloth.
+
+    Args:
+        prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
+        name: Shortname to be used as a key by Scene class.
+        particle_systems_enabled: Whether to enable or disable the particle system.
+        simulation_owners: Single PhysicsScene that simulates this particle system.
+        contact_offsets: Contact offset used for collisions with non-particle objects such as rigid or deformable
+            bodies.
+        rest_offsets: Rest offset used for collisions with non-particle objects such as rigid or deformable bodies.
+        particle_contact_offsets: Contact offset used for interactions between particles.
+            Must be larger than solid and fluid rest offsets.
+        solid_rest_offsets: Rest offset used for solid-solid or solid-fluid particle interactions.
+            Must be smaller than particle contact offset.
+        fluid_rest_offsets: Rest offset used for fluid-fluid particle interactions.
+            Must be smaller than particle contact offset.
+        enable_ccds: Enable continuous collision detection for particles to help avoid tunneling effects.
+        solver_position_iteration_counts: Number of solver iterations for position.
+        max_depenetration_velocities: The maximum velocity permitted to be introduced by the solver to depenetrate
+            intersecting particles.
+        winds: The wind applied to the current particle system.
+        max_neighborhoods: The particle neighborhood size.
+        max_velocities: Maximum particle velocity.
+        global_self_collisions_enabled: If True, self collisions follow particle-object-specific settings.
+            If False, all particle self collisions are disabled, regardless of any other settings.
+            Improves performance if self collisions are not needed.
     """
 
     def __init__(
@@ -64,33 +90,6 @@ class ParticleSystem:
         max_velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
         global_self_collisions_enabled: Optional[Union[np.ndarray, torch.Tensor]] = None,
     ):
-        """high level functions to deal with one or more particleSystems.
-
-        Args:
-            prim_paths_expr: Prim paths regex to encapsulate all prims that match it.
-            name: Shortname to be used as a key by Scene class.
-            particle_systems_enabled: Whether to enable or disable the particle system.
-            simulation_owners: Single PhysicsScene that simulates this particle system.
-            contact_offsets: Contact offset used for collisions with non-particle objects such as rigid or deformable
-                bodies.
-            rest_offsets: Rest offset used for collisions with non-particle objects such as rigid or deformable bodies.
-            particle_contact_offsets: Contact offset used for interactions between particles.
-                Must be larger than solid and fluid rest offsets.
-            solid_rest_offsets: Rest offset used for solid-solid or solid-fluid particle interactions.
-                Must be smaller than particle contact offset.
-            fluid_rest_offsets: Rest offset used for fluid-fluid particle interactions.
-                Must be smaller than particle contact offset.
-            enable_ccds: Enable continuous collision detection for particles to help avoid tunneling effects.
-            solver_position_iteration_counts: Number of solver iterations for position.
-            max_depenetration_velocities: The maximum velocity permitted to be introduced by the solver to depenetrate
-                intersecting particles.
-            winds: The wind applied to the current particle system.
-            max_neighborhoods: The particle neighborhood size.
-            max_velocities: Maximum particle velocity.
-            global_self_collisions_enabled: If True, self collisions follow particle-object-specific settings.
-                If False, all particle self collisions are disabled, regardless of any other settings.
-                Improves performance if self collisions are not needed.
-        """
         self._name = name
         self._physics_view = None
         self._prim_paths = find_matching_prim_paths(prim_paths_expr)
@@ -154,14 +153,14 @@ class ParticleSystem:
             observer_name="isaacsim.core.prims.ParticleSystem.initialize._invalidate_physics_handle_callback",
         )
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Cleans up the particle system view by releasing physics resources."""
         if hasattr(self, "_physics_view"):
             del self._physics_view
         self._invalidate_physics_handle_event = None
         return
 
-    def _apply_material_binding_api(self, index):
+    def _apply_material_binding_api(self, index: int):
         """Applies the UsdShade MaterialBindingAPI to the prim at the specified index.
 
         Args:
@@ -223,7 +222,7 @@ class ParticleSystem:
         carb.log_info("Particle System View Device: {}".format(self._device))
         return
 
-    def _invalidate_physics_handle_callback(self, event):
+    def _invalidate_physics_handle_callback(self, event: object) -> None:
         """Invalidates the physics handle when timeline stops.
 
         Args:

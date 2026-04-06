@@ -49,7 +49,7 @@ class IsaacSensorCreatePrim(omni.kit.commands.Command):
         parent: str = "",
         translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
         orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
-        schema_type=IsaacSensorSchema.IsaacBaseSensor,
+        schema_type: type = IsaacSensorSchema.IsaacBaseSensor,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():

@@ -97,7 +97,7 @@ class TestGraspImporter(omni.kit.test.AsyncTestCase):
 
         self._grasp_spec = import_grasps_from_file(self._grasp_file)
 
-    def assertAlmostEqual(self, a, b, msg: str = ""):
+    def assertAlmostEqual(self, a: object, b: object, msg: str = ""):
         """Assert that two arrays are almost equal within a tolerance of 1e-3.
 
         Overrides the standard assertAlmostEqual to support NumPy arrays and iterables,

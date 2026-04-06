@@ -35,7 +35,7 @@ class RobotRegistry:
     """The currently registered robot instance."""
 
     @classmethod
-    def register(cls, name: str, instance):
+    def register(cls, name: str, instance: object):
         """Register a robot instance with the registry.
 
         Args:
@@ -60,7 +60,7 @@ class RobotRegistry:
         return cls._robot
 
     @classmethod
-    def update(cls, instance):
+    def update(cls, instance: object):
         """Update the currently registered robot instance.
 
         Args:
@@ -101,7 +101,7 @@ class RobotTemplate(ABC):
     """
 
     @staticmethod
-    def add_property(cls, name, default):
+    def add_property(cls: type, name: str, default: object):
         """Dynamically adds a property `name` to `cls`.
         Stores `default` as the initial value, getter returns it, and setter rebinds it on the instance.
         Only supports simple data types like string, list, or dict.
@@ -128,7 +128,7 @@ class RobotTemplate(ABC):
         prop = property(getter, setter, doc=doc)
         setattr(cls, name, prop)
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         # the properties default to any robot template
         self.add_property(self.__class__, "name", name)
         self.add_property(self.__class__, "parent_prim_path", None)  # robot prim at the origianl stage
@@ -164,7 +164,7 @@ class CustomRobot(RobotTemplate):
         name: Name identifier for the custom robot instance.
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         super().__init__(name)
 
         self.add_property(self.__class__, "robot_type", "Custom")
@@ -197,7 +197,7 @@ class WheeledRobot(RobotTemplate):
         name: The name identifier for the wheeled robot instance.
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
 
         super().__init__(name)
 
@@ -232,7 +232,7 @@ class Manipulator(RobotTemplate):
         name: The name of the manipulator robot.
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         super().__init__(name)
         self.add_property(self.__class__, "links", ["link1", "link2", "link3", "tooltip"])
         self.add_property(self.__class__, "robot_type", "Manipulator")
@@ -263,7 +263,7 @@ class Gripper(RobotTemplate):
         name: The name identifier for the gripper robot instance.
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         super().__init__(name)
         self.add_property(self.__class__, "links", ["base_link", "right_finger", "left_finger"])
         self.add_property(self.__class__, "robot_type", "Gripper")
@@ -298,7 +298,7 @@ class Humanoid(RobotTemplate):
         name: The name identifier for the humanoid robot instance.
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         super().__init__(name)
         self.add_property(self.__class__, "links", ["base_link", "right_leg", "left_leg", "right_arm", "left_arm"])
         self.add_property(self.__class__, "robot_type", "Humanoid")
@@ -330,7 +330,7 @@ class Quadruped(RobotTemplate):
         name: The name identifier for the quadruped robot instance.
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         super().__init__(name)
         self.add_property(self.__class__, "links", ["base_link", "right_leg", "left_leg", "right_leg", "left_leg"])
         self.add_property(self.__class__, "robot_type", "Quadruped")

@@ -87,20 +87,37 @@ class CortexObject(object):
     def set_world_pose(
         self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
     ) -> None:
-        """Set the object's world pose."""
+        """Set the object's world pose.
+
+        Args:
+            position: The position to set.
+            orientation: The orientation to set.
+        """
         self.obj.set_world_pose(position, orientation)
 
     def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Get the object's world pose."""
+        """Get the object's world pose.
+
+        Returns:
+            A tuple of (position, orientation).
+        """
         return self.obj.get_world_pose()
 
     def get_transform(self) -> np.ndarray:
-        """Returns the object's world pose (in meters) as a 4x4 homogeneous matrix."""
+        """Returns the object's world pose (in meters) as a 4x4 homogeneous matrix.
+
+        Returns:
+            A 4x4 homogeneous transform matrix.
+        """
         position, orientation = self.get_world_pose()
         return math_util.pq2T(position, orientation)
 
     def get_T(self):
-        """Convenience accessor for get_transform() using T naming convention."""
+        """Convenience accessor for get_transform() using T naming convention.
+
+        Returns:
+            A 4x4 homogeneous transform matrix.
+        """
         return self.get_transform()
 
     def set_measured_pose(self, measured_pose: CortexMeasuredPose) -> None:
@@ -117,7 +134,8 @@ class CortexObject(object):
         A measured pose is valid if it's both available (has been set) and it's valid per the
         CortexMeasuredPose.is_valid() method.
 
-        Returns: The truth value of whether it has a valid measured pose.
+        Returns:
+            The truth value of whether it has a valid measured pose.
         """
         return self.measured_pose is not None and self.measured_pose.is_valid(time.time())
 
@@ -127,7 +145,8 @@ class CortexObject(object):
         This method doesn't check whether the measured pose is available. Use has_measured_pose() to
         verify.
 
-        Returns: (p, q) containing the position p and quaternion q of the measured pose.
+        Returns:
+            A tuple (p, q) containing the position p and quaternion q of the measured pose.
         """
         return self.measured_pose.pq
 
@@ -137,7 +156,8 @@ class CortexObject(object):
         This method doesn't check whether the measured pose is available. Use has_measured_pose() to
         verify.
 
-        Returns: A homogeneous transform matrix T representing the latest measured pose.
+        Returns:
+            A homogeneous transform matrix T representing the latest measured pose.
         """
         p, q = self.measured_pose.pq
         return math_util.pq2T(p, q)
@@ -183,6 +203,10 @@ class CortexObject(object):
         Sim core API goes through the tensor API, but the tensor API is only synced to USD when the
         object is active. If we receive a measured pose, we want to sync to USD regardless of
         whether the object is active so it's visualized correctly.
+
+        Args:
+            p: The position vector.
+            q: The orientation quaternion.
         """
         p = p.astype(float)
         q = q.astype(float)

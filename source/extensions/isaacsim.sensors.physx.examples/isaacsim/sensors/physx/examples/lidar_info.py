@@ -145,7 +145,7 @@ class Extension(omni.ext.IExt):
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)
         self._editor_event_subscription = None
 
-    async def _spawn_lidar_function(self, task):
+    async def _spawn_lidar_function(self, task: object) -> None:
         """Create and configure a LIDAR sensor in the stage.
 
         Sets up the physics scene, creates the LIDAR prim with specified attributes including field of view,
@@ -234,7 +234,7 @@ class Extension(omni.ext.IExt):
             observer_name="isaacsim.sensors.physx.examples.lidar_info.Extension._on_editor_step",
         )
 
-    def _on_editor_step(self, step):
+    def _on_editor_step(self, step: object) -> None:
         """Handle editor step updates to refresh LIDAR data display.
 
         Updates the data stream display when the info checkbox is enabled and timeline is playing.
@@ -248,7 +248,7 @@ class Extension(omni.ext.IExt):
         else:
             self._info_label.text = ""
 
-    def _on_spawn_obstacles_button(self):
+    def _on_spawn_obstacles_button(self) -> None:
         """Handle the spawn obstacles button click event.
 
         Creates a cube obstacle and distant light in the scene for the LIDAR to detect.
@@ -283,7 +283,7 @@ class Extension(omni.ext.IExt):
         # to do this, we give our cube the collision API, and set it's material and collision group.
         UsdPhysics.CollisionAPI.Apply(cubePrim)
 
-    def _get_info_function(self, val=False):
+    def _get_info_function(self, val: bool = False) -> None:
         """Retrieve and display LIDAR sensor data.
 
         Gets depth, zenith, and azimuth data from the LIDAR sensor and formats it into a table

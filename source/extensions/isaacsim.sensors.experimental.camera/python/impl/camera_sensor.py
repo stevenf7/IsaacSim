@@ -322,7 +322,11 @@ class CameraSensor:
         self._hydra_texture = None
 
     def _initialize_sensor(self, annotators: str | list[str]) -> None:
-        """Initialize sensor by creating the hydra texture and attaching annotators."""
+        """Initialize sensor by creating the hydra texture and attaching annotators.
+
+        Args:
+            annotators: Annotator/sensor types to configure.
+        """
         # create the hydra texture
         self._hydra_texture = rep.create.render_product(
             camera=self._camera.paths[0],
@@ -333,7 +337,14 @@ class CameraSensor:
         self.attach_annotators(annotators)
 
     def _get_annotator_spec(self, annotator: str) -> dict[str, Any]:
-        """Get the specification of the given annotator."""
+        """Get the specification of the given annotator.
+
+        Args:
+            annotator: Name of the annotator.
+
+        Returns:
+            Dictionary containing the annotator specification.
+        """
         try:
             return self._annotators_spec[annotator]
         except KeyError:
@@ -342,7 +353,11 @@ class CameraSensor:
             )
 
     def _validate_annotators(self, annotators: str | list[str]) -> None:
-        """Validate the given annotators."""
+        """Validate the given annotators.
+
+        Args:
+            annotators: Annotator/sensor types to validate.
+        """
         annotators = [annotators] if isinstance(annotators, str) else annotators
         for annotator in annotators:
             if annotator not in self._annotators_spec:

@@ -31,8 +31,12 @@ torch = import_module("torch")
 
 
 class TestGo2CPU(omni.kit.test.AsyncTestCase):
-    def get_device(self):
-        """Return the device to use for tensors. Override in subclasses."""
+    def get_device(self) -> object:
+        """Return the device to use for tensors. Override in subclasses.
+
+        Returns:
+            object: The torch device to use.
+        """
         return torch.device("cpu")
 
     async def setUp(self):
@@ -163,6 +167,10 @@ class TestGo2CPU(omni.kit.test.AsyncTestCase):
 
 
 class TestGo2GPU(TestGo2CPU):
-    def get_device(self):
-        """Return the device to use for tensors"""
+    def get_device(self) -> object:
+        """Return the device to use for tensors.
+
+        Returns:
+            object: The torch cuda device.
+        """
         return torch.device("cuda")

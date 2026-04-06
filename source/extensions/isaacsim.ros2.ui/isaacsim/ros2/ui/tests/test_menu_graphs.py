@@ -43,11 +43,12 @@ class ROS2MenuTestBase(ROS2TestCase):
         await super().setUp()
         self.node = self.create_node("test_omnigraph_node")
 
-    async def setup_test_environment(self, robot_path="/World/test_robot", add_test_cubes=False):
+    async def setup_test_environment(self, robot_path: str = "/World/test_robot", add_test_cubes: bool = False):
         """Helper function to set up a standard test environment with a Nova Carter robot.
 
         Args:
             robot_path: Path where the robot should be placed.
+            add_test_cubes: Whether to add test cube prims to the environment.
 
         Returns:
             The robot prim and base_link path.

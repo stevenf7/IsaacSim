@@ -28,7 +28,7 @@ from omni.kit.widget.stage import StageWidget
 from ..style import get_asset_picker_style
 
 
-def filter_prims(stage, prim_list, type_list):
+def filter_prims(stage: object, prim_list: list, type_list: list):
     """Filter prims from a list based on their USD schema types.
 
     Checks each prim in the list against the provided type list and returns only those that match at least one type.
@@ -70,7 +70,9 @@ class SelectionWatch:
         targets_limit: Maximum number of prims that can be selected simultaneously.
     """
 
-    def __init__(self, stage, on_selection_changed_fn, filter_type_list=[], targets_limit=0):
+    def __init__(
+        self, stage: object, on_selection_changed_fn: callable, filter_type_list: list = [], targets_limit: int = 0
+    ):
         self._stage = stage
         self._last_selected_prim_paths = None
         self._filter_type_list = filter_type_list
@@ -78,7 +80,7 @@ class SelectionWatch:
         self._targets_limit = targets_limit
         self._tree_view = None
 
-    def reset(self, stage):
+    def reset(self, stage: object):
         """Reset the selection watch with a new stage.
 
         Args:
@@ -87,7 +89,7 @@ class SelectionWatch:
         self.clear_selection()
         self._stage = weakref.ref(stage)
 
-    def set_tree_view(self, tree_view):
+    def set_tree_view(self, tree_view: object):
         """Set the tree view widget for selection monitoring.
 
         Args:
@@ -98,7 +100,11 @@ class SelectionWatch:
         self._last_selected_prim_paths = None
 
     def clear_selection(self):
-        """Clear the current selection in the tree view."""
+        """Clear the current selection in the tree view.
+
+        Returns:
+            None if the tree view is not set.
+        """
         if not self._tree_view:
             return
 
@@ -107,11 +113,14 @@ class SelectionWatch:
         if self._on_selection_changed_fn:
             self._on_selection_changed_fn([])
 
-    def _on_widget_selection_changed(self, selection):
+    def _on_widget_selection_changed(self, selection: list):
         """Handle selection changes from the tree view widget.
 
         Args:
             selection: The new selection from the tree view.
+
+        Returns:
+            None if the stage is not available or the selection has not changed.
         """
         stage = self._stage()
         if not stage:
@@ -179,13 +188,13 @@ class RobotAssetPicker:
 
     def __init__(
         self,
-        title,
-        stage,
-        filter_type_list=[],
-        on_targets_selected=None,
-        modal_window=False,
-        targets_limit=1,
-        target_name="",
+        title: str,
+        stage: object,
+        filter_type_list: list = [],
+        on_targets_selected: callable = None,
+        modal_window: bool = False,
+        targets_limit: int = 1,
+        target_name: str = "",
     ):
         self._weak_stage = weakref.ref(stage)
         self._selected_paths = []
@@ -241,6 +250,9 @@ class RobotAssetPicker:
 
         Args:
             visible: Whether the window is visible.
+
+        Returns:
+            None if the stage widget has not been built yet.
         """
         # the _stage_widget not build yet, will call again in build frame
         if not self._stage_widget:
@@ -273,6 +285,9 @@ class RobotAssetPicker:
 
         Args:
             weak_self: Weak reference to the RobotAssetPicker instance.
+
+        Returns:
+            None if the weak reference is no longer valid.
         """
         # pylint: disable=protected-access
         weak_self = weak_self()
@@ -283,7 +298,7 @@ class RobotAssetPicker:
             weak_self._on_targets_selected(weak_self._selected_paths)
         weak_self._window.visible = False
 
-    def set_on_selected(self, on_select):
+    def set_on_selected(self, on_select: callable):
         """Sets the callback function to be invoked when targets are selected.
 
         Args:

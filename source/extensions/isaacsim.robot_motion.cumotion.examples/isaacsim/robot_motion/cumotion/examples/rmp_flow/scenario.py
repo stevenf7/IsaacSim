@@ -49,7 +49,6 @@ class FrankaRmpFlowExample:
     """
 
     def __init__(self) -> None:
-        """Initialize the FrankaRmpFlowExample with default attribute values."""
         self._controller = None
         self._articulation = None
         self._target = None
@@ -57,7 +56,11 @@ class FrankaRmpFlowExample:
         self._controlled_joint_names = None
 
     async def load_example_assets(self) -> tuple:
-        """Load robot, target, and obstacle assets to the stage."""
+        """Load robot, target, and obstacle assets to the stage.
+
+        Returns:
+            Tuple of the articulation, target, and cube objects.
+        """
         self._robot_prim_path = "/panda"
         path_to_robot_usd = await get_assets_root_path_async() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
 
@@ -181,7 +184,11 @@ class FrankaRmpFlowExample:
         self._controller_reset = False
 
     def update(self, step: float) -> None:
-        """Update controller on each physics step."""
+        """Update controller on each physics step.
+
+        Args:
+            step: The physics time step in seconds.
+        """
         if self._controller is None or self._world_binding is None:
             return
 

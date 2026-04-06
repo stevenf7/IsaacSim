@@ -55,7 +55,7 @@ class ExposedVariablesPropertyWidget(UsdPropertiesWidget):
         # Initialize the multiple selection flag
         self._multiple_selection = False
 
-    def on_new_payload(self, payload) -> bool:
+    def on_new_payload(self, payload: list) -> bool:
         """Handles new payloads to refresh UI or update models.
 
         Args:
@@ -118,7 +118,7 @@ class ExposedVariablesPropertyWidget(UsdPropertiesWidget):
         # Do not create the widget if no valid properties found
         return bool(self._props_to_build)
 
-    def _get_shared_properties_from_selected_prims(self, anchor_prim) -> list:
+    def _get_shared_properties_from_selected_prims(self, anchor_prim: "Usd.Prim") -> list:
         """Override to provide properties for the base class's build_items().
 
         Args:
@@ -130,7 +130,7 @@ class ExposedVariablesPropertyWidget(UsdPropertiesWidget):
         # Return only the filtered UI properties to _customize_props_layout
         return self._props_to_build
 
-    def _customize_props_layout(self, props) -> list:
+    def _customize_props_layout(self, props: list) -> list:
         """Customize the layout by setting display groups and names for properties.
 
         Args:
@@ -179,7 +179,7 @@ class ExposedVariablesPropertyWidget(UsdPropertiesWidget):
         # Return the UI property entries with the updated display groups and names to be built by the widget
         return props
 
-    def _make_capitalized_title(self, namespace_name) -> str:
+    def _make_capitalized_title(self, namespace_name: str) -> str:
         """Convert names to 'Capitalized With Spaces' format.
 
         Args:

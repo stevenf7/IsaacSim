@@ -34,12 +34,12 @@ class _SinglePrimWrapper(object):
         view: The prim view to wrap for single prim operations.
     """
 
-    def __init__(self, view):
+    def __init__(self, view: object) -> None:
         self._prim_view = view
         self._prim_view._remove_callbacks()
         return
 
-    def initialize(self, physics_sim_view=None) -> None:
+    def initialize(self, physics_sim_view: object = None) -> None:
         """Create a physics simulation view if not passed and using PhysX tensor API
 
         .. note::
@@ -453,7 +453,7 @@ class _SinglePrimWrapper(object):
         """
         return self._prim_view.is_valid()
 
-    def _view_state_conversion(self, view_state):
+    def _view_state_conversion(self, view_state: object):
         """Convert view state to XFormPrimState format.
 
         Args:

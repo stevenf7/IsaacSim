@@ -37,6 +37,10 @@ class Cloner:
     Note that the cloning process is performed in a for-loop, so performance should
     be expected to follow linear scaling with an increase of clones.
 
+    Args:
+        stage: USD stage where source prim and clones are added to.
+            Defaults to the current stage from the USD context.
+
     Example:
 
     .. code-block:: python
@@ -50,29 +54,21 @@ class Cloner:
         ...     source_prim_path="/World/envs/env_0",
         ...     prim_paths=prim_paths,
         ... )
+
+    .. code-block:: python
+
+        >>> from isaacsim.core.cloner import Cloner
+        >>> import omni.usd
+        >>>
+        >>> # Use current stage
+        >>> cloner = Cloner()
+        >>>
+        >>> # Or provide a specific stage
+        >>> stage = omni.usd.get_context().get_stage()
+        >>> cloner = Cloner(stage=stage)
     """
 
     def __init__(self, stage: Usd.Stage = None):
-        """Initialize the Cloner instance.
-
-        Args:
-            stage: USD stage where source prim and clones are added to.
-                Defaults to the current stage from the USD context.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> from isaacsim.core.cloner import Cloner
-            >>> import omni.usd
-            >>>
-            >>> # Use current stage
-            >>> cloner = Cloner()
-            >>>
-            >>> # Or provide a specific stage
-            >>> stage = omni.usd.get_context().get_stage()
-            >>> cloner = Cloner(stage=stage)
-        """
         self._base_env_path = None
         self._root_path = None
         self._stage = stage

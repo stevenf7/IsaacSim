@@ -23,7 +23,7 @@ class IsaacSimAssetValidationExtension(omni.ext.IExt):
     including physics validation, robot schema validation, and material validation.
     """
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension on startup.
 
         Args:

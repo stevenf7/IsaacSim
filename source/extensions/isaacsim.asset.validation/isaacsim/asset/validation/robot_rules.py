@@ -80,7 +80,7 @@ class CleanFolder(av_core.BaseRuleChecker):
             self._AddWarning(message=f"Folder <{folder}> contains unexpected file <{entry.relative_path}>")
 
 
-def get_overridden_attributes(prim):
+def get_overridden_attributes(prim: object):
     """Get list of attribute names that have overridden values.
 
     Args:
@@ -240,7 +240,7 @@ class CheckRobotRelationships(av_core.BaseRuleChecker):
     """
 
     @classmethod
-    def create_link_relationship(cls, stage, prim):
+    def create_link_relationship(cls, stage: object, prim: object) -> None:
         """Create the robotLinks relationship on a prim.
 
         Args:
@@ -250,7 +250,7 @@ class CheckRobotRelationships(av_core.BaseRuleChecker):
         relationship = prim.CreateRelationship(robot_schema.Relations.ROBOT_LINKS.name)
 
     @classmethod
-    def create_joint_relationship(cls, stage, prim):
+    def create_joint_relationship(cls, stage: object, prim: object) -> None:
         """Create the robotJoints relationship on a prim.
 
         Args:
@@ -260,7 +260,7 @@ class CheckRobotRelationships(av_core.BaseRuleChecker):
         relationship = prim.CreateRelationship(robot_schema.Relations.ROBOT_JOINTS.name)
 
     @classmethod
-    def make_joint_relationship_prepended(cls, stage, prim):
+    def make_joint_relationship_prepended(cls, stage: object, prim: object) -> None:
         """Make the robotJoints relationship prepended for composition.
 
         Args:
@@ -271,7 +271,7 @@ class CheckRobotRelationships(av_core.BaseRuleChecker):
         make_relationship_prepended(relationship)
 
     @classmethod
-    def make_link_relationship_prepended(cls, stage, prim):
+    def make_link_relationship_prepended(cls, stage: object, prim: object) -> None:
         """Make the robotLinks relationship prepended for composition.
 
         Args:

@@ -128,7 +128,7 @@ class NewtonArticulationView:
                 self._ctrl_direct_dof_map = None
         return self._ctrl_direct_dof_map
 
-    def _set_ctrl_direct_biastype_affine(self):
+    def _set_ctrl_direct_biastype_affine(self) -> None:
         """Set biastype=AFFINE (1) for CTRL_DIRECT joint actuators in the solver's MuJoCo model.
 
         Without this, MuJoCo ignores biasprm values (biastype=NONE means bias=0),
@@ -187,7 +187,7 @@ class NewtonArticulationView:
                             bt_np[act_idx] = BIAS_AFFINE
                 wp.copy(bt_warp, wp.array(bt_np, dtype=bt_warp.dtype, device=bt_warp.device))
 
-    def _sync_ctrl_direct_position_targets(self):
+    def _sync_ctrl_direct_position_targets(self) -> None:
         """Sync joint_target_pos to control.mujoco.ctrl for CTRL_DIRECT joint actuators.
 
         On the first call, also sets biastype=AFFINE to enable PD control. This is
@@ -217,7 +217,7 @@ class NewtonArticulationView:
             self._ctrl_direct_biastype_set = True
             self._set_ctrl_direct_biastype_affine()
 
-    def _sync_ctrl_direct_actuator_gains(self):
+    def _sync_ctrl_direct_actuator_gains(self) -> None:
         """Sync joint_target_ke/kd to actuator gainprm/biasprm for CTRL_DIRECT joint actuators.
 
         Writes to model.mujoco arrays and notifies the solver. Does NOT activate PD

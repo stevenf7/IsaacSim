@@ -212,7 +212,7 @@ class CameraView(XFormPrim):
             self._tiled_render_product.destroy()
             self._tiled_render_product = None
 
-    def _get_tiled_resolution(self, num_cameras, resolution) -> Tuple[int, int]:
+    def _get_tiled_resolution(self, num_cameras: int, resolution: object) -> Tuple[int, int]:
         """Calculate the resolution for the tiled sensor based on the number of cameras and individual camera resolution.
 
         Args:
@@ -299,7 +299,7 @@ class CameraView(XFormPrim):
         width, height = self.get_resolutions()
         return float(width) / float(height)
 
-    def _convert_camera_axes(self, orientations, transform_matrix):
+    def _convert_camera_axes(self, orientations: object, transform_matrix: object):
         """Convert orientations using the specified transformation matrix.
 
         Args:
@@ -591,7 +591,7 @@ class CameraView(XFormPrim):
             )
         return out, info
 
-    def get_rgb_tiled(self, out=None, device="cpu") -> np.ndarray | torch.Tensor:
+    def get_rgb_tiled(self, out: object = None, device: str = "cpu") -> np.ndarray | torch.Tensor:
         """Fetch the RGB data for all cameras as a single tiled image.
 
         Args:
@@ -613,7 +613,7 @@ class CameraView(XFormPrim):
                 self.get_data("rgb", tiled=True, out=wp.from_torch(out))
         return out
 
-    def get_depth_tiled(self, out=None, device="cpu") -> np.ndarray | torch.Tensor:
+    def get_depth_tiled(self, out: object = None, device: str = "cpu") -> np.ndarray | torch.Tensor:
         """Fetch the depth data for all cameras as a single tiled image.
 
         Args:
@@ -635,7 +635,7 @@ class CameraView(XFormPrim):
                 self.get_data("distance_to_image_plane", tiled=True, out=wp.from_torch(out))
         return out
 
-    def get_rgb(self, out=None) -> torch.Tensor:
+    def get_rgb(self, out: object = None) -> torch.Tensor:
         """Get the RGB data for all cameras as a batch of images (num_cameras, height, width, 3).
 
         Args:
@@ -651,7 +651,7 @@ class CameraView(XFormPrim):
             self.get_data("rgb", out=wp.from_torch(out))
         return out
 
-    def get_depth(self, out=None) -> torch.Tensor:
+    def get_depth(self, out: object = None) -> torch.Tensor:
         """Get the depth data for all cameras as a batch of images (num_cameras, height, width, 1).
 
         Args:
@@ -702,6 +702,9 @@ class CameraView(XFormPrim):
             indices: Indices to specify which prims to query. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
                 Defaults to None (i.e: all prims in the view).
+
+        Returns:
+            None.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -751,6 +754,9 @@ class CameraView(XFormPrim):
             indices: Indices to specify which prims to set. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
                 Defaults to None (i.e: all prims in the view).
+
+        Returns:
+            None.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -802,6 +808,9 @@ class CameraView(XFormPrim):
             indices: Indices to specify which prims to set. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
                 Defaults to None (i.e: all prims in the view).
+
+        Returns:
+            None.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -853,6 +862,9 @@ class CameraView(XFormPrim):
             indices: Indices to specify which prims to set. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
                 Defaults to None (i.e: all prims in the view).
+
+        Returns:
+            None.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -906,6 +918,9 @@ class CameraView(XFormPrim):
             indices: Indices to specify which prims to set. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
                 Defaults to None (i.e: all prims in the view).
+
+        Returns:
+            None.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -958,6 +973,9 @@ class CameraView(XFormPrim):
                 indices.
             indices: Indices to specify which prims to set. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
+
+        Returns:
+            None.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1005,6 +1023,9 @@ class CameraView(XFormPrim):
                 indices.
             indices: Indices to specify which prims to set. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
+
+        Returns:
+            None.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1049,6 +1070,9 @@ class CameraView(XFormPrim):
             values: List of stereo roles (mono, left, right). Length of values must match length of indices.
             indices: Indices to specify which prims to set. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
+
+        Returns:
+            None.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1097,6 +1121,9 @@ class CameraView(XFormPrim):
             values: List of tuple (delay_open, delay_close). Length of values must match length of indices.
             indices: Indices to specify which prims to set. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
+
+        Returns:
+            None.
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)

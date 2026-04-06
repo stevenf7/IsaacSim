@@ -76,14 +76,14 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
 
     def __init__(
         self,
-        title,
-        collapsed,
-        schema_class,
-        attributes,
-        menu_label,
-        apply_fn,
-        relationships=None,
-        exclusive_classes=None,
+        title: str,
+        collapsed: bool,
+        schema_class: object,
+        attributes: list,
+        menu_label: str,
+        apply_fn: object,
+        relationships: object = None,
+        exclusive_classes: object = None,
     ):
         super().__init__(title, collapsed)
         from omni.kit.property.usd import PrimPathWidget
@@ -132,7 +132,7 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
                 return True
         return False
 
-    def _button_onclick(self, payload: PrimSelectionPayload):
+    def _button_onclick(self, payload: PrimSelectionPayload) -> None:
         """Handles button click to apply schema to selected prims.
 
         Args:
@@ -162,7 +162,7 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
         if property_window and property_window._window:  # noqa: SLF001
             property_window._window.frame.rebuild()  # noqa: SLF001
 
-    def _on_usd_changed(self, notice, stage):
+    def _on_usd_changed(self, notice: object, stage: object):
         """Handles USD change notifications.
 
         Args:
@@ -175,7 +175,7 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
         else:
             super()._on_usd_changed(notice, stage)
 
-    def _get_prim(self, prim_path):
+    def _get_prim(self, prim_path: object):
         """Retrieves a prim with the required schema from the given path.
 
         Args:
@@ -214,7 +214,7 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
 
         return self._prim
 
-    def on_remove_attr(self):
+    def on_remove_attr(self) -> None:
         """Removes the schema and associated attributes and relationships from the prim."""
         stage = self._payload.get_stage()
         if not stage or not self._payload:
@@ -234,7 +234,7 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
                 prim.RemoveProperty(rel.name)
         self._request_refresh()
 
-    def _filter_props_to_build(self, props):
+    def _filter_props_to_build(self, props: list):
         """Filters properties to build based on the schema's attributes and relationships.
 
         Args:
@@ -255,7 +255,7 @@ class _RobotSchemaWidgetBase(UsdPropertiesWidget):
                 filtered.append(prop)
         return filtered
 
-    def _has_exclusive_schema(self, prim):
+    def _has_exclusive_schema(self, prim: object):
         """Checks if the prim has any exclusive schema applied.
 
         Args:

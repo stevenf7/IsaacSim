@@ -439,7 +439,9 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         """
         return self._geometry_prim_view.is_collision_enabled()[0]
 
-    def apply_physics_material(self, physics_material: "PhysicsMaterial", weaker_than_descendants: bool = False):
+    def apply_physics_material(
+        self, physics_material: "PhysicsMaterial", weaker_than_descendants: bool = False
+    ) -> None:
         """Used to apply physics material to the held prim and optionally its descendants.
 
         Args:
