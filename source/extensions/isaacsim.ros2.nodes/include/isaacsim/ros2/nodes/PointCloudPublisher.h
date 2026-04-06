@@ -57,18 +57,18 @@ void fillPointCloudBufferHost(uint8_t* buffer,
 /// Any pointer that is null will be omitted from the published message.
 struct PointCloudMetadata
 {
-    float* intensityPtr = nullptr;
-    uint64_t* timestampPtr = nullptr;
-    uint32_t* emitterIdPtr = nullptr;
-    uint32_t* channelIdPtr = nullptr;
-    uint32_t* materialIdPtr = nullptr;
-    uint32_t* tickIdPtr = nullptr;
-    pxr::GfVec3f* hitNormalPtr = nullptr;
-    pxr::GfVec3f* velocityPtr = nullptr;
-    uint32_t* objectIdPtr = nullptr;
-    uint8_t* echoIdPtr = nullptr;
-    uint8_t* tickStatePtr = nullptr;
-    float* radialVelocityMSPtr = nullptr;
+    float* intensityPtr = nullptr; ///< Per-point intensity values.
+    uint64_t* timestampPtr = nullptr; ///< Per-point timestamps (ns).
+    uint32_t* emitterIdPtr = nullptr; ///< Per-point emitter IDs.
+    uint32_t* channelIdPtr = nullptr; ///< Per-point channel IDs.
+    uint32_t* materialIdPtr = nullptr; ///< Per-point material IDs.
+    uint32_t* tickIdPtr = nullptr; ///< Per-point tick IDs.
+    pxr::GfVec3f* hitNormalPtr = nullptr; ///< Per-point hit normals.
+    pxr::GfVec3f* velocityPtr = nullptr; ///< Per-point velocity vectors.
+    uint32_t* objectIdPtr = nullptr; ///< Per-point object IDs.
+    uint8_t* echoIdPtr = nullptr; ///< Per-point echo IDs.
+    uint8_t* tickStatePtr = nullptr; ///< Per-point tick states.
+    float* radialVelocityMSPtr = nullptr; ///< Per-point radial velocity (m/s).
 };
 
 /// Standalone ROS 2 point cloud publisher that can be used from OmniGraph
@@ -104,6 +104,7 @@ public:
                            int cudaDeviceIndex,
                            const PointCloudMetadata& metadata = {});
 
+    /// @copydoc PublisherBase::reset()
     void reset() override;
 
     /// Access to the underlying message for fill-from-host flows that need
@@ -112,6 +113,8 @@ public:
     {
         return m_message.get();
     }
+
+    /// Get the TF frame ID stamped into published messages.
     const std::string& getFrameId() const
     {
         return m_frameId;

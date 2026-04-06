@@ -75,20 +75,22 @@ Extensions
    :maxdepth: 1
    :caption: Extensions (Core)
 
-   isaacsim.core.api <source/extensions/isaacsim.core.api/docs/index>
+   isaacsim.core.api <source/deprecated/isaacsim.core.api/docs/index>
    isaacsim.core.cloner <source/extensions/isaacsim.core.cloner/docs/index>
    isaacsim.core.deprecation_manager <source/extensions/isaacsim.core.deprecation_manager/docs/index>
    isaacsim.core.experimental.materials <source/extensions/isaacsim.core.experimental.materials/docs/index>
    isaacsim.core.experimental.objects <source/extensions/isaacsim.core.experimental.objects/docs/index>
+   isaacsim.core.experimental.primdata <source/extensions/isaacsim.core.experimental.primdata/docs/index>
    isaacsim.core.experimental.prims <source/extensions/isaacsim.core.experimental.prims/docs/index>
    isaacsim.core.experimental.utils <source/extensions/isaacsim.core.experimental.utils/docs/index>
    isaacsim.core.includes <source/extensions/isaacsim.core.includes/docs/index>
    isaacsim.core.nodes <source/extensions/isaacsim.core.nodes/docs/index>
-   isaacsim.core.prims <source/extensions/isaacsim.core.prims/docs/index>
+   isaacsim.core.prims <source/deprecated/isaacsim.core.prims/docs/index>
    isaacsim.core.rendering_manager <source/extensions/isaacsim.core.rendering_manager/docs/index>
    isaacsim.core.simulation_manager <source/extensions/isaacsim.core.simulation_manager/docs/index>
+   isaacsim.core.telemetry <source/extensions/isaacsim.core.telemetry/docs/index>
    isaacsim.core.throttling <source/extensions/isaacsim.core.throttling/docs/index>
-   isaacsim.core.utils <source/extensions/isaacsim.core.utils/docs/index>
+   isaacsim.core.utils <source/deprecated/isaacsim.core.utils/docs/index>
    isaacsim.core.version <source/extensions/isaacsim.core.version/docs/index>
 
 .. toctree::
@@ -170,6 +172,7 @@ Extensions
    isaacsim.robot.surface_gripper <source/extensions/isaacsim.robot.surface_gripper/docs/index>
    isaacsim.robot.surface_gripper.ui <source/extensions/isaacsim.robot.surface_gripper.ui/docs/index>
    isaacsim.robot.wheeled_robots <source/deprecated/isaacsim.robot.wheeled_robots/docs/index>
+   isaacsim.robot.wheeled_robots.nodes <source/extensions/isaacsim.robot.wheeled_robots.nodes/docs/index>
    isaacsim.robot.wheeled_robots.ui <source/extensions/isaacsim.robot.wheeled_robots.ui/docs/index>
 
 .. toctree::
@@ -238,6 +241,7 @@ Extensions
 
    isaacsim.util.camera_inspector <source/extensions/isaacsim.util.camera_inspector/docs/index>
    isaacsim.util.debug_draw <source/internal_extensions/isaacsim.util.debug_draw/docs/index>
+   isaacsim.util.merge_mesh <source/deprecated/isaacsim.util.merge_mesh/docs/index>
    isaacsim.util.physics <source/extensions/isaacsim.util.physics/docs/index>
 
 .. toctree::

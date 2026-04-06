@@ -57,7 +57,10 @@ public:
     /// Thread-safe: can be called from a background task after prepare() completes.
     void send();
 
+    /// Release ROS 2 resources and reset the publisher to an uninitialized state.
     virtual void reset();
+
+    /// Return true if the publisher has been successfully initialized.
     bool isInitialized() const
     {
         return m_publisher != nullptr;
@@ -75,13 +78,13 @@ protected:
     /// Returns false when there are no subscribers and publish_without_verification is off.
     bool shouldPublish() const;
 
-    isaacsim::ros2::core::Ros2Bridge* m_ros2Bridge = nullptr;
-    isaacsim::ros2::core::Ros2Factory* m_factory = nullptr;
-    std::shared_ptr<isaacsim::ros2::core::Ros2ContextHandle>* m_contextHandle = nullptr;
-    std::shared_ptr<isaacsim::ros2::core::Ros2NodeHandle> m_nodeHandle;
-    std::shared_ptr<isaacsim::ros2::core::Ros2Publisher> m_publisher;
-    std::string m_frameId;
-    bool m_publishWithoutVerification = false;
+    isaacsim::ros2::core::Ros2Bridge* m_ros2Bridge = nullptr; ///< Cached bridge singleton.
+    isaacsim::ros2::core::Ros2Factory* m_factory = nullptr; ///< Cached factory from the bridge.
+    std::shared_ptr<isaacsim::ros2::core::Ros2ContextHandle>* m_contextHandle = nullptr; ///< ROS 2 context handle.
+    std::shared_ptr<isaacsim::ros2::core::Ros2NodeHandle> m_nodeHandle; ///< ROS 2 node handle.
+    std::shared_ptr<isaacsim::ros2::core::Ros2Publisher> m_publisher; ///< Underlying ROS 2 publisher.
+    std::string m_frameId; ///< TF frame ID stamped into published messages.
+    bool m_publishWithoutVerification = false; ///< When true, publish even with no subscribers.
 };
 
 } // namespace nodes
