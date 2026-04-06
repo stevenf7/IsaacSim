@@ -140,6 +140,9 @@ inventory.excludes.all = [
     # large in size cache (to isaacsim-extscache-kit-sdk)
     "extscache/omni.sensors*",
     "extscache/omni.kit.converter*",
+    # physics-related cache (to isaacsim-extscache-physics)
+    "extscache/omni.physics*",
+    "extscache/omni.physx*",
     # compatibility check
     "extscache/isaacsim.app.compatibility_check*",
 ]
@@ -167,8 +170,9 @@ pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "physics", "cache"]
 inventory.includes.all = [
     # license
     "LICENSE.txt",
-    # cache
-    # "extsPhysics",
+    # physics-related cache (from isaacsim-extscache-kit)
+    "extscache/omni.physics*",
+    "extscache/omni.physx*",
 ]
 
 #=================================================================
@@ -711,4 +715,7 @@ inventory.includes.all = [
     "exts/isaacsim.util.camera_inspector",
     "extsDeprecated/isaacsim.util.merge_mesh",
     "exts/isaacsim.util.physics",
+    # internal extensions (not included in extscache)
+    [ "extsInternal/isaacsim.kit.xr.teleop.bridge", "exts" ],
+    [ "extsInternal/isaacsim.util.clash_detection", "exts" ],
 ]
