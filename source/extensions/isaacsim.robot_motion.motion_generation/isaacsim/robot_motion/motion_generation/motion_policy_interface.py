@@ -23,7 +23,8 @@ from isaacsim.robot_motion.motion_generation.world_interface import WorldInterfa
 
 
 class MotionPolicy(WorldInterface):
-    """Interface for implementing a MotionPolicy: a collision-aware algorithm for dynamically moving a robot to a target. The MotionPolicy interface inherits
+    """Interface for implementing a MotionPolicy: a collision-aware algorithm for dynamically moving a robot to a target. The MotionPolicy interface inherits.
+
     from the WorldInterface class. A MotionPolicy can be passed to an ArticulationMotionPolicy to streamline moving the simulated robot.
     """
 
@@ -49,6 +50,7 @@ class MotionPolicy(WorldInterface):
         frame_duration: float,
     ) -> Tuple[np.array, np.array]:
         """Compute position and velocity targets for the next frame given the current robot state.
+
             Position and velocity targets are used in Isaac Sim to generate forces using the PD equation
             kp*(joint_position_targets-joint_positions) + kd*(joint_velocity_targets-joint_velocities).
 
@@ -62,7 +64,6 @@ class MotionPolicy(WorldInterface):
         Returns:
             A tuple containing (joint position targets, joint velocity targets) for the active robot joints for the next frame.
         """
-
         return active_joint_positions, np.zeros_like(active_joint_velocities)
 
     def get_active_joints(self) -> List[str]:
@@ -80,7 +81,8 @@ class MotionPolicy(WorldInterface):
 
     def get_watched_joints(self) -> List[str]:
         """Names of watched joints whose position/velocity matters to the MotionPolicy, but are not directly controlled.
-            e.g. A MotionPolicy may control a robot arm on a mobile robot. The joint states in the rest of the robot directly affect the position of the arm, but they are not actively controlled by this MotionPolicy
+
+            e.g. A MotionPolicy may control a robot arm on a mobile robot. The joint states in the rest of the robot directly affect the position of the arm, but they are not actively controlled by this MotionPolicy.
 
         Returns:
             Names of joints that are being watched by this MotionPolicy. The order of joints in this list determines the order in which a

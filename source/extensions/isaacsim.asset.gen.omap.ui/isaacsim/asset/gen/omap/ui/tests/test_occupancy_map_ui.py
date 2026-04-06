@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the occupancy map UI extension."""
+
+
 import os
 import tempfile
 

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""OmniGraph node for ROS 2 camera info publishers."""
+
 from __future__ import annotations
 
 import carb
@@ -30,6 +32,7 @@ class OgnROS2CameraInfoHelperInternalState(BaseWriterNode):
     """Internal state for the ROS2CameraInfoHelper OmniGraph node."""
 
     def __init__(self) -> None:
+        """Initialize the ROS2 camera info helper internal state."""
         self.viewport = None
         self.viewport_name = ""
         self.rv = ""
@@ -40,6 +43,7 @@ class OgnROS2CameraInfoHelperInternalState(BaseWriterNode):
         super().__init__(initialize=False)
 
     def post_attach(self, writer, render_product) -> None:
+        """Configure writer attributes after attaching to a render product."""
         try:
             if self.rv != "":
                 omni.syntheticdata.SyntheticData.Get().set_node_attributes(
@@ -62,12 +66,14 @@ class OgnROS2CameraInfoHelper:
 
     @staticmethod
     def internal_state() -> OgnROS2CameraInfoHelperInternalState:
+        """Return the internal state object for this node."""
         return OgnROS2CameraInfoHelperInternalState()
 
     @staticmethod
     def add_camera_info_writer(
         db, frameId, topicName, camera_info, render_product_path: str, time_type: str = ""
     ) -> None:
+        """Add a camera info writer for the given render product."""
         writer = rep.writers.get(f"ROS2{time_type}PublishCameraInfo")
         writer.initialize(
             frameId=frameId,
@@ -89,6 +95,7 @@ class OgnROS2CameraInfoHelper:
 
     @staticmethod
     def compute(db) -> bool:
+        """Compute the node outputs."""
         state = db.per_instance_state
         if not db.inputs.enabled:
             if state.initialized:
@@ -210,6 +217,7 @@ class OgnROS2CameraInfoHelper:
 
     @staticmethod
     def release_instance(node, graph_instance_id) -> None:
+        """Release resources for a graph instance."""
         try:
             state = OgnROS2CameraInfoHelperInternalState.per_instance_internal_state(node)
         except Exception:

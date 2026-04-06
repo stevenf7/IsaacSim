@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This is the implementation of the OGN node defined in OgnDope.ogn
-"""
+"""This is the implementation of the OGN node defined in OgnDope.ogn."""
 
 import json
 
@@ -118,13 +116,11 @@ def _get_semantics(
 
 
 class OgnDope:
-    """
-    Gets pose information of assets with semantic labels. Information is used to train a DOPE model.
-    """
+    """Gets pose information of assets with semantic labels. Information is used to train a DOPE model."""
 
     @staticmethod
     def compute(db) -> bool:
-        """Compute the outputs from the current input"""
+        """Compute the outputs from the current input."""
 
         db.log_warn("Deprecation warning: OgnDope has been deprecated and will be removed in the next major release.")
 

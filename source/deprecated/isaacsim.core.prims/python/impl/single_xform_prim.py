@@ -26,7 +26,7 @@ from .xform_prim import XFormPrim
 
 
 class SingleXFormPrim(_SinglePrimWrapper):
-    """Provides high level functions to deal with an Xform prim (only one Xform prim) and its attributes/properties
+    """Provides high level functions to deal with an Xform prim (only one Xform prim) and its attributes/properties.
 
     If there is an Xform prim present at the path, it will use it. Otherwise, a new XForm prim at
     the specified prim path will be created

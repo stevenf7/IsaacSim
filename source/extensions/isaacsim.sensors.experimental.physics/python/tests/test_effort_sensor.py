@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test effort sensor functionality."""
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
@@ -35,8 +37,11 @@ from pxr import UsdPhysics, UsdUtils
 
 
 class TestEffortSensor(omni.kit.test.AsyncTestCase):
+    """Test effort sensor."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
@@ -47,6 +52,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
     async def create_simple_articulation(
         self, physics_rate=60, include_cube=False, cube_path="/new_cube", cube_position=np.array([1, 0, 0.1])
     ):
+        """Create simple articulation."""
         self.pivot_path = "/Articulation/CenterPivot"
         self.slider_path = "/Articulation/Slider"
         self.arm_path = "/Articulation/Arm"
@@ -78,6 +84,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         if self._timeline.is_playing():
             self._timeline.stop()
         SimulationManager.invalidate_physics()
@@ -92,6 +99,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_sensor_reading(self):
+        """Test sensor reading."""
         await self.create_simple_articulation()
 
         self.effort_sensor = EffortSensor("/Articulation/Arm/RevoluteJoint")
@@ -133,6 +141,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
 
     # Remove this test later
     async def test_change_to_wrong_dof_name_in_play(self):
+        """Test change to wrong dof name in play."""
         await self.create_simple_articulation()
 
         self.effort_sensor = EffortSensor("/Articulation/Arm/RevoluteJoint")
@@ -177,6 +186,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
         self.assertEqual(reading.is_valid, True)
 
     async def test_change_buffer_size(self):
+        """Test change buffer size."""
         await self.create_simple_articulation()
 
         self.effort_sensor = EffortSensor("/Articulation/Arm/RevoluteJoint")

@@ -233,7 +233,7 @@ class SingleDeformablePrim(_SinglePrimWrapper):
     """
 
     def get_current_dynamic_state(self) -> DynamicState:
-        """Return the DynamicState that contains the position and orientation of the underlying xform prim
+        """Return the DynamicState that contains the position and orientation of the underlying xform prim.
 
         Returns:
             DynamicState:
@@ -249,7 +249,7 @@ class SingleDeformablePrim(_SinglePrimWrapper):
         return DynamicState(position=position, orientation=orientation)
 
     def _get_points_pose(self):
-        """Return the position of the points of the deformable prim with respect to the center of the deformable prim
+        """Return the position of the points of the deformable prim with respect to the center of the deformable prim.
 
         Returns:
             Union[np.ndarray, torch.Tensor]: position of the points that the deformable is composed of.

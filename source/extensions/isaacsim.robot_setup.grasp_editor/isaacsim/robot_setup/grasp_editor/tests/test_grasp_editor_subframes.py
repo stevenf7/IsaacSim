@@ -190,7 +190,8 @@ class TestGraspSubframes(omni.kit.test.AsyncTestCase):
 
     # Carry out test described in
     async def test_derived_poses(self):
-        """Ground truths were recorded from the Properties Panel while using the Grasp Editor UI
+        """Ground truths were recorded from the Properties Panel while using the Grasp Editor UI.
+
         to author the grasps in `robotiq_soup_grasp.yaml`.  These ground truths represent the
         state of the gripper and soup for each authored grasp (The gripper was left in one place).
 

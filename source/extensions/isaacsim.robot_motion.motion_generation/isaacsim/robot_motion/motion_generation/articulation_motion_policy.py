@@ -75,7 +75,6 @@ class ArticulationMotionPolicy:
         Returns:
             Desired position/velocity target for the robot in the next frame.
         """
-
         if physics_dt is None:
             physics_dt = self._default_physics_dt
 
@@ -110,7 +109,7 @@ class ArticulationMotionPolicy:
         return self._active_joints_view.make_articulation_action(position_targets, velocity_targets)
 
     def get_active_joints_subset(self) -> ArticulationSubset:
-        """Get view into active joints
+        """Get view into active joints.
 
         Returns:
             Returns robot states for active joints in an order compatible with the MotionPolicy.
@@ -118,7 +117,7 @@ class ArticulationMotionPolicy:
         return self._active_joints_view
 
     def get_watched_joints_subset(self) -> ArticulationSubset:
-        """Get view into watched joints
+        """Get view into watched joints.
 
         Returns:
             Returns robot states for watched joints in an order compatible with the MotionPolicy.
@@ -134,7 +133,7 @@ class ArticulationMotionPolicy:
         return self._robot_articulation
 
     def get_motion_policy(self) -> MotionPolicy:
-        """Get MotionPolicy that is being used to compute ArticulationActions
+        """Get MotionPolicy that is being used to compute ArticulationActions.
 
         Returns:
             MotionPolicy being used to compute ArticulationActions.
@@ -142,7 +141,7 @@ class ArticulationMotionPolicy:
         return self.motion_policy
 
     def get_default_physics_dt(self) -> float:
-        """Get the default value of the physics dt that is used to compute actions when none is provided
+        """Get the default value of the physics dt that is used to compute actions when none is provided.
 
         Returns:
             Default physics dt.
@@ -150,7 +149,7 @@ class ArticulationMotionPolicy:
         return self._default_physics_dt
 
     def set_default_physics_dt(self, physics_dt: float):
-        """Set the default value of the physics dt that is used to compute actions when none is provided
+        """Set the default value of the physics dt that is used to compute actions when none is provided.
 
         Args:
             physics_dt: Default physics dt.

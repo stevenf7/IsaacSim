@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Mesh merge utility for combining multiple USD meshes into one."""
+
 from .commands import *
 from .extension import *
 from .mesh_merger import *

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""UI builder for the configuration tooling workflow template."""
+
+
 import numpy as np
 import omni.timeline
 import omni.ui as ui
@@ -24,6 +27,8 @@ from isaacsim.gui.components.ui_utils import get_style
 
 
 class UIBuilder:
+    """Build and manage the UI for the configuration tooling workflow."""
+
     def __init__(self):
         # Frames are sub-windows that can contain multiple UI elements
         self.frames = []
@@ -43,6 +48,7 @@ class UIBuilder:
 
     def on_menu_callback(self):
         """Callback for when the UI is opened from the toolbar.
+
         This is called directly after build_ui().
         """
         # Reset internal state when UI window is closed and reopened
@@ -58,7 +64,7 @@ class UIBuilder:
             self._stop_text.visible = True
 
     def on_timeline_event(self, event):
-        """Callback for Timeline events (Play, Pause, Stop)
+        """Callback for Timeline events (Play, Pause, Stop).
 
         Args:
             event (omni.timeline.TimelineEventType): Event Type
@@ -67,7 +73,8 @@ class UIBuilder:
 
     def on_physics_step(self, step):
         """Callback for Physics Step.
-        Physics steps only occur when the timeline is playing
+
+        Physics steps only occur when the timeline is playing.
 
         Args:
             step (float): Size of physics step
@@ -75,7 +82,7 @@ class UIBuilder:
         pass
 
     def on_stage_event(self, event):
-        """Callback for Stage Events
+        """Callback for Stage Events.
 
         Args:
             event (omni.usd.StageEventType): Event Type
@@ -103,8 +110,9 @@ class UIBuilder:
     def cleanup(self):
         """
         Called when the stage is closed or the extension is hot reloaded.
+
         Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called
+        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called.
         """
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()
@@ -112,6 +120,7 @@ class UIBuilder:
     def build_ui(self):
         """
         Build a custom UI tool to run your extension.
+
         This function will be called any time the UI window is closed and reopened.
         """
         selection_panel_frame = CollapsableFrame("Selection Panel", collapsed=False)
@@ -171,7 +180,8 @@ class UIBuilder:
 
     def _invalidate_articulation(self):
         """
-        This function handles the event that the existing articulation becomes invalid and there is
+        This function handles the event that the existing articulation becomes invalid and there is.
+
         not a new articulation to select.  It is called explicitly in the code when the timeline is
         stopped and when the DropDown menu finds no articulations on the stage.
         """
@@ -181,7 +191,8 @@ class UIBuilder:
 
     def _on_articulation_selection(self, selection: str):
         """
-        This function is called whenever a new selection is made in the
+        This function is called whenever a new selection is made in the.
+
         "Select Articulation" DropDown.  A new selection may also be
         made implicitly any time self._selection_menu.repopulate() is called
         since the Articulation they had selected may no longer be present on the stage.
@@ -202,12 +213,12 @@ class UIBuilder:
         self._robot_control_frame.rebuild()
 
     def _setup_joint_control_frames(self):
-        """
-        Once a robot has been chosen, update the UI to match robot properties:
-            Make a frame visible for each robot joint.
-            Rename each frame to match the human-readable name of the joint it controls.
-            Change the FloatField for each joint to match the current robot position.
-            Apply the robot's joint limits to each FloatField.
+        """Update the UI to match robot properties once a robot has been chosen.
+
+        Make a frame visible for each robot joint.
+        Rename each frame to match the human-readable name of the joint it controls.
+        Change the FloatField for each joint to match the current robot position.
+        Apply the robot's joint limits to each FloatField.
         """
         num_dof = self.articulation.num_dof
         dof_names = self.articulation.dof_names
@@ -230,7 +241,8 @@ class UIBuilder:
 
     def _on_set_joint_position_target(self, joint_index: int, position_target: float):
         """
-        This function is called when the user changes one of the float fields
+        This function is called when the user changes one of the float fields.
+
         to control a robot joint position target.  The index of the joint and the new
         desired value are passed in as arguments.
 

@@ -276,7 +276,6 @@ def next_step(curret_step_name: str, next_step_name: str, verify_fn: callable = 
         next_step_name: Name of the next step to navigate to.
         verify_fn: Function to verify the current step before moving to the next step.
     """
-
     if verify_fn and callable(verify_fn):
         verify_fn()
 

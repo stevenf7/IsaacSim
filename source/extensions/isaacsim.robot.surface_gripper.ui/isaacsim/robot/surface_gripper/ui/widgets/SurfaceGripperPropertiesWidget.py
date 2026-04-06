@@ -101,7 +101,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         }
 
     def _request_refresh(self):
-        """Refreshes the entire property window"""
+        """Refreshes the entire property window."""
         selection = omni.usd.get_context().get_selection()
         selected_paths = selection.get_selected_prim_paths()
         window = omni.kit.window.property.get_window()._window  # noqa: PLW0212 what does this mean?
@@ -145,7 +145,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         return None
 
     def on_new_payload(self, payload: list) -> "list | bool":
-        """See PropertyWidget.on_new_payload
+        """See PropertyWidget.on_new_payload.
 
         Args:
             payload: The new payload containing prim selection data.

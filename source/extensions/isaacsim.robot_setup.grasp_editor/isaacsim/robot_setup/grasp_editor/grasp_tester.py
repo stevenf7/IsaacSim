@@ -152,12 +152,28 @@ class GraspTester:
         self._test_timestep = 0
 
     def initialize_test_grasp_script(self, articulation, rigid_body, grasp_test_settings):
+        """Initialize the grasp test script generator.
+
+        Args:
+            articulation: The gripper articulation to test.
+            rigid_body: The rigid body to grasp.
+            grasp_test_settings: Configuration settings for the grasp test.
+        """
         self._test_grasp_generator = self._test_grasp_script(articulation, rigid_body, grasp_test_settings)
         self._test_timestep = 0
 
     def close_gripper_trajectory(self, t, open_positions, close_positions, close_velocities):
-        # Return position command to close the gripper as a function of t.  The trajectory moves
-        # from open_positions to close_positions at a constant velocity of close_velocities.
+        """Compute gripper position command along a closing trajectory at constant velocity.
+
+        Args:
+            t: Current time in the trajectory.
+            open_positions: Joint positions when the gripper is fully open.
+            close_positions: Joint positions when the gripper is fully closed.
+            close_velocities: Closing velocities for each joint.
+
+        Returns:
+            Joint position command for the current time step.
+        """
         max_close_distance = np.abs(open_positions - close_positions)
         desired_close_distance = np.abs(t * close_velocities)
         signed_close_distance_clipped = np.clip(desired_close_distance, a_min=None, a_max=max_close_distance) * np.sign(
@@ -167,6 +183,14 @@ class GraspTester:
         return open_positions + signed_close_distance_clipped
 
     def update_grasp_test(self, step: float):
+        """Advance the grasp test by one step and return the result.
+
+        Args:
+            step: Time step size to advance.
+
+        Returns:
+            Test result from the current step, or the final return value when complete.
+        """
         try:
             result = next(self._test_grasp_generator)
             self._test_timestep += step
@@ -176,7 +200,15 @@ class GraspTester:
             return e.value
 
     def compute_relative_pose(self, rigid_body_frame: str, articulation_frame: str):
-        # Compute the pose of the articulation frame relative to the rigid body frame
+        """Compute the pose of the articulation frame relative to the rigid body frame.
+
+        Args:
+            rigid_body_frame: Prim path of the rigid body reference frame.
+            articulation_frame: Prim path of the articulation reference frame.
+
+        Returns:
+            Tuple of relative translation and quaternion orientation.
+        """
         rb_trans, rb_quat = get_world_pose(rigid_body_frame)
         gripper_trans, gripper_quat = get_world_pose(articulation_frame)
 

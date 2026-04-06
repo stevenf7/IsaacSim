@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Behavior script that randomizes prim locations within specified bounds."""
+
 import carb
 import numpy as np
 import omni.kit.window.property
@@ -29,8 +31,8 @@ from pxr import Gf, Sdf, Usd, UsdGeom
 
 
 class LocationRandomizer(BehaviorScript):
-    """
-    Behavior script that randomizes the location of prims within specified bounds.
+    """Behavior script that randomizes the location of prims within specified bounds.
+
     The behavior can be applied to multiple prims at once.
     """
 

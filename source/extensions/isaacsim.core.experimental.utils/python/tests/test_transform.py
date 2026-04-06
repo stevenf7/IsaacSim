@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+"""Test for transform."""
+
 import isaacsim.core.experimental.utils.transform as transform_utils
 import numpy as np
 import omni.kit.test
@@ -21,8 +23,10 @@ import warp as wp
 
 
 class TestTransform(omni.kit.test.AsyncTestCase):
+    """Test transform."""
+
     async def setUp(self):
-        """Method called to prepare the test fixture"""
+        """Method called to prepare the test fixture."""
         super().setUp()
         # ---------------
         # Do custom setUp
@@ -30,7 +34,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.tolerance = 1e-6
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        """Method called immediately after the test method has been called."""
         # ------------------
         # Do custom tearDown
         # ------------------
@@ -39,7 +43,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
     # --------------------------------------------------------------------
 
     async def test_rotation_matrix_to_quaternion(self):
-        """Test rotation_matrix_to_quaternion with single and batch inputs"""
+        """Test rotation_matrix_to_quaternion with single and batch inputs."""
         # Test identity matrix with different input types
         identity_inputs = [
             np.eye(3),  # numpy
@@ -73,7 +77,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(norms, expected_norms, atol=self.tolerance))
 
     async def test_euler_angles_to_rotation_matrix(self):
-        """Test euler_angles_to_rotation_matrix with single and batch inputs"""
+        """Test euler_angles_to_rotation_matrix with single and batch inputs."""
         # Test zero rotation with different input types
         euler_inputs = [
             [0.0, 0.0, 0.0],  # list
@@ -108,7 +112,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
             self.assertAlmostEqual(det, 1.0, places=5)
 
     async def test_euler_angles_to_quaternion(self):
-        """Test euler_angles_to_quaternion with single and batch inputs"""
+        """Test euler_angles_to_quaternion with single and batch inputs."""
         # Test zero rotation with different input types
         euler_inputs = [
             [0.0, 0.0, 0.0],  # list
@@ -143,7 +147,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(norms, expected_norms, atol=self.tolerance))
 
     async def test_degrees_vs_radians(self):
-        """Test that degrees and radians produce consistent results"""
+        """Test that degrees and radians produce consistent results."""
         # Test conversion consistency for zero rotation
         euler_deg = [0.0, 0.0, 0.0]
         euler_rad = [0.0, 0.0, 0.0]
@@ -161,7 +165,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(result_deg.numpy(), result_rad.numpy(), atol=self.tolerance))
 
     async def test_basic_mathematical_properties(self):
-        """Test basic mathematical properties of the results"""
+        """Test basic mathematical properties of the results."""
         # Test identity rotation
         euler = [0.0, 0.0, 0.0]
 
@@ -186,7 +190,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(norm, 1.0, places=5)
 
     async def test_quaternion_multiplication(self):
-        """Test quaternion_multiplication with single and batch inputs"""
+        """Test quaternion_multiplication with single and batch inputs."""
         # Test identity quaternion multiplication with different input types
         quaternion_inputs = [
             [1.0, 0.0, 0.0, 0.0],  # list
@@ -221,7 +225,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(norms, expected_norms, atol=self.tolerance))
 
     async def test_quaternion_conjugate(self):
-        """Test quaternion_conjugate with single and batch inputs"""
+        """Test quaternion_conjugate with single and batch inputs."""
         # Test with a rotation around X axis using different input types
         quaternion_inputs = [
             [0.7071, 0.7071, 0.0, 0.0],  # list
@@ -259,7 +263,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(norms, expected_norms, atol=self.tolerance))
 
     async def test_quaternion_to_rotation_matrix(self):
-        """Test quaternion_to_rotation_matrix with single and batch inputs, including round-trip validation"""
+        """Test quaternion_to_rotation_matrix with single and batch inputs, including round-trip validation."""
         # Test identity quaternion with different input types
         quaternion_inputs = [
             [1.0, 0.0, 0.0, 0.0],  # list
@@ -361,7 +365,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(R, expected, atol=self.tolerance))
 
     async def test_quaternion_multiplication_associativity(self):
-        """Test that quaternion multiplication is associative"""
+        """Test that quaternion multiplication is associative."""
         # Test (first_quaternion * second_quaternion) * third_quaternion = first_quaternion * (second_quaternion * third_quaternion)
         first_quaternion = np.array([0.7071, 0.7071, 0.0, 0.0])  # 90 deg around X
         second_quaternion = np.array([0.7071, 0.0, 0.7071, 0.0])  # 90 deg around Y
@@ -381,7 +385,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         )
 
     async def test_quaternion_to_euler_angles(self):
-        """Test quaternion_to_euler_angles with single and batch inputs"""
+        """Test quaternion_to_euler_angles with single and batch inputs."""
         # Test identity quaternion with different input types
         quaternion_inputs = [
             [1.0, 0.0, 0.0, 0.0],  # list
@@ -415,7 +419,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(result_batch_np, expected_batch, atol=self.tolerance))
 
     async def test_quaternion_to_euler_angles_degrees(self):
-        """Test quaternion_to_euler_angles with degrees output"""
+        """Test quaternion_to_euler_angles with degrees output."""
         # Identity quaternion should produce zero angles in both radians and degrees
         identity = np.array([1.0, 0.0, 0.0, 0.0])
 
@@ -439,7 +443,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(result_deg.numpy()[0], 90.0, atol=self.tolerance))
 
     async def test_quaternion_to_euler_angles_intrinsic(self):
-        """Test quaternion_to_euler_angles with intrinsic convention"""
+        """Test quaternion_to_euler_angles with intrinsic convention."""
         # Identity quaternion should produce zero angles
         identity = np.array([1.0, 0.0, 0.0, 0.0])
         result_identity = transform_utils.quaternion_to_euler_angles(identity, extrinsic=False)
@@ -460,7 +464,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(result_90y_np[[0, 2]], np.zeros(2), atol=self.tolerance))
 
     async def test_quaternion_to_euler_angles_intrinsic_degrees(self):
-        """Test quaternion_to_euler_angles with intrinsic convention in degrees"""
+        """Test quaternion_to_euler_angles with intrinsic convention in degrees."""
         # 90 degree rotation around Z should be [0, 0, 90] in intrinsic [X, Y, Z] order
         quat_90z = np.array([0.7071067811865476, 0.0, 0.0, 0.7071067811865476])
         result_deg = transform_utils.quaternion_to_euler_angles(quat_90z, degrees=True, extrinsic=False)
@@ -469,7 +473,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(result_deg_np[:2], np.zeros(2), atol=self.tolerance))
 
     async def test_quaternion_to_euler_angles_batch_intrinsic(self):
-        """Test quaternion_to_euler_angles batch path with intrinsic convention"""
+        """Test quaternion_to_euler_angles batch path with intrinsic convention."""
         sqrt_half = np.sqrt(0.5)
         quaternion_batch = np.array(
             [
@@ -505,7 +509,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(result_np[3, :2], np.zeros(2), atol=self.tolerance))
 
     async def test_euler_quaternion_roundtrip(self):
-        """Test round-trip conversion: euler -> quaternion -> euler"""
+        """Test round-trip conversion: euler -> quaternion -> euler."""
         # Test various euler angles
         test_angles = [
             np.array([0.0, 0.0, 0.0]),  # Identity
@@ -529,7 +533,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
             )
 
     async def test_quaternion_euler_roundtrip(self):
-        """Test round-trip conversion: quaternion -> euler -> quaternion"""
+        """Test round-trip conversion: quaternion -> euler -> quaternion."""
         # Test various quaternions (all unit quaternions)
         test_quaternions = [
             np.array([1.0, 0.0, 0.0, 0.0]),  # Identity
@@ -558,7 +562,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
             )
 
     async def test_euler_quaternion_roundtrip_intrinsic(self):
-        """Test round-trip conversion with intrinsic convention"""
+        """Test round-trip conversion with intrinsic convention."""
         test_angles = [
             np.array([0.0, 0.0, 0.0]),
             np.array([0.5, 0.0, 0.0]),
@@ -576,7 +580,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
             )
 
     async def test_quaternion_euler_roundtrip_intrinsic(self):
-        """Test round-trip conversion: quaternion -> euler -> quaternion with intrinsic convention"""
+        """Test round-trip conversion: quaternion -> euler -> quaternion with intrinsic convention."""
         test_quaternions = [
             np.array([1.0, 0.0, 0.0, 0.0]),  # Identity
             np.array([0.7071, 0.7071, 0.0, 0.0]),  # 90 deg around X
@@ -598,7 +602,7 @@ class TestTransform(omni.kit.test.AsyncTestCase):
             )
 
     async def test_quaternion_to_euler_angles_batch(self):
-        """Test quaternion_to_euler_angles with batch of different rotations"""
+        """Test quaternion_to_euler_angles with batch of different rotations."""
         quaternion_batch = np.array(
             [
                 [1.0, 0.0, 0.0, 0.0],  # Identity

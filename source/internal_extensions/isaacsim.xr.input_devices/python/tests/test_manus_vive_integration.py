@@ -9,7 +9,8 @@
 # its affiliates is strictly prohibited.
 
 """
-omni.kit.test-based tests for Manus+Vive integration that exercises the hand tracker
+omni.kit.test-based tests for Manus+Vive integration that exercises the hand tracker.
+
 plugin through the integration layer. The test forces the use of the test
 hand-tracker shared library by setting ISAACSIM_HANDTRACKER_LIB.
 """
@@ -57,11 +58,14 @@ def _discover_test_handtracker_library(module_dir: str):
 
 
 class TestManusViveIntegration(omni.kit.test.AsyncTestCase):
+    """Test manus vive integration."""
 
     async def setUp(self):
+        """Set up test fixtures."""
         pass
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         try:
             import isaacsim.xr.input_devices as xr
 
@@ -72,6 +76,7 @@ class TestManusViveIntegration(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def test_integration_uses_test_handtracker_plugin(self):
+        """Test integration uses test handtracker plugin."""
         # Import module to locate its directory and for constants
         import isaacsim.xr.input_devices as xr
 

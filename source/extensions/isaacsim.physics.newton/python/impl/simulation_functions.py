@@ -299,7 +299,6 @@ class NewtonSimulationFunctions:
             A tuple of (success, capabilities) where success is True if the operation was successful
                    and capabilities is a list of booleans indicating support for each schema.
         """
-
         capabilities = []
         for schema_name in schema_names:
             is_capable = False

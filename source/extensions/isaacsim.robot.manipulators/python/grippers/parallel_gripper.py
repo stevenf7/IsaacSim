@@ -25,7 +25,8 @@ from isaacsim.robot.manipulators.grippers.gripper import Gripper
 
 
 class ParallelGripper(Gripper):
-    """Provides high level functions to set/ get properties and actions of a parallel gripper
+    """Provides high level functions to set/ get properties and actions of a parallel gripper.
+
     (a gripper that has two fingers).
 
     Args:
@@ -125,6 +126,7 @@ class ParallelGripper(Gripper):
         physics_sim_view: omni.physics.tensors.SimulationView = None,
     ):
         """Create a physics simulation view if not passed and creates a rigid prim view using physX tensor api.
+
         This needs to be called after each hard reset (i.e stop + play on the timeline) before interacting with any
         of the functions of this class.
 
@@ -233,7 +235,8 @@ class ParallelGripper(Gripper):
         return self._get_joint_positions_func(joint_indices=self.active_joint_indices)
 
     def forward(self, action: str) -> ArticulationAction:
-        """Calculates the ArticulationAction for all of the articulation joints that corresponds to "open"
+        """Calculates the ArticulationAction for all of the articulation joints that corresponds to "open".
+
         or "close" actions.
 
         Args:

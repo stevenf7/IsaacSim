@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test for prim data reader."""
+
 import ctypes
 
 import carb
@@ -560,6 +562,7 @@ class TestPrimDataReaderPhysxTransforms(omni.kit.test.AsyncTestCase):
     """
 
     async def setUp(self):
+        """Set up test environment."""
         self.timeline = omni.timeline.get_timeline_interface()
         self._stage_id = 0
         from isaacsim.core.experimental.prims.impl.extension import get_prim_data_reader
@@ -569,6 +572,7 @@ class TestPrimDataReaderPhysxTransforms(omni.kit.test.AsyncTestCase):
             self.reader.initialize(0, -1)
 
     async def tearDown(self):
+        """Tear down test environment."""
         if self.reader is not None:
             self.reader.shutdown()
         if self.timeline.is_playing():

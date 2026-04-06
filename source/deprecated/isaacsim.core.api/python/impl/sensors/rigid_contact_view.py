@@ -31,7 +31,8 @@ torch = import_module("torch")
 
 
 class RigidContactView(object):
-    """Provides high level functions to deal with rigid prims (one or many) that track their contacts through filters
+    """Provides high level functions to deal with rigid prims (one or many) that track their contacts through filters.
+
     as well as their attributes/properties.
 
     This class wraps all matching rigid prims found at the regex provided at the ``prim_paths_expr`` argument
@@ -194,7 +195,7 @@ class RigidContactView(object):
         cr_api.CreateThresholdAttr().Set(0)
 
     def is_physics_handle_valid(self) -> bool:
-        """Check if rigid prim view's physics handler is initialized
+        """Check if rigid prim view's physics handler is initialized.
 
         .. warning::
 
@@ -213,7 +214,7 @@ class RigidContactView(object):
         return self._physics_view is not None
 
     def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
-        """Create a physics simulation view if not passed and set other properties using the PhysX tensor API
+        """Create a physics simulation view if not passed and set other properties using the PhysX tensor API.
 
         .. note::
 
@@ -481,7 +482,8 @@ class RigidContactView(object):
         Union[np.ndarray, torch.Tensor, wp.indexedarray],
         Union[np.ndarray, torch.Tensor, wp.indexedarray],
     ]:
-        """Gets friction data between the prims in the view and the filter prims. Specifically, this method provides frictional contact forces,
+        """Gets friction data between the prims in the view and the filter prims. Specifically, this method provides frictional contact forces,.
+
         and points. The data in reported for number of anchor points that includes tangential forces in a single tangent direction to contact normal.
         Given to the dynamic nature of collision between bodies, this method will provide buffers of friction data arranged sequentially for each pair.
         The starting index and the number of contact data points for each pair in this stream can be realized from pair_contacts_start_indices,

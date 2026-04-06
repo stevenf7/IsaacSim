@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Common test utilities and helpers."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -37,6 +39,7 @@ SMALL_TOLERANCE = 0.01
 
 
 async def step_simulation(seconds: float) -> None:
+    """Step the simulation forward by the given number of seconds."""
     dt = SimulationManager.get_physics_dt()
     steps = max(1, int(round(seconds / dt)))
     for _ in range(steps):
@@ -44,6 +47,7 @@ async def step_simulation(seconds: float) -> None:
 
 
 async def reset_timeline(timeline=None, *, steps: int = 2) -> None:
+    """Stop and restart the timeline."""
     if timeline is None:
         timeline = omni.timeline.get_timeline_interface()
     timeline.stop()
@@ -73,6 +77,7 @@ class AntConfig:
     lower_joints: list[str] = field(default_factory=list)
 
     def __post_init__(self):
+        """Initialize computed fields after dataclass creation."""
         if not self.lower_joints:
             self.lower_joints = ["{}/lower_arm_joint".format(path) for path in self.leg_paths]
 

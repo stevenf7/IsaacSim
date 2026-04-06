@@ -107,7 +107,8 @@ class ArticulationSubset:
 
     @require_initialized
     def get_joint_positions(self) -> np.array:
-        """Get joint positions for the joint names that were passed into this articulation view on
+        """Get joint positions for the joint names that were passed into this articulation view on.
+
             initialization. The indices of the joint positions returned correspond to the indices of
             the joint names.
 
@@ -118,7 +119,8 @@ class ArticulationSubset:
 
     @require_initialized
     def get_joint_velocities(self) -> np.array:
-        """Get joint velocities for the joint names that were passed into this articulation view on
+        """Get joint velocities for the joint names that were passed into this articulation view on.
+
             initialization. The indices of the joint velocities returned correspond to the indices of
             the joint names.
 
@@ -129,7 +131,8 @@ class ArticulationSubset:
 
     @require_initialized
     def get_joint_efforts(self) -> np.array:
-        """Get joint efforts for the joint names that were passed into this articulation view on
+        """Get joint efforts for the joint names that were passed into this articulation view on.
+
             initialization. The indices of the joint efforts returned correspond to the indices of the
             joint names.
 
@@ -228,7 +231,8 @@ class ArticulationSubset:
 
     @require_initialized
     def make_articulation_action(self, joint_positions: np.array, joint_velocities: np.array) -> ArticulationAction:
-        """Make an articulation action for only this subset's joints using the given target
+        """Make an articulation action for only this subset's joints using the given target.
+
         position and velocity values.
 
         Args:
@@ -298,7 +302,8 @@ class ArticulationSubset:
         return joints_state
 
     def get_joint_subset_indices(self) -> np.array:
-        """Accessor for the joint indices for this subset. These are the indices into the full
+        """Accessor for the joint indices for this subset. These are the indices into the full.
+
         articulation degrees of freedom corresponding to this subset of joints.
 
         Returns:
@@ -307,7 +312,8 @@ class ArticulationSubset:
         return self._get_joint_indices()
 
     def _get_joint_indices(self) -> np.array:
-        """Internal member which initializes the subset's joint indices from the specified names
+        """Internal member which initializes the subset's joint indices from the specified names.
+
         the first time through and returns that from then on out.
 
         Returns:

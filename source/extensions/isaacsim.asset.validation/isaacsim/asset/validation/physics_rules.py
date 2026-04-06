@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Validation rules for physics simulation configuration."""
+
+
 import typing
 
 import carb
@@ -169,8 +172,7 @@ def ComputeAdjacentMeshDict(stage: Usd.Stage) -> dict:
 
 # Copied from Ales's code
 def get_initial_collider_pairs(stage: Usd.Stage) -> typing.Set[typing.Tuple[str, str]]:
-    """
-    Get all collider pairs that are in contact in the physics simulation.
+    """Get all collider pairs that are in contact in the physics simulation.
 
     This function performs a single physics simulation step and collects all collider pairs
     that are in contact. It temporarily modifies physics settings to ensure accurate contact

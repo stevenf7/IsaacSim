@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated interoperability utility functions."""
+
 __all__ = [
     "warp2torch",
     "warp2jax",
@@ -70,7 +72,7 @@ _numpy_from_tensorflow = None
 
 
 def warp2torch(array: "warp.array") -> "torch.Tensor":
-    """Convert Warp array to PyTorch tensor
+    """Convert Warp array to PyTorch tensor.
 
     Args:
         array: Warp array
@@ -118,7 +120,7 @@ def warp2torch(array: "warp.array") -> "torch.Tensor":
 
 
 def warp2jax(array: "warp.array") -> "jax.Array":
-    """Convert Warp array to JAX array
+    """Convert Warp array to JAX array.
 
     Args:
         array: Warp array
@@ -156,7 +158,7 @@ def warp2jax(array: "warp.array") -> "jax.Array":
 
 
 def warp2tensorflow(array: "warp.array") -> "tensorflow.Tensor":
-    """Convert Warp array to TensorFlow tensor
+    """Convert Warp array to TensorFlow tensor.
 
     Args:
         array: Warp array
@@ -194,7 +196,7 @@ def warp2tensorflow(array: "warp.array") -> "tensorflow.Tensor":
 
 
 def warp2numpy(array: "warp.array") -> "numpy.ndarray":
-    """Convert Warp array to NumPy array
+    """Convert Warp array to NumPy array.
 
     Args:
         array: Warp array
@@ -224,7 +226,7 @@ def warp2numpy(array: "warp.array") -> "numpy.ndarray":
 
 
 def torch2warp(tensor: "torch.Tensor") -> "warp.array":
-    """Convert PyTorch tensor to Warp array
+    """Convert PyTorch tensor to Warp array.
 
     Args:
         tensor: PyTorch tensor
@@ -272,7 +274,7 @@ def torch2warp(tensor: "torch.Tensor") -> "warp.array":
 
 
 def torch2jax(tensor: "torch.Tensor") -> "jax.Array":
-    """Convert PyTorch tensor to JAX array
+    """Convert PyTorch tensor to JAX array.
 
     Args:
         tensor: PyTorch tensor
@@ -309,7 +311,7 @@ def torch2jax(tensor: "torch.Tensor") -> "jax.Array":
 
 
 def torch2tensorflow(tensor: "torch.Tensor") -> "tensorflow.Tensor":
-    """Convert PyTorch tensor to TensorFlow tensor
+    """Convert PyTorch tensor to TensorFlow tensor.
 
     Args:
         tensor: PyTorch tensor
@@ -346,7 +348,7 @@ def torch2tensorflow(tensor: "torch.Tensor") -> "tensorflow.Tensor":
 
 
 def torch2numpy(tensor: "torch.Tensor") -> "numpy.ndarray":
-    """Convert PyTorch tensor to NumPy array
+    """Convert PyTorch tensor to NumPy array.
 
     Args:
         tensor: PyTorch tensor
@@ -375,7 +377,7 @@ def torch2numpy(tensor: "torch.Tensor") -> "numpy.ndarray":
 
 
 def jax2warp(array: "jax.Array") -> "warp.array":
-    """Convert JAX array to Warp array
+    """Convert JAX array to Warp array.
 
     Args:
         array: JAX array
@@ -415,7 +417,7 @@ def jax2warp(array: "jax.Array") -> "warp.array":
 
 
 def jax2torch(array: "jax.Array") -> "torch.Tensor":
-    """Convert JAX array to PyTorch tensor
+    """Convert JAX array to PyTorch tensor.
 
     Args:
         array: JAX array
@@ -455,7 +457,7 @@ def jax2torch(array: "jax.Array") -> "torch.Tensor":
 
 
 def jax2tensorflow(array: "jax.Array") -> "tensorflow.Tensor":
-    """Convert JAX array to TensorFlow tensor
+    """Convert JAX array to TensorFlow tensor.
 
     Args:
         array: JAX array
@@ -495,7 +497,7 @@ def jax2tensorflow(array: "jax.Array") -> "tensorflow.Tensor":
 
 
 def jax2numpy(array: "jax.Array") -> "numpy.ndarray":
-    """Convert JAX array to NumPy array
+    """Convert JAX array to NumPy array.
 
     Args:
         array: JAX array
@@ -527,7 +529,7 @@ def jax2numpy(array: "jax.Array") -> "numpy.ndarray":
 
 
 def tensorflow2warp(tensor: "tensorflow.Tensor") -> "warp.array":
-    """Convert TensorFlow tensor to Warp array
+    """Convert TensorFlow tensor to Warp array.
 
     Args:
         tensor: TensorFlow tensor
@@ -571,7 +573,7 @@ def tensorflow2warp(tensor: "tensorflow.Tensor") -> "warp.array":
 
 
 def tensorflow2torch(tensor: "tensorflow.Tensor") -> "torch.Tensor":
-    """Convert TensorFlow tensor to PyTorch tensor
+    """Convert TensorFlow tensor to PyTorch tensor.
 
     Args:
         tensor: TensorFlow tensor
@@ -615,7 +617,7 @@ def tensorflow2torch(tensor: "tensorflow.Tensor") -> "torch.Tensor":
 
 
 def tensorflow2jax(tensor: "tensorflow.Tensor") -> "jax.Array":
-    """Convert TensorFlow tensor to JAX array
+    """Convert TensorFlow tensor to JAX array.
 
     Args:
         tensor: TensorFlow tensor
@@ -659,7 +661,7 @@ def tensorflow2jax(tensor: "tensorflow.Tensor") -> "jax.Array":
 
 
 def tensorflow2numpy(tensor: "tensorflow.Tensor") -> "numpy.ndarray":
-    """Convert TensorFlow tensor to NumPy array
+    """Convert TensorFlow tensor to NumPy array.
 
     Args:
         tensor: TensorFlow tensor
@@ -707,7 +709,7 @@ def tensorflow2numpy(tensor: "tensorflow.Tensor") -> "numpy.ndarray":
 
 
 def numpy2warp(array: "numpy.ndarray") -> "warp.array":
-    """Convert NumPy array to Warp array
+    """Convert NumPy array to Warp array.
 
     Args:
         array: NumPy array
@@ -740,7 +742,7 @@ def numpy2warp(array: "numpy.ndarray") -> "warp.array":
 
 
 def numpy2torch(array: "numpy.ndarray") -> "torch.Tensor":
-    """Convert NumPy array to PyTorch tensor
+    """Convert NumPy array to PyTorch tensor.
 
     Args:
         array: NumPy array
@@ -772,7 +774,7 @@ def numpy2torch(array: "numpy.ndarray") -> "torch.Tensor":
 
 
 def numpy2jax(array: "numpy.ndarray") -> "jax.Array":
-    """Convert NumPy array to JAX array
+    """Convert NumPy array to JAX array.
 
     Args:
         array: NumPy array
@@ -810,7 +812,7 @@ def numpy2jax(array: "numpy.ndarray") -> "jax.Array":
 
 
 def numpy2tensorflow(array: "numpy.ndarray") -> "tensorflow.Tensor":
-    """Convert NumPy array to TensorFlow tensor
+    """Convert NumPy array to TensorFlow tensor.
 
     Args:
         array: NumPy array

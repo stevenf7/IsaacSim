@@ -20,12 +20,12 @@ import omni.kit.test
 
 class TestTimeSplitter(ogts.OmniGraphTestCase):
     async def setUp(self):
-        """Set up  test environment, to be torn down when done"""
+        """Set up  test environment, to be torn down when done."""
         await omni.usd.get_context().new_stage_async()
 
     # ----------------------------------------------------------------------
     async def tearDown(self):
-        """Get rid of temporary data used by the test"""
+        """Get rid of temporary data used by the test."""
         # await omni.kit.stage_templates.new_stage_async()
 
     # ----------------------------------------------------------------------

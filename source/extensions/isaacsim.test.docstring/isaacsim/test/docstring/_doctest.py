@@ -112,7 +112,7 @@ class DocTest:
         self._checker = _Checker()
 
     def _get_names(self, obj: object, privates: bool = False) -> list[str]:
-        """Get class/module names without including special methods
+        """Get class/module names without including special methods.
 
         Args:
             obj: The class or module object to get names from.
@@ -162,7 +162,7 @@ class DocTest:
         exclude: list[object] | None = None,
         _globals: dict | None = None,
     ) -> list[object]:
-        """Get class/module members (names)
+        """Get class/module members (names).
 
         Args:
             expr: module function or class definition, property or method to check docstrings examples for
@@ -195,7 +195,7 @@ class DocTest:
         expr: object,
         flags: int = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS | doctest.FAIL_FAST,
     ) -> bool:
-        """Check that the examples in docstrings pass for a class/module member
+        """Check that the examples in docstrings pass for a class/module member.
 
         Args:
             expr: module function or class definition, property or method to check docstrings examples for
@@ -224,7 +224,7 @@ class DocTest:
         return True
 
     def _is_pybind11_module(self, obj: object) -> bool:
-        """Check if this is a pybind11 module
+        """Check if this is a pybind11 module.
 
         Args:
             obj: The object to check.
@@ -246,7 +246,7 @@ class DocTest:
         return False
 
     def _is_function_like(self, obj: object) -> bool:
-        """Check if object is function-like (including pybind11 functions)
+        """Check if object is function-like (including pybind11 functions).
 
         Args:
             obj: The object to check.

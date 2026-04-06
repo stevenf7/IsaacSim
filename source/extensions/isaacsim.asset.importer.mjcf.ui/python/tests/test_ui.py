@@ -86,6 +86,7 @@ class TestImporterUI(MenuUITestCase):
         # await omni.usd.get_context().new_stage_async()
 
     def find_content_file(self, window_name, filename):
+        """Perform find content file operation."""
 
         carb.log_info(f"Finding file {filename} in window {window_name}")
         for widget in ui_test.find_all(f"{window_name}//Frame/**/TreeView[*]"):
@@ -260,6 +261,7 @@ class TestImporterUI(MenuUITestCase):
             carb.log_warn(f"Warning: unable to delete {output_path} : {e.strerror}")
 
     async def test_mjcf_ui_match_mjcf_importer(self) -> None:
+        """Test mjcf ui match mjcf importer."""
 
         # UI workflow
         await self.test_import_ant_from_ui(delete_output_on_success=False)

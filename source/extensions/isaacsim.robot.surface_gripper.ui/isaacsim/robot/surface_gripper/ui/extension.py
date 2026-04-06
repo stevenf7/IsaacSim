@@ -44,7 +44,6 @@ class Extension(omni.ext.IExt):
         Args:
             ext_id: The unique identifier of the extension.
         """
-
         self._ext_id = ext_id
         self._ext_name = omni.ext.get_extension_name(ext_id)
         action_registry = omni.kit.actions.core.get_action_registry()

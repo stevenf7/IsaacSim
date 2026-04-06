@@ -33,7 +33,7 @@ class DataLogger:
         self._data_frame_logging_func = None
 
     def add_data(self, data: dict, current_time_step: float, current_time: float) -> None:
-        """Adds data to the log
+        """Adds data to the log.
 
         Args:
             data: Dictionary representing the data to be logged at this time index.
@@ -102,7 +102,7 @@ class DataLogger:
         return
 
     def save(self, log_path: str) -> None:
-        """Saves the current data in the logger to a json file
+        """Saves the current data in the logger to a json file.
 
         Args:
             log_path: Path of the json file to be used to save the data.

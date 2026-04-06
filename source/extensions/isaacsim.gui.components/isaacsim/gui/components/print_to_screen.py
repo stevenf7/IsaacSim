@@ -124,5 +124,5 @@ class ScreenPrinter:
         self.set_text("")
 
     def exit(self):
-        """Delete OmniGraph used by this ScreenPrinter. After calling exit(), all subsequent function calls will fail."""
+        """Delete OmniGraph used by this ScreenPrinter. After calling ``exit()``, all subsequent function calls will fail."""
         DeletePrimsCommand([self._graph_path]).do()

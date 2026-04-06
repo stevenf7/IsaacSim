@@ -30,7 +30,7 @@ This loader makes it simple to load RMPflow for the Franka robot using load_supp
 
 
 def get_supported_robot_policy_pairs() -> dict:
-    """Get a dictionary of MotionPolicy names that are supported for each given robot name
+    """Get a dictionary of MotionPolicy names that are supported for each given robot name.
 
     Returns:
         Dictionary mapping robot names (keys) to a list of supported MotionPolicy config files (values).
@@ -64,7 +64,7 @@ def get_supported_robots_with_lula_kinematics() -> List[str]:
 
 
 def get_supported_robot_path_planner_pairs() -> dict:
-    """Get a dictionary of PathPlanner names that are supported for each given robot name
+    """Get a dictionary of PathPlanner names that are supported for each given robot name.
 
     Returns:
         Dictionary mapping robot names (keys) to a list of supported PathPlanner config files (values).
@@ -83,6 +83,7 @@ def get_supported_robot_path_planner_pairs() -> dict:
 
 def load_supported_lula_kinematics_solver_config(robot_name: str, policy_config_dir: str = None) -> dict:
     """Load lula kinematics solver for a supported robot.
+
     Use get_supported_robots_with_lula_kinematics() to get a list of robots with supported kinematics.
 
     Args:
@@ -123,9 +124,10 @@ def load_supported_lula_kinematics_solver_config(robot_name: str, policy_config_
 
 
 def load_supported_motion_policy_config(robot_name: str, policy_name: str, policy_config_dir: str = None) -> dict:
-    """Load a MotionPolicy object by specifying the robot name and policy name
+    """Load a MotionPolicy object by specifying the robot name and policy name.
+
     For a dictionary mapping supported robots to supported policies on those robots,
-    use get_supported_robot_policy_pairs()
+    use get_supported_robot_policy_pairs().
 
     To use this loader for a new policy, a user may copy the config file structure found under /motion_policy_configs/
     in the motion_generation extension, passing in a path to a directory containing a "policy_map.json"
@@ -140,7 +142,6 @@ def load_supported_motion_policy_config(robot_name: str, policy_name: str, polic
         A dictionary whose keyword arguments are sufficient to load the desired motion policy
             e.g. lula.motion_policies.RmpFlow(**load_supported_motion_policy_config("Franka","RMPflow"))
     """
-
     if policy_config_dir is None:
         mg_extension_path = get_extension_path_from_name("isaacsim.robot_motion.motion_generation")
         policy_config_dir = os.path.join(mg_extension_path, "motion_policy_configs")
@@ -177,7 +178,6 @@ def load_supported_path_planner_config(robot_name: str, planner_name: str, polic
     Returns:
         A dictionary whose keyword arguments are sufficient to load the desired path planner.
     """
-
     if policy_config_dir is None:
         mg_extension_path = get_extension_path_from_name("isaacsim.robot_motion.motion_generation")
         policy_config_dir = os.path.join(mg_extension_path, "path_planner_configs")

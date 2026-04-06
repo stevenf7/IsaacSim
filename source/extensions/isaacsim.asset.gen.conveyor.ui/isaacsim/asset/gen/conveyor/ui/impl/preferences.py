@@ -1,3 +1,5 @@
+"""Conveyor builder preferences page and settings management."""
+
 # SPDX-FileCopyrightText: Copyright (c) 2023-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -49,6 +51,7 @@ def Singleton(class_: type) -> object:
 
 
 def create_filepicker(title: str, click_apply_fn: Callable = None, error_fn: Callable = None):
+    """Create and display a file picker dialog."""
     from omni.kit.window.filepicker import FilePickerDialog
 
     async def on_click_handler(filename: str, dirname: str, dialog: FilePickerDialog, click_fn: Callable):
@@ -74,11 +77,14 @@ def create_filepicker(title: str, click_apply_fn: Callable = None, error_fn: Cal
 
 @Singleton
 class ConveyorBuilderPreferences(PreferenceBuilder):
+    """Preferences page for the conveyor builder extension."""
+
     def __init__(self):
         super().__init__("Conveyor Builder")
         self._settings = carb.settings.get_settings()
 
     def reset_config_default(self):
+        """Reset the config file path to the default bundled location."""
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.gen.conveyor.ui")
         extension_path = ext_manager.get_extension_path(ext_id)
@@ -86,6 +92,7 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
         self._settings.set(CONFIG_LOCATION, str(cfg))
 
     def reset_assets_default(self):
+        """Reset the assets location to the default Nucleus path."""
         timeout = carb.settings.get_settings().get("/persistent/isaac/asset_root/timeout")
         carb.settings.get_settings().set("/persistent/isaac/asset_root/timeout", 1.0)
         path = nucleus.get_assets_root_path()
@@ -110,6 +117,7 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
         return path.replace("\\", "/")
 
     def build(self):
+        """Build the preferences UI panel."""
         with ui.VStack(height=0):
             with self.add_frame("General"):
                 with ui.VStack(height=0, spacing=5):
@@ -199,6 +207,7 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
 
     @property
     def assets_location(self):
+        """Get the configured conveyor assets location path."""
         if self._settings.get(ASSETS_LOCATION) is None:
             self.reset_assets_default()
 
@@ -206,6 +215,7 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
 
     @property
     def config_file(self):
+        """Get the configured conveyor config file path."""
         if self._settings.get(CONFIG_LOCATION) is None:
             self.reset_config_default()
 

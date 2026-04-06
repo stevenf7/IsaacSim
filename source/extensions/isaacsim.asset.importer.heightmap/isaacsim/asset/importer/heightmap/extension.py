@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""isaacsim.asset.importer.heightmap extension module."""
+
 import asyncio
 import gc
 import os

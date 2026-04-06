@@ -84,7 +84,7 @@ class ArticulationTrajectory:
         return actions
 
     def get_trajectory_duration(self) -> float:
-        """Returns the duration of the provided Trajectory
+        """Returns the duration of the provided Trajectory.
 
         Returns:
             Duration of the provided trajectory.
@@ -92,7 +92,7 @@ class ArticulationTrajectory:
         return self._trajectory.end_time - self._trajectory.start_time
 
     def get_active_joints_subset(self) -> ArticulationSubset:
-        """Get view into active joints
+        """Get view into active joints.
 
         Returns:
             Robot states for active joints in an order compatible with the TrajectoryGenerator.
@@ -100,7 +100,7 @@ class ArticulationTrajectory:
         return self._active_joints_view
 
     def get_robot_articulation(self) -> SingleArticulation:
-        """Get the robot Articulation
+        """Get the robot Articulation.
 
         Returns:
             Articulation object describing the robot.

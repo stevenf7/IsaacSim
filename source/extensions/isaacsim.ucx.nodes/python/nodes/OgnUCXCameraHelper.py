@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""OmniGraph node for publishing camera images over UCX."""
+
 import traceback
 
 import carb
@@ -26,6 +28,8 @@ from pxr import Usd
 
 
 class OgnUCXCameraHelperInternalState(BaseWriterNode):
+    """Internal state for the UCX camera helper OmniGraph node."""
+
     def __init__(self):
         self.rv = ""
         self.resetSimulationTimeOnStop = True
@@ -34,6 +38,7 @@ class OgnUCXCameraHelperInternalState(BaseWriterNode):
         super().__init__(initialize=False)
 
     def post_attach(self, writer, render_product):
+        """Configure node attributes after attaching a writer to a render product."""
         try:
             if self.rv != "":
                 omni.syntheticdata.SyntheticData.Get().set_node_attributes(
@@ -49,12 +54,16 @@ class OgnUCXCameraHelperInternalState(BaseWriterNode):
 
 
 class OgnUCXCameraHelper:
+    """OmniGraph node that publish camera images over UCX."""
+
     @staticmethod
     def internal_state():
+        """Return a new internal state instance."""
         return OgnUCXCameraHelperInternalState()
 
     @staticmethod
     def compute(db) -> bool:
+        """Compute the node output by initializing and attaching camera writers."""
         if db.per_instance_state.initialized is False:
             db.per_instance_state.initialized = True
             stage = omni.usd.get_context().get_stage()
@@ -105,6 +114,7 @@ class OgnUCXCameraHelper:
 
     @staticmethod
     def release_instance(node, graph_instance_id):
+        """Release resources when a node instance is destroyed."""
         try:
             state = OgnUCXCameraHelperInternalState.per_instance_internal_state(node)
         except Exception:

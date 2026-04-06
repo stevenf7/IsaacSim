@@ -48,8 +48,9 @@ torch = import_module("torch")
 
 
 class Articulation(XFormPrim):
-    """High level wrapper to deal with prims (one or many) that have the Root Articulation API applied
-    and their attributes/properties
+    """High level wrapper to deal with prims (one or many) that have the Root Articulation API applied.
+
+    and their attributes/properties.
 
     This class wraps all matching articulations found at the regex provided at the ``prim_paths_expr`` argument
 
@@ -187,7 +188,7 @@ class Articulation(XFormPrim):
 
     @property
     def num_dof(self) -> int:
-        """Number of DOF of the articulations
+        """Number of DOF of the articulations.
 
         Returns:
             int: maximum number of DOFs for the articulations in the view
@@ -206,7 +207,7 @@ class Articulation(XFormPrim):
 
     @property
     def num_bodies(self) -> int:
-        """Number of rigid bodies (links) of the articulations
+        """Number of rigid bodies (links) of the articulations.
 
         Returns:
             int: maximum number of rigid bodies for the articulations in the view
@@ -225,7 +226,7 @@ class Articulation(XFormPrim):
 
     @property
     def num_shapes(self) -> int:
-        """Number of rigid shapes of the articulations
+        """Number of rigid shapes of the articulations.
 
         Returns:
             int: maximum number of rigid shapes for the articulations in the view
@@ -244,7 +245,7 @@ class Articulation(XFormPrim):
 
     @property
     def num_joints(self) -> int:
-        """Number of joints of the articulations
+        """Number of joints of the articulations.
 
         Returns:
             int: number of joints of the articulations in the view
@@ -256,7 +257,7 @@ class Articulation(XFormPrim):
 
     @property
     def num_fixed_tendons(self) -> int:
-        """Number of fixed tendons of the articulations
+        """Number of fixed tendons of the articulations.
 
         Returns:
             int: maximum number of fixed tendons for the articulations in the view
@@ -275,7 +276,7 @@ class Articulation(XFormPrim):
 
     @property
     def body_names(self) -> List[str]:
-        """List of prim names for each rigid body (link) of the articulations
+        """List of prim names for each rigid body (link) of the articulations.
 
         Returns:
             List[str]: ordered names of bodies that corresponds to links for the articulations in the view
@@ -295,7 +296,7 @@ class Articulation(XFormPrim):
 
     @property
     def dof_names(self) -> List[str]:
-        """List of prim names for each DOF of the articulations
+        """List of prim names for each DOF of the articulations.
 
         Returns:
             List[str]: ordered names of joints that corresponds to degrees of freedom for the articulations in the view
@@ -315,7 +316,7 @@ class Articulation(XFormPrim):
 
     @property
     def joint_names(self) -> List[str]:
-        """List of prim names for each joint of the articulations
+        """List of prim names for each joint of the articulations.
 
         Returns:
             A list of ordered names of joints that corresponds to degrees of freedom for the articulations in the view
@@ -326,7 +327,7 @@ class Articulation(XFormPrim):
         return self._joint_names
 
     def is_physics_handle_valid(self) -> bool:
-        """Check if articulation view's physics handler is initialized
+        """Check if articulation view's physics handler is initialized.
 
         .. warning::
 
@@ -356,7 +357,7 @@ class Articulation(XFormPrim):
         return [self._joint_names_to_idx[joint_name] for joint_name in joint_names]
 
     def get_body_index(self, body_name: str) -> int:
-        """Get a ridig body (link) index in the articulation view given its name
+        """Get a ridig body (link) index in the articulation view given its name.
 
         Args:
             body_name: name of the ridig body to query
@@ -378,7 +379,7 @@ class Articulation(XFormPrim):
         return self._body_indices[body_name]
 
     def get_dof_index(self, dof_name: str) -> int:
-        """Get a DOF index in the joint buffers given its name
+        """Get a DOF index in the joint buffers given its name.
 
         Args:
             dof_name: name of the joint that corresponds to the degree of freedom to query
@@ -400,7 +401,7 @@ class Articulation(XFormPrim):
         return self._dof_indices[dof_name]
 
     def get_dof_types(self, dof_names: list[str] = None) -> list[str]:
-        """Get the DOF types given the DOF names
+        """Get the DOF types given the DOF names.
 
         Args:
             dof_names: names of the joints that corresponds to the degrees of freedom to query.
@@ -431,7 +432,7 @@ class Articulation(XFormPrim):
             return [self._dof_types[self.get_dof_index(dof_name)] for dof_name in dof_names]
 
     def get_dof_limits(self) -> Union[np.ndarray, torch.Tensor]:
-        """Get the articulations DOFs limits (lower and upper)
+        """Get the articulations DOFs limits (lower and upper).
 
         Returns:
             degrees of freedom position limits.
@@ -469,7 +470,7 @@ class Articulation(XFormPrim):
         return self._physics_view.get_dof_limits()
 
     def get_drive_types(self) -> Union[np.ndarray, torch.Tensor]:
-        """Get the articulations DOFs drive types
+        """Get the articulations DOFs drive types.
 
         Returns:
             degrees of freedom drive types.
@@ -481,7 +482,7 @@ class Articulation(XFormPrim):
         return self._physics_view.get_drive_types()
 
     def get_joint_index(self, joint_name: str) -> int:
-        """Get a joint index in the joint buffers given its name
+        """Get a joint index in the joint buffers given its name.
 
         Args:
             joint_name: name of the joint that corresponds to the index of the joint in the articulation
@@ -495,7 +496,7 @@ class Articulation(XFormPrim):
         return self._joint_indices[joint_name]
 
     def get_link_index(self, link_name: str) -> int:
-        """Get a link index in the link buffers given its name
+        """Get a link index in the link buffers given its name.
 
         Args:
             link_name: name of the link that corresponds to the index of the link in the articulation
@@ -515,7 +516,7 @@ class Articulation(XFormPrim):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_names: Optional[List[str]] = None,
     ) -> None:
-        """Set the friction coefficients for articulation joints in the view
+        """Set the friction coefficients for articulation joints in the view.
 
         Search for *"Joint Friction Coefficient"* in |physx_docs| for more details.
 
@@ -592,7 +593,7 @@ class Articulation(XFormPrim):
         joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.array]:
-        """Get the friction coefficients for the articulation joints in the view
+        """Get the friction coefficients for the articulation joints in the view.
 
         Search for *"Joint Friction Coefficient"* in |physx_docs| for more details.
 
@@ -672,7 +673,7 @@ class Articulation(XFormPrim):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_names: Optional[List[str]] = None,
     ) -> None:
-        """Set armatures for articulation joints in the view
+        """Set armatures for articulation joints in the view.
 
         Search for *"Joint Armature"* in |physx_docs| for more details.
 
@@ -745,7 +746,7 @@ class Articulation(XFormPrim):
         joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get armatures for articulation joints in the view
+        """Get armatures for articulation joints in the view.
 
         Search for *"Joint Armature"* in |physx_docs| for more details.
 
@@ -819,7 +820,7 @@ class Articulation(XFormPrim):
             return values
 
     def get_articulation_body_count(self) -> int:
-        """Get the number of rigid bodies (links) of the articulations
+        """Get the number of rigid bodies (links) of the articulations.
 
         Returns:
             maximum number of rigid bodies (links) in the articulation
@@ -843,7 +844,7 @@ class Articulation(XFormPrim):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_names: Optional[List[str]] = None,
     ) -> None:
-        """Set the joint position targets for the implicit Proportional-Derivative (PD) controllers
+        """Set the joint position targets for the implicit Proportional-Derivative (PD) controllers.
 
         .. note::
 
@@ -910,7 +911,7 @@ class Articulation(XFormPrim):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_names: Optional[List[str]] = None,
     ) -> None:
-        """Set the joint positions of articulations in the view
+        """Set the joint positions of articulations in the view.
 
         .. warning::
 
@@ -978,7 +979,7 @@ class Articulation(XFormPrim):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_names: Optional[List[str]] = None,
     ) -> None:
-        """Set the joint velocity targets for the implicit Proportional-Derivative (PD) controllers
+        """Set the joint velocity targets for the implicit Proportional-Derivative (PD) controllers.
 
         .. note::
 
@@ -1045,7 +1046,7 @@ class Articulation(XFormPrim):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_names: Optional[List[str]] = None,
     ) -> None:
-        """Set the joint velocities of articulations in the view
+        """Set the joint velocities of articulations in the view.
 
         .. warning::
 
@@ -1114,7 +1115,7 @@ class Articulation(XFormPrim):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_names: Optional[List[str]] = None,
     ) -> None:
-        """Set the joint efforts of articulations in the view
+        """Set the joint efforts of articulations in the view.
 
         .. note::
 
@@ -1186,7 +1187,7 @@ class Articulation(XFormPrim):
         joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the joint efforts of articulations in the view
+        """Get the joint efforts of articulations in the view.
 
         This method will return the efforts set by the ``set_joint_efforts`` method
 
@@ -1252,7 +1253,7 @@ class Articulation(XFormPrim):
         joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Returns the efforts computed/measured by the physics solver of the joint forces in the DOF motion direction
+        """Returns the efforts computed/measured by the physics solver of the joint forces in the DOF motion direction.
 
         Args:
             indices: indices to specify which prims
@@ -1436,7 +1437,7 @@ class Articulation(XFormPrim):
         joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the joint positions of articulations in the view
+        """Get the joint positions of articulations in the view.
 
         Args:
             indices: indices to specify which prims
@@ -1508,7 +1509,7 @@ class Articulation(XFormPrim):
         joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the joint velocities of articulations in the view
+        """Get the joint velocities of articulations in the view.
 
         Args:
             indices: indices to specify which prims
@@ -1580,7 +1581,7 @@ class Articulation(XFormPrim):
         control_actions: ArticulationActions,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Apply joint positions (targets), velocities (targets) and/or efforts to control an articulation
+        """Apply joint positions (targets), velocities (targets) and/or efforts to control an articulation.
 
         .. note::
 
@@ -1676,7 +1677,7 @@ class Articulation(XFormPrim):
         return
 
     def get_applied_actions(self, clone: bool = True) -> ArticulationActions:
-        """Get the last applied actions
+        """Get the last applied actions.
 
         Args:
             clone: True to return clones of the internal buffers. Otherwise False. Defaults to True.
@@ -2123,7 +2124,7 @@ class Articulation(XFormPrim):
         velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Set the linear velocities of the prims in the view
+        """Set the linear velocities of the prims in the view.
 
         The method does this through the PhysX API only. It has to be called after initialization.
         Note: This method is not supported for the gpu pipeline. ``set_velocities`` method should be used instead.
@@ -2229,7 +2230,7 @@ class Articulation(XFormPrim):
         velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Set the angular velocities of the prims in the view
+        """Set the angular velocities of the prims in the view.
 
         The method does this through the physx API only. It has to be called after initialization.
         Note: This method is not supported for the gpu pipeline. ``set_velocities`` method should be used instead.
@@ -2376,7 +2377,7 @@ class Articulation(XFormPrim):
         return
 
     def get_joints_default_state(self) -> JointsState:
-        """Get the default joint states defined with the ``set_joints_default_state`` method
+        """Get the default joint states defined with the ``set_joints_default_state`` method.
 
         Returns:
             an object that contains the default joint states
@@ -2411,7 +2412,7 @@ class Articulation(XFormPrim):
         return self._default_joints_state
 
     def get_joints_state(self) -> JointsState:
-        """Get the current joint states (positions and velocities)
+        """Get the current joint states (positions and velocities).
 
         Returns:
             an object that contains the current joint positions and velocities
@@ -2464,7 +2465,7 @@ class Articulation(XFormPrim):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_names: Optional[List[str]] = None,
     ) -> List[str]:
-        """Get effort modes for articulations in the view
+        """Get effort modes for articulations in the view.
 
         Args:
             indices: indices to specify which prims
@@ -2531,7 +2532,7 @@ class Articulation(XFormPrim):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
         joint_names: Optional[List[str]] = None,
     ) -> None:
-        """Set effort modes for articulations in the view
+        """Set effort modes for articulations in the view.
 
         Args:
             mode: effort mode to be applied to prims in the view: ``acceleration`` or ``force``.
@@ -2590,7 +2591,7 @@ class Articulation(XFormPrim):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_names: Optional[List[str]] = None,
     ) -> None:
-        """Set maximum efforts for articulation in the view
+        """Set maximum efforts for articulation in the view.
 
         Args:
             values: maximum efforts for articulations in the view. shape (M, K).
@@ -2669,7 +2670,7 @@ class Articulation(XFormPrim):
         joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the maximum efforts for articulation in the view
+        """Get the maximum efforts for articulation in the view.
 
         Args:
             indices: indices to specify which prims
@@ -2757,7 +2758,7 @@ class Articulation(XFormPrim):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_names: Optional[List[str]] = None,
     ) -> None:
-        """Set maximum velocities for articulation in the view
+        """Set maximum velocities for articulation in the view.
 
         Args:
             values: maximum velocities for articulations in the view. shape (M, K).
@@ -2798,7 +2799,7 @@ class Articulation(XFormPrim):
         joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the maximum joint velocities for articulation dofs in the view
+        """Get the maximum joint velocities for articulation dofs in the view.
 
         Args:
             indices: indices to specify which prims
@@ -2847,7 +2848,7 @@ class Articulation(XFormPrim):
         joint_names: Optional[List[str]] = None,
         save_to_usd: bool = False,
     ) -> None:
-        """Set the implicit Proportional-Derivative (PD) controller's Kps (stiffnesses) and Kds (dampings) of articulations in the view
+        """Set the implicit Proportional-Derivative (PD) controller's Kps (stiffnesses) and Kds (dampings) of articulations in the view.
 
         Args:
             kps: stiffness of the drives. shape is (M, K).
@@ -2983,7 +2984,7 @@ class Articulation(XFormPrim):
         joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Tuple[Union[np.ndarray, torch.Tensor], Union[np.ndarray, torch.Tensor], Union[wp.indexedarray, wp.index]]:
-        """Get the implicit Proportional-Derivative (PD) controller's Kps (stiffnesses) and Kds (dampings) of articulations in the view
+        """Get the implicit Proportional-Derivative (PD) controller's Kps (stiffnesses) and Kds (dampings) of articulations in the view.
 
         Args:
             indices: indices to specify which prims
@@ -3100,7 +3101,7 @@ class Articulation(XFormPrim):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         joint_names: Optional[List[str]] = None,
     ) -> None:
-        """Switch control mode between ``"position"``, ``"velocity"``, or ``"effort"`` for all joints
+        """Switch control mode between ``"position"``, ``"velocity"``, or ``"effort"`` for all joints.
 
         This method will set the implicit Proportional-Derivative (PD) controller's Kps (stiffnesses) and Kds (dampings),
         defined via the ``set_gains``  method, of the selected articulations and joints according to the following rule:
@@ -3197,7 +3198,7 @@ class Articulation(XFormPrim):
     def switch_dof_control_mode(
         self, mode: str, dof_index: int, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
     ) -> None:
-        """Switch control mode between ``"position"``, ``"velocity"``, or ``"effort"`` for the specified DOF
+        """Switch control mode between ``"position"``, ``"velocity"``, or ``"effort"`` for the specified DOF.
 
         This method will set the implicit Proportional-Derivative (PD) controller's Kps (stiffnesses) and Kds (dampings),
         defined via the ``set_gains``  method, of the selected DOF according to the following rule:
@@ -3291,7 +3292,7 @@ class Articulation(XFormPrim):
         counts: Union[np.ndarray, torch.Tensor, wp.array],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Set the solver (position) iteration count for the articulations
+        """Set the solver (position) iteration count for the articulations.
 
         The solver iteration count determines how accurately contacts, drives, and limits are resolved.
         Search for *Solver Iteration Count* in |physx_docs| for more details.
@@ -3328,7 +3329,7 @@ class Articulation(XFormPrim):
     def get_solver_position_iteration_counts(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the solver (position) iteration count for the articulations
+        """Get the solver (position) iteration count for the articulations.
 
         The solver iteration count determines how accurately contacts, drives, and limits are resolved.
         Search for *Solver Iteration Count* in |physx_docs| for more details.
@@ -3367,7 +3368,7 @@ class Articulation(XFormPrim):
         counts: Union[np.ndarray, torch.Tensor, wp.array],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Set the solver (velocity) iteration count for the articulations
+        """Set the solver (velocity) iteration count for the articulations.
 
         The solver iteration count determines how accurately contacts, drives, and limits are resolved.
         Search for *Solver Iteration Count* in |physx_docs| for more details.
@@ -3403,7 +3404,7 @@ class Articulation(XFormPrim):
     def get_solver_velocity_iteration_counts(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the solver (velocity) iteration count for the articulations
+        """Get the solver (velocity) iteration count for the articulations.
 
         The solver iteration count determines how accurately contacts, drives, and limits are resolved.
         Search for *Solver Iteration Count* in |physx_docs| for more details.
@@ -3442,7 +3443,7 @@ class Articulation(XFormPrim):
         thresholds: Union[np.ndarray, torch.Tensor, wp.array],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Set the mass-normalized kinetic energy below which the articulation may participate in stabilization
+        """Set the mass-normalized kinetic energy below which the articulation may participate in stabilization.
 
         Search for *Stabilization Threshold* in |physx_docs| for more details
 
@@ -3473,7 +3474,7 @@ class Articulation(XFormPrim):
     def get_stabilization_thresholds(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the mass-normalized kinetic energy below which the articulations may participate in stabilization
+        """Get the mass-normalized kinetic energy below which the articulations may participate in stabilization.
 
         Search for *Stabilization Threshold* in |physx_docs| for more details
 
@@ -3511,7 +3512,7 @@ class Articulation(XFormPrim):
         flags: Union[np.ndarray, torch.Tensor, wp.array],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Set the enable self collisions flag (``physxArticulation:enabledSelfCollisions``)
+        """Set the enable self collisions flag (``physxArticulation:enabledSelfCollisions``).
 
         Args:
             flags: True to enable self collision. otherwise false. shape (M,)
@@ -3540,7 +3541,7 @@ class Articulation(XFormPrim):
     def get_enabled_self_collisions(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the enable self collisions flag (``physxArticulation:enabledSelfCollisions``) for all articulations
+        """Get the enable self collisions flag (``physxArticulation:enabledSelfCollisions``) for all articulations.
 
         Args:
             indices: Indices to specify which prims to query. Shape (M,).
@@ -3576,7 +3577,7 @@ class Articulation(XFormPrim):
         thresholds: Union[np.ndarray, torch.Tensor, wp.array],
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Set the threshold for articulations to enter a sleep state
+        """Set the threshold for articulations to enter a sleep state.
 
         Search for *Articulations and Sleeping* in |physx_docs| for more details
 
@@ -3607,7 +3608,7 @@ class Articulation(XFormPrim):
     def get_sleep_thresholds(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the threshold for articulations to enter a sleep state
+        """Get the threshold for articulations to enter a sleep state.
 
         Search for *Articulations and Sleeping* in |physx_docs| for more details
 
@@ -3641,7 +3642,7 @@ class Articulation(XFormPrim):
         return result
 
     def get_jacobian_shape(self) -> Union[np.ndarray, torch.Tensor, wp.array]:
-        """Get the Jacobian matrix shape of a single articulation
+        """Get the Jacobian matrix shape of a single articulation.
 
         The Jacobian matrix maps the joint space velocities of a DOF to it's cartesian and angular velocities
 
@@ -3675,7 +3676,7 @@ class Articulation(XFormPrim):
         return (shape[0] // 6, 6, shape[1])
 
     def get_mass_matrix_shape(self) -> Union[np.ndarray, torch.Tensor, wp.array]:
-        """Get the mass matrix shape of a single articulation
+        """Get the mass matrix shape of a single articulation.
 
         The mass matrix contains the generalized mass of the robot depending on the current configuration
 
@@ -3706,7 +3707,7 @@ class Articulation(XFormPrim):
     def get_jacobians(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the Jacobian matrices of articulations in the view
+        """Get the Jacobian matrices of articulations in the view.
 
         .. note::
 
@@ -3759,7 +3760,7 @@ class Articulation(XFormPrim):
     def get_mass_matrices(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the mass matrices of articulations in the view
+        """Get the mass matrices of articulations in the view.
 
         .. note::
 
@@ -3812,8 +3813,9 @@ class Articulation(XFormPrim):
         joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the Coriolis and centrifugal forces (joint DOF forces required to counteract Coriolis and
-        centrifugal forces for the given articulation state) of articulations in the view
+        """Get the Coriolis and centrifugal forces (joint DOF forces required to counteract Coriolis and.
+
+        centrifugal forces for the given articulation state) of articulations in the view.
 
         Search for *Coriolis and Centrifugal Forces* in |physx_docs| for more details
 
@@ -3885,8 +3887,9 @@ class Articulation(XFormPrim):
         joint_names: Optional[List[str]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the generalized gravity forces (joint DOF forces required to counteract gravitational
-        forces for the given articulation pose) of articulations in the view
+        """Get the generalized gravity forces (joint DOF forces required to counteract gravitational.
+
+        forces for the given articulation pose) of articulations in the view.
 
         Search for *Generalized Gravity Force* in |physx_docs| for more details
 
@@ -3957,7 +3960,7 @@ class Articulation(XFormPrim):
         body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get rigid body masses of articulations in the view
+        """Get rigid body masses of articulations in the view.
 
         Args:
             indices: Indices to specify which prims to query. Shape (M,).
@@ -4017,7 +4020,7 @@ class Articulation(XFormPrim):
         body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get rigid body inverse masses of articulations in the view
+        """Get rigid body inverse masses of articulations in the view.
 
         Args:
             indices: Indices to specify which prims to query. Shape (M,).
@@ -4136,7 +4139,7 @@ class Articulation(XFormPrim):
         body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get rigid body inertias of articulations in the view
+        """Get rigid body inertias of articulations in the view.
 
         Args:
             indices: Indices to specify which prims to query. Shape (M,).
@@ -4194,7 +4197,7 @@ class Articulation(XFormPrim):
         body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get rigid body inverse inertias of articulations in the view
+        """Get rigid body inverse inertias of articulations in the view.
 
         Args:
             indices: Indices to specify which prims to query. Shape (M,).
@@ -4253,7 +4256,7 @@ class Articulation(XFormPrim):
         body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get whether the rigid bodies of articulations in the view have gravity disabled or not
+        """Get whether the rigid bodies of articulations in the view have gravity disabled or not.
 
         Args:
             indices: indices to specify which prims to query. Shape (M,).
@@ -4292,7 +4295,7 @@ class Articulation(XFormPrim):
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
         body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Set body masses for articulation bodies in the view
+        """Set body masses for articulation bodies in the view.
 
         Args:
             values: body masses for articulations in the view. shape (M, K).
@@ -4480,7 +4483,7 @@ class Articulation(XFormPrim):
     def get_fixed_tendon_stiffnesses(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the stiffness of fixed tendons for articulations in the view
+        """Get the stiffness of fixed tendons for articulations in the view.
 
         Search for *Fixed Tendon* in |physx_docs| for more details
 
@@ -4522,7 +4525,7 @@ class Articulation(XFormPrim):
     def get_fixed_tendon_dampings(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the dampings of fixed tendons for articulations in the view
+        """Get the dampings of fixed tendons for articulations in the view.
 
         Search for *Fixed Tendon* in |physx_docs| for more details
 
@@ -4564,7 +4567,7 @@ class Articulation(XFormPrim):
     def get_fixed_tendon_limit_stiffnesses(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the limit stiffness of fixed tendons for articulations in the view
+        """Get the limit stiffness of fixed tendons for articulations in the view.
 
         Search for *Fixed Tendon* in |physx_docs| for more details
 
@@ -4608,7 +4611,7 @@ class Articulation(XFormPrim):
     def get_fixed_tendon_limits(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the limits of fixed tendons for articulations in the view
+        """Get the limits of fixed tendons for articulations in the view.
 
         Search for *Fixed Tendon* in |physx_docs| for more details
 
@@ -4652,7 +4655,7 @@ class Articulation(XFormPrim):
     def get_fixed_tendon_rest_lengths(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the rest length of fixed tendons for articulations in the view
+        """Get the rest length of fixed tendons for articulations in the view.
 
         Search for *Fixed Tendon* in |physx_docs| for more details
 
@@ -4694,7 +4697,7 @@ class Articulation(XFormPrim):
     def get_fixed_tendon_offsets(
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """Get the offsets of fixed tendons for articulations in the view
+        """Get the offsets of fixed tendons for articulations in the view.
 
         Search for *Fixed Tendon* in |physx_docs| for more details
 
@@ -4746,7 +4749,7 @@ class Articulation(XFormPrim):
         offsets: Union[np.ndarray, torch.Tensor, wp.array] = None,
         indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Set fixed tendon properties for articulations in the view
+        """Set fixed tendon properties for articulations in the view.
 
         Search for *Fixed Tendon* in |physx_docs| for more details
 
@@ -4853,7 +4856,8 @@ class Articulation(XFormPrim):
             return None
 
     def resume_motion(self) -> None:
-        """Resumes the motion of all articulations wrapped under the Articulation using the position and velocity dof targets
+        """Resumes the motion of all articulations wrapped under the Articulation using the position and velocity dof targets.
+
         cached when pause_motion was called.
         """
         if not self._is_initialized:
@@ -4874,7 +4878,7 @@ class Articulation(XFormPrim):
             return None
 
     def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
-        """Create a physics simulation view if not passed and set other properties using the PhysX tensor API
+        """Create a physics simulation view if not passed and set other properties using the PhysX tensor API.
 
         .. note::
 

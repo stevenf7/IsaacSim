@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Common utilities for grasping tests."""
+
 
 def check_grasp_pose_generation_dependencies() -> bool:
     """Check if grasp sampler dependencies are met, used to skip tests if not.

@@ -92,7 +92,6 @@ class MobilityGenExtension(omni.ext.IExt):
         Args:
             ext_id: Extension identifier.
         """
-
         self.keyboard = KeyboardDriver.connect()
         self.gamepad = GamepadDriver.connect()
         self.scenario: MobilityGenScenario = None
@@ -306,7 +305,6 @@ class MobilityGenExtension(omni.ext.IExt):
         Args:
             step_size: The physics step size in simulation time units.
         """
-
         if self.scenario is not None:
 
             is_alive = self.scenario.step(step_size)

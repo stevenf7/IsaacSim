@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated articulation utility functions."""
+
 import typing
 from copy import copy
 
@@ -43,7 +45,8 @@ def add_articulation_root(prim: Usd.Prim):
 
 
 def move_articulation_root(src_prim: Usd.Prim, dst_prim: Usd.Prim):
-    """Move the Articulation Root from `src_prim` to `dst_prim`. If `src_prim` is not an
+    """Move the Articulation Root from `src_prim` to `dst_prim`. If `src_prim` is not an.
+
     Articulation Root, nothing will happen.
 
     Args:

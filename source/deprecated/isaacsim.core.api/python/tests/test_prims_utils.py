@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test for prims utils."""
+
 import numpy as np
 import omni.kit.commands
 import omni.kit.test
@@ -29,8 +31,11 @@ torch = import_module("torch")
 
 
 class TestPrims(CoreTestCase):
+    """Test prims."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test environment."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
@@ -38,10 +43,12 @@ class TestPrims(CoreTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down test environment."""
         await super().tearDown()
         pass
 
     async def test_get_all_matching_child_prims(self):
+        """Test get all matching child prims."""
         from isaacsim.core.utils.prims import create_prim, get_prim_path
         from isaacsim.core.utils.stage import clear_stage
 
@@ -55,6 +62,7 @@ class TestPrims(CoreTestCase):
         self.assertListEqual(result, ["/World", "/World/Floor", "/World/Room", "/World/Floor/thefloor"])
 
     async def test_create_prim(self):
+        """Test create prim."""
         from isaacsim.core.utils.prims import create_prim, get_prim_path
         from isaacsim.core.utils.stage import clear_stage
 
@@ -80,6 +88,7 @@ class TestPrims(CoreTestCase):
         )
 
     async def test_is_prim_non_root_articulation_link(self):
+        """Test is prim non root articulation link."""
         from isaacsim.core.api.objects import DynamicCuboid
         from isaacsim.core.utils.prims import is_prim_non_root_articulation_link
         from isaacsim.core.utils.stage import clear_stage
@@ -102,6 +111,7 @@ class TestPrims(CoreTestCase):
         self.assertFalse(is_prim_non_root_articulation_link(prim_path="/World/Franka/test_1"))
 
     async def test_get_articulation_root_api_prim_path(self):
+        """Test get articulation root api prim path."""
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_manager.get_enabled_extension_id("isaacsim.core.cloner")
         await omni.kit.app.get_app().next_update_async()
@@ -148,6 +158,7 @@ class TestPrims(CoreTestCase):
         )
 
     async def test_find_matching_prim_paths(self):
+        """Test find matching prim paths."""
         assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:
             raise Exception("Asset root path doesn't exist")

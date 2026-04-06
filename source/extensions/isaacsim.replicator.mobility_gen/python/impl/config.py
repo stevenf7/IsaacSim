@@ -23,7 +23,7 @@ from typing import Literal, Optional, Tuple
 
 @dataclass
 class Config:
-    """Config(scenario_type: str, robot_type: str, scene_usd: str)
+    """Config(scenario_type: str, robot_type: str, scene_usd: str).
 
     Args:
         scenario_type: The type of scenario to generate.

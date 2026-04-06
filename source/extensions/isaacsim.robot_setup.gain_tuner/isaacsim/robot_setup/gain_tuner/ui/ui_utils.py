@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""UI utility functions for the gain tuner."""
+
 import carb
 
 

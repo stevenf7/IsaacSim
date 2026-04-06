@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test rtx lidar sensor functionality."""
+
 from typing import Callable, Literal
 
 import isaacsim.core.experimental.utils.app as app_utils
@@ -41,6 +43,8 @@ def parametrize(
     populate_stage_func_kwargs: dict = {},
     max_num_prims: int = 1,
 ):
+    """Perform parametrize."""
+
     def decorator(func):
         async def wrapper(self):
             for instance in instances:
@@ -74,6 +78,7 @@ def parametrize(
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
+    """Perform populate stage."""
     # create new stage
     await stage_utils.create_new_stage_async()
     # wait for the viewport to be ready
@@ -88,13 +93,15 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
 
 
 class TestRtxLidarSensor(omni.kit.test.AsyncTestCase):
+    """Test rtx lidar sensor."""
+
     async def setUp(self):
-        """Method called to prepare the test fixture"""
+        """Method called to prepare the test fixture."""
         super().setUp()
         self.maxDiff = None  # show all diffs
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------
@@ -105,6 +112,7 @@ class TestRtxLidarSensor(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_data(self, prim, num_prims, operation):
+        """Test data."""
         for annotator in sorted(list(EXPECTED_ANNOTATOR_SPEC.keys())):
             cprint(f"  |    |-- annotator: {annotator}")
             spec = EXPECTED_ANNOTATOR_SPEC[annotator]

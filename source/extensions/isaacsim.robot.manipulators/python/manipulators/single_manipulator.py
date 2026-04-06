@@ -26,7 +26,8 @@ from isaacsim.robot.manipulators.grippers.surface_gripper import SurfaceGripper
 
 
 class SingleManipulator(SingleArticulation):
-    """Provides high level functions to set/ get properties and actions of a manipulator with a single end effector
+    """Provides high level functions to set/ get properties and actions of a manipulator with a single end effector.
+
     and optionally a gripper.
 
     Args:
@@ -95,6 +96,7 @@ class SingleManipulator(SingleArticulation):
 
     def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None):
         """Create a physics simulation view if not passed and creates an articulation view using physX tensor api.
+
         This needs to be called after each hard reset (i.e stop + play on the timeline) before interacting with any
         of the functions of this class.
 

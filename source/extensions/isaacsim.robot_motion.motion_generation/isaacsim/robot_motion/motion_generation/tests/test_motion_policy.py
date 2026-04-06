@@ -1064,7 +1064,6 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         Returns:
             None.
         """
-
         # outputs of mg in different scenarios
         no_target_truth = ground_truths["no_target"]
         target_no_obs_truth = ground_truths["target_no_obstacle"]

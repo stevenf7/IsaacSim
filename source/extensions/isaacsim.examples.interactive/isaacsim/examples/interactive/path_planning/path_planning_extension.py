@@ -55,7 +55,6 @@ class PathPlanningExtension(omni.ext.IExt):
         Args:
             ext_id: The extension identifier string.
         """
-
         self.example_name = "Path Planning"
         self.category = "Manipulation"
 

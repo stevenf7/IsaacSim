@@ -25,7 +25,7 @@ import carb
 
 
 class UIBuilder:
-    """Manage extension UI
+    """Manage extension UI.
 
     Args:
         ext_name: Extension name used for action registration.

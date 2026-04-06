@@ -164,6 +164,7 @@ class FrankaOpenDrawerPolicy(PolicyController):
 
     def forward(self, dt: float) -> None:
         """Computes and applies joint position targets for the Franka arm to execute the drawer opening task.
+
         The control runs at a decimated rate and applies position control to the first 8 joints
         (excluding the mimic joint). Actions are scaled and added to the default pose.
 
@@ -184,6 +185,7 @@ class FrankaOpenDrawerPolicy(PolicyController):
 
     def initialize(self):
         """Initializes the Franka arm articulation with position control mode and configures solver parameters.
+
         Sets up drawer link indices and specific physics solver settings for stable manipulation.
         """
         super().initialize(control_mode="position", set_articulation_props=False)

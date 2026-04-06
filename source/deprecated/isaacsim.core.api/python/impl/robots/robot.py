@@ -23,7 +23,7 @@ from isaacsim.core.prims import SingleArticulation
 
 
 class Robot(SingleArticulation):
-    """Implementation (on ``SingleArticulation`` class) to deal with an articulation prim as a robot
+    """Implementation (on ``SingleArticulation`` class) to deal with an articulation prim as a robot.
 
     .. warning::
 
@@ -90,7 +90,7 @@ class Robot(SingleArticulation):
         return
 
     def post_reset(self):
-        """Reset the robot to its default state
+        """Reset the robot to its default state.
 
         .. note::
 

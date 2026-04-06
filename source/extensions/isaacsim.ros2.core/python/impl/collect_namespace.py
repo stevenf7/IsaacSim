@@ -14,13 +14,16 @@
 # limitations under the License.
 
 
+"""Utility for collecting ROS 2 namespaces from USD prim hierarchies."""
+
 import omni
 import omni.syntheticdata
 from isaacsim.core.rendering_manager import ViewportManager
 
 
 def collect_namespace(namespace_input: str, render_product_path: str) -> str:
-    """Collects the ROS 2 namespace from a USD Prim hierarchy by traversing upwards and appending any
+    """Collects the ROS 2 namespace from a USD Prim hierarchy by traversing upwards and appending any.
+
     'isaac:namespace' attributes found.
 
     If an input namespace is provided, it will be returned as-is without traversing the hierarchy.
@@ -35,7 +38,6 @@ def collect_namespace(namespace_input: str, render_product_path: str) -> str:
     Returns:
         The accumulated namespace string.
     """
-
     # If the namespace_input is not empty, return it immediately
     if namespace_input:
         return namespace_input

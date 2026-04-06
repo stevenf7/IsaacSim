@@ -23,7 +23,7 @@ import numpy as np
 
 @dataclass
 class Point2d:
-    """Point2d(x: float, y: float)
+    """Point2d(x: float, y: float).
 
     Args:
         x: The x-coordinate of the point.
@@ -51,7 +51,7 @@ class Pose2d(Point2d):
 
 @dataclass
 class Pose3d:
-    """Pose3d(position: numpy.ndarray, orientation: numpy.ndarray)
+    """Pose3d(position: numpy.ndarray, orientation: numpy.ndarray).
 
     Args:
         position: The 3D position as a numpy array.

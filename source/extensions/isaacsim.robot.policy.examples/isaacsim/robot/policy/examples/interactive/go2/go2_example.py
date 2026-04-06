@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Go2 robot locomotion example with keyboard control."""
+
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni

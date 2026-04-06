@@ -32,17 +32,22 @@ def _obstacle_cube_prim_valid() -> bool:
 
 
 class TestWorldInterfaceGui(omni.kit.test.AsyncTestCase):
+    """Test suite for the world interface example GUI."""
+
     async def setUp(self):
+        """Set up the UI builder before each test."""
         await omni.kit.app.get_app().next_update_async()
         self.ui_builder = UIBuilder()
         self.ui_builder.build_ui()
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Clean up the UI builder after each test."""
         self.ui_builder.cleanup()
         await omni.kit.app.get_app().next_update_async()
 
     async def test_widgets_built(self):
+        """Verify that all expected widgets are created."""
         self.assertIsNotNone(self.ui_builder._load_btn)
         self.assertIsNotNone(self.ui_builder._update_style_combo)
 
@@ -76,7 +81,8 @@ class TestWorldInterfaceGui(omni.kit.test.AsyncTestCase):
         self.assertTrue(ok_stop, "Timed out waiting for timeline to stop after RESET")
 
     async def test_update_style_combo_switches_world_sync_mode(self):
-        """Update Style drives world-binding sync mode: ``synchronize``, ``synchronize_transforms``,
+        """Update Style drives world-binding sync mode: ``synchronize``, ``synchronize_transforms``,.
+
         or ``synchronize_properties`` (via ``set_update_style`` on the scenario).
         """
         ui = self.ui_builder

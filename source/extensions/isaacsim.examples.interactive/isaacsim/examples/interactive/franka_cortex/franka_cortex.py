@@ -43,6 +43,7 @@ class CubeSpec:
 
 class ContextStateMonitor(DfDiagnosticsMonitor):
     """State monitor to read the context and pass it to the UI.
+
     For these behaviors, the context has a `diagnostic_message` that contains the text to be displayed, and each
     behavior implements its own monitor to update that.
 

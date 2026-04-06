@@ -42,10 +42,10 @@ NEAR_EDGE_THRESHOLD = 0.5  # Threshold for near edge returns in degrees
 
 
 class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
-    """Test the Generic Model Output annotator"""
+    """Test the Generic Model Output annotator."""
 
     async def setUp(self):
-        """Setup test environment with a cube and lidar"""
+        """Setup test environment with a cube and lidar."""
         await create_new_stage_async()
         await update_stage_async()
 
@@ -722,10 +722,10 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
 
 
 class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
-    """Test the Isaac Create RTX Lidar Scan Buffer annotator"""
+    """Test the Isaac Create RTX Lidar Scan Buffer annotator."""
 
     async def setUp(self):
-        """Setup test environment with a cube and lidar"""
+        """Setup test environment with a cube and lidar."""
         await create_new_stage_async()
         await update_stage_async()
 
@@ -1135,7 +1135,7 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
 
 
 class TestIsaacComputeRTXLidarFlatScan(omni.kit.test.AsyncTestCase):
-    """Test class for IsaacComputeRTXLidarFlatScan annotator"""
+    """Test class for IsaacComputeRTXLidarFlatScan annotator."""
 
     async def setUp(self):
         """Setup test environment with a cube and lidar."""

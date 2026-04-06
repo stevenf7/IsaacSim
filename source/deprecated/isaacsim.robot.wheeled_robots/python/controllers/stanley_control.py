@@ -15,6 +15,7 @@
 
 """
 Path tracking simulation with Stanley steering control and PID speed control.
+
 author: Atsushi Sakai (@Atsushi_twi)
 Source: https://github.com/AtsushiSakai/PythonRobotics/blob/master/PathTracking/stanley_controller/stanley_controller.py
 Distributed under the MIT license:
@@ -81,6 +82,7 @@ class State(object):
 
     def update(self, acceleration, delta, dt):
         """Update the state of the vehicle.
+
             Stanley Control uses bicycle model.
 
         Args:

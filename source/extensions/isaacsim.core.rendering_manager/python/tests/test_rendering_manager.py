@@ -25,7 +25,7 @@ _SETTING_RATE_LIMIT_ENABLED = "/app/runLoops/main/rateLimitEnabled"
 
 class TestRenderingManager(omni.kit.test.AsyncTestCase):
     async def setUp(self):
-        """Method called to prepare the test fixture"""
+        """Method called to prepare the test fixture."""
         super().setUp()
         # ---------------
         self._callback_call = [0, 0]
@@ -35,7 +35,7 @@ class TestRenderingManager(omni.kit.test.AsyncTestCase):
         # ---------------
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        """Method called immediately after the test method has been called."""
         # ------------------
         carb.settings.get_settings().set_bool(_SETTING_RATE_LIMIT_ENABLED, self._rate_limit_enabled)
         stage_utils.close_stage()

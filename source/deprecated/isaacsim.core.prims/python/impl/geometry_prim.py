@@ -213,7 +213,7 @@ class GeometryPrim(XFormPrim):
         return self._geoms
 
     def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView | None = None) -> None:
-        """Create a physics simulation view if not passed and set other properties using the PhysX tensor API
+        """Create a physics simulation view if not passed and set other properties using the PhysX tensor API.
 
         .. note::
 
@@ -828,7 +828,7 @@ class GeometryPrim(XFormPrim):
         return collisions
 
     def apply_collision_apis(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> None:
-        """Apply the collision API to prims in the view and update internal variables
+        """Apply the collision API to prims in the view and update internal variables.
 
         Args:
             indices: indices to specify which prims
@@ -1028,7 +1028,8 @@ class GeometryPrim(XFormPrim):
         dt: float = 1.0,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
         """If contact forces of the prims in the view are tracked, this method returns the net contact forces on prims.
-        i.e., a matrix of dimension (self.count, 3)
+
+        i.e., a matrix of dimension (self.count, 3).
 
         Args:
             indices: indices to specify which prims
@@ -1054,7 +1055,8 @@ class GeometryPrim(XFormPrim):
         clone: bool = True,
         dt: float = 1.0,
     ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
-        """If the object is initialized with filter_paths_expr list, this method returns the contact forces between the prims
+        """If the object is initialized with filter_paths_expr list, this method returns the contact forces between the prims.
+
         in the view and the filter prims. i.e., a matrix of dimension (self.count, self._contact_view.num_filters, 3)
         where num_filters is the determined according to the filter_paths_expr parameter.
 
@@ -1089,7 +1091,8 @@ class GeometryPrim(XFormPrim):
         Union[np.ndarray, torch.Tensor, wp.indexedarray],
         Union[np.ndarray, torch.Tensor, wp.indexedarray],
     ]:
-        """Get more detailed contact information between the prims in the view and the filter prims. Specifically, this method provides individual
+        """Get more detailed contact information between the prims in the view and the filter prims. Specifically, this method provides individual.
+
         contact normals, contact points, contact separations as well as contact forces for each pair
         (the sum of which equals the forces that the get_contact_force_matrix method provides as the force aggregate of a pair)
         Given to the dynamic nature of collision between bodies, this method will provide buffers of contact data which are arranged sequentially for each pair.
@@ -1128,7 +1131,8 @@ class GeometryPrim(XFormPrim):
         Union[np.ndarray, torch.Tensor, wp.indexedarray],
         Union[np.ndarray, torch.Tensor, wp.indexedarray],
     ]:
-        """Gets friction data between the prims in the view and the filter prims. Specifically, this method provides frictional contact forces,
+        """Gets friction data between the prims in the view and the filter prims. Specifically, this method provides frictional contact forces,.
+
         and points. The data in reported for number of anchor points that includes tangential forces in a single tangent direction to contact normal.
         Given to the dynamic nature of collision between bodies, this method will provide buffers of friction data arranged sequentially for each pair.
         The starting index and the number of contact data points for each pair in this stream can be realized from pair_contacts_start_indices,

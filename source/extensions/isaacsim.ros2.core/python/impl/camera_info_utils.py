@@ -40,7 +40,6 @@ def read_camera_info(render_product_path: str) -> tuple:
     Returns:
         A tuple containing the populated CameraInfo message and the camera prim object.
     """
-
     from sensor_msgs.msg import CameraInfo
 
     camera_info = CameraInfo()
@@ -144,7 +143,6 @@ def compute_relative_pose(left_camera_prim: Usd.Prim, right_camera_prim: Usd.Pri
         A tuple containing the translation vector and orientation (rotation matrix) from the left camera to the right
         camera.
     """
-
     # Compute relative transform -> translation, orientation
     relative_transform = xform_utils.get_relative_transform(source_prim=left_camera_prim, target_prim=right_camera_prim)
     mat = Gf.Transform()

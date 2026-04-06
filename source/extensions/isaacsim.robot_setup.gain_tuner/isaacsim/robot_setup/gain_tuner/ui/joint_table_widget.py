@@ -1311,6 +1311,7 @@ class JointListModel(ui.AbstractItemModel):
 
     def get_item_value_model(self, item: object, column_id: int) -> ui.AbstractValueModel:
         """Return value model.
+
             It's the object that tracks the specific value.
 
         Args:

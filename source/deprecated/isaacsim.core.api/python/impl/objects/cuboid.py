@@ -30,7 +30,7 @@ from pxr import Gf, UsdGeom
 
 
 class VisualCuboid(SingleGeometryPrim):
-    """High level wrapper to create/encapsulate a visual cuboid
+    """High level wrapper to create/encapsulate a visual cuboid.
 
     .. note::
 
@@ -121,7 +121,7 @@ class VisualCuboid(SingleGeometryPrim):
         return
 
     def set_size(self, size: float) -> None:
-        """Set the length of each cube edge
+        """Set the length of each cube edge.
 
         Args:
             size: edge length
@@ -136,7 +136,7 @@ class VisualCuboid(SingleGeometryPrim):
         return
 
     def get_size(self) -> np.ndarray:
-        """Get the length of each cube edge
+        """Get the length of each cube edge.
 
         Returns:
             edge length
@@ -152,7 +152,7 @@ class VisualCuboid(SingleGeometryPrim):
 
 
 class FixedCuboid(VisualCuboid):
-    """High level wrapper to create/encapsulate a fixed cuboid
+    """High level wrapper to create/encapsulate a fixed cuboid.
 
     .. note::
 
@@ -248,7 +248,7 @@ class FixedCuboid(VisualCuboid):
 
 
 class DynamicCuboid(SingleRigidPrim, FixedCuboid):
-    """High level wrapper to create/encapsulate a dynamic cuboid
+    """High level wrapper to create/encapsulate a dynamic cuboid.
 
     .. note::
 

@@ -1,3 +1,5 @@
+"""Tests for the Kaya gamepad interactive example."""
+
 # SPDX-FileCopyrightText: Copyright (c) 2018-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -29,9 +31,11 @@ from omni.kit.app import get_app
 
 
 class TestKayaGamepadSample(omni.kit.test.AsyncTestCase):
+    """Test cases for the Kaya gamepad sample."""
 
     # Before running each test
     async def setUp(self):
+        """Set up the gamepad provider and Kaya sample."""
         self._provider = carb.input.acquire_input_provider()
         self._gamepad = self._provider.create_gamepad("test", "0")
         await get_app().next_update_async()
@@ -42,6 +46,7 @@ class TestKayaGamepadSample(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down by stopping timeline and cleaning up resources."""
         # Stop timeline if running
         if app_utils.is_playing():
             app_utils.stop()
@@ -59,6 +64,7 @@ class TestKayaGamepadSample(omni.kit.test.AsyncTestCase):
 
     # Run all functions with simulation enabled
     async def test_simulation(self):
+        """Test that gamepad input moves the Kaya robot forward."""
         await get_app().next_update_async()
 
         # Access the kaya robot prim directly by path

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test contact sensor functionality."""
+
 import asyncio
 
 import carb.tokens
@@ -40,6 +42,7 @@ from .common import reset_timeline, setup_ant_scene, step_simulation
 
 
 async def add_cube(stage, path, size, offset, physics=True, mass=0.0) -> Usd.Prim:
+    """Add a cube prim to the stage."""
     cube_geom = UsdGeom.Cube.Define(stage, path)
     cube_prim = stage.GetPrimAtPath(path)
     cube_geom.CreateSizeAttr(size)
@@ -61,8 +64,11 @@ async def add_cube(stage, path, size, offset, physics=True, mass=0.0) -> Usd.Pri
 
 
 class TestContactSensor(omni.kit.test.AsyncTestCase):
+    """Test contact sensor."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         # This needs to be set so that kit updates match physics updates
         self._physics_rate = 60
         self._cs = _sensor.acquire_contact_sensor_interface()
@@ -82,18 +88,22 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     # Convenience properties for ant configuration
     @property
     def leg_paths(self):
+        """Return leg paths."""
         return self._ant_config.leg_paths
 
     @property
     def sensor_offsets(self):
+        """Return sensor offsets."""
         return self._ant_config.sensor_offsets
 
     @property
     def color(self):
+        """Return color values."""
         return self._ant_config.colors
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         if self._timeline.is_playing():
             self._timeline.stop()

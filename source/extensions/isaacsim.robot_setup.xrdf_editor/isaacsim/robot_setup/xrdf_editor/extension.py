@@ -161,7 +161,6 @@ class Extension(omni.ext.IExt):
         Args:
             ext_id: Extension identifier.
         """
-
         # Events
         self._usd_context = omni.usd.get_context()
         self._physics_simulation_interface = omni.physics.core.get_physics_simulation_interface()
@@ -327,6 +326,7 @@ class Extension(omni.ext.IExt):
 
     def _on_selection(self, prim_path: str) -> None:
         """Creates an Articulation Object from the selected articulation prim path.
+
                    Updates the UI with the Selected articulation.
 
         Args:
@@ -582,6 +582,7 @@ class Extension(omni.ext.IExt):
 
     def get_articulation_values(self, articulation: SingleArticulation):
         """Get and store the latest dof_properties from the articulation.
+
            Update the Properties UI.
 
         Args:
@@ -660,7 +661,7 @@ class Extension(omni.ext.IExt):
     ##################################
 
     def _on_stage_selection_changed(self, event: carb.eventdispatcher.Event):
-        """Callback for Stage Selection Changed Event
+        """Callback for Stage Selection Changed Event.
 
         Args:
             event: Event
@@ -671,7 +672,7 @@ class Extension(omni.ext.IExt):
         self._refresh_collision_sphere_comboboxes(keep_sphere_selection=True)
 
     def _on_stage_opened(self, event: carb.eventdispatcher.Event):
-        """Callback for Stage Opened Event
+        """Callback for Stage Opened Event.
 
         Args:
             event: Event
@@ -682,7 +683,7 @@ class Extension(omni.ext.IExt):
         self._physics_subscription = None
 
     def _on_stage_closed(self, event: carb.eventdispatcher.Event):
-        """Callback for Stage Closed Event
+        """Callback for Stage Closed Event.
 
         Args:
             event: Event
@@ -693,7 +694,7 @@ class Extension(omni.ext.IExt):
         self._physics_subscription = None
 
     def _on_timeline_play(self, event: carb.eventdispatcher.Event):
-        """Callback for Timeline Played Event
+        """Callback for Timeline Played Event.
 
         Args:
             event: Event
@@ -702,7 +703,7 @@ class Extension(omni.ext.IExt):
         self._on_selection(self._get_selected_articulation())
 
     def _on_timeline_stop(self, event: carb.eventdispatcher.Event):
-        """Callback for Timeline Stopped Event
+        """Callback for Timeline Stopped Event.
 
         Args:
             event: Event
@@ -912,7 +913,8 @@ class Extension(omni.ext.IExt):
         self._models["frame_command_ui"].enabled = False
 
     def _build_editor_ui(self):
-        """Builds the link sphere editor UI panel with sphere generation, adding, connecting, scaling,
+        """Builds the link sphere editor UI panel with sphere generation, adding, connecting, scaling,.
+
         and clearing tools.
         """
         self._models["sphere_editor_ui"] = ui.CollapsableFrame(
@@ -1177,7 +1179,8 @@ class Extension(omni.ext.IExt):
                         self._models["link_clear_btn"].enabled = True
 
     def _build_tools_ui(self):
-        """Builds the editor tools UI panel with undo/redo, visibility controls, color pickers,
+        """Builds the editor tools UI panel with undo/redo, visibility controls, color pickers,.
+
         and import/export functionality.
         """
         self._models["editor_tools_ui"] = ui.CollapsableFrame(

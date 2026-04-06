@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for Go2 robot locomotion policy on CPU and GPU."""
+
 import asyncio
 
 import isaacsim.core.experimental.utils.prim as prim_utils
@@ -31,6 +33,8 @@ torch = import_module("torch")
 
 
 class TestGo2CPU(omni.kit.test.AsyncTestCase):
+    """Test Go2 robot locomotion policy on CPU."""
+
     def get_device(self) -> object:
         """Return the device to use for tensors. Override in subclasses.
 
@@ -40,6 +44,7 @@ class TestGo2CPU(omni.kit.test.AsyncTestCase):
         return torch.device("cpu")
 
     async def setUp(self):
+        """Set up test environment with physics scene and ground plane."""
         await stage_utils.create_new_stage_async()
         self._physics_rate = 200
 
@@ -68,6 +73,7 @@ class TestGo2CPU(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Tear down test environment and deregister physics callback."""
         await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
         SimulationManager.deregister_callback(self._physics_callback_id)
@@ -101,6 +107,7 @@ class TestGo2CPU(omni.kit.test.AsyncTestCase):
         )
 
     async def test_robot_move_forward_command(self):
+        """Test the robot moves forward in response to a forward command."""
         await self.spawn_go2()
         await omni.kit.app.get_app().next_update_async()
 
@@ -122,6 +129,7 @@ class TestGo2CPU(omni.kit.test.AsyncTestCase):
         self.assertLess(delta, 2.0)
 
     async def test_robot_turn_command(self):
+        """Test the robot turns in response to a yaw command."""
         await self.spawn_go2()
         await omni.kit.app.get_app().next_update_async()
 
@@ -147,6 +155,11 @@ class TestGo2CPU(omni.kit.test.AsyncTestCase):
         self.assertGreater(heading_delta, 0.35)
 
     async def spawn_go2(self, name="go2"):
+        """Spawn a Go2 robot and register the physics callback.
+
+        Args:
+            name: Name for the robot prim.
+        """
         self._prim_path = "/World/" + name
 
         self._go2 = Go2FlatTerrainPolicy(prim_path=self._prim_path, position=[0, 0, 0.60])
@@ -162,11 +175,19 @@ class TestGo2CPU(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     def on_physics_step(self, step_size, context):
+        """Execute one policy step on physics update.
+
+        Args:
+            step_size: Physics step duration.
+            context: Physics step context.
+        """
         if self._go2:
             self._go2.forward(step_size, self._base_command)
 
 
 class TestGo2GPU(TestGo2CPU):
+    """Test Go2 robot locomotion policy on GPU."""
+
     def get_device(self) -> object:
         """Return the device to use for tensors.
 

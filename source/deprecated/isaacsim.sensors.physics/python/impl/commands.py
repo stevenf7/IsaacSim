@@ -130,7 +130,6 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
         Returns:
             The created contact sensor prim, or None if creation failed.
         """
-
         if self._parent is None:
             carb.log_error("Valid parent prim must be selected before creating contact sensor prim.")
             return None

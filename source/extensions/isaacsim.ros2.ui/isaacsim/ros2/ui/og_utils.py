@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utility functions for creating ROS 2 OmniGraph shortcuts."""
+
 from pathlib import Path
 
 import omni.graph.core as og
@@ -49,6 +51,7 @@ class Ros2ClockGraph(MenuHelperWindow):
     """
 
     def __init__(self):
+        """Initialize the ROS2 clock graph window."""
         super().__init__("ROS2 Clock Graph", width=300, height=150)
         self._og_path = "/Graph/ROS_Clock"
 
@@ -56,7 +59,7 @@ class Ros2ClockGraph(MenuHelperWindow):
         self._build_ui()
 
     def make_graph(self) -> None:
-        """Creates and configures an OmniGraph for ROS2 clock publishing.
+        """Create and configures an OmniGraph for ROS2 clock publishing.
 
         Stops the timeline and constructs a graph containing nodes for playback tick, simulation time reading,
         clock publishing, and ROS2 context. The graph is set up to publish simulation time as ROS2 clock messages.
@@ -86,7 +89,7 @@ class Ros2ClockGraph(MenuHelperWindow):
         )
 
     def _build_ui(self) -> None:
-        """Constructs the UI elements for the ROS2 clock graph configuration window.
+        """Construct the UI elements for the ROS2 clock graph configuration window.
 
         Creates input fields for graph path, OK and Cancel buttons, and documentation links for the ROS2 clock
         graph generation interface.
@@ -131,7 +134,7 @@ class Ros2ClockGraph(MenuHelperWindow):
         return
 
     def _on_ok(self) -> None:
-        """Handles the OK button click event.
+        """Handle the OK button click event.
 
         Validates user inputs, creates the ROS2 clock graph if parameters are valid, and closes the window.
         Displays a warning notification if parameter validation fails.
@@ -146,19 +149,20 @@ class Ros2ClockGraph(MenuHelperWindow):
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self) -> None:
-        """Handles the Cancel button click event.
+        """Handle the Cancel button click event.
 
         Closes the ROS2 clock graph configuration window without creating a graph.
         """
         self.visible = False
 
     def _check_params(self) -> bool:
-        """Validates the graph path parameter.
+        """Validate the graph path parameter.
 
         Checks if a graph already exists at the specified path and displays a warning if it does.
 
         Returns:
             False if a graph already exists at the specified path, True otherwise.
+
         """
         stage = omni.usd.get_context().get_stage()
         og_prim = stage.GetPrimAtPath(self._og_path)
@@ -195,6 +199,7 @@ class Ros2GenericPubGraph(MenuHelperWindow):
     """
 
     def __init__(self):
+        """Initialize the ROS2 generic publisher graph window."""
         super().__init__("ROS2 Generic Publisher Graph", width=350, height=180)
         self._og_path = "/Graph/ROS_GenericPub"
         self._dropdown_model = None
@@ -209,7 +214,7 @@ class Ros2GenericPubGraph(MenuHelperWindow):
         self._build_ui()
 
     def make_rtf_graph(self) -> None:
-        """Creates a ROS2 publisher graph that publishes the real-time factor (RTF) as a Float32 message.
+        """Create a ROS2 publisher graph that publishes the real-time factor (RTF) as a Float32 message.
 
         The graph includes nodes for playback tick, generic publisher configured for Float32 messages, RTF computation,
         and ROS2 context.
@@ -246,7 +251,7 @@ class Ros2GenericPubGraph(MenuHelperWindow):
         )
 
     def make_bool_graph(self) -> None:
-        """Creates a ROS2 publisher graph that publishes a boolean value.
+        """Create a ROS2 publisher graph that publishes a boolean value.
 
         The graph includes nodes for playback tick, generic publisher configured for Bool messages, a constant boolean
         value, and ROS2 context.
@@ -284,7 +289,7 @@ class Ros2GenericPubGraph(MenuHelperWindow):
         )
 
     def make_int64_graph(self) -> None:
-        """Creates a ROS2 publisher graph that publishes an Int64 value.
+        """Create a ROS2 publisher graph that publishes an Int64 value.
 
         The graph includes nodes for playback tick, generic publisher configured for Int64 messages, a constant integer
         value set to 42, and ROS2 context.
@@ -322,7 +327,7 @@ class Ros2GenericPubGraph(MenuHelperWindow):
         )
 
     def make_string_graph(self) -> None:
-        """Creates a ROS2 publisher graph that publishes a string message.
+        """Create a ROS2 publisher graph that publishes a string message.
 
         The graph includes nodes for playback tick, generic publisher configured for String messages, a constant string
         value, and ROS2 context.
@@ -360,7 +365,7 @@ class Ros2GenericPubGraph(MenuHelperWindow):
         )
 
     def _build_ui(self) -> None:
-        """Builds the UI for the ROS2 Generic Publisher Graph window.
+        """Build the UI for the ROS2 Generic Publisher Graph window.
 
         The UI includes a graph path input field, a dropdown menu for selecting the publisher type, OK and Cancel
         buttons, and links to documentation and Python script.
@@ -410,7 +415,7 @@ class Ros2GenericPubGraph(MenuHelperWindow):
         return
 
     def _on_ok(self) -> None:
-        """Handles the OK button click event.
+        """Handle the OK button click event.
 
         Validates parameters, creates the selected publisher graph, and closes the window if validation succeeds.
         """
@@ -425,19 +430,20 @@ class Ros2GenericPubGraph(MenuHelperWindow):
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self) -> None:
-        """Handles the Cancel button click event.
+        """Handle the Cancel button click event.
 
         Closes the window without creating a graph.
         """
         self.visible = False
 
     def _check_params(self) -> bool:
-        """Validates the graph parameters.
+        """Validate the graph parameters.
 
         Checks if a graph already exists at the specified path. If it does, displays a warning notification.
 
         Returns:
             True if parameters are valid, False otherwise.
+
         """
         stage = omni.usd.get_context().get_stage()
         og_prim = stage.GetPrimAtPath(self._og_path)
@@ -478,6 +484,7 @@ class Ros2JointStatesGraph(MenuHelperWindow):
     """
 
     def __init__(self):
+        """Initialize the ROS2 joint states graph window."""
         super().__init__("ROS2 Joint States Graph", width=450, height=350)
         self._og_path = "/Graph/ROS_JointStates"
         self._node_namespace = ""
@@ -493,7 +500,7 @@ class Ros2JointStatesGraph(MenuHelperWindow):
         self._build_ui()
 
     def make_graph(self) -> None:
-        """Creates or modifies the ROS2 joint states action graph with publisher and subscriber nodes.
+        """Create or modifies the ROS2 joint states action graph with publisher and subscriber nodes.
 
         This method stops the timeline, then creates a new graph or modifies an existing one by adding ROS2 nodes for
         publishing and subscribing to joint states. When publishing is enabled, it adds a joint state publisher node.
@@ -649,13 +656,12 @@ class Ros2JointStatesGraph(MenuHelperWindow):
                 )
 
     def _build_ui(self) -> None:
-        """Constructs the user interface for the ROS2 Joint States Graph window.
+        """Construct the user interface for the ROS2 Joint States Graph window.
 
         This method creates UI elements including graph path input, node namespace input, articulation root prim
         selector, publisher/subscriber checkboxes, topic input fields, and control buttons. It also adds links to the
         python script and documentation.
         """
-
         og_path_def = ParamWidget.FieldDef(
             name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
         )
@@ -725,7 +731,7 @@ class Ros2JointStatesGraph(MenuHelperWindow):
         return
 
     def _on_ok(self) -> None:
-        """Handles the OK button click event.
+        """Handle the OK button click event.
 
         This method retrieves values from UI widgets, validates parameters, and creates the graph if validation
         passes. The window is hidden on success, or a warning notification is displayed on failure.
@@ -744,20 +750,21 @@ class Ros2JointStatesGraph(MenuHelperWindow):
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self) -> None:
-        """Handles the Cancel button click event.
+        """Handle the Cancel button click event.
 
         This method hides the window without creating or modifying the graph.
         """
         self.visible = False
 
     def _check_params(self) -> bool:
-        """Validates the graph parameters.
+        """Validate the graph parameters.
 
         When adding to an existing graph, this method verifies that the specified graph path exists and is a valid
         OmniGraph. If validation fails, a warning notification is posted.
 
         Returns:
             True if all parameters are valid, False otherwise.
+
         """
         stage = omni.usd.get_context().get_stage()
 
@@ -774,34 +781,38 @@ class Ros2JointStatesGraph(MenuHelperWindow):
         return True
 
     def _on_use_existing_graph(self, check_state: bool) -> None:
-        """Handles the checkbox state change for adding to an existing graph.
+        """Handle the checkbox state change for adding to an existing graph.
 
         Args:
             check_state: Whether to add to an existing graph.
+
         """
         self._add_to_existing_graph = check_state
 
     def _on_pub_graph(self, check_state: bool) -> None:
-        """Handles the checkbox state change for enabling the publisher.
+        """Handle the checkbox state change for enabling the publisher.
 
         Args:
             check_state: Whether to enable the publisher.
+
         """
         self._publisher = check_state
 
     def _on_sub_graph(self, check_state: bool) -> None:
-        """Handles the checkbox state change for enabling the subscriber.
+        """Handle the checkbox state change for enabling the subscriber.
 
         Args:
             check_state: Whether to enable the subscriber.
+
         """
         self._subscriber = check_state
 
     def _on_sub_move_robot(self, check_state: bool) -> None:
-        """Handles the checkbox state change for enabling robot movement from subscriber.
+        """Handle the checkbox state change for enabling robot movement from subscriber.
 
         Args:
             check_state: Whether to enable robot movement from subscriber.
+
         """
         self._sub_move_robot = check_state
 
@@ -822,6 +833,7 @@ class Ros2TfPubGraph(MenuHelperWindow):
     """
 
     def __init__(self):
+        """Initialize the ROS2 TF publisher graph window."""
         super().__init__("ROS2 TF Publisher Graph", width=450, height=450)
         self._og_path = "/Graph/ROS_TF"
         self._node_namespace = ""
@@ -837,7 +849,7 @@ class Ros2TfPubGraph(MenuHelperWindow):
         self._build_ui()
 
     def make_graph(self) -> None:
-        """Creates or modifies an OmniGraph to publish ROS2 transform trees.
+        """Create or modifies an OmniGraph to publish ROS2 transform trees.
 
         Generates a new graph with tick, context, and simulation time nodes if starting from scratch, or adds
         transform tree publisher nodes to an existing graph. Configures connections between nodes based on the
@@ -925,13 +937,12 @@ class Ros2TfPubGraph(MenuHelperWindow):
             )
 
     def _build_ui(self) -> None:
-        """Constructs the UI elements for the ROS2 TF Publisher Graph window.
+        """Construct the UI elements for the ROS2 TF Publisher Graph window.
 
         Creates input fields for graph path, node namespace, node path, target prim, parent prim, and publisher
         topic. Includes checkboxes for existing graph and node options, along with action buttons and
         documentation links.
         """
-
         og_path_def = ParamWidget.FieldDef(
             name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
         )
@@ -996,7 +1007,7 @@ class Ros2TfPubGraph(MenuHelperWindow):
         return
 
     def _on_ok(self) -> None:
-        """Handles the OK button click event.
+        """Handle the OK button click event.
 
         Retrieves values from all input fields, validates parameters through _check_params, and generates the
         graph if validation passes. Closes the window on success or displays a warning notification if parameter
@@ -1017,14 +1028,14 @@ class Ros2TfPubGraph(MenuHelperWindow):
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self) -> None:
-        """Handles the Cancel button click event.
+        """Handle the Cancel button click event.
 
         Closes the window without generating or modifying any graph.
         """
         self.visible = False
 
     def _check_params(self) -> bool:
-        """Validates the user-provided parameters before graph creation.
+        """Validate the user-provided parameters before graph creation.
 
         Verifies that the specified graph path exists when adding to an existing graph, and that the node path
         exists and is a valid OmniGraph node when adding to an existing node. Also ensures that adding to an
@@ -1032,6 +1043,7 @@ class Ros2TfPubGraph(MenuHelperWindow):
 
         Returns:
             True if all parameter checks pass, False otherwise.
+
         """
         stage = omni.usd.get_context().get_stage()
 
@@ -1063,18 +1075,20 @@ class Ros2TfPubGraph(MenuHelperWindow):
         return True
 
     def _on_use_existing_graph(self, check_state: bool) -> None:
-        """Updates the state when the existing graph checkbox is toggled.
+        """Update the state when the existing graph checkbox is toggled.
 
         Args:
             check_state: Whether the checkbox is checked.
+
         """
         self._add_to_existing_graph = check_state
 
     def _on_use_existing_node(self, check_state: bool) -> None:
-        """Updates the state when the existing node checkbox is toggled.
+        """Update the state when the existing node checkbox is toggled.
 
         Args:
             check_state: Whether the checkbox is checked.
+
         """
         self._add_to_existing_node = check_state
 
@@ -1098,6 +1112,7 @@ class Ros2OdometryGraph(MenuHelperWindow):
     """
 
     def __init__(self):
+        """Initialize the ROS2 odometry graph window."""
         super().__init__("ROS2 Odometry Graph", width=450, height=350)
         self._og_path = "/Graph/ROS_Odometry"
         self._node_namespace = ""
@@ -1113,7 +1128,7 @@ class Ros2OdometryGraph(MenuHelperWindow):
         self._build_ui()
 
     def make_graph(self) -> None:
-        """Creates or extends an OmniGraph for ROS2 odometry publishing.
+        """Create or extends an OmniGraph for ROS2 odometry publishing.
 
         Sets up nodes for computing odometry from an articulated robot, publishing odometry messages, and publishing
         transform trees between world, odom, and robot frames. If configured, also publishes the robot's internal TF tree.
@@ -1293,12 +1308,11 @@ class Ros2OdometryGraph(MenuHelperWindow):
                 )
 
     def _build_ui(self) -> None:
-        """Builds the user interface for configuring the ROS2 odometry graph.
+        """Build the user interface for configuring the ROS2 odometry graph.
 
         Creates input fields for graph path, node namespace, articulation root, and chassis link selection. Includes
         checkboxes for adding to an existing graph and publishing robot TF, along with OK and Cancel buttons.
         """
-
         og_path_def = ParamWidget.FieldDef(
             name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
         )
@@ -1354,7 +1368,7 @@ class Ros2OdometryGraph(MenuHelperWindow):
         return
 
     def _on_ok(self) -> None:
-        """Handles the OK button click.
+        """Handle the OK button click.
 
         Validates user input parameters, generates the odometry graph if validation passes, and closes the dialog.
         """
@@ -1372,17 +1386,18 @@ class Ros2OdometryGraph(MenuHelperWindow):
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self) -> None:
-        """Handles the Cancel button click.
+        """Handle the Cancel button click.
 
         Closes the dialog without generating a graph.
         """
         self.visible = False
 
     def _check_params(self) -> bool:
-        """Validates the user-provided parameters.
+        """Validate the user-provided parameters.
 
         Returns:
             True if all parameters are valid, False otherwise.
+
         """
         stage = omni.usd.get_context().get_stage()
 
@@ -1399,17 +1414,19 @@ class Ros2OdometryGraph(MenuHelperWindow):
         return True
 
     def _on_use_existing_graph(self, check_state: bool) -> None:
-        """Handles the checkbox state change for adding to an existing graph.
+        """Handle the checkbox state change for adding to an existing graph.
 
         Args:
             check_state: Whether the checkbox is checked.
+
         """
         self._add_to_existing_graph = check_state
 
     def _on_publish_robot_tf(self, check_state: bool) -> None:
-        """Handles the checkbox state change for publishing robot TF.
+        """Handle the checkbox state change for publishing robot TF.
 
         Args:
             check_state: Whether the checkbox is checked.
+
         """
         self._tf_robot_pub = check_state

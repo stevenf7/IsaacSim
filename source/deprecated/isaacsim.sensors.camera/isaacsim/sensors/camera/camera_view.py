@@ -105,7 +105,7 @@ wp.overload(
 
 
 class CameraView(XFormPrim):
-    """Provides high level functions to deal tiled/batched data from cameras
+    """Provides high level functions to deal tiled/batched data from cameras.
 
     .. list-table::
         :header-rows: 1
@@ -338,7 +338,7 @@ class CameraView(XFormPrim):
     ) -> Union[
         Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
     ]:
-        """Get the poses of the prims in the view with respect to the world's frame
+        """Get the poses of the prims in the view with respect to the world's frame.
 
         Args:
             indices: indices to specify which prims to query. Shape (M,).
@@ -422,7 +422,7 @@ class CameraView(XFormPrim):
     ) -> Union[
         Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
     ]:
-        """Get prim poses in the view with respect to the local frame (the prim's parent frame)
+        """Get prim poses in the view with respect to the local frame (the prim's parent frame).
 
         Args:
             indices: indices to specify which prims to query. Shape (M,).
@@ -477,7 +477,6 @@ class CameraView(XFormPrim):
         Raises:
             Exception: If the provided camera_axes is not supported.
         """
-
         if camera_axes not in ["world", "ros", "usd"]:
             raise Exception(
                 "camera axes passed {} is not supported: accepted values are ["
@@ -670,7 +669,7 @@ class CameraView(XFormPrim):
     def get_focal_lengths(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> List[float]:
-        """Get the focal length for all cameras
+        """Get the focal length for all cameras.
 
         Args:
             indices: indices to specify which prims to query. Shape (M,).
@@ -706,7 +705,6 @@ class CameraView(XFormPrim):
         Returns:
             None.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
 
@@ -758,7 +756,6 @@ class CameraView(XFormPrim):
         Returns:
             None.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
 
@@ -812,7 +809,6 @@ class CameraView(XFormPrim):
         Returns:
             None.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
 
@@ -866,7 +862,6 @@ class CameraView(XFormPrim):
         Returns:
             None.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
 
@@ -922,7 +917,6 @@ class CameraView(XFormPrim):
         Returns:
             None.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
 
@@ -977,7 +971,6 @@ class CameraView(XFormPrim):
         Returns:
             None.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
 
@@ -1027,7 +1020,6 @@ class CameraView(XFormPrim):
         Returns:
             None.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
 
@@ -1074,7 +1066,6 @@ class CameraView(XFormPrim):
         Returns:
             None.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
 
@@ -1125,7 +1116,6 @@ class CameraView(XFormPrim):
         Returns:
             None.
         """
-
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
 

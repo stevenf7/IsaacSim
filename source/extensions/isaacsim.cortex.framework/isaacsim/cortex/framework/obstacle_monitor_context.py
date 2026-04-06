@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""These classes make it easy to monitor obstacles and automatically suppress and unsuppress them
+"""These classes make it easy to monitor obstacles and automatically suppress and unsuppress them.
+
 as needed.
 
 Obstacle monitors use the logical state monitoring framework to handle this functionality in the
@@ -101,7 +102,8 @@ from isaacsim.cortex.framework.motion_commander import CortexObstacleType, Motio
 
 
 class ObstacleMonitor(ABC):
-    """An obstacle monitor is a logical state monitor that handles monitoring obstacles and
+    """An obstacle monitor is a logical state monitor that handles monitoring obstacles and.
+
     automatically suppressing or unsuppressing them as needed by user defined conditions.
 
     Obstacles all have an autotoggle feature which can be activated and deactivated using
@@ -151,13 +153,15 @@ class ObstacleMonitor(ABC):
         self.disable_obstacles()
 
     def activate_autotoggle(self) -> None:
-        """Turn on autotoggle. Starts the obstacle monitor automatically enabling or disabling the
+        """Turn on autotoggle. Starts the obstacle monitor automatically enabling or disabling the.
+
         obstacle per the boolean return of is_obstacle_required().
         """
         self.is_autotoggle_active = True
 
     def deactivate_autotoggle(self) -> None:
-        """Turn off autotoggle. Stops the obstacle monitor's activity. Disables all monitored
+        """Turn off autotoggle. Stops the obstacle monitor's activity. Disables all monitored.
+
         obstacles if they're currently enabled.
         """
         self.is_autotoggle_active = False
@@ -220,14 +224,16 @@ class ObstacleMonitorContext(DfLogicalState):
         self.add_monitor(ObstacleMonitorContext._monitor_obstacles)
 
     def reset(self) -> None:
-        """Reset all obstacle monitors. Deriving classes overriding this method should call
+        """Reset all obstacle monitors. Deriving classes overriding this method should call.
+
         super().reset() to ensure the obstacle monitors are reset as well.
         """
         for obs_monitor in self.obstacle_monitors:
             obs_monitor.reset()
 
     def add_obstacle_monitors(self, obstacle_monitors: Sequence[ObstacleMonitor]) -> None:
-        """Add a sequence of obstacle monitors. Their monitor methods will be automatically added
+        """Add a sequence of obstacle monitors. Their monitor methods will be automatically added.
+
         as logical state monitors.
 
         The obstacle monitors' monitor methods will be called in the order provided.
@@ -240,7 +246,8 @@ class ObstacleMonitorContext(DfLogicalState):
         self.obstacle_monitors.extend(obstacle_monitors)
 
     def _monitor_obstacles(self) -> None:
-        """An internal monitor method which calls each obstacle monitor's monitor function. This
+        """An internal monitor method which calls each obstacle monitor's monitor function. This.
+
         method is added as a logical state monitor before any obstacle monitors are added. Obstacle
         monitors can be added any any point and all of their monitor methods will correctly be
         called from this monitor method.

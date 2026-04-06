@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for distance metric functions."""
+
 import numpy as np
 
 # NOTE:
@@ -28,13 +30,18 @@ from scipy.spatial.transform import Rotation as R
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestDistanceMetrics(omni.kit.test.AsyncTestCase):
+    """Test cases for DistanceMetrics."""
+
     async def setUp(self):
+        """Set up test fixtures."""
         pass
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         pass
 
     async def is_distance_metric(self, t1, t2, t3, dist_fun, *args):
+        """Verify that a function satisfies distance metric properties."""
         # satisfies identity
         self.assertAlmostEqual(dist_fun(t1, t1, *args), 0, delta=1e-07)
         self.assertAlmostEqual(dist_fun(t2, t2, *args), 0, delta=1e-07)
@@ -58,6 +65,7 @@ class TestDistanceMetrics(omni.kit.test.AsyncTestCase):
     """
 
     async def test_weighted_translational_distance(self):
+        """Test weighted translational distance."""
         # Check that the conditions for being a distance metric are met for 200 random translations/weights.
         for i in range(200):
             transform1 = np.random.uniform(size=(4, 4))
@@ -111,6 +119,7 @@ class TestDistanceMetrics(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_rotational_distance_angle(self):
+        """Test rotational distance angle."""
         rad2deg = 360 / np.pi / 2
         transform1_gf = Gf.Matrix4d().SetRotate(Gf.Rotation(Gf.Vec3d(0.0, 0.0, 1.0), np.pi / 4 * rad2deg))
         transform1_np = np.eye(4)
@@ -136,6 +145,7 @@ class TestDistanceMetrics(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_rotational_distance_identity_matrix_deviation(self):
+        """Test rotational distance identity matrix deviation."""
         # Check that the conditions for being a distance metric are met for 200 random rotations.
         for i in range(200):
             n = np.random.uniform(size=3)
@@ -149,6 +159,7 @@ class TestDistanceMetrics(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_rotational_distance_single_axis(self):
+        """Test rotational distance single axis."""
         r1 = R.from_rotvec([0, 0, np.pi / 2]).as_matrix()
         r2 = R.from_rotvec([0.1, 0, 0]).as_matrix()
 

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Extension template for UI component library."""
+
+
 import asyncio
 import gc
 
@@ -50,8 +53,10 @@ This class sets up standard useful callback functions in UIBuilder:
 
 
 class Extension(omni.ext.IExt):
+    """Extension class for the UI component library template."""
+
     def on_startup(self, ext_id: str):
-        """Initialize extension and UI elements"""
+        """Initialize extension and UI elements."""
 
         self.ext_id = ext_id
         self._usd_context = omni.usd.get_context()
@@ -86,6 +91,7 @@ class Extension(omni.ext.IExt):
         self._timeline = omni.timeline.get_timeline_interface()
 
     def on_shutdown(self):
+        """Clean up resources on extension shutdown."""
         self._models = {}
         remove_menu_items(self._menu_items, EXTENSION_TITLE)
 

@@ -27,7 +27,7 @@ from isaacsim.robot_motion.motion_generation.motion_policy_interface import Moti
 
 
 class MotionPolicyController(BaseController):
-    """A Controller that steps using an arbitrary MotionPolicy
+    """A Controller that steps using an arbitrary MotionPolicy.
 
     Args:
         name: Name of this controller.
@@ -56,7 +56,6 @@ class MotionPolicyController(BaseController):
         Returns:
             A wrapper object containing the desired next state for the robot.
         """
-
         self._motion_policy.set_end_effector_target(target_end_effector_position, target_end_effector_orientation)
 
         self._motion_policy.update_world()

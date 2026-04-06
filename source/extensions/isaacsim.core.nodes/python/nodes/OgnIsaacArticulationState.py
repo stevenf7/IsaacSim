@@ -22,9 +22,7 @@ from pxr import UsdPhysics
 
 
 class OgnIsaacArticulationStateInternalState(BaseResetNode):
-    """
-    Internal node state for queuing articulation state
-    """
+    """Internal node state for queuing articulation state."""
 
     def __init__(self):
         self.robot_prim = None
@@ -82,9 +80,7 @@ class OgnIsaacArticulationStateInternalState(BaseResetNode):
 
 
 class OgnIsaacArticulationState:
-    """
-    Node for queuing articulation state
-    """
+    """Node for queuing articulation state."""
 
     @staticmethod
     def internal_state():

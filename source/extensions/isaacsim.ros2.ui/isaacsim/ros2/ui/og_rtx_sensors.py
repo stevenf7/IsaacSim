@@ -59,6 +59,7 @@ class Ros2CameraGraph(MenuHelperWindow):
     """
 
     def __init__(self):
+        """Initialize the ROS2 camera graph window."""
         super().__init__("ROS2 Camera Graph", width=500, height=600)
         # Initialize parameters
         self._og_path = "/Graph/ROS_Camera"
@@ -87,7 +88,7 @@ class Ros2CameraGraph(MenuHelperWindow):
         self._build_ui()
 
     def make_graph(self) -> None:
-        """Creates a ROS2 camera graph in OmniGraph based on the configured parameters.
+        """Create a ROS2 camera graph in OmniGraph based on the configured parameters.
 
         If adding to an existing graph, validates and reuses existing nodes (tick, context, render product).
         Otherwise, creates a new graph with base nodes. Adds publisher nodes for each enabled camera output type
@@ -428,7 +429,7 @@ class Ros2CameraGraph(MenuHelperWindow):
                 )
 
     def _build_ui(self) -> None:
-        """Constructs the user interface for configuring the ROS2 camera graph.
+        """Construct the user interface for configuring the ROS2 camera graph.
 
         Creates UI elements for graph path, camera prim selection, frame ID, node namespace, and topic
         configuration. Includes checkboxes to enable/disable publishing for each camera output type (RGB, depth,
@@ -561,7 +562,7 @@ class Ros2CameraGraph(MenuHelperWindow):
         return
 
     def _on_ok(self) -> None:
-        """Handles the OK button click event.
+        """Handle the OK button click event.
 
         Retrieves all parameter values from UI widgets, validates them using parameter check, and if validation
         passes, generates the ROS2 camera graph and closes the window. Otherwise, displays a warning notification.
@@ -587,7 +588,7 @@ class Ros2CameraGraph(MenuHelperWindow):
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _check_params(self) -> bool:
-        """Validates the configured parameters before graph creation.
+        """Validate the configured parameters before graph creation.
 
         When adding to an existing graph, verifies the graph path points to a valid OmniGraph prim. Validates that
         the camera prim path points to a valid UsdGeom.Camera prim. Displays warning notifications for invalid
@@ -595,6 +596,7 @@ class Ros2CameraGraph(MenuHelperWindow):
 
         Returns:
             True if all parameters are valid, False otherwise.
+
         """
         stage = omni.usd.get_context().get_stage()
 
@@ -618,78 +620,87 @@ class Ros2CameraGraph(MenuHelperWindow):
         return False
 
     def _on_cancel(self) -> None:
-        """Handles the Cancel button click event by closing the window."""
+        """Handle the Cancel button click event by closing the window."""
         self.visible = False
 
     def _on_use_existing_graph(self, check_state: bool) -> None:
-        """Handles the checkbox state change for adding to an existing graph.
+        """Handle the checkbox state change for adding to an existing graph.
 
         Args:
             check_state: Whether the checkbox is checked.
+
         """
         self._add_to_existing_graph = check_state
 
     def _on_rgb_pub(self, check_state: bool) -> None:
-        """Handles the checkbox state change for RGB publishing.
+        """Handle the checkbox state change for RGB publishing.
 
         Args:
             check_state: Whether the checkbox is checked.
+
         """
         self._rgb_pub = check_state
 
     def _on_depth_pub(self, check_state: bool) -> None:
-        """Handles the checkbox state change for depth publishing.
+        """Handle the checkbox state change for depth publishing.
 
         Args:
             check_state: Whether the checkbox is checked.
+
         """
         self._depth_pub = check_state
 
     def _on_depth_pcl_pub(self, check_state: bool) -> None:
-        """Handles the checkbox state change for depth point cloud publishing.
+        """Handle the checkbox state change for depth point cloud publishing.
 
         Args:
             check_state: Whether the checkbox is checked.
+
         """
         self._depth_pcl_pub = check_state
 
     def _on_instance_pub(self, check_state: bool) -> None:
-        """Handles the checkbox state change for instance segmentation publishing.
+        """Handle the checkbox state change for instance segmentation publishing.
 
         Args:
             check_state: Whether the checkbox is checked.
+
         """
         self._instance_pub = check_state
 
     def _on_semantic_pub(self, check_state: bool) -> None:
-        """Handles the semantic segmentation publishing checkbox state change.
+        """Handle the semantic segmentation publishing checkbox state change.
 
         Args:
             check_state: The new state of the semantic segmentation checkbox.
+
         """
         self._semantic_pub = check_state
 
     def _on_bbox2d_tight_pub(self, check_state: bool) -> None:
-        """Handles the 2D tight bounding box publishing checkbox state change.
+        """Handle the 2D tight bounding box publishing checkbox state change.
 
         Args:
             check_state: The new state of the 2D tight bounding box checkbox.
+
         """
         self._bbox2d_tight_pub = check_state
 
     def _on_bbox2d_loose_pub(self, check_state: bool) -> None:
-        """Handles the 2D loose bounding box publishing checkbox state change.
+        """Handle the 2D loose bounding box publishing checkbox state change.
 
         Args:
             check_state: The new state of the 2D loose bounding box checkbox.
+
         """
         self._bbox2d_loose_pub = check_state
 
     def _on_bbox3d_pub(self, check_state: bool) -> None:
-        """Handles the 3D bounding box publishing checkbox state change.
+        """Handle the 3D bounding box publishing checkbox state change.
 
         Args:
             check_state: The new state of the 3D bounding box checkbox.
+
         """
         self._bbox3d_pub = check_state
 
@@ -722,6 +733,7 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
     """
 
     def __init__(self):
+        """Initialize the ROS2 RTX lidar graph window."""
         super().__init__("ROS2 RTX Lidar Graph", width=400, height=650)
         self._og_path = "/Graph/ROS_LidarRTX"
         self._frame_id = "sim_lidar"
@@ -740,7 +752,7 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
         self._build_ui()
 
     def make_graph(self) -> None:
-        """Creates or modifies an action graph for ROS2 RTX Lidar publishing.
+        """Create or modifies an action graph for ROS2 RTX Lidar publishing.
 
         Generates a new graph or extends an existing one to publish RTX Lidar data. The graph includes nodes for laser scan and/or point cloud publishing based on the configured settings. When point cloud metadata options are selected, a configuration node is created to control which metadata fields are included in the published point cloud messages.
         """
@@ -934,7 +946,7 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
             )
 
     def _build_ui(self) -> None:
-        """Builds the user interface for the RTX Lidar graph configuration window.
+        """Build the user interface for the RTX Lidar graph configuration window.
 
         Creates input fields for graph path, lidar prim selection, frame ID, node namespace, and topic names. Includes checkboxes for enabling laser scan and point cloud publishing, along with a two-column layout for selecting point cloud metadata options.
         """
@@ -1040,7 +1052,7 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
         return
 
     def _on_ok(self) -> None:
-        """Handles the OK button click event.
+        """Handle the OK button click event.
 
         Collects values from all UI input fields, validates the parameters, and generates the graph if validation passes. Closes the window upon successful graph generation.
         """
@@ -1059,19 +1071,20 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
             post_notification("Parameter check failed", status=NotificationStatus.WARNING)
 
     def _on_cancel(self) -> None:
-        """Handles the Cancel button click event.
+        """Handle the Cancel button click event.
 
         Closes the window without generating or modifying the graph.
         """
         self.visible = False
 
     def _check_params(self) -> bool:
-        """Validates the graph and lidar prim parameters.
+        """Validate the graph and lidar prim parameters.
 
         Verifies that the specified graph path exists if adding to an existing graph, and confirms that the lidar prim is a valid RTX lidar (either a Camera with IsaacRtxLidarSensorAPI or an OmniLidar with OmniSensorGenericLidarCoreAPI). Displays warning notifications for any validation failures.
 
         Returns:
             True if all parameters are valid, False otherwise.
+
         """
         stage = omni.usd.get_context().get_stage()
 
@@ -1098,26 +1111,29 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
         return False
 
     def _on_use_existing_graph(self, check_state: bool) -> None:
-        """Handles the checkbox state change for using an existing graph.
+        """Handle the checkbox state change for using an existing graph.
 
         Args:
             check_state: Whether to add nodes to an existing graph instead of creating a new one.
+
         """
         self._add_to_existing_graph = check_state
 
     def _on_laser_scan_pub(self, check_state: bool) -> None:
-        """Handles the checkbox state change for laser scan publishing.
+        """Handle the checkbox state change for laser scan publishing.
 
         Args:
             check_state: Whether to enable laser scan publishing.
+
         """
         self._laser_scan_pub = check_state
 
     def _on_point_cloud_pub(self, check_state: bool) -> None:
-        """Handles the checkbox state change for point cloud publishing.
+        """Handle the checkbox state change for point cloud publishing.
 
         Args:
             check_state: Whether to enable point cloud publishing.
+
         """
         self._point_cloud_pub = check_state
 
@@ -1127,5 +1143,6 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
         Args:
             attr_name: Name of the metadata attribute being toggled.
             check_state: Whether the metadata option is enabled.
+
         """
         self._metadata_selected[attr_name] = check_state

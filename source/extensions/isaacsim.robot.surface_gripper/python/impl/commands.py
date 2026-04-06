@@ -21,7 +21,7 @@ from usd.schema.isaac import robot_schema
 
 
 class CreateSurfaceGripper(omni.kit.commands.Command):
-    """Creates Action graph containing a Surface Gripper node, and all prims to facilitate its creation
+    """Creates Action graph containing a Surface Gripper node, and all prims to facilitate its creation.
 
     Typical usage example:
 

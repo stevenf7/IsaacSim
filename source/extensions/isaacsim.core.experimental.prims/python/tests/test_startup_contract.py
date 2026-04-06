@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test for startup contract."""
+
 import carb
 import omni.kit.app
 import omni.kit.test

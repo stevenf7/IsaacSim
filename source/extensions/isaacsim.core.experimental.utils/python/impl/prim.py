@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Functions for working with USD/USDRT prims.
-"""
+"""Functions for working with USD/USDRT prims."""
 
 from __future__ import annotations
 

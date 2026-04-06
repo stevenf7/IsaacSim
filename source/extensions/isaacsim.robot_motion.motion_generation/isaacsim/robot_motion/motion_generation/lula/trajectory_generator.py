@@ -28,7 +28,7 @@ from .utils import get_pose3
 
 
 class LulaTrajectory(Trajectory):
-    """Instance of Trajectory interface class for handling lula.Trajectory objects
+    """Instance of Trajectory interface class for handling lula.Trajectory objects.
 
     Args:
         trajectory: C-space trajectory defined continuously
@@ -84,7 +84,8 @@ class LulaTrajectory(Trajectory):
 
 
 class LulaCSpaceTrajectoryGenerator:
-    """LulaCSpaceTrajectoryGenerator is a class for generating time-optimal trajectories that connect a series of
+    """LulaCSpaceTrajectoryGenerator is a class for generating time-optimal trajectories that connect a series of.
+
     provided c-space waypoints.
 
     Args:
@@ -104,7 +105,8 @@ class LulaCSpaceTrajectoryGenerator:
         self._c_space_trajectory_generator = lula.create_c_space_trajectory_generator(self._lula_kinematics)
 
     def compute_c_space_trajectory(self, waypoint_positions: np.array) -> LulaTrajectory:
-        """Produce a trajectory from a set of provided c_space waypoint positions.  The resulting trajectory
+        """Produce a trajectory from a set of provided c_space waypoint positions.  The resulting trajectory.
+
         will use spline-based interpolation to connect the waypoints with an initial and final velocity of 0.  The trajectory is time-optimal:
         i.e. either the velocity, acceleration, or jerk limits are saturated at any given time to produce as trajectory with as short a duration as possible.
 
@@ -116,7 +118,6 @@ class LulaCSpaceTrajectoryGenerator:
             Instance of the Trajectory class which specifies continuous joint_targets for the active joints over a span of time.
             If a trajectory could not be produced, None will be returned.
         """
-
         if waypoint_positions.shape[0] < 2:
             carb.log_error("LulaTrajectoryGenerator must be passed at least two waypoints")
 
@@ -141,6 +142,7 @@ class LulaCSpaceTrajectoryGenerator:
         self, waypoint_positions: np.array, timestamps: np.array, interpolation_mode: str = "cubic_spline"
     ) -> LulaTrajectory:
         """Compute a trajectory where each c_space waypoint has a corresponding timestamp that will be exactly matched.
+
         The resulting trajectory will use spline-based interpolation to connect the waypoints with an initial and final velocity of 0.
 
         Args:
@@ -154,7 +156,6 @@ class LulaCSpaceTrajectoryGenerator:
             Instance of the Trajectory class which specifies continuous joint_targets for the active joints over a span of time.
             If a trajectory could not be produced, None will be returned.
         """
-
         if waypoint_positions.shape[0] < 2:
             carb.log_error("LulaTrajectoryGenerator must be passed at least two waypoints")
 
@@ -191,6 +192,7 @@ class LulaCSpaceTrajectoryGenerator:
 
     def get_active_joints(self) -> List[str]:
         """List of joints by name that are considered to be controllable by the TrajectoryGenerator.
+
         All inputs and outputs of the LulaTrajectoryGenerator correspond to the joints specified by get_active_joints().
 
         Returns:
@@ -237,7 +239,6 @@ class LulaCSpaceTrajectoryGenerator:
             lower_position_limits: Lower position limits of active joints.
             upper_position_limits: Upper position limits of active joints.
         """
-
         if lower_position_limits.shape[0] != self._lula_kinematics.num_c_space_coords():
             carb.log_error(
                 f"Provided lower position limits have an incorrect shape: {lower_position_limits.shape}\n"
@@ -279,7 +280,6 @@ class LulaCSpaceTrajectoryGenerator:
         Args:
             acceleration_limits: Acceleration limits of active joints.
         """
-
         if acceleration_limits.shape[0] != self._lula_kinematics.num_c_space_coords():
             carb.log_error(
                 f"Provided acceleration limits have an incorrect shape: {acceleration_limits.shape}\n"
@@ -295,7 +295,6 @@ class LulaCSpaceTrajectoryGenerator:
         Args:
             jerk_limits: Jerk limits of active joints.
         """
-
         if jerk_limits.shape[0] != self._lula_kinematics.num_c_space_coords():
             carb.log_error(
                 f"Provided jerk limits have an incorrect shape: {jerk_limits.shape}\n"
@@ -307,8 +306,9 @@ class LulaCSpaceTrajectoryGenerator:
         self._c_space_trajectory_generator.set_jerk_limits(c_space_jerk_limits)
 
     def set_solver_param(self, param_name: str, param_val: Union[int, float, str]):
-        r"""Set solver parameters for the cspace trajectory generator.  A complete list of
-            parameters is provided in this docstring.
+        r"""Set solver parameters for the cspace trajectory generator.
+
+        A complete list of parameters is provided in this docstring.
 
             'max_segment_iterations': (int)
                 In general, a trajectory is locally time-optimal if at least one derivative for one of the
@@ -484,7 +484,6 @@ class LulaTaskSpaceTrajectoryGenerator:
             Instance of the isaacsim.robot_motion.motion_generation.Trajectory class.
             If no trajectory could be generated, None is returned.
         """
-
         if positions.shape[0] != orientations.shape[0]:
             carb.log_error(
                 "Provided positions must have the same number of rows as provided orientations: one for each point in the task_space."
@@ -511,7 +510,6 @@ class LulaTaskSpaceTrajectoryGenerator:
             Instance of the isaacsim.robot_motion.motion_generation.Trajectory class.
             If no trajectory could be generated, None is returned.
         """
-
         if isinstance(path_spec, lula.CompositePathSpec):
             c_space_path = lula.convert_composite_path_spec_to_c_space(
                 path_spec, self._lula_kinematics, frame_name, self._path_conversion_config

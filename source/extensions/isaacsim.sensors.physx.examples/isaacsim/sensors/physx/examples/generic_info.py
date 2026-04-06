@@ -262,7 +262,6 @@ class Extension(omni.ext.IExt):
 
     def _set_sensor_pattern(self):
         """Set the custom scanning pattern for the Range Sensor based on streaming or repeating mode."""
-
         if self._streaming:
             self.sensor_pattern, self.origin_offsets = self._test_streaming_data()
         else:
@@ -272,6 +271,7 @@ class Extension(omni.ext.IExt):
 
     def _test_streaming_data(self):
         """Custom generated data for testing streaming data mode.
+
             Data profile: zigzag left to right, slowly going up and down.
 
         Returns:
@@ -312,6 +312,7 @@ class Extension(omni.ext.IExt):
 
     def _test_repeating_data(self):
         """Custom data to test repeating (non-streaming) mode.
+
             Data profile: zigzag left and right, half of it scanning high in zenith, the other half scanning low.
             Expected behavior: switch between the two sides scanning with no additional data being sent.
 

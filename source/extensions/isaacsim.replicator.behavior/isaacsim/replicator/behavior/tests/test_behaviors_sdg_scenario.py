@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""SDG pipeline integration tests using behavior scripts."""
+
 import carb.settings
 import omni.kit.test
 import omni.usd
@@ -21,20 +23,20 @@ from isaacsim.test.utils.image_comparison import compare_images_in_directories
 
 
 class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
-    """
-    SDG pipeline test using behavior scripts and comparing to the golden data
-    """
+    """SDG pipeline test using behavior scripts and comparing to the golden data."""
 
     DEPTH_MEAN_TOLERANCE = 5
     RGB_MEAN_TOLERANCE = 10
 
     async def setUp(self):
+        """Set up a new stage and save DLSS settings before each test."""
         await omni.kit.app.get_app().next_update_async()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         self.original_dlss_exec_mode = carb.settings.get_settings().get("rtx/post/dlss/execMode")
 
     async def tearDown(self):
+        """Close the stage and restore DLSS settings after each test."""
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
@@ -43,6 +45,7 @@ class TestBehaviorsSDGScenario(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set("rtx/post/dlss/execMode", self.original_dlss_exec_mode)
 
     async def test_behavior_sdg_pipeline_warehouse(self):
+        """Test the full SDG pipeline with behavior scripts in a warehouse scene."""
         import inspect
         import os
 

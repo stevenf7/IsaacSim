@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Extension for loading and initializing the Lula robot motion planning library."""
+
 import os
 import pathlib
 

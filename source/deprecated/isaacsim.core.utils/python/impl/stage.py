@@ -13,12 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated USD stage utility functions."""
+
 import builtins
+import collections.abc
 import contextlib
 import threading
 
 # python
 import typing
+from typing import Generator
 
 # omniverse
 import carb
@@ -36,14 +40,14 @@ _context = threading.local()  # thread-local storage to handle nested contexts a
 
 
 @contextlib.contextmanager
-def use_stage(stage: Usd.Stage) -> typing.Generator[None, None, None]:
+def use_stage(stage: Usd.Stage) -> Generator[None, None, None]:
     """Context manager that sets a thread-local stage.
 
     Args:
         stage: The stage to set in the context.
 
-    Returns:
-        A context manager for the specified stage.
+    Yields:
+        Control to the caller with the stage set in thread-local context.
 
     Raises:
         AssertionError: If the stage is not a USD stage instance.
@@ -78,7 +82,7 @@ def use_stage(stage: Usd.Stage) -> typing.Generator[None, None, None]:
 
 
 def get_current_stage(fabric: bool = False) -> typing.Union[Usd.Stage, usdrt.Usd._Usd.Stage]:
-    """Get the current open USD or Fabric stage
+    """Get the current open USD or Fabric stage.
 
     Args:
         fabric: True to get the fabric stage. False to get the USD stage.
@@ -108,7 +112,7 @@ def get_current_stage(fabric: bool = False) -> typing.Union[Usd.Stage, usdrt.Usd
 
 
 def get_current_stage_id() -> int:
-    """Get the current open stage id
+    """Get the current open stage id.
 
     Returns:
         The stage id.
@@ -165,7 +169,7 @@ async def update_stage_async() -> None:
 
 # TODO: make a generic util for setting all layer properties
 def set_stage_up_axis(axis: str = "z"):
-    """Change the up axis of the current stage
+    """Change the up axis of the current stage.
 
     Args:
         axis: valid values are ``"x"``, ``"y"`` and ``"z"``
@@ -208,7 +212,7 @@ def get_stage_up_axis() -> str:
 
 
 def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None):
-    """Deletes all prims in the stage without populating the undo command buffer
+    """Deletes all prims in the stage without populating the undo command buffer.
 
     Args:
         predicate: user defined function that takes a prim_path (str) as input and returns True/False if the prim
@@ -489,7 +493,7 @@ async def open_stage_async(usd_path: str) -> typing.Tuple[bool, int]:
 
 
 def save_stage(usd_path: str, save_and_reload_in_place: bool = True) -> bool:
-    """Save usd file to path, it will be overwritten with the current stage
+    """Save usd file to path, it will be overwritten with the current stage.
 
     Args:
         usd_path: File path to save the current stage to
@@ -567,7 +571,7 @@ def close_stage(callback_fn: typing.Callable = None) -> bool:
 
 
 def set_livesync_stage(usd_path: str, enable: bool) -> bool:
-    """Save the stage and set the Live Sync mode for real-time live editing of shared files on a Nucleus server
+    """Save the stage and set the Live Sync mode for real-time live editing of shared files on a Nucleus server.
 
     Args:
         usd_path: path to enable live sync for, it will be overwritten with the current stage
@@ -660,7 +664,7 @@ def is_stage_loading() -> bool:
 
 
 def set_stage_units(stage_units_in_meters: float):
-    """Set the stage meters per unit
+    """Set the stage meters per unit.
 
     The most common units and their values are listed in the following table:
 
@@ -696,7 +700,7 @@ def set_stage_units(stage_units_in_meters: float):
 
 
 def get_stage_units() -> float:
-    """Get the stage meters per unit currently set
+    """Get the stage meters per unit currently set.
 
     The most common units and their values are listed in the following table:
 
@@ -730,7 +734,7 @@ def get_stage_units() -> float:
 
 
 def get_next_free_path(path: str, parent: str = None) -> str:
-    """Returns the next free usd path for the current stage
+    """Returns the next free usd path for the current stage.
 
     Args:
         path: path we want to check

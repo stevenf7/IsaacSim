@@ -13,23 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test for prim."""
+
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
 from isaacsim.core.experimental.prims import Prim
 
 
 class TestPrim(omni.kit.test.AsyncTestCase):
+    """Test prim."""
+
     async def setUp(self):
-        """Method called to prepare the test fixture"""
+        """Method called to prepare the test fixture."""
         super().setUp()
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
     async def test_resolve_paths(self):
+        """Test resolve paths."""
         # create new stage
         await stage_utils.create_new_stage_async()
         # define prims

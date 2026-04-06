@@ -13,14 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Example base behavior that inherits from BaseBehavior."""
+
 import carb
 from isaacsim.replicator.behavior.base_behavior import BaseBehavior
 from pxr import Sdf, Usd
 
 
 class ExampleBaseBehavior(BaseBehavior):
-    """
-    Example randomizer that inherits from `BaseBehavior`.
+    """Example randomizer that inherits from `BaseBehavior`.
+
     It exposes an additional attribute to include the children of the prim in the randomization.
     """
 
@@ -35,6 +37,7 @@ class ExampleBaseBehavior(BaseBehavior):
     ]
 
     def on_init(self):
+        """Initialize the behavior and set up exposed attributes."""
         # Call the base class to setup the exposed attributes
         super().on_init()
 

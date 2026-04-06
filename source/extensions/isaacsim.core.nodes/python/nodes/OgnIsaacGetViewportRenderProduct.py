@@ -25,9 +25,7 @@ class OgnIsaacGetViewportRenderProductInternalState:
 
 
 class OgnIsaacGetViewportRenderProduct:
-    """
-    Isaac Sim Create Hydra Texture
-    """
+    """Isaac Sim Create Hydra Texture."""
 
     @staticmethod
     def internal_state():

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test suite for Newton rigid contact view pattern matching functionality."""
+
 import isaacsim.physics.newton
 import isaacsim.physics.newton.tensors
 import omni.kit.app

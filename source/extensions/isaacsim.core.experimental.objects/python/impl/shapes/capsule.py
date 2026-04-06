@@ -31,7 +31,8 @@ from .shape import Shape
 
 
 class Capsule(Shape):
-    """High level class for creating/wrapping USD Capsule (primitive cylinder capped by two half spheres,
+    """High level class for creating/wrapping USD Capsule (primitive cylinder capped by two half spheres,.
+
     centered at the origin, whose spine is along the specified axis) prims.
 
     .. note::

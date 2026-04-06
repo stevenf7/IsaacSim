@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated simulation command utilities."""
 
 import carb
 import omni.kit.commands
@@ -87,7 +88,7 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
 
 
 class IsaacSimTeleportPrim(omni.kit.commands.Command):
-    """Command to set a transform of a prim. This uses dynamic_control to properly handle physics objects and articulation
+    """Command to set a transform of a prim. This uses dynamic_control to properly handle physics objects and articulation.
 
     Typical usage example:
 
@@ -136,7 +137,7 @@ class IsaacSimTeleportPrim(omni.kit.commands.Command):
 
 
 class IsaacSimScalePrim(omni.kit.commands.Command):
-    """Command to set a scale of a prim
+    """Command to set a scale of a prim.
 
     Typical usage example:
 

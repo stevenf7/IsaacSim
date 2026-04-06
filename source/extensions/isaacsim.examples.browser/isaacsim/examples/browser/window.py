@@ -50,7 +50,7 @@ class BrowserWidget(TreeFolderBrowserWidgetEx):
 
 
 class ExampleBrowserWindow(ui.Window):
-    """Represent a window to show Assets
+    """Represent a window to show Assets.
 
     Args:
         model: The browser model containing the data to display.

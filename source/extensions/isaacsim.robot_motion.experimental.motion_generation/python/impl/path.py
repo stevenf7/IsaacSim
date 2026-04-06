@@ -123,7 +123,6 @@ class Path:
             ValueError: If consecutive waypoints are equal within the allowed tolerances.
             ValueError: If there are not at least two waypoints.
         """
-
         return MinimalTimeJointTrajectory(
             path=self,
             max_velocities=place(max_velocities, dtype=self._waypoints.dtype, device=self._waypoints.device),

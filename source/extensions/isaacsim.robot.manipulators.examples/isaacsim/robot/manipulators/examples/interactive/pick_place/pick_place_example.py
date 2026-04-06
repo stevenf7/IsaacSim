@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Simple Franka Pick-and-Place Interactive Example
+"""Simple Franka Pick-and-Place Interactive Example.
 
 This interactive example demonstrates the simplified Franka pick-and-place controller
 without complex layers or RL concepts. Users can trigger pick-and-place actions

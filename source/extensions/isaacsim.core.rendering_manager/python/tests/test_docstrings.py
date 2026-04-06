@@ -20,13 +20,13 @@ from isaacsim.core.rendering_manager import RenderingManager, ViewportManager
 
 class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
     async def setUp(self):
-        """Method called to prepare the test fixture"""
+        """Method called to prepare the test fixture."""
         super().setUp()
         # create new stage
         await stage_utils.create_new_stage_async()
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------

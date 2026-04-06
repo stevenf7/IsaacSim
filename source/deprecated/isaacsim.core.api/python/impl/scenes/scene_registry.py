@@ -43,7 +43,7 @@ from isaacsim.core.prims import (
 
 
 class SceneRegistry(object):
-    """Class to keep track of the different types of objects added to the scene
+    """Class to keep track of the different types of objects added to the scene.
 
     Example:
 
@@ -387,7 +387,7 @@ class SceneRegistry(object):
         return
 
     def add_xform_view(self, name: str, xform_prim_view: XFormPrim) -> None:
-        """Register a ``XFormPrim`` (or subclass) object
+        """Register a ``XFormPrim`` (or subclass) object.
 
         Args:
             name: Object name
@@ -397,7 +397,7 @@ class SceneRegistry(object):
         return
 
     def add_deformable(self, name: str, deformable: SingleDeformablePrim) -> None:
-        """Register a ``SingleDeformablePrim`` (or subclass) object
+        """Register a ``SingleDeformablePrim`` (or subclass) object.
 
         Args:
             name: Object name
@@ -407,7 +407,7 @@ class SceneRegistry(object):
         return
 
     def add_deformable_view(self, name: str, deformable_prim_view: DeformablePrim) -> None:
-        """Register a ``DeformablePrim`` (or subclass) object
+        """Register a ``DeformablePrim`` (or subclass) object.
 
         Args:
             name: Object name
@@ -417,7 +417,7 @@ class SceneRegistry(object):
         return
 
     def add_deformable_material(self, name: str, deformable_material: DeformableMaterial) -> None:
-        """Register a ``DeformableMaterial`` (or subclass) object
+        """Register a ``DeformableMaterial`` (or subclass) object.
 
         Args:
             name: Object name
@@ -427,7 +427,7 @@ class SceneRegistry(object):
         return
 
     def add_deformable_material_view(self, name: str, deformable_material_view: DeformableMaterialView) -> None:
-        """Register a ``DeformableMaterialView`` (or subclass) object
+        """Register a ``DeformableMaterialView`` (or subclass) object.
 
         Args:
             name: Object name
@@ -437,7 +437,7 @@ class SceneRegistry(object):
         return
 
     def add_cloth(self, name: str, cloth: SingleClothPrim) -> None:
-        """Register a ``SingleClothPrim`` (or subclass) object
+        """Register a ``SingleClothPrim`` (or subclass) object.
 
         Args:
             name: Object name
@@ -447,7 +447,7 @@ class SceneRegistry(object):
         return
 
     def add_cloth_view(self, name: str, cloth_prim_view: ClothPrim) -> None:
-        """Register a ``ClothPrim`` (or subclass) object
+        """Register a ``ClothPrim`` (or subclass) object.
 
         Args:
             name: Object name
@@ -457,7 +457,7 @@ class SceneRegistry(object):
         return
 
     def add_particle_system(self, name: str, particle_system: SingleParticleSystem) -> None:
-        """Register a ``SingleParticleSystem`` (or subclass) object
+        """Register a ``SingleParticleSystem`` (or subclass) object.
 
         Args:
             name: Object name
@@ -467,7 +467,7 @@ class SceneRegistry(object):
         return
 
     def add_particle_system_view(self, name: str, particle_system_view: ParticleSystem) -> None:
-        """Register a ``ParticleSystem`` (or subclass) object
+        """Register a ``ParticleSystem`` (or subclass) object.
 
         Args:
             name: Object name
@@ -477,7 +477,7 @@ class SceneRegistry(object):
         return
 
     def add_particle_material(self, name: str, particle_material: ParticleMaterial) -> None:
-        """Register a ``ParticleMaterial`` (or subclass) object
+        """Register a ``ParticleMaterial`` (or subclass) object.
 
         Args:
             name: Object name
@@ -487,7 +487,7 @@ class SceneRegistry(object):
         return
 
     def add_particle_material_view(self, name: str, particle_material_view: ParticleMaterialView) -> None:
-        """Register a ``ParticleMaterialView`` (or subclass) object
+        """Register a ``ParticleMaterialView`` (or subclass) object.
 
         Args:
             name: Object name
@@ -497,7 +497,7 @@ class SceneRegistry(object):
         return
 
     def add_xform(self, name: str, xform: SingleXFormPrim) -> None:
-        """Register a ``SingleXFormPrim`` (or subclass) object
+        """Register a ``SingleXFormPrim`` (or subclass) object.
 
         Args:
             name: Object name
@@ -507,7 +507,7 @@ class SceneRegistry(object):
         return
 
     def add_sensor(self, name: str, sensor: BaseSensor) -> None:
-        """Register a ``BaseSensor`` (or subclass) object
+        """Register a ``BaseSensor`` (or subclass) object.
 
         Args:
             name: Object name
@@ -518,7 +518,7 @@ class SceneRegistry(object):
         return
 
     def name_exists(self, name: str) -> bool:
-        """Check if an object exists in the registry by its name
+        """Check if an object exists in the registry by its name.
 
         Args:
             name: Object name
@@ -540,7 +540,7 @@ class SceneRegistry(object):
         return False
 
     def remove_object(self, name: str) -> None:
-        """Remove and object from the registry
+        """Remove and object from the registry.
 
         .. note::
 
@@ -567,7 +567,7 @@ class SceneRegistry(object):
         raise Exception("Cannot remove object {} from the scene since it doesn't exist".format(name))
 
     def get_object(self, name: str) -> SingleXFormPrim:
-        """Get a registered object by its name if exists otherwise None
+        """Get a registered object by its name if exists otherwise None.
 
         Args:
             name: Object name

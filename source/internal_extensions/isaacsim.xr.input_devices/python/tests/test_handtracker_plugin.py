@@ -8,9 +8,7 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
-"""
-omni.kit.test-based tests for the Isaac Sim Hand Tracker C-API plugin bridge.
-"""
+"""omni.kit.test-based tests for the Isaac Sim Hand Tracker C-API plugin bridge."""
 
 import os
 import sys
@@ -19,11 +17,14 @@ import omni.kit.test
 
 
 class TestHandTrackerPlugin(omni.kit.test.AsyncTestCase):
+    """Test hand tracker plugin."""
 
     async def setUp(self):
+        """Set up test fixtures."""
         pass
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         try:
             import isaacsim.xr.input_devices as xr
 
@@ -35,6 +36,7 @@ class TestHandTrackerPlugin(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def test_handtracker_plugin_bindings(self):
+        """Test handtracker plugin bindings."""
         import isaacsim.xr.input_devices as xr
 
         # Explicitly load the test hand-tracker shared library from this extension's bin folder.

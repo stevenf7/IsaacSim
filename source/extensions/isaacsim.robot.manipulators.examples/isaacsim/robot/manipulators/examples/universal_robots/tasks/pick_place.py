@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Pick-and-place task definition for Universal Robots arms."""
+
 from typing import Optional
 
 import isaacsim.core.api.tasks as tasks

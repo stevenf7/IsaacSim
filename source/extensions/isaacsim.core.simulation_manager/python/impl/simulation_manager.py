@@ -44,7 +44,8 @@ _SETTING_PHYSICS_SUPPRESS_READBACK = "/physics/suppressReadback"
 
 
 class SimulationManager:
-    """This class provides functions that take care of many time-related events such as
+    """This class provides functions that take care of many time-related events such as.
+
     warm starting simulation in order for the physics data to be retrievable.
     Adding/ removing callback functions that gets triggered with certain events such as a physics step,
     on post reset, on physics ready..etc.
@@ -1861,7 +1862,7 @@ class SimulationManager:
 
     @classmethod
     def set_solver_type(cls, solver_type: str, physics_scene: str | None = None):
-        """solver used for simulation.
+        """Solver used for simulation.
 
         .. deprecated:: 1.8.0
 

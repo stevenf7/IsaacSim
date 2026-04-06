@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Jupyter notebook launcher for Isaac Sim."""
+
 import os
 import sys
 from typing import List
@@ -38,8 +40,10 @@ from jupyter_client.kernelspec import KernelSpecManager as _KernelSpecManager
 
 
 class KernelSpecManager(_KernelSpecManager):
+    """Custom kernel spec manager that loads Isaac Sim kernels."""
+
     def __init__(self, *args, **kwargs):
-        """Custom kernel spec manager to allow for loading of custom kernels"""
+        """Custom kernel spec manager to allow for loading of custom kernels."""
         super().__init__(*args, **kwargs)
         kernel_dir = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "kernels"))
         if kernel_dir not in self.kernel_dirs:
@@ -47,7 +51,7 @@ class KernelSpecManager(_KernelSpecManager):
 
 
 def main(ip: str = "127.0.0.1", port: int = 8228, argv: List[str] = []) -> None:
-    """Entry point for launching Jupyter Notebook/Lab
+    """Entry point for launching Jupyter Notebook/Lab.
 
     :param ip: Notebook server IP address (default: "127.0.0.1")
     :type code: str, optional

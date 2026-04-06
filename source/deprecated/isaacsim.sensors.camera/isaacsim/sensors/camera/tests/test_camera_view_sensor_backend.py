@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for camera view sensor backend configurations."""
+
 import omni.kit.app
 import omni.kit.test
 import omni.timeline
@@ -28,11 +30,13 @@ class TestCameraViewSensorBackend(omni.kit.test.AsyncTestCase):
     """Tests CameraView sensor with different SimulationManager backend configurations."""
 
     async def setUp(self):
+        """Set up test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         await create_new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
         SimulationManager.set_backend("numpy")

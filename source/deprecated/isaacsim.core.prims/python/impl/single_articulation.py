@@ -363,7 +363,6 @@ class SingleArticulation(_SinglePrimWrapper):
 
             >>> prim.disable_gravity()
         """
-
         self._articulation_view.set_body_disable_gravity(
             self._backend_utils.create_tensor_from_list([[True] * self.num_bodies], dtype="uint8")
         )
@@ -384,7 +383,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return
 
     def set_world_velocity(self, velocity: np.ndarray) -> None:
-        """Set the articulation root velocity
+        """Set the articulation root velocity.
 
         Args:
             velocity: linear and angular velocity to set the root prim to. Shape (6,).
@@ -394,7 +393,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return
 
     def get_world_velocity(self) -> np.ndarray:
-        """Get the articulation root velocity
+        """Get the articulation root velocity.
 
         Returns:
             current velocity of the the root prim. Shape (6,).
@@ -403,7 +402,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return velocities[0]
 
     def set_joint_positions(self, positions: np.ndarray, joint_indices: list | np.ndarray | None = None) -> None:
-        """Set the articulation joint positions
+        """Set the articulation joint positions.
 
         .. warning::
 
@@ -439,7 +438,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return
 
     def get_joint_positions(self, joint_indices: list | np.ndarray | None = None) -> np.ndarray:
-        """Get the articulation joint positions
+        """Get the articulation joint positions.
 
         Args:
             joint_indices: indices to specify which joints to read.
@@ -469,7 +468,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return result
 
     def set_joint_velocities(self, velocities: np.ndarray, joint_indices: list | np.ndarray | None = None) -> None:
-        """Set the articulation joint velocities
+        """Set the articulation joint velocities.
 
         .. warning::
 
@@ -505,7 +504,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return
 
     def set_joint_efforts(self, efforts: np.ndarray, joint_indices: list | np.ndarray | None = None) -> None:
-        """Set the articulation joint efforts
+        """Set the articulation joint efforts.
 
         .. note::
 
@@ -541,7 +540,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return
 
     def get_joint_velocities(self, joint_indices: list | np.ndarray | None = None) -> np.ndarray:
-        """Get the articulation joint velocities
+        """Get the articulation joint velocities.
 
         Args:
             joint_indices: indices to specify which joints to read.
@@ -571,7 +570,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return result
 
     def get_measured_joint_efforts(self, joint_indices: list | np.ndarray | None = None) -> np.ndarray:
-        """Returns the efforts computed/measured by the physics solver of the joint forces in the DOF motion direction
+        """Returns the efforts computed/measured by the physics solver of the joint forces in the DOF motion direction.
 
         Args:
             joint_indices: indices to specify which joints to read.
@@ -606,7 +605,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return result
 
     def get_applied_joint_efforts(self, joint_indices: list | np.ndarray | None = None) -> np.ndarray:
-        """Get the efforts applied to the joints set by the ``set_joint_efforts`` method
+        """Get the efforts applied to the joints set by the ``set_joint_efforts`` method.
 
         Args:
             joint_indices: indices to specify which joints to read.
@@ -798,7 +797,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return JointsState(positions=joints_state.positions[0], velocities=joints_state.velocities[0], efforts=None)
 
     def get_articulation_controller(self) -> ArticulationController:
-        """Get the articulation controller
+        """Get the articulation controller.
 
         .. note::
 
@@ -819,7 +818,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return self._articulation_controller
 
     def set_linear_velocity(self, velocity: np.ndarray) -> None:
-        """Set the linear velocity of the root articulation prim
+        """Set the linear velocity of the root articulation prim.
 
         .. warning::
 
@@ -864,7 +863,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return result
 
     def set_angular_velocity(self, velocity: np.ndarray) -> None:
-        """Set the angular velocity of the root articulation prim
+        """Set the angular velocity of the root articulation prim.
 
         .. warning::
 
@@ -909,7 +908,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return result
 
     def apply_action(self, control_actions: ArticulationAction) -> None:
-        """Apply joint positions, velocities and/or efforts to control an articulation
+        """Apply joint positions, velocities and/or efforts to control an articulation.
 
         Args:
             control_actions: Actions to be applied for next physics step.
@@ -960,7 +959,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return self._articulation_controller.get_applied_action()
 
     def set_solver_position_iteration_count(self, count: int) -> None:
-        """Set the solver (position) iteration count for the articulation
+        """Set the solver (position) iteration count for the articulation.
 
         The solver iteration count determines how accurately contacts, drives, and limits are resolved.
         Search for *Solver Iteration Count* in |physx_docs| for more details.
@@ -983,7 +982,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return
 
     def get_solver_position_iteration_count(self) -> int:
-        """Get the solver (position) iteration count for the articulation
+        """Get the solver (position) iteration count for the articulation.
 
         The solver iteration count determines how accurately contacts, drives, and limits are resolved.
         Search for *Solver Iteration Count* in |physx_docs| for more details.
@@ -1001,7 +1000,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return self._articulation_view.get_solver_position_iteration_counts()[0]
 
     def set_solver_velocity_iteration_count(self, count: int) -> None:
-        """Set the solver (velocity) iteration count for the articulation
+        """Set the solver (velocity) iteration count for the articulation.
 
         The solver iteration count determines how accurately contacts, drives, and limits are resolved.
         Search for *Solver Iteration Count* in |physx_docs| for more details.
@@ -1024,7 +1023,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return
 
     def get_solver_velocity_iteration_count(self) -> int:
-        """Get the solver (velocity) iteration count for the articulation
+        """Get the solver (velocity) iteration count for the articulation.
 
         The solver iteration count determines how accurately contacts, drives, and limits are resolved.
         Search for *Solver Iteration Count* in |physx_docs| for more details.
@@ -1042,7 +1041,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return self._articulation_view.get_solver_velocity_iteration_counts()[0]
 
     def set_stabilization_threshold(self, threshold: float) -> None:
-        """Set the mass-normalized kinetic energy below which the articulation may participate in stabilization
+        """Set the mass-normalized kinetic energy below which the articulation may participate in stabilization.
 
         Search for *Stabilization Threshold* in |physx_docs| for more details
 
@@ -1060,7 +1059,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return
 
     def get_stabilization_threshold(self) -> float:
-        """Get the mass-normalized kinetic energy below which the articulation may participate in stabilization
+        """Get the mass-normalized kinetic energy below which the articulation may participate in stabilization.
 
         Search for *Stabilization Threshold* in |physx_docs| for more details
 
@@ -1077,7 +1076,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return self._articulation_view.get_stabilization_thresholds()[0]
 
     def set_enabled_self_collisions(self, flag: bool) -> None:
-        """Set the enable self collisions flag (``physxArticulation:enabledSelfCollisions``)
+        """Set the enable self collisions flag (``physxArticulation:enabledSelfCollisions``).
 
         Args:
             flag: whether to enable self collisions
@@ -1093,7 +1092,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return
 
     def get_enabled_self_collisions(self) -> int:
-        """Get the enable self collisions flag (``physxArticulation:enabledSelfCollisions``)
+        """Get the enable self collisions flag (``physxArticulation:enabledSelfCollisions``).
 
         Returns:
             self collisions flag (boolean interpreted as int)
@@ -1108,7 +1107,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return self._articulation_view.get_enabled_self_collisions()[0]
 
     def set_sleep_threshold(self, threshold: float) -> None:
-        """Set the threshold for articulations to enter a sleep state
+        """Set the threshold for articulations to enter a sleep state.
 
         Search for *Articulations and Sleeping* in |physx_docs| for more details
 
@@ -1126,7 +1125,7 @@ class SingleArticulation(_SinglePrimWrapper):
         return
 
     def get_sleep_threshold(self) -> float:
-        """Get the threshold for articulations to enter a sleep state
+        """Get the threshold for articulations to enter a sleep state.
 
         Search for *Articulations and Sleeping* in |physx_docs| for more details
 

@@ -682,7 +682,6 @@ class GripperWindow(MenuHelperWindow):
         Creates the user interface elements for configuring gripper parameters including graph path,
         robot and gripper prim selection, speed settings, joint limits, and keyboard control options.
         """
-
         self._og_path = get_next_free_path(self._og_path, "")
         og_path_def = ParamWidget.FieldDef(
             name="og_path",
@@ -812,7 +811,6 @@ class GripperWindow(MenuHelperWindow):
         Generates an OmniGraph with gripper controller nodes, array nodes for joint positions and speeds,
         and optional keyboard input nodes. Connects all nodes to form a complete gripper control system.
         """
-
         # stop physics before adding graphs
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.stop()

@@ -397,7 +397,10 @@ def compute(db: og.Database):
 
 
 class Extension(omni.ext.IExt):
+    """Extension providing the ROS 2 waypoint follower example."""
+
     def on_startup(self, ext_id: str):
+        """Initialize the extension."""
         self._ext_id = ext_id
         """Initialize extension and UI elements"""
         self._timeline = omni.timeline.get_timeline_interface()
@@ -414,6 +417,7 @@ class Extension(omni.ext.IExt):
         )
 
     def build_ui(self):
+        """Build the extension user interface."""
         # check if ros2 bridge is enabled before proceeding
         extension_enabled = omni.kit.app.get_app().get_extension_manager().is_extension_enabled("isaacsim.ros2.bridge")
         if not extension_enabled:
@@ -643,7 +647,7 @@ class Extension(omni.ext.IExt):
                 )
 
     def on_shutdown(self):
-        """Cleanup objects on extension shutdown"""
+        """Cleanup objects on extension shutdown."""
         get_browser_instance().deregister_example(name=MENU_NAME, category=MENU_CATEGORY)
         self._timeline.stop()
         gc.collect()

@@ -28,6 +28,7 @@ from isaacsim.gui.components.element_wrappers.ui_widget_wrappers import *
 
 class LoadButton(UIWidgetWrapper):
     """Create a special type of UI button that connects to the isaacsim.core.api.World to enable convenient "Load" functionality.
+
     The World acts as a scene manager that simplifies user interaction with the simulator.
     This provides the user with certain guarantees at the time that their callback functions are
     called.
@@ -75,23 +76,17 @@ class LoadButton(UIWidgetWrapper):
 
     @property
     def label(self) -> ui.Label:
-        """
-        Returns:
-            omni.ui.Label: UI Label element that contains the descriptive text
-        """
+        """Get the UI Label element that contains the descriptive text."""
         return self._label
 
     @property
     def button(self) -> ui.Button:
-        """
-        Returns:
-            omni.ui.Button: UI Button element
-        """
+        """Get the UI Button element."""
         return self._button
 
     def set_setup_scene_fn(self, setup_scene_fn: Callable):
-        """
-        Set the setup_scene_fn that will be called when the LoadButton is clicked.
+        """Set the setup_scene_fn that will be called when the LoadButton is clicked.
+
         The setup_scene_fn() is called with the guarantee that a World has been created.  In this function,
         the user is meant to add the asssets they want to the USD stage.  These assets then must also be added to
         the World. World is a singleton class.  And example setup_scene_fn implementation would include:
@@ -109,8 +104,8 @@ class LoadButton(UIWidgetWrapper):
         self.setup_scene_fn = setup_scene_fn
 
     def set_setup_scene_fn(self, setup_scene_fn: Callable):
-        """
-        Set the setup_scene_fn that will be called when the LoadButton is clicked.
+        """Set the setup_scene_fn that will be called when the LoadButton is clicked.
+
         The setup_scene_fn() is called with the guarantee that a World has been created.  In this function,
         the user is meant to add the asssets they want to the USD stage.  These assets then must also be added to
         the World. World is a singleton class.  An example setup_scene_fn implementation would include:
@@ -127,8 +122,7 @@ class LoadButton(UIWidgetWrapper):
         self.setup_scene_fn = setup_scene_fn
 
     def set_setup_post_load_fn(self, setup_post_load_fn: Callable):
-        """
-        Set the setup_post_load_fn that will be called when the LoadButton is clicked.
+        """Set the setup_post_load_fn that will be called when the LoadButton is clicked.
 
         Args:
             setup_post_load_fn: A function that will be called when the LoadButton is clicked.
@@ -140,8 +134,8 @@ class LoadButton(UIWidgetWrapper):
         self.setup_post_load_fn = setup_post_load_fn
 
     def set_world_settings(self, **kwargs: object):
-        """
-        Pressing a Load Button will create a new instance of the isaacsim.core.api.World.
+        """Pressing a Load Button will create a new instance of the isaacsim.core.api.World.
+
         The default settings will be used unless the user specifies new settings at runtime before the Load Button is clicked.
 
         The default settings will ensure that the physics and rendering timesteps are fixed at 1/60.0 seconds (see set_defaults argument).
@@ -169,7 +163,6 @@ class LoadButton(UIWidgetWrapper):
 
     def _on_clicked_fn_wrapper(self):
         """This function is called when the Load Button is Clicked."""
-
         # From an extension workflow, the stage and world need to be interacted with asynchronously
 
         async def _on_click_async():
@@ -224,6 +217,7 @@ class LoadButton(UIWidgetWrapper):
 
 class ResetButton(UIWidgetWrapper):
     """Create a special type of UI button that connects to the isaacsim.core.api.World to perform a reset.
+
     If no World instance exists when this button will be clicked, this button will not create one.
     In this case, the button logs a warning and calls user callback functions with no guarantees
     on the Simulator State.
@@ -289,7 +283,6 @@ class ResetButton(UIWidgetWrapper):
 
     def _on_clicked_fn_wrapper(self):
         """This function is called when the Reset Button is Clicked."""
-
         # From an extension workflow, the stage and world need to be interacted with asynchronously
 
         async def _on_click_async():

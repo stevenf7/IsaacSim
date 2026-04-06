@@ -47,7 +47,8 @@ class LulaInterfaceHelper(LulaWorld):
         self._meters_per_unit = get_stage_units()
 
     def set_robot_base_pose(self, robot_position: np.array, robot_orientation: np.array):
-        """Update position of the robot base. Until this function is called, Lula will assume the base pose
+        """Update position of the robot base. Until this function is called, Lula will assume the base pose.
+
         to be at the origin with identity rotation.
 
         Args:
@@ -78,7 +79,7 @@ class LulaInterfaceHelper(LulaWorld):
         ]
 
     def get_watched_joints(self) -> List:
-        """Lula does not currently support watching joint states that are not controllable
+        """Lula does not currently support watching joint states that are not controllable.
 
         Returns:
             Always returns an empty list.
@@ -87,8 +88,9 @@ class LulaInterfaceHelper(LulaWorld):
 
     def get_end_effector_pose(self, active_joint_positions: np.array, frame_name: str) -> Tuple[np.array, np.array]:
         """Return pose of robot end effector given current joint positions.
+
         The end effector position will be transformed into world coordinates based
-        on the believed position of the robot base.  See set_robot_base_pose()
+        on the believed position of the robot base.  See set_robot_base_pose().
 
         Args:
             active_joint_positions: positions of the active joints in the robot

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utility functions for camera sensor tests."""
+
 import os
 
 import cv2
@@ -63,6 +65,7 @@ def debug_draw_pointcloud(pointcloud_data: object, color: object, size: float, c
 def save_image(
     image, filename: str, golden_dir: str, test_dir: str, save_as_golden: bool = False, save_as_test: bool = False
 ) -> None:
+    """Save an image to the golden or test directory."""
     if not filename.lower().endswith(".png"):
         filename += ".png"
     if save_as_test:
@@ -78,6 +81,8 @@ def save_image(
 
 
 def compare_images(src1, src2, ksize=5, thresh=30, hist_div=1):
+    """Compare two images using histogram correlation and background subtraction."""
+
     def compare_histograms(src1, src2):
         # gray scale images
         if src1.ndim == 2:

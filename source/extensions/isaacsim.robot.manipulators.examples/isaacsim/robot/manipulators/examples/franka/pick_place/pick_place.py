@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Pick-and-place example scenario for the Franka robot."""
+
 from typing import List, Optional
 
 import isaacsim.core.experimental.utils.stage as stage_utils

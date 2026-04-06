@@ -38,6 +38,7 @@ class TestContactSensorCppInterface(omni.kit.test.AsyncTestCase):
     """Validate IContactSensor C++ interface produces correct readings/raw data."""
 
     async def setUp(self):
+        """Set up test fixtures."""
         await stage_utils.create_new_stage_async()
         self._physics_rate = 60
         SimulationManager.setup_simulation(dt=1.0 / self._physics_rate)
@@ -60,6 +61,7 @@ class TestContactSensorCppInterface(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         if self._timeline.is_playing():
             self._timeline.stop()
         SimulationManager.invalidate_physics()

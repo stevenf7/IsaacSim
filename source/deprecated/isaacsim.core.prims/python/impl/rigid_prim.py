@@ -38,7 +38,8 @@ torch = import_module("torch")
 
 
 class RigidPrim(XFormPrim):
-    """Provides high level functions to deal with prims (one or many) that have Rigid Body API applied to them
+    """Provides high level functions to deal with prims (one or many) that have Rigid Body API applied to them.
+
     as well as their attributes/properties.
 
     This class wraps all matching rigid prims found at the regex provided at the ``prim_paths_expr`` argument
@@ -233,7 +234,7 @@ class RigidPrim(XFormPrim):
         return self._num_shapes
 
     def is_physics_handle_valid(self) -> bool:
-        """Check if rigid prim view's physics handler is initialized
+        """Check if rigid prim view's physics handler is initialized.
 
         .. warning::
 
@@ -395,6 +396,7 @@ class RigidPrim(XFormPrim):
             indices: indices to specify which prims to query. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
                 Defaults to None (i.e: all prims in the view)
+
         Returns:
             first index is positions in the local frame of the prims. shape is (M, 3).
             second index is quaternion orientations in the local frame of the prims.
@@ -527,7 +529,7 @@ class RigidPrim(XFormPrim):
         velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Set the linear velocities of the prims in the view
+        """Set the linear velocities of the prims in the view.
 
         The method does this through the PhysX API only. It has to be called after initialization.
         Note: This method is not supported for the gpu pipeline. ``set_velocities`` method should be used instead.
@@ -660,7 +662,7 @@ class RigidPrim(XFormPrim):
         velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Set the angular velocities of the prims in the view
+        """Set the angular velocities of the prims in the view.
 
         The method does this through the physx API only. It has to be called after initialization.
         Note: This method is not supported for the gpu pipeline. ``set_velocities`` method should be used instead.
@@ -937,6 +939,7 @@ class RigidPrim(XFormPrim):
         is_global: bool = True,
     ) -> None:
         """Applies forces and torques to prims in the view. The forces and/or torques can be in local or global coordinates.
+
         The forces can applied at a location given by positions variable.
 
         Args:
@@ -1579,7 +1582,7 @@ class RigidPrim(XFormPrim):
     def enable_rigid_body_physics(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> None:
-        """Enable rigid body physics (enabled by default)
+        """Enable rigid body physics (enabled by default).
 
         When enabled, the objects will be moved by external forces such as gravity and collisions
 
@@ -1623,7 +1626,7 @@ class RigidPrim(XFormPrim):
     def disable_rigid_body_physics(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> None:
-        """Disable rigid body physics (enabled by default)
+        """Disable rigid body physics (enabled by default).
 
         When disabled, the objects will not be moved by external forces such as gravity and collisions
 
@@ -1750,7 +1753,8 @@ class RigidPrim(XFormPrim):
         angular_velocities: np.ndarray | torch.Tensor | wp.array | None = None,
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
-        """Set the default state (position, orientation and linear and angular velocities) of prims in the view,
+        """Set the default state (position, orientation and linear and angular velocities) of prims in the view,.
+
         that will be used after each reset.
 
         .. note::
@@ -1841,7 +1845,8 @@ class RigidPrim(XFormPrim):
         return
 
     def get_default_state(self) -> DynamicsViewState:
-        """Default state (position, orientation and linear and angular velocities) of prims in the view,
+        """Default state (position, orientation and linear and angular velocities) of prims in the view,.
+
         that is used after each reset.
 
         Returns:
@@ -1882,7 +1887,7 @@ class RigidPrim(XFormPrim):
         return self._dynamics_default_state
 
     def get_current_dynamic_state(self) -> DynamicsViewState:
-        """Current rigid body states (position, orientation and linear and angular velocities)
+        """Current rigid body states (position, orientation and linear and angular velocities).
 
         Returns:
             The dynamic state of the rigid bodies
@@ -1936,7 +1941,7 @@ class RigidPrim(XFormPrim):
         clone: bool = True,
         dt: float = 1.0,
     ) -> np.ndarray | torch.Tensor | wp.indexedarray:
-        """Return the net contact forces on prims
+        """Return the net contact forces on prims.
 
         .. note::
 
@@ -1989,7 +1994,7 @@ class RigidPrim(XFormPrim):
         clone: bool = True,
         dt: float = 1.0,
     ) -> np.ndarray | torch.Tensor | wp.indexedarray:
-        """Return the contact forces between the prims in the view and the filter prims
+        """Return the contact forces between the prims in the view and the filter prims.
 
         E.g., a matrix of dimension ``(self.count, _contact_view.num_filters, 3)`` where ``_contact_view.num_filters``
         is determined according to the ``contact_filter_prim_paths_expr`` parameter
@@ -2166,7 +2171,8 @@ class RigidPrim(XFormPrim):
         np.ndarray | torch.Tensor | wp.indexedarray,
         np.ndarray | torch.Tensor | wp.indexedarray,
     ]:
-        """Get friction data between the prims in the view and the filter prims. Specifically, this method provides frictional contact forces,
+        """Get friction data between the prims in the view and the filter prims. Specifically, this method provides frictional contact forces,.
+
         and points. The data in reported for number of anchor points that includes tangential forces in a single tangent direction to contact normal.
         Given to the dynamic nature of collision between bodies, this method will provide buffers of friction data arranged sequentially for each pair.
         The starting index and the number of contact data points for each pair in this stream can be realized from pair_contacts_start_indices,
@@ -2198,7 +2204,7 @@ class RigidPrim(XFormPrim):
             return None
 
     def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
-        """Create a physics simulation view if not passed and set other properties using the PhysX tensor API
+        """Create a physics simulation view if not passed and set other properties using the PhysX tensor API.
 
         .. note::
 
@@ -2273,7 +2279,7 @@ class RigidPrim(XFormPrim):
         return
 
     def _on_post_reset(self, event: object) -> None:
-        """Reset the rigid prims to their default states (positions, orientations and linear and angular velocities)
+        """Reset the rigid prims to their default states (positions, orientations and linear and angular velocities).
 
         Args:
             event: Post-reset event (unused but required for event handling).

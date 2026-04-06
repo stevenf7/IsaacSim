@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Occupancy map UI extension for Isaac Sim."""
+
+
 import asyncio
 import gc
 import os
@@ -483,7 +486,6 @@ class OccupancyMapWindow(MenuHelperWindow):
         Each cube is scaled to match the cell size and colored cyan. This provides a
         3D visualization of the occupied space in the occupancy map.
         """
-
         instancePath = "/occupancyMap/occupiedInstances"
         cubePath = "/occupancyMap/occupiedCube"
         pos_list = self._om.get_occupied_positions()

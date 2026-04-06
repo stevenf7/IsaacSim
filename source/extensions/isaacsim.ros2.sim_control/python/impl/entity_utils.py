@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utility functions for entity management in ROS 2 simulation control."""
+
 import re
 
 import carb
@@ -38,6 +40,7 @@ def get_filtered_entities(usdrt_stage: object, filter_pattern: str | None = None
 
     Raises:
         Exception: If regex compilation fails.
+
     """
     # Check if usdrt stage is available
     if not usdrt_stage:
@@ -80,6 +83,7 @@ async def get_entity_state(entity_path: str):
 
     Raises:
         Exception: If entity state retrieval fails due to invalid paths or physics errors.
+
     """
     # Check if entity exists
     prim = prim_utils.get_prim_at_path(entity_path)
@@ -213,6 +217,7 @@ def create_empty_entity_state():
     Returns:
         Empty entity state object with default values.
         An EntityState object with all fields set to safe default values.
+
     """
     from geometry_msgs.msg import Accel, Point, Pose, Quaternion, Twist, Vector3
     from std_msgs.msg import Header

@@ -23,9 +23,7 @@ class OgnIsaacCreateViewportInternalState:
 
 
 class OgnIsaacCreateViewport:
-    """
-    Isaac Sim Create Viewport
-    """
+    """Isaac Sim Create Viewport."""
 
     @staticmethod
     def internal_state():

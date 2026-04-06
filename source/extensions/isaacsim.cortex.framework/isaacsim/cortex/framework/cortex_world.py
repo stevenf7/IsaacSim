@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The CortexWorld extends from the core API's world object and adds the behavior portion of the
+"""The CortexWorld extends from the core API's world object and adds the behavior portion of the.
+
 Cortex processing pipeline.
 
 The full Cortex processing pipeline includes:
@@ -134,13 +135,15 @@ class Behavior:
 
 
 class CommandableArticulation(ABC, SingleArticulation):
-    """A commandable articulation is an articulation with a collection of commanders controlling
+    """A commandable articulation is an articulation with a collection of commanders controlling.
+
     the joints. These commanders should be stepped through a call to step_commanders().
     """
 
     @abstractmethod
     def step_commanders(self):
-        """Deriving classes should override this method to define how commanders are stepped each
+        """Deriving classes should override this method to define how commanders are stepped each.
+
         cycle. This method is called once per cycle.
         """
         raise NotImplementedError()
@@ -192,7 +195,8 @@ class CortexWorld(World):
         self._robots = OrderedDict()
 
     def add_logical_state_monitor(self, logical_state_monitor: LogicalStateMonitor) -> None:
-        """Add a logical state monitor to the Cortex world. Multiple logical state monitors can be
+        """Add a logical state monitor to the Cortex world. Multiple logical state monitors can be.
+
         added (with unique names). They are each stepped in the order added during the logical state
         monitoring phase of the Cortex pipeline.
 
@@ -203,6 +207,7 @@ class CortexWorld(World):
 
     def add_behavior(self, behavior: Behavior) -> None:
         """Add a behavior to the Cortex world. Multiple behaviors can be added (with unique names).
+
         They are stepped in the order added during the behavior (decisions) phase of the Cortex
         pipeline.
 
@@ -212,7 +217,8 @@ class CortexWorld(World):
         self._behaviors[behavior.name] = behavior
 
     def add_decider_network(self, decider_network: DfNetwork, name: Optional[str] = None) -> None:
-        """Add a decider network to the Cortex world along with any logical state monitors bundled
+        """Add a decider network to the Cortex world along with any logical state monitors bundled.
+
         with it.
 
         Args:
@@ -227,7 +233,8 @@ class CortexWorld(World):
         self.reset_cortex()
 
     def add_robot(self, robot: CommandableArticulation) -> CommandableArticulation:
-        """Add a commandable robot (articulation) to the Cortex world. Multiple robots (with unique
+        """Add a commandable robot (articulation) to the Cortex world. Multiple robots (with unique.
+
         names) can be added and their underlying commanders are stepped in the order they're added
         in the command API (policy) phase of the Cortex pipeline.
 
@@ -283,7 +290,8 @@ class CortexWorld(World):
         return
 
     def reset(self, soft: bool = False) -> None:
-        """Resets both the underlying world and the Cortex pipeline. The world is reset before the
+        """Resets both the underlying world and the Cortex pipeline. The world is reset before the.
+
         cortex pipeline is. See reset_cortex() for documentation on Cortex resetting.
 
         Args:

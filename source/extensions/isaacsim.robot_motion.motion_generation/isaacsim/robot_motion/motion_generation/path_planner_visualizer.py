@@ -32,6 +32,7 @@ from .path_planning_interface import PathPlanner
 
 class PathPlannerVisualizer:
     """A helper class for quickly visualizing the plans output by a PathPlanner.
+
     The main utility of this class lies in the compute_plan_as_articulation_actions() function, which returns a sequence of
     ArticulationActions that may be directly sent to the robot Articulation in order to visualize the planned path.
 
@@ -52,7 +53,8 @@ class PathPlannerVisualizer:
         self._watched_joints_view = ArticulationSubset(robot_articulation, path_planner.get_watched_joints())
 
     def compute_plan_as_articulation_actions(self, max_cspace_dist: float = 0.05) -> List[ArticulationAction]:
-        """Compute plan using a PathPlanner and linearly interpolate the result to enforce that the maximum
+        """Compute plan using a PathPlanner and linearly interpolate the result to enforce that the maximum.
+
         distance (l2 norm) between any two points is max_cspace_dist.
 
         Args:
@@ -86,7 +88,7 @@ class PathPlannerVisualizer:
         return articulation_actions
 
     def interpolate_path(self, path: np.array, max_cspace_dist: float = 0.05) -> np.array:
-        """Linearly interpolate a sparse path such that the maximum distance (l2 norm) between any two points is max_cspace_dist
+        """Linearly interpolate a sparse path such that the maximum distance (l2 norm) between any two points is max_cspace_dist.
 
         Args:
             path: Sparse cspace path with shape (N x num_dofs) where N is number of points in the path

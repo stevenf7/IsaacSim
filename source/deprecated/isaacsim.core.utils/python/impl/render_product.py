@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated render product utility functions."""
+
 from typing import Tuple
 
 from isaacsim.core.utils.prims import set_prim_hide_in_stage_window, set_prim_no_delete
@@ -21,7 +23,7 @@ from pxr import Gf, Sdf, Usd, UsdRender
 
 
 def add_aov(render_product_path: str, aov_name: str):
-    """Adds an AOV/Render Var to an existing render product
+    """Adds an AOV/Render Var to an existing render product.
 
     Args:
         render_product_path: Path to the render product prim.
@@ -56,7 +58,7 @@ def add_aov(render_product_path: str, aov_name: str):
 
 
 def get_camera_prim_path(render_product_path: str) -> str:
-    """Get the current camera for a render product
+    """Get the current camera for a render product.
 
     Args:
         render_product_path: Path to the render product prim.
@@ -102,7 +104,7 @@ def set_camera_prim_path(render_product_path: str, camera_prim_path: str):
 
 
 def get_resolution(render_product_path: str) -> Tuple[int]:
-    """Get resolution for a render product
+    """Get resolution for a render product.
 
     Args:
         render_product_path: Path to the render product prim.
@@ -122,7 +124,7 @@ def get_resolution(render_product_path: str) -> Tuple[int]:
 
 
 def set_resolution(render_product_path: str, resolution: Tuple[int]):
-    """Set resolution for a render product
+    """Set resolution for a render product.
 
     Args:
         render_product_path: Path to the render product prim.

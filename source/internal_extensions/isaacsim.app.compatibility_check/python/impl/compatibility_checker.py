@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""System compatibility checker for verifying hardware and software requirements."""
+
 import os
 import platform
 import shutil
@@ -30,6 +32,8 @@ from .. import _compatibility_check
 
 
 class Level(Enum):
+    """Enumeration of compatibility check result levels."""
+
     UNMET: int = 0
     MINIMUM: int = 1
     GOOD: int = 2
@@ -38,6 +42,8 @@ class Level(Enum):
 
 @dataclass
 class Result:
+    """Data class representing a compatibility check result."""
+
     status: bool = False
     level: Level = Level.UNMET
     message: str = ""
@@ -45,7 +51,10 @@ class Result:
 
 
 class Checker:
+    """System compatibility checker for verifying hardware and software requirements."""
+
     def __init__(self):
+        """Initialize the compatibility checker."""
         self._nvidia_smi = Result()
         self._gpu_driver_version = Result()
         self._gpu_rtx = []
@@ -63,50 +72,62 @@ class Checker:
 
     @property
     def compatibility_check_status(self):
+        """Return the compatibility check status result."""
         return self._compatibility_check_status
 
     @property
     def operating_system(self):
+        """Return the operating system result."""
         return self._operating_system
 
     @property
     def display(self):
+        """Return the display result."""
         return self._display
 
     @property
     def nvidia_smi(self):
+        """Return the nvidia smi result."""
         return self._nvidia_smi
 
     @property
     def gpu_driver_version(self):
+        """Return the gpu driver version result."""
         return self._gpu_driver_version
 
     @property
     def gpu_rtx(self):
+        """Return the gpu rtx result."""
         return self._gpu_rtx
 
     @property
     def gpu_vram(self):
+        """Return the gpu vram result."""
         return self._gpu_vram
 
     @property
     def cpu(self):
+        """Return the cpu result."""
         return self._cpu
 
     @property
     def cpu_cores(self):
+        """Return the cpu cores result."""
         return self._cpu_cores
 
     @property
     def cpu_power_governor(self):
+        """Return the cpu power governor result."""
         return self._cpu_power_governor
 
     @property
     def ram(self):
+        """Return the ram result."""
         return self._ram
 
     @property
     def disk_storage(self):
+        """Return the disk storage result."""
         return self._disk_storage
 
     def _set_compatibility_check_status(self, status: bool) -> None:
@@ -136,11 +157,13 @@ class Checker:
             return -1
 
     def check_nvidia_smi(self, spec: dict) -> None:
+        """Check nvidia smi against specifications."""
         nvidia_smi_error = self._nvidia_smi_error()
         self._nvidia_smi.status = not len(nvidia_smi_error)
         self._nvidia_smi.message = nvidia_smi_error
 
     def check_driver_version(self, spec: dict) -> tuple[bool, str]:
+        """Check driver version against specifications."""
         nvidia_smi_error = self._nvidia_smi_error()
         if nvidia_smi_error:
             self._gpu_driver_version.valid = False
@@ -198,6 +221,7 @@ class Checker:
         self._set_compatibility_check_status(status)
 
     def check_rtx_gpu(self, spec: dict) -> tuple[bool, str]:
+        """Check rtx gpu against specifications."""
         num_gpus = self._get_gpu_count()
         self._gpu_rtx.clear()
 
@@ -255,6 +279,7 @@ class Checker:
             self._gpu_status["rtx"][i] = status
 
     def check_vram(self, spec: dict) -> tuple[bool, str]:
+        """Check vram against specifications."""
         num_gpus = self._get_gpu_count()
         self._gpu_vram.clear()
 
@@ -319,6 +344,7 @@ class Checker:
         self._set_compatibility_check_status(global_status)
 
     def check_cpu(self, spec: dict) -> tuple[bool, str]:
+        """Check cpu against specifications."""
         status = True
 
         # get CPU
@@ -344,6 +370,7 @@ class Checker:
         self._set_compatibility_check_status(status)
 
     def check_cpu_cores(self, spec: dict) -> tuple[bool, str]:
+        """Check cpu cores against specifications."""
         status = True
         level = Level.UNMET
         message = ""
@@ -377,6 +404,7 @@ class Checker:
         self._set_compatibility_check_status(status)
 
     def check_cpu_power_governor(self, spec: dict) -> tuple[bool, str]:
+        """Check cpu power governor against specifications."""
         status = True
         level = Level.UNMET
         message = ""
@@ -445,6 +473,7 @@ class Checker:
         self._cpu_power_governor.message = mode
 
     def check_ram(self, spec: dict) -> tuple[bool, str]:
+        """Check ram against specifications."""
         status = True
         level = Level.UNMET
         message = ""
@@ -479,6 +508,7 @@ class Checker:
         self._set_compatibility_check_status(status)
 
     def check_operating_system(self, operating_system: dict) -> tuple[bool, str]:
+        """Check operating system against specifications."""
         # get OS name and version
         os_name = [omni.platforminfo.IOsInfo().distro_name.lower(), platform.system().lower()]
         os_pretty_name = omni.platforminfo.IOsInfo().pretty_name
@@ -503,6 +533,7 @@ class Checker:
         self._set_compatibility_check_status(status)
 
     def check_storage(self, spec: dict) -> tuple[bool, str]:
+        """Check storage against specifications."""
         status = True
         level = Level.UNMET
         message = ""
@@ -547,6 +578,7 @@ class Checker:
         self._disk_storage.message = f"{storage}"
 
     def check_display(self) -> tuple[bool, str]:
+        """Check display against specifications."""
         status = False
         message = ""
 

@@ -33,6 +33,7 @@ SETTING_FOLDER = "/exts/isaacsim.gui.content_browser/folders"
 
 class IsaacConnectionItem(NucleusItem):
     """An item for an Isaac connection.
+
     Sub-classed from :obj:`NucleusItem`.
 
     Args:

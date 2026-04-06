@@ -201,8 +201,9 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         await update_stage_async()
 
     async def reset_robot(self, robot: object):
-        """To make motion_generation outputs more deterministic, this method may be used to
-        teleport the robot to specified position targets, setting velocity to 0
+        """To make motion_generation outputs more deterministic, this method may be used to.
+
+        teleport the robot to specified position targets, setting velocity to 0.
 
         This prevents changes in dynamic_control from affecting motion_generation tests
 

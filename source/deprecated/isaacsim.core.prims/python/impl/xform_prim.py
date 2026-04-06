@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import carb
 import isaacsim.core.utils.fabric as fabric_utils
@@ -43,7 +43,8 @@ torch = import_module("torch")
 
 
 class XFormPrim(Prim):
-    """Provides high level functions to deal with a Xform prim view (one or many) and its descendants
+    """Provides high level functions to deal with a Xform prim view (one or many) and its descendants.
+
     as well as its attributes/properties.
 
     This class wraps all matching Xforms found at the regex provided at the ``prim_paths_expr`` argument
@@ -184,7 +185,7 @@ class XFormPrim(Prim):
         visibilities: Union[np.ndarray, torch.Tensor, wp.array],
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
     ) -> None:
-        """Set the visibilities of the prims in stage
+        """Set the visibilities of the prims in stage.
 
         Args:
             visibilities: flag to set the visibilities of the usd prims in stage.
@@ -258,7 +259,7 @@ class XFormPrim(Prim):
             raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
 
     def get_default_state(self) -> XFormPrimViewState:
-        """Get the default states (positions and orientations) defined with the ``set_default_state`` method
+        """Get the default states (positions and orientations) defined with the ``set_default_state`` method.
 
         Returns:
             returns the default state of the prims that is used after each reset.
@@ -454,7 +455,7 @@ class XFormPrim(Prim):
     def get_applied_visual_materials(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> List["VisualMaterial"]:
-        """Get the current applied visual materials
+        """Get the current applied visual materials.
 
         Args:
             indices: indices to specify which prims
@@ -552,7 +553,7 @@ class XFormPrim(Prim):
     def is_visual_material_applied(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
     ) -> List[bool]:
-        """Check if there is a visual material applied
+        """Check if there is a visual material applied.
 
         Args:
             indices: indices to specify which prims
@@ -602,7 +603,7 @@ class XFormPrim(Prim):
     ) -> Union[
         Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
     ]:
-        """Get the poses of the prims in the view with respect to the world's frame
+        """Get the poses of the prims in the view with respect to the world's frame.
 
         Args:
             indices: indices to specify which prims
@@ -703,7 +704,7 @@ class XFormPrim(Prim):
         indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
         usd: bool = True,
     ) -> None:
-        """Set prim poses in the view with respect to the world's frame
+        """Set prim poses in the view with respect to the world's frame.
 
         .. warning::
 
@@ -797,7 +798,7 @@ class XFormPrim(Prim):
     def get_local_poses(
         self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
     ) -> tuple[np.ndarray, np.ndarray] | tuple[torch.Tensor, torch.Tensor] | tuple[wp.indexedarray, wp.indexedarray]:
-        """Get prim poses in the view with respect to the local frame (the prim's parent frame)
+        """Get prim poses in the view with respect to the local frame (the prim's parent frame).
 
         Args:
             indices: indices to specify which prims
@@ -862,7 +863,7 @@ class XFormPrim(Prim):
         orientations: np.ndarray | torch.Tensor | wp.array | None = None,
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
-        """Set prim poses in the view with respect to the local frame (the prim's parent frame)
+        """Set prim poses in the view with respect to the local frame (the prim's parent frame).
 
         .. warning::
 
@@ -939,7 +940,7 @@ class XFormPrim(Prim):
     def get_world_scales(
         self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
     ) -> np.ndarray | torch.Tensor | wp.indexedarray:
-        """Get prim scales in the view with respect to the world's frame
+        """Get prim scales in the view with respect to the world's frame.
 
         Args:
             indices: indices to specify which prims
@@ -990,7 +991,7 @@ class XFormPrim(Prim):
         scales: np.ndarray | torch.Tensor | wp.array | None,
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
-        """Set prim scales in the view with respect to the local frame (the prim's parent frame)
+        """Set prim scales in the view with respect to the local frame (the prim's parent frame).
 
         Args:
             scales: scales to be applied to the prim's dimensions in the view.
@@ -1197,7 +1198,7 @@ class XFormPrim(Prim):
             )
         return self._fabric_hierarchy
 
-    def _on_physics_ready(self, event):
+    def _on_physics_ready(self, event: Any) -> None:
         """Handle physics ready events and re-convert default state to the active backend.
 
         When the backend changes between __init__ and physics start (e.g. the automatic
@@ -1207,6 +1208,9 @@ class XFormPrim(Prim):
 
         Subclasses like Articulation reset _default_state to None/None in their __init__
         and populate it later in their own _on_physics_ready, so we skip None values.
+
+        Args:
+            event: The physics ready event.
         """
         Prim._on_physics_ready(self, event)
         if self._default_state is not None and not self._non_root_link:

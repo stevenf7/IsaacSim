@@ -81,7 +81,6 @@ class Extension(omni.ext.IExt):
         Args:
             ext_id: The extension ID string for this extension.
         """
-
         # Events
         self._usd_context = omni.usd.get_context()
 

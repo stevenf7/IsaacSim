@@ -14,6 +14,9 @@
 # limitations under the License.
 
 # python
+
+"""Deprecated rotation utility functions."""
+
 import math
 import typing
 

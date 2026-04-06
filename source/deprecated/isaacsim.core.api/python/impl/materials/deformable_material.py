@@ -205,7 +205,7 @@ class DeformableMaterial:
         )
 
     def set_poissons_ratio(self, value: float) -> None:
-        """Sets the poissons ratio coefficient
+        """Sets the poissons ratio coefficient.
 
         Args:
             value: The poissons ratio. Range: (0 , 0.5)

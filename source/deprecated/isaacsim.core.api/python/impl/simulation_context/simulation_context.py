@@ -49,7 +49,8 @@ from pxr import Usd
 
 
 class SimulationContext:
-    """This class provide functions that take care of many time-related events such as
+    """This class provide functions that take care of many time-related events such as.
+
     perform a physics or a render step for instance. Adding/ removing callback functions that
     gets triggered with certain events such as a physics step, timeline event
     (pause or play..etc), stage open/ close..etc.
@@ -196,7 +197,7 @@ class SimulationContext:
 
     @classmethod
     def instance(cls) -> SimulationContext:
-        """Get the instance of the class, if it was instantiated before
+        """Get the instance of the class, if it was instantiated before.
 
         Returns:
             SimulationContext object or None
@@ -214,7 +215,7 @@ class SimulationContext:
 
     @classmethod
     def clear_instance(cls) -> None:
-        """Delete the simulation context object, if it was instantiated before, and destroy any subscribed callback
+        """Delete the simulation context object, if it was instantiated before, and destroy any subscribed callback.
 
         Example:
 
@@ -240,7 +241,7 @@ class SimulationContext:
 
     @property
     def app(self) -> omni.kit.app.IApp:
-        """Omniverse Kit Application interface
+        """Omniverse Kit Application interface.
 
         Returns:
             Omniverse Kit Application interface
@@ -256,7 +257,7 @@ class SimulationContext:
 
     @property
     def current_time_step_index(self) -> int:
-        """Current number of physics steps that have elapsed since the simulation was played
+        """Current number of physics steps that have elapsed since the simulation was played.
 
         Returns:
             Current number of physics steps that have elapsed since the simulation was played
@@ -273,7 +274,7 @@ class SimulationContext:
 
     @property
     def current_time(self) -> float:
-        """Current time (simulated physical time) that have elapsed since the simulation was played
+        """Current time (simulated physical time) that have elapsed since the simulation was played.
 
         Returns:
             Current time (simulated physical time) that have elapsed since the simulation was played
@@ -290,7 +291,7 @@ class SimulationContext:
 
     @property
     def stage(self) -> Usd.Stage:
-        """Current open USD stage
+        """Current open USD stage.
 
         Returns:
             Current open USD stage
@@ -310,7 +311,7 @@ class SimulationContext:
 
     @property
     def backend(self) -> str:
-        """Current backend. Supported backends are ``"numpy"``, ``"torch"`` and ``"warp"``
+        """Current backend. Supported backends are ``"numpy"``, ``"torch"`` and ``"warp"``.
 
         Returns:
             Current backend. Supported backends are ``"numpy"``, ``"torch"`` and ``"warp"``
@@ -326,7 +327,7 @@ class SimulationContext:
 
     @property
     def device(self) -> str:
-        """Device used by the physics context. None for numpy backend
+        """Device used by the physics context. None for numpy backend.
 
         Returns:
             Device used by the physics context. None for numpy backend
@@ -342,7 +343,7 @@ class SimulationContext:
 
     @property
     def backend_utils(self):
-        """Current backend utils module
+        """Current backend utils module.
 
         .. list-table::
             :header-rows: 1
@@ -394,7 +395,7 @@ class SimulationContext:
     """
 
     def get_physics_context(self) -> PhysicsContext:
-        """Get the physics context (a class to deal with a physics scene and its settings) instance
+        """Get the physics context (a class to deal with a physics scene and its settings) instance.
 
         Raises:
             Exception: if there is no stage currently opened
@@ -484,7 +485,7 @@ class SimulationContext:
         return
 
     def get_physics_dt(self) -> float:
-        """Get the current physics dt of the physics context
+        """Get the current physics dt of the physics context.
 
         Raises:
             Exception: if there is no stage currently opened
@@ -504,7 +505,7 @@ class SimulationContext:
         return self._physics_context.get_physics_dt()
 
     def get_rendering_dt(self) -> float:
-        """Get the current rendering dt
+        """Get the current rendering dt.
 
         Raises:
             Exception: if there is no stage currently opened
@@ -542,7 +543,7 @@ class SimulationContext:
             return _get_dt_from_frequency()
 
     def set_block_on_render(self, block: bool) -> None:
-        """Set block on render flag for the simulation thread
+        """Set block on render flag for the simulation thread.
 
         .. note::
 
@@ -560,7 +561,7 @@ class SimulationContext:
         set_carb_setting(self._settings, "/app/hydraEngine/waitIdle", block)
 
     def get_block_on_render(self) -> bool:
-        """Get the block on render flag for the simulation thread
+        """Get the block on render flag for the simulation thread.
 
         Returns:
             True if one frame lag between any data captured from the render products and the current USD stage is guaranteed by blocking the step call.
@@ -579,7 +580,7 @@ class SimulationContext:
     """
 
     async def initialize_simulation_context_async(self) -> None:
-        """Initialize the simulation context
+        """Initialize the simulation context.
 
         .. hint::
 
@@ -620,7 +621,7 @@ class SimulationContext:
         return
 
     def initialize_physics(self) -> None:
-        """Initialize the physics simulation view
+        """Initialize the physics simulation view.
 
         Example:
 
@@ -726,7 +727,7 @@ class SimulationContext:
         return
 
     def render(self) -> None:
-        """Refresh the Isaac Sim app rendering components including UI elements, viewports and others
+        """Refresh the Isaac Sim app rendering components including UI elements, viewports and others.
 
         .. warning::
 
@@ -759,7 +760,7 @@ class SimulationContext:
         return
 
     async def render_async(self) -> None:
-        """Refresh the Isaac Sim app rendering components including UI elements, viewports and others
+        """Refresh the Isaac Sim app rendering components including UI elements, viewports and others.
 
         .. hint::
 
@@ -798,7 +799,7 @@ class SimulationContext:
         return
 
     def clear(self) -> None:
-        """Clear the current stage leaving the PhysicsScene and /World
+        """Clear the current stage leaving the PhysicsScene and /World.
 
         Example:
 
@@ -830,7 +831,7 @@ class SimulationContext:
     """
 
     def is_simulating(self) -> bool:
-        """Check whether the simulation is running or not
+        """Check whether the simulation is running or not.
 
         .. warning::
 
@@ -856,7 +857,7 @@ class SimulationContext:
     """
 
     def is_playing(self) -> bool:
-        """Check whether the simulation is playing
+        """Check whether the simulation is playing.
 
         Returns:
             True if the simulator is playing.
@@ -872,7 +873,7 @@ class SimulationContext:
         return self._timeline.is_playing()
 
     def is_stopped(self) -> bool:
-        """Check whether the simulation is playing
+        """Check whether the simulation is playing.
 
         Returns:
             True if the simulator is stopped.
@@ -888,7 +889,7 @@ class SimulationContext:
         return self._timeline.is_stopped()
 
     async def play_async(self) -> None:
-        """Start playing simulation
+        """Start playing simulation.
 
         Example:
 
@@ -910,7 +911,7 @@ class SimulationContext:
         return
 
     def play(self) -> None:
-        """Start playing simulation
+        """Start playing simulation.
 
         .. note::
 
@@ -931,7 +932,7 @@ class SimulationContext:
         return
 
     async def pause_async(self) -> None:
-        """Pause the physics simulation
+        """Pause the physics simulation.
 
         Example:
 
@@ -951,7 +952,7 @@ class SimulationContext:
         return
 
     def pause(self) -> None:
-        """Pause the physics simulation
+        """Pause the physics simulation.
 
         Example:
 
@@ -967,7 +968,7 @@ class SimulationContext:
         return
 
     async def stop_async(self) -> None:
-        """Stop the physics simulation
+        """Stop the physics simulation.
 
         Example:
 
@@ -987,7 +988,7 @@ class SimulationContext:
         return
 
     def stop(self) -> None:
-        """Stop the physics simulation
+        """Stop the physics simulation.
 
         Example:
 
@@ -1036,7 +1037,7 @@ class SimulationContext:
         return
 
     def remove_physics_callback(self, callback_name: str) -> None:
-        """Remove a physics callback by its name
+        """Remove a physics callback by its name.
 
         Args:
             callback_name: callback name
@@ -1056,7 +1057,7 @@ class SimulationContext:
         return
 
     def physics_callback_exists(self, callback_name: str) -> bool:
-        """Check if a physics callback exists
+        """Check if a physics callback exists.
 
         Args:
             callback_name: callback name
@@ -1078,7 +1079,7 @@ class SimulationContext:
             return False
 
     def clear_physics_callbacks(self) -> None:
-        """Remove all registered physics callbacks
+        """Remove all registered physics callbacks.
 
         Example:
 
@@ -1091,7 +1092,7 @@ class SimulationContext:
         return
 
     def add_stage_callback(self, callback_name: str, callback_fn: Callable) -> None:
-        """Add a callback which will be called after each stage event such as open/close among others
+        """Add a callback which will be called after each stage event such as open/close among others.
 
         ``callback_fn`` should take an argument of type ``omni.usd.StageEvent`` (e.g., ``event``)
 
@@ -1117,7 +1118,7 @@ class SimulationContext:
         return
 
     def remove_stage_callback(self, callback_name: str) -> None:
-        """Remove a stage callback by its name
+        """Remove a stage callback by its name.
 
         Args:
             callback_name: callback name
@@ -1136,7 +1137,7 @@ class SimulationContext:
         return
 
     def stage_callback_exists(self, callback_name: str) -> bool:
-        """Check if a stage callback exists
+        """Check if a stage callback exists.
 
         Args:
             callback_name: callback name
@@ -1158,7 +1159,7 @@ class SimulationContext:
             return False
 
     def clear_stage_callbacks(self) -> None:
-        """Remove all registered stage callbacks
+        """Remove all registered stage callbacks.
 
         Example:
 
@@ -1196,7 +1197,7 @@ class SimulationContext:
         return
 
     def remove_timeline_callback(self, callback_name: str) -> None:
-        """Remove a timeline callback by its name
+        """Remove a timeline callback by its name.
 
         Args:
             callback_name: callback name
@@ -1215,7 +1216,7 @@ class SimulationContext:
         return
 
     def timeline_callback_exists(self, callback_name: str) -> bool:
-        """Check if a timeline callback exists
+        """Check if a timeline callback exists.
 
         Args:
             callback_name: callback name
@@ -1237,7 +1238,7 @@ class SimulationContext:
             return False
 
     def clear_timeline_callbacks(self) -> None:
-        """Remove all registered timeline callbacks
+        """Remove all registered timeline callbacks.
 
         Example:
 
@@ -1276,7 +1277,7 @@ class SimulationContext:
         return
 
     def remove_render_callback(self, callback_name: str) -> None:
-        """Remove a render callback by its name
+        """Remove a render callback by its name.
 
         Args:
             callback_name: callback name
@@ -1295,7 +1296,7 @@ class SimulationContext:
         return
 
     def render_callback_exists(self, callback_name: str) -> bool:
-        """Check if a render callback exists
+        """Check if a render callback exists.
 
         Args:
             callback_name: callback name
@@ -1317,7 +1318,7 @@ class SimulationContext:
             return False
 
     def clear_render_callbacks(self) -> None:
-        """Remove all registered render callbacks
+        """Remove all registered render callbacks.
 
         Example:
 
@@ -1329,7 +1330,7 @@ class SimulationContext:
         return
 
     def clear_all_callbacks(self) -> None:
-        """Clear all callbacks which were added using any ``add_*_callback`` method
+        """Clear all callbacks which were added using any ``add_*_callback`` method.
 
         Example:
 
@@ -1346,7 +1347,7 @@ class SimulationContext:
         return
 
     def skip_next_stage_open_callback(self) -> None:
-        """Skip the next stage_open_callback_fn trigger"""
+        """Skip the next stage_open_callback_fn trigger."""
         self._skip_next_stage_open_callback_fn = True
 
     """

@@ -86,7 +86,8 @@ class BaseWriterNode(BaseResetNode):
         self._writers.append(copy.deepcopy(writer))
 
     def attach_writers(self, render_product_path: str | list[str]) -> None:
-        """Creates writer request for all stored writers using provided render product,
+        """Creates writer request for all stored writers using provided render product,.
+
             and activates them.
 
         Args:

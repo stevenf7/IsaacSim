@@ -163,6 +163,7 @@ class JointsModel(TreeViewWithPlacerHolderModel):  # the model for the tree view
 
     def get_item_value_model(self, item: object, column_id: int) -> object:
         """Return value model.
+
         It's the object that tracks the specific value.
         In our case we use ui.SimpleStringModel for the first column
         and SimpleFloatModel for the second column.
@@ -643,7 +644,6 @@ class JointsandDrives:
         Returns:
             None if the robot or stage is not available, or if no joints scope exists.
         """
-
         robot = RobotRegistry().get()
         stage = omni.usd.get_context().get_stage()
         if not robot or not stage:
@@ -932,7 +932,6 @@ class CreateJointWindow:
         Returns:
             None if the child xform stack is disabled.
         """
-
         if not self._child_xform_stack.enabled:
             return
         parent_value = self._parent_xform_model.get_value_as_string()

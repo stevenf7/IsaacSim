@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Behavior script that randomizes prim rotations within specified euler angle bounds."""
+
 import carb
 import numpy as np
 import omni.kit.window.property
@@ -33,8 +35,8 @@ from pxr import Gf, Sdf, Usd, UsdGeom
 
 
 class RotationRandomizer(BehaviorScript):
-    """
-    Behavior script that randomizes the rotation of prims within specified euler angle bounds.
+    """Behavior script that randomizes the rotation of prims within specified euler angle bounds.
+
     Rotations are handled using various xformOps, including 'xformOp:rotateXYZ', 'xformOp:orient', etc.
     depending on the existing xformOps of the prim. If no rotation xformOp exists 'xformOp:orient' is used.
     The behavior can be applied to multiple prims at once.

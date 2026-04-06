@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test UCX joint command subscribing node functionality."""
+
 import struct
 
 import isaacsim.core.experimental.utils.app as app_utils
@@ -25,15 +27,16 @@ from ucxx._lib.arr import Array
 
 
 class TestUCXSubscribeJointCommand(UCXTestCase):
-    """Test UCX joint command subscribing"""
+    """Test UCX joint command subscribing."""
 
     async def setUp(self):
+        """Set up a new stage for joint command subscription tests."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
     async def setup_ucx_client_with_listener(self):
-        """Setup UCX client"""
+        """Setup UCX client."""
         for _ in range(5):
             await omni.kit.app.get_app().next_update_async()
         self.create_ucx_client(self.port)
@@ -102,8 +105,7 @@ class TestUCXSubscribeJointCommand(UCXTestCase):
         request.check_error()
 
     async def test_joint_command_basic(self):
-        """Test basic joint command subscription"""
-
+        """Test basic joint command subscription."""
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
@@ -169,8 +171,7 @@ class TestUCXSubscribeJointCommand(UCXTestCase):
             self.assertAlmostEqual(efforts[i], test_efforts[i], places=5)
 
     async def test_joint_command_multiple(self):
-        """Test receiving multiple joint commands"""
-
+        """Test receiving multiple joint commands."""
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},

@@ -258,6 +258,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
     """Unit tests for Gain Tuner functionality."""
 
     async def setUp(self):
+        """Set up test environment with physics timeline and gain tuner."""
         self._physics_fps = 60
         self._physics_dt = 1.0 / self._physics_fps
         self._timeline = omni.timeline.get_timeline_interface()
@@ -272,6 +273,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         await app_utils.update_app_async()
 
     async def tearDown(self):
+        """Tear down test environment and reset gain tuner."""
         self._timeline.stop()
         self._gain_tuner.reset()
         await app_utils.update_app_async()

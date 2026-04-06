@@ -30,7 +30,7 @@ from pxr import Gf, UsdGeom
 
 
 class VisualSphere(SingleGeometryPrim):
-    """High level wrapper to create/encapsulate a visual sphere
+    """High level wrapper to create/encapsulate a visual sphere.
 
     .. note::
 
@@ -117,7 +117,7 @@ class VisualSphere(SingleGeometryPrim):
         return
 
     def set_radius(self, radius: float) -> None:
-        """Set the sphere radius
+        """Set the sphere radius.
 
         Args:
             radius: sphere radius
@@ -132,7 +132,7 @@ class VisualSphere(SingleGeometryPrim):
         return
 
     def get_radius(self) -> float:
-        """Sphere radius
+        """Sphere radius.
 
         Returns:
             Sphere radius.
@@ -148,7 +148,7 @@ class VisualSphere(SingleGeometryPrim):
 
 
 class FixedSphere(VisualSphere):
-    """High level wrapper to create/encapsulate a fixed sphere
+    """High level wrapper to create/encapsulate a fixed sphere.
 
     .. note::
 
@@ -236,7 +236,7 @@ class FixedSphere(VisualSphere):
 
 
 class DynamicSphere(SingleRigidPrim, FixedSphere):
-    """High level wrapper to create/encapsulate a dynamic sphere
+    """High level wrapper to create/encapsulate a dynamic sphere.
 
     .. note::
 

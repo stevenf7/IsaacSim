@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Peck behavior implemented as a decider network with context monitors."""
+
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
 from isaacsim.cortex.framework.df import (
@@ -31,6 +33,7 @@ from isaacsim.cortex.framework.motion_commander import ApproachParams, PosePq
 
 
 def sample_target_p():
+    """Sample a random target position on the ground plane."""
     min_x = 0.3
     max_x = 0.7
     min_y = -0.4
@@ -45,12 +48,19 @@ def sample_target_p():
 
 
 def make_target_rotation(target_p):
+    """Compute a downward-facing rotation quaternion oriented toward the target."""
     return math_util.matrix_to_quat(
         math_util.make_rotation_matrix(az_dominant=np.array([0.0, 0.0, -1.0]), ax_suggestion=-target_p)
     )
 
 
 class PeckContext(DfRobotApiContext):
+    """Context for the peck behavior with obstacle-aware target sampling.
+
+    Args:
+        robot: The robot API instance.
+    """
+
     def __init__(self, robot):
         super().__init__(robot)
         self.robot = robot
@@ -58,17 +68,21 @@ class PeckContext(DfRobotApiContext):
         self.add_monitors([PeckContext.monitor_active_target_p])
 
     def reset(self):
+        """Reset the context state."""
         self.is_done = True
         self.active_target_p = None
 
     def monitor_active_target_p(self):
+        """Mark the task as done if the active target is near an obstacle."""
         if self.active_target_p is not None and self.is_near_obs(self.active_target_p):
             self.is_done = True
 
     def set_is_done(self):
+        """Mark the current peck task as done."""
         self.is_done = True
 
     def is_near_obs(self, p):
+        """Check whether a point is within proximity of any registered obstacle."""
         for _, obs in self.robot.registered_obstacles.items():
             obs_p, _ = obs.get_world_pose()
             if np.linalg.norm(obs_p - p) < 0.2:
@@ -76,17 +90,22 @@ class PeckContext(DfRobotApiContext):
         return False
 
     def sample_target_p_away_from_obs(self):
+        """Sample a random target position that is not near any obstacle."""
         target_p = sample_target_p()
         while self.is_near_obs(target_p):
             target_p = sample_target_p()
         return target_p
 
     def choose_next_target(self):
+        """Choose the next peck target away from obstacles."""
         self.active_target_p = self.sample_target_p_away_from_obs()
 
 
 class PeckState(DfState):
+    """State that sends the end-effector to peck at the active target."""
+
     def enter(self):
+        """Compute the peck target pose and send the end-effector command."""
         target_p = self.context.active_target_p
         target_q = make_target_rotation(target_p)
         self.target = PosePq(target_p, target_q)
@@ -94,6 +113,7 @@ class PeckState(DfState):
         self.context.robot.arm.send_end_effector(self.target, approach_params=approach_params)
 
     def step(self):
+        """Continue until the end-effector reaches the target."""
         # Send the command each cycle so exponential smoothing will converge.
         target_dist = np.linalg.norm(self.context.robot.arm.get_fk_p() - self.target.p)
         if target_dist < 0.01:
@@ -102,13 +122,19 @@ class PeckState(DfState):
 
 
 class ChooseTarget(DfAction):
+    """Action that chooses the next peck target."""
+
     def step(self):
+        """Mark the task as not done and choose the next target."""
         self.context.is_done = False
         self.context.choose_next_target()
 
 
 class CloseGripper(DfAction):
+    """Action that closes the gripper."""
+
     def enter(self):
+        """Close the gripper."""
         self.context.robot.gripper.close()
 
 
@@ -144,6 +170,7 @@ class Dispatch(DfDecider):
         )
 
     def decide(self):
+        """Decide to choose a target if done, otherwise continue pecking."""
         if self.context.is_done:
             return DfDecision("choose_target")
         else:
@@ -151,4 +178,5 @@ class Dispatch(DfDecider):
 
 
 def make_decider_network(robot):
+    """Create the peck decider network for the given robot."""
     return DfNetwork(Dispatch(), context=PeckContext(robot))

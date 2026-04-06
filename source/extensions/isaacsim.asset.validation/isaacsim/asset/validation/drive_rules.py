@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Validation rules for physics joint drives and mimic APIs."""
+
 
 import omni.asset_validator.core as av_core
 from omni.asset_validator.core import registerRule

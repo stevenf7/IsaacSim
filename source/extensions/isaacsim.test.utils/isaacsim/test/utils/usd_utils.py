@@ -163,7 +163,15 @@ def compare_articulation_properties(
     """
 
     def show_mismatch(member_name: str, *, i: int, x: Any, j: int, y: Any) -> None:
-        """Log a property mismatch between two articulation prims."""
+        """Log a property mismatch between two articulation prims.
+
+        Args:
+            member_name: Name of the property that mismatched.
+            i: Index of the first prim.
+            x: Value from the first prim.
+            j: Index of the second prim.
+            y: Value from the second prim.
+        """
         if msg is None:
             carb.log_info(f"\n'{member_name}' mismatch")
         else:
@@ -172,7 +180,15 @@ def compare_articulation_properties(
         carb.log_info(f"  - {y}")
 
     def check_values(x: Any, y: Any) -> tuple[bool, Any, Any]:
-        """Recursively compare two values, handling tuples and warp arrays."""
+        """Recursively compare two values, handling tuples and warp arrays.
+
+        Args:
+            x: First value to compare.
+            y: Second value to compare.
+
+        Returns:
+            Tuple of (match_status, processed_x, processed_y).
+        """
         # tuple
         if isinstance(x, tuple):
             status = True

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test urdf functionality."""
+
 import asyncio
 import gc
 import os
@@ -532,6 +534,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self._delete_directory(os.path.dirname(output_path))
 
     async def test_urdf_parse_mimic(self):
+        """Test urdf parse mimic."""
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_mimic.urdf")
         _, prim_path = self._import_urdf(urdf_path)
         self.assertTrue(prim_path, "/test_mimic")

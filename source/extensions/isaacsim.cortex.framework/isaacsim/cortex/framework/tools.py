@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utility tools for rate control, cycle timing, and diagnostics."""
+
 import sys
 import time
 from collections import OrderedDict
@@ -20,7 +22,8 @@ from typing import Optional
 
 
 def write(s: str) -> None:
-    """A convenient utility method for writing a string to sys.stdout with a buffer flush but no
+    """A convenient utility method for writing a string to sys.stdout with a buffer flush but no.
+
     newline.
 
     Args:
@@ -31,7 +34,8 @@ def write(s: str) -> None:
 
 
 class SteadyRate:
-    """Maintains the steady cycle rate provided on initialization by adaptively sleeping an amount
+    """Maintains the steady cycle rate provided on initialization by adaptively sleeping an amount.
+
     of time to make up the remaining cycle time after work is done.
 
     Usage:
@@ -51,6 +55,7 @@ class SteadyRate:
         self.last_sleep_end = time.time()
 
     def sleep(self) -> None:
+        """Sleep for the remaining cycle time to maintain the target rate."""
         work_elapse = time.time() - self.last_sleep_end
         sleep_time = self.dt - work_elapse
         if sleep_time > 0.0:
@@ -100,7 +105,8 @@ class CycleTimer:
 
 
 class Profiler(object):
-    """A profiling utility for capturing the average percentage of a cycle given sections of code
+    """A profiling utility for capturing the average percentage of a cycle given sections of code.
+
     take.
 
     Basic usage: (see cortex_main.py for an example)
@@ -158,20 +164,23 @@ class Profiler(object):
 
     @property
     def is_active(self) -> bool:
-        """Returns true if the profiler is past the skip cycle set. The profiler won't capture and
+        """Returns true if the profiler is past the skip cycle set. The profiler won't capture and.
+
         print anything until is_active is true.
         """
         return self.cycle_num > self.skip_cycles
 
     def start_cycle(self) -> None:
-        """Start the current cycle capture. This method should be called at the beginning of the
+        """Start the current cycle capture. This method should be called at the beginning of the.
+
         cycle before any captures.
         """
         self.cycle_num += 1
         self.start_capture("cycle")
 
     def start_capture(self, tag: str) -> None:
-        """Start a named capture. This method should be called after self.start_cycle(), and later
+        """Start a named capture. This method should be called after self.start_cycle(), and later.
+
         self.end_capture(tag) should be called to end the capture anytime before self.end_cycle() is
         called.
 
@@ -183,7 +192,8 @@ class Profiler(object):
         self.capture_start_times[tag] = time.time()
 
     def end_capture(self, tag: str) -> None:
-        """End the named capture. The tag provided should be tag corresponding to a given open
+        """End the named capture. The tag provided should be tag corresponding to a given open.
+
         capture. This method should be called after self.start_capture(tag) and before
         self.end_cycle().
 
@@ -201,7 +211,8 @@ class Profiler(object):
             self.capture_avg_durations[tag] = duration
 
     def end_cycle(self) -> None:
-        """End the current cycle. No more captures should be performed after this call until
+        """End the current cycle. No more captures should be performed after this call until.
+
         self.start_cycle() is again called.
         """
         self.end_capture("cycle")
@@ -218,7 +229,8 @@ class Profiler(object):
         return tag in self.capture_avg_durations
 
     def get_avg(self, tag: str) -> float:
-        """Returns the average capture duration for the specified tag. This method does not check
+        """Returns the average capture duration for the specified tag. This method does not check.
+
         whether the average duration exists. Use self.has_avg(tag) to see whether it's safe to call
         this method.
 

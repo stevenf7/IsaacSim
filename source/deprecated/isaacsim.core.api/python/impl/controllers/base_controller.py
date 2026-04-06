@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Base controller module."""
+
 from abc import ABC, abstractmethod
 
 from isaacsim.core.utils.types import ArticulationAction
@@ -30,7 +32,8 @@ class BaseController(ABC):
 
     @abstractmethod
     def forward(self, *args: object, **kwargs: object) -> ArticulationAction:
-        """A controller should take inputs and returns an ArticulationAction to be then passed to the
+        """A controller should take inputs and returns an ArticulationAction to be then passed to the.
+
         ArticulationController.
 
         Args:

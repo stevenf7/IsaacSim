@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module provides a motion commander that wraps a motion policy to give it a standard
+"""This module provides a motion commander that wraps a motion policy to give it a standard.
+
 flexible command interface.
 
 The command, defined by the MotionCommand class, allows users to specify not only a target pose, but
@@ -49,7 +50,8 @@ CortexObstacleType = Union[CortexObject, SingleGeometryPrim]
 
 
 class ApproachParams(object):
-    """Parameters describing how to approach a target (in position). They generally describe a
+    """Parameters describing how to approach a target (in position). They generally describe a.
+
     funnel approaching the target from a particular direction.
 
     The approach direction is a 3D vector pointing in the direction of approach. It's magnitude
@@ -78,6 +80,7 @@ class ApproachParams(object):
         self.std_dev = std_dev
 
     def __str__(self):
+        """Return a string representation of the approach parameters."""
         return "{direction: %s, std_dev %s}" % (str(self.approach), str(self.std_dev))
 
 
@@ -111,7 +114,8 @@ class PosePq:
 
 
 class MotionCommand:
-    """Contains information about a motion command: an end-effector target (either full pose or
+    """Contains information about a motion command: an end-effector target (either full pose or.
+
     position only), optional approach parameters, and an optional posture configuration.
 
     The target pose is a full position and orientation target. The approach params define how the
@@ -173,7 +177,8 @@ class MotionCommand:
 
 
 def calc_shifted_approach_target(target_T: np.ndarray, eff_T: np.ndarray, approach_params: np.ndarray) -> np.ndarray:
-    """Calculates how the target should be shifted to implement the approach given the current
+    """Calculates how the target should be shifted to implement the approach given the current.
+
     end-effector position.
 
     Args:
@@ -202,7 +207,8 @@ def calc_shifted_approach_target(target_T: np.ndarray, eff_T: np.ndarray, approa
 
 
 class MotionCommandAdapter(TargetAdapter):
-    """A simple adapter class to extract the target information to pass into the SmoothedCommand
+    """A simple adapter class to extract the target information to pass into the SmoothedCommand.
+
     object.
 
     Args:
@@ -241,7 +247,8 @@ class MotionCommandAdapter(TargetAdapter):
 
 
 class MotionCommander(Commander):
-    """The motion commander provides an abstraction of motion for the cortex wherein a lower-level
+    """The motion commander provides an abstraction of motion for the cortex wherein a lower-level.
+
     policy implements the motion commands defined by MotionCommand objects.
 
     This class uses a target prim for setting targets. The target prim can be set to a target
@@ -281,7 +288,8 @@ class MotionCommander(Commander):
         self.register_target_prim(target_prim)
 
     def reset(self) -> None:
-        """Reset this motion commander. This method ensures that any internal integrators of the
+        """Reset this motion commander. This method ensures that any internal integrators of the.
+
         motion policy are reset, as is the smoothed command.
         """
         # Resetting the motion policy removes the obstacles, so we need to add them back.
@@ -294,7 +302,8 @@ class MotionCommander(Commander):
         self._reset_target_print_to_eff = True
 
     def soft_reset(self) -> None:
-        """Soft reset this motion commander. This method only resets the internal integrators and
+        """Soft reset this motion commander. This method only resets the internal integrators and.
+
         nothing else.
         """
         self.motion_policy._robot_joint_positions = None
@@ -312,7 +321,8 @@ class MotionCommander(Commander):
 
     @property
     def aji(self) -> np.ndarray:
-        """Returns the active joint indices. These are the indices into the full C-space
+        """Returns the active joint indices. These are the indices into the full C-space.
+
         configuration vector of the joints which are actively controlled.
         """
         return self.amp.get_active_joints_subset().get_joint_subset_indices()
@@ -333,7 +343,8 @@ class MotionCommander(Commander):
         self._reset_target_print_to_eff = True
 
     def get_end_effector_pose(self, config: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
-        """Returns the end-effector pose as a pair (p, R), where p is the position and R is the
+        """Returns the end-effector pose as a pair (p, R), where p is the position and R is the.
+
         rotation matrix.
 
         If config is None (default), it uses the current applied action (i.e. current integration
@@ -393,6 +404,7 @@ class MotionCommander(Commander):
 
     def get_fk_p(self, config: Optional[np.ndarray] = None) -> np.ndarray:
         """Returns the position components of end-effector pose.
+
         control frame.
 
         Calls get_end_effector_pose(config) internally; see that method's docstring for details.
@@ -421,7 +433,8 @@ class MotionCommander(Commander):
         return R
 
     def send_end_effector(self, *args: object, **kwargs: object) -> None:
-        """An alias for sending an explicit MotionCommand object via send(). The arguments should
+        """An alias for sending an explicit MotionCommand object via send(). The arguments should.
+
         match those of MotionCommand. This is for convenience only.
 
         Args:
@@ -556,7 +569,8 @@ class MotionCommander(Commander):
             self.motion_policy.set_end_effector_target(target_translation, target_orientation)
 
     def _step_command_smoothing(self, command: MotionCommand) -> None:
-        """Processes the command's approach parameters, smooths the resulting pose, and apply the
+        """Processes the command's approach parameters, smooths the resulting pose, and apply the.
+
         smoothed pose to the target_prim. Additionally, passes the posture config into the
         underlying motion policy.
 

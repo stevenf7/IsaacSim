@@ -17,9 +17,7 @@ import os
 
 
 class OgnIsaacReadEnvVar:
-    """
-    look for environment variable on OS, and return it.
-    """
+    """look for environment variable on OS, and return it."""
 
     @staticmethod
     def compute(db) -> bool:

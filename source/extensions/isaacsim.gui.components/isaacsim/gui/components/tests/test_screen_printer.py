@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the ScreenPrinter UI component."""
+
 import asyncio
 
 import numpy as np
@@ -26,8 +28,11 @@ from isaacsim.gui.components import ScreenPrinter
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestScreenPrinter(omni.kit.test.AsyncTestCase):
+    """Test suite for the ScreenPrinter UI component."""
+
     # Before running each test
     async def setUp(self):
+        """Set up the test environment with a new stage and timeline."""
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.play()
@@ -38,6 +43,7 @@ class TestScreenPrinter(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Clean up the test environment."""
         self._timeline.stop()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
@@ -50,6 +56,7 @@ class TestScreenPrinter(omni.kit.test.AsyncTestCase):
 
     # Run for a single frame and exit
     async def test_screen_printer(self):
+        """Test ScreenPrinter text display and configuration."""
         printer = ScreenPrinter()
         self.printers.append(printer)
         printer.set_text("This is a test")

@@ -51,7 +51,7 @@ class Version:
 
 
 def parse_version(full_version: str) -> Version:
-    """Parse a version string into a version object
+    """Parse a version string into a version object.
 
     Args:
         full_version: Full version string read from a VERSION file
@@ -73,12 +73,11 @@ def parse_version(full_version: str) -> Version:
 
 
 def get_version() -> typing.Tuple[str, str, str, str, str, str, str, str]:
-    """Retrieve version from the App VERSION file
+    """Retrieve version from the App VERSION file.
 
     Returns:
         [Core version, Pre-release tag and build number, Major version, Minor version, Patch version, Pre-release tag, Build number, Build tag]
     """
-
     app_folder = carb.settings.get_settings().get_as_string("/app/folder")
     if not app_folder:
         app_folder = carb.tokens.get_tokens_interface().resolve("${app}")

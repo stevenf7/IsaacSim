@@ -52,7 +52,7 @@ class Extension(omni.ext.IExt):
     """
 
     def on_startup(self, ext_id: str):
-        """Initialize extension and UI elements
+        """Initialize extension and UI elements.
 
         Args:
             ext_id: Extension identifier.

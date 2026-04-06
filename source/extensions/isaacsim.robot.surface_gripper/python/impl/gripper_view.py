@@ -27,7 +27,7 @@ from usd.schema.isaac import robot_schema
 
 
 class GripperView(XformPrim):
-    """Provides high level functions to deal with batched data from surface gripper
+    """Provides high level functions to deal with batched data from surface gripper.
 
     Args:
         paths: Prim paths regex to encapsulate all prims that match it. E.g.: "/World/Env[1-5]/Gripper" will match
@@ -123,7 +123,6 @@ class GripperView(XformPrim):
         Returns:
             List of gripped object paths for each gripper. Shape (M,).
         """
-
         indices = ops_utils.resolve_indices(indices, count=self.count, device="cpu").numpy()
         prim_paths = [self._prim_paths[i] for i in indices]
         return self.surface_gripper_interface.get_gripped_objects_batch(prim_paths)

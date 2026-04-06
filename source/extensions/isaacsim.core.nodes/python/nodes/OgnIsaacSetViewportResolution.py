@@ -19,9 +19,7 @@ from omni.kit.viewport.utility import get_active_viewport, get_viewport_from_win
 
 
 class OgnIsaacSetViewportResolution:
-    """
-    Isaac Sim Set Viewport Resolution
-    """
+    """Isaac Sim Set Viewport Resolution."""
 
     @staticmethod
     def compute(db) -> bool:

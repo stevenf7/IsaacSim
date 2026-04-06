@@ -73,7 +73,8 @@ class GraspSpec:
         return self._imported_data["grasps"][name]
 
     def get_grasp_dicts(self) -> dict:
-        """Get a dictionary of dictionaries that specify each grasp in the imported file. The
+        """Get a dictionary of dictionaries that specify each grasp in the imported file. The.
+
         `get_grasp_dict_by_name()` function describes the content of each inner dictionary, and the
         `get_grasp_names()` function provides the keys to this dictionary.
 
@@ -85,7 +86,8 @@ class GraspSpec:
     def compute_gripper_pose_from_rigid_body_pose(
         self, grasp_name: str, rb_trans: np.array, rb_quat: np.array
     ) -> Tuple[np.array, np.array]:
-        """Given a position of the rigid body in the world or robot frame, compute the position of
+        """Given a position of the rigid body in the world or robot frame, compute the position of.
+
         the gripper in that same frame to replicate the grasp associated `grasp_name`.
 
         Args:
@@ -116,7 +118,8 @@ class GraspSpec:
     def compute_rigid_body_pose_from_gripper_pose(
         self, grasp_name: str, gripper_trans: np.array, gripper_quat: np.array
     ) -> Tuple[np.array, np.array]:
-        """Given a position of the gripper in the world or robot frame, compute the position of
+        """Given a position of the gripper in the world or robot frame, compute the position of.
+
         the rigid body in that same frame to replicate the grasp associated `grasp_name`.
 
         Args:
@@ -147,7 +150,8 @@ class GraspSpec:
 
 
 def import_grasps_from_file(file_path: str) -> GraspSpec:
-    """Parse an `isaac_grasp` YAML file for use in Isaac Sim. The resulting `GraspSpec` class will
+    """Parse an `isaac_grasp` YAML file for use in Isaac Sim. The resulting `GraspSpec` class will.
+
     allow you to look up the data for each grasp by its name.
 
     Args:

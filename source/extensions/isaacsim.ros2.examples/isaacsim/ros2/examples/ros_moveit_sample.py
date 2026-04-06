@@ -42,7 +42,10 @@ FRANKA_STAGE_PATH = "/Franka"
 
 
 class Extension(omni.ext.IExt):
+    """Extension providing the Franka MoveIt example."""
+
     def on_startup(self, ext_id: str):
+        """Initialize the extension."""
         self._ext_id = ext_id
         """Initialize extension and UI elements"""
         self._timeline = omni.timeline.get_timeline_interface()
@@ -54,6 +57,7 @@ class Extension(omni.ext.IExt):
         )
 
     def build_ui(self):
+        """Build the extension user interface."""
         # check if ros2 bridge is enabled before proceeding
         extension_enabled = omni.kit.app.get_app().get_extension_manager().is_extension_enabled("isaacsim.ros2.bridge")
         if not extension_enabled:
@@ -73,6 +77,7 @@ class Extension(omni.ext.IExt):
                 ui.Button("Load Sample Scene", clicked_fn=self._on_environment_setup)
 
     def create_ros_action_graph(self, franka_stage_path):
+        """Create the ROS 2 action graph for joint state communication."""
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
@@ -121,6 +126,7 @@ class Extension(omni.ext.IExt):
         pass
 
     def create_franka(self, stage_path):
+        """Create a Franka robot prim on the stage."""
         usd_path = "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         asset_path = self._assets_root_path + usd_path
         prim = self._stage.DefinePrim(stage_path, "Xform")
@@ -167,7 +173,7 @@ class Extension(omni.ext.IExt):
         asyncio.ensure_future(self._create_moveit_sample())
 
     def on_shutdown(self):
-        """Cleanup objects on extension shutdown"""
+        """Cleanup objects on extension shutdown."""
         get_browser_instance().deregister_example(name=MENU_NAME, category=MENU_CATEGORY)
         self._timeline.stop()
         gc.collect()

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test UCX camera helper node functionality."""
+
 import time
 
 # UCX imports
@@ -33,9 +35,10 @@ from ucxx._lib.arr import Array
 
 
 class TestUCXCamera(UCXTestCase):
-    """Test UCX Camera Helper node"""
+    """Test UCX Camera Helper node."""
 
     async def setUp(self):
+        """Set up test stage, assets, and viewport."""
         await super().setUp()
 
         # Get assets root path

@@ -18,9 +18,7 @@ import omni.graph.core as og
 
 
 class OgnIsaacScaleToFromStageUnit:
-    """
-    Isaac Sim Scale To and From Stage Units
-    """
+    """Isaac Sim Scale To and From Stage Units."""
 
     @staticmethod
     def compute(db) -> bool:

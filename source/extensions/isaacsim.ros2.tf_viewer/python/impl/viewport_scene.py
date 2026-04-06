@@ -23,6 +23,8 @@ from .view_manipulator import ViewManipulator
 
 
 class ViewportScene:
+    """Manage a viewport scene overlay for TF frame visualization."""
+
     def __init__(self, viewport_window: ui.Window, ext_id: str) -> None:
         self._scene_view = None
         self._viewport_window = viewport_window
@@ -41,9 +43,11 @@ class ViewportScene:
             self._viewport_window.viewport_api.add_scene_view(self._scene_view)
 
     def __del__(self):
+        """Clean up the viewport scene."""
         self.destroy()
 
     def destroy(self):
+        """Destroy the viewport scene and release resources."""
         if self._scene_view:
             # empty the scene view
             self._scene_view.scene.clear()

@@ -13,28 +13,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Simple state machine that moves the end-effector between two target positions."""
+
 import numpy as np
 from isaacsim.cortex.framework.df import DfNetwork, DfState, DfStateMachineDecider, DfStateSequence
 from isaacsim.cortex.framework.dfb import DfBasicContext
 
 
 class ReachState(DfState):
+    """State that moves the end-effector to a target position and exits on arrival.
+
+    Args:
+        target_p: The 3D target position.
+    """
+
     def __init__(self, target_p):
         self.target_p = target_p
 
     def __str__(self):
+        """Return a string representation including the target position."""
         return f"{super().__str__()}({self.target_p})"
 
     def enter(self):
+        """Send the end-effector to the target position."""
         self.context.robot.arm.send_end_effector(target_position=self.target_p)
 
     def step(self):
+        """Continue until the end-effector reaches the target."""
         if np.linalg.norm(self.target_p - self.context.robot.arm.get_fk_p()) < 0.01:
             return None
         return self
 
 
 def make_decider_network(robot):
+    """Create the simple state machine decider network for the given robot."""
     p1 = np.array([0.2, -0.2, 0.01])
     p2 = np.array([0.6, 0.3, 0.6])
     root = DfStateMachineDecider(DfStateSequence([ReachState(p1), ReachState(p2)], loop=True))

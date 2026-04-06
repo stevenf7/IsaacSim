@@ -69,7 +69,7 @@ class BaseSensor(SingleXFormPrim):
         return
 
     def initialize(self, physics_sim_view: object = None) -> None:
-        """Create a physics simulation view if not passed and using PhysX tensor API
+        """Create a physics simulation view if not passed and using PhysX tensor API.
 
         .. note::
 

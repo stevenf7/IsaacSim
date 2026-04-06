@@ -74,7 +74,6 @@ class ProximitySensor:
         Checks for overlap with collision meshes, updates active zones, determines entered and exited zones,
         and calls appropriate callback functions for zone transitions and while inside zones.
         """
-
         # get any active zones
         self._prev_active_zones = self._active_zones
         self._active_zones = []  # clear the active zones

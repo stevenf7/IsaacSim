@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test menu functionality."""
+
 from isaacsim.core.utils.stage import traverse_stage
 from isaacsim.test.utils import MenuUITestCase, get_all_menu_paths
 from omni.kit.mainwindow import get_main_window

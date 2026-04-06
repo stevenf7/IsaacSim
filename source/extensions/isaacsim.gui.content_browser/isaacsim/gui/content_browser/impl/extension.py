@@ -28,7 +28,7 @@ from .isaac_collection import IsaacCollection
 
 
 class Extension(omni.ext.IExt):
-    """The Extension class"""
+    """The Extension class."""
 
     def on_startup(self, ext_id: str):
         """Method called when the extension is loaded/enabled.

@@ -257,7 +257,7 @@ class PickPlaceController(BaseController):
         end_effector_initial_height: typing.Optional[float] = None,
         events_dt: typing.Optional[typing.List[float]] = None,
     ):
-        """Resets the state machine to start from the first phase/ event
+        """Resets the state machine to start from the first phase/ event.
 
         Args:
             end_effector_initial_height: End effector initial picking height to start from.

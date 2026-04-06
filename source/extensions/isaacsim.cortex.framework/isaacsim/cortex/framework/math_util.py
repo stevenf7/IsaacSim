@@ -162,7 +162,8 @@ class Quaternion:
 
 
 def reorder_q_xyzw2wxyz(q: np.ndarray) -> np.ndarray:
-    """Reorders the given quaternion from (x,y,z,w) order (ROS convention) to (w,x,y,z) order
+    """Reorders the given quaternion from (x,y,z,w) order (ROS convention) to (w,x,y,z) order.
+
     (Isaac Sim core API convention).
 
     Args:
@@ -175,7 +176,8 @@ def reorder_q_xyzw2wxyz(q: np.ndarray) -> np.ndarray:
 
 
 def reorder_q_wxyz2xyzw(q: np.ndarray) -> np.ndarray:
-    """Reorders the given quaternion from (w,x,y,z) order (Isaac Sim core API convention) to
+    """Reorders the given quaternion from (w,x,y,z) order (Isaac Sim core API convention) to.
+
     (x,y,z,w) order (ROS convention).
 
     Args:
@@ -188,7 +190,8 @@ def reorder_q_wxyz2xyzw(q: np.ndarray) -> np.ndarray:
 
 
 def to_homogeneous_vec(v: np.ndarray) -> np.ndarray:
-    """Converts the provided 3D vector into a 4D homogeneous vector padded with 1 in the final
+    """Converts the provided 3D vector into a 4D homogeneous vector padded with 1 in the final.
+
     dimension.
 
     Args:
@@ -203,7 +206,8 @@ def to_homogeneous_vec(v: np.ndarray) -> np.ndarray:
 
 
 def apply_T(T: np.ndarray, v: np.ndarray) -> np.ndarray:
-    """Applies the 4x4 homogeneous transform matrix T to the provided 3D vector v. Returns the
+    """Applies the 4x4 homogeneous transform matrix T to the provided 3D vector v. Returns the.
+
     transformed 3D vector.
 
     Args:
@@ -243,7 +247,8 @@ def pq2T(p: np.ndarray, q: np.ndarray) -> np.ndarray:
 
 
 def R2T(R: np.ndarray) -> np.ndarray:
-    """Expands a rotation matrix to be a 4x4 homogeneous matrix by padding it with a zero position
+    """Expands a rotation matrix to be a 4x4 homogeneous matrix by padding it with a zero position.
+
     vector.
 
     Args:
@@ -258,7 +263,8 @@ def R2T(R: np.ndarray) -> np.ndarray:
 
 
 def proj_orth(v1: np.ndarray, v2: np.ndarray, normalize_res: Optional[bool] = False, eps: Optional[float] = 1e-5):
-    """Projects v1 orthogonal to v2. If v2 is zero (within eps), v1 is returned unchanged. If
+    """Projects v1 orthogonal to v2. If v2 is zero (within eps), v1 is returned unchanged. If.
+
     normalize_res is true, normalizes the result before returning.
 
     Args:
@@ -284,7 +290,8 @@ def proj_orth(v1: np.ndarray, v2: np.ndarray, normalize_res: Optional[bool] = Fa
 
 
 def unpack_T(T: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    """Unpack the rotation matrix and translation separately from a 4x4 homogeneous transform
+    """Unpack the rotation matrix and translation separately from a 4x4 homogeneous transform.
+
     matrix.
 
     Args:
@@ -331,7 +338,8 @@ def pack_R(ax: np.ndarray, ay: np.ndarray, az: np.ndarray, as_homogeneous: bool 
 
 
 def pack_Rp(R: np.ndarray, p: np.ndarray) -> np.ndarray:
-    """Packs the provided rotation matrix (R) and position (p) into a 4x4 homogeneous transform
+    """Packs the provided rotation matrix (R) and position (p) into a 4x4 homogeneous transform.
+
     matrix.
 
     Args:
@@ -348,7 +356,8 @@ def pack_Rp(R: np.ndarray, p: np.ndarray) -> np.ndarray:
 
 
 def invert_T(T: np.ndarray) -> np.ndarray:
-    """Inverts the provided transform matrix using the explicit formula leveraging the
+    """Inverts the provided transform matrix using the explicit formula leveraging the.
+
     orthogonality of R and the sparsity of the transform.
 
     Specifically, denote T = h(R, t) where h(.,.) is a function mapping the rotation R and
@@ -421,7 +430,8 @@ class ExpAvg(object):
         return self.val_avg is not None
 
     def update(self, val: float) -> None:
-        """Update the average with the provided value. When the first value is consumed, the
+        """Update the average with the provided value. When the first value is consumed, the.
+
         average is set to that value explicitly is no prior value is specified.
 
         Args:
@@ -446,7 +456,6 @@ def proj_R(R: np.ndarray) -> np.ndarray:
     Returns:
         The projected version of R.
     """
-
     q = matrix_to_quat(R)
     q /= np.linalg.norm(q)
     R = quat_to_rot_matrix(q)
@@ -454,7 +463,8 @@ def proj_R(R: np.ndarray) -> np.ndarray:
 
 
 def proj_T(T: np.ndarray) -> np.ndarray:
-    """Projects the rotational matrix portion of the provide homogeneous transform matrix to make
+    """Projects the rotational matrix portion of the provide homogeneous transform matrix to make.
+
     it a valid rotation.
 
     The projection is performed by first converting the rotation matrix components into a
@@ -477,7 +487,8 @@ def proj_T(T: np.ndarray) -> np.ndarray:
 
 
 def make_rotation_matrix(az_dominant: np.ndarray, ax_suggestion: np.ndarray) -> np.ndarray:
-    """Constructs a rotation matrix with the z-axis given by az_dominant (normalized), and the
+    """Constructs a rotation matrix with the z-axis given by az_dominant (normalized), and the.
+
     x-axis given by a orthogonally projected version of ax_suggestion. The y-axis is formed via the
     right hand rule.
 
@@ -497,7 +508,8 @@ def make_rotation_matrix(az_dominant: np.ndarray, ax_suggestion: np.ndarray) -> 
 
 
 def to_meters(p_stage: np.ndarray):
-    """Converts the position p_stage from stage units to meters. By default, a stage uses meters,
+    """Converts the position p_stage from stage units to meters. By default, a stage uses meters,.
+
     so this method does nothing. But if the world is constructed with different units, this method
     will convert those units to meters.
 
@@ -511,7 +523,8 @@ def to_meters(p_stage: np.ndarray):
 
 
 def T_to_meters(T_stage: np.ndarray):
-    """Convert the homogeneous transform to meters. This method simply makes a copy of T_stage and
+    """Convert the homogeneous transform to meters. This method simply makes a copy of T_stage and.
+
     converts the translation components to meters using a call to to_meters().
 
     Args:

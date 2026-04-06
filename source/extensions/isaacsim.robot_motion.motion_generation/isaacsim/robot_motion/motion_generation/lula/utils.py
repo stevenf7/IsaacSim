@@ -83,6 +83,7 @@ def get_pose_rel_robot_base(trans: object, rot: object, robot_pos: object, robot
 
 def get_pose3(trans: object = None, rot_mat: object = None, rot_quat: object = None) -> lula.Pose3:
     """Get lula.Pose3 type representing a transformation.
+
     rot_mat will take precedence over rot_quat if both are supplied.
 
     Args:
@@ -93,7 +94,6 @@ def get_pose3(trans: object = None, rot_mat: object = None, rot_quat: object = N
     Returns:
         Pose3 object representing the transformation.
     """
-
     if trans is None and rot_mat is None and rot_quat is None:
         return lula.Pose3()
 

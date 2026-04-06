@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated mesh utility functions."""
+
 import numpy as np
 
 # isaacsim
@@ -55,7 +57,6 @@ def get_mesh_vertices_relative_to(mesh_prim: UsdGeom.Mesh, coord_prim: Usd.Prim)
          [-1.5 -0.5 -1.5]
          [-0.5 -0.5 -1.5]]
     """
-
     # Vertices of the mesh in the mesh's coordinate system
     vertices_vec3f = UsdGeom.Mesh(mesh_prim).GetPointsAttr().Get()
     vertices = np.array(vertices_vec3f)

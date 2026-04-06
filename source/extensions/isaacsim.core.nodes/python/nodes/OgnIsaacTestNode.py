@@ -15,13 +15,11 @@
 
 
 class OgnIsaacTestNode:
-    """
-    Test Isaac Sim Node
-    """
+    """Test Isaac Sim Node."""
 
     @staticmethod
     def compute(db) -> bool:
-        """Dummy Compute Function"""
+        """Dummy Compute Function."""
         # copy input to output
         db.outputs.output = db.inputs.input
         return True

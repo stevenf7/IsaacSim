@@ -31,6 +31,8 @@ from .manus_vive_integration import ManusViveIntegration
 
 
 class Extension(omni.ext.IExt):
+    """Extension lifecycle management."""
+
     _instance = None
 
     def on_startup(self, ext_id: str) -> None:

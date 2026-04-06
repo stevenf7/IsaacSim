@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated deformable mesh utility functions."""
+
 import re
 
 import carb
@@ -114,7 +116,6 @@ def verifyTetraMesh(points: list, indices: list) -> None:
         points: Vertex positions of the tetrahedral mesh.
         indices: Tetrahedron indices in groups of 4.
     """
-
     # print("verifyTetraMesh:")
     # print("num points: " + str(len(points)))
     # print("num indices: " + str(len(indices)))

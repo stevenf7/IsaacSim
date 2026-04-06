@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Cloner module."""
+
 __all__ = ["Cloner"]
 
 from typing import List, Union
@@ -92,7 +94,6 @@ class Cloner:
             >>> cloner = Cloner()
             >>> cloner.define_base_env("/World/envs")
         """
-
         UsdGeom.Scope.Define(self._stage, base_env_path)
         self._base_env_path = base_env_path
 
@@ -117,7 +118,6 @@ class Cloner:
             >>> paths
             ['/World/envs/env_0', '/World/envs/env_1', '/World/envs/env_2', '/World/envs/env_3']
         """
-
         self._root_path = root_path + "_"
         return [f"{root_path}_{i}" for i in range(num_paths)]
 
@@ -618,7 +618,6 @@ class Cloner:
             ...     global_paths=["/World/ground_plane"],
             ... )
         """
-
         physx_scene = PhysxSchema.PhysxSceneAPI(self._stage.GetPrimAtPath(physicsscene_path))
 
         # We invert the collision group filters for more efficient collision filtering across environments

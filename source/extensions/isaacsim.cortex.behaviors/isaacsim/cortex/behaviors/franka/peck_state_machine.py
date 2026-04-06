@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Simple example of constructing a running a state machine. This state machine will loop choosing
+"""Simple example of constructing a running a state machine. This state machine will loop choosing.
+
 a target on the ground away from obstacles and pecking at it.
 
 In general this will loop successfully forever as long as the world is static. However, if the user
@@ -33,6 +34,7 @@ from isaacsim.cortex.framework.motion_commander import ApproachParams, PosePq
 
 
 def sample_target_p():
+    """Sample a random target position on the ground plane."""
     min_x = 0.3
     max_x = 0.7
     min_y = -0.4
@@ -47,13 +49,17 @@ def sample_target_p():
 
 
 def make_target_rotation(target_p):
+    """Compute a downward-facing rotation quaternion oriented toward the target."""
     return math_util.matrix_to_quat(
         math_util.make_rotation_matrix(az_dominant=np.array([0.0, 0.0, -1.0]), ax_suggestion=-target_p)
     )
 
 
 class PeckState(DfState):
+    """State that samples a target, sends the end-effector to peck, and waits for arrival."""
+
     def is_near_obs(self, p):
+        """Check whether a point is within proximity of any registered obstacle."""
         for _, obs in self.context.robot.registered_obstacles.items():
             obs_p, _ = obs.get_world_pose()
             if np.linalg.norm(obs_p - p) < 0.2:
@@ -61,12 +67,14 @@ class PeckState(DfState):
         return False
 
     def sample_target_p_away_from_obs(self):
+        """Sample a random target position that is not near any obstacle."""
         target_p = sample_target_p()
         while self.is_near_obs(target_p):
             target_p = sample_target_p()
         return target_p
 
     def enter(self):
+        """Sample a target and send the end-effector toward it."""
         # On entry, sample a target.
         target_p = self.sample_target_p_away_from_obs()
         target_q = make_target_rotation(target_p)
@@ -75,6 +83,7 @@ class PeckState(DfState):
         self.context.robot.arm.send_end_effector(self.target, approach_params=approach_params)
 
     def step(self):
+        """Continue until the end-effector reaches the target."""
         target_dist = np.linalg.norm(self.context.robot.arm.get_fk_p() - self.target.p)
         if target_dist < 0.01:
             return None  # Exit
@@ -82,6 +91,7 @@ class PeckState(DfState):
 
 
 def make_decider_network(robot):
+    """Create the peck state machine decider network for the given robot."""
     # Build a state machine decider from a sequencial state machine. The sequence will be
     #
     #   1. close gripper,

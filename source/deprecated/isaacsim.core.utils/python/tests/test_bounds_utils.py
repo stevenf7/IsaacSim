@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for bounds computation utilities."""
+
 import omni.kit.commands
 import omni.kit.test
 from isaacsim.core.utils.bounds import (
@@ -28,17 +30,22 @@ from pxr import UsdGeom
 
 
 class TestBounds(omni.kit.test.AsyncTestCase):
+    """Test cases for Bounds."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         pass
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         pass
 
     async def test_recompute_extents(self):
+        """Test recompute extents."""
         stage = get_current_stage()
         cubeGeom = UsdGeom.Cube.Define(stage, "/cube_shape")
         cubePrim = stage.GetPrimAtPath("/cube_shape")
@@ -79,6 +86,7 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         self.assertListEqual(combined_aabb.tolist(), aabb_with_children.tolist())
 
     async def test_nested_recompute_extents(self):
+        """Test nested recompute extents."""
         stage = get_current_stage()
         cubeA = UsdGeom.Cube.Define(stage, "/nested_cube")
         cubeB = UsdGeom.Cube.Define(stage, "/nested_cube/nested_cube")
@@ -120,6 +128,7 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         recompute_extents(cubeA.GetPrim(), include_children=True)
 
     async def test_obb_default(self):
+        """Test obb default."""
         stage = get_current_stage()
         UsdGeom.Cube.Define(stage, "/cube_shape")
 
@@ -168,6 +177,7 @@ class TestBounds(omni.kit.test.AsyncTestCase):
             self.assertAlmostEqual(a, b)
 
     async def test_obb_transformed(self):
+        """Test obb transformed."""
         stage = get_current_stage()
         cubeGeom = UsdGeom.Cube.Define(stage, "/cube_shape")
 
@@ -234,6 +244,7 @@ class TestBounds(omni.kit.test.AsyncTestCase):
             self.assertAlmostEqual(a, b)
 
     async def test_obb_nested(self):
+        """Test obb nested."""
         stage = get_current_stage()
         cubeA = UsdGeom.Cube.Define(stage, "/nested_cube")
         cubeB = UsdGeom.Cube.Define(stage, "/nested_cube/nested_cube")

@@ -52,6 +52,7 @@ class SrtxCaptureState:
     """
 
     def __init__(self) -> None:
+        """Initialize the SRTX capture state."""
         self._stage_id: str = ""
         self._output_paths: dict[str, list[str]] = {}
 
@@ -76,6 +77,7 @@ class SrtxCaptureState:
             srtx_instance: The SRTX instance to control.
             sensor_set_name: Name of the sensor set.
             output_path: Output path to add to the capture.
+
         """
         self._refresh_stage()
 
@@ -97,6 +99,7 @@ class SrtxCaptureState:
             srtx_instance: The SRTX instance to control.
             sensor_set_name: Name of the sensor set.
             output_paths_to_remove: Output paths to remove from the capture.
+
         """
         paths = self._output_paths.get(sensor_set_name)
         if paths is None:
@@ -137,6 +140,7 @@ def _add_render_var(stage: object, rendervar_path: str, aov_name: str) -> bool:
 
     Returns:
         True on success, False if the prim could not be created.
+
     """
     if not stage.GetPrimAtPath(rendervar_path).IsValid():
         render_var_prim = stage.DefinePrim(rendervar_path, "RenderVar")
@@ -163,6 +167,7 @@ def ensure_render_var_on_product(
 
     Returns:
         A (success, rendervar_path) tuple.
+
     """
     rp_prim = stage.GetPrimAtPath(render_product_path)
     aov_name_aliases = AOV_ALIASES.get(aov_name, set())
@@ -204,6 +209,7 @@ def cleanup_srtx_state(state: object) -> None:
 
     Args:
         state: The OG node internal state object to clean up.
+
     """
     handle = state._srtx_callback_handle
     sensor_set = state._srtx_sensor_set
@@ -253,8 +259,8 @@ class CompressedImageManager:
 
         Args:
             render_product_path: Path to the render product.
-        """
 
+        """
         stage = omni.usd.get_context().get_stage()
         with Usd.EditContext(stage, stage.GetSessionLayer()):
             if render_product_path not in cls._annotators:
@@ -271,6 +277,7 @@ class CompressedImageManager:
 
         Args:
             render_product_path: Path to the render product.
+
         """
         stage = omni.usd.get_context().get_stage()
         with Usd.EditContext(stage, stage.GetSessionLayer()):
@@ -295,6 +302,7 @@ class CompressedImageManager:
 
         Returns:
             The replicator writer instance for this render product.
+
         """
         stage = omni.usd.get_context().get_stage()
         with Usd.EditContext(stage, stage.GetSessionLayer()):
@@ -374,8 +382,8 @@ def build_rtx_sensor_pointcloud_writer(
         ...     frameId="lidar_frame",
         ...     topicName="point_cloud",
         ... )
-    """
 
+    """
     # Dynamically name, build, and register a new Annotator based on the selected metadata if it doesn't exist yet
     annotator_name = "IsaacCreateRTXLidarScanBuffer"
     annotator_name += "PerFrame" if not enable_full_scan else ""

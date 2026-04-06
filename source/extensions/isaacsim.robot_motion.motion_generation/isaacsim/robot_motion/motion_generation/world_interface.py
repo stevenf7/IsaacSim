@@ -41,7 +41,7 @@ class WorldInterface:
         pass
 
     def add_obstacle(self, obstacle: isaacsim.core.api.objects, static: Optional[bool] = False) -> bool:
-        """Add an obstacle
+        """Add an obstacle.
 
         Args:
             obstacle: An obstacle from the package isaacsim.core.api.obstacles
@@ -51,7 +51,6 @@ class WorldInterface:
         Returns:
             Returns True if the obstacle type is valid and the appropriate add function has been implemented
         """
-
         if (
             isinstance(obstacle, cuboid.DynamicCuboid)
             or isinstance(obstacle, cuboid.VisualCuboid)
@@ -157,7 +156,7 @@ class WorldInterface:
         return False
 
     def add_ground_plane(self, ground_plane: ground_plane.GroundPlane) -> bool:
-        """Add a ground_plane
+        """Add a ground_plane.
 
         Args:
             ground_plane: Wrapper object for handling ground_plane Usd Prims.
@@ -193,7 +192,8 @@ class WorldInterface:
         return False
 
     def remove_obstacle(self, obstacle: isaacsim.core.api.objects) -> bool:
-        """Remove obstacle from collision avoidance. Obstacle cannot be re-enabled via enable_obstacle() after
+        """Remove obstacle from collision avoidance. Obstacle cannot be re-enabled via enable_obstacle() after.
+
         removal.
 
         Args:

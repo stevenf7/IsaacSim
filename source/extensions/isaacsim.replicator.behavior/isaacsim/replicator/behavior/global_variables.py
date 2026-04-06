@@ -15,6 +15,9 @@
 
 # Extension name used for event prefixing (e.g. "isaacsim.replicator.behavior.my_event")
 # https://docs.omniverse.nvidia.com/dev-guide/latest/programmer_ref/events.html
+
+"""Global constants for the replicator behavior extension."""
+
 EXTENSION_NAME = "isaacsim.replicator.behavior"
 
 # The namespace of the exposed variables used in the randomizer scripts (e.g. "exposedVar:behaviorScriptName:group:attrName")

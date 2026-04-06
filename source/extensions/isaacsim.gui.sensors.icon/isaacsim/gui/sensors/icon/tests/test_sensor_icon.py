@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for sensor icon viewport functionality."""
+
+
 from pathlib import Path
 
 import carb.settings
@@ -35,6 +38,7 @@ TEST_OBJECT_PRIM_PATH = "/test_obj"
 
 # -- TRANSITION FOR SUPPORTING BOTH VP1 AND VP2
 def is_viewport_legacy():
+    """Check if the active viewport is a legacy viewport."""
     viewport_api = get_active_viewport()
     return hasattr(viewport_api, "legacy_window")
 
@@ -43,7 +47,10 @@ def is_viewport_legacy():
 
 
 class TestSensorIcon(OmniUiTest):
+    """Test suite for sensor icon functionality."""
+
     async def setUp(self):
+        """Set up test fixtures before each test."""
         await super().setUp()
         usd_context = omni.usd.get_context()
         await usd_context.new_stage_async()
@@ -60,6 +67,7 @@ class TestSensorIcon(OmniUiTest):
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures after each test."""
         usd_context = omni.usd.get_context()
         await usd_context.close_stage_async()
         self._icon_scene.clear()
@@ -79,6 +87,7 @@ class TestSensorIcon(OmniUiTest):
         await ui_test.wait_n_updates()
 
     async def test_sensoricon_default(self):
+        """Test default sensor icon creation and manipulation."""
         create_test_object()
         self._settings.set(SHOW_TITLE_PATH, True)
         await ui_test.human_delay()
@@ -116,6 +125,7 @@ class TestSensorIcon(OmniUiTest):
         await ui_test.wait_n_updates(30)
 
     async def test_sensoricon_saved_stage(self):
+        """Test sensor icon persistence across stage saves."""
         create_test_object()
         self._settings.set(SHOW_TITLE_PATH, True)
         await ui_test.human_delay()
@@ -249,6 +259,7 @@ class TestSensorIcon(OmniUiTest):
 
 
 def create_test_object(prim_path=TEST_OBJECT_PRIM_PATH, prim_type="Generic", attrs=None):
+    """Create a test object prim with an icon position attribute."""
     kwargs = {"prim_type": prim_type, "prim_path": prim_path}
     if attrs:
         kwargs["attributes"] = attrs

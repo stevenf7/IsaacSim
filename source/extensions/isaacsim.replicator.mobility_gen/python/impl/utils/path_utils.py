@@ -121,7 +121,6 @@ class PathHelper:
         Returns:
             Tuple of indices (start_index, end_index) representing the segment.
         """
-
         for i in range(0, len(self.points) - 1):
             d_a = self._point_distances[i]
             d_b = self._point_distances[i + 1]

@@ -67,7 +67,8 @@ class LulaWorld(WorldInterface):
         robot_base_moved: bool = False,
     ):
         """Update the internal world state of Lula.
-        This function automatically tracks the positions of obstacles that have been added with add_obstacle()
+
+        This function automatically tracks the positions of obstacles that have been added with add_obstacle().
 
         Args:
             updated_obstacles: Obstacles that have been added by add_obstacle() that need to be updated.
@@ -121,7 +122,6 @@ class LulaWorld(WorldInterface):
         Returns:
             Always True, indicating that this adder has been implemented
         """
-
         if cuboid in self._static_obstacles or cuboid in self._dynamic_obstacles:
             carb.log_warn(
                 "A cuboid was added twice to a Lula based MotionPolicy.  This has no effect beyond adding the cuboid once."
@@ -209,7 +209,6 @@ class LulaWorld(WorldInterface):
         Returns:
             Always True, indicating that this function has been implemented
         """
-
         # As of Lula 0.5.0, what Lula calls a "cylinder" is actually a capsule (i.e., the surface
         # defined by the set of all points a fixed distance from a line segment).  This will be
         # corrected in a future release of Lula.
@@ -243,6 +242,7 @@ class LulaWorld(WorldInterface):
         self, ground_plane: objects.ground_plane.GroundPlane, plane_width: Optional[float] = 50.0
     ) -> bool:
         """Add a ground_plane.
+
         Lula does not support ground planes directly, and instead internally creates a cuboid with an
         expansive face (dimensions 200x200 stage units) coplanar to the ground_plane.
 
@@ -321,7 +321,8 @@ class LulaWorld(WorldInterface):
         return True
 
     def remove_obstacle(self, obstacle: objects) -> bool:
-        """Remove obstacle from collision avoidance. Obstacle cannot be re-enabled via enable_obstacle() after
+        """Remove obstacle from collision avoidance. Obstacle cannot be re-enabled via enable_obstacle() after.
+
         removal.
 
         Args:
@@ -348,7 +349,7 @@ class LulaWorld(WorldInterface):
         return True
 
     def reset(self):
-        """reset the world to its initial state"""
+        """Reset the world to its initial state."""
         self._world = lula.create_world()
         self._dynamic_obstacles = dict()
         self._static_obstacles = dict()

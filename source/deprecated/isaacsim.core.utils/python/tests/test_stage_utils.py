@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for USD stage utility functions."""
+
 import asyncio
 
 import carb
@@ -35,8 +37,11 @@ from pxr import Usd, UsdGeom, UsdUtils
 
 
 class TestStage(omni.kit.test.AsyncTestCase):
+    """Test cases for Stage."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -46,6 +51,7 @@ class TestStage(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
@@ -92,6 +98,7 @@ class TestStage(omni.kit.test.AsyncTestCase):
         omni.usd.get_context().attach_stage_with_callback(stage_id)
 
     async def test_clear_stage(self):
+        """Test clear stage."""
         await create_new_stage_async()
         prim = define_prim(prim_path="/Test", prim_type="Xform")
         self.assertTrue(prim.IsValid())
@@ -110,6 +117,7 @@ class TestStage(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_add_reference_to_stage_units(self):
+        """Test add reference to stage units."""
         await create_new_stage_async()
         clear_stage()
         # setup different units
@@ -145,6 +153,7 @@ class TestStage(omni.kit.test.AsyncTestCase):
         ext_manager.set_extension_enabled_immediate("omni.usd.metrics.assembler.ui", False)
 
     async def test_context_manager(self):
+        """Test context manager."""
         await create_new_stage_async()
         stage_in_memory = Usd.Stage.CreateInMemory()
         default_stage = omni.usd.get_context().get_stage()
@@ -164,6 +173,7 @@ class TestStage(omni.kit.test.AsyncTestCase):
         self.assertIsInstance(get_current_stage(fabric=True), usdrt.Usd.Stage)
 
     async def test_stage_in_memory(self):
+        """Test stage in memory."""
         # create stage in memory
         stage_in_memory = create_new_stage_in_memory()
 

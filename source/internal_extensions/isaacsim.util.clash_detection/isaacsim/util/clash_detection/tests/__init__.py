@@ -8,4 +8,6 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
+"""Tests for the clash detection utility."""
+
 scan_for_test_modules = True

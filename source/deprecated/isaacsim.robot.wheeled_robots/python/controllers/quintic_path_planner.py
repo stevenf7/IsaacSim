@@ -14,11 +14,12 @@
 # limitations under the License.
 
 """
-Quintic Polynomials Planner
+Quintic Polynomials Planner.
+
 author: Atsushi Sakai (@Atsushi_twi)
 Source: https://github.com/AtsushiSakai/PythonRobotics/blob/master/PathPlanning/QuinticPolynomialsPlanner/quintic_polynomials_planner.py
 Distributed under the MIT license:
-The MIT License (MIT)
+The MIT License (MIT).
 
 Copyright (c) 2016 - 2021 Atsushi Sakai
 

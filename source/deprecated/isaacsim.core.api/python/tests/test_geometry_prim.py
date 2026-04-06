@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test for geometry prim."""
+
 import omni.kit.test
 from isaacsim.core.api.materials.physics_material import PhysicsMaterial
 
@@ -29,17 +31,22 @@ from .common import CoreTestCase
 
 
 class TestSingleGeometryPrim(CoreTestCase):
+    """Test single geometry prim."""
+
     async def setUp(self):
+        """Set up test environment."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         pass
 
     async def tearDown(self):
+        """Tear down test environment."""
         await super().tearDown()
         pass
 
     async def test_collision_approximation(self):
+        """Test collision approximation."""
         define_prim("/test", prim_type="cube")
         geometry_prim = SingleGeometryPrim("/test", "test", collision=True)
         approximations = ["convexHull", "convexDecomposition"]
@@ -49,6 +56,7 @@ class TestSingleGeometryPrim(CoreTestCase):
         return
 
     async def test_collision_enabled(self):
+        """Test collision enabled."""
         define_prim("/test", prim_type="cube")
         geometry_prim = SingleGeometryPrim("/test", "test")
         api = UsdPhysics.CollisionAPI.Apply(geometry_prim.prim)
@@ -57,6 +65,7 @@ class TestSingleGeometryPrim(CoreTestCase):
         return
 
     async def test_physics_material(self):
+        """Test physics material."""
         define_prim("/test", prim_type="cube")
         geometry_prim = SingleGeometryPrim("/test", "test")
         physics_material = PhysicsMaterial(

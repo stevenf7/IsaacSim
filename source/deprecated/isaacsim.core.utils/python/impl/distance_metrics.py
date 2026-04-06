@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated distance metric functions."""
+
 import typing
 
 # omniverse
@@ -61,7 +63,6 @@ def _standardize_rotation_matrix(r1: typing.Union[np.ndarray, Gf.Matrix3d, Gf.Ma
     Returns:
         Standardized 3x3 matrix.
     """
-
     if np.shape(r1) == (4, 4):
         r1 = _standardize_transform_matrix(r1)
         return r1[:3, :3]
@@ -89,7 +90,6 @@ def _standardize_translation_vector(t1: typing.Union[np.ndarray, Gf.Matrix4d]) -
     Returns:
         Standardized 3-dimensional array.
     """
-
     if np.shape(t1) == (4, 4):
         t1 = _standardize_transform_matrix(t1)
         return t1[:3, 3].flatten()
@@ -137,7 +137,6 @@ def weighted_translational_distance(
     Returns:
         The weighted norm of the difference (t1-t2).
     """
-
     t1 = _standardize_translation_vector(t1)
     t2 = _standardize_translation_vector(t2)
 
@@ -183,7 +182,6 @@ def rotational_distance_identity_matrix_deviation(
     Returns:
         The Frobenius norm ||I-r1*r2^T||, where I is the identity matrix.
     """
-
     r1 = _standardize_rotation_matrix(r1)
     r2 = _standardize_rotation_matrix(r2)
 
@@ -221,7 +219,6 @@ def rotational_distance_single_axis(
     Returns:
         The angle between (r1 @ axis) and (r2 @ axis).
     """
-
     r1 = _standardize_rotation_matrix(r1)
     r2 = _standardize_rotation_matrix(r2)
 

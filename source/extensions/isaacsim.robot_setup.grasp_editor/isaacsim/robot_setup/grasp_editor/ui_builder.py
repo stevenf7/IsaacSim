@@ -109,13 +109,14 @@ class UIBuilder:
 
     def on_menu_callback(self):
         """Callback for when the UI is opened from the toolbar.
+
         This is called directly after build_ui().
         """
         if not self._timeline.is_stopped():
             self._selection_frame.rebuild()
 
     def on_timeline_event(self, event: object) -> None:
-        """Callback for Timeline events (Play, Pause, Stop)
+        """Callback for Timeline events (Play, Pause, Stop).
 
         Args:
             event: Event Type
@@ -124,7 +125,8 @@ class UIBuilder:
 
     def on_physics_step(self, step: float):
         """Callback for Physics Step.
-        Physics steps only occur when the timeline is playing
+
+        Physics steps only occur when the timeline is playing.
 
         Args:
             step: Size of physics step
@@ -142,14 +144,16 @@ class UIBuilder:
 
     def cleanup(self):
         """Called when the stage is closed or the extension is hot reloaded.
+
         Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called
+        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called.
         """
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()
 
     def build_ui(self):
         """Build a custom UI tool to run your extension.
+
         This function will be called any time the UI window is closed and reopened.
         """
         self._selection_frame = CollapsableFrame(
@@ -1134,7 +1138,8 @@ class UIBuilder:
 
 
 class JointFrameUIState:
-    """This class stores the UI state of joint frames. The natural thing to do is to rely on the
+    """This class stores the UI state of joint frames. The natural thing to do is to rely on the.
+
     UI itself in order to store values for joint settings. But this runs into complications when
     you want to programmatically switch a joint from inactive to active. Only the frames that
     are visible on the screen will update when you rebuild the joint frames, and so UI state cannot

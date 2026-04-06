@@ -73,7 +73,6 @@ class TestO3dyn(omni.kit.test.AsyncTestCase):
 
     async def test_loading(self):
         """Test that the O3dyn robot loads and settles at expected position."""
-
         (result, error) = await open_stage_async(self.usd_path)
 
         stage = omni.usd.get_context().get_stage()

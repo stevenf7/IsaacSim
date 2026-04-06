@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test for foundation."""
+
 import isaacsim.core.experimental.utils.foundation as foundation_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
@@ -21,19 +23,22 @@ from pxr import Sdf
 
 
 class TestFoundation(omni.kit.test.AsyncTestCase):
+    """Test foundation."""
+
     async def setUp(self):
-        """Method called to prepare the test fixture"""
+        """Method called to prepare the test fixture."""
         super().setUp()
         # create new stage
         await stage_utils.create_new_stage_async()
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
     async def test_get_value_type_names(self):
+        """Test get value type names."""
         [self.assertIsInstance(item, str) for item in foundation_utils.get_value_type_names(format=str)]
         [
             self.assertIsInstance(item, Sdf.ValueTypeName)
@@ -45,6 +50,7 @@ class TestFoundation(omni.kit.test.AsyncTestCase):
         ]
 
     async def test_resolve_value_type_name(self):
+        """Test resolve value type name."""
         # str
         for item in foundation_utils.get_value_type_names(format=str):
             value_type_name = foundation_utils.resolve_value_type_name(item, backend="usd")

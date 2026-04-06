@@ -31,7 +31,8 @@ from .shape import Shape
 
 
 class Cone(Shape):
-    """High level class for creating/wrapping USD Cone (primitive cone, centered at the origin, whose spine is along
+    """High level class for creating/wrapping USD Cone (primitive cone, centered at the origin, whose spine is along.
+
     the specified axis, with the apex of the cone pointing in the direction of the positive axis) prims.
 
     .. note::

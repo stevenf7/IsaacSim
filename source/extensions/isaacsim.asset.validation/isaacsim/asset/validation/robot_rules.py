@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Validation rules for robot asset structure and configuration."""
+
+
 import omni.asset_validator.core as av_core
 import omni.client
 from omni.asset_validator.core import AuthoringLayers, registerRule
@@ -66,6 +69,7 @@ class CleanFolder(av_core.BaseRuleChecker):
     """
 
     def CheckStage(self, stage: Usd.Stage) -> None:
+        """Check if the robot asset folder contains unexpected files."""
         folders = stage.GetRootLayer().realPath.replace("\\", "/").split("/")
         folder = "/".join(folders[:-1])
         res, entries = omni.client.list(folder)
@@ -114,7 +118,7 @@ class NoOverrides(av_core.BaseRuleChecker):
     """
 
     def CheckPrim(self, prim: Usd.Prim) -> None:
-
+        """Check if a prim has overridden attributes."""
         if "/Render" in prim.GetPath().pathString:
             return
 
@@ -135,6 +139,7 @@ class RobotSchema(av_core.BaseRuleChecker):
     """
 
     def CheckStage(self, stage: Usd.Stage) -> None:
+        """Check if the robot asset has required schema and relationships."""
         prim = stage.GetDefaultPrim()
         if not prim:
             self._AddError(
@@ -185,6 +190,7 @@ class JointsExist(av_core.BaseRuleChecker):
     """
 
     def CheckStage(self, stage: Usd.Stage) -> None:
+        """Check if the robot asset contains at least one joint."""
         for prim in stage.Traverse():
             if prim.HasAPI(robot_schema.Classes.JOINT_API.value):
                 return
@@ -203,6 +209,7 @@ class LinksExist(av_core.BaseRuleChecker):
     """
 
     def CheckStage(self, stage: Usd.Stage) -> None:
+        """Check if the robot asset contains at least one link."""
         for prim in stage.Traverse():
             if prim.HasAPI(robot_schema.Classes.LINK_API.value):
                 return
@@ -221,6 +228,7 @@ class ThumbnailExists(av_core.BaseRuleChecker):
     """
 
     def CheckStage(self, stage: Usd.Stage) -> None:
+        """Check if the robot asset has a thumbnail image."""
         folders = stage.GetRootLayer().realPath.replace("\\", "/").split("/")
         folder = "/".join(folders[:-1])
         thumbnail_path = f"{folder}/.thumbs/256x256/{folders[-1]}.png"
@@ -330,6 +338,7 @@ class VerifyRobotPhysicsAttributesSourceLayer(av_core.BaseRuleChecker):
     """
 
     def CheckStage(self, stage: Usd.Stage) -> None:
+        """Check if physics attributes are authored in the physics layer."""
         # examine every physics attribute in the stage and ensure that they are authored in the physics layer
         for prim in stage.Traverse():
             for attr in prim.GetAttributes():
@@ -353,6 +362,7 @@ class VerifyRobotPhysicsSchemaSourceLayer(av_core.BaseRuleChecker):
     """
 
     def CheckStage(self, stage: Usd.Stage) -> None:
+        """Check if physics schemas are applied in the physics layer."""
         # examine every prim schema in the stage and ensure that they are authored in the physics layer
         for prim in stage.Traverse():
             for layer in stage.GetLayerStack():

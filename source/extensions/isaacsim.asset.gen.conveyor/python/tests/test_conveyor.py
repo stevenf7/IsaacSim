@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for conveyor belt functionality."""
+
+
 import asyncio
 import time
 
@@ -36,6 +39,7 @@ async def simulate_async(seconds: float, steps_per_sec: int = 60) -> None:
 
 
 def add_cube(stage, path, size, offset, physics=False):
+    """Add a cube prim to the stage."""
     cubeGeom = UsdGeom.Cube.Define(stage, path)
     cubePrim = stage.GetPrimAtPath(path)
 
@@ -50,6 +54,7 @@ def add_cube(stage, path, size, offset, physics=False):
 
 
 def create_physics_scene(stage, gravity=9.81):
+    """Create a physics scene with configurable gravity."""
     scene = UsdPhysics.Scene.Define(stage, "/physics")
     scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
     scene.CreateGravityMagnitudeAttr().Set(gravity)
@@ -64,9 +69,11 @@ def create_physics_scene(stage, gravity=9.81):
 
 
 class TestConveyor(omni.kit.test.AsyncTestCase):
+    """Test suite for conveyor belt functionality."""
+
     # Before running each test
     async def setUp(self):
-
+        """Set up test fixtures before each test."""
         self.conveyor_node = None
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
@@ -77,6 +84,7 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures after each test."""
         await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
         self.conveyor_node = None
@@ -87,6 +95,7 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_add_conveyor(self, physics=True):
+        """Test adding a conveyor belt to a prim."""
         stage = omni.usd.get_context().get_stage()
         cube_prim = add_cube(self._stage, "/cube", 1.00, (0, 0, 0), physics=physics)
         rigid_prim = UsdPhysics.RigidBodyAPI(cube_prim)
@@ -100,9 +109,11 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_add_conveyor_without_physics(self):
+        """Test adding a conveyor belt without physics enabled."""
         await self.test_add_conveyor(physics=False)
 
     async def test_set_velocity(self, direction=[1.0, 0.0, 0.0]):
+        """Test setting velocity on a conveyor belt."""
         await self.test_add_conveyor()
         dir_attr = self.conveyor_node.GetAttribute("inputs:direction")
         dir_attr.Set(Gf.Vec3f(*direction))
@@ -119,6 +130,7 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_set_angular_velocity(self, direction=[0.0, 0.0, 1.0]):
+        """Test setting angular velocity on a conveyor belt."""
         await self.test_add_conveyor()
         dir_attr = self.conveyor_node.GetAttribute("inputs:curved")
         dir_attr.Set(True)
@@ -137,6 +149,7 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_conveyor(self, d=[1.0, 0.0, 0.0]):
+        """Test conveyor belt moves a cube in the given direction."""
         await self.test_set_velocity(d)
 
         cube_prim = add_cube(self._stage, "/cube2", 0.1, (0, 0, 0.55), physics=True)
@@ -153,10 +166,11 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_conveyor_y(self):
+        """Test conveyor belt moves a cube in the Y direction."""
         await self.test_conveyor(d=[0.0, 1.0, 0.0])
 
     async def test_100_conveyors(self):
-
+        """Test creating and running 100 conveyor belts."""
         conveyor_nodes = []
         for i in range(10):
             for j in range(10):

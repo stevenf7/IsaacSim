@@ -32,10 +32,8 @@ class UCXBridgeExtension(omni.ext.IExt):
         Args:
             ext_id: Extension identifier provided by the extension manager.
         """
-
         carb.log_info("Starting UCX Bridge extension")
 
     def on_shutdown(self):
         """Cleans up the UCX Bridge extension resources."""
-
         carb.log_info("Shutting down UCX Bridge extension")

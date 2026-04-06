@@ -190,7 +190,8 @@ class DOPEWriter(Writer):
         )
 
     def setup_writer(config_data: dict, writer_config: dict):
-        """Initialize writer and attach render product
+        """Initialize writer and attach render product.
+
         Args:
             config_data: A dictionary containing the general configurations for the script.
             writer_config: A dictionary containing writer-specific configurations.

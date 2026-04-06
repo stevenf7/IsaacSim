@@ -128,7 +128,7 @@ class World(SimulationContext):
 
     @classmethod
     def clear_instance(cls) -> None:
-        """Delete the world object, if it was instantiated before, and destroy any subscribed callback
+        """Delete the world object, if it was instantiated before, and destroy any subscribed callback.
 
         Example:
 
@@ -150,7 +150,7 @@ class World(SimulationContext):
 
     @property
     def scene(self) -> Scene:
-        """Scene instance
+        """Scene instance.
 
         Example:
 
@@ -166,7 +166,7 @@ class World(SimulationContext):
     """
 
     def add_task(self, task: BaseTask) -> None:
-        """Add a task to the task registry
+        """Add a task to the task registry.
 
         .. note::
 
@@ -200,7 +200,7 @@ class World(SimulationContext):
         return
 
     def is_tasks_scene_built(self) -> bool:
-        """Check if the ``set_up_scene`` method was called for each registered task
+        """Check if the ``set_up_scene`` method was called for each registered task.
 
         Returns:
             Whether the ``set_up_scene`` method was called for each registered task.
@@ -216,7 +216,7 @@ class World(SimulationContext):
         return self._task_scene_built
 
     def get_current_tasks(self) -> List[BaseTask]:
-        """Get a dictionary of the registered tasks where keys are task names
+        """Get a dictionary of the registered tasks where keys are task names.
 
         Returns:
             Registered tasks.
@@ -231,7 +231,7 @@ class World(SimulationContext):
         return self._current_tasks
 
     def get_task(self, name: str) -> BaseTask:
-        """Get a task by its name
+        """Get a task by its name.
 
         Args:
             name: Task name to retrieve.
@@ -255,7 +255,7 @@ class World(SimulationContext):
     """
 
     def get_observations(self, task_name: Optional[str] = None) -> dict:
-        """Get observations from all the tasks that were added
+        """Get observations from all the tasks that were added.
 
         Args:
             task_name: task name to ask for. If None, returns observations from all tasks.
@@ -279,7 +279,7 @@ class World(SimulationContext):
             return observations
 
     def calculate_metrics(self, task_name: Optional[str] = None) -> dict:
-        """Get metrics from all the tasks that were added
+        """Get metrics from all the tasks that were added.
 
         Args:
             task_name: task name to ask for. If None, returns metrics from all tasks.
@@ -303,7 +303,7 @@ class World(SimulationContext):
             return metrics
 
     def is_done(self, task_name: Optional[str] = None) -> bool:
-        """Get done from all the tasks that were added
+        """Get done from all the tasks that were added.
 
         Args:
             task_name: task name to ask for. If None, checks if all tasks are done.
@@ -348,7 +348,7 @@ class World(SimulationContext):
     """
 
     def initialize_physics(self) -> None:
-        """Initialize the physics simulation view and each added object to the Scene
+        """Initialize the physics simulation view and each added object to the Scene.
 
         Example:
 
@@ -361,8 +361,9 @@ class World(SimulationContext):
         return
 
     def reset(self, soft: bool = False) -> None:
-        """Reset the stage to its initial state and each object included in the Scene to its default state
-            as specified by the ``set_default_state`` and ``__init__`` methods
+        """Reset the stage to its initial state and each object included in the Scene to its default state.
+
+            as specified by the ``set_default_state`` and ``__init__`` methods.
 
         .. note::
 
@@ -405,8 +406,9 @@ class World(SimulationContext):
             task.post_reset()
 
     async def reset_async_set_up_scene(self, soft: bool = False) -> None:
-        """Reset the stage to its initial state and each object included in the Scene to its default state
-            as specified by the ``set_default_state`` and ``__init__`` methods
+        """Reset the stage to its initial state and each object included in the Scene to its default state.
+
+            as specified by the ``set_default_state`` and ``__init__`` methods.
 
         .. note::
 
@@ -438,8 +440,9 @@ class World(SimulationContext):
             task.set_up_scene(self.scene)
 
     async def reset_async_no_set_up_scene(self, soft: bool = False) -> None:
-        """Reset the stage to its initial state and each object included in the Scene to its default state
-            as specified by the ``set_default_state`` and ``__init__`` methods
+        """Reset the stage to its initial state and each object included in the Scene to its default state.
+
+            as specified by the ``set_default_state`` and ``__init__`` methods.
 
         .. note::
 
@@ -480,8 +483,9 @@ class World(SimulationContext):
         return
 
     async def reset_async(self, soft: bool = False) -> None:
-        """Reset the stage to its initial state and each object included in the Scene to its default state
-            as specified by the ``set_default_state`` and ``__init__`` methods
+        """Reset the stage to its initial state and each object included in the Scene to its default state.
+
+            as specified by the ``set_default_state`` and ``__init__`` methods.
 
         .. note::
 
@@ -561,7 +565,7 @@ class World(SimulationContext):
         return
 
     def step_async(self, step_size: Optional[float] = None) -> None:
-        """Call all functions that should be called pre stepping the physics
+        """Call all functions that should be called pre stepping the physics.
 
         .. note::
 
@@ -597,7 +601,7 @@ class World(SimulationContext):
         return
 
     def clear(self) -> None:
-        """Clear the current stage leaving the PhysicsScene and /World
+        """Clear the current stage leaving the PhysicsScene and /World.
 
         Example:
 

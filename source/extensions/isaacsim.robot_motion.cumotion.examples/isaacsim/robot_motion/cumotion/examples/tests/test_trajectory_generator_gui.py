@@ -29,12 +29,14 @@ class TestTrajectoryGeneratorGui(omni.kit.test.AsyncTestCase):
     """Test suite for trajectory generator GUI."""
 
     async def setUp(self):
+        """Set up the UI builder before each test."""
         await omni.kit.app.get_app().next_update_async()
         self.ui_builder = UIBuilder()
         self.ui_builder.build_ui()
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Clean up the UI builder after each test."""
         self.ui_builder.cleanup()
         await omni.kit.app.get_app().next_update_async()
 
@@ -47,6 +49,7 @@ class TestTrajectoryGeneratorGui(omni.kit.test.AsyncTestCase):
         self.assertTrue(ok, "Timed out waiting for UR10 articulation after load")
 
     async def test_widgets_built(self):
+        """Verify that all expected widgets are created."""
         self.assertIsNotNone(self.ui_builder._load_btn)
         self.assertIsNotNone(self.ui_builder._reset_btn)
         self.assertIsNotNone(self.ui_builder._cspace_trajectory_btn)
@@ -54,9 +57,11 @@ class TestTrajectoryGeneratorGui(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(self.ui_builder._hybrid_trajectory_btn)
 
     async def test_load_enables_articulation(self):
+        """Test that loading creates the articulation."""
         await self._load_until_articulation()
 
     async def test_reset_triggers_scenario_reset(self):
+        """Test that the reset button triggers a scenario reset."""
         await self._load_until_articulation()
         with patch.object(self.ui_builder._scenario, "reset") as mock_reset:
             self.ui_builder._reset_btn.trigger_click()
@@ -64,18 +69,21 @@ class TestTrajectoryGeneratorGui(omni.kit.test.AsyncTestCase):
             self.assertTrue(ok, "Timed out waiting for scenario reset after RESET")
 
     async def test_run_cspace_button_calls_setup(self):
+        """Test that the C-space trajectory button calls setup."""
         await self._load_until_articulation()
         with patch.object(self.ui_builder._scenario, "setup_cspace_trajectory") as mock_setup:
             self.ui_builder._cspace_trajectory_btn.trigger_click_if_a_state()
             mock_setup.assert_called_once()
 
     async def test_run_taskspace_button_calls_setup(self):
+        """Test that the task-space trajectory button calls setup."""
         await self._load_until_articulation()
         with patch.object(self.ui_builder._scenario, "setup_taskspace_trajectory") as mock_setup:
             self.ui_builder._taskspace_trajectory_btn.trigger_click_if_a_state()
             mock_setup.assert_called_once()
 
     async def test_run_hybrid_button_calls_setup(self):
+        """Test that the hybrid trajectory button calls setup."""
         await self._load_until_articulation()
         with patch.object(self.ui_builder._scenario, "setup_hybrid_trajectory") as mock_setup:
             self.ui_builder._hybrid_trajectory_btn.trigger_click_if_a_state()

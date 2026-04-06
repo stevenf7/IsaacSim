@@ -1,3 +1,5 @@
+"""Widget for the conveyor builder UI, providing interactive track layout tools."""
+
 # SPDX-FileCopyrightText: Copyright (c) 2022-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -50,7 +52,15 @@ def Singleton(class_: type) -> object:
 
 
 class ConveyorBuilderWidget:
+    """Interactive widget for building conveyor track layouts on a USD stage.
+
+    Args:
+        mdl_file: Path to the MDL material file for ghost preview.
+        style: Dictionary of UI style overrides.
+    """
+
     def on_display(self):
+        """Initialize the stage session layer with temporary prims for preview."""
         stage = omni.usd.get_context().get_stage()
         if stage == None:
             carb.log_error(
@@ -159,6 +169,7 @@ class ConveyorBuilderWidget:
         self._on_kit_selection_changed()
 
     def shutdown(self):
+        """Clean up event subscriptions and remove temporary prims from the stage."""
         self._stage_event_sub_selection = None
         self._stage_event_sub_closed = None
         stage = omni.usd.get_context().get_stage()
@@ -188,6 +199,7 @@ class ConveyorBuilderWidget:
         self.shutdown()
 
     def get_selection(self):
+        """Get the currently selected conveyor track and its USD path."""
         stage = omni.usd.get_context().get_stage()
         if self._selection:
             for i, p in enumerate(self._selection.get_selected_prim_paths()):
@@ -212,7 +224,7 @@ class ConveyorBuilderWidget:
         return None, "/"
 
     def _on_kit_selection_changed(self):
-        """The selection in kit is changed"""
+        """The selection in kit is changed."""
         selections = self.get_selection()
         if "/ConveyorBuilder" not in selections[1]:
             self.current_track.update_selection(selections[0], self.builder.get_available_connections(selections[1]))
@@ -237,6 +249,7 @@ class ConveyorBuilderWidget:
             self.on_next_anchor_changed("")
 
     def get_ramp_and_curve_direction(self):
+        """Get the current ramp and curve direction based on button selections."""
         ramp = -1 if bool([i for i in range(2) if self.slope_buttons[i].selected]) else 1
         curve = -1 if bool([i for i in range(2) if self.direction_buttons[i].selected]) else 1
         if self.next_track.selected_conveyor:
@@ -247,6 +260,7 @@ class ConveyorBuilderWidget:
         return Gf.Vec3d(ramp, curve, 1)
 
     def current_direction(self):
+        """Get the direction of the currently selected track."""
         stage = omni.usd.get_context().get_stage()
         sel = self.get_selection()
         if sel[0]:
@@ -254,6 +268,7 @@ class ConveyorBuilderWidget:
         return 1
 
     def get_next_base_pose(self):
+        """Compute the world-space pose for the next track to be placed."""
         scale = self.get_ramp_and_curve_direction()
         return self.builder.get_next_pose(
             self.next_track.selected_conveyor,
@@ -265,6 +280,7 @@ class ConveyorBuilderWidget:
         )
 
     def on_track_selection_changed(self, track):
+        """Handle next-track selection change and update the preview prim."""
         stage = omni.usd.get_context().get_stage()
         temp_prim = stage.GetPrimAtPath("/ConveyorBuilder/conveyorBuilder_Temp")
         if temp_prim:
@@ -275,6 +291,7 @@ class ConveyorBuilderWidget:
         self.on_next_anchor_changed("")
 
     def on_next_anchor_changed(self, anchor):
+        """Handle anchor point change and reposition the preview prim."""
         stage = omni.usd.get_context().get_stage()
         temp_prim = stage.GetPrimAtPath("/ConveyorBuilder/conveyorBuilder_Temp")
         with EditContext(stage, stage.GetSessionLayer()):
@@ -289,6 +306,7 @@ class ConveyorBuilderWidget:
             set_pose_from_transform(temp_prim, self.get_next_base_pose(), scale_unit * scale)
 
     def on_thumb_loaded(self, track):
+        """Rebuild track card UI when a thumbnail finishes loading."""
         pass
         if self.current_track:
             if self.current_track.selected_conveyor == track or self.current_track.selected_conveyor is None:
@@ -298,10 +316,12 @@ class ConveyorBuilderWidget:
                 self.next_track.build_ui()
 
     def on_flip(self, current):
+        """Toggle the flip state for track placement direction."""
         self.flip_placement = not self.flip_placement
         self.on_next_anchor_changed(None)
 
     def remove_track(self, track):
+        """Remove the currently selected track from the stage and builder."""
         selection = self.get_selection()
         parent = None
         stage = omni.usd.get_context().get_stage()
@@ -311,7 +331,7 @@ class ConveyorBuilderWidget:
         self._selection.set_selected_prim_paths([parent], False)
 
     def on_add_track(self, track):
-
+        """Add the selected next track to the stage and connect it."""
         selection = self.get_selection()
         parent_anchor = ""
         if selection[0]:
@@ -328,6 +348,7 @@ class ConveyorBuilderWidget:
         self._selection.set_selected_prim_paths([new_track], False)
 
     def build_ui(self):
+        """Build the complete conveyor builder widget UI."""
         self.on_display()
         with self._frame:
             with ui.VStack(**self.style):
@@ -424,6 +445,7 @@ class ConveyorBuilderWidget:
                 self.update_filter()
 
     def update_filter(self):
+        """Apply the current filter and refresh available track tiles."""
         self.available_tiles = self._conveyor_selector.list_tracks(self._filter)
         filter = copy.copy(self._filter)
         filter.type = []
@@ -489,6 +511,7 @@ class ConveyorBuilderWidget:
         )
 
     def on_style_selected(self, selected):
+        """Handle style button selection and update the filter."""
         for a in self.style_buttons:
             a.selected = False
         selected.selected = True
@@ -496,6 +519,7 @@ class ConveyorBuilderWidget:
         self.update_filter()
 
     def on_direction_selected(self, selected):
+        """Handle direction button selection and update the filter."""
         before = self.get_ramp_and_curve_direction()
         for a in self.direction_buttons:
             a.selected = False
@@ -507,6 +531,7 @@ class ConveyorBuilderWidget:
             self.on_track_selection_changed(self.next_track.selected_conveyor)
 
     def on_slope_selected(self, selected):
+        """Handle slope button selection and update the filter."""
         before = self.get_ramp_and_curve_direction()
         for a in self.slope_buttons:
             a.selected = False
@@ -518,6 +543,7 @@ class ConveyorBuilderWidget:
             self.on_track_selection_changed(self.next_track.selected_conveyor)
 
     def on_type_selected(self, selected):
+        """Handle type button selection and update the filter."""
         for a in self.type_buttons:
             a.selected = False
         selected.selected = True

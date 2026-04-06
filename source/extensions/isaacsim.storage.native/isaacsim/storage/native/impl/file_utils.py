@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""File utility functions for USD asset discovery, validation, and path operations."""
+
 import asyncio
 import concurrent.futures
 import os
@@ -890,7 +892,6 @@ async def find_filtered_files_async(
     Returns:
         A set of absolute paths to USD files discovered during traversal.
     """
-
     # Get filtered USD files with depth limit in one pass
     loop = asyncio.get_event_loop()
     with concurrent.futures.ThreadPoolExecutor() as executor:

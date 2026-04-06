@@ -38,6 +38,7 @@ class Gripper(SingleRigidPrim):
 
     def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None):
         """Create a physics simulation view if not passed and creates a rigid prim view using physX tensor api.
+
         This needs to be called after each hard reset (i.e stop + play on the timeline) before interacting with any
         of the functions of this class.
 
@@ -79,7 +80,8 @@ class Gripper(SingleRigidPrim):
 
     @abstractmethod
     def forward(self, *args, **kwargs) -> ArticulationAction:
-        """calculates the ArticulationAction for all of the articulation joints that corresponds to a specific action
+        """calculates the ArticulationAction for all of the articulation joints that corresponds to a specific action.
+
         such as "open" for an example.
 
         Args:

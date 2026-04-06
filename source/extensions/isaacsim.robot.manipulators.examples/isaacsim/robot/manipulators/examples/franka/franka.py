@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Franka robot wrapper with gripper and motion generation support."""
+
 from typing import List, Optional
 
 import carb

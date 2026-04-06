@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Experimental Franka robot wrapper using the new API."""
+
 from typing import Optional
 
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -197,7 +199,6 @@ class FrankaExperimental(Articulation):
             ...     orientation=[0.0, 1.0, 0.0, 0.0]
             ... )
         """
-
         # Get current robot state
         current_dof_positions, current_end_effector_position, current_end_effector_orientation = (
             self.get_current_state()

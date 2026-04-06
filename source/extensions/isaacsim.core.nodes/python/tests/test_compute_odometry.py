@@ -78,13 +78,13 @@ class TestComputeOdometry(ogts.OmniGraphTestCase):
     NODE_NAME = "ComputeOdometry"
 
     async def setUp(self):
-        """Set up test environment, to be torn down when done"""
+        """Set up test environment, to be torn down when done."""
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
 
     async def tearDown(self):
-        """Get rid of temporary data used by the test"""
+        """Get rid of temporary data used by the test."""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -328,7 +328,8 @@ class TestComputeOdometry(ogts.OmniGraphTestCase):
         self._timeline.stop()
 
     async def test_odometry_survives_simulation_view_invalidation(self):
-        """After the shared SimulationManager physics view is invalidated, the odometry node
+        """After the shared SimulationManager physics view is invalidated, the odometry node.
+
         should not crash or produce errors. It should either continue producing valid data
         (if the view is recovered) or gracefully skip frames."""
         cube_path = "/World/Cube"

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test for xform."""
+
 import isaacsim.core.experimental.utils.backend as backend_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.core.experimental.utils.xform as xform_utils
@@ -21,19 +23,23 @@ import omni.kit.test
 
 
 class TestXform(omni.kit.test.AsyncTestCase):
+    """Test xform."""
+
     async def setUp(self):
-        """Method called to prepare the test fixture"""
+        """Method called to prepare the test fixture."""
         super().setUp()
         # create new stage
         await stage_utils.create_new_stage_async()
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
     async def test_world_and_local_pose(self):
+        """Test world and local pose."""
+
         def _check_pose(pose, position, orientation, *, rtol: float = 1e-03, atol: float = 1e-05):
             np.testing.assert_allclose(pose[0].numpy(), position, rtol=rtol, atol=atol)
             np.testing.assert_allclose(pose[1].numpy(), orientation, rtol=rtol, atol=atol)

@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+"""Common test utilities for ROS 2 node tests."""
+
 import numpy as np
 import omni
 from isaacsim.core.experimental.materials import OmniPbrMaterial
@@ -24,6 +26,7 @@ from pxr import UsdPhysics
 
 
 async def simulate_async(seconds, steps_per_sec=60, callback=None):
+    """Run simulation for a given duration asynchronously."""
     for _ in range(int(seconds * steps_per_sec)):
         await omni.kit.app.get_app().next_update_async()
         if callback:
@@ -31,6 +34,7 @@ async def simulate_async(seconds, steps_per_sec=60, callback=None):
 
 
 def set_translate(prim, new_loc):
+    """Set the translation of a USD prim."""
     from pxr import Gf, UsdGeom
 
     properties = prim.GetPropertyNames()
@@ -53,6 +57,7 @@ def set_translate(prim, new_loc):
 
 
 def set_rotate(prim, rot_mat):
+    """Set the rotation of a USD prim."""
     from pxr import Gf, UsdGeom
 
     properties = prim.GetPropertyNames()
@@ -71,6 +76,7 @@ def set_rotate(prim, rot_mat):
 
 
 async def add_cube(path, size, offset):
+    """Add a physics-enabled cube to the stage."""
     from pxr import UsdGeom, UsdPhysics
 
     stage = omni.usd.get_context().get_stage()
@@ -88,6 +94,7 @@ async def add_cube(path, size, offset):
 
 
 async def add_carter(assets_root_path, prim_path="/Carter"):
+    """Add a Carter robot to the stage."""
     from pxr import Gf, PhysicsSchemaTools
 
     stage_utils.add_reference_to_stage(
@@ -100,6 +107,7 @@ async def add_carter(assets_root_path, prim_path="/Carter"):
 
 
 async def add_carter_ros(assets_root_path, prim_path="/Carter"):
+    """Add a Carter robot with ROS 2 graphs to the stage."""
     from pxr import Gf, PhysicsSchemaTools
 
     stage_utils.add_reference_to_stage(assets_root_path + "/Isaac/Samples/ROS2/Robots/Carter_ROS.usd", prim_path)
@@ -129,6 +137,7 @@ async def add_carter_ros(assets_root_path, prim_path="/Carter"):
 
 
 async def add_nova_carter_ros(assets_root_path):
+    """Add a Nova Carter robot with ROS 2 graphs to the stage."""
     (result, error) = await stage_utils.open_stage_async(
         assets_root_path + "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd"
     )
@@ -136,12 +145,14 @@ async def add_nova_carter_ros(assets_root_path):
 
 
 async def add_franka(assets_root_path):
+    """Add a Franka robot to the stage."""
     (result, error) = await stage_utils.open_stage_async(
         assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
     )
 
 
 def get_qos_profile(depth: int = 1, history: str = "keep_last"):
+    """Create a ROS 2 QoS profile with the given parameters."""
     from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
 
     history_policy = QoSHistoryPolicy.SYSTEM_DEFAULT if history == "system_default" else QoSHistoryPolicy.KEEP_LAST
@@ -149,6 +160,7 @@ def get_qos_profile(depth: int = 1, history: str = "keep_last"):
 
 
 def set_joint_drive_parameters(joint_path, joint_type, drive_type, target_value, stiffness=None, damping=None):
+    """Set drive parameters for a joint on the stage."""
     stage = omni.usd.get_context().get_stage()
     drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(joint_path), joint_type)
 
@@ -183,7 +195,7 @@ def set_joint_drive_parameters(joint_path, joint_type, drive_type, target_value,
 def _create_cube_with_material(
     index: int, position: np.ndarray, scale: np.ndarray, color: np.ndarray, material_props: tuple, enable_material: bool
 ) -> dict:
-    """Helper to create a cube with optional material."""
+    """Create a cube with optional material."""
     cube_path = f"/World/cube_{index}"
     cube = Cube(
         cube_path,
@@ -205,6 +217,7 @@ def _create_cube_with_material(
 
 
 def create_sarcophagus(enable_nonvisual_material: bool = True):
+    """Create a nested cube structure for testing object detection."""
     # Autogenerate sarcophagus
     dims = [(10, 5, 7), (15, 9, 11), (20, 13, 15), (25, 17, 19)]
     cube_configs = [

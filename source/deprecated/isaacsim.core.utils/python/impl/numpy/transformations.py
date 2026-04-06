@@ -34,7 +34,6 @@ def tf_matrices_from_poses(translations: np.ndarray, orientations: np.ndarray, d
     Returns:
         Transformation matrices with shape (N, 4, 4).
     """
-
     result = np.zeros([orientations.shape[0], 4, 4], dtype=np.float32)
     r = Rotation.from_quat(orientations[:, [1, 2, 3, 0]])
     result[:, :3, :3] = r.as_matrix()

@@ -15,9 +15,10 @@ import requests
 class cuOptRunner:
     def __init__(self, cuopt_url: str):
         """
-        Note that a cuOpt server at a single url manages one problem at a time
+        Note that a cuOpt server at a single url manages one problem at a time.
+
         Initializing another instance of cuOptRunner at the same url will clear
-        optimization data currently set on
+        optimization data currently set on.
         """
         self.cuopt_url = cuopt_url
         self.data_parameters = {"return_data_state": False}

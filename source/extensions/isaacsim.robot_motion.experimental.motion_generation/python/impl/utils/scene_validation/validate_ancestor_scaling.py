@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Scene validation utilities for checking ancestor transform validity.
+"""Scene validation utilities for checking ancestor transform validity.
 
 This module provides utilities to validate that prims in a USD stage have valid
 ancestor transforms, specifically checking that no parent prims have non-identity

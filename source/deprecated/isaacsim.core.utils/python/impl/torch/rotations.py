@@ -48,7 +48,7 @@ def gf_quat_to_tensor(
 def euler_angles_to_quats(
     euler_angles: torch.Tensor, degrees: bool = False, extrinsic: bool = True, device: object = None
 ) -> torch.Tensor:
-    """Vectorized version of converting euler angles to quaternion (scalar first)
+    """Vectorized version of converting euler angles to quaternion (scalar first).
 
     Args:
         euler_angles: euler angles with shape (N, 3)
@@ -77,7 +77,7 @@ def euler_angles_to_quats(
 
 
 def rot_matrices_to_quats(rotation_matrices: torch.Tensor, device: object = None) -> torch.Tensor:
-    """Vectorized version of converting rotation matrices to quaternions
+    """Vectorized version of converting rotation matrices to quaternions.
 
     Args:
         rotation_matrices: N Rotation matrices with shape (N, 3, 3) or (3, 3)
@@ -124,6 +124,7 @@ def deg2rad(degree_value: float, device: object = None) -> torch.Tensor:
 
 @torch.jit.script
 def quat_mul(a, b):
+    """Multiply two quaternion tensors (scalar first)."""
     assert a.shape == b.shape
     shape = a.shape
     a = a.reshape(-1, 4)
@@ -148,6 +149,7 @@ def quat_mul(a, b):
 
 @torch.jit.script
 def quat_conjugate(a):
+    """Compute the conjugate of a quaternion tensor (scalar first)."""
     shape = a.shape
     a = a.reshape(-1, 4)
     return torch.cat((a[:, 0:1], -a[:, 1:]), dim=-1).view(shape)
@@ -155,6 +157,7 @@ def quat_conjugate(a):
 
 @torch.jit.script
 def quat_apply(a, b):
+    """Apply quaternion rotation to a 3D vector tensor."""
     shape = b.shape
     a = a.reshape(-1, 4)
     b = b.reshape(-1, 3)
@@ -165,6 +168,7 @@ def quat_apply(a, b):
 
 @torch.jit.script
 def quat_rotate(q, v):
+    """Rotate a vector by a quaternion."""
     shape = q.shape
     q_w = q[:, 0]
     q_vec = q[:, 1:]
@@ -176,6 +180,7 @@ def quat_rotate(q, v):
 
 @torch.jit.script
 def quat_rotate_inverse(q, v):
+    """Rotate a vector by the inverse of a quaternion."""
     shape = q.shape
     q_w = q[:, 0]
     q_vec = q[:, 1:]
@@ -187,11 +192,13 @@ def quat_rotate_inverse(q, v):
 
 @torch.jit.script
 def quat_unit(a):
+    """Normalize a quaternion to unit length."""
     return normalize(a)
 
 
 @torch.jit.script
 def quat_from_angle_axis(angle, axis):
+    """Create a quaternion from an angle and axis of rotation."""
     theta = (angle / 2).unsqueeze(-1)
     xyz = normalize(axis) * theta.sin()
     w = theta.cos()
@@ -200,6 +207,7 @@ def quat_from_angle_axis(angle, axis):
 
 @torch.jit.script
 def quat_axis(q, axis=0):
+    """Get a basis vector rotated by the given quaternion."""
     # type: (Tensor, int) -> Tensor
     basis_vec = torch.zeros(q.shape[0], 3, device=q.device)
     basis_vec[:, axis] = 1
@@ -208,16 +216,19 @@ def quat_axis(q, axis=0):
 
 @torch.jit.script
 def normalize_angle(x):
+    """Normalize an angle to the range [-pi, pi]."""
     return torch.atan2(torch.sin(x), torch.cos(x))
 
 
 @torch.jit.script
 def get_basis_vector(q, v):
+    """Get a basis vector rotated by the given quaternion."""
     return quat_rotate(q, v)
 
 
 @torch.jit.script
 def quats_to_rot_matrices(quats):
+    """Convert quaternions (scalar first) to rotation matrices."""
     squeeze_flag = False
     if quats.dim() == 1:
         squeeze_flag = True
@@ -244,6 +255,7 @@ def quats_to_rot_matrices(quats):
 
 @torch.jit.script
 def matrices_to_euler_angles(mat, extrinsic: bool = True):
+    """Convert rotation matrices to Euler angles (XYZ convention)."""
     _POLE_LIMIT = 1.0 - 1e-6
     if extrinsic:
         north_pole = mat[:, 2, 0] > _POLE_LIMIT
@@ -292,6 +304,7 @@ def matrices_to_euler_angles(mat, extrinsic: bool = True):
 
 @torch.jit.script
 def get_euler_xyz(q, extrinsic: bool = True):
+    """Get Euler XYZ angles from quaternions (scalar first)."""
     if extrinsic:
         qw, qx, qy, qz = 0, 1, 2, 3
         # roll (x-axis rotation)
@@ -316,6 +329,7 @@ def get_euler_xyz(q, extrinsic: bool = True):
 
 @torch.jit.script
 def quat_from_euler_xyz(roll, pitch, yaw, extrinsic: bool = True):
+    """Create quaternions from roll, pitch, and yaw angles."""
     cy = torch.cos(yaw * 0.5)
     sy = torch.sin(yaw * 0.5)
     cr = torch.cos(roll * 0.5)
@@ -339,12 +353,12 @@ def quat_from_euler_xyz(roll, pitch, yaw, extrinsic: bool = True):
 
 @torch.jit.script
 def quat_diff_rad(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
-    """
-    Get the difference in radians between two quaternions.
+    """Get the difference in radians between two quaternions.
 
     Args:
         a: first quaternion, shape (N, 4)
         b: second quaternion, shape (N, 4)
+
     Returns:
         Difference in radians, shape (N,)
     """
@@ -372,6 +386,7 @@ def normalise_quat_in_pose(pose: object):
 
 @torch.jit.script
 def compute_heading_and_up(torso_rotation, inv_start_rot, to_target, vec0, vec1, up_idx):
+    """Compute heading and up vectors from torso rotation and target direction."""
     # type: (Tensor, Tensor, Tensor, Tensor, Tensor, int) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]
     num_envs = torso_rotation.shape[0]
     target_dirs = normalize(to_target)
@@ -387,6 +402,7 @@ def compute_heading_and_up(torso_rotation, inv_start_rot, to_target, vec0, vec1,
 
 @torch.jit.script
 def compute_rot(torso_quat, velocity, ang_velocity, targets, torso_positions, extrinsic: bool = True):
+    """Compute local velocities and angles to target from torso rotation."""
     vel_loc = quat_rotate_inverse(torso_quat, velocity)
     angvel_loc = quat_rotate_inverse(torso_quat, ang_velocity)
 

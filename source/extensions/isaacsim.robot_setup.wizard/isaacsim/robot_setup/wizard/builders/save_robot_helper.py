@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Backend of "Save Robot"
+"""Backend of "Save Robot".
 
 - create a file with variants for _base,_physics, and _robot layer
 - add background (light and potential floor) and physicsscene outside of the defaultprim in the new usd

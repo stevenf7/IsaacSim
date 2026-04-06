@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests for grasp data importing functionality in the isaacsim.robot_setup.grasp_editor extension.
-"""
+"""Tests for grasp data importing functionality in the isaacsim.robot_setup.grasp_editor extension."""
 
 
 import asyncio

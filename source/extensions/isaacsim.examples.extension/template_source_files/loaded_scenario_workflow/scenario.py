@@ -13,18 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Scenario template and example for the loaded scenario workflow."""
+
 
 class ScenarioTemplate:
+    """Base template for defining simulation scenarios."""
+
     def __init__(self):
         pass
 
     def setup_scenario(self):
+        """Set up the scenario with required assets and parameters."""
         pass
 
     def teardown_scenario(self):
+        """Tear down the scenario and clean up resources."""
         pass
 
     def update_scenario(self):
+        """Update the scenario state for the current simulation step."""
         pass
 
 
@@ -43,6 +50,8 @@ the logic that runs the example from the UI design.
 
 
 class ExampleScenario(ScenarioTemplate):
+    """Example scenario that moves a robot through its joint DOFs."""
+
     def __init__(self):
         self._object = None
         self._articulation = None
@@ -66,6 +75,7 @@ class ExampleScenario(ScenarioTemplate):
         self._calculate_velocity = lambda t, x: 0
 
     def setup_scenario(self, articulation, object_prim):
+        """Set up the scenario with the given articulation and object."""
         self._articulation = articulation
         self._object = object_prim
 
@@ -86,6 +96,7 @@ class ExampleScenario(ScenarioTemplate):
         self._derive_sinusoid_params(0)
 
     def teardown_scenario(self):
+        """Tear down the scenario and reset all state."""
         self._time = 0.0
         self._object = None
         self._articulation = None
@@ -101,6 +112,7 @@ class ExampleScenario(ScenarioTemplate):
         self._calculate_velocity = lambda t, x: 0
 
     def update_scenario(self, step: float):
+        """Update the scenario for the current physics step."""
         if not self._running_scenario:
             return
 

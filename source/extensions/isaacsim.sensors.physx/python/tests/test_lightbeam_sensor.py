@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test lightbeam sensor functionality."""
+
 import asyncio
 
 import numpy as np
@@ -27,8 +29,11 @@ from pxr import Gf, UsdGeom, UsdPhysics
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestLightBeamSensor(omni.kit.test.AsyncTestCase):
+    """Test light beam sensor."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         self._lb = _range_sensor.acquire_lightbeam_sensor_interface()
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
@@ -41,6 +46,7 @@ class TestLightBeamSensor(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         self.my_world.stop()
         self.my_world.clear_instance()
         await omni.kit.app.get_app().next_update_async()
@@ -51,6 +57,7 @@ class TestLightBeamSensor(omni.kit.test.AsyncTestCase):
         pass
 
     async def add_cube(self, path, size, offset):
+        """Perform add cube operation."""
 
         cubeGeom = UsdGeom.Cube.Define(self._stage, path)
         cubePrim = self._stage.GetPrimAtPath(path)
@@ -63,6 +70,7 @@ class TestLightBeamSensor(omni.kit.test.AsyncTestCase):
 
     # Tests a light beam sensor with a cube in front of it breaking the beam
     async def test_basic_lightbeam_sensor(self):
+        """Test basic lightbeam sensor."""
 
         # Add a cube
         cubePath = "/World/Cube"
@@ -98,6 +106,7 @@ class TestLightBeamSensor(omni.kit.test.AsyncTestCase):
         self.assertEqual(n_length, 1)
 
     async def test_lightbeam_curtain(self):
+        """Test lightbeam curtain."""
 
         # Add a cube
         cubePath = "/World/Cube"

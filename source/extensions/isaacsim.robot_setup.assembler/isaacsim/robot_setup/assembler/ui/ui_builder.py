@@ -71,6 +71,7 @@ class UIBuilder:
 
     def on_menu_callback(self):
         """Callback for when the UI is opened from the toolbar.
+
         This is distinct from the creation of the UI in build_ui()
         because it can happen more than once if the user repeatedly
         closes and reopens the window.
@@ -85,7 +86,7 @@ class UIBuilder:
         pass
 
     def on_timeline_event(self, event: object):
-        """Callback for Timeline events (Play, Pause, Stop)
+        """Callback for Timeline events (Play, Pause, Stop).
 
         Args:
             event: Event Type
@@ -94,7 +95,8 @@ class UIBuilder:
 
     def on_physics_step(self, step: float):
         """Callback for Physics Step.
-        Physics steps only occur when the timeline is playing
+
+        Physics steps only occur when the timeline is playing.
 
         Args:
             step: Size of physics step
@@ -125,12 +127,11 @@ class UIBuilder:
         self._repopulate_all_dropdowns()
 
     def on_stage_event(self, event: object):
-        """Callback for Stage Events
+        """Callback for Stage Events.
 
         Args:
             event: Stage event object (Events 2.0 uses ``carb.eventdispatcher.Event``).
         """
-
         event_name = event.event_name
         usd_context = omni.usd.get_context()
         if event_name == usd_context.stage_event_name(omni.usd.StageEventType.ASSETS_LOADED):
@@ -154,8 +155,9 @@ class UIBuilder:
 
     def cleanup(self):
         """Called when the stage is closed or the extension is hot reloaded.
+
         Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called
+        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called.
         """
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()
@@ -167,6 +169,7 @@ class UIBuilder:
 
     def build_ui(self):
         """Build a custom UI tool to run your extension.
+
         This function will be called once when your extension is opened.
         Closing and reopening the extension from the toolbar will maintain the state of the UI.
         If the user hot reloads this extension, this function will be called again.
@@ -263,14 +266,14 @@ class UIBuilder:
                         settings.set(joint_gizmo_setting, not settings.get(joint_gizmo_setting))
 
                     def on_begin_assemble_btn_clicked():
-                        """
-                        if (
+                        """If (.
+
                             self._robot_dropdowns[0].get_selection() in self._articulation_options
                             and self._robot_dropdowns[0].get_selection() in self._articulation_options
                         ):
                             self.single_robot_cb.visible = True
                         else:
-                            self.single_robot_cb.visible = False
+                            self.single_robot_cb.visible = False.
                         """
                         self._attach_selection()
 
@@ -651,7 +654,6 @@ class UIBuilder:
             art_ind: Index of the articulation dropdown that triggered the selection.
             selection: The selected item from the dropdown.
         """
-
         self._repopulate_all_dropdowns()
 
         # self._articulation_attach_point_dropdowns[art_ind].repopulate()
@@ -756,7 +758,6 @@ class UIBuilder:
         Args:
             info_text: The informational text to display.
         """
-
         with ui.HStack(style=get_style()):
             with ui.VStack(width=20):
                 ui.Spacer()

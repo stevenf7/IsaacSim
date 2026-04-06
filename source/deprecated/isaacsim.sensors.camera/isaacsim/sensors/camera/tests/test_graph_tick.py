@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for graph tick and SDG pipeline conflict handling."""
+
 import omni.graph.core as og
 import omni.kit.test
 import omni.timeline
@@ -22,11 +24,15 @@ from pxr import Gf, Sdf, UsdGeom
 
 
 class TestGraphSDGPipelineConflict(omni.kit.test.AsyncTestCase):
+    """Test cases for GraphSDGPipelineConflict."""
+
     async def setUp(self):
+        """Set up test fixtures."""
         self._timeline = omni.timeline.get_timeline_interface()
         await omni.usd.get_context().new_stage_async()
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         self._timeline.stop()
 
     async def _create_and_initialize_camera(self, stage):
@@ -43,12 +49,14 @@ class TestGraphSDGPipelineConflict(omni.kit.test.AsyncTestCase):
         return camera
 
     async def test_sdg_pipeline_conflict(self):
+        """Test sdg pipeline conflict."""
         stage = omni.usd.get_context().get_stage()
 
         # Define test cube
         stage.DefinePrim("/Cube", "Cube")
 
         def make_graph(graph_path, cube_path):
+            """Execute make_graph."""
             return og.Controller.edit(
                 {"graph_path": graph_path, "evaluator_name": "execution"},
                 {

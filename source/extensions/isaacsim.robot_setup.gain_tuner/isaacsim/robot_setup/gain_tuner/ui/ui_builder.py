@@ -118,7 +118,7 @@ class UIBuilder:
         pass
 
     def on_timeline_event(self, event: object) -> None:
-        """Callback for Timeline events (Play, Pause, Stop)
+        """Callback for Timeline events (Play, Pause, Stop).
 
         Args:
             event: Event Type
@@ -138,7 +138,8 @@ class UIBuilder:
 
     def on_physics_step(self, step: float):
         """Callback for Physics Step.
-        Physics steps only occur when the timeline is playing
+
+        Physics steps only occur when the timeline is playing.
 
         Args:
             step: Size of physics step
@@ -151,7 +152,6 @@ class UIBuilder:
         Args:
             e: Event object
         """
-
         if not self._articulation_menu_model or not self._articulation_menu_model.has_item():
             return
         if self._reset_ui_next_frame:
@@ -168,7 +168,7 @@ class UIBuilder:
             self._reset_ui_next_frame = False
 
     def on_stage_event(self, event: object):
-        """Callback for Stage Events
+        """Callback for Stage Events.
 
         Args:
             event: Event Type
@@ -190,8 +190,9 @@ class UIBuilder:
 
     def reset(self):
         """Called when the stage is closed or the extension is hot reloaded.
+
         Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called
+        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called.
         """
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()
@@ -199,8 +200,9 @@ class UIBuilder:
 
     def cleanup(self):
         """Called when the extension is closed.
+
         Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called
+        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called.
         """
         self.reset()
         self._gains_tuning_frame = None
@@ -211,7 +213,7 @@ class UIBuilder:
         self._test_table_widget = None
 
     def _on_help_click(self, b: int):
-        """Opens an extension's documentation in a Web Browser
+        """Opens an extension's documentation in a Web Browser.
 
         Args:
             b: Button event parameter
@@ -789,7 +791,8 @@ class UIBuilder:
         plot.set_data_colors(self._plotting_colors)
 
     def _invalidate_articulation(self):
-        """This function handles the event that the existing articulation becomes invalid and there is
+        """This function handles the event that the existing articulation becomes invalid and there is.
+
         not a new articulation to select.  It is called explicitly in the code when the timeline is
         stopped and when the DropDown menu finds no articulations on the stage.
         """

@@ -8,4 +8,6 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
+"""Clash detection utility for 3D mesh overlap analysis."""
+
 from isaacsim.util.clash_detection.clash_detection import *

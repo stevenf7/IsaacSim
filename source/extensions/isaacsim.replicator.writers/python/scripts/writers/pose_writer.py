@@ -33,7 +33,7 @@ __version__ = "0.2.0"
 
 
 class PoseWriter(Writer):
-    """Pose Writer
+    """Pose Writer.
 
     Args:
         output_dir:

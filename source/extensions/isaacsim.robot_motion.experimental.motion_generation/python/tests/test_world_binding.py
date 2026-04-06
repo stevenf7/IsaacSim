@@ -156,6 +156,7 @@ class TestWorldBinding(omni.kit.test.AsyncTestCase):
 
     async def test_common_updates(self):
         """Test that the WorldBinding class can correctly update the world interface when the common tokens change.
+
         This includes the world transforms, the collision enabled outputs, and the local-transform which is
         used to track the scales.
         """

@@ -27,17 +27,22 @@ from .gui_test_support import assert_xyz_and_unit_quaternion_wxyz, wait_until
 
 
 class TestGraphPlannerGui(omni.kit.test.AsyncTestCase):
+    """Test suite for the graph planner example GUI."""
+
     async def setUp(self):
+        """Set up the UI builder before each test."""
         await omni.kit.app.get_app().next_update_async()
         self.ui_builder = UIBuilder()
         self.ui_builder.build_ui()
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
+        """Clean up the UI builder after each test."""
         self.ui_builder.cleanup()
         await omni.kit.app.get_app().next_update_async()
 
     async def test_widgets_built(self):
+        """Verify that all expected widgets are created."""
         self.assertIsNotNone(self.ui_builder._load_btn)
         self.assertIsNotNone(self.ui_builder._to_cspace_btn)
 

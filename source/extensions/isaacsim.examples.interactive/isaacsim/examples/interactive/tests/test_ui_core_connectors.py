@@ -1,3 +1,5 @@
+"""Tests for the UI core connectors (LoadButton, ResetButton)."""
+
 # SPDX-FileCopyrightText: Copyright (c) 2018-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -35,6 +37,8 @@ from isaacsim.storage.native import get_assets_root_path
 
 
 async def wait_until_stage_loaded(timeout_s: float = 20.0):
+    """Wait until the stage finishes loading or timeout is reached."""
+
     async def _wait():
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
@@ -44,8 +48,11 @@ async def wait_until_stage_loaded(timeout_s: float = 20.0):
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
+    """Test cases for the UI core connector widgets."""
+
     # Before running each test
     async def setUp(self):
+        """Set up by creating a fresh stage and timeline."""
         World.clear_instance()
         self._timeline = omni.timeline.get_timeline_interface()
         await create_new_stage_async()
@@ -53,6 +60,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down by stopping timeline and waiting for assets to load."""
         self._timeline.stop()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
@@ -72,6 +80,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
         return window
 
     async def test_load_button(self):
+        """Test that the LoadButton triggers setup_scene and setup_post_load callbacks."""
         window_title = "UI_Widget_Wrapper_Test_Window_LoadButton_Test"
         width = 500
         height = 200
@@ -124,6 +133,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
         self.assertTrue(self.setup_post_load_called)
 
     async def test_reset_button(self):
+        """Test that the ResetButton triggers pre_reset and post_reset callbacks."""
         window_title = "UI_Widget_Wrapper_Test_Window_ResetButton_Test"
         width = 500
         height = 200

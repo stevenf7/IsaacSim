@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Behavior script that randomly drops and stacks assets on top of prim surfaces."""
+
 import asyncio
 from enum import Enum
 
@@ -52,6 +54,8 @@ from pxr import Gf, PhysicsSchemaTools, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade,
 
 
 class BehaviorState(Enum):
+    """Enumeration of volume stack randomizer behavior states."""
+
     INIT = 0
     SETUP = 1
     RUNNING = 2
@@ -60,9 +64,7 @@ class BehaviorState(Enum):
 
 
 class VolumeStackRandomizer(BehaviorScript):
-    """
-    Behavior script that randomly drops and stacks assets on top of the prim(s) area.
-    """
+    """Behavior script that randomly drops and stacks assets on top of the prim(s) area."""
 
     BEHAVIOR_NS = "volumeStackRandomizer"
     EVENT_NAME_IN = f"{EXTENSION_NAME}.{BEHAVIOR_NS}.in"

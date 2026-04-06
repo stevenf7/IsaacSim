@@ -121,6 +121,7 @@ class AnymalFlatTerrainPolicy(PolicyController):
 
     def forward(self, dt: float, command: object) -> None:
         """Computes and applies joint torques for ANYmal locomotion based on the policy output.
+
         The control runs at a decimated rate and uses an actuator network to convert
         policy actions into joint torques. Joint order is:
         FL (hip, thigh, calf) -> FR -> RL -> RR.

@@ -29,6 +29,7 @@ from .interface_helper import LulaInterfaceHelper
 
 class RRT(LulaInterfaceHelper, PathPlanner):
     """RRT is a stochastic algorithm for quickly finding a feasible path in cspace to move a robot from a starting pose to a target pose.
+
     This class implements the PathPlanner interface, as well as exposing RRT-specific parameters.
 
     Args:
@@ -265,7 +266,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         self._seed = 123456
 
     def set_max_iterations(self, max_iter: int):
-        """Set the maximum number of iterations of RRT before a failure is returned
+        """Set the maximum number of iterations of RRT before a failure is returned.
 
         Args:
             max_iter: Maximum number of iterations of RRT before a failure is returned.
@@ -274,7 +275,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         self._rrt.set_param("max_iterations", max_iter)
 
     def set_random_seed(self, random_seed: int):
-        """Set the random seed that RRT uses to generate a solution
+        """Set the random seed that RRT uses to generate a solution.
 
         Args:
             random_seed: Used to initialize random sampling. random_seed must be positive.
@@ -282,7 +283,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         self._seed = random_seed
 
     def set_param(self, param_name: str, value: Union[np.array, float, int, str]) -> bool:
-        """Set a parameter for the RRT algorithm.  The parameters and their appropriate values are enumerated below:
+        """Set a parameter for the RRT algorithm.
 
         `seed` (int):
             -Used to initialize random sampling.

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for single-view depth sensor asset handling."""
+
 import omni.kit.test
 import omni.usd
 from isaacsim.core.experimental.utils.stage import create_new_stage_async, is_stage_loading

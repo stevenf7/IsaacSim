@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Behavior script that randomly applies texture materials to visual prims."""
+
 import string
 
 import carb
@@ -34,9 +36,7 @@ from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade
 
 
 class TextureRandomizer(BehaviorScript):
-    """
-    Behavior script that creates texture materials from the given list and randomly applies them to visual prim(s).
-    """
+    """Behavior script that creates texture materials from the given list and randomly applies them to visual prim(s)."""
 
     BEHAVIOR_NS = "textureRandomizer"
     VARIABLES_TO_EXPOSE = [

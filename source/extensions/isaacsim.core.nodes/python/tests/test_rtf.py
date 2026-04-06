@@ -24,7 +24,7 @@ from isaacsim.storage.native import get_assets_root_path
 
 class TestRealTimeFactor(ogts.OmniGraphTestCase):
     async def setUp(self):
-        """Set up  test environment, to be torn down when done"""
+        """Set up  test environment, to be torn down when done."""
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._core_nodes = _isaacsim_core_nodes.acquire_interface()
@@ -38,7 +38,7 @@ class TestRealTimeFactor(ogts.OmniGraphTestCase):
 
     # ----------------------------------------------------------------------
     async def tearDown(self):
-        """Get rid of temporary data used by the test"""
+        """Get rid of temporary data used by the test."""
         await omni.kit.stage_templates.new_stage_async()
 
     # ----------------------------------------------------------------------

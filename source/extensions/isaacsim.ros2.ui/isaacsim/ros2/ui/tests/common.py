@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Common utilities for ROS 2 UI tests."""
+
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 
 __all__ = ["ROS2TestCase"]

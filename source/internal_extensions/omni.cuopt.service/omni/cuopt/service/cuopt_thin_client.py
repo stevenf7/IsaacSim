@@ -66,8 +66,9 @@ def check_compressed(datafile):
 
 class CuOptServiceClient:
     """
-    The CuOptServiceClient handles requests to the
-    cuOpt service through NVIDIA Cloud Functions (NVCF)
+    The CuOptServiceClient handles requests to the.
+
+    cuOpt service through NVIDIA Cloud Functions (NVCF).
 
     Parameters
     ----------
@@ -150,7 +151,8 @@ class CuOptServiceClient:
         config_path="",
     ):
         """
-        Initializes the instance with the provided credentials, function
+        Initializes the instance with the provided credentials, function.
+
         information, and configuration options.
         """
 
@@ -675,7 +677,8 @@ class CuOptServiceClient:
 
     def repoll(self, req_id, asset_id=None):
         """
-        Poll for a result when get_optimized_routes results in
+        Poll for a result when get_optimized_routes results in.
+
         a TimeoutError exception. The req_id and asset_id are returned
         in the exception.
 
@@ -726,9 +729,7 @@ class CuOptServiceClient:
         return self._cleanup_response(cuopt_response_dict)
 
     def get_functions(self):
-        """
-        Lists all availble functions for the user in NVCF.
-        """
+        """Lists all availble functions for the user in NVCF."""
         if (not self.token) and (not self._check_token_cache()):
             log.info("Requesting New Token")
             self._get_jwt_token()
@@ -751,7 +752,8 @@ class CuOptServiceClient:
 
     def set_function_by_name(self, name, version_id=None):
         """
-        Set the function to invoke by name and optionally specify a
+        Set the function to invoke by name and optionally specify a.
+
         version. The current list of functions can be retrieved with
         get_functions().
 
@@ -801,7 +803,8 @@ class CuOptServiceClient:
 
     def set_function_by_id(self, id, version_id=None):
         """
-        Set the function to invoke by id and optionally specify a
+        Set the function to invoke by id and optionally specify a.
+
         version. The current list of functions can be retrieved with
         get_functions().
 

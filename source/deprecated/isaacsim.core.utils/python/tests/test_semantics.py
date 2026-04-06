@@ -16,6 +16,9 @@
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
+
+"""Tests for semantic labeling utility functions."""
+
 import omni.kit.test
 import Semantics
 from isaacsim.core.utils.prims import get_prim_at_path
@@ -34,16 +37,21 @@ from isaacsim.core.utils.semantics import (
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestSemantics(omni.kit.test.AsyncTestCase):
+    """Test cases for Semantics."""
+
     async def setUp(self):
+        """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         pass
 
     async def tearDown(self):
+        """Tear down test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         pass
 
     def create_test_environment_new_labels(self):
+        """Create a test environment with semantic labels."""
         # creates a test environment with 4 cubes meshes using the new LabelsAPI
         # assign labels "cube" for 2, "sphere" for 1, and leave the last one missing
         # Also add a nested prim with labels
@@ -79,6 +87,7 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
             data_attr.Set(semantic_label)
 
     async def test_upgrade_prim_semantics_to_labels(self):
+        """Test upgrade prim semantics to labels."""
         stage = omni.usd.get_context().get_stage()
         prim = stage.DefinePrim("/test_upgrade", "Xform")
 
@@ -110,6 +119,7 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
         )
 
     async def test_new_labels_api(self):
+        """Test new labels api."""
         stage = omni.usd.get_context().get_stage()
         # Create a test prim and a nested prim
         prim = stage.DefinePrim("/new_labels_test", "Xform")

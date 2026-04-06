@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""ROS 2 Bridge extension implementation."""
+
 import carb
 import omni.ext
 
@@ -31,7 +33,6 @@ class ROS2BridgeExtension(omni.ext.IExt):
         Args:
             ext_id: The extension identifier.
         """
-
         carb.log_info("Starting ROS 2 Bridge extension")
 
     def on_shutdown(self) -> None:
@@ -39,5 +40,4 @@ class ROS2BridgeExtension(omni.ext.IExt):
 
         Logs the shutdown of the ROS 2 Bridge extension.
         """
-
         carb.log_info("Shutting down ROS 2 Bridge extension")

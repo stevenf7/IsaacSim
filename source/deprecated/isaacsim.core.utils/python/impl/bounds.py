@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated bounds computation utilities."""
+
 import typing
 
 # omniverse
@@ -27,7 +29,7 @@ from pxr import Gf, Usd, UsdGeom
 def recompute_extents(
     prim: UsdGeom.Boundable, time: Usd.TimeCode = Usd.TimeCode.Default(), include_children: bool = False
 ):
-    """Recomputes and overwrites the extents attribute for a UsdGeom.Boundable prim
+    """Recomputes and overwrites the extents attribute for a UsdGeom.Boundable prim.
 
     Args:
         prim: Input prim to recompute extents for
@@ -77,7 +79,7 @@ def recompute_extents(
 
 
 def create_bbox_cache(time: Usd.TimeCode = Usd.TimeCode.Default(), use_extents_hint: bool = True) -> UsdGeom.BBoxCache:
-    """Helper function to create a Bounding Box Cache object that can be used for computations
+    """Helper function to create a Bounding Box Cache object that can be used for computations.
 
     Args:
         time: time at which cache should be initialized
@@ -99,7 +101,7 @@ def create_bbox_cache(time: Usd.TimeCode = Usd.TimeCode.Default(), use_extents_h
 
 
 def compute_aabb(bbox_cache: UsdGeom.BBoxCache, prim_path: str, include_children: bool = False) -> np.array:
-    """Compute an Axis-Aligned Bounding Box (AABB) for a given ``prim_path``
+    """Compute an Axis-Aligned Bounding Box (AABB) for a given ``prim_path``.
 
     A combined AABB is computed if ``include_children`` is True
 
@@ -142,7 +144,7 @@ def compute_aabb(bbox_cache: UsdGeom.BBoxCache, prim_path: str, include_children
 
 
 def compute_combined_aabb(bbox_cache: UsdGeom.BBoxCache, prim_paths: typing.List[str]) -> np.array:
-    """Computes a combined Axis-Aligned Bounding Box (AABB) given a list of prim paths
+    """Computes a combined Axis-Aligned Bounding Box (AABB) given a list of prim paths.
 
     Args:
         bbox_cache: Existing Bounding box cache to use for computation
@@ -173,7 +175,7 @@ def compute_combined_aabb(bbox_cache: UsdGeom.BBoxCache, prim_paths: typing.List
 
 
 def compute_obb(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> typing.Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Computes the Oriented Bounding Box (OBB) of a prim
+    """Computes the Oriented Bounding Box (OBB) of a prim.
 
     .. note::
 
@@ -243,7 +245,7 @@ def compute_obb(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> typing.Tuple[n
 
 
 def get_obb_corners(centroid: np.ndarray, axes: np.ndarray, half_extent: np.ndarray) -> np.ndarray:
-    """Computes the corners of the Oriented Bounding Box (OBB) from the given OBB information
+    """Computes the corners of the Oriented Bounding Box (OBB) from the given OBB information.
 
     Args:
         centroid: The centroid of the OBB as a NumPy array.
@@ -294,7 +296,7 @@ def get_obb_corners(centroid: np.ndarray, axes: np.ndarray, half_extent: np.ndar
 
 
 def compute_obb_corners(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> np.ndarray:
-    """Computes the corners of the Oriented Bounding Box (OBB) of a prim
+    """Computes the corners of the Oriented Bounding Box (OBB) of a prim.
 
     Args:
         bbox_cache: Bounding Box Cache object to use for computation

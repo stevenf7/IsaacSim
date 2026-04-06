@@ -193,7 +193,6 @@ class GettingStartedRobotUI(BaseSampleUITemplate):
 
     def _add_arm(self) -> None:
         """Adds a Franka Panda manipulator to the scene at the specified position and creates an articulation handle for it."""
-
         import carb
         from isaacsim.core.experimental.prims import Articulation, XformPrim
         from isaacsim.core.experimental.utils import stage as stage_utils
@@ -275,7 +274,6 @@ class GettingStartedRobotUI(BaseSampleUITemplate):
 
     def _move_vehicle(self) -> None:
         """Toggles the vehicle between moving and stopped states by setting DOF velocities."""
-
         if self.task_ui_elements["Move Vehicle"].text.upper() == "MOVE VEHICLE":
             # move the vehicle
             self.car_handle.set_dof_velocities([[2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]])

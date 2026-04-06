@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for prim utility functions."""
+
 import carb
 import omni.kit.test
 from isaacsim.core.utils.prims import define_prim, get_prim_attribute_value, set_prim_attribute_value
@@ -20,12 +22,16 @@ from pxr import Gf, Sdf
 
 
 class TestPrims(omni.kit.test.AsyncTestCase):
+    """Test cases for Prims."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         pass
 
     def _create_attributes(self, prim):
@@ -147,6 +153,7 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         return attributes
 
     async def test_prim_attribute_value(self):
+        """Test prim attribute value."""
         prim_path = "/prim"
         prim = define_prim(prim_path=prim_path, prim_type="Xform")
         attributes = self._create_attributes(prim)

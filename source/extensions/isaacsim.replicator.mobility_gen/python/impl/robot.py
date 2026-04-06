@@ -46,7 +46,7 @@ from .utils.stage_utils import stage_add_camera
 
 
 class MobilityGenRobot(Module):
-    """Abstract base class for robots
+    """Abstract base class for robots.
 
     This class defines an abstract base class for robots.
 
@@ -177,7 +177,6 @@ class MobilityGenRobot(Module):
         Returns:
             The built front camera module instance.
         """
-
         # Add camera
         camera_path = join_sdf_paths(prim_path, cls.front_camera_base_path)
         front_camera_xform = XFormPrim(camera_path)
@@ -200,7 +199,6 @@ class MobilityGenRobot(Module):
         Returns:
             The USD prim path of the created chase camera.
         """
-
         stage = get_current_stage()
 
         camera_path = join_sdf_paths(self.prim_path, self.chase_camera_base_path, "chase_camera")

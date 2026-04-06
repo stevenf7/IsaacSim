@@ -22,7 +22,7 @@ from isaacsim.core.utils.types import ArticulationAction
 
 
 class DifferentialController(BaseController):
-    r"""This controller uses a unicycle model of a differential drive. The Controller consumes a command in the form of a linear and angular velocity, and then computes the circular arc that satisfies this command given the distance between the wheels. This can then be used to compute the necessary angular velocities of the joints that will propel the midpoint between the wheels along the curve. The conversion is
+    r"""This controller uses a unicycle model of a differential drive. The Controller consumes a command in the form of a linear and angular velocity, and then computes the circular arc that satisfies this command given the distance between the wheels. This can then be used to compute the necessary angular velocities of the joints that will propel the midpoint between the wheels along the curve. The conversion is.
 
     .. math::
 

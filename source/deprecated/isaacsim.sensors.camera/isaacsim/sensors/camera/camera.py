@@ -104,6 +104,7 @@ def distort_point_rational_polynomial(
     camera_matrix: object, distortion_model: object, x: object, y: object
 ) -> np.ndarray:
     """[DEPRECATED] This helper function distorts point(s) using rational polynomial model.
+
     It should be equivalent to the following reference that uses OpenCV:
 
     .. code-block:: python
@@ -159,6 +160,7 @@ def distort_point_rational_polynomial(
 
 def distort_point_kannala_brandt(camera_matrix: object, distortion_model: object, x: object, y: object) -> np.ndarray:
     """[DEPRECATED] This helper function distorts point(s) using Kannala Brandt fisheye model.
+
     It should be equivalent to the following reference that uses OpenCV:
 
     .. code-block:: python
@@ -208,6 +210,7 @@ def distort_point_kannala_brandt(camera_matrix: object, distortion_model: object
 
 class Camera(BaseSensor):
     """Provides high level functions to deal with a camera prim and its attributes/ properties.
+
     If there is a camera prim present at the path, it will use it. Otherwise, a new Camera prim at
     the specified prim path will be created.
 
@@ -430,7 +433,7 @@ class Camera(BaseSensor):
             return self._current_frame
 
     def initialize(self, physics_sim_view: object = None, attach_rgb_annotator: bool = True):
-        """To be called before using this class after a reset of the world
+        """To be called before using this class after a reset of the world.
 
         Args:
             physics_sim_view: Current physics simulation view.
@@ -659,7 +662,7 @@ class Camera(BaseSensor):
         return width / float(height)
 
     def get_world_pose(self, camera_axes: str = "world") -> Tuple[np.ndarray, np.ndarray]:
-        """Gets prim's pose with respect to the world's frame (always at [0, 0, 0] and unity quaternion not to be confused with /World Prim)
+        """Gets prim's pose with respect to the world's frame (always at [0, 0, 0] and unity quaternion not to be confused with /World Prim).
 
         Args:
             camera_axes: camera axes, world is (+Z up, +X forward), ros is (+Y up, +Z forward) and usd is (+Y up and -Z forward).
@@ -1140,6 +1143,7 @@ class Camera(BaseSensor):
 
     def add_instance_segmentation_to_frame(self, init_params: dict = {}):
         """Attach the instance_segmentation annotator to this camera.
+
         The main difference between instance id segmentation and instance segmentation are that instance segmentation annotator goes down the hierarchy to the lowest level prim which has semantic labels, which instance id segmentation always goes down to the leaf prim.
 
         Args:
@@ -1432,7 +1436,8 @@ class Camera(BaseSensor):
         return
 
     def get_lens_aperture(self) -> float:
-        """Gets value of camera prim fStop attribute, which controls distance blurring. Lower numbers decrease focus
+        """Gets value of camera prim fStop attribute, which controls distance blurring. Lower numbers decrease focus.
+
                 range, larger numbers increase it.
 
         Returns:
@@ -1441,7 +1446,8 @@ class Camera(BaseSensor):
         return self.prim.GetAttribute("fStop").Get()
 
     def set_lens_aperture(self, value: float):
-        """Sets value of camera prim fStop attribute, which controls distance blurring. Lower numbers decrease focus
+        """Sets value of camera prim fStop attribute, which controls distance blurring. Lower numbers decrease focus.
+
                 range, larger numbers increase it.
 
         Args:
@@ -1588,6 +1594,7 @@ class Camera(BaseSensor):
 
     def set_lens_distortion_model(self, value: str):
         """Sets the `omni:lensdistortion:model` property of the camera prim and applies the corresponding schema.
+
         Note: `cameraProjectionType` has been deprecated in favor of `omni:lensdistortion:model`. `fisheyeOrthographic`, `fisheyeEquidistant`, `fisheyeEquisolid`, and `fisheyeSpherical` are no longer supported.
 
         Args:
@@ -1789,6 +1796,7 @@ class Camera(BaseSensor):
         distortion_model: Sequence[float],
     ):
         """[DEPRECATED] Approximates rational polynomial distortion with ftheta fisheye polynomial coefficients.
+
         Note: This method was designed to approximate the OpenCV pinhole distortion model using ftheta fisheye polynomial parameterization.
         The OpenCV pinhole distortion model is now directly supported, so this method will use that model directly.
 
@@ -1832,6 +1840,7 @@ class Camera(BaseSensor):
         distortion_model: Sequence[float],
     ):
         """[DEPRECATED] Approximates kannala brandt distortion with ftheta fisheye polynomial coefficients.
+
         Note: This method was designed to approximate the OpenCV fisheye distortion model using ftheta fisheye polynomial parameterization.
         The OpenCV fisheye distortion model is now directly supported, so this method will use that model directly.
 
@@ -1912,7 +1921,7 @@ class Camera(BaseSensor):
     def get_view_matrix_ros(
         self, device: str = None, backend_utils_cls: type = None
     ) -> np.ndarray | torch.Tensor | wp.array:
-        """3D points in World Frame -> 3D points in Camera Ros Frame
+        """3D points in World Frame -> 3D points in Camera Ros Frame.
 
         Args:
             device: str, optional, default is None. If None, uses self._device.
@@ -1995,8 +2004,9 @@ class Camera(BaseSensor):
         )
 
     def get_image_coords_from_world_points(self, points_3d: np.ndarray) -> np.ndarray:
-        """Using pinhole perspective projection, this method projects 3d points in the world frame to the image
-           plane giving the pixel coordinates [[0, width], [0, height]]
+        """Using pinhole perspective projection, this method projects 3d points in the world frame to the image.
+
+           plane giving the pixel coordinates [[0, width], [0, height]].
 
         Args:
             points_3d: 3d points (X, Y, Z) in world frame. shape is (n, 3) where n is the number of points.
@@ -2017,7 +2027,8 @@ class Camera(BaseSensor):
     def get_camera_points_from_image_coords(
         self, points_2d: object, depth: object, device: str = None, backend_utils_cls: type = None
     ) -> np.ndarray | torch.Tensor | wp.array:
-        """Using pinhole perspective projection, this method does the inverse projection given the depth of the
+        """Using pinhole perspective projection, this method does the inverse projection given the depth of the.
+
             pixels to get 3D points in camera frame.
 
         Args:
@@ -2062,7 +2073,8 @@ class Camera(BaseSensor):
     def get_world_points_from_image_coords(
         self, points_2d: object, depth: object, device: str = None, backend_utils_cls: type = None
     ) -> np.ndarray | torch.Tensor | wp.array:
-        """Using pinhole perspective projection, this method does the inverse projection given the depth of the
+        """Using pinhole perspective projection, this method does the inverse projection given the depth of the.
+
             pixels to get 3D points in world frame.
 
         Args:
@@ -2496,7 +2508,6 @@ def get_all_camera_objects(root_prim: str = "/") -> List[Camera]:
     Returns:
         A list of isaacsim.sensors.camera Camera objects
     """
-
     # Get the paths of prims that are of type "Camera" from scene
     camera_prims = get_all_matching_child_prims(
         prim_path=root_prim, predicate=lambda prim: get_prim_type_name(prim) == "Camera"

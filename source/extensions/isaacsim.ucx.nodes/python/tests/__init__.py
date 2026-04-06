@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-UCX Nodes Tests
+"""UCX Nodes Tests.
 
 This package contains unit tests for the UCX OmniGraph nodes.
 

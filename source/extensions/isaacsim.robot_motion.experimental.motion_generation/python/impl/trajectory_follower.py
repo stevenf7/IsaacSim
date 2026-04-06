@@ -55,7 +55,6 @@ class TrajectoryFollower(BaseController):
         Returns:
             True if reset succeeded, False if no trajectory had been set.
         """
-
         # If there is no trajectory, this is not ready to run.
         if self._trajectory is None:
             return False

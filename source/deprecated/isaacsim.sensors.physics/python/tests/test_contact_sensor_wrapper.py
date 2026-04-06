@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test contact sensor wrapper functionality."""
+
 import asyncio
 
 import omni.kit.test
@@ -27,8 +29,11 @@ from .common import reset_timeline
 
 
 class TestContactSensorWrapper(omni.kit.test.AsyncTestCase):
+    """Test contact sensor wrapper."""
+
     # Before running each test
     async def setUp(self):
+        """Set up test fixtures."""
         await create_new_stage_async()
         SimulationManager.setup_simulation(dt=1.0 / 60.0)
         self._timeline = omni.timeline.get_timeline_interface()
@@ -53,6 +58,7 @@ class TestContactSensorWrapper(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        """Tear down test fixtures."""
         if self._timeline.is_playing():
             self._timeline.stop()
         SimulationManager.invalidate_physics()

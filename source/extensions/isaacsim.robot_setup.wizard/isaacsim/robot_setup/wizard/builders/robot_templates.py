@@ -103,6 +103,7 @@ class RobotTemplate(ABC):
     @staticmethod
     def add_property(cls: type, name: str, default: object):
         """Dynamically adds a property `name` to `cls`.
+
         Stores `default` as the initial value, getter returns it, and setter rebinds it on the instance.
         Only supports simple data types like string, list, or dict.
 

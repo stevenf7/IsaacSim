@@ -48,7 +48,6 @@ class Extension(omni.ext.IExt, MenuHelperExtensionFull):
         Args:
             ext_id: The extension identifier.
         """
-
         # Create menu using MenuHelperExtensionFull
         self.menu_startup(
             lambda: ArticulationPositionWindow(),

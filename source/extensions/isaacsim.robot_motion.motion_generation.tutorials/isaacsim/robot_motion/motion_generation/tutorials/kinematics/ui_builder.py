@@ -67,6 +67,7 @@ class UIBuilder:
 
     def on_menu_callback(self):
         """Callback for when the UI is opened from the toolbar.
+
         This is called directly after build_ui().
         """
         pass
@@ -88,7 +89,8 @@ class UIBuilder:
 
     def on_physics_step(self, step: float):
         """Callback for Physics Step.
-        Physics steps only occur when the timeline is playing
+
+        Physics steps only occur when the timeline is playing.
 
         Args:
             step: Size of physics step.
@@ -108,14 +110,16 @@ class UIBuilder:
 
     def cleanup(self):
         """Called when the stage is closed or the extension is hot reloaded.
+
         Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called
+        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called.
         """
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()
 
     def build_ui(self):
         """Build a custom UI tool to run your extension.
+
         This function will be called any time the UI window is closed and reopened.
         """
         world_controls_frame = CollapsableFrame("World Controls", collapsed=False)
@@ -160,7 +164,7 @@ class UIBuilder:
         self._scenario = FrankaKinematicsExample()
 
     def _add_light_to_stage(self):
-        """A new stage does not have a light by default.  This function creates a spherical light"""
+        """A new stage does not have a light by default.  This function creates a spherical light."""
         sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
@@ -168,6 +172,7 @@ class UIBuilder:
 
     def _setup_scene(self):
         """This function is attached to the Load Button as the setup_scene_fn callback.
+
         On pressing the Load Button, a new instance of World() is created and then this function is called.
         The user should now load their assets onto the stage and add them to the World Scene.
         """
@@ -184,6 +189,7 @@ class UIBuilder:
 
     def _setup_scenario(self):
         """This function is attached to the Load Button as the setup_post_load_fn callback.
+
         The user may assume that their assets have been loaded by their setup_scene_fn callback, that
         their objects are properly initialized, and that the timeline is paused on timestep 0.
 
@@ -199,6 +205,7 @@ class UIBuilder:
 
     def _on_post_reset_btn(self):
         """This function is attached to the Reset Button as the post_reset_fn callback.
+
         The user may assume that their objects are properly initialized, and that the timeline is paused on timestep 0.
 
         They may also assume that objects that were added to the World.Scene have been moved to their default positions.
@@ -212,6 +219,7 @@ class UIBuilder:
 
     def _update_scenario(self, step: float, *args, **kwargs):
         """This function is attached to the Run Scenario StateButton.
+
         This function was passed in as the physics_callback_fn argument.
         This means that when the a_text "RUN" is pressed, a subscription is made to call this function on every physics step.
         When the b_text "STOP" is pressed, the physics callback is removed.
@@ -225,6 +233,7 @@ class UIBuilder:
 
     def _on_run_scenario_a_text(self):
         """This function is attached to the Run Scenario StateButton.
+
         This function was passed in as the on_a_click_fn argument.
         It is called when the StateButton is clicked while saying a_text "RUN".
 
@@ -236,8 +245,9 @@ class UIBuilder:
 
     def _on_run_scenario_b_text(self):
         """This function is attached to the Run Scenario StateButton.
+
         This function was passed in as the on_b_click_fn argument.
-        It is called when the StateButton is clicked while saying a_text "STOP"
+        It is called when the StateButton is clicked while saying a_text "STOP".
 
         Pausing the timeline on b_text is not strictly necessary for this example to run.
         Clicking "STOP" will cancel the physics subscription that updates the scenario, which means that
@@ -250,6 +260,7 @@ class UIBuilder:
 
     def _reset_extension(self):
         """This is called when the user opens a new stage from self.on_stage_event().
+
         All state should be reset.
         """
         self._on_init()

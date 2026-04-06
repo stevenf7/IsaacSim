@@ -30,7 +30,7 @@ from pxr import Gf, UsdGeom
 
 
 class VisualCylinder(SingleGeometryPrim):
-    """High level wrapper to create/encapsulate a visual cylinder
+    """High level wrapper to create/encapsulate a visual cylinder.
 
     .. note::
 
@@ -131,7 +131,7 @@ class VisualCylinder(SingleGeometryPrim):
         return
 
     def set_radius(self, radius: float) -> None:
-        """Set the base radius
+        """Set the base radius.
 
         Args:
             radius: base radius
@@ -146,7 +146,7 @@ class VisualCylinder(SingleGeometryPrim):
         return
 
     def get_radius(self) -> float:
-        """Base radius
+        """Base radius.
 
         Returns:
             Base radius.
@@ -161,7 +161,7 @@ class VisualCylinder(SingleGeometryPrim):
         return self.geom.GetRadiusAttr().Get()
 
     def set_height(self, height: float) -> None:
-        """Set the cylinder height
+        """Set the cylinder height.
 
         Args:
             height: cylinder height
@@ -176,7 +176,7 @@ class VisualCylinder(SingleGeometryPrim):
         return
 
     def get_height(self) -> float:
-        """Cylinder height
+        """Cylinder height.
 
         Returns:
             Cylinder height.
@@ -192,7 +192,7 @@ class VisualCylinder(SingleGeometryPrim):
 
 
 class FixedCylinder(VisualCylinder):
-    """High level wrapper to create/encapsulate a fixed cylinder
+    """High level wrapper to create/encapsulate a fixed cylinder.
 
     .. note::
 
@@ -288,7 +288,7 @@ class FixedCylinder(VisualCylinder):
 
 
 class DynamicCylinder(SingleRigidPrim, FixedCylinder):
-    """High level wrapper to create/encapsulate a dynamic cylinder
+    """High level wrapper to create/encapsulate a dynamic cylinder.
 
     .. note::
 
