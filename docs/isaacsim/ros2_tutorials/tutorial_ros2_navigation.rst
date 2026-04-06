@@ -18,7 +18,7 @@ ROS 2 Navigation
 
 **Support Limitations**
 
-* ROS 2 Navigation with |isaac-sim_short| is fully supported on Linux. On Windows, ROS 2 Navigation with |isaac-sim_short| is partially supported and could potentially produce errors.
+* ROS 2 Navigation with |isaac-sim_short| is fully supported on Linux and Windows with Pixi-based installation. On Windows (WSL), ROS 2 Navigation with |isaac-sim_short| is partially supported and could potentially produce errors.
 
 
 
@@ -40,7 +40,7 @@ Getting Started
 
 - Enable the ``isaacsim.ros2.bridge`` Extension in the **Extension Manager** window by navigating to **Window** > **Extensions**.
 
-- This tutorial requires ``carter_navigation``, ``iw_hub_navigation``, and ``isaac_ros_navigation_goal`` ROS2 packages, which are provided as part of your |isaac-sim| download. These ROS2 packages are located inside the appropriate ``ros2_ws``. They contain the required launch file, navigation parameters, and robot model. Complete :ref:`isaac_sim_app_install_ros`, make sure the ROS 2 workspace environment is set up correctly.
+- This tutorial requires ``carter_navigation``, ``iw_hub_navigation``, and ``isaac_ros_navigation_goal`` ROS2 packages, which are provided as part of your |isaac-sim| download. These ROS2 packages are located inside the appropriate ``ros2_ws``. They contain the required launch file, navigation parameters, and robot model. Complete :ref:`isaac_sim_app_install_ros`, specifically the :ref:`isaac_sim_ros_workspace_setup` steps, to make sure the ROS 2 workspace is built and sourced correctly.
 
 .. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly.
 

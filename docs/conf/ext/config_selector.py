@@ -23,6 +23,11 @@ class ConfigSelectorDirective(Directive):
     Usage:
     .. config-selector::
        :options: platform=Ubuntu 22.04|Ubuntu 24.04|Windows,ros_distro=Humble|Jazzy,package_type=Default|Custom
+       :dependencies: install_method=platform:Windows
+
+    The optional ``:dependencies:`` option accepts a comma-separated list of
+    ``key=dep_key:dep_value`` pairs.  A row tagged this way is only visible
+    when the named dependency key has the specified value.
     """
 
     has_content = False
@@ -30,19 +35,32 @@ class ConfigSelectorDirective(Directive):
     optional_arguments = 0
     option_spec = {
         "options": directives.unchanged_required,
+        "dependencies": directives.unchanged,
     }
 
     def run(self):
         # Parse the options string
         options_str = self.options.get("options", "")
+        deps_str = self.options.get("dependencies", "")
         config_options = {}
+        config_deps = {}
 
         for option_pair in options_str.split(","):
             if "=" in option_pair:
                 key, values = option_pair.strip().split("=", 1)
                 config_options[key.strip()] = [v.strip() for v in values.split("|")]
 
-        return [config_selector(config_options=config_options)]
+        # Parse dependencies: "install_method=platform:Windows" means the
+        # install_method row is only shown when platform == Windows.
+        for dep_pair in deps_str.split(",") if deps_str else []:
+            dep_pair = dep_pair.strip()
+            if "=" in dep_pair:
+                key, dep = dep_pair.split("=", 1)
+                if ":" in dep:
+                    dep_key, dep_value = dep.split(":", 1)
+                    config_deps[key.strip()] = {dep_key.strip(): dep_value.strip()}
+
+        return [config_selector(config_options=config_options, config_deps=config_deps)]
 
 
 class ConfigContentDirective(Directive):
@@ -85,6 +103,7 @@ class ConfigContentDirective(Directive):
 def visit_config_selector_html(self, node):
     """Render the configuration selector as HTML"""
     config_options = node.get("config_options", {})
+    config_deps = node.get("config_deps", {})
 
     # Generate unique IDs for the selectors
     selector_html = ['<div class="config-selector" id="config-selector">']
@@ -92,7 +111,12 @@ def visit_config_selector_html(self, node):
     selector_html.append('<div class="config-options">')
 
     for key, values in config_options.items():
-        selector_html.append(f'<div class="config-row">')
+        dep = config_deps.get(key)
+        if dep:
+            dep_json = json.dumps(dep).replace('"', "&quot;")
+            selector_html.append(f'<div class="config-row" data-show-when="{dep_json}">')
+        else:
+            selector_html.append(f'<div class="config-row">')
         selector_html.append(f'<div class="config-label">{key.replace("_", " ").title()}:</div>')
         selector_html.append(f'<div class="config-buttons" data-config-key="{key}">')
 
@@ -258,38 +282,52 @@ def visit_config_selector_html(self, node):
     document.addEventListener('DOMContentLoaded', function() {
         const buttons = document.querySelectorAll('.config-btn');
         const contents = document.querySelectorAll('.config-content');
-        
+
+        // Returns the active value for each visible config row.
+        // Rows hidden by a data-show-when dependency are excluded so their
+        // value does not accidentally filter out content blocks.
         function getCurrentConfig() {
             const config = {};
             const buttonGroups = document.querySelectorAll('.config-buttons');
-            
+
             buttonGroups.forEach(group => {
+                const row = group.closest('.config-row');
+                if (row && row.style.display === 'none') return;
+
                 const activeBtn = group.querySelector('.config-btn.active');
                 if (activeBtn) {
-                    const key = group.dataset.configKey;
-                    const value = activeBtn.dataset.value;
-                    config[key] = value;
+                    config[group.dataset.configKey] = activeBtn.dataset.value;
                 }
             });
-            
+
             return config;
         }
-        
+
+        // Show or hide config rows that have a data-show-when dependency.
+        // Must be called before updateVisibility() so getCurrentConfig() is correct.
+        function updateRowVisibility() {
+            const config = getCurrentConfig();
+            document.querySelectorAll('.config-row[data-show-when]').forEach(row => {
+                try {
+                    const showWhen = JSON.parse(row.dataset.showWhen || '{}');
+                    const visible = Object.entries(showWhen).every(([k, v]) => config[k] === v);
+                    row.style.display = visible ? '' : 'none';
+                } catch (e) {
+                    console.warn('Error parsing data-show-when for row:', e);
+                }
+            });
+        }
+
         function updateVisibility() {
             const currentConfig = getCurrentConfig();
-            
+
             contents.forEach(content => {
                 try {
                     const conditions = JSON.parse(content.dataset.conditions || '{}');
-                    let shouldShow = true;
-                    
-                    for (const [key, value] of Object.entries(conditions)) {
-                        if (currentConfig[key] !== value) {
-                            shouldShow = false;
-                            break;
-                        }
-                    }
-                    
+                    const shouldShow = Object.entries(conditions).every(
+                        ([key, value]) => currentConfig[key] === value
+                    );
+
                     if (shouldShow) {
                         content.classList.remove('hidden');
                         content.style.display = 'block';
@@ -302,24 +340,18 @@ def visit_config_selector_html(self, node):
                 }
             });
         }
-        
+
         // Add click event listeners to buttons
         buttons.forEach(button => {
             button.addEventListener('click', function() {
-                // Remove active class from siblings
-                const siblings = this.parentNode.querySelectorAll('.config-btn');
-                siblings.forEach(sibling => {
-                    sibling.classList.remove('active');
-                });
-                
-                // Add active class to clicked button
+                this.parentNode.querySelectorAll('.config-btn').forEach(s => s.classList.remove('active'));
                 this.classList.add('active');
-                
-                // Update visibility
+
+                // Row visibility must be updated before content visibility.
+                updateRowVisibility();
                 updateVisibility();
             });
-            
-            // Add keyboard support
+
             button.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
@@ -327,32 +359,14 @@ def visit_config_selector_html(self, node):
                 }
             });
         });
-        
-        // Initial visibility update
-        setTimeout(updateVisibility, 100);
-        
+
+        // Initial update
+        setTimeout(function() {
+            updateRowVisibility();
+            updateVisibility();
+        }, 100);
+
         // Watch for theme changes
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
-                    // Theme changed, styles will automatically update via CSS
-                }
-            });
-        });
-        
-        // Observe theme changes on document element
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['data-theme', 'class']
-        });
-        
-        // Also observe body for theme class changes (fallback)
-        if (document.body) {
-            observer.observe(document.body, {
-                attributes: true,
-                attributeFilter: ['class', 'data-theme']
-            });
-        }
     });
     </script>
     """

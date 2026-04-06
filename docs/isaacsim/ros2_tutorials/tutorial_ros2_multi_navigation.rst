@@ -17,7 +17,7 @@ Multiple Robot ROS2 Navigation
 
 **Support Limitations**
 
-* Multiple Robot ROS2 Navigation with |isaac-sim_short| is fully supported on Linux. On Windows, Multiple Robot ROS2 Navigation with |isaac-sim_short| could potentially produce errors.
+* Multiple Robot ROS2 Navigation with |isaac-sim_short| is fully supported on Linux and Windows with Pixi-based installation. On Windows (WSL), Multiple Robot ROS2 Navigation with |isaac-sim_short| could potentially produce errors.
 
 
 
@@ -39,7 +39,7 @@ Getting Started
 
     - ROS2 and Nav2 are installed.
     - ROS2 bridge is enabled.
-    - ``ros2_ws`` is sourced so that ``carter_navigation`` and ``isaac_ros_navigation_goal`` are inside your workspace.
+    - ``ros2_ws`` is built and sourced (see :ref:`isaac_sim_ros_workspace_setup`) so that ``carter_navigation`` and ``isaac_ros_navigation_goal`` are inside your workspace.
 
 .. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly. 
     

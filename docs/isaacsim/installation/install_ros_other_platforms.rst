@@ -32,9 +32,10 @@ Ubuntu 22.04    Humble                   Use default installation (Python 3.10).
 Ubuntu 22.04    Jazzy                    Build from source (Python 3.10). 
                                          Use Python 3.12 build of ROS 2 Workspace to use custom ROS interfaces with Isaac Sim.
 
-Windows 10      Humble, Jazzy (Beta)     Use default installation in WSL. Custom ROS Interfaces are not supported.
-                                     
-Windows 11      Humble, Jazzy (Beta)     Use default installation in WSL. Custom ROS Interfaces are not supported.
+Windows 10/11   Humble                   WSL installation. Custom ROS Interfaces are not supported.
+
+Windows 10/11   Jazzy                    **Pixi (Experimental)**: Pixi-based native ROS installation. Isaac Sim can source the Pixi ROS installation directly.
+                                         **WSL**: Custom ROS Interfaces are not supported.
 ============== ======================== =============================================
 
 For the ROS 2 bridge, |isaac-sim_short| is compatible with **ROS 2 Humble** and **ROS 2 Jazzy**.
@@ -44,7 +45,8 @@ For the ROS 2 bridge, |isaac-sim_short| is compatible with **ROS 2 Humble** and 
 ROS 2 Jazzy on Ubuntu 24.04 is recommended. Refer to :ref:`isaac_sim_app_install_ros`, if that is your mode of installation. Otherwise, verify or choose your configuration to continue:
 
 .. config-selector::
-   :options: platform=Ubuntu 22.04|Windows,ros_distro=Humble|Jazzy,package_type=Default ROS Interfaces|Custom ROS Interfaces
+   :options: platform=Ubuntu 22.04|Windows,ros_distro=Humble|Jazzy,package_type=Default ROS Interfaces|Custom ROS Interfaces,install_method=WSL2|Pixi (Experimental)
+   :dependencies: install_method=platform:Windows
 
 
 .. _isaac_sim_app_install_ros_options_other_platforms:
@@ -101,8 +103,13 @@ Install ROS 2
 
 
 .. config-content::
-   :show-when: platform=Windows,ros_distro=Humble
-   
+   :show-when: platform=Windows,ros_distro=Humble,install_method=Pixi (Experimental)
+
+   .. note:: Pixi-based native ROS 2 installation is only supported with **ROS 2 Jazzy** at this time. Please select Jazzy as your ROS 2 distro, or switch to the WSL2 install method to use Humble.
+
+.. config-content::
+   :show-when: platform=Windows,ros_distro=Humble,install_method=WSL2
+
    Use WSL2 to run ROS 2 on Windows, which communicates with the |isaac-sim_short| ROS Bridge run using internal ROS 2 libraries.
 
    #.  Install `WSL2 <https://learn.microsoft.com/en-us/windows/wsl/>`_ on your Windows machine.
@@ -176,8 +183,8 @@ Install ROS 2
    After the ROS Bridge is enabled on |isaac-sim_short| and the Windows network settings have been applied, |isaac-sim_short| is able to communicate with ROS 2 nodes in WSL2.
 
 .. config-content::
-   :show-when: platform=Windows,ros_distro=Jazzy
-   
+   :show-when: platform=Windows,ros_distro=Jazzy,install_method=WSL2
+
    Use WSL2 to run ROS 2 on Windows, which communicates with the |isaac-sim_short| ROS Bridge run using internal ROS 2 libraries.
 
    #.  Install `WSL2 <https://learn.microsoft.com/en-us/windows/wsl/>`_ on your Windows machine.
@@ -250,6 +257,29 @@ Install ROS 2
    
    After the ROS Bridge is enabled on |isaac-sim_short| and the Windows network settings have been applied, |isaac-sim_short| is able to communicate with ROS 2 nodes in WSL2.
 
+.. config-content::
+   :show-when: platform=Windows,ros_distro=Jazzy,install_method=Pixi (Experimental)
+
+   .. attention:: **Experimental: Pixi-based Native ROS 2 on Windows** — The Pixi workspace installs ROS 2 Jazzy natively on Windows via `RoboStack <https://robostack.github.io/>`_ conda packages. WSL2 is not required, and all |isaac-sim_short| ROS 2 tutorials are supported.
+
+   ROS 2 Jazzy is installed automatically as part of the Pixi workspace. No separate ROS 2 installation is needed. Ensure the following prerequisites are met before proceeding to the workspace setup:
+
+   .. list-table::
+      :header-rows: 1
+      :widths: 30 70
+
+      * - Requirement
+        - Notes
+      * - Windows 10/11 x64
+        -
+      * - `pixi <https://pixi.sh>`_
+        - ``winget install prefix-dev.pixi``
+      * - MSVC Build Tools 2022
+        - Select the "Desktop development with C++" workload. Required for source builds. To get VS 2022 specifically, scroll to "Older Downloads" on the `Visual Studio downloads page <https://visualstudio.microsoft.com/vs/older-downloads/>`_ and expand **2022**.
+      * - `Isaac Sim 6.0 <https://developer.nvidia.com/isaac-sim>`_
+        - Enable the ROS 2 bridge extension inside Isaac Sim.
+
+   Continue to :ref:`isaac_sim_ros_workspace_other_platforms` to download and set up the Pixi workspace.
 
 
 To install the ROS 2 workspaces and run our tutorials, follow the steps in the :ref:`isaac_sim_ros_workspace_other_platforms` section.
@@ -427,7 +457,12 @@ Setup ROS 2 Workspaces
       #. To run external nodes, use the Docker container as described in :ref:`isaac_ros_docker_other_platforms`.
 
 .. config-content::
-   :show-when: platform=Windows,ros_distro=Humble
+   :show-when: platform=Windows,ros_distro=Humble,install_method=Pixi (Experimental)
+
+   .. note:: Pixi-based native ROS 2 installation is only supported with **ROS 2 Jazzy** at this time. Please select Jazzy as your ROS 2 distro, or switch to the WSL2 install method to use Humble.
+
+.. config-content::
+   :show-when: platform=Windows,ros_distro=Humble,install_method=WSL2
 
    To run our ROS 2 tutorials and examples, it's necessary to source your ROS 2 installation workspace in the WSL2 terminal you plan to work in.
 
@@ -482,7 +517,7 @@ Setup ROS 2 Workspaces
          source install/local_setup.bash
 
 .. config-content::
-   :show-when: platform=Windows,ros_distro=Jazzy
+   :show-when: platform=Windows,ros_distro=Jazzy,install_method=WSL2
 
    To run our ROS 2 tutorials and examples, it's necessary to source your ROS 2 installation workspace in the WSL2 terminal you plan to work in.
 
@@ -535,6 +570,101 @@ Setup ROS 2 Workspaces
          source /opt/ros/jazzy/setup.bash
          cd jazzy_ws
          source install/local_setup.bash
+
+.. config-content::
+   :show-when: platform=Windows,ros_distro=Jazzy,install_method=Pixi (Experimental)
+
+   .. attention:: **Experimental** — The Pixi workspace is experimental. All |isaac-sim_short| ROS 2 tutorials should be supported, but there may be unforeseen limitations.
+
+   The Pixi workspace bundles ROS 2 Jazzy via `RoboStack <https://robostack.github.io/>`_ conda packages and uses `Zenoh <https://zenoh.io/>`_ as the RMW middleware, eliminating the need for WSL2 or DDS port forwarding.
+
+   #. Download the Pixi workspace: :download:`pixi_ws.zip <../../content/packages/pixi_ws.zip>`
+
+   #. Extract the contents to ``C:\\pixi_ws``.
+
+   #. Open a Command Prompt and navigate to the workspace:
+
+      .. code-block:: winbatch
+
+         cd C:\\pixi_ws
+
+   #. Install all ROS 2 Jazzy packages (this may take several minutes on first run):
+
+      .. code-block:: winbatch
+
+         pixi install
+
+   #. Clone workspace repositories, apply Windows patches, and build with MSVC:
+
+      .. code-block:: winbatch
+
+         pixi run setup
+
+      This runs the following steps in order:
+
+      - **clone** — clones ``IsaacSim-ros_workspaces`` from GitHub
+      - **clone-pointcloud-to-laserscan** — clones ``pointcloud_to_laserscan`` (not available as a binary on Windows)
+      - **apply-patches** — applies Windows compatibility patches
+      - **build** — compiles the workspace with ``colcon build --merge-install`` under MSVC
+
+      .. note:: The build uses ``--merge-install`` to keep the install tree flat and avoid Windows ``MAX_PATH`` issues.
+
+   **Rebuilding after changes**
+
+   If you modify source packages and want to rebuild without re-cloning:
+
+   .. code-block:: winbatch
+
+      pixi run build
+
+   **Running Isaac Sim with the Pixi workspace**
+
+   .. note:: ``RMW_IMPLEMENTATION=rmw_zenoh_cpp`` is set permanently in the Pixi workspace configuration. Zenoh is enabled by default for all ROS 2 nodes started via ``pixi shell`` or ``pixi run``.
+
+   Start each of the following in a **separate** Command Prompt, in order:
+
+   **Terminal 1 — Start the Zenoh router**
+
+   The Zenoh router must be running before any ROS 2 nodes start:
+
+   .. code-block:: winbatch
+
+      cd C:\\pixi_ws
+      pixi run zenohd
+
+   **Terminal 2 — Start Isaac Sim**
+
+   Open a pixi shell and launch Isaac Sim with the ROS 2 bridge enabled:
+
+   .. code-block:: winbatch
+
+      set isaac_sim_package_path=C:\\isaacsim
+
+      cd C:\\pixi_ws
+      pixi shell
+
+   From within the ``pixi shell``, run:
+
+   .. code-block:: winbatch
+
+      %isaac_sim_package_path%\\isaac-sim.bat --/isaac/startup/ros_bridge_extension=isaacsim.ros2.bridge
+
+   **Terminal 3 — Run ROS 2 commands**
+
+   Open another pixi shell for any ROS 2 commands:
+
+   .. code-block:: winbatch
+
+      cd C:\\pixi_ws
+      pixi shell
+
+   From within the ``pixi shell``, run any ``ros2`` command.
+
+   .. code-block:: winbatch
+
+      ros2 topic list
+
+   .. note:: On Windows you may see a symlink warning from the ROS logger: ``[WinError 1314] A required privilege is not held by the client``. This is harmless. To suppress it, enable **Developer Mode** in Windows Settings → System → For developers.
 
 
 .. _isaac_sim_app_no_system_installed_ros_other_platforms:
@@ -651,7 +781,12 @@ Configuring Options and Enabling Internal ROS Libraries
             $isaac_sim_package_path/python.sh <path/to/standalone/script>
 
 .. config-content::
-   :show-when: platform=Windows,ros_distro=Humble
+   :show-when: platform=Windows,ros_distro=Humble,install_method=Pixi (Experimental)
+
+   .. note:: Pixi-based native ROS 2 installation is only supported with **ROS 2 Jazzy** at this time. Please select Jazzy as your ROS 2 distro, or switch to the WSL2 install method to use Humble.
+
+.. config-content::
+   :show-when: platform=Windows,ros_distro=Humble,install_method=WSL2
 
    In Windows, |isaac-sim_short| automatically loads the **internal ROS 2 Humble** libraries, if no other ROS libraries are sourced. Enable the ROS 2 Bridge and run |isaac-sim_short| using: 
 
@@ -717,9 +852,9 @@ Configuring Options and Enabling Internal ROS Libraries
             & "$env:isaac_sim_package_path\python.bat" <path/to/standalone/script>
 
 .. config-content::
-   :show-when: platform=Windows,ros_distro=Jazzy
+   :show-when: platform=Windows,ros_distro=Jazzy,install_method=WSL2
 
-   In Windows, |isaac-sim_short| automatically loads the **internal ROS 2 Humble** libraries, if no other ROS libraries are sourced. To manually override that setting to enable Jazzy internal ROS 2 libs, enable the ROS 2 Bridge and run |isaac-sim_short| using: 
+   In Windows, |isaac-sim_short| automatically loads the **internal ROS 2 Humble** libraries, if no other ROS libraries are sourced. To manually override that setting to enable Jazzy internal ROS 2 libs, enable the ROS 2 Bridge and run |isaac-sim_short| using:
 
    
    .. tab-set::
@@ -796,7 +931,13 @@ Configuring Options and Enabling Internal ROS Libraries
             # Run Run Isaac Sim Standalone scripts
             & "$env:isaac_sim_package_path\python.bat" <path/to/standalone/script>
 
-Enabling the ROS 2 Bridge 
+.. config-content::
+   :show-when: platform=Windows,ros_distro=Jazzy,install_method=Pixi (Experimental)
+
+   With the Pixi workspace, ROS 2 Jazzy and Zenoh middleware are pre-configured. You do not need to set internal ROS 2 library paths manually.
+
+
+Enabling the ROS 2 Bridge
 ==========================
 
 The instructions :ref:`isaac_sim_app_enable_ros_other_platforms` are the recommended way to enable the ROS 2 bridge. 
@@ -866,7 +1007,7 @@ Enabling the ROS 2 Bridge using Fast DDS
          #. Source your ROS 2 installation or internal ROS 2 libraries and workspace before launching |isaac-sim_short|.
 
 .. config-content::
-   :show-when: platform=Windows
+   :show-when: platform=Windows,install_method=WSL2
 
    To use the ROS 2 bridge to connect to ROS nodes in WSL2, you must set the Fast DDS middleware on **all terminals** that will be passing ROS 2 messages and enable UDP transport:
 
@@ -908,6 +1049,11 @@ Enabling the ROS 2 Bridge using Fast DDS
    #. (Optional) Run ``set ROS_DOMAIN_ID=(id_number)`` before launching |isaac-sim_short|. Later you can decide whether to use this ``ROS_DOMAIN_ID`` inside your environment, or explicitly use a different ID number for any given topic.
    #. Ensure the internal ROS 2 libraries are sourced in the same terminal before launching |isaac-sim_short|.
 
+.. config-content::
+   :show-when: platform=Windows,install_method=Pixi (Experimental)
+
+   .. note:: Fast DDS is not applicable for Pixi-based installations. Pixi uses Zenoh middleware, which is supported. See :ref:`isaac_sim_app_install_zenoh_other_platforms`.
+
 
 .. _isaac_sim_app_install_cyclonedds_other_platforms:
 
@@ -920,18 +1066,28 @@ Enabling the ROS 2 Bridge using Cyclone DDS
    |isaac-sim_short| supports Cyclone DDS middleware for Linux, ROS 2 Humble, and Jazzy. To use Cyclone DDS, you must disable the default bridge that uses Fast DDS. After the bridge is disabled, you can enable the bridge using Cyclone DDS.
 
 .. config-content::
-   :show-when: platform=Windows
+   :show-when: platform=Windows,install_method=WSL2
 
-   .. note:: |isaac-sim_short| supports Cyclone DDS middleware for Linux only. Windows is not supported at this time.
+   .. note:: |isaac-sim_short| supports Cyclone DDS middleware for Linux only. Windows WSL2 is not supported at this time.
+
+.. config-content::
+   :show-when: platform=Windows,install_method=Pixi (Experimental)
+
+   .. note:: Cyclone DDS is not applicable for Pixi-based installations. Pixi uses Zenoh middleware, which is supported. See :ref:`isaac_sim_app_install_zenoh_other_platforms`.
 
 
 Enabling the ROS Bridge using Cyclone DDS (Linux Only)
 ********************************************************
 
 .. config-content::
-   :show-when: platform=Windows
+   :show-when: platform=Windows,install_method=WSL2
 
-   .. note:: Windows is not supported at this time.
+   .. note:: Windows WSL2 is not supported at this time.
+
+.. config-content::
+   :show-when: platform=Windows,install_method=Pixi (Experimental)
+
+   .. note:: Cyclone DDS is not applicable for Pixi-based installations. Pixi uses Zenoh middleware. See :ref:`isaac_sim_app_install_zenoh_other_platforms`.
 
 .. config-content::
    :show-when: platform=Ubuntu 22.04
@@ -949,13 +1105,18 @@ Enabling the ROS Bridge using Cyclone DDS (Linux Only)
 
 .. _isaac_sim_app_install_zenoh_other_platforms:
 
-Enabling the ROS 2 Bridge using Zenoh (ROS 2 Jazzy, Linux Only)
+Enabling the ROS 2 Bridge using Zenoh (ROS 2 Jazzy)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. config-content::
-   :show-when: platform=Windows
+   :show-when: platform=Windows,install_method=WSL2
 
-   .. note:: Zenoh middleware support is untested on Windows at this time.
+   .. note:: Zenoh middleware support via WSL2 is untested on Windows at this time.
+
+.. config-content::
+   :show-when: platform=Windows,install_method=Pixi (Experimental)
+
+   The Pixi workspace uses Zenoh (``rmw_zenoh_cpp``) as the default middleware. Zenoh is pre-configured as part of the workspace setup. Refer to the :ref:`isaac_sim_ros_workspace_other_platforms` section above for running instructions.
 
 .. config-content::
    :show-when: platform=Ubuntu 22.04,ros_distro=Humble
@@ -1060,9 +1221,14 @@ Running ROS in Docker Containers
 ================================
 
 .. config-content::
-   :show-when: platform=Windows
+   :show-when: platform=Windows,install_method=WSL2
 
-   .. note:: The Docker workflow is not supported on Windows.
+   .. note:: The Docker workflow is not supported on Windows WSL2.
+
+.. config-content::
+   :show-when: platform=Windows,install_method=Pixi (Experimental)
+
+   .. note:: The Docker workflow is not required for Pixi-based installations. The Pixi workspace handles all dependencies natively.
 
 .. config-content::
    :show-when: platform=Ubuntu 22.04

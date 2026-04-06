@@ -14,7 +14,7 @@
 ROS 2 Python Custom Messages
 ==============================
 
-.. note:: ROS 2 Python Custom Messages with |isaac-sim_short| is fully supported on Linux. On Windows (WSL), this workflow is not supported.
+.. note:: ROS 2 Python Custom Messages with |isaac-sim_short| is fully supported on Linux. On Windows (WSL), this workflow is not supported. On Windows with Pixi-based installation, this workflow is supported.
 
 Learning Objectives
 =====================
@@ -28,6 +28,8 @@ Getting Started
 **Prerequisite**
 
 - Basic understanding of `building ROS 2 packages <https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Custom-ROS2-Interfaces.html>`_.
+
+- ROS 2 workspace built and sourced. See :ref:`isaac_sim_ros_workspace_setup` for setup steps.
 
 
 

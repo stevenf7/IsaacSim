@@ -25,7 +25,7 @@ Prerequisites
 - Locate the ``import_manipulator`` folder in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/``.
 
 .. Note::
-   The ROS URDF import steps are tested on Linux only, it may not work on Windows. If you are using Windows, you can skip the ROS import steps and use the USD files provided in the content browser.
+   The ROS URDF import steps are tested on Linux only, it may not work on Windows (WSL). On Windows with Pixi-based installation, these steps are supported. If you are using Windows (WSL), you can skip the ROS import steps and use the USD files provided in the content browser.
    
 Build and Install the UR Description Package (Linux only)
 ==============================================================
