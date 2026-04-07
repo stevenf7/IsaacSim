@@ -15,8 +15,8 @@ Actor Simulation and Synthetic Data Generation
 
 Detecting and tracking animated actors or agents like human characters and robots in diverse environments offers significant value across industries like retail, manufacturing, and logistics. It helps optimize layouts, improve safety, and enhance efficiency. However, collecting real-world data to train detection models is often costly and unscalable.
 
-Synthetic data generation offers a flexible, scalable solution. The ``Omni.Metropolis.Pipeline`` (OMP), ``Isaacsim.Replicator.Agent`` (IRA), ``Isaacsim.Anim.Robot.Core`` (IAR) extensions together provide a way to set up human characters and robots in 3D environments and generate synthetic data. 
-This framework also provides control over actor behaviors, environments, sensors, via configuration file. It aims to provide a GPU-accelerated solution for training computer vision models and testing software-in-the-loop systems.
+Synthetic data generation offers a flexible, scalable solution. The ``Omni.Metropolis.Pipeline`` (OMP), ``Isaacsim.Replicator.Agent`` (IRA), ``Isaacsim.Anim.Robot.Core`` (IAR) extensions together provide a way to set up human characters and robots in 3D environments and generate synthetic data.
+This framework also provides control over actor behaviors, environments, and sensors, through a configuration file. It aims to provide a GPU-accelerated solution for training computer vision models and testing software-in-the-loop systems.
 
 This framework simplifies simulation customization with features like:
 
@@ -36,9 +36,9 @@ Before enabling this extension, read :doc:`What Is Isaac Sim? </overview/overvie
 
 .. _actor_sim_enable_extensions:
 
-Enable Extensions 
+Enable Extensions
 ----------------------------------
-1. Follow the `Omniverse Extension Manager guide <https://docs.omniverse.nvidia.com/extensions/latest/ext_core/ext_extension-manager.html>`_ to enable the ``Omni.Metropolis.Pipeline``, ``Isaacsim.Anim.Robot.Core`` and ``Isaacsim.Replicator.Agent.Core & UI``. 
+1. Follow the `Omniverse Extension Manager guide <https://docs.omniverse.nvidia.com/extensions/latest/ext_core/ext_extension-manager.html>`_ to enable the ``Omni.Metropolis.Pipeline``, ``Isaacsim.Anim.Robot.Core`` and ``Isaacsim.Replicator.Agent.Core & UI``.
 
     * The extensions fetch sample assets from Isaac Sim Assets during start. Refer to :doc:`Isaac Sim Assets </assets/usd_assets_overview>` if you encounter issues for loading assets.
     * If loading the UI appears to be hanging, try starting Isaac Sim with the flag ``--/persistent/isaac/asset_root/timeout=1.0``.
@@ -60,14 +60,14 @@ Enable Extensions
 
 Getting Started in UI
 -----------------------
-It is recommended to use UI for first-time users. Please refer to :ref:`Running from script <actor_sim_running_from_script>` section for running with python script in IsaacSim headless mode.
+It is recommended to use UI for first-time users. Please refer to :ref:`Running from script <actor_sim_running_from_script>` section for running with Python script in IsaacSim headless mode.
 
 1. Follow the :ref:`Enable Extensions <actor_sim_getting_started>` and open the UI panel.
 
 2. The default minimal config is loaded by default. You can also load a separate config file using the folder browser icon.
 
     * All the sample config files are in ``[Isaac Sim App Path]/extscache/isaacsim.replicator.agent.core-[current-version]/data/sample_configs/``.
-    * The minimal config file does not have actors and cameras. For a more comprehensive example, please use ``warehouse.yaml`` in the above folder. Note that this example can take up more loading time.
+    * The minimal config file does not have actors and cameras. For a more comprehensive example, use ``warehouse.yaml`` in the above folder. This example can take up more loading time.
 
 .. image:: /images/isim_6.0_full_tut_external_actor_sim_getting_started_config_panel.png
     :width: 600
@@ -91,7 +91,7 @@ It is recommended to use UI for first-time users. Please refer to :ref:`Running 
 
 5. Click the **Start Data Generation** button from the top of the UI and the simulation and data generation will start. It will run for the duration (in seconds) specified in the **Simulation Duration** in **Actor SDG Setup** panel.
 
-6. When data generation finishes, the output data can be found from the **Output Directory** according to the output directory in  **Replicator** panel. 
+6. When data generation finishes, the output data can be found from the **Output Directory** according to the output directory in  **Replicator** panel.
 
     * By default, it is in the User folder for Windows and the home folder for Linux.
 
@@ -123,7 +123,7 @@ API Usage
 This extension also exposes a Python API which you can use to set up simulations and generate data from your own script.
 Ensure that ``isaacsim.replicator.agent.core`` is enabled, and use the API as in the following example.
 
-Note: The snippet below uses the minimal config bundled with the extension (``data/sample_configs/minimal.yaml``).
+.. note:: The snippet below uses the minimal config bundled with the extension (``data/sample_configs/minimal.yaml``).
 
 .. literalinclude:: ../snippets/action_and_event_data_generation/tutorial_replicator_agent.py
     :language: python
@@ -135,9 +135,9 @@ Note: The snippet below uses the minimal config bundled with the extension (``da
 Configuration File
 ------------------
 
-| The configuration file is the central place to define your simulation. It controls everything from the environment and characters to the sensors and data output. The file uses the YAML format.
+The configuration file is the central place to define your simulation. It controls everything from the environment and characters to the sensors and data output. The file uses the YAML format.
 
-| The configuration file is organized into these top-level sections:
+The configuration file is organized into these top-level sections:
 
 -   ``environment``: Defines the simulation environment and assets.
 -   ``character``: Configures human characters.
@@ -152,7 +152,45 @@ For detailed configuration instructions, parameter lists, and examples, refer to
 
     ./ext_replicator-agent/ext_isaacsim_replicator_agent_configuration.rst
 
-For editing the configuration files through UI or code, see the :ref:`Configuration Editor API <ira_configuration_editor_api>`:
+Migrating from IRA 0.x.x
+--------------------------
+
+If you are upgrading from IRA 0.x.x (shipped with Isaac Sim 5.1 and earlier),
+be aware that IRA 1.x.x (Isaac Sim 6.0+) is a complete architectural redesign.
+All core capabilities, such as the following, are carried forward:
+
+- environment loading
+- character and robot spawning
+- sensor placement
+- synthetic data generation
+
+However, the configuration schema, behavior system, and Python API have all changed.
+Existing 0.x config files and scripts will not work without modification.
+
+Key reasons for the redesign:
+
+-   **Simpler workflow** -- The multi-step process of generating, saving, and
+    loading external command files is gone. Behaviors are now defined inline in
+    the YAML config, reducing setup to two clicks in the UI.
+-   **Greater flexibility** -- Named groups let you define multiple character,
+    robot, and sensor populations with independent settings in a single config.
+    Multiple data writers can run concurrently with per-writer timing and sensor
+    selection.
+-   **Stronger validation** -- Pydantic v2 models validate configs on load and
+    surface clear error messages, catching mistakes before the simulation starts.
+-   **USD-native architecture** -- Actor configurations are persisted as USD
+    schemas and prims, making them inspectable and editable directly in the
+    stage.
+
+The migration guide below walks through every breaking change with before and after
+examples, and a step-by-step checklist:
+
+.. toctree::
+    :maxdepth: 1
+
+    ./ext_replicator-agent/ext_isaacsim_replicator_agent_migration_guide.rst
+
+For editing the configuration files through UI or code, refer to the :ref:`Configuration Editor API <ira_configuration_editor_api>`:
 
 .. toctree::
     :maxdepth: 1
@@ -169,14 +207,14 @@ Actor behaviors are achieved by OMP, IRA and IAR together.
     :align: center
     :alt: Extension relationship.
 
-|
 
-Actors perform a "routine-trigger" behavior loop at play. This pattern is configurable by the behaviors and triggers assigned to the actor. 
+
+Actors perform a "routine-trigger" behavior loop at play. This pattern is configurable by the behaviors and triggers assigned to the actor.
 
 .. image:: /images/isim_6.0_full_tut_external_actor_sim_actor_behavior_overview.png
     :width: 900
     :align: center
-    :alt: actor, behavior, trigger.
+    :alt: actor, behavior, trigger
 
 |
 
@@ -185,9 +223,9 @@ The Routine Trigger Loop
 
 When no actor triggers are activated, actors perform routine loop by repeatedly pick behaviors under routines to perform by their probability weights, using the ``actor global seed``.
 
-When any trigger is activated, actor will pause routine and start performing the behaviors under each active trigger. Running triggers will be paused and pushed to queue if a trigger with higher priority happens (triggers with lower priority will be skipped). 
+When any trigger is activated, actor will pause routine and start performing the behaviors under each active trigger. Running triggers will be paused and pushed to queue if a trigger with higher priority happens (triggers with lower priority will be skipped).
 The trigger will be marked complete when its behaviors are all finished. Then the first trigger in queue will resume running.
-Once all active triggers complete, actors will fallback to routine.
+After all active triggers complete, actors will fallback to routine.
 
 .. image:: /images/isim_6.0_full_tut_external_actor_sim_actor_behavior_flowchart.png
     :width: 900
@@ -199,22 +237,33 @@ Once all active triggers complete, actors will fallback to routine.
 Configure Behaviors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After actors are loaded into scene by config file, the configurations are embedded in the USD API schemas and USD Prims. Each actor is represented by MetroAgentAPI schema and its derived type. 
-For human character, it is the ``IRACharacterAPI`` attached on the SkelRoot prim. For animated robot, it is the ``AnimRobotAPI`` attached on the root prim of the robot payload. 
+After actors are loaded into scene by config file, the configurations are embedded in the USD API schemas and USD Prims. Each actor is represented by MetroAgentAPI schema and its derived type.
+For human character, it is the ``IRACharacterAPI`` attached on the SkelRoot prim. For animated robot, it is the ``AnimRobotAPI`` attached on the root prim of the robot payload.
 Each behavior and trigger becomes individual USD Prims that actor USD API can have reference to, each actor trigger prim can also have reference to a list of behaviors.
 
-The actor USD API schema defines basic information of the actor: name, group, seed, a routine reference slot and a trigger reference slot. 
+The actor USD API schema defines basic information of the actor:
+
+- name
+- group
+- seed
+- a routine reference slot and a trigger reference slot
+
 At play, the name, group and seed will be combined and hashed into a single seed as ``actor global seed``. This seed will be used for all the "randomness" of the actor, including random routine picking for the actor itself and the picking within each behavior such as picking a speed from speed range.
 This also means the same ``actor global seed`` will display same result if other settings and the environment don't change.
 
-Each type of actor behavior is represented by a USD Prim type. It defines the configuration of the behavior: weight, repeat and behavior specific parameters.
+Each type of actor behavior is represented by a USD Prim type. It defines the configuration of the behavior:
+
+- weight
+- repeat
+- behavior 
+
 For human characters, the behavior prim types follows ``CharacterXXXBehavior`` naming pattern. For animated robots, they are ``RobotXXXBehavior``.
 
 Each actor trigger is also a USD Prim. It defines the trigger priority and has a reference of behavior list to be executed sequentially when this trigger activates.
 Human characters and anim robots share the same trigger types that's defined in OMP with naming ``MetroXXXTrigger``.
 
 In addition, actors leverage ``omni.behavior.behavior`` (Human characters) and ``isaacsim.anim.robot.core`` (Animated robots) as their animation implementation.
-For more information about them, please refer to the following documents:
+For more information about them, refer to the following documents:
 
 .. toctree::
     :maxdepth: 1
@@ -235,9 +284,9 @@ Terminology
 
     A ``.yaml`` file that contains configuration data that defines the key components of a simulation, including the randomization seed, duration of the simulation, number of the actors, and output format. To use the extension, you must load a configuration file or use the UI to generate a YAML file first.
 
-.. dropdown:: Actor 
+.. dropdown:: Actor
 
-    Actors are controlled by the respective controllers (omni.behavior.composer and isaacsim.anim.robot) and perform actions in the simulation. The extension supports human characters and robots (Nova Carter, iw.hub) as actors. The terms "actor" and "agent" are used interchangeably in this documentation.
+    Actors are controlled by the respective controllers (``omni.behavior.composer`` and ``isaacsim.anim.robot``) and perform actions in the simulation. The extension supports human characters and robots (Nova Carter, iw.hub) as actors. The terms "actor" and "agent" are used interchangeably in this documentation.
 
 .. dropdown:: Seed
 
