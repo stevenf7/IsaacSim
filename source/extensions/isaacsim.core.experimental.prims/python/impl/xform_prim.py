@@ -753,14 +753,18 @@ class XformPrim(Prim):
                 prim = self.prims[index]
                 property_names = prim.GetPropertyNames()
                 if translations is not None:
-                    assert (
-                        "xformOp:translate" in property_names
-                    ), f"Undefined 'xformOp:translate' property for {self.paths[index]}. Call '.reset_xform_op_properties()' first"
+                    assert "xformOp:translate" in property_names, (
+                        f"Undefined 'xformOp:translate' property for the {self.paths[index]} prim. "
+                        "Set the 'reset_xform_op_properties' parameter to True when initializing the class, "
+                        "or call '.reset_xform_op_properties()' manually before doing transform operations"
+                    )
                     prim.GetAttribute("xformOp:translate").Set(Gf.Vec3d(*translations[i]))
                 if orientations is not None:
-                    assert (
-                        "xformOp:orient" in property_names
-                    ), f"Undefined 'xformOp:orient' property for {self.paths[index]}. Call '.reset_xform_op_properties()' first"
+                    assert "xformOp:orient" in property_names, (
+                        f"Undefined 'xformOp:orient' property for the {self.paths[index]} prim. "
+                        "Set the 'reset_xform_op_properties' parameter to True when initializing the class, "
+                        "or call '.reset_xform_op_properties()' manually before doing transform operations"
+                    )
                     xform_op = prim.GetAttribute("xformOp:orient")
                     xform_op.Set((Gf.Quatf if xform_op.GetTypeName() == "quatf" else Gf.Quatd)(*orientations[i]))
         # USDRT API (with FSD and IFabricHierarchy)
@@ -858,9 +862,11 @@ class XformPrim(Prim):
             for i, index in enumerate(indices.numpy()):
                 prim = self.prims[index]
                 property_names = prim.GetPropertyNames()
-                assert (
-                    "xformOp:scale" in property_names
-                ), f"Undefined 'xformOp:scale' property for {self.paths[index]}. Call '.reset_xform_op_properties()' first"
+                assert "xformOp:scale" in property_names, (
+                    f"Undefined 'xformOp:scale' property for the {self.paths[index]} prim. "
+                    "Set the 'reset_xform_op_properties' parameter to True when initializing the class, "
+                    "or call '.reset_xform_op_properties()' manually before doing transform operations"
+                )
                 prim.GetAttribute("xformOp:scale").Set(Gf.Vec3d(*scales[0 if broadcast else i]))
         # USDRT API (with FSD and IFabricHierarchy)
         elif backend == "usdrt":
@@ -938,9 +944,11 @@ class XformPrim(Prim):
             for i, index in enumerate(indices.numpy()):
                 prim = self.prims[index]
                 property_names = prim.GetPropertyNames()
-                assert (
-                    "xformOp:scale" in property_names
-                ), f"Undefined 'xformOp:scale' property for {self.paths[index]}. Call '.reset_xform_op_properties()' first"
+                assert "xformOp:scale" in property_names, (
+                    f"Undefined 'xformOp:scale' property for the {self.paths[index]} prim. "
+                    "Set the 'reset_xform_op_properties' parameter to True when initializing the class, "
+                    "or call '.reset_xform_op_properties()' manually before doing transform operations"
+                )
                 scales[i] = np.array(prim.GetAttribute("xformOp:scale").Get(), dtype=np.float32)
             return ops_utils.place(scales, device=self._device)
         # USDRT API (with FSD and IFabricHierarchy)
@@ -988,7 +996,8 @@ class XformPrim(Prim):
 
         Backends: :guilabel:`usd`.
 
-        It ensures that each prim has only the following transformations in the specified order.
+        USD Xform schema supports a wide range of transformation operation types.
+        This method ensures that each wrapped prim has only the following transformations in the specified order.
         Any other transformation operations are removed, so they are not consumed.
 
         1. ``xformOp:translate`` (double precision)

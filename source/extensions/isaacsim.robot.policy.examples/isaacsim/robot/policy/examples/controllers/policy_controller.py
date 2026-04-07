@@ -62,10 +62,12 @@ class PolicyController(ABC):
             else:
                 carb.log_error("unable to add robot usd, usd_path not provided")
 
-        if root_path == None:
-            self.robot = Articulation(paths=prim_path, positions=position, orientations=orientation)
-        else:
-            self.robot = Articulation(paths=root_path, positions=position, orientations=orientation)
+        self.robot = Articulation(
+            paths=prim_path if root_path is None else root_path,
+            positions=position,
+            orientations=orientation,
+            reset_xform_op_properties=True,
+        )
 
         self._set_physics_variant(prim_path)
 

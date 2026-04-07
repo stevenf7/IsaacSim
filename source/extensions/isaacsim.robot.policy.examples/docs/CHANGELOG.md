@@ -1,4 +1,9 @@
 # Changelog
+
+## [5.2.1] - 2026-04-06
+### Changed
+- Set `reset_xform_op_properties` to True when instantiating the Articulation
+
 ## [5.2.0] - 2026-03-17
 ### Added
 - Newton can be used as a physics backend
