@@ -563,6 +563,7 @@ pyproject.version = "${build_string}"
 
 # wheel specifications
 wheel.platforms = {"linux-x86_64" = "manylinux_2_35_x86_64", "windows-x86_64" = "win_amd64", "linux-aarch64" = "manylinux_2_35_aarch64"}
+wheel.python = "cp312"
 
 # wheel publishing (PyPI)
 [[repo_python_package.publish.task]]
