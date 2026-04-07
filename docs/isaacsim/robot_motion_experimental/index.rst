@@ -15,8 +15,8 @@ Robot Motion (Experimental)
 ============================
 
 This section contains the new experimental motion generation API and its implementations. The :doc:`Motion Generation (Experimental) <../motion_generation/index>` API aims to package all Isaac Sim control algorithms 
-(wheeled robots, manipulators, humanoids) under a single framework. The :doc:`cuMotion Integration <../cumotion/index>` is the first example of a motion generation 
-library that implements this new API.
+(wheeled robots, manipulators, humanoids) under a single framework. The :doc:`cuMotion Integration <../cumotion/index>` and :doc:`PINK Integration <../pink/index>` are implementations of motion generation 
+libraries that build on this API.
 
 Motion Generation (Experimental)
 ==================================
@@ -33,3 +33,11 @@ cuMotion Integration
    :maxdepth: 2
 
    ../cumotion/index
+
+PINK Integration
+==================
+
+.. toctree::
+   :maxdepth: 2
+
+   ../pink/index
