@@ -21,13 +21,13 @@ Learning Objectives
 In this tutorial, you will:
 
 - **Explain** how **Filtered Pairs** work and when to use them.
-- **Identify** problematic collision pairs using the **Physics Debugger**.
-- **Add** filtered pairs for the palm and pinky.
+- **Identify** overlapping self-collision pairs with the **Robot Self-Collision Detector** and inspect collision geometry with the **Physics Debugger** as needed.
+- **Add** filtered pairs for the palm and pinky using **Filtered Pair** in the detector or **Filtered Pairs** on the *Property* panel, on the **physics.usda** layer.
 
 Prerequisites
 =============
 
-- Complete :ref:`isaac_sim_tutorial_tuning_openusd_module_2` (Tutorial 3: Inspect Asset).
+- Complete :ref:`isaac_sim_tutorial_tuning_openusd_module_2`.
 - Have the Inspire Hand scene open in Isaac Sim with joint and collider visualization familiar from the previous tutorial.
 
 Module 3.1: Understanding Filtered Pairs
@@ -39,14 +39,12 @@ Module 3.1: Understanding Filtered Pairs
 - **Instability** — The hand can jitter, jump, or blow apart as conflicting contacts fight each other.
 - **Wasted compute** — Simulating every anatomically possible self-contact is rarely necessary for grasping or manipulation.
 
-So the goal is to **filter the problematic pairs** while keeping contacts that you care about (e.g. finger–object, or specific finger–finger contacts). Use filtered pairs judiciously: over-filtering can allow unrealistic interpenetration; under-filtering can cause instability. We'll use the **Physics Debugger** to see exactly which pairs are causing trouble, then disable only those.
+So the goal is to **filter the problematic pairs** while keeping contacts that you care about (e.g. finger–object, or specific finger–finger contacts). Use filtered pairs judiciously: over-filtering can allow unrealistic interpenetration; under-filtering can cause instability. We'll turn on self-collisions, run the :ref:`isaac_collision_detector` to see which links overlap at rest, then author filters on **physics.usda**. The Physics Debugger is also available to view solid collision meshes in the viewport while you reason about a pair.
 
-Module 3.2: Identifying Problematic Collision Pairs
+Module 3.2: Enable self-collision and inspect pairs
 ===================================================
 
-**Which pairs should you filter?** It's not always obvious from simple inspection. The **Physics Debugger** is a helpful tool to see solid collision meshes while stepping through the simulation to understand which collision shapes are overlapping.
-
-Here we'll turn on self-collisions, watch the hand become unstable, then use the debugger to guide the filtering.
+**Which pairs should you filter?** At the current configuration, the self-collision detector queries the physics engine for overlapping colliders, maps them to rigid-body links, and shows them in a sortable, searchable table.
 
 .. note:: For this tutorial we focus on the **pinky** (little finger) as a clear example; the same workflow applies to other fingers or links.
 
@@ -95,10 +93,40 @@ You should now see the **physx.usda** layer highlighted green, indicating it is 
    :align: center
    :alt: GIF showing simulation instability with self-collisions enabled.
 
-Step 2: Visualize solid collision meshes and find overlapping pairs
--------------------------------------------------------------------
+Step 2: Run the Robot Self-Collision Detector
+---------------------------------------------
 
-We use the pinky as the example: visualize its collision meshes, find the overlaps, then filter those pairs in the next section.
+With **Self Collisions Enabled** on the articulation root, the physics engine can evaluate which collider pairs overlap in the hand's current configuration. The detector surfaces those pairs in a docked panel so you can inspect them and conveniently toggle **Filtered Pair**.
+
+.. note:: If **Self Collisions** on the articulation root are **disabled**, the tool reports no overlapping pairs from the collision engine—see :ref:`isaac_collision_detector_ui`. Keep self-collisions **on** for this tutorial.
+
+#. Press **Stop** if the simulation is still running so the hand returns to a stable pose for analysis.
+#. Open **Tools > Robotics > Asset Editors > Robot Self-Collision Detector**.
+#. In the **Robot** dropdown, select the **Inspire Hand**.
+#. Leave **Include environment collisions** off unless you have added props; we only need self-pairs for this exercise.
+#. Click **Check Collisions**. The table fills with **Rigid Body A** and **Rigid Body B** for each overlapping pair.
+
+.. figure:: ../images/isim_6.0_full_tut_gui_self_collision_detector_panel_inspire.png
+   :align: center
+   :alt: Robot Self-Collision Detector on Inspire Hand.
+
+#. Use the **search** field or column sort to find rows that involve the pinky and palm—for example pairs that include ``r_base_link`` with ``right_little_rubber_1``, and ``right_little_1`` with ``right_little_rubber_2``. You will enable **Filtered Pair** on those rows in the next module.
+#. Click a row to **highlight both bodies** in the viewport with distinct outline colors so you can confirm which links the table refers to.
+
+.. figure:: ../images/isim_6.0_full_tut_gui_self_collision_detector_viewport_pair.png
+   :align: center
+   :alt: Viewport highlighting for a selected collision pair.
+
+#. Use the **focal** (crosshair) icons next to a body name to select that body's collision prims in the *Stage* when you need a closer look.
+
+Sorting, batch checkbox toggles, multi-row selection, and keyboard navigation are described in :ref:`isaac_collision_detector`.
+
+Solid collision meshes (Physics Debugger)
+-------------------------------------------
+
+The steps below walk through **Solid Collision Mesh Visualization** for the Inspire Hand so you can relate detector rows to concrete shapes in the viewport. Follow them when that extra view helps; otherwise continue to the next module.
+
+We use the pinky as the example: visualize its collision meshes and relate them to the overlaps you saw in the detector.
 
 #. Open **Utilities > Physics Debugger** to show the *Physics Debug* panel.
 
@@ -149,14 +177,14 @@ The schematic below shows which rigid body pairs of the pinky we will filter in 
 Module 3.3: Adding Filtered Pairs
 ==================================
 
-Next, we'll filter out two specific collision pairs to prevent problematic self-collisions in the pinky. The pairs to filter are: (1) the palm and the pinky's lower rubber pad, and (2) the lower pinky link and the pinky's upper rubber pad.
+Next, we filter two specific self-collision pairs that drive pinky instability: (1) the palm ``r_base_link`` and the pinky's lower rubber pad ``right_little_rubber_1``, and (2) the lower pinky link ``right_little_1`` and the upper rubber pad ``right_little_rubber_2``.
 
-.. note:: It doesn't matter whether the filtered pair is a parent or child link; USD's Physics Filtered Pairs will block collisions between the specified pairs in both directions.
+.. note:: It doesn't matter whether the filtered pair is a parent or child link; USD's Physics Filtered Pairs block collisions between the specified pairs in both directions.
 
-Palm and Pinky Link 1 Rubber Pad
----------------------------------
+To follow Asset Structure 3.0, filtered pairs use the neutral Physics API—author on **physics.usda**.
 
-First, let's prevent the palm and the pinky's lower rubber pad from colliding. To follow Asset Structure 3.0 best practices, Filtered Pairs use the neutral Physics API, so we should apply these changes to the appropriate layer—**physics.usda**.
+Set **physics.usda** as the authoring layer
+---------------------------------------------
 
 #. In the **Layer** tab, expand **physx.usda**. You should see **physics.usda** listed in the hierarchy.
 
@@ -176,6 +204,45 @@ You should now see the **physics.usda** layer highlighted green, indicating it i
    :align: center
    :alt: physics.usda highlighted green, showing it is the active authoring layer.
 
+Robot Self-Collision Detector: **Filtered Pair**
+------------------------------------------------
+
+#. Open **Tools > Robotics > Asset Editors > Robot Self-Collision Detector** (or bring the panel forward if it is already open).
+#. Click **Check Collisions** so the table matches the current stage.
+#. Find the row whose two bodies are ``r_base_link`` and ``right_little_rubber_1`` (column order may vary). Enable **Filtered Pair** for that row.
+#. Find the row for ``right_little_1`` and ``right_little_rubber_2``. Enable **Filtered Pair** for that row.
+
+.. tip:: Multi-select rows and toggle one **Filtered Pair** checkbox to apply the same state to every selected row; see :ref:`isaac_collision_detector_ui`.
+
+Toggling **Filtered Pair** authors ``UsdPhysics.FilteredPairsAPI`` on the active layer—the **physics.usda** authoring layer you set above.
+
+.. note:: If you use the detector checkboxes in this section, skip the *Property* panel subsection that follows.
+
+Verify and save
+---------------
+
+#. Press **Play**. The pinky (little finger) should move more stably; the other fingers will still be unstable until their collision pairs are filtered the same way.
+
+.. figure:: ../images/isim_6.0_full_tut_gui_pinky_stable_after_filtered_pairs.gif
+   :align: center
+   :alt: GIF showing pinky moving stably after filtering its collision pairs.
+
+#. Click on the blue files icon next to **physics.usda (Authoring Layer)** to save the changes to **physics.usda**.
+
+.. figure:: ../images/isim_6.0_full_tut_gui_layer_panel_save_physics_usda.png
+   :align: center
+   :alt: Layer panel for saving to physics.usda.
+
+.. note:: Open the checkpoint at ``IsaacSim/Samples/Rigging/Inspire/module_3_end-checkpoint_1/inspire_hand.usda`` before starting Tutorial 5. It includes all collision filters for stability, plus additional filtered pairs (e.g. finger tips and pads) for computational performance.
+
+*Property* panel: **Filtered Pairs** on each prim
+-------------------------------------------------
+
+The following steps add the same two relationships by editing **Filtered Pairs** on ``r_base_link`` and ``right_little_1``. Use them if you prefer prim-by-prim authoring or want to see where the targets appear in the *Property* panel. If you already enabled both pairs in the Robot Self-Collision Detector, skip this subsection.
+
+Palm and lower pinky rubber pad
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 #. In the *Stage* tab, select the ``r_base_link`` prim. In the *Property* panel, click **Add > Physics > Filtered Pairs**.
 
 .. figure:: ../images/isim_6.0_full_tut_gui_add_physics_filtered_pair_r_base_link.png
@@ -194,12 +261,10 @@ You should now see the **physics.usda** layer highlighted green, indicating it i
    :align: center
    :alt: Popup window to select right_little_rubber_1 as the filtered pair target.
 
-After completing these steps, collisions between the palm (``r_base_link``) and the pinky's lower rubber pad (``right_little_rubber_1``) are filtered out. This means the overlapping contact points between them are disabled, helping stabilize the simulation and preventing unwanted self-collisions.
+After these steps, collisions between the palm (``r_base_link``) and the pinky's lower rubber pad (``right_little_rubber_1``) are filtered out.
 
-Pinky Link 1 and Pinky Link 2 Rubber Pad
-----------------------------------------
-
-Now, let's filter collisions between the lower pinky link (``right_little_1``) and the pinky's upper rubber pad (``right_little_rubber_2``).
+Lower pinky link and upper rubber pad
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. In the *Stage* panel, select the ``right_little_1`` prim (lower link of the pinky). In the *Property* panel, click **Add > Physics > Filtered Pairs**.
 
@@ -214,19 +279,7 @@ Now, let's filter collisions between the lower pinky link (``right_little_1``) a
    :align: center
    :alt: Property panel on right_little_1 prim, Filtered Pairs section with Add Target button.
 
-#. Press **Play**. The pinky (little finger) should now move more stably; the other fingers will still be unstable until their collision pairs are filtered the same way.
-
-.. figure:: ../images/isim_6.0_full_tut_gui_pinky_stable_after_filtered_pairs.gif
-   :align: center
-   :alt: GIF showing pinky moving stably after filtering its collision pairs.
-
-#. Click on the blue files icon next to **physx.usda (Authoring Layer)** to save the changes to **physx.usda**.
-
-.. figure:: ../images/isim_6.0_full_tut_gui_layer_panel_save_physx_usda.png
-   :align: center
-   :alt: Layer panel for saving to physx.usda.
-
-.. note:: Open the checkpoint at ``IsaacSim/Samples/Rigging/Inspire/module_3_end-checkpoint_1/inspire_hand.usda`` before starting Tutorial 5. It includes all collision filters for stability, plus additional filtered pairs (e.g. finger tips and pads) for computational performance.
+Then press **Play**, confirm the pinky moves more stably, and save the layers as in **Verify and save** above.
 
 Summary
 =======
@@ -234,10 +287,10 @@ Summary
 This tutorial covered:
 
 - How **Filtered Pairs** work and when to use them to prevent invalid self-collisions.
-- Using the **Physics Debugger** to visualize collision meshes and identify which pairs were causing instability.
-- Adding **filtered pairs** for the palm and pinky so the problematic pairs no longer produce invalid self-collisions.
+- Enabling self-collisions, running the **Robot Self-Collision Detector** to list overlapping pairs and mark **Filtered Pair**, and using the **Physics Debugger** for solid collision mesh visualization when helpful.
+- Authoring the pinky’s two filters on **physics.usda** via the detector or the *Property* panel on ``r_base_link`` and ``right_little_1``.
 
 Next Steps
 ==========
 
-Continue to :ref:`isaac_sim_tutorial_tuning_openusd_module_4` (Tutorial 5: Joint Drive Tuning) to set drive limits (max force, max velocity) from the Inspire Hand specs, then to Tutorial 6 for stiffness and damping with the Gain Tuner.
+Continue to :ref:`isaac_sim_tutorial_tuning_openusd_module_4` to set drive limits (max force, max velocity) from the Inspire Hand specs, then to :ref:`isaac_sim_tutorial_tuning_openusd_module_5` for stiffness and damping with the Gain Tuner.

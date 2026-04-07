@@ -13,7 +13,7 @@
 Tutorial 7: Using the Dexterous Hand in Practice
 =================================================
 
-With asset structure verified, collision pairs filtered, and joint parameters tuned, the Inspire Hand in Isaac Sim is stable and ready for downstream use. This tutorial points you to applied demos and next steps.
+With asset structure verified, collision pairs filtered, and joint parameters tuned, the Inspire Hand in Isaac Sim is stable and ready for downstream use.
 
 Learning Objectives
 ===================
@@ -27,7 +27,7 @@ In this tutorial, you will:
 Prerequisites
 =============
 
-- Complete :ref:`isaac_sim_tutorial_tuning_openusd_module_5` (Tutorial 6: Joint Gains Tuning). You should have a tuned, stable Inspire Hand USD.
+- Complete :ref:`isaac_sim_tutorial_tuning_openusd_module_5`. You should have a tuned, stable Inspire Hand USD.
 
 What You Accomplished
 =====================

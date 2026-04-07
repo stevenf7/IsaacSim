@@ -27,7 +27,7 @@ In this tutorial, you will:
 Prerequisites
 =============
 
-- Complete :ref:`isaac_sim_tutorial_tuning_openusd_setup` (Tutorial 1: Setup) and have the Inspire Hand scene open in Isaac Sim.
+- Complete :ref:`isaac_sim_tutorial_tuning_openusd_setup` and have the Inspire Hand scene open in Isaac Sim.
 
 Module 1.1: USD Asset Structure 3.0
 ===================================
@@ -350,4 +350,4 @@ This tutorial covered:
 Next Steps
 ==========
 
-Continue to :ref:`isaac_sim_tutorial_tuning_openusd_module_2` (Tutorial 3: Inspect Asset) to enable the joint visualizer and verify mass, inertia, and collision meshes before collision filtering.
+Continue to :ref:`isaac_sim_tutorial_tuning_openusd_module_2` to enable the joint visualizer and verify mass, inertia, and collision meshes before collision filtering.
