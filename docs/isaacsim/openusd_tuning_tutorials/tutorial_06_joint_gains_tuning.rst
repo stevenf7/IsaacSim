@@ -27,7 +27,7 @@ In this tutorial, you will:
 Prerequisites
 =============
 
-- Complete :ref:`isaac_sim_tutorial_tuning_openusd_module_4` (Tutorial 5: Joint Drive Tuning).
+- Complete :ref:`isaac_sim_tutorial_tuning_openusd_module_4`.
 - Open the **module_4_end-checkpoint_2** checkpoint (``IsaacSim/Samples/Rigging/Inspire/module_4_end-checkpoint_2/inspire_hand.usda``) in Isaac Sim.
 
 Module 5.1: Understanding Joint Drive Stiffness and Damping
@@ -189,7 +189,8 @@ You should see that ``right_thumb_1_joint`` is oscillating around the target and
    :alt: Sinewave test configuration and resulting tracking chart.
 
 #. Continue tuning by experimenting with different gain values (stiffness and damping) and various test parameters. As you tune, **monitor joint velocities** during the test to ensure none exceed the maximum joint velocity limits defined earlier. To do this:
-   - Select any joint in the *Property* panel,
+
+   - Select any joint in the *Property* panel.
    - Scroll down to **Extra Properties > Velocity** to view its current velocity while the test is running.
 
 .. figure:: ../images/isim_6.0_full_tut_gui_property_panel_extra_properties_velocity.png
@@ -199,6 +200,7 @@ You should see that ``right_thumb_1_joint`` is oscillating around the target and
 If velocities approach or exceed the maximums, reduce gain values or adjust test parameters.
 
 #. To evaluate the **entire hand's coordinated tracking**, run a parallel step function test:
+
    - Enable **Test** for all joints in the Gain Tuner.
    - Set **Sequence** to **1** for each joint (this runs tests in parallel for all fingers).
    - Set **Step Min** and **Step Max** to **10** and **30**, respectively, for each joint.
@@ -277,7 +279,7 @@ This tutorial covered:
 Next Steps
 ==========
 
-Continue to :ref:`isaac_sim_tutorial_tuning_openusd_practice` (Tutorial 7: Using the Dexterous Hand in Practice) for next steps and further resources.
+Continue to :ref:`isaac_sim_tutorial_tuning_openusd_practice` for next steps and further resources.
 
 Further Learning
 ================

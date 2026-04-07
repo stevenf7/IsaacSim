@@ -60,4 +60,4 @@ This tutorial covered:
 Next Steps
 ^^^^^^^^^^
 
-Continue to :ref:`isaac_sim_tutorial_tuning_openusd_module_1` (Tutorial 2: Asset Structure) to learn the USD Asset Structure 3.0 layout for the Inspire Hand.
+Continue to :ref:`isaac_sim_tutorial_tuning_openusd_module_1` to learn the USD Asset Structure 3.0 layout for the Inspire Hand.

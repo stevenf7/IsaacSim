@@ -32,7 +32,7 @@ By the end of this series, you will be able to:
 - **Apply** best practices to optimize the robot USD for performance and stability.
 - **Tune** joint parameters and control gains to achieve stable, critically damped, and realistic robot motion in simulation.
 
-We start by inspecting the robot USD, then configuring collision filters to manage self-collision, and finally tuning joint parameters: drive limits (max force, max velocity) in Tutorial 5 and stiffness and damping with the Gain Tuner in Tutorial 6. By the end, you will have a stable, functioning robotic hand ready to attach to an arm for a grasping controller.
+We start by inspecting the robot USD, then configuring collision filters to manage self-collision, and finally tuning joint parameters: drive limits (max force, max velocity) and stiffness and damping with the Gain Tuner. By the end, you will have a stable, functioning robotic hand ready to attach to an arm for a grasping controller.
 
 Tutorials in This Series
 =========================
@@ -48,4 +48,4 @@ Tutorials in This Series
    tutorial_06_joint_gains_tuning
    tutorial_07_practice
 
-To get started, see :ref:`isaac_sim_tutorial_tuning_openusd_setup` (Tutorial 1: Setup).
+To get started, see :ref:`isaac_sim_tutorial_tuning_openusd_setup`.

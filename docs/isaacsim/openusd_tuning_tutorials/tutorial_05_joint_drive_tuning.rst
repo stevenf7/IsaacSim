@@ -29,7 +29,7 @@ Inspire Hand specs used in this tutorial (palm fingers): Max palm finger grip fo
 Prerequisites
 =============
 
-- Complete :ref:`isaac_sim_tutorial_tuning_openusd_module_3` (Tutorial 4: Collider Pairs).
+- Complete :ref:`isaac_sim_tutorial_tuning_openusd_module_3`.
 - Open the checkpoint at ``IsaacSim/Samples/Rigging/Inspire/module_3_end-checkpoint_1/inspire_hand.usda`` in Isaac Sim (or have your own filtered-pairs version open).
 
 Module 4.1: Mimic Joints
@@ -41,8 +41,6 @@ A mimic joint links two degrees of freedom, establishing a relationship (via gea
 
 Follow these steps to configure the mimic joints:
 
-#. Open the checkpoint file ``IsaacSim/Samples/Rigging/Inspire/module_3_end-checkpoint_1/inspire_hand.usda`` in Isaac Sim if you haven't already.
-'t already.
 #. Open the checkpoint file ``IsaacSim/Samples/Rigging/Inspire/module_3_end-checkpoint_1/inspire_hand.usda`` in Isaac Sim if you haven't already.
 #. Mimic joints are a PhysX-specific feature, so set your authoring layer to **physx.usda**. In the **Layer** tab, click the **Insert Sublayer** icon if the sublayer is not already there.
 
@@ -69,6 +67,7 @@ You should now see the **physx.usda** layer highlighted green, indicating it is 
    :alt: Layer tab with physx.usda highlighted green.
 
 #. In the *Stage* panel, multi-select the mimic joints for the Inspire Hand palm fingers (hold **CTRL** and left-click each):
+
    - ``right_thumb_3_joint``
    - ``right_thumb_4_joint``
    - ``right_index_2_joint``
@@ -189,4 +188,4 @@ This tutorial covered:
 Next Steps
 ^^^^^^^^^^
 
-Continue to :ref:`isaac_sim_tutorial_tuning_openusd_module_5` (Tutorial 6: Joint Gains Tuning) to tune drive stiffness and damping with the Gain Tuner and analyze the results.
+Continue to :ref:`isaac_sim_tutorial_tuning_openusd_module_5` to tune drive stiffness and damping with the Gain Tuner and analyze the results.
