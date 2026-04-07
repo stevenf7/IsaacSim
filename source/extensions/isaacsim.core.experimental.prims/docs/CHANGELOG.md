@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.3] - 2026-04-06
+### Changed
+- Improve exception message related to xformOp reset status
+
 ## [1.7.2] - 2026-03-25
 ### Changed
 - Added tests for PhysX tensor-backed world transform path in IPrimDataReader (rigid body positions, quaternion reordering, mixed physics/Fabric prims, tensor vs Fabric consistency)
