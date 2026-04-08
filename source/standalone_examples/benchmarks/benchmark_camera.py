@@ -31,6 +31,9 @@ parser.add_argument(
     choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile", "OmniPerfKPIFile"],
     help="Benchmarking backend, defaults",
 )
+parser.add_argument(
+    "--tick-rate", type=float, default=0.0, help="Tick rate for camera sensors (Hz). 0.0 means default rate."
+)
 
 args, unknown = parser.parse_known_args()
 
@@ -41,11 +44,21 @@ n_frames = args.num_frames
 gpu_frametime = args.gpu_frametime
 headless = args.non_headless
 viewport_updates = args.viewport_updates
+tick_rate = args.tick_rate
+
+extra_args = []
+if tick_rate > 0:
+    extra_args.append("--/rtx/hydra/supportMultiTickRate=true")
 
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp(
-    {"headless": headless, "max_gpu_count": n_gpu, "disable_viewport_updates": viewport_updates}
+    {
+        "headless": headless,
+        "max_gpu_count": n_gpu,
+        "disable_viewport_updates": viewport_updates,
+        "extra_args": extra_args,
+    }
 )
 
 import carb
@@ -83,7 +96,12 @@ timeline = omni.timeline.get_timeline_interface()
 cameras = []
 for i in range(n_camera):
     cameras.append(
-        rep.create.camera(name=f"cam_{i}", position=[-8, 13, 2.0], rotation=[90, 0, 90 + i * 360 / n_camera])
+        rep.create.camera(
+            name=f"cam_{i}",
+            position=[-8, 13, 2.0],
+            rotation=[90, 0, 90 + i * 360 / n_camera],
+            tick_rate=tick_rate,
+        )
     )
 render_products = []
 for i, cam in enumerate(cameras):

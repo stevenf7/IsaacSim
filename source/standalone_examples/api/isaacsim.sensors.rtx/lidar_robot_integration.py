@@ -132,12 +132,11 @@ my_world.reset()
 
 # Attach annotator for point cloud extraction
 # Available annotators:
-#   - "IsaacExtractRTXSensorPointCloudNoAccumulator": Basic XYZ point cloud
-#   - "IsaacCreateRTXLidarScanBuffer": Extended data with object/material IDs
+#   - "IsaacCreateRTXLidarScanBuffer": XYZ point cloud with optional metadata channels
 #   - "IsaacComputeRTXLidarFlatScan": 2D flat scan data
-#   - "GenericModelOutput": Raw sensor output
+#   - "GenericModelOutput": Raw sensor output (recommended for direct access)
 #   - "StableIdMap": Object ID to prim path mapping
-my_lidar.attach_annotator("IsaacExtractRTXSensorPointCloudNoAccumulator")
+my_lidar.attach_annotator("IsaacCreateRTXLidarScanBuffer")
 carb.log_info("Attached point cloud annotator")
 
 # Enable debug draw visualization
@@ -191,7 +190,7 @@ while simulation_app.is_running():
     frame_data = my_lidar.get_current_frame()
 
     # Get point cloud data from the attached annotator
-    point_cloud = frame_data.get("IsaacExtractRTXSensorPointCloudNoAccumulator")
+    point_cloud = frame_data.get("IsaacCreateRTXLidarScanBuffer")
     if point_cloud is not None and len(point_cloud) > 0:
         # Point cloud is Nx3 array of XYZ coordinates
         num_points = len(point_cloud)

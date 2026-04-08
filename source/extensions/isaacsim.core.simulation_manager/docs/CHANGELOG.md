@@ -1,4 +1,7 @@
 # Changelog
+## [1.14.2] - 2026-04-07
+### Added
+- Add optional multitick support to TimeSampleStorage and PluginInterface. When multitick is enabled, physics time drives rendering time via onPhysicsStep callback.
 
 ## [1.14.1] - 2026-04-03
 ### Changed

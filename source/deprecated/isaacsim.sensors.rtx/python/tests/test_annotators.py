@@ -63,16 +63,19 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         self.cube_info = create_sarcophagus()
 
         self._timeline = omni.timeline.get_timeline_interface()
-        self.hydra_texture = None
+        self._hydra_texture = None
         self._annotator = rep.AnnotatorRegistry.get_annotator("GenericModelOutput")
         self._annotator_data = None
 
     async def tearDown(self):
         """Clean up test environment and stop timeline."""
         self._timeline.stop()
-        self._annotator.detach()
-        self.hydra_texture.destroy()
-        self.hydra_texture = None
+        if self._annotator.is_attached:
+            self._annotator.detach()
+            self._annotator = None
+        if self._hydra_texture is not None:
+            self._hydra_texture.destroy()
+            self._hydra_texture = None
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
@@ -315,18 +318,18 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         )
 
         # Create render product and attach to sensor
-        self.hydra_texture = rep.create.render_product(
+        self._hydra_texture = rep.create.render_product(
             self.sensor.GetPath(),
             [32, 32],
             name="RtxSensorRenderProduct",
             render_vars=["GenericModelOutput", "RtxSensorMetadata"],
         )
         # Attach annotator to render product
-        self._annotator.attach([self.hydra_texture.path])
+        self._annotator.attach([self._hydra_texture.path])
 
         # Attach StableIdMap annotator to OmniLidar prim to pick up object IDs
         self._annotator_stable_id_map = rep.AnnotatorRegistry.get_annotator("StableIdMap")
-        self._annotator_stable_id_map.attach([self.hydra_texture.path])
+        self._annotator_stable_id_map.attach([self._hydra_texture.path])
 
         # Render frames until we get valid data, or until we've rendered the maximum number of frames
         self._timeline.play()
@@ -428,7 +431,7 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         scan_rate_base_hz = self.sensor.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get()
 
         # Create render product and attach to sensor
-        self.hydra_texture = rep.create.render_product(
+        self._hydra_texture = rep.create.render_product(
             self.sensor.GetPath(),
             [32, 32],
             name="RtxSensorRenderProduct",
@@ -436,7 +439,7 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         )
         # Attach annotator to render product
         self._annotator.initialize()
-        self._annotator.attach([self.hydra_texture.path])
+        self._annotator.attach([self._hydra_texture.path])
 
         NUM_FRAMES = 100
         WARMUP_FRAMES = 3
@@ -548,14 +551,14 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         )
 
         # Create render product and attach to sensor
-        self.hydra_texture = rep.create.render_product(
+        self._hydra_texture = rep.create.render_product(
             self.sensor.GetPath(),
             [32, 32],
             name="RtxSensorRenderProduct",
             render_vars=["GenericModelOutput", "RtxSensorMetadata"],
         )
         self._annotator.initialize()
-        self._annotator.attach([self.hydra_texture.path])
+        self._annotator.attach([self._hydra_texture.path])
 
         WARMUP_FRAMES = 10
         NUM_FRAMES = 10
@@ -718,6 +721,10 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
 
     async def test_radar_timestamp_alignment(self):
         """Test that RTX Radar GMO timestamps align with timeline and pause/resume behavior."""
+
+        self.fail(
+            "This test crashes fatally, blocking downstream tests. See: https://nvbugspro.nvidia.com/bug/5999562."
+        )
         await self._test_timestamp_alignment("radar")
 
 
@@ -743,7 +750,7 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
         self.cube_info = create_sarcophagus()
 
         self._timeline = omni.timeline.get_timeline_interface()
-        self.hydra_texture = None
+        self._hydra_texture = None
         self._annotator = rep.AnnotatorRegistry.get_annotator("IsaacCreateRTXLidarScanBuffer")
         self._annotator_data = None
         self._annotator_generic_model_output_data = None
@@ -752,9 +759,12 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
     async def tearDown(self):
         """Clean up test environment and restore default settings."""
         self._timeline.stop()
-        self._annotator.detach()
-        self.hydra_texture.destroy()
-        self.hydra_texture = None
+        if self._annotator.is_attached:
+            self._annotator.detach()
+            self._annotator = None
+        if self._hydra_texture is not None:
+            self._hydra_texture.destroy()
+            self._hydra_texture = None
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
@@ -791,7 +801,7 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
         )
 
         # Create render product and attach to sensor
-        self.hydra_texture = rep.create.render_product(
+        self._hydra_texture = rep.create.render_product(
             self.sensor.GetPath(),
             [32, 32],
             name="RtxSensorRenderProduct",
@@ -815,11 +825,11 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
             outputTickState=True,
             enablePerFrameOutput=enable_per_frame_output,
         )
-        self._annotator.attach([self.hydra_texture.path])
+        self._annotator.attach([self._hydra_texture.path])
 
         # Attach GenericModelOutput annotator to OmniLidar prim to pick up object IDs
         annotator_generic_model_output = rep.AnnotatorRegistry.get_annotator("GenericModelOutput")
-        annotator_generic_model_output.attach([self.hydra_texture.path])
+        annotator_generic_model_output.attach([self._hydra_texture.path])
 
         # Render frames until we get valid data, or until we've rendered the maximum number of frames
         self._timeline.play()
@@ -1032,7 +1042,7 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
         scan_rate_base_hz = self.sensor.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get()
 
         # Create render product and attach to sensor
-        self.hydra_texture = rep.create.render_product(
+        self._hydra_texture = rep.create.render_product(
             self.sensor.GetPath(),
             [32, 32],
             name="RtxSensorRenderProduct",
@@ -1040,7 +1050,7 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
         )
         # Attach annotator to render product
         self._annotator.initialize(enablePerFrameOutput=(not enable_full_scan), outputAzimuth=True)
-        self._annotator.attach([self.hydra_texture.path])
+        self._annotator.attach([self._hydra_texture.path])
 
         self._timeline.play()
         data_frame_count = 0
@@ -1157,7 +1167,7 @@ class TestIsaacComputeRTXLidarFlatScan(omni.kit.test.AsyncTestCase):
 
         self._timeline = omni.timeline.get_timeline_interface()
         self._annotator_data = None
-        self.hydra_texture = None
+        self._hydra_texture = None
 
         self._lidar_scan_buffer_annotator = rep.AnnotatorRegistry.get_annotator(
             "IsaacCreateRTXLidarScanBufferForFlatScan"
@@ -1167,12 +1177,15 @@ class TestIsaacComputeRTXLidarFlatScan(omni.kit.test.AsyncTestCase):
     async def tearDown(self):
         """Clean up test environment by stopping timeline and detaching annotators."""
         self._timeline.stop()
-        self._lidar_scan_buffer_annotator.detach()
-        self._lidar_scan_buffer_annotator = None
-        self._lidar_flat_scan_annotator.detach()
-        self._lidar_flat_scan_annotator = None
-        self.hydra_texture.destroy()
-        self.hydra_texture = None
+        if self._lidar_scan_buffer_annotator.is_attached:
+            self._lidar_scan_buffer_annotator.detach()
+            self._lidar_scan_buffer_annotator = None
+        if self._lidar_flat_scan_annotator.is_attached:
+            self._lidar_flat_scan_annotator.detach()
+            self._lidar_flat_scan_annotator = None
+        if self._hydra_texture is not None:
+            self._hydra_texture.destroy()
+            self._hydra_texture = None
 
     async def _test_annotator_outputs(
         self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT
@@ -1214,15 +1227,15 @@ class TestIsaacComputeRTXLidarFlatScan(omni.kit.test.AsyncTestCase):
         carb.log_warn(f"is_2d_lidar: {self._is_2d_lidar}")
 
         # Create render product and attach to sensor
-        self.hydra_texture = rep.create.render_product(
+        self._hydra_texture = rep.create.render_product(
             self.sensor.GetPath(),
             [32, 32],
             name="RtxSensorRenderProduct",
             render_vars=["GenericModelOutput", "RtxSensorMetadata"],
         )
 
-        self._lidar_scan_buffer_annotator.attach([self.hydra_texture.path])
-        self._lidar_flat_scan_annotator.attach([self.hydra_texture.path])
+        self._lidar_scan_buffer_annotator.attach([self._hydra_texture.path])
+        self._lidar_flat_scan_annotator.attach([self._hydra_texture.path])
 
         # Render frames until we get valid data, or until we've rendered the maximum number of frames
         self._timeline.play()
@@ -1353,8 +1366,9 @@ class TestIsaacCreateRTXRadarPointCloud(omni.kit.test.AsyncTestCase):
         self.cube_info = create_sarcophagus()
 
         self._timeline = omni.timeline.get_timeline_interface()
+        self._annotator = rep.AnnotatorRegistry.get_annotator("IsaacCreateRTXRadarPointCloud")
         self._annotator_data = None
-        self.hydra_texture = None
+        self._hydra_texture = None
 
     async def tearDown(self):
         """Clean up test environment.
@@ -1363,10 +1377,12 @@ class TestIsaacCreateRTXRadarPointCloud(omni.kit.test.AsyncTestCase):
         and waits for all assets to finish loading before updating the stage.
         """
         self._timeline.stop()
-        if self._annotator:
+        if self._annotator.is_attached:
             self._annotator.detach()
-        self.hydra_texture.destroy()
-        self.hydra_texture = None
+            self._annotator = None
+        if self._hydra_texture is not None:
+            self._hydra_texture.destroy()
+        self._hydra_texture = None
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
@@ -1381,6 +1397,9 @@ class TestIsaacCreateRTXRadarPointCloud(omni.kit.test.AsyncTestCase):
         and zero radial velocity measurements for stationary objects.
         """
 
+        self.fail(
+            "This test crashes fatally, blocking downstream tests. See: https://nvbugspro.nvidia.com/bug/5999562."
+        )
         kwargs = {
             "path": "radar",
             "parent": None,
@@ -1397,19 +1416,18 @@ class TestIsaacCreateRTXRadarPointCloud(omni.kit.test.AsyncTestCase):
         )
 
         # Create render product and attach to sensor
-        self.hydra_texture = rep.create.render_product(
+        self._hydra_texture = rep.create.render_product(
             self.sensor.GetPath(),
             [32, 32],
             name="RtxSensorRenderProduct",
             render_vars=["GenericModelOutput"],
         )
         # Attach annotator to render product
-        self._annotator = rep.AnnotatorRegistry.get_annotator("IsaacCreateRTXRadarPointCloud")
         self._annotator.initialize(
             outputIntensity=True,
             outputRadialVelocityMS=True,
         )
-        self._annotator.attach([self.hydra_texture.path])
+        self._annotator.attach([self._hydra_texture.path])
 
         # Render frames until we get valid data, or until we've rendered the maximum number of frames
         self._timeline.play()

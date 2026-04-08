@@ -20,14 +20,14 @@ import math
 import os
 import shutil
 
+# NOTE:
+#   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
+#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
+import carb
 import omni.graph.core as og
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
-
-# NOTE:
-#   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
-#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.kit.usd
 import omni.kit.viewport.utility
@@ -351,6 +351,13 @@ class TestRos2Camera(ROS2TestCase):
 
     async def test_bbox(self):
         """Test bbox."""
+
+        is_multitick_enabled = carb.settings.get_settings().get("/rtx/hydra/supportMultiTickRate")
+        self.assertFalse(
+            is_multitick_enabled,
+            "Multitick rendering causes this test to crash fatally, blocking downstream tests. See: https://nvbugs/6036601.",
+        )
+
         cube_1 = Cube("/cube_1", sizes=1.0, positions=[2, 0, 0], scales=[1.5, 1, 1])
         cube_2 = Cube("/cube_2", sizes=1.0, positions=[-1.5, 0, 0], scales=[1, 2, 1])
         cube_3 = Cube("/cube_3", sizes=1.0, positions=[100, 0, 0], scales=[1, 1, 3])
@@ -961,7 +968,7 @@ class TestRos2Camera(ROS2TestCase):
         golden_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "golden", "spinning_camera")
 
         # Open the pre-built scene USD (contains physics scene and scattered objects).
-        scene_usd_path = os.path.join(golden_dir, "spinning_camera_scene.usd")
+        scene_usd_path = os.path.join(golden_dir, "spinning_camera_scene.usda")
         await stage_utils.open_stage_async(scene_usd_path)
         await omni.kit.app.get_app().next_update_async()
 

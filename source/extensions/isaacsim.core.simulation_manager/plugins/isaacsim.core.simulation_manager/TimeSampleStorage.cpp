@@ -15,6 +15,7 @@
 
 #include <carb/Interface.h>
 #include <carb/logging/Log.h>
+#include <carb/settings/ISettings.h>
 
 #include <isaacsim/core/simulation_manager/TimeSampleStorage.h>
 #include <omni/fabric/FabricTime.h>
@@ -59,7 +60,28 @@ omni::fabric::RationalTime TimeSampleStorage::getCurrentTime()
         StageReaderWriterId stageReaderWriterId = m_iStageReaderWriter->get(m_usdStageId);
         if (stageReaderWriterId.id != 0)
         {
-            FabricTime frameTime = m_iStageReaderWriter->getFrameTime(stageReaderWriterId);
+            FabricTime frameTime{};
+
+            // in this mode we store the simulation time in a stage attribute explicitly,
+            // the rendering uses this time to trigger sensor rendering and outputs will be tagged with
+            // times between the previous simulation time and this one
+            carb::settings::ISettings* iSettings = carb::getCachedInterface<carb::settings::ISettings>();
+            const bool multiTickRateEnabled = iSettings->getAsBool("/rtx/hydra/supportMultiTickRate");
+            if (multiTickRateEnabled)
+            {
+                static const omni::fabric::Path externalTimePrim =
+                    omni::fabric::Path::createImmortal("/ExternalSimulationTime");
+                static const omni::fabric::Token timeAttrToken = omni::fabric::Token::createImmortal("omni:time");
+                omni::fabric::ConstSpanWithTypeC arraySpan =
+                    m_iStageReaderWriter->getAttributeRd(stageReaderWriterId, externalTimePrim, timeAttrToken);
+                const double* externalSimTimeAttr = arraySpan.getTypedPointer<const double>();
+                CARB_CHECK(externalSimTimeAttr);
+                frameTime = omni::fabric::FabricTime(*externalSimTimeAttr);
+            }
+            else
+            {
+                frameTime = m_iStageReaderWriter->getFrameTime(stageReaderWriterId);
+            }
 
             // Check if we got a valid rational time
             if (frameTime.m_type == FabricTime::Type::Rational)
@@ -149,6 +171,15 @@ std::optional<double> TimeSampleStorage::getSimulationTimeAt(const omni::fabric:
     {
         CARB_LOG_WARN("getSimulationTimeAt: Invalid RationalTime - zero denominator");
         return std::nullopt;
+    }
+
+    // XXX: trodrigues: in this mode we passed the simulation time directly to the renderer,
+    // so sensor render time will be based on the simulation time
+    carb::settings::ISettings* iSettings = carb::getCachedInterface<carb::settings::ISettings>();
+    bool multiTickRateEnabled = iSettings->getAsBool("/rtx/hydra/supportMultiTickRate");
+    if (multiTickRateEnabled)
+    {
+        return double(time);
     }
 
     // Hold lock for entire operation to ensure thread safety

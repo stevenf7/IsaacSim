@@ -1,4 +1,8 @@
 # Changelog
+## [4.1.4] - 2026-03-30
+### Changed
+- Add multitick validation features (timestamp tolerance, golden directory management) to validation.py
+
 ## [4.1.3] - 2026-03-05
 ### Changed
 - Fix api and docs syntax issues

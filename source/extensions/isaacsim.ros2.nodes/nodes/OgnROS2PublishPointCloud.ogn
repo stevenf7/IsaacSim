@@ -1,6 +1,6 @@
 {
     "isaacsim.ros2.bridge.ROS2PublishPointCloud": {
-        "version": 1,
+        "version": 2,
         "icon": "icons/isaac-sim.svg",
         "description": [
             "This node publishes LiDAR scans as a ROS2 PointCloud2 message"
@@ -51,6 +51,81 @@
                 "description": "ROS2 Timestamp in seconds",
                 "uiName": "Timestamp",
                 "default": 0.0
+            },
+            "gmoDataPtr": {
+                "type": "uint64",
+                "description": "Pointer to GenericModelOutput buffer. When non-zero, the node extracts point cloud and metadata directly from the GMO buffer, bypassing individual metadata pointer inputs.",
+                "default": 0
+            },
+            "gmoBufferSize": {
+                "type": "uint64",
+                "description": "Size of the GenericModelOutput buffer in bytes",
+                "default": 0
+            },
+            "gmoMaxElements": {
+                "type": "uint64",
+                "description": "Maximum number of elements in the GenericModelOutput buffer",
+                "default": 0
+            },
+            "outputIntensity": {
+                "type": "bool",
+                "description": "Include intensity data from GMO when using gmoDataPtr",
+                "default": false
+            },
+            "outputTimestamp": {
+                "type": "bool",
+                "description": "Include per-point timestamp data from GMO when using gmoDataPtr",
+                "default": false
+            },
+            "outputEmitterId": {
+                "type": "bool",
+                "description": "Include emitter ID data from GMO when using gmoDataPtr",
+                "default": false
+            },
+            "outputChannelId": {
+                "type": "bool",
+                "description": "Include channel ID data from GMO when using gmoDataPtr",
+                "default": false
+            },
+            "outputMaterialId": {
+                "type": "bool",
+                "description": "Include material ID data from GMO when using gmoDataPtr",
+                "default": false
+            },
+            "outputTickId": {
+                "type": "bool",
+                "description": "Include tick ID data from GMO when using gmoDataPtr",
+                "default": false
+            },
+            "outputHitNormal": {
+                "type": "bool",
+                "description": "Include hit normal data from GMO when using gmoDataPtr",
+                "default": false
+            },
+            "outputVelocity": {
+                "type": "bool",
+                "description": "Include velocity data from GMO when using gmoDataPtr",
+                "default": false
+            },
+            "outputObjectId": {
+                "type": "bool",
+                "description": "Include object ID data from GMO when using gmoDataPtr",
+                "default": false
+            },
+            "outputEchoId": {
+                "type": "bool",
+                "description": "Include echo ID data from GMO when using gmoDataPtr",
+                "default": false
+            },
+            "outputTickState": {
+                "type": "bool",
+                "description": "Include tick state data from GMO when using gmoDataPtr",
+                "default": false
+            },
+            "outputRadialVelocityMS": {
+                "type": "bool",
+                "description": "Include radial velocity data from GMO when using gmoDataPtr (radar only)",
+                "default": false
             },
             "dataPtr": {
                 "type": "uint64",

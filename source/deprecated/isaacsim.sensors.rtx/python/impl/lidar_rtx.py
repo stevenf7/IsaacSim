@@ -125,6 +125,8 @@ class LidarRtx(BaseSensor):
                 raise Exception(f"Prim at {prim_path} does not have the OmniSensorGenericLidarCoreAPI schema.")
             carb.log_warn("Using existing RTX Lidar prim at path {}".format(prim_path))
             sensor = get_prim_at_path(prim_path)
+            if sensor.HasAttribute("omni:sensor:Core:accumulateOutputs"):
+                sensor.GetAttribute("omni:sensor:Core:accumulateOutputs").Set(True)
             for key, value in kwargs.items():
                 if sensor.HasAttribute(key):
                     sensor.GetAttribute(key).Set(value)

@@ -370,6 +370,30 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         # Verify it's an OmniLidar prim
         self.assertTrue(prim.IsA("OmniLidar"))
 
+    async def test_rtx_lidar_accumulate_outputs_set(self):
+        """Test that IsaacSensorCreateRtxLidar sets accumulateOutputs=True on OmniLidar prims."""
+        _, prim = omni.kit.commands.execute(
+            "IsaacSensorCreateRtxLidar",
+            path="/RtxLidar_AccumTest",
+            config="Example_Rotary",
+            translation=Gf.Vec3d(0.0, 0.0, 0.0),
+            orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
+        )
+
+        self.assertIsNotNone(prim)
+        self.assertTrue(prim.IsValid())
+        self.assertTrue(prim.IsA("OmniLidar"))
+
+        is_multitick_enabled = carb.settings.get_settings().get("/rtx/hydra/supportMultiTickRate")
+
+        attr = prim.GetAttribute("omni:sensor:Core:accumulateOutputs")
+        self.assertTrue(attr.IsValid(), "Expected accumulateOutputs attribute on OmniLidar prim.")
+        self.assertEqual(
+            attr.Get(),
+            is_multitick_enabled,
+            f"Expected accumulateOutputs to be {is_multitick_enabled} after command execution.",
+        )
+
     async def test_rtx_lidar_default_creation_with_path(self):
         """Test RTX Lidar default creation (no config, no force_camera_prim)."""
 

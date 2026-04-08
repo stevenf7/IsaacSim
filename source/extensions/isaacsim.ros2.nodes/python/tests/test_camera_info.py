@@ -199,7 +199,7 @@ class TestRos2CameraInfo(ROS2TestCase):
 
         node = self.create_node("camera_tester")
         camera_info_sub = self.create_subscription(
-            node, CameraInfo, "camera_info", camera_info_callback, get_qos_profile()
+            node, CameraInfo, "camera_info", camera_info_callback, get_qos_profile(depth=10)
         )
 
         await omni.kit.app.get_app().next_update_async()
