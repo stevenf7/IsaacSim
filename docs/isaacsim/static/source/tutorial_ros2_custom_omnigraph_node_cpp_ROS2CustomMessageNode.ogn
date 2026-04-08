@@ -1,0 +1,31 @@
+{
+    "ROS2CustomMessageNode": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node publishes a custom message with a ROS 2 OG node"
+        ],
+        "metadata": {
+            "uiName": "ROS2 Publish Custom Message"
+        },
+        "categories": ["tutorials"],
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port."
+            },
+
+            "publishCenter": {
+                "type": "float[3]",
+                "description": "Center co-ordinates to publish in order [x, y, z]",
+                "default" : [0.0, 0.0, 0.0]
+            },
+
+            "publishRadius": {
+                "type": "float",
+                "description": "Value of radius to publish",
+                "default" : 1.5
+            }
+        }
+    }
+}
