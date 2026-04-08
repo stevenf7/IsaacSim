@@ -1,0 +1,112 @@
+# SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Tests for the Lidar authoring class."""
+
+import isaacsim.core.experimental.utils.stage as stage_utils
+import omni.kit.test
+from isaacsim.sensors.experimental.rtx import Lidar
+
+
+class TestLidar(omni.kit.test.AsyncTestCase):
+    async def setUp(self):
+        super().setUp()
+        await stage_utils.create_new_stage_async()
+        stage_utils.define_prim("/World", "Xform")
+
+    async def tearDown(self):
+        super().tearDown()
+        stage_utils.close_stage()
+
+    # -- wrap --
+
+    async def test_wrap_existing_prim(self):
+        prim = stage_utils.define_prim("/World/lidar", "OmniLidar")
+        prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
+        lidar = Lidar("/World/lidar")
+        self.assertEqual(lidar.paths[0], "/World/lidar")
+        self.assertEqual(lidar.prims[0].GetTypeName(), "OmniLidar")
+
+    async def test_wrap_wrong_type_raises(self):
+        stage_utils.define_prim("/World/xform", "Xform")
+        with self.assertRaises(ValueError):
+            Lidar("/World/xform")
+
+    async def test_wrap_missing_schema_raises(self):
+        stage_utils.define_prim("/World/lidar", "OmniLidar")
+        with self.assertRaises(ValueError):
+            Lidar("/World/lidar")
+
+    async def test_wrap_with_tick_rate(self):
+        prim = stage_utils.define_prim("/World/lidar", "OmniLidar")
+        prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
+        lidar = Lidar("/World/lidar", tick_rate=10.0)
+        self.assertAlmostEqual(lidar.prims[0].GetAttribute("omni:sensor:tickRate").Get(), 10.0)
+
+    async def test_wrap_with_attributes(self):
+        prim = stage_utils.define_prim("/World/lidar", "OmniLidar")
+        prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
+        lidar = Lidar("/World/lidar", attributes={"omni:sensor:Core:outputFrameOfReference": "WORLD"})
+        self.assertEqual(lidar.prims[0].GetAttribute("omni:sensor:Core:outputFrameOfReference").Get(), "WORLD")
+
+    async def test_wrap_with_nonexistent_attribute_does_not_raise(self):
+        prim = stage_utils.define_prim("/World/lidar", "OmniLidar")
+        prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
+        lidar = Lidar("/World/lidar", attributes={"nonexistent:attr": 42})
+        self.assertEqual(lidar.prims[0].GetTypeName(), "OmniLidar")
+
+    # -- create --
+
+    async def test_create_new_prim(self):
+        lidar = Lidar("/World/lidar")
+        self.assertEqual(lidar.prims[0].GetTypeName(), "OmniLidar")
+        self.assertTrue(lidar.prims[0].HasAPI("OmniSensorGenericLidarCoreAPI"))
+
+    async def test_create_with_tick_rate(self):
+        lidar = Lidar("/World/lidar", tick_rate=30.0)
+        self.assertAlmostEqual(lidar.prims[0].GetAttribute("omni:sensor:tickRate").Get(), 30.0)
+
+    async def test_create_default_tick_rate_is_zero(self):
+        lidar = Lidar("/World/lidar")
+        self.assertAlmostEqual(lidar.prims[0].GetAttribute("omni:sensor:tickRate").Get(), 0.0)
+
+    async def test_create_with_attributes(self):
+        lidar = Lidar("/World/lidar", attributes={"omni:sensor:Core:outputFrameOfReference": "WORLD"})
+        self.assertEqual(lidar.prims[0].GetAttribute("omni:sensor:Core:outputFrameOfReference").Get(), "WORLD")
+
+    async def test_create_with_tick_rate_and_attributes(self):
+        lidar = Lidar(
+            "/World/lidar",
+            tick_rate=25.0,
+            attributes={"omni:sensor:Core:outputFrameOfReference": "WORLD"},
+        )
+        self.assertAlmostEqual(lidar.prims[0].GetAttribute("omni:sensor:tickRate").Get(), 25.0)
+        self.assertEqual(lidar.prims[0].GetAttribute("omni:sensor:Core:outputFrameOfReference").Get(), "WORLD")
+
+    async def test_tick_rate_from_attributes_overrides_parameter(self):
+        prim = stage_utils.define_prim("/World/lidar", "OmniLidar")
+        prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
+        lidar = Lidar("/World/lidar", tick_rate=10.0, attributes={"omni:sensor:tickRate": 25.0})
+        self.assertAlmostEqual(lidar.prims[0].GetAttribute("omni:sensor:tickRate").Get(), 25.0)
+
+    # -- errors --
+
+    async def test_multiple_prims_raises(self):
+        prim = stage_utils.define_prim("/World/lidar_0", "OmniLidar")
+        prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
+        prim = stage_utils.define_prim("/World/lidar_1", "OmniLidar")
+        prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
+        with self.assertRaises(ValueError):
+            Lidar("/World/lidar_.*")

@@ -8,15 +8,25 @@ Python API
 
 .. Summary
 
-The following table summarizes the available sensors.
+The following table summarizes the available classes.
 
 .. currentmodule:: isaacsim.sensors.experimental.rtx
 
-.. rubric:: sensors
+.. rubric:: authoring (USD prim wrappers)
 .. autosummary::
     :nosignatures:
 
-    RtxLidarSensor
+    Lidar
+    Radar
+    Acoustic
+
+.. rubric:: sensors (runtime)
+.. autosummary::
+    :nosignatures:
+
+    LidarSensor
+    RadarSensor
+    AcousticSensor
 
 .. rubric:: utils
 .. autosummary::
@@ -32,13 +42,43 @@ The following table summarizes the available sensors.
     SUPPORTED_LIDAR_CONFIGS
     SUPPORTED_LIDAR_VARIANT_SET_NAME
 
-Sensors
-"""""""
+Authoring
+"""""""""
 
-.. autoclass:: isaacsim.sensors.experimental.rtx.RtxLidarSensor
+.. autoclass:: isaacsim.sensors.experimental.rtx.Lidar
     :members:
     :undoc-members:
     :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.experimental.rtx.Radar
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.experimental.rtx.Acoustic
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+Sensors
+"""""""
+
+.. autoclass:: isaacsim.sensors.experimental.rtx.LidarSensor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.experimental.rtx.RadarSensor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.experimental.rtx.AcousticSensor
+    :members:
+    :undoc-members:
     :show-inheritance:
 
 Utils

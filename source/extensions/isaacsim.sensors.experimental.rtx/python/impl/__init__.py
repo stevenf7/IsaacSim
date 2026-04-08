@@ -14,6 +14,13 @@
 # limitations under the License.
 
 
-from .rtx_lidar_configs import SUPPORTED_LIDAR_CONFIGS, SUPPORTED_LIDAR_VARIANT_SET_NAME
-from .rtx_lidar_sensor import RtxLidarSensor
-from .utils import parse_generic_model_output_data, parse_stable_id_map_data
+from .acoustic import Acoustic as Acoustic
+from .acoustic_sensor import AcousticSensor as AcousticSensor
+from .lidar import Lidar as Lidar
+from .lidar_sensor import LidarSensor as LidarSensor
+from .radar import Radar as Radar
+from .radar_sensor import RadarSensor as RadarSensor
+from .rtx_lidar_configs import SUPPORTED_LIDAR_CONFIGS as SUPPORTED_LIDAR_CONFIGS
+from .rtx_lidar_configs import SUPPORTED_LIDAR_VARIANT_SET_NAME as SUPPORTED_LIDAR_VARIANT_SET_NAME
+from .utils import parse_generic_model_output_data as parse_generic_model_output_data
+from .utils import parse_stable_id_map_data as parse_stable_id_map_data

@@ -15,10 +15,20 @@
 
 """Test docstrings functionality."""
 
+import carb
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.test.docstring
-from isaacsim.sensors.experimental.rtx import RtxLidarSensor, parse_generic_model_output_data, parse_stable_id_map_data
+from isaacsim.sensors.experimental.rtx import (
+    Acoustic,
+    AcousticSensor,
+    Lidar,
+    LidarSensor,
+    Radar,
+    RadarSensor,
+    parse_generic_model_output_data,
+    parse_stable_id_map_data,
+)
 
 
 class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
@@ -39,14 +49,32 @@ class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
 
     # --------------------------------------------------------------------
 
-    async def test_rtx_lidar_sensor_docstrings(self):
+    async def test_lidar_sensor_docstrings(self):
         """Test rtx lidar sensor docstrings."""
         # define prims
         stage_utils.define_prim(f"/World/cube", "Cube")
         prim = stage_utils.define_prim(f"/World/prim_0", "OmniLidar")
         prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
         # test case
-        await self.assertDocTests(RtxLidarSensor)
+        await self.assertDocTests(LidarSensor)
+
+    async def test_radar_sensor_docstrings(self):
+        # define prims
+        stage_utils.define_prim(f"/World/cube", "Cube")
+        prim = stage_utils.define_prim(f"/World/prim_0", "OmniRadar")
+        prim.ApplyAPI("OmniSensorGenericRadarWpmDmatAPI")
+        # enable Motion BVH for radar
+        carb.settings.get_settings().set("/renderer/raytracingMotion/enabled", True)
+        # test case
+        await self.assertDocTests(RadarSensor)
+
+    async def test_acoustic_sensor_docstrings(self):
+        # define prims
+        stage_utils.define_prim(f"/World/cube", "Cube")
+        prim = stage_utils.define_prim(f"/World/prim_0", "OmniAcoustic")
+        prim.ApplyAPI("OmniSensorGenericAcousticWpmAPI")
+        # test case
+        await self.assertDocTests(AcousticSensor)
 
     async def test_parse_generic_model_output_data_docstrings(self):
         """Test parse generic model output data docstrings."""

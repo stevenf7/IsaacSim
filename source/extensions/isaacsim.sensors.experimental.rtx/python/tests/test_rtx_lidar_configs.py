@@ -21,7 +21,7 @@ from pathlib import Path
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
-from isaacsim.sensors.experimental.rtx import SUPPORTED_LIDAR_CONFIGS, RtxLidarSensor
+from isaacsim.sensors.experimental.rtx import SUPPORTED_LIDAR_CONFIGS, Lidar
 from isaacsim.sensors.experimental.rtx.sensor_checker import ModelInfo, SensorCheckerUtil
 
 from .common import create_sarcophagus
@@ -95,10 +95,9 @@ def _create_lidar_parameters_test(config_path, config_name, variant):
     """
 
     async def test_function(self):
-        # instantiate sensor
-        sensor = RtxLidarSensor.create_sensor(
+        # instantiate lidar prim
+        lidar = Lidar.create(
             path="/asset",
-            annotators=["generic-model-output"],
             attributes={"omni:sensor:Core:outputFrameOfReference": "WORLD"},
             config=config_name,
             variant=variant,
@@ -107,16 +106,14 @@ def _create_lidar_parameters_test(config_path, config_name, variant):
         # test cases
         # - prim path
         if config_path.endswith(".usda"):
-            self.assertEqual(sensor.paths[0], "/asset")
+            self.assertEqual(lidar.paths[0], "/asset")
         else:
-            self.assertNotEqual(sensor.paths[0], "/asset")
+            self.assertNotEqual(lidar.paths[0], "/asset")
         # - type
-        sensor_type = sensor.prims[0].GetTypeName()
-        self.assertEqual(
-            sensor_type, "OmniLidar", f"Expected OmniLidar prim, got {sensor_type}. Was sensor prim created?"
-        )
+        prim_type = lidar.prims[0].GetTypeName()
+        self.assertEqual(prim_type, "OmniLidar", f"Expected OmniLidar prim, got {prim_type}. Was sensor prim created?")
         # - validation
-        error_string = self._checker.validateParams(sensor.prims[0])
+        error_string = self._checker.validateParams(lidar.prims[0])
         self.assertIsNone(
             error_string,
             f"Sensor parameter validation failed for config {config_name} variant {variant}: {error_string}",
@@ -129,7 +126,7 @@ def _create_lidar_parameters_test(config_path, config_name, variant):
             f"Expected validated parameters, got {validated_params.numParams} parameters",
         )
 
-        del sensor
+        del lidar
 
     return test_function
 
