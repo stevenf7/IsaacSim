@@ -171,9 +171,6 @@ class TestRos2Camera(ROS2TestCase):
                         ("DepthPclPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
                         ("InstancePublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
                         ("SemanticPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                        ("Bbox2dTightPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                        ("Bbox2dLoosePublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                        ("Bbox3dPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
                         ("CreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
@@ -195,15 +192,6 @@ class TestRos2Camera(ROS2TestCase):
                         ("SemanticPublish.inputs:topicName", "semantic_segmentation"),
                         ("SemanticPublish.inputs:type", "semantic_segmentation"),
                         ("SemanticPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox2dTightPublish.inputs:topicName", "bbox_2d_tight"),
-                        ("Bbox2dTightPublish.inputs:type", "bbox_2d_tight"),
-                        ("Bbox2dTightPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox2dLoosePublish.inputs:topicName", "bbox_2d_loose"),
-                        ("Bbox2dLoosePublish.inputs:type", "bbox_2d_loose"),
-                        ("Bbox2dLoosePublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox3dPublish.inputs:topicName", "bbox_3d"),
-                        ("Bbox3dPublish.inputs:type", "bbox_3d"),
-                        ("Bbox3dPublish.inputs:resetSimulationTimeOnStop", True),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "CreateRenderProduct.inputs:execIn"),
@@ -212,23 +200,11 @@ class TestRos2Camera(ROS2TestCase):
                         ("CreateRenderProduct.outputs:execOut", "DepthPclPublish.inputs:execIn"),
                         ("CreateRenderProduct.outputs:execOut", "InstancePublish.inputs:execIn"),
                         ("CreateRenderProduct.outputs:execOut", "SemanticPublish.inputs:execIn"),
-                        ("CreateRenderProduct.outputs:execOut", "Bbox2dTightPublish.inputs:execIn"),
-                        ("CreateRenderProduct.outputs:execOut", "Bbox2dLoosePublish.inputs:execIn"),
-                        ("CreateRenderProduct.outputs:execOut", "Bbox3dPublish.inputs:execIn"),
                         ("CreateRenderProduct.outputs:renderProductPath", "RGBPublish.inputs:renderProductPath"),
                         ("CreateRenderProduct.outputs:renderProductPath", "DepthPublish.inputs:renderProductPath"),
                         ("CreateRenderProduct.outputs:renderProductPath", "DepthPclPublish.inputs:renderProductPath"),
                         ("CreateRenderProduct.outputs:renderProductPath", "InstancePublish.inputs:renderProductPath"),
                         ("CreateRenderProduct.outputs:renderProductPath", "SemanticPublish.inputs:renderProductPath"),
-                        (
-                            "CreateRenderProduct.outputs:renderProductPath",
-                            "Bbox2dTightPublish.inputs:renderProductPath",
-                        ),
-                        (
-                            "CreateRenderProduct.outputs:renderProductPath",
-                            "Bbox2dLoosePublish.inputs:renderProductPath",
-                        ),
-                        ("CreateRenderProduct.outputs:renderProductPath", "Bbox3dPublish.inputs:renderProductPath"),
                     ],
                 },
             )
@@ -237,16 +213,12 @@ class TestRos2Camera(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         from sensor_msgs.msg import Image, PointCloud2
-        from vision_msgs.msg import Detection2DArray, Detection3DArray
 
         self._rgb = None
         self._depth = None
         self._depth_pcl = None
         self._instance_segmentation = None
         self._semantic_segmentation = None
-        self._bbox_2d_tight = None
-        self._bbox_2d_loose = None
-        self._bbox_3d = None
 
         def rgb_callback(data):
             self._rgb = data
@@ -263,15 +235,6 @@ class TestRos2Camera(ROS2TestCase):
         def semantic_segmentation_callback(data):
             self._semantic_segmentation = data
 
-        def bbox_2d_tight_callback(data):
-            self._bbox_2d_tight = data
-
-        def bbox_2d_loose_callback(data):
-            self._bbox_2d_loose = data
-
-        def bbox_3d_callback(data):
-            self._bbox_3d = data
-
         node = self.create_node("camera_tester")
         rgb_sub = self.create_subscription(node, Image, "rgb", rgb_callback, get_qos_profile())
         depth_sub = self.create_subscription(node, Image, "depth", depth_callback, get_qos_profile())
@@ -282,13 +245,6 @@ class TestRos2Camera(ROS2TestCase):
         semantic_segmentation_sub = self.create_subscription(
             node, Image, "semantic_segmentation", semantic_segmentation_callback, get_qos_profile()
         )
-        bbox_2d_tight_sub = self.create_subscription(
-            node, Detection2DArray, "bbox_2d_tight", bbox_2d_tight_callback, get_qos_profile()
-        )
-        bbox_2d_loose_sub = self.create_subscription(
-            node, Detection2DArray, "bbox_2d_loose", bbox_2d_loose_callback, get_qos_profile()
-        )
-        bbox_3d_sub = self.create_subscription(node, Detection3DArray, "bbox_3d", bbox_3d_callback, get_qos_profile())
 
         await omni.kit.app.get_app().next_update_async()
         omni.kit.commands.execute(
@@ -311,9 +267,6 @@ class TestRos2Camera(ROS2TestCase):
         og.Controller.attribute("/ActionGraph/DepthPclPublish" + ".inputs:useSystemTime").set(True)
         og.Controller.attribute("/ActionGraph/InstancePublish" + ".inputs:useSystemTime").set(True)
         og.Controller.attribute("/ActionGraph/SemanticPublish" + ".inputs:useSystemTime").set(True)
-        og.Controller.attribute("/ActionGraph/Bbox2dTightPublish" + ".inputs:useSystemTime").set(True)
-        og.Controller.attribute("/ActionGraph/Bbox2dLoosePublish" + ".inputs:useSystemTime").set(True)
-        og.Controller.attribute("/ActionGraph/Bbox3dPublish" + ".inputs:useSystemTime").set(True)
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -325,9 +278,6 @@ class TestRos2Camera(ROS2TestCase):
                 self._rgb is not None
                 and self._instance_segmentation is not None
                 and self._semantic_segmentation is not None
-                and self._bbox_2d_tight is not None
-                and self._bbox_2d_loose is not None
-                and self._bbox_3d is not None
             ),
             max_frames=600,
             per_frame_callback=spin,
@@ -336,384 +286,12 @@ class TestRos2Camera(ROS2TestCase):
         self.assertIsNotNone(self._rgb)
         self.assertIsNotNone(self._instance_segmentation)
         self.assertIsNotNone(self._semantic_segmentation)
-        self.assertIsNotNone(self._bbox_2d_tight)
-        self.assertIsNotNone(self._bbox_2d_loose)
-        self.assertIsNotNone(self._bbox_3d)
 
         self.assertGreaterEqual(self._rgb.header.stamp.sec, system_time)
         self.assertGreaterEqual(self._depth.header.stamp.sec, system_time)
         self.assertGreaterEqual(self._depth_pcl.header.stamp.sec, system_time)
         self.assertGreaterEqual(self._instance_segmentation.header.stamp.sec, system_time)
         self.assertGreaterEqual(self._semantic_segmentation.header.stamp.sec, system_time)
-        self.assertGreaterEqual(self._bbox_2d_tight.header.stamp.sec, system_time)
-        self.assertGreaterEqual(self._bbox_2d_loose.header.stamp.sec, system_time)
-        self.assertGreaterEqual(self._bbox_3d.header.stamp.sec, system_time)
-
-    async def test_bbox(self):
-        """Test bbox."""
-
-        is_multitick_enabled = carb.settings.get_settings().get("/rtx/hydra/supportMultiTickRate")
-        self.assertFalse(
-            is_multitick_enabled,
-            "Multitick rendering causes this test to crash fatally, blocking downstream tests. See: https://nvbugs/6036601.",
-        )
-
-        cube_1 = Cube("/cube_1", sizes=1.0, positions=[2, 0, 0], scales=[1.5, 1, 1])
-        cube_2 = Cube("/cube_2", sizes=1.0, positions=[-1.5, 0, 0], scales=[1, 2, 1])
-        cube_3 = Cube("/cube_3", sizes=1.0, positions=[100, 0, 0], scales=[1, 1, 3])
-        cube_4 = Cube("/cube_4", sizes=1.0, positions=[0, 1, 0], scales=[1, 1, 3])
-        semantics_utils.add_labels(cube_1.prims[0], labels=["Cube0"])
-        semantics_utils.add_labels(cube_2.prims[0], labels=["Cube1"])
-        semantics_utils.add_labels(cube_3.prims[0], labels=["Cube2"])
-        semantics_utils.add_labels(cube_4.prims[0], labels=["Cube3"])
-        ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[0, -6, 0.5], target=[0, 0, 0.5])
-        import json
-
-        import rclpy
-
-        viewport_api = omni.kit.viewport.utility.get_active_viewport()
-        render_product_path = viewport_api.get_render_product_path()
-
-        try:
-            og.Controller.edit(
-                {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
-                {
-                    og.Controller.Keys.CREATE_NODES: [
-                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("Bbox2dTightPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                        ("Bbox2dLoosePublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                        ("Bbox3dPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                        ("InstancePublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                        ("SemanticPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                    ],
-                    og.Controller.Keys.SET_VALUES: [
-                        ("InstancePublish.inputs:renderProductPath", render_product_path),
-                        ("InstancePublish.inputs:topicName", "instance_segmentation"),
-                        ("InstancePublish.inputs:type", "instance_segmentation"),
-                        ("InstancePublish.inputs:resetSimulationTimeOnStop", True),
-                        ("SemanticPublish.inputs:renderProductPath", render_product_path),
-                        ("SemanticPublish.inputs:topicName", "semantic_segmentation"),
-                        ("SemanticPublish.inputs:type", "semantic_segmentation"),
-                        ("SemanticPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox2dTightPublish.inputs:renderProductPath", render_product_path),
-                        ("Bbox2dTightPublish.inputs:topicName", "bbox_2d_tight"),
-                        ("Bbox2dTightPublish.inputs:type", "bbox_2d_tight"),
-                        ("Bbox2dTightPublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox2dLoosePublish.inputs:renderProductPath", render_product_path),
-                        ("Bbox2dLoosePublish.inputs:topicName", "bbox_2d_loose"),
-                        ("Bbox2dLoosePublish.inputs:type", "bbox_2d_loose"),
-                        ("Bbox2dLoosePublish.inputs:resetSimulationTimeOnStop", True),
-                        ("Bbox3dPublish.inputs:renderProductPath", render_product_path),
-                        ("Bbox3dPublish.inputs:topicName", "bbox_3d"),
-                        ("Bbox3dPublish.inputs:type", "bbox_3d"),
-                        ("Bbox3dPublish.inputs:resetSimulationTimeOnStop", True),
-                        # enable semantics
-                        ("InstancePublish.inputs:enableSemanticLabels", True),
-                        ("InstancePublish.inputs:semanticLabelsTopicName", "semantic_labels_instance"),
-                        ("SemanticPublish.inputs:enableSemanticLabels", True),
-                        ("SemanticPublish.inputs:semanticLabelsTopicName", "semantic_labels_semantic"),
-                        ("Bbox2dTightPublish.inputs:enableSemanticLabels", True),
-                        ("Bbox2dTightPublish.inputs:semanticLabelsTopicName", "semantic_labels_tight"),
-                        ("Bbox2dLoosePublish.inputs:enableSemanticLabels", True),
-                        ("Bbox2dLoosePublish.inputs:semanticLabelsTopicName", "semantic_labels_loose"),
-                        ("Bbox3dPublish.inputs:enableSemanticLabels", True),
-                        ("Bbox3dPublish.inputs:semanticLabelsTopicName", "semantic_labels_3d"),
-                    ],
-                    og.Controller.Keys.CONNECT: [
-                        ("OnPlaybackTick.outputs:tick", "InstancePublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "SemanticPublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "Bbox2dTightPublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "Bbox2dLoosePublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "Bbox3dPublish.inputs:execIn"),
-                    ],
-                },
-            )
-        except Exception as e:
-            print(e)
-
-        # acquire the viewport window
-        viewport_api = omni.kit.viewport.utility.get_active_viewport()
-        # Set viewport resolution, changes will occur on next frame
-
-        await omni.kit.app.get_app().next_update_async()
-
-        from std_msgs.msg import String
-        from vision_msgs.msg import Detection2DArray, Detection3DArray
-
-        self._bbox_2d_tight = None
-        self._bbox_2d_loose = None
-        self._bbox_3d = None
-        self._semantic_data_instance = None
-        self._semantic_data_semantic = None
-        self._semantic_data_3d = None
-        self._semantic_data_tight = None
-        self._semantic_data_loose = None
-
-        def bbox_2d_tight_callback(data):
-            self._bbox_2d_tight = data
-
-        def bbox_2d_loose_callback(data):
-            self._bbox_2d_loose = data
-
-        def bbox_3d_callback(data):
-            self._bbox_3d = data
-
-        def semantic_callback_instance(data):
-            self._semantic_data_instance = data
-
-        def semantic_callback_semantic(data):
-            self._semantic_data_semantic = data
-
-        def semantic_callback_3d(data):
-            self._semantic_data_3d = data
-
-        def semantic_callback_tight(data):
-            self._semantic_data_tight = data
-
-        def semantic_callback_loose(data):
-            self._semantic_data_loose = data
-
-        node = self.create_node("bbox_tester")
-
-        bbox_2d_tight_sub = self.create_subscription(
-            node, Detection2DArray, "bbox_2d_tight", bbox_2d_tight_callback, get_qos_profile()
-        )
-        bbox_2d_loose_sub = self.create_subscription(
-            node, Detection2DArray, "bbox_2d_loose", bbox_2d_loose_callback, get_qos_profile()
-        )
-
-        bbox_3d_sub = self.create_subscription(node, Detection3DArray, "bbox_3d", bbox_3d_callback, get_qos_profile())
-        semantic_labels_instance_sub = self.create_subscription(
-            node, String, "semantic_labels_instance", semantic_callback_instance, get_qos_profile()
-        )
-        semantic_labels_semantic_sub = self.create_subscription(
-            node, String, "semantic_labels_semantic", semantic_callback_semantic, get_qos_profile()
-        )
-        semantic_labels_3d_sub = self.create_subscription(
-            node, String, "semantic_labels_3d", semantic_callback_3d, get_qos_profile()
-        )
-        semantic_labels_tight_sub = self.create_subscription(
-            node, String, "semantic_labels_tight", semantic_callback_tight, get_qos_profile()
-        )
-        semantic_labels_loose_sub = self.create_subscription(
-            node, String, "semantic_labels_loose", semantic_callback_loose, get_qos_profile()
-        )
-
-        def spin():
-            rclpy.spin_once(node, timeout_sec=0.01)
-
-        await omni.kit.app.get_app().next_update_async()
-
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await self.simulate_until_condition(
-            lambda: (
-                self._bbox_2d_tight is not None
-                and self._bbox_2d_loose is not None
-                and self._bbox_3d is not None
-                and self._semantic_data_instance is not None
-                and self._semantic_data_semantic is not None
-                and self._semantic_data_3d is not None
-                and self._semantic_data_tight is not None
-                and self._semantic_data_loose is not None
-            ),
-            max_frames=600,
-            per_frame_callback=spin,
-        )
-
-        self.assertIsNotNone(self._bbox_2d_tight)
-        self.assertIsNotNone(self._bbox_2d_loose)
-        self.assertIsNotNone(self._bbox_3d)
-        self.assertIsNotNone(self._semantic_data_instance)
-        self.assertIsNotNone(self._semantic_data_semantic)
-        self.assertIsNotNone(self._semantic_data_3d)
-        self.assertIsNotNone(self._semantic_data_tight)
-        self.assertIsNotNone(self._semantic_data_loose)
-
-        detections = self._bbox_3d.detections
-        semantic_instance_dict = json.loads(self._semantic_data_instance.data)
-        semantic_semantic_dict = json.loads(self._semantic_data_semantic.data)
-        semantic_tight_dict = json.loads(self._semantic_data_tight.data)
-        semantic_loose_dict = json.loads(self._semantic_data_loose.data)
-        semantic_3d_dict = json.loads(self._semantic_data_3d.data)
-        print(semantic_instance_dict)
-        print(semantic_semantic_dict)
-        print(semantic_tight_dict)
-        print(semantic_loose_dict)
-        print(semantic_3d_dict)
-        instance_values = {v for v in semantic_instance_dict.values() if isinstance(v, str)}
-        self.assertIn("BACKGROUND", instance_values)
-        self.assertIn("UNLABELLED", instance_values)
-        self.assertIn("/cube_1", instance_values)
-        self.assertIn("/cube_2", instance_values)
-        self.assertIn("/cube_4", instance_values)
-
-        semantic_classes = {v["class"] for k, v in semantic_semantic_dict.items() if k != "time_stamp"}
-        self.assertIn("BACKGROUND", semantic_classes)
-        self.assertEqual(len(semantic_semantic_dict.keys()), 6)  # (background + unalbeled + 3 cubes + timestamp)
-
-        bbox_3d_classes = {v["class"] for k, v in semantic_3d_dict.items() if k != "time_stamp"}
-        self.assertIn("cube0", bbox_3d_classes)
-        self.assertIn("cube1", bbox_3d_classes)
-        self.assertIn("cube3", bbox_3d_classes)
-
-        # there should be 3 bboxes; verify each cube's dimensions by matching on bbox size
-        self.assertEqual(len(detections), 3)
-        det_by_size = {}
-        for d in detections:
-            key = (d.bbox.size.x, d.bbox.size.y, d.bbox.size.z)
-            det_by_size[key] = d
-        self.assertIn((1.5, 1, 1), det_by_size)  # cube_1
-        self.assertIn((1, 2, 1), det_by_size)  # cube_2
-        self.assertIn((1, 1, 3), det_by_size)  # cube_4
-
-        cube_1_det = det_by_size[(1.5, 1, 1)]
-        self.assertEqual(cube_1_det.bbox.center.position.x, 2)
-        self.assertEqual(cube_1_det.bbox.center.position.y, 0)
-        self.assertEqual(cube_1_det.bbox.center.position.z, 0)
-
-        cube_2_det = det_by_size[(1, 2, 1)]
-        self.assertEqual(cube_2_det.bbox.center.position.x, -1.5)
-        self.assertEqual(cube_2_det.bbox.center.position.y, 0)
-        self.assertEqual(cube_2_det.bbox.center.position.z, 0)
-
-        cube_4_det = det_by_size[(1, 1, 3)]
-        self.assertEqual(cube_4_det.bbox.center.position.x, 0)
-        self.assertEqual(cube_4_det.bbox.center.position.y, 1)
-        self.assertEqual(cube_4_det.bbox.center.position.z, 0)
-
-        detections = self._bbox_2d_tight.detections
-        self.assertEqual(len(detections), 3)
-
-        print(detections[0].results)
-        print(detections[1].results)
-        print(detections[2].results)
-
-        det_2d_by_size = {}
-        for d in detections:
-            det_2d_by_size[(d.bbox.size_x, d.bbox.size_y)] = d
-
-        self.assertIn((340.0, 201.0), det_2d_by_size)  # cube_1
-        self.assertIn((284.0, 221.0), det_2d_by_size)  # cube_2
-        self.assertIn((169.0, 511.0), det_2d_by_size)  # cube_4
-
-        tight_cube_1 = det_2d_by_size[(340.0, 201.0)]
-        self.assertEqual(tight_cube_1.bbox.center.position.x, 1023.0)
-        self.assertEqual(tight_cube_1.bbox.center.position.y, 460.5)
-        self.assertEqual(tight_cube_1.bbox.center.theta, 0)
-
-        tight_cube_2 = det_2d_by_size[(284.0, 221.0)]
-        self.assertEqual(tight_cube_2.bbox.center.position.x, 339.0)
-        self.assertEqual(tight_cube_2.bbox.center.position.y, 470.5)
-        self.assertEqual(tight_cube_2.bbox.center.theta, 0)
-
-        tight_cube_4 = det_2d_by_size[(169.0, 511.0)]
-        self.assertEqual(tight_cube_4.bbox.center.position.x, 639.5)
-        self.assertEqual(tight_cube_4.bbox.center.position.y, 444.5)
-        self.assertEqual(tight_cube_4.bbox.center.theta, 0)
-
-        detections = self._bbox_2d_loose.detections
-        self.assertEqual(len(detections), 3)
-
-        det_2d_loose_by_size = {}
-        for d in detections:
-            det_2d_loose_by_size[(d.bbox.size_x, d.bbox.size_y)] = d
-
-        self.assertIn((340.0, 201.0), det_2d_loose_by_size)  # cube_1
-        self.assertIn((284.0, 221.0), det_2d_loose_by_size)  # cube_2
-        self.assertIn((169.0, 511.0), det_2d_loose_by_size)  # cube_4
-
-        loose_cube_1 = det_2d_loose_by_size[(340.0, 201.0)]
-        self.assertEqual(loose_cube_1.bbox.center.position.x, 1023.0)
-        self.assertEqual(loose_cube_1.bbox.center.position.y, 460.5)
-        self.assertEqual(loose_cube_1.bbox.center.theta, 0)
-
-        loose_cube_2 = det_2d_loose_by_size[(284.0, 221.0)]
-        self.assertEqual(loose_cube_2.bbox.center.position.x, 339.0)
-        self.assertEqual(loose_cube_2.bbox.center.position.y, 470.5)
-        self.assertEqual(loose_cube_2.bbox.center.theta, 0)
-
-        loose_cube_4 = det_2d_loose_by_size[(169.0, 511.0)]
-        self.assertEqual(loose_cube_4.bbox.center.position.x, 639.5)
-        self.assertEqual(loose_cube_4.bbox.center.position.y, 444.5)
-        self.assertEqual(loose_cube_4.bbox.center.theta, 0)
-
-    async def test_empty_semantics(self):
-        """Test empty semantics."""
-        cube_3 = Cube("/cube_3", sizes=1.0, positions=[100, 0, 0], scales=[1, 1, 3])
-        semantics_utils.add_labels(cube_3.prims[0], labels=["Cube2"])
-        ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[0, -6, 0.5], target=[0, 0, 0.5])
-        import json
-
-        import rclpy
-
-        viewport_api = omni.kit.viewport.utility.get_active_viewport()
-        render_product_path = viewport_api.get_render_product_path()
-
-        try:
-            og.Controller.edit(
-                {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
-                {
-                    og.Controller.Keys.CREATE_NODES: [
-                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("Bbox3dPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                    ],
-                    og.Controller.Keys.SET_VALUES: [
-                        ("Bbox3dPublish.inputs:renderProductPath", render_product_path),
-                        ("Bbox3dPublish.inputs:topicName", "bbox_3d"),
-                        ("Bbox3dPublish.inputs:type", "bbox_3d"),
-                        ("Bbox3dPublish.inputs:resetSimulationTimeOnStop", True),
-                        # enable semantics
-                        ("Bbox3dPublish.inputs:enableSemanticLabels", True),
-                        ("Bbox3dPublish.inputs:semanticLabelsTopicName", "semantic_labels"),
-                    ],
-                    og.Controller.Keys.CONNECT: [("OnPlaybackTick.outputs:tick", "Bbox3dPublish.inputs:execIn")],
-                },
-            )
-        except Exception as e:
-            print(e)
-
-        # acquire the viewport window
-        viewport_api = omni.kit.viewport.utility.get_active_viewport()
-        # Set viewport resolution, changes will occur on next frame
-
-        await omni.kit.app.get_app().next_update_async()
-
-        from std_msgs.msg import String
-        from vision_msgs.msg import Detection3DArray
-
-        self._bbox_3d = None
-        self._semantic_data = None
-
-        def bbox_3d_callback(data):
-            self._bbox_3d = data
-
-        def semantic_callback(data):
-            self._semantic_data = data
-
-        node = self.create_node("bbox_tester")
-
-        bbox_3d_sub = self.create_subscription(node, Detection3DArray, "bbox_3d", bbox_3d_callback, get_qos_profile())
-        semantic_labels_sub = self.create_subscription(
-            node, String, "semantic_labels", semantic_callback, get_qos_profile()
-        )
-
-        def spin():
-            rclpy.spin_once(node, timeout_sec=0.01)
-
-        await asyncio.sleep(2.0)
-
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await self.simulate_until_condition(
-            lambda: self._semantic_data is not None, max_frames=600, per_frame_callback=spin
-        )
-
-        self.assertIsNotNone(self._semantic_data)
-
-        semantic_dict = json.loads(self._semantic_data.data)
-        self.assertTrue("time_stamp" in semantic_dict)
-        self.assertFalse("0" in semantic_dict)
 
     async def test_rgb_golden_image_comparison(self):
         """Subscribe to an RGB image topic and compare received buffer against a golden image."""

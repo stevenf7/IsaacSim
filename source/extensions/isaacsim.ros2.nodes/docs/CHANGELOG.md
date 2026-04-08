@@ -1,3 +1,9 @@
+## [1.15.1] - 2026-04-08
+- Added `test_bbox.py` with ROS 2 bounding box publisher tests. Includes tight vs loose (i.e., occlusions included vs excluded), and "golden" csv files with ground truth bbox.
+
+### Changed
+- Moved bounding-box tests out of `test_camera.py` into `test_bbox.py`
+
 # Changelog
 ## [1.15.0] - 2026-04-07
 ### Added
