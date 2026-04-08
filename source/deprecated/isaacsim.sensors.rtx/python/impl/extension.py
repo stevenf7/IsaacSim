@@ -186,14 +186,26 @@ class Extension(omni.ext.IExt):
                 is_gpu_enabled=False,
             )
 
+        # Adjust node type IDs and input rendervars if multi-tick rate is enabled
+        is_multitick_enabled = carb.settings.get_settings().get("/rtx/hydra/supportMultiTickRate")
+        create_rtx_lidar_scan_buffer_node_type_id = "isaacsim.sensors.rtx.IsaacCreateRTXLidarScanBuffer" + (
+            "New" if is_multitick_enabled else ""
+        )
+        compute_rtx_lidar_flat_scan_node_type_id = "isaacsim.sensors.rtx.IsaacComputeRTXLidarFlatScan" + (
+            "New" if is_multitick_enabled else ""
+        )
+        input_rendervar_flatscan = (
+            "IsaacCreateRTXLidarScanBufferForFlatScan" if not is_multitick_enabled else "GenericModelOutputPtr"
+        )
+
         annotator_name = "IsaacExtractRTXSensorPointCloud" + "NoAccumulator"
         register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=[
                 "GenericModelOutputPtr",
             ],
-            node_type_id="isaacsim.sensors.rtx.IsaacCreateRTXLidarScanBuffer",
-            init_params={"enablePerFrameOutput": True},
+            node_type_id=create_rtx_lidar_scan_buffer_node_type_id,
+            init_params={"enablePerFrameOutput": not is_multitick_enabled},
             output_data_type=np.float32,
             output_channels=3,
         )
@@ -227,7 +239,7 @@ class Extension(omni.ext.IExt):
             input_rendervars=[
                 "GenericModelOutputPtr",
             ],
-            node_type_id="isaacsim.sensors.rtx.IsaacCreateRTXLidarScanBuffer",
+            node_type_id=create_rtx_lidar_scan_buffer_node_type_id,
             output_data_type=np.float32,
             output_channels=3,
             on_attach_callback=_on_attach_isaac_create_rtx_lidar_scan_buffer,
@@ -262,7 +274,7 @@ class Extension(omni.ext.IExt):
             input_rendervars=[
                 "GenericModelOutputPtr",
             ],
-            node_type_id="isaacsim.sensors.rtx.IsaacCreateRTXLidarScanBuffer",
+            node_type_id=create_rtx_lidar_scan_buffer_node_type_id,
             init_params={"outputAzimuth": True, "outputDistance": True, "outputIntensity": True},
             output_data_type=np.float32,
             output_channels=3,
@@ -277,8 +289,8 @@ class Extension(omni.ext.IExt):
             input_rendervars=[
                 "GenericModelOutputPtr",
             ],
-            node_type_id="isaacsim.sensors.rtx.IsaacCreateRTXLidarScanBuffer",
-            init_params={"enablePerFrameOutput": True},
+            node_type_id=create_rtx_lidar_scan_buffer_node_type_id,
+            init_params={"enablePerFrameOutput": not is_multitick_enabled},
             output_data_type=np.float32,
             output_channels=3,
         )
@@ -311,9 +323,9 @@ class Extension(omni.ext.IExt):
         register_annotator_from_node_with_telemetry(
             name=annotator_name,
             input_rendervars=[
-                "IsaacCreateRTXLidarScanBuffer" + "ForFlatScan",
+                input_rendervar_flatscan,
             ],
-            node_type_id="isaacsim.sensors.rtx.IsaacComputeRTXLidarFlatScan",
+            node_type_id=compute_rtx_lidar_flat_scan_node_type_id,
             output_data_type=np.float32,
             output_channels=3,
             on_attach_callback=_on_attach_gmo_flatscan,

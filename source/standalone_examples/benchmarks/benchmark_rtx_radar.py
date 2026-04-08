@@ -25,16 +25,24 @@ parser.add_argument(
     choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile", "OmniPerfKPIFile"],
     help="Benchmarking backend, defaults",
 )
+parser.add_argument(
+    "--tick-rate", type=float, default=0.0, help="Tick rate for radar sensors (Hz). 0.0 means default rate."
+)
 
 args, unknown = parser.parse_known_args()
 
 n_sensor = args.num_sensors
 n_frames = args.num_frames
 n_gpus = args.num_gpus
+tick_rate = args.tick_rate
+
+extra_args = []
+if tick_rate > 0:
+    extra_args.append("--/rtx/hydra/supportMultiTickRate=true")
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpus})
+simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpus, "extra_args": extra_args})
 
 import carb
 import omni.kit.test
@@ -85,6 +93,8 @@ for i in range(n_sensor):
     sensor_translation = Gf.Vec3f([-0.937, -2.0 + i * 2.0, 0.8940])  # defined for full_warehouse.usd
     sensor_orientation = Gf.Quatd(0.70711, 0.70711, 0, 0)
     sensor = add_rtx_radar(radar_path, sensor_translation, sensor_orientation)
+    if tick_rate > 0:
+        sensor.GetAttribute("omni:sensor:tickRate").Set(tick_rate)
     sensors.append(sensor)
 
     hydra = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")

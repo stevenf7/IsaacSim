@@ -1,4 +1,7 @@
 # Changelog
+## [2.17.1] - 2026-03-30
+### Added
+- Add optional multitick support. When enabled, loop runner resets simulation time to 0.0 on SimulationApp.__init__.
 
 ## [2.17.1] - 2026-04-02
 ### Changed

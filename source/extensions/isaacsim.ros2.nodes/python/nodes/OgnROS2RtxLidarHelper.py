@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+import math
 import traceback
 
 import carb
@@ -105,8 +106,11 @@ class OgnROS2RtxLidarHelper:
         rotation_rate = float(prim.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get() or 0)
         near_range = float(prim.GetAttribute("omni:sensor:Core:nearRangeM").Get() or 0)
         far_range = float(prim.GetAttribute("omni:sensor:Core:farRangeM").Get() or 0)
-
+        num_channels = int(prim.GetAttribute("omni:sensor:Core:numberOfChannels").Get() or 0)
+        max_returns = int(prim.GetAttribute("omni:sensor:Core:maxReturns").Get() or 0)
+        firing_rate = int(prim.GetAttribute("omni:sensor:Core:patternFiringRateHz").Get() or 0)
         scan_type = str(prim.GetAttribute("omni:sensor:Core:scanType").Get() or "")
+
         if scan_type == "SOLID_STATE":
             azimuth_deg = prim.GetAttribute("omni:sensor:Core:emitterState:s001:azimuthDeg").Get()
             if not azimuth_deg or len(azimuth_deg) == 0:
@@ -120,7 +124,6 @@ class OgnROS2RtxLidarHelper:
                 az_start -= 180.0
                 az_end -= 180.0
         else:
-            firing_rate = float(prim.GetAttribute("omni:sensor:Core:patternFiringRateHz").Get() or 0)
             if rotation_rate <= 0 or firing_rate <= 0:
                 carb.log_error("LaserScan SRTX: scanRateBaseHz or patternFiringRateHz is 0")
                 return None
@@ -129,6 +132,7 @@ class OgnROS2RtxLidarHelper:
             az_end = 180.0
             h_fov = 360.0
 
+        max_points = int(num_channels * max_returns * math.ceil(firing_rate / rotation_rate))
         return dict(
             azimuth_range_start=az_start,
             azimuth_range_end=az_end,
@@ -137,6 +141,7 @@ class OgnROS2RtxLidarHelper:
             rotation_rate=rotation_rate,
             horizontal_resolution=h_res,
             horizontal_fov=h_fov,
+            max_points=max_points,
         )
 
     @staticmethod
@@ -170,6 +175,7 @@ class OgnROS2RtxLidarHelper:
             if scan_meta is None:
                 carb.log_error("Failed to read laser scan metadata from lidar prim")
                 return False
+
             capsule = create_laser_scan_publisher_capsule(**common_params, **scan_meta)
         else:
             from isaacsim.ros2.nodes.bindings._ros2_nodes import create_lidar_publisher_capsule
@@ -205,7 +211,6 @@ class OgnROS2RtxLidarHelper:
                 # Camera helper was disabled, reset the state
                 state.custom_reset()
             return True
-
         if state.initialized:
             # Lidar helper was already initialized, nothing to do
             return True
@@ -258,20 +263,47 @@ class OgnROS2RtxLidarHelper:
             state.initialized = True
             return True
 
+        is_multitick_enabled = carb.settings.get_settings().get("/rtx/hydra/supportMultiTickRate")
+
         try:
             with Usd.EditContext(stage, stage.GetSessionLayer()):
                 # OG path: create writer, initialize, attach.
                 if sensor_type == "laser_scan":
-                    if db.inputs.fullScan:
+                    if is_multitick_enabled:
+                        if not db.inputs.fullScan:
+                            carb.log_warn(
+                                "fullScan=False is deprecated. RTX Lidar now always produces full scans. Ignoring."
+                            )
+                        # Map scan metadata to writer init parameters
+                        scan_meta = OgnROS2RtxLidarHelper._read_laser_scan_metadata(prim)
+                        if scan_meta is None:
+                            carb.log_error("Failed to read laser scan metadata from lidar prim")
+                            return False
+                        init_params["horizontalFov"] = scan_meta["horizontal_fov"]
+                        init_params["horizontalResolution"] = scan_meta["horizontal_resolution"]
+                        init_params["depthRange"] = [scan_meta["depth_range_min"], scan_meta["depth_range_max"]]
+                        init_params["rotationRate"] = scan_meta["rotation_rate"]
+                        init_params["azimuthRange"] = [scan_meta["azimuth_range_start"], scan_meta["azimuth_range_end"]]
+                    elif not db.inputs.fullScan:
                         carb.log_warn("Full scan does not have an effect with the laser_scan setting")
                     writer = rep.writers.get("RtxLidar" + f"ROS2{time_type}PublishLaserScan")
-
                 elif sensor_type == "point_cloud":
-                    writer = build_rtx_sensor_pointcloud_writer(
-                        metadata=db.inputs.selectedMetadata,
-                        enable_full_scan=db.inputs.fullScan,
-                        use_system_time=db.inputs.useSystemTime,
-                    )
+                    if is_multitick_enabled:
+                        if not db.inputs.fullScan:
+                            carb.log_warn(
+                                "fullScan=False is deprecated. RTX Lidar now always produces full scans. Ignoring."
+                            )
+                        scan_meta = OgnROS2RtxLidarHelper._read_laser_scan_metadata(prim)
+                        for metadata_item in db.inputs.selectedMetadata:
+                            init_params[f"output{metadata_item[0].upper()}{metadata_item[1:]}"] = True
+                        init_params["gmoMaxElements"] = scan_meta["max_points"]
+                        writer = rep.writers.get(f"RtxLidarROS2{time_type}PublishPointCloud")
+                    else:
+                        writer = build_rtx_sensor_pointcloud_writer(
+                            metadata=db.inputs.selectedMetadata,
+                            enable_full_scan=db.inputs.fullScan,
+                            use_system_time=db.inputs.useSystemTime,
+                        )
 
                     if db.inputs.enableObjectIdMap:
                         if "ObjectId" not in db.inputs.selectedMetadata:
@@ -298,14 +330,8 @@ class OgnROS2RtxLidarHelper:
                     writer.initialize(**init_params)
                     state.append_writer(writer)
                     if db.inputs.showDebugView:
-                        doTransform = not (
-                            prim.GetTypeName() == "OmniLidar"
-                            and prim.HasAttribute("omni:sensor:Core:outputFrameOfReference")
-                            and prim.GetAttribute("omni:sensor:Core:outputFrameOfReference").Get() == "WORLD"
-                        )
-                        writer = rep.writers.get(
-                            "RtxLidarDebugDrawPointCloud" + ("Buffer" if db.inputs.fullScan else "")
-                        )
+                        doTransform = prim.GetAttribute("omni:sensor:Core:outputFrameOfReference").Get() == "WORLD"
+                        writer = rep.writers.get("RtxLidarDebugDrawPointCloudBuffer")
                         writer.initialize(doTransform=doTransform)
                         state.append_writer(writer)
                 state.attach_writers(render_product_path)

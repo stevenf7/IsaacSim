@@ -1,4 +1,7 @@
 # Changelog
+## [15.16.0] - 2026-04-07
+### Added
+- Add optional multitick support.  When enabled, switch to nodes that consume GenericModelOutput assuming it contains a full scan, eliminating lidar accumulation post-processing.
 
 ## [15.15.2] - 2026-04-03
 ### Changed

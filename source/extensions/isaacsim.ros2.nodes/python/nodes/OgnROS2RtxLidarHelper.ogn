@@ -72,9 +72,9 @@
             },
             "fullScan": {
                 "type": "bool",
-                "description": "If True publish a full scan when enough data has accumulated instead of partial scans each frame. Supports point cloud type only",
+                "description": "DEPRECATED - RTX Lidar now always produces full scans via accumulateOutputs. This setting is ignored.",
                 "uiName": "Publish Full Scan",
-                "default": false
+                "default": true
             },
             "showDebugView": {
                 "type": "bool",

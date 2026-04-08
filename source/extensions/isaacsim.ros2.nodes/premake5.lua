@@ -50,6 +50,7 @@ includedirs {
     extsbuild_dir .. "/omni.syntheticdata/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
     "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/include",
+    "%{root}/_build/target-deps/generic_model_output/%{platform}/%{config}/include",
     "%{root}/source/extensions/isaacsim.ros2.nodes/include",
     "%{root}/_build/target-deps/generic_model_output/%{platform}/%{cfg.buildcfg}/include",
 }

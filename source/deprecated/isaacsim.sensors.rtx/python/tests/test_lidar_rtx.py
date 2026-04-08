@@ -131,6 +131,12 @@ class TestLidarRtx(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(lidar)
         self.assertEqual(lidar.prim_path, self.lidar_prim_path)
 
+        # Verify accumulateOutputs is set to True by the constructor
+        sensor_prim = self.stage.GetPrimAtPath(self.lidar_prim_path)
+        attr = sensor_prim.GetAttribute("omni:sensor:Core:accumulateOutputs")
+        if attr.IsValid():
+            self.assertTrue(attr.Get(), "Expected accumulateOutputs to be True after LidarRtx construction.")
+
     async def test_constructor_with_camera_prim(self):
         """Test constructor with Camera prim."""
         # Test position and orientation in constructor

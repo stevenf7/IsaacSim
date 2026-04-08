@@ -63,6 +63,9 @@ parser.add_argument(
 )
 parser.add_argument("--gpu-frametime", action="store_true", help="Enable GPU frametime measurement")
 parser.add_argument("--non-headless", action="store_false", dest="headless", help="Run with GUI")
+parser.add_argument(
+    "--enable-lidar-multitick", action="store_true", help="Enable multi-tick rendering for lidar sensors"
+)
 
 args, unknown = parser.parse_known_args()
 
@@ -73,6 +76,7 @@ lidar_type = args.lidar_type
 metadata_fields = args.metadata
 gpu_frametime = args.gpu_frametime
 headless = args.headless
+enable_lidar_multitick = args.enable_lidar_multitick
 
 from isaacsim import SimulationApp
 
@@ -81,6 +85,8 @@ if "ObjectId" in metadata_fields:
     extra_args.append("--/rtx-transient/stableIds/enabled=true")
 if "HitNormal" in metadata_fields:
     extra_args.append("--/app/sensors/nv/lidar/publishNormals=true")
+if enable_lidar_multitick:
+    extra_args.append("--/rtx/hydra/supportMultiTickRate=true")
 
 simulation_app = SimulationApp({"headless": headless, "max_gpu_count": n_gpu, "extra_args": extra_args})
 
@@ -152,6 +158,12 @@ for i in range(n_sensor):
         orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
     )
     sensors.append(sensor)
+
+    if enable_lidar_multitick:
+        scan_rate = sensor.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get()
+        if scan_rate is not None:
+            sensor.GetAttribute("omni:sensor:tickRate").Set(float(scan_rate))
+
     print(sensor.GetPath())
 
     # Create OmniGraph for ROS2 publishing with metadata

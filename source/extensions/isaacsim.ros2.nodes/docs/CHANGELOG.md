@@ -1,4 +1,7 @@
 # Changelog
+## [1.15.0] - 2026-04-07
+### Added
+- Add optional multitick support. When enabled, LaserScan and PointCloud2 messages built from GenericModelOutput annotator directly, and all sensor inputs (including RTX Lidar) are assumed to be full frames.
 
 ## [1.14.1] - 2026-04-03
 ### Changed

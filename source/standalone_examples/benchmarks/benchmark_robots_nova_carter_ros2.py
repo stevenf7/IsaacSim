@@ -47,6 +47,13 @@ parser.add_argument(
 parser.add_argument(
     "--async-render-warmup-frames", type=int, default=15, help="Number of frames to warmup the render thread"
 )
+parser.add_argument("--multitick", action="store_true", help="Run with multi-tick rendering enabled")
+parser.add_argument(
+    "--tick-rate", type=float, default=0.0, help="Tick rate for camera sensors (Hz). 0.0 means default rate."
+)
+parser.add_argument(
+    "--enable-lidar-multitick", action="store_true", help="Enable multi-tick rendering for lidar sensors"
+)
 
 args, unknown = parser.parse_known_args()
 
@@ -61,14 +68,24 @@ headless = args.non_headless
 viewport_updates = args.viewport_updates
 async_render_handshake = args.async_render_handshake
 async_render_warmup_frames = args.async_render_warmup_frames
+multitick = args.multitick
+tick_rate = args.tick_rate
+enable_lidar_multitick = args.enable_lidar_multitick
 
-async_render_handshake_args = []
+extra_args = []
 if async_render_handshake:
     async_render_handshake_args = [
         "--/app/asyncRendering=true",
         "--/app/omni.usd/asyncHandshake=true",
         "--/omni/replicator/asyncRendering=true",
     ]
+    extra_args.extend(async_render_handshake_args)
+
+if multitick or tick_rate > 0 or enable_lidar_multitick:
+    multitick_args = [
+        "--/rtx/hydra/supportMultiTickRate=true",
+    ]
+    extra_args.extend(multitick_args)
 
 import numpy as np
 from isaacsim import SimulationApp
@@ -78,7 +95,7 @@ simulation_app = SimulationApp(
         "headless": headless,
         "max_gpu_count": n_gpu,
         "disable_viewport_updates": viewport_updates,
-        "extra_args": async_render_handshake_args,
+        "extra_args": extra_args,
     }
 )
 
@@ -91,7 +108,7 @@ from isaacsim.core.experimental.utils.stage import get_current_stage
 from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.robot.wheeled_robots.robots import WheeledRobot
-from pxr import Usd
+from pxr import Usd, UsdGeom
 
 enable_extension("isaacsim.benchmark.services")
 
@@ -141,6 +158,7 @@ rclpy.init()
 node = rclpy.create_node("cmd_vel_publisher")
 cmd_vel_pub = node.create_publisher(Twist, "cmd_vel", 1)
 
+# TODO: May eventually want to use a different rig when using multi-tick rendering?
 robot_path = "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd"
 scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
 
@@ -203,6 +221,25 @@ for i in range(n_robot):
             ).set(False)
 
     robots.append(current_robot)
+
+if tick_rate > 0:
+    for robot_idx in range(n_robot):
+        robot_prim_path = "/Robots/Robot_" + str(robot_idx)
+        robot_prim = stage.GetPrimAtPath(robot_prim_path)
+        for prim in Usd.PrimRange(robot_prim):
+            if prim.IsA(UsdGeom.Camera):
+                prim.ApplyAPI("OmniSensorAPI")
+                prim.GetAttribute("omni:sensor:tickRate").Set(tick_rate)
+
+if enable_lidar_multitick:
+    for robot_idx in range(n_robot):
+        robot_prim_path = "/Robots/Robot_" + str(robot_idx)
+        robot_prim = stage.GetPrimAtPath(robot_prim_path)
+        for prim in Usd.PrimRange(robot_prim):
+            if prim.GetTypeName() == "OmniLidar":
+                scan_rate = prim.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get()
+                if scan_rate is not None:
+                    prim.GetAttribute("omni:sensor:tickRate").Set(float(scan_rate))
 
 # Set this to true so that we always publish regardless of subscribers
 carb.settings.get_settings().set_bool("/exts/isaacsim.ros2.bridge/publish_without_verification", True)

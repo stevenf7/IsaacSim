@@ -1,6 +1,6 @@
 {
     "isaacsim.ros2.bridge.ROS2PublishLaserScan": {
-        "version": 2,
+        "version": 3,
         "icon": "icons/isaac-sim.svg",
         "description": [
             "This node publishes LiDAR scans as a ROS2 LaserScan message"
@@ -50,6 +50,16 @@
                 "description": "ROS2 Timestamp in seconds",
                 "uiName": "Timestamp",
                 "default": 0.0
+            },
+            "dataPtr": {
+                "type": "uint64",
+                "description": "Pointer to GenericModelOutput buffer. When non-zero, the node processes the GMO buffer directly and linearDepthData/intensitiesData inputs are ignored.",
+                "default": 0
+            },
+            "bufferSize": {
+                "type": "uint64",
+                "description": "Size of the GenericModelOutput buffer in bytes",
+                "default": 0
             },
             "horizontalFov": {
                 "type": "float",

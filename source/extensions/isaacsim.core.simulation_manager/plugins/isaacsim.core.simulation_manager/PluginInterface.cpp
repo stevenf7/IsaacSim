@@ -701,6 +701,14 @@ void onPhysicsStep(float timeElapsed, const omni::physics::PhysicsStepContext& c
     {
         CARB_LOG_ERROR("Failed to write time data to storage");
     }
+
+    // multi-tick rate simulation time update
+    auto settings = carb::getCachedInterface<carb::settings::ISettings>();
+    if (g_runLoopRunnerInterface && settings && settings->getAsBool("/rtx/hydra/supportMultiTickRate"))
+    {
+        std::string runloopName;
+        g_runLoopRunnerInterface->setNextSimulationTime(g_simulationTime, runloopName);
+    }
 }
 
 /**
@@ -884,6 +892,8 @@ public:
         desc.onDetach = onDetach;
         desc.onResume = onResume;
         g_stageUpdate->createStageUpdateNode(desc);
+
+        g_runLoopRunnerInterface = carb::getCachedInterface<omni::kit::IRunLoopRunnerImpl>();
     }
 
     /**
