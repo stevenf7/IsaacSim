@@ -39,10 +39,10 @@ def parse_generic_model_output_data(data: wp.array) -> generic_model_output.Gene
 
         >>> import isaacsim.core.experimental.utils.app as app_utils
         >>> import isaacsim.core.experimental.utils.stage as stage_utils
-        >>> from isaacsim.sensors.experimental.rtx import RtxLidarSensor, parse_generic_model_output_data
+        >>> from isaacsim.sensors.experimental.rtx import LidarSensor, parse_generic_model_output_data
         >>>
         >>> stage_utils.define_prim("/World/sphere", "Sphere") # doctest: +NO_CHECK
-        >>> sensor = RtxLidarSensor("/World/lidar", annotators=["generic-model-output"]) # doctest: +NO_CHECK
+        >>> sensor = LidarSensor("/World/lidar", annotators=["generic-model-output"]) # doctest: +NO_CHECK
         >>>
         >>> # play the simulation so the sensor can fetch data
         >>> app_utils.play(commit=True)
@@ -52,7 +52,7 @@ def parse_generic_model_output_data(data: wp.array) -> generic_model_output.Gene
         <generic_model_output.GenericModelOutput object at 0x...>
     """
     if data is None:
-        gmo = generic_model_output.GenericModelOutput
+        gmo = generic_model_output.GenericModelOutput()
     # build struct from buffer
     elif isinstance(data, wp.array):
         gmo = generic_model_output.getModelOutputFromBuffer(data.numpy())
@@ -67,7 +67,7 @@ def parse_generic_model_output_data(data: wp.array) -> generic_model_output.Gene
         gmo = generic_model_output.getModelOutputFromBuffer(buffer)
     # validate struct (getModelOutputFromBuffer warns if magic number is incorrect)
     if gmo.magicNumber != generic_model_output.getMagicNumberGMO():
-        gmo = generic_model_output.GenericModelOutput
+        gmo = generic_model_output.GenericModelOutput()
         gmo.numElements = 0
     return gmo
 
@@ -87,10 +87,10 @@ def parse_stable_id_map_data(data: wp.array) -> dict:
 
         >>> import isaacsim.core.experimental.utils.app as app_utils
         >>> import isaacsim.core.experimental.utils.stage as stage_utils
-        >>> from isaacsim.sensors.experimental.rtx import RtxLidarSensor, parse_stable_id_map_data
+        >>> from isaacsim.sensors.experimental.rtx import LidarSensor, parse_stable_id_map_data
         >>>
         >>> stage_utils.define_prim("/World/sphere", "Sphere") # doctest: +NO_CHECK
-        >>> sensor = RtxLidarSensor("/World/lidar", annotators=["stable-id-map"]) # doctest: +NO_CHECK
+        >>> sensor = LidarSensor("/World/lidar", annotators=["stable-id-map"]) # doctest: +NO_CHECK
         >>>
         >>> # play the simulation so the sensor can fetch data
         >>> app_utils.play(commit=True)

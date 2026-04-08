@@ -1,12 +1,26 @@
 # Overview
 
-The isaacsim.sensors.experimental.rtx extension provides experimental Python APIs for RTX-based lidar simulation in Isaac Sim. It wraps OmniLidar prims and Replicator annotators so workflows can configure a sensor, run simulation, and retrieve structured range returns and stable-ID semantics. The extension metadata also covers related RTX sensor stack pieces (for example shared NV lidar and radar renderer options); the primary documented Python surface today is RTX lidar.
+The isaacsim.sensors.experimental.rtx extension provides experimental Python APIs for RTX-based sensor simulation in Isaac Sim, covering lidar, radar, and acoustic (ultrasonic) sensors. Each sensor type is split into an **authoring** class for USD prim creation and configuration, and a **runtime sensor** class for attaching annotators and retrieving data at simulation time.
 
 ## Key Components
 
-### {class}`RtxLidarSensor <isaacsim.sensors.experimental.rtx.RtxLidarSensor>`
+### Authoring classes
 
-**High-level OmniLidar wrapper.** The class resolves or creates a single `OmniLidar` prim, attaches selected annotators, and exposes `get_data()` after the timeline advances. Supported annotator names include `generic-model-output` and `stable-id-map`.
+Authoring classes inherit from `XformPrim` and manage the underlying USD sensor prim. They handle prim creation (or wrapping existing prims), schema application, attribute setting, and transform operations.
+
+- {class}`Lidar <isaacsim.sensors.experimental.rtx.Lidar>` — Creates or wraps `OmniLidar` prims using `omni.replicator.core.functional.create.omni_lidar`. Supports creating from known configurations via {data}`SUPPORTED_LIDAR_CONFIGS <isaacsim.sensors.experimental.rtx.SUPPORTED_LIDAR_CONFIGS>`.
+- {class}`Radar <isaacsim.sensors.experimental.rtx.Radar>` — Creates or wraps `OmniRadar` prims using `omni.replicator.core.functional.create.omni_radar`. Requires Motion BVH to be enabled (`/renderer/raytracingMotion/enabled`).
+- {class}`Acoustic <isaacsim.sensors.experimental.rtx.Acoustic>` — Creates or wraps `OmniAcoustic` prims directly. Automatically applies multi-instance schemas (`OmniSensorWpmAcousticSensorMountAPI`, `OmniSensorWpmAcousticRxGroupAPI`) when attributes with matching prefixes are provided.
+
+All authoring classes accept a `tick_rate` parameter (default `0` for autotrigger) that sets `omni:sensor:tickRate` on the prim.
+
+### Runtime sensor classes
+
+Runtime sensor classes wrap an authoring object, create a Replicator render product, and manage annotator attachment and data retrieval. Supported annotator names include `generic-model-output` and `stable-id-map`.
+
+- {class}`LidarSensor <isaacsim.sensors.experimental.rtx.LidarSensor>` — Wraps a `Lidar` object (or creates one from a path).
+- {class}`RadarSensor <isaacsim.sensors.experimental.rtx.RadarSensor>` — Wraps a `Radar` object (or creates one from a path).
+- {class}`AcousticSensor <isaacsim.sensors.experimental.rtx.AcousticSensor>` — Wraps an `Acoustic` object (or creates one from a path).
 
 ### Lidar configuration registry
 
@@ -27,20 +41,48 @@ The extension ships {mod}`isaacsim.sensors.experimental.rtx.generic_model_output
 
 ## Code examples
 
+### Lidar
+
 ```python
-from isaacsim.sensors.experimental.rtx import RtxLidarSensor, parse_generic_model_output_data
+from isaacsim.sensors.experimental.rtx import Lidar, LidarSensor, parse_generic_model_output_data
 import isaacsim.core.experimental.utils.app as app_utils
 
-sensor = RtxLidarSensor(
-    "/World/lidar",
-    annotators=["generic-model-output"],
-)
+# authoring: create a lidar prim from a known config
+lidar = Lidar.create(path="/World/lidar", config="OS1", variant="OS1_REV6_32ch20hz512res")
+
+# runtime: attach annotators and retrieve data
+sensor = LidarSensor(lidar, annotators=["generic-model-output"])
 app_utils.play(commit=True)
 
 data, _ = sensor.get_data("generic-model-output")
 gmo = parse_generic_model_output_data(data)
 ```
 
+### Radar
+
+```python
+from isaacsim.sensors.experimental.rtx import Radar, RadarSensor
+
+radar = Radar("/World/radar", tick_rate=20.0)
+sensor = RadarSensor(radar, annotators=["generic-model-output"])
+```
+
+### Acoustic
+
+```python
+from isaacsim.sensors.experimental.rtx import Acoustic, AcousticSensor
+
+acoustic = Acoustic(
+    "/World/acoustic",
+    tick_rate=30.0,
+    attributes={
+        "omni:sensor:WpmAcoustic:centerFrequency": 51200.0,
+        "omni:sensor:WpmAcoustic:sensorMount:m001:position": (0.0, 0.0, 0.0),
+    },
+)
+sensor = AcousticSensor(acoustic, annotators=["generic-model-output"])
+```
+
 ## Integration
 
-Dependencies include **isaacsim.core.experimental.prims** (transform and prim utilities), **omni.replicator.core** (annotators and writers), **omni.sensors.nv.lidar**, **omni.sensors.nv.radar**, **omni.sensors.nv.common**, **omni.sensors.nv.ids**, **omni.usd.schema.omni_sensors**, and **isaacsim.storage.native** for asset paths. Enable the extension from **Window > Extensions** and turn on `isaacsim.sensors.experimental.rtx`. Annotator names and buffer layouts are summarized in `docs/usage.rst` for published docs builds.
+Dependencies include **isaacsim.core.experimental.prims** (transform and prim utilities), **omni.replicator.core** (annotators and writers), **omni.sensors.nv.lidar**, **omni.sensors.nv.radar**, **omni.sensors.nv.acoustic**, **omni.sensors.nv.common**, **omni.sensors.nv.ids**, **omni.usd.schema.omni_sensors**, and **isaacsim.storage.native** for asset paths. Enable the extension from **Window > Extensions** and turn on `isaacsim.sensors.experimental.rtx`.

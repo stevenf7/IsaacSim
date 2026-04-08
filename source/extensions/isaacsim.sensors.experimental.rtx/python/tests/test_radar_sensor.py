@@ -13,17 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test rtx lidar sensor functionality."""
-
 from typing import Callable, Literal
 
+import carb
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
 import warp as wp
 from isaacsim.core.experimental.prims.tests.common import cprint
 from isaacsim.core.rendering_manager import ViewportManager
-from isaacsim.sensors.experimental.rtx import RtxLidarSensor, parse_generic_model_output_data, parse_stable_id_map_data
+from isaacsim.sensors.experimental.rtx import (
+    Radar,
+    RadarSensor,
+    parse_generic_model_output_data,
+    parse_stable_id_map_data,
+)
 
 from .common import create_sarcophagus
 
@@ -37,14 +41,12 @@ def parametrize(
     *,
     instances: list[Literal["one", "many"]] = ["one"],
     operations: list[Literal["wrap", "create"]] = ["wrap", "create"],
-    prim_class: type,
-    prim_class_kwargs: dict = {},
+    sensor_class: type,
+    sensor_class_kwargs: dict = {},
     populate_stage_func: Callable[[int, Literal["wrap", "create"]], None],
     populate_stage_func_kwargs: dict = {},
     max_num_prims: int = 1,
 ):
-    """Perform parametrize."""
-
     def decorator(func):
         async def wrapper(self):
             for instance in instances:
@@ -59,17 +61,17 @@ def parametrize(
                         paths = "/World/A_0" if instance == "one" else "/World/A_.*"
                     elif operation == "create":
                         paths = "/World/A_0" if instance == "one" else [f"/World/A_{i}" for i in range(max_num_prims)]
-                    prim = prim_class(paths, **prim_class_kwargs)
+                    sensor = sensor_class(paths, **sensor_class_kwargs)
                     num_prims = 1 if instance == "one" else max_num_prims
                     # run test function
                     app_utils.play(commit=True)
-                    await app_utils.update_app_async()
+                    await app_utils.update_app_async(steps=10)
                     try:
-                        await func(self, prim=prim, num_prims=num_prims, operation=operation)
+                        await func(self, sensor=sensor, num_prims=num_prims, operation=operation)
                     finally:
                         app_utils.stop(commit=True)
                         await app_utils.update_app_async()
-                        del prim  # needed to destroy/release everything before the next test
+                        del sensor  # needed to destroy/release everything before the next test
                         await app_utils.update_app_async(steps=3)
 
         return wrapper
@@ -78,48 +80,46 @@ def parametrize(
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
-    """Perform populate stage."""
     # create new stage
     await stage_utils.create_new_stage_async()
     # wait for the viewport to be ready
     await ViewportManager.wait_for_viewport_async()
+    # enable Motion BVH for radar
+    carb.settings.get_settings().set("/renderer/raytracingMotion/enabled", True)
     # define some shapes
     create_sarcophagus()
-    # define lidar prims
+    # define radar prims
     if operation == "wrap":
         for i in range(max_num_prims):
-            prim = stage_utils.define_prim(f"/World/A_{i}", "OmniLidar")
-            prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
+            prim = stage_utils.define_prim(f"/World/A_{i}", "OmniRadar")
+            prim.ApplyAPI("OmniSensorGenericRadarWpmDmatAPI")
 
 
-class TestRtxLidarSensor(omni.kit.test.AsyncTestCase):
-    """Test rtx lidar sensor."""
-
+class TestRadarSensor(omni.kit.test.AsyncTestCase):
     async def setUp(self):
-        """Method called to prepare the test fixture."""
+        """Method called to prepare the test fixture"""
         super().setUp()
         self.maxDiff = None  # show all diffs
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called."""
+        """Method called immediately after the test method has been called"""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
     @parametrize(
-        prim_class=RtxLidarSensor,
-        prim_class_kwargs={"annotators": list(EXPECTED_ANNOTATOR_SPEC.keys()), "positions": (0, 0, 0.1)},
+        sensor_class=RadarSensor,
+        sensor_class_kwargs={"annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
         populate_stage_func=populate_stage,
     )
-    async def test_data(self, prim, num_prims, operation):
-        """Test data."""
+    async def test_data(self, sensor, num_prims, operation):
         for annotator in sorted(list(EXPECTED_ANNOTATOR_SPEC.keys())):
             cprint(f"  |    |-- annotator: {annotator}")
             spec = EXPECTED_ANNOTATOR_SPEC[annotator]
             data, info = None, {}
             for i in range(10):
                 await app_utils.update_app_async()
-                data, info = prim.get_data(annotator)
+                data, info = sensor.get_data(annotator)
                 # if data is not None:
                 #     break
             if data is None:
