@@ -66,6 +66,8 @@ def main(args: argparse.Namespace) -> None:
     setup_command = ["./isaaclab.sh", "-i"]
     omni.repo.ci.launch(setup_command)
 
+    os.makedirs("tests", exist_ok=True)
+
     test_command = ["./isaaclab.sh", "-p", "-m", "pytest", "tools", "-v",
                     "--junit-xml=tests/full_report.xml"]
 
