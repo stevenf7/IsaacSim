@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
+version = "1.0.1"
 category = "Simulation"
 title = "IPC OmniGraph Node Examples"
 description = "Example OmniGraph nodes (C++ and Python) for inter-process communication over TCP/IP, for use in tutorials."
