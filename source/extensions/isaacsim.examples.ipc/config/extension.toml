@@ -1,0 +1,93 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "IPC OmniGraph Node Examples"
+description = "Example OmniGraph nodes (C++ and Python) for inter-process communication over TCP/IP, for use in tutorials."
+authors = ["hmazhar@nvidia.com", "rhua@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.examples.ipc"
+keywords = ["isaac", "omnigraph", "examples", "tcp", "tutorial"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/Overview.md"
+writeTarget.kit = true
+writeTarget.platform = true
+
+[dependencies]
+"isaacsim.core.nodes" = {}
+"omni.graph" = {}
+"omni.usd.libs" = {}
+
+[[python.module]]
+name = "isaacsim.examples.ipc"
+
+[[python.module]]
+name = "isaacsim.examples.ipc.bindings"
+public = false
+
+[[python.module]]
+name = "isaacsim.examples.ipc.tests"
+public = false
+
+[[native.plugin]]
+path = "bin/*.plugin"
+recursive = false
+
+[fswatcher.patterns]
+include = ["*.ogn", "*.py", "*.toml"]
+exclude = ["Ogn*Database.py"]
+
+[fswatcher.paths]
+exclude = ["*/bin", "*/__pycache__/*", "*/.git/*"]
+
+[[test]]
+name = "startup"
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
+[[test]]
+name = "doctest"
+enabled = true
+timeout = 300
+dependencies = [
+    "isaacsim.test.utils",
+]
+cppTests.libraries = ["bin/${lib_prefix}isaacsim.examples.ipc.tests${lib_ext}"]
+# C++ nodes register for execution graphs; generated push-graph USD OGN tests expect a Fabric
+# interface that only Python OGN types provide here — keep Py template tests, skip C++ ones.
+pythonTests.exclude = [
+    "isaacsim.examples.ipc.ogn.tests.TestOgnSimpleReceiveExternalStepCpp.*",
+    "isaacsim.examples.ipc.ogn.tests.TestOgnSimpleSendSimulationClockCpp.*",
+]
+stdoutFailPatterns.exclude = [
+    "*omni.replicator.nv*",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+]
+
+[[test]]
+enabled = true
+timeout = 300
+dependencies = [
+    "isaacsim.test.utils",
+]
+pythonTests.include = ["isaacsim.examples.ipc.tests.*"]
+pythonTests.exclude = [
+    "*test_data_access*",
+    "isaacsim.examples.ipc.ogn.tests.*",
+]
+stdoutFailPatterns.exclude = [
+    "*omni.replicator.nv*",
+    "*Width 0 or height 0 is not valid*",
+]
+args = [
+    "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
+    "--no-window",
+]

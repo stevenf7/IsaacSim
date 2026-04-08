@@ -434,6 +434,7 @@ inventory.includes.all = [
     "exts/isaacsim.examples.extension",
     "exts/isaacsim.examples.interactive",
     "exts/isaacsim.examples.ui",
+    "exts/isaacsim.examples.ipc",
 ]
 
 [isaacsim-gui]

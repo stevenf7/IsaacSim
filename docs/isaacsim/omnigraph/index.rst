@@ -18,6 +18,7 @@ To access OmniGraph's editor, go to **Window > Graph Editors > Action Graph**.
     omnigraph_shortcuts
     omnigraph_custom_python_nodes
     omnigraph_custom_cpp_nodes
+    omnigraph_custom_ipc_nodes
     :doc:`Additional Resources<extensions:ext_omnigraph>`
 
 
