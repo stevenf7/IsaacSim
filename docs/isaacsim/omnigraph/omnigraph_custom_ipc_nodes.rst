@@ -13,14 +13,14 @@
 Building Custom IPC OmniGraph Nodes
 ===================================
 
-This guide explains how to build OmniGraph nodes for IPC in |isaac-sim_short|—covering the node schema, transport lifecycle with ``BaseResetNode``, non-blocking I/O inside ``compute``, and how to add your transport library as a dependency. The OmniGraph patterns apply regardless of which IPC stack you use; the worked example is ``isaacsim.examples.ipc``, a clock-send and step-receive node pair over BSD sockets in C++ and Python. The tutorial starts by scaffolding a new extension with the CLI template so you have a working build skeleton before writing any IPC code.
+This guide explains how to build OmniGraph nodes for inter-process communication (IPC) in |isaac-sim_short|—covering the node schema, transport lifecycle with ``BaseResetNode``, non-blocking I/O inside ``compute``, and how to add your transport library as a dependency. The OmniGraph patterns apply regardless of which IPC stack you use; the worked example is ``isaacsim.examples.ipc``, a clock-send and step-receive node pair over BSD sockets in C++ and Python. The tutorial starts by scaffolding a new extension with the CLI template so you have a working build skeleton before writing any IPC code.
 
 Before You Start
 ================
 
 **Prerequisites**:
 
-#. **Custom C++ extensions** — :ref:`isaac_sim_app_tutorial_advanced_custom_cpp_extensions` and the `Kit C++ Extension Template <https://docs.omniverse.nvidia.com/kit/docs/kit-extension-template-cpp/latest/index.html>`_.
+#. **Custom C++ extensions** — `Kit C++ Extension Template <https://docs.omniverse.nvidia.com/kit/docs/kit-extension-template-cpp/latest/index.html>`_.
 #. **OmniGraph** — :doc:`OmniGraph Core Concepts <extensions:ext_omnigraph/getting-started/core_concepts>` and :doc:`Basic OmniGraph Tutorial <extensions:ext_omnigraph/tutorials/gentle_intro>`.
 #. **Custom nodes** — :ref:`isaac_sim_app_omnigraph_custom_python_nodes` and :ref:`isaac_sim_app_tutorial_advanced_omnigraph_custom_cpp_nodes`.
 
@@ -341,7 +341,18 @@ The steps below build the sample graph for ``tcp_tutorial_playback_bridge.py`` u
 #. **Enable the sample extension.** Open Window → Extensions, search for ``isaacsim.examples.ipc``, and enable IPC OmniGraph Node Examples.
 #. **Open the Action Graph editor.** Window → Graph Editors → Action Graph.
 #. **Place the tutorial nodes.** Under Isaac Examples in the node library, add Receive External Step and Send Simulation Clock. Use the search box to add On Playback Tick and Isaac Read Simulation Time from ``isaacsim.core.nodes``. Either C++ or Python node pair works with the bridge script.
-#. **Wire the graph.** Connect On Playback Tick ``execOut`` → Receive External Step ``execIn`` → Send Simulation Clock ``execIn``. Connect Isaac Read Simulation Time ``simulationTime`` → Send Simulation Clock ``simulationTime``. The default ``uri`` values are ``127.0.0.1:9001`` on the receive node and ``127.0.0.1:9000`` on the send node.
+#. **Wire the graph.**
+
+   Execution chain:
+
+   - On Playback Tick ``execOut`` → Receive External Step ``execIn``
+   - Receive External Step ``execOut`` → Send Simulation Clock ``execIn``
+
+   Data:
+
+   - Isaac Read Simulation Time ``simulationTime`` → Send Simulation Clock ``simulationTime``
+
+   The default ``uri`` values are ``127.0.0.1:9001`` on the receive node and ``127.0.0.1:9000`` on the send node.
 
 General Action Graph UI is covered in :ref:`isaac_sim_app_tutorial_gui_omnigraph` and in the OmniGraph documentation linked in `Before you start`_.
 
