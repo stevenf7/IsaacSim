@@ -49,7 +49,8 @@ def import_module(name: str) -> ModuleType:
     """
 
     def exit_app() -> None:
-        # test mode
+        if carb.settings.get_settings().get_as_bool("/app/stubgen/enabled"):
+            return
         if carb.settings.get_settings().get_as_bool("/exts/omni.kit.test/runTestsAndQuit"):
             sys.exit(1)
         omni.kit.app.get_app().shutdown()
