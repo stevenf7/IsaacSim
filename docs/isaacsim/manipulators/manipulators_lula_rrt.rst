@@ -20,8 +20,8 @@ Getting Started
 - You can reference the Lula Robot Description Editor to understand how to generate your own robot_description.yaml file to be able to use RRT on unsupported robots.
 - Review the :ref:`Loaded Scenario Extension Template <isaac_sim_app_tutorial_extension_templates_loaded_scenario>` to understand how this tutorial is structured and run.
 
-To follow along with the tutorial, you can search and enable the **Motion Generation Tutorials** extension within your running Isaac Sim 6.0 instance.
-Within the `isaacsim.robot_motion.motion_generation.tutorials` extension, there is a fully functional example of RRT being used to plan to a task-space target.
+To follow along with the tutorial, you can search and enable the **Motion Generation Examples** extension within your running Isaac Sim 6.0 instance.
+Within the `isaacsim.robot_motion.motion_generation.examples` extension, there is a fully functional example of RRT being used to plan to a task-space target.
 The sections of this tutorial build up the file ``scenario.py`` from basic functionality to the completed code.
 
 Generating a Path Using an RRT Instance

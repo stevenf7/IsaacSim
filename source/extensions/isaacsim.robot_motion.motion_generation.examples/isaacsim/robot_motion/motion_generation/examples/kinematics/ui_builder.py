@@ -13,37 +13,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""UI builder module for the UR10 trajectory generation tutorial extension."""
+"""A UI module for creating and managing the robot motion generation tutorial interface for Franka robot kinematics examples."""
 
 
+import asyncio
+
+import carb
 import omni.timeline
 import omni.ui as ui
 from isaacsim.core.api.world import World
-from isaacsim.core.prims import SingleXFormPrim
-from isaacsim.core.utils.stage import create_new_stage, get_current_stage
+from isaacsim.core.prims import SingleXFormPrim as XFormPrim
+from isaacsim.core.utils.stage import create_new_stage, get_current_stage, update_stage_async
 from isaacsim.core.utils.viewports import set_camera_view
-from isaacsim.examples.extension.core_connectors import LoadButton, ResetButton
-from isaacsim.gui.components.element_wrappers import CollapsableFrame, StateButton
-from isaacsim.gui.components.ui_utils import get_style
+from isaacsim.gui.components.element_wrappers import Button, CollapsableFrame, StateButton
+from isaacsim.gui.components.style import get_style
 from pxr import Sdf, UsdLux
 
-from .scenario import UR10TrajectoryGenerationExample
+from .scenario import FrankaKinematicsExample
 
 
 class UIBuilder:
-    """UI builder for the UR10 trajectory generation tutorial extension.
+    """A UI builder class for creating and managing the robot motion generation tutorial interface.
 
-    Provides an interactive interface for demonstrating robot motion generation concepts including configuration space
-    trajectories, task space trajectories, and advanced trajectory planning. The UI enables users to load a UR10 robot
-    scenario, reset the simulation, and execute different types of trajectory generation examples.
+    This class provides a complete user interface for the Franka robot kinematics example, including world
+    controls for loading and resetting scenes, and scenario controls for running robot motion demonstrations.
+    It manages UI elements such as collapsible frames, buttons, and state controls that allow users to
+    interactively load robot assets, set up scenarios, and execute motion generation examples.
 
-    The interface includes world control buttons for loading and resetting the scenario, and trajectory execution
-    buttons for running configuration space, task space, and advanced trajectory demonstrations. Each trajectory type
-    showcases different aspects of robot motion planning and control.
+    The UI includes:
+    - World Controls frame with Load and Reset buttons for scene management
+    - Run Scenario frame with state buttons for starting and stopping motion execution
+    - Automatic timeline and physics step management
+    - Camera positioning and lighting setup for optimal visualization
+    - Integration with the FrankaKinematicsExample scenario
 
-    The UI automatically handles timeline events, physics step callbacks, and stage events to maintain proper state
-    management throughout the simulation lifecycle. It integrates with the Isaac Sim World system to manage scene
-    objects and simulation parameters.
+    The class handles all necessary callbacks for timeline events, physics steps, and stage events,
+    ensuring proper cleanup and state management throughout the extension lifecycle.
     """
 
     def __init__(self):
@@ -80,12 +85,8 @@ class UIBuilder:
         # For complete robustness, the user should resolve those edge cases here
         # In general, for extensions based off this template, there is no value to having the user click the play/stop
         # button instead of using the Load/Reset/Run buttons provided.
-        self._cspace_trajectory_btn.reset()
-        self._taskspace_trajectory_btn.reset()
-        self._advanced_trajectory_btn.reset()
-        self._cspace_trajectory_btn.enabled = False
-        self._taskspace_trajectory_btn.enabled = False
-        self._advanced_trajectory_btn.enabled = False
+        self._scenario_state_btn.reset()
+        self._scenario_state_btn.enabled = False
 
     def on_physics_step(self, step: float):
         """Callback for Physics Step.
@@ -110,7 +111,7 @@ class UIBuilder:
     def cleanup(self):
         """Called when the stage is closed or the extension is hot reloaded.
         Perform any necessary cleanup such as removing active callback functions
-        Buttons imported from omni.isaac.ui.element_wrappers implement a cleanup function that should be called
+        Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called
         """
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()
@@ -123,72 +124,74 @@ class UIBuilder:
 
         with world_controls_frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
-                self._load_btn = LoadButton(
-                    "Load Button", "LOAD", setup_scene_fn=self._setup_scene, setup_post_load_fn=self._setup_scenario
-                )
-                self._load_btn.set_world_settings(physics_dt=1 / 60.0, rendering_dt=1 / 60.0)
+                self._load_btn = Button("Load Button", "LOAD", on_click_fn=self._on_load_btn_clicked)
                 self.wrapped_ui_elements.append(self._load_btn)
 
-                self._reset_btn = ResetButton(
-                    "Reset Button", "RESET", pre_reset_fn=None, post_reset_fn=self._on_post_reset_btn
-                )
+                self._reset_btn = Button("Reset Button", "RESET", on_click_fn=self._on_reset_btn_clicked)
                 self._reset_btn.enabled = False
                 self.wrapped_ui_elements.append(self._reset_btn)
 
-        run_scenario_frame = CollapsableFrame("Run Scenario", collapsed=False)
+        run_scenario_frame = CollapsableFrame("Run Scenario")
 
         with run_scenario_frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
-                self._cspace_trajectory_btn = StateButton(
-                    "Run CSpace Trajectory",
-                    "CSPACE TRAJECTORY",
+                self._scenario_state_btn = StateButton(
+                    "Run Scenario",
+                    "RUN",
                     "STOP",
-                    on_a_click_fn=self._on_run_cspace,
-                    on_b_click_fn=self._on_stop,
+                    on_a_click_fn=self._on_run_scenario_a_text,
+                    on_b_click_fn=self._on_run_scenario_b_text,
                     physics_callback_fn=self._update_scenario,
                 )
-                self._cspace_trajectory_btn.enabled = False
-
-                self._taskspace_trajectory_btn = StateButton(
-                    "Run TaskSpace Trajectory",
-                    "TASKSPACE TRAJECTORY",
-                    "STOP",
-                    on_a_click_fn=self._on_run_taskspace,
-                    on_b_click_fn=self._on_stop,
-                    physics_callback_fn=self._update_scenario,
-                )
-                self._taskspace_trajectory_btn.enabled = False
-
-                self._advanced_trajectory_btn = StateButton(
-                    "Run Advanced Trajectory",
-                    "ADVANCED TRAJECTORY",
-                    "STOP",
-                    on_a_click_fn=self._on_run_advanced,
-                    on_b_click_fn=self._on_stop,
-                    physics_callback_fn=self._update_scenario,
-                )
-                self._advanced_trajectory_btn.enabled = False
-
-                self.wrapped_ui_elements.append(self._cspace_trajectory_btn)
-                self.wrapped_ui_elements.append(self._taskspace_trajectory_btn)
-                self.wrapped_ui_elements.append(self._advanced_trajectory_btn)
+                self._scenario_state_btn.enabled = False
+                self.wrapped_ui_elements.append(self._scenario_state_btn)
 
     ######################################################################################
     # Functions Below This Point Support The Provided Example And Can Be Deleted/Replaced
     ######################################################################################
 
     def _on_init(self):
-        """Initialize the extension state and scenario."""
+        """Initializes the scenario and UI state variables."""
         self._articulation = None
         self._cuboid = None
-        self._scenario = UR10TrajectoryGenerationExample()
+        self._scenario = FrankaKinematicsExample()
 
     def _add_light_to_stage(self):
-        """A new stage does not have a light by default. This function creates a spherical light"""
+        """A new stage does not have a light by default.  This function creates a spherical light"""
         sphereLight = UsdLux.SphereLight.Define(get_current_stage(), Sdf.Path("/World/SphereLight"))
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
-        SingleXFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
+        XFormPrim(str(sphereLight.GetPath())).set_world_pose([6.5, 0, 12])
+
+    def _on_load_btn_clicked(self):
+        asyncio.ensure_future(self._load_world_async())
+
+    async def _load_world_async(self):
+        prev_world = World.instance()
+        if prev_world is not None:
+            prev_world.clear_all_callbacks()
+            prev_world.clear_instance()
+        await update_stage_async()
+        world = World(physics_dt=1 / 60.0, rendering_dt=1 / 60.0)
+        self._setup_scene()
+        await world.initialize_simulation_context_async()
+        await world.reset_async()
+        await update_stage_async()
+        await world.pause_async()
+        self._setup_scenario()
+
+    def _on_reset_btn_clicked(self):
+        asyncio.ensure_future(self._reset_world_async())
+
+    async def _reset_world_async(self):
+        world = World.instance()
+        if world is None:
+            carb.log_warn("Reset Button was used when there is no instance of World.")
+        else:
+            await world.reset_async()
+            await update_stage_async()
+            await world.pause_async()
+        self._on_post_reset_btn()
 
     def _setup_scene(self):
         """This function is attached to the Load Button as the setup_scene_fn callback.
@@ -197,7 +200,7 @@ class UIBuilder:
         """
         create_new_stage()
         self._add_light_to_stage()
-        set_camera_view(eye=[2.5, 2, 2.5], target=[0, 0, 0], camera_prim_path="/OmniverseKit_Persp")
+        set_camera_view(eye=[1.5, 1.25, 2], target=[0, 0, 0], camera_prim_path="/OmniverseKit_Persp")
 
         loaded_objects = self._scenario.load_example_assets()
 
@@ -217,9 +220,8 @@ class UIBuilder:
         self._scenario.setup()
 
         # UI management
-        self._cspace_trajectory_btn.enabled = True
-        self._taskspace_trajectory_btn.enabled = True
-        self._advanced_trajectory_btn.enabled = True
+        self._scenario_state_btn.reset()
+        self._scenario_state_btn.enabled = True
         self._reset_btn.enabled = True
 
     def _on_post_reset_btn(self):
@@ -230,12 +232,10 @@ class UIBuilder:
         I.e. the cube prim will move back to the position it was in when it was created in self._setup_scene().
         """
         self._scenario.reset()
-        self._cspace_trajectory_btn.reset()
-        self._taskspace_trajectory_btn.reset()
-        self._advanced_trajectory_btn.reset()
-        self._cspace_trajectory_btn.enabled = True
-        self._taskspace_trajectory_btn.enabled = True
-        self._advanced_trajectory_btn.enabled = True
+
+        # UI management
+        self._scenario_state_btn.reset()
+        self._scenario_state_btn.enabled = True
 
     def _update_scenario(self, step: float, *args, **kwargs):
         """This function is attached to the Run Scenario StateButton.
@@ -244,52 +244,34 @@ class UIBuilder:
         When the b_text "STOP" is pressed, the physics callback is removed.
 
         Args:
-            step: The dt of the current physics step
-            *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments.
+            step: The dt of the current physics step.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
         """
         self._scenario.update(step)
 
-    def _on_run_cspace(self):
-        """Initiates the configuration space trajectory demonstration.
+    def _on_run_scenario_a_text(self):
+        """This function is attached to the Run Scenario StateButton.
+        This function was passed in as the on_a_click_fn argument.
+        It is called when the StateButton is clicked while saying a_text "RUN".
 
-        Starts the timeline, resets the scenario, and sets up the configuration space trajectory.
-        Disables other trajectory buttons to prevent conflicts.
+        This function simply plays the timeline, which means that physics steps will start happening.  After the world is loaded or reset,
+        the timeline is paused, which means that no physics steps will occur until the user makes it play either programmatically or
+        through the left-hand UI toolbar.
         """
         self._timeline.play()
-        self._scenario.reset()
-        self._taskspace_trajectory_btn.reset()
-        self._advanced_trajectory_btn.reset()
-        self._scenario.setup_cspace_trajectory()
 
-    def _on_run_taskspace(self):
-        """Initiates the task space trajectory demonstration.
+    def _on_run_scenario_b_text(self):
+        """This function is attached to the Run Scenario StateButton.
+        This function was passed in as the on_b_click_fn argument.
+        It is called when the StateButton is clicked while saying a_text "STOP"
 
-        Starts the timeline, resets the scenario, and sets up the task space trajectory.
-        Disables other trajectory buttons to prevent conflicts.
-        """
-        self._timeline.play()
-        self._scenario.reset()
-        self._cspace_trajectory_btn.reset()
-        self._advanced_trajectory_btn.reset()
-        self._scenario.setup_taskspace_trajectory()
-
-    def _on_run_advanced(self):
-        """Initiates the advanced trajectory demonstration.
-
-        Starts the timeline, resets the scenario, and sets up the advanced trajectory.
-        Disables other trajectory buttons to prevent conflicts.
-        """
-        self._timeline.play()
-        self._scenario.reset()
-        self._cspace_trajectory_btn.reset()
-        self._taskspace_trajectory_btn.reset()
-        self._scenario.setup_advanced_trajectory()
-
-    def _on_stop(self):
-        """Stops the currently running trajectory demonstration.
-
-        Pauses the timeline to halt the physics simulation.
+        Pausing the timeline on b_text is not strictly necessary for this example to run.
+        Clicking "STOP" will cancel the physics subscription that updates the scenario, which means that
+        the robot will stop getting new commands and the cube will stop updating without needing to
+        pause at all.  The reason that the timeline is paused here is to prevent the robot being carried
+        forward by momentum for a few frames after the physics subscription is canceled.  Pausing here makes
+        this example prettier, but if curious, the user should observe what happens when this line is removed.
         """
         self._timeline.pause()
 
@@ -303,12 +285,8 @@ class UIBuilder:
     def _reset_ui(self):
         """Resets the UI elements to their initial state.
 
-        Disables all trajectory buttons and the reset button, and resets their visual state.
+        Disables the scenario and reset buttons and resets the scenario state button.
         """
-        self._cspace_trajectory_btn.reset()
-        self._taskspace_trajectory_btn.reset()
-        self._advanced_trajectory_btn.reset()
-        self._cspace_trajectory_btn.enabled = False
-        self._taskspace_trajectory_btn.enabled = False
-        self._advanced_trajectory_btn.enabled = False
+        self._scenario_state_btn.reset()
+        self._scenario_state_btn.enabled = False
         self._reset_btn.enabled = False

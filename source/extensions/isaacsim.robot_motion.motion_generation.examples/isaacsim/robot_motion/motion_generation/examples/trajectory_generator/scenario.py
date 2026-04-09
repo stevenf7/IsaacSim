@@ -63,7 +63,7 @@ class UR10TrajectoryGenerationExample:
     - Automatic trajectory looping with pause intervals
     - Robot state management and reset functionality
 
-    The class is designed as a tutorial example for the isaacsim.robot_motion.motion_generation.tutorials
+    The class is designed as an example for the isaacsim.robot_motion.motion_generation.examples
     extension, demonstrating practical usage patterns for robot motion planning in Isaac Sim.
     """
 

@@ -1,4 +1,10 @@
 # Changelog
+## [0.3.0] - 2026-04-06
+### Changed
+- Renamed extension and Python package namespace from `isaacsim.robot_motion.motion_generation.tutorials` to `isaacsim.robot_motion.motion_generation.examples`.
+- Example UIs register under a shared **Motion Generation Examples** menu (RMPflow, Kinematics, RRT, Trajectory Generation).
+- Old load/reset buttons changed out for newer button types.
+
 ## [0.2.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings

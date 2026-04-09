@@ -13,9 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Global variables and constants used throughout the kinematics tutorials in the robot motion generation module."""
+"""Global variables for the trajectory generator tutorial extension."""
 
 
-EXTENSION_TITLE = "Lula Kinematics Example"
+EXTENSION_TITLE = "Trajectory Generation Example"
+
+MENU_PARENT_NAME = "Motion Generation Examples"
+
+MENU_ITEM_NAME = "Trajectory Generation"
 
 EXTENSION_DESCRIPTION = ""

@@ -16,14 +16,16 @@
 """User interface builder for the Franka RMP Flow robot motion generation tutorial."""
 
 
+import asyncio
+
+import carb
 import omni.timeline
 import omni.ui as ui
 from isaacsim.core.api.world import World
 from isaacsim.core.prims import SingleXFormPrim as XFormPrim
-from isaacsim.core.utils.stage import create_new_stage, get_current_stage
+from isaacsim.core.utils.stage import create_new_stage, get_current_stage, update_stage_async
 from isaacsim.core.utils.viewports import set_camera_view
-from isaacsim.examples.extension.core_connectors import LoadButton, ResetButton
-from isaacsim.gui.components.element_wrappers import CollapsableFrame, StateButton
+from isaacsim.gui.components.element_wrappers import Button, CollapsableFrame, StateButton
 from isaacsim.gui.components.style import get_style
 from pxr import Sdf, UsdLux
 
@@ -122,15 +124,10 @@ class UIBuilder:
 
         with world_controls_frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
-                self._load_btn = LoadButton(
-                    "Load Button", "LOAD", setup_scene_fn=self._setup_scene, setup_post_load_fn=self._setup_scenario
-                )
-                self._load_btn.set_world_settings(physics_dt=1 / 60.0, rendering_dt=1 / 60.0)
+                self._load_btn = Button("Load Button", "LOAD", on_click_fn=self._on_load_btn_clicked)
                 self.wrapped_ui_elements.append(self._load_btn)
 
-                self._reset_btn = ResetButton(
-                    "Reset Button", "RESET", pre_reset_fn=None, post_reset_fn=self._on_post_reset_btn
-                )
+                self._reset_btn = Button("Reset Button", "RESET", on_click_fn=self._on_reset_btn_clicked)
                 self._reset_btn.enabled = False
                 self.wrapped_ui_elements.append(self._reset_btn)
 
@@ -165,6 +162,36 @@ class UIBuilder:
         sphereLight.CreateRadiusAttr(2)
         sphereLight.CreateIntensityAttr(100000)
         XFormPrim(str(sphereLight.GetPath())).set_world_pose([6.5, 0, 12])
+
+    def _on_load_btn_clicked(self):
+        asyncio.ensure_future(self._load_world_async())
+
+    async def _load_world_async(self):
+        prev_world = World.instance()
+        if prev_world is not None:
+            prev_world.clear_all_callbacks()
+            prev_world.clear_instance()
+        await update_stage_async()
+        world = World(physics_dt=1 / 60.0, rendering_dt=1 / 60.0)
+        self._setup_scene()
+        await world.initialize_simulation_context_async()
+        await world.reset_async()
+        await update_stage_async()
+        await world.pause_async()
+        self._setup_scenario()
+
+    def _on_reset_btn_clicked(self):
+        asyncio.ensure_future(self._reset_world_async())
+
+    async def _reset_world_async(self):
+        world = World.instance()
+        if world is None:
+            carb.log_warn("Reset Button was used when there is no instance of World.")
+        else:
+            await world.reset_async()
+            await update_stage_async()
+            await world.pause_async()
+        self._on_post_reset_btn()
 
     def _setup_scene(self):
         """This function is attached to the Load Button as the setup_scene_fn callback.

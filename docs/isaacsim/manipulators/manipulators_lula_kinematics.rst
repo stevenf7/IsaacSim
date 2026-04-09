@@ -18,8 +18,8 @@ Getting Started
 - You can reference the :ref:`isaac_sim_app_tutorial_motion_generation_robot_description_editor` to understand how to generate your own `robot_description.yaml` file to be able to use ``LulaKinematicsSolver`` on unsupported robots.
 - Review the :ref:`Loaded Scenario Extension Template <isaac_sim_app_tutorial_extension_templates_loaded_scenario>` to understand how this tutorial is structured and run.
 
-To follow along with the tutorial, you can search and enable the **Motion Generation Tutorials** extension within your running Isaac Sim 6.0 instance.
-Within the `isaacsim.robot_motion.motion_generation.tutorials` extension, there is a fully functional example using a ``LulaKinematicsSolver`` to track a task-space target.
+To follow along with the tutorial, you can search and enable the **Motion Generation Examples** extension within your running Isaac Sim 6.0 instance.
+Within the `isaacsim.robot_motion.motion_generation.examples` extension, there is a fully functional example using a ``LulaKinematicsSolver`` to track a task-space target.
 The sections of this tutorial build up the file ``scenario.py`` from basic functionality to the completed code.
 
 Using the LulaKinematicsSolver to Compute Forward and Inverse Kinematics

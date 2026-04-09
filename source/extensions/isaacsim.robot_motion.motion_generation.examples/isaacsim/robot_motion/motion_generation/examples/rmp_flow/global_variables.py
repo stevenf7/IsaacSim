@@ -13,9 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Global variables for the trajectory generator tutorial extension."""
+"""Global variables and constants for the RMP Flow tutorial."""
 
 
-EXTENSION_TITLE = "Trajectory Generation Example"
+EXTENSION_TITLE = "RMPflow Example"
+
+MENU_PARENT_NAME = "Motion Generation Examples"
+
+MENU_ITEM_NAME = "RMPflow"
 
 EXTENSION_DESCRIPTION = ""

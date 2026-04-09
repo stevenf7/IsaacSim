@@ -750,7 +750,7 @@ Please refer to the individual extension changelogs for more detailed informatio
       - Updated Overview.md with note about newer experimental motion generation API.
       - Updated path_planner_visualizer.py docstring to clarify it only does interpolation.
 
-- **isaacsim.robot_motion.motion_generation.tutorials**
+- **isaacsim.robot_motion.motion_generation.examples**
 
     - Changed
 
