@@ -266,9 +266,30 @@ def _apply_numpy_coverage_patch() -> None:
     _COVERAGE_PATCH_APPLIED = True
 
 
+def _apply_novaluetype_numeric_patch() -> None:
+    """Give ``numpy._globals._NoValueType`` numeric dunder methods.
+
+    When coverage.py is active its tracing can leak ``_NoValue`` sentinels into
+    code paths that call ``int()``, ``float()``, or use the value as an index.
+    Adding ``__int__``, ``__float__``, and ``__index__`` to the sentinel class lets
+    those calls return 0 instead of raising ``TypeError``.
+    """
+    try:
+        import numpy._globals as npg
+
+        _NVT = getattr(npg, "_NoValueType", None)
+        if _NVT is not None and not hasattr(_NVT, "__int__"):
+            _NVT.__int__ = lambda self: 0
+            _NVT.__float__ = lambda self: 0.0
+            _NVT.__index__ = lambda self: 0
+    except (ImportError, AttributeError):
+        pass
+
+
 if _is_pycoverage_enabled():
     _apply_numpy_copymode_coverage_patch()
     _apply_numpy_coverage_patch()
+    _apply_novaluetype_numeric_patch()
 
 from .button_utils import *
 from .file_validation import *
