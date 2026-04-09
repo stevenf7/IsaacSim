@@ -1,4 +1,9 @@
 # Changelog
+## [0.4.0] - 2026-04-02
+### Changed
+- Resolve content browser folder paths relative to `persistent.isaac.asset_root.default` instead of hardcoding full URLs
+- Add `isaacsim.storage.native` as a dependency
+
 ## [0.3.3] - 2026-03-30
 ### Changed
 - Update USD Search API endpoint

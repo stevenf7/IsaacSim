@@ -98,28 +98,28 @@ The policies used in the examples are trained in Isaac Lab and are available her
       - Parameters
 
     * - H1 Flat Terrain Policy
-      - `H1 Flat Terrain Policy <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/h1_policy.pt>`_
-      - `H1 Flat Terrain Policy Environment Parameters <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/h1_env.yaml>`_
+      - `H1 Flat Terrain Policy <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/h1_policy.pt>`_
+      - `H1 Flat Terrain Policy Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/h1_env.yaml>`_
 
-        `H1 Flat Terrain Policy Network Parameters <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/agent.yaml>`_
+        `H1 Flat Terrain Policy Network Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/agent.yaml>`_
 
     * - Spot Flat Terrain Policy
-      - `Spot Flat Terrain Policy <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Spot_Policies/spot_policy.pt>`_
-      - `Spot Flat Terrain Policy Environment Parameters <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Spot_Policies/spot_env.yaml>`_
+      - `Spot Flat Terrain Policy <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Spot_Policies/spot_policy.pt>`_
+      - `Spot Flat Terrain Policy Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Spot_Policies/spot_env.yaml>`_
 
-        `Spot Flat Terrain Policy Network Parameters <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Spot_Policies/agent.yaml>`_
+        `Spot Flat Terrain Policy Network Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Spot_Policies/agent.yaml>`_
 
     * - ANYmal C Flat Terrain Policy
-      - `ANYmal C Flat Terrain Policy <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Anymal_Policies/anymal_policy.pt>`_
+      - `ANYmal C Flat Terrain Policy <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Anymal_Policies/anymal_policy.pt>`_
 
-        `Anymal C Motor Policy <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Anymal_Policies/sea_net_jit2.pt>`_
-      - `ANYmal C Flat Terrain Policy Environment Parameters <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Anymal_Policies/anymal_env.yaml>`_
+        `Anymal C Motor Policy <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Anymal_Policies/sea_net_jit2.pt>`_
+      - `ANYmal C Flat Terrain Policy Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Anymal_Policies/anymal_env.yaml>`_
 
-        `ANYmal C Flat Terrain Policy Network Parameters <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Anymal_Policies/agent.yaml>`_
+        `ANYmal C Flat Terrain Policy Network Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Anymal_Policies/agent.yaml>`_
 
     * - Franka Panda Open Drawer Policy
-      - `Franka Panda Open Drawer Policy <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Franka_Policies/Open_Drawer_Policy/policy.pt>`_
-      - `Franka Panda Open Drawer Policy Environment Parameters <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Franka_Policies/Open_Drawer_Policy/env.yaml>`_
+      - `Franka Panda Open Drawer Policy <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Franka_Policies/Open_Drawer_Policy/policy.pt>`_
+      - `Franka Panda Open Drawer Policy Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Franka_Policies/Open_Drawer_Policy/env.yaml>`_
 
 .. Note:: The policies can also be downloaded directly from the Content Browser by right clicking the policy and selecting ``Download``.
 
