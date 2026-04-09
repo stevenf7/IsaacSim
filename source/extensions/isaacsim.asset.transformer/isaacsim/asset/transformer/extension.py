@@ -23,7 +23,7 @@ from .manager import RuleRegistry
 class Extension(omni.ext.IExt):
     """Extension that initializes the transformer rule registry."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension.
 
         Args:
@@ -33,5 +33,5 @@ class Extension(omni.ext.IExt):
         # Initialize the singleton rule registry so other modules can register rules.
         self._registry = RuleRegistry()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Tear down the extension and release resources."""

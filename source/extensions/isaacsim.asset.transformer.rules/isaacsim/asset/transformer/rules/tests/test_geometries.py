@@ -116,7 +116,7 @@ def _build_no_mesh_stage(stage_path: str) -> str:
 class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
     """Async tests for GeometriesRoutingRule."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create a temporary stage for geometry routing tests."""
         self._tmpdir = tempfile.mkdtemp()
         self._temp_asset = os.path.join(self._tmpdir, "payloads/base.usd")
@@ -124,12 +124,12 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
         stage.Export(self._temp_asset)
         self._success = False
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Remove temporary directory after successful tests."""
         if self._success:
             shutil.rmtree(self._tmpdir, ignore_errors=True)
 
-    async def test_get_configuration_parameters(self):
+    async def test_get_configuration_parameters(self) -> None:
         """Verify configuration parameters are exposed."""
         stage = Usd.Stage.Open(_UR10E_SHOULDER_USD)
         rule = GeometriesRoutingRule(
@@ -151,7 +151,7 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
         self.assertIn("save_base_as_usda", param_names)
         self._success = True
 
-    async def test_process_rule_creates_geometries_layer(self):
+    async def test_process_rule_creates_geometries_layer(self) -> None:
         """Verify geometries and instances layers are created."""
         base_stage = Usd.Stage.Open(self._temp_asset)
         os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
@@ -580,7 +580,7 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
                     )
         self._success = True
 
-    async def test_process_rule_name_clash_instances(self):
+    async def test_process_rule_name_clash_instances(self) -> None:
         """Verify meshes with name clashes are routed to unique instances."""
         os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
         temp_input = os.path.join(self._tmpdir, "test_advanced.usda")
@@ -695,7 +695,7 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
 
         self._success = True
 
-    async def test_process_rule_preserves_parent_properties_on_merge(self):
+    async def test_process_rule_preserves_parent_properties_on_merge(self) -> None:
         """Verify merged parent retains authored properties and schemas."""
         os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
         temp_input = os.path.join(self._tmpdir, "test_collision_from_visuals.usda")
@@ -758,7 +758,7 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
 
         self._success = True
 
-    async def test_process_rule_with_scope(self):
+    async def test_process_rule_with_scope(self) -> None:
         """Verify scope filter limits geometry routing."""
         stage = Usd.Stage.Open(self._temp_asset)
         os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
@@ -781,7 +781,7 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
         self.assertTrue(any("scope=/ur10e/base_link" in msg for msg in log))
         self._success = True
 
-    async def test_process_rule_without_deduplication(self):
+    async def test_process_rule_without_deduplication(self) -> None:
         """Verify non-deduplicated processing logs are recorded."""
         stage = Usd.Stage.Open(self._temp_asset)
         os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
@@ -804,7 +804,7 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
         self.assertTrue(any("deduplicate=False" in msg for msg in log))
         self._success = True
 
-    async def test_process_rule_affected_stages(self):
+    async def test_process_rule_affected_stages(self) -> None:
         """Verify affected stages are recorded."""
         stage = Usd.Stage.Open(self._temp_asset)
         os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
@@ -826,7 +826,7 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
         self.assertGreaterEqual(len(affected), 0)
         self._success = True
 
-    async def test_process_rule_logs_operations(self):
+    async def test_process_rule_logs_operations(self) -> None:
         """Verify operation log entries are recorded."""
         stage = Usd.Stage.Open(self._temp_asset)
         os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
@@ -853,7 +853,7 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
     # Tests for negative-scale decomposition and deduplicate=False path
     # ------------------------------------------------------------------
 
-    async def test_decompose_transform_negative_scale(self):
+    async def test_decompose_transform_negative_scale(self) -> None:
         """Verify _decompose_transform correctly handles negative scale (det < 0).
 
         When a transform matrix has a negative determinant (reflection), the
@@ -911,7 +911,7 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
 
         self._success = True
 
-    async def test_no_deduplicate_produces_separate_geometries(self):
+    async def test_no_deduplicate_produces_separate_geometries(self) -> None:
         """Verify deduplicate=False creates independent geometry and instance entries.
 
         Two meshes with identical vertex data but different parent names must each
@@ -1024,7 +1024,7 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
                         msg=f"World transform mismatch at {path}[{row}][{col}]",
                     )
 
-    async def test_no_geometry_prims_saves_base_as_usda(self):
+    async def test_no_geometry_prims_saves_base_as_usda(self) -> None:
         """Verify save_base_as_usda converts the base layer even when no Mesh prims exist.
 
         Assets like MuJoCo-converted robots (ant, humanoid) may contain only
@@ -1080,7 +1080,7 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
 
         self._success = True
 
-    async def test_process_rule_preserves_physics_material_bindings(self):
+    async def test_process_rule_preserves_physics_material_bindings(self) -> None:
         """Verify physics material bindings survive geometry routing unchanged.
 
         A mesh with both a visual ``material:binding`` and a physics-purpose

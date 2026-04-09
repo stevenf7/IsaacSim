@@ -1,12 +1,12 @@
 [package]
-version = "1.1.2"
+version = "1.2.0"
 category = "Simulation"
 title = "Isaac Sim Asset Importer Utils"
 description = "Shared utility functions for asset importers."
 authors = ["hmazhar@nvidia.com","stevfeng@nvidia.com"]
 keywords = ["isaac", "asset", "importer", "utils"]
 changelog = "docs/CHANGELOG.md"
-readme = "docs/Overview.md"
+readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
@@ -81,3 +81,6 @@ args = [
     "--/persistent/omnihydra/useSceneGraphInstancing=true",
 ]
 pythonTests.include = ["isaacsim.asset.importer.utils.tests.*"]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

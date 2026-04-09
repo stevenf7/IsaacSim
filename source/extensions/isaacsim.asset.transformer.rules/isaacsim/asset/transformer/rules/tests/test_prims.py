@@ -33,17 +33,17 @@ _TEST_USD = os.path.join(_TEST_DATA_DIR, "test_prims", "base.usda")
 class TestPrimRoutingRule(omni.kit.test.AsyncTestCase):
     """Async tests for PrimRoutingRule."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create a temporary directory for test output."""
         self._tmpdir = tempfile.mkdtemp()
         self._success = False
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Remove temporary directory after successful tests."""
         if self._success:
             shutil.rmtree(self._tmpdir, ignore_errors=True)
 
-    async def test_get_configuration_parameters(self):
+    async def test_get_configuration_parameters(self) -> None:
         """Verify configuration parameters are exposed."""
         stage = Usd.Stage.Open(_TEST_USD)
         rule = PrimRoutingRule(
@@ -65,7 +65,7 @@ class TestPrimRoutingRule(omni.kit.test.AsyncTestCase):
         self.assertIn("ignore_prim_names", param_names)
         self._success = True
 
-    async def test_process_rule_no_prim_types_skips(self):
+    async def test_process_rule_no_prim_types_skips(self) -> None:
         """Verify rule skips when no prim types are provided."""
         stage = Usd.Stage.Open(_TEST_USD)
         rule = PrimRoutingRule(
@@ -80,7 +80,7 @@ class TestPrimRoutingRule(omni.kit.test.AsyncTestCase):
         log = rule.get_operation_log()
         self.assertTrue(any("No prim types" in msg for msg in log))
 
-    async def test_process_rule_with_scope(self):
+    async def test_process_rule_with_scope(self) -> None:
         """Verify scope filter limits routed prims."""
         temp_asset = os.path.join(self._tmpdir, "ur10e.usd")
         shutil.copy(_TEST_USD, temp_asset)
@@ -120,7 +120,7 @@ class TestPrimRoutingRule(omni.kit.test.AsyncTestCase):
         self.assertFalse(any("/joints" not in str(prim.GetPath()) for prim in prims_defined))
         self._success = True
 
-    async def test_process_rule_logs_completion(self):
+    async def test_process_rule_logs_completion(self) -> None:
         """Verify completion log entries are recorded."""
         temp_asset = os.path.join(self._tmpdir, "ur10e.usd")
         shutil.copy(_TEST_USD, temp_asset)
@@ -147,7 +147,7 @@ class TestPrimRoutingRule(omni.kit.test.AsyncTestCase):
 
         self._success = True
 
-    async def test_process_rule_with_prim_names(self):
+    async def test_process_rule_with_prim_names(self) -> None:
         """Verify prim name filters route expected prims."""
         temp_asset = os.path.join(self._tmpdir, "ur10e.usd")
         shutil.copy(_TEST_USD, temp_asset)
@@ -188,7 +188,7 @@ class TestPrimRoutingRule(omni.kit.test.AsyncTestCase):
 
         self._success = True
 
-    async def test_process_rule_with_ignore_prim_names(self):
+    async def test_process_rule_with_ignore_prim_names(self) -> None:
         """Verify ignore prim name filters exclude prims."""
         temp_asset = os.path.join(self._tmpdir, "ur10e.usd")
         shutil.copy(_TEST_USD, temp_asset)
@@ -229,7 +229,7 @@ class TestPrimRoutingRule(omni.kit.test.AsyncTestCase):
 
         self._success = True
 
-    async def test_process_rule_with_prim_types(self):
+    async def test_process_rule_with_prim_types(self) -> None:
         """Verify prim type filters route expected prims."""
         temp_asset = os.path.join(self._tmpdir, "ur10e.usd")
         shutil.copy(_TEST_USD, temp_asset)
@@ -270,7 +270,7 @@ class TestPrimRoutingRule(omni.kit.test.AsyncTestCase):
 
         self._success = True
 
-    async def test_process_rule_with_ignore_prim_types(self):
+    async def test_process_rule_with_ignore_prim_types(self) -> None:
         """Verify ignore prim type filters override includes."""
         temp_asset = os.path.join(self._tmpdir, "ur10e.usd")
         shutil.copy(_TEST_USD, temp_asset)

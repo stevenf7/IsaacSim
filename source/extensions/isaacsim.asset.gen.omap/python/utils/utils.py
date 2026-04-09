@@ -13,19 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utility functions for occupancy map generation."""
+"""Utility functions for occupancy map generation and visualization."""
 
-
-from typing import List, Tuple
 
 import numpy as np
 
 
 def update_location(
-    om,
-    start_location: Tuple[float, float, float],
-    lower_bound: Tuple[float, float, float],
-    upper_bound: Tuple[float, float, float],
+    om: object,
+    start_location: tuple[float, float, float],
+    lower_bound: tuple[float, float, float],
+    upper_bound: tuple[float, float, float],
 ) -> None:
     """Updates the occupancy map transform and visualization.
 
@@ -53,8 +51,8 @@ def update_location(
 
 
 def compute_coordinates(
-    om, cell_size: float
-) -> Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float], Tuple[float, float], np.matrix]:
+    om: object, cell_size: float
+) -> tuple[tuple[float, float], tuple[float, float], tuple[float, float], tuple[float, float], np.matrix]:
     """Computes the corner coordinates and image transformation for the occupancy map.
 
     Calculates the world coordinates of the four corners of the occupancy map image
@@ -91,7 +89,7 @@ def compute_coordinates(
     return top_left, top_right, bottom_left, bottom_right, image_coords
 
 
-def generate_image(om, occupied_col: List[int], unknown_col: List[int], freespace_col: List[int]) -> List[int]:
+def generate_image(om: object, occupied_col: list[int], unknown_col: list[int], freespace_col: list[int]) -> list[int]:
     """Generates a colored RGBA image from the occupancy map buffer (optimized).
 
     Creates an image representation of the occupancy map where each cell is colored

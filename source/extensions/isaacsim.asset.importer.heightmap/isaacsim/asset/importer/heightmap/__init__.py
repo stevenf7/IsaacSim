@@ -12,5 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Module for importing and converting heightmap images into 3D terrain in Isaac Sim."""
+
 from .extension import Extension  # noqa: F401 (Extension loaded for side effects)
 from .extension import HeightmapImporter
+
+__all__ = ["HeightmapImporter"]

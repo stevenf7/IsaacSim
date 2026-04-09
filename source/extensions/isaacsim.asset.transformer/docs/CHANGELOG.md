@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0] - 2026-04-08
+### Changed
+- Improve Python API documentation (`config/python_api.md` and/or module docstrings).
+
 ## [1.0.3] - 2026-03-10
 ### Fixed
 - Canonicalize quaternion orientations (real >= 0) on the flattened base layer so double-transform produces identical output

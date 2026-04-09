@@ -24,20 +24,20 @@ from isaacsim.core.experimental.utils.stage import create_new_stage_async
 class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
     """Test suite for occupancy map extension docstrings."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Method called to prepare the test fixture."""
         super().setUp()
         # create new stage
         await create_new_stage_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Method called immediately after the test method has been called."""
         super().tearDown()
 
-    async def test_omap_docstrings(self):
+    async def test_omap_docstrings(self) -> None:
         """Test occupancy map bindings docstrings."""
         await self.assertDocTests(omap_bindings)
 
-    async def test_omap_generator_docstrings(self):
+    async def test_omap_generator_docstrings(self) -> None:
         """Test occupancy map generator docstrings."""
         await self.assertDocTests(omap_bindings.Generator)

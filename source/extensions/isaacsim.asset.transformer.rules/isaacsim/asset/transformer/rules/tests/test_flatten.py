@@ -29,17 +29,17 @@ from .common import _UR10E_USD
 class TestFlattenRule(omni.kit.test.AsyncTestCase):
     """Async tests for FlattenRule."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create a temporary directory for test output."""
         self._tmpdir = tempfile.mkdtemp()
         self._success = False
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Remove temporary directory after successful tests."""
         if self._success:
             shutil.rmtree(self._tmpdir, ignore_errors=True)
 
-    async def test_get_configuration_parameters(self):
+    async def test_get_configuration_parameters(self) -> None:
         """Verify configuration parameters are exposed."""
         stage = Usd.Stage.Open(_UR10E_USD)
         rule = FlattenRule(
@@ -59,7 +59,7 @@ class TestFlattenRule(omni.kit.test.AsyncTestCase):
         self.assertIn("case_insensitive", param_names)
         self._success = True
 
-    async def test_flatten_basic_stage(self):
+    async def test_flatten_basic_stage(self) -> None:
         """Verify flattening creates expected output stage."""
         stage = Usd.Stage.Open(_UR10E_USD)
         output_subdir = "payloads"
@@ -92,7 +92,7 @@ class TestFlattenRule(omni.kit.test.AsyncTestCase):
         self.assertTrue(flattened_layer.GetPrimAtPath("/ur10e/base_link").IsValid())
         self._success = True
 
-    async def test_flatten_without_input_stage_path_skips(self):
+    async def test_flatten_without_input_stage_path_skips(self) -> None:
         """Verify rule skips when input stage path is missing."""
         stage = Usd.Stage.Open(_UR10E_USD)
 
@@ -109,7 +109,7 @@ class TestFlattenRule(omni.kit.test.AsyncTestCase):
         self.assertTrue(any("No input_stage_path" in msg for msg in log))
         self._success = True
 
-    async def test_flatten_with_variants_cleared(self):
+    async def test_flatten_with_variants_cleared(self) -> None:
         """Verify flattening clears variant selections when enabled."""
         stage = Usd.Stage.Open(_UR10E_USD)
         os.makedirs(os.path.join(self._tmpdir, "output"), exist_ok=True)
@@ -142,7 +142,7 @@ class TestFlattenRule(omni.kit.test.AsyncTestCase):
         self.assertFalse(flattened_layer.GetPrimAtPath("/ur10e/base_link").IsValid())
         self._success = True
 
-    async def test_flatten_with_selected_variants(self):
+    async def test_flatten_with_selected_variants(self) -> None:
         """Verify selected variants are applied before flattening."""
         stage = Usd.Stage.Open(_UR10E_USD)
         os.makedirs(os.path.join(self._tmpdir, "output"), exist_ok=True)
@@ -172,7 +172,7 @@ class TestFlattenRule(omni.kit.test.AsyncTestCase):
         )
         self._success = True
 
-    async def test_flatten_affected_stages(self):
+    async def test_flatten_affected_stages(self) -> None:
         """Verify affected stages list contains output stage."""
         stage = Usd.Stage.Open(_UR10E_USD)
         os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
@@ -194,7 +194,7 @@ class TestFlattenRule(omni.kit.test.AsyncTestCase):
         self.assertTrue(any("base.usda" in s for s in affected))
         self._success = True
 
-    async def test_flatten_logs_completion(self):
+    async def test_flatten_logs_completion(self) -> None:
         """Verify completion log entry is recorded."""
         stage = Usd.Stage.Open(_UR10E_USD)
         os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
@@ -216,7 +216,7 @@ class TestFlattenRule(omni.kit.test.AsyncTestCase):
         self.assertTrue(any("FlattenRule completed" in msg for msg in log))
         self._success = True
 
-    async def test_flatten_return_value_and_invalid_input(self):
+    async def test_flatten_return_value_and_invalid_input(self) -> None:
         """process_rule returns abs output path; invalid input stage path handled gracefully."""
         stage = Usd.Stage.Open(_UR10E_USD)
         failures = []
@@ -259,7 +259,7 @@ class TestFlattenRule(omni.kit.test.AsyncTestCase):
         self.assertEqual(failures, [], "\n".join(failures))
         self._success = True
 
-    async def test_flatten_variant_selection_edge_cases(self):
+    async def test_flatten_variant_selection_edge_cases(self) -> None:
         """Case-insensitive match, nonexistent variant set, nonexistent variant name."""
         stage = Usd.Stage.Open(_UR10E_USD)
         failures = []

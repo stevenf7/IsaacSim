@@ -44,7 +44,7 @@ class _NoOpRule(RuleInterface):
 class TestRuleInterface(omni.kit.test.AsyncTestCase):
     """Async tests for the rule interface helpers."""
 
-    async def test_rule_interface_logging_and_affected_list(self):
+    async def test_rule_interface_logging_and_affected_list(self) -> None:
         """Verify log collection and affected stage de-duplication."""
         fake_stage_mod = types.SimpleNamespace()
         fake_usd_mod = types.SimpleNamespace(Stage=fake_stage_mod)

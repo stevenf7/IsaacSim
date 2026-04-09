@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2026-04-08
+### Changed
+- Added type annotations and improved docstrings
+
 ## [1.2.0] - 2026-03-31
 ### Changed
 - use shared ui library from isaacsim.gui.components

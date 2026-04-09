@@ -19,6 +19,8 @@ with URDF-specific icon entries. The option panel style references
 extension-local font assets and cannot be shared.
 """
 
+from __future__ import annotations
+
 import pathlib
 
 import omni
@@ -28,7 +30,7 @@ from isaacsim.gui.components.style import get_style as _get_base_style
 from omni.ui import color as cl
 
 
-def get_style():
+def get_style() -> dict:
     """Get the primary UI style dictionary.
 
     Returns the shared base style from ``isaacsim.gui.components`` merged with
@@ -112,7 +114,7 @@ HEADER_FONT_SIZE = 16
 FONT_SIZE = 14
 
 
-def get_option_style():
+def get_option_style() -> dict:
     """Get the option panel style dictionary.
 
     Returns:

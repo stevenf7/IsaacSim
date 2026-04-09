@@ -1,5 +1,8 @@
 # Overview
 
+```{image} ../../../../source/extensions/isaacsim.asset.importer.urdf/data/preview.png
+```
+
 To enable this extension, go to the Extension Manager menu and enable isaacsim.asset.importer.urdf extension.
 
 ## High Level Code Overview

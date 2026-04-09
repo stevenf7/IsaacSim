@@ -85,8 +85,16 @@ class TestImporterUI(MenuUITestCase):
         await omni.kit.app.get_app().next_update_async()
         # await omni.usd.get_context().new_stage_async()
 
-    def find_content_file(self, window_name, filename):
-        """Perform find content file operation."""
+    def find_content_file(self, window_name: str, filename: str) -> object | None:
+        """Find a file row in the picker tree view by label text.
+
+        Args:
+            window_name: UI test window name prefix for the search scope.
+            filename: Label text identifying the desired file row.
+
+        Returns:
+            The matching label widget, or ``None`` if not found.
+        """
 
         carb.log_info(f"Finding file {filename} in window {window_name}")
         for widget in ui_test.find_all(f"{window_name}//Frame/**/TreeView[*]"):
@@ -96,8 +104,11 @@ class TestImporterUI(MenuUITestCase):
                     return file_widget
         return None
 
-    async def test_import_ant_from_ui(self, delete_output_on_success=True) -> None:
+    async def test_import_ant_from_ui(self, delete_output_on_success: bool = True) -> None:
         """Import the ant asset via the UI and validate output.
+
+        Args:
+            delete_output_on_success: When True, remove generated output after a passing run.
 
         Example:
 

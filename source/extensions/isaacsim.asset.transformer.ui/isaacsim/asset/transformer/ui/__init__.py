@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .extension import AssetTransformerUiExtension
+"""UI components for the Isaac Sim asset transformer functionality."""
+
+
+from .extension import AssetTransformerUiExtension  # noqa: F401 (loaded for Kit extension discovery)
 
 __all__ = []

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.0] - 2026-04-08
+### Changed
+- Improve Python API documentation (`config/python_api.md` and/or module docstrings).
+
 ## [2.5.1] - 2026-03-25
 ### Changed
 - Replace deprecated onclick_fn with onclick_action for menu registration

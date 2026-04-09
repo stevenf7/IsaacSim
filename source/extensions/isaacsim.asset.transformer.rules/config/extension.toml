@@ -1,5 +1,5 @@
 [package]
-version = "1.2.0"
+version = "1.3.0"
 category = "Simulation"
 title = "Isaac Sim Asset Transformer Rules"
 description = "Rule implementations for the Asset Transformer"
@@ -20,3 +20,6 @@ name = "isaacsim.asset.transformer.rules"
 
 [[python.module]]
 name = "isaacsim.asset.transformer.rules.tests"
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

@@ -43,12 +43,12 @@ def _matches_any(name: str, patterns: list[str]) -> bool:
 class TestMakeListsNonExplicitRule(omni.kit.test.AsyncTestCase):
     """Async tests for MakeListsNonExplicitRule."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create a temporary directory for test output."""
         self._tmpdir = tempfile.mkdtemp()
         self._success = False
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Remove temporary directory after successful tests."""
         if self._success:
             shutil.rmtree(self._tmpdir, ignore_errors=True)
@@ -125,7 +125,7 @@ class TestMakeListsNonExplicitRule(omni.kit.test.AsyncTestCase):
                     return prim_spec.path.pathString, prop_name, explicit_items
         return None
 
-    async def test_get_configuration_parameters(self):
+    async def test_get_configuration_parameters(self) -> None:
         """Verify configuration parameters are exposed."""
         stage = Usd.Stage.Open(_TEST_ADVANCED_USD)
         rule = MakeListsNonExplicitRule(
@@ -142,7 +142,7 @@ class TestMakeListsNonExplicitRule(omni.kit.test.AsyncTestCase):
         self.assertIn("list_op_type", param_names)
         self._success = True
 
-    async def test_process_rule_converts_explicit_lists_prepend(self):
+    async def test_process_rule_converts_explicit_lists_prepend(self) -> None:
         """Verify explicit list ops are converted to prepended list ops."""
         temp_asset = self._copy_test_asset()
         stage = Usd.Stage.Open(temp_asset)
@@ -191,7 +191,7 @@ class TestMakeListsNonExplicitRule(omni.kit.test.AsyncTestCase):
 
         self._success = True
 
-    async def test_process_rule_converts_explicit_lists_append(self):
+    async def test_process_rule_converts_explicit_lists_append(self) -> None:
         """Verify explicit list ops are converted to appended list ops."""
         temp_asset = self._copy_test_asset()
         stage = Usd.Stage.Open(temp_asset)
@@ -228,7 +228,7 @@ class TestMakeListsNonExplicitRule(omni.kit.test.AsyncTestCase):
 
         self._success = True
 
-    async def test_process_rule_converts_explicit_schemas_prepend(self):
+    async def test_process_rule_converts_explicit_schemas_prepend(self) -> None:
         """Verify explicit apiSchemas are converted to prepended list ops."""
         temp_asset = self._copy_test_asset()
         stage = Usd.Stage.Open(temp_asset)

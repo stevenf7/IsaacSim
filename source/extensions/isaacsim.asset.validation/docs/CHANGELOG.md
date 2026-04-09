@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2026-04-08
+### Changed
+- Improve Python API documentation (`config/python_api.md` and/or module docstrings).
+
 ## [1.2.1] - 2026-02-28
 ### Changed
 - Updated physics_rules to use new omni.physics.core API (`IPhysicsSimulation.initialize`/`close` replaces removed `attach_stage`/`detach_stage`)

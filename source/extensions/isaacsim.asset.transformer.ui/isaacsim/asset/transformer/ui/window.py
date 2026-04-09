@@ -24,6 +24,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
+from typing import Any
 
 import carb
 import omni.kit.app
@@ -65,11 +66,14 @@ from .style import STYLE
 
 
 class Sections(StrEnum):
-    """Identifiers for the three collapsable sections of the window."""
+    """Identifiers for the three collapsible sections of the window."""
 
     INPUT = "input"
+    """Identifier for the input file selection section."""
     ACTIONS = "actions"
+    """Identifier for the transformation actions configuration section."""
     REVIEW = "review"
+    """Identifier for the review and execute section."""
 
 
 @dataclass
@@ -77,6 +81,14 @@ class InputFileSelectionData:
     """Storage for widgets related to input file selection.
 
     Holds only the widgets that need to be read or written at runtime.
+
+    Args:
+        input_source_label: Label widget for the input source field.
+        input_source_field: String field widget displaying the input source path.
+        output_dir_field: String field widget for the output directory path.
+        select_source_button: Button widget to open file picker for source selection.
+        select_output_button: Button widget to open file picker for output directory selection.
+        autoload_option: Checkbox widget to enable/disable auto-loading of transformed assets.
     """
 
     input_source_label: ui.Label
@@ -105,7 +117,7 @@ def _filter_file_picker(ext: list[str], item: FileBrowserItem) -> bool:
 
 
 class BoldCollapsableFrame(ui.CollapsableFrame):
-    """Collapsable frame with a custom bold header and directional triangle.
+    """Collapsible frame with a custom bold header and directional triangle.
 
     Args:
         show_help_button: Reserved for future use.
@@ -115,7 +127,7 @@ class BoldCollapsableFrame(ui.CollapsableFrame):
     # TODO: This class _may_ not be necessary with proper styling, look into this
     # Especially since I moved the docs button to a top-level floaring button...
 
-    def __init__(self, show_help_button: bool = False, **kwargs) -> None:
+    def __init__(self, show_help_button: bool = False, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.set_build_header_fn(self._build_header)
         self.explicit_hover = True
@@ -167,12 +179,15 @@ class AssetTransformerWindow(MenuHelperWindow):
     """
 
     WINDOW_TITLE: str = "Asset Transformer"
+    """The title displayed in the window header."""
 
     # Default window dimensions
     DEFAULT_WIDTH = 600
+    """The default pixel width of the window."""
     DEFAULT_HEIGHT = 710
+    """The default pixel height of the window."""
 
-    def __init__(self, visible: bool = True, **kwargs) -> None:
+    def __init__(self, visible: bool = True, **kwargs: Any) -> None:
         # Set default size if not provided via kwargs
         kwargs.setdefault("width", self.DEFAULT_WIDTH)
         kwargs.setdefault("height", self.DEFAULT_HEIGHT)
@@ -442,7 +457,7 @@ class AssetTransformerWindow(MenuHelperWindow):
         self._update_stage_field()
 
         # Update profile and buttons when output file changes
-        def _on_output_dir_changed(_):
+        def _on_output_dir_changed(_: ui.AbstractValueModel) -> None:
             self._update_profile_output_paths()
             self._update_button_states()
 
@@ -618,7 +633,7 @@ class AssetTransformerWindow(MenuHelperWindow):
         self._file_picker = None
         picker.hide()
 
-        async def _deferred_destroy():
+        async def _deferred_destroy() -> None:
             await omni.kit.app.get_app().next_update_async()
             picker.destroy()
 
@@ -674,7 +689,7 @@ class AssetTransformerWindow(MenuHelperWindow):
             dialog.visible = False
             self._confirmation_dialog = None
 
-            async def _destroy_next_frame():
+            async def _destroy_next_frame() -> None:
                 await omni.kit.app.get_app().next_update_async()
                 dialog.destroy()
 
@@ -730,7 +745,7 @@ class AssetTransformerWindow(MenuHelperWindow):
 
         picker = self._file_picker
 
-        async def _deferred_navigate():
+        async def _deferred_navigate() -> None:
             await omni.kit.app.get_app().next_update_async()
             if picker is not self._file_picker:
                 return
@@ -1074,7 +1089,7 @@ class AssetTransformerWindow(MenuHelperWindow):
     def _save_preset(self) -> None:
         """Open a file picker dialog to save the current profile as a JSON preset.
 
-        Navigates to the directory of the last-used preset file.  Falls back
+        Navigates to the directory of the last-used preset file. Falls back
         to the user's ``Documents`` folder (or home directory) when no recent
         preset path is available.
         """

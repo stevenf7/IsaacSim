@@ -14,6 +14,10 @@
 # limitations under the License.
 
 # Re-export for extension loader convenience
+
+"""Framework for defining and executing transformation rules on USD stages."""
+
+
 from .extension import Extension  # noqa: F401
 from .manager import AssetTransformerManager, RuleRegistry  # noqa: F401
 from .models import ExecutionReport, RuleConfigurationParam, RuleExecutionResult, RuleProfile, RuleSpec  # noqa: F401

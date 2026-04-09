@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Validation rules for USD material organization."""
+"""Material validation rules for Isaac Sim assets."""
 
 
 from collections.abc import Iterator
@@ -31,6 +31,10 @@ def traverse_without_references_payloads(prim: "Usd.Prim") -> Iterator:
 
     Yields:
         USD prims in the hierarchy that don't have references or payloads.
+
+    Returns:
+        Iterator over the same prims as yielded (depth-first, children with
+        authored references or payloads skipped).
     """
     yield prim
 
@@ -51,7 +55,7 @@ class NoNestedMaterials(av_core.BaseRuleChecker):
     materials, which can cause unexpected rendering behavior.
     """
 
-    def CheckPrim(self, prim: Usd.Prim) -> None:
+    def CheckPrim(self, prim: Usd.Prim) -> None:  # noqa: N802
         """Check if a material prim contains nested materials.
 
         Args:
@@ -76,7 +80,7 @@ class MaterialsOnTopLevelOnly(av_core.BaseRuleChecker):
     top-level Looks prim, following USD best practices for material organization.
     """
 
-    def CheckStage(self, stage: Usd.Stage) -> None:
+    def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
         """Check if all materials are properly organized in the Looks prim.
 
         Args:

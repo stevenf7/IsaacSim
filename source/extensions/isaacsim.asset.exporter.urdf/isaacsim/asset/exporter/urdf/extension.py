@@ -31,7 +31,16 @@ EXTENSION_TITLE = "URDF Exporter"
 
 
 class Extension(omni.ext.IExt):
-    """Kit extension that registers the URDF export menu item and dialog."""
+    """Extension class for the isaacsim.asset.exporter.urdf extension.
+
+    This extension provides URDF export functionality for Isaac Sim, allowing users to export USD scenes
+    and assets to URDF (Unified Robot Description Format) files. The extension integrates with Isaac Sim's
+    file export system and adds a "URDF Exporter" menu item to the File menu.
+
+    The extension creates a file export dialog that supports .urdf file format and provides export-specific
+    options through a custom UI. Users can select USD prims and convert them to URDF format with
+    appropriate robot description syntax including joints, links, and material properties.
+    """
 
     def on_startup(self, ext_id: str) -> None:
         """Register the export action and menu item.
@@ -57,6 +66,10 @@ class Extension(omni.ext.IExt):
         add_menu_items(self._menu_items, "File")
 
     def _show_dialog(self) -> None:
+        """Shows the URDF export dialog.
+
+        Creates a UrdfExporterDelegate and displays the file exporter window with URDF format options.
+        """
         # File Exporter Dialog setup
         file_exporter = get_file_exporter()
         if not file_exporter:
@@ -74,12 +87,16 @@ class Extension(omni.ext.IExt):
         file_exporter.add_export_options_frame("Export Options", self._export_options)
 
     def _hide_dialog(self) -> None:
+        """Hides the URDF export dialog window."""
         file_exporter = get_file_exporter()
         if file_exporter:
             file_exporter.hide_window()
 
     def on_shutdown(self) -> None:
-        """Clean up the exporter delegate, menu items, and registered actions."""
+        """Cleans up resources when the extension is shut down.
+
+        Cleans up the export options delegate, hides the dialog, removes menu items, and performs garbage collection.
+        """
         if self._export_options:
             self._export_options.cleanup()
         self._hide_dialog()
@@ -90,7 +107,15 @@ class Extension(omni.ext.IExt):
 
 
 class UrdfExporterDelegate(ExportOptionsDelegate):
-    """Delegate that provides URDF export options inside the file-exporter dialog."""
+    """Export options delegate for URDF file format.
+
+    This delegate integrates with the Omniverse Kit file exporter system to provide URDF-specific export
+    options and functionality. It creates a UI frame containing export configuration options and handles the
+    export process when users select the URDF format in the file exporter dialog.
+
+    The delegate manages the lifecycle of URDF export operations, including building the options UI,
+    handling export requests, and cleaning up resources when no longer needed.
+    """
 
     def __init__(self) -> None:
         # Initialize the delegate
@@ -102,6 +127,10 @@ class UrdfExporterDelegate(ExportOptionsDelegate):
         self._exporter = UrdfExporter()
 
     def _build_ui_impl(self) -> None:
+        """Builds the UI implementation for the URDF exporter options.
+
+        Creates a UI frame widget and builds the exporter options interface within it.
+        """
         self._widget = ui.Frame()
         with self._widget:
             self._exporter.build_exporter_options()
@@ -122,11 +151,18 @@ class UrdfExporterDelegate(ExportOptionsDelegate):
             print(f"Error: Failed to export to URDF")
 
     def _destroy_impl(self) -> None:
+        """Destroys the UI implementation and cleans up the widget.
+
+        Destroys the UI frame widget and resets the widget reference to None.
+        """
         if self._widget:
             self._widget.destroy()
         self._widget = None
 
     def cleanup(self) -> None:
-        """Clean up the exporter and destroy the options widget."""
+        """Performs cleanup operations for the URDF exporter delegate.
+
+        Cleans up the exporter instance and destroys the UI implementation.
+        """
         self._exporter.cleanup()
         self._destroy_impl()

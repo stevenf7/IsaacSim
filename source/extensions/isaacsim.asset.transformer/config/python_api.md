@@ -71,6 +71,6 @@
 - class RuleConfigurationParam
   - name: str
   - display_name: str
-  - param_type: Any
+  - param_type: type
   - description: str | None
-  - default_value: Any
+  - default_value: object | None

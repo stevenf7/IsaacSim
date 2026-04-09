@@ -1,5 +1,5 @@
 [package]
-version = "1.4.5"
+version = "1.5.0"
 category = "Simulation"
 title = "Isaac Sim USD to URDF exporter"
 description = "Extension that exports USD files to URDF"
@@ -54,3 +54,6 @@ stdoutFailPatterns.exclude = [
     '*Error processing node attribute `outputs:pointInstanceDataType`: dataType attribute is empty*',
     '*SyntheticData extension needs at least a stageFrameHistoryCount of 3*'
 ]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

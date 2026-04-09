@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.4.0] - 2026-04-08
+### Changed
+- Improve Python API documentation (`config/python_api.md` and/or module docstrings).
+
 ## [3.3.0] - 2026-03-31
 ### Changed
 - use shared ui library from isaacsim.gui.components

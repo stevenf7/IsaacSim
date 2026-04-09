@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Validation rules for physics joint transforms and states."""
+"""Validation rules for USD joint prims in Isaac Sim assets."""
 
 
 import omni.asset_validator.core as av_core
@@ -50,9 +50,18 @@ class JointHasCorrectTransformAndState(av_core.BaseRuleChecker):
         "Y": Gf.Vec3d(0, 1, 0),
         "Z": Gf.Vec3d(0, 0, 1),
     }
+    """Mapping from axis string identifiers to their corresponding 3D vector representations."""
 
-    def CheckPrim(self, prim: Usd.Prim) -> None:
-        """Check if a prim has correct joint transform and state configuration."""
+    def CheckPrim(self, prim: Usd.Prim) -> None:  # noqa: N802
+        """Validates that joint transform and state values are consistent with the connected bodies.
+
+        Checks revolute and prismatic joints to ensure their transforms and joint states correctly
+        define the relationship between connected bodies. Reports errors when joint positions or
+        rotations are not well-defined or when joint states don't match the robot pose.
+
+        Args:
+            prim: The joint prim to validate.
+        """
         # print(f"JointHasCorrectTransform: {prim.GetPath()}")
 
         joint = UsdPhysics.Joint(prim)
@@ -134,9 +143,9 @@ class JointHasCorrectTransformAndState(av_core.BaseRuleChecker):
         expected_state_rot_0 = joint_state_pos_0.GetRotation()
         expected_rot_0 = expected_tm_0.GetRotation()
         expected_rot_1 = expected_tm_1.GetRotation()
-        expected_state_rot0_as_vec4d = GfQuatToVec4d(expected_state_rot_0.GetQuat())
-        expected_rot0_as_vec4d = GfQuatToVec4d(expected_rot_0.GetQuat().GetNormalized())
-        expected_rot1_as_vec4d = GfQuatToVec4d(expected_rot_1.GetQuat().GetNormalized())
+        expected_state_rot0_as_vec4d = gf_quat_to_vec4d(expected_state_rot_0.GetQuat())
+        expected_rot0_as_vec4d = gf_quat_to_vec4d(expected_rot_0.GetQuat().GetNormalized())
+        expected_rot1_as_vec4d = gf_quat_to_vec4d(expected_rot_1.GetQuat().GetNormalized())
 
         if not Gf.IsClose(expected_state_rot0_as_vec4d, expected_rot1_as_vec4d, 1e-3):
             if not Gf.IsClose(expected_rot0_as_vec4d, expected_rot1_as_vec4d, 1e-3):
@@ -151,7 +160,7 @@ class JointHasCorrectTransformAndState(av_core.BaseRuleChecker):
                 )
 
 
-def GfQuatToVec4d(quat: Gf.Quatd) -> Gf.Vec4d:
+def gf_quat_to_vec4d(quat: Gf.Quatd) -> Gf.Vec4d:
     """Convert a quaternion to a 4D vector.
 
     Args:
@@ -163,7 +172,7 @@ def GfQuatToVec4d(quat: Gf.Quatd) -> Gf.Vec4d:
     return Gf.Vec4d(quat.GetReal(), quat.GetImaginary()[0], quat.GetImaginary()[1], quat.GetImaginary()[2])
 
 
-def GfRotationToVec4d(rot: Gf.Rotation) -> Gf.Vec4d:
+def gf_rotation_to_vec4d(rot: Gf.Rotation) -> Gf.Vec4d:
     """Convert a rotation to a 4D vector.
 
     Args:
@@ -172,7 +181,7 @@ def GfRotationToVec4d(rot: Gf.Rotation) -> Gf.Vec4d:
     Returns:
         A Vec4d representation of the rotation's quaternion.
     """
-    return GfQuatToVec4d(rot.GetQuat())
+    return gf_quat_to_vec4d(rot.GetQuat())
 
 
 @registerRule("IsaacSim.PhysicsRules")
@@ -188,6 +197,7 @@ class JointHasJointStateAPI(av_core.BaseRuleChecker):
         """Apply the appropriate JointStateAPI to a joint prim.
 
         Args:
+            _: Unused; reserved for API consistency with other validators.
             joint_prim: The joint prim to apply the API to.
         """
         actuator_type = None
@@ -207,7 +217,7 @@ class JointHasJointStateAPI(av_core.BaseRuleChecker):
             PhysxSchema.JointStateAPI.Apply(prim, actuator_type)
             edit_stage.Save()
 
-    def CheckPrim(self, prim: Usd.Prim) -> None:
+    def CheckPrim(self, prim: Usd.Prim) -> None:  # noqa: N802
         """Check if a prim has the required JointStateAPI applied.
 
         Args:
@@ -261,7 +271,7 @@ class MimicAPICheck(av_core.BaseRuleChecker):
     natural frequencies, damping ratios, and compatible joint limits.
     """
 
-    def CheckPrim(self, prim: Usd.Prim) -> None:
+    def CheckPrim(self, prim: Usd.Prim) -> None:  # noqa: N802
         """Check if a prim with mimic API is properly configured.
 
         Args:
@@ -381,7 +391,7 @@ class MimicAPICheck(av_core.BaseRuleChecker):
 # RG - Modified the code below to return the world transform of the joint computed from the body 0 or body 1
 
 
-def get_world_body_transform(stage: object, cache: object, joint: object, body0base: bool):
+def get_world_body_transform(stage: object, cache: object, joint: object, body0base: bool) -> Gf.Transform:
     """Get the world transform of a joint computed from either body 0 or body 1.
 
     Args:

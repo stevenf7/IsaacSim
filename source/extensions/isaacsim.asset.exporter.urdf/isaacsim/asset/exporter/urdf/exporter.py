@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Extension to export USD to URDF."""
 
 # Standard Library
@@ -20,7 +19,6 @@ import os
 import pathlib
 import re
 from dataclasses import dataclass
-from typing import Any, Optional
 
 # Third Party
 import numpy as np
@@ -47,7 +45,24 @@ from .style import get_option_style
 
 
 class UrdfExporter:
-    """Handles USD-to-URDF export logic and builds the exporter options UI."""
+    """Exports USD robot assets to URDF format.
+
+    Provides functionality to convert USD-based robot models to URDF (Unified Robot Description Format),
+    which is commonly used in robotics applications. The exporter handles the conversion of robot geometry,
+    physics properties, joint definitions, and material assignments from USD prims to URDF XML format.
+
+    Key features include:
+    - Conversion of USD robot hierarchies to URDF link-joint structures
+    - Export of collision and visual meshes with configurable path prefixes
+    - Preservation of inertial properties including mass, center of mass, and inertia tensors
+    - Support for various mesh path formats (file://, package://, relative paths)
+    - Configurable mesh organization and naming conventions
+    - Integration with PhysX physics data for accurate inertial properties
+
+    The exporter extracts physics properties from USD prims with UsdPhysics.MassAPI and
+    UsdPhysics.RigidBodyAPI, queries PhysX for computed inertial data, and generates a complete
+    URDF description suitable for use in robotics simulators and frameworks.
+    """
 
     def __init__(self) -> None:
         self.log_level = logger.level_from_name("ERROR")
@@ -57,13 +72,13 @@ class UrdfExporter:
         self._visualize_collision_meshes = False
 
     def cleanup(self) -> None:
-        """Reset exporter state to defaults."""
+        """Clean up the exporter by resetting all parameters to their default values."""
         self._mesh_dir = None
         self._mesh_path_prefix = ""
         self._root = None
         self._visualize_collision_meshes = False
 
-    def _on_value_changed(self, param_name: str, new_value: Any) -> None:
+    def _on_value_changed(self, param_name: str, new_value: object) -> None:
         """Generic handler for value changes in UI elements.
 
         Args:
@@ -73,7 +88,11 @@ class UrdfExporter:
         setattr(self, f"_{param_name}", new_value)
 
     def build_exporter_options(self) -> None:
-        """Build the URDF exporter options UI widgets."""
+        """Build the UI options panel for configuring URDF export settings.
+
+        Creates UI elements for mesh folder configuration, path prefix selection, root prim path,
+        and collision visualization options.
+        """
         with ui.VStack(style=get_option_style(), spacing=5, height=0):
             mesh_field = StringField(
                 "Mesh Folder Name",
@@ -135,6 +154,18 @@ class UrdfExporter:
             )
 
     def _on_export_button_clicked_fn(self, export_dir: str, export_filename: str) -> bool:
+        """Handle the export button click event to export USD stage to URDF format.
+
+        Processes the current USD stage, extracts inertia data from physics prims, and exports
+        the robot structure to a URDF file with associated mesh files.
+
+        Args:
+            export_dir: Directory path where the URDF file and meshes will be exported.
+            export_filename: Base filename for the exported URDF file (without extension).
+
+        Returns:
+            True if the export operation completed successfully.
+        """
         sanitized_export_dir = os.path.normpath(export_dir)
         assert self._mesh_dir is not None
         self._mesh_dir = os.path.join(sanitized_export_dir, os.path.basename(self._mesh_dir))
@@ -247,24 +278,34 @@ class UrdfExporter:
 class InertiaData:
     """Helper class to store inertia data."""
 
-    mass: Optional[float] = None
-    ref_point: Optional[np.ndarray] = None
-    inertia_diag: Optional[np.ndarray] = None
-    prin_axes: Optional[Rotation] = None
+    mass: float | None = None
+    """Mass value of the rigid body."""
+    ref_point: np.ndarray | None = None
+    """Reference point (center of mass) as a 3D coordinate array."""
+    inertia_diag: np.ndarray | None = None
+    """Diagonal elements of the inertia tensor as a 3D array."""
+    prin_axes: Rotation | None = None
+    """Principal axes of inertia as a rotation object."""
 
     @classmethod
     def get_physx_queried_inertia_data(cls, prim: Usd.Prim) -> "InertiaData":
-        """Query PhysX for the rigid-body inertia properties of a prim.
+        """Creates InertiaData from PhysX property queries.
+
+        Queries the PhysX simulation for rigid body properties including mass, center of mass,
+        inertia, and principal axes.
 
         Args:
-            prim: The USD prim with a rigid body to query.
+            prim: The USD prim to query for inertia data.
 
         Returns:
-            Populated inertia data from the PhysX property query.
+            InertiaData object with queried properties.
+
+        Raises:
+            RuntimeError: If PhysX query rigid info is not valid for the given prim.
         """
         inertia_data = cls()
 
-        def rigid_body_fn(rigid_info: Any, prim_path: str) -> None:
+        def rigid_body_fn(rigid_info: object, prim_path: str) -> None:
             nonlocal inertia_data
 
             if rigid_info.result == PhysxPropertyQueryResult.VALID:
@@ -304,13 +345,16 @@ class InertiaData:
 
     @classmethod
     def init_from_prim(cls, prim: Usd.Prim) -> "InertiaData":
-        """Build inertia data from authored USD mass attributes, falling back to PhysX queries.
+        """Creates InertiaData from USD prim with authored values taking precedence.
+
+        First queries PhysX for computed values, then overrides with any authored USD attributes
+        from the MassAPI.
 
         Args:
-            prim: The USD prim to extract inertia data from.
+            prim: The USD prim to initialize from.
 
         Returns:
-            Inertia data populated from authored attributes or PhysX queries.
+            InertiaData object with combined authored and computed properties.
         """
         inertia_data = cls.get_physx_queried_inertia_data(prim)
 
@@ -341,13 +385,16 @@ class InertiaData:
 
 
 def create_new_stage_with_inertia_data(stage: Usd.Stage) -> Usd.Stage:
-    """Write PhysX-queried inertia data onto all rigid-body prims in the stage.
+    """Updates a USD stage with computed inertia data for all rigid body prims.
+
+    Iterates through all prims with MassAPI and RigidBodyAPI, retrieves their inertia data using PhysX queries,
+    and updates the stage with computed mass, center of mass, diagonal inertia, and principal axes values.
 
     Args:
-        stage: The USD stage whose rigid-body prims will be updated.
+        stage: The USD stage containing rigid body prims to update with inertia data.
 
     Returns:
-        The same stage with inertia attributes written.
+        The updated stage with inertia data applied to rigid body prims.
     """
     link_prims = prim_helper.get_prims(stage, has_apis=[UsdPhysics.MassAPI, UsdPhysics.RigidBodyAPI])
 

@@ -1,5 +1,5 @@
 [package]
-version = "1.0.1"
+version = "1.1.0"
 category = "Simulation"
 title = "Isaac Sim Asset Transformer"
 description = "UI tool for applying and previewing asset transformations"
@@ -70,3 +70,6 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
 ]
+
+[documentation]
+pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

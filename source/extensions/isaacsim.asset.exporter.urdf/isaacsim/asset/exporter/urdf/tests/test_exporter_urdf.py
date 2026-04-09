@@ -20,6 +20,7 @@ import asyncio
 import os
 import tempfile
 import unittest
+from collections.abc import Callable
 from typing import Any
 
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -62,7 +63,7 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
     @staticmethod
     def check(
         prims: list,
-        member: Any,
+        member: property | Callable[..., Any],
         member_args: list[tuple] | None = None,
         member_kwargs: list[dict] | None = None,
         msg: list[str] | None = None,

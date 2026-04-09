@@ -15,9 +15,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 import asyncio
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
+from typing import Any
 
 import carb
 import omni
@@ -31,18 +34,18 @@ ASSETS_LOCATION = f"{SETTINGS_PATH}/assets_location"
 CONFIG_LOCATION = f"{SETTINGS_PATH}/config_location"
 
 
-def Singleton(class_: type) -> object:
-    """A singleton decorator.
+def singleton(class_: type) -> object:
+    """A singleton decorator that ensures only one instance of a class is created.
 
     Args:
-        class_: The class to make a singleton.
+        class_: The class to be converted to a singleton.
 
     Returns:
-        A wrapper function that returns the singleton instance.
+        A function that returns the singleton instance of the class.
     """
     instances = {}
 
-    def getinstance(*args, **kwargs):
+    def getinstance(*args: Any, **kwargs: Any) -> Any:
         if class_ not in instances:
             instances[class_] = class_(*args, **kwargs)
         return instances[class_]
@@ -50,11 +53,17 @@ def Singleton(class_: type) -> object:
     return getinstance
 
 
-def create_filepicker(title: str, click_apply_fn: Callable = None, error_fn: Callable = None):
-    """Create and display a file picker dialog."""
+def create_filepicker(title: str, click_apply_fn: Callable = None, error_fn: Callable = None) -> None:
+    """Creates a file picker dialog for selecting files or directories.
+
+    Args:
+        title: The title displayed in the file picker dialog.
+        click_apply_fn: Callback function executed when a file is selected.
+        error_fn: Callback function executed when an error occurs.
+    """
     from omni.kit.window.filepicker import FilePickerDialog
 
-    async def on_click_handler(filename: str, dirname: str, dialog: FilePickerDialog, click_fn: Callable):
+    async def on_click_handler(filename: str, dirname: str, dialog: FilePickerDialog, click_fn: Callable) -> None:
         dirname = dirname.strip()
         if filename and dirname and not dirname.endswith("/"):
             dirname += "/"
@@ -75,24 +84,37 @@ def create_filepicker(title: str, click_apply_fn: Callable = None, error_fn: Cal
     )
 
 
-@Singleton
+@singleton
 class ConveyorBuilderPreferences(PreferenceBuilder):
-    """Preferences page for the conveyor builder extension."""
+    """Preferences builder for the Conveyor Builder extension.
 
-    def __init__(self):
+    This class creates a preference panel that allows users to configure settings for the Conveyor Builder extension.
+    It provides UI controls for setting the conveyor assets location and conveyor configuration file paths.
+    The class is implemented as a singleton to ensure only one instance exists throughout the application lifecycle.
+
+    The preference panel includes:
+    - Conveyor Assets Location: Directory path where conveyor assets are stored
+    - Conveyor Config: File path to the JSON configuration file containing track type definitions
+
+    Both settings include browse buttons for easy file/directory selection and reset buttons to restore default values.
+    The assets location defaults to the Isaac/Props/Conveyors/ directory in the assets root path, while the config
+    file defaults to the track_types.json file included with the extension.
+    """
+
+    def __init__(self) -> None:
         super().__init__("Conveyor Builder")
         self._settings = carb.settings.get_settings()
 
-    def reset_config_default(self):
-        """Reset the config file path to the default bundled location."""
+    def reset_config_default(self) -> None:
+        """Resets the conveyor configuration file path to the default track_types.json location."""
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.gen.conveyor.ui")
         extension_path = ext_manager.get_extension_path(ext_id)
         cfg = Path(extension_path).joinpath("data").joinpath("track_types.json")
         self._settings.set(CONFIG_LOCATION, str(cfg))
 
-    def reset_assets_default(self):
-        """Reset the assets location to the default Nucleus path."""
+    def reset_assets_default(self) -> None:
+        """Resets the conveyor assets location to the default Isaac conveyor assets directory."""
         timeout = carb.settings.get_settings().get("/persistent/isaac/asset_root/timeout")
         carb.settings.get_settings().set("/persistent/isaac/asset_root/timeout", 1.0)
         path = nucleus.get_assets_root_path()
@@ -116,8 +138,8 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
                 path += "/"
         return path.replace("\\", "/")
 
-    def build(self):
-        """Build the preferences UI panel."""
+    def build(self) -> None:
+        """Builds the preferences UI with conveyor assets location and config file settings."""
         with ui.VStack(height=0):
             with self.add_frame("General"):
                 with ui.VStack(height=0, spacing=5):
@@ -129,7 +151,7 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
                             lambda a, w=widget: self._on_file_pick(a.get_value_as_string(), w, ASSETS_LOCATION)
                         )
 
-                        def reset():
+                        def reset() -> None:
                             self.reset_assets_default()
                             widget.model.set_value(self.assets_location)
 
@@ -141,7 +163,7 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
                             width=24,
                         )
 
-                        def reset_asset(w):
+                        def reset_asset(w: Any) -> None:
                             self.reset_assets_default()
                             w.model.set_value(self.assets_location)
 
@@ -166,7 +188,7 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
                             width=24,
                         )
 
-                        def reset_cfg(w):
+                        def reset_cfg(w: Any) -> None:
                             self.reset_config_default()
                             w.model.set_value(self.config_file)
 
@@ -182,8 +204,8 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
 
         Args:
             path: The current path value.
-            widget: The UI widget to update.
-            setting: The settings key to update.
+            widget: The UI widget associated with the browse button.
+            setting: The setting key to update when a path is selected.
         """
         file_pick = create_filepicker(
             title="Select Directory" if setting == ASSETS_LOCATION else "Select Config File",
@@ -197,25 +219,33 @@ class ConveyorBuilderPreferences(PreferenceBuilder):
         """Called when the user accepts directory in the Select Directory dialog.
 
         Args:
-            full_path: The selected file path.
-            widget: The UI widget to update.
-            setting: The settings key to update.
+            full_path: The selected file or directory path.
+            widget: The UI widget to update with the new path.
+            setting: The setting key to store the selected path.
         """
         directory = self.cleanup_slashes(full_path, not full_path.endswith(".json"))
         self._settings.set(setting, directory)
         widget.model.set_value(directory)
 
     @property
-    def assets_location(self):
-        """Get the configured conveyor assets location path."""
+    def assets_location(self) -> str:
+        """Location path for conveyor assets.
+
+        Returns:
+            The conveyor assets directory path.
+        """
         if self._settings.get(ASSETS_LOCATION) is None:
             self.reset_assets_default()
 
         return self._settings.get(ASSETS_LOCATION)
 
     @property
-    def config_file(self):
-        """Get the configured conveyor config file path."""
+    def config_file(self) -> str:
+        """Path to the conveyor configuration file.
+
+        Returns:
+            The conveyor configuration file path.
+        """
         if self._settings.get(CONFIG_LOCATION) is None:
             self.reset_config_default()
 

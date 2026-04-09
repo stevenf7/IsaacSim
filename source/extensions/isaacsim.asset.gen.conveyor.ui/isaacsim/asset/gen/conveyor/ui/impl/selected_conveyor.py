@@ -15,9 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
+from typing import Any
+
 import omni.ui as ui
 
-from .conveyor_builder.conveyor_track import Ramp, Type
+from .conveyor_builder.conveyor_track import ConveyorTrack, Ramp, Type
 
 
 class SelectedConveyorWidget:
@@ -29,7 +33,7 @@ class SelectedConveyorWidget:
             `anchor_changed_fn`, and `flip_fn`.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         self._frame = ui.Frame(**kwargs, width=128, height=128)
         self.name = kwargs.get("name", "")
         self.style = kwargs
@@ -46,33 +50,63 @@ class SelectedConveyorWidget:
         self.available_anchors = []
         # self.build_ui()
 
-    def on_flip(self, track):
-        """Invoke the flip callback for the given track."""
+    def on_flip(self, track: ConveyorTrack) -> None:
+        """Invoke the flip callback for the given track.
+
+        Args:
+            track: Track whose orientation should be flipped.
+        """
         if self.on_flip_callback:
             self.on_flip_callback(track)
 
-    def on_add_track(self, track):
-        """Invoke the add-track callback for the given track."""
+    def on_add_track(self, track: ConveyorTrack) -> None:
+        """Invoke the add-track callback for the given track.
+
+        Args:
+            track: Track the user chose to add.
+        """
         if self.on_add_track_callback:
             self.on_add_track_callback(track)
 
-    def on_selection_changed(self, track):
-        """Invoke the selection-changed callback for the given track."""
+    def on_selection_changed(self, track: ConveyorTrack) -> None:
+        """Invoke the selection-changed callback for the given track.
+
+        Args:
+            track: Newly selected track, or ``None`` if cleared.
+        """
         if self.on_selection_changed_callback:
             self.on_selection_changed_callback(track)
 
-    def on_remove_track(self, track):
-        """Invoke the remove-track callback for the given track."""
+    def on_remove_track(self, track: ConveyorTrack) -> None:
+        """Invoke the remove-track callback for the given track.
+
+        Args:
+            track: Track the user chose to remove.
+        """
         if self.on_remove_track_callback:
             self.on_remove_track_callback(track)
 
-    def update_list(self, new_list, new_selection=0, direction=1):
-        """Update the track list and select the specified track index."""
+    def update_list(self, new_list: list[ConveyorTrack], new_selection: int = 0, direction: int = 1) -> None:
+        """Update the track list and select the specified track index.
+
+        Args:
+            new_list: Replacement list of selectable tracks.
+            new_selection: Index into ``new_list`` to show as selected.
+            direction: Passed through when resolving anchors for the selection.
+        """
         self.track_list = new_list
         self.update_selection(self.track_list[new_selection], direction=direction)
 
-    def update_selection(self, new_selection, available_anchors=[], direction=1):
-        """Update the selected conveyor and available anchors, then rebuild UI."""
+    def update_selection(
+        self, new_selection: ConveyorTrack | None, available_anchors: list[str] | None = None, direction: int = 1
+    ) -> None:
+        """Update the selected conveyor and available anchors, then rebuild UI.
+
+        Args:
+            new_selection: Track to display, or ``None`` to clear.
+            available_anchors: Explicit anchor list; if omitted, derived from ``new_selection``.
+            direction: Used when computing default anchors from the selected track.
+        """
         if self.selected_conveyor != new_selection or self.available_anchors != available_anchors:
             self.selected_conveyor = new_selection
             # if new_selection:
@@ -100,30 +134,46 @@ class SelectedConveyorWidget:
         # print("available anchors", available_anchors, self.available_anchors)
         self.build_ui()
 
-    def anchor_changed(self, new_anchor):
-        """Handle anchor button selection change."""
+    def anchor_changed(self, new_anchor: int) -> None:
+        """Handle anchor button selection change.
+
+        Args:
+            new_anchor: Index of the anchor button that was pressed.
+        """
         self.current_anchor = new_anchor
         for i in range(len(self.anchor_btns)):
             self.anchor_btns[i].selected = new_anchor == i
         self.on_anchor_changed(self.available_anchors[new_anchor])
 
-    def on_anchor_changed(self, new_anchor):
-        """Invoke the anchor-changed callback."""
+    def on_anchor_changed(self, new_anchor: str) -> None:
+        """Invoke the anchor-changed callback.
+
+        Args:
+            new_anchor: Anchor name now selected.
+        """
         if self.on_anchor_changed_callback:
             self.on_anchor_changed_callback(new_anchor)
 
-    def get_current_anchor(self):
+    def get_current_anchor(self) -> str:
         """Get the name of the currently selected anchor point."""
         if self.selected_conveyor:
             return self.available_anchors[self.current_anchor]
         return ""
 
-    def get_next_anchor(self, direction):
-        """Get the anchor point name for the given direction."""
+    def get_next_anchor(self, direction: int) -> str:
+        """Get the anchor point name for the given direction.
+
+        Args:
+            direction: Sign or mode used when resolving anchor ordering on the track.
+
+        Returns:
+            Anchor name at ``current_anchor`` for ``direction``, or empty string if none.
+        """
         if self.selected_conveyor:
             return self.selected_conveyor.get_anchors(direction)[self.current_anchor]
+        return ""
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Build the conveyor card UI with thumbnail, anchor buttons, and actions."""
         with self._frame:
             with ui.ZStack(width=144, height=144, alignment=ui.Alignment.CENTER):
@@ -214,7 +264,7 @@ class SelectedConveyorWidget:
                     # ui.Spacer()
                     # ui.Button(name="add_box", width=30)
                     self.anchor_btns = []
-                    anchors = [a for a in self.available_anchors]
+                    anchors = list(self.available_anchors)
                     if self.selected_conveyor.ramp != Ramp.FLAT:
                         anchors = [anchors[0]]
                     if len(anchors) > 1:

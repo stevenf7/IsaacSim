@@ -91,8 +91,16 @@ class RobotDescription:
             self._set_status("ROS node found")
         else:
             self._set_status("ROS node not found", color=0xFF0000FF)
-        self._option_widget.set_refresh_enabled(True)
-        self._option_widget.set_import_enabled(True)
+
+        def _enable_ui() -> None:
+            self._option_widget.set_refresh_enabled(True)
+            self._option_widget.set_import_enabled(True)
+
+        app = omni.kit.app.get_app()
+        if hasattr(app, "post_to_main_thread"):
+            app.post_to_main_thread(_enable_ui)
+        else:
+            _enable_ui()
 
     def _on_node_changed(self, model: ui.AbstractValueModel) -> None:
         """Request a new URDF description for the provided node.

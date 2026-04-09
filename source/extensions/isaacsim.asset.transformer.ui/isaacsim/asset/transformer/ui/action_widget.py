@@ -49,7 +49,6 @@ class ActionRowDelegate(ui.AbstractItemDelegate):
             level: Nesting depth.
             expanded: Whether the item is expanded.
         """
-        pass
 
     def build_widget(
         self,

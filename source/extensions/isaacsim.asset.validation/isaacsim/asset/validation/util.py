@@ -29,11 +29,7 @@ def is_relationship_prepended(relationship: object) -> bool:
         True if the relationship is prepended, False if it uses explicit items.
     """
     rel_stack = relationship.GetPropertyStack()
-    for spec in rel_stack:
-        if spec.targetPathList.isExplicit:
-            # It's a non-editable list
-            return False
-    return True
+    return all(not spec.targetPathList.isExplicit for spec in rel_stack)
 
 
 def make_relationship_prepended(relationship: object) -> bool:
@@ -51,7 +47,7 @@ def make_relationship_prepended(relationship: object) -> bool:
     rel_stack = relationship.GetPropertyStack()
     for spec in rel_stack:
         if spec.targetPathList.isExplicit:
-            items = [i for i in spec.targetPathList.explicitItems]
+            items = list(spec.targetPathList.explicitItems)
             spec.targetPathList.prependedItems = items
             spec.targetPathList.explicitItems = []
     return True

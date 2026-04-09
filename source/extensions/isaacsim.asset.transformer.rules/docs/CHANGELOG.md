@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2026-04-08
+### Changed
+- Improve Python API documentation (`config/python_api.md` and/or module docstrings).
+
 ## [1.2.0] - 2026-03-09
 ### Added
 - PhysicsJointPoseFixRule to correct joint local poses after body world transforms change

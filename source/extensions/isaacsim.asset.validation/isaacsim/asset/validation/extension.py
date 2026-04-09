@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Isaac Sim asset validation extension."""
+"""Isaac Sim Asset Validation Extension that provides custom validation rules for physics, robot schemas, and materials."""
 
 
 import omni.ext
@@ -32,8 +32,6 @@ class IsaacSimAssetValidationExtension(omni.ext.IExt):
         Args:
             ext_id: The extension identifier.
         """
-        pass
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up resources when the extension is shut down."""
-        pass

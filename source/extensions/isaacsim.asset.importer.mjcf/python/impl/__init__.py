@@ -18,3 +18,5 @@
 from ._mjcf import _mjcf as _mjcf
 from .config import MJCFImporterConfig as MJCFImporterConfig
 from .converter import MJCFImporter as MJCFImporter
+
+__all__ = ["_mjcf", "MJCFImporterConfig", "MJCFImporter"]

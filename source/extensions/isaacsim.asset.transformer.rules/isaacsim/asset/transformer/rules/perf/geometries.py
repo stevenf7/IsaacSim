@@ -2917,7 +2917,7 @@ class GeometriesRoutingRule(RuleInterface):
                     count += 1
             return count
 
-        def remove_prototype_refs(prim_spec):
+        def remove_prototype_refs(prim_spec: Sdf.PrimSpec | None) -> None:
             nonlocal removed_refs
             if prim_spec is None:
                 return

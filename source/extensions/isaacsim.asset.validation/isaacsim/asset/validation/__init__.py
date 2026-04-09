@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Provides validation rules and utilities for Isaac Sim assets including drives, joints, materials, physics, and robots."""
+
+
 from .drive_rules import *
 from .extension import IsaacSimAssetValidationExtension  # noqa: F401
 from .joint_rules import *

@@ -1,5 +1,8 @@
 # Overview
 
+```{image} ../../../../source/extensions/isaacsim.asset.gen.omap.ui/data/preview.png
+```
+
 To enable this extension, go to the Extension Manager menu and enable isaacsim.asset.gen.omap extension.
 
 ## Generating an Occupancy Map

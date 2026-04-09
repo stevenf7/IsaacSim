@@ -46,10 +46,14 @@ FONT_SIZE = 14
 
 
 def get_option_style() -> dict:
-    """Return the omni.ui style dictionary for the exporter options panel.
+    """Returns the UI style configuration for the URDF exporter extension.
+
+    Provides styling definitions for various UI components including buttons, labels, fields, tree views, and other
+    interface elements used throughout the exporter interface.
 
     Returns:
-        Style dictionary mapping widget selectors to their visual properties.
+        A dictionary containing style definitions for UI components, with keys as component selectors and values as
+        style property dictionaries.
     """
     style = {
         "Button::reset": {"background_color": 0x0, "border_radius": 1},

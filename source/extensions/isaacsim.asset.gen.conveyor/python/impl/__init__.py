@@ -12,4 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Implementation module for the Isaac Sim asset generation conveyor extension."""
+
 from .extension import Extension  # noqa: F401 (Extension loaded for side effects)
+
+__all__ = []
