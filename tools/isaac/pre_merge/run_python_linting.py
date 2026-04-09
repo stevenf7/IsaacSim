@@ -23,7 +23,6 @@ comprehensive code quality checks. Extensions are discovered under:
 
 Tools:
     - mypy: Static type checking
-    - darglint: Docstring argument/return validation
     - interrogate: Docstring coverage metrics
     - pydoclint: Docstring validation (enforces no types in docstrings)
     - ruff: Fast linter with code quality checks:
@@ -111,13 +110,6 @@ from term_helpers import Colors, colorize  # noqa: E402
 # =============================================================================
 # Tool Configurations (hardcoded defaults when config files not supported)
 # =============================================================================
-
-# darglint configuration
-# Note: "long" strictness doesn't require Returns section when function returns None
-DARGLINT_CONFIG: dict[str, Any] = {
-    "docstring_style": "google",
-    "strictness": "long",  # short, long, or full (full is too strict about None returns)
-}
 
 # interrogate configuration
 INTERROGATE_CONFIG: dict[str, Any] = {
@@ -440,7 +432,7 @@ def discover_tools(vendor_dir: str | None = None) -> dict[str, ToolInfo]:
     """
     packman_bin = get_packman_python_bin()
     tools = {}
-    for name in ["mypy", "darglint", "interrogate", "pydoclint", "ruff"]:
+    for name in ["mypy", "interrogate", "pydoclint", "ruff"]:
         tools[name] = find_tool(name, vendor_dir, packman_bin)
     return tools
 
@@ -610,74 +602,6 @@ def run_mypy(
     except Exception as e:
         result.skipped = True
         result.skip_reason = f"Error running mypy: {e}"
-
-    return result
-
-
-def run_darglint(
-    python_dir: Path,
-    python_files: list[Path] | None,
-    tool_info: ToolInfo,
-    cwd: Path,
-) -> ToolResult:
-    """Run darglint on a directory.
-
-    Args:
-        python_dir: Directory containing Python files to check.
-        python_files: Specific Python files to check, or None for all files in python_dir.
-        tool_info: Information about the darglint tool.
-        cwd: Current working directory for running the command.
-
-    Returns:
-        ToolResult with errors, warnings, and messages.
-    """
-    result = ToolResult(tool_name="darglint")
-
-    if not tool_info.available:
-        result.skipped = True
-        result.skip_reason = tool_info.error_message
-        return result
-
-    # Find all Python files (darglint doesn't support directories directly)
-    py_files = python_files if python_files is not None else list(python_dir.rglob("*.py"))
-    # Exclude vendor files
-    py_files = [f for f in py_files if "/_vendor/" not in str(f)]
-
-    if not py_files:
-        result.skipped = True
-        result.skip_reason = "No Python files to check"
-        return result
-
-    assert tool_info.binary_path is not None
-    cmd = [
-        tool_info.binary_path,
-        "--docstring-style={}".format(DARGLINT_CONFIG["docstring_style"]),
-        "--strictness={}".format(DARGLINT_CONFIG["strictness"]),
-    ] + [str(f) for f in py_files]
-
-    start_time = time.time()
-    try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
-        result.duration_seconds = time.time() - start_time
-
-        # Check for tool crashes (e.g., ModuleNotFoundError)
-        combined_output = (proc.stdout or "") + (proc.stderr or "")
-        if "Traceback" in combined_output or "ModuleNotFoundError" in combined_output:
-            result.skipped = True
-            result.skip_reason = "darglint crashed (possibly not installed in this Python environment)"
-            return result
-
-        if proc.stdout.strip():
-            for line in proc.stdout.strip().split("\n"):
-                if line.strip():
-                    # darglint outputs errors as DAR### codes
-                    if "DAR" in line:
-                        result.errors += 1
-                    result.messages.append(line)
-
-    except Exception as e:
-        result.skipped = True
-        result.skip_reason = f"Error running darglint: {e}"
 
     return result
 
@@ -1050,9 +974,6 @@ def run_tools_on_extension(
             python_dir, python_files, mypy_config, exclude_patterns, tools["mypy"], vendor_dir, cwd
         )
 
-    if "darglint" in enabled_tools:
-        result.tool_results["darglint"] = run_darglint(python_dir, python_files, tools["darglint"], cwd)
-
     if "interrogate" in enabled_tools:
         result.tool_results["interrogate"] = run_interrogate(python_dir, python_files, tools["interrogate"], cwd)
 
@@ -1121,9 +1042,6 @@ def run_tools_on_directory(
         result.tool_results["mypy"] = run_mypy(
             python_dir, python_files, mypy_config, exclude_patterns, tools["mypy"], vendor_dir, cwd
         )
-
-    if "darglint" in enabled_tools:
-        result.tool_results["darglint"] = run_darglint(python_dir, python_files, tools["darglint"], cwd)
 
     if "interrogate" in enabled_tools:
         result.tool_results["interrogate"] = run_interrogate(python_dir, python_files, tools["interrogate"], cwd)
@@ -1347,7 +1265,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
     """
     parser.description = (
         "Run Python linting tools on extensions under source/extensions, source/internal_extensions, "
-        "and source/deprecated (mypy, darglint, interrogate, pydoclint, ruff). "
+        "and source/deprecated (mypy, interrogate, pydoclint, ruff). "
         "Ruff enforces docstring style (Google convention), type annotations (ANN), modern annotations, "
         "naming, pycodestyle, bugbear, comprehensions, return hygiene, and simplify rules by default. "
         "Ruff cleanup rules for unused imports/pass removal are enabled by default; "
@@ -1386,11 +1304,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
         "--mypy",
         action="store_true",
         help="Run mypy type checking",
-    )
-    parser.add_argument(
-        "--darglint",
-        action="store_true",
-        help="Run darglint docstring argument validation",
     )
     parser.add_argument(
         "--interrogate",
@@ -1508,7 +1421,6 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict[str, Any]) -> 
         # Determine which tools to run
         tool_flags = {
             "mypy": args.mypy,
-            "darglint": args.darglint,
             "interrogate": args.interrogate,
             "pydoclint": args.pydoclint,
             "ruff": args.ruff,
