@@ -545,6 +545,8 @@ inventory.includes.all = [
     "exts/isaacsim.robot_motion.experimental.motion_generation",
     "exts/isaacsim.robot_motion.cumotion",
     "exts/isaacsim.robot_motion.cumotion.examples",
+    "exts/isaacsim.robot_motion.pink",
+    "exts/isaacsim.robot_motion.pink.examples",
     "exts/isaacsim.robot_motion.schema",
 ]
 

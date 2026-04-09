@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.14.1] - 2026-04-08
+### Added
+- Add `_apply_novaluetype_numeric_patch` coverage workaround giving `numpy._globals._NoValueType` `__int__`, `__float__`, and `__index__` methods so `int()`/`float()` calls inside osqp/scipy do not crash under coverage
+
 ## [0.14.0] - 2026-03-31
 ### Added
 - Add `usd_utils` module with `compare_usd_files` for loading and comparing articulation properties across USD files
