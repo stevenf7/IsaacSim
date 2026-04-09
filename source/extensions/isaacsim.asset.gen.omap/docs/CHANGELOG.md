@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.0] - 2026-04-08
+### Changed
+- Improve Python API documentation (`config/python_api.md` and/or module docstrings).
+
 ## [2.2.1] - 2025-11-19
 ### Changed
 - Update to use new debug draw plugin interface

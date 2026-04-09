@@ -15,11 +15,12 @@
 
 """Occupancy map UI extension for Isaac Sim."""
 
+from __future__ import annotations
 
 import asyncio
 import gc
 import os
-from typing import List, Optional, Tuple, Union
+from typing import Optional
 
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -131,7 +132,7 @@ class Extension(omni.ext.IExt, MenuHelperExtensionFull):
 
     EXTENSION_NAME = "Occupancy Map"
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension is enabled.
 
         Sets up menu items and layout templates for the occupancy map UI.
@@ -162,7 +163,7 @@ class Extension(omni.ext.IExt, MenuHelperExtensionFull):
         ]
         add_menu_items(self._menu_items, "Layouts")
 
-    def _open_layout_fn(self, ext_id: str):
+    def _open_layout_fn(self, ext_id: str) -> asyncio.Task[None] | None:
         """Opens the occupancy map layout.
 
         Loads the predefined layout for occupancy map generation from the extension's
@@ -179,11 +180,11 @@ class Extension(omni.ext.IExt, MenuHelperExtensionFull):
         layout_file = f"{extension_path}/data/omap.json"
         if not os.path.exists(layout_file):
             carb.log_warn(f"Layout file {layout_file} does not exist")
-            return
+            return None
 
         return asyncio.ensure_future(_load_layout(layout_file))
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension is disabled.
 
         Removes menu items and cleans up resources.
@@ -205,7 +206,7 @@ class OccupancyMapWindow(MenuHelperWindow):
     to the occupancy map interface and USD stage.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             Extension.EXTENSION_NAME, width=WINDOW_DEFAULT_WIDTH, height=WINDOW_DEFAULT_HEIGHT, focused=True
         )
@@ -223,12 +224,12 @@ class OccupancyMapWindow(MenuHelperWindow):
         self._map_scale_to_meters: Optional[float] = None
         self._models = {}
         self._stage_open_callback: Optional[object] = None
-        self._image: Optional[List[int]] = None
+        self._image: Optional[list[int]] = None
         self._im: Optional[object] = None
 
-        self.prev_origin: List[float] = [0.0, 0.0]
-        self.lower_bound: List[float] = list(DEFAULT_LOWER_BOUND)
-        self.upper_bound: List[float] = list(DEFAULT_UPPER_BOUND)
+        self.prev_origin: list[float] = [0.0, 0.0]
+        self.lower_bound: list[float] = list(DEFAULT_LOWER_BOUND)
+        self.upper_bound: list[float] = list(DEFAULT_UPPER_BOUND)
 
         self.wait_bound_update: bool = False
         self.bound_update_case: int = 0
@@ -239,7 +240,7 @@ class OccupancyMapWindow(MenuHelperWindow):
 
         self.build_ui()
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Builds the window UI.
 
         Creates all UI elements including origin controls, bounds inputs, cell size settings,
@@ -327,7 +328,7 @@ class OccupancyMapWindow(MenuHelperWindow):
 
     def calculate_bounds(
         self, origin_calc: bool, stationary_bounds: bool
-    ) -> Union[List[float], Tuple[List[float], List[float]]]:
+    ) -> list[float] | tuple[list[float], list[float]]:
         """Calculates bounds based on selected prims.
 
         Computes either the origin point or the bounding box limits based on the selected
@@ -530,7 +531,7 @@ class OccupancyMapWindow(MenuHelperWindow):
         self.on_update_location(0)
         self.on_update_cell_size(0)
 
-        async def generate_task():
+        async def generate_task() -> None:
             self._timeline.stop()
             await omni.kit.app.get_app().next_update_async()
             if not self._models["physx_geom"].get_value_as_bool():
@@ -737,7 +738,7 @@ class OccupancyMapWindow(MenuHelperWindow):
         try:
             image_width = self._im.width
             image_height = self._im.height
-            file = file if file[-4:].lower() == ".png" else "{}.png".format(file)
+            file = file if file[-4:].lower() == ".png" else f"{file}.png"
             im = Image.frombytes("RGBA", (image_width, image_height), bytes(self._image))
             save_path = os.path.join(folder, file)
             carb.log_info(f"Saving occupancy map image to {save_path}")
@@ -803,7 +804,7 @@ class OccupancyMapWindow(MenuHelperWindow):
 
         try:
             if os.path.splitext(file)[1].lower() not in (".yaml", ".yml"):
-                file = "{}.yaml".format(file)
+                file = f"{file}.yaml"
             save_path = os.path.join(folder, file)
             carb.log_info(f"Saving occupancy map YAML to {save_path}")
             with open(save_path, "w") as f:

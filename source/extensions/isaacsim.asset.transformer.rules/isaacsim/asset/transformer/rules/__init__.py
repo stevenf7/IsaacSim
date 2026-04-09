@@ -13,4 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides access to the Extension class for transformer rules functionality."""
+
 from .extension import Extension  # noqa: F401
+
+__all__ = []

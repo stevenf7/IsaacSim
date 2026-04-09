@@ -122,7 +122,8 @@ class TestRos2UrdfNodeImporter(ROS2TestCase):
         await ui_test.human_delay()
 
         import_button = await find_enabled_widget_with_retry(
-            "Import from ROS2 URDF Node//Frame/**/Button[*].identifier=='ros2_urdf_import'"
+            "Import from ROS2 URDF Node//Frame/**/Button[*].identifier=='ros2_urdf_import'",
+            max_frames=300,
         )
 
         await import_button.click()

@@ -21,7 +21,6 @@ import gc
 import importlib
 import os
 import shutil
-from typing import Any
 
 import omni
 from isaacsim.asset.importer.utils.impl import (
@@ -54,7 +53,7 @@ class MJCFImporter:
 
     def __init__(self, config: MJCFImporterConfig | None = None) -> None:
         self._config = config if config else MJCFImporterConfig()
-        self.converter: Any = None
+        self.converter: object | None = None
 
     @property
     def config(self) -> MJCFImporterConfig:

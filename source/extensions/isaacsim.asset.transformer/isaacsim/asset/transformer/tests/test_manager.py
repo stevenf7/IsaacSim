@@ -50,11 +50,19 @@ class _FakeLayer:
         self.dirty = False
 
     def Export(self, path: str) -> bool:  # noqa: N802
+        """Record the export path and report success (test stub).
+
+        Args:
+            path: Destination path passed to ``Export``.
+
+        Returns:
+            Always ``True`` for the fake layer.
+        """
         self.realPath = path
         return True
 
     def Save(self) -> None:  # noqa: N802
-        pass
+        """No-op save hook for the fake layer."""
 
 
 class _FakeStage:
@@ -63,10 +71,20 @@ class _FakeStage:
     def __init__(self) -> None:
         self._layer = _FakeLayer()
 
-    def GetRootLayer(self):  # noqa: N802
+    def GetRootLayer(self) -> _FakeLayer:  # noqa: N802
+        """Return the fake root layer instance.
+
+        Returns:
+            The ``_FakeLayer`` created in ``__init__``.
+        """
         return self._layer
 
-    def Flatten(self):  # noqa: N802
+    def Flatten(self) -> _FakeLayer:  # noqa: N802
+        """Return a new empty fake layer (test stub).
+
+        Returns:
+            A fresh ``_FakeLayer`` instance.
+        """
         return _FakeLayer()
 
 
@@ -99,15 +117,15 @@ def _fake_sdf() -> types.SimpleNamespace:
 class TestManager(omni.kit.test.AsyncTestCase):
     """Async tests for AssetTransformerManager and RuleRegistry."""
 
-    async def asyncSetUp(self):
+    async def asyncSetUp(self) -> None:
         """Clear the rule registry before each test."""
         RuleRegistry().clear()
 
-    async def asyncTearDown(self):
+    async def asyncTearDown(self) -> None:
         """Clear the rule registry after each test."""
         RuleRegistry().clear()
 
-    async def test_rule_registry_register_get_clear(self):
+    async def test_rule_registry_register_get_clear(self) -> None:
         """Verify registry register, get, and clear behaviors."""
         reg = RuleRegistry()
         reg.register(_DummyRule)
@@ -123,7 +141,7 @@ class TestManager(omni.kit.test.AsyncTestCase):
         with self.assertRaises(TypeError):
             reg.register(NotARule)  # type: ignore[arg-type]
 
-    async def test_manager_run_happy_path(self):
+    async def test_manager_run_happy_path(self) -> None:
         """Verify manager run succeeds with a registered rule."""
         fake_stage = _FakeStage()
         fake_usd = _fake_usd(open_returns=fake_stage)
@@ -158,7 +176,7 @@ class TestManager(omni.kit.test.AsyncTestCase):
             self.assertIsInstance(result.finished_at, str)
             self.assertIsInstance(report.finished_at, str)
 
-    async def test_manager_run_missing_implementation_sets_error(self):
+    async def test_manager_run_missing_implementation_sets_error(self) -> None:
         """Verify missing rule implementations set error status."""
         fake_stage = _FakeStage()
         fake_usd = _fake_usd(open_returns=fake_stage)
@@ -181,7 +199,7 @@ class TestManager(omni.kit.test.AsyncTestCase):
             self.assertIn("No rule implementation registered", res.error)
             self.assertIsInstance(res.finished_at, str)
 
-    async def test_manager_run_source_open_failure_raises(self):
+    async def test_manager_run_source_open_failure_raises(self) -> None:
         """Verify source stage open failures raise errors."""
         fake_usd = _fake_usd(open_returns=None)
         with patch("isaacsim.asset.transformer.manager.Usd", fake_usd, create=True):

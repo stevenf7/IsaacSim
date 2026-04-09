@@ -254,7 +254,7 @@ class RosPackageDelegate(ui.AbstractItemDelegate):
                                 identifier=f"ros_package_table_path_field_{item.row_index}",
                             )
 
-                            def update_field(filename, path, vm=value_model):
+                            def update_field(filename: str, path: str, vm: ui.AbstractValueModel = value_model) -> None:
                                 if filename == "":
                                     val = path
                                 elif filename[0] != "/" and path[-1] != "/":

@@ -36,7 +36,7 @@ from .structure.variants import VariantRoutingRule
 class Extension(omni.ext.IExt):
     """Extension that registers transformation rules."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Register rule implementations with the global registry.
 
         Args:
@@ -59,6 +59,6 @@ class Extension(omni.ext.IExt):
         registry.register(InterfaceConnectionRule)
         carb.log_info("[isaacsim.asset.transformer.rules] Rules registered")
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Log shutdown for the rules extension."""
         carb.log_info(f"[isaacsim.asset.transformer.rules] Shutdown: {getattr(self, '_ext_id', '')}")

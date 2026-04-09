@@ -110,6 +110,12 @@ def _canonicalize_orient_quats(layer: Sdf.Layer) -> None:
 
 
 def _canonicalize_orient_quats_recursive(prim_spec: Sdf.PrimSpec) -> None:
+    """Canonicalize ``xformOp:orient`` quaternions on *prim_spec* and descendants.
+
+    Args:
+        prim_spec: Root prim spec whose attribute and name-children hierarchy is
+            processed recursively.
+    """
     if "xformOp:orient" in prim_spec.attributes:
         attr = prim_spec.attributes["xformOp:orient"]
         if attr.typeName == Sdf.ValueTypeNames.Quatd and attr.default:
@@ -157,9 +163,9 @@ def Singleton(class_: type[T]) -> Callable[..., T]:  # noqa: N802
 
         registry = Registry()
     """
-    instances: dict[type[Any], Any] = {}
+    instances: dict[type[Any], object] = {}
 
-    def getinstance(*args: Any, **kwargs: Any) -> T:
+    def getinstance(*args: object, **kwargs: object) -> T:
         if class_ not in instances:
             instances[class_] = class_(*args, **kwargs)
         return instances[class_]
@@ -271,6 +277,9 @@ class AssetTransformerManager:
     @property
     def registry(self) -> RuleRegistry:
         """Return the singleton rule registry.
+
+        Returns:
+            The manager's internal :class:`RuleRegistry` instance.
 
         Example:
 

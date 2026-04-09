@@ -18,7 +18,6 @@
 import copy
 import gc
 import os
-import typing
 from collections import namedtuple
 from pathlib import Path
 
@@ -26,6 +25,7 @@ import carb
 import omni.ext
 import omni.kit.app
 import omni.kit.tool.asset_importer as ai
+import omni.ui as ui
 import omni.usd
 from isaacsim.asset.importer.urdf import URDFImporter, URDFImporterConfig
 from isaacsim.core.experimental.utils import stage as stage_utils
@@ -64,7 +64,7 @@ class Extension(omni.ext.IExt):
             ext_id: Extension identifier provided by the extension manager.
         """
         self._usd_context = omni.usd.get_context()
-        self._models: dict[str, typing.Any] = {}
+        self._models: dict[str, ui.AbstractValueModel] = {}
         self._config = URDFImporterConfig()
         self._extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
         self._importer = URDFImporter(self._config)
@@ -99,7 +99,7 @@ class Extension(omni.ext.IExt):
         self._config.allow_self_collision = False
         self._config.ros_package_paths = []
 
-    async def _start_import(self, path: str | None = None, **kargs) -> str | None:
+    async def _start_import(self, path: str | None = None, **kargs: object) -> str | None:
         """Start the URDF import process.
 
         Args:
@@ -164,7 +164,8 @@ class Extension(omni.ext.IExt):
         _extension_instance = None
         gc.collect()
 
-    def _print_config(self):
+    def _print_config(self) -> None:
+        """Log the current URDF importer configuration to the Carb log."""
         carb.log_info(f"config urdf path: {self._config.urdf_path}")
         carb.log_info(f"config usd path: {self._config.usd_path}")
         carb.log_info(f"config merge mesh: {self._config.merge_mesh}")
@@ -230,17 +231,29 @@ class UrdfImporterDelegate(ai.AbstractImporterDelegate):
 
     @property
     def name(self) -> str:
-        """Get the display name for the importer."""
+        """Get the display name for the importer.
+
+        Returns:
+            Human-readable importer label.
+        """
         return self._name
 
     @property
     def filter_regexes(self) -> list[str]:
-        """Get the filter regex patterns supported by the importer."""
+        """Get the filter regex patterns supported by the importer.
+
+        Returns:
+            File-type filter patterns for the asset import dialog.
+        """
         return self._filters
 
     @property
     def filter_descriptions(self) -> list[str]:
-        """Get the filter descriptions shown in the UI."""
+        """Get the filter descriptions shown in the UI.
+
+        Returns:
+            User-facing descriptions parallel to ``filter_regexes``.
+        """
         return self._descriptions
 
     def build_options(self, paths: list[str]) -> None:
@@ -263,7 +276,7 @@ class UrdfImporterDelegate(ai.AbstractImporterDelegate):
         """
         return False
 
-    async def convert_assets(self, paths: list[str], **kargs) -> dict | None:
+    async def convert_assets(self, paths: list[str], **kargs: object) -> dict | None:
         """Convert selected URDF assets to USD.
 
         Args:

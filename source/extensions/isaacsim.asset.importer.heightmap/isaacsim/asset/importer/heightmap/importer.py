@@ -15,7 +15,7 @@
 
 """Heightmap importer utilities."""
 
-from typing import List, Optional
+from typing import Optional
 
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -54,7 +54,7 @@ class HeightmapImporter:
         stage: USD stage to create heightmap in. If None, uses the current stage.
     """
 
-    def __init__(self, stage: Optional[any] = None):
+    def __init__(self, stage: Optional[any] = None) -> None:
         self._stage = stage
 
     def create_heightmap(
@@ -218,7 +218,7 @@ class HeightmapImporter:
         return point_instancer
 
     def _configure_point_instancer(
-        self, point_instancer: UsdGeom.PointInstancer, cube_prototype: UsdGeom.Cube, positions: List[Gf.Vec3f]
+        self, point_instancer: UsdGeom.PointInstancer, cube_prototype: UsdGeom.Cube, positions: list[Gf.Vec3f]
     ) -> None:
         """Configure the point instancer with positions and prototype.
 
@@ -255,7 +255,7 @@ class HeightmapImporter:
 
         return cube
 
-    def _generate_occupied_positions(self, image: Image.Image, cell_scale: float, cell_offset: float) -> List[Gf.Vec3f]:
+    def _generate_occupied_positions(self, image: Image.Image, cell_scale: float, cell_offset: float) -> list[Gf.Vec3f]:
         """Generate 3D positions for all occupied cells in the image.
 
         Uses NumPy for efficient vectorized processing of large images.

@@ -110,23 +110,28 @@ def _diff_detail(rel: str, a: str, b: str, context: int = 2) -> str:
 class TestProfileIdempotency(omni.kit.test.AsyncTestCase):
     """Run the full Isaac Sim profile twice and assert stable output."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Initialise temp-directory tracking and success flag."""
         self._dirs: list[str] = []
         self._success = False
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Remove temp directories on success; keep them on failure for inspection."""
         if self._success:
             for d in self._dirs:
                 shutil.rmtree(d, ignore_errors=True)
 
     def _tmpdir(self) -> str:
+        """Create a unique temp directory and track it for cleanup on success.
+
+        Returns:
+            Absolute path to the new directory.
+        """
         d = tempfile.mkdtemp(prefix="asset_transformer_rules_test_profile_idempotency_")
         self._dirs.append(d)
         return d
 
-    async def test_double_transform_produces_identical_output(self):
+    async def test_double_transform_produces_identical_output(self) -> None:
         """Transform ur10e_shoulder twice; the second output must match the first."""
         errors: list[str] = []
 

@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.0] - 2026-04-08
+### Changed
+- Improve Python API documentation (`config/python_api.md` and/or module docstrings).
+
 ## [2.1.20] - 2026-03-06
 ### Fixed
 - Fix shutdown() clearing wrong variable name (`_stage_event_subscription` instead of `_stage_event_sub_selection`), which leaked the selection subscription

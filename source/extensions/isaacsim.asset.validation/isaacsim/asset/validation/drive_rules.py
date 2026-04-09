@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Validation rules for physics joint drives and mimic APIs."""
+"""Validates physics joint drive configurations and properties for Isaac Sim assets."""
 
 
 import omni.asset_validator.core as av_core
@@ -21,7 +21,9 @@ from omni.asset_validator.core import registerRule
 from pxr import PhysxSchema, Usd, UsdPhysics
 
 
-def GetJointDrivesAndJointStates(joint: object):
+def get_joint_drives_and_joint_states(
+    joint: Usd.Prim,
+) -> tuple[list[UsdPhysics.DriveAPI], list[PhysxSchema.JointStateAPI]]:
     """Get the drive APIs and joint state APIs for a joint.
 
     Args:
@@ -58,7 +60,7 @@ class PhysicsJointHasDriveOrMimicAPI(av_core.BaseRuleChecker):
     configuration where drive stiffness and damping are set to 0.0 when mimic is used.
     """
 
-    def CheckPrim(self, prim: Usd.Prim) -> None:
+    def CheckPrim(self, prim: Usd.Prim) -> None:  # noqa: N802
         """Check if a prim has proper drive or mimic API configuration.
 
         Args:
@@ -66,7 +68,7 @@ class PhysicsJointHasDriveOrMimicAPI(av_core.BaseRuleChecker):
         """
         if not UsdPhysics.Joint(prim) or UsdPhysics.FixedJoint(prim):
             return
-        drives, joint_states = GetJointDrivesAndJointStates(prim)
+        drives, joint_states = get_joint_drives_and_joint_states(prim)
         has_mimic = prim.HasAPI(PhysxSchema.PhysxMimicJointAPI)
         exclude_from_articulation = UsdPhysics.Joint(prim).GetExcludeFromArticulationAttr().Get()
         if not drives and not has_mimic and not exclude_from_articulation:
@@ -88,7 +90,7 @@ class PhysicsJointMaxVelocity(av_core.BaseRuleChecker):
     max joint velocity, which is required for proper joint simulation.
     """
 
-    def CheckPrim(self, prim: Usd.Prim) -> None:
+    def CheckPrim(self, prim: Usd.Prim) -> None:  # noqa: N802
         """Check if a prim has proper max joint velocity configuration.
 
         Args:
@@ -119,13 +121,13 @@ class PhysicsDriveAndJointState(av_core.BaseRuleChecker):
     and that drive target positions/velocities match joint state positions/velocities.
     """
 
-    def CheckPrim(self, prim: Usd.Prim) -> None:
+    def CheckPrim(self, prim: Usd.Prim) -> None:  # noqa: N802
         """Check if a prim has proper drive and joint state configuration.
 
         Args:
             prim: The USD prim to validate.
         """
-        drives, joint_states = GetJointDrivesAndJointStates(prim)
+        drives, joint_states = get_joint_drives_and_joint_states(prim)
         if not drives:
             return
         is_mimic = prim.HasAPI(PhysxSchema.PhysxMimicJointAPI)
@@ -193,17 +195,21 @@ class DriveJointValueReasonable(av_core.BaseRuleChecker):
     """
 
     DRIVE_STIFFNESS_MIN = 0.0
+    """Minimum allowed drive stiffness value for joint validation."""
     DRIVE_STIFFNESS_MAX = 1000000.0  # 1e6 stiffness
+    """Maximum allowed drive stiffness value for joint validation."""
     NATURAL_FREQUENCY_MIN = 0.0
+    """Minimum allowed natural frequency value for joint validation."""
     NATURAL_FREQUENCY_MAX = 500.0  # 500 Hz - warning threshold.
+    """Maximum allowed natural frequency value for joint validation."""
 
-    def CheckPrim(self, prim: Usd.Prim) -> None:
+    def CheckPrim(self, prim: Usd.Prim) -> None:  # noqa: N802
         """Check if a prim has reasonable drive stiffness values.
 
         Args:
             prim: The USD prim to validate.
         """
-        drives, joint_states = GetJointDrivesAndJointStates(prim)
+        drives, joint_states = get_joint_drives_and_joint_states(prim)
         is_mimic = prim.HasAPI(PhysxSchema.PhysxMimicJointAPI)
         for drive in drives:
             stiffness = drive.GetStiffnessAttr().Get()

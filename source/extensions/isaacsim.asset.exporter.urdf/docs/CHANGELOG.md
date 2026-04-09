@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.0] - 2026-04-08
+### Changed
+- Improve Python API documentation (`config/python_api.md` and/or module docstrings).
+
 ## [1.4.5] - 2026-04-02
 ### Changed
 - Update imports for compare usd function as it's moved

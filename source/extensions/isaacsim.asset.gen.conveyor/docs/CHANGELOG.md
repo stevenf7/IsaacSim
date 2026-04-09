@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.0] - 2026-04-08
+### Changed
+- Improve Python API documentation (`config/python_api.md` and/or module docstrings).
+
 ## [1.0.24] - 2025-11-07
 ### Changed
 - Update to Kit 109 and Python 3.12

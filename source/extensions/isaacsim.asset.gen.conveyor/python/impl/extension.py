@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Conveyor belt extension implementation."""
+"""Extension module for conveyor asset generation capabilities within Isaac Sim."""
 
 
 __all__ = []
@@ -24,9 +24,21 @@ from isaacsim.asset.gen.conveyor.bindings._isaacsim_asset_gen_conveyor import re
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self, ext_id: str):
+    """Extension for the isaacsim.asset.gen.conveyor package.
+
+    This extension provides conveyor asset generation capabilities within Isaac Sim. It manages the
+    acquisition and release of the conveyor interface during the extension lifecycle.
+    """
+
+    def on_startup(self, ext_id: str) -> None:
+        """Initializes the extension by acquiring the conveyor asset generation interface.
+
+        Args:
+            ext_id: The extension identifier.
+        """
         self.__interface = _acquire()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
+        """Cleans up the extension by releasing the conveyor asset generation interface."""
         _release(self.__interface)
         self.__interface = None

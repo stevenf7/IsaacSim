@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Validation rules for robot asset structure and configuration."""
+"""Robot asset validation rules for ensuring proper structure, naming, and physics layer organization."""
 
 
 import omni.asset_validator.core as av_core
@@ -33,7 +33,7 @@ class RobotNaming(av_core.BaseRuleChecker):
     <Manufacturer>/<robot>/<robot.usd> or <Manufacturer>/<robot>/<version>/<robot.usd>.
     """
 
-    def CheckStage(self, stage: Usd.Stage) -> None:
+    def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
         """Check if the robot asset follows proper naming conventions.
 
         Args:
@@ -68,8 +68,12 @@ class CleanFolder(av_core.BaseRuleChecker):
     unexpected files that might cause confusion or conflicts.
     """
 
-    def CheckStage(self, stage: Usd.Stage) -> None:
-        """Check if the robot asset folder contains unexpected files."""
+    def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
+        """Validates that the robot asset folder doesn't contain unexpected files.
+
+        Args:
+            stage: The USD stage to validate for clean folder structure.
+        """
         folders = stage.GetRootLayer().realPath.replace("\\", "/").split("/")
         folder = "/".join(folders[:-1])
         res, entries = omni.client.list(folder)
@@ -84,7 +88,7 @@ class CleanFolder(av_core.BaseRuleChecker):
             self._AddWarning(message=f"Folder <{folder}> contains unexpected file <{entry.relative_path}>")
 
 
-def get_overridden_attributes(prim: object):
+def get_overridden_attributes(prim: Usd.Prim) -> list[str]:
     """Get list of attribute names that have overridden values.
 
     Args:
@@ -117,8 +121,15 @@ class NoOverrides(av_core.BaseRuleChecker):
     which can cause unexpected behavior in robot assets. This only applies for the open stage.
     """
 
-    def CheckPrim(self, prim: Usd.Prim) -> None:
-        """Check if a prim has overridden attributes."""
+    def CheckPrim(self, prim: Usd.Prim) -> None:  # noqa: N802
+        """Validates that the prim does not have overridden attributes.
+
+        Checks if the prim has attributes with overridden values, which can cause unexpected behavior
+        in robot assets. Prims under "/Render" paths are skipped from validation.
+
+        Args:
+            prim: The USD prim to check for overridden attributes.
+        """
         if "/Render" in prim.GetPath().pathString:
             return
 
@@ -138,8 +149,16 @@ class RobotSchema(av_core.BaseRuleChecker):
     and the required robotLinks and robotJoints relationships defined.
     """
 
-    def CheckStage(self, stage: Usd.Stage) -> None:
-        """Check if the robot asset has required schema and relationships."""
+    def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
+        """Validates that the robot asset has required RobotAPI and relationships.
+
+        Checks that the default prim has the RobotAPI applied and contains the required robotLinks and
+        robotJoints relationships. Reports errors for missing RobotAPI or relationships, and warnings for
+        empty relationship targets.
+
+        Args:
+            stage: The USD stage to validate.
+        """
         prim = stage.GetDefaultPrim()
         if not prim:
             self._AddError(
@@ -189,8 +208,15 @@ class JointsExist(av_core.BaseRuleChecker):
     applied, which is typically required for articulated robots.
     """
 
-    def CheckStage(self, stage: Usd.Stage) -> None:
-        """Check if the robot asset contains at least one joint."""
+    def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
+        """Check if the robot asset contains at least one joint prim.
+
+        Traverses the stage to find prims with the JointAPI applied. If no joints are found,
+        adds a warning since articulated robots typically require at least one joint.
+
+        Args:
+            stage: The USD stage to validate for joint prims.
+        """
         for prim in stage.Traverse():
             if prim.HasAPI(robot_schema.Classes.JOINT_API.value):
                 return
@@ -208,8 +234,12 @@ class LinksExist(av_core.BaseRuleChecker):
     applied, which is typically required for articulated robots.
     """
 
-    def CheckStage(self, stage: Usd.Stage) -> None:
-        """Check if the robot asset contains at least one link."""
+    def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
+        """Check if the robot asset contains at least one link.
+
+        Args:
+            stage: The USD stage to validate for link existence.
+        """
         for prim in stage.Traverse():
             if prim.HasAPI(robot_schema.Classes.LINK_API.value):
                 return
@@ -227,8 +257,15 @@ class ThumbnailExists(av_core.BaseRuleChecker):
     path, which is used for display in asset browsers.
     """
 
-    def CheckStage(self, stage: Usd.Stage) -> None:
-        """Check if the robot asset has a thumbnail image."""
+    def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
+        """Check if a thumbnail image exists for the robot asset.
+
+        Validates that a thumbnail image exists at the expected path (.thumbs/256x256/{filename}.png)
+        relative to the robot asset's folder location.
+
+        Args:
+            stage: The USD stage to validate for thumbnail existence.
+        """
         folders = stage.GetRootLayer().realPath.replace("\\", "/").split("/")
         folder = "/".join(folders[:-1])
         thumbnail_path = f"{folder}/.thumbs/256x256/{folders[-1]}.png"
@@ -289,7 +326,7 @@ class CheckRobotRelationships(av_core.BaseRuleChecker):
         relationship = prim.GetRelationship(robot_schema.Relations.ROBOT_LINKS.name)
         make_relationship_prepended(relationship)
 
-    def CheckStage(self, stage: Usd.Stage) -> None:
+    def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
         """Check if robot relationships are properly configured.
 
         Args:
@@ -337,8 +374,15 @@ class VerifyRobotPhysicsAttributesSourceLayer(av_core.BaseRuleChecker):
     the physics layer (_physics.usd), following the recommended layer structure.
     """
 
-    def CheckStage(self, stage: Usd.Stage) -> None:
-        """Check if physics attributes are authored in the physics layer."""
+    def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
+        """Check if physics attributes are authored in the physics layer.
+
+        Examines every physics attribute in the stage to ensure they are authored in the
+        physics layer (_physics.usd), following the recommended layer structure for robot assets.
+
+        Args:
+            stage: The USD stage to validate.
+        """
         # examine every physics attribute in the stage and ensure that they are authored in the physics layer
         for prim in stage.Traverse():
             for attr in prim.GetAttributes():
@@ -361,8 +405,15 @@ class VerifyRobotPhysicsSchemaSourceLayer(av_core.BaseRuleChecker):
     the physics layer (_physics.usd), following the recommended layer structure.
     """
 
-    def CheckStage(self, stage: Usd.Stage) -> None:
-        """Check if physics schemas are applied in the physics layer."""
+    def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
+        """Validates that physics schemas are applied in the physics layer.
+
+        Examines every prim in the stage to ensure physics schemas (PhysX and Physics APIs) are authored
+        in the physics layer (_physics.usd) following the recommended layer structure for robot assets.
+
+        Args:
+            stage: The USD stage to validate for physics schema layer compliance.
+        """
         # examine every prim schema in the stage and ensure that they are authored in the physics layer
         for prim in stage.Traverse():
             for layer in stage.GetLayerStack():

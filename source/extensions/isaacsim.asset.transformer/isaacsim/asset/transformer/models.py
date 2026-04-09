@@ -37,9 +37,11 @@ class RuleConfigurationParam:
 
     name: str
     display_name: str
-    param_type: Any
+    param_type: type
     description: str | None = None
-    default_value: Any = None
+    """Optional description of the parameter."""
+    default_value: object | None = None
+    """Default value for the parameter."""
 
 
 @dataclass
@@ -57,8 +59,10 @@ class RuleSpec:
     name: str
     type: str
     destination: str | None = None
+    """Optional output path override."""
     params: dict[str, Any] = field(default_factory=dict)
     enabled: bool = True
+    """Whether the rule is active."""
 
     def to_dict(self) -> dict[str, Any]:
         """Convert this specification to a plain dictionary.
@@ -130,11 +134,16 @@ class RuleProfile:
 
     profile_name: str
     version: str | None = None
+    """Optional profile version string."""
     rules: list[RuleSpec] = field(default_factory=list)
     interface_asset_name: str | None = None
+    """Optional interface asset identifier."""
     output_package_root: str | None = None
+    """Optional output root for packages."""
     flatten_source: bool = False
+    """Whether to flatten source stages before rules."""
     base_name: str | None = None
+    """Optional base name for generated outputs."""
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize profile to a dictionary.
@@ -244,8 +253,10 @@ class RuleExecutionResult:
     log: list[dict[str, Any]] = field(default_factory=list)
     affected_stages: list[str] = field(default_factory=list)
     error: str | None = None
+    """Error message if the rule failed."""
     started_at: str = field(default_factory=lambda: datetime.utcnow().isoformat(timespec="milliseconds") + "Z")
     finished_at: str | None = None
+    """Finish timestamp in ISO format."""
 
     def close(self) -> None:
         """Mark the result as finished by setting the ``finished_at`` timestamp.
@@ -279,8 +290,10 @@ class ExecutionReport:
     package_root: str
     started_at: str = field(default_factory=lambda: datetime.utcnow().isoformat(timespec="milliseconds") + "Z")
     finished_at: str | None = None
+    """Finish timestamp in ISO format."""
     results: list[RuleExecutionResult] = field(default_factory=list)
     output_stage_path: str | None = None
+    """File path of the final working stage after all rules have executed. Callers can use this to load the transformed asset."""
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize the report to a dictionary suitable for JSON.

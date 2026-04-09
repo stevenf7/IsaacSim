@@ -13,16 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Conveyor belt creation commands."""
-
+from __future__ import annotations
 
 __all__ = ["CreateConveyorBelt"]
+
+from typing import Any
 
 import omni
 import omni.graph.core as og
 import omni.kit.commands
 import pxr
-from pxr import PhysxSchema, UsdPhysics
+from pxr import PhysxSchema, Usd, UsdPhysics
 
 
 class CreateConveyorBelt(omni.kit.commands.Command):
@@ -39,9 +40,13 @@ class CreateConveyorBelt(omni.kit.commands.Command):
                 prim_name="ConveyorActionGraph",
                 conveyor_prim="/ConveyorBeltRigidBody"
             )
+
+    Args:
+        prim_name: Name for the conveyor belt graph prim.
+        conveyor_prim: The rigid body prim to apply the conveyor belt to.
     """
 
-    def __init__(self, prim_name: str = "ConveyorBeltGraph", conveyor_prim=None):
+    def __init__(self, prim_name: str = "ConveyorBeltGraph", conveyor_prim: Any = None) -> None:
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
@@ -52,8 +57,14 @@ class CreateConveyorBelt(omni.kit.commands.Command):
         self._conveyor_prim_selected = conveyor_prim is not None
         pass
 
-    def do(self):
-        """Execute the conveyor belt creation command."""
+    def do(self) -> Usd.Prim:
+        """Creates the conveyor belt action graph.
+
+        Creates an action graph with OnPlaybackTick, IsaacConveyor, and ReadVariable nodes. If no conveyor prim is specified, uses the selected prim or default prim. Applies rigid body API if needed and sets up the conveyor node relationships.
+
+        Returns:
+            The created conveyor node prim.
+        """
         if self._conveyor_prim is None:
             _selection = omni.usd.get_context().get_selection()
             selected_paths = _selection.get_selected_prim_paths()
@@ -120,8 +131,12 @@ class CreateConveyorBelt(omni.kit.commands.Command):
             self._prim = self._stage.GetPrimAtPath(self._prim_path + "/" + conveyor_node_name)
         return self._prim
 
-    def undo(self):
-        """Undo the conveyor belt creation command."""
+    def undo(self) -> bool:
+        """Removes the created conveyor belt action graph.
+
+        Returns:
+            True if the prim was successfully removed.
+        """
         if self._prim:
             return self._stage.RemovePrim(self._prim_path)
         pass

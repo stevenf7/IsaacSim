@@ -39,7 +39,7 @@ from .common import _UR10E_USD
 class TestPureStringUtilities(omni.kit.test.AsyncTestCase):
     """Stateless string-based utility functions."""
 
-    async def test_sanitize_prim_name(self):
+    async def test_sanitize_prim_name(self) -> None:
         """Sanitization across normal, special-char, digit-prefixed, empty, and unicode inputs."""
         failures = []
         cases = [
@@ -67,7 +67,7 @@ class TestPureStringUtilities(omni.kit.test.AsyncTestCase):
 
         self.assertEqual(failures, [], "\n".join(failures))
 
-    async def test_is_builtin_mdl_and_path_classifiers(self):
+    async def test_is_builtin_mdl_and_path_classifiers(self) -> None:
         """is_builtin_mdl, is_remote_path, is_usd_file across true/false cases."""
         failures = []
 
@@ -100,7 +100,7 @@ class TestPureStringUtilities(omni.kit.test.AsyncTestCase):
 
         self.assertEqual(failures, [], "\n".join(failures))
 
-    async def test_norm_path_and_matches_prim_filter(self):
+    async def test_norm_path_and_matches_prim_filter(self) -> None:
         """norm_path dot-collapse; matches_prim_filter include/exclude combinations."""
         failures = []
 
@@ -127,7 +127,7 @@ class TestPureStringUtilities(omni.kit.test.AsyncTestCase):
 
         self.assertEqual(failures, [], "\n".join(failures))
 
-    async def test_get_path_string(self):
+    async def test_get_path_string(self) -> None:
         """Path extraction from str, None, and Sdf.AssetPath."""
         failures = []
         if utils.get_path_string("/some/path") != "/some/path":
@@ -143,15 +143,15 @@ class TestPureStringUtilities(omni.kit.test.AsyncTestCase):
 class TestPrimSpecOperations(omni.kit.test.AsyncTestCase):
     """Prim spec creation, composition arc clearing, instanceable clearing."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create temporary directory."""
         self._tmpdir = tempfile.mkdtemp()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Remove temporary directory."""
         shutil.rmtree(self._tmpdir, ignore_errors=True)
 
-    async def test_create_prim_spec_variants(self):
+    async def test_create_prim_spec_variants(self) -> None:
         """Default, typed, instanceable, and Over specifier in one layer."""
         layer = Sdf.Layer.CreateNew(os.path.join(self._tmpdir, "test.usda"))
         failures = []
@@ -176,7 +176,7 @@ class TestPrimSpecOperations(omni.kit.test.AsyncTestCase):
 
         self.assertEqual(failures, [], "\n".join(failures))
 
-    async def test_clear_arcs_and_instanceable(self):
+    async def test_clear_arcs_and_instanceable(self) -> None:
         """clear_composition_arcs (refs + payloads) and clear_instanceable_recursive (parent+children)."""
         layer = Sdf.Layer.CreateNew(os.path.join(self._tmpdir, "arcs.usda"))
         failures = []
@@ -211,15 +211,15 @@ class TestPrimSpecOperations(omni.kit.test.AsyncTestCase):
 class TestLayerOperations(omni.kit.test.AsyncTestCase):
     """Layer-level utilities: relative paths, hierarchy, ensure spec."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create temporary directory."""
         self._tmpdir = tempfile.mkdtemp()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Remove temporary directory."""
         shutil.rmtree(self._tmpdir, ignore_errors=True)
 
-    async def test_relative_path_and_hierarchy(self):
+    async def test_relative_path_and_hierarchy(self) -> None:
         """get_relative_layer_path (same/sub/parent dir) and ensure_prim_hierarchy (shallow+deep)."""
         failures = []
 
@@ -271,7 +271,7 @@ class TestLayerOperations(omni.kit.test.AsyncTestCase):
 class TestStageQueries(omni.kit.test.AsyncTestCase):
     """Stage query utilities using UR10e test asset."""
 
-    async def test_scope_root_default_prim_and_ancestor(self):
+    async def test_scope_root_default_prim_and_ancestor(self) -> None:
         """get_scope_root variants, get_default_prim_path, find_ancestor_matching."""
         stage = Usd.Stage.Open(_UR10E_USD)
         failures = []
@@ -327,15 +327,15 @@ class TestStageQueries(omni.kit.test.AsyncTestCase):
 class TestStageMetadataCopy(omni.kit.test.AsyncTestCase):
     """Stage metadata copy from stage and layer."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create temporary directory."""
         self._tmpdir = tempfile.mkdtemp()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Remove temporary directory."""
         shutil.rmtree(self._tmpdir, ignore_errors=True)
 
-    async def test_copy_metadata_from_stage_and_layer(self):
+    async def test_copy_metadata_from_stage_and_layer(self) -> None:
         """copy_stage_metadata copies metersPerUnit/upAxis; copy_stage_metadata_from_layer skips defaultPrim."""
         failures = []
 
@@ -363,15 +363,15 @@ class TestStageMetadataCopy(omni.kit.test.AsyncTestCase):
 class TestFileOperations(omni.kit.test.AsyncTestCase):
     """File comparison and copy utilities."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create temporary directory."""
         self._tmpdir = tempfile.mkdtemp()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Remove temporary directory."""
         shutil.rmtree(self._tmpdir, ignore_errors=True)
 
-    async def test_files_are_identical_and_copy_file_to_directory(self):
+    async def test_files_are_identical_and_copy_file_to_directory(self) -> None:
         """files_are_identical (same/diff content/size); copy_file_to_directory (basic/missing/cached/conflict)."""
         failures = []
 
@@ -433,7 +433,7 @@ class TestFileOperations(omni.kit.test.AsyncTestCase):
 class TestMergeTokenListOp(omni.kit.test.AsyncTestCase):
     """TokenListOp merging: None, explicit, prepended dedup."""
 
-    async def test_merge_scenarios(self):
+    async def test_merge_scenarios(self) -> None:
         """Merge into None, into existing explicit, and prepend deduplication."""
         failures = []
 
@@ -466,15 +466,15 @@ class TestMergeTokenListOp(omni.kit.test.AsyncTestCase):
 class TestAssetPathResolution(omni.kit.test.AsyncTestCase):
     """Asset path resolution, remapping, and arc priority."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create temporary directory."""
         self._tmpdir = tempfile.mkdtemp()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Remove temporary directory."""
         shutil.rmtree(self._tmpdir, ignore_errors=True)
 
-    async def test_resolve_and_find_first_arc(self):
+    async def test_resolve_and_find_first_arc(self) -> None:
         """resolve_asset_path (empty/abs/missing/fallback); find_first_resolvable_arc (priority/empty)."""
         failures = []
 
@@ -502,7 +502,7 @@ class TestAssetPathResolution(omni.kit.test.AsyncTestCase):
         Sdf.Layer.CreateNew(p_file)
         Sdf.Layer.CreateNew(r_file)
 
-        def resolve(path):
+        def resolve(path: str) -> str:
             full = os.path.join(self._tmpdir, path)
             return full if os.path.isfile(full) else ""
 

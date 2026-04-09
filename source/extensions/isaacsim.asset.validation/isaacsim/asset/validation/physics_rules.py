@@ -15,8 +15,9 @@
 
 """Validation rules for physics simulation configuration."""
 
+from __future__ import annotations
 
-import typing
+from typing import Any
 
 import carb
 import omni.asset_validator.core as av_core
@@ -93,7 +94,7 @@ class RigidBodyHasMassAPI(av_core.BaseRuleChecker):
                 at=prim,
             )
 
-    def CheckStage(self, stage: Usd.Stage) -> None:
+    def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
         """Check all rigid bodies in the stage for proper mass configuration.
 
         Args:
@@ -112,7 +113,7 @@ class RigidBodyHasCollider(av_core.BaseRuleChecker):
     applied, which is required for collision detection in physics simulation.
     """
 
-    def CheckPrim(self, prim: Usd.Prim) -> None:
+    def CheckPrim(self, prim: Usd.Prim) -> None:  # noqa: N802
         """Check if an enabled rigid body has collision geometry.
 
         Args:
@@ -131,7 +132,7 @@ class RigidBodyHasCollider(av_core.BaseRuleChecker):
             self._AddError(message=f"Rigid body {prim.GetPath()} has rigid body api but no collision api", at=prim)
 
 
-def ComputeAdjacentMeshDict(stage: Usd.Stage) -> dict:
+def compute_adjacent_mesh_dict(stage: Usd.Stage) -> dict:
     """Compute a dictionary mapping body paths to lists of adjacent body paths.
 
     Args:
@@ -171,7 +172,7 @@ def ComputeAdjacentMeshDict(stage: Usd.Stage) -> dict:
 
 
 # Copied from Ales's code
-def get_initial_collider_pairs(stage: Usd.Stage) -> typing.Set[typing.Tuple[str, str]]:
+def get_initial_collider_pairs(stage: Usd.Stage) -> set[tuple[str, str]]:
     """Get all collider pairs that are in contact in the physics simulation.
 
     This function performs a single physics simulation step and collects all collider pairs
@@ -199,7 +200,7 @@ def get_initial_collider_pairs(stage: Usd.Stage) -> typing.Set[typing.Tuple[str,
         The original settings are restored after the function completes.
     """
 
-    def on_contact_event(contact_headers, contact_data, friction_anchors):
+    def on_contact_event(contact_headers: Any, contact_data: Any, friction_anchors: Any) -> None:
         for contact_header in contact_headers:
             if contact_header.type == ContactEventType.CONTACT_FOUND:
                 collider0 = str(PhysicsSchemaTools.intToSdfPath(contact_header.collider0))
@@ -270,13 +271,13 @@ class NonAdjacentCollisionMeshesDoNotClash(av_core.BaseRuleChecker):
     intersect each other, which can cause unstable physics simulation.
     """
 
-    def CheckStage(self, stage: Usd.Stage) -> None:
+    def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
         """Check for intersecting non-adjacent collision meshes.
 
         Args:
             stage: The USD stage to validate.
         """
-        self.adjacent_mesh_matrix = ComputeAdjacentMeshDict(stage)  # Sdf Path of all joints
+        self.adjacent_mesh_matrix = compute_adjacent_mesh_dict(stage)  # Sdf Path of all joints
         self.collisions_pairs = get_initial_collider_pairs(
             stage
         )  # Set of tuples of collider pairs in contact (Sdf Paths)
@@ -306,7 +307,7 @@ class InvisibleCollisionMeshHasPurposeGuide(av_core.BaseRuleChecker):
     have their purpose set to 'guide', following USD best practices.
     """
 
-    def CheckPrim(self, prim: Usd.Prim) -> None:
+    def CheckPrim(self, prim: Usd.Prim) -> None:  # noqa: N802
         """Check if invisible collision meshes have proper purpose setting.
 
         Args:
@@ -341,7 +342,7 @@ class HasArticulationRoot(av_core.BaseRuleChecker):
     proper articulation simulation in physics.
     """
 
-    def CheckStage(self, stage: Usd.Stage) -> None:
+    def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
         """Check if the stage has at least one articulation root.
 
         Args:

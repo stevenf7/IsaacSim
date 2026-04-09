@@ -1,5 +1,8 @@
 # Overview
 
+```{image} ../../../../source/extensions/isaacsim.asset.transformer.ui/data/preview.png
+```
+
 The Asset Transformer extension provides a UI for applying configurable transformation actions to USD assets. It enables users to restructure, split, and modify USD files through a pipeline of ordered actions.
 
 ## Features

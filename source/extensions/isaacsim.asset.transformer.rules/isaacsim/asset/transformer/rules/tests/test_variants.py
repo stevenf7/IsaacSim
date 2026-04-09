@@ -66,12 +66,12 @@ _EXPECTED_DEPENDENCIES = {
 class TestVariantRoutingRule(omni.kit.test.AsyncTestCase):
     """Async tests for the variant routing rule."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create a temporary directory for test output."""
         self._tmpdir = tempfile.mkdtemp()
         self._success = False
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Remove temporary directories after successful tests."""
         if self._success:
             shutil.rmtree(self._tmpdir, ignore_errors=True)
@@ -128,7 +128,7 @@ class TestVariantRoutingRule(omni.kit.test.AsyncTestCase):
             abs_path = os.path.normpath(os.path.join(layer_dir, relative))
             self.assertTrue(os.path.exists(abs_path), f"Missing dependency asset: {abs_path}")
 
-    async def test_get_configuration_parameters(self):
+    async def test_get_configuration_parameters(self) -> None:
         """Verify configuration parameters are exposed by the rule."""
         stage = Usd.Stage.Open(_G1_USD)
         rule = VariantRoutingRule(
@@ -148,7 +148,7 @@ class TestVariantRoutingRule(omni.kit.test.AsyncTestCase):
         self.assertIn("excluded_variants", param_names)
         self._success = True
 
-    async def test_process_rule_creates_variants_and_dependencies(self):
+    async def test_process_rule_creates_variants_and_dependencies(self) -> None:
         """Verify variant files and dependencies are generated."""
         stage = Usd.Stage.Open(_G1_USD)
         rule = VariantRoutingRule(
@@ -185,7 +185,7 @@ class TestVariantRoutingRule(omni.kit.test.AsyncTestCase):
 
         self._success = True
 
-    async def test_process_rule_no_default_prim_and_logging(self):
+    async def test_process_rule_no_default_prim_and_logging(self) -> None:
         """No-default-prim skip, affected-stages tracking, start/completion log entries."""
         failures = []
 
@@ -235,7 +235,7 @@ class TestVariantRoutingRule(omni.kit.test.AsyncTestCase):
         self.assertEqual(failures, [], "\n".join(failures))
         self._success = True
 
-    async def test_process_rule_options(self):
+    async def test_process_rule_options(self) -> None:
         """variant_sets filter, case_insensitive=False, collect_dependencies=False."""
         stage = Usd.Stage.Open(_G1_USD)
         default_prim = stage.GetDefaultPrim()

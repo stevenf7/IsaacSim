@@ -15,6 +15,8 @@
 
 """Unit tests for HeightmapImporter class."""
 
+from __future__ import annotations
+
 from unittest.mock import MagicMock, Mock, patch
 
 import omni.kit.test
@@ -29,17 +31,17 @@ from pxr import Gf
 class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
     """Test suite for HeightmapImporter class."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures."""
         self.mock_stage = MagicMock()
         self.importer = HeightmapImporter(self.mock_stage)
 
-    def test_initialization_with_stage(self):
+    def test_initialization_with_stage(self) -> None:
         """Test initialization with a provided stage."""
         importer = HeightmapImporter(self.mock_stage)
         self.assertEqual(importer._stage, self.mock_stage)
 
-    def test_initialization_without_stage(self):
+    def test_initialization_without_stage(self) -> None:
         """Test initialization without a provided stage."""
         importer = HeightmapImporter()
         self.assertIsNone(importer._stage)
@@ -55,7 +57,7 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
             self.importer.create_heightmap(None, 0.05)
         self.assertIn("Image cannot be None", str(context.exception))
 
-    def test_create_heightmap_with_invalid_cell_scale(self):
+    def test_create_heightmap_with_invalid_cell_scale(self) -> None:
         """Test that create_heightmap raises ValueError with invalid cell scale."""
         # Create a simple test image
         test_image = Image.new("RGBA", (10, 10), color=(255, 255, 255, 255))
@@ -121,7 +123,7 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
         mock_world_prim = MagicMock()
         mock_cube_prim = MagicMock()
 
-        def get_prim_side_effect(path):
+        def get_prim_side_effect(path: str) -> MagicMock:
             if "occupiedCube" in str(path):
                 return mock_cube_prim
             return mock_world_prim
@@ -175,7 +177,7 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
         mock_usd_physics.CollisionAPI.Apply.assert_called_once()
         mock_ground_plane.assert_called_once()
 
-    def test_generate_occupied_positions_with_simple_image(self):
+    def test_generate_occupied_positions_with_simple_image(self) -> None:
         """Test position generation with a simple test image."""
         # Create a 3x3 image with specific pattern
         test_image = Image.new("RGBA", (3, 3), color=(255, 255, 255, 255))
@@ -221,7 +223,7 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
             )
             self.assertTrue(found, f"Expected position {exp_pos} not found in actual positions")
 
-    def test_generate_occupied_positions_with_threshold(self):
+    def test_generate_occupied_positions_with_threshold(self) -> None:
         """Test that only pixels below threshold are converted to positions."""
         # Create a 2x2 image
         test_image = Image.new("RGBA", (2, 2), color=(255, 255, 255, 255))
@@ -240,20 +242,20 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
         # Only 2 positions should be created (below threshold)
         self.assertEqual(len(positions), 2)
 
-    def test_generate_occupied_positions_with_all_white_image(self):
+    def test_generate_occupied_positions_with_all_white_image(self) -> None:
         """Test that an all-white image produces no positions."""
         test_image = Image.new("RGBA", (5, 5), color=(255, 255, 255, 255))
         positions = self.importer._generate_occupied_positions(test_image, 1.0, 0.5)
         self.assertEqual(len(positions), 0)
 
-    def test_generate_occupied_positions_with_all_black_image(self):
+    def test_generate_occupied_positions_with_all_black_image(self) -> None:
         """Test that an all-black image produces positions for all pixels."""
         test_image = Image.new("RGBA", (5, 5), color=(0, 0, 0, 255))
         positions = self.importer._generate_occupied_positions(test_image, 1.0, 0.5)
         # Should create 25 positions (5x5)
         self.assertEqual(len(positions), 25)
 
-    def test_generate_occupied_positions_with_different_scales(self):
+    def test_generate_occupied_positions_with_different_scales(self) -> None:
         """Test position generation with different cell scales."""
         test_image = Image.new("RGBA", (2, 2), color=(0, 0, 0, 255))
 
@@ -267,7 +269,7 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
         self.assertEqual(len(positions_large), 4)
         self.assertAlmostEqual(positions_large[0][0], 5.0, places=5)
 
-    def test_generate_occupied_positions_z_coordinate(self):
+    def test_generate_occupied_positions_z_coordinate(self) -> None:
         """Test that all positions have z-coordinate of 0.0."""
         test_image = Image.new("RGBA", (3, 3), color=(0, 0, 0, 255))
         positions = self.importer._generate_occupied_positions(test_image, 1.0, 0.5)
@@ -295,12 +297,12 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
 class TestHeightmapImporterIntegration(omni.kit.test.AsyncTestCase):
     """Integration tests for HeightmapImporter with realistic scenarios."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures."""
         self.mock_stage = MagicMock()
         self.importer = HeightmapImporter(self.mock_stage)
 
-    def test_checkerboard_pattern(self):
+    def test_checkerboard_pattern(self) -> None:
         """Test position generation with a checkerboard pattern."""
         # Create 4x4 checkerboard
         test_image = Image.new("RGBA", (4, 4), color=(255, 255, 255, 255))
@@ -315,7 +317,7 @@ class TestHeightmapImporterIntegration(omni.kit.test.AsyncTestCase):
         # Checkerboard should have 8 black squares
         self.assertEqual(len(positions), 8)
 
-    def test_stripe_pattern(self):
+    def test_stripe_pattern(self) -> None:
         """Test position generation with vertical stripes."""
         # Create 6x4 image with vertical stripes
         test_image = Image.new("RGBA", (6, 4), color=(255, 255, 255, 255))
@@ -329,7 +331,7 @@ class TestHeightmapImporterIntegration(omni.kit.test.AsyncTestCase):
         # Should have 12 positions (3 columns × 4 rows)
         self.assertEqual(len(positions), 12)
 
-    def test_large_image_performance(self):
+    def test_large_image_performance(self) -> None:
         """Test that large images can be processed without errors."""
         # Create a 100x100 image
         test_image = Image.new("RGBA", (100, 100), color=(255, 255, 255, 255))

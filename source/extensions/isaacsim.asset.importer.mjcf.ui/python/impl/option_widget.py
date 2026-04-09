@@ -120,7 +120,7 @@ class OptionWidget:
         return self._models
 
     @property
-    def config(self):
+    def config(self) -> MJCFImporterConfig:
         """Return the current configuration object.
 
         Returns:

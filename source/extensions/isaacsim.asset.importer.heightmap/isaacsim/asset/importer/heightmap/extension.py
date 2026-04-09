@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""isaacsim.asset.importer.heightmap extension module."""
+"""Extension for generating heightmap terrain from heightmap and occupancy map images."""
 
 import asyncio
 import gc

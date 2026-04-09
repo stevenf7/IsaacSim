@@ -14,4 +14,7 @@
 # limitations under the License.
 
 
+"""Tests for the asset transformer UI components."""
+
+
 scan_for_test_modules = True

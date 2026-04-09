@@ -28,7 +28,7 @@ import omni.timeline
 class TestConveyorBuilderUI(omni.kit.test.AsyncTestCase):
     """Test cases for the conveyor builder UI."""
 
-    async def setup(self):
+    async def setup(self) -> None:
         """Set up test environment and wait for material preloading."""
         # wait for material to be preloaded so create menu is complete & menus don't rebuild during tests
         await omni.kit.material.library.get_mdl_list_async()
@@ -38,7 +38,7 @@ class TestConveyorBuilderUI(omni.kit.test.AsyncTestCase):
         # TODO: get omni.kit.test_suite.
         # self._stage_event_handler = StageEventHandler("omni.kit.stage_templates")
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment and wait for assets to finish loading."""
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -46,14 +46,12 @@ class TestConveyorBuilderUI(omni.kit.test.AsyncTestCase):
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
 
-        pass
-
-    async def test_loading(self):
+    async def test_loading(self) -> None:
         """Test that the conveyor builder UI can be loaded from the Tools menu."""
         await omni.usd.get_context().new_stage_async()
         menu_widget = ui_test.get_menubar()
         try:
             await menu_widget.find_menu("Tools").click(human_delay_speed=50)
             await menu_widget.find_menu("Conveyor Track Builder").click(human_delay_speed=50)
-        except:
+        except Exception:
             carb.log_warn("Could not run test because carb::windowing is not available")

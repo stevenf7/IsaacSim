@@ -15,6 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""UI styling configuration for the conveyor asset generation interface."""
+
+
 import os
 from pathlib import Path
 

@@ -14,4 +14,6 @@
 # limitations under the License.
 
 from .commands import *
-from .impl import *
+from .impl import Extension  # noqa: F401 (loaded for Kit extension discovery)
+
+__all__ = ["CreateConveyorBelt"]

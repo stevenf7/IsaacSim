@@ -15,9 +15,10 @@
 
 """UI option widgets for the URDF importer."""
 
-import typing
+from collections.abc import Callable, Sequence
 
 import omni.ui as ui
+from isaacsim.asset.importer.urdf import URDFImporterConfig
 from isaacsim.gui.components.ui_utils import checkbox_builder, dropdown_builder, string_filed_builder
 
 from .style import get_option_style
@@ -50,8 +51,8 @@ def option_header(collapsed: bool, title: str) -> None:
 
 def option_frame(
     title: str,
-    build_content_fn: typing.Callable[[], None],
-    collapse_fn: typing.Callable[[bool], None] | None = None,
+    build_content_fn: Callable[[], None],
+    collapse_fn: Callable[[bool], None] | None = None,
 ) -> None:
     """Build a collapsable options frame.
 
@@ -77,7 +78,7 @@ class OptionWidget:
         config: Import configuration to update from the UI.
     """
 
-    def __init__(self, models: dict[str, typing.Any], config: typing.Any) -> None:
+    def __init__(self, models: dict[str, ui.AbstractValueModel], config: URDFImporterConfig) -> None:
         self._models = models
         self._config = config
         self._ros_package_table_frame = None
@@ -86,13 +87,21 @@ class OptionWidget:
         self._ros_package_tree = None
 
     @property
-    def models(self):
-        """Return the models dictionary used by the widget."""
+    def models(self) -> dict[str, ui.AbstractValueModel]:
+        """Return the models dictionary used by the widget.
+
+        Returns:
+            Map of option keys to Omni UI value models.
+        """
         return self._models
 
     @property
-    def config(self):
-        """Return the importer configuration instance."""
+    def config(self) -> URDFImporterConfig:
+        """Return the importer configuration instance.
+
+        Returns:
+            Live ``URDFImporterConfig`` edited by this widget.
+        """
         return self._config
 
     def build_options(self) -> None:
@@ -102,8 +111,10 @@ class OptionWidget:
             self._build_colliders_frame()
             self._build_options_frame()
 
-    def _build_model_frame(self):
-        def build_model_content():
+    def _build_model_frame(self) -> None:
+        """Build the Model options frame (USD output path and ROS package table)."""
+
+        def build_model_content() -> None:
             with ui.VStack(spacing=0):
                 ui.Label("USD Output")
                 self._models["dst_path"] = string_filed_builder(
@@ -132,7 +143,7 @@ class OptionWidget:
 
         option_frame("Model", build_model_content)
 
-    def _build_colliders_frame(self):
+    def _build_colliders_frame(self) -> None:
         """Build the Colliders options frame.
 
         Creates UI elements for:
@@ -141,7 +152,7 @@ class OptionWidget:
         - Allow self-collision checkbox
         """
 
-        def build_colliders_content():
+        def build_colliders_content() -> None:
             def set_collision_type(value: str) -> None:
                 self._config.collision_type = value
 
@@ -197,7 +208,7 @@ class OptionWidget:
 
         option_frame("Colliders", build_colliders_content)
 
-    def _build_options_frame(self):
+    def _build_options_frame(self) -> None:
         """Build the Options frame.
 
         Creates UI elements for:
@@ -207,7 +218,7 @@ class OptionWidget:
         - Open Gains Tuner checkbox (default: False)
         """
 
-        def build_options_content():
+        def build_options_content() -> None:
             def set_merge_mesh(value: bool) -> None:
                 self._config.merge_mesh = value
 
@@ -245,12 +256,19 @@ class OptionWidget:
         self._config.collision_from_visuals = value
         self._collision_type_frame.visible = value
 
-    def _add_ros_package_row(self):
+    def _add_ros_package_row(self) -> None:
+        """Append a blank name/path row to the ROS package table."""
         if not self._ros_package_model:
             return
         self._ros_package_model.add_row("", "")
 
-    def _build_ros_package_table(self, rows_data):
+    def _build_ros_package_table(self, rows_data: Sequence[tuple[str, str]]) -> None:
+        """Populate or refresh the ROS package ``TreeView`` from row data.
+
+        Args:
+            rows_data: Sequence of ``(package_name, path)`` tuples used to seed
+                the table model.
+        """
         if not self._ros_package_table_frame:
             return
         self._ros_package_table_frame.clear()
@@ -306,7 +324,12 @@ class OptionWidget:
                 ros_packages.append({"name": name, "path": path})
         return ros_packages
 
-    def _delete_ros_package_row(self, item):
+    def _delete_ros_package_row(self, item: ui.AbstractItem) -> None:
+        """Remove a row from the ROS package table; ensure at least one row remains.
+
+        Args:
+            item: Tree row item passed from the table delegate.
+        """
         if not self._ros_package_model:
             return
         self._ros_package_model.remove_row(item)
