@@ -22,13 +22,14 @@ to a standalone script:
   2. Code formatting verification   -> repo.sh format --verify
   3. Changelog and version bump     -> validate_changelog.py
   4. extension.toml validation      -> validate_extension_toml.py
-  5. Settings docs validation       -> validate_settings.py
-  6. Extension structure validation  -> validate_extension_structure.py
-  7. License header validation       -> validate_license_headers.py
-  8. Python package definitions      -> repo.sh validate_python_packages
-  9. C++ linting (clang-tidy)        -> clang_tidy.py  (--clang-tidy flag, requires build)
- 10. Extension test discovery & run  -> run_extension_tests.py
- 11. API docs check (checkapi)       -> run_checkapi.py (--checkapi flag, requires build)
+  5. Test args validation            -> validate_test_args.py
+  6. Settings docs validation       -> validate_settings.py
+  7. Extension structure validation  -> validate_extension_structure.py
+  8. License header validation       -> validate_license_headers.py
+  9. Python package definitions      -> repo.sh validate_python_packages
+ 10. C++ linting (clang-tidy)        -> clang_tidy.py  (--clang-tidy flag, requires build)
+ 11. Extension test discovery & run  -> run_extension_tests.py
+ 12. API docs check (checkapi)       -> run_checkapi.py (--checkapi flag, requires build)
 
 Determines the full set of changed files by comparing against the merge-base
 of the current branch with its upstream (auto-detected, or set via --base-branch).
@@ -396,7 +397,49 @@ def check_extension_toml(extensions: list[Path], fix: bool = False) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Check 5: Settings docs validation — delegates to validate_settings.py
+# Check 5: Test args validation — delegates to validate_test_args.py
+# ---------------------------------------------------------------------------
+
+
+def check_test_args(extensions: list[Path], fix: bool = False) -> int:
+    """Validate test args in extension.toml for each modified extension.
+
+    Args:
+        extensions: List of extension paths to validate.
+        fix: Whether to auto-fix non-conforming args.
+
+    Returns:
+        Number of extensions with validation errors.
+    """
+    if not extensions:
+        log_info("No modified extensions to validate test args.")
+        return 0
+
+    from validate_test_args import validate_extension_toml as validate_test_args_toml
+
+    errors = 0
+    for ext in extensions:
+        toml_file = ext / "config" / "extension.toml"
+        if not toml_file.exists():
+            continue  # Already reported by check_extension_toml
+
+        issues = validate_test_args_toml(toml_file, fix=fix)
+        if issues:
+            for issue in issues:
+                print(f"    {issue}", flush=True)
+            if fix:
+                log_pass(f"{ext.name}: test args fixed.")
+            else:
+                log_fail(f"{ext.name}: test args do not match standard.")
+                errors += 1
+        else:
+            log_pass(f"{ext.name}: test args OK.")
+
+    return errors
+
+
+# ---------------------------------------------------------------------------
+# Check 6: Settings docs validation — delegates to validate_settings.py
 # ---------------------------------------------------------------------------
 
 
@@ -817,6 +860,7 @@ def build_parser() -> argparse.ArgumentParser:
     checks.add_argument("--format", action="store_true", help="Run code format verification")
     checks.add_argument("--changelog", action="store_true", help="Check changelog and version bump")
     checks.add_argument("--toml", action="store_true", help="Validate extension.toml files")
+    checks.add_argument("--test-args", action="store_true", help="Validate test args in extension.toml")
     checks.add_argument("--settings", action="store_true", help="Validate settings docs against extension.toml")
     checks.add_argument("--structure", action="store_true", help="Validate extension directory structure")
     checks.add_argument("--license", action="store_true", help="Validate SPDX license headers on changed files")
@@ -980,6 +1024,7 @@ def _run(args: argparse.Namespace) -> int:
         args.format,
         args.changelog,
         args.toml,
+        args.test_args,
         args.settings,
         args.structure,
         args.license,
@@ -1046,6 +1091,10 @@ def _run(args: argparse.Namespace) -> int:
         if run_all_validation or args.toml:
             header("extension.toml Validation")
             total_errors += check_extension_toml(extensions, fix=args.fix)
+
+        if run_all_validation or args.test_args:
+            header("Test Args Validation")
+            total_errors += check_test_args(extensions, fix=args.fix)
 
         if run_all_validation or args.settings:
             header("Settings Docs Validation")
