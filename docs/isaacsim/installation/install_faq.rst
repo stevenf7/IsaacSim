@@ -501,6 +501,34 @@ Setup Tips
         * The `persistent.isaac.asset_root.default` setting is used in the Python code that calls the `get_assets_root_path_async`` or `get_assets_root_path`` functions.
         * The `exts."isaacsim.gui.content_browser".folders` setting is used in the :ref:`Content Browser <isaac_sim_app_gui_content_browser>`.
 
+    .. _isaac_sim_asset_root_resolution:
+
+    .. rubric:: Asset Root Resolution Order
+
+    The ``persistent.isaac.asset_root.default`` setting is resolved from multiple sources. The following table lists them from **highest to lowest priority**:
+
+    .. list-table::
+        :widths: 5 30 65
+        :header-rows: 1
+
+        * - Priority
+          - Source
+          - Example
+        * - 1
+          - ``ISAACSIM_ASSET_ROOT`` environment variable
+          - ``export ISAACSIM_ASSET_ROOT=https://my-server``
+        * - 2
+          - Command-line argument
+          - ``--/persistent/isaac/asset_root/default=https://my-server``
+        * - 3
+          - Experience (``.kit``) file
+          - ``persistent.isaac.asset_root.default = "https://my-server"``
+        * - 4
+          - Extension default (``extension.toml``)
+          - ``persistent.isaac.asset_root.default = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0"``
+
+    At startup the ``isaacsim.storage.native`` extension reads the ``ISAACSIM_ASSET_ROOT`` environment variable and, if set, overwrites the setting regardless of any value provided by a ``.kit`` file or command-line argument. When the variable is unset, the normal Kit settings precedence applies (CLI > ``.kit`` > ``extension.toml``).
+
     .. _isaac_sim_setup_assets_check:
 
     .. rubric::  Assets Check

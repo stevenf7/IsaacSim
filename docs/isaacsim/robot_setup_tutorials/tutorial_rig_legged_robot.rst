@@ -26,7 +26,7 @@ In this tutorial, you will walk through the process of rigging a H1 humanoid rob
 2. Setting joint configuration
 3. Verifying joint configuration
 
-.. Note:: The H1 flat terrain policy environment definition file is available `here <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/h1_env.yaml>`_.
+.. Note:: The H1 flat terrain policy environment definition file is available `here <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/h1_env.yaml>`_.
 
 
 .. _isaac_sim_tutorial_rig_legged_robot_initial_position:

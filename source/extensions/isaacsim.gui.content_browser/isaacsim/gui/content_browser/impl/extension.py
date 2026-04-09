@@ -38,7 +38,6 @@ class Extension(omni.ext.IExt):
         """
         carb.log_info(f"on_startup {ext_id}")
         self._content_browser_ref = weakref.ref(get_content_window(), lambda ref: self.destroy())
-
         self._add_isim_content()
 
     def _add_isim_content(self) -> None:

@@ -50,7 +50,7 @@ Set Up Robot Joint Configurations
 Follow the steps in :ref:`isaac_sim_app_tutorial_rig_legged_robot` to setup the robot joint configurations based on the locomotion policy parameter. This step is very important, because mismatching the joint configurations can result in unexpected robot behavior.
 
 
-   - The H1 flat terrain policy environment definition file is in `YAML file <https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/h1_env.yaml>`_.
+   - The H1 flat terrain policy environment definition file is in `YAML file <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/h1_env.yaml>`_.
    - The angle units specified in the policy environment definition file are in radians. The |isaac-sim_short| USD GUI interface expects the angles to be specified in degrees.
    - The rigged H1 robot is available in the content browser at ``Isaac/Samples/Rigging/H1/h1_rigged.usd``.
 

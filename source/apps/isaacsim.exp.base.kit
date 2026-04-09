@@ -275,17 +275,7 @@ omnihydra.parallelHydraSprimSync = true
 # FOR DEVELOPMENT - START #
 [settings]
 persistent.isaac.asset_root.default = "omniverse://isaac-dev.ov.nvidia.com"
-
-exts."isaacsim.gui.content_browser".folders = [
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Robots",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Environments",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/IsaacLab",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Materials",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/People",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Props",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Samples",
-    "omniverse://isaac-dev.ov.nvidia.com/Isaac/Sensors",
-]
+# Folders are now relative to asset_root; override only if the dev server has different paths.
 
 # FOR DEVELOPMENT - END #
 
