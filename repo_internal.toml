@@ -935,6 +935,7 @@ exts_exclude = [
 ]
 kit_extra_args = [
   "--/app/extensions/fastImporter/enabled=1",
+  "--/app/stubgen/enabled=1",
 ]
 stubgen_exclude = [
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle/torch",

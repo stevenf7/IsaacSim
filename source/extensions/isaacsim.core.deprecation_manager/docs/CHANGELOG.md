@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.1] - 2026-04-09
+### Fixed
+- Skip `exit_app` during stub generation to prevent Kit shutdown when optional dependencies (e.g. torch) are missing
+
 ## [0.4.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md, SETTINGS.md and updated docstrings
