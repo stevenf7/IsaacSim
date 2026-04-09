@@ -18,4 +18,8 @@
 
 EXTENSION_TITLE = "RRT Example"
 
+MENU_PARENT_NAME = "Motion Generation Examples"
+
+MENU_ITEM_NAME = "RRT"
+
 EXTENSION_DESCRIPTION = ""

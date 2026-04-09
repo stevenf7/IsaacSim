@@ -13,9 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Global variables and constants for the RMP Flow tutorial."""
+"""Global variables and constants used throughout the kinematics tutorials in the robot motion generation module."""
 
 
-EXTENSION_TITLE = "RMPflow Example"
+EXTENSION_TITLE = "Lula Kinematics Example"
+
+MENU_PARENT_NAME = "Motion Generation Examples"
+
+MENU_ITEM_NAME = "Kinematics"
 
 EXTENSION_DESCRIPTION = ""

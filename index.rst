@@ -147,7 +147,7 @@ Extensions
    isaacsim.robot_motion.lula <source/extensions/isaacsim.robot_motion.lula/docs/index>
    isaacsim.robot_motion.lula_test_widget <source/extensions/isaacsim.robot_motion.lula_test_widget/docs/index>
    isaacsim.robot_motion.motion_generation <source/extensions/isaacsim.robot_motion.motion_generation/docs/index>
-   isaacsim.robot_motion.motion_generation.tutorials <source/extensions/isaacsim.robot_motion.motion_generation.tutorials/docs/index>
+   isaacsim.robot_motion.motion_generation.examples <source/extensions/isaacsim.robot_motion.motion_generation.examples/docs/index>
    isaacsim.robot_motion.schema <source/extensions/isaacsim.robot_motion.schema/docs/index>
    isaacsim.robot_setup.assembler <source/extensions/isaacsim.robot_setup.assembler/docs/index>
    isaacsim.robot_setup.gain_tuner <source/extensions/isaacsim.robot_setup.gain_tuner/docs/index>

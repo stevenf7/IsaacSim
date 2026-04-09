@@ -30,7 +30,7 @@ from isaacsim.gui.components.element_wrappers import ScrollingWindow
 from isaacsim.gui.components.menu import MenuItemDescription
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 
-from .global_variables import EXTENSION_TITLE
+from .global_variables import EXTENSION_TITLE, MENU_ITEM_NAME, MENU_PARENT_NAME
 from .ui_builder import UIBuilder
 
 """
@@ -53,7 +53,7 @@ This class sets up standard useful callback functions in UIBuilder:
 
 
 class Extension(omni.ext.IExt):
-    """Extension class for the isaacsim.robot_motion.motion_generation.tutorials extension.
+    """Extension class for the isaacsim.robot_motion.motion_generation.examples extension.
 
     Provides a UI-based extension that creates a scrolling window interface for robot motion generation
     tutorials. The extension registers menu items, handles window visibility, and manages event subscriptions
@@ -94,10 +94,10 @@ class Extension(omni.ext.IExt):
             description=f"Add {EXTENSION_TITLE} Extension to UI toolbar",
         )
         self._menu_items = [
-            MenuItemDescription(name=EXTENSION_TITLE, onclick_action=(ext_id, f"CreateUIExtension:{EXTENSION_TITLE}"))
+            MenuItemDescription(name=MENU_ITEM_NAME, onclick_action=(ext_id, f"CreateUIExtension:{EXTENSION_TITLE}"))
         ]
 
-        add_menu_items(self._menu_items, EXTENSION_TITLE)
+        add_menu_items(self._menu_items, MENU_PARENT_NAME)
 
         # Filled in with User Functions
         self.ui_builder = UIBuilder()
@@ -111,7 +111,7 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         """Clean up extension resources and UI elements."""
         self._models = {}
-        remove_menu_items(self._menu_items, EXTENSION_TITLE)
+        remove_menu_items(self._menu_items, MENU_PARENT_NAME)
 
         action_registry = omni.kit.actions.core.get_action_registry()
         action_registry.deregister_action(self.ext_id, f"CreateUIExtension:{EXTENSION_TITLE}")

@@ -1,4 +1,4 @@
-# Public API for module isaacsim.robot_motion.motion_generation.tutorials.rmp_flow:
+# Public API for module isaacsim.robot_motion.motion_generation.examples.rmp_flow:
 
 ## Classes
 
@@ -15,7 +15,7 @@
   - def on_startup(self, ext_id: str)
   - def on_shutdown(self)
 
-# Public API for module isaacsim.robot_motion.motion_generation.tutorials.rrt:
+# Public API for module isaacsim.robot_motion.motion_generation.examples.rrt:
 
 ## Classes
 
@@ -32,7 +32,7 @@
   - def on_startup(self, ext_id: str)
   - def on_shutdown(self)
 
-# Public API for module isaacsim.robot_motion.motion_generation.tutorials.kinematics:
+# Public API for module isaacsim.robot_motion.motion_generation.examples.kinematics:
 
 ## Classes
 
@@ -49,7 +49,7 @@
   - def on_startup(self, ext_id: str)
   - def on_shutdown(self)
 
-# Public API for module isaacsim.robot_motion.motion_generation.tutorials.trajectory_generator:
+# Public API for module isaacsim.robot_motion.motion_generation.examples.trajectory_generator:
 
 ## Classes
 
