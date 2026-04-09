@@ -1,5 +1,5 @@
 [package]
-version = "2.3.2"
+version = "2.3.3"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation"
 description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor."
@@ -36,9 +36,6 @@ path = "bin/*.plugin"
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -49,7 +46,6 @@ dependencies = [
     "isaacsim.core.experimental.objects",
     "isaacsim.storage.native",
     "isaacsim.test.utils",
-    "omni.isaac.ml_archive"
 ]
 stdoutFailPatterns.exclude = [
     '*[Error] [isaacsim.sensors.experimental.physics.impl.commands] Valid parent prim must be selected before creating contact sensor prim.*',
@@ -114,7 +110,6 @@ timeout = 900
 dependencies = [
     "isaacsim.core.experimental.objects",
     "isaacsim.test.utils",
-    "omni.isaac.ml_archive"
 ]
 stdoutFailPatterns.exclude = [
     '*[Error] [isaacsim.sensors.experimental.physics.impl.commands] Valid parent prim must be selected before creating contact sensor prim.*',

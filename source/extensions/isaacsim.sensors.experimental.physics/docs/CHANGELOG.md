@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.3] - 2026-04-09
+### Removed
+- Remove the `omni.isaac.ml_archive` dependency
+
 ## [2.3.2] - 2026-03-26
 ### Changed
 - Moved Python binding module to `bindings/` subdirectory

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2026-04-09
+### Removed
+- Remove the `omni.isaac.ml_archive` dependency
+
 ## [1.4.0] - 2026-03-20
 ### Changed
 - Update OmniGraph nodes to use prim path based sensor API instead of integer sensor IDs
