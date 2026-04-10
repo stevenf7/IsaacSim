@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Robot schema helpers and applied schema utilities."""
+import logging
 from enum import Enum
 
-import carb
 import pxr
 from pxr import Sdf, Usd
+
+logger = logging.getLogger(__name__)
 
 
 class Classes(Enum):
@@ -134,6 +136,7 @@ class Attributes(Enum):
         .. code-block:: python
 
             attr_name = Attributes.DESCRIPTION.name
+
         """
         return self.value[0]
 
@@ -149,6 +152,7 @@ class Attributes(Enum):
         .. code-block:: python
 
             label = Attributes.DESCRIPTION.display_name
+
         """
         return self.value[1]
 
@@ -164,6 +168,7 @@ class Attributes(Enum):
         .. code-block:: python
 
             attr_type = Attributes.DESCRIPTION.type
+
         """
         return self.value[2]
 
@@ -200,6 +205,7 @@ class Relations(Enum):
         .. code-block:: python
 
             rel_name = Relations.ROBOT_LINKS.name
+
         """
         return self.value[0]
 
@@ -215,6 +221,7 @@ class Relations(Enum):
         .. code-block:: python
 
             label = Relations.ROBOT_LINKS.display_name
+
         """
         return self.value[1]
 
@@ -226,6 +233,7 @@ def _create_attributes(prim: pxr.Usd.Prim, attributes, write_sparsely: bool = Tr
         prim: The prim to receive attributes.
         attributes: Iterable of attribute descriptors to create.
         write_sparsely: Whether to author sparse values.
+
     """
     for attr in attributes:
         prim.CreateAttribute(attr.name, attr.type, write_sparsely)
@@ -238,6 +246,7 @@ def _create_relationships(prim: pxr.Usd.Prim, relationships, custom: bool = True
         prim: The prim to receive relationships.
         relationships: Iterable of relationship descriptors to create.
         custom: Whether to create custom relationships.
+
     """
     for rel in relationships:
         prim.CreateRelationship(rel.name, custom=custom)
@@ -261,6 +270,7 @@ def _apply_api(
         relationships: Iterable of relationship descriptors to create.
         write_sparsely: Whether to author sparse values.
         relationships_custom: Whether to create custom relationships.
+
     """
     prim.AddAppliedSchema(schema.value)
     _create_attributes(prim, attributes, write_sparsely)
@@ -278,6 +288,7 @@ def ApplyRobotAPI(prim: pxr.Usd.Prim):
     .. code-block:: python
 
         ApplyRobotAPI(robot_prim)
+
     """
     _apply_api(
         prim,
@@ -302,6 +313,7 @@ def ApplyLinkAPI(prim: pxr.Usd.Prim):
     .. code-block:: python
 
         ApplyLinkAPI(link_prim)
+
     """
     _apply_api(prim, Classes.LINK_API)
 
@@ -317,6 +329,7 @@ def ApplySiteAPI(prim: pxr.Usd.Prim):
     .. code-block:: python
 
         ApplySiteAPI(site_prim)
+
     """
     _apply_api(prim, Classes.SITE_API)
 
@@ -332,8 +345,9 @@ def ApplyReferencePointAPI(prim: pxr.Usd.Prim):
     .. code-block:: python
 
         ApplyReferencePointAPI(reference_prim)
+
     """
-    carb.log_warn("ApplyReferencePointAPI is deprecated. Use ApplySiteAPI instead.")
+    logger.warning("ApplyReferencePointAPI is deprecated. Use ApplySiteAPI instead.")
     _apply_api(prim, Classes.SITE_API)
     # for attr in [Attributes.REFERENCE_DESCRIPTION, Attributes.FORWARD_AXIS]:
     #     prim.CreateAttribute(attr.name, attr.type, True)
@@ -350,6 +364,7 @@ def ApplyJointAPI(prim: pxr.Usd.Prim):
     .. code-block:: python
 
         ApplyJointAPI(joint_prim)
+
     """
     _apply_api(prim, Classes.JOINT_API)
 
@@ -369,6 +384,7 @@ def CreateSurfaceGripper(stage: pxr.Usd.Stage, prim_path: str) -> pxr.Usd.Prim:
     .. code-block:: python
 
         gripper_prim = CreateSurfaceGripper(stage, "/World/Gripper")
+
     """
     # Create the prim
     prim = stage.DefinePrim(prim_path, Classes.SURFACE_GRIPPER.value)
@@ -407,6 +423,7 @@ def ApplyAttachmentPointAPI(prim: pxr.Usd.Prim):
     .. code-block:: python
 
         ApplyAttachmentPointAPI(attachment_prim)
+
     """
     _apply_api(prim, Classes.ATTACHMENT_POINT_API)
     # for attr in [Attributes.FORWARD_AXIS, Attributes.CLEARANCE_OFFSET]:
@@ -428,6 +445,7 @@ def CreateNamedPose(stage: pxr.Usd.Stage, prim_path: str) -> pxr.Usd.Prim:
     .. code-block:: python
 
         named_pose_prim = CreateNamedPose(stage, "/World/Robot/HomePose")
+
     """
     prim = stage.DefinePrim(prim_path, Classes.NAMED_POSE.value)
     _create_attributes(

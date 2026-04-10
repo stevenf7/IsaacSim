@@ -15,8 +15,19 @@
 
 """Register transformer rules with the global registry."""
 
-import carb
-import omni.ext
+import logging
+
+try:
+    import omni.ext
+
+    _ExtBase = omni.ext.IExt
+except ImportError:
+
+    class _ExtBase:
+        def on_startup(self, ext_id: str) -> None: ...
+        def on_shutdown(self) -> None: ...
+
+
 from isaacsim.asset.transformer import RuleRegistry
 
 from .core.prims import PrimRoutingRule
@@ -32,8 +43,10 @@ from .structure.flatten import FlattenRule
 from .structure.interface import InterfaceConnectionRule
 from .structure.variants import VariantRoutingRule
 
+logger = logging.getLogger(__name__)
 
-class Extension(omni.ext.IExt):
+
+class Extension(_ExtBase):
     """Extension that registers transformation rules."""
 
     def on_startup(self, ext_id: str) -> None:
@@ -41,9 +54,10 @@ class Extension(omni.ext.IExt):
 
         Args:
             ext_id: Fully qualified extension identifier.
+
         """
         self._ext_id = ext_id
-        carb.log_info(f"[isaacsim.asset.transformer.rules] Startup: {ext_id}")
+        logger.info(f"[isaacsim.asset.transformer.rules] Startup: {ext_id}")
         registry = RuleRegistry()
         registry.register(FlattenRule)
         registry.register(GeometriesRoutingRule)
@@ -57,8 +71,8 @@ class Extension(omni.ext.IExt):
         registry.register(VariantRoutingRule)
         registry.register(RobotSchemaRule)
         registry.register(InterfaceConnectionRule)
-        carb.log_info("[isaacsim.asset.transformer.rules] Rules registered")
+        logger.info("[isaacsim.asset.transformer.rules] Rules registered")
 
     def on_shutdown(self) -> None:
         """Log shutdown for the rules extension."""
-        carb.log_info(f"[isaacsim.asset.transformer.rules] Shutdown: {getattr(self, '_ext_id', '')}")
+        logger.info(f"[isaacsim.asset.transformer.rules] Shutdown: {getattr(self, '_ext_id', '')}")

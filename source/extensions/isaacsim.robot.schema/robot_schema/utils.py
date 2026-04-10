@@ -16,14 +16,27 @@
 """Utilities for Isaac robot schema traversal and updates."""
 from __future__ import annotations
 
+import logging
 from collections import deque
 from collections.abc import Callable
 from typing import Any
 
-import carb
-import omni
 import pxr
+from pxr import UsdGeom
 from usd.schema.isaac.robot_schema import *
+
+logger = logging.getLogger(__name__)
+
+
+def _get_world_transform_matrix(
+    prim: pxr.Usd.Prim, time: pxr.Usd.TimeCode = pxr.Usd.TimeCode.Default()
+) -> pxr.Gf.Matrix4d:
+    """Return the composed world transform for *prim* at *time*.
+
+    Pure-pxr replacement for ``omni.usd.get_world_transform_matrix``.
+    """
+    return UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(time)
+
 
 _DEPRECATED_DOF_ATTRS: tuple[tuple[str, str, pxr.TfToken], ...] = (
     ("isaac:physics:Tr_X:DoFOffset", "TransX", pxr.UsdPhysics.Tokens.transX),
@@ -49,6 +62,7 @@ def _path_key(path: pxr.Sdf.Path | None) -> str | None:
 
     Returns:
         The path as a string, or None if not provided.
+
     """
     if not path:
         return None
@@ -63,6 +77,7 @@ def _find_articulation_root(prim: pxr.Usd.Prim) -> pxr.Usd.Prim | None:
 
     Returns:
         The prim carrying ArticulationRootAPI, or None if not found.
+
     """
     if prim.HasAPI(pxr.UsdPhysics.ArticulationRootAPI):
         return prim
@@ -80,6 +95,7 @@ def _collect_deprecated_dof_values(joint_prim: pxr.Usd.Prim) -> dict[str, int]:
 
     Returns:
         Dict mapping token name (e.g. "RotX") to its order index value.
+
     """
     deprecated_values: dict[str, int] = {}
     for attr_name, token_name, _ in _DEPRECATED_DOF_ATTRS:
@@ -102,6 +118,7 @@ def _remove_deprecated_dof_attrs(joint_prim: pxr.Usd.Prim, deprecated_tokens: se
     Args:
         joint_prim: The joint prim containing deprecated attributes.
         deprecated_tokens: Set of token names (e.g. "RotX") whose attributes to remove.
+
     """
     if not deprecated_tokens:
         return
@@ -138,6 +155,7 @@ def _collect_robot_prims(
 
     Returns:
         List of collected USD prims matching the target API.
+
     """
     if not stage or not prim:
         return []
@@ -193,6 +211,7 @@ def _is_single_dof_joint(joint_prim: pxr.Usd.Prim) -> bool:
 
     Returns:
         True if the joint is Revolute, Prismatic, or Fixed.
+
     """
     return (
         joint_prim.IsA(pxr.UsdPhysics.RevoluteJoint)
@@ -218,6 +237,7 @@ def UpdateDeprecatedJointDofOrder(joint_prim: pxr.Usd.Prim) -> bool:
 
     Returns:
         True if migration was performed, False otherwise.
+
     """
     if not joint_prim:
         return False
@@ -283,6 +303,7 @@ def _discover_articulation_prims(
 
     Returns:
         Tuple of (discovered_links, discovered_joints).
+
     """
     if not stage or not robot_prim:
         return [], []
@@ -381,6 +402,7 @@ def GetAllRobotJoints(
     .. code-block:: python
 
         joints = GetAllRobotJoints(stage, robot_root_prim)
+
     """
 
     def _descend(child: pxr.Usd.Prim) -> bool:
@@ -391,6 +413,7 @@ def GetAllRobotJoints(
 
         Returns:
             True if nested robots should be parsed for this prim.
+
         """
         return parse_nested_robots and child.HasAPI(Classes.ROBOT_API.value)
 
@@ -412,7 +435,7 @@ def GetAllRobotJoints(
         if robot_path not in _warned_missing_schema_joints:
             _warned_missing_schema_joints.add(robot_path)
             missing_paths = [str(j.GetPath()) for j in missing_joints]
-            carb.log_warn(
+            logger.warning(
                 f"Robot at {robot_link_prim.GetPath()} has joints missing from schema relationship: {missing_paths}"
             )
         schema_joints.extend(missing_joints)
@@ -442,6 +465,7 @@ def GetAllRobotLinks(
     .. code-block:: python
 
         links = GetAllRobotLinks(stage, robot_root_prim)
+
     """
 
     def _include(prim: pxr.Usd.Prim) -> bool:
@@ -452,6 +476,7 @@ def GetAllRobotLinks(
 
         Returns:
             True if the prim should be treated as a link.
+
         """
         if prim.HasAPI(Classes.LINK_API.value):
             return True
@@ -459,7 +484,7 @@ def GetAllRobotLinks(
             prim.HasAPI(Classes.REFERENCE_POINT_API.value) or prim.HasAPI(Classes.SITE_API.value)
         ):
             if prim.HasAPI(Classes.REFERENCE_POINT_API.value):
-                carb.log_warn(f"{prim.GetPath()} has ReferencePointAPI which is deprecated. Use SiteAPI instead.")
+                logger.warning(f"{prim.GetPath()} has ReferencePointAPI which is deprecated. Use SiteAPI instead.")
             return True
         return False
 
@@ -482,7 +507,7 @@ def GetAllRobotLinks(
         if robot_path not in _warned_missing_schema_links:
             _warned_missing_schema_links.add(robot_path)
             missing_paths = [str(lnk.GetPath()) for lnk in missing_links]
-            carb.log_warn(
+            logger.warning(
                 f"Robot at {robot_link_prim.GetPath()} has links missing from schema relationship: {missing_paths}"
             )
         schema_links.extend(missing_links)
@@ -505,6 +530,7 @@ def GetAllNamedPoses(stage: pxr.Usd.Stage, robot_prim: pxr.Usd.Prim) -> list[pxr
     .. code-block:: python
 
         named_poses = GetAllNamedPoses(stage, robot_prim)
+
     """
     if not stage or not robot_prim or not robot_prim.HasAPI(Classes.ROBOT_API.value):
         return []
@@ -527,6 +553,7 @@ def GetNamedPoseStartLink(named_pose_prim: pxr.Usd.Prim) -> pxr.Sdf.Path | None:
 
     Returns:
         The target path of the start link relationship, or None.
+
     """
     if not named_pose_prim:
         return None
@@ -545,6 +572,7 @@ def GetNamedPoseEndLink(named_pose_prim: pxr.Usd.Prim) -> pxr.Sdf.Path | None:
 
     Returns:
         The target path of the end link relationship, or None.
+
     """
     if not named_pose_prim:
         return None
@@ -563,6 +591,7 @@ def GetNamedPoseJoints(named_pose_prim: pxr.Usd.Prim) -> list[pxr.Sdf.Path]:
 
     Returns:
         List of joint target paths, in order.
+
     """
     if not named_pose_prim:
         return []
@@ -580,6 +609,7 @@ def GetNamedPoseJointValues(named_pose_prim: pxr.Usd.Prim) -> list[float] | None
 
     Returns:
         The joint values array, or None if not authored.
+
     """
     if not named_pose_prim:
         return None
@@ -597,6 +627,7 @@ def GetNamedPoseJointFixed(named_pose_prim: pxr.Usd.Prim) -> list[bool] | None:
 
     Returns:
         The joint fixed array, or None if not authored.
+
     """
     if not named_pose_prim:
         return None
@@ -614,6 +645,7 @@ def GetNamedPoseValid(named_pose_prim: pxr.Usd.Prim) -> bool | None:
 
     Returns:
         The valid value, or None if not authored.
+
     """
     if not named_pose_prim:
         return None
@@ -639,6 +671,7 @@ class RobotLinkNode:
     .. code-block:: python
 
         root_node = RobotLinkNode(root_prim)
+
     """
 
     def __init__(self, prim: pxr.Usd.Prim, parentLink: RobotLinkNode = None, joint: pxr.Usd.Prim = None):
@@ -665,6 +698,7 @@ class RobotLinkNode:
         .. code-block:: python
 
             node.add_child(child_node)
+
         """
         self.children.append(child)
 
@@ -680,6 +714,7 @@ class RobotLinkNode:
         .. code-block:: python
 
             children = node.children
+
         """
         return self._children
 
@@ -695,6 +730,7 @@ class RobotLinkNode:
         .. code-block:: python
 
             parent = node.parent
+
         """
         return self._parent
 
@@ -714,6 +750,7 @@ def GetJointBodyRelationship(joint_prim: pxr.Usd.Prim, bodyIndex: int):
     .. code-block:: python
 
         body_path = GetJointBodyRelationship(joint_prim, 0)
+
     """
     joint = pxr.UsdPhysics.Joint(joint_prim)
     if joint:
@@ -745,6 +782,7 @@ def PrintRobotTree(root: RobotLinkNode, indent=0):
     .. code-block:: python
 
         PrintRobotTree(root_node)
+
     """
     print(" " * indent + root.name)
     for child in root.children:
@@ -765,6 +803,7 @@ def _get_joint_local_transform(joint: pxr.UsdPhysics.Joint, body_index: int) -> 
 
     Returns:
         The local transform matrix (single precision), or None if attributes are missing.
+
     """
     translate_attr = joint.GetLocalPos0Attr() if body_index == 0 else joint.GetLocalPos1Attr()
     rotate_attr = joint.GetLocalRot0Attr() if body_index == 0 else joint.GetLocalRot1Attr()
@@ -795,8 +834,9 @@ def GetJointPose(robot_prim: pxr.Usd.Prim, joint_prim: pxr.Usd.Prim) -> pxr.Gf.M
     .. code-block:: python
 
         joint_pose = GetJointPose(robot_prim, joint_prim)
+
     """
-    robot_transform = pxr.Gf.Matrix4d(omni.usd.get_world_transform_matrix(robot_prim))
+    robot_transform = pxr.Gf.Matrix4d(_get_world_transform_matrix(robot_prim))
     joint = pxr.UsdPhysics.Joint(joint_prim)
     if not joint:
         return None
@@ -816,7 +856,7 @@ def GetJointPose(robot_prim: pxr.Usd.Prim, joint_prim: pxr.Usd.Prim) -> pxr.Gf.M
         if not local_transform:
             continue
         local_d = pxr.Gf.Matrix4d(local_transform)
-        body_pose = pxr.Gf.Matrix4d(omni.usd.get_world_transform_matrix(body_prim))
+        body_pose = pxr.Gf.Matrix4d(_get_world_transform_matrix(body_prim))
         joint_pose = compose_order[body_index](local_d, body_pose)
         return joint_pose * inverse_robot
 
@@ -838,6 +878,7 @@ def GetLinksFromJoint(root: RobotLinkNode, joint_prim: pxr.Usd.Prim) -> tuple[li
     .. code-block:: python
 
         before_links, after_links = GetLinksFromJoint(root_node, joint_prim)
+
     """
 
     def find_node_with_joint(node: RobotLinkNode, target_joint: pxr.Usd.Prim) -> RobotLinkNode:
@@ -849,6 +890,7 @@ def GetLinksFromJoint(root: RobotLinkNode, joint_prim: pxr.Usd.Prim) -> tuple[li
 
         Returns:
             The matching node, or None if not found.
+
         """
         if node._joint_to_parent == target_joint:
             return node
@@ -866,6 +908,7 @@ def GetLinksFromJoint(root: RobotLinkNode, joint_prim: pxr.Usd.Prim) -> tuple[li
 
         Returns:
             List of link prims in the forward direction.
+
         """
         links = [node.prim]
         for child in node.children:
@@ -880,6 +923,7 @@ def GetLinksFromJoint(root: RobotLinkNode, joint_prim: pxr.Usd.Prim) -> tuple[li
 
         Returns:
             List of link prims in the backward direction.
+
         """
         links = [node.prim]
         current = node.parent
@@ -922,6 +966,7 @@ def GenerateRobotLinkTree(stage: pxr.Usd.Stage, robot_link_prim: pxr.Usd.Prim = 
     .. code-block:: python
 
         tree_root = GenerateRobotLinkTree(stage, robot_root_prim)
+
     """
     # Get all links and joints
     all_links = GetAllRobotLinks(stage, robot_link_prim)
@@ -975,6 +1020,7 @@ def _detect_sites_for_link(link_prim: pxr.Usd.Prim) -> list[pxr.Usd.Prim]:
 
     Returns:
         List of child prims that qualify as sites.
+
     """
     if not link_prim or not link_prim.IsValid():
         return []
@@ -1039,6 +1085,7 @@ def PopulateRobotSchemaFromArticulation(
         >>> stage = omni.usd.get_context().get_stage()
         >>> robot = stage.GetPrimAtPath("/World/MyRobot")
         >>> root_link, root_joint = PopulateRobotSchemaFromArticulation(stage, robot, robot)
+
     """
     if not stage:
         raise ValueError("Stage is invalid.")
@@ -1158,6 +1205,7 @@ def UpdateDeprecatedSchemas(robot_prim: pxr.Usd.Prim):
 
     Args:
         robot_prim: The robot prim whose subtree to scan and update.
+
     """
     if not robot_prim or not robot_prim.IsValid():
         return
@@ -1241,6 +1289,7 @@ def DetectAndApplySites(
         Tuple of (all_sites, sites_by_parent_path). ``all_sites`` is a list of all
         site prims in order of appearance. ``sites_by_parent_path`` is a dict mapping
         parent link path strings to lists of their site prims.
+
     """
     if not stage or not robot_prim or not robot_prim.IsValid():
         return [], {}
@@ -1281,6 +1330,7 @@ def AddSitesToRobotLinks(
             (used when sites_last=False to insert sites after their parent).
         sites_last: If False (default), sites are inserted after their parent link.
             If True, all sites are appended at the end.
+
     """
     if not robot_prim or not robot_prim.IsValid():
         return
@@ -1331,6 +1381,7 @@ def ValidateRobotSchemaRelationships(
 
     Returns:
         Tuple of (valid_links, invalid_links, valid_joints, invalid_joints).
+
     """
     valid_links: list[pxr.Sdf.Path] = []
     invalid_links: list[pxr.Sdf.Path] = []
@@ -1374,6 +1425,7 @@ def RebuildRelationshipAsPrepend(
         prim: The prim containing the relationship.
         rel_name: Name of the relationship.
         targets: List of target paths to set.
+
     """
     if not prim or not prim.IsValid():
         return
@@ -1394,6 +1446,7 @@ def EnsurePrependListForRobotRelationships(robot_prim: pxr.Usd.Prim):
 
     Args:
         robot_prim: The robot prim with RobotAPI.
+
     """
     if not robot_prim or not robot_prim.IsValid():
         return
@@ -1447,6 +1500,7 @@ def RecalculateRobotSchema(
         >>> stage = omni.usd.get_context().get_stage()
         >>> robot = stage.GetPrimAtPath("/World/MyRobot")
         >>> root_link, root_joint = RecalculateRobotSchema(stage, robot, robot)
+
     """
     if not stage:
         raise ValueError("Stage is invalid.")
@@ -1638,6 +1692,7 @@ def _find_tree_node(root: Any, target_path: str) -> Any:
 
     Returns:
         The matching node, or None if not found.
+
     """
     if str(root.path) == target_path:
         return root
@@ -1656,6 +1711,7 @@ def _ancestors(node: Any) -> list[Any]:
 
     Returns:
         List of nodes from node to root.
+
     """
     chain: list[Any] = []
     cur = node
@@ -1680,6 +1736,7 @@ def _collect_chain_joints(start_node: Any, end_node: Any) -> list[tuple[Any, boo
 
     Raises:
         ValueError: When start and end nodes are not connected in the tree.
+
     """
     start_anc = _ancestors(start_node)
     end_anc = _ancestors(end_node)
@@ -1730,12 +1787,11 @@ def _compute_zero_config_poses(tree_root: Any) -> dict[str, Any]:
 
     Returns:
         Dict mapping prim-path string to pxr.Gf.Matrix4d (zero-config world transform).
-    """
-    import omni.usd
 
+    """
     zero_world: dict[str, Any] = {}
 
-    root_world = pxr.Gf.Matrix4d(omni.usd.get_world_transform_matrix(tree_root.prim))
+    root_world = pxr.Gf.Matrix4d(_get_world_transform_matrix(tree_root.prim))
     zero_world[str(tree_root.prim.GetPath())] = root_world
 
     stack = [tree_root]

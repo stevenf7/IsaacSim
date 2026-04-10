@@ -63,6 +63,7 @@ def ik_lm(
 
     Returns:
         Joint values that (approximately) achieve the target.
+
     """
     if base_frame is not None:
         target = base_frame.inv() @ target
@@ -184,6 +185,7 @@ class IKSolverLM(IKSolver):
 
         Returns:
             Joint values that achieve the target.
+
         """
         if q0 is None:
             q0 = np.zeros(len(chain.joints))

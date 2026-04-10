@@ -38,6 +38,7 @@ def _collect_assets(layer: Sdf.Layer, package_root: str) -> None:
     Args:
         layer: The USD layer to process.
         package_root: Destination directory for collected assets.
+
     """
     layer_path = layer.realPath
     assets_dir = os.path.join(package_root, "source_assets")
@@ -78,6 +79,7 @@ def _collect_assets(layer: Sdf.Layer, package_root: str) -> None:
 
         Returns:
             Updated asset path, or the original path if no copy exists.
+
         """
         if not original_path:
             return original_path
@@ -162,6 +164,7 @@ def Singleton(class_: type[T]) -> Callable[..., T]:  # noqa: N802
             pass
 
         registry = Registry()
+
     """
     instances: dict[type[Any], object] = {}
 
@@ -195,6 +198,7 @@ class RuleRegistry:
         .. code-block:: python
 
             registry.register(MyRule)
+
         """
         if not issubclass(rule_cls, RuleInterface):
             raise TypeError("rule_cls must subclass RuleInterface")
@@ -215,6 +219,7 @@ class RuleRegistry:
         .. code-block:: python
 
             rule_cls = registry.get("my.module.MyRule")
+
         """
         return self._type_to_cls.get(rule_type)
 
@@ -226,6 +231,7 @@ class RuleRegistry:
         .. code-block:: python
 
             registry.clear()
+
         """
         self._type_to_cls.clear()
 
@@ -240,6 +246,7 @@ class RuleRegistry:
         .. code-block:: python
 
             rules = registry.list_rules()
+
         """
         return dict(self._type_to_cls)
 
@@ -254,6 +261,7 @@ class RuleRegistry:
         .. code-block:: python
 
             types = registry.list_rule_types()
+
         """
         return sorted(self._type_to_cls.keys())
 
@@ -269,6 +277,7 @@ class AssetTransformerManager:
     Args:
         registry: Optional registry instance. Currently ignored in favor of the
             global singleton registry.
+
     """
 
     def __init__(self, registry: RuleRegistry | None = None) -> None:
@@ -286,19 +295,23 @@ class AssetTransformerManager:
         .. code-block:: python
 
             registry = manager.registry
+
         """
         return self._registry
 
     def run(
         self,
-        input_stage_path: str,
+        input_stage: str | Usd.Stage,
         profile: RuleProfile,
         package_root: str | None = None,
     ) -> ExecutionReport:
-        """Execute a profile from an input stage path and return an execution report.
+        """Execute a rule profile against a USD stage and return an execution report.
 
         Args:
-            input_stage_path: Path to the source USD stage or layer.
+            input_stage: Path to the source USD stage or layer, or an
+                already-opened :class:`pxr.Usd.Stage`. When a stage object is
+                passed it is used directly and its root layer path is used as
+                the internal ``input_stage``.
             profile: Rule profile specifying ordered rules to run.
             package_root: Destination root directory for outputs.
 
@@ -316,6 +329,14 @@ class AssetTransformerManager:
             manager = AssetTransformerManager()
             report = manager.run("input.usd", profile, package_root="/tmp/package")
         """
+        # Accept either a file path string or an already-opened Usd.Stage.
+        if isinstance(input_stage, str):
+            input_stage_path: str = input_stage
+            stage_obj: Usd.Stage | None = Usd.Stage.Open(input_stage_path)
+        else:
+            stage_obj = input_stage
+            input_stage_path = input_stage.GetRootLayer().realPath
+
         package_root_final = package_root or profile.output_package_root or ""
         report = ExecutionReport(
             profile=profile,
@@ -323,7 +344,7 @@ class AssetTransformerManager:
             package_root=package_root_final,
         )
 
-        source_stage = Usd.Stage.Open(input_stage_path)
+        source_stage = stage_obj
         if source_stage is None:
             report.close()
             raise RuntimeError(f"Failed to open source stage: {input_stage_path}")
@@ -373,6 +394,7 @@ class AssetTransformerManager:
                         "params": spec.params,
                         "interface_asset_name": profile.interface_asset_name,
                         "input_stage_path": input_stage_path,
+                        "input_stage": stage_obj,
                     },
                 )
 

@@ -15,7 +15,7 @@
 
 """UI option widgets for the URDF importer."""
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 
 import omni.ui as ui
 from isaacsim.asset.importer.urdf import URDFImporterConfig
@@ -31,6 +31,7 @@ def option_header(collapsed: bool, title: str) -> None:
     Args:
         collapsed: Whether the frame is collapsed.
         title: Header title to display.
+
     """
     with ui.HStack(height=22):
         ui.Spacer(width=4)
@@ -60,6 +61,7 @@ def option_frame(
         title: Frame title to display.
         build_content_fn: Callback that builds the frame content.
         collapse_fn: Optional callback invoked on collapse changes.
+
     """
     with ui.CollapsableFrame(
         title, name="option", height=0, collapsed=False, build_header_fn=option_header, collapsed_changed_fn=collapse_fn
@@ -76,6 +78,7 @@ class OptionWidget:
     Args:
         models: Dictionary used to store UI models.
         config: Import configuration to update from the UI.
+
     """
 
     def __init__(self, models: dict[str, ui.AbstractValueModel], config: URDFImporterConfig) -> None:
@@ -252,23 +255,17 @@ class OptionWidget:
 
         Args:
             value: Boolean indicating if collision from visuals is enabled.
+
         """
         self._config.collision_from_visuals = value
         self._collision_type_frame.visible = value
 
     def _add_ros_package_row(self) -> None:
-        """Append a blank name/path row to the ROS package table."""
         if not self._ros_package_model:
             return
         self._ros_package_model.add_row("", "")
 
-    def _build_ros_package_table(self, rows_data: Sequence[tuple[str, str]]) -> None:
-        """Populate or refresh the ROS package ``TreeView`` from row data.
-
-        Args:
-            rows_data: Sequence of ``(package_name, path)`` tuples used to seed
-                the table model.
-        """
+    def _build_ros_package_table(self, rows_data: list[tuple[str, str]]) -> None:
         if not self._ros_package_table_frame:
             return
         self._ros_package_table_frame.clear()
@@ -313,6 +310,7 @@ class OptionWidget:
 
         Returns:
             List of ROS package name/path mappings.
+
         """
         if not self._ros_package_model:
             return []
@@ -324,12 +322,22 @@ class OptionWidget:
                 ros_packages.append({"name": name, "path": path})
         return ros_packages
 
-    def _delete_ros_package_row(self, item: ui.AbstractItem) -> None:
-        """Remove a row from the ROS package table; ensure at least one row remains.
+    def populate_packages(self, packages: list[tuple[str, str]]) -> None:
+        """Replace the current ROS package table rows with *packages*.
+
+        Each entry is a ``(name, path)`` tuple.  The user can still edit,
+        add, or remove rows after pre-population.
 
         Args:
-            item: Tree row item passed from the table delegate.
+            packages: Discovered package name/path pairs.
+
         """
+        if not packages:
+            return
+        self._ros_package_model = RosPackageModel(packages)
+        self._build_ros_package_table(packages)
+
+    def _delete_ros_package_row(self, item: object) -> None:
         if not self._ros_package_model:
             return
         self._ros_package_model.remove_row(item)

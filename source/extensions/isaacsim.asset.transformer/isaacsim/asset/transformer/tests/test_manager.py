@@ -38,6 +38,7 @@ class _DummyRule(RuleInterface):
 
         Returns:
             Empty list of configuration parameters.
+
         """
         return []
 
@@ -96,6 +97,7 @@ def _fake_usd(open_returns: object | None) -> types.SimpleNamespace:
 
     Returns:
         Simple namespace mimicking the Usd module.
+
     """
     fake_stage_mod = types.SimpleNamespace()
     fake_stage_mod.Open = lambda path: open_returns
@@ -108,6 +110,7 @@ def _fake_sdf() -> types.SimpleNamespace:
 
     Returns:
         Simple namespace mimicking the Sdf module.
+
     """
     fake_layer_mod = types.SimpleNamespace()
     fake_layer_mod.FindOrOpen = lambda path: None
@@ -166,7 +169,7 @@ class TestManager(omni.kit.test.AsyncTestCase):
                 output_package_root="/pkg",
             )
             mgr = AssetTransformerManager()
-            report = mgr.run(input_stage_path="in.usda", profile=profile, package_root=None)
+            report = mgr.run(input_stage="in.usda", profile=profile, package_root=None)
             self.assertEqual(len(report.results), 1)
             result = report.results[0]
             self.assertTrue(result.success)
@@ -191,7 +194,7 @@ class TestManager(omni.kit.test.AsyncTestCase):
             unknown_type = "non.existent.Rule"
             profile = RuleProfile(profile_name="p", rules=[RuleSpec(name="r", type=unknown_type)])
             mgr = AssetTransformerManager()
-            report = mgr.run(input_stage_path="in.usda", profile=profile)
+            report = mgr.run(input_stage="in.usda", profile=profile)
             self.assertEqual(len(report.results), 1)
             res = report.results[0]
             self.assertFalse(res.success)
@@ -206,5 +209,5 @@ class TestManager(omni.kit.test.AsyncTestCase):
             mgr = AssetTransformerManager()
             profile = RuleProfile(profile_name="p", rules=[])
             with self.assertRaises(RuntimeError) as excinfo:
-                mgr.run(input_stage_path="missing.usda", profile=profile)
+                mgr.run(input_stage="missing.usda", profile=profile)
             self.assertIn("Failed to open source stage", str(excinfo.exception))

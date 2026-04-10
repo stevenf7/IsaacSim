@@ -43,6 +43,7 @@ class RuleInterface(ABC):
         destination_path: Relative path for rule outputs.
         args: Mapping of parameters including keys such as ``destination`` and
             ``params``.
+
     """
 
     def __init__(self, source_stage: Usd.Stage, package_root: str, destination_path: str, args: dict[str, Any]) -> None:
@@ -80,6 +81,7 @@ class RuleInterface(ABC):
 
             stage = Usd.Stage.CreateInMemory()
             NoOpRule(stage, "/tmp", "", {"destination": "out.usda"}).process_rule()
+
         """
         raise NotImplementedError
 
@@ -94,6 +96,7 @@ class RuleInterface(ABC):
         .. code-block:: python
 
             rule.log_operation("Copied prim /World")
+
         """
         self._log.append(message)
 
@@ -108,6 +111,7 @@ class RuleInterface(ABC):
         .. code-block:: python
 
             messages = rule.get_operation_log()
+
         """
         return list(self._log)
 
@@ -123,6 +127,7 @@ class RuleInterface(ABC):
         .. code-block:: python
 
             rule.add_affected_stage("/tmp/output.usda")
+
         """
         if stage_identifier and stage_identifier not in self._affected_stages:
             self._affected_stages.append(stage_identifier)
@@ -138,6 +143,7 @@ class RuleInterface(ABC):
         .. code-block:: python
 
             affected = rule.get_affected_stages()
+
         """
         return list(self._affected_stages)
 
@@ -153,5 +159,6 @@ class RuleInterface(ABC):
         .. code-block:: python
 
             params = rule.get_configuration_parameters()
+
         """
         raise NotImplementedError

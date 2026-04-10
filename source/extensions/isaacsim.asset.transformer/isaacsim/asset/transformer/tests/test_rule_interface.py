@@ -37,6 +37,7 @@ class _NoOpRule(RuleInterface):
 
         Returns:
             Empty list of configuration parameters.
+
         """
         return []
 

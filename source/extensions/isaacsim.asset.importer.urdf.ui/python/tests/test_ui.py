@@ -19,6 +19,7 @@ import asyncio
 import gc
 import os
 import shutil
+import tempfile
 
 import carb
 import omni.kit.commands
@@ -70,6 +71,7 @@ class TestImporterUI(MenuUITestCase):
         self._urdf_path = os.path.normpath(
             os.path.join(self._urdf_extension_path, "data", "urdf", "robots", "ur10", "urdf", "ur10.urdf")
         )
+        self._tmpdir = tempfile.mkdtemp(prefix="urdf_ui_test_")
 
     # After running each test
     async def tearDown(self) -> None:
@@ -86,7 +88,9 @@ class TestImporterUI(MenuUITestCase):
             carb.log_info("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
-        # await omni.usd.get_context().new_stage_async()
+        self._stage = None
+        gc.collect()
+        shutil.rmtree(self._tmpdir, ignore_errors=True)
 
     def find_content_file(self, window_name: str, filename: str) -> object | None:
         """Find a file row in the picker tree view by label text.
@@ -136,6 +140,11 @@ class TestImporterUI(MenuUITestCase):
         await file.click()
         await ui_test.human_delay()
 
+        output_path_field = await self.find_widget_with_retry(
+            "Select File//Frame/**/StringField[*].identifier=='urdf_output_path'"
+        )
+        output_path_field.model.set_value(self._tmpdir)
+
         import_button = await self.find_widget_with_retry("Select File//Frame/VStack[0]/HStack[2]/Button[0]")
         await import_button.click()
         await ui_test.human_delay()
@@ -164,14 +173,6 @@ class TestImporterUI(MenuUITestCase):
         self.assertAlmostEqual(shoulder_link.GetAttribute("physics:mass").Get(), 7.778, delta=1e-2)
 
         await omni.kit.app.get_app().next_update_async()
-        if delete_output_on_success:
-            output_path = os.path.normpath(os.path.join(os.path.dirname(self._urdf_path), "ur10"))
-            self._stage = None
-            gc.collect()
-            try:
-                shutil.rmtree(output_path)
-            except OSError as e:
-                carb.log_warn(f"Warning: {output_path} : {e.strerror}")
 
     async def test_urdf_ui_selections(self) -> None:
         """Update UI settings and validate importer config values.
@@ -202,7 +203,7 @@ class TestImporterUI(MenuUITestCase):
         output_path_field = await self.find_widget_with_retry(
             "Select File//Frame/**/StringField[*].identifier=='urdf_output_path'"
         )
-        output_path_field.model.set_value(os.path.join(self._extension_path, "data", "urdf", "temp/"))
+        output_path_field.model.set_value(self._tmpdir)
 
         ros_package_table_name_field = await self.find_widget_with_retry(
             "Select File//Frame/**/StringField[*].identifier=='ros_package_table_name_field_0'"
@@ -276,7 +277,7 @@ class TestImporterUI(MenuUITestCase):
         self.assertEqual(os.path.normpath(config.urdf_path.lower()), os.path.normpath(self._urdf_path.lower()))
         self.assertEqual(
             os.path.normpath(config.usd_path.lower()),
-            os.path.normpath(os.path.join(self._extension_path, "data", "urdf", "temp")).lower(),
+            os.path.normpath(self._tmpdir).lower(),
         )
         self.assertEqual(config.merge_mesh, True)
         self.assertEqual(config.debug_mode, True)
@@ -289,25 +290,21 @@ class TestImporterUI(MenuUITestCase):
         )
 
         await omni.kit.app.get_app().next_update_async()
-        output_path = os.path.normpath(os.path.join(self._extension_path, "data", "urdf", "temp"))
-        self._stage = None
-        gc.collect()
-        try:
-            shutil.rmtree(output_path)
-        except OSError as e:
-            carb.log_warn(f"Warning: {output_path} : {e.strerror}")
 
     async def test_urdf_ui_match_urdf_importer(self) -> None:
         """Test urdf ui match urdf importer."""
 
-        # UI workflow
-        await self.test_import_ur10_from_ui(delete_output_on_success=False)
+        # UI workflow (output goes to self._tmpdir via test_import_ur10_from_ui)
+        await self.test_import_ur10_from_ui()
 
-        ui_ur10_path = os.path.normpath(os.path.join(os.path.dirname(self._urdf_path), "ur10", "ur10.usda"))
-        # URDF importer workflow
+        ui_ur10_path = os.path.normpath(os.path.join(self._tmpdir, "ur10", "ur10.usda"))
+
+        # URDF importer workflow into a separate subdirectory
+        importer_output_dir = os.path.join(self._tmpdir, "importer_output")
+        os.makedirs(importer_output_dir, exist_ok=True)
         config = URDFImporterConfig()
         config.urdf_path = self._urdf_path
-        config.usd_path = os.path.normpath(os.path.join(self._extension_path, "data", "urdf", "temp"))
+        config.usd_path = importer_output_dir
         urdf_importer = URDFImporter(config)
         urdf_importer_output_path = os.path.normpath(urdf_importer.import_urdf())
         print(f"urdf_importer_output_path: {urdf_importer_output_path}")
@@ -316,12 +313,3 @@ class TestImporterUI(MenuUITestCase):
         self.assertTrue(result, "USD comparison failed")
 
         await omni.kit.app.get_app().next_update_async()
-        output_path = os.path.normpath(os.path.join(self._extension_path, "data", "urdf", "temp"))
-        self._stage = None
-        gc.collect()
-        try:
-            shutil.rmtree(output_path)
-            shutil.rmtree(os.path.normpath(os.path.dirname(urdf_importer_output_path)))
-        except OSError as e:
-            carb.log_warn(f"Warning: {output_path} : {e.strerror}")
-            carb.log_warn(f"Warning: {os.path.normpath(os.path.dirname(urdf_importer_output_path))} : {e.strerror}")

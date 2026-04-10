@@ -29,6 +29,7 @@ def make_explicit_relative(rel_path: str) -> str:
 
     Returns:
         The path guaranteed to start with ``./`` or ``../``.
+
     """
     if not rel_path:
         return rel_path

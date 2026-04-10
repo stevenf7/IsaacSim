@@ -1,13 +1,22 @@
 # Changelog
 
+## [3.5.0] - 2026-04-09
+### Added
+- Round-trip geometry reconstruction: capsule and cone primitives exported as URDF-compatible geometry are restored to their original USD types on import using `isaac:source_geometry` breadcrumb comments
+- Round-trip joint reconstruction: multi-DOF joints (SphericalJoint, D6Joint) decomposed into single-DOF URDF chains are collapsed back into their original USD joint types on import using `isaac:source_joint` breadcrumb comments
+- Round-trip drive reconstruction: DriveAPI gains, MjcActuator parameters, and PhysxJointAPI armature are restored from `isaac:source_drive` breadcrumb comments after the default URDF-to-PhysX/MjcActuator conversion
+
+### Changed
+- Refactored tests to write output to a temporary directory instead of the source tree, with centralized cleanup in tearDown
+
 ## [3.4.0] - 2026-04-08
 ### Changed
 - Improve Python API documentation (`config/python_api.md` and/or module docstrings).
 
 ## [3.3.0] - 2026-03-31
 ### Changed
-- use shared ui library from isaacsim.gui.components
-- version bump to urdf-usd-converter 0.1.1
+- Use shared ui library from isaacsim.gui.components
+- Version bump to urdf-usd-converter 0.1.1
 
 ## [3.2.2] - 2026-03-21
 ### Fixed

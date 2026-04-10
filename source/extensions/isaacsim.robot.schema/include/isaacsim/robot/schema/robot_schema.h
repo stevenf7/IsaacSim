@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include <carb/logging/Log.h>
-
 #include <pxr/base/tf/token.h>
 #include <pxr/base/vt/array.h>
 #include <pxr/pxr.h>
@@ -33,6 +31,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstdio>
 #include <deque>
 #include <string>
 #include <unordered_map>
@@ -551,7 +550,7 @@ inline void ApplySiteAPI(pxr::UsdPrim& prim)
  */
 inline void ApplyReferencePointAPI(pxr::UsdPrim& prim)
 {
-    CARB_LOG_WARN("ApplyReferencePointAPI is deprecated. Use ApplySiteAPI instead.");
+    fprintf(stderr, "Warning: ApplyReferencePointAPI is deprecated. Use ApplySiteAPI instead.\n");
     ApplySiteAPI(prim);
 }
 

@@ -203,7 +203,7 @@ def snippet_extension_registration():
 # -----------------------------------------------------------------------------
 
 
-def snippet_basic_usage(input_stage_path: str, package_root: str):
+def snippet_basic_usage(input_stage: str, package_root: str):
     # <start-basic-usage-snippet>
     from isaacsim.asset.transformer import (
         AssetTransformerManager,
@@ -211,7 +211,7 @@ def snippet_basic_usage(input_stage_path: str, package_root: str):
         RuleSpec,
     )
 
-    # input_stage_path = "/path/to/robot.usd"
+    # input_stage = "/path/to/robot.usd"
     # package_root = "/output/robot_package"
 
     profile = RuleProfile(
@@ -243,7 +243,7 @@ def snippet_basic_usage(input_stage_path: str, package_root: str):
 
     manager = AssetTransformerManager()
     report = manager.run(
-        input_stage_path=input_stage_path,
+        input_stage=input_stage,
         profile=profile,
         package_root=package_root,
     )
@@ -265,7 +265,7 @@ def snippet_basic_usage(input_stage_path: str, package_root: str):
 
 def snippet_load_profile_from_json(
     profile_path: str,
-    input_stage_path: str,
+    input_stage: str,
     package_root: str,
 ):
     # <start-load-profile-from-json-snippet>
@@ -274,7 +274,7 @@ def snippet_load_profile_from_json(
     from isaacsim.asset.transformer import AssetTransformerManager, RuleProfile
 
     # profile_path = "/path/to/profile.json"
-    # input_stage_path = "/path/to/robot.usd"
+    # input_stage = "/path/to/robot.usd"
     # package_root = "/output/robot_package"
 
     with open(profile_path, "r") as f:
@@ -284,7 +284,7 @@ def snippet_load_profile_from_json(
 
     manager = AssetTransformerManager()
     report = manager.run(
-        input_stage_path=input_stage_path,
+        input_stage=input_stage,
         profile=profile,
         package_root=package_root,
     )
@@ -301,7 +301,7 @@ def snippet_save_execution_report(report):
     # <start-save-execution-report-snippet>
     import json
 
-    # report = manager.run(input_stage_path, profile, package_root)
+    # report = manager.run(input_stage, profile, package_root)
 
     report_path = f"{report.package_root}/transform_report.json"
     with open(report_path, "w") as f:
@@ -360,16 +360,16 @@ def snippet_querying_registered_rules():
 # -----------------------------------------------------------------------------
 
 
-def snippet_error_handling(input_stage_path: str, profile, package_root: str):
+def snippet_error_handling(input_stage: str, profile, package_root: str):
     # <start-error-handling-snippet>
     from isaacsim.asset.transformer import AssetTransformerManager, RuleProfile
 
-    # input_stage_path, profile, package_root from your context
+    # input_stage, profile, package_root from your context
 
     manager = AssetTransformerManager()
 
     try:
-        report = manager.run(input_stage_path, profile, package_root)
+        report = manager.run(input_stage, profile, package_root)
     except RuntimeError as e:
         print(f"Transformation failed to start: {e}")
         raise
@@ -395,9 +395,9 @@ def _get_evobot_input_and_temp_output():
     assets_root = get_assets_root_path()
     if not assets_root:
         raise RuntimeError("Could not find Isaac Sim assets root (isaacsim.storage.native).")
-    input_stage_path = assets_root.rstrip("/") + EVOBOT_REL_PATH
+    input_stage = assets_root.rstrip("/") + EVOBOT_REL_PATH
     package_root = tempfile.mkdtemp(prefix="asset_transformer_")
-    return input_stage_path, package_root
+    return input_stage, package_root
 
 
 def _ensure_asset_transformer_extensions_loaded(simulation_app):
@@ -443,8 +443,8 @@ def _run_step(name: str, fn, *args, **kwargs):
 
 def run_orchestrator() -> int:
     """Run all API snippets with Evobot and temp dirs. Called after SimulationApp is up."""
-    input_stage_path, package_root_1 = _get_evobot_input_and_temp_output()
-    print(f"Input (Evobot): {input_stage_path}")
+    input_stage, package_root_1 = _get_evobot_input_and_temp_output()
+    print(f"Input (Evobot): {input_stage}")
     print(f"Temp outputs: {package_root_1} ...")
     sys.stdout.flush()
 
@@ -459,7 +459,7 @@ def run_orchestrator() -> int:
     report = _run_step(
         "snippet (basic usage)",
         snippet_basic_usage,
-        input_stage_path,
+        input_stage,
         package_root_1,
     )
     _validate_report(report, "snippet (basic usage)")
@@ -478,7 +478,7 @@ def run_orchestrator() -> int:
         "snippet (load profile from JSON)",
         snippet_load_profile_from_json,
         profile_path,
-        input_stage_path,
+        input_stage,
         package_root_2,
     )
     _validate_report(report2, "snippet (load profile from JSON)")
@@ -493,7 +493,7 @@ def run_orchestrator() -> int:
     report3 = _run_step(
         "snippet (error handling)",
         snippet_error_handling,
-        input_stage_path,
+        input_stage,
         profile,
         package_root_2,
     )

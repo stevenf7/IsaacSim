@@ -106,6 +106,7 @@ class TestRobotSchemaRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             Dictionary of parameter values.
+
         """
         params = _DEFAULT_PARAMS.copy()
         params.update(overrides)
@@ -120,6 +121,7 @@ class TestRobotSchemaRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             Configured RobotSchemaRule instance.
+
         """
         params = self._get_params(**param_overrides)
         return RobotSchemaRule(
@@ -137,6 +139,7 @@ class TestRobotSchemaRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             Absolute output path for the robot schema file.
+
         """
         name = stage_name or _DEFAULT_PARAMS["stage_name"]
         return os.path.join(self._tmpdir, "payloads", name)
@@ -146,6 +149,7 @@ class TestRobotSchemaRule(omni.kit.test.AsyncTestCase):
 
         Args:
             rule: Rule instance to execute.
+
         """
         rule.process_rule()
         self.log = rule.get_operation_log()
@@ -159,6 +163,7 @@ class TestRobotSchemaRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             Opened output layer.
+
         """
         output_path = self._get_output_path(stage_name)
         output_layer = Sdf.Layer.FindOrOpen(output_path)
@@ -174,6 +179,7 @@ class TestRobotSchemaRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             List of applied schema tokens.
+
         """
         prim_spec = layer.GetPrimAtPath(prim_path)
         if not prim_spec:
@@ -193,6 +199,7 @@ class TestRobotSchemaRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             True if the schema token is present.
+
         """
         schemas = self._get_api_schemas(layer, prim_path)
         return any(schema_name in str(item) for item in schemas)
@@ -207,6 +214,7 @@ class TestRobotSchemaRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             List of relationship target paths.
+
         """
         prim_spec = layer.GetPrimAtPath(prim_path)
         if not prim_spec:
@@ -225,6 +233,7 @@ class TestRobotSchemaRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             True if any log line contains the substring.
+
         """
         if case_sensitive:
             return any(substring in msg for msg in self.log)
@@ -238,6 +247,7 @@ class TestRobotSchemaRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             Executed RobotSchemaRule instance.
+
         """
         rule = self._create_rule(self.stage, **param_overrides)
         self._run_rule(rule)

@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.3] - 2026-04-02
+### Changed
+- Replace `carb.log_*` with Python `logging` module
+- Replace `omni.usd.get_world_transform_matrix` with pure `pxr` `UsdGeom.Xformable.ComputeLocalToWorldTransform`
+- Replace `CARB_LOG_WARN` with `fprintf(stderr, ...)` in C++ header
+- Remove `omni.usd` from extension.toml dependencies
+
 ## [5.1.2] - 2026-03-19
 ### Removed
 - Remove the `omni.isaac.ml_archive` dependency

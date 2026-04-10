@@ -43,6 +43,7 @@ def merge_path_list_op(existing_list: Sdf.PathListOp, new_paths: list) -> None:
     .. code-block:: python
 
         merge_path_list_op(list_op, [Sdf.Path("/World")])
+
     """
     # Get existing paths to avoid duplicates
     existing_paths = set()
@@ -79,6 +80,7 @@ def remove_prim_from_source_layers(prim: Usd.Prim, exclude_layer: Sdf.Layer) -> 
     .. code-block:: python
 
         removed_count, layers = remove_prim_from_source_layers(prim, exclude_layer)
+
     """
     prim_path = prim.GetPath()
     removed_count = 0
@@ -130,6 +132,7 @@ class PrimRoutingRule(RuleInterface):
         .. code-block:: python
 
             params = rule.get_configuration_parameters()
+
         """
         return [
             RuleConfigurationParam(
@@ -166,6 +169,7 @@ class PrimRoutingRule(RuleInterface):
         .. code-block:: python
 
             rule.process_rule()
+
         """
         params = self.args.get("params", {}) or {}
         prim_types = params.get("prim_types") or []

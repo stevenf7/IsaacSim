@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import gc
 import importlib
+import logging
 import os
 import shutil
 
@@ -32,6 +33,11 @@ from isaacsim.asset.importer.utils.impl import (
 from pxr import Sdf
 
 from .config import URDFImporterConfig
+from .drive_reconstruction import parse_source_drive_breadcrumbs, reconstruct_source_drives
+from .geometry_reconstruction import parse_source_geometry_breadcrumbs, reconstruct_source_geometry
+from .joint_reconstruction import parse_source_joint_breadcrumbs, reconstruct_source_joints
+
+_logger = logging.getLogger(__name__)
 
 
 class URDFImporter:
@@ -129,9 +135,27 @@ class URDFImporter:
         if not self.stage:
             raise ValueError(f"Failed to open flattened stage at path: {asset.path}")
 
+        breadcrumbs = parse_source_geometry_breadcrumbs(urdf_path)
+        if breadcrumbs:
+            n = reconstruct_source_geometry(self.stage, breadcrumbs)
+            if n:
+                _logger.info(f"Reconstructed {n} source geometry primitives from breadcrumbs")
+
+        joint_breadcrumbs = parse_source_joint_breadcrumbs(urdf_path)
+        if joint_breadcrumbs:
+            n = reconstruct_source_joints(self.stage, joint_breadcrumbs)
+            if n:
+                _logger.info(f"Reconstructed {n} source joint types from breadcrumbs")
+
         importer_utils.remove_custom_scopes(self.stage)
         importer_utils.add_rigid_body_schemas(self.stage)
         importer_utils.add_joint_schemas(self.stage)
+
+        drive_breadcrumbs = parse_source_drive_breadcrumbs(urdf_path)
+        if drive_breadcrumbs:
+            n = reconstruct_source_drives(self.stage, drive_breadcrumbs)
+            if n:
+                _logger.info(f"Reconstructed {n} joint drive configurations from breadcrumbs")
 
         if self.config.merge_mesh:
             merge_mesh_utils.clean_mesh_operation(self.stage)
@@ -143,6 +167,7 @@ class URDFImporter:
 
         importer_utils.enable_self_collision(self.stage, self.config.allow_self_collision)
         urdf_to_mjc_physx_conversion_utils.convert_joints_attributes(self.stage)
+
         stage_utils.save_stage(self.stage, intermediate_path)  # save the stage to the output path
         self.stage = None
         gc.collect()

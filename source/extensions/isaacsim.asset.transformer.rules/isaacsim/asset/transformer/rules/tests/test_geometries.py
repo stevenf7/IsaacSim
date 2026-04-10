@@ -42,6 +42,7 @@ def _build_mirrored_meshes_stage(stage_path: str) -> str:
 
     Returns:
         The file path of the exported stage.
+
     """
     stage = Usd.Stage.CreateNew(stage_path)
     stage.SetMetadata("metersPerUnit", 1.0)
@@ -91,6 +92,7 @@ def _build_no_mesh_stage(stage_path: str) -> str:
 
     Returns:
         The file path of the exported stage.
+
     """
     stage = Usd.Stage.CreateNew(stage_path)
     stage.SetMetadata("metersPerUnit", 1.0)
@@ -1183,5 +1185,79 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
                 break
 
         self.assertTrue(vis_binding_found, "No visual material:binding found in instances layer")
+
+        self._success = True
+
+    async def test_multiple_sibling_meshes_not_merged_into_parent(self) -> None:
+        """Verify that a parent Xform with multiple Mesh children keeps all children as separate references.
+
+        Reproduces the anymal_d pattern where /robot/link/visuals has N mesh children.
+        After geometry routing, each mesh should be its own instanceable reference under
+        the parent — the rule must NOT merge the last mesh into the parent and lose the
+        others.  This tests that _is_subtree_empty correctly treats siblings with
+        composition arcs (references) as non-empty, preventing premature merging.
+        """
+        # Build a stage: /Robot/base/visuals has 5 Mesh children
+        stage_path = os.path.join(self._tmpdir, "payloads", "base.usd")
+        os.makedirs(os.path.dirname(stage_path), exist_ok=True)
+        stage = Usd.Stage.CreateNew(stage_path)
+        stage.SetDefaultPrim(stage.DefinePrim("/Robot", "Xform"))
+        base = stage.DefinePrim("/Robot/base", "Xform")
+        visuals = stage.DefinePrim("/Robot/base/visuals", "Xform")
+        mesh_names = ["mesh_a", "mesh_b", "mesh_c", "mesh_d", "mesh_e"]
+        for name in mesh_names:
+            mesh = stage.DefinePrim(f"/Robot/base/visuals/{name}", "Mesh")
+            UsdGeom.Mesh(mesh).CreatePointsAttr([(-1, 0, 0), (1, 0, 0), (0, 1, 0)])
+            UsdGeom.Mesh(mesh).CreateFaceVertexCountsAttr([3])
+            UsdGeom.Mesh(mesh).CreateFaceVertexIndicesAttr([0, 1, 2])
+        stage.Save()
+
+        # Run GeometriesRoutingRule
+        rule = GeometriesRoutingRule(
+            source_stage=Usd.Stage.Open(stage_path),
+            package_root=self._tmpdir,
+            destination_path="payloads",
+            args={
+                "input_stage_path": stage_path,
+                "params": {
+                    "scope": "/",
+                    "geometries_layer": "geometries.usd",
+                    "instance_layer": "instances.usda",
+                    "deduplicate": True,
+                    "save_base_as_usda": False,
+                },
+            },
+        )
+        result = rule.process_rule()
+        self.assertIsNotNone(result, "process_rule should return a path")
+
+        # Re-open the output stage
+        output_stage = Usd.Stage.Open(result)
+        visuals_prim = output_stage.GetPrimAtPath("/Robot/base/visuals")
+        self.assertTrue(visuals_prim.IsValid(), "/Robot/base/visuals should exist after routing")
+
+        # visuals itself should NOT be instanceable (it's the parent container)
+        self.assertFalse(
+            visuals_prim.IsInstanceable(),
+            "/Robot/base/visuals should not be merged/instanceable — it is a container for multiple meshes",
+        )
+
+        # All 5 mesh children should exist as Xform references under visuals
+        children = [c.GetName() for c in visuals_prim.GetChildren()]
+        for name in mesh_names:
+            self.assertIn(
+                name,
+                children,
+                f"{name} missing from visuals children after geometry routing: got {children}",
+            )
+
+        # Each child should be instanceable with a reference
+        for name in mesh_names:
+            child = output_stage.GetPrimAtPath(f"/Robot/base/visuals/{name}")
+            self.assertTrue(child.IsValid(), f"{name} should exist")
+            self.assertTrue(
+                child.IsInstanceable(),
+                f"{name} should be instanceable",
+            )
 
         self._success = True

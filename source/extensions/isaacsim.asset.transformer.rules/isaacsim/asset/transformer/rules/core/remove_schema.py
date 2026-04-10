@@ -40,6 +40,7 @@ class RemoveSchemaRule(RuleInterface):
         .. code-block:: python
 
             params = rule.get_configuration_parameters()
+
         """
         return [
             RuleConfigurationParam(
@@ -97,6 +98,7 @@ class RemoveSchemaRule(RuleInterface):
         .. code-block:: python
 
             rule.process_rule()
+
         """
         params = self.args.get("params", {}) or {}
         schema_patterns = utils.compile_patterns(params.get("schema_patterns") or [])
@@ -122,7 +124,7 @@ class RemoveSchemaRule(RuleInterface):
 
         source_stage = self.source_stage
         if input_stage_path:
-            source_stage = Usd.Stage.Open(input_stage_path)
+            source_stage = self.args.get("input_stage") or Usd.Stage.Open(input_stage_path)
             if not source_stage:
                 self.log_operation(f"Failed to open input stage: {input_stage_path}")
                 return None
@@ -181,6 +183,7 @@ class RemoveSchemaRule(RuleInterface):
 
         Returns:
             List of matching prim paths.
+
         """
         if not prim_path_patterns:
             return [prim.GetPath().pathString for prim in stage.Traverse()]
@@ -204,6 +207,7 @@ class RemoveSchemaRule(RuleInterface):
 
         Returns:
             Count of deleted schema tokens.
+
         """
         applied_schemas = [str(token) for token in source_prim.GetAppliedSchemas()]
         matching_schemas = [schema for schema in applied_schemas if utils.matches_any_pattern(schema, schema_patterns)]
@@ -252,6 +256,7 @@ class RemoveSchemaRule(RuleInterface):
 
         Returns:
             Count of removed properties.
+
         """
         removed_count = 0
         for prop_name, _ in list(prim_spec.properties.items()):

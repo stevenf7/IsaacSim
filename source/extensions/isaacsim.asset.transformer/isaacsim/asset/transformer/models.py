@@ -33,6 +33,7 @@ class RuleConfigurationParam:
         param_type: Expected Python type for the parameter.
         description: Optional description of the parameter.
         default_value: Default value for the parameter.
+
     """
 
     name: str
@@ -54,6 +55,7 @@ class RuleSpec:
         destination: Optional output path override.
         params: Rule parameter overrides.
         enabled: Whether the rule is active.
+
     """
 
     name: str
@@ -81,6 +83,7 @@ class RuleSpec:
             ... )
             >>> isinstance(spec.to_dict(), dict)
             True
+
         """
         return asdict(self)
 
@@ -104,6 +107,7 @@ class RuleSpec:
             spec = RuleSpec.from_dict(
                 {"name": "MoveMeshes", "type": "my.rule.Class", "params": {"scope": "/World"}}
             )
+
         """
         name = data.get("name")
         type_ = data.get("type")
@@ -130,6 +134,7 @@ class RuleProfile:
         output_package_root: Optional output root for packages.
         flatten_source: Whether to flatten source stages before rules.
         base_name: Optional base name for generated outputs.
+
     """
 
     profile_name: str
@@ -156,6 +161,7 @@ class RuleProfile:
         .. code-block:: python
 
             payload = profile.to_dict()
+
         """
         return {
             "profile_name": self.profile_name,
@@ -178,6 +184,7 @@ class RuleProfile:
         .. code-block:: python
 
             json_str = profile.to_json()
+
         """
         return json.dumps(self.to_dict(), sort_keys=True, separators=(",", ":"))
 
@@ -199,6 +206,7 @@ class RuleProfile:
         .. code-block:: python
 
             profile = RuleProfile.from_dict({"profile_name": "Default", "rules": []})
+
         """
         profile_name = data.get("profile_name") or ""
         if not profile_name:
@@ -230,6 +238,7 @@ class RuleProfile:
         .. code-block:: python
 
             profile = RuleProfile.from_json('{"profile_name":"Default","rules":[]}')
+
         """
         return RuleProfile.from_dict(json.loads(json_str))
 
@@ -246,6 +255,7 @@ class RuleExecutionResult:
         error: Error message if the rule failed.
         started_at: Start timestamp in ISO format.
         finished_at: Finish timestamp in ISO format.
+
     """
 
     rule: RuleSpec
@@ -266,6 +276,7 @@ class RuleExecutionResult:
         .. code-block:: python
 
             result.close()
+
         """
         self.finished_at = datetime.utcnow().isoformat(timespec="milliseconds") + "Z"
 
@@ -283,6 +294,7 @@ class ExecutionReport:
         results: Rule execution results.
         output_stage_path: File path of the final working stage after all rules
             have executed. Callers can use this to load the transformed asset.
+
     """
 
     profile: RuleProfile
@@ -306,6 +318,7 @@ class ExecutionReport:
         .. code-block:: python
 
             payload = report.to_dict()
+
         """
         return {
             "profile": self.profile.to_dict(),
@@ -328,6 +341,7 @@ class ExecutionReport:
         .. code-block:: python
 
             json_str = report.to_json()
+
         """
         return json.dumps(self.to_dict(), sort_keys=True, separators=(",", ":"))
 
@@ -339,5 +353,6 @@ class ExecutionReport:
         .. code-block:: python
 
             report.close()
+
         """
         self.finished_at = datetime.utcnow().isoformat(timespec="milliseconds") + "Z"
