@@ -37,8 +37,6 @@ Carbonite SDK API:
 #include <carb/Interface.h>
 
 #include <omni/fabric/RationalTime.h>
-#include <pch/UsdPCH.h>
-#include <pxr/pxr.h>
 
 #include <cstdint>
 #include <functional>

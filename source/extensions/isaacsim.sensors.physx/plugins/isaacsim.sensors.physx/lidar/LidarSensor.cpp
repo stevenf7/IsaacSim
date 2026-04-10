@@ -17,20 +17,13 @@
 
 // clang-format off
 #include <pch/UsdPCH.h>
-#include <pxr/usd/usd/inherits.h>
 // clang-format on
 
 #include "LidarSensor.h"
 
-#include <carb/InterfaceUtils.h>
-
 #include <isaacsim/core/includes/Conversions.h>
 #include <isaacsim/core/includes/Pose.h>
-#include <omni/fabric/FabricUSD.h>
-#include <omni/fabric/IToken.h>
-#include <omni/fabric/SimStageWithHistory.h>
 #include <omni/physx/IPhysx.h>
-#include <omni/physx/IPhysxSceneQuery.h>
 
 #include <algorithm>
 #include <iostream>

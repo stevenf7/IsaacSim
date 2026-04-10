@@ -21,7 +21,6 @@
 #include <isaacsim/core/includes/Color.h>
 #include <isaacsim/sensors/physx/IPhysxSensorInterface.h>
 #include <pxr/base/gf/vec3f.h>
-#include <pxr/usd/usd/inherits.h>
 #include <rangeSensorSchema/lidar.h>
 
 #include <vector>

@@ -24,7 +24,6 @@
 #include <omni/fabric/FabricUSD.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
-#include <pxr/usd/usd/inherits.h>
 #include <usdrt/gf/matrix.h>
 #include <usdrt/gf/vec.h>
 

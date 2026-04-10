@@ -22,14 +22,12 @@
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/logging/Log.h>
-#include <carb/settings/ISettings.h>
 
 #include <isaacsim/asset/gen/omap/IOccupancyMap.h>
 #include <isaacsim/asset/gen/omap/MapGenerator.h>
 #include <isaacsim/util/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
-#include <omni/renderer/IDebugDraw.h>
 
 #include <map>
 #include <string>

@@ -17,16 +17,12 @@
 
 // clang-format off
 #include <pch/UsdPCH.h>
-#include <pxr/usd/usd/inherits.h>
 // clang-format on
 
 #include "GenericSensor.h"
 
-#include <carb/InterfaceUtils.h>
-
 #include <isaacsim/core/includes/Pose.h>
 #include <omni/physx/IPhysx.h>
-#include <omni/physx/IPhysxSceneQuery.h>
 
 #include <chrono>
 #include <iostream>

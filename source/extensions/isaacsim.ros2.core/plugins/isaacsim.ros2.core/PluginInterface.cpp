@@ -20,9 +20,6 @@
 #    pragma warning(disable : 4996)
 #endif
 
-// clang-format off
-#include <pch/UsdPCH.h>
-// clang-format on
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>

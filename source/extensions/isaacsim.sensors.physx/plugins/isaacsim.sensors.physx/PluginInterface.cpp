@@ -36,10 +36,7 @@
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
-#include <omni/renderer/IDebugDraw.h>
-#include <omni/usd/UsdContext.h>
 
-#include <map>
 #include <vector>
 
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.sensors.physx.plugin", "Isaac Range Sensor", "NVIDIA",

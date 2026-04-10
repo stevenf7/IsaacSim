@@ -15,9 +15,10 @@
 
 // clang-format off
 #include <pch/UsdPCH.h>
-#include <pxr/usd/usd/inherits.h>
 #include <omni/physx/ContactEvent.h>
 // clang-format on
+
+#include <carb/profiler/Profile.h>
 
 #include <isaacsim/sensors/physics/ContactManager.h>
 

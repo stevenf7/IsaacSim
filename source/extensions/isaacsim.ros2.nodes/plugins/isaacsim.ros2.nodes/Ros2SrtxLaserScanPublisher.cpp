@@ -15,7 +15,6 @@
 
 #include "Ros2SrtxLaserScanPublisher.h"
 
-#include <carb/profiler/IProfiler.h>
 #include <carb/profiler/Profile.h>
 
 #include <GenericModelOutputTypes.h>

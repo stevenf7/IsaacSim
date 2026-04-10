@@ -22,7 +22,6 @@
 
 // clang-format off
 #include <pch/UsdPCH.h>
-#include <pxr/usd/usd/inherits.h>
 // clang-format on
 
 #include "LightBeamSensor.h"
@@ -31,17 +30,11 @@
 #include "isaacsim/core/includes/UsdUtilities.h"
 
 #include <carb/Framework.h>
-#include <carb/PluginUtils.h>
 
 #include <isaacsim/core/includes/Conversions.h>
 #include <isaacsim/sensors/physx/IPhysxSensorInterface.h>
-#include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
-#include <omni/usd/UsdContext.h>
-#include <omni/usd/UsdContextIncludes.h>
-#include <physicsSchemaTools/UsdTools.h>
-#include <pxr/usd/usdPhysics/scene.h>
 
 #include <PxActor.h>
 

@@ -15,10 +15,6 @@
 
 #pragma once
 
-// clang-format off
-#include <pch/UsdPCH.h>
-// clang-format on
-
 #include <carb/logging/Log.h>
 
 #include <OmniClient.h>

@@ -19,8 +19,6 @@
 #include <isaacsim/sensors/physics/IPhysicsSensor.h>
 #include <isaacsim/sensors/physics/IsaacSensorComponent.h>
 #include <omni/physx/IPhysx.h>
-#include <omni/renderer/IDebugDraw.h>
-#include <pxr/usd/usd/inherits.h>
 #include <usdrt/gf/matrix.h>
 #include <usdrt/gf/vec.h>
 

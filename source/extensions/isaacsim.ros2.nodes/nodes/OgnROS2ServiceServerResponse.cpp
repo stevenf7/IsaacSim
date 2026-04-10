@@ -19,9 +19,6 @@
 
 #include "isaacsim/core/includes/UsdUtilities.h"
 
-#include <carb/Framework.h>
-#include <carb/Types.h>
-
 #include <isaacsim/ros2/core/Ros2Node.h>
 #include <isaacsim/ros2/nodes/Ros2OgnUtils.h>
 #include <omni/fabric/FabricUSD.h>

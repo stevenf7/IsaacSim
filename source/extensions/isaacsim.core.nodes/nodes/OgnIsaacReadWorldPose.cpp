@@ -20,12 +20,10 @@
 
 #include <isaacsim/core/includes/Pose.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 #include <pxr/base/gf/quatd.h>
 #include <pxr/base/gf/vec3d.h>
-#include <pxr/usd/usd/inherits.h>
 #include <usdrt/gf/matrix.h>
 #include <usdrt/gf/transform.h>
 #include <usdrt/gf/vec.h>

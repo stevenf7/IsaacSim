@@ -16,8 +16,6 @@
 #pragma once
 
 #include <carb/Framework.h>
-#include <carb/PluginUtils.h>
-#include <carb/events/EventsUtils.h>
 #include <carb/logging/Log.h>
 
 #include <isaacSensorSchema/isaacContactSensor.h>
@@ -27,12 +25,7 @@
 #include <isaacsim/sensors/physics/ImuSensor.h>
 #include <isaacsim/sensors/physics/IsaacSensorComponent.h>
 #include <isaacsim/sensors/physics/IsaacSensorTypes.h>
-#include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
-#include <omni/physx/IPhysxSceneQuery.h>
-#include <omni/usd/UsdContext.h>
-#include <physicsSchemaTools/UsdTools.h>
-#include <physxSchema/physxContactReportAPI.h>
 #include <pxr/usd/usdPhysics/scene.h>
 
 #include <PxActor.h>

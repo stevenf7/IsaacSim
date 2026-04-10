@@ -14,7 +14,6 @@
 // limitations under the License.
 
 #include <carb/BindingsPythonUtils.h>
-#include <carb/logging/Log.h>
 
 #include <isaacsim/robot/wheeled_robots/IWheeledRobots.h>
 

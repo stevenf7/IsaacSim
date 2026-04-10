@@ -21,7 +21,6 @@
 
 // clang-format off
 #include <pch/UsdPCH.h>
-#include <pxr/usd/usd/inherits.h>
 #include <omni/usd/UtilsIncludes.h>
 
 #include "isaacsim/robot/surface_gripper/SurfaceGripperComponent.h"
@@ -39,11 +38,8 @@
 #include <omni/fabric/usd/PathConversion.h>
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/kit/IStageUpdate.h>
-#include <omni/physics/tensors/IRigidBodyView.h>
-#include <omni/physics/tensors/IRigidContactView.h>
 #include <omni/physics/tensors/ISimulationView.h>
 #include <omni/physics/tensors/TensorApi.h>
-#include <omni/physics/tensors/TensorDesc.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/usd/UsdContext.h>

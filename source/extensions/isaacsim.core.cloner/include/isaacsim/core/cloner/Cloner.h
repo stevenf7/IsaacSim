@@ -15,11 +15,8 @@
 
 #pragma once
 
-// clang-format off
-#include <pch/UsdPCH.h>
-// clang-format on
-
 #include <string>
+#include <vector>
 
 
 #ifdef _MSC_VER
