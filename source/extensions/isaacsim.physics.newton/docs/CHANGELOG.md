@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.1] - 2026-04-10
+### Removed
+- Remove the `isaacsim.core.utils` and `omni.isaac.ml_archive` dependencies
+
 ## [0.7.0] - 2026-04-01
 ### Changed
 - get_simulation_time_steps_per_second returns int rather than float to comply with omni.physics.core bindings
