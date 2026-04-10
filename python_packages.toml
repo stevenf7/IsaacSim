@@ -24,6 +24,7 @@ pyproject.optional-dependencies.all = [
         "isaacsim-cortex==${version}",
         "isaacsim-example==${version}",
         "isaacsim-gui==${version}",
+        "isaacsim-hsb-bridge==${version}",
         "isaacsim-replicator==${version}",
         "isaacsim-rl==${version}",
         "isaacsim-robot==${version}",
@@ -700,6 +701,23 @@ inventory.includes.all = [
     "exts/isaacsim.ucx.bridge",
     "exts/isaacsim.ucx.core",
     "exts/isaacsim.ucx.nodes",
+]
+
+[isaacsim-hsb-bridge]
+# pyproject.toml
+pyproject.description = "Isaac Sim Holoscan Sensor Bridge (HSB) - OmniGraph nodes for high-performance sensor data transfer"
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "holoscan", "hsb", "sensor", "bridge"]
+pyproject.dependencies.all = [
+    "isaacsim-sensor==${version}",
+]
+# inventory (relative to the build config)
+inventory.includes.all = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/isaacsim.hsb.bridge",
+    "exts/isaacsim.hsb.core",
+    "exts/isaacsim.hsb.nodes",
 ]
 
 

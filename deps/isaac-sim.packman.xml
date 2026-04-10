@@ -44,4 +44,7 @@
   <dependency name="sensor-checker" linkPath="../_build/target-deps/sensor-checker/${platform_target}/${config}">
     <package name="sensor-checker" version="110.1.1+production.292519.6389b0d7.gl.${platform_target_abi}.${config}"/>
   </dependency>
+  <dependency name="hsb_emulator" linkPath="../_build/target-deps/hsb_emulator">
+    <package name="hsb_emulator" version="2.6.0-EA.${platform_target_abi}" platforms="manylinux_2_35_x86_64 manylinux_2_35_aarch64"/>
+  </dependency>
 </project>
