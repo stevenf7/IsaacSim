@@ -20,6 +20,8 @@ import numpy as np
 from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
 from isaacsim.examples.base.base_sample_experimental import BaseSample
+from isaacsim.robot.experimental.manipulators.examples.franka.stacking import Stacking as FrankaStacking
+from isaacsim.robot.experimental.manipulators.examples.universal_robots.stacking import Stacking as UR10Stacking
 
 # Wheeled robots (Kaya, Jetbot): isaacsim.robot.experimental.wheeled_robots
 # Extension: source/extensions/isaacsim.robot.experimental.wheeled_robots
@@ -31,8 +33,6 @@ from isaacsim.robot.experimental.wheeled_robots.robots import (
     HolonomicRobotUsdSetup,
     WheeledRobot,
 )
-from isaacsim.robot.manipulators.examples.franka.stacking import Stacking as FrankaStacking
-from isaacsim.robot.manipulators.examples.universal_robots.stacking import Stacking as UR10Stacking
 from isaacsim.storage.native import get_assets_root_path
 
 

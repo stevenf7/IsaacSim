@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.15.5] - 2026-04-06
+### Changed
+- Update imports to use isaacsim.robot.experimental.manipulators.examples
+- Remove deprecated isaacsim.robot.manipulators.examples dependency
+- Add isaacsim.robot_motion.cumotion and isaacsim.robot_motion.experimental.motion_generation dependencies
+- Update test_bin_filling and test_path_planning to use experimental APIs
+
 ## [4.15.4] - 2026-03-31
 ### Changed
 - Added test for Robo Party example

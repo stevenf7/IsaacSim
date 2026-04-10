@@ -170,7 +170,7 @@ Review the:
 
 ..     .. code-block:: console
 
-..         ./python.sh standalone_examples/api/isaacsim.robot.manipulators/franka/follow_target_with_rmpflow.py
+..         ./python.sh standalone_examples/api/isaacsim.robot.experimental.manipulators/franka/follow_target_with_rmpflow.py
 
 .. #. Move the target prim by selecting it in the viewport so that Franka follows it.
 

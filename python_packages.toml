@@ -510,8 +510,9 @@ inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
+    "exts/isaacsim.robot.experimental.manipulators.examples",
     "exts/isaacsim.robot.manipulators",
-    "exts/isaacsim.robot.manipulators.examples",
+    "extsDeprecated/isaacsim.robot.manipulators.examples",
     "exts/isaacsim.robot.manipulators.ui",
     "exts/isaacsim.robot.policy.examples",
     "exts/isaacsim.robot.poser",

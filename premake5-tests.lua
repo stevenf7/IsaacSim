@@ -319,35 +319,61 @@ end
 
 local function get_robot_tests()
     return {
-        -- Manipulators
+        -- Manipulators (experimental): one --test per standalone; extra rows exercise non-default CLI (SVD IK on pick_place and UR10 IK;
+        -- --with-obstacle on both RmpFlow follow-target scripts).
         {
-            "tests-nativepython-isaacsim.robot.manipulators.franka.franka_gripper",
-            "standalone_examples/api/isaacsim.robot.manipulators/franka/franka_gripper.py",
+            "tests-nativepython-isaacsim.robot.experimental.manipulators.franka.pick_place",
+            "standalone_examples/api/isaacsim.robot.experimental.manipulators/franka/pick_place.py",
             "--test",
         },
         {
-            "tests-nativepython-isaacsim.robot.manipulators.cobotta_900.follow_target_example",
-            "standalone_examples/api/isaacsim.robot.manipulators/cobotta_900/follow_target_example.py",
+            "tests-nativepython-isaacsim.robot.experimental.manipulators.franka.pick_place.ik_singular_value_decomposition",
+            "standalone_examples/api/isaacsim.robot.experimental.manipulators/franka/pick_place.py",
+            "--test --ik-method singular-value-decomposition",
+        },
+        {
+            "tests-nativepython-isaacsim.robot.experimental.manipulators.franka.stacking",
+            "standalone_examples/api/isaacsim.robot.experimental.manipulators/franka/stacking.py",
             "--test",
         },
         {
-            "tests-nativepython-isaacsim.robot.manipulators.cobotta_900.pick_up_example",
-            "standalone_examples/api/isaacsim.robot.manipulators/cobotta_900/pick_up_example.py",
+            "tests-nativepython-isaacsim.robot.experimental.manipulators.franka.multiple_tasks",
+            "standalone_examples/api/isaacsim.robot.experimental.manipulators/franka/multiple_tasks.py",
             "--test",
         },
         {
-            "tests-nativepython-isaacsim.robot.manipulators.cobotta_900.gripper_control",
-            "standalone_examples/api/isaacsim.robot.manipulators/cobotta_900/gripper_control.py",
+            "tests-nativepython-isaacsim.robot.experimental.manipulators.franka.follow_target_with_rmpflow",
+            "standalone_examples/api/isaacsim.robot.experimental.manipulators/franka/follow_target_with_rmpflow.py",
             "--test",
         },
         {
-            "tests-nativepython-isaacsim.robot.manipulators.franka_pick_up",
-            "standalone_examples/api/isaacsim.robot.manipulators/franka_pick_up.py",
+            "tests-nativepython-isaacsim.robot.experimental.manipulators.franka.follow_target_with_rmpflow.with_obstacle",
+            "standalone_examples/api/isaacsim.robot.experimental.manipulators/franka/follow_target_with_rmpflow.py",
+            "--test --with-obstacle",
+        },
+        {
+            "tests-nativepython-isaacsim.robot.experimental.manipulators.ur10.follow_target_with_ik",
+            "standalone_examples/api/isaacsim.robot.experimental.manipulators/universal_robots/follow_target_with_ik.py",
             "--test",
         },
         {
-            "tests-nativepython-isaacsim.robot.manipulators.ur10_pick_up",
-            "standalone_examples/api/isaacsim.robot.manipulators/ur10_pick_up.py",
+            "tests-nativepython-isaacsim.robot.experimental.manipulators.ur10.follow_target_with_ik.ik_singular_value_decomposition",
+            "standalone_examples/api/isaacsim.robot.experimental.manipulators/universal_robots/follow_target_with_ik.py",
+            "--test --ik-method singular-value-decomposition",
+        },
+        {
+            "tests-nativepython-isaacsim.robot.experimental.manipulators.ur10.follow_target_with_rmpflow",
+            "standalone_examples/api/isaacsim.robot.experimental.manipulators/universal_robots/follow_target_with_rmpflow.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.robot.experimental.manipulators.ur10.follow_target_with_rmpflow.with_obstacle",
+            "standalone_examples/api/isaacsim.robot.experimental.manipulators/universal_robots/follow_target_with_rmpflow.py",
+            "--test --with-obstacle",
+        },
+        {
+            "tests-nativepython-isaacsim.robot.experimental.manipulators.ur10.stacking",
+            "standalone_examples/api/isaacsim.robot.experimental.manipulators/universal_robots/stacking.py",
             "--test",
         },
         -- Wheeled Robots
@@ -584,7 +610,7 @@ end
 
 local function get_doc_snippets_tests()
     -- PYTHONPATH directories for robot_setup_tutorials/tutorial_pickplace_example tests
-    local pickplace_pythonpath = { "../../../source/standalone_examples/api/isaacsim.robot.manipulators/ur10e" }
+    local pickplace_pythonpath = { "../../../source/standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e" }
 
     return {
         -- assets

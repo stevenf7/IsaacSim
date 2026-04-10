@@ -27,8 +27,8 @@ Input Devices                  | Examples using different HIDs.
 - Kaya Gamepad                 | Connect to Gamepad using OmniGraph to control a Kaya robot.
 - Omnigraph Keyboard           | Connect to Keyboard using OmniGraph.
 Manipulation                   | Examples showing different manipulation tools in Isaac Sim.
-- Follow Target                | Example showing a FrankaPanda robot arm following a target and avoid obstacles using RMPFlow controllers.
-- Path Planning                | An extension version of the standalone example in :ref:`isaac_sim_app_tutorial_motion_generation_rrt` utilizing a FrankaPanda arm.
+- Follow Target                | Example showing a UR10 robot arm following a target and avoiding obstacles using RMPflow controllers.
+- Path Planning                | Franka robot planning collision-free paths using cuMotion's graph-based motion planner with wall obstacles.
 - Bin Filling                  | Example showing UR10 filling bins using suction grippers.
 - Replay Follow Target         | Example of saving and replaying joint trajectories using a FrankaPanda arm.
 - Surface Gripper              | See the :ref:`isaac_surface_grippers` docs for more details.
