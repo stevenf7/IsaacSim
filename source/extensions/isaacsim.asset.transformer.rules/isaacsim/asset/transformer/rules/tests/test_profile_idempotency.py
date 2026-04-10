@@ -141,7 +141,7 @@ class TestProfileIdempotency(omni.kit.test.AsyncTestCase):
         # -- Run 1: original asset -------------------------------------------
         out1 = self._tmpdir()
         report1 = AssetTransformerManager().run(
-            input_stage_path=_UR10E_SHOULDER_USD,
+            input_stage=_UR10E_SHOULDER_USD,
             profile=profile,
             package_root=out1,
         )
@@ -160,7 +160,7 @@ class TestProfileIdempotency(omni.kit.test.AsyncTestCase):
         # -- Run 2: re-transform run-1 output --------------------------------
         out2 = self._tmpdir()
         report2 = AssetTransformerManager().run(
-            input_stage_path=run1_output,
+            input_stage=run1_output,
             profile=profile,
             package_root=out2,
         )

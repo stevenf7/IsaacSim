@@ -19,9 +19,9 @@ import asyncio
 import gc
 import os
 import shutil
+import tempfile
 import unittest
 
-import carb
 import numpy as np
 
 # NOTE:
@@ -63,16 +63,16 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.importer.urdf")
         self._extension_path = ext_manager.get_extension_path(ext_id)
-        self.dest_path = os.path.normpath(os.path.abspath(os.path.join(self._extension_path, "_tests_out")))
+        self._tmpdir = tempfile.mkdtemp(prefix="urdf_test_")
+        self._success = False
         self.importer = URDFImporter()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
-        pass
 
     # After running each test
     async def tearDown(self) -> None:
-        """Wait for stage loading to complete after tests.
+        """Clean up test output and wait for stage unloading to complete.
 
         Example:
 
@@ -88,6 +88,10 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         # current stage (avoiding a SIGSEGV in UsdStage::~UsdStage).
         for _ in range(10):
             await omni.kit.app.get_app().next_update_async()
+        self._stage = None
+        gc.collect()
+        if self._success:
+            shutil.rmtree(self._tmpdir, ignore_errors=True)
 
     async def standard_checks(self, prim_path: str) -> None:
         """Validate standard properties of imported URDF prims.
@@ -122,7 +126,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
 
         Args:
             urdf_path: Absolute path to the URDF file.
-            usd_path: Output directory for generated USD assets. Defaults to URDF directory.
+            usd_path: Output directory for generated USD assets. Defaults to self._tmpdir.
             collision_from_visuals: Whether to generate collisions from visuals.
             collision_type: Collision geometry type.
             allow_self_collision: Whether to enable self-collision.
@@ -134,9 +138,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         """
         config = URDFImporterConfig()
         config.urdf_path = os.path.normpath(urdf_path)
-        config.usd_path = (
-            os.path.normpath(usd_path) if usd_path else os.path.normpath(os.path.dirname(config.urdf_path))
-        )
+        config.usd_path = os.path.normpath(usd_path) if usd_path else os.path.normpath(self._tmpdir)
         if collision_from_visuals is not None:
             config.collision_from_visuals = collision_from_visuals
         if collision_type is not None:
@@ -154,20 +156,6 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self._stage = omni.usd.get_context().get_stage()
         prim_path = f"/{os.path.splitext(os.path.basename(urdf_path))[0]}"
         return output_path, prim_path
-
-    def _delete_directory(self, path: str) -> None:
-        """Delete a directory and handle errors gracefully.
-
-        Args:
-            path: Directory path to remove.
-        """
-        normalized_path = os.path.normpath(path)
-        self._stage = None
-        gc.collect()
-        try:
-            shutil.rmtree(normalized_path)
-        except OSError as e:
-            carb.log_warn(f"Warning: {normalized_path} : {e.strerror}")
 
     # basic urdf test: joints and links are imported correctly
     async def test_urdf_basic(self) -> None:
@@ -220,9 +208,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self._timeline.stop()
 
         self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(self._stage), 1.0)
-        self._stage = None
-        self._delete_directory(os.path.dirname(path))
-        pass
+        self._success = True
 
     async def test_urdf_massless(self) -> None:
         """Import URDF with massless links and validate physics properties."""
@@ -259,9 +245,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(mass_collision_no_inertia.GetAttribute("physics:mass").Get(), 10.0)
 
         self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(self._stage), 1.0)
-
-        self._delete_directory(os.path.dirname(path))
-        pass
+        self._success = True
 
     async def test_urdf_save_to_file(self) -> None:
         """Import URDF and save to a specified file path."""
@@ -269,11 +253,9 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         urdf_path = os.path.normpath(
             os.path.abspath(os.path.join(self._extension_path, "data", "urdf", "tests", "test_basic.urdf"))
         )
-        dest_path = os.path.normpath(os.path.abspath(os.path.join(self.dest_path, "test_basic.usd")))
-        output_path, _ = self._import_urdf(urdf_path, usd_path=os.path.dirname(dest_path))
-        dest_path = output_path
+        output_path, _ = self._import_urdf(urdf_path, usd_path=self._tmpdir)
         await omni.kit.app.get_app().next_update_async()
-        self._stage = pxr.Usd.Stage.Open(dest_path)
+        self._stage = pxr.Usd.Stage.Open(output_path)
         prim = self._stage.GetPrimAtPath("/test_basic")
         prim.GetVariantSet("Physics").SetVariantSelection("physx")
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
@@ -298,10 +280,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(fingerLink.GetAttribute("physics:mass").Get(), 3)
 
         self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(self._stage), 1.0)
-        self._stage = None
-
-        self._delete_directory(os.path.dirname(output_path))
-        pass
+        self._success = True
 
     async def test_urdf_save_twice_to_file(self) -> None:
         """Import URDF twice to the same location and verify no conflicts."""
@@ -309,18 +288,13 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         urdf_path = os.path.normpath(
             os.path.abspath(os.path.join(self._extension_path, "data", "urdf", "tests", "test_basic.urdf"))
         )
-        dest_path = os.path.normpath(os.path.abspath(os.path.join(self.dest_path, "test_basic.usd")))
-        output_path, _ = self._import_urdf(urdf_path, usd_path=os.path.dirname(dest_path))
-        dest_path = output_path
+        output_path, _ = self._import_urdf(urdf_path, usd_path=self._tmpdir)
         await omni.kit.app.get_app().next_update_async()
-        stats = os.stat(dest_path)
-        output_path, _ = self._import_urdf(urdf_path, usd_path=os.path.dirname(dest_path))
-        dest_path = output_path
-        stats_2 = os.stat(dest_path)
+        stats = os.stat(output_path)
+        output_path, _ = self._import_urdf(urdf_path, usd_path=self._tmpdir)
+        stats_2 = os.stat(output_path)
         await omni.kit.app.get_app().next_update_async()
-
-        self._delete_directory(os.path.dirname(output_path))
-        pass
+        self._success = True
 
     async def test_urdf_textured_obj(self) -> None:
         """Import URDF with OBJ mesh textures and validate texture import."""
@@ -333,9 +307,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         result = omni.client.list(os.path.normpath(os.path.join(os.path.dirname(output_path), "Textures")))
         self.assertEqual(result[0], omni.client.Result.OK)
         self.assertEqual(len(result[1]), 2)  # Metallic texture is unsuported by assimp on OBJ
-
-        self._delete_directory(os.path.dirname(output_path))
-        pass
+        self._success = True
 
     async def test_urdf_textured_in_memory(self) -> None:
         """Import URDF with textures and validate in-memory processing."""
@@ -346,9 +318,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         urdf_path = os.path.normpath(os.path.join(base_path, f"{basename}.urdf"))
         output_path, _ = self._import_urdf(urdf_path)
         await omni.kit.app.get_app().next_update_async()
-
-        self._delete_directory(os.path.dirname(output_path))
-        pass
+        self._success = True
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "Skipped in ETM: Unknown reason for ETM failing to load DAE.")
     async def test_urdf_textured_dae(self) -> None:
@@ -356,23 +326,18 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
 
         base_path = os.path.normpath(os.path.join(self._extension_path, "data", "urdf", "tests", "test_textures_urdf"))
         basename = "cube_dae"
-        dest_path = os.path.normpath(os.path.join(self.dest_path, basename))
-        mats_path = os.path.normpath(os.path.join(self.dest_path, basename, "Textures"))
-        omni.client.create_folder(os.path.normpath(os.path.join(self.dest_path, basename)))
+        mats_path = os.path.normpath(os.path.join(self._tmpdir, basename, "Textures"))
+        omni.client.create_folder(os.path.normpath(os.path.join(self._tmpdir, basename)))
         omni.client.create_folder(mats_path)
 
         urdf_path = os.path.normpath(os.path.join(base_path, f"{basename}.urdf"))
-        output_path, _ = self._import_urdf(urdf_path, usd_path=os.path.dirname(dest_path))
-        dest_path = output_path
+        output_path, _ = self._import_urdf(urdf_path, usd_path=self._tmpdir)
 
         await omni.kit.app.get_app().next_update_async()
         result = omni.client.list(mats_path)
         self.assertEqual(result[0], omni.client.Result.OK)
         self.assertEqual(len(result[1]), 1)  # only albedo is supported for Collada
-
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
-        pass
+        self._success = True
 
     async def test_urdf_overwrite_file(self) -> None:
         """Import URDF twice to overwrite existing file and validate results."""
@@ -380,17 +345,12 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         urdf_path = os.path.normpath(
             os.path.abspath(os.path.join(self._extension_path, "data", "urdf", "tests", "test_basic.urdf"))
         )
-        dest_path = os.path.normpath(
-            os.path.abspath(os.path.join(self._extension_path, "data", "urdf", "tests", "_tests_out", "test_basic.usd"))
-        )
-        output_path, _ = self._import_urdf(urdf_path, usd_path=os.path.dirname(dest_path))
-        dest_path = output_path
+        output_path, _ = self._import_urdf(urdf_path, usd_path=self._tmpdir)
         await omni.kit.app.get_app().next_update_async()
-        output_path, _ = self._import_urdf(urdf_path, usd_path=os.path.dirname(dest_path))
-        dest_path = output_path
+        output_path, _ = self._import_urdf(urdf_path, usd_path=self._tmpdir)
         await omni.kit.app.get_app().next_update_async()
 
-        self._stage = pxr.Usd.Stage.Open(dest_path)
+        self._stage = pxr.Usd.Stage.Open(output_path)
         prim = self._stage.GetPrimAtPath("/test_basic")
         prim.GetVariantSet("Physics").SetVariantSelection("physx")
         self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
@@ -421,11 +381,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         # nothing crashes
         self._timeline.stop()
         self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(self._stage), 1.0)
-        self._stage = None
-        gc.collect()
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
-        pass
+        self._success = True
 
     # advanced urdf test: test for all the categories of inputs that an urdf can hold
     async def test_urdf_advanced(self) -> None:
@@ -464,9 +420,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         await asyncio.sleep(1.0)
         # nothing crashes
         self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
-        pass
+        self._success = True
 
     async def test_urdf_mtl(self) -> None:
         """Import URDF with MTL material files and validate material binding."""
@@ -474,17 +428,14 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         urdf_path = os.path.normpath(
             os.path.abspath(os.path.join(self._extension_path, "data", "urdf", "tests", "test_mtl.urdf"))
         )
-        usd_path = os.path.normpath(os.path.abspath(os.path.join(self._extension_path, "test_output")))
-        output_path, _ = self._import_urdf(urdf_path, usd_path=usd_path)
+        output_path, _ = self._import_urdf(urdf_path, usd_path=self._tmpdir)
         self._stage = omni.usd.get_context().get_stage()
 
         mesh = self._stage.GetPrimAtPath("/test_mtl/Geometry/cube/test_mtl")
         self.assertTrue(UsdShade.MaterialBindingAPI(mesh) is not None)
         mat, rel = UsdShade.MaterialBindingAPI(mesh).ComputeBoundMaterial()
         self.assertTrue(Gf.IsClose(mat.GetInput("diffuseColor").Get(), Gf.Vec3f(0.60383, 0.0, 0.0), 1e-5))
-
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
+        self._success = True
 
     async def test_urdf_material(self):
         """Import URDF with material and validate material binding."""
@@ -497,9 +448,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self.assertTrue(UsdShade.MaterialBindingAPI(mesh) is not None)
         mat, rel = UsdShade.MaterialBindingAPI(mesh).ComputeBoundMaterial()
         self.assertTrue(Gf.IsClose(mat.GetInput("diffuseColor").Get(), Gf.Vec3f(1.0, 0.0, 0.0), 1e-5))
-
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
+        self._success = True
 
     async def test_urdf_mtl_stl(self) -> None:
         """Import URDF with STL meshes and MTL materials and validate material binding."""
@@ -507,17 +456,14 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         urdf_path = os.path.normpath(
             os.path.abspath(os.path.join(self._extension_path, "data", "urdf", "tests", "test_mtl_stl.urdf"))
         )
-        usd_path = os.path.normpath(os.path.abspath(os.path.join(self._extension_path, "test_output")))
-        output_path, _ = self._import_urdf(urdf_path, usd_path=usd_path)
+        output_path, _ = self._import_urdf(urdf_path, usd_path=self._tmpdir)
         self._stage = omni.usd.get_context().get_stage()
 
         mesh = self._stage.GetPrimAtPath("/test_mtl_stl/Geometry/cube/cube")
         self.assertTrue(UsdShade.MaterialBindingAPI(mesh) is not None)
         mat, rel = UsdShade.MaterialBindingAPI(mesh).ComputeBoundMaterial()
         self.assertTrue(Gf.IsClose(mat.GetInput("diffuseColor").Get(), Gf.Vec3f(0.60383, 0.0, 0.0), 1e-5))
-
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
+        self._success = True
 
     async def test_urdf_carter(self) -> None:
         """Import Carter robot URDF and validate basic structure."""
@@ -531,7 +477,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self.assertTrue(prim_path, "/carter")
         # TODO add checks here
         await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
+        self._success = True
 
     async def test_urdf_parse_mimic(self):
         """Test urdf parse mimic."""
@@ -572,6 +518,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         ref_joint_targets = z_mimic_api.GetReferenceJointRel().GetTargets()
         self.assertEqual(len(ref_joint_targets), 1)
         self.assertEqual(ref_joint_targets[0], source_joint.GetPath())
+        self._success = True
 
     async def test_urdf_franka(self) -> None:
         """Import Franka robot URDF and validate mesh geometry."""
@@ -592,7 +539,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         output_path, prim_path = self._import_urdf(urdf_path)
         await self.standard_checks(prim_path)
         await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
+        self._success = True
 
     async def test_urdf_ur10(self) -> None:
         """Import UR10 robot URDF and validate mesh geometry."""
@@ -603,7 +550,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         output_path, prim_path = self._import_urdf(urdf_path)
         await self.standard_checks(prim_path)
         await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
+        self._success = True
 
     async def test_urdf_kaya(self) -> None:
         """Import Kaya robot URDF and validate mesh geometry."""
@@ -614,7 +561,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         output_path, prim_path = self._import_urdf(urdf_path)
         await self.standard_checks(prim_path)
         await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
+        self._success = True
 
     async def test_missing(self) -> None:
         """Import URDF with missing mesh files and validate error handling."""
@@ -624,7 +571,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         )
         output_path, _ = self._import_urdf(urdf_path)
         await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
+        self._success = True
 
     # This sample corresponds to the example in the docs, keep this and the version in the docs in sync
     async def test_doc_sample(self) -> None:
@@ -678,9 +625,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         # In this case because we want to do velocity control this should be set to zero
         left_wheel_drive.GetStiffnessAttr().Set(0)
         right_wheel_drive.GetStiffnessAttr().Set(0)
-
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
+        self._success = True
 
     # Make sure that a urdf with more than 63 links imports
     async def test_64(self) -> None:
@@ -693,7 +638,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         prim = self._stage.GetPrimAtPath("/test_large")
         self.assertTrue(prim)
         await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
+        self._success = True
 
     # basic urdf test: joints and links are imported correctly
     async def test_urdf_floating(self) -> None:
@@ -731,9 +676,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         await asyncio.sleep(1.0)
         # nothing crashes
         self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
-        pass
+        self._success = True
 
     async def test_urdf_scale(self) -> None:
         """Import URDF and validate stage units and scaling."""
@@ -755,9 +698,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self._timeline.stop()
 
         self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(self._stage), 1.0)
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
-        pass
+        self._success = True
 
     async def test_urdf_drive_none(self) -> None:
         """Import URDF and validate joint drive API presence for appropriate joints."""
@@ -781,9 +722,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         await asyncio.sleep(1.0)
         # nothing crashes
         self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
-        pass
+        self._success = True
 
     async def test_urdf_usd(self) -> None:
         """Import URDF referencing USD geometry and validate USD prim import."""
@@ -803,10 +742,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         await asyncio.sleep(1.0)
         # nothing crashes
         self._timeline.stop()
-
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
-        pass
+        self._success = True
 
     # test negative joint limits
     async def test_urdf_limits(self) -> None:
@@ -855,9 +791,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         await asyncio.sleep(1.0)
         # nothing crashes
         self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
-        pass
+        self._success = True
 
     # test collision from visuals
     async def test_collision_from_visuals(self) -> None:
@@ -896,10 +830,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         # nothing crashes
         self._timeline.stop()
-
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
-        pass
+        self._success = True
 
     async def test_debug_mode(self) -> None:
         """Import with debug mode enabled and validate results.
@@ -921,8 +852,4 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self.assertTrue(os.path.exists(temp_usd_path), f"Temp USD file not found: {temp_usd_path}")
         self.assertTrue(os.path.exists(usdex_usd_path), f"USDEx USD file not found: {usdex_usd_path}")
         self.assertTrue(os.path.exists(output_path), f"Output path not found: {output_path}")
-
-        await omni.kit.app.get_app().next_update_async()
-        self._delete_directory(os.path.dirname(output_path))
-        self._delete_directory(os.path.dirname(temp_usd_path))
-        self._delete_directory(os.path.dirname(usdex_usd_path))
+        self._success = True

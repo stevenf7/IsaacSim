@@ -219,7 +219,7 @@ def run_asset_transformer_profile(
 
     manager = AssetTransformerManager()
     report = manager.run(
-        input_stage_path=input_stage_path,
+        input_stage=input_stage_path,
         profile=profile,
         package_root=output_package_root,
     )

@@ -25,7 +25,7 @@ import omni.kit.app
 import omni.kit.test
 import omni.usd
 import usd.schema.isaac as isaac_schema
-from pxr import Gf, Sdf, UsdGeom, UsdPhysics
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
 from usd.schema.isaac import robot_schema
 from usd.schema.isaac.robot_schema import utils as robot_utils
 
@@ -57,7 +57,7 @@ class TestRobotSchemaUtils(omni.kit.test.AsyncTestCase):
 
         return robot_prim, link_prim, joint
 
-    def _apply_limit(self, joint_prim, axis_token, low=-1.0, high=1.0) -> None:
+    def _apply_limit(self, joint_prim: Usd.Prim, axis_token: str, low: float = -1.0, high: float = 1.0) -> None:
         limit_api = UsdPhysics.LimitAPI.Apply(joint_prim, axis_token)
         limit_api.CreateLowAttr().Set(low)
         limit_api.CreateHighAttr().Set(high)
@@ -357,7 +357,7 @@ class TestValidateAndRebuild(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
 
-    def _create_robot_with_joint(self):
+    def _create_robot_with_joint(self) -> tuple[UsdGeom.Xform, UsdGeom.Xform, UsdPhysics.Joint]:
         robot_prim = UsdGeom.Xform.Define(self._stage, "/World/Robot")
         UsdPhysics.RigidBodyAPI.Apply(robot_prim.GetPrim())
         UsdPhysics.ArticulationRootAPI.Apply(robot_prim.GetPrim())
@@ -448,7 +448,7 @@ class TestPopulateWithSites(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
 
-    def _build_robot_with_site(self):
+    def _build_robot_with_site(self) -> tuple[Usd.Prim, Usd.Prim]:
         robot = UsdGeom.Xform.Define(self._stage, "/World/Robot")
         UsdPhysics.RigidBodyAPI.Apply(robot.GetPrim())
         UsdPhysics.ArticulationRootAPI.Apply(robot.GetPrim())
@@ -500,7 +500,7 @@ class TestRecalculateRobotSchema(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
 
-    def _create_robot_with_joint(self):
+    def _create_robot_with_joint(self) -> tuple[UsdGeom.Xform, UsdGeom.Xform, UsdPhysics.Joint]:
         robot_prim = UsdGeom.Xform.Define(self._stage, "/World/Robot")
         UsdPhysics.RigidBodyAPI.Apply(robot_prim.GetPrim())
         UsdPhysics.ArticulationRootAPI.Apply(robot_prim.GetPrim())
@@ -578,7 +578,7 @@ class TestDetectAndApplySites(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
 
-    def _create_robot_with_link_and_site_candidate(self):
+    def _create_robot_with_link_and_site_candidate(self) -> tuple[Usd.Prim, Usd.Prim]:
         robot = UsdGeom.Xform.Define(self._stage, "/World/Robot")
         UsdPhysics.RigidBodyAPI.Apply(robot.GetPrim())
         UsdPhysics.ArticulationRootAPI.Apply(robot.GetPrim())
@@ -618,11 +618,12 @@ class TestDetectAndApplySites(omni.kit.test.AsyncTestCase):
         self.assertEqual(len(all_sites), 0)
         self.assertEqual(len(sites_by_parent), 0)
 
-    def _create_robot_with_two_links_and_sites(self):
+    def _create_robot_with_two_links_and_sites(self) -> Usd.Prim:
         """Build a robot with two links each having a site candidate child.
 
         Returns:
             The robot prim with applied RobotAPI.
+
         """
         robot = UsdGeom.Xform.Define(self._stage, "/World/Robot2")
         UsdPhysics.RigidBodyAPI.Apply(robot.GetPrim())

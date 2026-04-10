@@ -84,6 +84,7 @@ class TestVariantRoutingRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             Absolute path to the variant set output directory.
+
         """
         return os.path.join(self._tmpdir, "payloads", sanitize_prim_name(variant_set_name))
 
@@ -96,6 +97,7 @@ class TestVariantRoutingRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             Absolute path to the variant USDA file.
+
         """
         variant_file = f"{sanitize_prim_name(variant_name).lower()}.usda"
         return os.path.join(self._variant_set_dir(variant_set_name), variant_file)
@@ -108,6 +110,7 @@ class TestVariantRoutingRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             List of asset paths referenced by the layer.
+
         """
         layer = Sdf.Layer.FindOrOpen(layer_path)
         self.assertIsNotNone(layer)
@@ -118,6 +121,7 @@ class TestVariantRoutingRule(omni.kit.test.AsyncTestCase):
 
         Args:
             layer_path: Path to the variant layer file.
+
         """
         layer_dir = os.path.dirname(layer_path)
         for asset_path in self._layer_asset_paths(layer_path):

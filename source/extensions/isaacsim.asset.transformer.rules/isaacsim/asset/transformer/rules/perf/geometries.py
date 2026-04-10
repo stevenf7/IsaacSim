@@ -74,6 +74,7 @@ class GeometrySource:
         source_layer_id: Identifier of the source layer.
         geometry_hash: Hash of the geometry content.
         type_name: USD type name of the prim.
+
     """
 
     prim_path: str
@@ -93,6 +94,7 @@ class GeometryEntry:
         type_name: USD type name of the geometry prim.
         sources: Source prims that contributed to this geometry.
         existing: Whether the geometry already existed in the layer.
+
     """
 
     name: str
@@ -113,6 +115,7 @@ class InstanceEntry:
         geometry_entry: Geometry entry referenced by the instance.
         delta_hash: Hash of instance-specific deltas.
         sources: Source prims that contributed to this instance.
+
     """
 
     name: str
@@ -146,6 +149,7 @@ class GeometriesRoutingRule(RuleInterface):
         .. code-block:: python
 
             params = rule.get_configuration_parameters()
+
         """
         return [
             RuleConfigurationParam(
@@ -214,6 +218,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             True if the property is intrinsic to the geometry type.
+
         """
         if prop_name in _INSTANCE_SPECIFIC_PROPERTIES:
             return False
@@ -246,6 +251,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             True if the property is an xformOp or xformOpOrder.
+
         """
         return prop_name.startswith("xformOp:") or prop_name == "xformOpOrder"
 
@@ -257,6 +263,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             Formatted log string describing translation and rotation.
+
         """
         translate = Gf.Vec3d(matrix.ExtractTranslation())
         rotation = matrix.ExtractRotation()
@@ -275,6 +282,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             Formatted log string describing the rotation.
+
         """
         rotation = Gf.Rotation(quat)
         # Decompose to axis-angle first
@@ -299,6 +307,7 @@ class GeometriesRoutingRule(RuleInterface):
             - translate: Gf.Vec3d translation
             - orient: Gf.Quatd rotation quaternion
             - scale: Gf.Vec3d scale factors
+
         """
         # Extract translation
         translate = Gf.Vec3d(transform.ExtractTranslation())
@@ -378,6 +387,7 @@ class GeometriesRoutingRule(RuleInterface):
         Args:
             xformable: Xformable prim to inspect.
             context: Label to include in log output.
+
         """
         if not getattr(self, "_verbose", False):
             return
@@ -413,6 +423,7 @@ class GeometriesRoutingRule(RuleInterface):
         Returns:
             Tuple of (translate, orient, scale) if transform is non-identity,
             None if identity or prim is invalid.
+
         """
         mesh_prim = self.source_stage.GetPrimAtPath(prim_path)
         if not mesh_prim.IsValid():
@@ -488,6 +499,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             True if the transform is approximately identity within tolerance.
+
         """
         identity = Gf.Matrix4d(1.0)
         tolerance = 10 ** (-_TRANSFORM_HASH_PRECISION)
@@ -511,6 +523,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             True if the parent can absorb the geometry reference directly.
+
         """
         prim = self.source_stage.GetPrimAtPath(prim_path)
         if not prim.IsValid():
@@ -541,6 +554,12 @@ class GeometriesRoutingRule(RuleInterface):
     def _is_subtree_empty(prim: Usd.Prim) -> bool:
         """True when *prim* and all its descendants have no authored properties.
 
+        A prim is considered non-empty if it has any of:
+        - Authored properties (attributes or relationships)
+        - Composition arcs in any layer of its prim stack (references, payloads,
+          inherits, specializes). This catches prims that have been processed by a
+          previous geometry routing pass and carry references but no properties.
+
         Args:
             prim: The USD prim to check.
 
@@ -549,6 +568,25 @@ class GeometriesRoutingRule(RuleInterface):
         """
         if prim.GetAuthoredProperties():
             return False
+
+        # Check for composition arcs across all layers in the prim stack.
+        # A prim with a reference or payload is NOT empty even if it has no
+        # authored properties — it brings in content via the arc.
+        for spec in prim.GetPrimStack():
+            if (
+                spec.referenceList.GetAddedOrExplicitItems()
+                or list(spec.referenceList.prependedItems)
+                or list(spec.referenceList.appendedItems)
+                or spec.payloadList.GetAddedOrExplicitItems()
+                or list(spec.payloadList.prependedItems)
+                or list(spec.payloadList.appendedItems)
+                or list(spec.inheritPathList.prependedItems)
+                or list(spec.inheritPathList.appendedItems)
+                or list(spec.specializesList.prependedItems)
+                or list(spec.specializesList.appendedItems)
+            ):
+                return False
+
         return all(GeometriesRoutingRule._is_subtree_empty(c) for c in prim.GetChildren())
 
     def _get_combined_parent_child_transform(
@@ -572,6 +610,7 @@ class GeometriesRoutingRule(RuleInterface):
         Returns:
             Tuple of (translate, orient, scale) for the combined transform,
             or None if both transforms are identity.
+
         """
         prim = self.source_stage.GetPrimAtPath(prim_path)
         if not prim.IsValid():
@@ -696,6 +735,7 @@ class GeometriesRoutingRule(RuleInterface):
             translate: Translation vector.
             orient: Orientation quaternion.
             scale: Scale vector.
+
         """
         q = self._quantize_double
         orient = self._canonicalize_quat(orient)
@@ -731,6 +771,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             List of material paths.
+
         """
         paths: list[Sdf.Path] = []
         if not prim.HasAPI(UsdShade.MaterialBindingAPI):
@@ -756,6 +797,7 @@ class GeometriesRoutingRule(RuleInterface):
         Args:
             subset_spec: The GeomSubset prim spec to clean.
             subset_prim: The corresponding composed prim (for intrinsic attr lookup).
+
         """
         # Get intrinsic properties for GeomSubset
         intrinsic_props = self._get_intrinsic_attributes(subset_prim)
@@ -794,6 +836,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             True if the copy succeeded, False otherwise.
+
         """
         if not src_prim.IsValid() or not src_prim.IsA(UsdGeom.Subset):
             return False
@@ -851,6 +894,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             True if any deltas were copied, False otherwise.
+
         """
         if not src_prim.IsValid():
             return False
@@ -951,6 +995,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             True if the attribute was copied successfully, False otherwise.
+
         """
         try:
             attr_spec = Sdf.AttributeSpec(prim_spec, attr.GetName(), attr.GetTypeName())
@@ -971,6 +1016,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Args:
             layer: The layer to process.
+
         """
         # Collect all prim paths using Traverse callback
         prim_paths = []
@@ -1029,6 +1075,7 @@ class GeometriesRoutingRule(RuleInterface):
 
             Returns:
                 Tuple of (deleted_overrides_count, cleared_instanceable_count).
+
             """
             nonlocal source_layer
             deleted = 0
@@ -1109,6 +1156,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             The number of child override specs deleted.
+
         """
         deleted_count = 0
         children_to_delete: list[str] = []
@@ -1151,6 +1199,7 @@ class GeometriesRoutingRule(RuleInterface):
         .. code-block:: python
 
             output_stage = rule.process_rule()
+
         """
         params = self.args.get("params", {}) or {}
         scope = params.get("scope") or "/"
@@ -1489,6 +1538,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             The path to the exported .usda file, or None if already in .usda format.
+
         """
         source_layer = self.source_stage.GetRootLayer()
         original_path = source_layer.realPath
@@ -1528,6 +1578,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             List of GeometrySource objects describing each geometry usage.
+
         """
         geometry_sources = []
         root_prim = self.source_stage.GetPseudoRoot()
@@ -1570,6 +1621,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             Dictionary mapping geometry hashes to GeometryEntry objects for existing geometries.
+
         """
         existing: dict[str, GeometryEntry] = {}
 
@@ -1622,6 +1674,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             A sanitized name suitable for use in the geometries layer.
+
         """
         name = prim.GetName()
         # Sanitize name for use in prim paths
@@ -1641,6 +1694,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             A hex string hash representing the geometry's intrinsic content.
+
         """
         hasher = hashlib.sha256()
 
@@ -1675,6 +1729,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             A hex string hash representing the instance's delta content.
+
         """
         hasher = hashlib.sha256()
 
@@ -1742,6 +1797,7 @@ class GeometriesRoutingRule(RuleInterface):
             prim: The source geometry prim.
             entry: The GeometryEntry describing where to store it.
             geom_stage: The geometries stage to copy to.
+
         """
         src_layer = self.source_stage.GetRootLayer()
         dst_layer = geom_stage.GetRootLayer()
@@ -1849,6 +1905,7 @@ class GeometriesRoutingRule(RuleInterface):
             src_prim: Source prim to copy attributes from.
             dst_prim: Destination prim to copy attributes to.
             include_all: If True, copy all attributes. If False, only copy intrinsic properties.
+
         """
         intrinsic_props = self._get_intrinsic_attributes(src_prim)
 
@@ -1898,6 +1955,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             True if the copy succeeded, False otherwise.
+
         """
         if not src_prim.IsValid():
             return False
@@ -2014,6 +2072,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             True if the copy succeeded, False otherwise.
+
         """
         if not src_prim or not src_prim.IsValid():
             # If no source prim, just create an Xform
@@ -2136,6 +2195,7 @@ class GeometriesRoutingRule(RuleInterface):
             src_prim: The source prim from composed stage whose children to process.
             inst_prim_path: The path in the instances layer.
             inst_layer: The instances layer.
+
         """
         for src_child in src_prim.GetChildren():
             child_name = src_child.GetName()
@@ -2169,6 +2229,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             True if the copy succeeded, False otherwise.
+
         """
         if not src_prim.IsValid():
             return False
@@ -2179,7 +2240,9 @@ class GeometriesRoutingRule(RuleInterface):
             return False
 
         prim_spec.specifier = Sdf.SpecifierDef
-        prim_spec.typeName = src_prim.GetTypeName()
+        type_name = src_prim.GetTypeName()
+        if type_name:  # Only set non-empty type names; empty causes USD error
+            prim_spec.typeName = type_name
 
         # Copy applied API schemas
         applied_schemas = src_prim.GetAppliedSchemas()
@@ -2255,6 +2318,7 @@ class GeometriesRoutingRule(RuleInterface):
             geometries_layer_abs_path: Absolute path to the geometries layer file.
             inst_stage: The instances stage to create the instance in.
             template_prim: The source prim to copy delta attributes from.
+
         """
         inst_layer = inst_stage.GetRootLayer()
         geom_entry = instance_entry.geometry_entry
@@ -2281,6 +2345,29 @@ class GeometriesRoutingRule(RuleInterface):
         child_prim_spec = inst_layer.GetPrimAtPath(child_mesh_path)
         if child_prim_spec:
             utils.clear_composition_arcs(child_prim_spec)
+
+        # Propagate purpose=guide from parent Xform to the child mesh prim in the instances layer.
+        # In USD, purpose inheritance does not cross instanceable prim boundaries, so if the
+        # parent Xform (e.g. collisions/base) carried purpose=guide, that attribute must be
+        # authored directly on the prototype mesh prim inside the instances layer so the
+        # composed prototype renders with the correct (hidden) purpose.
+        parent_prim = template_prim.GetParent()
+        if parent_prim and parent_prim.IsValid():
+            parent_purpose_attr = parent_prim.GetAttribute("purpose")
+            if parent_purpose_attr.IsValid() and parent_purpose_attr.Get() == "guide":
+                if child_prim_spec:
+                    purpose_attr_spec = Sdf.AttributeSpec(
+                        child_prim_spec,
+                        "purpose",
+                        Sdf.ValueTypeNames.Token,
+                        Sdf.VariabilityUniform,
+                    )
+                    if purpose_attr_spec:
+                        purpose_attr_spec.default = "guide"
+                self.log_operation(
+                    f"Propagated purpose=guide from parent {parent_prim.GetPath()} "
+                    f"to prototype mesh {child_mesh_path}"
+                )
 
         # Create the parent Xform prim that references the geometry wrapper
         parent_prim_spec = utils.create_prim_spec(inst_layer, instance_path, type_name=_XFORM_TYPE_NAME)
@@ -2312,6 +2399,7 @@ class GeometriesRoutingRule(RuleInterface):
             src_prim: The source prim to get material bindings from.
             prim_path: The path of the prim in the instances layer.
             inst_stage: The instances stage to create material references in.
+
         """
         inst_layer = inst_stage.GetRootLayer()
         src_layer = self.source_stage.GetRootLayer()
@@ -2398,6 +2486,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             Dictionary mapping original material path -> copied material path in source.
+
         """
         src_layer = self.source_stage.GetRootLayer()
         default_prim = self.source_stage.GetDefaultPrim()
@@ -2524,6 +2613,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             SHA256 hash string representing the material's properties.
+
         """
         hasher = hashlib.sha256()
 
@@ -2590,6 +2680,7 @@ class GeometriesRoutingRule(RuleInterface):
             materials_scope_path: The path to the VisualMaterials scope.
             all_materials: Dictionary to populate with orig_path -> local_path mappings.
             prim_bindings: Dictionary to populate with inst_prim_path -> bindings list.
+
         """
         bindings_list: list[tuple[str, str]] = []
 
@@ -2647,6 +2738,7 @@ class GeometriesRoutingRule(RuleInterface):
             deduplicate: Whether deduplication is enabled. When False, source prims
                 whose names don't match their geometry entry are renamed so the
                 base layer hierarchy matches the geometry/instance naming.
+
         """
         if instance_remap is None:
             instance_remap = {}
@@ -2879,6 +2971,7 @@ class GeometriesRoutingRule(RuleInterface):
 
             Returns:
                 True if the item references a flattened prototype.
+
             """
             # References and payloads have primPath attribute
             if hasattr(item, "primPath") and item.primPath:
@@ -2896,6 +2989,7 @@ class GeometriesRoutingRule(RuleInterface):
 
             Returns:
                 Number of removed entries.
+
             """
             count = 0
             # All ListOp sublist accessors
@@ -3019,6 +3113,7 @@ class GeometriesRoutingRule(RuleInterface):
             instances_layer: The instances layer to update.
             old_source_path: The original source file path.
             new_source_path: The new source file path after conversion.
+
         """
         # Compute old and new relative paths from instances layer perspective
         old_rel_path = utils.get_relative_layer_path(instances_layer, old_source_path)
@@ -3075,6 +3170,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Args:
             instances_layer: The instances layer to finalize.
+
         """
         # Collect all prim paths using Traverse callback
         prim_paths: list[Sdf.Path] = []
@@ -3143,6 +3239,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             True if all xformOps resolve to identity after normalization.
+
         """
         tolerance = 10 ** (-_TRANSFORM_HASH_PRECISION)
         all_identity = True
@@ -3177,6 +3274,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             Tuple of (normalized_value, is_identity).
+
         """
         # Determine the op type from the attribute name
         # Format: xformOp:<opType> or xformOp:<opType>:<suffix>
@@ -3279,6 +3377,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             Dictionary mapping deleted instance paths to their replacement (kept) instance paths.
+
         """
         # Collect all instance root prims in /Instances scope
         instances_scope_spec = instances_layer.GetPrimAtPath(_INSTANCES_SCOPE_PATH)
@@ -3339,6 +3438,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             SHA256 hash string representing the instance's content.
+
         """
         hasher = hashlib.sha256()
         instance_sdf_path = Sdf.Path(instance_path)
@@ -3352,6 +3452,7 @@ class GeometriesRoutingRule(RuleInterface):
 
             Returns:
                 String representation suitable for hash input.
+
             """
             if isinstance(value, (Gf.Vec3d, Gf.Vec3f)):
                 return f"({round(value[0], precision)},{round(value[1], precision)},{round(value[2], precision)})"
@@ -3452,6 +3553,7 @@ class GeometriesRoutingRule(RuleInterface):
         Args:
             stage: The stage to create the hierarchy in.
             prim_path: The full prim path whose parents need to exist.
+
         """
         path = Sdf.Path(prim_path)
         parent_path = path.GetParentPath()
@@ -3470,6 +3572,7 @@ class GeometriesRoutingRule(RuleInterface):
         Args:
             layer: The layer to create/update the hierarchy in.
             prim_path: The full prim path whose parents need to be defined.
+
         """
         path = Sdf.Path(prim_path)
         parent_path = path.GetParentPath()
@@ -3503,6 +3606,7 @@ class GeometriesRoutingRule(RuleInterface):
 
         Returns:
             Frozenset of attribute names that are intrinsic to this geometry type.
+
         """
         type_name = prim.GetTypeName()
         if not type_name:

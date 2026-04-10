@@ -19,6 +19,7 @@ import asyncio
 import gc
 import os
 import shutil
+import tempfile
 
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -60,6 +61,7 @@ class TestURDFCommands(omni.kit.test.AsyncTestCase):
         self._urdf_path = os.path.join(
             self._urdf_extension_path, "data", "urdf", "robots", "carter", "urdf", "carter.urdf"
         )
+        self._tmpdir = tempfile.mkdtemp(prefix="urdf_cmd_test_")
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
@@ -78,6 +80,9 @@ class TestURDFCommands(omni.kit.test.AsyncTestCase):
             carb.log_info("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
+        self._stage = None
+        gc.collect()
+        shutil.rmtree(self._tmpdir, ignore_errors=True)
 
     def test_urdf_create_import_config(self) -> None:
         """Test URDFCreateImportConfig command execution.
@@ -126,6 +131,7 @@ class TestURDFCommands(omni.kit.test.AsyncTestCase):
             True
         """
         config = URDFImporterConfig(urdf_path=self._urdf_path)
+        config.usd_path = self._tmpdir
         status, output_path = omni.kit.commands.execute(
             "URDFImportRobot",
             urdf_path=self._urdf_path,
@@ -147,11 +153,3 @@ class TestURDFCommands(omni.kit.test.AsyncTestCase):
         prim = self._stage.GetDefaultPrim()
         self.assertIsNotNone(prim)
         self.assertEqual(prim.GetName(), "carter")
-
-        # Clean up
-        self._stage = None
-        gc.collect()
-        try:
-            shutil.rmtree(os.path.dirname(output_path))
-        except OSError as e:
-            carb.log_warn(f"Warning: {os.path.dirname(output_path)}: {e.strerror}")

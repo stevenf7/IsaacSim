@@ -55,6 +55,7 @@ class TestRemoveSchemaRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             Configured rule instance.
+
         """
         return RemoveSchemaRule(
             source_stage=stage,

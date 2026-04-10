@@ -28,9 +28,9 @@ class Extension(omni.ext.IExt):
 
         Args:
             ext_id: Fully qualified extension identifier.
+
         """
         self._ext_id = ext_id
-        # Initialize the singleton rule registry so other modules can register rules.
         self._registry = RuleRegistry()
 
     def on_shutdown(self) -> None:

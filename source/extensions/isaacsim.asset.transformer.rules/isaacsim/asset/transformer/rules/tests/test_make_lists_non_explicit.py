@@ -36,6 +36,7 @@ def _matches_any(name: str, patterns: list[str]) -> bool:
 
     Returns:
         True if name matches any pattern, False otherwise.
+
     """
     return matches_any_pattern(name, compile_patterns(patterns))
 
@@ -58,6 +59,7 @@ class TestMakeListsNonExplicitRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             Absolute path to the copied test asset.
+
         """
         temp_asset = os.path.join(self._tmpdir, "test_advanced.usda")
         shutil.copy(_TEST_ADVANCED_USD, temp_asset)
@@ -76,6 +78,7 @@ class TestMakeListsNonExplicitRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             Tuple of (prim_path, metadata_key, explicit_items) or None if not found.
+
         """
         layer = stage.GetRootLayer()
         for prim in Usd.PrimRange(stage.GetPseudoRoot()):
@@ -106,6 +109,7 @@ class TestMakeListsNonExplicitRule(omni.kit.test.AsyncTestCase):
 
         Returns:
             Tuple of (prim_path, property_name, explicit_items) or None if not found.
+
         """
         layer = stage.GetRootLayer()
         for prim in Usd.PrimRange(stage.GetPseudoRoot()):

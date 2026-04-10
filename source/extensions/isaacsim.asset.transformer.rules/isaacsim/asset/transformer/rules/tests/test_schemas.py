@@ -38,6 +38,7 @@ def get_all_schema_items(api_schemas: Sdf.TokenListOp | None) -> list[object]:
 
     Returns:
         List of all schema items across the list op sublists.
+
     """
     if not api_schemas:
         return []

@@ -85,6 +85,7 @@ class MaterialSource:
         defining_layer_id: Identifier of the defining layer.
         defining_prim_path: Prim path within the defining layer.
         material_hash: Hash of the material content.
+
     """
 
     prim_path: str
@@ -103,6 +104,7 @@ class MaterialEntry:
         sources: Source prims that contributed to this material.
         existing: Whether the material already existed in the layer.
         asset_paths: Asset paths used by the material.
+
     """
 
     name: str
@@ -120,6 +122,7 @@ class MaterialBinding:
         prim_path: Path of the bound prim.
         material_path: Path to the material prim.
         purpose: Binding purpose name.
+
     """
 
     prim_path: str
@@ -149,6 +152,7 @@ class MaterialsRoutingRule(RuleInterface):
         .. code-block:: python
 
             params = rule.get_configuration_parameters()
+
         """
         return [
             RuleConfigurationParam(
@@ -211,6 +215,7 @@ class MaterialsRoutingRule(RuleInterface):
         .. code-block:: python
 
             rule.process_rule()
+
         """
         params = self.args.get("params", {}) or {}
         scope = params.get("scope") or "/"
@@ -410,6 +415,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             Tuple of (layer_identifier, prim_path_in_layer).
+
         """
         prim_path = prim.GetPath().pathString
         prim_stack = prim.GetPrimStack()
@@ -437,6 +443,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             List of MaterialSource objects describing each material.
+
         """
         material_sources = []
         root_prim = utils.get_scope_root(self.source_stage, scope or _DEFAULT_SCOPE)
@@ -472,6 +479,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             Dictionary mapping material hashes to MaterialEntry objects for existing materials.
+
         """
         existing: dict[str, MaterialEntry] = {}
 
@@ -511,6 +519,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             A hex string hash representing the material's content.
+
         """
         hasher = hashlib.sha256()
         material_root_path = prim.GetPath().pathString
@@ -529,6 +538,7 @@ class MaterialsRoutingRule(RuleInterface):
 
             Returns:
                 Relative path from the material root.
+
             """
             if abs_path.startswith(material_root_path):
                 return abs_path[len(material_root_path) :]
@@ -579,6 +589,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             Tuple of (asset_paths, mdl_paths) to transfer.
+
         """
         asset_paths: set[str] = set()
         mdl_paths: set[str] = set()
@@ -591,6 +602,7 @@ class MaterialsRoutingRule(RuleInterface):
 
             Returns:
                 True if the asset should be transferred.
+
             """
             if not path:
                 return False
@@ -705,6 +717,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             List of resolved texture paths referenced by the MDL files.
+
         """
         deps: set[str] = set()
         for mdl_path in sorted(mdl_paths):
@@ -741,6 +754,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             Set of resolved dependency paths.
+
         """
         if not mdl_text:
             return set()
@@ -766,6 +780,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             Resolved path string, or empty string if not resolvable.
+
         """
         if not raw_path:
             return ""
@@ -785,6 +800,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             Remote URL directory.
+
         """
         if "/" not in remote_path:
             return remote_path
@@ -799,6 +815,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             Joined remote URL.
+
         """
         rel = rel_path.lstrip("./")
         return f"{base.rstrip('/')}/{rel.lstrip('/')}"
@@ -811,6 +828,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             Decoded text content, or empty string if unavailable.
+
         """
         try:
             import omni.client
@@ -836,6 +854,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             True if download succeeded, False otherwise.
+
         """
         try:
             import omni.client
@@ -877,6 +896,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             Dictionary mapping original resolved path -> new relative path from materials layer.
+
         """
         path_mapping: dict[str, str] = {}
         used_filenames: dict[str, str] = {}
@@ -948,6 +968,7 @@ class MaterialsRoutingRule(RuleInterface):
             mdl_paths: Set of source MDL paths.
             path_mapping: Mapping from source path to new relative path.
             materials_layer_dir: Materials layer directory for absolute resolution.
+
         """
         if not mdl_paths or not path_mapping:
             return
@@ -1009,6 +1030,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             Tuple of (updated_text, replacements_count).
+
         """
         base_is_remote = utils.is_remote_path(mdl_src_path)
         base_dir = self._remote_dir(mdl_src_path) if base_is_remote else os.path.dirname(mdl_src_path)
@@ -1047,6 +1069,7 @@ class MaterialsRoutingRule(RuleInterface):
             entry: The MaterialEntry describing where to store it.
             mat_stage: The materials stage to copy to.
             asset_path_mapping: Mapping from original resolved path to new relative path.
+
         """
         dst_layer = mat_stage.GetRootLayer()
         src_prim_path = prim.GetPath().pathString
@@ -1103,6 +1126,7 @@ class MaterialsRoutingRule(RuleInterface):
             material_path: Path to the material in the layer.
             layer: The layer containing the material.
             path_mapping: Dictionary mapping old resolved paths to new relative paths.
+
         """
         # Build lookup tables for fast matching
         by_resolved: dict[str, str] = path_mapping.copy()
@@ -1161,6 +1185,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             List of MaterialBinding objects describing each binding.
+
         """
         bindings: list[MaterialBinding] = []
         root_prim = utils.get_scope_root(self.source_stage, scope or _DEFAULT_SCOPE)
@@ -1197,6 +1222,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Returns:
             The layer, or None if it could not be opened.
+
         """
         if layer_id in layer_cache:
             return layer_cache[layer_id]
@@ -1221,6 +1247,7 @@ class MaterialsRoutingRule(RuleInterface):
         Args:
             material_by_hash: Dictionary mapping material hashes to MaterialEntry objects.
             materials_layer_abs_path: Absolute path to the materials layer file.
+
         """
         source_layer = self.source_stage.GetRootLayer()
         layer_cache: dict[str, Sdf.Layer] = {}
@@ -1276,6 +1303,7 @@ class MaterialsRoutingRule(RuleInterface):
 
         Args:
             all_bindings: List of all material bindings in the stage.
+
         """
         source_layer = self.source_stage.GetRootLayer()
         applied_count = 0
@@ -1326,6 +1354,7 @@ class MaterialsRoutingRule(RuleInterface):
         Args:
             material_by_hash: Dictionary mapping material hashes to MaterialEntry objects.
             all_bindings: List of all material bindings in the stage.
+
         """
         source_layer = self.source_stage.GetRootLayer()
         bound_material_paths: set[str] = {b.material_path for b in all_bindings}

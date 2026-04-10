@@ -45,6 +45,7 @@ def is_urdf_file(path: str) -> bool:
 
     Returns:
         True if the path has a URDF extension, otherwise False.
+
     """
     _, ext = os.path.splitext(path.lower())
     return ext in [".urdf", ".URDF"]
@@ -62,6 +63,7 @@ class Extension(omni.ext.IExt):
 
         Args:
             ext_id: Extension identifier provided by the extension manager.
+
         """
         self._usd_context = omni.usd.get_context()
         self._models: dict[str, ui.AbstractValueModel] = {}
@@ -84,9 +86,25 @@ class Extension(omni.ext.IExt):
         global _extension_instance
         _extension_instance = self
 
-    def build_new_options(self) -> None:
-        """Build the UI options and sync to the current stage."""
+    def build_new_options(self, paths: list[str] | None = None) -> None:
+        """Build the UI options and pre-populate the ROS package table.
+
+        Args:
+            paths: URDF file paths selected in the file picker.  The first
+                valid URDF is scanned for ``package://`` references so the
+                package table can be pre-populated.
+
+        """
         self._option_builder.build_options()
+
+        if paths:
+            urdf_paths = [p for p in paths if is_urdf_file(p)]
+            if urdf_paths:
+                from .package_scanner import scan_urdf_packages
+
+                packages = scan_urdf_packages(urdf_paths[0])
+                if packages:
+                    self._option_builder.populate_packages(packages)
 
     def reset_config(self) -> None:
         """Reset importer configuration to default values."""
@@ -108,6 +126,7 @@ class Extension(omni.ext.IExt):
 
         Returns:
             Path to the imported prim in the USD stage, or None if import failed.
+
         """
         if not path:
             carb.log_error("URDF Importer: No path provided")
@@ -151,6 +170,7 @@ class Extension(omni.ext.IExt):
 
         Returns:
             Current importer configuration instance.
+
         """
         return self._last_config
 
@@ -183,9 +203,11 @@ class UrdfImporterDelegate(ai.AbstractImporterDelegate):
         name: Display name for the importer.
         filters: Regex filters for supported file types.
         descriptions: Descriptions for supported file types.
+
     """
 
     def __init__(self, name: str, filters: list[str], descriptions: list[str]) -> None:
+        """Initialize the delegate; see class docstring for parameter descriptions."""
         super().__init__()
         self._name = name
         self._filters = filters
@@ -207,6 +229,7 @@ class UrdfImporterDelegate(ai.AbstractImporterDelegate):
 
         Args:
             importer: Extension instance that performs imports.
+
         """
         self._importer = importer
 
@@ -215,6 +238,7 @@ class UrdfImporterDelegate(ai.AbstractImporterDelegate):
 
         Returns:
             False to hide the destination frame.
+
         """
         return False
 
@@ -227,6 +251,7 @@ class UrdfImporterDelegate(ai.AbstractImporterDelegate):
 
         Args:
             file_paths: List of imported file paths.
+
         """
 
     @property
@@ -261,10 +286,11 @@ class UrdfImporterDelegate(ai.AbstractImporterDelegate):
 
         Args:
             paths: Paths selected for import.
+
         """
         if self._importer is not None:
             self._importer.reset_config()
-            self._importer.build_new_options()
+            self._importer.build_new_options(paths)
         else:
             carb.log_error("URDF Importer: Importer not initialized, cannot build options")
 
@@ -273,6 +299,7 @@ class UrdfImporterDelegate(ai.AbstractImporterDelegate):
 
         Returns:
             False since the importer does not support stage caching.
+
         """
         return False
 
@@ -285,6 +312,7 @@ class UrdfImporterDelegate(ai.AbstractImporterDelegate):
 
         Returns:
             An empty result dictionary on success, or None on failure.
+
         """
         if not paths:
             post_notification(
@@ -314,5 +342,6 @@ def get_instance() -> Extension | None:
 
         >>> from isaacsim.asset.importer.urdf.ui.impl import extension
         >>> extension.get_instance()  # doctest: +SKIP
+
     """
     return _extension_instance

@@ -15,6 +15,7 @@
 
 import argparse
 import os
+import tempfile
 
 from isaacsim import SimulationApp
 
@@ -99,6 +100,8 @@ def main():
             ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.importer.urdf")
             extension_path = ext_manager.get_extension_path(ext_id)
             args.urdf = os.path.join(extension_path, "data", "urdf", "robots", "carter", "urdf", "carter.urdf")
+            if args.usd_path is None:
+                args.usd_path = tempfile.mkdtemp(prefix="urdf_import_test_")
         else:
             if args.urdf is None:
                 raise RuntimeError(

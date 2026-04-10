@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.4.0] - 2026-04-09
+### Added
+- Test verifying multiple sibling meshes under a parent Xform are preserved as separate instanceable references
+
+### Fixed
+- GeometriesRoutingRule `_is_subtree_empty` not checking composition arcs, causing premature merging of sibling meshes that carry references but no authored properties
+- GeometriesRoutingRule setting empty `typeName` on prim specs, which triggers a USD error
+- GeometriesRoutingRule not propagating `purpose=guide` from parent Xform to child mesh prim in the instances layer
+- `is_builtin_mdl` not recognizing `omnisurfacepresets.mdl`, `core_definitions.mdl`, and path-suffix forms like `nvidia/core_definitions.mdl`
+
 ## [1.3.0] - 2026-04-08
 ### Changed
 - Improve Python API documentation (`config/python_api.md` and/or module docstrings).

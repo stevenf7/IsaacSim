@@ -262,7 +262,7 @@ The execution report contains the following information:
      - Description
    * - ``profile``
      - The complete profile configuration used for the transformation
-   * - ``input_stage_path``
+   * - ``input_stage``
      - Path to the original input USD stage
    * - ``package_root``
      - Output directory where transformed assets are written
@@ -311,7 +311,7 @@ Each rule's execution result includes:
           "version": "1.0",
           "rules": ["...truncated..."]
         },
-        "input_stage_path": "/path/to/robot.usd",
+        "input_stage": "/path/to/robot.usd",
         "package_root": "/output/robot_package",
         "started_at": "2024-01-15T10:30:00.000Z",
         "finished_at": "2024-01-15T10:30:45.123Z",

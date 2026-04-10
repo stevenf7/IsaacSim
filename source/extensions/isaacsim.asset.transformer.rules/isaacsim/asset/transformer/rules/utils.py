@@ -47,8 +47,14 @@ BUILTIN_MDL_FILES: frozenset[str] = frozenset(
         "omnihair.mdl",
         "omnihairbase.mdl",
         "usdpreviewsurface.mdl",
+        "omnisurfacepresets.mdl",
+        "core_definitions.mdl",
     )
 )
+
+# MDL paths that are built-in even when the full relative path is used
+# (e.g. "nvidia/core_definitions.mdl" should be treated as built-in)
+BUILTIN_MDL_PATH_SUFFIXES: frozenset[str] = frozenset(("nvidia/core_definitions.mdl",))
 
 
 def is_builtin_mdl(path: str) -> bool:
@@ -62,8 +68,13 @@ def is_builtin_mdl(path: str) -> bool:
 
     Returns:
         ``True`` when the basename matches a known built-in MDL.
+
     """
-    return os.path.basename(path).lower() in BUILTIN_MDL_FILES
+    path_lower = path.lower().replace("\\", "/")
+    if os.path.basename(path_lower) in BUILTIN_MDL_FILES:
+        return True
+    # Also check full-path suffixes (e.g. "nvidia/core_definitions.mdl")
+    return any(path_lower.endswith(suffix) for suffix in BUILTIN_MDL_PATH_SUFFIXES)
 
 
 def norm_path(path: str) -> str:
@@ -79,6 +90,7 @@ def norm_path(path: str) -> str:
 
     Returns:
         Normalized path string suitable for dict keys and comparisons.
+
     """
     return os.path.normcase(os.path.normpath(path))
 
@@ -122,6 +134,7 @@ def make_scope_param(description: str = "Root path to search (default: '/')") ->
     .. code-block:: python
 
         scope_param = make_scope_param()
+
     """
     return RuleConfigurationParam(
         name="scope",
@@ -150,6 +163,7 @@ def make_stage_name_param(
     .. code-block:: python
 
         stage_param = make_stage_name_param(default_value="out.usda")
+
     """
     return RuleConfigurationParam(
         name="stage_name",
@@ -176,6 +190,7 @@ def make_prim_names_param(
     .. code-block:: python
 
         prim_names_param = make_prim_names_param()
+
     """
     return RuleConfigurationParam(
         name="prim_names",
@@ -202,6 +217,7 @@ def make_ignore_prim_names_param(
     .. code-block:: python
 
         ignore_param = make_ignore_prim_names_param()
+
     """
     return RuleConfigurationParam(
         name="ignore_prim_names",
@@ -235,6 +251,7 @@ def find_or_create_layer(
     .. code-block:: python
 
         layer = find_or_create_layer("/tmp/out.usda", stage)
+
     """
     os.makedirs(os.path.dirname(path), exist_ok=True)
     layer = Sdf.Layer.FindOrOpen(path)
@@ -265,6 +282,7 @@ def ensure_prim_spec_in_layer(
     .. code-block:: python
 
         prim_spec = ensure_prim_spec_in_layer(layer, Sdf.Path("/World"))
+
     """
     prim_spec = layer.GetPrimAtPath(path)
     if prim_spec:
@@ -291,6 +309,7 @@ def get_scope_root(stage: Usd.Stage, scope: str, fallback_to_pseudo_root: bool =
     .. code-block:: python
 
         scope_prim = get_scope_root(stage, "/World")
+
     """
     # "/" is always valid and maps to pseudo root
     if not scope or scope == "/":
@@ -320,6 +339,7 @@ def get_default_prim_path(stage: Usd.Stage, fallback: str = "/World") -> str:
     .. code-block:: python
 
         path = get_default_prim_path(stage)
+
     """
     default_prim = stage.GetDefaultPrim()
     if default_prim and default_prim.IsValid():
@@ -347,6 +367,7 @@ def compile_patterns(
     .. code-block:: python
 
         compiled = compile_patterns(["Physics.*", "Newton.*"])
+
     """
     if not patterns:
         return []
@@ -381,6 +402,7 @@ def matches_any_pattern(value: str, compiled_patterns: list[re.Pattern[str]]) ->
 
         patterns = compile_patterns(["Physics.*"])
         matches_any_pattern("PhysicsRigidBodyAPI", patterns)  # True
+
     """
     return any(p.fullmatch(value) for p in compiled_patterns)
 
@@ -405,6 +427,7 @@ def matches_prim_filter(
     .. code-block:: python
 
         matches = matches_prim_filter("Body", ["Body.*"], ["BodyIgnore.*"])
+
     """
     compiled_include = compile_patterns(include_patterns)
     if not compiled_include:
@@ -435,6 +458,7 @@ def is_remote_path(path: str) -> bool:
     .. code-block:: python
 
         is_remote = is_remote_path("omniverse://server/asset.usd")
+
     """
     if not path:
         return False
@@ -455,6 +479,7 @@ def is_usd_file(path: str) -> bool:
     .. code-block:: python
 
         is_usd = is_usd_file("asset.usda")
+
     """
     if not path:
         return False
@@ -474,6 +499,7 @@ def clear_composition_arcs(prim_spec: Sdf.PrimSpec, make_explicit: bool = False)
     .. code-block:: python
 
         clear_composition_arcs(prim_spec)
+
     """
     arc_checks_and_lists = [
         (prim_spec.hasReferences, prim_spec.referenceList),
@@ -513,6 +539,7 @@ def create_prim_spec(
     .. code-block:: python
 
         prim_spec = create_prim_spec(layer, "/World", type_name="Xform")
+
     """
     prim_spec = Sdf.CreatePrimInLayer(layer, path)
     if prim_spec:
@@ -542,6 +569,7 @@ def get_relative_layer_path(from_layer: Sdf.Layer, to_layer_path: str) -> str:
     .. code-block:: python
 
         rel_path = get_relative_layer_path(layer, "/tmp/other.usda")
+
     """
     from_dir = os.path.dirname(from_layer.identifier)
     return make_explicit_relative(os.path.relpath(to_layer_path, from_dir))
@@ -558,6 +586,7 @@ def clear_instanceable_recursive(prim_spec: Sdf.PrimSpec) -> None:
     .. code-block:: python
 
         clear_instanceable_recursive(prim_spec)
+
     """
     if prim_spec.instanceable:
         prim_spec.instanceable = False
@@ -578,6 +607,7 @@ def clean_schema_metadata(prim_spec: Sdf.PrimSpec) -> None:
     .. code-block:: python
 
         clean_schema_metadata(prim_spec)
+
     """
     for attr_name in list(prim_spec.attributes.keys()):  # noqa: SIM118
         attr_spec = prim_spec.attributes[attr_name]
@@ -604,6 +634,7 @@ def find_ancestor_matching(
     .. code-block:: python
 
         ancestor = find_ancestor_matching(prim, lambda p: p.GetName() == "Root")
+
     """
     ancestor = prim.GetParent()
     while ancestor and ancestor.IsValid():
@@ -631,6 +662,7 @@ def merge_token_list_op(existing_list_op: Sdf.TokenListOp | None, new_items: lis
     .. code-block:: python
 
         merged = merge_token_list_op(existing_list_op, ["PhysicsAPI"])
+
     """
     if (
         existing_list_op is None
@@ -697,6 +729,7 @@ def copy_prim_from_composed_stage(
     .. code-block:: python
 
         success = copy_prim_from_composed_stage(src_prim, layer, "/World/Prim")
+
     """
     if not src_prim.IsValid():
         return False
@@ -815,6 +848,7 @@ def copy_composed_prim_to_layer(
     .. code-block:: python
 
         success = copy_composed_prim_to_layer(src_prim, layer, Sdf.Path("/World/Prim"))
+
     """
     if not src_prim.IsValid():
         return False
@@ -1010,6 +1044,7 @@ def ensure_prim_hierarchy(
     .. code-block:: python
 
         ensure_prim_hierarchy(layer, "/World/Scope/Prim")
+
     """
     path = Sdf.Path(prim_path)
     parent_path = path.GetParentPath()
@@ -1036,6 +1071,7 @@ def files_are_identical(path1: str, path2: str) -> bool:
     .. code-block:: python
 
         same = files_are_identical("/tmp/a.usda", "/tmp/b.usda")
+
     """
     try:
         if os.path.getsize(path1) != os.path.getsize(path2):
@@ -1067,6 +1103,7 @@ def sanitize_prim_name(name: str, prefix: str = "prim_") -> str:
     .. code-block:: python
 
         sanitized = sanitize_prim_name("My Prim")
+
     """
     sanitized = "".join(c if c.isalnum() or c == "_" else "_" for c in name)
     if not sanitized or sanitized[0].isdigit():
@@ -1089,6 +1126,7 @@ def copy_stage_metadata_from_layer(source_layer: Sdf.Layer, target_layer: Sdf.La
     .. code-block:: python
 
         copy_stage_metadata_from_layer(source_layer, target_layer)
+
     """
     source_pseudo_root = source_layer.pseudoRoot
     target_pseudo_root = target_layer.pseudoRoot
@@ -1123,6 +1161,7 @@ def copy_stage_metadata(source_stage: Usd.Stage, target_layer: Sdf.Layer) -> Non
     .. code-block:: python
 
         copy_stage_metadata(stage, target_layer)
+
     """
     copy_stage_metadata_from_layer(source_stage.GetRootLayer(), target_layer)
 
@@ -1143,6 +1182,7 @@ def get_path_string(asset_path_obj: object) -> str:
     .. code-block:: python
 
         path_str = get_path_string(asset_path)
+
     """
     if hasattr(asset_path_obj, "GetPathString"):
         return asset_path_obj.GetPathString()
@@ -1184,6 +1224,7 @@ def remap_asset_path(
     .. code-block:: python
 
         remapped = remap_asset_path("foo.usd", "/src", "/dst", {}, {})
+
     """
     if not original_path:
         return original_path
@@ -1241,6 +1282,7 @@ def copy_file_to_directory(
     .. code-block:: python
 
         dest_path = copy_file_to_directory("/tmp/a.usd", "/tmp/output")
+
     """
     if not os.path.isfile(src_path):
         return None
@@ -1287,6 +1329,7 @@ def copy_attributes_to_prim_spec(
     .. code-block:: python
 
         count = copy_attributes_to_prim_spec(src_spec, dst_spec)
+
     """
     count = 0
     for attr_name in src_spec.attributes.keys():  # noqa: SIM118
@@ -1324,6 +1367,7 @@ def copy_relationships_to_prim_spec(
     .. code-block:: python
 
         count = copy_relationships_to_prim_spec(src_spec, dst_spec)
+
     """
     count = 0
     for rel_name in src_spec.relationships.keys():  # noqa: SIM118
@@ -1358,6 +1402,7 @@ def copy_prim_metadata(
     .. code-block:: python
 
         copy_prim_metadata(src_spec, dst_spec)
+
     """
     if skip_keys is None:
         skip_keys = COMPOSITION_SKIP_KEYS
@@ -1381,6 +1426,7 @@ def _try_usd_extensions(base_path: str) -> str | None:
 
     Returns:
         The first existing path, or None if none exist.
+
     """
     if os.path.isfile(base_path):
         return base_path
@@ -1419,6 +1465,7 @@ def resolve_asset_path(
     .. code-block:: python
 
         resolved = resolve_asset_path("asset.usd", base_layer=layer, fallback_dirs=["/tmp"])
+
     """
     if not arc_asset_path:
         return ""
@@ -1468,6 +1515,7 @@ def find_first_resolvable_arc(
     .. code-block:: python
 
         resolved = find_first_resolvable_arc(payloads, references, resolve_asset_path)
+
     """
     for arc in payloads:
         if arc.assetPath:

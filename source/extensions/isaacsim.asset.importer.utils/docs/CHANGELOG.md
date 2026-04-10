@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2026-04-09
+### Changed
+- Update `run_asset_transformer_profile` to use renamed `input_stage` parameter
+
 ## [1.2.0] - 2026-04-08
 ### Changed
 - Improve Python API documentation (`config/python_api.md` and/or module docstrings).

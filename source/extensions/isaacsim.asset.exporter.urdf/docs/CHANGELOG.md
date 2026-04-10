@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.0] - 2026-04-09
+### Changed
+- Rewrite as physics-graph-driven converter (UsdToUrdfConverter)
+
+### Added
+- Round-trip drive breadcrumbs: `isaac:source_drive` XML comments preserve DriveAPI gains (stiffness, damping, maxForce, targetPosition), MjcActuator parameters, and PhysxJointAPI armature across URDF export/import
+
+### Fixed
+- DriveAPI values no longer incorrectly populate URDF `<dynamics>`, `<limit effort>`, or `<calibration reference_position>` — these URDF elements now only contain passive joint properties per the URDF-to-USD concept mapping
+- Split into API extension (this) and UI extension (isaacsim.asset.exporter.urdf.ui)
+- Remove nvidia-srl-usd-to-urdf dependency
+- Remove omni.physics.physx dependency from core API
+
 ## [1.5.0] - 2026-04-08
 ### Changed
 - Improve Python API documentation (`config/python_api.md` and/or module docstrings).

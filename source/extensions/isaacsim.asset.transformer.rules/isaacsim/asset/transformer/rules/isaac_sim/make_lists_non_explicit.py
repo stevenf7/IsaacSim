@@ -42,6 +42,7 @@ def _normalize_list_op_type(list_op_type: str | None) -> str:
 
     Returns:
         Normalized list op type string ("prepend" or "append").
+
     """
     if not list_op_type:
         return _LIST_OP_PREPEND
@@ -58,6 +59,7 @@ def _matches_any(name: str, patterns: list[str]) -> bool:
 
     Returns:
         True if name matches any pattern, False otherwise.
+
     """
     compiled = utils.compile_patterns(patterns)
     return utils.matches_any_pattern(name, compiled)
@@ -75,6 +77,7 @@ def _convert_list_op(
 
     Returns:
         Tuple of (new list op or None, explicit items list).
+
     """
     if not list_op or not hasattr(list_op, "isExplicit") or not getattr(list_op, "isExplicit"):
         return None, []
@@ -109,6 +112,7 @@ def _apply_list_op_items(list_op_proxy: object, explicit_items: list[object], li
 
     Returns:
         True if items were applied, False otherwise.
+
     """
     if not list_op_proxy or not explicit_items:
         return False
@@ -144,6 +148,7 @@ def _recreate_relationship_with_targets(
 
     Returns:
         The recreated relationship spec or None if creation failed.
+
     """
     if rel_name in prim_spec.relationships:
         old_rel = prim_spec.relationships[rel_name]
@@ -197,6 +202,7 @@ class MakeListsNonExplicitRule(RuleInterface):
         .. code-block:: python
 
             params = rule.get_configuration_parameters()
+
         """
         return [
             RuleConfigurationParam(
@@ -233,6 +239,7 @@ class MakeListsNonExplicitRule(RuleInterface):
         .. code-block:: python
 
             rule.process_rule()
+
         """
         params = self.args.get("params", {}) or {}
         metadata_names = params.get("metadata_names") or []

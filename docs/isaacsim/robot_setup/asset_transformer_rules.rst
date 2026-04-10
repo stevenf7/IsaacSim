@@ -545,7 +545,7 @@ Select a category tab to view available rules. Expand each rule for detailed par
               - Description
             * - ``original_composition_path``
               - str
-              - Optional explicit path to the original composition stage. Defaults to the ``input_stage_path`` passed by the transformer manager (the unmodified source asset).
+              - Optional ``Usd.Stage`` object or explicit path to the original composition stage. Defaults to the ``input_stage`` passed by the transformer manager (the unmodified source asset).
             * - ``tolerance_position``
               - float
               - Maximum allowed position difference (Euclidean distance) when comparing joint world poses (default: ``1e-6``)
@@ -555,7 +555,7 @@ Select a category tab to view available rules. Expand each rule for detailed par
 
          **Execution Logic**:
 
-         1. **Original Stage**: Opens the original input asset (before any transformer rules ran) via ``input_stage_path``.
+         1. **Original Stage**: Opens the original input asset (before any transformer rules ran) via ``input_stage``.
          2. **Joint Discovery**: Traverses the working stage for all ``UsdPhysics.Joint`` prims.
          3. **World Pose Comparison**: For each joint, computes the joint world pose from both ``body0`` and ``body1`` on the original stage and on the working stage using ``local_pose * body_world_transform``.
          4. **Drift Detection**: If the working stage's joint world pose differs from the original beyond the configured tolerance, the affected body side is flagged for correction.

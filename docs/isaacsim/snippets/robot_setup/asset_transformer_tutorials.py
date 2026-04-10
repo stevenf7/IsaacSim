@@ -36,7 +36,7 @@ from pathlib import Path
 
 def snippet_1_load_and_run_saved_profile(
     profile_path: str,
-    input_stage_path: str,
+    input_stage: str,
     package_root: str,
 ):
     # <start-load-and-run-saved-profile-snippet>
@@ -45,7 +45,7 @@ def snippet_1_load_and_run_saved_profile(
     from isaacsim.asset.transformer import AssetTransformerManager, RuleProfile
 
     # profile_path = "/path/to/my_custom_profile.json"
-    # input_stage_path = "/path/to/my_robot.usd"
+    # input_stage = "/path/to/my_robot.usd"
     # package_root = "/output/my_robot_package"
     # Load a saved profile from disk
     with open(profile_path, "r") as f:
@@ -56,7 +56,7 @@ def snippet_1_load_and_run_saved_profile(
     # Create the manager and run the transformation
     manager = AssetTransformerManager()
     report = manager.run(
-        input_stage_path=input_stage_path,
+        input_stage=input_stage,
         profile=profile,
         package_root=package_root,
     )
@@ -78,7 +78,7 @@ def snippet_1_load_and_run_saved_profile(
 
 
 def snippet_2_build_profile_programmatically(
-    input_stage_path: str,
+    input_stage: str,
     package_root: str,
 ):
     # <start-build-profile-programmatically-snippet>
@@ -88,7 +88,7 @@ def snippet_2_build_profile_programmatically(
         RuleSpec,
     )
 
-    # input_stage_path = "/path/to/my_robot.usd"
+    # input_stage = "/path/to/my_robot.usd"
     # package_root = "/output/my_robot_package"
 
     profile = RuleProfile(
@@ -131,7 +131,7 @@ def snippet_2_build_profile_programmatically(
 
     manager = AssetTransformerManager()
     report = manager.run(
-        input_stage_path=input_stage_path,
+        input_stage=input_stage,
         profile=profile,
         package_root=package_root,
     )
@@ -147,7 +147,7 @@ def snippet_2_build_profile_programmatically(
 
 
 def snippet_3_use_isaac_sim_structure_profile(
-    input_stage_path: str,
+    input_stage: str,
     package_root: str,
 ):
     # <start-use-isaac-sim-structure-profile-snippet>
@@ -157,7 +157,7 @@ def snippet_3_use_isaac_sim_structure_profile(
     from isaacsim.asset.transformer import AssetTransformerManager, RuleProfile
     from isaacsim.core.utils.extensions import get_extension_path_from_name
 
-    # input_stage_path = "/path/to/my_robot.usd"
+    # input_stage = "/path/to/my_robot.usd"
     # package_root = "/output/my_robot_isaacsim_structure"
     # Locate the built-in profile shipped with the rules extension (use get_extension_path_from_name so the path is absolute)
     ext_path = Path(get_extension_path_from_name("isaacsim.asset.transformer.rules"))
@@ -168,7 +168,7 @@ def snippet_3_use_isaac_sim_structure_profile(
 
     manager = AssetTransformerManager()
     report = manager.run(
-        input_stage_path=input_stage_path,
+        input_stage=input_stage,
         profile=profile,
         package_root=package_root,
     )
@@ -206,7 +206,7 @@ def snippet_4_batch_process_multiple_assets(
         output_dir = f"{output_base_dir.rstrip('/')}/{asset_name}_transformed"
 
         report = manager.run(
-            input_stage_path=asset_path,
+            input_stage=asset_path,
             profile=profile,
             package_root=output_dir,
         )
@@ -266,9 +266,9 @@ def _get_evobot_input_and_temp_output():
     assets_root = get_assets_root_path()
     if not assets_root:
         raise RuntimeError("Could not find Isaac Sim assets root (isaacsim.storage.native).")
-    input_stage_path = assets_root.rstrip("/") + EVOBOT_REL_PATH
+    input_stage = assets_root.rstrip("/") + EVOBOT_REL_PATH
     package_root = tempfile.mkdtemp(prefix="asset_transformer_")
-    return input_stage_path, package_root
+    return input_stage, package_root
 
 
 def _ensure_asset_transformer_extensions_loaded(simulation_app):
@@ -305,8 +305,8 @@ def _run_step(name: str, fn, *args, **kwargs):
 
 def run_orchestrator() -> int:
     """Run all snippets with Evobot and temp dirs. Called after SimulationApp is up."""
-    input_stage_path, package_root_1 = _get_evobot_input_and_temp_output()
-    print(f"Input (Evobot): {input_stage_path}")
+    input_stage, package_root_1 = _get_evobot_input_and_temp_output()
+    print(f"Input (Evobot): {input_stage}")
     print(f"Temp outputs: {package_root_1} ...")
     sys.stdout.flush()
 
@@ -321,7 +321,7 @@ def run_orchestrator() -> int:
         "snippet_1 (load and run saved profile)",
         snippet_1_load_and_run_saved_profile,
         profile_path,
-        input_stage_path,
+        input_stage,
         package_root_1,
     )
     _run_step("snippet_5 (save report)", snippet_5_save_report, report)
@@ -333,7 +333,7 @@ def run_orchestrator() -> int:
     report = _run_step(
         "snippet_2 (build profile and run)",
         snippet_2_build_profile_programmatically,
-        input_stage_path,
+        input_stage,
         package_root_2,
     )
     _run_step("snippet_5 (save report)", snippet_5_save_report, report)
@@ -345,7 +345,7 @@ def run_orchestrator() -> int:
     report = _run_step(
         "snippet_3 (Isaac Sim Structure profile)",
         snippet_3_use_isaac_sim_structure_profile,
-        input_stage_path,
+        input_stage,
         package_root_3,
     )
     _run_step("snippet_5 (save report)", snippet_5_save_report, report)
@@ -358,7 +358,7 @@ def run_orchestrator() -> int:
         "snippet_4 (batch process)",
         snippet_4_batch_process_multiple_assets,
         profile_path,
-        [input_stage_path],
+        [input_stage],
         output_base,
     )
 

@@ -216,6 +216,7 @@ inventory.includes.all = [
     "exts/isaacsim.asset.gen.conveyor",
     "exts/isaacsim.asset.gen.conveyor.ui",
     "exts/isaacsim.asset.exporter.urdf",
+    "exts/isaacsim.asset.exporter.urdf.ui",
     "exts/isaacsim.asset.gen.omap",
     "exts/isaacsim.asset.gen.omap.ui",
     "exts/isaacsim.asset.importer.heightmap",

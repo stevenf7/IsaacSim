@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.0] - 2026-04-09
+### Added
+- Auto-populate the ROS package table from `package://` references found in the selected URDF file on import
+- `package_scanner` module that resolves `package://` URIs to filesystem paths by walking parent directories
+
 ## [1.2.1] - 2026-04-09
 ### Removed
 - Select file window size constraints

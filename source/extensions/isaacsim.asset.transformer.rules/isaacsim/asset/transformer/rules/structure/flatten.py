@@ -49,6 +49,7 @@ class FlattenRule(RuleInterface):
         .. code-block:: python
 
             params = rule.get_configuration_parameters()
+
         """
         return [
             RuleConfigurationParam(
@@ -98,6 +99,7 @@ class FlattenRule(RuleInterface):
         .. code-block:: python
 
             output_path = rule.process_rule()
+
         """
         params = self.args.get("params", {}) or {}
 
@@ -119,7 +121,7 @@ class FlattenRule(RuleInterface):
         )
 
         # Open the original input stage
-        input_stage = Usd.Stage.Open(input_stage_path)
+        input_stage = self.args.get("input_stage") or Usd.Stage.Open(input_stage_path)
         if not input_stage:
             self.log_operation(f"Failed to open input stage: {input_stage_path}")
             return None
@@ -191,6 +193,7 @@ class FlattenRule(RuleInterface):
             stage: The stage containing the default prim.
             selected_variants: Dictionary mapping variant set names to variant selections.
             case_insensitive: If True, match variant names case-insensitively.
+
         """
         default_prim = stage.GetDefaultPrim()
         if not default_prim or not default_prim.IsValid():
@@ -243,6 +246,7 @@ class FlattenRule(RuleInterface):
 
         Args:
             stage: The stage to clear variant selections from.
+
         """
         cleared_count = 0
         root_layer = stage.GetRootLayer()
