@@ -12,7 +12,7 @@ We will be using the robot imported in :doc:`tutorial_import_assemble_manipulato
 In this tutorial, we will be using the Lula kinematics solver to follow a target and the RMPFlow to pick up a block.
 
 .. Note:: 
-    All the files created in this tutorial are available at ``standalone_examples/api/isaacsim.robot.manipulators/ur10e`` for verification.
+    All the files created in this tutorial are available at ``standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e`` for verification.
 
 
 *30 Minutes Tutorial*
@@ -36,7 +36,7 @@ Steps 0 to 400 close the gripper slowly. Steps 400 to 800, open the gripper slow
     
     .. code-block:: bash
 
-        ./python.sh standalone_examples/api/isaacsim.robot.manipulators/ur10e/gripper_control.py
+        ./python.sh standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e/gripper_control.py
 
 .. dropdown:: gripper_control.py
 
@@ -55,14 +55,14 @@ Follow Target Example using Lula Kinematics Solver
 Create a follow target task using the Lula kinematics solver, where you can specify the target position using a cube and the robot will move its end effector to the target position.
 The inverse kinematics solver will use the Lula robot descriptor created in the :doc:`tutorial_generate_robot_config` tutorial. 
 
-The generated robot descriptor file is available at ``source/standalone_examples/api/isaacsim.robot.manipulators/ur10e/rmpflow/robot_descriptor.yaml``.
+The generated robot descriptor file is available at ``source/standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e/rmpflow/robot_descriptor.yaml``.
 
 .. note::
     The provided script can be run using:
     
     .. code-block:: bash
 
-        ./python.sh standalone_examples/api/isaacsim.robot.manipulators/ur10e/follow_target_example.py
+        ./python.sh standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e/follow_target_example.py
 
     Move the cube to the target location and run the script to see the robot move its end effector to the target location.
 
@@ -98,7 +98,7 @@ RMP Flow Configuration
 
 Use RMPFlow to control the end effector. See :ref:`isaac_sim_motion_generation_rmpflow` for more details about RMPFlow.
 
-The ``ur10e_rmpflow_common.yaml`` file is available at ``source/standalone_examples/api/isaacsim.robot.manipulators/ur10e/rmpflow/ur10e_rmpflow_common.yaml``, 
+The ``ur10e_rmpflow_common.yaml`` file is available at ``source/standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e/rmpflow/ur10e_rmpflow_common.yaml``, 
 it specifies various parameters for the RMPFlow controller.
 
 .. dropdown:: rmpflow/ur10e_rmpflow_common.yaml
@@ -195,7 +195,7 @@ Create an RMP flow controller to move the robot end effector to the target locat
     
     .. code-block:: bash
 
-        ./python.sh standalone_examples/api/isaacsim.robot.manipulators/ur10e/follow_target_example_rmpflow.py
+        ./python.sh standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e/follow_target_example_rmpflow.py
 
 .. image:: /images/isim_5.0_full_tut_gui_ur10e_follow_target_rmp.webp
     :align: center
@@ -225,7 +225,7 @@ Use the RMPFlow controller to pick up a block and place it in a target location.
     
     .. code-block:: bash
 
-        ./python.sh standalone_examples/api/isaacsim.robot.manipulators/ur10e/pick_up_example.py
+        ./python.sh standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e/pick_up_example.py
 
 .. image:: /images/isim_5.0_full_tut_gui_ur10e_pick_place_rmp.webp
     :align: center

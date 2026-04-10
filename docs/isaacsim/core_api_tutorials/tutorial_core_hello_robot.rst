@@ -137,7 +137,8 @@ Further Learning
 
 **Robot Specific Extensions**
 
-- |isaac-sim| provides several robot extensions such as ``isaacsim.robot.manipulators.examples.franka``, ``isaacsim.robot.manipulators.examples.universal_robots``,
-  and many more. To learn more, check out the standalone examples located at ``standalone_examples/api/isaacsim.robot.manipulators/franka``
-  and ``standalone_examples/api/isaacsim.robot.manipulators/universal_robots/``.
+- |isaac-sim| provides several robot extensions, including ``isaacsim.robot.experimental.wheeled_robots``,
+  and ``isaacsim.robot.experimental.manipulators.examples``.
+  To learn more, check out the standalone examples located at ``standalone_examples/api/isaacsim.robot.experimental.manipulators/franka``
+  and ``standalone_examples/api/isaacsim.robot.experimental.manipulators/universal_robots/``.
 

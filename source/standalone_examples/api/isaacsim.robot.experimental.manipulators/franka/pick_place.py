@@ -36,6 +36,7 @@ The source code is organized into 3 main sections:
 import argparse
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--test", action="store_true", help="Run in test mode (exit after task completes)")
 parser.add_argument("--device", type=str, choices=["cpu", "cuda"], default="cpu", help="Simulation device")
 parser.add_argument(
     "--ik-method",
@@ -51,12 +52,17 @@ args, _ = parser.parse_known_args()
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
+import omni.kit.app
+
+omni.kit.app.get_app().get_extension_manager().set_extension_enabled_immediate(
+    "isaacsim.robot.experimental.manipulators.examples", True
+)
 
 # Any Omniverse level imports must occur after the `SimulationApp` class is instantiated (because APIs are provided
 # by the extension/runtime plugin system, it must be loaded before they will be available to import).
 import omni.timeline
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.robot.manipulators.examples.franka import FrankaPickPlace
+from isaacsim.robot.experimental.manipulators.examples.franka import FrankaPickPlace
 
 # 2. --------------------------------------------------------------------
 
@@ -94,8 +100,10 @@ while simulation_app.is_running():
 
     # - Check if task is completed and print completion message
     if pick_place.is_done() and not task_completed:
-        print("done picking and placing")
+        print("Done picking and placing")
         task_completed = True
+        if args.test:
+            break
 
     # - Update simulation
     simulation_app.update()

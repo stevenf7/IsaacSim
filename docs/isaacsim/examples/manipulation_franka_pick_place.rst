@@ -66,13 +66,13 @@ To run the standalone example from the command line:
 
          .. code-block:: bash
 
-            ./python.sh standalone_examples/api/isaacsim.robot.manipulators/franka/pick_place.py
+            ./python.sh standalone_examples/api/isaacsim.robot.experimental.manipulators/franka/pick_place.py
 
    .. tab-item:: Windows
 
          .. code-block:: bash
 
-            .\python.bat standalone_examples\api\isaacsim.robot.manipulators\franka\pick_place.py
+            .\python.bat standalone_examples\api\isaacsim.robot.experimental.manipulators\franka\pick_place.py
 
 What the Example Does
 ======================

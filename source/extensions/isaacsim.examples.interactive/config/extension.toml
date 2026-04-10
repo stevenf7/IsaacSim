@@ -1,5 +1,5 @@
 [package]
-version = "4.15.4"
+version = "4.15.5"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Provides interactive sample extensions demonstrating Isaac Sim features including robot manipulation, path planning, gamepad control, bin filling, and Cortex behavior framework usage."
@@ -14,6 +14,9 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.core.api" = {}
+"isaacsim.core.experimental.materials" = {}
+"isaacsim.core.experimental.objects" = {}
+"isaacsim.core.experimental.prims" = {}
 "isaacsim.core.experimental.utils" = {}
 "isaacsim.core.prims" = {}
 "isaacsim.cortex.behaviors" = {}
@@ -22,9 +25,9 @@ writeTarget.kit = true
 "isaacsim.examples.browser" = {}
 "isaacsim.examples.extension" = {}
 "isaacsim.gui.components" = {}
+"isaacsim.robot.experimental.manipulators.examples" = {}
 "isaacsim.robot.experimental.wheeled_robots" = {}
 "isaacsim.robot.manipulators" = {}
-"isaacsim.robot.manipulators.examples" = {}
 "isaacsim.robot.wheeled_robots.nodes" = {}
 "isaacsim.robot_motion.motion_generation" = {}
 "isaacsim.storage.native" = {}
@@ -45,28 +48,13 @@ name = "isaacsim.examples.interactive.kaya_gamepad"
 name = "isaacsim.examples.interactive.omnigraph_keyboard"
 
 [[python.module]]
-name = "isaacsim.examples.interactive.follow_target"
-
-[[python.module]]
-name = "isaacsim.examples.interactive.path_planning"
-
-[[python.module]]
-name = "isaacsim.examples.interactive.bin_filling"
-
-[[python.module]]
 name = "isaacsim.examples.interactive.franka_cortex"
-
-[[python.module]]
-name = "isaacsim.examples.interactive.robo_factory"
 
 [[python.module]]
 name = "isaacsim.examples.interactive.robo_party"
 
 [[python.module]]
 name = "isaacsim.examples.interactive.hello_world"
-
-[[python.module]]
-name = "isaacsim.examples.interactive.replay_follow_target"
 
 [[python.module]]
 name = "isaacsim.examples.interactive.surface_gripper"

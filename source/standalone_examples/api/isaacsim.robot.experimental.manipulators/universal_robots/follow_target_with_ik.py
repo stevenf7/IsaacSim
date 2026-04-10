@@ -36,6 +36,7 @@ The source code is organized into 3 main sections:
 import argparse
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--test", action="store_true", help="Run in test mode (exit after N frames)")
 parser.add_argument("--device", type=str, choices=["cpu", "cuda"], default="cpu", help="Simulation device")
 parser.add_argument(
     "--ik-method",
@@ -51,12 +52,17 @@ args, _ = parser.parse_known_args()
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
+import omni.kit.app
+
+omni.kit.app.get_app().get_extension_manager().set_extension_enabled_immediate(
+    "isaacsim.robot.experimental.manipulators.examples", True
+)
 
 # Any Omniverse level imports must occur after the `SimulationApp` class is instantiated (because APIs are provided
 # by the extension/runtime plugin system, it must be loaded before they will be available to import).
 import omni.timeline
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.robot.manipulators.examples.universal_robots import UR10FollowTarget
+from isaacsim.robot.experimental.manipulators.examples.universal_robots import UR10FollowTarget
 
 # 2. --------------------------------------------------------------------
 
@@ -85,6 +91,7 @@ simulation_app.update()  # - Allow physics to initialize
 
 # Initialize task state tracking.
 reset_needed = True
+frame_count = 0
 
 # Run simulation loop until application shutdown.
 while simulation_app.is_running():
@@ -98,6 +105,10 @@ while simulation_app.is_running():
 
         # - Move robot towards target using the specified IK method
         follow_target.move_to_target(ik_method=args.ik_method)
+        frame_count += 1
+
+    if args.test and frame_count >= 100:
+        break
 
     # - Update simulation
     simulation_app.update()

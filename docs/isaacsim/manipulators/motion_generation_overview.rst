@@ -56,5 +56,6 @@ To locate the interactive examples, go to **Windows** > **Examples** > **Robotic
 
 To run a standalone example, navigate to your ``<isaac_sim_root_dir>``, then use ``./python.sh`` for Linux or ``python.bat`` for Windows to run the example scripts listed here. 
 
-- Follow Target with RMPflow: ``standalone_examples/api/isaacsim.robot.manipulators/franka/follow_target_with_rmpflow.py``
-- Follow Target with IK: ``standalone_examples/api/isaacsim.robot.manipulators/franka/follow_target_with_ik.py``
+- Follow Target with RMPflow (Franka): ``standalone_examples/api/isaacsim.robot.experimental.manipulators/franka/follow_target_with_rmpflow.py``
+- Follow Target with RMPflow (UR10): ``standalone_examples/api/isaacsim.robot.experimental.manipulators/universal_robots/follow_target_with_rmpflow.py``
+- Follow Target with IK (UR10): ``standalone_examples/api/isaacsim.robot.experimental.manipulators/universal_robots/follow_target_with_ik.py``

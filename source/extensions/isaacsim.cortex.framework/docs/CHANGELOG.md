@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.14] - 2026-04-06
+### Changed
+- Remove unused isaacsim.robot.manipulators.examples dependency
+
 ## [1.0.13] - 2025-12-20
 ### Changed
 - Add omni.isaac.ml_archive as a test dependency

@@ -1,5 +1,5 @@
 [package]
-version = "1.0.13"
+version = "1.0.14"
 category = "Robotics"
 title = "Omni Isaac Cortex"
 description = "Isaac Cortex is a framework within NVIDIA's Isaac Sim that integrates various robotics tools into a unified system, facilitating the development of collaborative robotic applications. It emphasizes reactivity and adaptability, enabling robots to operate safely alongside humans without the need for physical barriers."
@@ -15,7 +15,6 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
-"isaacsim.robot.manipulators.examples" = {}
 "isaacsim.robot_motion.motion_generation" = {}
 "isaacsim.storage.native" = {}
 
