@@ -34,10 +34,10 @@ from .. import _compatibility_check
 class Level(Enum):
     """Enumeration of compatibility check result levels."""
 
-    UNMET: int = 0
-    MINIMUM: int = 1
-    GOOD: int = 2
-    IDEAL: int = 3
+    UNMET = 0
+    MINIMUM = 1
+    GOOD = 2
+    IDEAL = 3
 
 
 @dataclass
@@ -162,7 +162,7 @@ class Checker:
         self._nvidia_smi.status = not len(nvidia_smi_error)
         self._nvidia_smi.message = nvidia_smi_error
 
-    def check_driver_version(self, spec: dict) -> tuple[bool, str]:
+    def check_driver_version(self, spec: dict) -> None:
         """Check driver version against specifications."""
         nvidia_smi_error = self._nvidia_smi_error()
         if nvidia_smi_error:
@@ -220,7 +220,7 @@ class Checker:
 
         self._set_compatibility_check_status(status)
 
-    def check_rtx_gpu(self, spec: dict) -> tuple[bool, str]:
+    def check_rtx_gpu(self, spec: dict) -> None:
         """Check rtx gpu against specifications."""
         num_gpus = self._get_gpu_count()
         self._gpu_rtx.clear()
@@ -278,7 +278,7 @@ class Checker:
 
             self._gpu_status["rtx"][i] = status
 
-    def check_vram(self, spec: dict) -> tuple[bool, str]:
+    def check_vram(self, spec: dict) -> None:
         """Check vram against specifications."""
         num_gpus = self._get_gpu_count()
         self._gpu_vram.clear()
@@ -299,7 +299,7 @@ class Checker:
             ]
             raw_memory = subprocess.check_output(cmd).decode().strip()
             try:
-                memory = round(int(raw_memory) * 0.00104858, 2)  # MiB -> GB
+                memory: float | str = round(int(raw_memory) * 0.00104858, 2)  # MiB -> GB
             except ValueError:
                 memory = "N/A"
 
@@ -343,7 +343,7 @@ class Checker:
                 break
         self._set_compatibility_check_status(global_status)
 
-    def check_cpu(self, spec: dict) -> tuple[bool, str]:
+    def check_cpu(self, spec: dict) -> None:
         """Check cpu against specifications."""
         status = True
 
@@ -369,7 +369,7 @@ class Checker:
 
         self._set_compatibility_check_status(status)
 
-    def check_cpu_cores(self, spec: dict) -> tuple[bool, str]:
+    def check_cpu_cores(self, spec: dict) -> None:
         """Check cpu cores against specifications."""
         status = True
         level = Level.UNMET
@@ -403,7 +403,7 @@ class Checker:
 
         self._set_compatibility_check_status(status)
 
-    def check_cpu_power_governor(self, spec: dict) -> tuple[bool, str]:
+    def check_cpu_power_governor(self, spec: dict) -> None:
         """Check cpu power governor against specifications."""
         status = True
         level = Level.UNMET
@@ -472,7 +472,7 @@ class Checker:
         self._cpu_power_governor.level = level
         self._cpu_power_governor.message = mode
 
-    def check_ram(self, spec: dict) -> tuple[bool, str]:
+    def check_ram(self, spec: dict) -> None:
         """Check ram against specifications."""
         status = True
         level = Level.UNMET
@@ -507,7 +507,7 @@ class Checker:
 
         self._set_compatibility_check_status(status)
 
-    def check_operating_system(self, operating_system: dict) -> tuple[bool, str]:
+    def check_operating_system(self, operating_system: dict) -> None:
         """Check operating system against specifications."""
         # get OS name and version
         os_name = [omni.platforminfo.IOsInfo().distro_name.lower(), platform.system().lower()]
@@ -532,7 +532,7 @@ class Checker:
 
         self._set_compatibility_check_status(status)
 
-    def check_storage(self, spec: dict) -> tuple[bool, str]:
+    def check_storage(self, spec: dict) -> None:
         """Check storage against specifications."""
         status = True
         level = Level.UNMET
@@ -547,7 +547,7 @@ class Checker:
             partitions = [f"{chr(x)}:" for x in range(65, 91) if os.path.exists(f"{chr(x)}:")]
 
         # get available storage
-        storage = 0
+        storage: float = 0
         for partition in partitions:
             disk_usage = shutil.disk_usage(partition)
             storage += disk_usage.free
@@ -577,7 +577,7 @@ class Checker:
         self._disk_storage.level = level
         self._disk_storage.message = f"{storage}"
 
-    def check_display(self) -> tuple[bool, str]:
+    def check_display(self) -> None:
         """Check display against specifications."""
         status = False
         message = ""

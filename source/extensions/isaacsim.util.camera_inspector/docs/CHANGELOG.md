@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.2] - 2026-04-08
+### Fixed
+- Fix mypy type errors: add type annotations, fix callback types, add None guards, rename variable shadowing builtin
+
 ## [1.1.1] - 2026-03-06
 ### Fixed
 - Clear per-frame camera state subscriber when window is hidden to stop GLOBAL_EVENT_UPDATE callbacks while the panel is not visible

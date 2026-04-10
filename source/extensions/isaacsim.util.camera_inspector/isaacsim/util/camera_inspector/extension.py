@@ -15,10 +15,13 @@
 
 """Extension module for the isaacsim.util.camera_inspector that provides a Camera Inspector window for examining and interacting with cameras in the scene."""
 
+from __future__ import annotations
 
 import asyncio
 import gc
 import weakref
+from collections.abc import Callable
+from typing import Any, Final
 
 import carb
 import omni
@@ -39,13 +42,13 @@ from isaacsim.gui.components.ui_utils import (
     get_style,
     setup_ui_headers,
 )
-from isaacsim.sensors.camera import get_all_camera_objects
+from isaacsim.sensors.camera import Camera, get_all_camera_objects
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
-from omni.kit.viewport.window import get_viewport_window_instances
+from omni.kit.viewport.window import ViewportWindow, get_viewport_window_instances
 from omni.kit.window.property.templates import LABEL_WIDTH
 
-EXTENSION_NAME = "Camera Inspector"
-SUPPORTED_AXES = ["world", "usd", "ros"]
+EXTENSION_NAME: Final[str] = "Camera Inspector"
+SUPPORTED_AXES: Final[list[str]] = ["world", "usd", "ros"]
 
 
 class Extension(omni.ext.IExt):
@@ -88,7 +91,7 @@ class Extension(omni.ext.IExt):
         self._window.set_visibility_changed_fn(self._on_window)
 
         # UI
-        self._task_ui_elements = dict()
+        self._task_ui_elements: dict[str, Any] = {}
 
         self._ext_id = ext_id
         menu_items = [
@@ -96,8 +99,8 @@ class Extension(omni.ext.IExt):
         ]
         self._menu_items = [MenuItemDescription(name="Sensors", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Tools")
-        self._all_cameras = []
-        self._all_viewports = []
+        self._all_cameras: list[Camera] = []
+        self._all_viewports: list[ViewportWindow] = []
 
         self.colors = {"X": COLOR_X, "Y": COLOR_Y, "Z": COLOR_Z, "W": COLOR_W}
 
@@ -296,13 +299,13 @@ class Extension(omni.ext.IExt):
         )
         with self._frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
-                dict = {
+                btn_config = {
                     "label": "Get all cameras",
                     "text": "Refresh",
                     "tooltip": "Finds all cameras in the scene and adds them to the camera manager.",
                     "on_clicked_fn": self._on_refresh,
                 }
-                self._task_ui_elements["refresh_btn"] = btn_builder(**dict)
+                self._task_ui_elements["refresh_btn"] = btn_builder(**btn_config)
 
                 # self._task_ui_elements["refresh_btn"].enabled = True
                 # self._frame.visible = True
@@ -328,7 +331,7 @@ class Extension(omni.ext.IExt):
                     dropdown_fn=self._on_camera_changed_event,
                 )
 
-                self._camera_axes_builder_config = {
+                self._camera_axes_builder_config: dict[str, Any] = {
                     "label": "World Camera Axis",
                     "default_val": 0,
                     "items": SUPPORTED_AXES,
@@ -357,8 +360,8 @@ class Extension(omni.ext.IExt):
         self,
         button_text: str,
         label_text: str,
-        button_fn: object = None,
-        dropdown_fn: object = None,
+        button_fn: Callable[[], None] | None = None,
+        dropdown_fn: Callable[[int], None] | None = None,
     ) -> None:
         """Builds a combined UI element with a dropdown and button for camera-viewport operations.
 
@@ -387,7 +390,8 @@ class Extension(omni.ext.IExt):
             add_line_rect_flourish(draw_line=False)
 
             def on_clicked_wrapper(model, val):
-                dropdown_fn(model.get_item_value_model().as_int)
+                if dropdown_fn is not None:
+                    dropdown_fn(model.get_item_value_model().as_int)
 
             self._task_ui_elements[f"Combo {label_text}"].add_item_changed_fn(on_clicked_wrapper)
 
@@ -397,7 +401,7 @@ class Extension(omni.ext.IExt):
         default_val: int = 0,
         items: list = [],
         tooltip: str = "",
-        on_clicked_fn: object = None,
+        on_clicked_fn: Callable[[int], None] | None = None,
         add_line: bool = False,
         label_width: int = LABEL_WIDTH,
     ):
@@ -421,7 +425,8 @@ class Extension(omni.ext.IExt):
             add_line_rect_flourish(add_line)
 
             def on_clicked_wrapper(model, val):
-                on_clicked_fn(model.get_item_value_model().as_int)
+                if on_clicked_fn is not None:
+                    on_clicked_fn(model.get_item_value_model().as_int)
 
             if on_clicked_fn is not None:
                 combo_box.add_item_changed_fn(on_clicked_wrapper)

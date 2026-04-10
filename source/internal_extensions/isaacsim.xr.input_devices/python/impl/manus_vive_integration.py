@@ -15,6 +15,8 @@
 
 """Manus glove and Vive tracker integration."""
 
+from typing import Any, Final
+
 import carb
 from isaacsim.xr.input_devices.bindings._isaac_xr_input_devices import (
     ISAACSIM_HAND_JOINT_COUNT,
@@ -27,10 +29,10 @@ from isaacsim.xr.input_devices.bindings._isaac_xr_input_devices import (
 
 from .vive_tracker import IsaacSimViveTracker
 
-_handtracker_available = True
+_handtracker_available: Final[bool] = True
 
 
-def get_manus_vive_integration(handtracker_lib_override: str = None):
+def get_manus_vive_integration(handtracker_lib_override: str | None = None):
     """Return a shared `ManusViveIntegration` instance.
 
     If the extension is loaded, returns its singleton instance; otherwise creates
@@ -127,14 +129,14 @@ class ManusViveIntegration:
         # Manus tracker
         self.manus_tracker = ManusTracker()
 
-        self.device_status = {
+        self.device_status: dict[str, Any] = {
             "manus_gloves": {"connected": False, "last_data_time": 0},
             "vive_trackers": {"connected": False, "last_data_time": 0},
             "left_hand_connected": False,
             "right_hand_connected": False,
         }
 
-    def register_devices(self, handtracker_lib_override: str = None) -> None:
+    def register_devices(self, handtracker_lib_override: str | None = None) -> None:
         """Register the hand-tracker plugin and Vive trackers.
 
         Updates connectivity flags in `device_status` and reports status via logs.

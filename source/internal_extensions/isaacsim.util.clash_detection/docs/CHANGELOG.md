@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.1] - 2026-04-08
+### Fixed
+- Fix mypy type errors: add type annotations, fix `_run()` returning truthy tuple instead of `False` on error, fix namedtuple name mismatch
+
 ## [0.2.0] - 2025-12-17
 ### Changed
 - Migrate extension implementation to core experimental API

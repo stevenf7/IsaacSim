@@ -19,6 +19,7 @@ import os
 import subprocess
 import sys
 import threading
+from typing import Any, Final
 
 import carb
 import omni
@@ -27,28 +28,28 @@ import omni.ui as ui
 
 from .compatibility_checker import Level
 
-GRAY = 0xFF4A4A4A
-LIGHT_GRAY = 0xFFA8A8A8
-DARK_GRAY = 0xFF363636
-GREEN = 0xFF00B976
-BLACK = 0xFF000000
-BLUE = 0xFFF6A66B
-LIGHT_BLUE = 0xFF8A8777
-WHITE = ui.color("#FFFFFF")
+GRAY: Final[int] = 0xFF4A4A4A
+LIGHT_GRAY: Final[int] = 0xFFA8A8A8
+DARK_GRAY: Final[int] = 0xFF363636
+GREEN: Final[int] = 0xFF00B976
+BLACK: Final[int] = 0xFF000000
+BLUE: Final[int] = 0xFFF6A66B
+LIGHT_BLUE: Final[int] = 0xFF8A8777
+WHITE: Final[int] = ui.color("#FFFFFF")
 
-COLOR_WARNING = ui.color("#FFAF2B")
-COLOR_DISABLED = ui.color("#444444")
+COLOR_WARNING: Final[int] = ui.color("#FFAF2B")
+COLOR_DISABLED: Final[int] = ui.color("#444444")
 
-COLOR_SOPPORTED = ui.color("#26B83A")
-COLOR_UNSOPPORTED = ui.color("#B83326")
+COLOR_SOPPORTED: Final[int] = ui.color("#26B83A")
+COLOR_UNSOPPORTED: Final[int] = ui.color("#B83326")
 
-COLOR_UNMET = ui.color("#B83326")
-COLOR_MINIMUM = ui.color("#F08232")
-COLOR_GOOD = ui.color("#85C235")
-COLOR_IDEAL = ui.color("#26B83A")
+COLOR_UNMET: Final[int] = ui.color("#B83326")
+COLOR_MINIMUM: Final[int] = ui.color("#F08232")
+COLOR_GOOD: Final[int] = ui.color("#85C235")
+COLOR_IDEAL: Final[int] = ui.color("#26B83A")
 
 
-WINDOW_STYLE = {}
+WINDOW_STYLE: dict[str, Any] = {}
 
 
 class CheckWindow:
@@ -84,6 +85,7 @@ class CheckWindow:
 
     def _build_window(self) -> None:
         self._window = ui.Window(self._title, padding_x=0, padding_y=0, style={"Window": {"pading": 0}})
+        assert self._window is not None
         self._window.frame.set_style(WINDOW_STYLE)
         with self._window.frame:
             with ui.VStack():
@@ -115,7 +117,7 @@ class CheckWindow:
             Level.IDEAL: COLOR_DISABLED if disable else COLOR_IDEAL,
         }
         labels = [""] * 4
-        colors = [""] * 4
+        colors: list[str | int] = [""] * 4
         for i in range(4):
             if i <= result.level.value:
                 colors[i] = color_by_level[result.level]
@@ -166,6 +168,7 @@ class CheckWindow:
         else:
             self._check_list_frame.clear()
 
+        assert self._check_list_frame is not None
         with self._check_list_frame:
             with ui.VStack():
                 # GPU
@@ -256,6 +259,7 @@ class CheckWindow:
         else:
             self._test_output_frame.clear()
 
+        assert self._test_output_frame is not None
         with self._test_output_frame:
             with ui.VStack():
                 ui.Label(

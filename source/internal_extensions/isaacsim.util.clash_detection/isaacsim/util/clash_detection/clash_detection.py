@@ -15,11 +15,17 @@
 
 """Clash detection engine for identifying overlapping 3D meshes."""
 
+from __future__ import annotations
+
 from collections import namedtuple
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from isaacsim.core.experimental.prims import Prim
 
 import carb
 import omni.client
-import yaml
+import yaml  # type: ignore[import-untyped]
 from omni.physxclashdetectioncore.clash_data import ClashData
 from omni.physxclashdetectioncore.clash_data_serializer_sqlite import ClashDataSerializerSqlite
 from omni.physxclashdetectioncore.clash_detect import ClashDetection
@@ -87,7 +93,7 @@ class ClashDetector:
             },
             comment="",
         )
-        self._prim_queries = {}
+        self._prim_queries: dict[str, int] = {}
 
         if self._clash_data_layer:
             self._clash_data = ClashData(ClashDataSerializerSqlite())
@@ -96,8 +102,8 @@ class ClashDetector:
         self._is_prim_view = False
         self._prim_view_counter = 0
         self._prim_view_query_name = ""
-        self._clashing_view_prims = []
-        self._prim_view_queries = {}
+        self._clashing_view_prims: list[Any] = []
+        self._prim_view_queries: dict[str, dict[str, Any]] = {}
 
     def set_scope(self, searchset_path: str):
         """Set the searchset defining the scope of the clash detection.
@@ -281,7 +287,7 @@ class ClashDetector:
 
         return True
 
-    def detect_prim_view_clashes(self, prim_view: object, prim_view_query_name: str = "") -> list:
+    def detect_prim_view_clashes(self, prim_view: Prim, prim_view_query_name: str = "") -> list:
         """Check if any prims in the input prim view are clashing with any mesh in the searchset.
 
         Args:
@@ -331,8 +337,8 @@ class ClashDetector:
                 if not success:
                     carb.log_warn(f"Failed to run clash detection for {prim_path}")
                 if self._num_overlaps != 0:
-                    Overlap = namedtuple("Clash", "prim_path query_name")
-                    self._clashing_view_prims.append(Overlap(prim_path, query_name))
+                    Clash = namedtuple("Clash", "prim_path query_name")
+                    self._clashing_view_prims.append(Clash(prim_path, query_name))
 
         else:
             carb.log_warn("Prim View contains an invalid prim. Aborting clash detection.")
@@ -354,15 +360,15 @@ class ClashDetector:
             new_query_id = self._clash_data.insert_query(self._query, True, True)
             if not new_query_id or new_query_id < 1:
                 carb.log_warn("Failed to save clash detection query...")
-                return (False, 0)
+                return False
 
         clash_detect = ClashDetection()
         if not clash_detect.set_scope(stage, self._query.object_a_path, self._query.object_b_path):
             carb.log_warn("Failed to set clash detection scope.")
-            return (False, 0)
+            return False
         if not clash_detect.set_settings(self._query.clash_detect_settings, stage):
             carb.log_warn("Failed to set clash detection settings.")
-            return (False, 0)
+            return False
 
         self._num_overlaps = self._detect_overlaps(stage, clash_detect)
 
