@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.2] - 2026-04-08
+### Fixed
+- Fix mypy type errors: fix implicit Optional parameters, add type annotations for constants and variables
+
 ## [1.1.1] - 2026-03-26
 ### Changed
 - Moved Python binding module to `bindings/` subdirectory
