@@ -15,6 +15,7 @@
 
 """Test suite for Newton rigid contact view pattern matching functionality."""
 
+import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.physics.newton
 import isaacsim.physics.newton.tensors
 import omni.kit.app
@@ -22,7 +23,6 @@ import omni.kit.test
 import omni.timeline
 import omni.usd
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.stage import create_new_stage_async
 from pxr import Gf, PhysicsSchemaTools, UsdGeom, UsdPhysics
 
 
@@ -40,7 +40,7 @@ class TestRigidContactView(omni.kit.test.AsyncTestCase):
         self.use_gpu = True
         self.wp_device = "cuda:0" if self.use_gpu else "cpu"
 
-        await create_new_stage_async()
+        await stage_utils.create_new_stage_async()
         self.stage = omni.usd.get_context().get_stage()
 
         PhysicsSchemaTools.addPhysicsScene(self.stage, "/physicsScene")

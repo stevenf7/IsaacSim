@@ -25,10 +25,8 @@ import numpy as np
 import warp as wp
 from isaacsim.core.deprecation_manager import import_module
 
-torch = import_module("torch")
 
-
-def convert_to_warp(tensor: "wp.array | torch.Tensor | np.ndarray", device: str) -> wp.array | None:
+def convert_to_warp(tensor: wp.array | "torch.Tensor" | np.ndarray, device: str) -> wp.array | None:
     """Prepare a tensor for use as warp kernel output.
 
     Args:
@@ -41,9 +39,6 @@ def convert_to_warp(tensor: "wp.array | torch.Tensor | np.ndarray", device: str)
     if isinstance(tensor, wp.array):
         return tensor
 
-    elif isinstance(tensor, torch.Tensor):
-        return wp.from_torch(tensor)
-
     elif isinstance(tensor, np.ndarray):
         tensor_cont = np.ascontiguousarray(tensor)
         if np.issubdtype(tensor_cont.dtype, np.floating):
@@ -54,12 +49,15 @@ def convert_to_warp(tensor: "wp.array | torch.Tensor | np.ndarray", device: str)
             warp_dtype = wp.float32
         return wp.array(tensor_cont, dtype=warp_dtype, device=str(device), copy=False)
 
-    else:
-        return None
+    torch = import_module("torch")
+    if isinstance(tensor, torch.Tensor):
+        return wp.from_torch(tensor)
+
+    return None
 
 
 def wrap_input_tensor(
-    tensor: "wp.array | torch.Tensor | np.ndarray", device: str, dtype: type | None = None
+    tensor: wp.array | "torch.Tensor" | np.ndarray, device: str, dtype: type | None = None
 ) -> wp.array | None:
     """Wrap an input tensor as a warp array for kernel input.
 
@@ -76,7 +74,17 @@ def wrap_input_tensor(
             return wp.array(tensor, dtype=dtype, device=tensor.device)
         return tensor
 
-    elif isinstance(tensor, torch.Tensor):
+    elif isinstance(tensor, np.ndarray):
+        tensor_cont = np.ascontiguousarray(tensor)
+        if dtype is None:
+            if np.issubdtype(tensor_cont.dtype, np.integer):
+                dtype = wp.int64
+            else:
+                dtype = wp.float32
+        return wp.array(tensor_cont, dtype=dtype, device=str(device), copy=False)
+
+    torch = import_module("torch")
+    if isinstance(tensor, torch.Tensor):
         target_device = "cuda" if "cuda" in str(device) else "cpu"
         if tensor.device.type != target_device:
             tensor = tensor.to(target_device)
@@ -101,19 +109,10 @@ def wrap_input_tensor(
 
         return wp.from_torch(tensor_cont, dtype=dtype)
 
-    elif isinstance(tensor, np.ndarray):
-        tensor_cont = np.ascontiguousarray(tensor)
-        if dtype is None:
-            if np.issubdtype(tensor_cont.dtype, np.integer):
-                dtype = wp.int64
-            else:
-                dtype = wp.float32
-        return wp.array(tensor_cont, dtype=dtype, device=str(device), copy=False)
-    else:
-        return None
+    return None
 
 
-def move_tensor_to_cpu(tensor: "wp.array | torch.Tensor | np.ndarray") -> "wp.array | torch.Tensor | np.ndarray | None":
+def move_tensor_to_cpu(tensor: wp.array | "torch.Tensor" | np.ndarray) -> "wp.array | torch.Tensor | np.ndarray | None":
     """Move a tensor to CPU while preserving the frontend type.
 
     Args:
@@ -126,15 +125,15 @@ def move_tensor_to_cpu(tensor: "wp.array | torch.Tensor | np.ndarray") -> "wp.ar
         if tensor.device.is_cpu:
             return tensor
         return tensor.to("cpu")
-    elif isinstance(tensor, torch.Tensor):
-        return tensor.cpu()
     elif isinstance(tensor, np.ndarray):
         return tensor
-    else:
-        return None
+    torch = import_module("torch")
+    if isinstance(tensor, torch.Tensor):
+        return tensor.cpu()
+    return None
 
 
-def zero_tensor(tensor: "wp.array | torch.Tensor | np.ndarray"):
+def zero_tensor(tensor: wp.array | "torch.Tensor" | np.ndarray):
     """Zero out a tensor in a backend-agnostic way.
 
     Args:

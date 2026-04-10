@@ -15,6 +15,7 @@
 
 """Unit tests for isaacsim.physics.newton.tensors articulation view."""
 
+import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.physics.newton
 import isaacsim.physics.newton.tensors
 import numpy as np
@@ -24,7 +25,6 @@ import omni.timeline
 import omni.usd
 import warp as wp
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
 
 
@@ -46,11 +46,11 @@ class TestNewtonArticulationView(omni.kit.test.AsyncTestCase):
         if self._assets_root_path is None:
             self.skipTest("Could not find Isaac Sim assets folder")
 
-        await create_new_stage_async()
+        await stage_utils.create_new_stage_async()
         self.stage = omni.usd.get_context().get_stage()
 
         self.humanoid_asset = self._assets_root_path + "/Isaac/Robots/IsaacSim/Humanoid/humanoid.usd"
-        add_reference_to_stage(usd_path=self.humanoid_asset, prim_path="/nv_humanoid")
+        stage_utils.add_reference_to_stage(usd_path=self.humanoid_asset, path="/nv_humanoid")
         await wait_for_stage_loading()
 
         success = SimulationManager.switch_physics_engine("newton")

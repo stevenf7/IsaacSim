@@ -15,6 +15,7 @@
 
 """Unit tests for isaacsim.physics.newton.tensors rigid body view."""
 
+import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.physics.newton
 import isaacsim.physics.newton.tensors
 import numpy as np
@@ -24,7 +25,6 @@ import omni.timeline
 import omni.usd
 import warp as wp
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.stage import create_new_stage_async
 from pxr import Gf, UsdGeom, UsdPhysics
 
 
@@ -42,7 +42,7 @@ class TestNewtonRigidBodyView(omni.kit.test.AsyncTestCase):
         self.use_gpu = True
         self.wp_device = "cuda:0" if self.use_gpu else "cpu"
 
-        await create_new_stage_async()
+        await stage_utils.create_new_stage_async()
         self.stage = omni.usd.get_context().get_stage()
 
         # Create physics scene
