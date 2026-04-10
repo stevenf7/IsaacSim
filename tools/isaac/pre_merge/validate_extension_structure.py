@@ -210,7 +210,7 @@ class ExtensionValidator:
             self.errors.append(f"Missing required docs folder\nExpected: {docs_path}")
             return
 
-        for required_file in ["CHANGELOG.md", "README.md"]:
+        for required_file in ["CHANGELOG.md", "Overview.md"]:
             if not (docs_path / required_file).exists():
                 self.errors.append(
                     f"Missing required file in docs folder: {required_file}\n" f"Expected: {docs_path}/{required_file}"
