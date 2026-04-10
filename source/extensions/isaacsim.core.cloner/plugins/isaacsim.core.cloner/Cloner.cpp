@@ -19,17 +19,6 @@
 
 #include <isaacsim/core/cloner/Cloner.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/fabric/IFabric.h>
-
-#if !defined(_WIN32)
-#    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#    pragma GCC diagnostic ignored "-Wunused-variable"
-#endif
-#include <omni/fabric/connectivity/Connectivity.h>
-#if defined(__GNUC__) && !defined(_WIN32)
-#    pragma GCC diagnostic pop
-#endif
 // clang-format on
 
 #include <usdrt/hierarchy/IFabricHierarchy.h>

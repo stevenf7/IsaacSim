@@ -21,7 +21,6 @@
 
 // clang-format off
 #include <pch/UsdPCH.h>
-#include <pxr/usd/usd/inherits.h>
 
 #include <isaacsim/sensors/physics/IsaacSensorComponent.h>
 #include <isaacsim/sensors/physics/IsaacSensorManager.h>
@@ -40,13 +39,11 @@
 #include <omni/fabric/usd/PathConversion.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physics/tensors/IRigidBodyView.h>
-#include <omni/physics/tensors/IRigidContactView.h>
 #include <omni/physics/tensors/ISimulationView.h>
 #include <omni/physics/tensors/TensorApi.h>
 #include <omni/physics/tensors/TensorDesc.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
-#include <omni/usd/UsdContext.h>
 
 
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.sensors.physics.plugin", "Isaac Sensor", "NVIDIA",

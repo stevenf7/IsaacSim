@@ -14,7 +14,6 @@
 // limitations under the License.
 
 #include <carb/BindingsPythonUtils.h>
-#include <carb/logging/Log.h>
 
 #include <isaacsim/asset/gen/conveyor/IOmniIsaacConveyor.h>
 

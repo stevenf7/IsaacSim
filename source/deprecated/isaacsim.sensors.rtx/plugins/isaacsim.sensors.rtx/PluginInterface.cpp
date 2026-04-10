@@ -15,9 +15,6 @@
 
 #define CARB_EXPORTS
 
-// clang-format off
-#include <pch/UsdPCH.h>
-// clang-format on
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
@@ -25,12 +22,7 @@
 
 #include <isaacsim/sensors/rtx/IIsaacSimSensorsRtx.h>
 #include <omni/fabric/IToken.h>
-#include <omni/graph/core/OgnHelpers.h>
-#include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
-#include <omni/kit/IMinimal.h>
-
-#include <algorithm>
 
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.sensors.rtx.plugin", "Isaac Sim Sensors RTX Node plugin.",
                                                     "NVIDIA", carb::PluginHotReload::eEnabled, "dev" };

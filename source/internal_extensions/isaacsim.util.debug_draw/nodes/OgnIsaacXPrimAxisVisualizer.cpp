@@ -22,10 +22,8 @@
 #include <isaacsim/core/includes/Pose.h>
 #include <isaacsim/util/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/fabric/FabricUSD.h>
-#include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
-#include <pxr/usd/usd/inherits.h>
 #include <usdrt/gf/matrix.h>
 #include <usdrt/gf/vec.h>
 

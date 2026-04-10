@@ -21,7 +21,6 @@
 
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Log.h>
-#include <carb/settings/ISettings.h>
 
 #include <isaacSensorSchema/isaacContactSensor.h>
 #include <isaacsim/core/experimental/prims/IPrimDataReader.h>

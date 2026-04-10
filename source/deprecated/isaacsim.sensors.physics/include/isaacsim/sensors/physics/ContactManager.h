@@ -16,21 +16,15 @@
 #pragma once
 
 #include <carb/Framework.h>
-#include <carb/PluginUtils.h>
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Log.h>
 
 #include <isaacsim/sensors/physics/IsaacSensorTypes.h>
-#include <omni/kit/IStageUpdate.h>
 #include <omni/physx/ContactEvent.h>
 #include <omni/physx/IPhysx.h>
-#include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/physx/IPhysxSimulation.h>
-#include <omni/usd/UsdContext.h>
-#include <physicsSchemaTools/UsdTools.h>
 #include <physxSchema/physxContactReportAPI.h>
 #include <physxSchema/physxRigidBodyAPI.h>
-#include <pxr/usd/usdPhysics/scene.h>
 
 #include <PxActor.h>
 

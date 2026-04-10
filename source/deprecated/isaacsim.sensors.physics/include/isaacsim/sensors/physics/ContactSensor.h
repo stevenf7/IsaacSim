@@ -20,9 +20,7 @@
 
 #include <isaacSensorSchema/isaacContactSensor.h>
 #include <isaacsim/sensors/physics/IPhysicsSensor.h>
-#include <omni/renderer/IDebugDraw.h>
 #include <pxr/base/gf/vec4d.h>
-#include <pxr/usd/usd/inherits.h>
 #include <usdrt/gf/matrix.h>
 #include <usdrt/gf/vec.h>
 

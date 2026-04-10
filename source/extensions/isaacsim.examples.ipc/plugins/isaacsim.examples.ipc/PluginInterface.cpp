@@ -27,7 +27,6 @@
 #include <carb/settings/ISettings.h>
 
 #include <omni/fabric/IToken.h>
-#include <omni/graph/core/NodeTypeRegistrar.h>
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
 

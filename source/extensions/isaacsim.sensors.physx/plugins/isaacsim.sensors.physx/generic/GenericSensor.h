@@ -23,7 +23,6 @@
 #include <isaacsim/core/includes/Conversions.h>
 #include <isaacsim/sensors/physx/IPhysxSensorInterface.h>
 #include <pxr/base/gf/vec3f.h>
-#include <pxr/usd/usd/inherits.h>
 #include <rangeSensorSchema/generic.h>
 
 #include <vector>

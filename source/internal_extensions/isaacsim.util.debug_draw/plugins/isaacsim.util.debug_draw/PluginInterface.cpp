@@ -31,7 +31,6 @@
 
 ///
 #include <omni/kit/IStageUpdate.h>
-#include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 ///

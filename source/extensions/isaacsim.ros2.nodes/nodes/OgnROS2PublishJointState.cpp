@@ -20,7 +20,6 @@
 #include "isaacsim/core/includes/UsdUtilities.h"
 
 #include <carb/Framework.h>
-#include <carb/Types.h>
 #include <carb/logging/Log.h>
 
 #include <isaacsim/ros2/core/Ros2Node.h>

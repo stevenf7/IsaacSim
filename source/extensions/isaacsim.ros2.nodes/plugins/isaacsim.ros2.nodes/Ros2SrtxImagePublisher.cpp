@@ -15,7 +15,6 @@
 
 #include "Ros2SrtxImagePublisher.h"
 
-#include <carb/profiler/IProfiler.h>
 #include <carb/profiler/Profile.h>
 #include <carb/settings/ISettings.h>
 

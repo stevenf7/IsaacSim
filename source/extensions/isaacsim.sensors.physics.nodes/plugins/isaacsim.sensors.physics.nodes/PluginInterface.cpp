@@ -15,15 +15,11 @@
 
 #define CARB_EXPORTS
 
-// clang-format off
-#include <pch/UsdPCH.h>
-// clang-format on
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 
 #include <isaacsim/sensors/physics/nodes/IPhysicsSensorNodes.h>
-#include <omni/graph/core/NodeTypeRegistrar.h>
 #include <omni/graph/core/ogn/Registration.h>
 
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.sensors.physics.nodes.plugin",

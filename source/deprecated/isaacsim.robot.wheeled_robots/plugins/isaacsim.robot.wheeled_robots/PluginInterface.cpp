@@ -15,16 +15,12 @@
 
 #define CARB_EXPORTS
 
-// clang-format off
-#include <pch/UsdPCH.h>
-// clang-format on
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/settings/ISettings.h>
 
 #include <isaacsim/robot/wheeled_robots/IWheeledRobots.h>
-#include <omni/kit/IMinimal.h>
 
 namespace
 {

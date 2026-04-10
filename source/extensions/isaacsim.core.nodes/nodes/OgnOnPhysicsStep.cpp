@@ -18,7 +18,6 @@
 // clang-format on
 
 #include <carb/Defines.h>
-#include <carb/Types.h>
 #include <carb/eventdispatcher/IEventDispatcher.h>
 #include <carb/logging/Logger.h>
 

@@ -17,9 +17,6 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include <carb/Defines.h>
-#include <carb/Types.h>
-
 #include <isaacsim/core/includes/BaseResetNode.h>
 #include <isaacsim/core/includes/UsdUtilities.h>
 #include <isaacsim/core/nodes/ICoreNodes.h>

@@ -18,9 +18,6 @@
 // clang-format on
 
 #include <carb/Defines.h>
-#include <carb/Types.h>
-#include <carb/events/EventsUtils.h>
-#include <carb/logging/Logger.h>
 
 #include <isaacsim/core/includes/BaseResetNode.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>

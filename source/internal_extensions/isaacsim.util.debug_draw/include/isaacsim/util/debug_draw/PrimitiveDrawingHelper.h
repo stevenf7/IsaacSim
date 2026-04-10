@@ -17,7 +17,6 @@
 
 #include <omni/usd/UsdContextIncludes.h>
 //
-#include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdContext.h>
 
 #include <memory>

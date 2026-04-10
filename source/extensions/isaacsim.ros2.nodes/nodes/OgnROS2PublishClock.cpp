@@ -17,8 +17,6 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
-#include <carb/extras/Library.h>
-
 #include <isaacsim/ros2/core/Ros2Factory.h>
 #include <isaacsim/ros2/core/Ros2Node.h>
 

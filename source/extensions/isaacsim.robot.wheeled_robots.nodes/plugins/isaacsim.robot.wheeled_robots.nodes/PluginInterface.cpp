@@ -15,9 +15,6 @@
 
 #define CARB_EXPORTS
 
-// clang-format off
-#include <pch/UsdPCH.h>
-// clang-format on
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
@@ -28,7 +25,6 @@
 #include <omni/graph/core/NodeTypeRegistrar.h>
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
-#include <omni/kit/IMinimal.h>
 
 namespace
 {
