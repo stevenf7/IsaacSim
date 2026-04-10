@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2026-04-09
+### Removed
+- Select file window size constraints
+
 ## [1.2.0] - 2026-04-08
 ### Changed
 - Improve Python API documentation (`config/python_api.md` and/or module docstrings).
