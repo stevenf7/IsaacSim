@@ -13,10 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides a base template class for creating interactive Isaac Sim example user interfaces with standardized world controls and extensible UI frameworks."""
+"""Provides a base template class for creating interactive Isaac Sim example user interfaces.
+
+.. deprecated::
+    This module is deprecated. Use :mod:`isaacsim.examples.base.base_sample_experimental`
+    and its corresponding UI template which use the new experimental APIs
+    (``SimulationManager``, ``app_utils``, ``stage_utils``) instead of the legacy ``World`` API.
+"""
 
 
 import asyncio
+import warnings
 from abc import abstractmethod
 
 import carb.eventdispatcher
@@ -52,6 +59,12 @@ class BaseSampleUITemplate:
     """
 
     def __init__(self, *args: object, **kwargs: object) -> None:
+        warnings.warn(
+            "BaseSampleUITemplate from isaacsim.examples.interactive.base_sample is deprecated. "
+            "Use BaseSampleUITemplate from isaacsim.examples.base (base_sample_experimental) instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self._ext_id = kwargs.get("ext_id")
         self._file_path = kwargs.get("file_path", "")
         self._title = kwargs.get("title", "Isaac Sim Example")

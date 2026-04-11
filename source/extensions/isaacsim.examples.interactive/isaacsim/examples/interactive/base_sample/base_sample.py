@@ -13,10 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Abstract base class for creating interactive Isaac Sim examples and samples."""
+"""Abstract base class for creating interactive Isaac Sim examples and samples.
+
+.. deprecated::
+    This module is deprecated. Use :mod:`isaacsim.examples.base.base_sample_experimental`
+    (``BaseSample`` from ``isaacsim.examples.base``) which uses the new experimental APIs
+    (``SimulationManager``, ``app_utils``, ``stage_utils``) instead of the legacy ``World`` API.
+"""
 
 
 import gc
+import warnings
 from abc import abstractmethod
 
 from isaacsim.core.api import World
@@ -48,6 +55,12 @@ class BaseSample(object):
     """
 
     def __init__(self):
+        warnings.warn(
+            "BaseSample from isaacsim.examples.interactive.base_sample is deprecated. "
+            "Use BaseSample from isaacsim.examples.base (base_sample_experimental) instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self._world = None
         self._current_tasks = None
         self._world_settings = {"physics_dt": 1.0 / 60.0, "stage_units_in_meters": 1.0, "rendering_dt": 1.0 / 60.0}
