@@ -12,11 +12,38 @@ from __future__ import annotations
 import argparse
 import glob
 import os
+from pathlib import Path
 import sys
 import xml.etree.ElementTree as ET
 
 import omni.repo.ci
 from omni.repo.man import find_and_extract_package
+
+
+def _restore_repointed_prebundle(isaac_sim_path: str) -> None:
+    """Undo IsaacLab's ``_repoint_prebundle_packages()`` for the ``nvidia`` namespace.
+
+    IsaacLab's installer may replace ``pip_prebundle/nvidia/`` (which aggregates
+    CUDA libraries from 16+ pip packages) with a symlink to ``site-packages/nvidia/``
+    (which may contain only a partial subset, e.g. nvidia-srl-*).  This causes
+    ``libcudart.so.12`` and other CUDA shared objects to go missing at runtime.
+
+    If a ``.bak`` backup exists we restore the original directory; otherwise we
+    just remove the bad symlink so the prebundled copies remain authoritative.
+    """
+    ml_prebundle = Path(isaac_sim_path) / "exts" / "omni.isaac.ml_archive" / "pip_prebundle"
+    if not ml_prebundle.is_dir():
+        return
+    nvidia_path = ml_prebundle / "nvidia"
+    nvidia_bak = ml_prebundle / "nvidia.bak"
+    if nvidia_path.is_symlink():
+        print(f"[isaaclab-fixup] Removing repointed symlink: {nvidia_path}")
+        nvidia_path.unlink()
+        if nvidia_bak.is_dir():
+            print(f"[isaaclab-fixup] Restoring backup: {nvidia_bak} -> {nvidia_path}")
+            nvidia_bak.rename(nvidia_path)
+        else:
+            print(f"[isaaclab-fixup] Warning: no .bak found at {nvidia_bak}", file=sys.stderr)
 
 
 def _combine_junit_xmls(xml_dir: str, output_path: str) -> None:
@@ -65,6 +92,10 @@ def main(args: argparse.Namespace) -> None:
 
     setup_command = ["./isaaclab.sh", "-i"]
     omni.repo.ci.launch(setup_command)
+
+    # IsaacLab's installer may replace prebundled nvidia/ directories with
+    # symlinks to site-packages, losing CUDA shared objects.  Undo that.
+    _restore_repointed_prebundle("_isaac_sim")
 
     os.makedirs("tests", exist_ok=True)
 
