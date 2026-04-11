@@ -15,6 +15,9 @@
 #
 # Uses isaacsim.robot.experimental.wheeled_robots
 # Extension: source/extensions/isaacsim.robot.experimental.wheeled_robots
+
+"""Demonstrate Jetbot differential drive movement."""
+
 import argparse
 
 from isaacsim import SimulationApp

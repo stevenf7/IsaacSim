@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate interactive ANYmal robot simulation with keyboard control."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
@@ -49,8 +51,7 @@ class Anymal_runner(object):
     """
 
     def __init__(self, physics_dt: float, render_dt: float) -> None:
-        """
-        Initialize the simulation environment with ANYmal robot in a warehouse.
+        """Initialize the simulation environment with ANYmal robot in a warehouse.
 
         Args:
             physics_dt: Physics simulation timestep in seconds
@@ -108,8 +109,7 @@ class Anymal_runner(object):
         self.first_step = True
 
     def setup(self) -> None:
-        """
-        Configure simulation input handling and physics callbacks.
+        """Configure simulation input handling and physics callbacks.
 
         Sets up the keyboard event listener for robot control and registers
         the physics step callback for robot state updates and control.
@@ -121,8 +121,7 @@ class Anymal_runner(object):
         _physics_callback_id = SimulationManager.register_callback(self.on_physics_step, IsaacEvents.POST_PHYSICS_STEP)
 
     def on_physics_step(self, step_size: float, context) -> None:
-        """
-        Physics simulation step callback handler.
+        """Physics simulation step callback handler.
 
         Manages robot initialization on first step, handles simulation resets,
         and executes the robot's control policy to apply joint torques based
@@ -130,6 +129,7 @@ class Anymal_runner(object):
 
         Args:
             step_size: Physics timestep duration in seconds
+            context: Physics simulation context
         """
         if self.first_step:
             self._anymal.initialize()
@@ -141,8 +141,7 @@ class Anymal_runner(object):
             self._anymal.forward(step_size, self._base_command)
 
     def run(self) -> None:
-        """
-        Main simulation loop.
+        """Main simulation loop.
 
         Continuously steps the physics simulation with rendering enabled,
         monitoring for simulation stop conditions that trigger resets.
@@ -156,8 +155,7 @@ class Anymal_runner(object):
         return
 
     def _sub_keyboard_event(self, event: carb.input.KeyboardEvent, *args, **kwargs) -> bool:
-        """
-        Handle keyboard input events for robot control.
+        """Handle keyboard input events for robot control.
 
         Processes key press and release events to update the robot's command velocity.
         Supports numpad and arrow keys for movement control:
@@ -176,7 +174,6 @@ class Anymal_runner(object):
         Returns:
             True to continue processing keyboard events
         """
-
         # when a key is pressed for released  the command is adjusted w.r.t the key-mapping
         if event.type == carb.input.KeyboardEventType.KEY_PRESS:
             if event.input.name in self._input_keyboard_mapping:
@@ -190,8 +187,7 @@ class Anymal_runner(object):
 
 
 def main() -> None:
-    """
-    Entry point for the ANYmal simulation demo.
+    """Entry point for the ANYmal simulation demo.
 
     Sets up and runs an interactive simulation of an ANYmal robot in a warehouse
     environment with keyboard-based velocity control. Uses a 200Hz physics update

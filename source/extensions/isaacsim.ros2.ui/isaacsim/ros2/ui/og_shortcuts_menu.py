@@ -172,8 +172,6 @@ class Ros2ShortcutsMenuExtension(omni.ext.IExt, MenuHelperExtensionFull):
         if camera_position is not None and camera_target is not None:
             ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=camera_position, target=camera_target)
 
-        pass
-
     def on_shutdown(self):
         """Clean up resources when the extension shuts down."""
         carb.log_info("ROS2 Shortcuts Menu shutdown")

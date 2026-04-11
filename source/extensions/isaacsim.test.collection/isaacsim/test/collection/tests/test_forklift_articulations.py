@@ -113,8 +113,6 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
             },
         )
 
-        pass
-
     # After running each test
     async def tearDown(self):
         """Clean up test environment and stop timeline."""
@@ -122,7 +120,6 @@ class TestForkliftArticulations(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def test_forklift_forward(self):
         """Test forklift moves forward when positive wheel velocity is applied."""

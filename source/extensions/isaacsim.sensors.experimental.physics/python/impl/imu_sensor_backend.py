@@ -115,7 +115,6 @@ class ImuSensorBackend(_PhysicsSensorBase):
         Args:
             step_dt: Physics step duration in seconds.
         """
-        pass
 
     def on_timeline_stop(self):
         """Handle timeline stop events."""

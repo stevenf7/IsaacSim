@@ -119,7 +119,6 @@ class Commander(ABC):
 
         This method doesn't handle resetting the command.
         """
-        pass
 
     def post_reset(self) -> None:
         """Clear the command and reset the commander. This method is called automatically at the.

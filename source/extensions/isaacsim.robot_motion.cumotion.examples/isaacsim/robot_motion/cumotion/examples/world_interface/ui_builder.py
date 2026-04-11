@@ -23,7 +23,7 @@ import omni.kit.app
 import omni.timeline
 import omni.ui as ui
 from isaacsim.core.experimental.utils import stage as stage_utils
-from isaacsim.core.rendering_manager import RenderingManager, ViewportManager
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.gui.components.element_wrappers import Button, CollapsableFrame, StateButton
 from isaacsim.gui.components.style import get_style

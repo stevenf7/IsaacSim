@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate differences between Push and Action graphs and manual graph triggering."""
 
 from isaacsim import SimulationApp
 

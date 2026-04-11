@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Load and simulate a Franka Panda robot for a fixed number of steps."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})

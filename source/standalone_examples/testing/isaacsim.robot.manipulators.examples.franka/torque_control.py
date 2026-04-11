@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Test torque control of a Franka robot using a PD controller."""
 
 import numpy as np
 from isaacsim import SimulationApp
@@ -29,12 +30,15 @@ my_world = World(stage_units_in_meters=1.0)
 
 # TODO: this should be converted to a test, for now this is not working, we need to verify if force control works.
 class FrankaTask(BaseTask):
+    """Define a task for Franka torque control testing."""
+
     def __init__(self):
         BaseTask.__init__(self, name="dummy_task", offset=None)
         self._my_franka = None
         self._pd_gains = None
 
     def set_up_scene(self, scene):
+        """Set up the scene with a ground plane and Franka robot."""
         BaseTask.set_up_scene(self, scene)
         scene.add_default_ground_plane()
         self._my_franka = scene.add(
@@ -50,6 +54,7 @@ class FrankaTask(BaseTask):
         return
 
     def get_observations(self):
+        """Return current joint positions and velocities of the Franka robot."""
         joints_state = self.scene.get_object("my_franka").get_joints_state()
         return {
             "franka": {
@@ -59,12 +64,15 @@ class FrankaTask(BaseTask):
         }
 
     def post_reset(self):
+        """Switch the Franka articulation to effort control mode after reset."""
         self._pd_gains = self._my_franka.get_articulation_controller().get_gains()
         self._my_franka.get_articulation_controller().switch_control_mode("effort")
         return
 
 
 class PDController(BaseController):
+    """Implement a proportional-derivative controller for joint effort control."""
+
     def __init__(self, name, kp, kd):
         super().__init__(name)
         self._kp = kp
@@ -72,6 +80,7 @@ class PDController(BaseController):
         return
 
     def forward(self, observations):
+        """Compute joint efforts from position and velocity errors."""
         position_error = observations["franka"]["target_joint_positions"] - observations["franka"]["joint_positions"]
         velocity_error = -observations["franka"]["joint_velcoities"]
         joint_efforts = self._kp * position_error + self._kd * velocity_error

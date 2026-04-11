@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate ROS 2 clock publishing and subscribing with simulation time."""
 
 import time
 
@@ -73,10 +74,12 @@ simulation_app.update()
 
 # Define ROS2 callbacks
 def sim_clock_callback(data):
+    """Log the simulation clock time."""
     print("sim time:", data.clock)
 
 
 def manual_clock_callback(data):
+    """Log the manually stepped simulation clock time."""
     print("manual stepped sim time:", data.clock)
 
 

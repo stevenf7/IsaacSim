@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Verify torch is imported from the expected path and CUDA is available."""
+
 import torch
 
 print(torch.__path__[0])
@@ -22,6 +25,7 @@ assert torch.cuda.is_available()
 
 @torch.jit.script
 def add(a, b):
+    """Add two tensors element-wise using torch.jit.script."""
     return a + b
 
 

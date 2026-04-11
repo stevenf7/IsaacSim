@@ -79,7 +79,6 @@ class LightBeamSensorDemo(omni.ext.IExt):
 
     def build_window(self):
         """Placeholder method for building the extension window."""
-        pass
 
     def _on_stage_closed(self, event: object) -> None:
         """Stage closed event callback.

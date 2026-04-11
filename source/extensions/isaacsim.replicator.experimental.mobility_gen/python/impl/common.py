@@ -103,7 +103,6 @@ class Module:
             dict[str, Module]: The dictionary of all nested modules with
                 expanded names as keys.
         """
-
         named_modules = OrderedDict()
 
         named_modules[prefix] = self
@@ -127,7 +126,6 @@ class Module:
             dict[str, Buffer]: The dictionary of all nested buffers with
                 expanded names as keys.
         """
-
         named_buffers = OrderedDict()
 
         for name, module in self.named_modules(prefix).items():

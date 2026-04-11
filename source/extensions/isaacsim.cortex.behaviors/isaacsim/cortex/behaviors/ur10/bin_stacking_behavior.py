@@ -525,7 +525,6 @@ class CloseSuctionGripperWithRetries(DfState):
 
     def enter(self):
         """Enter the close gripper with retries state."""
-        pass
 
     def step(self):
         """Attempt to close the gripper each cycle until successful."""
@@ -562,7 +561,7 @@ class OpenSuctionGripper(DfState):
 
     def step(self):
         """Exit immediately after opening."""
-        return None
+        return
 
 
 class DoNothing(DfState):

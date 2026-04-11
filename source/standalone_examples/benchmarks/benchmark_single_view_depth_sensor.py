@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Benchmark single-view depth sensor performance in Isaac Sim."""
+
 import argparse
 
 parser = argparse.ArgumentParser()

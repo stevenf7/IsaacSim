@@ -33,19 +33,16 @@ class TestUI(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         """Set up the test environment."""
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     # After running each test
     async def tearDown(self):
         """Clean up after each test."""
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     # Run for a single frame and exit
     async def test_ui(self):
         """Test basic UI frame update."""
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     # TODO: Disabling this test as it hangs on TC on shutdown
     # async def test_clipboard(self):

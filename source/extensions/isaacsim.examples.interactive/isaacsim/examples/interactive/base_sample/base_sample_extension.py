@@ -94,7 +94,6 @@ class BaseSampleUITemplate:
         # with self._window.frame:
         #     self.build_ui()
         # return self._window
-        pass
 
     def build_ui(self) -> None:
         """Builds the complete user interface by constructing the default frame and extra frames."""

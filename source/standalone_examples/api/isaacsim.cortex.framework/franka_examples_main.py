@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Run selectable Franka cortex behaviors with a block-stacking scene."""
 
 import argparse
 
@@ -37,12 +38,15 @@ from isaacsim.cortex.framework.robot import add_franka_to_stage
 
 
 class CubeSpec:
+    """Store the name and color specification for a cube obstacle."""
+
     def __init__(self, name, color):
         self.name = name
         self.color = np.array(color)
 
 
 def main():
+    """Set up the scene and run the selected Franka behavior."""
     world = CortexWorld()
     context_monitor = ContextStateMonitor(print_dt=0.25)
     robot = world.add_robot(add_franka_to_stage(name="franka", prim_path="/World/Franka"))

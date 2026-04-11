@@ -68,8 +68,6 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
 
         await app_utils.update_app_async()
 
-        pass
-
     # After running each test
     async def tearDown(self):
         """Clean up test environment and stop timeline."""
@@ -78,7 +76,6 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await app_utils.update_app_async()
-        pass
 
     async def test_prim_visibility_bug(self):
         """Test that making prim invisible and deleting it does not crash."""

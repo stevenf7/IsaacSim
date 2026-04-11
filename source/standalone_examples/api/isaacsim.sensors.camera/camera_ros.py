@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Create a camera from ROS camera_info topic parameters and render an image."""
+
 # Given a printout of ROS topic, containing the intrinsic and extrinsic parameters of the camera,
 # creates a camera and a sample scene, renders an image and saves it to camera_ros.png file.
 # The asset is also saved to camera_ros.usd file. The camera model is based on Intel RealSense D435i.
@@ -135,6 +137,7 @@ img = Image.fromarray(camera.get_rgba()[:, :, :3])
 
 # Optional step, draw the 3D points to the image plane using the OpenCV fisheye model
 def draw_points_opencv(points3d):
+    """Draw 3D points projected onto the image plane using OpenCV."""
     try:
         # To install, run python.sh -m pip install opencv-python
         import cv2

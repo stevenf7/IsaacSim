@@ -119,7 +119,6 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
             if name != "self":
                 setattr(self, f"_{name}", value)
         self._prim = None
-        pass
 
     def do(self):
         """Creates a contact sensor prim with the specified parameters.
@@ -165,7 +164,6 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
         Currently a no-op placeholder for the undo functionality.
         """
         # undo must be defined even if empty
-        pass
 
 
 class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
@@ -202,7 +200,6 @@ class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
             if name != "self":
                 setattr(self, f"_{name}", value)
         self._prim = None
-        pass
 
     def do(self):
         """Creates an IMU sensor prim with the specified configuration.
@@ -239,7 +236,6 @@ class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
         This method is required for command pattern implementation but currently performs no action.
         """
         # undo must be defined even if empty
-        pass
 
 
 omni.kit.commands.register_all_commands_in_module(__name__)

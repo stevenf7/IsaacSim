@@ -36,7 +36,6 @@ class TestSockets(omni.kit.test.AsyncTestCase):
     # After running each test
     async def tearDown(self):
         """Tear down test fixtures after each test."""
-        pass
 
     async def test_tcp_socket(self):
         """Test TCP socket code execution and response parsing."""

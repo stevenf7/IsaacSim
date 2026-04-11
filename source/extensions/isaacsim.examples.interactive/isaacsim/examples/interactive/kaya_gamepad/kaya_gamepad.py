@@ -74,20 +74,15 @@ class KayaGamepad(BaseSample):
 
     async def setup_post_load(self) -> None:
         """Called after the scene is loaded."""
-        pass
 
     async def setup_pre_reset(self) -> None:
         """Called before world reset."""
-        pass
 
     async def setup_post_reset(self) -> None:
         """Called after world reset."""
-        pass
 
     async def setup_post_clear(self) -> None:
         """Called after clearing the scene."""
-        pass
 
     def physics_cleanup(self) -> None:
         """Function called when extension shutdowns and starts again, (hot reloading feature)."""
-        pass

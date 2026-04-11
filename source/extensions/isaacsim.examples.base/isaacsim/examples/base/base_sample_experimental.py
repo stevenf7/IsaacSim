@@ -130,7 +130,6 @@ class BaseSample(object):
     @abstractmethod
     def setup_scene(self):
         """Used to setup anything in the world, adding tasks happen here for instance."""
-        pass
 
     @abstractmethod
     async def setup_post_load(self):
@@ -138,7 +137,6 @@ class BaseSample(object):
 
         intializing private variables happen here.
         """
-        pass
 
     @abstractmethod
     async def setup_pre_reset(self):
@@ -146,12 +144,10 @@ class BaseSample(object):
 
         to remove a physics callback for instance or a controller reset.
         """
-        pass
 
     @abstractmethod
     async def setup_post_reset(self):
         """Called in reset button after resetting the world which includes one step with rendering."""
-        pass
 
     @abstractmethod
     async def setup_post_clear(self):
@@ -159,7 +155,6 @@ class BaseSample(object):
 
         or after creating a new stage and clearing the instance of the world with its callbacks.
         """
-        pass
 
     def log_info(self, info: str) -> None:
         """Appends information to the logging string.
@@ -177,7 +172,6 @@ class BaseSample(object):
 
     def physics_cleanup(self):
         """Function called when extension shutdowns and starts again, (hot reloading feature)."""
-        pass
 
     async def clear_async(self):
         """Function called when clicking clear button."""

@@ -128,7 +128,6 @@ class Shape(XformPrim, ABC):
         Args:
             geoms: Geoms to process.
         """
-        pass
 
     @staticmethod
     @abstractmethod
@@ -141,7 +140,6 @@ class Shape(XformPrim, ABC):
         Returns:
             Boolean flags indicating if the prims are valid for creating Shape instances.
         """
-        pass
 
     @staticmethod
     def fetch_instances(paths: str | Usd.Prim | list[str | Usd.Prim]) -> list[Shape | None]:

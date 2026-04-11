@@ -40,12 +40,10 @@ class TestStorageNative(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         """Set up test fixtures before each test method."""
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def tearDown(self):
         """Clean up after each test method."""
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def test_get_assets_root_path(self):
         """Test asset root path retrieval with various settings configurations.

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate effort sensor measurement."""
+
 # In this example, please drag the cube along the arm and see how the effort measurement from the effort sensor changes
 
 from isaacsim import SimulationApp

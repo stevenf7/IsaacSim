@@ -159,7 +159,6 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._articulation_policy = None
         await update_stage_async()
         World.clear_instance()
-        pass
 
     async def _create_light(self):
         """Create a sphere light in the scene for illumination.
@@ -213,7 +212,6 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         robot.post_reset()
         await self._prepare_stage(robot)
         await update_stage_async()
-        pass
 
     async def test_rrt_set_params(self):
         """Test setting various RRT planner parameters.
@@ -645,4 +643,3 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         a = np.array(a)
         b = np.array(b)
         self.assertFalse(np.any(abs((a[a != np.array(None)] - b[b != np.array(None)])) > 1e-3), dbg_msg)
-        pass

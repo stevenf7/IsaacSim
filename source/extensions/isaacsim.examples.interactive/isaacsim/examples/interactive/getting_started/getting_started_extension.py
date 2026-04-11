@@ -122,19 +122,15 @@ class GettingStartedUI(BaseSampleUITemplate):
 
     def build_window(self) -> None:
         """Builds the main window for the Getting Started tutorial."""
-        pass
 
     def post_reset_button_event(self) -> None:
         """Handles actions after the reset button is pressed."""
-        pass
 
     def post_load_button_event(self) -> None:
         """Handles actions after the load button is pressed."""
-        pass
 
     def post_clear_button_event(self) -> None:
         """Handles actions after the clear button is pressed."""
-        pass
 
     def build_extra_frames(self) -> None:
         """Builds additional UI frames for the Getting Started tutorial.

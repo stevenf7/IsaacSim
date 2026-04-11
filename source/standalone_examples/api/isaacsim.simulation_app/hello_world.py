@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate the most basic SimulationApp creation and usage."""
+
 from isaacsim import SimulationApp
 
 # The most basic usage for creating a simulation app

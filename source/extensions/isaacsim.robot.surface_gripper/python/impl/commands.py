@@ -58,7 +58,6 @@ class CreateSurfaceGripper(omni.kit.commands.Command):
                 else:
                     prim_path = str(default_prim.GetPath())
         self._prim_path = omni.usd.get_stage_next_free_path(stage, prim_path + "/SurfaceGripper", False)
-        pass
 
     def do(self):
         """Creates the Surface Gripper prim at the specified path.
@@ -77,7 +76,6 @@ class CreateSurfaceGripper(omni.kit.commands.Command):
         """
         if self._prim:
             return self._stage.RemovePrim(self._prim_path)
-        pass
 
 
 omni.kit.commands.register_all_commands_in_module(__name__)

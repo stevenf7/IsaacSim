@@ -92,8 +92,6 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         await update_stage_async()
 
-        pass
-
     # After running each test
     async def tearDown(self):
         """Clean up the test environment after each test.
@@ -109,7 +107,6 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self._articulation_policy = None
         await update_stage_async()
         World.clear_instance()
-        pass
 
     async def _create_light(self):
         """Create a sphere light in the scene for visualization.
@@ -652,8 +649,6 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         action = self._articulation_policy.get_next_articulation_action()
 
-        pass
-
     async def test_rmpflow_on_franka(self):
         """Test RMPflow motion policy with Franka Panda robot including state updates."""
         asset_root_path = await get_assets_root_path_async()
@@ -725,8 +720,6 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
-        pass
-
     async def test_rmpflow_on_franka_ignore_state(self):
         """Test RMPflow motion policy with Franka Panda robot while ignoring state updates."""
         # Perform an internal rollout of robot state, ignoring simulated robot state updates
@@ -780,8 +773,6 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self._robot.set_world_pose(trans, gf_quat_to_np_array(rot_quat))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
-
-        pass
 
     async def test_rmpflow_static_obstacles_franka(self):
         """Test RmpFlow motion policy on the Franka robot with static obstacles.
@@ -894,8 +885,6 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
-        pass
-
     async def test_rmpflow_on_ur10_ignore_state(self):
         """Test RmpFlow motion policy on the UR10 robot with state updates ignored.
 
@@ -951,8 +940,6 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self._robot.set_world_pose(trans, gf_quat_to_np_array(rot_quat))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
-
-        pass
 
     async def reached_end_effector_target(
         self, target_trans: object, target_orient: object, trans_thresh: float = 0.02, rot_thresh: float = 0.1
@@ -1024,7 +1011,6 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         a = np.array(a)
         b = np.array(b)
         self.assertFalse(np.any(abs((a[a != np.array(None)] - b[b != np.array(None)])) > 1e-3), msg)
-        pass
 
     async def simulate_until_target_reached(self, timeout: float, target_trans: object, target_orient: object = None):
         """Simulate robot motion until the target is reached or timeout occurs.

@@ -68,4 +68,3 @@ class UIWidgetWrapper:
 
     def cleanup(self):
         """Perform any necessary cleanup."""
-        pass

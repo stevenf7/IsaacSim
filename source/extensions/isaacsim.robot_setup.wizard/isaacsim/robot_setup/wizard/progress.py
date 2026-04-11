@@ -129,7 +129,6 @@ class ProgressRegistry:
 
     def destroy(self):
         """Called to cancel current search."""
-        pass
 
     def set_steps(self, steps: dict):
         """Set the steps.

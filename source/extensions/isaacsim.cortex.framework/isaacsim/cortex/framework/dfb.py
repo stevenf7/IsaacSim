@@ -62,7 +62,6 @@ class DfBasicContext(DfRobotApiContext):
 
     def reset(self) -> None:
         """Reset the context. No-op for the basic context."""
-        pass
 
 
 class DfDiagnosticsMonitor(ABC):

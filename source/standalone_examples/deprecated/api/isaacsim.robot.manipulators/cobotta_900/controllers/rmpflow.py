@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Define RMPFlow motion policy controller for the Cobotta Pro 900 robot."""
 
 import os
 
@@ -20,6 +21,8 @@ from isaacsim.core.prims import SingleArticulation
 
 
 class RMPFlowController(mg.MotionPolicyController):
+    """Control the Cobotta Pro 900 end effector using RMPFlow motion policy."""
+
     def __init__(self, name: str, robot_articulation: SingleArticulation, physics_dt: float = 1.0 / 60.0) -> None:
         self.rmpflow = mg.lula.motion_policies.RmpFlow(
             robot_description_path=os.path.join(os.path.dirname(__file__), "../rmpflow/robot_descriptor.yaml"),
@@ -42,6 +45,7 @@ class RMPFlowController(mg.MotionPolicyController):
         return
 
     def reset(self):
+        """Reset the controller and restore the robot base pose."""
         mg.MotionPolicyController.reset(self)
         self._motion_policy.set_robot_base_pose(
             robot_position=self._default_position, robot_orientation=self._default_orientation

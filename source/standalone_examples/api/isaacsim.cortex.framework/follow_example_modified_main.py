@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate a modified Franka follow example with context monitors for gripper control."""
 
 from isaacsim import SimulationApp
 
@@ -26,23 +27,28 @@ from isaacsim.cortex.framework.robot import add_franka_to_stage
 
 
 class FollowState(DfState):
-    """The context object is available as self.context. We have access to everything in the context
-    object, which in this case is everything in the robot object (the command API and the follow
-    sphere).
+    """Access the context object as self.context.
+
+    We have access to everything in the context object, which in this case is everything in the
+    robot object (the command API and the follow sphere).
     """
 
     @property
     def robot(self):
+        """Return the robot from the context."""
         return self.context.robot
 
     @property
     def follow_sphere(self):
+        """Return the follow sphere from the robot."""
         return self.context.robot.follow_sphere
 
     def enter(self):
+        """Initialize the follow sphere pose to the current end-effector position."""
         self.follow_sphere.set_world_pose(*self.robot.arm.get_fk_pq().as_tuple())
 
     def step(self):
+        """Send the end effector toward the follow sphere, clamping height above the ground."""
         target_position, _ = self.follow_sphere.get_world_pose()
         target_position[2] = max(target_position[2], 0.02)
         self.robot.arm.send_end_effector(target_position=target_position)
@@ -50,6 +56,8 @@ class FollowState(DfState):
 
 
 class FollowContext(DfRobotApiContext):
+    """Extend the robot API context with end-effector and gripper monitors."""
+
     def __init__(self, robot):
         super().__init__(robot)
         self.reset()
@@ -59,24 +67,29 @@ class FollowContext(DfRobotApiContext):
         )
 
     def reset(self):
+        """Reset the target-reached flag."""
         self.is_target_reached = False
 
     def monitor_end_effector(self):
+        """Check whether the end effector has reached the target sphere."""
         eff_p = self.robot.arm.get_fk_p()
         target_p, _ = self.robot.follow_sphere.get_world_pose()
         self.is_target_reached = np.linalg.norm(target_p - eff_p) < 0.01
 
     def monitor_gripper(self):
+        """Close the gripper when the target is reached, otherwise open it."""
         if self.is_target_reached:
             self.robot.gripper.close()
         else:
             self.robot.gripper.open()
 
     def monitor_diagnostics(self):
+        """Print the current target-reached status."""
         print("is_target_reached: {}".format(self.is_target_reached))
 
 
 def main():
+    """Set up and run the modified Franka follow sphere example."""
     world = CortexWorld()
     robot = world.add_robot(add_franka_to_stage(name="franka", prim_path="/World/Franka"))
 

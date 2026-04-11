@@ -30,12 +30,10 @@ class TestAsyncDocTest(isaacsim.test.docstring.AsyncDocTestCase):
     # Before running each test
     async def setUp(self):
         """Set up the test fixture before each test method is run."""
-        pass
 
     # After running each test
     async def tearDown(self):
         """Clean up after each test method has run."""
-        pass
 
     async def test_async_doctest_case(self):
         """Test AsyncDocTestCase docstring examples."""

@@ -288,7 +288,6 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         Args:
             item: The selected axis item.
         """
-        pass
 
     def _on_coaxial_force_limit_changed(self, value: float):
         """Handles coaxial force limit value changes.
@@ -297,7 +296,6 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
             value: The new coaxial force limit value.
         """
         print("Coaxial Force Limit Changed was called!", value)
-        pass
 
     def _on_grip_distance_changed(self, value: float):
         """Handles changes to the grip distance value.
@@ -305,7 +303,6 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         Args:
             value: The new grip distance value.
         """
-        pass
 
     def _on_max_grip_distance_changed(self, value: float):
         """Handles changes to the maximum grip distance value.
@@ -313,7 +310,6 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         Args:
             value: The new maximum grip distance value.
         """
-        pass
 
     def _on_retry_interval_changed(self, value: float):
         """Handles changes to the retry interval value.
@@ -321,7 +317,6 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         Args:
             value: The new retry interval value.
         """
-        pass
 
     def _on_shear_force_limit_changed(self, value: float):
         """Handles changes to the shear force limit value.
@@ -329,4 +324,3 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         Args:
             value: The new shear force limit value.
         """
-        pass

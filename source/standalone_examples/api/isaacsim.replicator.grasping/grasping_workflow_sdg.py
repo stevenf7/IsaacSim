@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate grasp pose generation and evaluation using the grasping manager."""
 
 from isaacsim import SimulationApp
 
@@ -41,6 +42,7 @@ def run_example(
     gripper_path=None,
     object_prim_path=None,
 ):
+    """Run grasp pose generation and physics-based evaluation workflow."""
     assets_root_path = get_assets_root_path()
     print(f"Assets root path: {assets_root_path}")
     stage_url = assets_root_path + stage_path

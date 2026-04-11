@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate synthetic data generation with deformable physics objects."""
 
 from isaacsim import SimulationApp
 
@@ -47,6 +48,7 @@ ASSETS_CONFIG = [
 
 
 def run_example(assets_config: list[tuple[str, int, str, float, float]]):
+    """Run deformable drop simulation and capture frames on trigger height."""
     omni.usd.get_context().new_stage()
     assets_root_path = get_assets_root_path()
     rng = random.Random(RNG_SEED)

@@ -63,8 +63,6 @@ class Extension(omni.ext.IExt):
         except Exception as e:
             carb.log_error(f"Could not register node templates {e}")
 
-        pass
-
     def on_shutdown(self):
         """Called when the extension is disabled to release the interface and unregister nodes."""
         release_interface(self.__interface)
@@ -73,7 +71,6 @@ class Extension(omni.ext.IExt):
             self.unregister_nodes()
         except Exception as e:
             carb.log_warn(f"Could not unregister node templates {e}")
-        pass
 
     def register_nodes(self):
         """Registers Isaac Sim annotator node templates and simulation gates for synthetic data generation.

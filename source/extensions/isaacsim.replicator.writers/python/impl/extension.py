@@ -30,4 +30,3 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         """Shutting down this part of the extension prepares it for hot reload."""
-        pass

@@ -56,4 +56,3 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         """Called when the extension is shutting down."""
-        pass

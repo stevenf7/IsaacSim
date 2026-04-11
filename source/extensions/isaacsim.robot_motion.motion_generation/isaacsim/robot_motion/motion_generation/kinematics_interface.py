@@ -43,7 +43,6 @@ class KinematicsSolver(WorldInterface):
                 The translation vector should be specified in the units of the USD stage
             robot_orientation: (4 x 1) quaternion describing the orientation of the robot base relative to the USD stage global frame
         """
-        pass
 
     def get_joint_names(self) -> List[str]:
         """Return a list containing the names of all joints in the given kinematic structure. The order of this list.

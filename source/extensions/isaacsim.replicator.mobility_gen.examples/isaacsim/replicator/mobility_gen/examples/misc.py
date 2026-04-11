@@ -71,7 +71,6 @@ class HawkCamera(Module):
         Returns:
             A new HawkCamera instance with left and right cameras configured.
         """
-
         add_reference_to_stage(usd_path=cls.usd_url, path=prim_path)
 
         return cls.attach(prim_path)

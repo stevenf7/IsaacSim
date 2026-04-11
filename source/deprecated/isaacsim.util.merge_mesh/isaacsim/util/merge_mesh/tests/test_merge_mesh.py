@@ -56,12 +56,10 @@ class TestMergeMesh(omni.kit.test.AsyncTestCase):
             UsdShade.MaterialBindingAPI(cube_prim).Bind(cube_mat_shade, UsdShade.Tokens.strongerThanDescendants)
 
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def tearDown(self):
         """Clean up after each test."""
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def test_startup(self):
         """Test that the Mesh Merge Tool window loads without errors."""
@@ -71,7 +69,6 @@ class TestMergeMesh(omni.kit.test.AsyncTestCase):
         for frame in range(60):
             await omni.kit.app.get_app().next_update_async()
         window.visible = False
-        pass
 
     async def test_basic_merge(self):
         """Test basic mesh merge functionality without any additional options."""
@@ -89,7 +86,6 @@ class TestMergeMesh(omni.kit.test.AsyncTestCase):
         self.assertTrue(merged.IsValid())
 
         self.assertEqual(len(merged.GetChildren()), 3)
-        pass
 
     async def test_material_combine_merge(self):
         """Test mesh merge with material combining enabled."""
@@ -110,7 +106,6 @@ class TestMergeMesh(omni.kit.test.AsyncTestCase):
 
         newLooks = self._stage.GetPrimAtPath("/World/Looks2")
         self.assertEqual(len(newLooks.GetChildren()), 3)
-        pass
 
     async def test_deactivate_source(self):
         """Test that source prims are deactivated after merge when the option is enabled."""
@@ -132,7 +127,6 @@ class TestMergeMesh(omni.kit.test.AsyncTestCase):
         for src in self.cubes_list:
             prim = self._stage.GetPrimAtPath(src)
             self.assertFalse(prim.IsActive())
-        pass
 
     async def test_clear_parent_xform(self):
         """Test mesh merge with parent transform clearing enabled."""
@@ -148,8 +142,6 @@ class TestMergeMesh(omni.kit.test.AsyncTestCase):
 
         merged = self._stage.GetPrimAtPath(mesh_merger.output_mesh)
         self.assertTrue(merged.IsValid())
-
-        pass
 
     async def test_merge_command(self):
         """Test the MergeMeshesCommand with all options enabled."""

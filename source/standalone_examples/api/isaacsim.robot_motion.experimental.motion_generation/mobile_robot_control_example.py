@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Complete example demonstrating robot control with the Motion Generation API.
+"""Complete example demonstrating robot control with the Motion Generation API.
 
 This example shows how to use a differential drive controller with optional
 low-pass filtering and noise injection.
@@ -531,7 +530,6 @@ async def setup_scene() -> tuple[Articulation, list[str]]:
 
 def main():
     """Run the complete robot control workflow."""
-
     # Parse command-line arguments
     parser = argparse.ArgumentParser(
         description="Differential drive controller example with optional noise and filtering"

@@ -51,11 +51,9 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
         for name, value in vars().items():
             if name != "self":
                 setattr(self, f"_{name}", value)
-        pass
         self._stage = get_current_stage()
         self._stage_id = get_current_stage_id()
         self._context = omni.usd.get_context()
-        pass
 
     def do(self) -> bool:
         """Spawns a new prim in the stage with the specified USD reference and transform.
@@ -77,14 +75,12 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
             )
 
         return True
-        pass
 
     def undo(self):
         """Undoes the prim spawn operation.
 
         Currently not implemented - the spawned prim remains in the stage.
         """
-        pass
 
 
 class IsaacSimTeleportPrim(omni.kit.commands.Command):
@@ -114,7 +110,6 @@ class IsaacSimTeleportPrim(omni.kit.commands.Command):
         self._stage = get_current_stage()
         self._stage_id = get_current_stage_id()
         self._context = omni.usd.get_context()
-        pass
 
     def do(self) -> bool:
         """Executes the teleport operation by setting the prim's transform.
@@ -125,7 +120,6 @@ class IsaacSimTeleportPrim(omni.kit.commands.Command):
         if self._translation is not None and self._rotation is not None:
             transforms.set_transform(self._stage_id, str(self._prim_path), self._translation, self._rotation)
         return True
-        pass
 
     def undo(self):
         """Undoes the teleport operation.
@@ -133,7 +127,6 @@ class IsaacSimTeleportPrim(omni.kit.commands.Command):
         Note:
             This method currently has no implementation and does not restore the prim's previous transform.
         """
-        pass
 
 
 class IsaacSimScalePrim(omni.kit.commands.Command):
@@ -161,7 +154,6 @@ class IsaacSimScalePrim(omni.kit.commands.Command):
         self._stage = get_current_stage()
         self._stage_id = get_current_stage_id()
         self._context = omni.usd.get_context()
-        pass
 
     def do(self) -> bool:
         """Executes the prim scaling operation by applying the specified scale values.
@@ -172,11 +164,9 @@ class IsaacSimScalePrim(omni.kit.commands.Command):
         if self._scale is not None:
             transforms.set_scale(self._stage_id, str(self._prim_path), self._scale)
         return True
-        pass
 
     def undo(self):
         """Reverts the prim scaling operation."""
-        pass
 
 
 class IsaacSimDestroyPrim(omni.kit.commands.Command):
@@ -199,7 +189,6 @@ class IsaacSimDestroyPrim(omni.kit.commands.Command):
         for name, value in vars().items():
             if name != "self":
                 setattr(self, f"_{name}", value)
-        pass
 
     def do(self) -> bool:
         """Deletes the prim from the stage.
@@ -209,11 +198,9 @@ class IsaacSimDestroyPrim(omni.kit.commands.Command):
         """
         delete_cmd = omni.usd.commands.DeletePrimsCommand([self._prim_path])
         delete_cmd.do()
-        pass
 
     def undo(self):
         """No-op undo operation as this command doesn't support undo functionality."""
-        pass
 
 
 omni.kit.commands.register_all_commands_in_module(__name__)

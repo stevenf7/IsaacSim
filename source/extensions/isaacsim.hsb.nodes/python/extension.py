@@ -62,7 +62,6 @@ class HsbNodesExtension(omni.ext.IExt):
 
     def register_nodes(self):
         """Register OmniGraph nodes with Replicator."""
-
         # Get the RGB rendervar name
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
 

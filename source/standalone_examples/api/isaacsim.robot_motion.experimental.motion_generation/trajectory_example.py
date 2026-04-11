@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Complete example demonstrating trajectory following with the Motion Generation API.
+"""Complete example demonstrating trajectory following with the Motion Generation API.
 
 This example shows how to:
 1. Create a custom LinearTrajectory class that implements the Trajectory interface

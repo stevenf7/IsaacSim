@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Benchmark Nova Carter robot with ROS2 bridge performance."""
+
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -135,6 +137,7 @@ benchmark = BaseIsaacBenchmark(
 
 # Generate Twist message
 def move_cmd_msg(x, y, z, ax, ay, az):
+    """Generate a Twist message with the given linear and angular velocities."""
     msg = Twist()
     msg.linear.x = x
     msg.linear.y = y

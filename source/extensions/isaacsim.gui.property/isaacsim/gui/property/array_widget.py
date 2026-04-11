@@ -302,8 +302,6 @@ class _ArrayWidgetBuilder:
                 mod.create_list_item(ADD_BUTTON_STYLE, "append")
                 ui.Spacer(height=10)
 
-    pass
-
 
 class _UsdArrayAttributeModel(UsdAttributeModel):
     """A model for managing USD array attribute properties.

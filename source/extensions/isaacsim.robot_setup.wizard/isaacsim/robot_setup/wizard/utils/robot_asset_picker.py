@@ -166,7 +166,6 @@ class SelectionWatch:
         Args:
             filter_string: The filter string to apply, or None to clear filtering.
         """
-        pass
 
 
 class RobotAssetPicker:

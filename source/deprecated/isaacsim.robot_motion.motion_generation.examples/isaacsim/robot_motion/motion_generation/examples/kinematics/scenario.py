@@ -143,4 +143,3 @@ class FrankaKinematicsExample:
         Since kinematics is stateless, this method performs no operations.
         """
         # Kinematics is stateless
-        pass

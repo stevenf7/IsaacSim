@@ -98,8 +98,6 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
             self.graph_path, "joint_wheel_left", "joint_wheel_right", "/nova_carter/chassis_link", 0.14, 0.4132
         )
 
-        pass
-
     # After running each test
     async def tearDown(self):
         """Clean up test environment and stop timeline."""
@@ -108,7 +106,6 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
-        pass
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_loading(self):
@@ -138,8 +135,6 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         print("Diff is ", delta)
         self.assertTrue(delta > 0.02)
 
-        pass
-
     # general, slowly building up speed testcase
     async def test_accel(self):
         """Test acceleration behavior with gradually increasing velocities."""
@@ -168,8 +163,6 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
         self._timeline.stop()
-
-        pass
 
     # braking from different init speeds
     async def test_brake(self):
@@ -204,7 +197,6 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
 
             self._timeline.stop()
             await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def test_spin(self):
         """Test spinning behavior at different angular velocities."""
@@ -259,5 +251,3 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(og.DataView.get(odom_ang_vel)[2], angular_velocity, delta=1e-1)
 
         await omni.kit.app.get_app().next_update_async()
-
-        pass

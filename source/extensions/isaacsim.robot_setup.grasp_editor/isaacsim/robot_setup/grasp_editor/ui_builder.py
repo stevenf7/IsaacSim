@@ -121,7 +121,6 @@ class UIBuilder:
         Args:
             event: Event Type
         """
-        pass
 
     def on_physics_step(self, step: float):
         """Callback for Physics Step.
@@ -131,7 +130,6 @@ class UIBuilder:
         Args:
             step: Size of physics step
         """
-        pass
 
     def on_assets_loaded(self):
         """Callback for when stage assets have finished loading."""

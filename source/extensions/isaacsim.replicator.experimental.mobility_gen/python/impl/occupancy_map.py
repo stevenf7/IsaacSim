@@ -239,7 +239,6 @@ free_thresh: {free_thresh}
         Returns:
             OccupancyMap: The occupancy map.
         """
-
         data = np.zeros(freespace_mask.shape, dtype=np.uint8)
         data[...] = OccupancyMapDataValue.UNKNOWN
         data[freespace_mask] = OccupancyMapDataValue.FREESPACE
@@ -334,7 +333,6 @@ free_thresh: {free_thresh}
         Returns:
             OccupancyMap: The buffered (aka: dilated / padded) occupancy map.
         """
-
         buffer_distance_pixels = int(buffer_distance_pixels)
 
         radius = buffer_distance_pixels
@@ -424,7 +422,6 @@ free_thresh: {free_thresh}
             bool: True if the coordinate is inside the bounds of
                 the occupancy map.  False otherwise.
         """
-
         pixel = self.world_to_pixel_numpy(np.array([[point.x, point.y]]))
         x_px = int(pixel[0, 0])
         y_px = int(pixel[0, 1])

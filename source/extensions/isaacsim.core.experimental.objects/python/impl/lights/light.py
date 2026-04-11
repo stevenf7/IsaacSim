@@ -703,7 +703,6 @@ class Light(XformPrim, ABC):
         Returns:
             Boolean flags indicating if the prims are valid for creating Light instances.
         """
-        pass
 
     @staticmethod
     def fetch_instances(paths: str | Usd.Prim | list[str | Usd.Prim]) -> list[Light | None]:

@@ -111,7 +111,6 @@ class SearchableItem(ui.AbstractItem):
 
     def refresh_text(self):
         """Updates the text representation of the searchable item."""
-        pass
 
 
 class PlacerHolderItem(ui.AbstractItem):
@@ -258,7 +257,6 @@ class TreeViewWithPlacerHolderModel(ui.AbstractItemModel):
         Args:
             item: The item to edit.
         """
-        pass
 
     def filter_by_text(self, filter_texts: list):
         """Filters items by text, showing only items that contain all filter texts.
@@ -359,7 +357,6 @@ class TreeViewWithPlacerHolderDelegate(ui.AbstractItemDelegate):
             level: The nesting level of the item.
             expanded: Whether the branch is expanded.
         """
-        pass
 
     def __build_rename_field(self, item: object, item_model: object, label: object, value: str, parent_stack: object):
         """Creates a rename field widget that allows editing item names on double-click.

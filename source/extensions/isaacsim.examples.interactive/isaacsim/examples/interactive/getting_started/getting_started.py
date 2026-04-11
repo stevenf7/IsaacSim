@@ -43,7 +43,6 @@ class GettingStarted(BaseSample):
 
     def setup_scene(self):
         """Sets up the scene for the getting started sample."""
-        pass
 
     async def setup_post_load(self):
         """Sets up the scene after loading by configuring the camera view position."""
@@ -51,16 +50,12 @@ class GettingStarted(BaseSample):
 
     async def setup_pre_reset(self):
         """Performs setup tasks before the scene is reset."""
-        pass
 
     async def setup_post_reset(self):
         """Performs setup tasks after the scene is reset."""
-        pass
 
     async def setup_post_clear(self):
         """Performs setup tasks after the scene is cleared."""
-        pass
 
     def physics_cleanup(self):
         """Cleans up physics-related resources."""
-        pass

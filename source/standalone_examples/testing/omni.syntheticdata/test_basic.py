@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test basic synthetic data sensor capture with a robot asset."""
 
 from isaacsim import SimulationApp
 

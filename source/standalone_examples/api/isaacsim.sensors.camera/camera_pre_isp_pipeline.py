@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate pre-ISP camera image processing pipeline."""
+
 import argparse
 import os
 

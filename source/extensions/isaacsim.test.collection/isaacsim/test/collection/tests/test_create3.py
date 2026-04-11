@@ -66,7 +66,6 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
         graph, self.odom_node = setup_robot_og(
             self.graph_path, "left_wheel_joint", "right_wheel_joint", "/create3", 0.3575, 0.233
         )
-        pass
 
     # After running each test
     async def tearDown(self):
@@ -76,8 +75,6 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
-
-        pass
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_loading(self):
@@ -106,8 +103,6 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
         delta = np.linalg.norm(self.current_pos - self.starting_pos)
         self.assertTrue(delta > 0.02)
 
-        pass
-
     # Building up speed tests
     async def test_accel(self):
         """Test acceleration behavior with gradually increasing velocities."""
@@ -135,8 +130,6 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
         self._timeline.stop()
-
-        pass
 
     # braking from different init speeds
     async def test_brake(self):
@@ -171,7 +164,6 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
 
             self._timeline.stop()
             await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def test_spin(self):
         """Test spinning behavior at different angular velocities."""
@@ -197,8 +189,6 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
             self.assertAlmostEqual(curr_ang_vel, angular_velocity, delta=2e-1)
 
             self._timeline.stop()
-
-        pass
 
     # go in circle
     async def test_circle(self):
@@ -228,5 +218,3 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
         self.assertTrue(og.DataView.get(odom_ang_vel)[2] > 1.2)
 
         await omni.kit.app.get_app().next_update_async()
-
-        pass

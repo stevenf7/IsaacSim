@@ -75,4 +75,3 @@ class Extension(omni.ext.IExt):
             context: Physics simulation context.
         """
         self._proximity_sensor_manager.update()
-        pass

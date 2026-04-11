@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate the Cortex command API with nullspace posture shifting."""
 
 from isaacsim import SimulationApp
 
@@ -27,6 +28,8 @@ from isaacsim.cortex.framework.robot import add_franka_to_stage
 
 
 class NullspaceShiftState(DfState):
+    """Cycle through random nullspace posture configurations at a fixed end-effector target."""
+
     def __init__(self):
         super().__init__()
         self.config_mean = np.array([0.00, -1.3, 0.00, -2.87, 0.00, 2.00, 0.75])
@@ -34,6 +37,7 @@ class NullspaceShiftState(DfState):
         self.construction_time = time.time()
 
     def enter(self):
+        """Sample a new posture configuration and toggle the gripper."""
         # Change the posture configuration while maintaining a consistent target.
         posture_config = self.config_mean + np.random.randn(7)
         self.context.robot.arm.send_end_effector(target_position=self.target_p, posture_config=posture_config)
@@ -51,12 +55,14 @@ class NullspaceShiftState(DfState):
         print("[%f] <enter> sampling posture config" % (self.entry_time - self.construction_time))
 
     def step(self):
+        """Wait for two seconds before transitioning to the next state."""
         if time.time() - self.entry_time < 2.0:
             return self
         return None
 
 
 def main():
+    """Set up and run the nullspace posture shifting example."""
     world = CortexWorld()
     robot = world.add_robot(add_franka_to_stage(name="franka", prim_path="/World/franka"))
     world.scene.add_default_ground_plane()

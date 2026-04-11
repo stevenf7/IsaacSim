@@ -167,7 +167,6 @@ class TestBaseIsaacBenchmarkAsync(BaseIsaacBenchmarkAsync):
 
             def stop_collecting(self):
                 """Stop collecting custom data."""
-                pass
 
             def get_data(self) -> MeasurementData:
                 """Return the collected custom measurement.

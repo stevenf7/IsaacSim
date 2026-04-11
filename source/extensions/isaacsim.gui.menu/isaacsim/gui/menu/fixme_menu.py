@@ -55,7 +55,6 @@ class FixmeMenuExtension:
                     delegate = FixmeMenuExtension.MenuDelegate()
                     delegate.build_item(item)
             """
-            pass
 
     def __init__(self, ext_id: str):
         self._menu_placeholder = [MenuItemDescription(name="FixMe!!!", show_fn=lambda: False)]

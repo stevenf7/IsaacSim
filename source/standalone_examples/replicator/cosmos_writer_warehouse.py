@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Generate synthetic video clips in a warehouse using the CosmosWriter."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp(launch_config={"headless": False})
@@ -44,6 +46,7 @@ CARTER_NAV_TARGET_POSITION = (3, 3, 0)
 
 
 def advance_timeline_by_duration(duration: float, max_updates: int = 1000):
+    """Advance the simulation timeline by the specified duration in seconds."""
     timeline = omni.timeline.get_timeline_interface()
     current_time = timeline.get_current_time()
     target_time = current_time + duration
@@ -77,6 +80,7 @@ def advance_timeline_by_duration(duration: float, max_updates: int = 1000):
 def run_sdg_pipeline(
     camera_path, num_clips, num_frames_per_clip, capture_interval, use_instance_id=True, segmentation_mapping=None
 ):
+    """Run the synthetic data generation pipeline and capture video clips."""
     rp = rep.create.render_product(camera_path, (1280, 720))
     cosmos_writer = rep.WriterRegistry.get("CosmosWriter")
     backend = rep.backends.get("DiskBackend")
@@ -135,6 +139,7 @@ def run_example(
     use_instance_id=True,
     segmentation_mapping=None,
 ):
+    """Set up the warehouse scene and run the SDG pipeline."""
     assets_root_path = get_assets_root_path()
     stage_path = assets_root_path + STAGE_URL
     print(f"Opening stage: '{stage_path}'")

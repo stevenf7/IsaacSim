@@ -83,15 +83,12 @@ class UIBuilder:
         if self._timeline.is_playing():
             self._repopulate_all_dropdowns()
 
-        pass
-
     def on_timeline_event(self, event: object):
         """Callback for Timeline events (Play, Pause, Stop).
 
         Args:
             event: Event Type
         """
-        pass
 
     def on_physics_step(self, step: float):
         """Callback for Physics Step.
@@ -101,7 +98,6 @@ class UIBuilder:
         Args:
             step: Size of physics step
         """
-        pass
 
     def reset_ui(self):
         """Reset the UI to its initial state.
@@ -477,7 +473,6 @@ class UIBuilder:
         Args:
             idx: Index of the robot to build position controls for.
         """
-        pass
 
     ##########################################################################################
     #                              Robot Assembler Frame Functions
@@ -666,7 +661,6 @@ class UIBuilder:
             joint_index: Index of the joint within the robot.
             position_target: Target position value for the joint.
         """
-        pass
 
     def _repopulate_all_dropdowns(self):
         """Refreshes the contents of all robot and attach point dropdowns by repopulating their options."""
@@ -828,4 +822,3 @@ class UIBuilder:
             item_filter_fn=lambda item: self._filter_usd_files(item),
         )
         filepicker.show()
-        pass

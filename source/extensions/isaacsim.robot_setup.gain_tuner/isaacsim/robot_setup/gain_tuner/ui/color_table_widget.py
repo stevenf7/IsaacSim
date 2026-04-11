@@ -106,7 +106,7 @@ class ColorJointItem(TableItem):
         Returns:
             Always returns None as no value model is used.
         """
-        return None
+        return
 
 
 class ColorJointItemDelegate(TableItemDelegate):
@@ -133,7 +133,6 @@ class ColorJointItemDelegate(TableItemDelegate):
 
     def init_model(self):
         """Initialize the model for the delegate."""
-        pass
 
     def build_header(self, column_id: int = 0):
         """Build the header widget for a specific column.
@@ -163,7 +162,6 @@ class ColorJointItemDelegate(TableItemDelegate):
 
     def update_defaults(self):
         """Update default settings for the delegate."""
-        pass
 
     def build_widget(
         self, model: object, item: ColorJointItem | None = None, index: int = 0, level: int = 0, expanded: bool = False

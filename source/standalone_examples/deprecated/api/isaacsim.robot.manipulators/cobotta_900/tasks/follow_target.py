@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Define follow-target task for the Cobotta Pro 900 robot."""
 
 from typing import Optional
 
@@ -25,6 +26,8 @@ from isaacsim.storage.native import get_assets_root_path
 
 # Inheriting from the base class Follow Target
 class FollowTarget(tasks.FollowTarget):
+    """Track a target pose with the Cobotta Pro 900 end effector."""
+
     def __init__(
         self,
         name: str = "denso_follow_target",
@@ -46,6 +49,7 @@ class FollowTarget(tasks.FollowTarget):
         return
 
     def set_robot(self) -> SingleManipulator:
+        """Create and configure the Cobotta Pro 900 manipulator for the task."""
         assets_root_path = get_assets_root_path()
         if assets_root_path is None:
             raise Exception("Could not find Isaac Sim assets folder")

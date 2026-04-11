@@ -78,7 +78,7 @@ class Extension(omni.ext.IExt):
         context_menu = omni.kit.context_menu.get_instance()
         if context_menu is None:
             carb.log_error("context_menu is disabled!")
-            return None
+            return
 
     def _unregister_property_menu(self) -> None:
         """Unregisters the property menu for the extension.

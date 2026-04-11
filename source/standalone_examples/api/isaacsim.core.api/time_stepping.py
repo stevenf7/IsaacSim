@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate various physics and rendering time-stepping configurations."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
@@ -34,11 +36,13 @@ simulation_context.initialize_physics()
 
 
 def step_callback(step_size):
+    """Print the physics step size on each simulation step."""
     print("simulate with step: ", step_size)
     return
 
 
 def render_callback(event):
+    """Print the rendering delta time on each render update."""
     print("update app with step: ", event.payload["dt"])
 
 

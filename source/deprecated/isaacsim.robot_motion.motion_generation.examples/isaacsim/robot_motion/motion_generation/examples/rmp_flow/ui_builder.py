@@ -72,7 +72,6 @@ class UIBuilder:
 
         This is called directly after build_ui().
         """
-        pass
 
     def on_timeline_event(self, event: object) -> None:
         """Callback for Timeline events (Play, Pause, Stop).
@@ -97,7 +96,6 @@ class UIBuilder:
         Args:
             step: Size of physics step.
         """
-        pass
 
     def on_stage_event(self, event: object) -> None:
         """Callback for Stage Events.

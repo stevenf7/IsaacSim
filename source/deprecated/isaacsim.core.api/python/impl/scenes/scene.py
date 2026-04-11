@@ -573,7 +573,7 @@ class Scene(object):
         prim_object = self.get_object(name)
         if not hasattr(prim_object, "prim"):
             carb.log_error(f"Computing AABB bounds supported only for single classes.")
-            return
+            return None
         bounds = self._bbox_cache.ComputeWorldBound(prim_object.prim)
         prim_range = bounds.ComputeAlignedRange()
         return np.array([np.array(prim_range.GetMin()), np.array(prim_range.GetMax())])

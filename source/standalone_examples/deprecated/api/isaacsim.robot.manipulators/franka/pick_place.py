@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate Franka robot pick-and-place with differential IK."""
+
 from __future__ import annotations
 
 import argparse
@@ -38,6 +40,7 @@ from isaacsim.robot.manipulators.examples.franka import FrankaPickPlace
 
 
 def main():
+    """Run Franka pick-and-place simulation loop."""
     print("Starting Simple Franka Pick-and-Place Demo")
     SimulationManager.set_physics_sim_device(args.device)
     simulation_app.update()

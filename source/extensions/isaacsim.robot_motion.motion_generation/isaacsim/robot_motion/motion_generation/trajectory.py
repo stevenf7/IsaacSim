@@ -38,7 +38,6 @@ class Trajectory:
         Returns:
             Start time of the trajectory.
         """
-        pass
 
     @property
     def end_time(self) -> float:
@@ -47,7 +46,6 @@ class Trajectory:
         Returns:
             End time of the trajectory.
         """
-        pass
 
     def get_active_joints(self) -> List[str]:
         """Active joints are directly controlled by this Trajectory.
@@ -73,4 +71,3 @@ class Trajectory:
         Returns:
             A tuple containing (joint position targets for the active robot joints, joint velocity targets for the active robot joints).
         """
-        pass

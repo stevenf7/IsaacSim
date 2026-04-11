@@ -95,7 +95,6 @@ class Extension(omni.ext.IExt):
 
     def build_window(self) -> None:
         """Build the extension window (no-op, UI is built in `build_ui`)."""
-        pass
 
     def build_ui(self) -> None:
         """Build the surface gripper example UI panel."""

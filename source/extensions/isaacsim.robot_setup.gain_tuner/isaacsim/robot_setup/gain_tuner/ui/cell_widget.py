@@ -148,7 +148,6 @@ class CellLabelField:
         Args:
             model: The model associated with the edit operation.
         """
-        pass
 
     def _begin_edit(self) -> None:
         """Initiates an edit operation on the field if the field is enabled."""

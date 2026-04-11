@@ -76,7 +76,6 @@ class PhysicsMaterial(Prim, ABC):
         Returns:
             Boolean flags indicating if the prims are valid for creating material instances (shape ``(N, 1)``).
         """
-        pass
 
     @staticmethod
     def fetch_instances(paths: str | Usd.Prim | list[str | Usd.Prim]) -> list[PhysicsMaterial | None]:

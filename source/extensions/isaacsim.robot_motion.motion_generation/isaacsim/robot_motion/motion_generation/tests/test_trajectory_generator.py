@@ -99,8 +99,6 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         await create_new_stage_async()
         await update_stage_async()
 
-        pass
-
     async def _create_light(self):
         """Create a sphere light in the USD stage.
 
@@ -162,7 +160,6 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         self._mg = None
         await update_stage_async()
         World.clear_instance()
-        pass
 
     async def test_lula_c_space_traj_gen_franka(self):
         """Test Lula C-space trajectory generation with the Franka robot.

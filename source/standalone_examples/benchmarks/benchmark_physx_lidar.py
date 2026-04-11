@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Benchmark PhysX lidar sensor performance in Isaac Sim."""
+
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -46,6 +48,7 @@ from isaacsim.benchmark.services import BaseIsaacBenchmark
 
 # Create PhysX Lidar from params
 def add_physx_lidar(prim_path, translation=Gf.Vec3f(0, 0, 0), orientation=Gf.Vec4d(0, 0, 0, 0)):
+    """Create a PhysX lidar sensor at the specified path and transform."""
     _, lidar = omni.kit.commands.execute(
         "RangeSensorCreateLidar",
         path=prim_path,

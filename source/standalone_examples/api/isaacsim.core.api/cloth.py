@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate creating and manipulating particle cloth environments."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False, "extra_args": ["--/app/useFabricSceneDelegate=0"]})
@@ -44,6 +46,8 @@ if assets_root_path is None:
 
 
 class ParticleClothExample:
+    """Manage particle cloth simulation across multiple environments."""
+
     def __init__(self):
         self._array_container = torch.Tensor
         self.my_world = World(stage_units_in_meters=1.0, backend="torch", device="cuda")
@@ -56,6 +60,7 @@ class ParticleClothExample:
         self.makeEnvs()
 
     def makeEnvs(self):
+        """Create cloth environments with particle systems and materials."""
         for i in range(self.num_envs):
             env_path = "/World/Env" + str(i)
             env = UsdGeom.Xform.Define(self.stage, env_path)
@@ -108,6 +113,7 @@ class ParticleClothExample:
         self.my_world.reset(soft=False)
 
     def play(self):
+        """Run the simulation loop with periodic resets."""
         reset_needed = False
         while simulation_app.is_running():
             if self.my_world.is_stopped() and not reset_needed:

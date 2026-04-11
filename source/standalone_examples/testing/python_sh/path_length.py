@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Verify the PATH environment variable does not exceed a safe length."""
+
 import os
 
 # test to give us a heads up if the PATH variable gets too long, can be an issue on windows

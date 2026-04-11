@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate maintaining a constant frame rate in simulation."""
+
 import time
 
 from isaacsim import SimulationApp
@@ -35,6 +37,7 @@ app_update_time_s = 0.0
 
 
 def update_event_callback(event: carb.events.IEvent):
+    """Record the wall-clock time of each app update event."""
     global last_frametime_timestamp_ns, app_update_time_s
     timestamp_ns = time.perf_counter_ns()
     app_update_time_s = round((timestamp_ns - last_frametime_timestamp_ns) / 1e9, 9)

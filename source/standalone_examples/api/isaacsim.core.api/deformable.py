@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate creating and manipulating deformable prim environments."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False, "extra_args": ["--/app/useFabricSceneDelegate=0"]})
@@ -45,6 +47,8 @@ if assets_root_path is None:
 
 
 class DeformableExample:
+    """Manage deformable body simulation across multiple environments."""
+
     def __init__(self):
         self._array_container = torch.Tensor
         self.my_world = World(stage_units_in_meters=1.0, backend="torch", device="cuda")
@@ -57,6 +61,7 @@ class DeformableExample:
         self.makeEnvs()
 
     def makeEnvs(self):
+        """Create deformable body environments with materials."""
         for i in range(self.num_envs):
             init_loc = Gf.Vec3f(i * 2 - self.num_envs, 0.0, 0.0)
             env_scope = UsdGeom.Scope.Define(self.stage, "/World/Envs")
@@ -117,6 +122,7 @@ class DeformableExample:
         #     print(self.initial_positions[i])
 
     def play(self):
+        """Run the simulation loop with periodic resets."""
         while simulation_app.is_running():
             if self.my_world.is_playing():
                 # deal with sim re-initialization after restarting sim

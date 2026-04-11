@@ -80,7 +80,6 @@ class Extension(omni.ext.IExt):
 
     def build_window(self):
         """Build the extension window interface."""
-        pass
 
     def build_ui(self):
         """Build the user interface with command panel and output controls for the Generic Range Sensor example."""

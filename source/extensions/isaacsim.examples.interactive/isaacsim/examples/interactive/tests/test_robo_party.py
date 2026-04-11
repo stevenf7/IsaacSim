@@ -48,7 +48,6 @@ class TestRoboPartyExampleExtension(omni.kit.test.AsyncTestCase):
         await self._sample.clear_async()
         await update_stage_async()
         self._sample = None
-        pass
 
     # Run all functions with simulation enabled
     async def test_stacking(self):
@@ -60,7 +59,6 @@ class TestRoboPartyExampleExtension(omni.kit.test.AsyncTestCase):
         # run for 2500 frames and print time
         for i in range(500):
             await update_stage_async()
-        pass
 
     async def test_reset(self):
         """Test that resetting the sample twice works without errors."""
@@ -70,7 +68,6 @@ class TestRoboPartyExampleExtension(omni.kit.test.AsyncTestCase):
         await self._sample.reset_async()
         await update_stage_async()
         await update_stage_async()
-        pass
 
     async def test_cpu_device_preserved_after_reset(self):
         """After reset with device='cpu', all physics scenes must remain in CPU mode."""

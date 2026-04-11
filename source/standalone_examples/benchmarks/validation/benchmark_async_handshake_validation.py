@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Standalone script to validate async rendering with handshake mode.
+"""Standalone script to validate async rendering with handshake mode.
 
 This script runs a simple simulation with async rendering and handshake enabled,
 then validates that the FrametimeStats contain both App_Update and Render stats

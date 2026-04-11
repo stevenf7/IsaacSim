@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Provide inverse kinematics solver controller for UR10e robot."""
 
 import os
 from typing import Optional
@@ -21,6 +22,8 @@ from isaacsim.robot_motion.motion_generation import ArticulationKinematicsSolver
 
 
 class KinematicsSolver(ArticulationKinematicsSolver):
+    """Kinematics solver for UR10e robot using Lula IK."""
+
     def __init__(self, robot_articulation: Articulation, end_effector_frame_name: Optional[str] = None) -> None:
         # TODO: change the config path
         self._kinematics = LulaKinematicsSolver(

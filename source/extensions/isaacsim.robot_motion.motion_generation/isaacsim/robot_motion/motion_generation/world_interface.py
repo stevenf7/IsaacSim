@@ -38,7 +38,6 @@ class WorldInterface:
                 this list will be ignored if the robot base has moved because all object poses will have changed
                 relative to the robot.
         """
-        pass
 
     def add_obstacle(self, obstacle: isaacsim.core.api.objects, static: Optional[bool] = False) -> bool:
         """Add an obstacle.
@@ -207,4 +206,3 @@ class WorldInterface:
 
     def reset(self):
         """Reset all state inside the WorldInterface to its initial values."""
-        pass

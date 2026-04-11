@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate SDG performance with fabric writes and render wait options."""
 
 import os
 import time
@@ -29,6 +30,7 @@ NUM_CAPTURES = 10
 
 
 def run_example(wait_for_render, write_to_fabric):
+    """Run SDG with the given render wait and fabric write settings."""
     print(f"\n[SDG] Running with wait_for_render={wait_for_render}, write_to_fabric={write_to_fabric}")
     omni.usd.get_context().new_stage()
     rep.orchestrator.set_capture_on_play(False)

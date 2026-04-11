@@ -19,7 +19,6 @@
 import enum
 import os
 import typing as tp
-from typing import Tuple
 
 import cv2
 import numpy as np

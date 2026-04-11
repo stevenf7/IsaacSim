@@ -17,7 +17,6 @@
 
 
 from collections import OrderedDict
-from enum import Enum
 from typing import Dict, List
 
 __all__ = ["Buffer", "Module"]

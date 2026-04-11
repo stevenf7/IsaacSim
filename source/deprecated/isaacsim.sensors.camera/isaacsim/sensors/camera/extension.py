@@ -34,8 +34,6 @@ class Extension(omni.ext.IExt):
         Args:
             ext_id: The extension identifier.
         """
-        pass
 
     def on_shutdown(self):
         """Called when the Isaac Sensor extension shuts down."""
-        pass

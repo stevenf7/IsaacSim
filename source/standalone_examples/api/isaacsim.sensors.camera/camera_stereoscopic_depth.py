@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate stereoscopic depth camera setup."""
+
 import argparse
 
 # Parse command line arguments

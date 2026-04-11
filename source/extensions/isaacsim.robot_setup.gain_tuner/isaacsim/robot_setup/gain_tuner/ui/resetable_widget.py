@@ -244,7 +244,6 @@ class ResetableLabelField:
         Args:
             model: The field model that finished editing.
         """
-        pass
 
     def _begin_edit(self) -> None:
         """Initiates the editing state for the field.

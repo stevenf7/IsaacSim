@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provide utility functions for object-based synthetic data generation."""
+
 import random
 
 import numpy as np

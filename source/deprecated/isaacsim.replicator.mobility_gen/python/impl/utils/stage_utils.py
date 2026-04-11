@@ -16,12 +16,9 @@
 """Utilities for USD stage operations in the mobility generation module."""
 
 
-import os
-import tempfile  # type: ignore
 from typing import Tuple  # type: ignore
 
-import PIL.Image
-from pxr import Gf, Kind, PhysxSchema, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics, UsdShade
+from pxr import Usd, UsdGeom
 
 
 def stage_add_camera(

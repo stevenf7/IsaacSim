@@ -39,7 +39,6 @@ class MotionPolicy(WorldInterface):
                 The translation vector should be specified in the units of the USD stage
             robot_orientation: (4 x 1) quaternion describing the orientation of the robot base relative to the USD stage global frame
         """
-        pass
 
     def compute_joint_targets(
         self,
@@ -97,7 +96,6 @@ class MotionPolicy(WorldInterface):
             active_joint_targets: Desired configuration for the robot as (m x 1) vector where m is the number of active
                 joints.
         """
-        pass
 
     def set_end_effector_target(self, target_translation: object = None, target_orientation: object = None):
         """Set end effector target.
@@ -107,4 +105,3 @@ class MotionPolicy(WorldInterface):
                 Target translation should be specified in the same units as the USD stage, relative to the stage origin.
             target_orientation: Quaternion of desired rotation for robot end effector relative to USD stage global frame
         """
-        pass

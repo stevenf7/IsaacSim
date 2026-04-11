@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate rigid body contact force queries using RigidPrim and GeometryPrim views."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
@@ -33,12 +35,15 @@ args, unknown = parser.parse_known_args()
 
 
 class RigidViewExample:
+    """Demonstrate contact force queries between rigid body views."""
+
     def __init__(self):
         self._array_container = torch.Tensor
         self.my_world = World(stage_units_in_meters=1.0, backend="torch")
         self.stage = simulation_app.context.get_stage()
 
     def makeEnv(self):
+        """Create the environment with bottom boxes, top boxes, and ground plane views."""
         self.cube_height = 1.0
         self.top_cube_height = self.cube_height + 3.0
         self.cube_dx = 5.0
@@ -103,6 +108,7 @@ class RigidViewExample:
         self.my_world.reset(soft=False)
 
     def play(self):
+        """Run the simulation loop and periodically print contact forces."""
         self.makeEnv()
         reset_needed = False
         while simulation_app.is_running():

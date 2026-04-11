@@ -17,7 +17,6 @@
 
 
 import math
-import os
 from typing import Tuple, Type
 
 import isaacsim.core.utils.numpy.rotations as rot_utils

@@ -73,7 +73,7 @@ class RobotContextMenu(ContextMenu):
         stage = event.payload.get("stage", None)
         if stage is None:
             carb.log_error("stage not avaliable")
-            return None
+            return
 
         # get parameters passed by event
         prim_path = event.payload["prim_path"]

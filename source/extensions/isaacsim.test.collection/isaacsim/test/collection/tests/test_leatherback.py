@@ -91,8 +91,6 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
 
         rclpy.init()
 
-        pass
-
     # After running each test
     async def tearDown(self):
         """Clean up test environment, stop timeline, and shutdown ROS2."""
@@ -105,8 +103,6 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
         rclpy.shutdown()
-
-        pass
 
     async def test_drive_forward(self):
         """Test that Leatherback drives forward via ROS2 Ackermann commands."""
@@ -147,8 +143,6 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
 
         delta = np.linalg.norm(x - target)
         self.assertAlmostEqual(delta, 0, delta=0.01, msg=f"delta: {delta}, target: {target}, actual: {x}")
-
-        pass
 
     async def test_cameras(self):
         """Test that RGB and depth cameras publish valid data via ROS2."""
@@ -210,4 +204,3 @@ class TestLeatherback(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.abs(depth_data[-1] - 0.602) < 0.1)
 
         node.destroy_node()
-        pass

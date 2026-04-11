@@ -75,7 +75,7 @@ class TestTrajectoryOptimizerGui(omni.kit.test.AsyncTestCase):
 
         def record_and_skip_plan(q_target=None):
             captured["q"] = q_target
-            return None
+            return
 
         with patch.object(self.ui_builder._scenario, "plan_to_cspace_target", side_effect=record_and_skip_plan):
             self.ui_builder._on_to_cspace_target_btn()

@@ -614,7 +614,7 @@ class AddColliders:
 
         def __recursively_find_mesh(prim, collider_model: ColliderModel) -> ColliderModel:
             if not prim:
-                return
+                return None
             children = prim.GetChildren()
             if children:
                 for child in children:

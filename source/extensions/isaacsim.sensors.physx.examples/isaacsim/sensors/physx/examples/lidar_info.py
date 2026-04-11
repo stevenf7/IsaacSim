@@ -70,7 +70,6 @@ class Extension(omni.ext.IExt):
 
     def build_window(self):
         """Build the main window for the extension."""
-        pass
 
     def build_ui(self):
         """Build the user interface components for the LIDAR sensor extension.
