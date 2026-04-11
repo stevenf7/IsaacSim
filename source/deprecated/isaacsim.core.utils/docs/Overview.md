@@ -1,5 +1,9 @@
 # Overview
 
+```{deprecated} 6.0.0
+This extension is deprecated in favor of `isaacsim.core.experimental.utils`.
+```
+
 The isaacsim.core.utils extension provides a comprehensive set of utility functions for working with USD stages, physics simulation, mathematics, and rendering operations within Isaac Sim. This extension serves as a foundational toolkit that simplifies common development tasks through high-level APIs for stage manipulation, geometry processing, coordinate transformations, and data interchange between different computational frameworks.
 
 ## Functionality

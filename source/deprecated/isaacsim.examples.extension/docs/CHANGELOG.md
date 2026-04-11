@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.0] - 2026-04-10
+### Deprecated
+- Extension deprecated in favor of the `repo.sh template` CLI system (`./repo.sh template new`)
+- Moved to source/deprecated/
+
 ## [2.2.1] - 2026-03-17
 ### Fixed
 - Correct "broadcast" to "broadphase" in default physics settings docstring

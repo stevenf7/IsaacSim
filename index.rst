@@ -106,7 +106,7 @@ Extensions
 
    isaacsim.examples.base <source/extensions/isaacsim.examples.base/docs/index>
    isaacsim.examples.browser <source/extensions/isaacsim.examples.browser/docs/index>
-   isaacsim.examples.extension <source/extensions/isaacsim.examples.extension/docs/index>
+   isaacsim.examples.extension <source/deprecated/isaacsim.examples.extension/docs/index>
    isaacsim.examples.interactive <source/extensions/isaacsim.examples.interactive/docs/index>
    isaacsim.examples.ui <source/extensions/isaacsim.examples.ui/docs/index>
 

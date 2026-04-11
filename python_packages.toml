@@ -433,7 +433,7 @@ inventory.includes.all = [
     # extensions
     "exts/isaacsim.examples.base",
     "exts/isaacsim.examples.browser",
-    "exts/isaacsim.examples.extension",
+    "extsDeprecated/isaacsim.examples.extension",
     "exts/isaacsim.examples.interactive",
     "exts/isaacsim.examples.ui",
     "exts/isaacsim.examples.ipc",
