@@ -13,15 +13,13 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
--- Setup the basic extension variables
 local ext = get_current_extension_info()
--- Set up the basic shared project information
-project_ext (ext)
+ext.target_dir = deprecated_exts_path .. "/" .. ext.id
 
--- -------------------------------------
--- Link/copy folders and files to be packaged with the extension
+project_ext(ext)
+
 repo_build.prebuild_link {
-    { "data", ext.target_dir.."/data" },
-    { "docs", ext.target_dir.."/docs" },
-    { "isaacsim", ext.target_dir.."/isaacsim" },
+    { "data", ext.target_dir .. "/data" },
+    { "docs", ext.target_dir .. "/docs" },
+    { "isaacsim", ext.target_dir .. "/isaacsim" },
 }

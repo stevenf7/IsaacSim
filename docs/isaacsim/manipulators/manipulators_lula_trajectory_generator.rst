@@ -23,6 +23,11 @@ Within the `isaacsim.robot_motion.motion_generation.examples` extension, there a
 connecting specified c-space and task-space points.
 The sections of this tutorial build up the file ``scenario.py`` from basic functionality to the completed code.
 
+.. note::
+   **Motion Generation Examples** (``isaacsim.robot_motion.motion_generation.examples``) are deprecated **since Isaac Sim 6.0.0**. In the Isaac Sim source repository they live under ``source/deprecated/isaacsim.robot_motion.motion_generation.examples``; the extension id is unchanged.
+
+   **Replacement:** Use the ``isaacsim.robot_motion.cumotion.examples`` extension and the :doc:`cuMotion Integration <../../cumotion/index>` tutorials.
+
 .. figure:: /images/isim_4.5_full_tut_gui_lula_trajectory_gen.webp
    :align: center
 

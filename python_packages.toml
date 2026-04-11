@@ -544,7 +544,7 @@ inventory.includes.all = [
     "exts/isaacsim.robot_motion.lula",
     "exts/isaacsim.robot_motion.lula_test_widget",
     "exts/isaacsim.robot_motion.motion_generation",
-    "exts/isaacsim.robot_motion.motion_generation.examples",
+    "extsDeprecated/isaacsim.robot_motion.motion_generation.examples",
     "exts/isaacsim.robot_motion.experimental.motion_generation",
     "exts/isaacsim.robot_motion.cumotion",
     "exts/isaacsim.robot_motion.cumotion.examples",
