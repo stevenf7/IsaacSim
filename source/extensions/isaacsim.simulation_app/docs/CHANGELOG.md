@@ -1,10 +1,11 @@
 # Changelog
 
-## [2.17.2] - 2026-04-10
+## [2.17.2] - 2026-04-11
 ### Fixed
-- Changed close() to call exit() instead of shutdown_and_release_framework() to avoid deadlocking
-- Shutdown watchdog no longer prints a spurious "force-killing" message when the parent process has already exited
-- Watchdog now sends SIGKILL to the parent process when it genuinely hangs, instead of only exiting the child
+- Replaced `shutdown_and_release_framework()` with `app.shutdown()` in close() to avoid a GIL deadlock where the main thread held the GIL while `carb.tasking` worker threads waited for it during plugin teardown (NVBug 5948099)
+- Replaced deprecated `isaacsim.core.utils.carb.get_carb_setting` import with direct `carb.settings` API
+### Removed
+- Removed shutdown watchdog (no longer needed now that close() avoids the deadlock-prone framework release path)
 
 ## [2.17.1] - 2026-03-30
 ### Added
