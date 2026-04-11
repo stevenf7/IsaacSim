@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate retrieving detailed contact and friction data from rigid bodies."""
+
 import argparse
 
 from isaacsim import SimulationApp
@@ -31,6 +33,8 @@ args, unknown = parser.parse_known_args()
 
 
 class RigidViewExample:
+    """Manage rigid body contact data simulation."""
+
     def __init__(self):
         self.my_world = World(stage_units_in_meters=1.0, backend="numpy")
         self.stage = simulation_app.context.get_stage()
@@ -38,6 +42,7 @@ class RigidViewExample:
         self.count = 3
 
     def makeEnv(self):
+        """Create the environment with cubes and contact filters."""
         self.cube_height = 1.0
         self.top_cube_height = self.cube_height + 3.0
         self.cube_dx = 5.0
@@ -81,6 +86,7 @@ class RigidViewExample:
         self.my_world.reset(soft=False)
 
     def play(self):
+        """Run the simulation loop and print contact data periodically."""
         self.makeEnv()
         reset_needed = False
         while simulation_app.is_running():

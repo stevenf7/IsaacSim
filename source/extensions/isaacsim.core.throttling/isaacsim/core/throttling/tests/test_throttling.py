@@ -34,14 +34,12 @@ class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
         # Reset async rendering state to clean test environment
         self._settings.set("/app/asyncRendering", False)
         self._settings.set("/app/asyncRenderingLowLatency", False)
-        pass
 
     async def tearDown(self):
         """Tear down test environment."""
         # Reset state after each test
         self._settings.set("/app/asyncRendering", False)
         self._settings.set("/app/asyncRenderingLowLatency", False)
-        pass
 
     # async rendering always off
     async def test_on_stop_play_toggles_off(self):
@@ -73,7 +71,6 @@ class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._settings.get("/rtx/ecoMode/enabled"), True)
         self.assertEqual(self._settings.get("/exts/omni.kit.hydra_texture/gizmos/enabled"), True)
         self.assertFalse(self._settings.get("/app/asyncRendering"))
-        pass
 
     async def test_on_stop_play_callback(self):
         """Test on stop play callback."""
@@ -100,7 +97,6 @@ class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self.assertEqual(self._settings.get("/rtx/ecoMode/enabled"), True)
         self.assertEqual(self._settings.get("/exts/omni.kit.hydra_texture/gizmos/enabled"), True)
-        pass
 
     async def test_async_rendering_10_frame_delay(self):
         """Test that async rendering is re-enabled after 10 frames when timeline stops."""
@@ -129,4 +125,3 @@ class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(self._settings.get("/app/asyncRendering"))
-        pass

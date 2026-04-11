@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate custom event-triggered randomization and data capture."""
 
 from isaacsim import SimulationApp
 
@@ -64,6 +65,7 @@ writer.attach(rp)
 
 
 def run_example():
+    """Run custom event randomization and capture sequence."""
     print(f"Capturing at original positions")
     rep.orchestrator.step(rt_subframes=8)
 

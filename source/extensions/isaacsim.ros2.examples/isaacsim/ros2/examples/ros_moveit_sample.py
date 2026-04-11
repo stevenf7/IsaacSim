@@ -123,7 +123,6 @@ class Extension(omni.ext.IExt):
             )
         except Exception as e:
             print(e)
-        pass
 
     def create_franka(self, stage_path):
         """Create a Franka robot prim on the stage."""
@@ -142,7 +141,6 @@ class Extension(omni.ext.IExt):
             old_transform_matrix=None,
             new_transform_matrix=Gf.Matrix4d().SetRotate(rot_mat).SetTranslateOnly(Gf.Vec3d(0, -0.64, 0)),
         )
-        pass
 
     async def _create_moveit_sample(self):
         await omni.usd.get_context().new_stage_async()

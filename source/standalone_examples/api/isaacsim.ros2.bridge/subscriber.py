@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate ROS 2 subscriber controlling a cube in simulation."""
 
 from isaacsim import SimulationApp
 
@@ -36,6 +37,8 @@ from std_msgs.msg import Empty
 
 
 class Subscriber(Node):
+    """ROS 2 subscriber node that moves a cube on message receipt."""
+
     def __init__(self):
         super().__init__("tutorial_subscriber")
 
@@ -55,11 +58,13 @@ class Subscriber(Node):
         self.ros_world.reset()
 
     def move_cube_callback(self, data):
+        """Set a new random cube position on message receipt."""
         # callback function to set the cube position to a new one upon receiving a (empty) ROS2 message
         if self.ros_world.is_playing():
             self._cube_position = np.array([np.random.rand() * 0.40, np.random.rand() * 0.40, 0.10])
 
     def run_simulation(self):
+        """Run the simulation loop with ROS 2 message handling."""
         self.timeline.play()
         reset_needed = False
         while simulation_app.is_running():

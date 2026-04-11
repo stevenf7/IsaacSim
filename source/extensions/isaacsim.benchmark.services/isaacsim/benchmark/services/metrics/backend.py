@@ -50,7 +50,6 @@ class MetricsBackendInterface:
 
             backend.add_metrics(test_phase)
         """
-        pass
 
     def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False, **kwargs) -> None:
         """Write metrics data to files and clear state.
@@ -66,7 +65,6 @@ class MetricsBackendInterface:
 
             backend.finalize("/tmp/metrics")
         """
-        pass
 
 
 class KitGenericTelemetry(MetricsBackendInterface):

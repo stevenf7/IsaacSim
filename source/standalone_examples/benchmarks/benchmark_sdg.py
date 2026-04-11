@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Benchmark synthetic data generation performance in Isaac Sim."""
+
 import argparse
 
 VALID_ANNOTATORS = {
@@ -162,6 +164,7 @@ class FPSWriter(Writer):
         self.annotators = annotators if annotators else ["rgb"]
 
     def write(self, data):
+        """Record the time between consecutive replicator steps."""
         if self._last_frame_time is None:
             self._last_frame_time = time.time()
             return
@@ -176,8 +179,7 @@ class FPSWriter(Writer):
 # ============================================================================
 @MeasurementDataRecorderRegistry.register("replicator_fps")
 class ReplicatorFPSRecorder(MeasurementDataRecorder):
-    """
-    Records Replicator FPS by reading data from an attached FPSWriter.
+    """Records Replicator FPS by reading data from an attached FPSWriter.
 
     This recorder acts as a bridge between the Replicator FPSWriter and
     the benchmark metrics system.
@@ -192,9 +194,11 @@ class ReplicatorFPSRecorder(MeasurementDataRecorder):
         self._fps_writer = fps_writer
 
     def start_collecting(self):
+        """Start collecting FPS measurements."""
         pass
 
     def stop_collecting(self):
+        """Stop collecting FPS measurements."""
         pass
 
     def get_data(self) -> MeasurementData:

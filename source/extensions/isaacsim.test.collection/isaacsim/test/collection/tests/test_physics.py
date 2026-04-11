@@ -48,7 +48,6 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def test_usd_updates(self):
         """Test that physics updates propagate to USD when enabled."""
@@ -75,7 +74,6 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         position = positions.numpy()[0]
         self.assertAlmostEqual(position[2], 25.0, 0)
         carb.settings.get_settings().set_int("physics/updateToUsd", True)
-        pass
 
     async def test_rigid_body(self):
         """Test rigid body physics equations of motion under gravity."""
@@ -124,7 +122,6 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
             self.assertAlmostEqual(p_1[2], p_expected, 0)
             time_elapsed += dt
         omni.timeline.get_timeline_interface().stop()
-        pass
 
     async def test_reparenting(self):
         """Test that prim reparenting works during simulation."""

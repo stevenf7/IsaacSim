@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate Franka robot pick-up task using manipulator API."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})

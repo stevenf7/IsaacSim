@@ -39,7 +39,6 @@ class TestScreenPrinter(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         self.printers = []
-        pass
 
     # After running each test
     async def tearDown(self):
@@ -52,7 +51,6 @@ class TestScreenPrinter(omni.kit.test.AsyncTestCase):
 
         # This clears the
         [printer.exit() for printer in self.printers]
-        pass
 
     # Run for a single frame and exit
     async def test_screen_printer(self):
@@ -72,4 +70,3 @@ class TestScreenPrinter(omni.kit.test.AsyncTestCase):
         self.printers.append(printer2)
 
         await omni.kit.app.get_app().next_update_async()
-        pass

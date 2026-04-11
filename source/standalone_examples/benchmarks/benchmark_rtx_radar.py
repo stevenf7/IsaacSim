@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Benchmark RTX radar sensor performance in Isaac Sim."""
+
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -56,6 +58,7 @@ from isaacsim.benchmark.services import BaseIsaacBenchmark
 
 # Create RTX Radar from params
 def add_rtx_radar(prim_path, sensor_translation, sensor_orientation):
+    """Create an RTX radar sensor at the specified path and transform."""
     _, sensor = omni.kit.commands.execute(
         "IsaacSensorCreateRtxRadar",
         path=prim_path,

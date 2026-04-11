@@ -27,7 +27,7 @@ from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import Articulation, GeomPrim
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.experimental.utils.stage import add_reference_to_stage
-from isaacsim.core.rendering_manager import RenderingManager, ViewportManager
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.gui.components.element_wrappers import Button, CollapsableFrame, StateButton
 from isaacsim.gui.components.style import get_style

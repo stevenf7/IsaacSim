@@ -480,7 +480,6 @@ class SimulationContext:
             set_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled", True)
             set_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency", rendering_hz)
             self._timeline.set_target_framerate(rendering_hz)
-            pass
 
         return
 

@@ -19,8 +19,6 @@
 import carb
 import cv2 as cv
 import numpy as np
-import omni
-import omni.syntheticdata
 from isaacsim.core.experimental.utils import xform as xform_utils
 from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.sensors.camera.camera import OPENCV_FISHEYE_ATTRIBUTE_MAP, OPENCV_PINHOLE_ATTRIBUTE_MAP

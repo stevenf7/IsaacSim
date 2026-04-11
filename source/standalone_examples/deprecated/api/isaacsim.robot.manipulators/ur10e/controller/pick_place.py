@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Provide pick-and-place controller for UR10e robot."""
 
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
 from isaacsim.core.prims import SingleArticulation
@@ -21,6 +22,8 @@ from .rmpflow import RMPFlowController
 
 
 class PickPlaceController(manipulators_controllers.PickPlaceController):
+    """Pick-and-place controller for UR10e using RMPflow."""
+
     def __init__(
         self, name: str, gripper: ParallelGripper, robot_articulation: SingleArticulation, events_dt=None
     ) -> None:

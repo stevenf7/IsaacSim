@@ -55,7 +55,6 @@ class BaseResetNode:
 
         This method is called when the timeline stops to perform node-specific reset operations.
         """
-        pass
 
     def reset(self):
         """Cleans up the node by clearing event subscriptions and initialization state."""

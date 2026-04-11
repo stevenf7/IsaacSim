@@ -135,11 +135,9 @@ class OmnigraphKeyboard(BaseSample):
 
     async def setup_post_load(self):
         """Called after the scene is loaded."""
-        pass
 
     async def setup_pre_reset(self):
         """Called before world reset."""
-        pass
 
     async def setup_post_reset(self):
         """Called after world reset to restore cube to initial state."""

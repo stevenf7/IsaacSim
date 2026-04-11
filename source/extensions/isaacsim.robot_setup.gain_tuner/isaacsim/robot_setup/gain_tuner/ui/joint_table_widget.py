@@ -925,7 +925,6 @@ class JointItemDelegate(ui.AbstractItemDelegate):
             level: The nesting level of the item.
             expanded: Whether the branch is expanded.
         """
-        pass
 
     def build_header(self, column_id: int = 0):
         """Builds the header widget for the specified column.
@@ -991,7 +990,6 @@ class JointItemDelegate(ui.AbstractItemDelegate):
 
     def update_mimic(self):
         """Updates mimic joint configuration for all items in the model."""
-        pass
         # for item in self.__model.get_item_children():
         #     if 1 in item.value_field:
         #         if not item.config.parse_mimic:

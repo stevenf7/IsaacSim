@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provide utility functions for Infinigen synthetic data generation."""
+
 import math
 import os
 import re
@@ -492,6 +494,7 @@ def resolve_scale_issues_with_metrics_assembler() -> None:
 
 
 def get_matching_prim_location(match_string, root_path=None):
+    """Return the translation of the first prim matching the given string."""
     prim = find_matching_prims(
         match_strings=[match_string], root_path=root_path, prim_type="Xform", first_match_only=True
     )

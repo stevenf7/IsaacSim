@@ -310,7 +310,7 @@ def get_all_settings(joint_path: str) -> dict:
         actuator_type = "angular"
     else:
         # joint type not supported with drive
-        return
+        return None
     settings_dict["drive_type"] = joint_prim.GetAttribute(f"drive:{actuator_type}:physics:type")
     settings_dict["max_force"] = joint_prim.GetAttribute(f"drive:{actuator_type}:physics:maxForce")
     settings_dict["target_velocity"] = joint_prim.GetAttribute(f"drive:{actuator_type}:physics:targetVelocity")

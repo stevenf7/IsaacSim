@@ -28,12 +28,10 @@ class TestLula(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         """Set up test fixtures."""
-        pass
 
     # After running each test
     async def tearDown(self):
         """Clean up after each test."""
-        pass
 
     async def test_lula(self):
         """Test that Lula can be imported and a world can be created."""
@@ -41,4 +39,3 @@ class TestLula(omni.kit.test.AsyncTestCase):
 
         world = lula.create_world()
         self.assertIsNotNone(world)
-        pass

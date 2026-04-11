@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Define pick-and-place task for UR10e robot."""
+
 from typing import Optional
 
 import isaacsim.core.api.tasks as tasks
@@ -23,6 +25,8 @@ from isaacsim.storage.native import get_assets_root_path
 
 
 class PickPlace(tasks.PickPlace):
+    """Pick-and-place task for UR10e with gripper."""
+
     def __init__(
         self,
         name: str = "ur10e_pick_place",
@@ -44,6 +48,7 @@ class PickPlace(tasks.PickPlace):
         return
 
     def set_robot(self) -> SingleManipulator:
+        """Configure and return the UR10e manipulator with gripper."""
         assets_root_path = get_assets_root_path()
         if assets_root_path is None:
             raise Exception("Could not find Isaac Sim assets folder")

@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Define Franka behavior modules and context state monitoring."""
+
 import sys
 
 if __name__ == "__main__":
@@ -40,17 +42,17 @@ behaviors = {
 
 
 class ContextStateMonitor(DfDiagnosticsMonitor):
-    """
-    State monitor to read the context and pass it to the UI.
+    """State monitor to read the context and pass it to the UI.
+
     For these behaviors, the context has a `diagnostic_message` that contains the text to be displayed, and each
     behavior implements its own monitor to update that.
-
     """
 
     def __init__(self, print_dt, diagnostic_fn=None):
         super().__init__(print_dt=print_dt)
 
     def print_diagnostics(self, context):
+        """Print diagnostic messages from the context."""
         if hasattr(context, "diagnostics_message"):
             print("====================================")
             print(context.diagnostics_message)

@@ -17,7 +17,6 @@
 
 
 import isaacsim.core
-import omni.kit
 from pxr import Sdf
 
 

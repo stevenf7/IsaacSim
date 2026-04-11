@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate adding a depth sensor to a camera in simulation."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp()

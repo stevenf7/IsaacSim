@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test physics fetch_results for deadlock detection."""
+
 from isaacsim import SimulationApp
 
 kit = SimulationApp()
@@ -32,6 +34,7 @@ kit.update()
 
 
 def test_callback(step, context):
+    """Print a message when the physics step callback fires."""
     print("callback")
 
 

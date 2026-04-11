@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate a Franka robot following a movable sphere using a decider network."""
 
 from isaacsim import SimulationApp
 
@@ -26,30 +27,36 @@ from isaacsim.cortex.framework.robot import add_franka_to_stage
 
 
 class FollowState(DfState):
-    """The context object is available as self.context. We have access to everything in the context
-    object, which in this case is everything in the robot object (the command API and the follow
-    sphere).
+    """Access the context object as self.context.
+
+    We have access to everything in the context object, which in this case is everything in the
+    robot object (the command API and the follow sphere).
     """
 
     @property
     def robot(self):
+        """Return the robot from the context."""
         return self.context.robot
 
     @property
     def follow_sphere(self):
+        """Return the follow sphere from the robot."""
         return self.context.robot.follow_sphere
 
     def enter(self):
+        """Close the gripper and initialize the follow sphere pose."""
         self.robot.gripper.close()
         self.follow_sphere.set_world_pose(*self.robot.arm.get_fk_pq().as_tuple())
 
     def step(self):
+        """Send the end effector toward the follow sphere position."""
         target_position, _ = self.follow_sphere.get_world_pose()
         self.robot.arm.send_end_effector(target_position=target_position)
         return self  # Always transition back to this state.
 
 
 def main():
+    """Set up and run the Franka follow sphere example."""
     world = CortexWorld()
     robot = world.add_robot(add_franka_to_stage(name="franka", prim_path="/World/Franka"))
 

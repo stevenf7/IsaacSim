@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate camera annotator data retrieval and validation."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
@@ -29,6 +31,7 @@ from isaacsim.sensors.camera import Camera
 def test_camera_annotator_data(
     test_name: str, data: np.ndarray, expected_class: type, expected_dtype: type, expected_shape: tuple
 ) -> bool:
+    """Validate camera annotator data against expected type, dtype, and shape."""
     print(f"{test_name}: data.shape: {data.shape}; dtype: {data.dtype}; type: {type(data)}")
     success = True
     if not isinstance(data, expected_class):

@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate replicator behavior scripts for randomizing prims in Isaac Sim."""
 
 from isaacsim import SimulationApp
 
@@ -53,16 +54,16 @@ carb.settings.get_settings().set_bool("/app/scripting/ignoreWarningDialog", True
 simulation_app.update()
 
 
-# Setup a new stage with a dome light
 def setup_stage():
+    """Set up a new stage with a dome light."""
     omni.usd.get_context().new_stage()
     stage = omni.usd.get_context().get_stage()
     dome_light = stage.DefinePrim("/World/DomeLight", "DomeLight")
     dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(500.0)
 
 
-# Add scripting to the root prim with a behavior script and the custom exposed variables values
 def add_behavior_script_with_parameters(prim_path, behavior_class, exposed_variables={}):
+    """Add a behavior script to a prim and set exposed variable values."""
     stage = omni.usd.get_context().get_stage()
     prim = stage.GetPrimAtPath(prim_path)
     if not prim:
@@ -88,8 +89,8 @@ def add_behavior_script_with_parameters(prim_path, behavior_class, exposed_varia
         exposed_var_attr.Set(var_value)
 
 
-# Remove the scripts from the prim paths list
 def remove_all_scripts(prim_paths):
+    """Remove all behavior scripts from the given prim paths."""
     stage = omni.usd.get_context().get_stage()
     for prim_path in prim_paths:
         prim = stage.GetPrimAtPath(prim_path)
@@ -101,16 +102,16 @@ def remove_all_scripts(prim_paths):
         scripts_attr.Set(Sdf.AssetPathArray())
 
 
-# Create prims for single randomization (single prim at root)
 def create_prims_single(prim_path, prim_type):
+    """Create a single prim at the given path for randomization."""
     stage = omni.usd.get_context().get_stage()
     prim = stage.DefinePrim(prim_path, prim_type)
     if not prim.IsValid():
         raise RuntimeError(f"Failed to create prim of type {prim_type} at {prim_path}")
 
 
-# Create prims for multi randomization (children under a root)
 def create_prims_multi(root_path, num_prims=1, prim_type="SphereLight", prim_name="light"):
+    """Create multiple child prims under a root path for randomization."""
     stage = omni.usd.get_context().get_stage()
 
     for i in range(num_prims):

@@ -55,13 +55,11 @@ class TestUI(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         """Set up the test environment."""
-        pass
 
     # After running each test
     async def tearDown(self):
         """Clean up after each test."""
         await update_stage_async()
-        pass
 
     async def _create_window(self, title, width, height):
         """Create a scrolling window for testing."""

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate adding visual and dynamic cuboids to a scene."""
+
 import numpy as np
 from isaacsim import SimulationApp
 

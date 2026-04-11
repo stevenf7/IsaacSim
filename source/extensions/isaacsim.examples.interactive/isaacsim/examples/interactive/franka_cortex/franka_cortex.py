@@ -217,4 +217,3 @@ class FrankaCortex(CortexBase):
 
     def world_cleanup(self) -> None:
         """Performs cleanup operations when the world is being destroyed."""
-        pass

@@ -484,7 +484,7 @@ class XformPrim(Prim):
             ):
                 # TODO: should fall back to other backend???
                 carb.log_error(f"Failed to update fabric selection for {fabric_data['attr']}")
-                return
+                return None
             indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
             positions = fabric_data["cache"]["positions"]
             orientations = fabric_data["cache"]["orientations"]
@@ -674,7 +674,7 @@ class XformPrim(Prim):
             ):
                 # TODO: should fall back to other backend???
                 carb.log_error(f"Failed to update fabric selection for {fabric_data['attr']}")
-                return
+                return None
             indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
             translations = fabric_data["cache"]["translations"]
             orientations = fabric_data["cache"]["orientations"]
@@ -973,7 +973,7 @@ class XformPrim(Prim):
             ):
                 # TODO: should fall back to other backend???
                 carb.log_error(f"Failed to update fabric selection for {fabric_data['attr']}")
-                return
+                return None
             indices = ops_utils.resolve_indices(indices, count=len(self), device=self._device)
             scales = fabric_data["cache"]["scales"]
             wp.launch(

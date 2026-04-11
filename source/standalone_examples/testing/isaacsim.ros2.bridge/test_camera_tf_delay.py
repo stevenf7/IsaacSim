@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Test synchronization between TF and camera timestamps in ROS2 bridge."""
+
 import argparse
 import logging
 import os
@@ -66,6 +68,7 @@ img_queue = deque()
 
 
 def tf_callback(msg):
+    """Handle incoming TF messages and record their timestamps."""
     global tf_msg, tf_recv_time, tf_recv_count
     tf_msg = msg
     tf_recv_time = time.perf_counter()
@@ -81,6 +84,7 @@ def tf_callback(msg):
 
 
 def img_callback(msg):
+    """Handle incoming image messages and record their timestamps."""
     global img_msg, img_recv_time, img_recv_count
     img_msg = msg
     img_recv_time = time.perf_counter()
@@ -95,6 +99,7 @@ def img_callback(msg):
 
 
 def clear_message_state():
+    """Reset all message state and clear queues."""
     global tf_msg, img_msg, tf_recv_time, img_recv_time
     tf_msg = None
     img_msg = None
@@ -105,6 +110,7 @@ def clear_message_state():
 
 
 def collect_latest_pair(max_wait_steps=20):
+    """Collect the latest TF and image message pair by spinning the ROS node."""
     wait_count = 0
     spin_start = time.perf_counter()
 

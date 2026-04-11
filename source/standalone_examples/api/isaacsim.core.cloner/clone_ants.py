@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate cloning ant robots using GridCloner and controlling them as articulations."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})

@@ -116,8 +116,6 @@ class CustomDataWidget(SimplePropertyWidget):
         data.set_value(j)
         data.add_value_changed_fn(lambda m: validate(m))
 
-        pass
-
     def build_property_item(self, stage: Usd.Stage, ui_prop: UsdPropertyUiEntry, prim_paths: list[Sdf.Path]):
         """Build the UI for a single property item.
 

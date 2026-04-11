@@ -16,8 +16,6 @@
 
 """Utility for collecting ROS 2 namespaces from USD prim hierarchies."""
 
-import omni
-import omni.syntheticdata
 from isaacsim.core.rendering_manager import ViewportManager
 
 

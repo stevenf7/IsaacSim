@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate simulation-event-driven data capture with writers and annotators."""
 
 from isaacsim import SimulationApp
 
@@ -29,8 +30,8 @@ from omni.replicator.core.functional import write_image, write_json
 from pxr import UsdPhysics
 
 
-# Util function to save semantic segmentation annotator data
 def write_sem_data(sem_data, file_path):
+    """Save semantic segmentation data as JSON labels and PNG image."""
     id_to_labels = sem_data["info"]["idToLabels"]
     write_json(path=file_path + ".json", data=id_to_labels)
     sem_image_data = sem_data["data"]

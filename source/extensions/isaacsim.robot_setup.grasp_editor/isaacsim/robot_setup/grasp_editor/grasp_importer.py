@@ -69,7 +69,7 @@ class GraspSpec:
         """
         if name not in self._imported_data["grasps"]:
             carb.log_error(f"Invalid grasp name {name} was given.  Nothing will be returned.")
-            return
+            return None
         return self._imported_data["grasps"][name]
 
     def get_grasp_dicts(self) -> dict:

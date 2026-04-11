@@ -256,7 +256,6 @@ class DfDecider(DfBindable):
 
         Use this method for any setup to prepare as a new decision session is started.
         """
-        pass
 
     def decide(self) -> DfDecision:
         """Decider node API method called every time this decider node is reached by a decider.
@@ -276,7 +275,6 @@ class DfDecider(DfBindable):
             DfDecision object naming the chosen child. The decision object can optionally contain
             parameters to pass to the object.
         """
-        pass
 
     def exit(self) -> None:
         """Decider node API method called the first time this decider node is no longer reached by.
@@ -286,7 +284,6 @@ class DfDecider(DfBindable):
 
         Use this method to perform any cleanup needed at the end of a given decision session.
         """
-        pass
 
 
 class DfAction(DfDecider):
@@ -301,7 +298,6 @@ class DfAction(DfDecider):
 
     def step(self) -> None:
         """Step the action. Deriving classes should override this method."""
-        pass
 
     def decide(self) -> None:
         """This decider node automatically calls step() each cycle. Deriving classes should not.
@@ -310,7 +306,7 @@ class DfAction(DfDecider):
         of this action.
         """
         self.step()
-        return None
+        return
 
 
 def df_descend(
@@ -418,7 +414,6 @@ class DfState(DfBindable):
 
     def enter(self) -> None:
         """Deriving classes should use this API call to set up the state as needed for stepping."""
-        pass
 
     def step(self) -> "DfState":
         """Deriving classes should use this API call to step the state. This is where the main work.
@@ -439,7 +434,6 @@ class DfState(DfBindable):
 
         transitioning to another state.
         """
-        pass
 
     def process_step(self) -> "DfState":
         """This method can be used to both process the step and correct exit from the current state.
@@ -682,7 +676,6 @@ class DfFastestRate(DfRate):
 
     def sleep(self):
         """Return immediately without sleeping."""
-        pass
 
 
 def run_state_machine(
@@ -894,11 +887,11 @@ class DfStateMachineDecider(DfDecider):
             None, as this decider processes an internal state machine rather than choosing children.
         """
         if self.state == None:
-            return None
+            return
 
         self._bind_state()
         self.state = self.state.process_step()
-        return None
+        return
 
     def exit(self):
         """On exit, the internal state machine is exited."""
@@ -1143,7 +1136,6 @@ class DfRldsNode(DfDecider):
 
     def is_runnable(self):
         """Override this method to implement the IsRunnable condition of the RLDS node."""
-        pass
 
     def is_enterable(self):
         """Is enterable can be overriden to specify a slightly different enterable condition than.

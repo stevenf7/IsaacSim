@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate physics and rendering callbacks for robot joint control and state queries."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": True})
@@ -41,10 +43,12 @@ simulation_context.play()
 
 
 def step_callback_1(step_size):
+    """Set the target joint position for panda_joint2."""
     art.set_joint_positions([[-1.5]], joint_indices=[dof_ptr])
 
 
 def step_callback_2(step_size):
+    """Print the current joint position and simulation time."""
     print(
         "Current joint 2 position @ step "
         + str(simulation_context.current_time_step_index)
@@ -55,6 +59,7 @@ def step_callback_2(step_size):
 
 
 def render_callback(event):
+    """Print a message on each render frame."""
     print("Render Frame")
 
 

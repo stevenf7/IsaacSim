@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate custom FPS data capture using writers and annotators."""
 
 from isaacsim import SimulationApp
 
@@ -36,6 +37,7 @@ SENSOR_DT = 1.0 / SENSOR_FPS
 
 
 def run_custom_fps_example(duration_seconds):
+    """Run a simulation capturing data at a custom sensor framerate."""
     # Create a new stage
     omni.usd.get_context().new_stage()
 

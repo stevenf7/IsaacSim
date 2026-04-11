@@ -616,4 +616,3 @@ def clean_up(robot_stage: object):
     Args:
         robot_stage: The USD stage containing the robot to clean up.
     """
-    pass

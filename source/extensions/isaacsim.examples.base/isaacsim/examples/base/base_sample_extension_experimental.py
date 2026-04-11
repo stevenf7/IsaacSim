@@ -135,7 +135,6 @@ class BaseSampleUITemplate:
 
         This abstract method must be implemented by subclasses to add sample-specific UI elements.
         """
-        pass
 
     def _on_load_world(self):
         """Handles the Load World button click event.
@@ -187,7 +186,6 @@ class BaseSampleUITemplate:
 
         This abstract method must be implemented by subclasses to define sample-specific reset behavior.
         """
-        pass
 
     @abstractmethod
     def post_load_button_event(self):
@@ -195,7 +193,6 @@ class BaseSampleUITemplate:
 
         This abstract method must be implemented by subclasses to define sample-specific loading behavior.
         """
-        pass
 
     @abstractmethod
     def post_clear_button_event(self):
@@ -203,7 +200,6 @@ class BaseSampleUITemplate:
 
         This abstract method must be implemented by subclasses to define sample-specific cleanup behavior.
         """
-        pass
 
     def _enable_all_buttons(self, flag: bool):
         """Enables or disables all UI buttons in the widget.

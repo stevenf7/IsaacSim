@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate H1 humanoid robot simulation with policy control."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
@@ -52,6 +54,7 @@ robots = []
 
 # initialize robot on first step, run robot advance
 def on_physics_step(step_size, context) -> None:
+    """Handle physics step for robot initialization, reset, and control."""
     global first_step
     global reset_needed
     if first_step:

@@ -39,7 +39,6 @@ class TestUITemplate(omni.kit.test.AsyncTestCase):
         Waits for the next application update to ensure proper initialization.
         """
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     # After running each test
     async def tearDown(self):
@@ -48,7 +47,6 @@ class TestUITemplate(omni.kit.test.AsyncTestCase):
         Waits for the next application update to ensure proper cleanup.
         """
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     # Run for 60 frames and make sure there were no errors loading
     async def test_template(self):
@@ -58,4 +56,3 @@ class TestUITemplate(omni.kit.test.AsyncTestCase):
         """
         for frame in range(60):
             await omni.kit.app.get_app().next_update_async()
-        pass

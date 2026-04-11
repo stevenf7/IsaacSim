@@ -16,13 +16,9 @@
 """Implements base functionality for mobility generation scenarios with robot navigation in occupancy map environments."""
 
 
-from typing import Optional, Tuple
-
-import numpy as np
-import PIL.Image
 from PIL import Image
 
-from .common import Buffer, Module
+from .common import Module
 from .occupancy_map import OccupancyMap
 from .robot import MobilityGenRobot
 from .utils.registry import Registry

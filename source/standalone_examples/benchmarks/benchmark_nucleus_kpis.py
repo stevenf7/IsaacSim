@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Benchmark Nucleus asset KPIs for Isaac Sim."""
+
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -41,6 +44,8 @@ from isaacsim.benchmark.services.metrics import measurements
 
 
 class IsaacSimNucleusKPIRecorder(interface.MeasurementDataRecorder):
+    """Record Nucleus asset counts as KPI measurements."""
+
     def __init__(self):
         self.assets_root_path = get_assets_root_path()
         self._loop = asyncio.get_event_loop()
@@ -50,7 +55,7 @@ class IsaacSimNucleusKPIRecorder(interface.MeasurementDataRecorder):
         return len([f for f in files if f.endswith(".usd")])
 
     def get_data(self):
-
+        """Collect and return Nucleus asset count measurements."""
         measurements_out = []
 
         # of objects & scenes for SDG in USD

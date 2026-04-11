@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate simulation-driven SDG with physics-based capture triggers."""
 
 import os
 
@@ -28,6 +29,7 @@ from pxr import UsdGeom
 
 
 def run_example():
+    """Run physics simulation and capture data at height-based intervals."""
     # Create a new stage and disable capture on play
     omni.usd.get_context().new_stage()
     rep.orchestrator.set_capture_on_play(False)

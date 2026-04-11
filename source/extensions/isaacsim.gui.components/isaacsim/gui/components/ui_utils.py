@@ -1838,7 +1838,6 @@ class SearchListItemDelegate(ui.AbstractItemDelegate):
             level: The tree level depth.
             expanded: Whether the branch is currently expanded.
         """
-        pass
 
     def build_widget(self, model: object, item: object, column_id: int, level: int, expanded: bool):
         """Create a widget per column per item.

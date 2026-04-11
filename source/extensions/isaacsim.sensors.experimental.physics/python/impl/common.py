@@ -324,7 +324,6 @@ class _SensorStepManager:
         Args:
             event: Simulation start event data.
         """
-        pass
 
     def _on_physics_step(self, step_dt: float, context: Any = None):
         """Handle physics step events.

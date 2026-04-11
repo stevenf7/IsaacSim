@@ -16,7 +16,6 @@
 """Deprecated USD stage utility functions."""
 
 import builtins
-import collections.abc
 import contextlib
 import threading
 

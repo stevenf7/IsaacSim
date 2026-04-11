@@ -48,16 +48,12 @@ class HelloWorld(BaseSample):
 
     async def setup_post_load(self):
         """Set up operations to be performed after the world is loaded."""
-        pass
 
     async def setup_pre_reset(self):
         """Set up operations to be performed before the world is reset."""
-        pass
 
     async def setup_post_reset(self):
         """Set up operations to be performed after the world is reset."""
-        pass
 
     def world_cleanup(self):
         """Clean up the world and release resources."""
-        pass

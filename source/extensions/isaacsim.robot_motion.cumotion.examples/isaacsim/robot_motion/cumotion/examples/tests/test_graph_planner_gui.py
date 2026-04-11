@@ -75,7 +75,7 @@ class TestGraphPlannerGui(omni.kit.test.AsyncTestCase):
 
         def record_and_skip_plan(q_target=None):
             captured["q"] = q_target
-            return None
+            return
 
         with patch.object(self.ui_builder._scenario, "plan_to_cspace_target", side_effect=record_and_skip_plan):
             self.ui_builder._on_to_cspace_target_btn()
@@ -96,7 +96,7 @@ class TestGraphPlannerGui(omni.kit.test.AsyncTestCase):
         def record_plan_to_pose(self, *args, **kwargs):
             captured["position"] = kwargs["position"]
             captured["orientation"] = kwargs["orientation"]
-            return None
+            return
 
         with patch.object(GraphBasedMotionPlanner, "plan_to_pose_target", record_plan_to_pose):
             self.ui_builder._on_to_task_space_target_btn()

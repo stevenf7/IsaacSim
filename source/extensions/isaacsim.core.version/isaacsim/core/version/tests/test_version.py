@@ -24,11 +24,9 @@ class TestIsaacVersion(omni.kit.test.AsyncTestCase):
 
     async def setUp(self):
         """Set up test environment."""
-        pass
 
     async def tearDown(self):
         """Tear down test environment."""
-        pass
 
     async def test_version(self):
         """Test version."""

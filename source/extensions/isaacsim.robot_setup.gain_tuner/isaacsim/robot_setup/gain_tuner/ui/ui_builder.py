@@ -115,7 +115,6 @@ class UIBuilder:
         #     # presses play before opening this extension
         #     # self._articulation_menu.repopulate()
         #     # self._stop_text.visible = True
-        pass
 
     def on_timeline_event(self, event: object) -> None:
         """Callback for Timeline events (Play, Pause, Stop).
@@ -144,7 +143,6 @@ class UIBuilder:
         Args:
             step: Size of physics step
         """
-        pass
 
     def on_render_step(self, e: carb.events.IEvent) -> None:
         """Render event set up to cancel physics subscriptions that run the gains test.

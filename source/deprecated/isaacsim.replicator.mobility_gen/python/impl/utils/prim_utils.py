@@ -16,12 +16,10 @@
 """Provides utility functions for manipulating USD prim transformations and xform operations."""
 
 
-import math
-import typing as tp
 from typing import Sequence, Tuple
 
 import numpy as np
-from pxr import Gf, Kind, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics, UsdShade
+from pxr import Gf, Usd, UsdGeom
 
 
 def prim_get_xform_op_order(prim: Usd.Prim) -> list[str]:

@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import annotations
+"""Demonstrate Push and Action graph differences and manual graph triggering using the experimental API.
 
-"""
 This example demonstrates how Push and Action graphs differ, and how to trigger graphs manually using the Isaac Sim
 core (experimental) API.
 
@@ -33,10 +32,13 @@ The source code is organized into 3 main sections:
 3. Example logic demonstrating different graph triggering methods.
 """
 
-# 1. --------------------------------------------------------------------
+from __future__ import annotations
 
 # Parse any command-line arguments specific to the standalone application (only known arguments).
 import argparse
+
+# 1. --------------------------------------------------------------------
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

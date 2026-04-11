@@ -39,7 +39,6 @@ class PathPlanner(WorldInterface):
                 The translation vector should be specified in the units of the USD stage
             robot_orientation: (4 x 1) quaternion describing the orientation of the robot base relative to the USD stage global frame
         """
-        pass
 
     def compute_path(self, active_joint_positions: np.array, watched_joint_positions: np.array) -> np.array:
         """Compute a set of c-space waypoints, which when linearly interpolated,.
@@ -88,7 +87,6 @@ class PathPlanner(WorldInterface):
             active_joint_targets: Desired configuration for the robot as (m x 1) vector where m is the number of active
                 joints
         """
-        pass
 
     def set_end_effector_target(self, target_translation: object, target_orientation: object = None):
         """Set end effector target.
@@ -98,4 +96,3 @@ class PathPlanner(WorldInterface):
                 Target translation should be specified in the same units as the USD stage, relative to the stage origin.
             target_orientation: Quaternion of desired rotation for robot end effector relative to USD stage global frame
         """
-        pass

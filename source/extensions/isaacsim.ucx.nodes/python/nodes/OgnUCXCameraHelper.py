@@ -119,7 +119,6 @@ class OgnUCXCameraHelper:
             state = OgnUCXCameraHelperInternalState.per_instance_internal_state(node)
         except Exception:
             state = None
-            pass
 
         if state is not None:
             state.reset()

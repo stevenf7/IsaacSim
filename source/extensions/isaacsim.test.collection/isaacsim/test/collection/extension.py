@@ -31,8 +31,6 @@ class Extension(omni.ext.IExt):
         Args:
             ext_id: Extension identifier provided by the extension manager.
         """
-        pass
 
     def on_shutdown(self):
         """Clean up resources when the extension is unloaded."""
-        pass

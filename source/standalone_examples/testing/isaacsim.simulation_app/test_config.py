@@ -33,7 +33,7 @@ def test_createstage_config(kit):
     """Test app startup without creating new stage.
 
     Args:
-        param kit: The SimulationApp instance to test.
+        kit: The SimulationApp instance to test.
     """
     print("\n[TEST 1] Testing create_new_stage configuration...")
 
@@ -63,7 +63,7 @@ def test_extra_args(kit):
     """Test passing extra arguments to SimulationApp.
 
     Args:
-        param kit: The SimulationApp instance to test.
+        kit: The SimulationApp instance to test.
     """
     print("\n[TEST 2] Testing extra_args configuration...")
 
@@ -93,7 +93,7 @@ def test_unsaved_on_exit(kit):
     """Test that app exits cleanly without prompting for unsaved changes.
 
     Args:
-        param kit: The SimulationApp instance to test.
+        kit: The SimulationApp instance to test.
     """
     print("\n[TEST 3] Testing unsaved changes on exit...")
 

@@ -16,12 +16,10 @@
 """Camera interface module for the mobility generation system that provides various rendering outputs."""
 
 
-import os
 from typing import Tuple
 
 import omni.replicator.core as rep
 from isaacsim.core.utils.prims import get_prim_at_path
-from isaacsim.core.utils.stage import open_stage
 
 from .common import Buffer, Module
 from .utils.prim_utils import prim_get_world_transform

@@ -36,7 +36,6 @@ class Trajectory(ABC):
         Returns:
             Duration of the trajectory in seconds.
         """
-        pass
 
     @abstractmethod
     def get_target_state(self, time: float) -> Optional[RobotState]:
@@ -62,4 +61,3 @@ class Trajectory(ABC):
             >>> if target is None:
             ...     raise RuntimeError("No target available")
         """
-        pass

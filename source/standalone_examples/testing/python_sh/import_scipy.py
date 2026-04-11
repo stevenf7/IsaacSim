@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Verify scipy is imported from the expected omni.pip.compute path."""
+
 import scipy
 
 print(scipy.__path__[0])

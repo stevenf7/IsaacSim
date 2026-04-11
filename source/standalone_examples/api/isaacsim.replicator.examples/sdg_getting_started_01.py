@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate basic synthetic data generation with a writer and render product."""
 
 import os
 
@@ -25,6 +26,7 @@ import omni.usd
 
 
 def run_example():
+    """Run a basic SDG pipeline capturing RGB and bounding box data."""
     # Create a new stage and disable capture on play
     omni.usd.get_context().new_stage()
     rep.orchestrator.set_capture_on_play(False)

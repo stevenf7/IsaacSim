@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate SDG with custom and graph-based randomizers."""
 
 import os
 import random
@@ -25,13 +26,14 @@ import omni.replicator.core as rep
 import omni.usd
 
 
-# Randomize the location of a prim without the graph-based randomizer
 def randomize_location(prim):
+    """Randomize the position of a prim using the USD functional API."""
     random_pos = (random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1))
     rep.functional.modify.position(prim, random_pos)
 
 
 def run_example():
+    """Run SDG with combined USD API and graph-based randomization."""
     # Create a new stage and disable capture on play
     omni.usd.get_context().new_stage()
     rep.orchestrator.set_capture_on_play(False)

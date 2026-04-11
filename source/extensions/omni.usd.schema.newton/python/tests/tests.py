@@ -24,11 +24,9 @@ class NewtonSchemaTests(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def setUp(self):
         """Set up test fixtures."""
-        pass
 
     async def tearDown(self):
         """Tear down test fixtures."""
-        pass
 
     async def test_schema_api_types(self):
         """Test schema api types."""

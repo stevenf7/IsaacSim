@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Define pick-and-place controller for the Cobotta Pro 900 robot."""
 
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
 from isaacsim.core.prims import SingleArticulation
@@ -21,6 +22,8 @@ from .rmpflow import RMPFlowController
 
 
 class PickPlaceController(manipulators_controllers.PickPlaceController):
+    """Coordinate pick-and-place actions for the Cobotta Pro 900 using RMPFlow."""
+
     def __init__(
         self, name: str, gripper: ParallelGripper, robot_articulation: SingleArticulation, events_dt=None
     ) -> None:

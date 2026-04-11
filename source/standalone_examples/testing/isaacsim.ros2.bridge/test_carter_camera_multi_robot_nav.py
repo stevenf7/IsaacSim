@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Test multi-robot Carter camera navigation with ROS2 bridge."""
+
 import sys
 
 from isaacsim import SimulationApp

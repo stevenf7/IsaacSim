@@ -2793,7 +2793,7 @@ class Articulation(XFormPrim):
             )
             self._physics_view.set_dof_max_velocities(new_values, indices)
         else:
-            return None
+            return
 
     def get_joint_max_velocities(
         self,
@@ -4834,7 +4834,7 @@ class Articulation(XFormPrim):
         """Pauses the motion of all articulations wrapped under the Articulation."""
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
-            return None
+            return
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(None, self.count, self._device)
             self._paused_position_targets = self._physics_view.get_dof_position_targets()
@@ -4856,7 +4856,7 @@ class Articulation(XFormPrim):
             self._paused_motion = True
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use pause_motion")
-            return None
+            return
 
     def resume_motion(self) -> None:
         """Resumes the motion of all articulations wrapped under the Articulation using the position and velocity dof targets.
@@ -4865,10 +4865,10 @@ class Articulation(XFormPrim):
         """
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
-            return None
+            return
         if not self._paused_motion:
             carb.log_warn("Articulation needs to be paused in order to use resume_motion.")
-            return None
+            return
 
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(None, self.count, self._device)
@@ -4878,7 +4878,7 @@ class Articulation(XFormPrim):
             self._paused_motion = False
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use resume_motion")
-            return None
+            return
 
     def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
         """Create a physics simulation view if not passed and set other properties using the PhysX tensor API.

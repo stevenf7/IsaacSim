@@ -101,8 +101,6 @@ class Extension(omni.ext.IExt):
                 self._progress_bar = progress_bar_builder("Current Progress")
                 self._progress_bar.set_value(0)
 
-        pass
-
     def _menu_callback(self):
         """Toggle the visibility of the extension window."""
         self._window.visible = not self._window.visible
@@ -164,8 +162,6 @@ class Extension(omni.ext.IExt):
 
         asyncio.ensure_future(_task())
 
-        pass
-
     def remove_physics_apis_on_selected(self):
         """Remove all physics APIs from the currently selected prims.
 
@@ -190,8 +186,6 @@ class Extension(omni.ext.IExt):
                     await omni.kit.app.get_app().next_update_async()
 
         asyncio.ensure_future(_task())
-
-        pass
 
     def traverse_prims(
         self, selection: list, include_xform: bool = False, ignore_rigid: bool = True, visible_only: bool = True
@@ -278,7 +272,6 @@ class Extension(omni.ext.IExt):
         elif include_xform and prim.IsA(UsdGeom.Xformable):
             return True
         return False
-        pass
 
     def apply_collision_to_prim(self, prim: Usd.Prim, approximationShape: str = "none") -> None:
         """Apply collision API to a single prim.
@@ -345,4 +338,3 @@ class Extension(omni.ext.IExt):
         """
         remove_menu_items(self._menu_items, "Tools")
         gc.collect()
-        pass

@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate timeline, physics, render, and app update event subscriptions."""
 
 from isaacsim import SimulationApp
 
@@ -55,6 +56,7 @@ VERBOSE = False
 
 
 def on_timeline_event(event: carb.eventdispatcher.Event):
+    """Handle timeline tick events."""
     global timeline_events
     timeline_events.append(event)
     if VERBOSE:
@@ -62,6 +64,7 @@ def on_timeline_event(event: carb.eventdispatcher.Event):
 
 
 def on_physics_step(dt, context):
+    """Handle physics step events."""
     global physics_events
     physics_events.append(dt)
     if VERBOSE:
@@ -69,6 +72,7 @@ def on_physics_step(dt, context):
 
 
 def on_stage_render_event(event: carb.eventdispatcher.Event):
+    """Handle stage render new frame events."""
     global stage_render_events
     stage_render_events.append(event.event_name)
     if VERBOSE:
@@ -76,6 +80,7 @@ def on_stage_render_event(event: carb.eventdispatcher.Event):
 
 
 def on_app_update(event: carb.eventdispatcher.Event):
+    """Handle application update events."""
     global app_update_events
     app_update_events.append(event.event_name)
     if VERBOSE:

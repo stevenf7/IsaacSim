@@ -16,6 +16,8 @@
 # Uses isaacsim.robot.experimental.wheeled_robots
 # Extension: source/extensions/isaacsim.robot.experimental.wheeled_robots
 
+"""Demonstrate Kaya holonomic movement."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})

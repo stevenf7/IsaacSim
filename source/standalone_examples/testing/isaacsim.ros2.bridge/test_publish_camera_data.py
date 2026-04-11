@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Test publishing camera data through ROS2 bridge with timestamp validation."""
 
 import argparse
 import sys
@@ -70,6 +71,8 @@ from rclpy.node import Node
 
 
 class TimestampChecker(Node):
+    """Check ROS2 topic timestamps for duplicates and backwards time."""
+
     def __init__(self):
         super().__init__("timestamp_checker")
         self.topic_timestamps = defaultdict(set)  # topic_name -> set of timestamps
@@ -80,6 +83,7 @@ class TimestampChecker(Node):
         self.subscribed_types = {}
 
     def subscribe_dynamic(self, topic_name, msg_type_str):
+        """Subscribe to a topic dynamically by resolving the message type string."""
         if topic_name in self.subscribed_types:
             return
         msg_type = self._import_message_type(msg_type_str)
@@ -92,6 +96,7 @@ class TimestampChecker(Node):
         self.subscribed_types[topic_name] = msg_type
 
     def check_timestamp(self, msg, topic_name):
+        """Validate that message timestamps are unique and monotonically increasing."""
         timestamp = getattr(msg, "header", None)
         if timestamp:
             time_val = (timestamp.stamp.sec, timestamp.stamp.nanosec)
@@ -139,10 +144,12 @@ class TimestampChecker(Node):
             return None
 
     def stop(self):
+        """Signal the checker to stop spinning."""
         self.event.set()
 
 
 def run_checker(checker):
+    """Spin the timestamp checker node until it is stopped."""
     while rclpy.ok() and not checker.event.is_set():
         rclpy.spin_once(checker, timeout_sec=0.1)
 
@@ -154,6 +161,7 @@ def run_checker(checker):
 
 # Paste functions from the tutorial here
 def publish_camera_tf(camera: Camera):
+    """Publish TF transforms for a camera prim using an OmniGraph action graph."""
     camera_prim = camera.prim_path
 
     if not omni.usd.get_context().get_stage().GetPrimAtPath(camera_prim).IsValid():
@@ -237,6 +245,7 @@ def publish_camera_tf(camera: Camera):
 
 
 def publish_camera_info(camera: Camera, freq):
+    """Publish camera info messages at the specified frequency."""
     from isaacsim.ros2.core import read_camera_info
 
     # The following code will link the camera's render product and publish the data to the specified topic name.
@@ -275,6 +284,7 @@ def publish_camera_info(camera: Camera, freq):
 
 
 def publish_pointcloud_from_depth(camera: Camera, freq):
+    """Publish point cloud data generated from depth images at the specified frequency."""
     # The following code will link the camera's render product and publish the data to the specified topic name.
     render_product = camera._render_product_path
     step_size = int(60 / freq)
@@ -299,6 +309,7 @@ def publish_pointcloud_from_depth(camera: Camera, freq):
 
 
 def publish_depth(camera: Camera, freq):
+    """Publish depth image data at the specified frequency."""
     # The following code will link the camera's render product and publish the data to the specified topic name.
     render_product = camera._render_product_path
     step_size = int(60 / freq)
@@ -320,6 +331,7 @@ def publish_depth(camera: Camera, freq):
 
 
 def publish_rgb(camera: Camera, freq):
+    """Publish RGB image data at the specified frequency."""
     # The following code will link the camera's render product and publish the data to the specified topic name.
     render_product = camera._render_product_path
     step_size = int(60 / freq)

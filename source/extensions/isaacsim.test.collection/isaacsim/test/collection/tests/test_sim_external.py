@@ -37,7 +37,6 @@ class TestExternalDependencies(omni.kit.test.AsyncTestCase):
     async def tearDown(self):
         """Clean up test environment."""
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def test_asset_converter(self):
         """Test that OBJ files can be converted to USD format."""

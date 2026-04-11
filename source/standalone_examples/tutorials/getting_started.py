@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate basic scene setup with visual and physics cubes."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})

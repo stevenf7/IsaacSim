@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
+"""Test frame delay between object motion and rendered image.
+
 To generate several frames, create and run a bash script with the following content:
 
 for i in $(seq 64 512); do
@@ -68,6 +69,8 @@ from pxr import UsdGeom, UsdPhysics
 
 
 class CustomWriter(Writer):
+    """Custom replicator writer that captures RGB, segmentation, and bounding box data."""
+
     def __init__(self):
         self.annotators = []
         self.annotators.append(AnnotatorRegistry.get_annotator("rgb"))
@@ -75,12 +78,13 @@ class CustomWriter(Writer):
         self.annotators.append(AnnotatorRegistry.get_annotator("bounding_box_2d_tight"))
 
     def write(self, data):
+        """Cache annotator data without writing to disk."""
         # The base Writer class caches 'data' automatically, accessible via self.get_data()
         pass
 
 
 def get_data(sensor: Camera | Writer) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Get RGB, semantic segmentation and BBox from Camera or Writer (according to `USE_REPLICATOR_WRITER`)"""
+    """Get RGB, semantic segmentation and BBox from Camera or Writer (according to `USE_REPLICATOR_WRITER`)."""
     if USE_REPLICATOR_WRITER:
         rgb = sensor.get_data()["rgb"]
         semantic_segmentation = sensor.get_data()["semantic_segmentation"]["data"]
@@ -155,6 +159,7 @@ def validate_bbox(detected_bbox: dict, expected_bbox: dict, tolerance_pixels: fl
 
 
 def draw_data(frame, position, bbox, label):
+    """Draw position and bounding box annotations onto an image frame."""
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     frame = cv2.rectangle(
         img=frame,
@@ -212,6 +217,7 @@ def draw_data(frame, position, bbox, label):
 
 
 def generate_result(data: list[dict], banner: list[str] = []):
+    """Generate a composite result image from collected frame data."""
     rgb_frames = []
     semantic_segmentation_frames = []
     for item in data:

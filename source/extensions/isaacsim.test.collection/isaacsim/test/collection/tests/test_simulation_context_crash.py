@@ -41,8 +41,6 @@ class TestSimulationContextCrash(omni.kit.test.AsyncTestCase):
         await stage_utils.create_new_stage_async()
         await app_utils.update_app_async()
 
-        pass
-
     # After running each test
     async def tearDown(self):
         """Clean up test environment and stop timeline."""
@@ -51,7 +49,6 @@ class TestSimulationContextCrash(omni.kit.test.AsyncTestCase):
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await app_utils.update_app_async()
-        pass
 
     async def test_simulation_context_crash(self):
         """Test that stopping timeline after articulation creation does not crash."""

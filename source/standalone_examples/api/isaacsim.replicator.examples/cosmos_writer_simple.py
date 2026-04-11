@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate synthetic data generation using the CosmosWriter."""
 
 from isaacsim import SimulationApp
 
@@ -33,6 +34,7 @@ NUM_FRAMES = 60
 
 
 def run_cosmos_example(num_frames, segmentation_mapping=None):
+    """Run a CosmosWriter example capturing physics simulation frames."""
     # Create a new stage
     omni.usd.get_context().new_stage()
 

@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Define pick-and-place task for the Cobotta Pro 900 robot."""
 
 from typing import Optional
 
@@ -24,6 +25,8 @@ from isaacsim.storage.native import get_assets_root_path
 
 
 class PickPlace(tasks.PickPlace):
+    """Pick up a cube and place it at a target location using the Cobotta Pro 900."""
+
     def __init__(
         self,
         name: str = "denso_pick_place",
@@ -44,6 +47,7 @@ class PickPlace(tasks.PickPlace):
         return
 
     def set_robot(self) -> SingleManipulator:
+        """Create and configure the Cobotta Pro 900 manipulator for the task."""
         assets_root_path = get_assets_root_path()
         if assets_root_path is None:
             raise Exception("Could not find Isaac Sim assets folder")

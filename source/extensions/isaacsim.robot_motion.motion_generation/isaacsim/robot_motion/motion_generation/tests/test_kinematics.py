@@ -86,8 +86,6 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         with open(os.path.join(self._polciy_config_dir, "policy_map.json")) as policy_map:
             self._policy_map = json.load(policy_map)
 
-        pass
-
     # After running each test
     async def tearDown(self):
         """Clean up test environment after each test.
@@ -102,7 +100,6 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         self._mg = None
         await update_stage_async()
         World.clear_instance()
-        pass
 
     async def _create_light(self):
         """Create a sphere light in the scene.

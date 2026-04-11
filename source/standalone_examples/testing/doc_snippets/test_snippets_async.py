@@ -30,7 +30,6 @@ import asyncio
 import atexit
 import csv
 import importlib.util
-import os
 import re
 import signal
 import sys

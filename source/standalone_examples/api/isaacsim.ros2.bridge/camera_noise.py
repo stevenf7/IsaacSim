@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate ROS 2 camera publishing with GPU-based noise augmentation."""
+
 import sys
 
 from isaacsim import SimulationApp
@@ -79,6 +81,7 @@ set_camera_prim_path(render_product_path, CAMERA_STAGE_PATH)
 def image_gaussian_noise_warp(
     data_in: wp.array3d(dtype=wp.uint8), data_out: wp.array3d(dtype=wp.uint8), seed: int, sigma: float = 0.5
 ):
+    """Apply Gaussian noise to an image using warp."""
     i, j = wp.tid()
     dim_i = data_out.shape[0]
     dim_j = data_out.shape[1]

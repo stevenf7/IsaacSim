@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate SDG with custom writers and multiple render products."""
 
 import os
 
@@ -25,8 +26,9 @@ import omni.usd
 from omni.replicator.core import Writer
 
 
-# Create a custom writer to access annotator data
 class MyWriter(Writer):
+    """Access and print annotator data from attached render products."""
+
     def __init__(self, camera_params: bool = True, bounding_box_3d: bool = True):
         # Organize data from render product perspective (legacy, annotator, renderProduct)
         self.data_structure = "renderProduct"
@@ -38,6 +40,7 @@ class MyWriter(Writer):
         self._frame_id = 0
 
     def write(self, data: dict):
+        """Print captured annotator data for each frame."""
         print(f"[MyWriter][{self._frame_id}] data:")
         for key, value in data.items():
             print(f"  {key}: {value}")
@@ -49,6 +52,7 @@ rep.writers.register_writer(MyWriter)
 
 
 def run_example():
+    """Run SDG with custom writer, pose writer, and annotator data access."""
     # Create a new stage and disable capture on play
     omni.usd.get_context().new_stage()
     rep.orchestrator.set_capture_on_play(False)

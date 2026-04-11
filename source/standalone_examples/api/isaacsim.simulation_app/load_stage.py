@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate loading a USD stage in simulation."""
+
 import argparse
 import sys
 

@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate motion blur capture with configurable delta times and render modes."""
 
 from isaacsim import SimulationApp
 
@@ -224,6 +225,7 @@ def run_motion_blur_example(
 
 
 def run_motion_blur_examples(num_frames, delta_times, samples_per_pixel, motion_blur_subsamples):
+    """Run motion blur examples across all delta time and render mode combinations."""
     print(
         f"[MotionBlur] Running with delta_times={delta_times}, samples_per_pixel={samples_per_pixel}, motion_blur_subsamples={motion_blur_subsamples}"
     )

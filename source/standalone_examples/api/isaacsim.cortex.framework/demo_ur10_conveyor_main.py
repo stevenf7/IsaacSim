@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate UR10 bin stacking on a conveyor belt."""
 
 from isaacsim import SimulationApp
 
@@ -33,6 +34,8 @@ from isaacsim.cortex.framework.robot import CortexUr10
 
 
 class Ur10Assets:
+    """Store USD asset paths for the UR10 bin stacking scene."""
+
     def __init__(self):
         self.assets_root_path = get_assets_root_path_or_die()
 
@@ -45,6 +48,7 @@ class Ur10Assets:
 
 
 def print_diagnostics(diagnostic):
+    """Print the current logical state of the bin stacking behavior."""
     print("=========== logical state ==========")
     if diagnostic.bin_name:
         print("active bin info:")
@@ -61,6 +65,7 @@ def print_diagnostics(diagnostic):
 
 
 def random_bin_spawn_transform():
+    """Generate a random position and orientation for spawning a bin."""
     x = random.uniform(-0.15, 0.15)
     y = 1.5
     z = -0.15
@@ -81,6 +86,8 @@ def random_bin_spawn_transform():
 
 
 class BinStackingTask(BaseTask):
+    """Manage bin spawning and tracking for the stacking task."""
+
     def __init__(self, env_path, assets):
         super().__init__("bin_stacking")
         self.assets = assets
@@ -97,6 +104,7 @@ class BinStackingTask(BaseTask):
         rigid_bin.set_visibility(True)
 
     def post_reset(self) -> None:
+        """Clear all bins and reset state after a world reset."""
         if len(self.bins) > 0:
             for rigid_bin in self.bins:
                 self.scene.remove_object(rigid_bin.name)
@@ -126,6 +134,7 @@ class BinStackingTask(BaseTask):
 
 
 def main():
+    """Set up and run the UR10 conveyor bin stacking demo."""
     world = CortexWorld()
 
     env_path = "/World/Ur10Table"

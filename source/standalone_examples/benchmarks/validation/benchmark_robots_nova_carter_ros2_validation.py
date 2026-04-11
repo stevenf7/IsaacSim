@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Validate Nova Carter ROS2 benchmark results against golden data."""
+
 import argparse
 
 parser = argparse.ArgumentParser()

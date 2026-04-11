@@ -2191,7 +2191,7 @@ class Camera(BaseSensor):
         """
         if self.prim.GetAttribute("omni:lensdistortion:model").Get() != distortion_model_attr:
             carb.log_error(f"Camera omni:lensdistortion:model attribute not set to '{distortion_model_attr}'.")
-            return
+            return None
         attrs = []
         for attr_name in attr_names:
             tokens = attr_name.split("_")

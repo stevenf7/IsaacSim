@@ -163,4 +163,3 @@ class BaseWriterNode(BaseResetNode):
             writer: The writer that was attached.
             render_product: The render product the writer was attached to.
         """
-        pass

@@ -77,8 +77,6 @@ class TestIw_hub(omni.kit.test.AsyncTestCase):
             self.graph_path, "left_wheel_joint", "right_wheel_joint", "/iw_hub", 0.08, 0.58
         )
 
-        pass
-
     # After running each test
     async def tearDown(self):
         """Clean up test environment and stop timeline."""
@@ -87,7 +85,6 @@ class TestIw_hub(omni.kit.test.AsyncTestCase):
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def test_loading(self):
         """Test that the iW Hub robot loads and can move forward."""
@@ -114,8 +111,6 @@ class TestIw_hub(omni.kit.test.AsyncTestCase):
         delta = np.linalg.norm(self.current_pos - self.starting_pos)
         print("Diff is ", delta)
         self.assertTrue(delta > 0.02)
-
-        pass
 
     # general, slowly building up speed testcase
     async def test_accel(self):
@@ -145,8 +140,6 @@ class TestIw_hub(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
         self._timeline.stop()
-
-        pass
 
     # braking from different init speeds
     async def test_brake(self):
@@ -181,7 +174,6 @@ class TestIw_hub(omni.kit.test.AsyncTestCase):
 
             self._timeline.stop()
             await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def test_spin(self):
         """Test spinning behavior at different angular velocities."""
@@ -205,8 +197,6 @@ class TestIw_hub(omni.kit.test.AsyncTestCase):
             self.assertAlmostEqual(curr_ang_vel, angular_velocity, delta=5e-2)
 
         # self._timeline.stop()
-
-        pass
 
     # go in circle
     async def test_circle(self):
@@ -234,5 +224,3 @@ class TestIw_hub(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(og.DataView.get(odom_ang_vel)[2], angular_velocity, delta=5e-2)
 
         await omni.kit.app.get_app().next_update_async()
-
-        pass

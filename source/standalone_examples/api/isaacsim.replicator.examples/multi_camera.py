@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Demonstrate multi-camera data capture with custom writers and annotators."""
 
 from isaacsim import SimulationApp
 
@@ -29,16 +30,17 @@ from omni.replicator.core.functional import write_image
 NUM_FRAMES = 5
 
 
-# Randomize cube color every frame using a graph-based replicator randomizer
 def cube_color_randomizer():
+    """Randomize cube color every frame using a graph-based replicator randomizer."""
     cube_prims = rep.get.prims(path_pattern="Cube")
     with cube_prims:
         rep.randomizer.color(colors=rep.distribution.uniform((0, 0, 0), (1, 1, 1)))
     return cube_prims.node
 
 
-# Example of custom writer class to access the annotator data
 class MyWriter(Writer):
+    """Write RGB annotator data to disk from multiple render products."""
+
     def __init__(self, rgb: bool = True):
         # Organize data from render product perspective (legacy, annotator, renderProduct)
         self.data_structure = "renderProduct"
@@ -53,6 +55,7 @@ class MyWriter(Writer):
         self.backend = DiskBackend(output_dir=output_dir, overwrite=True)
 
     def write(self, data):
+        """Write RGB frames from each render product to disk."""
         if "renderProducts" in data:
             for rp_name, rp_data in data["renderProducts"].items():
                 if "rgb" in rp_data:

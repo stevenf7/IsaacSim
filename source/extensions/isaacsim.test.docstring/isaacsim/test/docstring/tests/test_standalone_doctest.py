@@ -33,12 +33,10 @@ class TestStandaloneDocTest(isaacsim.test.docstring.AsyncDocTestCase):
     # Before running each test
     async def setUp(self):
         """Set up the test case before running each test."""
-        pass
 
     # After running each test
     async def tearDown(self):
         """Clean up the test case after running each test."""
-        pass
 
     async def test_async_doctest_case(self):
         """Test the StandaloneDocTestCase by running its doctests."""

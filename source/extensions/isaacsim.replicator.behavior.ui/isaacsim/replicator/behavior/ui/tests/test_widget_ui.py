@@ -35,11 +35,9 @@ class TestExposedVariablesWidgetUI(omni.kit.test.AsyncTestCase):
 
     async def setup(self):
         """Set up test fixtures."""
-        pass
 
     async def tearDown(self):
         """Tear down test fixtures."""
-        pass
 
     async def test_widget_registered(self):
         """Verify the exposed variables widget is registered in the property window."""

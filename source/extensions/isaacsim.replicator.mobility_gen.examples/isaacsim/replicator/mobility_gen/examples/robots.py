@@ -167,7 +167,6 @@ class PolicyMobilityGenRobot(MobilityGenRobot):
         Returns:
             The configured robot instance.
         """
-
         add_reference_to_stage(usd_path=cls.usd_url, path=prim_path)
         stage = get_current_stage(backend="usd")
 

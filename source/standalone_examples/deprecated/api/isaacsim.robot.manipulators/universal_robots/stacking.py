@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Demonstrate UR10 stacking task."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})

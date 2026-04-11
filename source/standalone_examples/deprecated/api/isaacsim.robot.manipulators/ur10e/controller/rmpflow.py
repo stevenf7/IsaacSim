@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Provide RMPflow motion policy controller for UR10e robot."""
 
 
 import os
@@ -21,6 +22,8 @@ from isaacsim.core.prims import Articulation
 
 
 class RMPFlowController(mg.MotionPolicyController):
+    """RMPflow-based motion policy controller for UR10e robot."""
+
     def __init__(self, name: str, robot_articulation: Articulation, physics_dt: float = 1.0 / 60.0) -> None:
 
         self.rmpflow = mg.lula.motion_policies.RmpFlow(
@@ -43,6 +46,7 @@ class RMPFlowController(mg.MotionPolicyController):
         return
 
     def reset(self):
+        """Reset the controller and restore the robot base pose."""
         mg.MotionPolicyController.reset(self)
         self._motion_policy.set_robot_base_pose(
             robot_position=self._default_position, robot_orientation=self._default_orientation
