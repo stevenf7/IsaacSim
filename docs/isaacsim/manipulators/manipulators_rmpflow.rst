@@ -27,6 +27,11 @@ To follow along with the tutorial, you can search and enable the **Motion Genera
 Within the `isaacsim.robot_motion.motion_generation.examples` extension, there is a fully functional example of RMPflow including following a target, world awareness,
 and a debugging option.  The sections of this tutorial build up the file ``scenario.py`` from basic functionality to the completed code.
 
+.. note::
+   **Motion Generation Examples** (``isaacsim.robot_motion.motion_generation.examples``) are deprecated **since Isaac Sim 6.0.0**. In the Isaac Sim source repository they live under ``source/deprecated/isaacsim.robot_motion.motion_generation.examples``; the extension id is unchanged.
+
+   **Replacement:** Use the ``isaacsim.robot_motion.cumotion.examples`` extension and the :doc:`cuMotion Integration <../../cumotion/index>` tutorials.
+
 Generating Motions with an RMPflow Instance
 ============================================
 

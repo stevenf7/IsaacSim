@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.1] - 2026-04-06
+### Changed
+- Moved extension from `source/extensions` to `source/deprecated`.
+
 ## [0.3.0] - 2026-04-06
 ### Changed
 - Renamed extension and Python package namespace from `isaacsim.robot_motion.motion_generation.tutorials` to `isaacsim.robot_motion.motion_generation.examples`.
