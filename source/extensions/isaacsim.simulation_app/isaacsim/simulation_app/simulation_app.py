@@ -459,10 +459,20 @@ class SimulationApp:
         parent_pid = os.getpid()
 
         def _kill_parent():
+            # Check if the parent is still alive before printing anything.
+            try:
+                os.kill(parent_pid, 0)
+            except OSError:
+                # Parent already exited — nothing to do.
+                os._exit(0)
             print(
                 f"\033[91mSimulationApp: {reason} hung for {timeout_s}s, " f"force-killing pid {parent_pid}\033[0m",
                 flush=True,
             )
+            try:
+                os.kill(parent_pid, signal.SIGKILL)
+            except OSError:
+                pass
             os._exit(1)
 
         if hasattr(os, "fork"):
@@ -950,16 +960,6 @@ class SimulationApp:
             carb.log_info("SimulationApp.close: app already stopped, skipping framework shutdown")
             if self.config.get("fast_shutdown", False):
                 self._app.print_and_log("Simulation App Shutting Down")
-                # Unload plugins before os._exit() so native thread pools are
-                # torn down cleanly — a bare os._exit(0) triggers glibc
-                # destructors that deadlock on blocked threads (NVBug 5948099).
-                _watchdog = self._start_watchdog(30, "plugin unload")
-                try:
-                    self._framework.unload_all_plugins()
-                except Exception:
-                    pass
-                finally:
-                    self._cancel_watchdog(_watchdog)
                 os._exit(0)
             return
 

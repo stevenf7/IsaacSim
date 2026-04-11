@@ -1,4 +1,11 @@
 # Changelog
+
+## [2.17.2] - 2026-04-10
+### Fixed
+- Changed close() to call exit() instead of shutdown_and_release_framework() to avoid deadlocking
+- Shutdown watchdog no longer prints a spurious "force-killing" message when the parent process has already exited
+- Watchdog now sends SIGKILL to the parent process when it genuinely hangs, instead of only exiting the child
+
 ## [2.17.1] - 2026-03-30
 ### Added
 - Add optional multitick support. When enabled, loop runner resets simulation time to 0.0 on SimulationApp.__init__.
