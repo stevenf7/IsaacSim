@@ -13,18 +13,22 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
--- This is a pure Python umbrella extension.
--- All C++ functionality has been moved to isaacsim.hsb.core and isaacsim.hsb.nodes.
-local ext = get_current_extension_info()
-project_ext(ext)
+if os.target() == "linux" then
+    -- This is a pure Python umbrella extension.
+    -- All C++ functionality has been moved to isaacsim.hsb.core and isaacsim.hsb.nodes.
+    local ext = get_current_extension_info()
+    project_ext(ext)
 
--- Copy/link necessary files for packaging
-repo_build.prebuild_link {
-    { "docs", ext.target_dir .. "/docs" },
-    { "data", ext.target_dir .. "/data" },
-}
+    -- Copy/link necessary files for packaging
+    repo_build.prebuild_link {
+        { "docs", ext.target_dir .. "/docs" },
+        { "data", ext.target_dir .. "/data" },
+    }
 
-repo_build.prebuild_copy {
-    { "python/__init__.py", ext.target_dir .. "/isaacsim/hsb/bridge" },
-    { "python/extension.py", ext.target_dir .. "/isaacsim/hsb/bridge" },
-}
+    repo_build.prebuild_copy {
+        { "python/__init__.py", ext.target_dir .. "/isaacsim/hsb/bridge" },
+        { "python/extension.py", ext.target_dir .. "/isaacsim/hsb/bridge" },
+    }
+else
+    print("SKIPPING BUILD - Only supported on linux-x86_64")
+end
