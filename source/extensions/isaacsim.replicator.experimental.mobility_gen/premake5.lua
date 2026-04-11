@@ -1,4 +1,4 @@
--- SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+-- SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 -- SPDX-License-Identifier: Apache-2.0
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +14,13 @@
 -- limitations under the License.
 
 local ext = get_current_extension_info()
-local ogn = get_ogn_project_information(ext, "isaacsim/replicator/mobility_gen")
+local ogn = get_ogn_project_information(ext, "isaacsim/replicator/experimental/mobility_gen")
 
 project_ext(ext)
 
 project_ext_bindings {
     ext = ext,
-    project_name = "isaacsim.replicator.mobility_gen",
+    project_name = "isaacsim.replicator.experimental.mobility_gen",
     module = "_path_planner",
     src = ogn.bindings_path,
     target_subdir = ogn.bindings_target_path,

@@ -17,45 +17,20 @@
 
 
 import math
-import os
 from typing import List, Tuple, Union
 
 import numpy as np
-import torch
+from isaacsim.core.deprecation_manager import import_module
 
-# isaacsim.core.api
-from isaacsim.core.api.robots.robot import Robot as _Robot
-
-# isaacsim.core.prims
-from isaacsim.core.prims import Articulation as _ArticulationView
-from isaacsim.core.prims import SingleXFormPrim as XFormPrim
-from isaacsim.core.utils.prims import get_prim_at_path
-
-# isaacsim.core.utils
-from isaacsim.core.utils.stage import add_reference_to_stage, get_current_stage
-from isaacsim.replicator.mobility_gen.impl.camera import MobilityGenCamera
-from isaacsim.replicator.mobility_gen.impl.common import Buffer, Module
+torch = import_module("torch")
 
 # isaacsim.replicator.mobility_gen.examples
-from isaacsim.replicator.mobility_gen.impl.robot import ROBOTS, MobilityGenRobot
-from isaacsim.replicator.mobility_gen.impl.types import Pose2d
-from isaacsim.replicator.mobility_gen.impl.utils.global_utils import get_world, join_sdf_paths
-from isaacsim.replicator.mobility_gen.impl.utils.prim_utils import (
-    prim_rotate_x,
-    prim_rotate_y,
-    prim_rotate_z,
-    prim_translate,
-)
-from isaacsim.replicator.mobility_gen.impl.utils.registry import Registry
-from isaacsim.replicator.mobility_gen.impl.utils.stage_utils import stage_add_camera
-from isaacsim.robot.policy.examples.robots import SpotFlatTerrainPolicy
-
-# isaacsim.robot.policy.examples
-from isaacsim.robot.policy.examples.robots.h1 import H1FlatTerrainPolicy
-from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
-
-# isaacsim.robot.wheeled_robots
-from isaacsim.robot.wheeled_robots.robots import WheeledRobot as _WheeledRobot
+# isaacsim.core.experimental.*
+from isaacsim.core.experimental.prims import Articulation
+from isaacsim.core.experimental.utils.stage import add_reference_to_stage, get_current_stage
+from isaacsim.replicator.experimental.mobility_gen import ROBOTS, MobilityGenRobot, Module, Pose2d
+from isaacsim.robot.experimental.wheeled_robots import DifferentialController
+from isaacsim.robot.policy.examples.robots import H1FlatTerrainPolicy, SpotFlatTerrainPolicy
 from isaacsim.storage.native import get_assets_root_path
 
 # this package
@@ -91,16 +66,13 @@ class WheeledMobilityGenRobot(MobilityGenRobot):
     def __init__(
         self,
         prim_path: str,
-        robot: _WheeledRobot,
-        articulation_view: _ArticulationView,
+        articulation: Articulation,
         controller: DifferentialController,
         front_camera: Module | None = None,
     ):
-        super().__init__(
-            prim_path=prim_path, robot=robot, articulation_view=articulation_view, front_camera=front_camera
-        )
+        super().__init__(prim_path=prim_path, articulation=articulation, front_camera=front_camera)
         self.controller = controller
-        self.robot = robot
+        self._wheel_indices = None  # cached after first physics-ready call
 
     @classmethod
     def build(cls, prim_path: str) -> "WheeledRobot":
@@ -115,21 +87,16 @@ class WheeledMobilityGenRobot(MobilityGenRobot):
         Returns:
             The configured wheeled robot instance.
         """
-        world = get_world()
+        add_reference_to_stage(usd_path=cls.usd_url, path=prim_path)
+        stage = get_current_stage(backend="usd")
+        stage.Load(prim_path)
+        articulation = Articulation(prim_path)
 
-        robot = world.scene.add(
-            _WheeledRobot(prim_path, wheel_dof_names=cls.wheel_dof_names, create_robot=True, usd_path=cls.usd_url)
-        )
-
-        view = _ArticulationView(join_sdf_paths(prim_path, cls.chassis_subpath))
-
-        world.scene.add(view)
-
-        controller = DifferentialController(name="controller", wheel_radius=cls.wheel_radius, wheel_base=cls.wheel_base)
+        controller = DifferentialController(wheel_radius=cls.wheel_radius, wheel_base=cls.wheel_base)
 
         camera = cls.build_front_camera(prim_path)
 
-        return cls(prim_path=prim_path, robot=robot, articulation_view=view, controller=controller, front_camera=camera)
+        return cls(prim_path=prim_path, articulation=articulation, controller=controller, front_camera=camera)
 
     def write_action(self, step_size: float):
         """Applies wheel actions to the robot based on current controller commands.
@@ -140,7 +107,12 @@ class WheeledMobilityGenRobot(MobilityGenRobot):
         Args:
             step_size: Time step size for the action application.
         """
-        self.robot.apply_wheel_actions(self.controller.forward(command=self.action.get_value()))
+        if not self.is_physics_ready():
+            return
+        if self._wheel_indices is None:
+            self._wheel_indices = self.articulation.get_joint_indices(self.wheel_dof_names)
+        action = self.controller.forward(command=self.action.get_value())
+        self.articulation.set_dof_velocities(action[np.newaxis], dof_indices=self._wheel_indices)
 
 
 class PolicyMobilityGenRobot(MobilityGenRobot):
@@ -168,13 +140,13 @@ class PolicyMobilityGenRobot(MobilityGenRobot):
     def __init__(
         self,
         prim_path: str,
-        robot: _Robot,
-        articulation_view: _ArticulationView,
+        articulation: Articulation,
         controller: Union[H1FlatTerrainPolicy, SpotFlatTerrainPolicy],
         front_camera: Module | None = None,
     ):
-        super().__init__(prim_path, robot, articulation_view, front_camera)
+        super().__init__(prim_path, articulation, front_camera)
         self.controller = controller
+        self._controller_initialized = False
 
     @classmethod
     def build_policy(cls, prim_path: str):
@@ -195,29 +167,17 @@ class PolicyMobilityGenRobot(MobilityGenRobot):
         Returns:
             The configured robot instance.
         """
-        stage = get_current_stage()
-        world = get_world()
 
-        add_reference_to_stage(usd_path=cls.usd_url, prim_path=prim_path)
+        add_reference_to_stage(usd_path=cls.usd_url, path=prim_path)
+        stage = get_current_stage(backend="usd")
 
-        robot = _Robot(prim_path=prim_path)
-
-        world.scene.add(robot)
-
-        # Articulation
-        view = _ArticulationView(join_sdf_paths(prim_path, cls.articulation_path))
-
-        world.scene.add(view)
-
-        # Controller
         controller = cls.build_policy(prim_path)
 
-        prim = get_prim_at_path(prim_path)
-        prim_translate(prim, (0, 0, cls.z_offset))
+        stage.Load(prim_path)
 
         camera = cls.build_front_camera(prim_path)
 
-        return cls(prim_path=prim_path, robot=robot, articulation_view=view, controller=controller, front_camera=camera)
+        return cls(prim_path=prim_path, articulation=controller.robot, controller=controller, front_camera=camera)
 
     def write_action(self, step_size: float):
         """Applies the current action to the robot using the policy controller.
@@ -225,9 +185,14 @@ class PolicyMobilityGenRobot(MobilityGenRobot):
         Args:
             step_size: Time step size for the action.
         """
+        if not self.is_physics_ready():
+            return
+        if not self._controller_initialized:
+            self.controller.initialize()
+            self._controller_initialized = True
         action = self.action.get_value()
-        command = np.array([action[0], 0.0, action[1]])
-        command = torch.from_numpy(command)
+        device = torch.device(str(self.controller.robot._device))
+        command = torch.tensor([action[0], 0.0, action[1]], dtype=torch.float32, device=device)
         self.controller.forward(step_size, command)
 
     def set_pose_2d(self, pose: Pose2d):
@@ -237,7 +202,9 @@ class PolicyMobilityGenRobot(MobilityGenRobot):
             pose: The 2D pose to set for the robot.
         """
         super().set_pose_2d(pose)
-        self.controller.initialize()
+        if self.is_physics_ready():
+            self.controller.initialize()
+            self._controller_initialized = True
 
 
 @ROBOTS.register()

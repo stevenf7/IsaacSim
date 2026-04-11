@@ -23,35 +23,28 @@ import os
 import tempfile
 
 import carb
-import isaacsim.core.api.objects as objects
+import isaacsim.core.experimental.utils.app as app_utils
 
 # import examples to register example robots / scenarios
-import isaacsim.replicator.mobility_gen.examples
-import numpy as np
+import isaacsim.replicator.mobility_gen.examples  # noqa: F401
 import omni.ext
 import omni.kit
 import omni.kit.usdz_export as usdz_export
 import omni.ui as ui
-from isaacsim.core.utils.stage import open_stage, save_stage
-from isaacsim.core.utils.viewports import set_active_viewport_camera
-from isaacsim.gui.components.ui_utils import (
-    btn_builder,
-    cb_builder,
-    color_picker_builder,
-    dropdown_builder,
-    float_builder,
-    multi_btn_builder,
-    xyz_builder,
+from isaacsim.core.experimental.objects import GroundPlane
+from isaacsim.core.experimental.utils.stage import open_stage, save_stage
+from isaacsim.core.rendering_manager import ViewportManager
+from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
+from isaacsim.replicator.experimental.mobility_gen import (
+    ROBOTS,
+    SCENARIOS,
+    Config,
+    GamepadDriver,
+    KeyboardDriver,
+    MobilityGenScenario,
+    MobilityGenWriter,
+    OccupancyMap,
 )
-from isaacsim.replicator.mobility_gen.impl.config import Config
-from isaacsim.replicator.mobility_gen.impl.inputs import GamepadDriver, KeyboardDriver
-from isaacsim.replicator.mobility_gen.impl.occupancy_map import OccupancyMap
-from isaacsim.replicator.mobility_gen.impl.robot import ROBOTS
-from isaacsim.replicator.mobility_gen.impl.scenario import SCENARIOS, MobilityGenScenario
-
-# isaacsim.replicator.mobility_gen
-from isaacsim.replicator.mobility_gen.impl.utils.global_utils import get_world, new_world
-from isaacsim.replicator.mobility_gen.impl.writer import MobilityGenWriter
 
 if "MOBILITY_GEN_DATA" in os.environ:
     DATA_DIR = os.environ["MOBILITY_GEN_DATA"]
@@ -103,6 +96,7 @@ class MobilityGenExtension(omni.ext.IExt):
         self.cached_stage_path: str | None = None
 
         self.writer: MobilityGenWriter | None = None
+        self._physics_callback_id: int | None = None
         self.step: int = 0
         self.is_recording: bool = False
         self.recording_enabled: bool = False
@@ -233,9 +227,9 @@ class MobilityGenExtension(omni.ext.IExt):
         """
         self.keyboard.disconnect()
         self.gamepad.disconnect()
-        world = get_world()
-        if world is not None:
-            world.remove_physics_callback("scenario_physics")
+        if self._physics_callback_id is not None:
+            SimulationManager.deregister_callback(self._physics_callback_id)
+            self._physics_callback_id = None
 
     def start_new_recording(self):
         """Start a new recording session.
@@ -299,11 +293,12 @@ class MobilityGenExtension(omni.ext.IExt):
             self.start_new_recording()
         self.draw_visualization_image()
 
-    def on_physics(self, step_size: int):
+    def on_physics(self, step_size: int, context=None):
         """Physics step callback that advances the scenario and handles recording.
 
         Args:
             step_size: The physics step size in simulation time units.
+            context: Optional simulation context passed by the simulation manager.
         """
         if self.scenario is not None:
 
@@ -381,21 +376,44 @@ class MobilityGenExtension(omni.ext.IExt):
                 await usdz_export.usdz_export(scene_usd_str, self.cached_stage_path)
             else:
                 self.cached_stage_path = os.path.join(tempfile.mkdtemp(), "stage.usd")
-                save_stage(self.cached_stage_path, save_and_reload_in_place=False)
+                save_stage(self.cached_stage_path)
+                # Kit adds /Render/.../SDGPipeline prims to the live stage during viewport
+                # rendering setup.  Strip them from the saved file using the standalone USD
+                # API so they are never baked into recording stage copies — the replay script
+                # would otherwise crash when it tries to remove them via Kit's stage API.
+                from pxr import Usd as _Usd
 
-            # Initialize world
-            world = new_world(physics_dt=robot_type.physics_dt)
-            await world.initialize_simulation_context_async()
+                _disk_stage = _Usd.Stage.Open(self.cached_stage_path)
+                for _sdg_path in (
+                    "/Render/PostProcess/SDGPipeline",
+                    "/Render/PostRender/SDGPipeline",
+                    "/Render/Simulation/SDGPipeline",
+                ):
+                    if _disk_stage.GetPrimAtPath(_sdg_path).IsValid():
+                        _disk_stage.RemovePrim(_sdg_path)
+                _disk_stage.Save()
+                del _disk_stage
 
-            # Add ground plane
-            objects.GroundPlane("/World/ground_plane", visible=False)
+            # Setup physics with the correct timestep
+            SimulationManager.setup_simulation(dt=robot_type.physics_dt)
+
+            # Add ground plane (physics only — hide mesh to prevent z-fighting
+            # with the warehouse USD floor; template=None avoids a missing texture error)
+            from isaacsim.core.experimental.utils.stage import get_current_stage as _get_stage
+            from pxr import UsdGeom as _UsdGeom
+
+            _gp = GroundPlane("/World/ground_plane", templates=None)
+            _stage = _get_stage()
+            for _mp in _gp.meshes.paths:
+                _UsdGeom.Imageable(_stage.GetPrimAtPath(_mp)).MakeInvisible()
 
             # Add robot
             robot = robot_type.build("/World/robot")
 
             # Set the chase camera
             chase_camera_path = robot.build_chase_camera()
-            set_active_viewport_camera(chase_camera_path)
+            if ViewportManager.get_viewport_api() is not None:
+                ViewportManager.set_camera(chase_camera_path)
 
             # Set the scenario
             self.scenario = scenario_type.from_robot_occupancy_map(robot, occupancy_map)
@@ -403,9 +421,17 @@ class MobilityGenExtension(omni.ext.IExt):
             # Draw the occupancy map
             self.draw_visualization_image()
 
-            # Run the scenario
-            await world.reset_async()
-            world.add_physics_callback("scenario_physics", self.on_physics)
+            # Start the simulation and initialize physics
+            app_utils.play()
+            await app_utils.update_app_async()
+            SimulationManager.initialize_physics()
+
+            # Register physics callback
+            if self._physics_callback_id is not None:
+                SimulationManager.deregister_callback(self._physics_callback_id)
+            self._physics_callback_id = SimulationManager.register_callback(
+                self.on_physics, event=SimulationEvent.PHYSICS_POST_STEP
+            )
 
             self.reset()
 

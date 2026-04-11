@@ -89,8 +89,14 @@ class PolicyController(ABC):
         engine = (SimulationManager.get_default_engine() or "").lower()
         if engine not in ("physx", "newton"):
             engine = SimulationManager.get_active_physics_engine()
-        variant = self._ENGINE_TO_VARIANT.get(engine, engine)
-        variant_sets.GetVariantSet("Physics").SetVariantSelection(variant)
+        target_variant = self._ENGINE_TO_VARIANT.get(engine, engine)
+        variant_set = variant_sets.GetVariantSet("Physics")
+        # Case-insensitive match — some USDs use 'Physx' instead of 'physx'
+        for available in variant_set.GetVariantNames():
+            if available.lower() == target_variant.lower():
+                variant_set.SetVariantSelection(available)
+                return
+        variant_set.SetVariantSelection(target_variant)
 
     def load_policy(self, policy_file_path: str, policy_env_path: str) -> None:
         """Loads a policy from a file.

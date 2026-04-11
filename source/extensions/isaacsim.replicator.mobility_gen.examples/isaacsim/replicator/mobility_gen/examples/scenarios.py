@@ -16,22 +16,23 @@
 """Provides pre-built scenario implementations for robot mobility generation and control."""
 
 
-from typing import Tuple
-
 import numpy as np
 import PIL.Image
-from isaacsim.replicator.mobility_gen.impl.common import Buffer, Module
-from isaacsim.replicator.mobility_gen.impl.inputs import Gamepad, Keyboard
-from isaacsim.replicator.mobility_gen.impl.occupancy_map import OccupancyMap
-from isaacsim.replicator.mobility_gen.impl.path_planner import compress_path, generate_paths
-from isaacsim.replicator.mobility_gen.impl.pose_samplers import GridPoseSampler, UniformPoseSampler
-from isaacsim.replicator.mobility_gen.impl.robot import MobilityGenRobot
-
-# isaacsim.replicator.mobility_gen.examples
-from isaacsim.replicator.mobility_gen.impl.scenario import SCENARIOS, MobilityGenScenario
-from isaacsim.replicator.mobility_gen.impl.utils.path_utils import PathHelper
-from isaacsim.replicator.mobility_gen.impl.utils.registry import Registry
-from PIL import Image, ImageDraw
+from isaacsim.replicator.experimental.mobility_gen import (
+    SCENARIOS,
+    Buffer,
+    Gamepad,
+    GridPoseSampler,
+    Keyboard,
+    MobilityGenRobot,
+    MobilityGenScenario,
+    OccupancyMap,
+    PathHelper,
+    UniformPoseSampler,
+    compress_path,
+    generate_paths,
+)
+from PIL import ImageDraw
 
 
 @SCENARIOS.register()
@@ -92,8 +93,6 @@ class KeyboardTeleoperationScenario(MobilityGenScenario):
         self.robot.action.set_value(np.array([linear_velocity, angular_velocity]))
 
         self.robot.write_action(step_size)
-
-        self.update_state()
 
         return True
 

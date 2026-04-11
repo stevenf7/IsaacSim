@@ -1,5 +1,5 @@
 [package]
-version = "0.3.0"
+version = "0.4.0"
 category = "Simulation"
 title = "MobilityGen UI"
 description = "User interface for recording data with MobilityGen"
@@ -13,9 +13,13 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
+"isaacsim.core.experimental.objects" = {}
+"isaacsim.core.experimental.utils" = {}
+"isaacsim.core.rendering_manager" = {}
+"isaacsim.core.simulation_manager" = {}
 "isaacsim.examples.browser" = {}
 "isaacsim.gui.components" = {}
-"isaacsim.replicator.mobility_gen" = {}
+"isaacsim.replicator.experimental.mobility_gen" = {}
 "isaacsim.replicator.mobility_gen.examples" = {}
 "omni.kit.pip_archive" = {}
 "omni.kit.uiapp" = {}
