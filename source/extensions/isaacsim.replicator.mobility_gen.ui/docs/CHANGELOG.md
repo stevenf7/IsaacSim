@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0] - 2026-04-08
+### Changed
+- Migrate from deprecated `isaacsim.replicator.mobility_gen` to `isaacsim.replicator.experimental.mobility_gen`
+- Replace legacy world-based simulation control with `SimulationManager` and `SimulationEvent.PHYSICS_POST_STEP` callback
+- Replace `set_active_viewport_camera` with `ViewportManager.set_camera`
+- Replace `objects.GroundPlane` (core.api) with `GroundPlane` from `isaacsim.core.experimental.objects`
+- Use `save_stage` without deprecated `save_and_reload_in_place` argument
+
 ## [0.3.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings

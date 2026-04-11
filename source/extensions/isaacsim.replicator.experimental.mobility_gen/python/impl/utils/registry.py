@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2022-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Examples and demonstrations for robot policies in Isaac Sim."""
 
-from . import robots
+from collections import OrderedDict
+
+
+class Registry[T]:
+
+    def __init__(self):
+        self.items = OrderedDict()
+
+    def register(self):
+        def _register(cls):
+            self.items[cls.__name__] = cls
+            return cls
+
+        return _register
+
+    def names(self):
+        return self.items.keys()
+
+    def get(self, name: str) -> T:
+        return self.items[name]
+
+    def get_index(self, index: int) -> T:
+        return list(self.items.values())[index]

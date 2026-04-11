@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2022-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Examples and demonstrations for robot policies in Isaac Sim."""
 
-from . import robots
+from dataclasses import dataclass
+
+import numpy as np
+
+
+@dataclass
+class Point2d:
+    x: float
+    y: float
+
+
+@dataclass
+class Pose2d(Point2d):
+    theta: float
+
+
+@dataclass
+class Pose3d:
+    position: np.ndarray
+    orientation: np.ndarray

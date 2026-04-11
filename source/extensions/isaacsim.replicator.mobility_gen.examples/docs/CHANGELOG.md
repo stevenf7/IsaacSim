@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.1] - 2026-03-19
+### Changed
+- Migrate to use `isaacsim.core.experimental.prims` (`Articulation`) in place of `isaacsim.core.prims`
+- Force USD payload loading before `Articulation` initialization to ensure `ArticulationRootAPI` is visible
+
 ## [0.2.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings

@@ -128,10 +128,11 @@ Extensions
    isaacsim.replicator.behavior.ui <source/extensions/isaacsim.replicator.behavior.ui/docs/index>
    isaacsim.replicator.domain_randomization <source/deprecated/isaacsim.replicator.domain_randomization/docs/index>
    isaacsim.replicator.experimental.domain_randomization <source/extensions/isaacsim.replicator.experimental.domain_randomization/docs/index>
+   isaacsim.replicator.experimental.mobility_gen <source/extensions/isaacsim.replicator.experimental.mobility_gen/docs/index>
    isaacsim.replicator.examples <source/extensions/isaacsim.replicator.examples/docs/index>
    isaacsim.replicator.grasping <source/extensions/isaacsim.replicator.grasping/docs/index>
    isaacsim.replicator.grasping.ui <source/extensions/isaacsim.replicator.grasping.ui/docs/index>
-   isaacsim.replicator.mobility_gen <source/extensions/isaacsim.replicator.mobility_gen/docs/index>
+   isaacsim.replicator.mobility_gen <source/deprecated/isaacsim.replicator.mobility_gen/docs/index>
    isaacsim.replicator.mobility_gen.examples <source/extensions/isaacsim.replicator.mobility_gen.examples/docs/index>
    isaacsim.replicator.mobility_gen.ui <source/extensions/isaacsim.replicator.mobility_gen.ui/docs/index>
    isaacsim.replicator.synthetic_recorder <source/extensions/isaacsim.replicator.synthetic_recorder/docs/index>

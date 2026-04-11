@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.2.2] - 2026-04-08
+### Fixed
+- Fix physics variant selection to match USD variant names case-insensitively, resolving H1 robot loading failure when variant set uses `Physx` instead of `physx`
+- Register `isaacsim.robot.policy.examples.robots` as a public module in the extension manifest
+
 ## [5.2.1] - 2026-04-06
 ### Changed
 - Set `reset_xform_op_properties` to True when instantiating the Articulation

@@ -13,12 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-
-This script launches a simulation app for replaying and rendering
-a recording.
-
-"""
+"""Launches a simulation app for replaying a recording and rendering sensor data."""
 
 from isaacsim import SimulationApp
 
@@ -31,11 +26,15 @@ import shutil
 import time
 
 import carb
+import isaacsim.core.experimental.utils.app as app_utils
 import omni.replicator.core as rep
-from isaacsim.replicator.mobility_gen.impl.build import load_scenario
-from isaacsim.replicator.mobility_gen.impl.reader import MobilityGenReader
-from isaacsim.replicator.mobility_gen.impl.utils.global_utils import get_world
-from isaacsim.replicator.mobility_gen.impl.writer import MobilityGenWriter
+import omni.timeline
+from isaacsim.core.simulation_manager import SimulationManager
+
+app_utils.enable_extension("isaacsim.replicator.experimental.mobility_gen")
+app_utils.enable_extension("isaacsim.replicator.mobility_gen.examples")
+
+from isaacsim.replicator.experimental.mobility_gen import MobilityGenReader, MobilityGenWriter, load_scenario
 
 if "MOBILITY_GEN_DATA" in os.environ:
     DATA_DIR = os.environ["MOBILITY_GEN_DATA"]
@@ -111,8 +110,16 @@ if __name__ == "__main__":
 
         scenario = load_scenario(recording_path)
 
-        world = get_world()
-        world.reset()
+        SimulationManager.initialize_physics()
+
+        # Play the timeline briefly so the render pipeline (tonemapping, physical
+        # camera settings) initialises correctly — matching the develop branch's
+        # world.reset() path.  Pause immediately so simulation_app.update() in the
+        # replay loop does not tick physics on top of SimulationManager.step().
+        _timeline = omni.timeline.get_timeline_interface()
+        _timeline.play()
+        simulation_app.update()
+        _timeline.pause()
 
         if args.rgb_enabled:
             scenario.enable_rgb_rendering()
@@ -128,6 +135,11 @@ if __name__ == "__main__":
 
         if args.normals_enabled:
             scenario.enable_normals_rendering()
+
+        # Re-enable hydra texture updates now that all annotators are attached.
+        # enable_rendering() disables updates to prevent OmniGraph from evaluating
+        # partially-constructed nodes while annotators are being set up.
+        scenario.finalize_rendering()
 
         simulation_app.update()
         rep.orchestrator.step(rt_subframes=args.render_rt_subframes, delta_time=0.0, pause_timeline=False)
@@ -159,6 +171,13 @@ if __name__ == "__main__":
             scenario.load_state_dict(state_dict_original)
             scenario.write_replay_data()
 
+            # Propagate tensor-API pose/joint writes to USD before rendering.
+            # set_world_poses() / set_dof_positions() write into PhysX tensor buffers; PhysX
+            # only syncs these back to USD during simulate() + fetch_results().
+            # SimulationManager.initialize_physics() does not start the Kit timeline, so
+            # simulation_app.update() does not tick physics here — a direct step() call is needed.
+            SimulationManager.step(steps=1)
+
             simulation_app.update()
 
             rep.orchestrator.step(rt_subframes=args.render_rt_subframes, delta_time=0.00, pause_timeline=False)
@@ -188,4 +207,11 @@ if __name__ == "__main__":
 
         carb.log_warn(f"Process time per frame: {count / (t1 - t0)}")
 
+        rep.orchestrator.wait_until_complete()
+        scenario.disable_rendering()
+
+    # Stop the timeline so Kit's shutdown sequence receives the stop event and
+    # can clean up physics properly.  Without this, the timeline is left paused
+    # and simulation_app.close() hangs for 120 s waiting for physics teardown.
+    omni.timeline.get_timeline_interface().stop()
     simulation_app.close()
