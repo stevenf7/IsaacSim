@@ -4,6 +4,10 @@
 Extension Template Generator Explained
 =============================================
 
+.. deprecated:: 6.0.0
+   The UI-based Extension Template Generator (``isaacsim.examples.extension``) is deprecated.
+   Use the :ref:`CLI Extension Templates <isaac_sim_cli_extension_templates>` instead.
+
 General Concepts
 ================
 

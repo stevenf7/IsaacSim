@@ -1,5 +1,9 @@
 # Overview
 
+```{deprecated} 6.0.0
+This extension is deprecated in favor of `isaacsim.sensors.experimental.camera`.
+```
+
 The isaacsim.sensors.camera extension provides APIs for creating and managing camera sensors in Isaac Sim. This extension enables programmatic control of camera properties, lens distortion models, and batch processing of camera data for robotics simulation and computer vision applications.
 
 ## Key Components

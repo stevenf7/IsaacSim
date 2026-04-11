@@ -12,8 +12,14 @@
 Extension Template Generator
 ===========================================
 
-The Extension Template Generator populate a UI-based extensions on your local machine. The available extension templates give a useful starting point for many |isaac-sim_short|
-applications and are structured to help you learn how to build a custom UI tool that meets your needs.  
+.. deprecated:: 6.0.0
+   The UI-based Extension Template Generator (``isaacsim.examples.extension``) is deprecated.
+   Use the :ref:`CLI Extension Templates <isaac_sim_cli_extension_templates>` instead, which
+   provide the same scaffolding capabilities with better maintainability, no runtime dependencies,
+   and support for the latest extension conventions.
+
+The Extension Template Generator populated UI-based extensions on your local machine. The available extension templates gave a useful starting point for many |isaac-sim_short|
+applications and were structured to help you learn how to build a custom UI tool that meets your needs.
 
 
 Getting Started

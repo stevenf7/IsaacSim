@@ -1,5 +1,9 @@
 # Overview
 
+```{deprecated} 6.0.0
+This extension is deprecated in favor of the Core Experimental extensions: `isaacsim.core.experimental.*`.
+```
+
 The `isaacsim.core.api` extension provides APIs for controlling simulation state and physics scenes within Isaac Sim. This extension serves as the primary interface for managing simulation execution, physics interactions, and USD object manipulation in robotics and AI simulation workflows.
 
 ## Functionality

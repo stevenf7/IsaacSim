@@ -1,5 +1,9 @@
 # Overview
 
+```{deprecated} 6.0.0
+This extension is deprecated in favor of `isaacsim.replicator.experimental.domain_randomization`.
+```
+
 To enable this extension, go to the Extension Manager menu and enable isaacsim.replicator.domain_randomization extension
 
 ## Reinforcement Learning Domain Randomization

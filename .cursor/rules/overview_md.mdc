@@ -1,6 +1,6 @@
 ---
 description: Rules for writing and reviewing extension Overview.md documentation files
-globs: source/extensions/**/docs/Overview.md
+globs: source/extensions/**/docs/Overview.md,source/deprecated/**/docs/Overview.md
 ---
 
 # Extension Overview.md Documentation Rules
@@ -111,17 +111,32 @@ The Overview length should be proportional to the extension's complexity:
 - Start class/component descriptions with bold summary sentence
 - Use US English spelling
 
-## Extension TOML Reference
+## Deprecated Extensions
 
-The `config/extension.toml` must reference Overview.md:
+Extensions in `source/deprecated/` **must** include a deprecation notice immediately after the
+`# Overview` heading and before the opening paragraph. Use the MyST `{deprecated}` directive:
 
-```toml
-[package]
-readme = "docs/Overview.md"
+```markdown
+# Overview
+
+```{deprecated} 6.0.0
+This extension is deprecated in favor of `replacement.extension.name`.
 ```
 
-If an extension has `readme = "docs/README.md"`, migrate the content to `docs/Overview.md`
-and update the path. The filename `Overview.md` is the project standard.
+The rest of the Overview content follows.
+```
+
+### Deprecation Notice Guidelines
+
+- The directive argument is the version when deprecation occurred (e.g., `6.0.0`)
+- The body must name the replacement: a specific extension, a CLI tool, or "the Scene Optimizer", etc.
+- Keep the notice to 1–3 sentences. If migration is non-trivial, add a `## Migration` section after
+  the notice with concrete steps (import replacements, CLI commands, API mapping)
+- Do **not** delete the rest of the Overview content — users on older versions still need it as reference
+- Use past tense for the opening paragraph when describing what the extension did
+  (e.g., "provided" instead of "provides"), or keep present tense if the extension still functions
+  but is no longer recommended
+- The corresponding `[deprecation]` TOML entry is governed by `extension_toml.mdc`
 
 ## Validation Checklist
 
@@ -135,4 +150,4 @@ When reviewing or writing an Overview.md:
 6. ☐ No references to classes/modules that don't exist in the extension
 7. ☐ Content is proportional to extension complexity (not a stub for complex extensions)
 8. ☐ Code examples are valid and use current API
-9. ☐ `extension.toml` has `readme = "docs/Overview.md"`
+9. ☐ If in `source/deprecated/`: has `{deprecated}` directive after `# Overview` with replacement named
