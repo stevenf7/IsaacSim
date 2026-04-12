@@ -20,10 +20,10 @@ that can be used with the RTX sensor system. It includes configurations for vari
 manufacturers.
 """
 
-# Expected name of Lidar prim variant sets
+#: Expected name of Lidar prim variant sets.
 SUPPORTED_LIDAR_VARIANT_SET_NAME = "sensor"
 
-# Map supported Lidar asset paths to their variants
+#: Map of supported Lidar asset paths to their variant name sets.
 SUPPORTED_LIDAR_CONFIGS = {
     "/Isaac/Sensors/HESAI/XT32_SD10/HESAI_XT32_SD10.usd": set(),
     # "/Isaac/Sensors/NVIDIA/Debug_Rotary.usda": set(),

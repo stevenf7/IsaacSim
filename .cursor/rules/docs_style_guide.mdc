@@ -1,0 +1,166 @@
+---
+description: NVIDIA SWDOCS style guide for user-facing RST documentation in the docs/ folder
+globs: docs/**/*.rst
+---
+
+# Documentation Style Guide (SWDOCS Peer Review Checklist)
+
+Based on the [NVIDIA SWDOCS Peer Review Checklist](https://nvidia.atlassian.net/wiki/spaces/SWDOCS/pages/2639397140/Peer+Review+Checklist).
+
+## Voice and Tone
+
+- **Active voice**: Use active voice over passive. "Isaac Sim loads the scene" not "The scene is loaded by Isaac Sim."
+- **Second person**: Address the reader as "you." Write "you can create segments" not "the product allows you to create segments."
+- **Imperative mood for instructions**: Use commands. "Click **File > Open**" not "You should click File > Open."
+- **Present tense**: Describe current behavior. "The extension provides..." not "The extension will provide..."
+- **Confidence without arrogance**: Be authoritative and direct, not flowery or hedging.
+- **No exclamation points** outside of code samples.
+- **No emojis** in documentation.
+
+## Language and Content
+
+### Plain English
+
+- Keep sentences concise and to the point. Avoid jargon; use simple verbiage.
+- Define uncommon terms when first introduced.
+- Avoid ambiguity: be specific ("supports PhysX rigid-body simulation" not "supports physics").
+- Avoid redundancy and flowery language.
+
+### Abbreviations and Acronyms
+
+- Spell out the full term on first use, followed by the abbreviation in parentheses: "Graphics Processing Unit (GPU)."
+- After the first occurrence, use only the abbreviation.
+- Well-known acronyms (GPU, CPU, API, USB, PC, USD) do not need to be spelled out.
+
+### Capitalization
+
+- **Headings**: Use sentence case for all RST headings ("Getting started with sensors" not "Getting Started With Sensors").
+- **NVIDIA**: Always all-caps.
+- **Product names**: Capitalize as branded (Isaac Sim, Omniverse, PhysX, OmniGraph).
+- **UI labels**: Capitalize exactly as they appear in the interface.
+
+### Punctuation
+
+- End all sentences with periods, including list items that are complete sentences.
+- Use the serial (Oxford) comma: "physics, rendering, and sensors."
+- Use an em-dash (---) for parenthetical statements in RST.
+
+## Structure
+
+### Information Order
+
+Present information in a logical order. For feature/tool topics, follow this general pattern:
+
+1. **Introductory paragraph** explaining what the feature is (no "Introduction" heading).
+2. **Prerequisites** or requirements if applicable.
+3. **Conceptual explanation** (the "why" and "how it works").
+4. **Procedural steps** (how to use it).
+5. **Code examples** if applicable.
+6. **Reference** (settings, API links, environment variables).
+7. **Troubleshooting** or known limitations if applicable.
+
+### Pacing
+
+Introduce information at the right pace. Do not dump all concepts before the first action; interleave explanation with guided steps.
+
+## Minimalism
+
+- Use **numbered lists** for sequential steps and **bullet lists** for non-sequential items.
+- Use **tables** for structured reference data (settings, parameter lists, compatibility matrices).
+- Prefer lists and tables over dense paragraphs for complex information.
+- Keep paragraphs short: aim for 2-4 sentences maximum.
+
+## RST Formatting Conventions
+
+### Headings
+
+Use the project's standard RST heading hierarchy:
+
+```rst
+===============
+Page Title (H1)
+===============
+
+Section (H2)
+=============
+
+Subsection (H3)
+-----------------
+
+Sub-subsection (H4)
+^^^^^^^^^^^^^^^^^^^^^
+
+Paragraph heading (H5)
+########################
+```
+
+### Inline Formatting
+
+- **Bold** (``**text**``) for UI elements: menu names, button labels, panel names, field names.
+- *Italic* (``*text*``) for emphasis, introducing new terms, and variable placeholders.
+- ``Monospace`` (double backticks) for: file paths, file names, code identifiers, terminal commands, prim paths, property names, setting keys.
+
+### Labels and Cross-references
+
+- Add an RST label above every H1 and H2 heading so other pages can link to it:
+
+```rst
+.. _my_section_label:
+
+My Section
+==========
+```
+
+- Use `:ref:` for internal cross-references: ``:ref:`label_name` `` or ``:ref:`Display text <label_name>` ``.
+- Use `:doc:` for linking to other pages by file path.
+
+### Code Blocks
+
+- Use `.. code-block:: <language>` with proper indentation.
+- Specify the language (``python``, ``bash``, ``json``, ``yaml``, ``cpp``).
+
+### Images
+
+- Always include `:alt:` text describing the image content.
+- Use `:align: center` and set an appropriate `:width:`.
+
+```rst
+.. image:: /images/my_screenshot.webp
+    :alt: Description of what the image shows
+    :align: center
+    :width: 80%
+```
+
+### Substitutions
+
+Use the project's standard substitutions for product names:
+
+- ``|isaac-sim_short|`` for the short product name
+- ``|omnigraph_short|`` for OmniGraph references
+
+## Accessibility and Usability
+
+- **Scannability**: Use descriptive headings and subheadings so readers can skim to find what they need.
+- **Alt text**: Provide meaningful alt text for every image, table, and diagram.
+- **Cross-references**: Link to related sections when it helps the reader navigate. Place links at the end of paragraphs or in "See also" blocks rather than inline.
+- **Minimize inline links**: Prefer end-of-section reference links over embedding links mid-sentence.
+- **Verify links**: All `:ref:`, `:doc:`, and external links must resolve correctly.
+
+## Sensitive Language
+
+- Use inclusive, modern language. Avoid terms like "master/slave," "whitelist/blacklist," or "sanity check."
+- Preferred alternatives: "primary/replica," "allowlist/denylist," "smoke test" or "confidence check."
+
+## Copyright Header
+
+Every RST file begins with the NVIDIA copyright comment:
+
+```rst
+..
+   Copyright (c) 2022-2026, NVIDIA CORPORATION. All rights reserved.
+   NVIDIA CORPORATION and its licensors retain all intellectual property
+   and proprietary rights in and to this software, related documentation
+   and any modifications thereto. Any use, reproduction, disclosure or
+   distribution of this software and related documentation without an express
+   license agreement from NVIDIA CORPORATION is strictly prohibited.
+```

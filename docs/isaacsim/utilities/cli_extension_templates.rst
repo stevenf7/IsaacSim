@@ -1,5 +1,5 @@
 ..
-   Copyright (c) 2026, NVIDIA CORPORATION. All rights reserved.
+   Copyright (c) 2022-2026, NVIDIA CORPORATION. All rights reserved.
    NVIDIA CORPORATION and its licensors retain all intellectual property
    and proprietary rights in and to this software, related documentation
    and any modifications thereto. Any use, reproduction, disclosure or
@@ -8,22 +8,24 @@
 
 .. _isaac_sim_cli_extension_templates:
 
-====================================
-CLI Extension Templates
-====================================
+========================
+CLI extension templates
+========================
 
-The CLI Extension Templates allow you to scaffold new Isaac Sim extensions from the terminal using ``./repo.sh template new``. Four templates are available covering the most common extension patterns:
+The command-line interface (CLI) extension templates allow you to scaffold new |isaac-sim_short| extensions from the terminal using ``./repo.sh template new``. Four templates cover the most common extension patterns:
 
-- **Python Extension** — Minimal Python-only extension with ``extension.py``, docs, and test scaffolding.
-- **UI Extension** — Python extension with Examples Browser integration, Load/Reset world controls, physics callbacks, and custom UI using the experimental ``BaseSample`` and ``BaseSampleUITemplate`` classes.
-- **C++ Extension** — Extension with a Carbonite C++ plugin, pybind11 Python bindings, and a Python wrapper.
-- **OmniGraph Extension** — Extension with C++ and Python OmniGraph node definitions, a Carbonite plugin, pybind11 bindings, and OGN build integration.
+- **Python extension** --- Minimal Python-only extension with ``extension.py``, docs, and test scaffolding.
+- **UI extension** --- Python extension with **Examples Browser** integration, **Load World**/**Reset** controls, physics callbacks, and custom UI using the experimental ``BaseSample`` and ``BaseSampleUITemplate`` classes.
+- **C++ extension** --- Extension with a Carbonite C++ plugin, pybind11 Python bindings, and a Python wrapper.
+- **OmniGraph extension** --- Extension with C++ and Python OmniGraph Node (OGN) definitions, a Carbonite plugin, pybind11 bindings, and OGN build integration.
 
-All generated extensions are placed in ``source/extensions/`` and are automatically discovered by the build system — no manual registration required.
+The generator places all extensions in ``source/extensions/``, and the build system discovers them automatically --- no manual registration required.
 
 
-Getting Started
--------------------
+.. _cli_ext_templates_getting_started:
+
+Getting started
+================
 
 To create a new extension:
 
@@ -34,11 +36,13 @@ To create a new extension:
 Follow the interactive prompts to select a template and configure your extension name, title, and other variables.
 
 
-Available Templates
--------------------
+.. _cli_ext_templates_available:
 
-Python Extension
-^^^^^^^^^^^^^^^^
+Available templates
+====================
+
+Python extension
+-----------------
 
 A minimal Python-only extension. Use this when you need a lightweight extension without UI, scene management, or C++ code.
 
@@ -58,18 +62,18 @@ Generated structure:
 
 **Key files to modify:**
 
-- ``extension.py`` — Add your startup/shutdown logic in ``on_startup()`` and ``on_shutdown()``.
+- ``extension.py`` --- Add your startup/shutdown logic in ``on_startup()`` and ``on_shutdown()``.
 
 
-UI Extension
-^^^^^^^^^^^^
+UI extension
+-------------
 
 A Python extension with full UI and scene management. This template provides:
 
-- **Examples Browser integration** — Your extension appears in the Examples Browser (``Window > Examples Browser``) under your chosen category.
-- **Load/Reset world controls** — Pre-built ``Load World`` and ``Reset`` buttons that manage the simulation lifecycle.
-- **Physics callbacks** — A ``scenario.py`` with ``on_physics_step()`` called every simulation step via ``SimulationManager``.
-- **Custom UI** — A ``ui.py`` with an ``Actions`` frame where you add your own buttons and controls using ``btn_builder`` and other ``UIElementWrapper`` utilities.
+- **Examples Browser integration** --- Your extension appears under your chosen category in **Window > Examples Browser**.
+- **Load/Reset world controls** --- Pre-built **Load World** and **Reset** buttons that manage the simulation lifecycle.
+- **Physics callbacks** --- A ``scenario.py`` with ``on_physics_step()`` called every simulation step via ``SimulationManager``.
+- **Custom UI** --- A ``ui.py`` with an **Actions** frame where you add your own buttons and controls using ``btn_builder`` and other ``UIElementWrapper`` utilities.
 
 The template uses the experimental APIs:
 
@@ -96,12 +100,12 @@ Generated structure:
 
 **Key files to modify:**
 
-- ``scenario.py`` — Add your simulation assets in ``setup_scene()`` and logic in ``on_physics_step()``.
-- ``ui.py`` — Add custom buttons and controls in ``build_extra_frames()``.
+- ``scenario.py`` --- Add your simulation assets in ``setup_scene()`` and logic in ``on_physics_step()``.
+- ``ui.py`` --- Add custom buttons and controls in ``build_extra_frames()``.
 
 
-C++ Extension
-^^^^^^^^^^^^^
+C++ extension
+--------------
 
 An extension with a Carbonite C++ plugin and pybind11 Python bindings. The plugin implements a Carbonite interface
 (``IExample``) and the bindings expose ``acquire_example_interface()`` / ``release_example_interface()`` to Python.
@@ -128,24 +132,24 @@ The ``binding_module`` variable controls the pybind11 module name (e.g., ``my_ex
 
 **Key files to modify:**
 
-- ``IExample.h`` — Define your Carbonite interface methods.
-- ``ExamplePlugin.cpp`` — Implement the interface.
-- ``Bindings.cpp`` — Expose additional methods to Python via pybind11.
-- ``extension.py`` — The interface is already acquired on startup; add your Python-side logic.
+- ``IExample.h`` --- Define your Carbonite interface methods.
+- ``ExamplePlugin.cpp`` --- Implement the interface.
+- ``Bindings.cpp`` --- Expose additional methods to Python via pybind11.
+- ``extension.py`` --- The interface is already acquired on startup; add your Python-side logic.
 
 
-OmniGraph Extension
-^^^^^^^^^^^^^^^^^^^
+OmniGraph extension
+--------------------
 
-An extension with both C++ and Python OmniGraph node definitions, a Carbonite plugin for C++ node registration,
+An extension with both C++ and Python |omnigraph_short| node definitions, a Carbonite plugin for C++ node registration,
 pybind11 bindings, and full OGN build integration.
 
 The C++ nodes are defined by ``.ogn`` + ``.cpp`` pairs in ``nodes/``. The Python nodes are defined by ``.ogn`` + ``.py``
 pairs in ``python/nodes/``. The OGN build system auto-generates database classes and test scaffolding for both.
 
 The Carbonite plugin implements ``INITIALIZE_OGN_NODES()`` / ``RELEASE_OGN_NODES()`` in ``carbOnPluginStartup()`` /
-``carbOnPluginShutdown()``. The pybind11 bindings expose ``acquire_example_nodes_interface()`` which is called in
-``extension.py`` on startup — this triggers the plugin to load and register the C++ OGN nodes.
+``carbOnPluginShutdown()``. The pybind11 bindings expose ``acquire_example_nodes_interface()`` which ``extension.py``
+calls on startup --- this triggers the plugin to load and register the C++ OGN nodes.
 
 Generated structure:
 
@@ -172,25 +176,27 @@ Generated structure:
    │   └── tests/__init__.py, test_extension.py
    └── premake5.lua
 
-Unlike the C++ template, the OGN template does not have a separate ``binding_module`` variable. The bindings module
-name is automatically derived from the extension name by the OGN build system (e.g., ``isaacsim.my.nodes`` →
+Unlike the C++ template, the OGN template does not use a separate ``binding_module`` variable. The OGN build system
+automatically derives the bindings module name from the extension name (e.g., ``isaacsim.my.nodes`` →
 ``_isaacsim_my_nodes``).
 
 **Key files to modify:**
 
-- ``.ogn`` files — Define node inputs, outputs, and metadata (JSON format).
-- ``OgnExampleCpp.cpp`` — Implement the ``compute()`` method for the C++ node.
-- ``OgnExamplePython.py`` — Implement the ``compute()`` method for the Python node.
+- ``.ogn`` files --- Define node inputs, outputs, and metadata (JSON format).
+- ``OgnExampleCpp.cpp`` --- Implement the ``compute()`` method for the C++ node.
+- ``OgnExamplePython.py`` --- Implement the ``compute()`` method for the Python node.
 - To add more nodes, create new ``.ogn`` + ``.cpp``/``.py`` pairs in the appropriate ``nodes/`` directory.
 
 
-Tutorial: Creating and Testing an Extension
---------------------------------------------
+.. _cli_ext_templates_tutorial:
+
+Tutorial: Creating and testing an extension
+=============================================
 
 This tutorial walks through creating a Python extension, building it, and verifying it works.
 
-Step 1: Generate the Extension
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 1: Generate the extension
+-------------------------------
 
 Run the template generator:
 
@@ -198,7 +204,7 @@ Run the template generator:
 
    ./repo.sh template new
 
-Select the **Python Extension** template and enter values when prompted:
+Select the **Python extension** template and enter values when prompted:
 
 - Extension name: ``isaacsim.my.hello``
 - Title: ``Hello World``
@@ -214,7 +220,7 @@ You should see:
    source/extensions/isaacsim.my.hello
 
 Step 2: Build
-^^^^^^^^^^^^^
+--------------
 
 Rebuild the project so the new extension is included:
 
@@ -222,10 +228,10 @@ Rebuild the project so the new extension is included:
 
    ./build.sh
 
-The extension is automatically discovered — no manual registration is needed.
+The build system discovers the extension automatically --- no manual registration required.
 
-Step 3: Run the Startup Test
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 3: Run the startup test
+------------------------------
 
 Every generated extension includes a startup test. Run it from the build directory:
 
@@ -238,18 +244,18 @@ This runs two test suites: a startup test (extension loads without errors) and u
 (``test_extension.py``).
 
 Step 4: Verify in Isaac Sim
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------
 
-Launch Isaac Sim with your extension enabled:
+Launch |isaac-sim_short| with your extension enabled:
 
 .. code-block:: bash
 
    ./_build/linux-x86_64/release/isaac-sim.sh --enable isaacsim.my.hello
 
-To verify it loaded, open the Extensions Manager (``Window > Extensions``) and search for
+To verify it loaded, open the **Extensions Manager** (**Window > Extensions**) and search for
 ``isaacsim.my.hello``. It should appear as enabled.
 
-You can also verify from the Script Editor (``Window > Script Editor``):
+You can also verify from the **Script Editor** (**Window > Script Editor**):
 
 .. code-block:: python
 
@@ -259,14 +265,14 @@ You can also verify from the Script Editor (``Window > Script Editor``):
    # Expected: True
 
 Step 5: Customize
-^^^^^^^^^^^^^^^^^^^
+------------------
 
 Open ``source/extensions/isaacsim.my.hello/isaacsim/my/hello/extension.py`` and modify the
 ``on_startup`` and ``on_shutdown`` methods to add your custom logic. Rebuild and re-test.
 
 
-Verifying C++ and OmniGraph Extensions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Verifying C++ and OmniGraph extensions
+----------------------------------------
 
 For **C++ extensions**, verify the bindings work after building:
 
@@ -287,7 +293,7 @@ For **OmniGraph extensions**, verify both C++ and Python nodes are registered:
 The unit tests check that both node types appear in ``og.get_registered_nodes()`` and that their
 ``compute()`` methods produce correct results.
 
-You can also verify OGN nodes interactively via the Script Editor:
+You can also verify OGN nodes interactively via the **Script Editor**:
 
 .. code-block:: python
 
@@ -297,10 +303,12 @@ You can also verify OGN nodes interactively via the Script Editor:
    # Expected: ['isaacsim.my.nodes.ExampleCpp', 'isaacsim.my.nodes.ExamplePython']
 
 
-Non-Interactive Usage (CI)
-----------------------------
+.. _cli_ext_templates_ci:
 
-For CI automation, use the replay feature with a pre-defined playback file:
+Non-interactive usage (CI)
+============================
+
+For Continuous Integration (CI) automation, use the replay feature with a pre-defined playback file:
 
 .. code-block:: bash
 
@@ -310,7 +318,7 @@ For CI automation, use the replay feature with a pre-defined playback file:
    # Replay without prompts
    ./repo.sh template replay my_extension.toml
 
-Playback files are TOML files that specify the template and variable values:
+Playback files use TOML (Tom's Obvious, Minimal Language) format to specify the template and variable values:
 
 .. code-block:: toml
 
@@ -321,11 +329,13 @@ Playback files are TOML files that specify the template and variable values:
    description = "Provides lidar sensor simulation."
    category = "Sensors"
 
-Pre-defined test playback files are provided in ``templates/tests/`` for CI build verification.
+The ``templates/tests/`` directory contains pre-defined playback files for CI build verification.
 
 
-Template Variables
--------------------
+.. _cli_ext_templates_variables:
+
+Template variables
+===================
 
 All templates share a common set of variables:
 
@@ -369,28 +379,32 @@ All templates share a common set of variables:
 
 .. note::
 
-   The OmniGraph template does not use ``binding_module``. Its pybind11 module name is derived
-   automatically from ``extension_name`` by the OGN build system.
+   The |omnigraph_short| template does not use ``binding_module``. The OGN build system automatically
+   derives the pybind11 module name from ``extension_name``.
 
 
-Build and Verification Checklist
----------------------------------
+.. _cli_ext_templates_checklist:
+
+Build and verification checklist
+==================================
 
 After generating an extension, always:
 
-1. **Build** — ``./build.sh``
-2. **Test** — ``cd _build/linux-x86_64/release && ./tests/tests-<extension_name>.sh``
+1. **Build** --- ``./build.sh``
+2. **Test** --- ``cd _build/linux-x86_64/release && ./tests/tests-<extension_name>.sh``
 
-For C++ and OmniGraph templates, the build compiles the Carbonite plugin and pybind11 bindings.
+For C++ and |omnigraph_short| templates, the build compiles the Carbonite plugin and pybind11 bindings.
 If the build fails, check that the ``premake5.lua`` include paths match your extension's directory layout.
 
 
+.. _cli_ext_templates_troubleshooting:
+
 Troubleshooting
-----------------
+================
 
 **Extension not loading at runtime**
    Check that the extension name in ``config/extension.toml`` matches the directory name under ``source/extensions/``.
-   Verify the extension is enabled with ``--enable <extension_name>`` on the command line or through the Extensions Manager.
+   Verify the extension is enabled with ``--enable <extension_name>`` on the command line or through the **Extensions Manager**.
 
 **C++ plugin not loading**
    Ensure the ``[[native.plugin]]`` section in ``extension.toml`` includes ``path = "bin/*.plugin"``.
@@ -413,4 +427,4 @@ Troubleshooting
 **Stubgen failure during build**
    The stubgen step may fail with ``generic_type: type "X" is already registered`` errors.
    This is a known issue with the pybind11 stub generator when multiple extensions share type names.
-   The build itself succeeds — only the ``.pyi`` stub generation fails, which does not affect runtime.
+   The build itself succeeds --- only the ``.pyi`` stub generation fails, which does not affect runtime.

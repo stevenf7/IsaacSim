@@ -50,8 +50,22 @@ public:
               uint8_t sensorId,
               const std::string& dataPlaneType = "linux");
 
+    /**
+     * @brief Connect to the HSB data plane
+     * @return True if the connection was established successfully, false otherwise
+     */
     bool connect();
+
+    /**
+     * @brief Disconnect from the HSB data plane
+     * @return True if the disconnection was successful, false otherwise
+     */
     bool disconnect();
+
+    /**
+     * @brief Check whether the sender is currently connected
+     * @return True if connected, false otherwise
+     */
     bool isConnected() const;
 
     /**

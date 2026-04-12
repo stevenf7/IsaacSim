@@ -9,15 +9,15 @@ This document lists all standalone examples available in Isaac Sim.
 standalone_examples/api
 -----------------------
 
-isaacsim.asset.importer.mjcf
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* ``mjcf_import.py``
-
 isaacsim.asset.exporter.urdf
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * ``urdf_export.py``
+
+isaacsim.asset.importer.mjcf
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``mjcf_import.py``
 
 isaacsim.asset.importer.urdf
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -123,87 +123,17 @@ isaacsim.robot.experimental.manipulators
 franka
 ^^^^^^
 
-* ``franka/multiple_tasks.py``
-* ``franka/pick_place.py``
-* ``franka/stacking.py``
-
-universal_robots
-^^^^^^^^^^^^^^^^
-
-* ``universal_robots/follow_target_with_ik.py``
-
-isaacsim.robot.manipulators
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* ``franka_pick_up.py``
-* ``ur10_pick_up.py``
-
-cobotta_900
-^^^^^^^^^^^
-
-* ``cobotta_900/follow_target_example.py``
-* ``cobotta_900/gripper_control.py``
-* ``cobotta_900/pick_up_example.py``
-
-cobotta_900/controllers
-^^^^^^^^^^^^^^^^^^^^^^^
-
-* ``cobotta_900/controllers/pick_place.py``
-* ``cobotta_900/controllers/rmpflow.py``
-
-cobotta_900/tasks
-^^^^^^^^^^^^^^^^^
-
-* ``cobotta_900/tasks/follow_target.py``
-* ``cobotta_900/tasks/pick_place.py``
-
-franka
-^^^^^^
-
-* ``franka/follow_target_with_ik.py``
 * ``franka/follow_target_with_rmpflow.py``
-* ``franka/franka_gripper.py``
 * ``franka/multiple_tasks.py``
 * ``franka/pick_place.py``
 * ``franka/stacking.py``
 
-rmpflow_supported_robots
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-* ``rmpflow_supported_robots/supported_robot_follow_target_example.py``
-
 universal_robots
 ^^^^^^^^^^^^^^^^
 
-* ``universal_robots/bin_filling.py``
 * ``universal_robots/follow_target_with_ik.py``
-* ``universal_robots/follow_target_with_ik_experimental.py``
 * ``universal_robots/follow_target_with_rmpflow.py``
-* ``universal_robots/multiple_tasks.py``
-* ``universal_robots/pick_place.py``
-* ``universal_robots/pick_place2.py``
 * ``universal_robots/stacking.py``
-
-ur10e
-^^^^^
-
-* ``ur10e/follow_target_example.py``
-* ``ur10e/follow_target_example_rmpflow.py``
-* ``ur10e/gripper_control.py``
-* ``ur10e/pick_up_example.py``
-
-ur10e/controller
-^^^^^^^^^^^^^^^^
-
-* ``ur10e/controller/ik_solver.py``
-* ``ur10e/controller/pick_place.py``
-* ``ur10e/controller/rmpflow.py``
-
-ur10e/tasks
-^^^^^^^^^^^
-
-* ``ur10e/tasks/follow_target.py``
-* ``ur10e/tasks/pick_place.py``
 
 isaacsim.robot.policy.examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -328,6 +258,85 @@ validation
 * ``benchmark_async_handshake_validation.py``
 * ``benchmark_robots_nova_carter_ros2_validation.py``
 * ``benchmark_sdg_validation.py``
+
+standalone_examples/deprecated
+------------------------------
+
+api
+~~~
+
+isaacsim.robot.manipulators
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.robot.manipulators/franka_pick_up.py``
+* ``isaacsim.robot.manipulators/ur10_pick_up.py``
+
+isaacsim.robot.manipulators/cobotta_900
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.robot.manipulators/cobotta_900/follow_target_example.py``
+* ``isaacsim.robot.manipulators/cobotta_900/gripper_control.py``
+* ``isaacsim.robot.manipulators/cobotta_900/pick_up_example.py``
+
+isaacsim.robot.manipulators/cobotta_900/controllers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.robot.manipulators/cobotta_900/controllers/pick_place.py``
+* ``isaacsim.robot.manipulators/cobotta_900/controllers/rmpflow.py``
+
+isaacsim.robot.manipulators/cobotta_900/tasks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.robot.manipulators/cobotta_900/tasks/follow_target.py``
+* ``isaacsim.robot.manipulators/cobotta_900/tasks/pick_place.py``
+
+isaacsim.robot.manipulators/franka
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.robot.manipulators/franka/follow_target_with_ik.py``
+* ``isaacsim.robot.manipulators/franka/follow_target_with_rmpflow.py``
+* ``isaacsim.robot.manipulators/franka/franka_gripper.py``
+* ``isaacsim.robot.manipulators/franka/multiple_tasks.py``
+* ``isaacsim.robot.manipulators/franka/pick_place.py``
+* ``isaacsim.robot.manipulators/franka/stacking.py``
+
+isaacsim.robot.manipulators/rmpflow_supported_robots
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.robot.manipulators/rmpflow_supported_robots/supported_robot_follow_target_example.py``
+
+isaacsim.robot.manipulators/universal_robots
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.robot.manipulators/universal_robots/bin_filling.py``
+* ``isaacsim.robot.manipulators/universal_robots/follow_target_with_ik.py``
+* ``isaacsim.robot.manipulators/universal_robots/follow_target_with_ik_experimental.py``
+* ``isaacsim.robot.manipulators/universal_robots/follow_target_with_rmpflow.py``
+* ``isaacsim.robot.manipulators/universal_robots/multiple_tasks.py``
+* ``isaacsim.robot.manipulators/universal_robots/pick_place.py``
+* ``isaacsim.robot.manipulators/universal_robots/pick_place2.py``
+* ``isaacsim.robot.manipulators/universal_robots/stacking.py``
+
+isaacsim.robot.manipulators/ur10e
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.robot.manipulators/ur10e/follow_target_example.py``
+* ``isaacsim.robot.manipulators/ur10e/follow_target_example_rmpflow.py``
+* ``isaacsim.robot.manipulators/ur10e/gripper_control.py``
+* ``isaacsim.robot.manipulators/ur10e/pick_up_example.py``
+
+isaacsim.robot.manipulators/ur10e/controller
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.robot.manipulators/ur10e/controller/ik_solver.py``
+* ``isaacsim.robot.manipulators/ur10e/controller/pick_place.py``
+* ``isaacsim.robot.manipulators/ur10e/controller/rmpflow.py``
+
+isaacsim.robot.manipulators/ur10e/tasks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.robot.manipulators/ur10e/tasks/follow_target.py``
+* ``isaacsim.robot.manipulators/ur10e/tasks/pick_place.py``
 
 standalone_examples/replicator
 ------------------------------
