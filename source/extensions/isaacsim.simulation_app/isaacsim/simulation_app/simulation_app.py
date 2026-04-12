@@ -306,9 +306,7 @@ class SimulationApp:
 
         self._app.print_and_log("Simulation App Starting")
         # XXX:make sure we reset the simulation time before doing any other runloop ticking
-        from isaacsim.core.utils.carb import get_carb_setting
-
-        self.enable_multi_tick_rate = get_carb_setting(self._carb_settings, "/rtx/hydra/supportMultiTickRate")
+        self.enable_multi_tick_rate = self._carb_settings.get("/rtx/hydra/supportMultiTickRate")
         if self.enable_multi_tick_rate:
             try:
                 import omni.kit.loop._loop as omni_loop
@@ -434,79 +432,6 @@ class SimulationApp:
         if not self._exiting:
             carb.log_warn("SimulationApp.close() was not called explicitly. Shutting down automatically")
             self.close(wait_for_replicator=False)
-
-    @staticmethod
-    def _start_watchdog(timeout_s: int, reason: str) -> tuple:
-        """Start a watchdog that forcibly kills this process after *timeout_s* seconds.
-
-        On Linux a forked child process is used because it is immune to GIL
-        starvation and signal masking — exactly the conditions that cause the
-        native-thread deadlocks we are guarding against (NVBug 5948099).
-
-        On Windows ``os.fork`` is unavailable, so a daemon thread is used
-        instead.  The glibc destructor deadlocks that motivate the fork do not
-        apply on Windows, so a thread is sufficient.
-
-        Args:
-            timeout_s: Number of seconds before the watchdog kills the process.
-            reason: Human-readable reason for the watchdog, used in the log message.
-
-        Returns:
-            An opaque handle to pass to ``_cancel_watchdog``.
-        """
-        import threading
-
-        parent_pid = os.getpid()
-
-        def _kill_parent():
-            # Check if the parent is still alive before printing anything.
-            try:
-                os.kill(parent_pid, 0)
-            except OSError:
-                # Parent already exited — nothing to do.
-                os._exit(0)
-            print(
-                f"\033[91mSimulationApp: {reason} hung for {timeout_s}s, " f"force-killing pid {parent_pid}\033[0m",
-                flush=True,
-            )
-            try:
-                os.kill(parent_pid, signal.SIGKILL)
-            except OSError:
-                pass
-            os._exit(1)
-
-        if hasattr(os, "fork"):
-            child_pid = os.fork()
-            if child_pid == 0:
-                try:
-                    time.sleep(timeout_s)
-                    _kill_parent()
-                except OSError:
-                    pass
-                os._exit(0)
-            return ("fork", child_pid)
-
-        timer = threading.Timer(timeout_s, _kill_parent)
-        timer.daemon = True
-        timer.start()
-        return ("timer", timer)
-
-    @staticmethod
-    def _cancel_watchdog(handle: tuple) -> None:
-        """Cancel a watchdog previously started by ``_start_watchdog``.
-
-        Args:
-            handle: Opaque handle returned by ``_start_watchdog``.
-        """
-        kind, ref = handle
-        if kind == "fork":
-            try:
-                os.kill(ref, signal.SIGKILL)
-                os.waitpid(ref, 0)
-            except OSError:
-                pass
-        else:
-            ref.cancel()
 
     ### Private methods
 
@@ -954,7 +879,7 @@ class SimulationApp:
             return
 
         # `post_quit()` can already stop Kit's run loop before callers reach `close()`.
-        # In that state, forcing `shutdown_and_release_framework()` may block indefinitely.
+        # In that state, forcing shutdown may block indefinitely.
         if not self._app.is_running():
             self._exiting = True
             carb.log_info("SimulationApp.close: app already stopped, skipping framework shutdown")
@@ -968,7 +893,7 @@ class SimulationApp:
             carb.log_info("SimulationApp.close: immediate_exit")
             _logging = carb.logging.acquire_logging()
             _logging.set_log_enabled(False)
-            self._app.shutdown_and_release_framework()
+            self._app.shutdown()
             return
         try:
             # Ensure replicator workflows complete any queued writes.
@@ -998,26 +923,31 @@ class SimulationApp:
         self._exiting = True
         self._app.print_and_log("Simulation App Shutting Down")
 
-        # The entire shutdown sequence (tracy cleanup + shutdown_and_release_framework)
-        # can deadlock when native thread pools block during teardown (NVBug 5948099).
-        _watchdog = self._start_watchdog(120, "shutdown")
+        # Cleanup any running tracy instances so data is not lost
         try:
-            # Cleanup any running tracy instances so data is not lost
-            try:
-                _profiler_tracy = carb.profiler.acquire_profiler_interface(plugin_name="carb.profiler-tracy.plugin")
-                if _profiler_tracy:
-                    _profiler_tracy.set_capture_mask(0)
-                    _profiler_tracy.end(0)
-                    _profiler_tracy.shutdown()
-            except RuntimeError:
-                pass
+            _profiler_tracy = carb.profiler.acquire_profiler_interface(plugin_name="carb.profiler-tracy.plugin")
+            if _profiler_tracy:
+                _profiler_tracy.set_capture_mask(0)
+                _profiler_tracy.end(0)
+                _profiler_tracy.shutdown()
+        except RuntimeError:
+            pass
 
-            carb.log_info("SimulationApp.close: shutting down app and releasing framework")
-            _logging = carb.logging.acquire_logging()
-            _logging.set_log_enabled(False)
-            self._app.shutdown_and_release_framework()
-        finally:
-            self._cancel_watchdog(_watchdog)
+        carb.log_info("SimulationApp.close: shutting down app")
+        _logging = carb.logging.acquire_logging()
+        _logging.set_log_enabled(False)
+
+        # Use app.shutdown() instead of shutdown_and_release_framework() to avoid a
+        # GIL deadlock (NVBug 5948099): the Python binding for
+        # shutdown_and_release_framework holds the GIL while
+        # releaseFrameworkAndShutdown() joins carb.tasking worker threads that may
+        # themselves be blocked waiting for the GIL.
+        #
+        # app.shutdown() handles /app/fastShutdown internally — when true (the
+        # default) it calls quickReleaseFrameworkAndTerminate which exits the process
+        # immediately.  When false it performs full extension teardown and returns;
+        # the framework/plugin unload is left to process exit.
+        self._app.shutdown()
 
     def is_running(self) -> bool:
         """Check if the simulation application is currently running.
