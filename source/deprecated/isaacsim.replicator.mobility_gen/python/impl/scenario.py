@@ -16,6 +16,8 @@
 """Implements base functionality for mobility generation scenarios with robot navigation in occupancy map environments."""
 
 
+from typing import NoReturn
+
 from PIL import Image
 
 from .common import Module
@@ -41,13 +43,13 @@ class MobilityGenScenario(Module):
         occupancy_map: The occupancy map representing the environment layout and obstacles.
     """
 
-    def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap):
+    def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap) -> None:
         self.robot = robot
         self.occupancy_map = occupancy_map
         self.buffered_occupancy_map = occupancy_map.buffered_meters(self.robot.occupancy_map_radius)
 
     @classmethod
-    def from_robot_occupancy_map(cls, robot: MobilityGenRobot, occupancy_map: OccupancyMap):
+    def from_robot_occupancy_map(cls, robot: MobilityGenRobot, occupancy_map: OccupancyMap) -> "MobilityGenScenario":
         """Creates a MobilityGenScenario instance from a robot and occupancy map.
 
         Args:
@@ -59,7 +61,7 @@ class MobilityGenScenario(Module):
         """
         return cls(robot, occupancy_map)
 
-    def reset(self):
+    def reset(self) -> NoReturn:
         """Resets the scenario to its initial state."""
         raise NotImplementedError
 

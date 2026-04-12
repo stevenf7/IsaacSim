@@ -15,7 +15,6 @@
 
 """Deprecated bounds computation utilities."""
 
-import typing
 
 # omniverse
 import carb
@@ -28,7 +27,7 @@ from pxr import Gf, Usd, UsdGeom
 
 def recompute_extents(
     prim: UsdGeom.Boundable, time: Usd.TimeCode = Usd.TimeCode.Default(), include_children: bool = False
-):
+) -> None:
     """Recomputes and overwrites the extents attribute for a UsdGeom.Boundable prim.
 
     Args:
@@ -51,7 +50,7 @@ def recompute_extents(
     """
 
     #
-    def update_extents(prim: UsdGeom.Boundable, time: Usd.TimeCode = Usd.TimeCode.Default()):
+    def update_extents(prim: UsdGeom.Boundable, time: Usd.TimeCode = Usd.TimeCode.Default()) -> None:
         compute_prim = UsdGeom.Boundable(prim)
         if compute_prim:
             bounds = []
@@ -143,7 +142,7 @@ def compute_aabb(bbox_cache: UsdGeom.BBoxCache, prim_path: str, include_children
     return np.array([*range.GetMin(), *range.GetMax()])
 
 
-def compute_combined_aabb(bbox_cache: UsdGeom.BBoxCache, prim_paths: typing.List[str]) -> np.array:
+def compute_combined_aabb(bbox_cache: UsdGeom.BBoxCache, prim_paths: list[str]) -> np.array:
     """Computes a combined Axis-Aligned Bounding Box (AABB) given a list of prim paths.
 
     Args:
@@ -174,7 +173,7 @@ def compute_combined_aabb(bbox_cache: UsdGeom.BBoxCache, prim_paths: typing.List
     return np.array([*range.GetMin(), *range.GetMax()])
 
 
-def compute_obb(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> typing.Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def compute_obb(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Computes the Oriented Bounding Box (OBB) of a prim.
 
     .. note::

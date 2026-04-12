@@ -17,7 +17,8 @@
 
 
 from .commands import *
-from .contact_sensor import ContactSensor
-from .effort_sensor import EffortSensor, EsSensorReading
+from .contact_sensor import ContactSensor as ContactSensor
+from .effort_sensor import EffortSensor as EffortSensor
+from .effort_sensor import EsSensorReading as EsSensorReading
 from .extension import Extension  # noqa: F401 (Extension loaded for side effects)
-from .imu_sensor import IMUSensor
+from .imu_sensor import IMUSensor as IMUSensor

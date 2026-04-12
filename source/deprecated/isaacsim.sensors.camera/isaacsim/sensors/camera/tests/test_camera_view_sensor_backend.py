@@ -29,13 +29,13 @@ from pxr import UsdGeom
 class TestCameraViewSensorBackend(omni.kit.test.AsyncTestCase):
     """Tests CameraView sensor with different SimulationManager backend configurations."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         await create_new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
@@ -48,7 +48,7 @@ class TestCameraViewSensorBackend(omni.kit.test.AsyncTestCase):
 
     async def run_test_async(
         self, backend: str = "numpy", device: object = None, gpu_dynamics: bool = False, app_warmup: bool = False
-    ):
+    ) -> None:
         """Run the camera capture test with specified backend configuration.
 
         Args:
@@ -56,6 +56,7 @@ class TestCameraViewSensorBackend(omni.kit.test.AsyncTestCase):
             device: Device to use for physics simulation.
             gpu_dynamics: Whether to enable GPU dynamics.
             app_warmup: Whether to warm up the application.
+
         """
         await omni.usd.get_context().new_stage_async()
         stage = omni.usd.get_context().get_stage()
@@ -124,67 +125,67 @@ class TestCameraViewSensorBackend(omni.kit.test.AsyncTestCase):
             self.assertIsNotNone(depth, "Depth data could not be captured")
 
     # numpy backend
-    async def test_numpy_cpu_nogpu_nowarmup(self):
+    async def test_numpy_cpu_nogpu_nowarmup(self) -> None:
         """Tests numpy backend on CPU without GPU dynamics and without app warmup."""
         await self.run_test_async(backend="numpy", device=None, gpu_dynamics=False, app_warmup=False)
 
-    async def test_numpy_cpu_nogpu_warmup(self):
+    async def test_numpy_cpu_nogpu_warmup(self) -> None:
         """Tests numpy backend on CPU without GPU dynamics and with app warmup."""
         await self.run_test_async(backend="numpy", device=None, gpu_dynamics=False, app_warmup=True)
 
-    async def test_numpy_cpu_gpu_nowarmup(self):
+    async def test_numpy_cpu_gpu_nowarmup(self) -> None:
         """Tests numpy backend on CPU with GPU dynamics and without app warmup."""
         await self.run_test_async(backend="numpy", device=None, gpu_dynamics=True, app_warmup=False)
 
-    async def test_numpy_cpu_gpu_warmup(self):
+    async def test_numpy_cpu_gpu_warmup(self) -> None:
         """Tests numpy backend on CPU with GPU dynamics and with app warmup."""
         await self.run_test_async(backend="numpy", device=None, gpu_dynamics=True, app_warmup=True)
 
-    async def test_numpy_cuda_nogpu_nowarmup(self):
+    async def test_numpy_cuda_nogpu_nowarmup(self) -> None:
         """Tests numpy backend on CUDA without GPU dynamics and without app warmup."""
         await self.run_test_async(backend="numpy", device="cuda", gpu_dynamics=False, app_warmup=False)
 
-    async def test_numpy_cuda_nogpu_warmup(self):
+    async def test_numpy_cuda_nogpu_warmup(self) -> None:
         """Tests numpy backend on CUDA without GPU dynamics and with app warmup."""
         await self.run_test_async(backend="numpy", device="cuda", gpu_dynamics=False, app_warmup=True)
 
-    async def test_numpy_cuda_gpu_nowarmup(self):
+    async def test_numpy_cuda_gpu_nowarmup(self) -> None:
         """Tests numpy backend on CUDA with GPU dynamics and without app warmup."""
         await self.run_test_async(backend="numpy", device="cuda", gpu_dynamics=True, app_warmup=False)
 
-    async def test_numpy_cuda_gpu_warmup(self):
+    async def test_numpy_cuda_gpu_warmup(self) -> None:
         """Tests numpy backend on CUDA with GPU dynamics and with app warmup."""
         await self.run_test_async(backend="numpy", device="cuda", gpu_dynamics=True, app_warmup=True)
 
     # torch backend
-    async def test_torch_cpu_nogpu_nowarmup(self):
+    async def test_torch_cpu_nogpu_nowarmup(self) -> None:
         """Tests torch backend on CPU without GPU dynamics and without app warmup."""
         await self.run_test_async(backend="torch", device=None, gpu_dynamics=False, app_warmup=False)
 
-    async def test_torch_cpu_nogpu_warmup(self):
+    async def test_torch_cpu_nogpu_warmup(self) -> None:
         """Tests torch backend on CPU without GPU dynamics and with app warmup."""
         await self.run_test_async(backend="torch", device=None, gpu_dynamics=False, app_warmup=True)
 
-    async def test_torch_cpu_gpu_nowarmup(self):
+    async def test_torch_cpu_gpu_nowarmup(self) -> None:
         """Tests torch backend on CPU with GPU dynamics and without app warmup."""
         await self.run_test_async(backend="torch", device=None, gpu_dynamics=True, app_warmup=False)
 
-    async def test_torch_cpu_gpu_warmup(self):
+    async def test_torch_cpu_gpu_warmup(self) -> None:
         """Tests torch backend on CPU with GPU dynamics and with app warmup."""
         await self.run_test_async(backend="torch", device=None, gpu_dynamics=True, app_warmup=True)
 
-    async def test_torch_cuda_nogpu_nowarmup(self):
+    async def test_torch_cuda_nogpu_nowarmup(self) -> None:
         """Tests torch backend on CUDA without GPU dynamics and without app warmup."""
         await self.run_test_async(backend="torch", device="cuda", gpu_dynamics=False, app_warmup=False)
 
-    async def test_torch_cuda_nogpu_warmup(self):
+    async def test_torch_cuda_nogpu_warmup(self) -> None:
         """Tests torch backend on CUDA without GPU dynamics and with app warmup."""
         await self.run_test_async(backend="torch", device="cuda", gpu_dynamics=False, app_warmup=True)
 
-    async def test_torch_cuda_gpu_nowarmup(self):
+    async def test_torch_cuda_gpu_nowarmup(self) -> None:
         """Tests torch backend on CUDA with GPU dynamics and without app warmup."""
         await self.run_test_async(backend="torch", device="cuda", gpu_dynamics=True, app_warmup=False)
 
-    async def test_torch_cuda_gpu_warmup(self):
+    async def test_torch_cuda_gpu_warmup(self) -> None:
         """Tests torch backend on CUDA with GPU dynamics and with app warmup."""
         await self.run_test_async(backend="torch", device="cuda", gpu_dynamics=True, app_warmup=True)

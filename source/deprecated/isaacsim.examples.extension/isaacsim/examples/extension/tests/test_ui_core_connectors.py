@@ -36,10 +36,10 @@ from isaacsim.examples.extension.core_connectors import LoadButton, ResetButton
 from isaacsim.storage.native import get_assets_root_path
 
 
-async def wait_until_stage_loaded(timeout_s: float = 20.0):
+async def wait_until_stage_loaded(timeout_s: float = 20.0) -> None:
     """Wait until the stage finishes loading or timeout is reached."""
 
-    async def _wait():
+    async def _wait() -> None:
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
@@ -51,7 +51,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
     """Test cases for the UI core connector widgets."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up by creating a fresh stage and timeline."""
         World.clear_instance()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -59,7 +59,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
         await update_stage_async()
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down by stopping timeline and waiting for assets to load."""
         self._timeline.stop()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -68,7 +68,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         World.clear_instance()
 
-    async def _create_window(self, title, width, height):
+    async def _create_window(self, title: str, width: int, height: int) -> object:
         window = ui.Window(
             title=title,
             width=width,
@@ -79,7 +79,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         return window
 
-    async def test_load_button(self):
+    async def test_load_button(self) -> None:
         """Test that the LoadButton triggers setup_scene and setup_post_load callbacks."""
         window_title = "UI_Widget_Wrapper_Test_Window_LoadButton_Test"
         width = 500
@@ -89,7 +89,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
         self.setup_scene_called = False
         self.setup_post_load_called = False
 
-        def setup_scene_fn():
+        def setup_scene_fn() -> None:
             self.setup_scene_called = True
 
             robot_prim_path = "/ur10e"
@@ -109,7 +109,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
 
         loaded = asyncio.Event()
 
-        def setup_post_load_fn():
+        def setup_post_load_fn() -> None:
             self.setup_post_load_called = True
             loaded.set()
 
@@ -132,7 +132,7 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
         self.assertTrue(self.setup_scene_called)
         self.assertTrue(self.setup_post_load_called)
 
-    async def test_reset_button(self):
+    async def test_reset_button(self) -> None:
         """Test that the ResetButton triggers pre_reset and post_reset callbacks."""
         window_title = "UI_Widget_Wrapper_Test_Window_ResetButton_Test"
         width = 500
@@ -142,12 +142,12 @@ class TestUICoreConnectors(omni.kit.test.AsyncTestCase):
         self.pre_reset_called = False
         self.post_reset_called = False
 
-        def pre_reset_fn():
+        def pre_reset_fn() -> None:
             self.pre_reset_called = True
 
             self.assertTrue(np.all(self.cuboid.get_world_pose()[0] == np.array([-1, 0, 0])))
 
-        def post_reset_fn():
+        def post_reset_fn() -> None:
             self.post_reset_called = True
 
             # Assert that the timeline is paused when this callback is called

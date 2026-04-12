@@ -15,9 +15,9 @@
 
 """Abstract base class for pick and place tasks involving cube manipulation with a robot."""
 
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 import numpy as np
 from isaacsim.core.api.objects import DynamicCuboid
@@ -38,16 +38,17 @@ class PickPlace(ABC, BaseTask):
         target_position: Target position for placing.
         cube_size: Size of the cube.
         offset: Offset for all task objects.
+
     """
 
     def __init__(
         self,
         name: str,
-        cube_initial_position: Optional[np.ndarray] = None,
-        cube_initial_orientation: Optional[np.ndarray] = None,
-        target_position: Optional[np.ndarray] = None,
-        cube_size: Optional[np.ndarray] = None,
-        offset: Optional[np.ndarray] = None,
+        cube_initial_position: np.ndarray | None = None,
+        cube_initial_orientation: np.ndarray | None = None,
+        target_position: np.ndarray | None = None,
+        cube_size: np.ndarray | None = None,
+        offset: np.ndarray | None = None,
     ) -> None:
         BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
@@ -74,6 +75,7 @@ class PickPlace(ABC, BaseTask):
 
         Args:
             scene: The scene to populate.
+
         """
         super().set_up_scene(scene)
         scene.add_default_ground_plane()
@@ -106,9 +108,9 @@ class PickPlace(ABC, BaseTask):
 
     def set_params(
         self,
-        cube_position: Optional[np.ndarray] = None,
-        cube_orientation: Optional[np.ndarray] = None,
-        target_position: Optional[np.ndarray] = None,
+        cube_position: np.ndarray | None = None,
+        cube_orientation: np.ndarray | None = None,
+        target_position: np.ndarray | None = None,
     ) -> None:
         """Set task parameters for cube position, orientation, and target position.
 
@@ -116,6 +118,7 @@ class PickPlace(ABC, BaseTask):
             cube_position: New position for the cube.
             cube_orientation: New orientation for the cube.
             target_position: New target position for placing.
+
         """
         if target_position is not None:
             self._target_position = target_position
@@ -128,8 +131,9 @@ class PickPlace(ABC, BaseTask):
 
         Returns:
             Dictionary containing task parameters with values and modifiability flags.
+
         """
-        params_representation = dict()
+        params_representation = {}
         position, orientation = self._cube.get_local_pose()
         params_representation["cube_position"] = {"value": position, "modifiable": True}
         params_representation["cube_orientation"] = {"value": orientation, "modifiable": True}
@@ -143,6 +147,7 @@ class PickPlace(ABC, BaseTask):
 
         Returns:
             Dictionary with cube and robot observations.
+
         """
         joints_state = self._robot.get_joints_state()
         cube_position, cube_orientation = self._cube.get_local_pose()
@@ -165,6 +170,7 @@ class PickPlace(ABC, BaseTask):
         Args:
             time_step_index: Current simulation step index.
             simulation_time: Current simulation time.
+
         """
         return
 
@@ -181,6 +187,7 @@ class PickPlace(ABC, BaseTask):
 
         Returns:
             Dictionary containing calculated task metrics.
+
         """
         raise NotImplementedError
 
@@ -189,5 +196,6 @@ class PickPlace(ABC, BaseTask):
 
         Returns:
             Whether the task is complete.
+
         """
         raise NotImplementedError

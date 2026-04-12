@@ -15,8 +15,9 @@
 
 """Provides high level functions for managing batched camera data and sensor operations in Isaac Sim."""
 
+from __future__ import annotations
 
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 import omni.replicator.core as rep
@@ -63,7 +64,7 @@ def reshape_tiled_image(
     num_output_channels: int,
     num_tiles_x: int,
     offset: int,
-):
+) -> None:
     """Reshape a tiled image (height*width*num_channels*num_cameras,) to a batch of images (num_cameras, height, width, num_channels).
 
     Args:
@@ -75,6 +76,7 @@ def reshape_tiled_image(
         num_output_channels: The number of output channels in the batched image.
         num_tiles_x: The number of tiles in x direction.
         offset: The offset in the image buffer. This is used when multiple image types are concatenated in the buffer.
+
     """
     # get the thread id
     camera_id, height_id, width_id = wp.tid()
@@ -163,21 +165,24 @@ class CameraView(XFormPrim):
     Raises:
         Exception: if translations and positions defined at the same time.
         Exception: No prim was matched using the prim_paths_expr provided.
+
     """
 
     def __init__(
         self,
         prim_paths_expr: str = None,
         name: str = "camera_prim_view",
-        camera_resolution: Tuple[int, int] = (256, 256),
-        output_annotators: Optional[List[str]] = ["rgb", "depth"],
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        translations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        scales: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        visibilities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        camera_resolution: tuple[int, int] = (256, 256),
+        output_annotators: list[str] | None = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None = None,
+        translations: np.ndarray | torch.Tensor | wp.array | None = None,
+        orientations: np.ndarray | torch.Tensor | wp.array | None = None,
+        scales: np.ndarray | torch.Tensor | wp.array | None = None,
+        visibilities: np.ndarray | torch.Tensor | wp.array | None = None,
         reset_xform_properties: bool = True,
-    ):
+    ) -> None:
+        if output_annotators is None:
+            output_annotators = ["rgb", "depth"]
         XFormPrim.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
@@ -190,21 +195,21 @@ class CameraView(XFormPrim):
             reset_xform_properties=reset_xform_properties,
         )
         self._output_annotators = output_annotators
-        self._annotators = dict()
+        self._annotators = {}
         self.camera_resolution = camera_resolution
         self._tiled_render_product = None
         self._setup_tiled_sensor()
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Clean up resources when the CameraView object is destroyed."""
         self.destroy()
 
-    def destroy(self):
+    def destroy(self) -> None:
         """Destroy the CameraView by cleaning up the tiled sensor and calling the parent destructor."""
         self._clean_up_tiled_sensor()
         super().destroy()
 
-    def _clean_up_tiled_sensor(self):
+    def _clean_up_tiled_sensor(self) -> None:
         """Clean up the sensor by detaching annotators and destroying render products, and removing related prims."""
         if self._tiled_render_product is not None:
             for annotator in self._annotators.values():
@@ -212,7 +217,7 @@ class CameraView(XFormPrim):
             self._tiled_render_product.destroy()
             self._tiled_render_product = None
 
-    def _get_tiled_resolution(self, num_cameras: int, resolution: object) -> Tuple[int, int]:
+    def _get_tiled_resolution(self, num_cameras: int, resolution: object) -> tuple[int, int]:
         """Calculate the resolution for the tiled sensor based on the number of cameras and individual camera resolution.
 
         Args:
@@ -221,13 +226,14 @@ class CameraView(XFormPrim):
 
         Returns:
             The total resolution for the tiled sensor layout.
+
         """
         num_rows = round(num_cameras**0.5)
         num_columns = (num_cameras + num_rows - 1) // num_rows
 
         return (num_columns * resolution[0], num_rows * resolution[1])
 
-    def _setup_tiled_sensor(self):
+    def _setup_tiled_sensor(self) -> None:
         """Set up the tiled sensor, compute resolutions, attach annotators, and initiate the render process."""
         self._clean_up_tiled_sensor()
 
@@ -267,26 +273,29 @@ class CameraView(XFormPrim):
 
         Returns:
             The path to the render product, or None if not available.
+
         """
         return self._render_product_path
 
     # TODO: add functionality to pause and resume tiled sensor, similar to camera.py
-    def set_resolutions(self, resolution: Tuple[int, int]):
+    def set_resolutions(self, resolution: tuple[int, int]) -> None:
         """Set the resolutions for all cameras, updating the tiled sensor configuration if changed.
 
         Args:
             resolution: The new resolution to apply to all cameras.
+
         """
-        if not resolution == self.camera_resolution:
+        if resolution != self.camera_resolution:
             self.camera_resolution = resolution
             # update tiled sensor after changing resolution
             self._setup_tiled_sensor()
 
-    def get_resolutions(self) -> Tuple[int, int]:
+    def get_resolutions(self) -> tuple[int, int]:
         """Retrieve the current resolution setting for all cameras.
 
         Returns:
             The resolution of the cameras.
+
         """
         return self.camera_resolution
 
@@ -295,11 +304,14 @@ class CameraView(XFormPrim):
 
         Returns:
             The aspect ratio, defined as width divided by height.
+
         """
         width, height = self.get_resolutions()
         return float(width) / float(height)
 
-    def _convert_camera_axes(self, orientations: object, transform_matrix: object):
+    def _convert_camera_axes(
+        self, orientations: object, transform_matrix: object
+    ) -> np.ndarray | torch.Tensor | wp.array:
         """Convert orientations using the specified transformation matrix.
 
         Args:
@@ -308,6 +320,7 @@ class CameraView(XFormPrim):
 
         Returns:
             The converted orientations.
+
         """
         if isinstance(orientations, np.ndarray):
             orientation_matrices = self._backend_utils.quats_to_rot_matrices(orientations)
@@ -332,12 +345,10 @@ class CameraView(XFormPrim):
 
     def get_world_poses(
         self,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         camera_axes: str = "world",
         usd: bool = True,
-    ) -> Union[
-        Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
-    ]:
+    ) -> tuple[np.ndarray, np.ndarray] | tuple[torch.Tensor, torch.Tensor] | tuple[wp.indexedarray, wp.indexedarray]:
         """Get the poses of the prims in the view with respect to the world's frame.
 
         Args:
@@ -354,16 +365,17 @@ class CameraView(XFormPrim):
 
         Raises:
             Exception: If the provided camera_axes is not supported.
+
         """
         if camera_axes not in ["world", "ros", "usd"]:
             raise Exception(
-                "camera axes passed {} is not supported: accepted values are ["
+                f"camera axes passed {camera_axes} is not supported: accepted values are ["
                 "world"
                 ", "
                 "ros"
                 ", "
                 "usd"
-                "] only".format(camera_axes)
+                "] only"
             )
 
         translations, orientations = XFormPrim.get_world_poses(self, indices, usd=usd)
@@ -378,9 +390,9 @@ class CameraView(XFormPrim):
 
     def set_world_poses(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None = None,
+        orientations: np.ndarray | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         camera_axes: str = "world",
         usd: bool = True,
     ) -> None:
@@ -395,16 +407,17 @@ class CameraView(XFormPrim):
 
         Raises:
             Exception: If the provided camera_axes is not supported.
+
         """
         if camera_axes not in ["world", "ros", "usd"]:
             raise Exception(
-                "camera axes passed {} is not supported: accepted values are ["
+                f"camera axes passed {camera_axes} is not supported: accepted values are ["
                 "world"
                 ", "
                 "ros"
                 ", "
                 "usd"
-                "] only".format(camera_axes)
+                "] only"
             )
 
         if orientations is not None:
@@ -417,11 +430,9 @@ class CameraView(XFormPrim):
 
     def get_local_poses(
         self,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         camera_axes: str = "world",
-    ) -> Union[
-        Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
-    ]:
+    ) -> tuple[np.ndarray, np.ndarray] | tuple[torch.Tensor, torch.Tensor] | tuple[wp.indexedarray, wp.indexedarray]:
         """Get prim poses in the view with respect to the local frame (the prim's parent frame).
 
         Args:
@@ -437,16 +448,17 @@ class CameraView(XFormPrim):
 
         Raises:
             Exception: If the provided camera_axes is not supported.
+
         """
         if camera_axes not in ["world", "ros", "usd"]:
             raise Exception(
-                "camera axes passed {} is not supported: accepted values are ["
+                f"camera axes passed {camera_axes} is not supported: accepted values are ["
                 "world"
                 ", "
                 "ros"
                 ", "
                 "usd"
-                "] only".format(camera_axes)
+                "] only"
             )
 
         translations, orientations = XFormPrim.get_local_poses(self, indices)
@@ -461,9 +473,9 @@ class CameraView(XFormPrim):
 
     def set_local_poses(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None = None,
+        orientations: np.ndarray | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         camera_axes: str = "world",
     ) -> None:
         """Set the local poses for all cameras, adjusting their positions and orientations based on specified indices and coordinate system.
@@ -476,16 +488,17 @@ class CameraView(XFormPrim):
 
         Raises:
             Exception: If the provided camera_axes is not supported.
+
         """
         if camera_axes not in ["world", "ros", "usd"]:
             raise Exception(
-                "camera axes passed {} is not supported: accepted values are ["
+                f"camera axes passed {camera_axes} is not supported: accepted values are ["
                 "world"
                 ", "
                 "ros"
                 ", "
                 "usd"
-                "] only".format(camera_axes)
+                "] only"
             )
 
         if orientations is not None:
@@ -497,8 +510,8 @@ class CameraView(XFormPrim):
         return XFormPrim.set_local_poses(self, positions, orientations, indices)
 
     def get_data(
-        self, annotator_type: str, *, tiled: bool = False, out: Optional[wp.array] = None
-    ) -> Tuple[wp.array, dict[str, Any]]:
+        self, annotator_type: str, *, tiled: bool = False, out: wp.array | None = None
+    ) -> tuple[wp.array, dict[str, Any]]:
         """Fetch the specified annotator/sensor data for all cameras as a batch of images or as a single tiled image.
 
         Args:
@@ -514,6 +527,7 @@ class CameraView(XFormPrim):
         Raises:
             ValueError: If the specified annotator type is not supported.
             ValueError: If the specified annotator type is not configured when instantiating the object.
+
         """
         # get and check annotator specification
         spec = ANNOTATOR_SPEC.get(annotator_type)
@@ -599,6 +613,7 @@ class CameraView(XFormPrim):
 
         Returns:
             containing the RGBA data for each camera. Depth channel is excluded if present.
+
         """
         if out is None:
             if device == "cuda":
@@ -621,6 +636,7 @@ class CameraView(XFormPrim):
 
         Returns:
             containing the depth data for each camera.
+
         """
         if out is None:
             if device == "cuda":
@@ -643,6 +659,7 @@ class CameraView(XFormPrim):
         Returns:
             containing the RGB data for each camera.
             Shape is (num_cameras, height, width, 3) with type torch.float32.
+
         """
         if out is None:
             out = wp.to_torch(self.get_data("rgb")[0])
@@ -659,6 +676,7 @@ class CameraView(XFormPrim):
         Returns:
             containing the depth data for each camera.
             Shape is (num_cameras, height, width, 1) with type torch.float32.
+
         """
         if out is None:
             out = wp.to_torch(self.get_data("distance_to_image_plane")[0])
@@ -666,9 +684,7 @@ class CameraView(XFormPrim):
             self.get_data("distance_to_image_plane", out=wp.from_torch(out))
         return out
 
-    def get_focal_lengths(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> List[float]:
+    def get_focal_lengths(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> list[float]:
         """Get the focal length for all cameras.
 
         Args:
@@ -678,6 +694,7 @@ class CameraView(XFormPrim):
 
         Returns:
             list containing the focal lengths of the cameras.
+
         """
         focal_lengths = []
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -690,9 +707,9 @@ class CameraView(XFormPrim):
 
     def set_focal_lengths(
         self,
-        values: List[float],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
-    ):
+        values: list[float],
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+    ) -> None:
         """Set the focal length for cameras specific in indices. If indices is None, set for all cameras.
 
         Args:
@@ -704,6 +721,7 @@ class CameraView(XFormPrim):
 
         Returns:
             None.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
@@ -717,9 +735,7 @@ class CameraView(XFormPrim):
 
         return
 
-    def get_focus_distances(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> List[float]:
+    def get_focus_distances(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> list[float]:
         """Get the focus distances for cameras specific in indices. If indices is None, get for all cameras.
 
         Args:
@@ -729,6 +745,7 @@ class CameraView(XFormPrim):
 
         Returns:
             List containing the focus distances of the cameras.
+
         """
         focus_distances = []
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -741,9 +758,9 @@ class CameraView(XFormPrim):
 
     def set_focus_distances(
         self,
-        values: List[float],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
-    ):
+        values: list[float],
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+    ) -> None:
         """Set the focus distance for cameras specific in indices. If indices is None, set for all cameras.
 
         Args:
@@ -755,6 +772,7 @@ class CameraView(XFormPrim):
 
         Returns:
             None.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
@@ -768,9 +786,7 @@ class CameraView(XFormPrim):
 
         return
 
-    def get_lens_apertures(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> List[float]:
+    def get_lens_apertures(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> list[float]:
         """Get the lens apertures for cameras specific in indices. If indices is None, get for all cameras.
 
         Args:
@@ -780,6 +796,7 @@ class CameraView(XFormPrim):
 
         Returns:
             List containing the lens apertures of the cameras.
+
         """
         lens_apertures = []
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -792,9 +809,9 @@ class CameraView(XFormPrim):
 
     def set_lens_apertures(
         self,
-        values: List[float],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
-    ):
+        values: list[float],
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+    ) -> None:
         """Set the lens apertures for cameras specific in indices. If indices is None, set for all cameras.
 
         Controls Distance Blurring. Lower Numbers decrease focus range, larger numbers increase it.
@@ -808,6 +825,7 @@ class CameraView(XFormPrim):
 
         Returns:
             None.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
@@ -822,8 +840,8 @@ class CameraView(XFormPrim):
         return
 
     def get_horizontal_apertures(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> List[float]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> list[float]:
         """Get the horizontal apertures for cameras specific in indices. If indices is None, get for all cameras.
 
         Emulates sensor/film width on a camera.
@@ -835,6 +853,7 @@ class CameraView(XFormPrim):
 
         Returns:
             List containing the horizontal apertures of the cameras.
+
         """
         horizontal_apertures = []
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -847,9 +866,9 @@ class CameraView(XFormPrim):
 
     def set_horizontal_apertures(
         self,
-        values: List[float],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
-    ):
+        values: list[float],
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+    ) -> None:
         """Set the horizontal apertures for cameras specific in indices. If indices is None, set for all cameras.
 
         Args:
@@ -861,6 +880,7 @@ class CameraView(XFormPrim):
 
         Returns:
             None.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
@@ -874,9 +894,7 @@ class CameraView(XFormPrim):
 
         return
 
-    def get_vertical_apertures(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> List[float]:
+    def get_vertical_apertures(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> list[float]:
         """Get the vertical apertures for cameras specific in indices. If indices is None, get for all cameras.
 
         Emulates sensor/film height on a camera.
@@ -888,6 +906,7 @@ class CameraView(XFormPrim):
 
         Returns:
             List containing the vertical apertures of the cameras.
+
         """
         vertical_apertures = []
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -900,9 +919,9 @@ class CameraView(XFormPrim):
 
     def set_vertical_apertures(
         self,
-        values: List[float],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
-    ):
+        values: list[float],
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+    ) -> None:
         """Set the vertical apertures for cameras specific in indices. If indices is None, set for all cameras.
 
         Emulates sensor/film height on a camera.
@@ -916,6 +935,7 @@ class CameraView(XFormPrim):
 
         Returns:
             None.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
@@ -929,9 +949,7 @@ class CameraView(XFormPrim):
 
         return
 
-    def get_projection_types(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> List[str]:
+    def get_projection_types(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> list[str]:
         """Get the projection types for cameras specific in indices. If indices is None, get for all cameras.
 
         Args:
@@ -941,6 +959,7 @@ class CameraView(XFormPrim):
 
         Returns:
             List of projection types (pinhole, fisheyeOrthographic, fisheyeEquidistant, fisheyeEquisolid, fisheyePolynomial or fisheyeSpherical).
+
         """
         projection_types = []
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -956,9 +975,9 @@ class CameraView(XFormPrim):
 
     def set_projection_types(
         self,
-        values: List[str],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
-    ):
+        values: list[str],
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+    ) -> None:
         """Set the projection types for cameras specific in indices. If indices is None, set for all cameras.
 
         Args:
@@ -970,6 +989,7 @@ class CameraView(XFormPrim):
 
         Returns:
             None.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
@@ -983,9 +1003,7 @@ class CameraView(XFormPrim):
 
         return
 
-    def get_projection_modes(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> List[str]:
+    def get_projection_modes(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> list[str]:
         """Get the projection modes for cameras specific in indices. If indices is None, get for all cameras.
 
         Args:
@@ -994,6 +1012,7 @@ class CameraView(XFormPrim):
 
         Returns:
             List of projection modes (perspective, orthographic).
+
         """
         projection_modes = []
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1006,9 +1025,9 @@ class CameraView(XFormPrim):
 
     def set_projection_modes(
         self,
-        values: List[str],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
-    ):
+        values: list[str],
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+    ) -> None:
         """Set the projection modes for cameras specific in indices. If indices is None, set for all cameras.
 
         Args:
@@ -1019,6 +1038,7 @@ class CameraView(XFormPrim):
 
         Returns:
             None.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
@@ -1032,7 +1052,7 @@ class CameraView(XFormPrim):
 
         return
 
-    def get_stereo_roles(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> List[str]:
+    def get_stereo_roles(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> list[str]:
         """Get the stereo roles for cameras specific in indices. If indices is None, get for all cameras.
 
         Args:
@@ -1041,6 +1061,7 @@ class CameraView(XFormPrim):
 
         Returns:
             List of stereo roles (mono, left, right).
+
         """
         stereo_roles = []
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1053,9 +1074,9 @@ class CameraView(XFormPrim):
 
     def set_stereo_roles(
         self,
-        values: List[str],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
-    ):
+        values: list[str],
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+    ) -> None:
         """Set the stereo roles for cameras specific in indices. If indices is None, set for all cameras.
 
         Args:
@@ -1065,6 +1086,7 @@ class CameraView(XFormPrim):
 
         Returns:
             None.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)
@@ -1079,8 +1101,8 @@ class CameraView(XFormPrim):
         return
 
     def get_shutter_properties(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> List[Tuple[float, float]]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> list[tuple[float, float]]:
         """Get the (delay_open, delay_close) of shutter for cameras specific in indices. If indices is None, get for all cameras.
 
         Args:
@@ -1089,6 +1111,7 @@ class CameraView(XFormPrim):
 
         Returns:
             List of tuple (delay_open, delay_close).
+
         """
         shutter_properties = []
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -1103,9 +1126,9 @@ class CameraView(XFormPrim):
 
     def set_shutter_properties(
         self,
-        values: List[Tuple[float, float]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
-    ):
+        values: list[tuple[float, float]],
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+    ) -> None:
         """Set the (delay_open, delay_close) of shutter for cameras specific in indices. If indices is None, set for all cameras.
 
         Args:
@@ -1115,6 +1138,7 @@ class CameraView(XFormPrim):
 
         Returns:
             None.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         indices = self._backend_utils.to_list(indices)

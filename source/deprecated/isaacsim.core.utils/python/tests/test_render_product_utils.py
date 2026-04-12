@@ -17,7 +17,13 @@
 
 import omni.kit.test
 import omni.replicator.core as rep
-from isaacsim.core.utils.render_product import *
+from isaacsim.core.utils.render_product import (
+    add_aov,
+    get_camera_prim_path,
+    get_resolution,
+    set_camera_prim_path,
+    set_resolution,
+)
 
 
 class TestRenderProduct(omni.kit.test.AsyncTestCase):
@@ -42,7 +48,7 @@ class TestRenderProduct(omni.kit.test.AsyncTestCase):
         self.assertEqual(get_camera_prim_path(hydra_texture.path), "/OmniverseKit_Persp")
         add_aov(hydra_texture.path, "RtxSensorCpu")
         await omni.kit.app.get_app().next_update_async()
-        camera_prim_path = get_camera_prim_path(hydra_texture.path)
+        get_camera_prim_path(hydra_texture.path)
         set_camera_prim_path(hydra_texture.path, "/OmniverseKit_Top")
         await omni.kit.app.get_app().next_update_async()
         self.assertEqual(get_camera_prim_path(hydra_texture.path), "/OmniverseKit_Top")

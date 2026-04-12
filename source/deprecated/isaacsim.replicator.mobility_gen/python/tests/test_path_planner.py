@@ -16,7 +16,6 @@
 """Tests for path planning functionality in the mobility generation module."""
 
 
-import carb.tokens
 import numpy as np
 
 # NOTE:
@@ -44,19 +43,16 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
     """
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures before running each test method."""
-        pass
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up test fixtures after running each test method."""
-        pass
 
     # test to make sure this runs
-    async def test_generate_path_diagonal(self):
+    async def test_generate_path_diagonal(self) -> None:
         """Test generating a diagonal path from (0,0) to (2,2) in a 3x3 free space grid."""
-
         start = (0, 0)
         end = (2, 2)
 
@@ -70,9 +66,8 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(np.allclose(path, ground_truth))
 
-    async def test_generate_path_l_shaped(self):
+    async def test_generate_path_l_shaped(self) -> None:
         """Test generating an L-shaped path when direct diagonal movement is blocked by obstacles."""
-
         start = (0, 0)
         end = (2, 2)
 
@@ -94,9 +89,8 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(np.allclose(path, ground_truth))
 
-    async def test_compress_path_line(self):
+    async def test_compress_path_line(self) -> None:
         """Test compressing a straight line path by removing intermediate collinear points."""
-
         # 111 -> 1-1
         path = np.array([[0, 0], [0, 1], [0, 2]]).astype(np.float32)
 
@@ -106,9 +100,8 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(np.allclose(path_compressed, compressed_path_true))
 
-    async def test_compress_path_bend(self):
+    async def test_compress_path_bend(self) -> None:
         """Test compressing a path with bends by removing intermediate points in straight segments."""
-
         # 111----      1-1----
         # ---1---   => -------
         # ----111      ----1-1

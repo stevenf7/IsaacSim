@@ -26,7 +26,7 @@ from pxr import UsdGeom
 class TestSingleViewDepthSensorAsset(omni.kit.test.AsyncTestCase):
     """Test suite for SingleViewDepthSensorAsset class."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment by creating a new stage."""
         await create_new_stage_async()
         await omni.kit.app.get_app().next_update_async()
@@ -34,7 +34,7 @@ class TestSingleViewDepthSensorAsset(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         self.assets_root_path = get_assets_root_path()
 
-    async def test_valid_asset_path_initialization_and_depth_sensor_access(self):
+    async def test_valid_asset_path_initialization_and_depth_sensor_access(self) -> None:
         """Test valid asset path initialization and depth sensor access."""
         # Create SingleViewDepthSensorAsset with valid asset path
         depth_sensor_asset = SingleViewDepthSensorAsset(
@@ -61,15 +61,15 @@ class TestSingleViewDepthSensorAsset(omni.kit.test.AsyncTestCase):
         depth_sensor = depth_sensor_asset.get_child_depth_sensor(valid_camera_prim_path)
         self.assertTrue(depth_sensor.get_enabled())
 
-    async def test_add_template_render_product_static_method(self):
+    async def test_add_template_render_product_static_method(self) -> None:
         """Test the add_template_render_product static method."""
         stage = omni.usd.get_context().get_stage()
 
         # Create a Camera on the stage at prim path "/camera"
-        camera_prim = UsdGeom.Camera.Define(stage, "/camera")
+        UsdGeom.Camera.Define(stage, "/camera")
 
         # Create an Xform on the stage at prim path "/template"
-        template_prim = UsdGeom.Xform.Define(stage, "/template")
+        UsdGeom.Xform.Define(stage, "/template")
 
         # Test with invalid camera_prim_path "/foo" - should return invalid prim
         invalid_prim = SingleViewDepthSensorAsset.add_template_render_product(

@@ -15,13 +15,15 @@
 
 """Deprecated semantic labeling utility functions."""
 
+from __future__ import annotations
+
 import carb
 import Semantics
 from isaacsim.core.utils.stage import get_current_stage
 from pxr import Usd, UsdGeom, UsdSemantics
 
 
-def add_labels(prim: Usd.Prim, labels: list[str], instance_name: str = "class", overwrite: bool = True):
+def add_labels(prim: Usd.Prim, labels: list[str], instance_name: str = "class", overwrite: bool = True) -> None:
     """Apply semantic labels to a prim using the UsdSemantics.LabelsAPI.
 
     Args:
@@ -61,7 +63,7 @@ def get_labels(prim: Usd.Prim) -> dict[str, list[str]]:
     return result
 
 
-def remove_labels(prim: Usd.Prim, instance_name: str | None = None, include_descendants: bool = False):
+def remove_labels(prim: Usd.Prim, instance_name: str | None = None, include_descendants: bool = False) -> None:
     """Removes semantic labels (UsdSemantics.LabelsAPI) from a prim.
 
     Args:
@@ -71,7 +73,7 @@ def remove_labels(prim: Usd.Prim, instance_name: str | None = None, include_desc
         include_descendants: Also traverse children and remove labels recursively.
     """
 
-    def remove_single_prim_labels(target_prim: Usd.Prim):
+    def remove_single_prim_labels(target_prim: Usd.Prim) -> None:
         schemas_to_remove = []
         for schema_name in target_prim.GetAppliedSchemas():
             if schema_name.startswith("SemanticsLabelsAPI:"):

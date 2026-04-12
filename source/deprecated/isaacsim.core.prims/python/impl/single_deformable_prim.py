@@ -15,8 +15,9 @@
 
 """Provides functionalities to create and control deformable objects."""
 
+from __future__ import annotations
 
-from typing import Optional, Sequence, Union
+from collections.abc import Sequence
 
 import numpy as np
 from isaacsim.core.deprecation_manager import import_module
@@ -91,32 +92,32 @@ class SingleDeformablePrim(_SinglePrimWrapper):
     def __init__(
         self,
         prim_path: str,
-        deformable_material: Optional["DeformableMaterial"] = None,
-        name: Optional[str] = "deformable",
-        position: Optional[Sequence[float]] = None,
-        orientation: Optional[Sequence[float]] = None,
-        scale: Optional[Sequence[float]] = None,
-        visible: Optional[bool] = None,
-        vertex_velocity_damping: Optional[float] = None,
-        sleep_damping: Optional[float] = None,
-        sleep_threshold: Optional[float] = None,
-        settling_threshold: Optional[float] = None,
-        self_collision: Optional[bool] = True,
-        self_collision_filter_distance: Optional[float] = None,
-        solver_position_iteration_count: Optional[int] = None,
-        kinematic_enabled: Optional[bool] = False,
-        simulation_rest_points: Optional[Sequence[float]] = None,
-        simulation_indices: Optional[Sequence[int]] = None,
-        simulation_hexahedral_resolution: Optional[int] = 10,
-        collision_rest_points: Optional[Sequence[float]] = None,
-        collision_indices: Optional[Sequence[int]] = None,
-        collision_simplification: Optional[bool] = True,
-        collision_simplification_remeshing: Optional[bool] = True,
-        collision_simplification_remeshing_resolution: Optional[int] = 0,
-        collision_simplification_target_triangle_count: Optional[int] = 0,
-        collision_simplification_force_conforming: Optional[bool] = False,
-        embedding: Optional[Sequence[int]] = None,
-    ):
+        deformable_material: "DeformableMaterial" | None = None,
+        name: str | None = "deformable",
+        position: Sequence[float] | None = None,
+        orientation: Sequence[float] | None = None,
+        scale: Sequence[float] | None = None,
+        visible: bool | None = None,
+        vertex_velocity_damping: float | None = None,
+        sleep_damping: float | None = None,
+        sleep_threshold: float | None = None,
+        settling_threshold: float | None = None,
+        self_collision: bool | None = True,
+        self_collision_filter_distance: float | None = None,
+        solver_position_iteration_count: int | None = None,
+        kinematic_enabled: bool | None = False,
+        simulation_rest_points: Sequence[float] | None = None,
+        simulation_indices: Sequence[int] | None = None,
+        simulation_hexahedral_resolution: int | None = 10,
+        collision_rest_points: Sequence[float] | None = None,
+        collision_indices: Sequence[int] | None = None,
+        collision_simplification: bool | None = True,
+        collision_simplification_remeshing: bool | None = True,
+        collision_simplification_remeshing_resolution: int | None = 0,
+        collision_simplification_target_triangle_count: int | None = 0,
+        collision_simplification_force_conforming: bool | None = False,
+        embedding: Sequence[int] | None = None,
+    ) -> None:
         self._stage = get_current_stage()
         self._prim = self._stage.GetPrimAtPath(prim_path)
         self._mesh = UsdGeom.Mesh.Get(self._stage, prim_path)
@@ -248,7 +249,7 @@ class SingleDeformablePrim(_SinglePrimWrapper):
         position, orientation = self.get_world_pose()
         return DynamicState(position=position, orientation=orientation)
 
-    def _get_points_pose(self):
+    def _get_points_pose(self) -> object:
         """Return the position of the points of the deformable prim with respect to the center of the deformable prim.
 
         Returns:
@@ -355,7 +356,7 @@ class SingleDeformablePrim(_SinglePrimWrapper):
     Operations- Getters.
     """
 
-    def get_simulation_mesh_rest_points(self) -> Union[np.ndarray, torch.Tensor]:
+    def get_simulation_mesh_rest_points(self) -> np.ndarray | torch.Tensor:
         """Simulation mesh vertices rest positions.
 
         Returns:
@@ -363,7 +364,7 @@ class SingleDeformablePrim(_SinglePrimWrapper):
         """
         return self._deformable_prim_view.get_simulation_mesh_rest_points()[0]
 
-    def get_simulation_mesh_indices(self) -> Union[np.ndarray, torch.Tensor]:
+    def get_simulation_mesh_indices(self) -> np.ndarray | torch.Tensor:
         """Simulation mesh element indices.
 
         Returns:
@@ -380,7 +381,7 @@ class SingleDeformablePrim(_SinglePrimWrapper):
     #     """
     #     return self._deformable_prim_view.get_collision_mesh_rest_points()[0]
 
-    def get_collision_mesh_indices(self) -> Union[np.ndarray, torch.Tensor]:
+    def get_collision_mesh_indices(self) -> np.ndarray | torch.Tensor:
         """Collision mesh element indices.
 
         Returns:

@@ -15,9 +15,9 @@
 
 """Common base classes and utilities for hierarchical state management and simulation data handling."""
 
+from __future__ import annotations
 
 from collections import OrderedDict
-from typing import Dict, List
 
 __all__ = ["Buffer", "Module"]
 
@@ -38,13 +38,13 @@ class Buffer:
         tags: List of string tags for categorizing and filtering the buffer.
     """
 
-    def __init__(self, value: object = None, tags: List[str] | None = None):
+    def __init__(self, value: object = None, tags: list[str] | None = None) -> None:
         self.value = value
         if tags is None:
             tags = []
         self.tags = tags
 
-    def get_value(self):
+    def get_value(self) -> object:
         """Get the buffer value.
 
         Returns:
@@ -60,7 +60,7 @@ class Buffer:
         """
         self.value = value
 
-    def includes_tags(self, tags: List[str]) -> bool:
+    def includes_tags(self, tags: list[str]) -> bool:
         """Check if the buffer includes a set of tags.
 
         Args:
@@ -73,7 +73,7 @@ class Buffer:
         tags_b = set(tags)
         return tags_a.issuperset(tags_b)
 
-    def excludes_tags(self, tags: List[str]) -> bool:
+    def excludes_tags(self, tags: list[str]) -> bool:
         """Check if the buffer excludes a set of tags.
 
         Args:
@@ -118,7 +118,7 @@ class Module:
     scenarios.
     """
 
-    def children(self) -> Dict[str, "Module"]:
+    def children(self) -> dict[str, "Module"]:
         """Immediate children attached to the module.
 
         Returns:
@@ -130,7 +130,7 @@ class Module:
                 children[k] = v
         return children
 
-    def buffers(self) -> Dict[str, Buffer]:
+    def buffers(self) -> dict[str, Buffer]:
         """Buffers directly attached to the module.
 
         Returns:
@@ -142,7 +142,7 @@ class Module:
                 buffers[k] = v
         return buffers
 
-    def named_modules(self, prefix: str = "") -> Dict[str, "Module"]:
+    def named_modules(self, prefix: str = "") -> dict[str, "Module"]:
         """Get a dictionary of all nested modules.
 
         Args:
@@ -166,8 +166,8 @@ class Module:
         return named_modules
 
     def named_buffers(
-        self, prefix: str = "", include_tags: List[str] | None = None, exclude_tags: List[str] | None = None
-    ) -> Dict[str, "Buffer"]:
+        self, prefix: str = "", include_tags: list[str] | None = None, exclude_tags: list[str] | None = None
+    ) -> dict[str, "Buffer"]:
         """Get a dictionary of all nested buffers.
 
         Args:
@@ -197,8 +197,8 @@ class Module:
         return named_buffers
 
     def state_dict(
-        self, prefix: str = "", include_tags: List[str] | None = None, exclude_tags: List[str] | None = None
-    ) -> Dict[str, any]:
+        self, prefix: str = "", include_tags: list[str] | None = None, exclude_tags: list[str] | None = None
+    ) -> dict[str, any]:
         """Get the state dictionary of the module.
 
         Args:
@@ -214,7 +214,7 @@ class Module:
             named_values[name] = buffer.value
         return named_values
 
-    def state_dict_common(self, prefix: str = "") -> Dict[str, any]:
+    def state_dict_common(self, prefix: str = "") -> dict[str, any]:
         """Get the state dictionary, including only common types (no images).
 
         This method gets the state dictionary, but excludes any state values
@@ -230,7 +230,7 @@ class Module:
         """
         return self.state_dict(prefix, exclude_tags=["rgb", "segmentation", "depth", "normals"])
 
-    def state_dict_rgb(self, prefix: str = "") -> Dict[str, any]:
+    def state_dict_rgb(self, prefix: str = "") -> dict[str, any]:
         """Get the state dictionary, including only values tagged "rgb".
 
         Args:
@@ -241,7 +241,7 @@ class Module:
         """
         return self.state_dict(prefix, include_tags=["rgb"])
 
-    def state_dict_segmentation(self, prefix: str = "") -> Dict[str, any]:
+    def state_dict_segmentation(self, prefix: str = "") -> dict[str, any]:
         """Get the state dictionary, including only values tagged "segmentation".
 
         Args:
@@ -252,7 +252,7 @@ class Module:
         """
         return self.state_dict(prefix, include_tags=["segmentation"])
 
-    def state_dict_depth(self, prefix: str = "") -> Dict[str, any]:
+    def state_dict_depth(self, prefix: str = "") -> dict[str, any]:
         """Get the state dictionary, including only values tagged "depth".
 
         Args:
@@ -263,7 +263,7 @@ class Module:
         """
         return self.state_dict(prefix, include_tags=["depth"])
 
-    def state_dict_normals(self, prefix: str = "") -> Dict[str, any]:
+    def state_dict_normals(self, prefix: str = "") -> dict[str, any]:
         """Get the state dictionary, including only values tagged "normals".
 
         Args:
@@ -274,7 +274,7 @@ class Module:
         """
         return self.state_dict(prefix, include_tags=["normals"])
 
-    def enable_rgb_rendering(self):
+    def enable_rgb_rendering(self) -> None:
         """Enable RGB rendering for this module.
 
         This class only needs to be overwritten for Camera implementations, which
@@ -284,7 +284,7 @@ class Module:
         for child in self.children().values():
             child.enable_rgb_rendering()
 
-    def enable_segmentation_rendering(self):
+    def enable_segmentation_rendering(self) -> None:
         """Enable segmentation rendering for this module.
 
         This class only needs to be overwritten for Camera implementations, which
@@ -294,7 +294,7 @@ class Module:
         for child in self.children().values():
             child.enable_segmentation_rendering()
 
-    def enable_depth_rendering(self):
+    def enable_depth_rendering(self) -> None:
         """Enable depth rendering for this module.
 
         This class only needs to be overwritten for Camera implementations, which
@@ -304,7 +304,7 @@ class Module:
         for child in self.children().values():
             child.enable_depth_rendering()
 
-    def enable_instance_id_segmentation_rendering(self):
+    def enable_instance_id_segmentation_rendering(self) -> None:
         """Enable instance ID segmentation rendering for this module.
 
         This class only needs to be overwritten for Camera implementations, which
@@ -314,7 +314,7 @@ class Module:
         for child in self.children().values():
             child.enable_instance_id_segmentation_rendering()
 
-    def enable_normals_rendering(self):
+    def enable_normals_rendering(self) -> None:
         """Enable normals rendering for this module.
 
         This class only needs to be overwritten for Camera implementations, which
@@ -324,7 +324,7 @@ class Module:
         for child in self.children().values():
             child.enable_normals_rendering()
 
-    def write_replay_data(self):
+    def write_replay_data(self) -> None:
         """Write module state to Isaac Sim for replay.
 
         This method writes the module state to Isaac Sim for replaying.
@@ -355,7 +355,7 @@ class Module:
         for child in self.children().values():
             child.write_replay_data()
 
-    def update_state(self):
+    def update_state(self) -> None:
         """Update the module state by reading data from Isaac Sim.
 
         This method reads data from Isaac Sim to update the module state.

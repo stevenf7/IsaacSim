@@ -16,8 +16,6 @@
 """Base class for visual material representations in Isaac Sim."""
 
 
-from typing import List
-
 from pxr import Usd, UsdShade
 
 
@@ -30,6 +28,7 @@ class VisualMaterial(object):
         prim: The USD prim object.
         shaders_list: List of shaders used by the material.
         material: The USD material object.
+
     """
 
     def __init__(
@@ -37,9 +36,9 @@ class VisualMaterial(object):
         name: str,
         prim_path: str,
         prim: Usd.Prim,
-        shaders_list: List[UsdShade.Shader],
+        shaders_list: list[UsdShade.Shader],
         material: UsdShade.Material,
-    ):
+    ) -> None:
         self._shaders_list = shaders_list
         self._material = material
         self._name = name
@@ -53,15 +52,17 @@ class VisualMaterial(object):
 
         Returns:
             The UsdShade.Material object.
+
         """
         return self._material
 
     @property
-    def shaders_list(self) -> List[UsdShade.Shader]:
+    def shaders_list(self) -> list[UsdShade.Shader]:
         """Get the list of shaders used by the material.
 
         Returns:
             List of UsdShade.Shader objects.
+
         """
         return self._shaders_list
 
@@ -71,6 +72,7 @@ class VisualMaterial(object):
 
         Returns:
             The material name.
+
         """
         return self._name
 
@@ -80,6 +82,7 @@ class VisualMaterial(object):
 
         Returns:
             The prim path string.
+
         """
         return self._prim_path
 
@@ -89,5 +92,6 @@ class VisualMaterial(object):
 
         Returns:
             The Usd.Prim object.
+
         """
         return self._prim

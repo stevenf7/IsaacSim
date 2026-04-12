@@ -38,7 +38,7 @@ EXTENSION_NAME = "Mesh Merge Tool"
 class Extension(omni.ext.IExt):
     """Mesh Merge Tool extension for combining multiple meshes into a single mesh."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension and create the UI window.
 
         Args:
@@ -65,7 +65,7 @@ class Extension(omni.ext.IExt):
 
         self.mesh_merger = MeshMerger(self._stage)
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Build the user interface for the Mesh Merge Tool window."""
         with self._window.frame:
             with ui.HStack(spacing=5):
@@ -78,13 +78,13 @@ class Extension(omni.ext.IExt):
                         vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                     )
 
-                    def input_changed(model):
+                    def input_changed(model: object) -> None:
                         if input_frame.collapsed:
-                            input_frame.title = "Input ({})".format(model.get_value_as_string())
+                            input_frame.title = f"Input ({model.get_value_as_string()})"
 
-                    def collapsed_changed_fn(frame, base_txt, model, collapsed):
+                    def collapsed_changed_fn(frame: object, base_txt: str, model: object, collapsed: bool) -> None:
                         if collapsed:
-                            frame.title = base_txt + " ({})".format(model.get_value_as_string())
+                            frame.title = base_txt + f" ({model.get_value_as_string()})"
                         else:
                             frame.title = base_txt
 
@@ -159,7 +159,7 @@ class Extension(omni.ext.IExt):
         if self.mesh_merger.materials_destination != value:
             self.mesh_merger.materials_destination = value
 
-    def _menu_callback(self):
+    def _menu_callback(self) -> None:
         """Toggle the visibility of the Mesh Merge Tool window."""
         self._window.visible = not self._window.visible
 
@@ -220,11 +220,11 @@ class Extension(omni.ext.IExt):
                     self.models["output_mesh"].set_value("")
                     self.models["output_subset"].set_value(0)
 
-    def _merge_mesh(self):
+    def _merge_mesh(self) -> None:
         """Execute the mesh merge operation using the current settings."""
         self.mesh_merger.merge_meshes()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up resources when the extension is unloaded."""
         remove_menu_items(self._menu_items, "Tools")
         self._window = None

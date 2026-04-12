@@ -51,12 +51,10 @@ class TestSingleArticulation(CoreTestCase):
         self._my_world = World(stage_units_in_meters=1.0, backend="torch", device=device)
         await self._my_world.initialize_simulation_context_async()
         self._my_world.scene.add_default_ground_plane()
-        pass
 
     async def tearDown(self):
         """Tear down test environment."""
         await super().tearDown()
-        pass
 
     async def test_get_applied_action(self, add_view_to_scene=True):
         """Test get applied action."""

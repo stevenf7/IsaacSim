@@ -92,7 +92,7 @@ class TestDeformablePrim(CoreTestCase):
                 damping_scale=0.1,
                 elasticity_damping=0.1,
             )
-            deformable = SingleDeformablePrim(
+            SingleDeformablePrim(
                 prim_path=deformable_path,
                 deformable_material=self.deformable_material,
                 simulation_hexahedral_resolution=1,
@@ -229,7 +229,7 @@ class TestDeformablePrim(CoreTestCase):
         """Sim rest position test."""
         await self.my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
-        stress_vals = self.deformable_view.get_simulation_mesh_element_stresses(indices)
+        self.deformable_view.get_simulation_mesh_element_stresses(indices)
         nodal_positions = self.deformable_view.get_simulation_mesh_nodal_positions(indices)
         rest_point = self.deformable_view.get_simulation_mesh_rest_points(indices)
         xforms = self.deformable_view.get_world_poses(indices)

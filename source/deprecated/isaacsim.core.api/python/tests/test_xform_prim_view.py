@@ -61,7 +61,6 @@ class TestXFormPrimView(CoreTestCase):
         self._frankas_view = XFormPrim(prim_paths_expr="/World/Franka_[1-2]", name="frankas_view")
         self._targets_view = XFormPrim(prim_paths_expr="/World/Frame_[1-3]/Target", name="targets_view")
         self._frames_view = XFormPrim(prim_paths_expr="/World/Frame_[1-3]", name="frames_view")
-        pass
 
     async def tearDown(self):
         """Tear down test environment."""

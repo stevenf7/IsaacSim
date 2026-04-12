@@ -15,7 +15,7 @@
 
 """Pick-and-place task definition for Universal Robots arms."""
 
-from typing import Optional
+from __future__ import annotations
 
 import isaacsim.core.api.tasks as tasks
 import numpy as np
@@ -40,12 +40,12 @@ class PickPlace(tasks.PickPlace):
     def __init__(
         self,
         name: str = "ur10_pick_place",
-        cube_initial_position: Optional[np.ndarray] = None,
-        cube_initial_orientation: Optional[np.ndarray] = None,
-        target_position: Optional[np.ndarray] = None,
-        cube_size: Optional[np.ndarray] = None,
-        offset: Optional[np.ndarray] = None,
-    ):
+        cube_initial_position: np.ndarray | None = None,
+        cube_initial_orientation: np.ndarray | None = None,
+        target_position: np.ndarray | None = None,
+        cube_size: np.ndarray | None = None,
+        offset: np.ndarray | None = None,
+    ) -> None:
         if cube_size is None:
             cube_size = np.array([0.0515, 0.0515, 0.0515]) / get_stage_units()
         if target_position is None:

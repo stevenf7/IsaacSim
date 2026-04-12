@@ -19,6 +19,8 @@ This module provides the extension class for RTX sensors in Isaac Sim, including
 annotator registration and utility functions for working with Generic Model Output (GMO) data.
 """
 
+from __future__ import annotations
+
 import ctypes
 import gc
 from typing import Any
@@ -52,7 +54,7 @@ class Extension(omni.ext.IExt):
     visualization.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension when it is loaded.
 
         Args:
@@ -67,7 +69,7 @@ class Extension(omni.ext.IExt):
         except Exception as e:
             carb.log_warn(f"Could not register node templates {e}")
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up resources when the extension is unloaded."""
         _release(self.__interface)
         self.__interface = None
@@ -171,7 +173,7 @@ class Extension(omni.ext.IExt):
         except Exception as e:
             carb.log_error(f"Error connecting {annotator_name}: {e}. Annotator will not be attached correctly.")
 
-    def _register_nodes(self):
+    def _register_nodes(self) -> None:
         """Register RTX sensor annotators and writers.
 
         Registers various annotators for RTX sensor data extraction including point cloud,
@@ -362,7 +364,7 @@ class Extension(omni.ext.IExt):
             category="isaacsim.sensors.rtx",
         )
 
-    def _unregister_nodes(self):
+    def _unregister_nodes(self) -> None:
         """Unregister RTX sensor annotators and writers.
 
         Removes all annotators and writers registered by this extension.

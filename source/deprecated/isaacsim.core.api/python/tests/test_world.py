@@ -44,13 +44,11 @@ class TestScene(CoreTestCase):
         """Set up test environment."""
         await super().setUp()
         World.clear_instance()
-        pass
 
     # After running each test
     async def tearDown(self):
         """Tear down test environment."""
         await super().tearDown()
-        pass
 
     async def test_clear_instance(self):
         """Test clear instance."""
@@ -74,7 +72,7 @@ class TestScene(CoreTestCase):
         my_world = World(device="cpu")
         await my_world.initialize_simulation_context_async()
         await omni.kit.app.get_app().next_update_async()
-        cube_1 = my_world.scene.add(
+        my_world.scene.add(
             VisualCuboid(
                 prim_path="/new_cube_1",
                 name="visual_cube",
@@ -93,7 +91,7 @@ class TestScene(CoreTestCase):
         await omni.kit.app.get_app().next_update_async()
         await my_world.reset_async()
         await omni.kit.app.get_app().next_update_async()
-        cube_1 = my_world.scene.add(
+        my_world.scene.add(
             VisualCuboid(
                 prim_path="/new_cube_1",
                 name="visual_cube_2",
@@ -144,7 +142,7 @@ class TestScene(CoreTestCase):
         await update_stage_async()
         my_world.clear()
         await update_stage_async()
-        cube_1 = my_world.scene.add(
+        my_world.scene.add(
             VisualCuboid(
                 prim_path="/new_cube_1",
                 name="visual_cube",
@@ -175,7 +173,7 @@ class TestScene(CoreTestCase):
         asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         self.assertTrue(is_prim_path_valid("/World/Franka"))
-        articulated_system_1 = my_world.scene.add(SingleRigidPrim(prim_path="/World/Franka/panda_link1", name="link_1"))
+        my_world.scene.add(SingleRigidPrim(prim_path="/World/Franka/panda_link1", name="link_1"))
         await update_stage_async()
         await my_world.reset_async()
         await update_stage_async()
@@ -199,8 +197,8 @@ class TestScene(CoreTestCase):
         asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
         self.assertTrue(is_prim_path_valid("/World/Franka"))
-        articulated_system_1 = my_world.scene.add(Articulation(prim_paths_expr="/World/Franka", name="my_franka_1"))
-        link_1 = my_world.scene.add(RigidPrim(prim_paths_expr="/World/Franka/panda_link1", name="link_1"))
+        my_world.scene.add(Articulation(prim_paths_expr="/World/Franka", name="my_franka_1"))
+        my_world.scene.add(RigidPrim(prim_paths_expr="/World/Franka/panda_link1", name="link_1"))
         await update_stage_async()
         await my_world.reset_async()
         await update_stage_async()

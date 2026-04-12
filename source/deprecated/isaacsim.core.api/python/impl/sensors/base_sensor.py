@@ -15,8 +15,9 @@
 
 """Provides a base class for sensor implementations in Isaac Sim."""
 
+from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from isaacsim.core.prims import SingleXFormPrim
 
@@ -44,17 +45,18 @@ class BaseSensor(SingleXFormPrim):
 
     Raises:
         Exception: If translation and position defined at the same time.
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "base_sensor",
-        position: Optional[Sequence[float]] = None,
-        translation: Optional[Sequence[float]] = None,
-        orientation: Optional[Sequence[float]] = None,
-        scale: Optional[Sequence[float]] = None,
-        visible: Optional[bool] = None,
+        position: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
+        orientation: Sequence[float] | None = None,
+        scale: Sequence[float] | None = None,
+        visible: bool | None = None,
     ) -> None:
         SingleXFormPrim.__init__(
             self,
@@ -84,6 +86,7 @@ class BaseSensor(SingleXFormPrim):
         .. code-block:: python
 
             >>> prim.initialize()
+
         """
         SingleXFormPrim.initialize(self, physics_sim_view=physics_sim_view)
         return

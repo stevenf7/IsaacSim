@@ -16,4 +16,4 @@
 """Provides logging functionality for data collection and analysis in Isaac Sim applications."""
 
 
-from isaacsim.core.api.loggers.data_logger import DataLogger
+from isaacsim.core.api.loggers.data_logger import DataLogger as DataLogger

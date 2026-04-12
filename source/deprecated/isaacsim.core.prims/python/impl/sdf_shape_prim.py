@@ -15,8 +15,7 @@
 
 """Provides high-level functionality for handling geometry prims that provide their Signed Distance Field (SDF)."""
 
-
-from typing import List, Optional, Union
+from __future__ import annotations
 
 import carb
 import numpy as np
@@ -76,18 +75,20 @@ class SdfShapePrim(GeometryPrim):
         num_query_points: int,
         prepare_sdf_schemas: bool = True,
         name: str = "sdf_shape_view",
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        translations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        scales: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        visibilities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None = None,
+        translations: np.ndarray | torch.Tensor | wp.array | None = None,
+        orientations: np.ndarray | torch.Tensor | wp.array | None = None,
+        scales: np.ndarray | torch.Tensor | wp.array | None = None,
+        visibilities: np.ndarray | torch.Tensor | wp.array | None = None,
         reset_xform_properties: bool = True,
-        collisions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        collisions: np.ndarray | torch.Tensor | wp.array | None = None,
         track_contact_forces: bool = False,
         prepare_contact_sensors: bool = False,
         disable_stablization: bool = True,
-        contact_filter_prim_paths_expr: Optional[List[str]] = [],
-    ):
+        contact_filter_prim_paths_expr: list[str] | None = None,
+    ) -> None:
+        if contact_filter_prim_paths_expr is None:
+            contact_filter_prim_paths_expr = []
         GeometryPrim.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
@@ -131,7 +132,7 @@ class SdfShapePrim(GeometryPrim):
         """
         return self._num_query_points
 
-    def _apply_sdf_schema(self, prim_at_path: object):
+    def _apply_sdf_schema(self, prim_at_path: object) -> None:
         """Apply appropriate sdf schemas to prims.
 
         Args:
@@ -164,24 +165,24 @@ class SdfShapePrim(GeometryPrim):
         if physics_sim_view is None:
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
             physics_sim_view.set_subspace_roots("/")
-        carb.log_info("initializing view for {}".format(self._name))
+        carb.log_info(f"initializing view for {self._name}")
         self._physics_sim_view = physics_sim_view
         self._physics_view = physics_sim_view.create_sdf_shape_view(
             self._regex_prim_paths[0].replace(".*", "*"), self._num_query_points
         )
         if not carb.settings.get_settings().get_as_bool("/physics/suppressReadback"):
             carb.log_error("Using SDFShapeView requires the gpu pipeline or (a World initialized with a cuda device)")
-        carb.log_info("SDF Shape View Device: {}".format(self._device))
+        carb.log_info(f"SDF Shape View Device: {self._device}")
         self._num_shapes = self._physics_view.count
         self._num_query_points = self._physics_view.max_num_points
         return
 
     def get_sdf_and_gradients(
         self,
-        points: Union[np.ndarray, torch.Tensor],
-        indices: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        points: np.ndarray | torch.Tensor,
+        indices: np.ndarray | torch.Tensor | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> np.ndarray | torch.Tensor:
         """Get the SDF values and gradients of the query points.
 
         Args:
@@ -208,8 +209,8 @@ class SdfShapePrim(GeometryPrim):
             return None
 
     def get_sdf_margins(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets sdf margin values.
 
         Args:
@@ -237,8 +238,8 @@ class SdfShapePrim(GeometryPrim):
         return values
 
     def get_sdf_narrow_band_thickness(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets sdf collision narrow band thickness values.
 
         Args:
@@ -266,8 +267,8 @@ class SdfShapePrim(GeometryPrim):
         return values
 
     def get_sdf_subgrid_resolution(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets sdf collision subgrid resolution values.
 
         Args:
@@ -295,8 +296,8 @@ class SdfShapePrim(GeometryPrim):
         return values
 
     def get_sdf_resolution(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets sdf collision resolution values.
 
         Args:
@@ -324,7 +325,7 @@ class SdfShapePrim(GeometryPrim):
         return values
 
     def set_sdf_margins(
-        self, values: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None
     ) -> None:
         """Sets signed distance field margins for prims in the view.
 

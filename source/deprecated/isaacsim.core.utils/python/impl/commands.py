@@ -46,7 +46,7 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
 
     def __init__(
         self, usd_path: str, prim_path: str, translation: carb.Float3 = (0, 0, 0), rotation: carb.Float4 = (0, 0, 0, 1)
-    ):
+    ) -> None:
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
@@ -76,7 +76,7 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
 
         return True
 
-    def undo(self):
+    def undo(self) -> None:
         """Undoes the prim spawn operation.
 
         Currently not implemented - the spawned prim remains in the stage.
@@ -103,7 +103,9 @@ class IsaacSimTeleportPrim(omni.kit.commands.Command):
         rotation: Rotation quaternion as (x, y, z, w).
     """
 
-    def __init__(self, prim_path: str, translation: carb.Float3 = (0, 0, 0), rotation: carb.Float4 = (0, 0, 0, 1)):
+    def __init__(
+        self, prim_path: str, translation: carb.Float3 = (0, 0, 0), rotation: carb.Float4 = (0, 0, 0, 1)
+    ) -> None:
         for name, value in vars().items():
             if name != "self":
                 setattr(self, f"_{name}", value)
@@ -121,7 +123,7 @@ class IsaacSimTeleportPrim(omni.kit.commands.Command):
             transforms.set_transform(self._stage_id, str(self._prim_path), self._translation, self._rotation)
         return True
 
-    def undo(self):
+    def undo(self) -> None:
         """Undoes the teleport operation.
 
         Note:
@@ -147,7 +149,7 @@ class IsaacSimScalePrim(omni.kit.commands.Command):
         scale: Scale values for x, y, and z axes.
     """
 
-    def __init__(self, prim_path: str, scale: carb.Float3 = (0, 0, 0)):
+    def __init__(self, prim_path: str, scale: carb.Float3 = (0, 0, 0)) -> None:
         for name, value in vars().items():
             if name != "self":
                 setattr(self, f"_{name}", value)
@@ -165,7 +167,7 @@ class IsaacSimScalePrim(omni.kit.commands.Command):
             transforms.set_scale(self._stage_id, str(self._prim_path), self._scale)
         return True
 
-    def undo(self):
+    def undo(self) -> None:
         """Reverts the prim scaling operation."""
 
 
@@ -185,7 +187,7 @@ class IsaacSimDestroyPrim(omni.kit.commands.Command):
         prim_path: Path to the prim to delete.
     """
 
-    def __init__(self, prim_path: str):
+    def __init__(self, prim_path: str) -> None:
         for name, value in vars().items():
             if name != "self":
                 setattr(self, f"_{name}", value)
@@ -199,7 +201,7 @@ class IsaacSimDestroyPrim(omni.kit.commands.Command):
         delete_cmd = omni.usd.commands.DeletePrimsCommand([self._prim_path])
         delete_cmd.do()
 
-    def undo(self):
+    def undo(self) -> None:
         """No-op undo operation as this command doesn't support undo functionality."""
 
 

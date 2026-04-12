@@ -34,7 +34,7 @@ class Extension(omni.ext.IExt):
     sensor interfaces required for physics simulation in Isaac Sim.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the Isaac Sensor extension.
 
         Acquires the contact sensor and IMU sensor interfaces for use by the extension.
@@ -45,7 +45,7 @@ class Extension(omni.ext.IExt):
         self._cs = _sensor.acquire_contact_sensor_interface()
         self._is = _sensor.acquire_imu_sensor_interface()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up the Isaac Sensor extension.
 
         Releases the contact sensor and IMU sensor interfaces and performs garbage collection.

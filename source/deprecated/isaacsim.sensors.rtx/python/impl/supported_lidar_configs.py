@@ -20,4 +20,5 @@ that can be used with the RTX sensor system. It includes configurations for vari
 manufacturers.
 """
 
-from isaacsim.sensors.experimental.rtx import SUPPORTED_LIDAR_CONFIGS, SUPPORTED_LIDAR_VARIANT_SET_NAME
+from isaacsim.sensors.experimental.rtx import SUPPORTED_LIDAR_CONFIGS as SUPPORTED_LIDAR_CONFIGS  # noqa: F401
+from isaacsim.sensors.experimental.rtx import SUPPORTED_LIDAR_VARIANT_SET_NAME as SUPPORTED_LIDAR_VARIANT_SET_NAME

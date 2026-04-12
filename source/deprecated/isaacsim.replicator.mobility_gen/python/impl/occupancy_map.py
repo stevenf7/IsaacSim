@@ -18,7 +18,6 @@
 
 import enum
 import os
-import typing as tp
 
 import cv2
 import numpy as np
@@ -108,7 +107,7 @@ free_thresh: {free_thresh}
     """Template string for generating ROS occupancy map YAML configuration files with placeholders for image filename,
 resolution, origin, negate flag, occupied threshold, and free threshold."""
 
-    def __init__(self, data: np.ndarray, resolution: int, origin: tp.Tuple[int, int, int]):
+    def __init__(self, data: np.ndarray, resolution: int, origin: tuple[int, int, int]) -> None:
         self.data = data
         self.resolution = resolution  # meters per pixel
         self.origin = origin  # x, y, yaw.  where (x, y) is the bottom-left of image
@@ -174,7 +173,7 @@ resolution, origin, negate flag, occupied threshold, and free threshold."""
             free_thresh=ROS_FREESPACE_THRESH_DEFAULT,
         )
 
-    def save_ros(self, path: str):
+    def save_ros(self, path: str) -> None:
         """Save the occupancy map to a folder in ROS format.
 
         This method saves both the ROS formatted PNG image, as well
@@ -205,7 +204,7 @@ resolution, origin, negate flag, occupied threshold, and free threshold."""
         Returns:
             OccupancyMap
         """
-        with open(ros_yaml_path, "r") as f:
+        with open(ros_yaml_path) as f:
             yaml_data = yaml.safe_load(f)
         yaml_dir = os.path.dirname(ros_yaml_path)
         image_path = os.path.join(yaml_dir, yaml_data["image"])
@@ -224,7 +223,7 @@ resolution, origin, negate flag, occupied threshold, and free threshold."""
     def from_ros_image(
         ros_image: PIL.Image.Image,
         resolution: int,
-        origin: tp.Tuple[float, float, float],
+        origin: tuple[float, float, float],
         negate: bool = False,
         occupied_thresh: float = ROS_OCCUPIED_THRESH_DEFAULT,
         free_thresh: float = ROS_FREESPACE_THRESH_DEFAULT,
@@ -266,7 +265,7 @@ resolution, origin, negate flag, occupied threshold, and free threshold."""
 
     @staticmethod
     def from_masks(
-        freespace_mask: np.ndarray, occupied_mask: np.ndarray, resolution: int, origin: tp.Tuple[float, float, float]
+        freespace_mask: np.ndarray, occupied_mask: np.ndarray, resolution: int, origin: tuple[float, float, float]
     ) -> "OccupancyMap":
         """Creates an occupancy map from binary masks and other data.
 
@@ -323,7 +322,7 @@ resolution, origin, negate flag, occupied threshold, and free threshold."""
         """
         return self.resolution * self.height_pixels()
 
-    def bottom_left_pixel_world_coords(self) -> tp.Tuple[float, float]:
+    def bottom_left_pixel_world_coords(self) -> tuple[float, float]:
         """World coordinates of the bottom left pixel.
 
         Returns:
@@ -332,7 +331,7 @@ resolution, origin, negate flag, occupied threshold, and free threshold."""
         """
         return (self.origin[0], self.origin[1])
 
-    def top_left_pixel_world_coords(self) -> tp.Tuple[float, float]:
+    def top_left_pixel_world_coords(self) -> tuple[float, float]:
         """World coordinates of the top left pixel.
 
         Returns:
@@ -341,7 +340,7 @@ resolution, origin, negate flag, occupied threshold, and free threshold."""
         """
         return (self.origin[0], self.origin[1] + self.height_meters())
 
-    def bottom_right_pixel_world_coords(self) -> tp.Tuple[float, float]:
+    def bottom_right_pixel_world_coords(self) -> tuple[float, float]:
         """World coordinates of the bottom right pixel.
 
         Returns:
@@ -350,7 +349,7 @@ resolution, origin, negate flag, occupied threshold, and free threshold."""
         """
         return (self.origin[0] + self.width_meters(), self.origin[1])
 
-    def top_right_pixel_world_coords(self) -> tp.Tuple[float, float]:
+    def top_right_pixel_world_coords(self) -> tuple[float, float]:
         """World coordinates of the top right pixel.
 
         Returns:

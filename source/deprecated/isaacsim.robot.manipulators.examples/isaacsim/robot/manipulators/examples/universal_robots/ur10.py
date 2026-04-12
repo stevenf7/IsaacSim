@@ -15,7 +15,7 @@
 
 """UR10 robot wrapper with gripper and motion generation support."""
 
-from typing import Optional
+from __future__ import annotations
 
 import carb
 import numpy as np
@@ -48,13 +48,13 @@ class UR10(Robot):
         self,
         prim_path: str,
         name: str = "ur10_robot",
-        usd_path: Optional[str] = None,
-        position: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        end_effector_prim_name: Optional[str] = None,
+        usd_path: str | None = None,
+        position: np.ndarray | None = None,
+        orientation: np.ndarray | None = None,
+        end_effector_prim_name: str | None = None,
         attach_gripper: bool = False,
-        gripper_usd: Optional[str] = "default",
-    ):
+        gripper_usd: str | None = "default",
+    ) -> None:
         prim = get_prim_at_path(prim_path)
         self._end_effector = None
         self._gripper = None

@@ -28,12 +28,13 @@ class Extension(omni.ext.IExt):
     of camera sensors within the simulation environment.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the Isaac Sensor extension starts up.
 
         Args:
             ext_id: The extension identifier.
+
         """
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the Isaac Sensor extension shuts down."""

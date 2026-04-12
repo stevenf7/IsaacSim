@@ -32,13 +32,11 @@ class TestSimulationContext(CoreTestCase):
         await super().setUp()
         await create_new_stage_async()
         World.clear_instance()
-        pass
 
     # After running each test
     async def tearDown(self):
         """Tear down test environment."""
         await super().tearDown()
-        pass
 
     async def test_singleton(self):
         """Test singleton."""

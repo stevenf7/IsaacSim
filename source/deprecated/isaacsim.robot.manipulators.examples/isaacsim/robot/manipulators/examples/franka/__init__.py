@@ -12,5 +12,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from isaacsim.robot.manipulators.examples.franka.franka import Franka
-from isaacsim.robot.manipulators.examples.franka.kinematics_solver import KinematicsSolver
+from isaacsim.robot.manipulators.examples.franka.franka import Franka as Franka
+from isaacsim.robot.manipulators.examples.franka.kinematics_solver import KinematicsSolver as KinematicsSolver

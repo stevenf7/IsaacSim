@@ -27,7 +27,7 @@ from isaacsim.sensors.camera import Camera
 class TestCameraLifecycle(omni.kit.test.AsyncTestCase):
     """Test cases for CameraLifecycle."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
@@ -38,14 +38,14 @@ class TestCameraLifecycle(omni.kit.test.AsyncTestCase):
         rep.functional.create.camera(position=(0, 0, 3), look_at=(0, 0, 0), parent="/World", name="Camera")
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_destroy_cleans_up_observers_and_annotators(self):
+    async def test_destroy_cleans_up_observers_and_annotators(self) -> None:
         """Test destroy cleans up observers and annotators."""
         camera = Camera(prim_path="/World/Camera", resolution=(64, 64))
         camera.initialize()
@@ -79,7 +79,7 @@ class TestCameraLifecycle(omni.kit.test.AsyncTestCase):
         self.assertEqual(len(camera._custom_annotators), 0)
         self.assertIsNone(camera.get_render_product_path())
 
-    async def test_dt_and_clipping_range_edge_cases(self):
+    async def test_dt_and_clipping_range_edge_cases(self) -> None:
         """Test dt and clipping range edge cases."""
         camera = Camera(prim_path="/World/Camera", resolution=(64, 64))
 

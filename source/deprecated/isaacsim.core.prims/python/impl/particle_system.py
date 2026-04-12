@@ -17,7 +17,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 import carb
 import carb.eventdispatcher
@@ -75,29 +76,27 @@ class ParticleSystem:
         self,
         prim_paths_expr: str,
         name: str = "particle_system_view",
-        particle_systems_enabled: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        simulation_owners: Optional[Sequence[str]] = None,
-        contact_offsets: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        rest_offsets: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        particle_contact_offsets: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        solid_rest_offsets: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        fluid_rest_offsets: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        enable_ccds: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        solver_position_iteration_counts: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        max_depenetration_velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        winds: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        max_neighborhoods: Optional[int] = None,
-        max_velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        global_self_collisions_enabled: Optional[Union[np.ndarray, torch.Tensor]] = None,
-    ):
+        particle_systems_enabled: np.ndarray | torch.Tensor | None = None,
+        simulation_owners: Sequence[str] | None = None,
+        contact_offsets: np.ndarray | torch.Tensor | None = None,
+        rest_offsets: np.ndarray | torch.Tensor | None = None,
+        particle_contact_offsets: np.ndarray | torch.Tensor | None = None,
+        solid_rest_offsets: np.ndarray | torch.Tensor | None = None,
+        fluid_rest_offsets: np.ndarray | torch.Tensor | None = None,
+        enable_ccds: np.ndarray | torch.Tensor | None = None,
+        solver_position_iteration_counts: np.ndarray | torch.Tensor | None = None,
+        max_depenetration_velocities: np.ndarray | torch.Tensor | None = None,
+        winds: np.ndarray | torch.Tensor | None = None,
+        max_neighborhoods: int | None = None,
+        max_velocities: np.ndarray | torch.Tensor | None = None,
+        global_self_collisions_enabled: np.ndarray | torch.Tensor | None = None,
+    ) -> None:
         self._name = name
         self._physics_view = None
         self._prim_paths = find_matching_prim_paths(prim_paths_expr)
         if len(self._prim_paths) == 0:
             raise Exception(
-                "Prim path expression {} is invalid, a prim matching the expression needs to created before wrapping it as view".format(
-                    prim_paths_expr
-                )
+                f"Prim path expression {prim_paths_expr} is invalid, a prim matching the expression needs to created before wrapping it as view"
             )
         self._count = len(self._prim_paths)
         self._prims = []
@@ -160,7 +159,7 @@ class ParticleSystem:
         self._invalidate_physics_handle_event = None
         return
 
-    def _apply_material_binding_api(self, index: int):
+    def _apply_material_binding_api(self, index: int) -> None:
         """Applies the UsdShade MaterialBindingAPI to the prim at the specified index.
 
         Args:
@@ -211,7 +210,7 @@ class ParticleSystem:
         if physics_sim_view is None:
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
             physics_sim_view.set_subspace_roots("/")
-        carb.log_info("initializing view for {}".format(self._name))
+        carb.log_info(f"initializing view for {self._name}")
         if not carb.settings.get_settings().get_as_bool("/physics/suppressReadback"):
             carb.log_error(
                 "Using particle system view requires the gpu pipeline or (a World initialized with a cuda device)"
@@ -219,7 +218,7 @@ class ParticleSystem:
         self._physics_sim_view = physics_sim_view
         self._physics_view = physics_sim_view.create_particle_system_view(self._regex_prim_paths.replace(".*", "*"))
         self._count = self._physics_view.count
-        carb.log_info("Particle System View Device: {}".format(self._device))
+        carb.log_info(f"Particle System View Device: {self._device}")
         return
 
     def _invalidate_physics_handle_callback(self, event: object) -> None:
@@ -231,7 +230,7 @@ class ParticleSystem:
         self._physics_view = None
         return
 
-    def is_valid(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> bool:
+    def is_valid(self, indices: np.ndarray | list | torch.Tensor | None = None) -> bool:
         """Checks whether all prim paths in the view correspond to valid prims in the stage.
 
         Args:
@@ -253,8 +252,8 @@ class ParticleSystem:
 
     def apply_particle_materials(
         self,
-        particle_materials: Union["ParticleMaterial", List["ParticleMaterial"]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        particle_materials: "ParticleMaterial" | list["ParticleMaterial"],
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Used to apply particle material to prims in the view.
 
@@ -321,7 +320,7 @@ class ParticleSystem:
     """
 
     def set_particle_contact_offsets(
-        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | List | torch.Tensor | None = None
+        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None
     ) -> None:
         """Set the contact offset used for interactions between particles.
 
@@ -344,15 +343,13 @@ class ParticleSystem:
             for i in indices:
                 if "particleContactOffset" not in self._prims[i.tolist()].GetPropertyNames():
                     carb.log_error(
-                        "particleContactOffset property needs to be set for {} before setting its value".format(
-                            self.name
-                        )
+                        f"particleContactOffset property needs to be set for {self.name} before setting its value"
                     )
                 self._prims[i.tolist()].GetAttribute("particleContactOffset").Set(values[idx_count].tolist())
                 idx_count += 1
 
     def set_solid_rest_offsets(
-        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | List | torch.Tensor | None = None
+        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None
     ) -> None:
         """Set the rest offset used for solid-solid or solid-fluid particle interactions.
 
@@ -374,14 +371,12 @@ class ParticleSystem:
             idx_count = 0
             for i in indices:
                 if "solidRestOffset" not in self._prims[i.tolist()].GetPropertyNames():
-                    carb.log_error(
-                        "solidRestOffset property needs to be set for {} before setting its value".format(self.name)
-                    )
+                    carb.log_error(f"solidRestOffset property needs to be set for {self.name} before setting its value")
                 self._prims[i.tolist()].GetAttribute("solidRestOffset").Set(values[idx_count].tolist())
                 idx_count += 1
 
     def set_fluid_rest_offsets(
-        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | List | torch.Tensor | None = None
+        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None
     ) -> None:
         """Set the rest offset used for fluid-fluid particle interactions.
 
@@ -403,14 +398,12 @@ class ParticleSystem:
             idx_count = 0
             for i in indices:
                 if "fluidRestOffset" not in self._prims[i.tolist()].GetPropertyNames():
-                    carb.log_error(
-                        "fluidRestOffset property needs to be set for {} before setting its value".format(self.name)
-                    )
+                    carb.log_error(f"fluidRestOffset property needs to be set for {self.name} before setting its value")
                 self._prims[i.tolist()].GetAttribute("fluidRestOffset").Set(values[idx_count].tolist())
                 idx_count += 1
 
     def set_winds(
-        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | List | torch.Tensor | None = None
+        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None
     ) -> None:
         """Set the winds velocities applied to the current particle system.
 
@@ -428,12 +421,12 @@ class ParticleSystem:
             idx_count = 0
             for i in indices:
                 if "wind" not in self._prims[i.tolist()].GetPropertyNames():
-                    carb.log_error("wind property needs to be set for {} before setting its value".format(self.name))
+                    carb.log_error(f"wind property needs to be set for {self.name} before setting its value")
                 self._prims[i.tolist()].GetAttribute("wind").Set(tuple(values[idx_count].tolist()))
                 idx_count += 1
 
     def set_max_velocities(
-        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | List | torch.Tensor | None = None
+        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None
     ) -> None:
         """Set the maximum particle velocity for particle systems.
 
@@ -446,12 +439,12 @@ class ParticleSystem:
         idx_count = 0
         for i in indices:
             if "maxVelocity" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error("maxVelocity property needs to be set for {} before setting its value".format(self.name))
+                carb.log_error(f"maxVelocity property needs to be set for {self.name} before setting its value")
             self._prims[i.tolist()].GetAttribute("maxVelocity").Set(values[idx_count].tolist())
             idx_count += 1
 
     def set_max_depenetration_velocities(
-        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | List | torch.Tensor | None = None
+        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None
     ) -> None:
         """Set the maximum velocity permitted to be introduced by the solver to depenetrate intersecting particles for particle systems.
 
@@ -465,15 +458,13 @@ class ParticleSystem:
         for i in indices:
             if "maxDepenetrationVelocity" not in self._prims[i.tolist()].GetPropertyNames():
                 carb.log_error(
-                    "maxDepenetrationVelocity property needs to be set for {} before setting its value".format(
-                        self.name
-                    )
+                    f"maxDepenetrationVelocity property needs to be set for {self.name} before setting its value"
                 )
             self._prims[i.tolist()].GetAttribute("maxDepenetrationVelocity").Set(values[idx_count].tolist())
             idx_count += 1
 
     def set_rest_offsets(
-        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | List | torch.Tensor | None = None
+        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None
     ) -> None:
         """Set the rest offset used for collisions with non-particle objects such as rigid or deformable bodies for particle systems.
 
@@ -486,12 +477,12 @@ class ParticleSystem:
         idx_count = 0
         for i in indices:
             if "restOffset" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error("restOffset property needs to be set for {} before setting its value".format(self.name))
+                carb.log_error(f"restOffset property needs to be set for {self.name} before setting its value")
             self._prims[i.tolist()].GetAttribute("restOffset").Set(values[idx_count].tolist())
             idx_count += 1
 
     def set_contact_offsets(
-        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | List | torch.Tensor | None = None
+        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None
     ) -> None:
         """Set the contact offset used for collisions with non-particle objects such as rigid or deformable bodies for particle systems.
 
@@ -504,14 +495,12 @@ class ParticleSystem:
         idx_count = 0
         for i in indices:
             if "contactOffset" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(
-                    "contactOffset property needs to be set for {} before setting its value".format(self.name)
-                )
+                carb.log_error(f"contactOffset property needs to be set for {self.name} before setting its value")
             self._prims[i.tolist()].GetAttribute("contactOffset").Set(values[idx_count].tolist())
             idx_count += 1
 
     def set_solver_position_iteration_counts(
-        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | List | torch.Tensor | None = None
+        self, values: np.ndarray | torch.Tensor, indices: np.ndarray | list | torch.Tensor | None = None
     ) -> None:
         """Set the number of solver iterations for position for particle systems.
 
@@ -525,7 +514,7 @@ class ParticleSystem:
         for i in indices:
             if "solverPositionIterationCount" not in self._prims[i.tolist()].GetPropertyNames():
                 carb.log_error(
-                    "solverPositionIteration property needs to be set for {} before setting its value".format(self.name)
+                    f"solverPositionIteration property needs to be set for {self.name} before setting its value"
                 )
             self._prims[i.tolist()].GetAttribute("solverPositionIterationCount").Set(values[idx_count].tolist())
             idx_count += 1
@@ -546,9 +535,7 @@ class ParticleSystem:
         idx_count = 0
         for i in indices:
             if "maxNeighborhood" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(
-                    "maxNeighborhood property needs to be set for {} before setting its value".format(self.name)
-                )
+                carb.log_error(f"maxNeighborhood property needs to be set for {self.name} before setting its value")
             self._prims[i.tolist()].GetAttribute("maxNeighborhood").Set(values[idx_count].tolist())
             idx_count += 1
 
@@ -569,9 +556,7 @@ class ParticleSystem:
         for i in indices:
             if "globalSelfCollisionEnabled" not in self._prims[i.tolist()].GetPropertyNames():
                 carb.log_error(
-                    "globalSelfCollisionEnabled property needs to be set for {} before setting its value".format(
-                        self.name
-                    )
+                    f"globalSelfCollisionEnabled property needs to be set for {self.name} before setting its value"
                 )
             self._prims[i.tolist()].GetAttribute("globalSelfCollisionEnabled").Set(values[idx_count].tolist())
             idx_count += 1
@@ -592,7 +577,7 @@ class ParticleSystem:
         idx_count = 0
         for i in indices:
             if "enableCCD" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error("enableCCD property needs to be set for {} before setting its value".format(self.name))
+                carb.log_error(f"enableCCD property needs to be set for {self.name} before setting its value")
             self._prims[i.tolist()].GetAttribute("enableCCD").Set(values[idx_count].tolist())
             idx_count += 1
 
@@ -613,7 +598,7 @@ class ParticleSystem:
         for i in indices:
             if "particleSystemEnabled" not in self._prims[i.tolist()].GetPropertyNames():
                 carb.log_error(
-                    "particleSystemEnabled property needs to be set for {} before setting its value".format(self.name)
+                    f"particleSystemEnabled property needs to be set for {self.name} before setting its value"
                 )
             self._prims[i.tolist()].GetAttribute("particleSystemEnabled").Set(values[idx_count].tolist())
             idx_count += 1
@@ -634,9 +619,7 @@ class ParticleSystem:
         idx_count = 0
         for i in indices:
             if "simulationOwner" not in self._prims[i.tolist()].GetPropertyNames():
-                carb.log_error(
-                    "simulationOwner property needs to be set for {} before setting its value".format(self.name)
-                )
+                carb.log_error(f"simulationOwner property needs to be set for {self.name} before setting its value")
             self._prims[i.tolist()].GetRelationship("simulationOwner").SetTargets([values[idx_count]])
             idx_count += 1
 
@@ -790,8 +773,8 @@ class ParticleSystem:
         return results
 
     def get_max_depenetration_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None
+    ) -> np.ndarray | torch.Tensor:
         """The maximum velocity permitted to be introduced by the solver to depenetrate intersecting particles for particle systems for each particle system.
 
         Args:
@@ -810,9 +793,7 @@ class ParticleSystem:
             write_idx += 1
         return results
 
-    def get_rest_offsets(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
+    def get_rest_offsets(self, indices: np.ndarray | list | torch.Tensor | None = None) -> np.ndarray | torch.Tensor:
         """The rest offset used for collisions with non-particle objects for each particle system.
 
         Args:
@@ -830,9 +811,7 @@ class ParticleSystem:
             write_idx += 1
         return results
 
-    def get_contact_offsets(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
+    def get_contact_offsets(self, indices: np.ndarray | list | torch.Tensor | None = None) -> np.ndarray | torch.Tensor:
         """The contact offset used for collisions with non-particle objects for each particle system.
 
         Args:
@@ -851,8 +830,8 @@ class ParticleSystem:
         return results
 
     def get_solver_position_iteration_counts(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None
+    ) -> np.ndarray | torch.Tensor:
         """The number of solver iterations for positions for each particle system.
 
         Args:
@@ -871,8 +850,8 @@ class ParticleSystem:
         return results
 
     def get_max_neighborhoods(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None
+    ) -> np.ndarray | torch.Tensor:
         """The particle neighborhood size for each particle system.
 
         Args:
@@ -891,8 +870,8 @@ class ParticleSystem:
         return results
 
     def get_global_self_collisions_enabled(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None
+    ) -> np.ndarray | torch.Tensor:
         """Whether self collisions to follow particle-object-specific settings is enabled or disabled for each particle system.
 
         Args:
@@ -911,9 +890,7 @@ class ParticleSystem:
             write_idx += 1
         return results
 
-    def get_enable_ccds(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
+    def get_enable_ccds(self, indices: np.ndarray | list | torch.Tensor | None = None) -> np.ndarray | torch.Tensor:
         """Whether continuous collision detection for particles is enabled or disabled for each particle system.
 
         Args:
@@ -932,8 +909,8 @@ class ParticleSystem:
         return results
 
     def get_particle_systems_enabled(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None
+    ) -> np.ndarray | torch.Tensor:
         """Whether particle system is enabled or not for each particle system.
 
         Args:
@@ -951,7 +928,7 @@ class ParticleSystem:
             write_idx += 1
         return results
 
-    def get_simulation_owners(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> Sequence[str]:
+    def get_simulation_owners(self, indices: np.ndarray | list | torch.Tensor | None = None) -> Sequence[str]:
         """The physics scene prim path attached to particle system.
 
         Args:

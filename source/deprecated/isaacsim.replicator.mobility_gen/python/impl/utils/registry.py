@@ -33,23 +33,23 @@ class Registry(Generic[T]):
     Classes can be registered using the register decorator, then accessed by name or numeric index.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.items = OrderedDict()
 
-    def register(self):
+    def register(self) -> object:
         """Decorator for registering classes in the registry.
 
         Returns:
             A decorator function that registers a class by its name.
         """
 
-        def _register(cls):
+        def _register(cls: type) -> type:
             self.items[cls.__name__] = cls
             return cls
 
         return _register
 
-    def names(self):
+    def names(self) -> object:
         """Names of all registered items in the registry.
 
         Returns:

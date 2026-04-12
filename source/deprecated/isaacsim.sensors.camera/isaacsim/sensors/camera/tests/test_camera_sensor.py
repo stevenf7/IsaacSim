@@ -37,13 +37,13 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
     CAMERA_FREQUENCY = 20  # Hz
     NUM_WARMUP_FRAMES = 10  # Frame dict data availability warmup frames, depends on the camera frequency
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         await create_new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
@@ -52,11 +52,12 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
-    async def _create_test_environment(self):
+    async def _create_test_environment(self) -> tuple:
         """Create the test environment with ground plane, cubes, and camera.
 
         Returns:
             None.
+
         """
         await create_new_stage_async()
 
@@ -108,7 +109,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         return camera, cube_2, cube_3, xform
 
-    async def test_world_poses(self):
+    async def test_world_poses(self) -> None:
         """Test getting and setting world and local poses."""
         camera, _, _, _ = await self._create_test_environment()
         position, orientation = camera.get_world_pose()
@@ -134,7 +135,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             orientation=euler_angles_to_quaternion(np.array([0, 180, 0]), degrees=True, extrinsic=False).numpy(),
         )
 
-    async def test_projection(self):
+    async def test_projection(self) -> None:
         """Test projecting world points to image coordinates and back."""
         camera, cube_2, cube_3, _ = await self._create_test_environment()
         # Timeline must be playing for the SDG pipeline to initialize the camera
@@ -162,7 +163,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(points_3d[0], expected_points_3d_0, atol=0.05), f"points_3d[0]: {points_3d[0]}")
         self.assertTrue(np.allclose(points_3d[1], expected_points_3d_1, atol=0.05), f"points_3d[1]: {points_3d[1]}")
 
-    async def test_data_acquisition(self):
+    async def test_data_acquisition(self) -> None:
         """Test adding/removing annotators and acquiring frame data."""
         camera, _, _, _ = await self._create_test_environment()
         timeline = omni.timeline.get_timeline_interface()
@@ -191,9 +192,9 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
 
             # Make sure the annotator data is no longer in the frame dict
             data = camera.get_current_frame()
-            self.assertTrue(annotator not in data.keys(), f"{annotator}")
+            self.assertTrue(annotator not in data, f"{annotator}")
 
-    async def test_camera_properties(self):
+    async def test_camera_properties(self) -> None:
         """Test setting and getting camera USD prim properties."""
         camera, _, _, _ = await self._create_test_environment()
 
@@ -252,7 +253,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertEqual(resolution[0], 400)
         self.assertEqual(resolution[1], 300)
 
-    async def test_viewport_camera(self):
+    async def test_viewport_camera(self) -> None:
         """Test camera attached to an existing viewport render product."""
         await self._create_test_environment()
         viewport_api = get_active_viewport()
@@ -286,7 +287,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertEqual(viewport_camera.get_depth().size, expected_pixels * 1)
         self.assertEqual(viewport_camera.get_render_product_path(), render_product_path)
 
-    async def test_get_current_frame(self):
+    async def test_get_current_frame(self) -> None:
         """Test that get_current_frame returns consistent/cloned frames."""
         camera, _, _, _ = await self._create_test_environment()
         # Timeline must be playing for the SDG pipeline to initialize the camera
@@ -310,7 +311,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         # Make sure that the two frames refer to different objects
         self.assertIsNot(current_frame_3, current_frame_4)
 
-    async def test_annotators_data(self):
+    async def test_annotators_data(self) -> None:
         """Test annotator data shapes, types, and dtypes for all annotators."""
         camera, _, _, _ = await self._create_test_environment()
         # Timeline must be playing for the SDG pipeline to initialize the camera
@@ -451,7 +452,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertTrue(isinstance(instance_segmentation_data["data"], np.ndarray))
         self.assertTrue(instance_segmentation_data["data"].dtype == np.uint32)
 
-    async def test_annotators_data_with_init_params(self):
+    async def test_annotators_data_with_init_params(self) -> None:
         """Test annotator data with custom init_params like colorize and semanticTypes."""
         camera, _, _, _ = await self._create_test_environment()
         # Timeline must be playing for the SDG pipeline to initialize the camera
@@ -553,7 +554,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertTrue(isinstance(instance_segmentation_data["data"], np.ndarray))
         self.assertTrue(instance_segmentation_data["data"].dtype == np.uint8)
 
-    async def test_ftheta_properties_full(self):
+    async def test_ftheta_properties_full(self) -> None:
         """Test F-theta lens distortion model with full coefficients."""
         camera, _, _, _ = await self._create_test_environment()
         camera.set_ftheta_properties(
@@ -570,7 +571,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(max_fov, 560, delta=2)
         self.assertTrue(np.isclose(coeffs, [1, 2, 3, 4, 5]).all())
 
-    async def test_kannala_brandt_k3_properties_full(self):
+    async def test_kannala_brandt_k3_properties_full(self) -> None:
         """Test Kannala-Brandt K3 lens distortion model with full coefficients."""
         camera, _, _, _ = await self._create_test_environment()
         camera.set_kannala_brandt_k3_properties(
@@ -587,7 +588,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(max_fov, 180, delta=2)
         self.assertTrue(np.isclose(coeffs, [0.05, 0.01, -0.003, -0.0005], atol=0.00001).all())
 
-    async def test_rad_tan_thin_prism_properties_full(self):
+    async def test_rad_tan_thin_prism_properties_full(self) -> None:
         """Test Radial-Tangential Thin Prism lens distortion model with full coefficients."""
         camera, _, _, _ = await self._create_test_environment()
         camera.set_rad_tan_thin_prism_properties(
@@ -606,7 +607,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             np.isclose(coeffs, [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06], atol=0.00001).all()
         )
 
-    async def test_lut_properties_full(self):
+    async def test_lut_properties_full(self) -> None:
         """Test LUT lens distortion model with full parameters."""
         camera, _, _, _ = await self._create_test_environment()
         camera.set_lut_properties(
@@ -623,7 +624,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertEqual(enter_tex, "path/to/enter.png")
         self.assertEqual(exit_tex, "path/to/exit.png")
 
-    async def test_ftheta_properties_partial(self):
+    async def test_ftheta_properties_partial(self) -> None:
         """Test F-theta lens distortion model with partial coefficients."""
         camera, _, _, _ = await self._create_test_environment()
         camera.set_ftheta_properties(
@@ -640,7 +641,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(max_fov, 560, delta=2)
         self.assertTrue(np.isclose(coeffs, [1, 2, 0, 0, 0]).all())  # k2, k3, k4 should default to 0
 
-    async def test_kannala_brandt_k3_properties_partial(self):
+    async def test_kannala_brandt_k3_properties_partial(self) -> None:
         """Test Kannala-Brandt K3 lens distortion model with partial coefficients."""
         camera, _, _, _ = await self._create_test_environment()
         camera.set_kannala_brandt_k3_properties(
@@ -657,7 +658,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(max_fov, 180, delta=2)
         self.assertTrue(np.isclose(coeffs, [0.05, 0.01, 0, 0], atol=0.00001).all())  # k2, k3 should default to 0
 
-    async def test_rad_tan_thin_prism_properties_partial(self):
+    async def test_rad_tan_thin_prism_properties_partial(self) -> None:
         """Test Radial-Tangential Thin Prism lens distortion model with partial coefficients."""
         camera, _, _, _ = await self._create_test_environment()
         camera.set_rad_tan_thin_prism_properties(
@@ -676,7 +677,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         expected_coeffs = [0.1, 0.2, 0.3] + [0.0, 0.0, 0.0, -0.00037, -0.00074, -0.00058, -0.00022, 0.00019, -0.0002]
         self.assertTrue(np.isclose(coeffs, expected_coeffs, atol=0.00001).all())
 
-    async def test_lut_properties_partial(self):
+    async def test_lut_properties_partial(self) -> None:
         """Test LUT lens distortion model with partial parameters."""
         camera, _, _, _ = await self._create_test_environment()
 
@@ -699,7 +700,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertEqual(enter_tex, "path/to/enter.png")
         self.assertEqual(exit_tex, "path/to/exit.png")
 
-    async def test_opencv_pinhole_properties_full(self):
+    async def test_opencv_pinhole_properties_full(self) -> None:
         """Test OpenCV pinhole lens distortion model with full coefficients."""
         camera, _, _, _ = await self._create_test_environment()
         camera.set_opencv_pinhole_properties(
@@ -734,7 +735,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         image_size = camera.prim.GetAttribute("omni:lensdistortion:opencvPinhole:imageSize").Get()
         self.assertEqual(image_size, self.CAMERA_RESOLUTION)
 
-    async def test_opencv_pinhole_properties_partial(self):
+    async def test_opencv_pinhole_properties_partial(self) -> None:
         """Test OpenCV pinhole lens distortion model with partial parameters."""
         camera, _, _, _ = await self._create_test_environment()
         # Only set cx and fx
@@ -751,7 +752,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         image_size = camera.prim.GetAttribute("omni:lensdistortion:opencvPinhole:imageSize").Get()
         self.assertEqual(image_size, self.CAMERA_RESOLUTION)
 
-    async def test_opencv_fisheye_properties_full(self):
+    async def test_opencv_fisheye_properties_full(self) -> None:
         """Test OpenCV fisheye lens distortion model with full coefficients."""
         camera, _, _, _ = await self._create_test_environment()
         camera.set_opencv_fisheye_properties(
@@ -767,7 +768,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         image_size = camera.prim.GetAttribute("omni:lensdistortion:opencvFisheye:imageSize").Get()
         self.assertEqual(image_size, self.CAMERA_RESOLUTION)
 
-    async def test_opencv_fisheye_properties_partial(self):
+    async def test_opencv_fisheye_properties_partial(self) -> None:
         """Test OpenCV fisheye lens distortion model with partial parameters."""
         camera, _, _, _ = await self._create_test_environment()
         # Only set cy and fy
@@ -784,7 +785,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         image_size = camera.prim.GetAttribute("omni:lensdistortion:opencvFisheye:imageSize").Get()
         self.assertEqual(image_size, self.CAMERA_RESOLUTION)
 
-    async def test_lens_distortion_model_handling(self):
+    async def test_lens_distortion_model_handling(self) -> None:
         """Test how set_lens_distortion_model handles different model names."""
         camera, _, _, _ = await self._create_test_environment()
 
@@ -835,7 +836,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         # Verify correct API is applied
         self.assertIn("OmniLensDistortionOpenCvPinholeAPI", camera.prim.GetAppliedSchemas())
 
-    async def test_opencv_non_square_resolution(self):
+    async def test_opencv_non_square_resolution(self) -> None:
         """Test OpenCV distortion models with non-square resolution."""
         await self._create_test_environment()
 
@@ -897,7 +898,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         image_size = non_square_camera.prim.GetAttribute("omni:lensdistortion:opencvPinhole:imageSize").Get()
         self.assertEqual(image_size, resolution)
 
-    async def test_fisheye_polynomial_properties(self):
+    async def test_fisheye_polynomial_properties(self) -> None:
         """Test setting and getting fisheye polynomial properties."""
         camera, _, _, _ = await self._create_test_environment()
         camera.set_projection_type("fisheyePolynomial")
@@ -921,7 +922,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(max_fov, 180, delta=1)
         self.assertTrue(np.isclose(poly, [0.1, 0.2, 0.3, 0.4, 0.5], atol=0.001).all())
 
-    async def test_rational_polynomial_properties(self):
+    async def test_rational_polynomial_properties(self) -> None:
         """Test setting rational polynomial properties."""
         camera, _, _, _ = await self._create_test_environment()
         # set_rational_polynomial_properties is a wrapper for set_opencv_pinhole_properties
@@ -943,7 +944,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(fy, 1080 * camera.get_focal_length() / camera.get_vertical_aperture(), delta=1)
         self.assertTrue(np.isclose(pinhole, [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12]).all())
 
-    async def test_kannala_brandt_properties(self):
+    async def test_kannala_brandt_properties(self) -> None:
         """Test setting Kannala-Brandt properties."""
         camera, _, _, _ = await self._create_test_environment()
         camera.set_kannala_brandt_properties(
@@ -964,7 +965,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(fy, 1080 * camera.get_focal_length() / camera.get_vertical_aperture(), delta=1)
         self.assertTrue(np.isclose(fisheye, [0.1, 0.2, 0.3, 0.4]).all())
 
-    async def test_projection_mode(self):
+    async def test_projection_mode(self) -> None:
         """Test setting and getting projection mode."""
         camera, _, _, _ = await self._create_test_environment()
         camera.set_projection_mode("perspective")
@@ -973,7 +974,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         camera.set_projection_mode("orthographic")
         self.assertEqual(camera.get_projection_mode(), "orthographic")
 
-    async def test_view_matrix_ros(self):
+    async def test_view_matrix_ros(self) -> None:
         """Test getting camera view matrix in ROS convention."""
         camera, _, _, _ = await self._create_test_environment()
         # Timeline must be playing for the SDG pipeline to initialize the camera
@@ -1062,7 +1063,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         # Both methods must agree
         self.assertTrue(np.allclose(cam_points_from_view, cam_points_from_intrinsics, atol=1e-4))
 
-    async def test_intrinsics_matrix(self):
+    async def test_intrinsics_matrix(self) -> None:
         """Test getting camera intrinsics matrix."""
         camera, _, _, _ = await self._create_test_environment()
         # Timeline must be playing for the SDG pipeline to initialize the camera
@@ -1090,7 +1091,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(intrinsics[0, 2], 320, delta=64)
         self.assertAlmostEqual(intrinsics[1, 2], 240, delta=48)
 
-    async def test_camera_points_from_image_coords(self):
+    async def test_camera_points_from_image_coords(self) -> None:
         """Test converting image coordinates to camera points."""
         camera, _, _, _ = await self._create_test_environment()
         # Timeline must be playing for the SDG pipeline to initialize the camera
@@ -1115,7 +1116,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(camera_points[0, 0], 0.0, delta=0.5)  # X should be near 0 (with tolerance)
         self.assertAlmostEqual(camera_points[0, 1], 0.0, delta=0.5)  # Y should be near 0 (with tolerance)
 
-    async def test_world_points_from_image_coords(self):
+    async def test_world_points_from_image_coords(self) -> None:
         """Test converting image coordinates to world points."""
         camera, _, _, _ = await self._create_test_environment()
         # Timeline must be playing for the SDG pipeline to initialize the camera

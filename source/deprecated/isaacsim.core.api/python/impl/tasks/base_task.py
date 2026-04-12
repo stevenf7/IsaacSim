@@ -15,8 +15,7 @@
 
 """Base class for creating and managing simulation tasks in Isaac Sim environments."""
 
-
-from typing import Optional
+from __future__ import annotations
 
 import numpy as np
 from isaacsim.core.api.scenes.scene import Scene
@@ -34,13 +33,14 @@ class BaseTask(object):
     Args:
         name: needs to be unique if added to the World.
         offset: offset applied to all assets of the task.
+
     """
 
-    def __init__(self, name: str, offset: Optional[np.ndarray] = None) -> None:
+    def __init__(self, name: str, offset: np.ndarray | None = None) -> None:
         self._scene = None
         self._name = name
         self._offset = offset
-        self._task_objects = dict()
+        self._task_objects = {}
         if self._offset is None:
             self._offset = np.array([0.0, 0.0, 0.0])
 
@@ -49,11 +49,12 @@ class BaseTask(object):
         return
 
     @property
-    def device(self):
+    def device(self) -> str:
         """Device used for simulation computations.
 
         Returns:
             The simulation device instance.
+
         """
         return self._device
 
@@ -63,6 +64,7 @@ class BaseTask(object):
 
         Returns:
             The scene instance associated with this task.
+
         """
         return self._scene
 
@@ -72,6 +74,7 @@ class BaseTask(object):
 
         Returns:
             The task name.
+
         """
         return self._name
 
@@ -82,6 +85,7 @@ class BaseTask(object):
 
         Args:
             scene: The scene to set up with task assets.
+
         """
         self._scene = scene
         return
@@ -107,6 +111,7 @@ class BaseTask(object):
 
         Returns:
             Dictionary of task objects keyed by name.
+
         """
         return self._task_objects
 
@@ -118,6 +123,7 @@ class BaseTask(object):
 
         Returns:
             Dictionary containing task-specific observations.
+
         """
         raise NotImplementedError
 
@@ -129,6 +135,7 @@ class BaseTask(object):
 
         Returns:
             Dictionary containing calculated task metrics.
+
         """
         raise NotImplementedError
 
@@ -140,6 +147,7 @@ class BaseTask(object):
 
         Returns:
             True if the task is complete, False otherwise.
+
         """
         raise NotImplementedError
 
@@ -149,6 +157,7 @@ class BaseTask(object):
         Args:
             time_step_index: Current physics step index.
             simulation_time: Current simulation time in seconds.
+
         """
         return
 
@@ -161,6 +170,7 @@ class BaseTask(object):
 
         Returns:
             A string describing the task.
+
         """
         return ""
 
@@ -180,6 +190,7 @@ class BaseTask(object):
 
         Raises:
             NotImplementedError: Must be implemented by subclass.
+
         """
         raise NotImplementedError
 
@@ -196,5 +207,6 @@ class BaseTask(object):
 
         Returns:
             Defined parameters of the task.
+
         """
         raise NotImplementedError

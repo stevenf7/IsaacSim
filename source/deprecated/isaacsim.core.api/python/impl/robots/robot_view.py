@@ -15,8 +15,7 @@
 
 """Handles multiple robot (articulation) prims efficiently through regex-based selection for batch operations."""
 
-
-from typing import Optional, Union
+from __future__ import annotations
 
 import numpy as np
 from isaacsim.core.deprecation_manager import import_module
@@ -80,17 +79,18 @@ class RobotView(Articulation):
         >>> prims = RobotView(prim_paths_expr="/World/envs/env.*/panda", name="franka_panda_view")
         >>> print(prims)
         <isaacsim.core.api.robots.robot_view.RobotView object at 0x7f12785a5fc0>
+
     """
 
     def __init__(
         self,
         prim_paths_expr: str,
         name: str = "rigid_prim_view",
-        positions: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        translations: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        visibilities: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        positions: np.ndarray | torch.Tensor | None = None,
+        translations: np.ndarray | torch.Tensor | None = None,
+        orientations: np.ndarray | torch.Tensor | None = None,
+        scales: np.ndarray | torch.Tensor | None = None,
+        visibilities: np.ndarray | torch.Tensor | None = None,
     ) -> None:
         Articulation.__init__(
             self,
@@ -102,7 +102,7 @@ class RobotView(Articulation):
             scales=scales,
             visibilities=visibilities,
         )
-        self._sensors = list()
+        self._sensors = []
         return
 
     def post_reset(self) -> None:
@@ -120,6 +120,7 @@ class RobotView(Articulation):
         .. code-block:: python
 
             >>> prims.post_reset()
+
         """
         Articulation.post_reset(self)
         return

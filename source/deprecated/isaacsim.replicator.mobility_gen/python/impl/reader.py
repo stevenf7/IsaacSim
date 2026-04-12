@@ -54,7 +54,7 @@ class MobilityGenReader:
         recording_path: Path to the recording directory containing the structured mobility generation data.
     """
 
-    def __init__(self, recording_path: str):
+    def __init__(self, recording_path: str) -> None:
         self.recording_path = recording_path
 
         state_dict_paths = glob.glob(os.path.join(self.recording_path, "state", "common", "*.npy"))
@@ -78,11 +78,11 @@ class MobilityGenReader:
         Returns:
             The configuration object loaded from config.json.
         """
-        with open(os.path.join(self.recording_path, "config.json"), "r") as f:
+        with open(os.path.join(self.recording_path, "config.json")) as f:
             config = Config.from_json(f.read())
         return config
 
-    def read_occupancy_map(self):
+    def read_occupancy_map(self) -> object:
         """Reads the occupancy map from the recording.
 
         Returns:
@@ -90,7 +90,7 @@ class MobilityGenReader:
         """
         return OccupancyMap.from_ros_yaml(os.path.join(self.recording_path, "occupancy_map", "map.yaml"))
 
-    def read_rgb(self, name: str, index: int):
+    def read_rgb(self, name: str, index: int) -> object:
         """Reads RGB image data for a specific camera at a given step index.
 
         Args:
@@ -104,7 +104,7 @@ class MobilityGenReader:
         image = PIL.Image.open(os.path.join(self.recording_path, "state", "rgb", name, f"{step:08d}.jpg"))
         return np.asarray(image)
 
-    def read_state_dict_rgb(self, index: int):
+    def read_state_dict_rgb(self, index: int) -> object:
         """Reads RGB data from all cameras at a given step index.
 
         Args:
@@ -119,7 +119,7 @@ class MobilityGenReader:
             rgb_dict[name] = data
         return rgb_dict
 
-    def read_segmentation(self, name: str, index: int):
+    def read_segmentation(self, name: str, index: int) -> object:
         """Reads segmentation image data for a specific camera at a given step index.
 
         Args:
@@ -133,7 +133,7 @@ class MobilityGenReader:
         image = PIL.Image.open(os.path.join(self.recording_path, "state", "segmentation", name, f"{step:08d}.png"))
         return np.asarray(image)
 
-    def read_normals(self, name: str, index: int):
+    def read_normals(self, name: str, index: int) -> object:
         """Reads normals data for a specific camera at a given step index.
 
         Args:
@@ -147,7 +147,7 @@ class MobilityGenReader:
         data = np.load(os.path.join(self.recording_path, "state", "normals", name, f"{step:08d}.npy"))
         return data
 
-    def read_state_dict_segmentation(self, index: int):
+    def read_state_dict_segmentation(self, index: int) -> object:
         """Reads segmentation data from all cameras at a given step index.
 
         Args:
@@ -162,7 +162,7 @@ class MobilityGenReader:
             segmentation_dict[name] = data
         return segmentation_dict
 
-    def read_depth(self, name: str, index: int, eps: float = 1e-6):
+    def read_depth(self, name: str, index: int, eps: float = 1e-6) -> object:
         """Reads depth image data for a specific camera at a given step index.
 
         Args:
@@ -180,7 +180,7 @@ class MobilityGenReader:
         depth = 65535 / (np.asarray(image).astype(np.float32) + eps) - 1.0
         return depth
 
-    def read_state_dict_depth(self, index: int):
+    def read_state_dict_depth(self, index: int) -> object:
         """Reads depth data from all cameras at a given step index.
 
         Args:
@@ -195,7 +195,7 @@ class MobilityGenReader:
             depth_dict[name] = data
         return depth_dict
 
-    def read_state_dict_normals(self, index: int):
+    def read_state_dict_normals(self, index: int) -> object:
         """Reads normals data from all cameras at a given step index.
 
         Args:
@@ -210,7 +210,7 @@ class MobilityGenReader:
             normals_dict[name] = data
         return normals_dict
 
-    def read_state_dict_common(self, index: int):
+    def read_state_dict_common(self, index: int) -> object:
         """Reads the common state dictionary for a specific step.
 
         Args:
@@ -225,7 +225,7 @@ class MobilityGenReader:
         ).item()
         return state_dict
 
-    def read_state_dict(self, index: int):
+    def read_state_dict(self, index: int) -> object:
         """Reads the complete state dictionary including common data and all sensor data.
 
         Args:
@@ -257,7 +257,7 @@ class MobilityGenReader:
         """
         return len(self.steps)
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, index: int) -> object:
         """Retrieves the complete state dictionary for a specific step index.
 
         Args:

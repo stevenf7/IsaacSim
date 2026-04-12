@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any
 
 import carb
 import isaacsim.core.utils.fabric as fabric_utils
@@ -126,7 +126,7 @@ class XFormPrim(Prim):
         visibilities: np.ndarray | torch.Tensor | None = None,
         reset_xform_properties: bool = True,
         usd: bool = True,
-    ):
+    ) -> None:
         self._non_root_link = False
         if not isinstance(prim_paths_expr, list):
             prim_paths_expr = [prim_paths_expr]
@@ -142,8 +142,8 @@ class XFormPrim(Prim):
         self._fabric_to_view = None
         self._view_to_fabric = None
         self._default_view_indices = None
-        self._fabric_data_dicts = dict()
-        self._fabric_data_valid = dict()
+        self._fabric_data_dicts = {}
+        self._fabric_data_valid = {}
         self._fabric_hierarchy = None
         if SimulationManager.get_physics_sim_view() is not None:
             XFormPrim._on_physics_ready(self, None)
@@ -182,8 +182,8 @@ class XFormPrim(Prim):
 
     def set_visibilities(
         self,
-        visibilities: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        visibilities: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set the visibilities of the prims in stage.
 
@@ -213,12 +213,12 @@ class XFormPrim(Prim):
                     imageable.MakeInvisible()
                 read_idx += 1
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         return
 
     def get_visibilities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Returns the current visibilities of the prims in stage.
 
         Args:
@@ -256,7 +256,7 @@ class XFormPrim(Prim):
             visibilities = self._backend_utils.convert(visibilities, dtype="bool", device=self._device, indexed=True)
             return visibilities
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
 
     def get_default_state(self) -> XFormPrimViewState:
         """Get the default states (positions and orientations) defined with the ``set_default_state`` method.
@@ -289,13 +289,13 @@ class XFormPrim(Prim):
                 carb.log_warn("This view corresponds to non root links that are included in an articulation")
             return self._default_state
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
 
     def set_default_state(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None = None,
+        orientations: np.ndarray | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set the default state of the prims (positions and orientations), that will be used after each reset.
 
@@ -356,13 +356,13 @@ class XFormPrim(Prim):
                         self._default_state.orientations[indices] = orientations
             return
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
 
     def apply_visual_materials(
         self,
-        visual_materials: Union["VisualMaterial", List["VisualMaterial"]],
-        weaker_than_descendants: Optional[Union[bool, List[bool]]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        visual_materials: "VisualMaterial" | list["VisualMaterial"],
+        weaker_than_descendants: bool | list[bool] | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Apply visual material to the prims and optionally their prim descendants.
 
@@ -450,11 +450,11 @@ class XFormPrim(Prim):
                     self._applied_visual_materials[i] = visual_materials
             return
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
 
     def get_applied_visual_materials(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> List["VisualMaterial"]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> list["VisualMaterial"]:
         """Get the current applied visual materials.
 
         Args:
@@ -517,7 +517,7 @@ class XFormPrim(Prim):
                             shader_path = material_path + "/Shader"
                             shader = UsdShade.Shader(get_prim_at_path(shader_path))
                         else:
-                            carb.log_warn("the shader on xform prim {} is not supported".format(self._prim_paths[i]))
+                            carb.log_warn(f"the shader on xform prim {self._prim_paths[i]} is not supported")
                             result[write_idx] = None
                             write_idx += 1
                             continue
@@ -543,16 +543,16 @@ class XFormPrim(Prim):
                             result[write_idx] = self._applied_visual_materials[i]
                             write_idx += 1
                         else:
-                            carb.log_warn("the shader on xform prim {} is not supported".format(self._prim_paths[i]))
+                            carb.log_warn(f"the shader on xform prim {self._prim_paths[i]} is not supported")
                             result[write_idx] = None
                             write_idx += 1
             return result
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
 
     def is_visual_material_applied(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> List[bool]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> list[bool]:
         """Check if there is a visual material applied.
 
         Args:
@@ -596,13 +596,11 @@ class XFormPrim(Prim):
                     write_idx += 1
             return result
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
 
     def get_world_poses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, usd: bool = True
-    ) -> Union[
-        Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
-    ]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, usd: bool = True
+    ) -> tuple[np.ndarray, np.ndarray] | tuple[torch.Tensor, torch.Tensor] | tuple[wp.indexedarray, wp.indexedarray]:
         """Get the poses of the prims in the view with respect to the world's frame.
 
         Args:
@@ -695,13 +693,13 @@ class XFormPrim(Prim):
                 )
                 return positions, orientations
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
 
     def set_world_poses(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None = None,
+        orientations: np.ndarray | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         usd: bool = True,
     ) -> None:
         """Set prim poses in the view with respect to the world's frame.
@@ -793,7 +791,7 @@ class XFormPrim(Prim):
                 )
             return
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
 
     def get_local_poses(
         self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
@@ -855,7 +853,7 @@ class XFormPrim(Prim):
             orientations = self._backend_utils.convert(orientations, dtype="float32", device=self._device, indexed=True)
             return translations, orientations
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
 
     def set_local_poses(
         self,
@@ -912,7 +910,7 @@ class XFormPrim(Prim):
                     translation = Gf.Vec3d(*translations[write_idx])
                     if "xformOp:translate" not in properties:
                         carb.log_error(
-                            "Translate property needs to be set for {} before setting its position".format(self.name)
+                            f"Translate property needs to be set for {self.name} before setting its position"
                         )
                     xform_op = self._prims[i].GetAttribute("xformOp:translate")
                     xform_op.Set(translation)
@@ -924,7 +922,7 @@ class XFormPrim(Prim):
                     properties = self._prims[i].GetPropertyNames()
                     if "xformOp:orient" not in properties:
                         carb.log_error(
-                            "Orient property needs to be set for {} before setting its orientation".format(self.name)
+                            f"Orient property needs to be set for {self.name} before setting its orientation"
                         )
                     xform_op = self._prims[i].GetAttribute("xformOp:orient")
                     if xform_op.GetTypeName() == "quatf":
@@ -935,7 +933,7 @@ class XFormPrim(Prim):
                     write_idx += 1
             return
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
 
     def get_world_scales(
         self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
@@ -984,7 +982,7 @@ class XFormPrim(Prim):
             scales = self._backend_utils.convert(scales, dtype="float32", device=self._device, indexed=True)
             return scales
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
 
     def set_local_scales(
         self,
@@ -1022,13 +1020,13 @@ class XFormPrim(Prim):
                 scale = Gf.Vec3d(*scales[read_idx])
                 properties = self._prims[i].GetPropertyNames()
                 if "xformOp:scale" not in properties:
-                    carb.log_error("Scale property needs to be set for {} before setting its scale".format(self.name))
+                    carb.log_error(f"Scale property needs to be set for {self.name} before setting its scale")
                 xform_op = self._prims[i].GetAttribute("xformOp:scale")
                 xform_op.Set(scale)
                 read_idx += 1
             return
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
 
     def get_local_scales(
         self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
@@ -1074,9 +1072,9 @@ class XFormPrim(Prim):
             scales = self._backend_utils.convert(scales, dtype="float32", device=self._device, indexed=True)
             return scales
         else:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
 
-    def _get_fabric_selection(self):
+    def _get_fabric_selection(self) -> None:
         """Initialize fabric selection and view-to-fabric mapping arrays for efficient data access."""
         self._selection = self._usdrt_stage.SelectPrims(
             require_attrs=[
@@ -1093,7 +1091,7 @@ class XFormPrim(Prim):
             device=self._device,
         )
 
-    def _create_fabric_view_indices(self):
+    def _create_fabric_view_indices(self) -> None:
         """Create fabric view index attributes on prims and initialize world transform data for fabric access."""
         for i in range(self.count):
             prim = self._usdrt_stage.GetPrimAtPath(self._prim_paths[i])
@@ -1103,7 +1101,7 @@ class XFormPrim(Prim):
             if not xformable_prim.HasWorldXform():
                 xformable_prim.SetWorldXformFromUsd()
 
-    def _reset_fabric_selection(self, dt: float, context: object = None):
+    def _reset_fabric_selection(self, dt: float, context: object = None) -> None:
         """Reset fabric selection and invalidate cached fabric data arrays.
 
         Args:
@@ -1111,7 +1109,7 @@ class XFormPrim(Prim):
             context: Optional context parameter.
         """
         self._selection = None
-        for data_tensor_name in self._fabric_data_valid.keys():
+        for data_tensor_name in self._fabric_data_valid:
             self._fabric_data_valid[data_tensor_name] = False
 
     def _warp2backend(self, data: object) -> wp.indexedarray | torch.Tensor | np.ndarray:
@@ -1161,7 +1159,7 @@ class XFormPrim(Prim):
         else:
             return result
 
-    def _prepare_view_in_fabric(self):
+    def _prepare_view_in_fabric(self) -> None:
         """Prepares the view for Fabric-based operations by creating necessary data structures and indices.
 
         Initializes view indices, fabric arrays, and data dictionaries for world position and orientation.
@@ -1186,7 +1184,7 @@ class XFormPrim(Prim):
         )
         self._view_in_fabric_prepared = True
 
-    def _get_fabric_hierarchy(self):
+    def _get_fabric_hierarchy(self) -> object:
         """Retrieves the Fabric hierarchy interface for the current stage.
 
         Returns:

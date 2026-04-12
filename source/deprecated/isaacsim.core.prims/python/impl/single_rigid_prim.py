@@ -15,8 +15,9 @@
 
 """High level wrapper to deal with a rigid body prim (only one rigid body prim) and its attributes/properties."""
 
+from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 import numpy as np
 from isaacsim.core.utils.types import DynamicState
@@ -79,17 +80,17 @@ class SingleRigidPrim(_SinglePrimWrapper):
         self,
         prim_path: str,
         name: str = "rigid_prim",
-        position: Optional[Sequence[float]] = None,
-        translation: Optional[Sequence[float]] = None,
-        orientation: Optional[Sequence[float]] = None,
-        scale: Optional[Sequence[float]] = None,
-        visible: Optional[bool] = None,
+        position: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
+        orientation: Sequence[float] | None = None,
+        scale: Sequence[float] | None = None,
+        visible: bool | None = None,
         reset_xform_properties: bool = True,
-        mass: Optional[float] = None,
-        density: Optional[float] = None,
-        linear_velocity: Optional[np.ndarray] = None,
-        angular_velocity: Optional[np.ndarray] = None,
-    ):
+        mass: float | None = None,
+        density: float | None = None,
+        linear_velocity: np.ndarray | None = None,
+        angular_velocity: np.ndarray | None = None,
+    ) -> None:
         from isaacsim.core.simulation_manager import SimulationManager
 
         self._backend = SimulationManager.get_backend()
@@ -342,10 +343,10 @@ class SingleRigidPrim(_SinglePrimWrapper):
 
     def set_default_state(
         self,
-        position: Optional[Sequence[float]] = None,
-        orientation: Optional[Sequence[float]] = None,
-        linear_velocity: Optional[np.ndarray] = None,
-        angular_velocity: Optional[np.ndarray] = None,
+        position: Sequence[float] | None = None,
+        orientation: Sequence[float] | None = None,
+        linear_velocity: np.ndarray | None = None,
+        angular_velocity: np.ndarray | None = None,
     ) -> None:
         """Set the default state of the prim (position, orientation and linear and angular velocities),.
 
@@ -449,7 +450,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
         view_default_state = self._rigid_prim_view.get_current_dynamic_state()
         return self._dynamics_view_state_conversion(view_default_state)
 
-    def _dynamics_view_state_conversion(self, view_state: object):
+    def _dynamics_view_state_conversion(self, view_state: object) -> object:
         """Convert view state from the rigid prim view to a DynamicState object.
 
         Args:

@@ -15,6 +15,7 @@
 
 """Scenario implementation for the scripting workflow template."""
 
+from __future__ import annotations
 
 import numpy as np
 from isaacsim.core.api.objects import DynamicCuboid, FixedCuboid, GroundPlane
@@ -32,7 +33,7 @@ from isaacsim.storage.native import get_assets_root_path
 class FrankaRmpFlowExampleScript:
     """Script a Franka robot to move to a target using RMPFlow."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._rmpflow = None
         self._articulation_rmpflow = None
 
@@ -41,7 +42,7 @@ class FrankaRmpFlowExampleScript:
 
         self._script_generator = None
 
-    def load_example_assets(self):
+    def load_example_assets(self) -> tuple:
         """Load assets onto the stage and return them so they can be registered with the.
 
         core.World.
@@ -51,7 +52,6 @@ class FrankaRmpFlowExampleScript:
         The position in which things are loaded is also the position to which
         they will be returned on reset.
         """
-
         robot_prim_path = "/panda"
         path_to_robot_usd = get_assets_root_path() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
 
@@ -95,7 +95,7 @@ class FrankaRmpFlowExampleScript:
         # Return assets that were added to the stage so that they can be registered with the core.World
         return self._articulation, self._target, *self._obstacles, self._goal_block, self._ground_plane
 
-    def setup(self):
+    def setup(self) -> None:
         """This function is called after assets have been loaded from ui_builder._setup_scenario()."""
         # Set a camera view that looks good
         set_camera_view(eye=[2, 0.8, 1], target=[0, 0, 0], camera_prim_path="/OmniverseKit_Persp")
@@ -115,9 +115,8 @@ class FrankaRmpFlowExampleScript:
         # Create a script generator to execute my_script().
         self._script_generator = self.my_script()
 
-    def reset(self):
-        """
-        This function is called when the reset button is pressed.
+    def reset(self) -> None:
+        """This function is called when the reset button is pressed.
 
         In this example the core.World takes care of all necessary resetting
         by putting everything back in the position it was in when loaded.
@@ -140,14 +139,14 @@ class FrankaRmpFlowExampleScript:
     using the "yield from" keywords.
     """
 
-    def update(self, step: float):
+    def update(self, step: float) -> bool | None:
         """Update the script generator on each physics step."""
         try:
             result = next(self._script_generator)
         except StopIteration:
             return True
 
-    def my_script(self):
+    def my_script(self) -> object:
         """Execute the main scripting sequence for the robot."""
         translation_target, orientation_target = self._target.get_world_pose()
 
@@ -201,20 +200,18 @@ class FrankaRmpFlowExampleScript:
 
     def goto_position(
         self,
-        translation_target,
-        orientation_target,
-        articulation,
-        rmpflow,
-        translation_thresh=0.01,
-        orientation_thresh=0.1,
-        timeout=500,
-    ):
-        """
-        Use RMPflow to move a robot Articulation to a desired task-space position.
+        translation_target: object,
+        orientation_target: object,
+        articulation: object,
+        rmpflow: object,
+        translation_thresh: float = 0.01,
+        orientation_thresh: float = 0.1,
+        timeout: int = 500,
+    ) -> object:
+        """Use RMPflow to move a robot Articulation to a desired task-space position.
 
         Exit upon timeout or when end effector comes within the provided threshholds of the target pose.
         """
-
         articulation_motion_policy = ArticulationMotionPolicy(articulation, rmpflow, 1 / 60)
         rmpflow.set_end_effector_target(translation_target, orientation_target)
 
@@ -242,7 +239,7 @@ class FrankaRmpFlowExampleScript:
 
         return False
 
-    def open_gripper_franka(self, articulation):
+    def open_gripper_franka(self, articulation: object) -> object:
         """Open the Franka gripper to the fully open position."""
         open_gripper_action = ArticulationAction(np.array([0.04, 0.04]), joint_indices=np.array([7, 8]))
         articulation.apply_action(open_gripper_action)
@@ -253,7 +250,9 @@ class FrankaRmpFlowExampleScript:
 
         return True
 
-    def close_gripper_franka(self, articulation, close_position=np.array([0, 0]), atol=0.001):
+    def close_gripper_franka(
+        self, articulation: object, close_position: object = np.array([0, 0]), atol: float = 0.001
+    ) -> object:
         """Close the Franka gripper to the specified position."""
         # To close around the cube, different values are passed in for close_position and atol
         open_gripper_action = ArticulationAction(np.array(close_position), joint_indices=np.array([7, 8]))

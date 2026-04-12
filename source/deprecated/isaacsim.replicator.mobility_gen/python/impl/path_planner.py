@@ -18,7 +18,6 @@
 
 import random
 from dataclasses import dataclass
-from typing import Tuple
 
 import numpy as np
 
@@ -44,7 +43,7 @@ class GeneratePathsOutput:
     prev_i: np.ndarray
     prev_j: np.ndarray
 
-    def unroll_path(self, end: Tuple[int, int]) -> np.ndarray:
+    def unroll_path(self, end: tuple[int, int]) -> np.ndarray:
         """Unrolls a path from the start point to a specified end point.
 
         Args:
@@ -57,7 +56,7 @@ class GeneratePathsOutput:
         path = _path_planner.unroll_path(end, self.prev_i, self.prev_j)
         return np.array(path)
 
-    def get_valid_end_points(self):
+    def get_valid_end_points(self) -> tuple:
         """Gets coordinates of all valid end points that can be reached from the start.
 
         Returns:
@@ -65,7 +64,7 @@ class GeneratePathsOutput:
         """
         return np.where(self.visited != 0)
 
-    def sample_random_end_point(self) -> Tuple[int, int]:
+    def sample_random_end_point(self) -> tuple[int, int]:
         """Samples a random end point from all valid reachable points.
 
         Returns:
@@ -85,7 +84,7 @@ class GeneratePathsOutput:
         return self.unroll_path(end)
 
 
-def generate_paths(start: Tuple[int, int], freespace: np.ndarray) -> GeneratePathsOutput:
+def generate_paths(start: tuple[int, int], freespace: np.ndarray) -> GeneratePathsOutput:
     """Generate shortest paths from a starting position to all reachable points in the freespace.
 
     Uses pathfinding algorithm to compute distances and predecessor information for path reconstruction
@@ -110,7 +109,7 @@ def generate_paths(start: Tuple[int, int], freespace: np.ndarray) -> GeneratePat
     return GeneratePathsOutput(visited=visited, distance_to_start=distance_to_start, prev_i=prev_i, prev_j=prev_j)
 
 
-def compress_path(path: np.ndarray, eps: float = 1e-3):
+def compress_path(path: np.ndarray, eps: float = 1e-3) -> tuple:
     """Compress a path by removing redundant points that lie approximately on a straight line.
 
     The function identifies path points that deviate minimally from the line connecting their neighbors

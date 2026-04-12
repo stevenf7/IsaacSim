@@ -19,20 +19,17 @@
 class ScenarioTemplate:
     """Base template for defining simulation scenarios."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def setup_scenario(self):
+    def setup_scenario(self) -> None:
         """Set up the scenario with required assets and parameters."""
-        pass
 
-    def teardown_scenario(self):
+    def teardown_scenario(self) -> None:
         """Tear down the scenario and clean up resources."""
-        pass
 
-    def update_scenario(self):
+    def update_scenario(self) -> None:
         """Update the scenario state for the current simulation step."""
-        pass
 
 
 import numpy as np
@@ -52,7 +49,7 @@ the logic that runs the example from the UI design.
 class ExampleScenario(ScenarioTemplate):
     """Example scenario that moves a robot through its joint DOFs."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._object = None
         self._articulation = None
 
@@ -74,7 +71,7 @@ class ExampleScenario(ScenarioTemplate):
         self._calculate_position = lambda t, x: 0
         self._calculate_velocity = lambda t, x: 0
 
-    def setup_scenario(self, articulation, object_prim):
+    def setup_scenario(self, articulation: object, object_prim: object) -> None:
         """Set up the scenario with the given articulation and object."""
         self._articulation = articulation
         self._object = object_prim
@@ -95,7 +92,7 @@ class ExampleScenario(ScenarioTemplate):
 
         self._derive_sinusoid_params(0)
 
-    def teardown_scenario(self):
+    def teardown_scenario(self) -> None:
         """Tear down the scenario and reset all state."""
         self._time = 0.0
         self._object = None
@@ -111,7 +108,7 @@ class ExampleScenario(ScenarioTemplate):
         self._calculate_position = lambda t, x: 0
         self._calculate_velocity = lambda t, x: 0
 
-    def update_scenario(self, step: float):
+    def update_scenario(self, step: float) -> None:
         """Update the scenario for the current physics step."""
         if not self._running_scenario:
             return
@@ -126,7 +123,7 @@ class ExampleScenario(ScenarioTemplate):
 
         self._update_sinusoidal_joint_path(step)
 
-    def _derive_sinusoid_params(self, joint_index: int):
+    def _derive_sinusoid_params(self, joint_index: int) -> None:
         # Derive the parameters of the joint target sinusoids for joint {joint_index}
         start_position = self._lower_joint_limits[joint_index]
 
@@ -144,7 +141,7 @@ class ExampleScenario(ScenarioTemplate):
         )
         self._calculate_velocity = lambda time, path_duration: V_max * np.sin(2 * np.pi * time / path_duration)
 
-    def _update_sinusoidal_joint_path(self, step):
+    def _update_sinusoidal_joint_path(self, step: object) -> None:
         # Update the target for the robot joints
         self._joint_time += step
 

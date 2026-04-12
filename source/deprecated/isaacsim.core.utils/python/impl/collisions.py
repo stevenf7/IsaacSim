@@ -15,7 +15,7 @@
 
 """Deprecated collision utility functions."""
 
-import typing
+from __future__ import annotations
 
 # python
 import numpy as np
@@ -30,7 +30,7 @@ from pxr import Gf, PhysicsSchemaTools, UsdGeom
 
 def ray_cast(
     position: np.array, orientation: np.array, offset: np.array, max_dist: float = 100.0
-) -> typing.Tuple[typing.Union[None, str], float]:
+) -> tuple[None | str, float]:
     """Projects a raycast forward along x axis with specified offset.
 
     If a hit is found within the maximum distance, then the object's prim path and distance to it is returned.

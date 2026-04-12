@@ -16,8 +16,7 @@
 
 """A module for creating and managing deformable materials used in soft body physics simulations."""
 
-
-from typing import Optional
+from __future__ import annotations
 
 import carb
 
@@ -46,17 +45,18 @@ class DeformableMaterial:
         poissons_ratio: The Poisson's ratio coefficient that is related to volume preservation in range [0, 0.5).
         elasticity_damping: Material damping parameter in [0, inf).
         damping_scale: The damping scale coefficient in [0, 1].
+
     """
 
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "deformable_material",
-        dynamic_friction: Optional[float] = None,
-        youngs_modulus: Optional[float] = None,
-        poissons_ratio: Optional[float] = None,
-        elasticity_damping: Optional[float] = None,
-        damping_scale: Optional[float] = None,
+        name: str | None = "deformable_material",
+        dynamic_friction: float | None = None,
+        youngs_modulus: float | None = None,
+        poissons_ratio: float | None = None,
+        elasticity_damping: float | None = None,
+        damping_scale: float | None = None,
     ) -> None:
         stage = stage_utils.get_current_stage()
         self._name = name
@@ -121,6 +121,7 @@ class DeformableMaterial:
 
         Returns:
             The stage path to the material.
+
         """
         return self._prim_path
 
@@ -130,6 +131,7 @@ class DeformableMaterial:
 
         Returns:
             The USD prim present.
+
         """
         return self._prim
 
@@ -139,15 +141,17 @@ class DeformableMaterial:
 
         Returns:
             The USD Material object.
+
         """
         return self._material
 
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> str | None:
         """Name given to the prim when instantiating it.
 
         Returns:
             Name given to the prim when instantiating it. Otherwise None.
+
         """
         return self._name
 
@@ -156,6 +160,7 @@ class DeformableMaterial:
 
         Args:
             physics_sim_view: Physics simulation view to initialize with.
+
         """
         self._deformable_material_view.initialize(physics_sim_view=physics_sim_view)
         return
@@ -165,6 +170,7 @@ class DeformableMaterial:
 
         Returns:
             True if the current prim path corresponds to a valid prim in stage. False otherwise.
+
         """
         return self._deformable_material_view.is_valid()
 
@@ -185,6 +191,7 @@ class DeformableMaterial:
 
         Args:
             value: The dynamic_friction coefficient. Range: [0, inf), Units: dimensionless
+
         """
         if value < 0:
             carb.log_error("The valid range of dynamic_friction coefficient is [0. inf).")
@@ -197,6 +204,7 @@ class DeformableMaterial:
 
         Args:
             value: The youngs_modululs. Range: [0, inf)
+
         """
         if value < 0:
             carb.log_error("The valid range of youngs_modululs is [0. inf).")
@@ -209,6 +217,7 @@ class DeformableMaterial:
 
         Args:
             value: The poissons ratio. Range: (0 , 0.5)
+
         """
         self._deformable_material_view.set_poissons_ratios(
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
@@ -219,6 +228,7 @@ class DeformableMaterial:
 
         Args:
             value: The damping scale coefficient Range: [0, inf)
+
         """
         if value < 0:
             carb.log_error("The valid range of damping_scale coefficient is [0. inf).")
@@ -232,6 +242,7 @@ class DeformableMaterial:
         Args:
             value: The elasticity damping coefficient.
                 Range: [0, inf), Units: dimensionless
+
         """
         if value < 0:
             carb.log_error("The valid range of elasticity damping coefficient is [0. inf).")
@@ -248,6 +259,7 @@ class DeformableMaterial:
 
         Returns:
             The dynamic friction coefficient.
+
         """
         return self._deformable_material_view.get_dynamic_frictions()[0]
 
@@ -256,6 +268,7 @@ class DeformableMaterial:
 
         Returns:
             The youngs modulus coefficient.
+
         """
         return self._deformable_material_view.get_youngs_moduli()[0]
 
@@ -264,6 +277,7 @@ class DeformableMaterial:
 
         Returns:
             The poissons ratio.
+
         """
         return self._deformable_material_view.get_poissons_ratios()[0]
 
@@ -272,6 +286,7 @@ class DeformableMaterial:
 
         Returns:
             The damping scale coefficient.
+
         """
         return self._deformable_material_view.get_damping_scales()[0]
 
@@ -280,5 +295,6 @@ class DeformableMaterial:
 
         Returns:
             The elasticity damping coefficient.
+
         """
         return self._deformable_material_view.get_elasticity_dampings()[0]

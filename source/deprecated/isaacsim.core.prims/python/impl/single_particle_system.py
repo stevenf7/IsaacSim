@@ -15,8 +15,9 @@
 
 """Implements a wrapper for PhysX particle system functionality in Isaac Sim."""
 
+from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 import carb
 import isaacsim.core.utils.prims as prim_utils
@@ -96,7 +97,7 @@ class SingleParticleSystem:
         max_velocity: float | None = None,
         global_self_collision_enabled: bool | None = None,
         non_particle_collision_enabled: bool | None = None,
-    ):
+    ) -> None:
         # store constants
         from isaacsim.core.simulation_manager import SimulationManager
 

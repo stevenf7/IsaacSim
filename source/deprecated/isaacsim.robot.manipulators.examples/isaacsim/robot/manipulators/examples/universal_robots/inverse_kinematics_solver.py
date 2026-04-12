@@ -15,8 +15,9 @@
 
 """Inverse kinematics solver for Universal Robots arms."""
 
+from __future__ import annotations
+
 import os
-from typing import Optional
 
 from isaacsim.core.utils.extensions import get_extension_path_from_name
 from isaacsim.robot_motion.motion_generation.kinematics import InverseKinematicsSolver as BaseInverseKinematicsSolver
@@ -38,9 +39,9 @@ class InverseKinematicsSolver(BaseInverseKinematicsSolver):
         self,
         name: str,
         robot_prim_path: str,
-        robot_urdf_path: Optional[str] = None,
-        robot_description_yaml_path: Optional[str] = None,
-        end_effector_frame_name: Optional[str] = None,
+        robot_urdf_path: str | None = None,
+        robot_description_yaml_path: str | None = None,
+        end_effector_frame_name: str | None = None,
         attach_gripper: bool = False,
     ) -> None:
         mg_extension_path = get_extension_path_from_name("isaacsim.robot_motion.motion_generation")

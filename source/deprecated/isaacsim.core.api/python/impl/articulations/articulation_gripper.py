@@ -15,8 +15,7 @@
 
 """Provides gripper control functionality for articulation-based grippers with open and closed state management."""
 
-
-from typing import Optional
+from __future__ import annotations
 
 import numpy as np
 from isaacsim.core.api.controllers import ArticulationController
@@ -31,13 +30,14 @@ class ArticulationGripper(object):
         gripper_dof_names: List of DOF names for the gripper joints.
         gripper_open_position: Joint positions for open state.
         gripper_closed_position: Joint positions for closed state.
+
     """
 
     def __init__(
         self,
         gripper_dof_names: list,
-        gripper_open_position: Optional[np.ndarray] = None,
-        gripper_closed_position: Optional[np.ndarray] = None,
+        gripper_open_position: np.ndarray | None = None,
+        gripper_closed_position: np.ndarray | None = None,
     ) -> None:
         self._articulation = None
         self._grippers_dof_names = gripper_dof_names
@@ -53,6 +53,7 @@ class ArticulationGripper(object):
 
         Returns:
             Array of joint positions for open state.
+
         """
         return self._gripper_open_position
 
@@ -62,6 +63,7 @@ class ArticulationGripper(object):
 
         Returns:
             Array of joint positions for closed state.
+
         """
         return self._gripper_closed_position
 
@@ -71,6 +73,7 @@ class ArticulationGripper(object):
 
         Returns:
             Array of DOF indices for the gripper joints.
+
         """
         return self._grippers_dof_indices
 
@@ -83,6 +86,7 @@ class ArticulationGripper(object):
 
         Raises:
             Exception: If not all gripper DOF names could be resolved.
+
         """
         self._articulation = SingleArticulation(root_prim_path)
         for index in len(self._articulation.dof_names):
@@ -103,6 +107,7 @@ class ArticulationGripper(object):
 
         Args:
             positions: Target positions for the gripper joints.
+
         """
         self._articulation.set_joint_positions(positions, self._grippers_dof_indices)
         self._articulation_controller.apply_action(
@@ -120,6 +125,7 @@ class ArticulationGripper(object):
 
         Returns:
             Array of current gripper joint positions.
+
         """
         # gripper_positions = np.zeros(len(self._grippers_dof_handles))
         # for i in range(len(self._grippers_dof_handles)):
@@ -132,6 +138,7 @@ class ArticulationGripper(object):
 
         Returns:
             Array of current gripper joint velocities.
+
         """
         # gripper_velocities = np.zeros(len(self._grippers_dof_handles))
         # for i in range(len(self._grippers_dof_handles)):
@@ -144,6 +151,7 @@ class ArticulationGripper(object):
 
         Args:
             velocities: Target velocities for the gripper joints.
+
         """
         # for i in range(len(self._grippers_dof_handles)):
         #     self._dc_interface.set_dof_velocity(self._grippers_dof_handles[i], velocities[i])
@@ -163,6 +171,7 @@ class ArticulationGripper(object):
 
         Args:
             action: The articulation action to apply.
+
         """
         action.joint_indices = self._grippers_dof_indices
         self._articulation_controller.apply_action(action)

@@ -13,7 +13,6 @@ icon = "data/icon.png"
 writeTarget.kit = true
 writeTarget.platform = true
 
-
 [deprecation]
 warning = "Extension deprecated since Isaac Sim 6.0.0 in favor of the experimental extension: isaacsim.replicator.experimental.mobility_gen"
 

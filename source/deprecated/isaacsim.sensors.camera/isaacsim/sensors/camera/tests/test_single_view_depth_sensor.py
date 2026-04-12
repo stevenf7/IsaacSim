@@ -48,7 +48,7 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
     ]
     GOLDEN_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "golden", "single_view_depth_sensor")
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         await create_new_stage_async()
@@ -56,7 +56,7 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
 
         self.test_dir = carb.tokens.get_tokens_interface().resolve("${temp}/test_camera_view_sensor")
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
@@ -65,11 +65,12 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
-    async def _create_test_environment(self):
+    async def _create_test_environment(self) -> tuple:
         """Create test environment with ground plane, cubes, cone, and depth camera.
 
         Returns:
             None.
+
         """
         await create_new_stage_async()
 
@@ -120,7 +121,7 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
 
         return camera, cube_1, cube_2, cone
 
-    async def test_getter_setter_methods(self):
+    async def test_getter_setter_methods(self) -> None:
         """Test getter and setter methods before and after initialization."""
         camera, _, _, _ = await self._create_test_environment()
 
@@ -205,7 +206,7 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
         camera.set_show_distance(True)
         self.assertTrue(camera.get_show_distance())
 
-    async def test_annotator_methods(self):
+    async def test_annotator_methods(self) -> None:
         """Test attaching and detaching annotators."""
         camera, _, _, _ = await self._create_test_environment()
 
@@ -240,7 +241,7 @@ class TestSingleViewDepthSensor(omni.kit.test.AsyncTestCase):
         with self.assertRaises(rep.annotators.AnnotatorRegistryError):
             camera.attach_annotator("InvalidAnnotator")
 
-    async def test_depth_sensor_distance_annotator(self):
+    async def test_depth_sensor_distance_annotator(self) -> None:
         """Test the DepthSensorDistance annotator output against golden image."""
         camera, _, _, _ = await self._create_test_environment()
 

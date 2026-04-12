@@ -15,10 +15,10 @@
 
 """Abstract task implementation for robot end effector target following scenarios."""
 
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import Optional
 
 import numpy as np
 from isaacsim.core.api.objects import VisualCuboid
@@ -41,16 +41,17 @@ class FollowTarget(ABC, BaseTask):
         target_position: Initial target position.
         target_orientation: Initial target orientation.
         offset: Offset for all task objects.
+
     """
 
     def __init__(
         self,
         name: str,
-        target_prim_path: Optional[str] = None,
-        target_name: Optional[str] = None,
-        target_position: Optional[np.ndarray] = None,
-        target_orientation: Optional[np.ndarray] = None,
-        offset: Optional[np.ndarray] = None,
+        target_prim_path: str | None = None,
+        target_name: str | None = None,
+        target_position: np.ndarray | None = None,
+        target_orientation: np.ndarray | None = None,
+        offset: np.ndarray | None = None,
     ) -> None:
         BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
@@ -70,6 +71,7 @@ class FollowTarget(ABC, BaseTask):
 
         Args:
             scene: The scene to populate.
+
         """
         super().set_up_scene(scene)
         scene.add_default_ground_plane()
@@ -101,15 +103,16 @@ class FollowTarget(ABC, BaseTask):
 
         Raises:
             NotImplementedError: Must be implemented by subclass.
+
         """
         raise NotImplementedError
 
     def set_params(
         self,
-        target_prim_path: Optional[str] = None,
-        target_name: Optional[str] = None,
-        target_position: Optional[np.ndarray] = None,
-        target_orientation: Optional[np.ndarray] = None,
+        target_prim_path: str | None = None,
+        target_name: str | None = None,
+        target_position: np.ndarray | None = None,
+        target_orientation: np.ndarray | None = None,
     ) -> None:
         """Set task parameters including target pose.
 
@@ -118,6 +121,7 @@ class FollowTarget(ABC, BaseTask):
             target_name: Name for target object.
             target_position: Target position.
             target_orientation: Target orientation.
+
         """
         if target_prim_path is not None:
             if self._target is not None:
@@ -157,8 +161,9 @@ class FollowTarget(ABC, BaseTask):
 
         Returns:
             Dictionary of task parameters.
+
         """
-        params_representation = dict()
+        params_representation = {}
         params_representation["target_prim_path"] = {"value": self._target.prim_path, "modifiable": True}
         params_representation["target_name"] = {"value": self._target.name, "modifiable": True}
         position, orientation = self._target.get_local_pose()
@@ -172,6 +177,7 @@ class FollowTarget(ABC, BaseTask):
 
         Returns:
             Dictionary with robot and target observations.
+
         """
         joints_state = self._robot.get_joints_state()
         target_position, target_orientation = self._target.get_local_pose()
@@ -196,6 +202,7 @@ class FollowTarget(ABC, BaseTask):
 
         Returns:
             Dictionary containing calculated task metrics.
+
         """
         raise NotImplementedError
 
@@ -207,6 +214,7 @@ class FollowTarget(ABC, BaseTask):
 
         Returns:
             Whether the task is complete.
+
         """
         raise NotImplementedError
 
@@ -215,6 +223,7 @@ class FollowTarget(ABC, BaseTask):
 
         Returns:
             True if target is reached, False otherwise.
+
         """
         end_effector_position, _ = self._robot.end_effector.get_world_pose()
         target_position, _ = self._target.get_world_pose()
@@ -229,6 +238,7 @@ class FollowTarget(ABC, BaseTask):
         Args:
             time_step_index: Current simulation step index.
             simulation_time: Current simulation time.
+
         """
         if self._target_visual_material is not None:
             if hasattr(self._target_visual_material, "set_color"):
@@ -251,6 +261,7 @@ class FollowTarget(ABC, BaseTask):
 
         Returns:
             The created obstacle cube object.
+
         """
         # TODO: move to task frame if there is one
         cube_prim_path = find_unique_string_name(
@@ -271,11 +282,12 @@ class FollowTarget(ABC, BaseTask):
         self._obstacle_cubes[cube.name] = cube
         return cube
 
-    def remove_obstacle(self, name: Optional[str] = None) -> None:
+    def remove_obstacle(self, name: str | None = None) -> None:
         """Remove an obstacle from the scene.
 
         Args:
             name: Name of obstacle to remove. Defaults to last added.
+
         """
         if name is not None:
             self.scene.remove_object(name)
@@ -286,11 +298,12 @@ class FollowTarget(ABC, BaseTask):
             del self._obstacle_cubes[obstacle_to_delete]
         return
 
-    def get_obstacle_to_delete(self):
+    def get_obstacle_to_delete(self) -> object:
         """Get the last obstacle that would be deleted.
 
         Returns:
             The obstacle object to be deleted.
+
         """
         obstacle_to_delete = list(self._obstacle_cubes.keys())[-1]
         return self.scene.get_object(obstacle_to_delete)
@@ -300,6 +313,7 @@ class FollowTarget(ABC, BaseTask):
 
         Returns:
             True if obstacles exist, False otherwise.
+
         """
         if len(self._obstacle_cubes) > 0:
             return True

@@ -37,12 +37,12 @@ class TemplateGenerator:
     and maintains consistent extension metadata across all generated templates.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_extension_id_by_module("isaacsim.examples.extension")
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
-    def _write_string_to_file(self, file_path: str, file_string: str):
+    def _write_string_to_file(self, file_path: str, file_string: str) -> None:
         """Writes a string to a file, creating directories as needed.
 
         Args:
@@ -51,9 +51,8 @@ class TemplateGenerator:
         """
         Path(os.path.dirname(file_path)).mkdir(parents=True, exist_ok=True)
 
-        f = open(file_path, "w+")
-        f.write(file_string)
-        f.close()
+        with open(file_path, "w+") as f:
+            f.write(file_string)
 
     def _copy_directory_contents(self, source_dir: str, target_dir: str) -> list[str]:
         """Recursively copies all files and directories from source to target directory.
@@ -82,7 +81,7 @@ class TemplateGenerator:
 
         return new_paths
 
-    def _replace_keywords(self, replace_dict: dict[str, str], file_paths: list[str]):
+    def _replace_keywords(self, replace_dict: dict[str, str], file_paths: list[str]) -> None:
         """Replaces keywords in template files with specified values.
 
         Args:
@@ -92,17 +91,15 @@ class TemplateGenerator:
         for file_path in file_paths:
             if file_path[-4:] == ".png":
                 continue
-            template = open(file_path, "r")
-            file_string = template.read()
+            with open(file_path) as template:
+                file_string = template.read()
 
             for k, v in replace_dict.items():
                 file_string = file_string.replace(k, v)
 
-            template.close()
-
             self._write_string_to_file(file_path, file_string)
 
-    def _write_common_data(self, file_path: str, extension_title: str, extension_description: str):
+    def _write_common_data(self, file_path: str, extension_title: str, extension_description: str) -> None:
         """Copies common template files and replaces standard keywords.
 
         Args:
@@ -146,7 +143,9 @@ class TemplateGenerator:
 
         return package_name
 
-    def generate_configuration_tooling_template(self, file_path: str, extension_title: str, extension_description: str):
+    def generate_configuration_tooling_template(
+        self, file_path: str, extension_title: str, extension_description: str
+    ) -> None:
         """Generates a configuration tooling workflow template.
 
         Args:
@@ -170,7 +169,9 @@ class TemplateGenerator:
 
         self._replace_keywords(replace_keywords, [os.path.join(target_dir, "global_variables.py")])
 
-    def generate_loaded_scenario_template(self, file_path: str, extension_title: str, extension_description: str):
+    def generate_loaded_scenario_template(
+        self, file_path: str, extension_title: str, extension_description: str
+    ) -> None:
         """Generates a loaded scenario workflow template.
 
         Args:
@@ -194,7 +195,7 @@ class TemplateGenerator:
 
         self._replace_keywords(replace_keywords, [os.path.join(target_dir, "global_variables.py")])
 
-    def generate_scripting_template(self, file_path: str, extension_title: str, extension_description: str):
+    def generate_scripting_template(self, file_path: str, extension_title: str, extension_description: str) -> None:
         """Generates a scripting workflow template.
 
         Args:
@@ -218,7 +219,9 @@ class TemplateGenerator:
 
         self._replace_keywords(replace_keywords, [os.path.join(target_dir, "global_variables.py")])
 
-    def generate_component_library_template(self, file_path: str, extension_title: str, extension_description: str):
+    def generate_component_library_template(
+        self, file_path: str, extension_title: str, extension_description: str
+    ) -> None:
         """Generates a UI component library template.
 
         Args:

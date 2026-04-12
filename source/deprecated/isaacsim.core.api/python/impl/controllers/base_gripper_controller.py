@@ -28,6 +28,7 @@ class BaseGripperController(BaseController):
 
     Args:
         name: Name identifier for the controller.
+
     """
 
     def __init__(self, name: str) -> None:
@@ -46,6 +47,7 @@ class BaseGripperController(BaseController):
 
         Returns:
             Action to apply to the gripper joints.
+
         """
         if action == "open":
             return self.open(current_joint_positions)
@@ -66,6 +68,7 @@ class BaseGripperController(BaseController):
 
         Returns:
             Action to open the gripper.
+
         """
         raise NotImplementedError
 
@@ -81,6 +84,7 @@ class BaseGripperController(BaseController):
 
         Returns:
             Action to close the gripper.
+
         """
         raise NotImplementedError
 

@@ -18,7 +18,6 @@
 from __future__ import annotations
 
 import weakref
-from typing import List, Optional, Tuple, Union
 
 import carb
 import carb.eventdispatcher
@@ -130,24 +129,26 @@ class RigidPrim(XFormPrim):
 
     def __init__(
         self,
-        prim_paths_expr: Union[str, List[str]],
+        prim_paths_expr: str | list[str],
         name: str = "rigid_prim_view",
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        translations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        scales: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        visibilities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None = None,
+        translations: np.ndarray | torch.Tensor | wp.array | None = None,
+        orientations: np.ndarray | torch.Tensor | wp.array | None = None,
+        scales: np.ndarray | torch.Tensor | wp.array | None = None,
+        visibilities: np.ndarray | torch.Tensor | wp.array | None = None,
         reset_xform_properties: bool = True,
-        masses: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        densities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        linear_velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        angular_velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        masses: np.ndarray | torch.Tensor | wp.array | None = None,
+        densities: np.ndarray | torch.Tensor | wp.array | None = None,
+        linear_velocities: np.ndarray | torch.Tensor | wp.array | None = None,
+        angular_velocities: np.ndarray | torch.Tensor | wp.array | None = None,
         track_contact_forces: bool = False,
         prepare_contact_sensors: bool = True,
         disable_stablization: bool = True,
-        contact_filter_prim_paths_expr: Optional[List[str]] = [],
+        contact_filter_prim_paths_expr: list[str] | None = None,
         max_contact_count: int = 0,
-    ):
+    ) -> None:
+        if contact_filter_prim_paths_expr is None:
+            contact_filter_prim_paths_expr = []
         self._physics_view = None
         self._num_shapes = None
         self._contact_filter_prim_paths_expr = contact_filter_prim_paths_expr
@@ -209,7 +210,7 @@ class RigidPrim(XFormPrim):
         self._invalidation_callback = None
         return
 
-    def _invalidate_physics_handle_callback(self, event: object):
+    def _invalidate_physics_handle_callback(self, event: object) -> None:
         """Callback to invalidate the physics handle when physics simulation stops.
 
         Args:
@@ -254,9 +255,9 @@ class RigidPrim(XFormPrim):
 
     def set_world_poses(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None = None,
+        orientations: np.ndarray | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         usd: bool = True,
     ) -> None:
         """Set poses of prims in the view with respect to the world's frame.
@@ -297,7 +298,7 @@ class RigidPrim(XFormPrim):
             >>> prims.set_world_poses(positions, orientations, indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_positions, current_orientations = self.get_world_poses(clone=False)
@@ -320,12 +321,10 @@ class RigidPrim(XFormPrim):
 
     def get_world_poses(
         self,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         usd: bool = True,
-    ) -> Union[
-        Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
-    ]:
+    ) -> tuple[np.ndarray, np.ndarray] | tuple[torch.Tensor, torch.Tensor] | tuple[wp.indexedarray, wp.indexedarray]:
         """Get the poses of the prims in the view with respect to the world's frame.
 
         Args:
@@ -373,7 +372,7 @@ class RigidPrim(XFormPrim):
              [ 1.0000000e+00 -7.9806580e-07 -1.3064776e-07  5.3154917e-08]]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             pose = self._physics_view.get_transforms()
@@ -386,10 +385,8 @@ class RigidPrim(XFormPrim):
             return XFormPrim.get_world_poses(self, indices=indices, usd=usd)
 
     def get_local_poses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> Union[
-        Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
-    ]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> tuple[np.ndarray, np.ndarray] | tuple[torch.Tensor, torch.Tensor] | tuple[wp.indexedarray, wp.indexedarray]:
         """Get prim poses in the view with respect to the local frame (the prim's parent frame).
 
         Args:
@@ -435,7 +432,7 @@ class RigidPrim(XFormPrim):
              [ 1.0000000e+00 -7.9806864e-07 -1.3064822e-07  5.3155105e-08]]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             world_positions, world_orientations = self.get_world_poses(indices=indices)
@@ -459,9 +456,9 @@ class RigidPrim(XFormPrim):
 
     def set_local_poses(
         self,
-        translations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        translations: np.ndarray | torch.Tensor | wp.array | None = None,
+        orientations: np.ndarray | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set prim poses in the view with respect to the local frame (the prim's parent frame).
 
@@ -493,7 +490,7 @@ class RigidPrim(XFormPrim):
             >>> prims.set_local_poses(positions, orientations, indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self.is_physics_handle_valid():
             if translations is None or orientations is None:
                 current_translations, current_orientations = RigidPrim.get_local_poses(self, indices=indices)
@@ -526,8 +523,8 @@ class RigidPrim(XFormPrim):
 
     def set_linear_velocities(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        velocities: np.ndarray | torch.Tensor | wp.array | None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set the linear velocities of the prims in the view.
 
@@ -562,7 +559,7 @@ class RigidPrim(XFormPrim):
             >>> prims.set_linear_velocities(velocities, indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self._device is not None and "cuda" in self._device:
             carb.log_warn(
                 "set_linear_velocities function is not supported for the gpu pipeline, use set_velocities instead."
@@ -596,8 +593,8 @@ class RigidPrim(XFormPrim):
             return
 
     def get_linear_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the linear velocities of prims in the view.
 
         Args:
@@ -629,7 +626,7 @@ class RigidPrim(XFormPrim):
              [0. 0. 0.]]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
         if self.is_physics_handle_valid():
@@ -659,8 +656,8 @@ class RigidPrim(XFormPrim):
 
     def set_angular_velocities(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        velocities: np.ndarray | torch.Tensor | wp.array | None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set the angular velocities of the prims in the view.
 
@@ -696,7 +693,7 @@ class RigidPrim(XFormPrim):
             >>> prims.set_angular_velocities(velocities, indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if self._device is not None and "cuda" in self._device:
             carb.log_warn(
@@ -729,8 +726,8 @@ class RigidPrim(XFormPrim):
         return
 
     def get_angular_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the angular velocities of prims in the view.
 
         Args:
@@ -762,7 +759,7 @@ class RigidPrim(XFormPrim):
              [0. 0. 0.]]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if self.is_physics_handle_valid():
             angular_velocities = self._physics_view.get_velocities()
@@ -791,8 +788,8 @@ class RigidPrim(XFormPrim):
 
     def set_velocities(
         self,
-        velocities: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        velocities: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set the linear and angular velocities of the prims in the view at once.
 
@@ -829,7 +826,7 @@ class RigidPrim(XFormPrim):
             >>> prims.set_velocities(velocities, indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
         if self.is_physics_handle_valid():
@@ -844,8 +841,8 @@ class RigidPrim(XFormPrim):
         return
 
     def get_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the linear and angular velocities of prims in the view.
 
         Args:
@@ -877,7 +874,7 @@ class RigidPrim(XFormPrim):
              [0. 0. 0. 0. 0. 0.]]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
         if self.is_physics_handle_valid():
@@ -892,8 +889,8 @@ class RigidPrim(XFormPrim):
 
     def apply_forces(
         self,
-        forces: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        forces: np.ndarray | torch.Tensor | wp.array | None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         is_global: bool = True,
     ) -> None:
         """Applies forces to prims in the view.
@@ -919,7 +916,7 @@ class RigidPrim(XFormPrim):
             >>> prims.apply_forces(forces, indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             new_forces = self._backend_utils.create_zeros_tensor([self.count, 3], device=self._device, dtype="float32")
@@ -932,10 +929,10 @@ class RigidPrim(XFormPrim):
 
     def apply_forces_and_torques_at_pos(
         self,
-        forces: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        torques: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        forces: np.ndarray | torch.Tensor | wp.array | None = None,
+        torques: np.ndarray | torch.Tensor | wp.array | None = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         is_global: bool = True,
     ) -> None:
         """Applies forces and torques to prims in the view. The forces and/or torques can be in local or global coordinates.
@@ -969,7 +966,7 @@ class RigidPrim(XFormPrim):
             >>> prims.apply_forces_and_torques_at_pos(forces, torques, indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
@@ -1009,8 +1006,8 @@ class RigidPrim(XFormPrim):
             carb.log_warn("Physics Simulation View is not created yet")
 
     def get_masses(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get rigid body masses of prims in the view.
 
         Args:
@@ -1035,7 +1032,7 @@ class RigidPrim(XFormPrim):
             [999.99994 999.99994 999.99994]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if self.is_physics_handle_valid():
             current_values = self._backend_utils.move_data(
@@ -1060,8 +1057,8 @@ class RigidPrim(XFormPrim):
             return masses
 
     def get_inv_masses(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get rigid body inverse masses of prims in the view.
 
         Args:
@@ -1092,7 +1089,7 @@ class RigidPrim(XFormPrim):
              [0.001]]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._backend_utils.move_data(self._physics_view.get_inv_masses(), self._device)
@@ -1104,8 +1101,8 @@ class RigidPrim(XFormPrim):
             return None
 
     def get_coms(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get rigid body center of mass (COM) of bodies in the view.
 
         Args:
@@ -1151,7 +1148,7 @@ class RigidPrim(XFormPrim):
              [[1. 0. 0. 0.]]]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._backend_utils.move_data(
@@ -1171,8 +1168,8 @@ class RigidPrim(XFormPrim):
             return None
 
     def get_inertias(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get rigid body inertias of prims in the view.
 
         Args:
@@ -1203,7 +1200,7 @@ class RigidPrim(XFormPrim):
              [166.66667  0.  0.  0.  166.66667  0.  0.  0.  166.66667]]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._backend_utils.move_data(
@@ -1217,8 +1214,8 @@ class RigidPrim(XFormPrim):
             return None
 
     def get_inv_inertias(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get rigid body inverse inertias of prims in the view.
 
         Args:
@@ -1249,7 +1246,7 @@ class RigidPrim(XFormPrim):
              [0.006 0.    0.    0.    0.006 0.    0.    0.    0.006]]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_values = self._backend_utils.move_data(
@@ -1264,8 +1261,8 @@ class RigidPrim(XFormPrim):
 
     def set_masses(
         self,
-        masses: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        masses: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set body masses for prims in the view.
 
@@ -1286,7 +1283,7 @@ class RigidPrim(XFormPrim):
             >>> prims.set_masses(np.full(3, 10.0), indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         if self.is_physics_handle_valid():
             data = self._physics_view.get_masses().reshape(self.count)
@@ -1309,8 +1306,8 @@ class RigidPrim(XFormPrim):
 
     def set_inertias(
         self,
-        values: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        values: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set rigid body inertias for prims in the view.
 
@@ -1334,7 +1331,7 @@ class RigidPrim(XFormPrim):
             >>> prims.set_inertias(inertias, indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         if self.is_physics_handle_valid():
             data = self._physics_view.get_inertias()
@@ -1345,9 +1342,9 @@ class RigidPrim(XFormPrim):
 
     def set_coms(
         self,
-        positions: Union[np.ndarray, torch.Tensor, wp.array] = None,
-        orientations: Union[np.ndarray, torch.Tensor, wp.array] = None,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array = None,
+        orientations: np.ndarray | torch.Tensor | wp.array = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set body center of mass (COM) positions and orientations for bodies in the view.
 
@@ -1374,7 +1371,7 @@ class RigidPrim(XFormPrim):
             >>> prims.set_coms(positions, orientations, indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         if self.is_physics_handle_valid():
             coms = self._physics_view.get_coms().reshape((self.count, 7))
@@ -1406,8 +1403,8 @@ class RigidPrim(XFormPrim):
 
     def set_densities(
         self,
-        densities: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        densities: np.ndarray | torch.Tensor | wp.array | None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set densities of prims in the view.
 
@@ -1429,7 +1426,7 @@ class RigidPrim(XFormPrim):
             >>> prims.set_densities(np.full(3, 0.9), indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         read_idx = 0
         indices = self._backend_utils.to_list(indices)
@@ -1445,8 +1442,8 @@ class RigidPrim(XFormPrim):
         return
 
     def get_densities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get densities of prims in the view.
 
         Args:
@@ -1470,7 +1467,7 @@ class RigidPrim(XFormPrim):
             [0. 0. 0.]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         densities = np.zeros(shape=(indices.shape[0]), dtype=np.float32)
         write_idx = 0
@@ -1488,8 +1485,8 @@ class RigidPrim(XFormPrim):
 
     def set_sleep_thresholds(
         self,
-        thresholds: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        thresholds: np.ndarray | torch.Tensor | wp.array | None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set sleep thresholds of prims in the view.
 
@@ -1515,7 +1512,7 @@ class RigidPrim(XFormPrim):
             >>> prims.set_sleep_thresholds(np.full(3, 1e-5), indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         read_idx = 0
         indices = self._backend_utils.to_list(indices)
@@ -1532,8 +1529,8 @@ class RigidPrim(XFormPrim):
         return
 
     def get_sleep_thresholds(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get sleep thresholds of prims in the view.
 
         Search for *Rigid Body Dynamics* > *Sleeping* in |physx_docs| for more details
@@ -1561,7 +1558,7 @@ class RigidPrim(XFormPrim):
             [5.e-05 5.e-05 5.e-05]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         thresholds = np.zeros(indices.shape[0], dtype=np.float32)
         write_idx = 0
@@ -1579,9 +1576,7 @@ class RigidPrim(XFormPrim):
         thresholds = self._backend_utils.convert(thresholds, dtype="float32", device=self._device, indexed=True)
         return thresholds
 
-    def enable_rigid_body_physics(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> None:
+    def enable_rigid_body_physics(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> None:
         """Enable rigid body physics (enabled by default).
 
         When enabled, the objects will be moved by external forces such as gravity and collisions
@@ -1602,7 +1597,7 @@ class RigidPrim(XFormPrim):
             >>> prims.enable_rigid_body_physics(indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             data = self._physics_view.get_disable_simulations().reshape(self._count)
@@ -1623,9 +1618,7 @@ class RigidPrim(XFormPrim):
                 self._rigid_body_apis[i].GetRigidBodyEnabledAttr().Set(True)
             return
 
-    def disable_rigid_body_physics(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> None:
+    def disable_rigid_body_physics(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> None:
         """Disable rigid body physics (enabled by default).
 
         When disabled, the objects will not be moved by external forces such as gravity and collisions
@@ -1646,7 +1639,7 @@ class RigidPrim(XFormPrim):
             >>> prims.disable_rigid_body_physics(indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         if self.is_physics_handle_valid():
             data = self._physics_view.get_disable_simulations().reshape(self._count)
@@ -1685,7 +1678,7 @@ class RigidPrim(XFormPrim):
             >>> prims.enable_gravities(indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             data = self._physics_view.get_disable_gravities().reshape(self._count)
@@ -1724,7 +1717,7 @@ class RigidPrim(XFormPrim):
             >>> prims.disable_gravities(indices=np.array([0, 2, 4]))
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         if self.is_physics_handle_valid():
             data = self._physics_view.get_disable_gravities().reshape(self._count)
@@ -1926,7 +1919,7 @@ class RigidPrim(XFormPrim):
              [0. 0. 0.]]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         positions, orientations = self.get_world_poses()
         return DynamicsViewState(
             positions=positions,
@@ -1937,7 +1930,7 @@ class RigidPrim(XFormPrim):
 
     def get_net_contact_forces(
         self,
-        indices: np.ndarray | List | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
     ) -> np.ndarray | torch.Tensor | wp.indexedarray:
@@ -1979,7 +1972,7 @@ class RigidPrim(XFormPrim):
              [2.1966895e-05 0.0000000e+00 1.6349425e+02]]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if self._track_contact_forces:
             return self._contact_view.get_net_contact_forces(indices, clone, dt)
         else:
@@ -1990,7 +1983,7 @@ class RigidPrim(XFormPrim):
 
     def get_contact_force_matrix(
         self,
-        indices: np.ndarray | List | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
     ) -> np.ndarray | torch.Tensor | wp.indexedarray:
@@ -2031,7 +2024,7 @@ class RigidPrim(XFormPrim):
              [[ 0.0000000e+00  0.0000000e+00  0.0000000e+00]]]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if len(self._contact_filter_prim_paths_expr) != 0:
             return self._contact_view.get_contact_force_matrix(indices, clone, dt)
         else:
@@ -2042,10 +2035,10 @@ class RigidPrim(XFormPrim):
 
     def get_contact_force_data(
         self,
-        indices: np.ndarray | List | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> Tuple[
+    ) -> tuple[
         np.ndarray | torch.Tensor | wp.indexedarray,
         np.ndarray | torch.Tensor | wp.indexedarray,
         np.ndarray | torch.Tensor | wp.indexedarray,
@@ -2151,7 +2144,7 @@ class RigidPrim(XFormPrim):
              [8]]
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if len(self._contact_filter_prim_paths_expr) != 0:
             return self._contact_view.get_contact_force_data(indices, clone, dt)
         else:
@@ -2162,10 +2155,10 @@ class RigidPrim(XFormPrim):
 
     def get_friction_data(
         self,
-        indices: np.ndarray | List | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> Tuple[
+    ) -> tuple[
         np.ndarray | torch.Tensor | wp.indexedarray,
         np.ndarray | torch.Tensor | wp.indexedarray,
         np.ndarray | torch.Tensor | wp.indexedarray,
@@ -2194,7 +2187,7 @@ class RigidPrim(XFormPrim):
             contact data points per pair in the aforementioned buffers.
         """
         if not self._is_valid:
-            raise Exception("prim view {} is not a valid view".format(self._regex_prim_paths))
+            raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
         if len(self._contact_filter_prim_paths_expr) != 0:
             return self._contact_view.get_friction_data(indices, clone, dt)
         else:
@@ -2223,7 +2216,7 @@ class RigidPrim(XFormPrim):
             self._on_physics_ready(None)
         return
 
-    def _on_physics_ready(self, event: object):
+    def _on_physics_ready(self, event: object) -> None:
         """Initialize the physics simulation view for rigid body operations.
 
         Creates a rigid body view from the simulation manager, sets up default states, and initializes
@@ -2251,7 +2244,7 @@ class RigidPrim(XFormPrim):
                 self._dynamics_default_state.angular_velocities = (
                     angular_velocities.data if self._backend == "warp" else angular_velocities
                 )
-        carb.log_info("Rigid Prim View Device: {}".format(self._device))
+        carb.log_info(f"Rigid Prim View Device: {self._device}")
         if self._track_contact_forces:
             self._contact_view.initialize(simulation_view)
 

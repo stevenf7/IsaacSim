@@ -160,10 +160,10 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         """Test destroy windows."""
         from omni.kit.viewport.utility import create_viewport_window
 
-        window_1 = create_viewport_window()
-        window_2 = create_viewport_window()
-        window_3 = create_viewport_window()
-        window_4 = create_viewport_window()
+        create_viewport_window()
+        create_viewport_window()
+        create_viewport_window()
+        create_viewport_window()
         for i in range(10):
             await omni.kit.app.get_app().next_update_async()
 
@@ -210,7 +210,7 @@ class TestViewports(omni.kit.test.AsyncTestCase):
 
         viewport_api = get_active_viewport()
         camera_prim_path = "/Camera"
-        camera = Camera(prim_path=camera_prim_path, render_product_path=viewport_api.get_render_product_path())
+        Camera(prim_path=camera_prim_path, render_product_path=viewport_api.get_render_product_path())
 
         # TODO 106: calling initialize crashes, disabling because its not necessary for the test
         # camera.initialize()
@@ -236,8 +236,6 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(rotate_prop.Get().GetImaginary()[0], 0.176, delta=0.01)
         self.assertAlmostEqual(rotate_prop.Get().GetImaginary()[1], 0.425, delta=0.01)
         self.assertAlmostEqual(rotate_prop.Get().GetImaginary()[2], 0.820, delta=0.01)
-
-        camera = None
 
         stage = omni.usd.get_context().get_stage()
         camera_rot_xyz = stage.DefinePrim("/World/Camera_RotXYZ", "Camera")

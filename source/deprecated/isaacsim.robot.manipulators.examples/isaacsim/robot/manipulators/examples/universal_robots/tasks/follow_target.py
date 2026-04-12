@@ -15,7 +15,7 @@
 
 """Follow-target task definition for Universal Robots arms."""
 
-from typing import Optional
+from __future__ import annotations
 
 import isaacsim.core.api.tasks as tasks
 import numpy as np
@@ -43,15 +43,15 @@ class FollowTarget(tasks.FollowTarget):
     def __init__(
         self,
         name: str = "ur10_follow_target",
-        target_prim_path: Optional[str] = None,
-        target_name: Optional[str] = None,
-        target_position: Optional[np.ndarray] = None,
-        target_orientation: Optional[np.ndarray] = None,
-        offset: Optional[np.ndarray] = None,
-        ur10_prim_path: Optional[str] = None,
-        ur10_robot_name: Optional[str] = None,
+        target_prim_path: str | None = None,
+        target_name: str | None = None,
+        target_position: np.ndarray | None = None,
+        target_orientation: np.ndarray | None = None,
+        offset: np.ndarray | None = None,
+        ur10_prim_path: str | None = None,
+        ur10_robot_name: str | None = None,
         attach_gripper: bool = False,
-    ):
+    ) -> None:
         if target_orientation is None:
             target_orientation = euler_angles_to_quat(np.array([0, np.pi / 2.0, 0]))
         tasks.FollowTarget.__init__(

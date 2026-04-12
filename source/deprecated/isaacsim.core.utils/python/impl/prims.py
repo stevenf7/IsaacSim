@@ -15,6 +15,8 @@
 
 """Deprecated prim utility functions."""
 
+from __future__ import annotations
+
 # python
 import typing
 
@@ -34,7 +36,7 @@ from omni.usd.commands import DeletePrimsCommand, MovePrimCommand
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics  # noqa: F401 -- Gf is used inside eval() in set_prim_attribute_value
 
 
-def get_prim_at_path(prim_path: str, fabric: bool = False) -> typing.Union[Usd.Prim, usdrt.Usd._Usd.Prim]:
+def get_prim_at_path(prim_path: str, fabric: bool = False) -> Usd.Prim | usdrt.Usd._Usd.Prim:
     """Get the USD or Fabric Prim at a given path string.
 
     Args:
@@ -91,7 +93,7 @@ def is_prim_path_valid(prim_path: str, fabric: bool = False) -> bool:
         return False
 
 
-def get_prim_attribute_names(prim_path: str, fabric: bool = False) -> typing.List[str]:
+def get_prim_attribute_names(prim_path: str, fabric: bool = False) -> list[str]:
     """Get all the attribute names of a prim at the path.
 
     Args:
@@ -151,7 +153,7 @@ def get_prim_attribute_value(prim_path: str, attribute_name: str, fabric: bool =
         return attr.Get()
 
 
-def set_prim_attribute_value(prim_path: str, attribute_name: str, value: typing.Any, fabric: bool = False):
+def set_prim_attribute_value(prim_path: str, attribute_name: str, value: typing.Any, fabric: bool = False) -> None:
     """Set a prim attribute value.
 
     Args:
@@ -216,7 +218,7 @@ def define_prim(prim_path: str, prim_type: str = "Xform", fabric: bool = False) 
         Usd.Prim(</World/Shapes>)
     """
     if is_prim_path_valid(prim_path, fabric=fabric):
-        raise Exception("A prim already exists at prim path: {}".format(prim_path))
+        raise Exception(f"A prim already exists at prim path: {prim_path}")
     return get_current_stage(fabric=fabric).DefinePrim(prim_path, prim_type)
 
 
@@ -243,7 +245,7 @@ def get_prim_type_name(prim_path: str, fabric: bool = False) -> str:
         Cube
     """
     if not is_prim_path_valid(prim_path, fabric=fabric):
-        raise Exception("A prim does not exist at prim path: {}".format(prim_path))
+        raise Exception(f"A prim does not exist at prim path: {prim_path}")
     prim = get_prim_at_path(prim_path, fabric=fabric)
     if fabric:
         return prim.GetTypeName()
@@ -251,7 +253,7 @@ def get_prim_type_name(prim_path: str, fabric: bool = False) -> str:
         return prim.GetPrimTypeInfo().GetTypeName()
 
 
-def move_prim(path_from: str, path_to: str):
+def move_prim(path_from: str, path_to: str) -> None:
     """Run the Move command to change a prims USD Path in the stage.
 
     Args:
@@ -338,8 +340,8 @@ def get_first_matching_parent_prim(prim_path: str, predicate: typing.Callable[[s
 
 
 def get_all_matching_child_prims(
-    prim_path: str, predicate: typing.Callable[[str], bool] = lambda x: True, depth: typing.Optional[int] = None
-) -> typing.List[Usd.Prim]:
+    prim_path: str, predicate: typing.Callable[[str], bool] = lambda x: True, depth: int | None = None
+) -> list[Usd.Prim]:
     """Performs a breadth-first search starting from the root and returns all the prims matching the predicate.
 
     Args:
@@ -380,7 +382,7 @@ def get_all_matching_child_prims(
     return out
 
 
-def find_matching_prim_paths(prim_path_regex: str, prim_type: typing.Optional[str] = None) -> typing.List[str]:
+def find_matching_prim_paths(prim_path_regex: str, prim_type: str | None = None) -> list[str]:
     """Find all the matching prim paths in the stage based on Regex expression.
 
     Args:
@@ -407,7 +409,7 @@ def find_matching_prim_paths(prim_path_regex: str, prim_type: typing.Optional[st
     return _find_matching_prim_paths(prim_path_regex.replace(".*", "*"), stage_id, prim_type)
 
 
-def get_prim_children(prim: Usd.Prim) -> typing.List[Usd.Prim]:
+def get_prim_children(prim: Usd.Prim) -> list[Usd.Prim]:
     """Return the call of the USD Prim's GetChildren member function.
 
     Args:
@@ -628,7 +630,7 @@ def get_prim_path(prim: Usd.Prim) -> str:
         return None
 
 
-def set_prim_visibility(prim: Usd.Prim, visible: bool):
+def set_prim_visibility(prim: Usd.Prim, visible: bool) -> None:
     """Sets the visibility of the prim in the opened stage.
 
     .. note::
@@ -659,14 +661,14 @@ def set_prim_visibility(prim: Usd.Prim, visible: bool):
 def create_prim(
     prim_path: str,
     prim_type: str = "Xform",
-    position: typing.Optional[typing.Sequence[float]] = None,
-    translation: typing.Optional[typing.Sequence[float]] = None,
-    orientation: typing.Optional[typing.Sequence[float]] = None,
-    scale: typing.Optional[typing.Sequence[float]] = None,
-    usd_path: typing.Optional[str] = None,
-    semantic_label: typing.Optional[str] = None,
+    position: typing.Sequence[float] | None = None,
+    translation: typing.Sequence[float] | None = None,
+    orientation: typing.Sequence[float] | None = None,
+    scale: typing.Sequence[float] | None = None,
+    usd_path: str | None = None,
+    semantic_label: str | None = None,
     semantic_type: str = "class",
-    attributes: typing.Optional[dict] = None,
+    attributes: dict | None = None,
 ) -> Usd.Prim:
     """Create a prim into current USD stage.
 
@@ -758,7 +760,7 @@ def create_prim(
     return prim
 
 
-def delete_prim(prim_path: str):
+def delete_prim(prim_path: str) -> None:
     """Remove the USD Prim and its descendants from the scene if able.
 
     Args:
@@ -798,7 +800,7 @@ def get_prim_property(prim_path: str, property_name: str) -> typing.Any:
     return prim.GetAttribute(property_name).Get()
 
 
-def set_prim_property(prim_path: str, property_name: str, property_value: typing.Any):
+def set_prim_property(prim_path: str, property_name: str, property_value: typing.Any) -> None:
     """Set the attribute of the USD Prim at the path.
 
     Args:
@@ -819,7 +821,7 @@ def set_prim_property(prim_path: str, property_name: str, property_value: typing
     prim.GetAttribute(property_name).Set(property_value)
 
 
-def get_prim_object_type(prim_path: str) -> typing.Union[str, None]:
+def get_prim_object_type(prim_path: str) -> str | None:
     """Get the dynamic control object type of the USD Prim at the given path.
 
     If the prim at the path is of Dynamic Control type e.g.: rigid_body, joint, dof, articulation, attractor, d6joint,
@@ -910,7 +912,7 @@ def is_prim_non_root_articulation_link(prim_path: str) -> bool:
     return False
 
 
-def set_prim_hide_in_stage_window(prim: Usd.Prim, hide: bool):
+def set_prim_hide_in_stage_window(prim: Usd.Prim, hide: bool) -> None:
     """Set ``hide_in_stage_window`` metadata for a prim.
 
     .. warning ::
@@ -934,7 +936,7 @@ def set_prim_hide_in_stage_window(prim: Usd.Prim, hide: bool):
     prim.SetMetadata("hide_in_stage_window", hide)
 
 
-def set_prim_no_delete(prim: Usd.Prim, no_delete: bool):
+def set_prim_no_delete(prim: Usd.Prim, no_delete: bool) -> None:
     """Set ``no_delete`` metadata for a prim.
 
     .. note ::
@@ -958,7 +960,7 @@ def set_prim_no_delete(prim: Usd.Prim, no_delete: bool):
     prim.SetMetadata("no_delete", no_delete)
 
 
-def set_targets(prim: Usd.Prim, attribute: str, target_prim_paths: list):
+def set_targets(prim: Usd.Prim, attribute: str, target_prim_paths: list) -> None:
     """Set targets for a prim relationship attribute.
 
     Args:
@@ -1016,7 +1018,7 @@ def get_articulation_root_api_prim_path(prim_path: str) -> str:
         >>> prims_utils.get_articulation_root_api_prim_path("/World/env.*/Ant")
         /World/env.*/Ant/torso
     """
-    predicate = lambda path: get_prim_at_path(path).HasAPI(UsdPhysics.ArticulationRootAPI)
+    predicate = lambda path: get_prim_at_path(path).HasAPI(UsdPhysics.ArticulationRootAPI)  # noqa: E731
     # single prim
     if Sdf.Path.IsValidPathString(prim_path) and is_prim_path_valid(prim_path):
         prim = get_first_matching_child_prim(prim_path, predicate)

@@ -15,11 +15,12 @@
 
 """NumPy-based tensor operations and data manipulation utilities for Isaac Sim."""
 
+from __future__ import annotations
 
 import numpy as np
 
 
-def as_type(data: np.ndarray, dtype: str):
+def as_type(data: np.ndarray, dtype: str) -> np.ndarray | None:
     """Convert data to the specified data type.
 
     Args:
@@ -45,7 +46,7 @@ def as_type(data: np.ndarray, dtype: str):
         print(f"Type {dtype} not supported.")
 
 
-def convert(data: object, device: object = None, dtype: str = "float32", indexed: object = None):
+def convert(data: object, device: object = None, dtype: str = "float32", indexed: object = None) -> np.ndarray | None:
     """Convert data to a NumPy array with specified data type.
 
     Args:
@@ -60,7 +61,7 @@ def convert(data: object, device: object = None, dtype: str = "float32", indexed
     return as_type(np.asarray(data), dtype)
 
 
-def create_zeros_tensor(shape: object, dtype: str, device: object = None):
+def create_zeros_tensor(shape: object, dtype: str, device: object = None) -> np.ndarray | None:
     """Create a tensor of zeros with specified shape and data type.
 
     Args:
@@ -74,7 +75,7 @@ def create_zeros_tensor(shape: object, dtype: str, device: object = None):
     return as_type(np.zeros(shape), dtype)
 
 
-def create_tensor_from_list(data: list, dtype: str, device: object = None):
+def create_tensor_from_list(data: list, dtype: str, device: object = None) -> np.ndarray | None:
     """Create a tensor from a list with specified data type.
 
     Args:
@@ -88,7 +89,7 @@ def create_tensor_from_list(data: list, dtype: str, device: object = None):
     return as_type(np.array(data), dtype)
 
 
-def clone_tensor(data: np.ndarray, device: object = None):
+def clone_tensor(data: np.ndarray, device: object = None) -> np.ndarray:
     """Create a copy of the input data.
 
     Args:
@@ -101,7 +102,7 @@ def clone_tensor(data: np.ndarray, device: object = None):
     return np.copy(data)
 
 
-def resolve_indices(indices: object, count: int, device: object = None):
+def resolve_indices(indices: object, count: int, device: object = None) -> np.ndarray:
     """Resolve indices into a NumPy array format.
 
     Args:
@@ -120,7 +121,7 @@ def resolve_indices(indices: object, count: int, device: object = None):
     return result
 
 
-def move_data(data: np.ndarray, device: object = None):
+def move_data(data: np.ndarray, device: object = None) -> np.ndarray:
     """Move data to the specified device.
 
     Args:
@@ -133,7 +134,7 @@ def move_data(data: np.ndarray, device: object = None):
     return data
 
 
-def tensor_cat(data: list, device: object = None, dim: int = -1):
+def tensor_cat(data: list, device: object = None, dim: int = -1) -> np.ndarray:
     """Concatenate tensors along a specified dimension.
 
     Args:
@@ -147,7 +148,7 @@ def tensor_cat(data: list, device: object = None, dim: int = -1):
     return np.concatenate(data, axis=dim)
 
 
-def expand_dims(data: np.ndarray, axis: int):
+def expand_dims(data: np.ndarray, axis: int) -> np.ndarray:
     """Expand the dimensions of the data array.
 
     Args:
@@ -160,7 +161,7 @@ def expand_dims(data: np.ndarray, axis: int):
     return np.expand_dims(data, axis)
 
 
-def pad(data: np.ndarray, pad_width: object, mode: str = "constant", value: object = None):
+def pad(data: np.ndarray, pad_width: object, mode: str = "constant", value: object = None) -> np.ndarray:
     """Pad an array with specified padding mode and values.
 
     Args:
@@ -179,7 +180,7 @@ def pad(data: np.ndarray, pad_width: object, mode: str = "constant", value: obje
     return np.pad(data, pad_width, mode)
 
 
-def tensor_stack(data: list, dim: int = 0):
+def tensor_stack(data: list, dim: int = 0) -> np.ndarray:
     """Stack tensors along a new dimension.
 
     Args:
@@ -192,7 +193,7 @@ def tensor_stack(data: list, dim: int = 0):
     return np.stack(data, axis=dim)
 
 
-def to_list(data: object):
+def to_list(data: object) -> list:
     """Convert numpy array to list format.
 
     Args:
@@ -206,7 +207,7 @@ def to_list(data: object):
     return data
 
 
-def to_numpy(data: np.ndarray):
+def to_numpy(data: np.ndarray) -> np.ndarray:
     """Convert data to numpy array format.
 
     Args:
@@ -218,7 +219,7 @@ def to_numpy(data: np.ndarray):
     return data
 
 
-def assign(src: np.ndarray, dst: np.ndarray, indices: object):
+def assign(src: np.ndarray, dst: np.ndarray, indices: object) -> np.ndarray:
     """Assign source data to destination array at specified indices.
 
     Args:

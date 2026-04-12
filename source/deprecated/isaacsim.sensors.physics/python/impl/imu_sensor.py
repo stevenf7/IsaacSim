@@ -15,8 +15,7 @@
 
 """Implementation of a physics-based IMU (Inertial Measurement Unit) sensor for Isaac Sim."""
 
-
-from typing import Optional
+from __future__ import annotations
 
 import carb
 import numpy as np
@@ -59,16 +58,16 @@ class IMUSensor(BaseSensor):
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "imu_sensor",
-        frequency: Optional[int] = None,
-        dt: Optional[float] = None,
-        translation: Optional[np.ndarray] = None,
-        position: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        linear_acceleration_filter_size: Optional[int] = 1,
-        angular_velocity_filter_size: Optional[int] = 1,
-        orientation_filter_size: Optional[int] = 1,
-    ):
+        name: str | None = "imu_sensor",
+        frequency: int | None = None,
+        dt: float | None = None,
+        translation: np.ndarray | None = None,
+        position: np.ndarray | None = None,
+        orientation: np.ndarray | None = None,
+        linear_acceleration_filter_size: int | None = 1,
+        angular_velocity_filter_size: int | None = 1,
+        orientation_filter_size: int | None = 1,
+    ) -> None:
         if frequency is not None and dt is not None:
             raise Exception("Sensor Frequency and Sensor dt can't be both specified")
 
@@ -103,7 +102,7 @@ class IMUSensor(BaseSensor):
                 physx_scene_api = PhysxSchema.PhysxSceneAPI(current_physics_prim)
                 current_physics_frequency = physx_scene_api.GetTimeStepsPerSecondAttr().Get()
                 dt = 1.0 / current_physics_frequency
-            carb.log_warn("Creating a new IMU prim at path {}".format(prim_path))
+            carb.log_warn(f"Creating a new IMU prim at path {prim_path}")
             success, self._isaac_sensor_prim = omni.kit.commands.execute(
                 "IsaacSensorCreateImuSensor",
                 path="/" + self._sensor_name,
@@ -125,7 +124,7 @@ class IMUSensor(BaseSensor):
             )
         self._pause = False
         self._current_time = 0
-        self._current_frame = dict()
+        self._current_frame = {}
         self._current_frame["time"] = 0
         self._current_frame["physics_step"] = 0
         self._current_frame["lin_acc"] = self._backend_utils.create_zeros_tensor(

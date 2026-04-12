@@ -17,7 +17,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Sequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 import carb
 import numpy as np
@@ -82,14 +83,14 @@ class SingleArticulation(_SinglePrimWrapper):
         self,
         prim_path: str,
         name: str = "articulation",
-        position: Optional[Sequence[float]] = None,
-        translation: Optional[Sequence[float]] = None,
-        orientation: Optional[Sequence[float]] = None,
-        scale: Optional[Sequence[float]] = None,
-        visible: Optional[bool] = None,
+        position: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
+        orientation: Sequence[float] | None = None,
+        scale: Sequence[float] | None = None,
+        visible: bool | None = None,
         reset_xform_properties: bool = True,
-        articulation_controller: Optional["ArticulationController"] = None,
-    ):
+        articulation_controller: "ArticulationController" | None = None,
+    ) -> None:
         from isaacsim.core.simulation_manager import SimulationManager
 
         self._backend = SimulationManager.get_backend()
@@ -316,7 +317,7 @@ class SingleArticulation(_SinglePrimWrapper):
 
             >>> prim.initialize()
         """
-        carb.log_info("initializing handles for {}".format(self.prim_path))
+        carb.log_info(f"initializing handles for {self.prim_path}")
         self._articulation_controller.initialize(self._articulation_view)
         self._articulation_view.initialize(physics_sim_view=physics_sim_view)
         return

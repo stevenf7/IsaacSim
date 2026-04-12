@@ -227,7 +227,7 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
 
     async def test_count_labels_in_scene_new(self):
         """Test the count_labels_in_scene function using the new LabelsAPI."""
-        cube_paths = self.create_test_environment_new_labels()
+        self.create_test_environment_new_labels()
         # Count from root
         labels_dict = count_labels_in_scene()
 

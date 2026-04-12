@@ -15,7 +15,7 @@
 
 """Stacking controller for Universal Robots arms."""
 
-from typing import List, Optional
+from __future__ import annotations
 
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
 import numpy as np
@@ -41,9 +41,9 @@ class StackingController(manipulators_controllers.StackingController):
         name: str,
         gripper: SurfaceGripper,
         robot_articulation: SingleArticulation,
-        picking_order_cube_names: List[str],
+        picking_order_cube_names: list[str],
         robot_observation_name: str,
-    ):
+    ) -> None:
         manipulators_controllers.StackingController.__init__(
             self,
             name=name,
@@ -58,8 +58,8 @@ class StackingController(manipulators_controllers.StackingController):
     def forward(
         self,
         observations: dict,
-        end_effector_orientation: Optional[np.ndarray] = None,
-        end_effector_offset: Optional[np.ndarray] = None,
+        end_effector_orientation: np.ndarray | None = None,
+        end_effector_offset: np.ndarray | None = None,
     ) -> ArticulationAction:
         """Execute one step of the stacking controller.
 

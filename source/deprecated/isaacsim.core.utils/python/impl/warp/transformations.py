@@ -36,7 +36,7 @@ def _local_to_world(
     orientations: Any,
     world_pos: wp.array(dtype=float, ndim=2),
     world_rot: wp.array(dtype=float, ndim=2),
-):
+) -> None:
     """Warp kernel that transforms local poses to world coordinates.
 
     Applies parent transformations to convert local positions and orientations into world space.
@@ -57,7 +57,7 @@ def _local_to_world(
     parent_trans = wp.vec3(parent_translations[tid, 0], parent_translations[tid, 1], parent_translations[tid, 2])
     local_rot = wp.quat(orientations[tid, 1], orientations[tid, 2], orientations[tid, 3], orientations[tid, 0])
     local_pos = wp.vec3(positions[tid, 0], positions[tid, 1], positions[tid, 2])
-    pos = quat_rotate(parent_rot, local_pos) + parent_trans
+    pos = quat_rotate(parent_rot, local_pos) + parent_trans  # noqa: F821
     world_pos[tid, 0] = pos[0]
     world_pos[tid, 1] = pos[1]
     world_pos[tid, 2] = pos[2]
@@ -77,7 +77,7 @@ wp.overload(
 )
 
 
-def get_local_from_world(parent_transforms: object, positions: object, orientations: object, device: object):
+def get_local_from_world(parent_transforms: object, positions: object, orientations: object, device: object) -> tuple:
     """Converts world-space poses to local coordinates relative to parent transforms.
 
     Transforms world positions and orientations to local space using parent transformation matrices.
@@ -127,7 +127,9 @@ def get_local_from_world(parent_transforms: object, positions: object, orientati
     return world_pos, world_rot
 
 
-def get_world_from_local(parent_transforms: object, translations: object, orientations: object, device: object):
+def get_world_from_local(
+    parent_transforms: object, translations: object, orientations: object, device: object
+) -> tuple:
     """Transforms local poses to world coordinates using parent transformations.
 
     Converts local translations and orientations to world space by applying parent transformation
@@ -175,7 +177,7 @@ def get_world_from_local(parent_transforms: object, translations: object, orient
 
 
 @wp.kernel
-def _assign_pose(pose: wp.array(dtype=float, ndim=2), positions: Any, orientations: Any):
+def _assign_pose(pose: wp.array(dtype=float, ndim=2), positions: Any, orientations: Any) -> None:
     """Warp kernel that assigns position and orientation data to a pose array.
 
     Combines position and orientation arrays into a unified pose format.
@@ -203,7 +205,7 @@ wp.overload(
 )
 
 
-def get_pose(positions: object, orientations: object, device: object):
+def get_pose(positions: object, orientations: object, device: object) -> wp.array:
     """Combines position and orientation arrays into a unified pose representation.
 
     Creates a pose array containing both position and orientation data in a single structure.
@@ -228,7 +230,9 @@ def get_pose(positions: object, orientations: object, device: object):
 
 
 @wp.kernel
-def _assign_current_pose(pose: wp.array(dtype=wp.float32, ndim=2), current_positions: Any, current_orientations: Any):
+def _assign_current_pose(
+    pose: wp.array(dtype=wp.float32, ndim=2), current_positions: Any, current_orientations: Any
+) -> None:
     """Warp kernel that assigns current pose values to a pose array.
 
     Copies position and orientation data from current arrays into the pose array format.
@@ -273,7 +277,7 @@ def _assign_new_pose(
     indices: wp.array(dtype=wp.int32),
     has_positions: int,
     has_orientations: int,
-):
+) -> None:
     """Warp kernel that selectively assigns new pose values to specific indices in a pose array.
 
     Updates pose data at specified indices based on availability flags.
@@ -318,7 +322,7 @@ def assign_pose(
     indices: object,
     device: object,
     pose: object,
-):
+) -> wp.array:
     """Assigns pose data by combining current poses with selective updates.
 
     First populates the pose array with current position and orientation data, then selectively

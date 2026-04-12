@@ -28,7 +28,7 @@ class RMPFlowController(mg.MotionPolicyController):
         physics_dt: Physics timestep.
     """
 
-    def __init__(self, name: str, robot_articulation: SingleArticulation, physics_dt: float = 1.0 / 60.0):
+    def __init__(self, name: str, robot_articulation: SingleArticulation, physics_dt: float = 1.0 / 60.0) -> None:
         self.rmp_flow_config = mg.interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
         self.rmp_flow = mg.lula.motion_policies.RmpFlow(**self.rmp_flow_config)
 
@@ -44,7 +44,7 @@ class RMPFlowController(mg.MotionPolicyController):
         )
         return
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the RMPFlow controller to its default state.
 
         Resets the parent motion policy controller and restores the robot base pose to its default position and orientation.

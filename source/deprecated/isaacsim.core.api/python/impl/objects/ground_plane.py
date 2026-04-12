@@ -15,8 +15,9 @@
 
 """Module for creating and managing ground plane objects in Isaac Sim."""
 
+from __future__ import annotations
 
-from typing import Optional, Sequence, Tuple
+from collections.abc import Sequence
 
 import carb
 import numpy as np
@@ -64,23 +65,24 @@ class GroundPlane(object):
         >>> plane = GroundPlane(prim_path="/World/GroundPlane", z_position=0)
         >>> plane
         <isaacsim.core.api.objects.ground_plane.GroundPlane object at 0x7f15d003fb50>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "ground_plane",
-        size: Optional[float] = None,
-        z_position: Optional[float] = None,
-        scale: Optional[np.ndarray] = None,
-        visible: Optional[bool] = None,
-        color: Optional[np.ndarray] = None,
-        physics_material: Optional[PhysicsMaterial] = None,
-        visual_material: Optional[VisualMaterial] = None,
+        size: float | None = None,
+        z_position: float | None = None,
+        scale: np.ndarray | None = None,
+        visible: bool | None = None,
+        color: np.ndarray | None = None,
+        physics_material: PhysicsMaterial | None = None,
+        visual_material: VisualMaterial | None = None,
     ) -> None:
         # wrap two object the xform and the collision plane
         if not is_prim_path_valid(prim_path):
-            carb.log_info("Creating a new Ground Plane prim at path {}".format(prim_path))
+            carb.log_info(f"Creating a new Ground Plane prim at path {prim_path}")
             stage = get_current_stage()
             if size is None:
                 size = 50.0 / get_stage_units()
@@ -156,11 +158,12 @@ class GroundPlane(object):
 
             >>> plane.prim_path
             /World/GroundPlane
+
         """
         return self._xform_prim.prim_path
 
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> str | None:
         """Name given to the prim when instantiating it.
 
         Returns:
@@ -172,6 +175,7 @@ class GroundPlane(object):
 
             >>> plane.name
             ground_plane
+
         """
         return self._xform_prim.name
 
@@ -188,6 +192,7 @@ class GroundPlane(object):
 
             >>> plane.prim
             Usd.Prim(</World/GroundPlane>)
+
         """
         return self._xform_prim.prim
 
@@ -204,6 +209,7 @@ class GroundPlane(object):
 
             >>> plane.xform_prim
             <isaacsim.core.prims.single_xform_prim.SingleXFormPrim object at 0x7f1578d32560>
+
         """
         return self._xform_prim
 
@@ -220,6 +226,7 @@ class GroundPlane(object):
 
             >>> plane.collision_geometry_prim
             <isaacsim.core.prims.single_geometry_prim.SingleGeometryPrim object at 0x7f15ff3461a0>
+
         """
         return self._collision_prim
 
@@ -239,6 +246,7 @@ class GroundPlane(object):
         .. code-block:: python
 
             >>> plane.initialize()
+
         """
         self._xform_prim.initialize(physics_sim_view=physics_sim_view)
         self._collision_prim.initialize(physics_sim_view=physics_sim_view)
@@ -252,6 +260,7 @@ class GroundPlane(object):
         .. code-block:: python
 
             >>> plane.post_reset()
+
         """
         self._xform_prim.post_reset()
         self._collision_prim.post_reset()
@@ -270,6 +279,7 @@ class GroundPlane(object):
             >>> # given an existing and valid prim
             >>> plane.is_valid()
             True
+
         """
         return self._xform_prim.is_valid()
 
@@ -297,6 +307,7 @@ class GroundPlane(object):
             ...     restitution=0.1
             ... )
             >>> plane.apply_physics_material(material)
+
         """
         self._collision_prim.apply_physics_material(
             physics_material=physics_material, weaker_than_descendants=weaker_than_descendants
@@ -315,11 +326,12 @@ class GroundPlane(object):
 
             >>> plane.get_applied_physics_material()
             <isaacsim.core.api.materials.physics_material.PhysicsMaterial object at 0x7f517ff62920>
+
         """
         return self._collision_prim.get_applied_physics_material()
 
     def set_world_pose(
-        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+        self, position: Sequence[float] | None = None, orientation: Sequence[float] | None = None
     ) -> None:
         """Sets prim's pose with respect to the world's frame.
 
@@ -341,12 +353,13 @@ class GroundPlane(object):
         .. code-block:: python
 
             >>> plane.set_world_pose(position=np.array([0.0, 0.0, 0.5]), orientation=np.array([1., 0., 0., 0.]))
+
         """
         self._collision_prim.set_world_pose(position=position, orientation=orientation)
         self._xform_prim.set_world_pose(position=position, orientation=orientation)
         return
 
-    def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_world_pose(self) -> tuple[np.ndarray, np.ndarray]:
         """Get prim's pose with respect to the world's frame.
 
         Returns:
@@ -363,6 +376,7 @@ class GroundPlane(object):
             [0. 0. 0.]
             >>> orientation
             [1. 0. 0. 0.]
+
         """
         return self._xform_prim.get_world_pose()
 
@@ -384,11 +398,12 @@ class GroundPlane(object):
             [0. 0. 0.]
             >>> state.orientation
             [1. 0. 0. 0.]
+
         """
         return self._xform_prim.get_default_state()
 
     def set_default_state(
-        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+        self, position: Sequence[float] | None = None, orientation: Sequence[float] | None = None
     ) -> None:
         """Sets the default state of the prim (position and orientation), that will be used after each reset.
 
@@ -406,6 +421,7 @@ class GroundPlane(object):
             >>>
             >>> # set default states during post-reset
             >>> plane.post_reset()
+
         """
         self._xform_prim.set_default_state(position=position, orientation=orientation)
         self._collision_prim.set_default_state(position=position, orientation=orientation)

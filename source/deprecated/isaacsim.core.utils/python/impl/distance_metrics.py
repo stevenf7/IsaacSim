@@ -15,7 +15,6 @@
 
 """Deprecated distance metric functions."""
 
-import typing
 
 # omniverse
 import carb
@@ -25,7 +24,7 @@ from pxr import Gf
 # python
 
 
-def _standardize_transform_matrix(t1: typing.Union[np.ndarray, Gf.Matrix4d]) -> np.ndarray:
+def _standardize_transform_matrix(t1: np.ndarray | Gf.Matrix4d) -> np.ndarray:
     """Check that input matrix is 4x4 and convert it to a numpy array.
 
     .. note::
@@ -48,7 +47,7 @@ def _standardize_transform_matrix(t1: typing.Union[np.ndarray, Gf.Matrix4d]) -> 
     return t1
 
 
-def _standardize_rotation_matrix(r1: typing.Union[np.ndarray, Gf.Matrix3d, Gf.Matrix4d]) -> np.ndarray:
+def _standardize_rotation_matrix(r1: np.ndarray | Gf.Matrix3d | Gf.Matrix4d) -> np.ndarray:
     """Extract rotation matrix from input and convert it to numpy array.
 
     If input matrix is a 4x4 matrix, then the rotation matrix component is extracted.
@@ -78,7 +77,7 @@ def _standardize_rotation_matrix(r1: typing.Union[np.ndarray, Gf.Matrix3d, Gf.Ma
     return r1
 
 
-def _standardize_translation_vector(t1: typing.Union[np.ndarray, Gf.Matrix4d]) -> np.ndarray:
+def _standardize_translation_vector(t1: np.ndarray | Gf.Matrix4d) -> np.ndarray:
     """Extract translation vector from input and convert it to numpy array.
 
     If input matrix is a 4x4 matrix, then the translation component is extracted.
@@ -103,8 +102,8 @@ def _standardize_translation_vector(t1: typing.Union[np.ndarray, Gf.Matrix4d]) -
 
 
 def weighted_translational_distance(
-    t1: typing.Union[np.ndarray, Gf.Matrix4d],
-    t2: typing.Union[np.ndarray, Gf.Matrix4d],
+    t1: np.ndarray | Gf.Matrix4d,
+    t2: np.ndarray | Gf.Matrix4d,
     weight_matrix: np.ndarray = np.eye(3),
 ) -> np.ndarray:
     """Computes the weighted distance between two translation vectors.
@@ -144,7 +143,7 @@ def weighted_translational_distance(
 
 
 def rotational_distance_angle(
-    r1: typing.Union[np.ndarray, Gf.Matrix3d, Gf.Matrix4d], r2: typing.Union[np.ndarray, Gf.Matrix3d, Gf.Matrix4d]
+    r1: np.ndarray | Gf.Matrix3d | Gf.Matrix4d, r2: np.ndarray | Gf.Matrix3d | Gf.Matrix4d
 ) -> np.ndarray:
     """Computes the weighted distance between two rotations using inner product.
 
@@ -167,7 +166,7 @@ def rotational_distance_angle(
 
 
 def rotational_distance_identity_matrix_deviation(
-    r1: typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d], r2: typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d]
+    r1: np.ndarray | Gf.Matrix4d | Gf.Matrix3d, r2: np.ndarray | Gf.Matrix4d | Gf.Matrix3d
 ) -> np.ndarray:
     """Computes the distance between two rotations using deviation from identity matrix.
 
@@ -191,8 +190,8 @@ def rotational_distance_identity_matrix_deviation(
 
 
 def rotational_distance_single_axis(
-    r1: typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d],
-    r2: typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d],
+    r1: np.ndarray | Gf.Matrix4d | Gf.Matrix3d,
+    r2: np.ndarray | Gf.Matrix4d | Gf.Matrix3d,
     axis: np.ndarray,
 ) -> np.ndarray:
     """Computes the distance between two rotations w.r.t. input axis.

@@ -15,6 +15,7 @@
 
 """Provides high-level cloth prim management functionality for cloth simulation objects in Isaac Sim."""
 
+from __future__ import annotations
 
 import carb
 import carb.eventdispatcher
@@ -93,7 +94,7 @@ class ClothPrim(XFormPrim):
         bend_stiffnesses: np.ndarray | torch.Tensor | None = None,
         shear_stiffnesses: np.ndarray | torch.Tensor | None = None,
         spring_dampings: np.ndarray | torch.Tensor | None = None,
-    ):
+    ) -> None:
         carb.log_warn(
             "Please note that support for particle cloth and related APIs is now deprecated. These features will be removed in future releases."
         )
@@ -211,7 +212,7 @@ class ClothPrim(XFormPrim):
         if physics_sim_view is None:
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
             physics_sim_view.set_subspace_roots("/")
-        carb.log_info("initializing view for {}".format(self._name))
+        carb.log_info(f"initializing view for {self._name}")
         if not carb.settings.get_settings().get_as_bool("/physics/suppressReadback"):
             carb.log_error("Using cloth view requires the gpu pipeline or (a World initialized with a cuda device)")
         self._physics_sim_view = physics_sim_view
@@ -221,7 +222,7 @@ class ClothPrim(XFormPrim):
         self._count = self._physics_view.count
         self._max_springs_per_cloth = self._physics_view.max_springs_per_cloth
         self._max_particles_per_cloth = self._physics_view.max_particles_per_cloth
-        carb.log_info("Cloth Prim View Device: {}".format(self._device))
+        carb.log_info(f"Cloth Prim View Device: {self._device}")
         return
 
     def _invalidate_physics_handle_callback(self, event: object) -> None:
@@ -233,7 +234,7 @@ class ClothPrim(XFormPrim):
         self._physics_view = None
         return
 
-    def _apply_cloth_auto_api(self, index: int):
+    def _apply_cloth_auto_api(self, index: int) -> None:
         """Apply PhysxAutoParticleClothAPI to the cloth prim at the specified index.
 
         Args:
@@ -246,7 +247,7 @@ class ClothPrim(XFormPrim):
                 cloth_api = PhysxSchema.PhysxAutoParticleClothAPI.Apply(self._prims[index])
             self._cloth_auto_apis[index] = cloth_api
 
-    def _apply_cloth_api(self, index: int):
+    def _apply_cloth_api(self, index: int) -> None:
         """Apply PhysxParticleClothAPI to the cloth prim at the specified index.
 
         Args:
@@ -259,7 +260,7 @@ class ClothPrim(XFormPrim):
                 cloth_api = PhysxSchema.PhysxParticleClothAPI.Apply(self._prims[index])
             self._cloth_apis[index] = cloth_api
 
-    def _apply_particle_api(self, index: int):
+    def _apply_particle_api(self, index: int) -> None:
         """Apply PhysxParticleAPI to the cloth prim at the specified index.
 
         Args:

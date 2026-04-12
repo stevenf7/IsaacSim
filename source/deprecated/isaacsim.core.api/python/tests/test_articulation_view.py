@@ -54,7 +54,6 @@ class TestArticulationView(CoreTestCase):
         World.clear_instance()
         await create_new_stage_async()
         self._assets_root_path = await get_assets_root_path_async()
-        pass
 
     # After running each test
     async def tearDown(self):
@@ -74,7 +73,6 @@ class TestArticulationView(CoreTestCase):
 
     async def add_frankas(self, backend):
         """Add frankas."""
-
         asset_path = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot1 = add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
         robot1.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
@@ -110,9 +108,7 @@ class TestArticulationView(CoreTestCase):
             positions = torch.tensor(positions)
         elif backend == "warp":
             positions = wp.array(positions, device="cpu", dtype=wp.float32)
-        humanoids_view = Articulation(
-            prim_paths_expr="/World/Humanoid_[1-2]", name="humanoids_view", positions=positions
-        )
+        Articulation(prim_paths_expr="/World/Humanoid_[1-2]", name="humanoids_view", positions=positions)
         self._humanoids_view = Articulation(prim_paths_expr="/World/Humanoid_[1-2]/torso", name="humanoids_view")
         self._my_world.scene.add(self._humanoids_view)
         await self._my_world.reset_async()
@@ -610,16 +606,15 @@ class TestArticulationView(CoreTestCase):
                     print("index:", indexed, "device:", device)
 
                     def step_callback_1(step_size, context):
-                        a = self._frankas_view.get_joint_positions()
+                        self._frankas_view.get_joint_positions()
 
-                    physics_sub = omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
+                    omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
                         pre_step=False, order=0, on_update=step_callback_1
                     )
                     await self._my_world.reset_async()
                     await update_stage_async()
                     await update_stage_async()
                     await self._my_world.reset_async()
-                    physics_sub = None
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
     async def test_local_pose_torch(self):
@@ -884,9 +879,7 @@ class TestArticulationView(CoreTestCase):
                     if usd:
                         await self._my_world.stop_async()
                     if indexed:
-                        old_efforts = self._frankas_view.get_max_efforts(
-                            indices=[1], joint_names=["panda_joint6", "panda_joint5"]
-                        )
+                        self._frankas_view.get_max_efforts(indices=[1], joint_names=["panda_joint6", "panda_joint5"])
                         new_efforts = torch.tensor([[100.0, 100.0]], device=device)
                         self._frankas_view.set_max_efforts(
                             new_efforts, indices=[1], joint_names=["panda_joint6", "panda_joint5"]
@@ -895,7 +888,7 @@ class TestArticulationView(CoreTestCase):
                             indices=[1], joint_names=["panda_joint6", "panda_joint5"]
                         )
                     else:
-                        old_efforts = self._frankas_view.get_max_efforts()
+                        self._frankas_view.get_max_efforts()
                         new_efforts = torch.tensor(
                             [
                                 [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 500.0],
@@ -919,12 +912,12 @@ class TestArticulationView(CoreTestCase):
                 if usd:
                     await self._my_world.stop_async()
                 if indexed:
-                    old_efforts = self._frankas_view.get_max_efforts(indices=[1], joint_indices=[1, 2])
+                    self._frankas_view.get_max_efforts(indices=[1], joint_indices=[1, 2])
                     new_efforts = np.array([[100.0, 100.0]])
                     self._frankas_view.set_max_efforts(new_efforts, indices=[1], joint_indices=[1, 2])
                     efforts = self._frankas_view.get_max_efforts(indices=[1], joint_indices=[1, 2])
                 else:
-                    old_efforts = self._frankas_view.get_max_efforts()
+                    self._frankas_view.get_max_efforts()
                     new_efforts = np.array(
                         [
                             [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 500.0],
@@ -948,12 +941,12 @@ class TestArticulationView(CoreTestCase):
                     if usd:
                         await self._my_world.stop_async()
                     if indexed:
-                        old_efforts = self._frankas_view.get_max_efforts(indices=[1], joint_indices=[1, 2])
+                        self._frankas_view.get_max_efforts(indices=[1], joint_indices=[1, 2])
                         new_efforts = wp.array([[100.0, 100.0]], device=device, dtype=wp.float32)
                         self._frankas_view.set_max_efforts(new_efforts, indices=[1], joint_indices=[1, 2])
                         efforts = self._frankas_view.get_max_efforts(indices=[1], joint_indices=[1, 2])
                     else:
-                        old_efforts = self._frankas_view.get_max_efforts()
+                        self._frankas_view.get_max_efforts()
                         new_efforts = wp.array(
                             [
                                 [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 500.0],
@@ -1244,7 +1237,7 @@ class TestArticulationView(CoreTestCase):
 
                 print("index:", indexed, "device:", device)
 
-                cur_value = self._cartpoles_view.get_joint_velocities()
+                self._cartpoles_view.get_joint_velocities()
                 await self._step()
                 if indexed:
                     new_value = torch.tensor([[0.1]], device=device)
@@ -1264,7 +1257,7 @@ class TestArticulationView(CoreTestCase):
         await self.setUpWorld(backend="numpy", device="cpu")
         await self.add_cartpoles(backend="numpy")
         for indexed in INDEXED:
-            cur_value = self._cartpoles_view.get_joint_velocities()
+            self._cartpoles_view.get_joint_velocities()
             await self._step()
             if indexed:
                 new_value = np.array([[0.1]])
@@ -1288,7 +1281,7 @@ class TestArticulationView(CoreTestCase):
 
                 print("index:", indexed, "device:", device)
 
-                cur_value = self._cartpoles_view.get_joint_velocities()
+                self._cartpoles_view.get_joint_velocities()
                 await self._step()
                 if indexed:
                     new_value = wp.array([[0.1]], device=device, dtype=wp.float32)
@@ -1313,7 +1306,7 @@ class TestArticulationView(CoreTestCase):
 
                 print("index:", indexed, "device:", device)
 
-                cur_value = self._frankas_view.get_joint_positions()
+                self._frankas_view.get_joint_positions()
                 if indexed:
                     new_value = torch.tensor([[0.02, 0.02]], device=device)
                     self._frankas_view.set_joint_positions(new_value, indices=[1], joint_indices=[7, 8])
@@ -1339,7 +1332,7 @@ class TestArticulationView(CoreTestCase):
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
 
-            cur_value = self._frankas_view.get_joint_positions()
+            self._frankas_view.get_joint_positions()
             if indexed:
                 new_value = np.array([[0.02, 0.02]])
                 self._frankas_view.set_joint_positions(new_value, indices=[1], joint_indices=[7, 8])
@@ -1365,7 +1358,7 @@ class TestArticulationView(CoreTestCase):
 
                 print("index:", indexed, "device:", device)
 
-                cur_value = self._frankas_view.get_joint_positions()
+                self._frankas_view.get_joint_positions()
                 if indexed:
                     new_value = wp.array([[0.02, 0.02]], device=device, dtype=wp.float32)
                     self._frankas_view.set_joint_positions(new_value, indices=[1], joint_indices=[7, 8])
@@ -1502,7 +1495,6 @@ class TestArticulationView(CoreTestCase):
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
     async def test_jacobians(self):
         """Test jacobians."""
-
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
                 await self.setUpWorld(backend=backend, device=device)
@@ -1529,7 +1521,6 @@ class TestArticulationView(CoreTestCase):
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
     async def test_mass_matrices(self):
         """Test mass matrices."""
-
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
                 await self.setUpWorld(backend=backend, device=device)
@@ -1555,7 +1546,6 @@ class TestArticulationView(CoreTestCase):
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
     async def test_coriolis_centrifugal(self):
         """Test coriolis centrifugal."""
-
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
                 await self.setUpWorld(backend=backend, device=device)
@@ -1575,7 +1565,6 @@ class TestArticulationView(CoreTestCase):
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
     async def test_generalized_gravity(self):
         """Test generalized gravity."""
-
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
                 await self.setUpWorld(backend=backend, device=device)
@@ -1626,7 +1615,6 @@ class TestArticulationView(CoreTestCase):
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
     async def test_masses_torch(self):
         """Test masses torch."""
-
         for device in ["cpu", "cuda:0"]:
             await self.setUpWorld(backend="torch", device=device)
             await self.add_frankas(backend="torch")
@@ -1677,7 +1665,6 @@ class TestArticulationView(CoreTestCase):
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
     async def test_masses_warp(self):
         """Test masses warp."""
-
         for device in ["cpu", "cuda:0"]:
             await self.setUpWorld(backend="warp", device=device)
             await self.add_frankas(backend="warp")
@@ -1765,7 +1752,6 @@ class TestArticulationView(CoreTestCase):
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
     async def test_inertia_torch(self):
         """Test inertia torch."""
-
         for device in ["cpu", "cuda:0"]:
             await self.setUpWorld(backend="torch", device=device)
             await self.add_frankas(backend="torch")
@@ -2526,7 +2512,7 @@ class TestArticulationView(CoreTestCase):
                         print("backend:", backend, "clone:", clone, "device:", device)
                         await self.setUpWorld(backend=backend, device=device)
                         await self.add_frankas(backend=backend)
-                        cur_value = self._frankas_view.get_measured_joint_efforts(clone=clone)
+                        self._frankas_view.get_measured_joint_efforts(clone=clone)
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
     async def test_get_measured_joint_forces(self):
@@ -2538,7 +2524,7 @@ class TestArticulationView(CoreTestCase):
                         print("backend:", backend, "clone:", clone, "device:", device)
                         await self.setUpWorld(backend=backend, device=device)
                         await self.add_frankas(backend=backend)
-                        cur_value = self._frankas_view.get_measured_joint_forces(clone=clone)
+                        self._frankas_view.get_measured_joint_forces(clone=clone)
                         # check joint name/index conversion
                         value_by_index = self._frankas_view.get_measured_joint_forces(
                             joint_indices=[self._frankas_view._metadata.joint_indices["panda_joint5"] + 1], clone=clone

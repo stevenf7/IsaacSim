@@ -15,8 +15,9 @@
 
 """High level wrappers for creating and manipulating capsule geometry prims with visual, collision, and physics properties."""
 
+from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 import numpy as np
 from isaacsim.core.api.materials.physics_material import PhysicsMaterial
@@ -70,27 +71,28 @@ class VisualCapsule(SingleGeometryPrim):
         ... )
         >>> prim
         <isaacsim.core.api.objects.capsule.VisualCapsule object at 0x7f4ff958b0d0>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "visual_capsule",
-        position: Optional[Sequence[float]] = None,
-        translation: Optional[Sequence[float]] = None,
-        orientation: Optional[Sequence[float]] = None,
-        scale: Optional[Sequence[float]] = None,
-        visible: Optional[bool] = None,
-        color: Optional[np.ndarray] = None,
-        radius: Optional[float] = None,
-        height: Optional[float] = None,
-        visual_material: Optional[VisualMaterial] = None,
+        position: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
+        orientation: Sequence[float] | None = None,
+        scale: Sequence[float] | None = None,
+        visible: bool | None = None,
+        color: np.ndarray | None = None,
+        radius: float | None = None,
+        height: float | None = None,
+        visual_material: VisualMaterial | None = None,
     ) -> None:
 
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Capsule):
-                raise Exception("The prim at path {} cannot be parsed as a Capsule object".format(prim_path))
+                raise Exception(f"The prim at path {prim_path} cannot be parsed as a Capsule object")
             capsule_geom = UsdGeom.Capsule(prim)
         else:
             capsule_geom = UsdGeom.Capsule.Define(get_current_stage(), prim_path)
@@ -142,6 +144,7 @@ class VisualCapsule(SingleGeometryPrim):
         .. code-block:: python
 
             >>> prim.set_radius(1.0)
+
         """
         self.geom.GetRadiusAttr().Set(radius)
         return
@@ -158,6 +161,7 @@ class VisualCapsule(SingleGeometryPrim):
 
             >>> prim.get_radius()
             0.5
+
         """
         return self.geom.GetRadiusAttr().Get()
 
@@ -172,6 +176,7 @@ class VisualCapsule(SingleGeometryPrim):
         .. code-block:: python
 
             >>> prim.set_height(2.0)
+
         """
         self.geom.GetHeightAttr().Set(height)
         return
@@ -188,6 +193,7 @@ class VisualCapsule(SingleGeometryPrim):
 
             >>> prim.get_height()
             1.0
+
         """
         return self.geom.GetHeightAttr().Get()
 
@@ -235,22 +241,23 @@ class FixedCapsule(VisualCapsule):
         ... )
         >>> print(prim)
         <isaacsim.core.api.objects.capsule.FixedCapsule object at 0x7f520c0d4790>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "fixed_capsule",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
-        visible: Optional[bool] = None,
-        color: Optional[np.ndarray] = None,
-        radius: Optional[np.ndarray] = None,
-        height: Optional[float] = None,
-        visual_material: Optional[VisualMaterial] = None,
-        physics_material: Optional[PhysicsMaterial] = None,
+        position: np.ndarray | None = None,
+        translation: np.ndarray | None = None,
+        orientation: np.ndarray | None = None,
+        scale: np.ndarray | None = None,
+        visible: bool | None = None,
+        color: np.ndarray | None = None,
+        radius: np.ndarray | None = None,
+        height: float | None = None,
+        visual_material: VisualMaterial | None = None,
+        physics_material: PhysicsMaterial | None = None,
     ) -> None:
         if not is_prim_path_valid(prim_path):
             # set default values if no physics material given
@@ -334,26 +341,27 @@ class DynamicCapsule(SingleRigidPrim, FixedCapsule):
         ... )
         >>> prim
         <isaacsim.core.api.objects.capsule.DynamicCapsule object at 0x7f4ff915f8e0>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "dynamic_capsule",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
-        visible: Optional[bool] = None,
-        color: Optional[np.ndarray] = None,
-        radius: Optional[np.ndarray] = None,
-        height: Optional[np.ndarray] = None,
-        visual_material: Optional[VisualMaterial] = None,
-        physics_material: Optional[PhysicsMaterial] = None,
-        mass: Optional[float] = None,
-        density: Optional[float] = None,
-        linear_velocity: Optional[Sequence[float]] = None,
-        angular_velocity: Optional[Sequence[float]] = None,
+        position: np.ndarray | None = None,
+        translation: np.ndarray | None = None,
+        orientation: np.ndarray | None = None,
+        scale: np.ndarray | None = None,
+        visible: bool | None = None,
+        color: np.ndarray | None = None,
+        radius: np.ndarray | None = None,
+        height: np.ndarray | None = None,
+        visual_material: VisualMaterial | None = None,
+        physics_material: PhysicsMaterial | None = None,
+        mass: float | None = None,
+        density: float | None = None,
+        linear_velocity: Sequence[float] | None = None,
+        angular_velocity: Sequence[float] | None = None,
     ) -> None:
         if not is_prim_path_valid(prim_path):
             if mass is None:

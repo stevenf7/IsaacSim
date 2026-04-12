@@ -15,8 +15,9 @@
 
 """Single prim wrapper that provides a simplified interface for manipulating individual USD prims."""
 
+from __future__ import annotations
 
-from typing import Optional, Sequence, Tuple
+from collections.abc import Sequence
 
 import numpy as np
 from isaacsim.core.utils.types import XFormPrimState
@@ -274,7 +275,7 @@ class _SinglePrimWrapper(object):
         return self._prim_view.is_visual_material_applied()[0]
 
     def set_world_pose(
-        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+        self, position: Sequence[float] | None = None, orientation: Sequence[float] | None = None
     ) -> None:
         """Set prim's pose with respect to the world's frame.
 
@@ -306,7 +307,7 @@ class _SinglePrimWrapper(object):
         self._prim_view.set_world_poses(positions=position, orientations=orientation)
         return
 
-    def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_world_pose(self) -> tuple[np.ndarray, np.ndarray]:
         """Get prim's pose with respect to the world's frame.
 
         Returns:
@@ -330,7 +331,7 @@ class _SinglePrimWrapper(object):
         else:
             return positions[0], orientations[0]
 
-    def get_local_pose(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_local_pose(self) -> tuple[np.ndarray, np.ndarray]:
         """Get prim's pose with respect to the local frame (the prim's parent frame).
 
         Returns:
@@ -355,7 +356,7 @@ class _SinglePrimWrapper(object):
             return translations[0], orientations[0]
 
     def set_local_pose(
-        self, translation: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+        self, translation: Sequence[float] | None = None, orientation: Sequence[float] | None = None
     ) -> None:
         """Set prim's pose with respect to the local frame (the prim's parent frame).
 
@@ -402,7 +403,7 @@ class _SinglePrimWrapper(object):
         """
         return self._prim_view.get_world_scales()[0]
 
-    def set_local_scale(self, scale: Optional[Sequence[float]]) -> None:
+    def set_local_scale(self, scale: Sequence[float] | None) -> None:
         """Set prim's scale with respect to the local frame (the prim's parent frame).
 
         Args:
@@ -454,7 +455,7 @@ class _SinglePrimWrapper(object):
         """
         return self._prim_view.is_valid()
 
-    def _view_state_conversion(self, view_state: object):
+    def _view_state_conversion(self, view_state: object) -> object:
         """Convert view state to XFormPrimState format.
 
         Args:

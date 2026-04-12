@@ -15,8 +15,7 @@
 
 """Module for creating and managing physics materials with friction and restitution properties."""
 
-
-from typing import Optional
+from __future__ import annotations
 
 import carb
 import isaacsim.core.utils.stage as stage_utils
@@ -32,22 +31,23 @@ class PhysicsMaterial(object):
         static_friction: Static friction coefficient.
         dynamic_friction: Dynamic friction coefficient.
         restitution: Restitution (bounciness) coefficient.
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "physics_material",
-        static_friction: Optional[float] = None,
-        dynamic_friction: Optional[float] = None,
-        restitution: Optional[float] = None,
+        static_friction: float | None = None,
+        dynamic_friction: float | None = None,
+        restitution: float | None = None,
     ) -> None:
         self._name = name
         self._prim_path = prim_path
 
         stage = stage_utils.get_current_stage()
         if stage.GetPrimAtPath(prim_path).IsValid():
-            carb.log_info("Physics Material Prim already defined at path: {}".format(prim_path))
+            carb.log_info(f"Physics Material Prim already defined at path: {prim_path}")
             self._material = UsdShade.Material(stage.GetPrimAtPath(prim_path))
         else:
             self._material = UsdShade.Material.Define(stage, prim_path)
@@ -70,6 +70,7 @@ class PhysicsMaterial(object):
 
         Returns:
             The prim path string.
+
         """
         return self._prim_path
 
@@ -79,6 +80,7 @@ class PhysicsMaterial(object):
 
         Returns:
             The Usd.Prim object.
+
         """
         return self._prim
 
@@ -88,6 +90,7 @@ class PhysicsMaterial(object):
 
         Returns:
             The material name.
+
         """
         return self._name
 
@@ -97,6 +100,7 @@ class PhysicsMaterial(object):
 
         Returns:
             The UsdShade.Material object.
+
         """
         return self._material
 
@@ -105,6 +109,7 @@ class PhysicsMaterial(object):
 
         Args:
             friction: The dynamic friction coefficient value.
+
         """
         if self._material_api.GetDynamicFrictionAttr().Get() is None:
             self._material_api.CreateDynamicFrictionAttr().Set(friction)
@@ -117,6 +122,7 @@ class PhysicsMaterial(object):
 
         Returns:
             The dynamic friction coefficient value.
+
         """
         if self._material_api.GetDynamicFrictionAttr().Get() is None:
             carb.log_warn("A dynamic friction attribute is not set yet")
@@ -129,6 +135,7 @@ class PhysicsMaterial(object):
 
         Args:
             friction: The static friction coefficient value.
+
         """
         if self._material_api.GetStaticFrictionAttr().Get() is None:
             self._material_api.CreateStaticFrictionAttr().Set(friction)
@@ -141,6 +148,7 @@ class PhysicsMaterial(object):
 
         Returns:
             The static friction coefficient value.
+
         """
         if self._material_api.GetStaticFrictionAttr().Get() is None:
             carb.log_warn("A static friction attribute is not set yet")
@@ -153,6 +161,7 @@ class PhysicsMaterial(object):
 
         Args:
             restitution: The restitution coefficient value.
+
         """
         if self._material_api.GetRestitutionAttr().Get() is None:
             self._material_api.CreateRestitutionAttr().Set(restitution)
@@ -165,6 +174,7 @@ class PhysicsMaterial(object):
 
         Returns:
             The restitution coefficient value.
+
         """
         if self._material_api.GetRestitutionAttr().Get() is None:
             carb.log_warn("A restitution attribute is not set yet")

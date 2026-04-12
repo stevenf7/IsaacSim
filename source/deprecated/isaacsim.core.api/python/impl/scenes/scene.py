@@ -15,10 +15,10 @@
 
 """Scene management system for Isaac Sim environments that provides methods to add, manage, and interact with objects in the USD stage."""
 
+from __future__ import annotations
 
 import builtins
 import gc
-from typing import Optional, Tuple
 
 import carb
 import numpy as np
@@ -78,6 +78,7 @@ class Scene(object):
         >>> scene = Scene()
         >>> scene
         <isaacsim.core.api.scenes.scene.Scene object at 0x...>
+
     """
 
     def __init__(self) -> None:
@@ -107,6 +108,7 @@ class Scene(object):
             Usd.Stage.Open(rootLayer=Sdf.Find('anon:0x...usd'),
                            sessionLayer=Sdf.Find('anon:0x...usda'),
                            pathResolverContext=<invalid repr>)
+
         """
         return get_current_stage()
 
@@ -131,9 +133,10 @@ class Scene(object):
             >>> prims = XFormPrim(prim_paths_expr="/World")
             >>> scene.add(prims)
             <isaacsim.core.prims.XFormPrim object at 0x...>
+
         """
         if self._scene_registry.name_exists(obj.name):
-            raise Exception("Cannot add the object {} to the scene since its name is not unique".format(obj.name))
+            raise Exception(f"Cannot add the object {obj.name} to the scene since its name is not unique")
         if isinstance(obj, SingleRigidPrim):
             self._scene_registry.add_rigid_object(name=obj.name, rigid_object=obj)
         elif isinstance(obj, RigidPrim):
@@ -186,14 +189,14 @@ class Scene(object):
 
     def add_ground_plane(
         self,
-        size: Optional[float] = None,
+        size: float | None = None,
         z_position: float = 0,
         name: str = "ground_plane",
         prim_path: str = "/World/groundPlane",
         static_friction: float = 0.5,
         dynamic_friction: float = 0.5,
         restitution: float = 0.8,
-        color: Optional[np.ndarray] = None,
+        color: np.ndarray | None = None,
     ) -> GroundPlane:
         """Create a ground plane and add it to the scene registry.
 
@@ -217,9 +220,10 @@ class Scene(object):
 
             >>> scene.add_ground_plane()
             <isaacsim.core.api.objects.ground_plane.GroundPlane object at 0x...>
+
         """
         if Scene.object_exists(self, name=name):
-            carb.log_info("ground floor already created with name {}.".format(name))
+            carb.log_info(f"ground floor already created with name {name}.")
             return Scene.get_object(self, name=name)
         physics_material_path = find_unique_string_name(
             initial_name="/World/Physics_Materials/physics_material", is_unique_fn=lambda x: not is_prim_path_valid(x)
@@ -271,9 +275,10 @@ class Scene(object):
             >>> scene.add_default_ground_plane()
             server...
             <isaacsim.core.api.objects.ground_plane.GroundPlane object at 0x...>
+
         """
         if Scene.object_exists(self, name=name):
-            carb.log_info("ground floor already created with name {}.".format(name))
+            carb.log_info(f"ground floor already created with name {name}.")
             return Scene.get_object(self, name=name)
         assets_root_path = get_assets_root_path()
         if assets_root_path is None:
@@ -301,6 +306,7 @@ class Scene(object):
         .. code-block:: python
 
             >>> scene.post_reset()
+
         """
         prim_registries_available = [
             self._scene_registry._geometry_objects,
@@ -342,6 +348,7 @@ class Scene(object):
 
         Args:
             physics_sim_view: Physics simulation view to initialize objects with.
+
         """
         for xform_name, xform_object in self._scene_registry.xforms.items():
             xform_object.initialize(physics_sim_view)
@@ -399,6 +406,7 @@ class Scene(object):
 
             >>> # given a default ground plane named 'default_ground_plane'
             >>> scene.remove_object("default_ground_plane")
+
         """
         prim_object = self.get_object(name=name)
         # sometimes the prim path is under a reference
@@ -452,6 +460,7 @@ class Scene(object):
             >>> # given a default ground plane named 'default_ground_plane'
             >>> scene.get_object("default_ground_plane")
             <isaacsim.core.api.objects.ground_plane.GroundPlane object at 0x...>
+
         """
         return self._scene_registry.get_object(name=name)
 
@@ -471,6 +480,7 @@ class Scene(object):
             >>> # given a default ground plane named 'default_ground_plane'
             >>> scene.object_exists("default_ground_plane")
             True
+
         """
         if self._scene_registry.name_exists(name):
             return True
@@ -488,6 +498,7 @@ class Scene(object):
         .. code-block:: python
 
             >>> scene.clear()
+
         """
         # Group all of the stage delete events together
         with Sdf.ChangeBlock():
@@ -539,7 +550,7 @@ class Scene(object):
                 self.remove_object(deformable_material_name, registry_only=registry_only)
         return
 
-    def compute_object_AABB(self, name: str) -> Tuple[np.ndarray, np.ndarray]:
+    def compute_object_AABB(self, name: str) -> tuple[np.ndarray, np.ndarray]:  # noqa: N802
         """Compute the bounding box points (minimum and maximum) of a registered object given its name.
 
         .. warning::
@@ -567,12 +578,13 @@ class Scene(object):
             array([-50., -50.,  0.])
             >>> bbox[1]  # maximum
             array([50., 50.,  0.])
+
         """
         if not self._enable_bounding_box_computations:
             raise Exception("bounding box computations should be enabled before querying AABB of an object")
         prim_object = self.get_object(name)
         if not hasattr(prim_object, "prim"):
-            carb.log_error(f"Computing AABB bounds supported only for single classes.")
+            carb.log_error("Computing AABB bounds supported only for single classes.")
             return None
         bounds = self._bbox_cache.ComputeWorldBound(prim_object.prim)
         prim_range = bounds.ComputeAlignedRange()
@@ -586,6 +598,7 @@ class Scene(object):
         .. code-block:: python
 
             >>> scene.enable_bounding_boxes_computations()
+
         """
         self._bbox_cache = UsdGeom.BBoxCache(
             time=Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_], useExtentsHint=False
@@ -601,6 +614,7 @@ class Scene(object):
         .. code-block:: python
 
             >>> scene.disable_bounding_boxes_computations()
+
         """
         self._bbox_cache = None
         self._enable_bounding_box_computations = False

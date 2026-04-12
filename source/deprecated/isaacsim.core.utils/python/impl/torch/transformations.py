@@ -52,7 +52,7 @@ def tf_matrices_from_poses(
     return result
 
 
-def get_local_from_world(parent_transforms: object, positions: object, orientations: object, device: object):
+def get_local_from_world(parent_transforms: object, positions: object, orientations: object, device: object) -> tuple:
     """Converts world-space positions and orientations to local-space relative to parent transforms.
 
     Args:
@@ -79,7 +79,9 @@ def get_local_from_world(parent_transforms: object, positions: object, orientati
     return calculated_translations, calculated_orientations
 
 
-def get_world_from_local(parent_transforms: object, translations: object, orientations: object, device: object):
+def get_world_from_local(
+    parent_transforms: object, translations: object, orientations: object, device: object
+) -> tuple:
     """Converts local-space translations and orientations to world-space using parent transforms.
 
     Args:
@@ -104,7 +106,7 @@ def get_world_from_local(parent_transforms: object, translations: object, orient
     return calculated_positions, calculated_orientations
 
 
-def get_pose(positions: object, orientations: object, device: object):
+def get_pose(positions: object, orientations: object, device: object) -> object:
     """Combines position and orientation arrays into a single pose tensor.
 
     Args:
@@ -124,7 +126,7 @@ def get_pose(positions: object, orientations: object, device: object):
 
 
 @torch.jit.script
-def get_world_from_local_position(pos_offset_local: torch.Tensor, pose_global: torch.Tensor):
+def get_world_from_local_position(pos_offset_local: torch.Tensor, pose_global: torch.Tensor):  # noqa: ANN201
     """Convert a point from the local frame to the global frame.
 
     Args:
@@ -144,7 +146,7 @@ def get_world_from_local_position(pos_offset_local: torch.Tensor, pose_global: t
 
 
 # NB: do not make this function jit, since it is passed around as an argument.
-def normalise_quat_in_pose(pose: object):
+def normalise_quat_in_pose(pose: object) -> object:  # noqa: N802
     """Takes a pose and normalises the quaternion portion of it.
 
     Args:
@@ -160,26 +162,26 @@ def normalise_quat_in_pose(pose: object):
 
 
 @torch.jit.script
-def tf_inverse(q, t):
+def tf_inverse(q, t):  # noqa: ANN001, ANN201
     """Compute the inverse of a transform given by quaternion and translation."""
     q_inv = quat_conjugate(q)
     return q_inv, -quat_apply(q_inv, t)
 
 
 @torch.jit.script
-def tf_apply(q, t, v):
+def tf_apply(q, t, v):  # noqa: ANN001, ANN201
     """Apply a rigid transform (quaternion + translation) to a vector."""
     return quat_apply(q, v) + t
 
 
 @torch.jit.script
-def tf_vector(q, v):
+def tf_vector(q, v):  # noqa: ANN001, ANN201
     """Rotate a vector by a quaternion without translation."""
     return quat_apply(q, v)
 
 
 @torch.jit.script
-def tf_combine(q1, t1, q2, t2):
+def tf_combine(q1, t1, q2, t2):  # noqa: ANN001, ANN201
     """Combine two rigid transforms into a single transform."""
     return quat_mul(q1, q2), quat_apply(q1, t2) + t1
 
@@ -192,7 +194,7 @@ def assign_pose(
     indices: object,
     device: object,
     pose: object = None,
-):
+) -> object:
     """Assigns new pose values to specific indices in current pose arrays.
 
     Args:

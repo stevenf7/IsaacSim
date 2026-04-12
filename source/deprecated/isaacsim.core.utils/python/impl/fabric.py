@@ -21,7 +21,7 @@ import warp as wp
 @wp.kernel(enable_backward=False)
 def set_view_to_fabric_array(
     fabric_to_view: wp.fabricarray(dtype=wp.uint32), view_to_fabric: wp.array(ndim=1, dtype=wp.uint32)
-):
+) -> None:
     """Populate the view-to-fabric mapping array from the fabric-to-view mapping.
 
     Args:
@@ -40,7 +40,7 @@ def set_vec3d_array(
     view_to_fabric: wp.array(ndim=1, dtype=wp.uint32),
     new_vals: wp.array(ndim=2),
     view_indices: wp.array(ndim=1, dtype=wp.uint32),
-):
+) -> None:
     """Update 3D vector values in fabric array from a view array.
 
     Args:
@@ -64,7 +64,7 @@ def get_vec3d_array(
     view_to_fabric: wp.array(ndim=1, dtype=wp.uint32),
     result: wp.array(ndim=2, dtype=wp.float32),
     view_indices: wp.array(ndim=1, dtype=wp.uint32),
-):
+) -> None:
     """Extract 3D vector values from fabric array and store them in a view array.
 
     Args:
@@ -90,7 +90,7 @@ def set_quatf_array(
     view_to_fabric: wp.array(ndim=1, dtype=wp.uint32),
     new_vals: wp.array(ndim=2),
     view_indices: wp.array(ndim=1, dtype=wp.uint32),
-):
+) -> None:
     """Update quaternion values in fabric array from a view array.
 
     Args:
@@ -116,7 +116,7 @@ def get_quatf_array(
     view_to_fabric: wp.array(ndim=1, dtype=wp.uint32),
     result: wp.array(ndim=2, dtype=wp.float32),
     view_indices: wp.array(ndim=1, dtype=wp.uint32),
-):
+) -> None:
     """Extract quaternion values from fabric array and store them in a view array.
 
     Args:
@@ -137,7 +137,7 @@ def get_quatf_array(
 
 
 @wp.kernel(enable_backward=False)
-def arange_k(a: wp.array(dtype=wp.uint32)):
+def arange_k(a: wp.array(dtype=wp.uint32)) -> None:
     """Populate an array with sequential indices starting from 0.
 
     Args:
@@ -155,7 +155,7 @@ def decompose_fabric_transformation_matrix_to_warp_arrays(
     array_scales: wp.array(ndim=2, dtype=wp.float32),
     indices: wp.array(ndim=1, dtype=wp.uint32),
     mapping: wp.array(ndim=1, dtype=wp.uint32),
-):
+) -> None:
     """Decompose fabric transformation matrices into separate position, orientation, and scale arrays.
 
     Args:
@@ -199,7 +199,7 @@ def compose_fabric_transformation_matrix_from_warp_arrays(
     broadcast_scales: bool,
     indices: wp.array(ndim=1, dtype=wp.uint32),
     mapping: wp.array(ndim=1, dtype=wp.uint32),
-):
+) -> None:
     """Compose fabric transformation matrices from separate position, orientation, and scale arrays.
 
     Args:

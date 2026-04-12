@@ -15,14 +15,13 @@
 
 """Deprecated articulation utility functions."""
 
-import typing
 from copy import copy
 
 from isaacsim.core.utils.stage import get_current_stage
 from pxr import PhysxSchema, Usd, UsdPhysics
 
 
-def remove_articulation_root(prim: Usd.Prim):
+def remove_articulation_root(prim: Usd.Prim) -> None:
     """Remove the Articulation Root from `prim` if one exists.
 
     Args:
@@ -34,7 +33,7 @@ def remove_articulation_root(prim: Usd.Prim):
             prim.RemoveAPI(PhysxSchema.PhysxArticulationAPI)
 
 
-def add_articulation_root(prim: Usd.Prim):
+def add_articulation_root(prim: Usd.Prim) -> None:
     """Add an Articulation Root to `prim`.
 
     Args:
@@ -44,7 +43,7 @@ def add_articulation_root(prim: Usd.Prim):
     prim.ApplyAPI(PhysxSchema.PhysxArticulationAPI)
 
 
-def move_articulation_root(src_prim: Usd.Prim, dst_prim: Usd.Prim):
+def move_articulation_root(src_prim: Usd.Prim, dst_prim: Usd.Prim) -> None:
     """Move the Articulation Root from `src_prim` to `dst_prim`. If `src_prim` is not an.
 
     Articulation Root, nothing will happen.
@@ -58,7 +57,7 @@ def move_articulation_root(src_prim: Usd.Prim, dst_prim: Usd.Prim):
         add_articulation_root(dst_prim)
 
 
-def find_all_articulation_base_paths() -> typing.List:
+def find_all_articulation_base_paths() -> list:
     """Find all base Articulation paths on the stage.
 
     A base path is defined as the maximal path that contains every part of a robot. For example,

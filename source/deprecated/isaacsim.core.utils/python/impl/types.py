@@ -15,7 +15,7 @@
 
 """Deprecated type definitions for simulation data structures."""
 
-from typing import List, Optional, Union
+from __future__ import annotations
 
 import numpy as np
 from isaacsim.core.deprecation_manager import import_module
@@ -33,7 +33,7 @@ class DataFrame(object):
         data: Dictionary containing the simulation data.
     """
 
-    def __init__(self, current_time_step: int, current_time: float, data: dict):
+    def __init__(self, current_time_step: int, current_time: float, data: dict) -> None:
         self.current_time_step = current_time_step
         self.current_time = current_time
         self.data = data
@@ -55,7 +55,7 @@ class DataFrame(object):
         return str(self.get_dict())
 
     @classmethod
-    def init_from_dict(cls, dict_representation: dict):
+    def init_from_dict(cls, dict_representation: dict) -> "DataFrame":
         """Create a DataFrame instance from a dictionary.
 
         Args:
@@ -81,7 +81,7 @@ class DOFInfo(object):
         index: The index of this DOF in the articulation.
     """
 
-    def __init__(self, prim_path: str, handle: int, prim: Usd.Prim, index: int):
+    def __init__(self, prim_path: str, handle: int, prim: Usd.Prim, index: int) -> None:
         self.prim_path = prim_path
         self.handle = handle
         self.prim = prim
@@ -97,7 +97,7 @@ class XFormPrimState(object):
         orientation: The orientation quaternion (w, x, y, z) as a numpy array of shape (4,).
     """
 
-    def __init__(self, position: np.ndarray, orientation: np.ndarray):
+    def __init__(self, position: np.ndarray, orientation: np.ndarray) -> None:
         self.position = position
         self.orientation = orientation
 
@@ -110,7 +110,7 @@ class XFormPrimViewState(object):
         orientations: Quaternion orientations (scalar first) with shape (N, 4).
     """
 
-    def __init__(self, positions: Union[np.ndarray, torch.Tensor], orientations: Union[np.ndarray, torch.Tensor]):
+    def __init__(self, positions: np.ndarray | torch.Tensor, orientations: np.ndarray | torch.Tensor) -> None:
         self.positions = positions
         self.orientations = orientations
 
@@ -127,7 +127,7 @@ class DynamicState(object):
 
     def __init__(
         self, position: np.ndarray, orientation: np.ndarray, linear_velocity: np.ndarray, angular_velocity: np.ndarray
-    ):
+    ) -> None:
         self.position = position
         self.orientation = orientation
         self.linear_velocity = linear_velocity
@@ -146,11 +146,11 @@ class DynamicsViewState(object):
 
     def __init__(
         self,
-        positions: Union[np.ndarray, torch.Tensor],
-        orientations: Union[np.ndarray, torch.Tensor],
-        linear_velocities: Union[np.ndarray, torch.Tensor],
-        angular_velocities: Union[np.ndarray, torch.Tensor],
-    ):
+        positions: np.ndarray | torch.Tensor,
+        orientations: np.ndarray | torch.Tensor,
+        linear_velocities: np.ndarray | torch.Tensor,
+        angular_velocities: np.ndarray | torch.Tensor,
+    ) -> None:
         self.positions = positions
         self.orientations = orientations
         self.linear_velocities = linear_velocities
@@ -166,7 +166,7 @@ class JointsState(object):
         efforts: Joint efforts (torques/forces) array.
     """
 
-    def __init__(self, positions: np.ndarray, velocities: np.ndarray, efforts: np.ndarray):
+    def __init__(self, positions: np.ndarray, velocities: np.ndarray, efforts: np.ndarray) -> None:
         self.positions = positions
         self.velocities = velocities
         self.efforts = efforts
@@ -184,11 +184,11 @@ class ArticulationAction(object):
 
     def __init__(
         self,
-        joint_positions: Optional[Union[List, np.ndarray]] = None,
-        joint_velocities: Optional[Union[List, np.ndarray]] = None,
-        joint_efforts: Optional[Union[List, np.ndarray]] = None,
-        joint_indices: Optional[Union[List, np.ndarray]] = None,
-    ):
+        joint_positions: list | np.ndarray | None = None,
+        joint_velocities: list | np.ndarray | None = None,
+        joint_efforts: list | np.ndarray | None = None,
+        joint_indices: list | np.ndarray | None = None,
+    ) -> None:
         self.joint_positions = joint_positions
         self.joint_velocities = joint_velocities
         self.joint_efforts = joint_efforts
@@ -206,7 +206,7 @@ class ArticulationAction(object):
         if self.joint_efforts is not None and self.joint_efforts[index] is not None:
             return {"effort": self.joint_efforts[index]}
         else:
-            dof_action = dict()
+            dof_action = {}
             if self.joint_velocities is not None and self.joint_velocities[index] is not None:
                 dof_action["velocity"] = self.joint_velocities[index]
             if self.joint_positions is not None and self.joint_positions[index] is not None:
@@ -219,7 +219,7 @@ class ArticulationAction(object):
         Returns:
             Dictionary with joint_positions, joint_velocities, and joint_efforts.
         """
-        result = dict()
+        result = {}
         if self.joint_positions is not None:
             if isinstance(self.joint_positions, np.ndarray):
                 result["joint_positions"] = self.joint_positions.tolist()
@@ -251,7 +251,7 @@ class ArticulationAction(object):
         """
         return str(self.get_dict())
 
-    def get_length(self) -> Optional[int]:
+    def get_length(self) -> int | None:
         """Get the number of joints this action applies to.
 
         Returns:
@@ -298,12 +298,12 @@ class ArticulationActions(object):
 
     def __init__(
         self,
-        joint_positions: Optional[Union[List, np.ndarray]] = None,
-        joint_velocities: Optional[Union[List, np.ndarray]] = None,
-        joint_efforts: Optional[Union[List, np.ndarray]] = None,
-        joint_indices: Optional[Union[List, np.ndarray]] = None,
-        joint_names: Optional[List[str]] = None,
-    ):
+        joint_positions: list | np.ndarray | None = None,
+        joint_velocities: list | np.ndarray | None = None,
+        joint_efforts: list | np.ndarray | None = None,
+        joint_indices: list | np.ndarray | None = None,
+        joint_names: list[str] | None = None,
+    ) -> None:
         if joint_names is not None and joint_indices is not None:
             raise Exception("joint indices and joint names can't be both specified")
         self.joint_positions = joint_positions

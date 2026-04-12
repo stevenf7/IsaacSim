@@ -55,27 +55,27 @@ class MeshMerger(object):
         self.on_materials_changed_fn = None
 
     @property
-    def total_meshes(self):
+    def total_meshes(self) -> int:
         """Get the total number of meshes to be merged."""
         return self._total_meshes
 
     @property
-    def total_subsets(self):
+    def total_subsets(self) -> int:
         """Get the total number of geometry subsets across all meshes."""
         return self._total_subsets
 
     @property
-    def total_materials(self):
+    def total_materials(self) -> int:
         """Get the total number of unique materials across all meshes."""
         return self._total_materials
 
     @property
-    def meshes_to_merge(self):
+    def meshes_to_merge(self) -> list:
         """Get the list of mesh prims to be merged."""
         return self._meshes_to_merge
 
     @property
-    def clear_parent_xform(self):
+    def clear_parent_xform(self) -> bool:
         """Get whether to clear the parent transform when merging."""
         return self._clear_parent_xform
 
@@ -91,7 +91,7 @@ class MeshMerger(object):
         self._clear_parent_xform = value
 
     @property
-    def deactivate_source(self):
+    def deactivate_source(self) -> bool:
         """Get whether to deactivate source prims after merging."""
         return self._deactivate_source
 
@@ -106,12 +106,12 @@ class MeshMerger(object):
         self._deactivate_source = value
 
     @property
-    def selected_objects(self):
+    def selected_objects(self) -> list:
         """Get the list of selected prim paths."""
         return self._selected_objects
 
     @property
-    def combine_materials(self):
+    def combine_materials(self) -> bool:
         """Get whether to combine materials into a single destination."""
         return self._combine_materials
 
@@ -126,7 +126,7 @@ class MeshMerger(object):
         self._combine_materials = value
 
     @property
-    def materials_destination(self):
+    def materials_destination(self) -> str:
         """Get the destination path for combined materials."""
         return self._materials_destination
 
@@ -144,7 +144,7 @@ class MeshMerger(object):
             self.on_materials_changed_fn(value)
 
     @property
-    def output_mesh(self):
+    def output_mesh(self) -> str:
         """Get the output path for the merged mesh."""
         return self._output_mesh
 
@@ -212,9 +212,7 @@ class MeshMerger(object):
         for prim in self.selected_objects:
             curr_prim = self._stage.GetPrimAtPath(prim)
             materials = {}
-            primrange = [child_prim for child_prim in Usd.PrimRange(curr_prim, Usd.TraverseInstanceProxies())] + [
-                curr_prim
-            ]
+            primrange = list(Usd.PrimRange(curr_prim, Usd.TraverseInstanceProxies())) + [curr_prim]
             for child_prim in primrange:
                 imageable = UsdGeom.Imageable(child_prim)
                 if imageable:
@@ -261,7 +259,7 @@ class MeshMerger(object):
             self._total_subsets = total_subsets
             self._total_materials = len(materials)
 
-    def merge_meshes(self):
+    def merge_meshes(self) -> None:
         """Execute the mesh merge operation.
 
         Combines all meshes in the selection into a single merged mesh. This includes
@@ -447,7 +445,7 @@ class MeshMerger(object):
                 prim = self._stage.GetPrimAtPath(source)
                 prim.SetActive(False)
 
-    def reactivate_sources(self):
+    def reactivate_sources(self) -> None:
         """Reactivate source prims that were deactivated during merge.
 
         This is used by the undo operation to restore the original state.
@@ -457,7 +455,7 @@ class MeshMerger(object):
                 prim = self._stage.GetPrimAtPath(source)
                 prim.SetActive(True)
 
-    def remove_created_materials(self):
+    def remove_created_materials(self) -> None:
         """Remove materials that were created during the merge operation.
 
         This is used by the undo operation to clean up copied materials.

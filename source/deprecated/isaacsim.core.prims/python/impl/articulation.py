@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import weakref
 from collections import OrderedDict
-from typing import List, Optional, Tuple, Union
 
 import carb
 import carb.eventdispatcher
@@ -123,7 +122,7 @@ class Articulation(XFormPrim):
         scales: np.ndarray | torch.Tensor | wp.array | None = None,
         visibilities: np.ndarray | torch.Tensor | wp.array | None = None,
         reset_xform_properties: bool = True,
-    ):
+    ) -> None:
         self._physics_view = None
         if isinstance(prim_paths_expr, list):
             prim_paths_expr = [
@@ -178,7 +177,7 @@ class Articulation(XFormPrim):
         self._invalidation_callback = None
         return
 
-    def _invalidate_physics_handle_callback(self, event: object):
+    def _invalidate_physics_handle_callback(self, event: object) -> None:
         """Invalidate the physics view handle when the timeline stops.
 
         Args:
@@ -275,7 +274,7 @@ class Articulation(XFormPrim):
         return self._num_fixed_tendons
 
     @property
-    def body_names(self) -> List[str]:
+    def body_names(self) -> list[str]:
         """List of prim names for each rigid body (link) of the articulations.
 
         Returns:
@@ -295,7 +294,7 @@ class Articulation(XFormPrim):
         return self._body_names
 
     @property
-    def dof_names(self) -> List[str]:
+    def dof_names(self) -> list[str]:
         """List of prim names for each DOF of the articulations.
 
         Returns:
@@ -315,7 +314,7 @@ class Articulation(XFormPrim):
         return self._dof_names
 
     @property
-    def joint_names(self) -> List[str]:
+    def joint_names(self) -> list[str]:
         """List of prim names for each joint of the articulations.
 
         Returns:
@@ -345,7 +344,7 @@ class Articulation(XFormPrim):
         """
         return SimulationManager.get_physics_sim_view() is not None and self._physics_view is not None
 
-    def _convert_joint_names_to_indices(self, joint_names: object, dof_indices: bool = True):
+    def _convert_joint_names_to_indices(self, joint_names: object, dof_indices: bool = True) -> list:
         """Convert joint names to joint indices (or DOF indices if ``dof_indices`` is True).
 
         Args:
@@ -434,7 +433,7 @@ class Articulation(XFormPrim):
         else:
             return [self._dof_types[self.get_dof_index(dof_name)] for dof_name in dof_names]
 
-    def get_dof_limits(self) -> Union[np.ndarray, torch.Tensor]:
+    def get_dof_limits(self) -> np.ndarray | torch.Tensor:
         """Get the articulations DOFs limits (lower and upper).
 
         Returns:
@@ -472,7 +471,7 @@ class Articulation(XFormPrim):
             return None
         return self._physics_view.get_dof_limits()
 
-    def get_drive_types(self) -> Union[np.ndarray, torch.Tensor]:
+    def get_drive_types(self) -> np.ndarray | torch.Tensor:
         """Get the articulations DOFs drive types.
 
         Returns:
@@ -514,10 +513,10 @@ class Articulation(XFormPrim):
 
     def set_friction_coefficients(
         self,
-        values: Union[np.ndarray, torch.Tensor],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        values: np.ndarray | torch.Tensor,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
     ) -> None:
         """Set the friction coefficients for articulation joints in the view.
 
@@ -591,11 +590,11 @@ class Articulation(XFormPrim):
 
     def get_friction_coefficients(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.array]:
+    ) -> np.ndarray | torch.Tensor | wp.array:
         """Get the friction coefficients for the articulation joints in the view.
 
         Search for *"Joint Friction Coefficient"* in |physx_docs| for more details.
@@ -671,10 +670,10 @@ class Articulation(XFormPrim):
 
     def set_armatures(
         self,
-        values: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        values: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
     ) -> None:
         """Set armatures for articulation joints in the view.
 
@@ -744,11 +743,11 @@ class Articulation(XFormPrim):
 
     def get_armatures(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get armatures for articulation joints in the view.
 
         Search for *"Joint Armature"* in |physx_docs| for more details.
@@ -842,10 +841,10 @@ class Articulation(XFormPrim):
 
     def set_joint_position_targets(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
     ) -> None:
         """Set the joint position targets for the implicit Proportional-Derivative (PD) controllers.
 
@@ -909,10 +908,10 @@ class Articulation(XFormPrim):
 
     def set_joint_positions(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
     ) -> None:
         """Set the joint positions of articulations in the view.
 
@@ -977,10 +976,10 @@ class Articulation(XFormPrim):
 
     def set_joint_velocity_targets(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        velocities: np.ndarray | torch.Tensor | wp.array | None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
     ) -> None:
         """Set the joint velocity targets for the implicit Proportional-Derivative (PD) controllers.
 
@@ -1044,10 +1043,10 @@ class Articulation(XFormPrim):
 
     def set_joint_velocities(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        velocities: np.ndarray | torch.Tensor | wp.array | None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
     ) -> None:
         """Set the joint velocities of articulations in the view.
 
@@ -1113,10 +1112,10 @@ class Articulation(XFormPrim):
 
     def set_joint_efforts(
         self,
-        efforts: Optional[Union[np.ndarray, torch.Tensor, wp.array]],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        efforts: np.ndarray | torch.Tensor | wp.array | None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
     ) -> None:
         """Set the joint efforts of articulations in the view.
 
@@ -1185,11 +1184,11 @@ class Articulation(XFormPrim):
 
     def get_applied_joint_efforts(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the joint efforts of articulations in the view.
 
         This method will return the efforts set by the ``set_joint_efforts`` method
@@ -1251,11 +1250,11 @@ class Articulation(XFormPrim):
 
     def get_measured_joint_efforts(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Returns the efforts computed/measured by the physics solver of the joint forces in the DOF motion direction.
 
         Args:
@@ -1322,11 +1321,11 @@ class Articulation(XFormPrim):
 
     def get_measured_joint_forces(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | None = None,
+        joint_names: list[str] | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
+    ) -> np.ndarray | torch.Tensor:
         """Get the measured joint reaction forces and torques (link incoming joint forces and torques) to external loads.
 
         Forces and torques are reported in the local body reference frame (child joint frame of the link's incoming joint).
@@ -1435,11 +1434,11 @@ class Articulation(XFormPrim):
 
     def get_joint_positions(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the joint positions of articulations in the view.
 
         Args:
@@ -1507,11 +1506,11 @@ class Articulation(XFormPrim):
 
     def get_joint_velocities(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the joint velocities of articulations in the view.
 
         Args:
@@ -1582,7 +1581,7 @@ class Articulation(XFormPrim):
     def apply_action(
         self,
         control_actions: ArticulationActions,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Apply joint positions (targets), velocities (targets) and/or efforts to control an articulation.
 
@@ -1742,9 +1741,9 @@ class Articulation(XFormPrim):
 
     def set_world_poses(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None = None,
+        orientations: np.ndarray | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         usd: bool = True,
     ) -> None:
         """Set poses of prims in the view with respect to the world's frame.
@@ -1807,12 +1806,10 @@ class Articulation(XFormPrim):
 
     def get_world_poses(
         self,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         usd: bool = True,
-    ) -> Union[
-        Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
-    ]:
+    ) -> tuple[np.ndarray, np.ndarray] | tuple[torch.Tensor, torch.Tensor] | tuple[wp.indexedarray, wp.indexedarray]:
         """Get the poses of the prims in the view with respect to the world's frame.
 
         Args:
@@ -1875,10 +1872,8 @@ class Articulation(XFormPrim):
             return ret_pos, ret_rot
 
     def get_local_poses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> Union[
-        Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]
-    ]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> tuple[np.ndarray, np.ndarray] | tuple[torch.Tensor, torch.Tensor] | tuple[wp.indexedarray, wp.indexedarray]:
         """Get prim poses in the view with respect to the local frame (the prim's parent frame).
 
         Args:
@@ -1948,9 +1943,9 @@ class Articulation(XFormPrim):
 
     def set_local_poses(
         self,
-        translations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        translations: np.ndarray | torch.Tensor | wp.array | None = None,
+        orientations: np.ndarray | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set prim poses in the view with respect to the local frame (the prim's parent frame).
 
@@ -2024,9 +2019,9 @@ class Articulation(XFormPrim):
 
     def set_velocities(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
-    ):
+        velocities: np.ndarray | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+    ) -> None:
         """Set the linear and angular velocities of the prims in the view at once.
 
         The method does this through the PhysX API only. It has to be called after initialization
@@ -2076,8 +2071,8 @@ class Articulation(XFormPrim):
             self.set_angular_velocities(velocities[:, 3:6], indices=indices)
 
     def get_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the linear and angular velocities of prims in the view.
 
         Args:
@@ -2124,8 +2119,8 @@ class Articulation(XFormPrim):
 
     def set_linear_velocities(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        velocities: np.ndarray | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set the linear velocities of the prims in the view.
 
@@ -2184,8 +2179,8 @@ class Articulation(XFormPrim):
             carb.log_warn("Physics Simulation View is not created yet in order to use set_linear_velocities")
 
     def get_linear_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the linear velocities of prims in the view.
 
         Args:
@@ -2230,8 +2225,8 @@ class Articulation(XFormPrim):
 
     def set_angular_velocities(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        velocities: np.ndarray | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set the angular velocities of the prims in the view.
 
@@ -2290,8 +2285,8 @@ class Articulation(XFormPrim):
         return
 
     def get_angular_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the angular velocities of prims in the view.
 
         Args:
@@ -2336,9 +2331,9 @@ class Articulation(XFormPrim):
 
     def set_joints_default_state(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        velocities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        efforts: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None = None,
+        velocities: np.ndarray | torch.Tensor | wp.array | None = None,
+        efforts: np.ndarray | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set the joints default state (joint positions, velocities and efforts) to be applied after each reset.
 
@@ -2464,10 +2459,10 @@ class Articulation(XFormPrim):
 
     def get_effort_modes(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
-    ) -> List[str]:
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
+    ) -> list[str]:
         """Get effort modes for articulations in the view.
 
         Args:
@@ -2531,9 +2526,9 @@ class Articulation(XFormPrim):
     def set_effort_modes(
         self,
         mode: str,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | None = None,
+        joint_names: list[str] | None = None,
     ) -> None:
         """Set effort modes for articulations in the view.
 
@@ -2563,7 +2558,7 @@ class Articulation(XFormPrim):
             carb.log_warn("Articulation needs to be initialized.")
             return
         if mode not in ["force", "acceleration"]:
-            raise Exception("Effort Mode specified {} is not recognized".format(mode))
+            raise Exception(f"Effort Mode specified {mode} is not recognized")
         if joint_names is not None and joint_indices is not None:
             raise Exception("joint indices and joint names can't be both specified")
         if joint_names is not None:
@@ -2589,10 +2584,10 @@ class Articulation(XFormPrim):
 
     def set_max_efforts(
         self,
-        values: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        values: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
     ) -> None:
         """Set maximum efforts for articulation in the view.
 
@@ -2668,11 +2663,11 @@ class Articulation(XFormPrim):
 
     def get_max_efforts(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the maximum efforts for articulation in the view.
 
         Args:
@@ -2756,10 +2751,10 @@ class Articulation(XFormPrim):
 
     def set_max_joint_velocities(
         self,
-        values: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        values: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
     ) -> None:
         """Set maximum velocities for articulation in the view.
 
@@ -2797,11 +2792,11 @@ class Articulation(XFormPrim):
 
     def get_joint_max_velocities(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the maximum joint velocities for articulation dofs in the view.
 
         Args:
@@ -2844,11 +2839,11 @@ class Articulation(XFormPrim):
 
     def set_gains(
         self,
-        kps: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        kds: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        kps: np.ndarray | torch.Tensor | wp.array | None = None,
+        kds: np.ndarray | torch.Tensor | wp.array | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
         save_to_usd: bool = False,
     ) -> None:
         """Set the implicit Proportional-Derivative (PD) controller's Kps (stiffnesses) and Kds (dampings) of articulations in the view.
@@ -2982,11 +2977,11 @@ class Articulation(XFormPrim):
 
     def get_gains(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
         clone: bool = True,
-    ) -> Tuple[Union[np.ndarray, torch.Tensor], Union[np.ndarray, torch.Tensor], Union[wp.indexedarray, wp.index]]:
+    ) -> tuple[np.ndarray | torch.Tensor, np.ndarray | torch.Tensor, wp.indexedarray | wp.index]:
         """Get the implicit Proportional-Derivative (PD) controller's Kps (stiffnesses) and Kds (dampings) of articulations in the view.
 
         Args:
@@ -3100,9 +3095,9 @@ class Articulation(XFormPrim):
     def switch_control_mode(
         self,
         mode: str,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
     ) -> None:
         """Switch control mode between ``"position"``, ``"velocity"``, or ``"effort"`` for all joints.
 
@@ -3199,7 +3194,7 @@ class Articulation(XFormPrim):
         return
 
     def switch_dof_control_mode(
-        self, mode: str, dof_index: int, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
+        self, mode: str, dof_index: int, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
     ) -> None:
         """Switch control mode between ``"position"``, ``"velocity"``, or ``"effort"`` for the specified DOF.
 
@@ -3292,8 +3287,8 @@ class Articulation(XFormPrim):
 
     def set_solver_position_iteration_counts(
         self,
-        counts: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        counts: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set the solver (position) iteration count for the articulations.
 
@@ -3330,8 +3325,8 @@ class Articulation(XFormPrim):
         return
 
     def get_solver_position_iteration_counts(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the solver (position) iteration count for the articulations.
 
         The solver iteration count determines how accurately contacts, drives, and limits are resolved.
@@ -3368,8 +3363,8 @@ class Articulation(XFormPrim):
 
     def set_solver_velocity_iteration_counts(
         self,
-        counts: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        counts: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set the solver (velocity) iteration count for the articulations.
 
@@ -3405,8 +3400,8 @@ class Articulation(XFormPrim):
         return
 
     def get_solver_velocity_iteration_counts(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the solver (velocity) iteration count for the articulations.
 
         The solver iteration count determines how accurately contacts, drives, and limits are resolved.
@@ -3443,8 +3438,8 @@ class Articulation(XFormPrim):
 
     def set_stabilization_thresholds(
         self,
-        thresholds: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        thresholds: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set the mass-normalized kinetic energy below which the articulation may participate in stabilization.
 
@@ -3475,8 +3470,8 @@ class Articulation(XFormPrim):
         return
 
     def get_stabilization_thresholds(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the mass-normalized kinetic energy below which the articulations may participate in stabilization.
 
         Search for *Stabilization Threshold* in |physx_docs| for more details
@@ -3512,8 +3507,8 @@ class Articulation(XFormPrim):
 
     def set_enabled_self_collisions(
         self,
-        flags: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        flags: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set the enable self collisions flag (``physxArticulation:enabledSelfCollisions``).
 
@@ -3542,8 +3537,8 @@ class Articulation(XFormPrim):
         return
 
     def get_enabled_self_collisions(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the enable self collisions flag (``physxArticulation:enabledSelfCollisions``) for all articulations.
 
         Args:
@@ -3577,8 +3572,8 @@ class Articulation(XFormPrim):
 
     def set_sleep_thresholds(
         self,
-        thresholds: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        thresholds: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set the threshold for articulations to enter a sleep state.
 
@@ -3609,8 +3604,8 @@ class Articulation(XFormPrim):
         return
 
     def get_sleep_thresholds(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the threshold for articulations to enter a sleep state.
 
         Search for *Articulations and Sleeping* in |physx_docs| for more details
@@ -3644,7 +3639,7 @@ class Articulation(XFormPrim):
         result = self._backend_utils.convert(result, dtype="float32", device=self._device, indexed=True)
         return result
 
-    def get_jacobian_shape(self) -> Union[np.ndarray, torch.Tensor, wp.array]:
+    def get_jacobian_shape(self) -> np.ndarray | torch.Tensor | wp.array:
         """Get the Jacobian matrix shape of a single articulation.
 
         The Jacobian matrix maps the joint space velocities of a DOF to it's cartesian and angular velocities
@@ -3678,7 +3673,7 @@ class Articulation(XFormPrim):
         shape = self._physics_view.jacobian_shape
         return (shape[0] // 6, 6, shape[1])
 
-    def get_mass_matrix_shape(self) -> Union[np.ndarray, torch.Tensor, wp.array]:
+    def get_mass_matrix_shape(self) -> np.ndarray | torch.Tensor | wp.array:
         """Get the mass matrix shape of a single articulation.
 
         The mass matrix contains the generalized mass of the robot depending on the current configuration
@@ -3708,8 +3703,8 @@ class Articulation(XFormPrim):
         return self._physics_view.generalized_mass_matrix_shape
 
     def get_jacobians(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the Jacobian matrices of articulations in the view.
 
         .. note::
@@ -3761,8 +3756,8 @@ class Articulation(XFormPrim):
             return None
 
     def get_mass_matrices(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the mass matrices of articulations in the view.
 
         .. note::
@@ -3811,11 +3806,11 @@ class Articulation(XFormPrim):
 
     def get_coriolis_and_centrifugal_forces(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the Coriolis and centrifugal forces (joint DOF forces required to counteract Coriolis and.
 
         centrifugal forces for the given articulation state) of articulations in the view.
@@ -3885,11 +3880,11 @@ class Articulation(XFormPrim):
 
     def get_generalized_gravity_forces(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        joint_names: Optional[List[str]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_names: list[str] | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the generalized gravity forces (joint DOF forces required to counteract gravitational.
 
         forces for the given articulation pose) of articulations in the view.
@@ -3959,10 +3954,10 @@ class Articulation(XFormPrim):
 
     def get_body_masses(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        body_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get rigid body masses of articulations in the view.
 
         Args:
@@ -4019,10 +4014,10 @@ class Articulation(XFormPrim):
 
     def get_body_inv_masses(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        body_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get rigid body inverse masses of articulations in the view.
 
         Args:
@@ -4055,10 +4050,10 @@ class Articulation(XFormPrim):
 
     def get_body_coms(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        body_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get rigid body center of mass (COM) of articulations in the view.
 
         Args:
@@ -4138,10 +4133,10 @@ class Articulation(XFormPrim):
 
     def get_body_inertias(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        body_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get rigid body inertias of articulations in the view.
 
         Args:
@@ -4196,10 +4191,10 @@ class Articulation(XFormPrim):
 
     def get_body_inv_inertias(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        body_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get rigid body inverse inertias of articulations in the view.
 
         Args:
@@ -4255,10 +4250,10 @@ class Articulation(XFormPrim):
 
     def get_body_disable_gravity(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        body_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get whether the rigid bodies of articulations in the view have gravity disabled or not.
 
         Args:
@@ -4294,9 +4289,9 @@ class Articulation(XFormPrim):
 
     def set_body_masses(
         self,
-        values: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        values: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        body_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set body masses for articulation bodies in the view.
 
@@ -4340,9 +4335,9 @@ class Articulation(XFormPrim):
 
     def set_body_inertias(
         self,
-        values: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        values: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        body_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set body inertias for articulation bodies in the view.
 
@@ -4386,10 +4381,10 @@ class Articulation(XFormPrim):
 
     def set_body_coms(
         self,
-        positions: Union[np.ndarray, torch.Tensor, wp.array] = None,
-        orientations: Union[np.ndarray, torch.Tensor, wp.array] = None,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array = None,
+        orientations: np.ndarray | torch.Tensor | wp.array = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        body_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set body center of mass (COM) positions and orientations for articulation bodies in the view.
 
@@ -4453,9 +4448,9 @@ class Articulation(XFormPrim):
 
     def set_body_disable_gravity(
         self,
-        values: Union[np.ndarray, torch.Tensor, wp.array],
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
-        body_indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        values: np.ndarray | torch.Tensor | wp.array,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        body_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set body gravity activation articulation bodies in the view.
 
@@ -4484,8 +4479,8 @@ class Articulation(XFormPrim):
             carb.log_warn("Physics Simulation View is not created yet in order to use set_body_disable_gravity")
 
     def get_fixed_tendon_stiffnesses(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the stiffness of fixed tendons for articulations in the view.
 
         Search for *Fixed Tendon* in |physx_docs| for more details
@@ -4526,8 +4521,8 @@ class Articulation(XFormPrim):
             return None
 
     def get_fixed_tendon_dampings(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the dampings of fixed tendons for articulations in the view.
 
         Search for *Fixed Tendon* in |physx_docs| for more details
@@ -4568,8 +4563,8 @@ class Articulation(XFormPrim):
             return None
 
     def get_fixed_tendon_limit_stiffnesses(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the limit stiffness of fixed tendons for articulations in the view.
 
         Search for *Fixed Tendon* in |physx_docs| for more details
@@ -4612,8 +4607,8 @@ class Articulation(XFormPrim):
             return None
 
     def get_fixed_tendon_limits(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the limits of fixed tendons for articulations in the view.
 
         Search for *Fixed Tendon* in |physx_docs| for more details
@@ -4656,8 +4651,8 @@ class Articulation(XFormPrim):
             return None
 
     def get_fixed_tendon_rest_lengths(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the rest length of fixed tendons for articulations in the view.
 
         Search for *Fixed Tendon* in |physx_docs| for more details
@@ -4698,8 +4693,8 @@ class Articulation(XFormPrim):
             return None
 
     def get_fixed_tendon_offsets(
-        self, indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the offsets of fixed tendons for articulations in the view.
 
         Search for *Fixed Tendon* in |physx_docs| for more details
@@ -4744,13 +4739,13 @@ class Articulation(XFormPrim):
 
     def set_fixed_tendon_properties(
         self,
-        stiffnesses: Union[np.ndarray, torch.Tensor, wp.array] = None,
-        dampings: Union[np.ndarray, torch.Tensor, wp.array] = None,
-        limit_stiffnesses: Union[np.ndarray, torch.Tensor, wp.array] = None,
-        limits: Union[np.ndarray, torch.Tensor, wp.array] = None,
-        rest_lengths: Union[np.ndarray, torch.Tensor, wp.array] = None,
-        offsets: Union[np.ndarray, torch.Tensor, wp.array] = None,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        stiffnesses: np.ndarray | torch.Tensor | wp.array = None,
+        dampings: np.ndarray | torch.Tensor | wp.array = None,
+        limit_stiffnesses: np.ndarray | torch.Tensor | wp.array = None,
+        limits: np.ndarray | torch.Tensor | wp.array = None,
+        rest_lengths: np.ndarray | torch.Tensor | wp.array = None,
+        offsets: np.ndarray | torch.Tensor | wp.array = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Set fixed tendon properties for articulations in the view.
 
@@ -4900,7 +4895,7 @@ class Articulation(XFormPrim):
             self._on_physics_ready(None)
         return
 
-    def _on_physics_ready(self, event: object):
+    def _on_physics_ready(self, event: object) -> None:
         """Handles physics ready event to initialize physics simulation view.
 
         Args:
@@ -4912,7 +4907,7 @@ class Articulation(XFormPrim):
             [regular_expression.replace(".*", "*") for regular_expression in self._regex_prim_paths]
         )
         if self._physics_view is None:
-            raise Exception("Can't find articulations matching {}".format(self._regex_prim_paths))
+            raise Exception(f"Can't find articulations matching {self._regex_prim_paths}")
         assert self._physics_view.is_homogeneous
         if not self._is_initialized:
             self._metadata = self._physics_view.shared_metatype
@@ -4933,7 +4928,7 @@ class Articulation(XFormPrim):
             self._num_joints = self._metadata.joint_count
             self._link_indices = self._metadata.link_indices
             self._prim_paths = self._physics_view.prim_paths
-            carb.log_info("Articulation Prim View Device: {}".format(self._device))
+            carb.log_info(f"Articulation Prim View Device: {self._device}")
             self._is_initialized = True
             self._default_kps, self._default_kds = self.get_gains(clone=True)
             default_actions = self.get_applied_actions(clone=True)

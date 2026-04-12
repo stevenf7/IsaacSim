@@ -27,7 +27,7 @@ torch = import_module("torch")
 
 
 @torch.jit.script
-def normalize(x, eps: float = 1e-9):
+def normalize(x, eps: float = 1e-9):  # noqa: ANN001, ANN201
     """Normalize a tensor along the last dimension."""
     return x / x.norm(p=2, dim=-1).clamp(min=eps, max=None).unsqueeze(-1)
 
@@ -73,7 +73,7 @@ def unscale_transform(x: torch.Tensor, lower: torch.Tensor, upper: torch.Tensor)
 
 
 @torch.jit.script
-def copysign(a, b):
+def copysign(a, b):  # noqa: ANN001, ANN201
     """Return a tensor with magnitude of a and sign of b."""
     # type: (float, Tensor) -> Tensor
     a = torch.tensor(a, device=b.device, dtype=torch.float).repeat(b.shape[0])
@@ -81,14 +81,14 @@ def copysign(a, b):
 
 
 @torch.jit.script
-def torch_rand_float(lower, upper, shape, device):
+def torch_rand_float(lower, upper, shape, device):  # noqa: ANN001, ANN201
     """Generate random floats uniformly distributed in [lower, upper]."""
     # type: (float, float, Tuple[int, int], str) -> Tensor
     return (upper - lower) * torch.rand(*shape, device=device) + lower
 
 
 @torch.jit.script
-def torch_random_dir_2(shape, device):
+def torch_random_dir_2(shape, device):  # noqa: ANN001, ANN201
     """Generate random 2D unit direction vectors."""
     # type: (Tuple[int, int], str) -> Tensor
     angle = torch_rand_float(-np.pi, np.pi, shape, device).squeeze(-1)
@@ -96,24 +96,24 @@ def torch_random_dir_2(shape, device):
 
 
 @torch.jit.script
-def tensor_clamp(t, min_t, max_t):
+def tensor_clamp(t, min_t, max_t):  # noqa: ANN001, ANN201
     """Clamp tensor values element-wise between min and max tensors."""
     return torch.max(torch.min(t, max_t), min_t)
 
 
 @torch.jit.script
-def scale(x, lower, upper):
+def scale(x, lower, upper):  # noqa: ANN001, ANN201
     """Scale a tensor from [-1, 1] to [lower, upper] range."""
     return 0.5 * (x + 1.0) * (upper - lower) + lower
 
 
 @torch.jit.script
-def unscale(x, lower, upper):
+def unscale(x, lower, upper):  # noqa: ANN001, ANN201
     """Scale a tensor from [lower, upper] range to [-1, 1]."""
     return (2.0 * x - upper - lower) / (upper - lower)
 
 
-def unscale_np(x: np.ndarray, lower: np.ndarray, upper: np.ndarray):
+def unscale_np(x: np.ndarray, lower: np.ndarray, upper: np.ndarray) -> np.ndarray:
     """Denormalizes values from [-1, 1] range back to original [lower, upper] range using NumPy operations.
 
     Args:
@@ -127,7 +127,7 @@ def unscale_np(x: np.ndarray, lower: np.ndarray, upper: np.ndarray):
     return (2.0 * x - upper - lower) / (upper - lower)
 
 
-def set_seed(seed: int, torch_deterministic: bool = False):
+def set_seed(seed: int, torch_deterministic: bool = False) -> int:
     """Set seed across modules.
 
     Sets random seeds for Python, NumPy, PyTorch, Warp, and environment variables to ensure
@@ -145,7 +145,7 @@ def set_seed(seed: int, torch_deterministic: bool = False):
         seed = 42
     elif seed == -1:
         seed = np.random.randint(0, 10000)
-    print("Setting seed: {}".format(seed))
+    print(f"Setting seed: {seed}")
 
     random.seed(seed)
     np.random.seed(seed)
@@ -168,7 +168,7 @@ def set_seed(seed: int, torch_deterministic: bool = False):
     return seed
 
 
-def matmul(matrix_a: object, matrix_b: object):
+def matmul(matrix_a: object, matrix_b: object) -> object:
     """Performs matrix multiplication between two tensors.
 
     Args:
@@ -181,7 +181,7 @@ def matmul(matrix_a: object, matrix_b: object):
     return torch.matmul(matrix_a, matrix_b)
 
 
-def sin(data: object):
+def sin(data: object) -> object:
     """Computes the sine of the input tensor.
 
     Args:
@@ -193,7 +193,7 @@ def sin(data: object):
     return torch.sin(data)
 
 
-def cos(data: object):
+def cos(data: object) -> object:
     """Computes the cosine of the input tensor.
 
     Args:
@@ -205,7 +205,7 @@ def cos(data: object):
     return torch.cos(data)
 
 
-def transpose_2d(data: object):
+def transpose_2d(data: object) -> object:
     """Transposes a 2D tensor by swapping dimensions 0 and 1.
 
     Args:
@@ -217,7 +217,7 @@ def transpose_2d(data: object):
     return torch.transpose(data, 1, 0)
 
 
-def inverse(data: object):
+def inverse(data: object) -> object:
     """Computes the matrix inverse of the input tensor.
 
     Args:

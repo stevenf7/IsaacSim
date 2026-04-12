@@ -15,8 +15,9 @@
 
 """Provides high-level wrapper classes for creating and manipulating cylinder objects with different physics behaviors in Isaac Sim."""
 
+from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 import numpy as np
 from isaacsim.core.api.materials.physics_material import PhysicsMaterial
@@ -70,26 +71,27 @@ class VisualCylinder(SingleGeometryPrim):
         ... )
         >>> prim
         <isaacsim.core.api.objects.cylinder.VisualCylinder object at 0x7f4e433f22c0>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "visual_cylinder",
-        position: Optional[Sequence[float]] = None,
-        translation: Optional[Sequence[float]] = None,
-        orientation: Optional[Sequence[float]] = None,
-        scale: Optional[Sequence[float]] = None,
-        visible: Optional[bool] = None,
-        color: Optional[np.ndarray] = None,
-        radius: Optional[float] = None,
-        height: Optional[float] = None,
-        visual_material: Optional[VisualMaterial] = None,
+        position: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
+        orientation: Sequence[float] | None = None,
+        scale: Sequence[float] | None = None,
+        visible: bool | None = None,
+        color: np.ndarray | None = None,
+        radius: float | None = None,
+        height: float | None = None,
+        visual_material: VisualMaterial | None = None,
     ) -> None:
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Cylinder):
-                raise Exception("The prim at path {} cannot be parsed as a Cylinder object".format(prim_path))
+                raise Exception(f"The prim at path {prim_path} cannot be parsed as a Cylinder object")
             cylinderGeom = UsdGeom.Cylinder(prim)
         else:
             cylinderGeom = UsdGeom.Cylinder.Define(get_current_stage(), prim_path)
@@ -141,6 +143,7 @@ class VisualCylinder(SingleGeometryPrim):
         .. code-block:: python
 
             >>> prim.set_radius(1.0)
+
         """
         self.geom.GetRadiusAttr().Set(radius)
         return
@@ -157,6 +160,7 @@ class VisualCylinder(SingleGeometryPrim):
 
             >>> prim.get_radius()
             0.5
+
         """
         return self.geom.GetRadiusAttr().Get()
 
@@ -171,6 +175,7 @@ class VisualCylinder(SingleGeometryPrim):
         .. code-block:: python
 
             >>> prim.set_height(2.0)
+
         """
         self.geom.GetHeightAttr().Set(height)
         return
@@ -187,6 +192,7 @@ class VisualCylinder(SingleGeometryPrim):
 
             >>> prim.get_height()
             1.0
+
         """
         return self.geom.GetHeightAttr().Get()
 
@@ -234,22 +240,23 @@ class FixedCylinder(VisualCylinder):
         ... )
         >>> print(prim)
         <isaacsim.core.api.objects.cylinder.FixedCylinder object at 0x7f4f24144f40>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "fixed_cylinder",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
-        visible: Optional[bool] = None,
-        color: Optional[np.ndarray] = None,
-        radius: Optional[np.ndarray] = None,
-        height: Optional[float] = None,
-        visual_material: Optional[VisualMaterial] = None,
-        physics_material: Optional[PhysicsMaterial] = None,
+        position: np.ndarray | None = None,
+        translation: np.ndarray | None = None,
+        orientation: np.ndarray | None = None,
+        scale: np.ndarray | None = None,
+        visible: bool | None = None,
+        color: np.ndarray | None = None,
+        radius: np.ndarray | None = None,
+        height: float | None = None,
+        visual_material: VisualMaterial | None = None,
+        physics_material: PhysicsMaterial | None = None,
     ) -> None:
         if not is_prim_path_valid(prim_path):
             # set default values if no physics material given
@@ -335,26 +342,27 @@ class DynamicCylinder(SingleRigidPrim, FixedCylinder):
         ... )
         >>> prim
         <isaacsim.core.api.objects.cylinder.DynamicCylinder object at 0x7f4e8f5c4a60>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "dynamic_cylinder",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
-        visible: Optional[bool] = None,
-        color: Optional[np.ndarray] = None,
-        radius: Optional[np.ndarray] = None,
-        height: Optional[np.ndarray] = None,
-        visual_material: Optional[VisualMaterial] = None,
-        physics_material: Optional[PhysicsMaterial] = None,
-        mass: Optional[float] = None,
-        density: Optional[float] = None,
-        linear_velocity: Optional[Sequence[float]] = None,
-        angular_velocity: Optional[Sequence[float]] = None,
+        position: np.ndarray | None = None,
+        translation: np.ndarray | None = None,
+        orientation: np.ndarray | None = None,
+        scale: np.ndarray | None = None,
+        visible: bool | None = None,
+        color: np.ndarray | None = None,
+        radius: np.ndarray | None = None,
+        height: np.ndarray | None = None,
+        visual_material: VisualMaterial | None = None,
+        physics_material: PhysicsMaterial | None = None,
+        mass: float | None = None,
+        density: float | None = None,
+        linear_velocity: Sequence[float] | None = None,
+        angular_velocity: Sequence[float] | None = None,
     ) -> None:
         if not is_prim_path_valid(prim_path):
             if mass is None:

@@ -16,7 +16,7 @@
 """Provides utility functions for manipulating USD prim transformations and xform operations."""
 
 
-from typing import Sequence, Tuple
+from collections.abc import Sequence
 
 import numpy as np
 from pxr import Gf, Usd, UsdGeom
@@ -83,7 +83,7 @@ def prim_get_num_xform_ops(prim: Usd.Prim) -> int:
     return len(prim_get_xform_op_order(prim))
 
 
-def prim_translate(prim: Usd.Prim, offset: Tuple[float, float, float]) -> Usd.Prim:
+def prim_translate(prim: Usd.Prim, offset: tuple[float, float, float]) -> Usd.Prim:
     """Translates a prim along the (x, y, z) dimensions.
 
     Args:
@@ -174,7 +174,7 @@ def _rotation_to_np_quat(r: Gf.Rotation) -> np.ndarray:
     return np.array([real, imag[0], imag[1], imag[2]])
 
 
-def prim_get_local_transform(prim: Usd.Prim) -> Tuple[np.ndarray, np.ndarray]:
+def prim_get_local_transform(prim: Usd.Prim) -> tuple[np.ndarray, np.ndarray]:
     """From: https://docs.omniverse.nvidia.com/dev-guide/latest/programmer_ref/usd/transforms/get-local-transforms.html.
 
     Get the local transformation of a prim using Xformable.
@@ -195,7 +195,7 @@ def prim_get_local_transform(prim: Usd.Prim) -> Tuple[np.ndarray, np.ndarray]:
     return _translation_to_np(translation), _rotation_to_np_quat(rotation)
 
 
-def prim_get_world_transform(prim: Usd.Prim) -> Tuple[np.ndarray, np.ndarray]:
+def prim_get_world_transform(prim: Usd.Prim) -> tuple[np.ndarray, np.ndarray]:
     """From: https://docs.omniverse.nvidia.com/dev-guide/latest/programmer_ref/usd/transforms/get-world-transforms.html.
 
     Get the world transformation of a prim using Xformable.

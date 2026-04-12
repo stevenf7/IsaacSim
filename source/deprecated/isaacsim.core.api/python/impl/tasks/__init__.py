@@ -16,7 +16,7 @@
 """Core task implementations for Isaac Sim including base task functionality and specific tasks like follow target, pick and place, and stacking."""
 
 
-from isaacsim.core.api.tasks.base_task import BaseTask
-from isaacsim.core.api.tasks.follow_target import FollowTarget
-from isaacsim.core.api.tasks.pick_place import PickPlace
-from isaacsim.core.api.tasks.stacking import Stacking
+from isaacsim.core.api.tasks.base_task import BaseTask as BaseTask
+from isaacsim.core.api.tasks.follow_target import FollowTarget as FollowTarget
+from isaacsim.core.api.tasks.pick_place import PickPlace as PickPlace
+from isaacsim.core.api.tasks.stacking import Stacking as Stacking

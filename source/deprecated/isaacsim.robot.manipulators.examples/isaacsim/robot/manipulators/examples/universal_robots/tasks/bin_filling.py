@@ -37,7 +37,7 @@ class BinFilling(BaseTask):
         name: Task name identifier. Should be unique if added to the World.
     """
 
-    def __init__(self, name: str = "bin_filling"):
+    def __init__(self, name: str = "bin_filling") -> None:
         BaseTask.__init__(self, name=name, offset=None)
         self._ur10_robot = None
         self._packing_bin = None
@@ -218,7 +218,7 @@ class BinFilling(BaseTask):
         Returns:
             Defined parameters of the task.
         """
-        params_representation = dict()
+        params_representation = {}
         params_representation["bin_name"] = {"value": self._packing_bin.name, "modifiable": False}
         params_representation["robot_name"] = {"value": self._ur10_robot.name, "modifiable": False}
         return params_representation

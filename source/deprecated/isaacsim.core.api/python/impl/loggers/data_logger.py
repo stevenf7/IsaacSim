@@ -17,7 +17,7 @@
 
 
 import json
-from typing import Callable, Dict, List
+from collections.abc import Callable
 
 from isaacsim.core.api.scenes.scene import Scene
 from isaacsim.core.api.tasks.base_task import BaseTask
@@ -39,6 +39,7 @@ class DataLogger:
             data: Dictionary representing the data to be logged at this time index.
             current_time_step: Time step corresponding to the data collected.
             current_time: Time in seconds corresponding to the data collected.
+
         """
         self._data_frames.append(DataFrame(current_time_step=current_time_step, current_time=current_time, data=data))
         return
@@ -48,6 +49,7 @@ class DataLogger:
 
         Returns:
             The number of data frames collected in the data logger.
+
         """
         return len(self._data_frames)
 
@@ -66,6 +68,7 @@ class DataLogger:
 
         Returns:
             True if data collection is started or resumed, False otherwise.
+
         """
         return not self._pause
 
@@ -83,10 +86,11 @@ class DataLogger:
 
         Returns:
             Data Frame collected at the specified data frame index.
+
         """
         return self._data_frames[data_frame_index]
 
-    def add_data_frame_logging_func(self, func: Callable[[List[BaseTask], Scene], Dict]) -> None:
+    def add_data_frame_logging_func(self, func: Callable[[list[BaseTask], Scene], dict]) -> None:
         """Adds a data collection function to be called at every step when the logger is started.
 
         Args:
@@ -97,6 +101,7 @@ class DataLogger:
 
                     def dummy_data_collection_fn(tasks, scene):
                         return {"data 1": [data]}
+
         """
         self._data_frame_logging_func = func
         return
@@ -106,6 +111,7 @@ class DataLogger:
 
         Args:
             log_path: Path of the json file to be used to save the data.
+
         """
         data = {}
         data["Isaac Sim Data"] = [data_frame.get_dict() for data_frame in self._data_frames]
@@ -118,6 +124,7 @@ class DataLogger:
 
         Args:
             log_path: Path of the json file to be used to load the data.
+
         """
         self._pause = True
         self._data_frames = []
