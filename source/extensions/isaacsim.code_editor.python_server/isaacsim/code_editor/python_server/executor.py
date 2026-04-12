@@ -32,6 +32,29 @@ except ImportError:
 _SENTINEL = object()
 
 
+def _safe_getvalue(sio: io.StringIO) -> str:
+    """Read captured output, returning an empty string on failure."""
+    try:
+        return sio.getvalue()
+    except Exception:
+        return ""
+
+
+def _safe_format_exc(exc: BaseException) -> str:
+    """Format the current traceback, falling back to a minimal representation.
+
+    After RecursionError or MemoryError the normal formatting helpers may
+    themselves raise; this wrapper ensures we always return *something*.
+    """
+    try:
+        return traceback.format_exc()
+    except Exception:
+        try:
+            return f"{type(exc).__name__}: {exc}\n"
+        except Exception:
+            return "Traceback unavailable\n"
+
+
 @dataclass
 class ExecutionResult:
     """Hold the outcome of a single code execution.
@@ -139,26 +162,26 @@ class Executor:
                     result = _SENTINEL
         except SystemExit as exc:
             return ExecutionResult(
-                output=output.getvalue(),
+                output=_safe_getvalue(output),
                 exception=RuntimeError(f"SystemExit({exc.code}) intercepted — use raise RuntimeError() instead"),
                 traceback_str=f"SystemExit({exc.code}): The python_server caught SystemExit to prevent application shutdown.\n",
             )
         except Exception as exc:
             return ExecutionResult(
-                output=output.getvalue(),
+                output=_safe_getvalue(output),
                 exception=exc,
-                traceback_str=traceback.format_exc(),
+                traceback_str=_safe_format_exc(exc),
             )
         except BaseException as exc:
             # Catch remaining BaseException subclasses (GeneratorExit, KeyboardInterrupt,
             # custom subclasses) to prevent them from crashing the host application.
             return ExecutionResult(
-                output=output.getvalue(),
+                output=_safe_getvalue(output),
                 exception=RuntimeError(
                     f"{type(exc).__name__}({exc}) intercepted — "
                     "BaseException subclasses must not propagate out of user code"
                 ),
-                traceback_str=traceback.format_exc(),
+                traceback_str=_safe_format_exc(exc),
             )
 
         return ExecutionResult(output=output.getvalue(), result=result)

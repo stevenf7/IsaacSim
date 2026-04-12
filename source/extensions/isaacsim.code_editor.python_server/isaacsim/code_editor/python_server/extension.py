@@ -418,6 +418,21 @@ class Extension(omni.ext.IExt):
             source: The raw incoming string from the TCP connection.
             transport: The asyncio transport for sending the response.
         """
+        try:
+            self._process_code_inner(source, transport)
+        except Exception as exc:
+            carb.log_error(f"python_server internal error: {exc}")
+            reply: dict[str, object] = {
+                "status": "error",
+                "output": "",
+                "ename": type(exc).__name__,
+                "evalue": f"Internal server error: {exc}",
+                "traceback": [],
+            }
+            self._send_raw_reply(reply, transport)
+
+    def _process_code_inner(self, source: str, transport: asyncio.Transport) -> None:
+        """Inner implementation of ``_process_code``, wrapped by a safety-net handler."""
         code, envelope = self._parse_envelope(source)
 
         # Introspection shortcut — no code execution needed

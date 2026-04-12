@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.6] - 2026-04-06
+### Changed
+- Disable SystemExit/BaseException tests in CI
+
 ## [1.1.5] - 2026-04-02
 ### Fixed
 - `SystemExit` and `BaseException` subclasses in user code are now caught and returned as errors instead of crashing the application

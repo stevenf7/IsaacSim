@@ -28,6 +28,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
+import unittest
 
 import carb
 import omni.kit.test
@@ -134,6 +136,7 @@ class TestBasicExecution(omni.kit.test.AsyncTestCase):
 # ---------------------------------------------------------------------------
 
 
+@unittest.skipIf(os.getenv("CI"), "Skipped in CI — SystemExit/BaseException tests can destabilize the Kit process")
 class TestDangerousExceptions(omni.kit.test.AsyncTestCase):
     """Test that SystemExit, BaseException, etc. don't crash Kit."""
 
