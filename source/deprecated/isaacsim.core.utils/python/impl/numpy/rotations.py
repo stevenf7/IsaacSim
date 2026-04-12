@@ -16,16 +16,12 @@
 """Provides NumPy-based functions for 3D rotation conversions between quaternions, Euler angles, rotation matrices, and rotation vectors."""
 
 
-import typing
-
 import numpy as np
 from pxr import Gf
 from scipy.spatial.transform import Rotation
 
 
-def gf_quat_to_tensor(
-    orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion], device: object = None
-) -> np.ndarray:
+def gf_quat_to_tensor(orientation: Gf.Quatd | Gf.Quatf | Gf.Quaternion, device: object = None) -> np.ndarray:
     """Converts a pxr Quaternion type to a numpy array following [w, x, y, z] convention.
 
     Args:

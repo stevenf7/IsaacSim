@@ -16,9 +16,19 @@
 """API for creating and managing primitive geometric objects in Isaac Sim."""
 
 
-from isaacsim.core.api.objects.capsule import DynamicCapsule, FixedCapsule, VisualCapsule
-from isaacsim.core.api.objects.cone import DynamicCone, FixedCone, VisualCone
-from isaacsim.core.api.objects.cuboid import DynamicCuboid, FixedCuboid, VisualCuboid
-from isaacsim.core.api.objects.cylinder import DynamicCylinder, FixedCylinder, VisualCylinder
-from isaacsim.core.api.objects.ground_plane import GroundPlane
-from isaacsim.core.api.objects.sphere import DynamicSphere, FixedSphere, VisualSphere
+from isaacsim.core.api.objects.capsule import DynamicCapsule as DynamicCapsule
+from isaacsim.core.api.objects.capsule import FixedCapsule as FixedCapsule
+from isaacsim.core.api.objects.capsule import VisualCapsule as VisualCapsule
+from isaacsim.core.api.objects.cone import DynamicCone as DynamicCone
+from isaacsim.core.api.objects.cone import FixedCone as FixedCone
+from isaacsim.core.api.objects.cone import VisualCone as VisualCone
+from isaacsim.core.api.objects.cuboid import DynamicCuboid as DynamicCuboid
+from isaacsim.core.api.objects.cuboid import FixedCuboid as FixedCuboid
+from isaacsim.core.api.objects.cuboid import VisualCuboid as VisualCuboid
+from isaacsim.core.api.objects.cylinder import DynamicCylinder as DynamicCylinder
+from isaacsim.core.api.objects.cylinder import FixedCylinder as FixedCylinder
+from isaacsim.core.api.objects.cylinder import VisualCylinder as VisualCylinder
+from isaacsim.core.api.objects.ground_plane import GroundPlane as GroundPlane
+from isaacsim.core.api.objects.sphere import DynamicSphere as DynamicSphere
+from isaacsim.core.api.objects.sphere import FixedSphere as FixedSphere
+from isaacsim.core.api.objects.sphere import VisualSphere as VisualSphere

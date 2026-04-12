@@ -15,11 +15,9 @@
 
 """Provides a comprehensive physics simulation world environment with scene management, task orchestration, and data logging capabilities."""
 
+from __future__ import annotations
 
 import gc
-
-# python
-from typing import List, Optional
 
 from isaacsim.core.api.loggers import DataLogger
 from isaacsim.core.api.scenes.scene import Scene
@@ -31,6 +29,8 @@ from isaacsim.core.simulation_manager import IsaacEvents
 
 # omniverse
 from pxr import Usd
+
+# python
 
 
 class World(SimulationContext):
@@ -86,6 +86,7 @@ class World(SimulationContext):
         >>> world = World()
         >>> world
         <isaacsim.core.api.world.world.World object at 0x...>
+
     """
 
     _world_initialized = False
@@ -93,14 +94,14 @@ class World(SimulationContext):
 
     def __init__(
         self,
-        physics_dt: Optional[float] = None,
-        rendering_dt: Optional[float] = None,
-        stage_units_in_meters: Optional[float] = None,
+        physics_dt: float | None = None,
+        rendering_dt: float | None = None,
+        stage_units_in_meters: float | None = None,
         physics_prim_path: str = "/physicsScene",
         sim_params: dict = None,
         set_defaults: bool = True,
         backend: str = "numpy",
-        device: Optional[str] = None,
+        device: str | None = None,
     ) -> None:
         SimulationContext.__init__(
             self,
@@ -117,7 +118,7 @@ class World(SimulationContext):
             return
         World._world_initialized = True
         self._task_scene_built = False
-        self._current_tasks = dict()
+        self._current_tasks = {}
         self._scene = Scene()
         self._data_logger = DataLogger()
         return
@@ -135,6 +136,7 @@ class World(SimulationContext):
         .. code-block:: python
 
             >>> World.clear_instance()
+
         """
         if World._world_initialized:
             if hasattr(SimulationContext._instance, "_scene"):
@@ -158,6 +160,7 @@ class World(SimulationContext):
 
             >>> world.scene
             <isaacsim.core.api.scenes.scene.Scene object at 0x>
+
         """
         return self._scene
 
@@ -193,6 +196,7 @@ class World(SimulationContext):
             ...
             >>> task = Task(name="custom_task")
             >>> world.add_task(task)
+
         """
         if task.name in self._current_tasks:
             raise Exception("Task name should be unique in the world")
@@ -212,10 +216,11 @@ class World(SimulationContext):
             >>> # given a world instance that was rested at some point
             >>> world.is_tasks_scene_built()
             True
+
         """
         return self._task_scene_built
 
-    def get_current_tasks(self) -> List[BaseTask]:
+    def get_current_tasks(self) -> list[BaseTask]:
         """Get a dictionary of the registered tasks where keys are task names.
 
         Returns:
@@ -227,6 +232,7 @@ class World(SimulationContext):
 
             >>> world.get_current_tasks()
             {'custom_task': <custom.task.scripts.extension.Task object at 0x...>}
+
         """
         return self._current_tasks
 
@@ -245,16 +251,17 @@ class World(SimulationContext):
 
             >>> world.get_task("custom_task")
             <custom.task.scripts.extension.Task object at 0x...>
+
         """
         if name not in self._current_tasks:
-            raise Exception("task name {} doesn't exist in the current world tasks.".format(name))
+            raise Exception(f"task name {name} doesn't exist in the current world tasks.")
         return self._current_tasks[name]
 
     """
     Operations - Tasks state collection.
     """
 
-    def get_observations(self, task_name: Optional[str] = None) -> dict:
+    def get_observations(self, task_name: str | None = None) -> dict:
         """Get observations from all the tasks that were added.
 
         Args:
@@ -269,16 +276,17 @@ class World(SimulationContext):
 
             >>> world.get_observations("custom_task")
             {'obs': [0]}
+
         """
         if task_name is not None:
             return self._current_tasks[task_name].get_observations()
         else:
-            observations = dict()
+            observations = {}
             for task in self._current_tasks.values():
                 observations.update(task.get_observations())
             return observations
 
-    def calculate_metrics(self, task_name: Optional[str] = None) -> dict:
+    def calculate_metrics(self, task_name: str | None = None) -> dict:
         """Get metrics from all the tasks that were added.
 
         Args:
@@ -293,16 +301,17 @@ class World(SimulationContext):
 
             >>> world.calculate_metrics("custom_task")
             {'reward': 1}
+
         """
         if task_name is not None:
             return self._current_tasks[task_name].calculate_metrics()
         else:
-            metrics = dict()
+            metrics = {}
             for task in self._current_tasks.values():
                 metrics.update(task.calculate_metrics())
             return metrics
 
-    def is_done(self, task_name: Optional[str] = None) -> bool:
+    def is_done(self, task_name: str | None = None) -> bool:
         """Get done from all the tasks that were added.
 
         Args:
@@ -317,6 +326,7 @@ class World(SimulationContext):
 
             >>> world.is_done("custom_task")
             False
+
         """
         if task_name is not None:
             return self._current_tasks[task_name].is_done()
@@ -340,6 +350,7 @@ class World(SimulationContext):
 
             >>> world.get_data_logger()
             <isaacsim.core.api.loggers.data_logger.DataLogger object at 0x...>
+
         """
         return self._data_logger
 
@@ -355,6 +366,7 @@ class World(SimulationContext):
         .. code-block:: python
 
             >>> world.initialize_physics()
+
         """
         SimulationContext.initialize_physics(self)
         self._scene._finalize(self.physics_sim_view)
@@ -390,6 +402,7 @@ class World(SimulationContext):
         .. code-block:: python
 
             >>> world.reset()
+
         """
         if not self._task_scene_built:
             for task in self._current_tasks.values():
@@ -435,6 +448,7 @@ class World(SimulationContext):
             >>>     await world.reset_async_set_up_scene()
             >>>
             >>> run_coroutine(task())
+
         """
         for task in self._current_tasks.values():
             task.set_up_scene(self.scene)
@@ -469,6 +483,7 @@ class World(SimulationContext):
             >>>     await world.reset_async_no_set_up_scene()
             >>>
             >>> run_coroutine(task())
+
         """
         if not soft:
             await self.stop_async()
@@ -512,6 +527,7 @@ class World(SimulationContext):
             ...     await world.reset_async()
             ...
             >>> run_coroutine(task())
+
         """
         if not self._task_scene_built:
             await self.reset_async_set_up_scene()
@@ -546,6 +562,7 @@ class World(SimulationContext):
         .. code-block:: python
 
             >>> world.step()
+
         """
         if self._task_scene_built:
             for task in self._current_tasks.values():
@@ -564,7 +581,7 @@ class World(SimulationContext):
             )
         return
 
-    def step_async(self, step_size: Optional[float] = None) -> None:
+    def step_async(self, step_size: float | None = None) -> None:
         """Call all functions that should be called pre stepping the physics.
 
         .. note::
@@ -585,6 +602,7 @@ class World(SimulationContext):
             ...     await world.step_async()
             ...
             >>> run_coroutine(task())
+
         """
         if self._task_scene_built:
             for task in self._current_tasks.values():
@@ -608,9 +626,10 @@ class World(SimulationContext):
         .. code-block:: python
 
             >>> world.clear()
+
         """
         self.scene.clear(registry_only=False)
-        self._current_tasks = dict()
+        self._current_tasks = {}
         self._task_scene_built = False
         self._data_logger = DataLogger()
         # clear all prims in the stage.

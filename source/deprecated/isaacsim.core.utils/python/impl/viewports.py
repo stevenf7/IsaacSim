@@ -17,7 +17,9 @@
 
 """Deprecated viewport utility functions."""
 
-from typing import Any, List
+from __future__ import annotations
+
+from typing import Any
 
 # omniverse
 import carb
@@ -175,7 +177,7 @@ def set_camera_view(
     return
 
 
-def get_viewport_names(usd_context_name: str = None) -> List[str]:
+def get_viewport_names(usd_context_name: str = None) -> list[str]:
     """Get list of all viewport names.
 
     Args:
@@ -211,7 +213,7 @@ def get_viewport_names(usd_context_name: str = None) -> List[str]:
     return viewport_names
 
 
-def get_id_from_index(index: int):
+def get_id_from_index(index: int) -> int | None:
     """Get the viewport id for a given index.
 
     This function was added for backwards compatibility for VP2 as viewport IDs are not the same as the viewport index.
@@ -251,7 +253,7 @@ def get_id_from_index(index: int):
     return None
 
 
-def get_window_from_id(id: object, usd_context_name: str = None):
+def get_window_from_id(id: object, usd_context_name: str = None) -> object | None:
     """Find window that matches a given viewport id.
 
     Args:
@@ -292,7 +294,7 @@ def get_window_from_id(id: object, usd_context_name: str = None):
     return None
 
 
-def destroy_all_viewports(usd_context_name: str = None, destroy_main_viewport: bool = True):
+def destroy_all_viewports(usd_context_name: str = None, destroy_main_viewport: bool = True) -> None:
     """Destroys all viewport windows.
 
     Args:
@@ -377,7 +379,7 @@ def get_intrinsics_matrix(viewport_api: Any) -> np.ndarray:
     return np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
 
 
-def set_intrinsics_matrix(viewport_api: Any, intrinsics_matrix: np.ndarray, focal_length: float = 1.0):
+def set_intrinsics_matrix(viewport_api: Any, intrinsics_matrix: np.ndarray, focal_length: float = 1.0) -> None:
     """Set intrinsic matrix for the camera attached to a specific viewport.
 
     Note:
@@ -453,7 +455,7 @@ def backproject_depth(depth_image: np.array, viewport_api: Any, max_clip_depth: 
     return raw_pc
 
 
-def project_depth_to_worldspace(depth_image: np.array, viewport_api: Any, max_clip_depth: float) -> List[carb.Float3]:
+def project_depth_to_worldspace(depth_image: np.array, viewport_api: Any, max_clip_depth: float) -> list[carb.Float3]:
     """Project depth image to world space.
 
     Args:
@@ -488,7 +490,7 @@ def create_viewport_for_camera(
     height: int = 720,
     position_x: int = 0,
     position_y: int = 0,
-):
+) -> object:
     """Create a new viewport and peg it to a specific camera specified by camera_prim_path. If the viewport already exists with the specified viewport_name, that viewport will be replaced with the new camera view.
 
     Args:

@@ -44,7 +44,7 @@ def tf_matrices_from_poses(translations: np.ndarray, orientations: np.ndarray, d
 
 def get_local_from_world(
     parent_transforms: np.ndarray, positions: np.ndarray, orientations: np.ndarray, device: object = None
-):
+) -> tuple:
     """Convert world space poses to local space relative to parent transformations.
 
     Args:
@@ -71,7 +71,7 @@ def get_local_from_world(
 
 def get_world_from_local(
     parent_transforms: np.ndarray, translations: np.ndarray, orientations: np.ndarray, device: object = None
-):
+) -> tuple:
     """Convert local space poses to world space using parent transformations.
 
     Args:
@@ -96,7 +96,7 @@ def get_world_from_local(
     return calculated_positions, calculated_orientations
 
 
-def get_pose(positions: np.ndarray, orientations: np.ndarray, device: object = None):
+def get_pose(positions: np.ndarray, orientations: np.ndarray, device: object = None) -> np.ndarray:
     """Concatenate position and orientation arrays into a single pose array.
 
     Args:
@@ -119,7 +119,7 @@ def assign_pose(
     indices: object,
     device: object = None,
     pose: object = None,
-):
+) -> np.ndarray:
     """Update pose arrays by assigning new positions and orientations at specified indices.
 
     Args:

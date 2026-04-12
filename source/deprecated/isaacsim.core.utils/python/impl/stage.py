@@ -15,13 +15,15 @@
 
 """Deprecated USD stage utility functions."""
 
+from __future__ import annotations
+
 import builtins
 import contextlib
 import threading
 
 # python
 import typing
-from typing import Generator
+from collections.abc import Generator
 
 # omniverse
 import carb
@@ -80,7 +82,7 @@ def use_stage(stage: Usd.Stage) -> Generator[None, None, None]:
             _context.stage = previous_stage
 
 
-def get_current_stage(fabric: bool = False) -> typing.Union[Usd.Stage, usdrt.Usd._Usd.Stage]:
+def get_current_stage(fabric: bool = False) -> Usd.Stage | usdrt.Usd._Usd.Stage:
     """Get the current open USD or Fabric stage.
 
     Args:
@@ -167,7 +169,7 @@ async def update_stage_async() -> None:
 
 
 # TODO: make a generic util for setting all layer properties
-def set_stage_up_axis(axis: str = "z"):
+def set_stage_up_axis(axis: str = "z") -> None:
     """Change the up axis of the current stage.
 
     Args:
@@ -210,7 +212,7 @@ def get_stage_up_axis() -> str:
     return UsdGeom.GetStageUpAxis(stage)
 
 
-def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None):
+def clear_stage(predicate: typing.Callable[[str], bool] | None = None) -> None:
     """Deletes all prims in the stage without populating the undo command buffer.
 
     Args:
@@ -240,7 +242,7 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
         is_prim_no_delete,
     )
 
-    def default_predicate(prim_path: str):
+    def default_predicate(prim_path: str) -> bool:
         # prim = get_prim_at_path(prim_path)
         # skip prims that we cannot delete
         if is_prim_no_delete(prim_path):
@@ -268,7 +270,7 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
         omni.kit.app.get_app_interface().update()
 
 
-def print_stage_prim_paths(fabric: bool = False):
+def print_stage_prim_paths(fabric: bool = False) -> None:
     """Traverses the stage and prints all prim (hidden or not) paths.
 
     Args:
@@ -336,7 +338,7 @@ def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xfor
     prim = stage.GetPrimAtPath(prim_path)
     if not prim.IsValid():
         prim = stage.DefinePrim(prim_path, prim_type)
-    carb.log_info("Loading Asset from path {} ".format(usd_path))
+    carb.log_info(f"Loading Asset from path {usd_path} ")
     # Handle units
     sdf_layer = Sdf.Layer.FindOrOpen(usd_path)
     if not sdf_layer:
@@ -352,17 +354,17 @@ def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xfor
 
                 payref = Sdf.Reference(usd_path)
                 omni.kit.commands.execute("AddReference", stage=stage, prim_path=prim.GetPath(), reference=payref)
-            except Exception as exc:
+            except Exception:
                 carb.log_warn(
                     f"The USD file {usd_path} used for a reference does have divergent units, please either enable omni.usd.metrics.assembler.ui or convert the file into right units."
                 )
                 success_bool = prim.GetReferences().AddReference(usd_path)
                 if not success_bool:
-                    raise FileNotFoundError("The usd file at path {} provided wasn't found".format(usd_path))
+                    raise FileNotFoundError(f"The usd file at path {usd_path} provided wasn't found")
         else:
             success_bool = prim.GetReferences().AddReference(usd_path)
             if not success_bool:
-                raise FileNotFoundError("The usd file at path {} provided wasn't found".format(usd_path))
+                raise FileNotFoundError(f"The usd file at path {usd_path} provided wasn't found")
 
     return prim
 
@@ -407,7 +409,7 @@ def create_new_stage_in_memory() -> Usd.Stage:
     return Usd.Stage.CreateInMemory()
 
 
-async def create_new_stage_async():
+async def create_new_stage_async() -> None:
     """Create a new stage (asynchronous version).
 
     Example:
@@ -457,7 +459,7 @@ def open_stage(usd_path: str) -> bool:
     return result
 
 
-async def open_stage_async(usd_path: str) -> typing.Tuple[bool, int]:
+async def open_stage_async(usd_path: str) -> tuple[bool, int]:
     """Open the given usd file and replace currently opened stage (asynchronous version).
 
     Args:
@@ -594,11 +596,10 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
     # TODO: Check that the provided usd_path exists
     if save_stage(usd_path):
         if enable:
-            usd_path_split = usd_path.split("/")
             live_session = layers.get_live_syncing().find_live_session_by_name(usd_path, "Default")
             if live_session is None:
                 live_session = layers.get_live_syncing().create_live_session(name="Default")
-            result = layers.get_live_syncing().join_live_session(live_session)
+            layers.get_live_syncing().join_live_session(live_session)
             return True
         else:
             layers.get_live_syncing().stop_live_session(usd_path)
@@ -662,7 +663,7 @@ def is_stage_loading() -> bool:
         return loading > 0
 
 
-def set_stage_units(stage_units_in_meters: float):
+def set_stage_units(stage_units_in_meters: float) -> None:
     """Set the stage meters per unit.
 
     The most common units and their values are listed in the following table:
@@ -763,7 +764,7 @@ def get_next_free_path(path: str, parent: str = None) -> str:
     return path
 
 
-def remove_deleted_references():
+def remove_deleted_references() -> None:
     """Clean up deleted references in the current USD stage.
 
     Removes any deleted items from both payload and references lists

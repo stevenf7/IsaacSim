@@ -38,7 +38,7 @@ class KeyboardButton:
         key: The keyboard input key to monitor for press and release events.
     """
 
-    def __init__(self, key: carb.input.KeyboardInput):
+    def __init__(self, key: carb.input.KeyboardInput) -> None:
         self._key = key
         self._value = False
 
@@ -51,7 +51,7 @@ class KeyboardButton:
         """
         return self._value
 
-    def _event_callback(self, event: carb.input.KeyboardEvent, *args, **kwargs):
+    def _event_callback(self, event: carb.input.KeyboardEvent, *args: object, **kwargs: object) -> None:
         """Handles keyboard events to update the button state.
 
         Args:
@@ -92,7 +92,7 @@ class KeyboardDriver(object):
     _instance = None
     """Singleton instance of the KeyboardDriver class."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         if self._instance is not None:
             raise RuntimeError("Keyboard singleton already instantiated.  Please call Keyboard.instance() instead.")
         self._appwindow = omni.appwindow.get_default_app_window()
@@ -108,7 +108,7 @@ class KeyboardDriver(object):
 
         self.buttons = [KeyboardButton(key) for key in key_input_types]
 
-    def _event_callback(self, event: carb.input.KeyboardEvent, *args, **kwargs):
+    def _event_callback(self, event: carb.input.KeyboardEvent, *args: object, **kwargs: object) -> None:
         """Handles keyboard events and forwards them to all keyboard buttons.
 
         Args:
@@ -119,17 +119,17 @@ class KeyboardDriver(object):
         for button in self.buttons:
             button._event_callback(event, *args, **kwargs)
 
-    def _connect(self):
+    def _connect(self) -> None:
         """Subscribes to keyboard events from the application window's keyboard."""
         self._event_handle = self._input.subscribe_to_keyboard_events(self._keyboard, self._event_callback)
 
-    def _disconnect(self):
+    def _disconnect(self) -> None:
         """Unsubscribes from keyboard events and clears the event handle."""
         self._input.unsubscribe_to_keyboard_events(self._keyboard, self._event_handle)
         self._event_handle = None
 
     @staticmethod
-    def connect():
+    def connect() -> "KeyboardDriver":
         """Creates and connects the keyboard driver singleton instance.
 
         Returns:
@@ -147,7 +147,7 @@ class KeyboardDriver(object):
         KeyboardDriver.instance()._disconnect()
 
     @staticmethod
-    def instance():
+    def instance() -> "KeyboardDriver":
         """Gets or creates the singleton KeyboardDriver instance.
 
         Returns:
@@ -190,7 +190,7 @@ class GamepadAxis:
         carb_pos_input: carb.input.GamepadInput,
         carb_neg_input: carb.input.GamepadInput,
         deadzone: bool = 0.01,
-    ):
+    ) -> None:
         self.carb_pos_input = carb_pos_input
         self.carb_neg_input = carb_neg_input
         self.deadzone = deadzone
@@ -210,7 +210,7 @@ class GamepadAxis:
         else:
             return -self._neg_val if self._neg_val > self.deadzone else 0.0
 
-    def _event_callback(self, event: carb.input.GamepadEvent, *args, **kwargs):
+    def _event_callback(self, event: carb.input.GamepadEvent, *args: object, **kwargs: object) -> None:
         """Handles gamepad input events to update axis values.
 
         Args:
@@ -260,7 +260,7 @@ class GamepadDriver(object):
     _instance = None
     """Singleton instance of the GamepadDriver class."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         if self._instance is not None:
             raise RuntimeError("Gamepad singleton already instantiated.  Please call Gamepad.instance() instead.")
         self._appwindow = omni.appwindow.get_default_app_window()
@@ -289,7 +289,7 @@ class GamepadDriver(object):
             ),
         ]
 
-    def _event_callback(self, event: carb.input.GamepadEvent, *args, **kwargs):
+    def _event_callback(self, event: carb.input.GamepadEvent, *args: object, **kwargs: object) -> None:
         """Handles gamepad events and updates axis values.
 
         Args:
@@ -301,17 +301,17 @@ class GamepadDriver(object):
             axis._event_callback(event, *args, **kwargs)
         # carb.log_warn(f"{self.axes[0].value}, {self.axes[1].value}, {self.axes[2].value}, {self.axes[3].value}")
 
-    def _connect(self):
+    def _connect(self) -> None:
         """Subscribes to gamepad events to start receiving input data."""
         self._event_handle = self._input.subscribe_to_gamepad_events(self._gamepad, self._event_callback)
 
-    def _disconnect(self):
+    def _disconnect(self) -> None:
         """Unsubscribes from gamepad events and cleans up the event handle."""
         self._input.unsubscribe_to_gamepad_events(self._gamepad, self._event_handle)
         self._event_handle = None
 
     @staticmethod
-    def connect():
+    def connect() -> "GamepadDriver":
         """Creates and connects a gamepad driver instance.
 
         Returns:
@@ -329,7 +329,7 @@ class GamepadDriver(object):
         GamepadDriver.instance()._disconnect()
 
     @staticmethod
-    def instance():
+    def instance() -> "GamepadDriver":
         """Gets the singleton GamepadDriver instance, creating it if needed.
 
         Returns:
@@ -381,11 +381,11 @@ class Keyboard(Module):
     refresh the input data and maintain synchronization with the underlying input system.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._keyboard = KeyboardDriver.instance()
         self.buttons = Buffer()
 
-    def update_state(self):
+    def update_state(self) -> None:
         """Updates the current state of keyboard button values.
 
         Retrieves the latest button states from the keyboard driver and stores them in the internal buffer.
@@ -422,12 +422,12 @@ class Gamepad(Module):
     or data collection workflows where human input needs to be captured alongside simulation data.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._gamepad = GamepadDriver.instance()
         self.buttons = Buffer()
         self.axes = Buffer()
 
-    def update_state(self):
+    def update_state(self) -> None:
         """Updates the gamepad state by refreshing button and axis values from the gamepad driver.
 
         Returns:

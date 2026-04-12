@@ -16,5 +16,5 @@
 """Sensor API module providing base sensor functionality and rigid contact views for Isaac Sim."""
 
 
-from isaacsim.core.api.sensors.base_sensor import BaseSensor
-from isaacsim.core.api.sensors.rigid_contact_view import RigidContactView
+from isaacsim.core.api.sensors.base_sensor import BaseSensor as BaseSensor
+from isaacsim.core.api.sensors.rigid_contact_view import RigidContactView as RigidContactView

@@ -17,7 +17,9 @@
 
 """Deprecated physics utility functions."""
 
-from typing import Callable, Union
+from __future__ import annotations
+
+from collections.abc import Callable
 
 import omni.kit
 import omni.kit.commands
@@ -29,7 +31,7 @@ from isaacsim.core.utils.stage import get_current_stage
 from pxr import Sdf
 
 
-def get_rigid_body_enabled(prim_path: str) -> Union[bool, None]:
+def get_rigid_body_enabled(prim_path: str) -> bool | None:
     """Get the ``physics:rigidBodyEnabled`` attribute from the USD Prim at the given path.
 
     Args:
@@ -55,7 +57,7 @@ def get_rigid_body_enabled(prim_path: str) -> Union[bool, None]:
     return stage.GetPrimAtPath(prim_path).GetAttribute("physics:rigidBodyEnabled").Get()
 
 
-def set_rigid_body_enabled(_value: bool, prim_path: str):
+def set_rigid_body_enabled(_value: bool, prim_path: str) -> None:
     """If it exists, set the ``physics:rigidBodyEnabled`` attribute on the USD Prim at the given path.
 
     .. note::
@@ -79,7 +81,7 @@ def set_rigid_body_enabled(_value: bool, prim_path: str):
     )
 
 
-async def simulate_async(seconds: float, steps_per_sec: int = 60, callback: Callable = None):
+async def simulate_async(seconds: float, steps_per_sec: int = 60, callback: Callable = None) -> None:
     """Helper function to simulate async for ``seconds * steps_per_sec frames``.
 
     Args:

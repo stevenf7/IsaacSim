@@ -12,5 +12,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from isaacsim.robot.manipulators.examples.universal_robots.kinematics_solver import KinematicsSolver
-from isaacsim.robot.manipulators.examples.universal_robots.ur10 import UR10
+from isaacsim.robot.manipulators.examples.universal_robots.kinematics_solver import KinematicsSolver as KinematicsSolver
+from isaacsim.robot.manipulators.examples.universal_robots.ur10 import UR10 as UR10

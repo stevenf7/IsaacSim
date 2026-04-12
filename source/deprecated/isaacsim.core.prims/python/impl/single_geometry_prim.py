@@ -15,8 +15,9 @@
 
 """High level wrapper to manage a single geometry prim and its attributes/properties."""
 
+from __future__ import annotations
 
-from typing import List, Optional, Sequence, Union
+from collections.abc import Sequence
 
 import numpy as np
 from isaacsim.core.deprecation_manager import import_module
@@ -86,20 +87,22 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         self,
         prim_path: str,
         name: str = "geometry_prim",
-        position: Optional[Sequence[float]] = None,
-        translation: Optional[Sequence[float]] = None,
-        orientation: Optional[Sequence[float]] = None,
-        scale: Optional[Sequence[float]] = None,
-        visible: Optional[bool] = None,
+        position: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
+        orientation: Sequence[float] | None = None,
+        scale: Sequence[float] | None = None,
+        visible: bool | None = None,
         reset_xform_properties: bool = True,
         collision: bool = False,
         track_contact_forces: bool = False,
         prepare_contact_sensor: bool = False,
         disable_stablization: bool = True,
-        contact_filter_prim_paths_expr: Optional[List[str]] = [],
-    ):
+        contact_filter_prim_paths_expr: list[str] | None = None,
+    ) -> None:
         from isaacsim.core.simulation_manager import SimulationManager
 
+        if contact_filter_prim_paths_expr is None:
+            contact_filter_prim_paths_expr = []
         self._backend = SimulationManager.get_backend()
         self._device = SimulationManager.get_physics_sim_device()
         self._backend_utils = SimulationManager._get_backend_utils()
@@ -487,7 +490,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         """
         return self._geometry_prim_view.get_applied_physics_materials()[0]
 
-    def get_net_contact_forces(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
+    def get_net_contact_forces(self, dt: float = 1.0) -> np.ndarray | torch.Tensor:
         """Return the net contact forces on the prim if contact forces are tracked.
 
         i.e., a matrix of dimension (1, 3).
@@ -501,7 +504,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         """
         return self._geometry_prim_view.get_net_contact_forces(dt=dt)[0]
 
-    def get_contact_force_matrix(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
+    def get_contact_force_matrix(self, dt: float = 1.0) -> np.ndarray | torch.Tensor:
         """Return contact forces between the prim and filter prims if the object is initialized with filter_paths_expr.
 
         i.e., a matrix of dimension (self._contact_view.num_filters, 3) where num_filters is determined according to
@@ -516,7 +519,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         """
         return self._geometry_prim_view._contact_view.get_contact_force_matrix(dt=dt)[0]
 
-    def get_contact_force_data(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
+    def get_contact_force_data(self, dt: float = 1.0) -> np.ndarray | torch.Tensor:
         """Return detailed contact forces between the prim and filter prims if the object is initialized with.
 
         filter_paths_expr. This includes normal contact forces, normal directions, contact points, separations.
@@ -536,7 +539,7 @@ class SingleGeometryPrim(_SinglePrimWrapper):
         """
         return self._geometry_prim_view._contact_view.get_contact_force_data(dt=dt)[0]
 
-    def get_friction_data(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
+    def get_friction_data(self, dt: float = 1.0) -> np.ndarray | torch.Tensor:
         """Return detailed friction forces between the prim and filter prims if the object is initialized with.
 
         filter_paths_expr. This includes tangential forces and points.

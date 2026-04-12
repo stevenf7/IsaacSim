@@ -15,8 +15,9 @@
 
 """High level wrapper for dealing with a single XForm prim and its transformation properties."""
 
+from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 import carb
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path, is_prim_path_valid
@@ -77,18 +78,18 @@ class SingleXFormPrim(_SinglePrimWrapper):
         self,
         prim_path: str,
         name: str = "xform_prim",
-        position: Optional[Sequence[float]] = None,
-        translation: Optional[Sequence[float]] = None,
-        orientation: Optional[Sequence[float]] = None,
-        scale: Optional[Sequence[float]] = None,
-        visible: Optional[bool] = None,
+        position: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
+        orientation: Sequence[float] | None = None,
+        scale: Sequence[float] | None = None,
+        visible: bool | None = None,
         reset_xform_properties: bool = True,
-    ):
+    ) -> None:
 
         if is_prim_path_valid(prim_path):
             self._prim = get_prim_at_path(prim_path)
         else:
-            carb.log_info("Creating a new XForm prim at path {}".format(prim_path))
+            carb.log_info(f"Creating a new XForm prim at path {prim_path}")
             self._prim = define_prim(prim_path=prim_path, prim_type="Xform")
 
         from isaacsim.core.simulation_manager import SimulationManager

@@ -15,7 +15,7 @@
 
 """Pick-and-place controller for the Franka robot."""
 
-from typing import List, Optional
+from __future__ import annotations
 
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
 from isaacsim.core.prims import SingleArticulation
@@ -39,9 +39,9 @@ class PickPlaceController(manipulators_controllers.PickPlaceController):
         name: str,
         gripper: ParallelGripper,
         robot_articulation: SingleArticulation,
-        end_effector_initial_height: Optional[float] = None,
-        events_dt: Optional[List[float]] = None,
-    ):
+        end_effector_initial_height: float | None = None,
+        events_dt: list[float] | None = None,
+    ) -> None:
         if events_dt is None:
             events_dt = [0.008, 0.005, 1, 0.1, 0.05, 0.05, 0.0025, 1, 0.008, 0.08]
         manipulators_controllers.PickPlaceController.__init__(

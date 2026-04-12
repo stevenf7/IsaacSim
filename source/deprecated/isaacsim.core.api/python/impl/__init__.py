@@ -14,9 +14,9 @@
 # limitations under the License.
 import builtins
 
-from isaacsim.core.api.physics_context.physics_context import PhysicsContext
-from isaacsim.core.api.simulation_context.simulation_context import SimulationContext
-from isaacsim.core.api.world.world import World
+from isaacsim.core.api.physics_context.physics_context import PhysicsContext as PhysicsContext
+from isaacsim.core.api.simulation_context.simulation_context import SimulationContext as SimulationContext
+from isaacsim.core.api.world.world import World as World
 
 # In case we are running from a regular kit instance and not a simulation_app, this variable is not defined.
 if not hasattr(builtins, "ISAAC_LAUNCHED_FROM_TERMINAL"):

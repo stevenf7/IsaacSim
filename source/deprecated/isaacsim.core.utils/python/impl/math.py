@@ -15,8 +15,9 @@
 
 """Deprecated math utility functions."""
 
+from __future__ import annotations
+
 import copy
-from typing import Union
 
 import numpy as np
 
@@ -33,7 +34,7 @@ def radians_to_degrees(rad_angles: np.ndarray) -> np.ndarray:
     return rad_angles * (180.0 / np.pi)
 
 
-def cross(a: Union[np.ndarray, list], b: Union[np.ndarray, list]) -> list:
+def cross(a: np.ndarray | list, b: np.ndarray | list) -> list:
     """Computes the cross-product between two 3-dimensional vectors.
 
     Args:

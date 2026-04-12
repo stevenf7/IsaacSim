@@ -15,14 +15,13 @@
 
 """Deprecated render product utility functions."""
 
-from typing import Tuple
 
 from isaacsim.core.utils.prims import set_prim_hide_in_stage_window, set_prim_no_delete
 from isaacsim.core.utils.stage import get_current_stage
 from pxr import Gf, Sdf, Usd, UsdRender
 
 
-def add_aov(render_product_path: str, aov_name: str):
+def add_aov(render_product_path: str, aov_name: str) -> None:
     """Adds an AOV/Render Var to an existing render product.
 
     Args:
@@ -77,7 +76,7 @@ def get_camera_prim_path(render_product_path: str) -> str:
         return render_prod_prim.GetCameraRel().GetTargets()[0]
 
 
-def set_camera_prim_path(render_product_path: str, camera_prim_path: str):
+def set_camera_prim_path(render_product_path: str, camera_prim_path: str) -> None:
     """Sets the camera prim path for a render product.
 
     Also applies the OmniRtxCameraExposureAPI_1 schema to the camera prim and sets the exposure:time attribute to 0.02.
@@ -103,7 +102,7 @@ def set_camera_prim_path(render_product_path: str, camera_prim_path: str):
     camera_prim.CreateAttribute("exposure:time", Sdf.ValueTypeNames.Float).Set(0.02)
 
 
-def get_resolution(render_product_path: str) -> Tuple[int]:
+def get_resolution(render_product_path: str) -> tuple[int]:
     """Get resolution for a render product.
 
     Args:
@@ -123,7 +122,7 @@ def get_resolution(render_product_path: str) -> Tuple[int]:
         return render_prod_prim.GetResolutionAttr().Get()
 
 
-def set_resolution(render_product_path: str, resolution: Tuple[int]):
+def set_resolution(render_product_path: str, resolution: tuple[int]) -> None:
     """Set resolution for a render product.
 
     Args:

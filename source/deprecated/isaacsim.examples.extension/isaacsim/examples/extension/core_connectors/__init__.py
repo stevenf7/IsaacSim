@@ -16,4 +16,5 @@
 """Provides UI components for core connector functionality including load and reset operations."""
 
 
-from .ui_core_connectors import LoadButton, ResetButton
+from .ui_core_connectors import LoadButton as LoadButton
+from .ui_core_connectors import ResetButton as ResetButton

@@ -42,10 +42,10 @@ class MobilityGenWriter:
         path: Output directory path where all mobility generation data will be written.
     """
 
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:
         self.path = path
 
-    def write_state_dict_common(self, state_dict: dict, step: int):
+    def write_state_dict_common(self, state_dict: dict, step: int) -> None:
         """Writes the common state dictionary data to a NumPy file.
 
         Args:
@@ -58,7 +58,7 @@ class MobilityGenWriter:
         state_dict_path = os.path.join(dict_folder, f"{step:08d}.npy")
         np.save(state_dict_path, state_dict)
 
-    def write_state_dict_rgb(self, state_rgb: dict, step: int):
+    def write_state_dict_rgb(self, state_rgb: dict, step: int) -> None:
         """Writes RGB state data as JPEG images.
 
         Args:
@@ -74,7 +74,7 @@ class MobilityGenWriter:
                 image = PIL.Image.fromarray(value)
                 image.save(image_path)
 
-    def write_state_dict_segmentation(self, state_segmentation: dict, step: int):
+    def write_state_dict_segmentation(self, state_segmentation: dict, step: int) -> None:
         """Writes segmentation state data as PNG images.
 
         Args:
@@ -90,7 +90,7 @@ class MobilityGenWriter:
                 image = PIL.Image.fromarray(value)
                 image.save(image_path)
 
-    def write_state_dict_depth(self, state_np: dict, step: int):
+    def write_state_dict_depth(self, state_np: dict, step: int) -> None:
         """Writes depth state data as 16-bit inverse depth PNG images.
 
         Args:
@@ -112,7 +112,7 @@ class MobilityGenWriter:
 
                 image.save(output_path)
 
-    def write_state_dict_normals(self, state_np: dict, step: int):
+    def write_state_dict_normals(self, state_np: dict, step: int) -> None:
         """Writes normals state data as NumPy files.
 
         Args:
@@ -127,7 +127,7 @@ class MobilityGenWriter:
                 output_path = os.path.join(output_folder, f"{step:08d}.npy")
                 np.save(output_path, value)
 
-    def copy_stage(self, input_path: str):
+    def copy_stage(self, input_path: str) -> None:
         """Copies a USD or USDZ stage file to the output directory.
 
         Args:
@@ -140,7 +140,7 @@ class MobilityGenWriter:
         else:
             shutil.copyfile(input_path, os.path.join(self.path, "stage.usd"))
 
-    def write_config(self, config: Config):
+    def write_config(self, config: Config) -> None:
         """Writes the configuration to a JSON file.
 
         Args:
@@ -151,7 +151,7 @@ class MobilityGenWriter:
         with open(os.path.join(self.path, "config.json"), "w") as f:
             f.write(config.to_json())
 
-    def write_occupancy_map(self, occupancy_map: OccupancyMap):
+    def write_occupancy_map(self, occupancy_map: OccupancyMap) -> None:
         """Writes the occupancy map in ROS format.
 
         Args:
@@ -161,7 +161,7 @@ class MobilityGenWriter:
             os.makedirs(self.path)
         occupancy_map.save_ros(os.path.join(self.path, "occupancy_map"))
 
-    def copy_init(self, other_path: str):
+    def copy_init(self, other_path: str) -> None:
         """Copies initialization files from another path including stage, config, and occupancy map.
 
         Args:

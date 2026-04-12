@@ -15,7 +15,7 @@
 
 """Franka robot wrapper with gripper and motion generation support."""
 
-from typing import List, Optional
+from __future__ import annotations
 
 import carb
 import numpy as np
@@ -47,15 +47,15 @@ class Franka(Robot):
         self,
         prim_path: str,
         name: str = "franka_robot",
-        usd_path: Optional[str] = None,
-        position: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        end_effector_prim_name: Optional[str] = None,
-        gripper_dof_names: Optional[List[str]] = None,
-        gripper_open_position: Optional[np.ndarray] = None,
-        gripper_closed_position: Optional[np.ndarray] = None,
-        deltas: Optional[np.ndarray] = None,
-    ):
+        usd_path: str | None = None,
+        position: np.ndarray | None = None,
+        orientation: np.ndarray | None = None,
+        end_effector_prim_name: str | None = None,
+        gripper_dof_names: list[str] | None = None,
+        gripper_open_position: np.ndarray | None = None,
+        gripper_closed_position: np.ndarray | None = None,
+        deltas: np.ndarray | None = None,
+    ) -> None:
         prim = get_prim_at_path(prim_path)
         self._end_effector = None
         self._gripper = None

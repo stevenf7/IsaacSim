@@ -15,7 +15,7 @@
 
 """Kinematics solver configuration for the Franka robot."""
 
-from typing import Optional
+from __future__ import annotations
 
 import isaacsim.robot_motion.motion_generation.interface_config_loader as interface_config_loader
 from isaacsim.core.prims import SingleArticulation
@@ -32,7 +32,7 @@ class KinematicsSolver(ArticulationKinematicsSolver):
             be automatically selected.
     """
 
-    def __init__(self, robot_articulation: SingleArticulation, end_effector_frame_name: Optional[str] = None):
+    def __init__(self, robot_articulation: SingleArticulation, end_effector_frame_name: str | None = None) -> None:
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config("Franka")
         self._kinematics = LulaKinematicsSolver(**kinematics_config)
 

@@ -15,6 +15,8 @@
 
 """Tests for camera sensor point cloud generation."""
 
+from __future__ import annotations
+
 import os
 
 import numpy as np
@@ -40,13 +42,13 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
     CAMERA_FREQUENCY = 60
     NUM_WARMUP_FRAMES = 5
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create a new stage for each test."""
         await omni.kit.app.get_app().next_update_async()
         await create_new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Stop the timeline and close the stage after each test."""
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
@@ -55,11 +57,12 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
-    async def _create_test_environment(self):
+    async def _create_test_environment(self) -> tuple:
         """Create test environment with ground plane, cubes, and camera.
 
         Returns:
             None.
+
         """
         await create_new_stage_async()
 
@@ -100,11 +103,12 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
 
         return camera, cube_1, cube_2, cube_3
 
-    async def _start_data_capture(self, num_warm_up_frames: int = 0):
+    async def _start_data_capture(self, num_warm_up_frames: int = 0) -> None:
         """Start the timeline and optionally wait for valid data to be available.
 
         Args:
             num_warm_up_frames: Number of warm-up frames to render before capturing data.
+
         """
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
@@ -119,7 +123,7 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
         output_dir: str | None = None,
         save_debug_imgs: bool = True,
         print_stats: bool = False,
-    ):
+    ) -> None:
         """Compare pointcloud data from depth and pointcloud annotators against golden data.
 
         Args:
@@ -128,6 +132,7 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
             output_dir: Output directory for saving debug images.
             save_debug_imgs: Whether to save debug images.
             print_stats: Whether to print statistics.
+
         """
         res_str = f"{resolution[0]}_{resolution[1]}"
         camera.set_resolution(resolution)
@@ -291,7 +296,7 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
                 f"mean={camera_mean:.6f}, max={camera_max:.6f}",
             )
 
-    async def test_pointcloud_data_resolution_4_4(self):
+    async def test_pointcloud_data_resolution_4_4(self) -> None:
         """Test pointcloud data at 4x4 resolution."""
         camera, _, _, _ = await self._create_test_environment()
         for _ in range(self.NUM_WARMUP_FRAMES):
@@ -307,7 +312,7 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
             print_stats=True,
         )
 
-    async def test_pointcloud_data_resolution_64_64(self):
+    async def test_pointcloud_data_resolution_64_64(self) -> None:
         """Test pointcloud data at 64x64 resolution."""
         camera, _, _, _ = await self._create_test_environment()
         for _ in range(self.NUM_WARMUP_FRAMES):
@@ -323,7 +328,7 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
             print_stats=True,
         )
 
-    async def test_pointcloud_data_resolution_67_137(self):
+    async def test_pointcloud_data_resolution_67_137(self) -> None:
         """Test pointcloud data at 67x137 non-square resolution."""
         camera, _, _, _ = await self._create_test_environment()
         for _ in range(self.NUM_WARMUP_FRAMES):
@@ -339,7 +344,7 @@ class TestCameraSensorPointcloud(omni.kit.test.AsyncTestCase):
             print_stats=True,
         )
 
-    async def test_pointcloud_data_resolution_211_99(self):
+    async def test_pointcloud_data_resolution_211_99(self) -> None:
         """Test pointcloud data at 211x99 non-square resolution."""
         camera, _, _, _ = await self._create_test_environment()
         for _ in range(self.NUM_WARMUP_FRAMES):

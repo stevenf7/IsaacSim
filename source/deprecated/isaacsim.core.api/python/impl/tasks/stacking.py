@@ -15,9 +15,9 @@
 
 """Provides an abstract base class for stacking multiple cubes with a robot."""
 
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List, Optional
 
 import numpy as np
 from isaacsim.core.api.objects import DynamicCuboid
@@ -38,16 +38,17 @@ class Stacking(ABC, BaseTask):
         stack_target_position: Position to stack cubes at.
         cube_size: Size of each cube.
         offset: Offset for all task objects.
+
     """
 
     def __init__(
         self,
         name: str,
         cube_initial_positions: np.ndarray,
-        cube_initial_orientations: Optional[np.ndarray] = None,
-        stack_target_position: Optional[np.ndarray] = None,
-        cube_size: Optional[np.ndarray] = None,
-        offset: Optional[np.ndarray] = None,
+        cube_initial_orientations: np.ndarray | None = None,
+        stack_target_position: np.ndarray | None = None,
+        cube_size: np.ndarray | None = None,
+        offset: np.ndarray | None = None,
     ) -> None:
         BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
@@ -71,6 +72,7 @@ class Stacking(ABC, BaseTask):
 
         Args:
             scene: The scene to populate.
+
         """
         super().set_up_scene(scene)
         scene.add_default_ground_plane()
@@ -108,15 +110,16 @@ class Stacking(ABC, BaseTask):
 
         Raises:
             NotImplementedError: Must be implemented by subclass.
+
         """
         raise NotImplementedError
 
     def set_params(
         self,
-        cube_name: Optional[str] = None,
-        cube_position: Optional[str] = None,
-        cube_orientation: Optional[str] = None,
-        stack_target_position: Optional[str] = None,
+        cube_name: str | None = None,
+        cube_position: str | None = None,
+        cube_orientation: str | None = None,
+        stack_target_position: str | None = None,
     ) -> None:
         """Set task parameters.
 
@@ -125,6 +128,7 @@ class Stacking(ABC, BaseTask):
             cube_position: New position for cube.
             cube_orientation: New orientation for cube.
             stack_target_position: New stack target position.
+
         """
         if stack_target_position is not None:
             self._stack_target_position = stack_target_position
@@ -137,8 +141,9 @@ class Stacking(ABC, BaseTask):
 
         Returns:
             Dictionary of task parameters.
+
         """
-        params_representation = dict()
+        params_representation = {}
         params_representation["stack_target_position"] = {"value": self._stack_target_position, "modifiable": True}
         params_representation["robot_name"] = {"value": self._robot.name, "modifiable": False}
         return params_representation
@@ -148,6 +153,7 @@ class Stacking(ABC, BaseTask):
 
         Returns:
             Dictionary with cube and robot observations.
+
         """
         joints_state = self._robot.get_joints_state()
         end_effector_position, _ = self._robot.end_effector.get_local_pose()
@@ -178,6 +184,7 @@ class Stacking(ABC, BaseTask):
         Args:
             time_step_index: Current simulation step index.
             simulation_time: Current simulation time.
+
         """
         return
 
@@ -189,11 +196,12 @@ class Stacking(ABC, BaseTask):
             self._robot.gripper.set_joint_positions(self._robot.gripper.joint_opened_positions)
         return
 
-    def get_cube_names(self) -> List[str]:
+    def get_cube_names(self) -> list[str]:
         """Get the names of all cubes in the task.
 
         Returns:
             List of cube names.
+
         """
         cube_names = []
         for i in range(self._num_of_cubes):
@@ -208,6 +216,7 @@ class Stacking(ABC, BaseTask):
 
         Returns:
             Dictionary of task metrics.
+
         """
         raise NotImplementedError
 
@@ -219,5 +228,6 @@ class Stacking(ABC, BaseTask):
 
         Returns:
             True if task is done, False otherwise.
+
         """
         raise NotImplementedError

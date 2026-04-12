@@ -43,12 +43,9 @@ class TestArticulationDeterminism(CoreTestCase):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-        pass
-
     async def tearDown(self):
         """Tear down test environment."""
         await super().tearDown()
-        pass
 
     async def test_inconsistent_result(self):
         """Test inconsistent result."""

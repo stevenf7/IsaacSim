@@ -29,7 +29,7 @@ from isaacsim.gui.components.ui_utils import get_style
 class UIBuilder:
     """Build and manage the UI for the configuration tooling workflow."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Frames are sub-windows that can contain multiple UI elements
         self.frames = []
 
@@ -46,7 +46,7 @@ class UIBuilder:
     #           The Functions Below Are Called Automatically By extension.py
     ###################################################################################
 
-    def on_menu_callback(self):
+    def on_menu_callback(self) -> None:
         """Callback for when the UI is opened from the toolbar.
 
         This is called directly after build_ui().
@@ -63,15 +63,14 @@ class UIBuilder:
         elif self._timeline.is_stopped():
             self._stop_text.visible = True
 
-    def on_timeline_event(self, event):
+    def on_timeline_event(self, event: object) -> None:
         """Callback for Timeline events (Play, Pause, Stop).
 
         Args:
             event (omni.timeline.TimelineEventType): Event Type
         """
-        pass
 
-    def on_physics_step(self, step):
+    def on_physics_step(self, step: object) -> None:
         """Callback for Physics Step.
 
         Physics steps only occur when the timeline is playing.
@@ -79,9 +78,8 @@ class UIBuilder:
         Args:
             step (float): Size of physics step
         """
-        pass
 
-    def on_stage_event(self, event):
+    def on_stage_event(self, event: object) -> None:
         """Callback for Stage Events.
 
         Args:
@@ -107,9 +105,8 @@ class UIBuilder:
                 self._invalidate_articulation()
                 self._stop_text.visible = True
 
-    def cleanup(self):
-        """
-        Called when the stage is closed or the extension is hot reloaded.
+    def cleanup(self) -> None:
+        """Called when the stage is closed or the extension is hot reloaded.
 
         Perform any necessary cleanup such as removing active callback functions
         Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called.
@@ -117,9 +114,8 @@ class UIBuilder:
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()
 
-    def build_ui(self):
-        """
-        Build a custom UI tool to run your extension.
+    def build_ui(self) -> None:
+        """Build a custom UI tool to run your extension.
 
         This function will be called any time the UI window is closed and reopened.
         """
@@ -147,7 +143,7 @@ class UIBuilder:
 
         self._robot_control_frame = CollapsableFrame("Robot Control Frame", collapsed=True, enabled=False)
 
-        def build_robot_control_frame_fn():
+        def build_robot_control_frame_fn() -> None:
             self._joint_control_frames = []
             self._joint_position_float_fields = []
 
@@ -175,12 +171,11 @@ class UIBuilder:
     # Functions Below This Point Support The Provided Example And Can Be Replaced/Deleted
     ######################################################################################
 
-    def _on_init(self):
+    def _on_init(self) -> None:
         self.articulation = None
 
-    def _invalidate_articulation(self):
-        """
-        This function handles the event that the existing articulation becomes invalid and there is.
+    def _invalidate_articulation(self) -> None:
+        """This function handles the event that the existing articulation becomes invalid and there is.
 
         not a new articulation to select.  It is called explicitly in the code when the timeline is
         stopped and when the DropDown menu finds no articulations on the stage.
@@ -189,9 +184,8 @@ class UIBuilder:
         self._robot_control_frame.collapsed = True
         self._robot_control_frame.enabled = False
 
-    def _on_articulation_selection(self, selection: str):
-        """
-        This function is called whenever a new selection is made in the.
+    def _on_articulation_selection(self, selection: str) -> None:
+        """This function is called whenever a new selection is made in the.
 
         "Select Articulation" DropDown.  A new selection may also be
         made implicitly any time self._selection_menu.repopulate() is called
@@ -212,7 +206,7 @@ class UIBuilder:
         self._robot_control_frame.enabled = True
         self._robot_control_frame.rebuild()
 
-    def _setup_joint_control_frames(self):
+    def _setup_joint_control_frames(self) -> None:
         """Update the UI to match robot properties once a robot has been chosen.
 
         Make a frame visible for each robot joint.
@@ -239,9 +233,8 @@ class UIBuilder:
             position_float_field.set_upper_limit(upper_joint_limits[i])
             position_float_field.set_lower_limit(lower_joint_limits[i])
 
-    def _on_set_joint_position_target(self, joint_index: int, position_target: float):
-        """
-        This function is called when the user changes one of the float fields.
+    def _on_set_joint_position_target(self, joint_index: int, position_target: float) -> None:
+        """This function is called when the user changes one of the float fields.
 
         to control a robot joint position target.  The index of the joint and the new
         desired value are passed in as arguments.

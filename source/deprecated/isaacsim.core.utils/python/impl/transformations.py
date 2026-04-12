@@ -15,7 +15,7 @@
 
 """Deprecated transformation utility functions."""
 
-from typing import Sequence, Tuple, Union
+from collections.abc import Sequence
 
 import numpy as np
 
@@ -48,7 +48,7 @@ def tf_matrix_from_pose(translation: Sequence[float], orientation: Sequence[floa
     return np.transpose(mat.GetMatrix())
 
 
-def pose_from_tf_matrix(transformation: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def pose_from_tf_matrix(transformation: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Gets pose corresponding to input transformation matrix.
 
     Args:
@@ -67,8 +67,8 @@ def pose_from_tf_matrix(transformation: np.ndarray) -> Tuple[np.ndarray, np.ndar
 
 
 def tf_matrices_from_poses(
-    translations: Union[np.ndarray, torch.Tensor], orientations: Union[np.ndarray, torch.Tensor]
-) -> Union[np.ndarray, torch.Tensor]:
+    translations: np.ndarray | torch.Tensor, orientations: np.ndarray | torch.Tensor
+) -> np.ndarray | torch.Tensor:
     """Compute transformation matrices from translation and orientation arrays.
 
     Args:
@@ -154,7 +154,7 @@ def get_translation_from_target(
 
 def get_world_pose_from_relative(
     coord_prim: Usd.Prim, relative_translation: np.ndarray, relative_orientation: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Get a pose defined in the world frame from a pose defined relative to the frame of the coord_prim.
 
     Args:

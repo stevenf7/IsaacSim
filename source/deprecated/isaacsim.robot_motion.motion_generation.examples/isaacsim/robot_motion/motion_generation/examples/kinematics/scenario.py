@@ -15,6 +15,7 @@
 
 """Tutorial module demonstrating kinematics-based robot control for the Franka Panda robot using inverse kinematics computations."""
 
+from __future__ import annotations
 
 import os
 
@@ -52,14 +53,14 @@ class FrankaKinematicsExample:
     between the USD articulation and the underlying kinematics computation.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._kinematics_solver = None
         self._articulation_kinematics_solver = None
 
         self._articulation = None
         self._target = None
 
-    def load_example_assets(self):
+    def load_example_assets(self) -> tuple:
         """Loads the Franka robot and target assets into the simulation stage.
 
         Adds a Franka Panda robot at `/panda` and a target frame at `/World/target` to the stage.
@@ -83,7 +84,7 @@ class FrankaKinematicsExample:
         # Return assets that were added to the stage so that they can be registered with the core.World
         return self._articulation, self._target
 
-    def setup(self):
+    def setup(self) -> None:
         """Initializes the kinematics solvers for the Franka robot.
 
         Loads the robot description and URDF files, creates a LulaKinematicsSolver,
@@ -110,7 +111,7 @@ class FrankaKinematicsExample:
             self._articulation, self._kinematics_solver, end_effector_name
         )
 
-    def update(self, step: float):
+    def update(self, step: float) -> None:
         """Updates the robot motion to track the target position.
 
         Computes inverse kinematics to move the robot's end effector to the target pose.
@@ -137,7 +138,7 @@ class FrankaKinematicsExample:
         # Unused Forward Kinematics:
         # ee_position,ee_rot_mat = articulation_kinematics_solver.compute_end_effector_pose()
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the kinematics example.
 
         Since kinematics is stateless, this method performs no operations.

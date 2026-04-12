@@ -33,5 +33,5 @@ class Extension(omni.ext.IExt):
             ext_id: The extension ID.
         """
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension shuts down."""

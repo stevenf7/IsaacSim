@@ -15,7 +15,7 @@
 
 """Deprecated string utility functions."""
 
-from typing import Callable, Tuple
+from collections.abc import Callable
 
 
 def find_unique_string_name(initial_name: str, is_unique_fn: Callable[[str], bool]) -> str:
@@ -41,7 +41,7 @@ def find_unique_string_name(initial_name: str, is_unique_fn: Callable[[str], boo
     return result
 
 
-def find_root_prim_path_from_regex(prim_path_regex: str) -> Tuple[str, int]:
+def find_root_prim_path_from_regex(prim_path_regex: str) -> tuple[str, int]:
     """Find the first prim above the regex pattern prim and its position.
 
     Args:

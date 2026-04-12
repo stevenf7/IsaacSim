@@ -22,8 +22,8 @@ import omni.ext
 class Extension(omni.ext.IExt):
     """Object that tracks the lifetime of the Python part of the extension loading."""
 
-    def on_startup(self):
+    def on_startup(self) -> None:
         """Set up initial conditions for the Python part of the extension."""
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Shutting down this part of the extension prepares it for hot reload."""

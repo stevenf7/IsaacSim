@@ -16,18 +16,18 @@
 """Implementation module for various prim classes including geometry, physics, articulation, and transformation primitives."""
 
 
-from .articulation import Articulation
-from .cloth_prim import ClothPrim
-from .deformable_prim import DeformablePrim
-from .geometry_prim import GeometryPrim
-from .particle_system import ParticleSystem
-from .rigid_prim import RigidPrim
-from .sdf_shape_prim import SdfShapePrim
-from .single_articulation import SingleArticulation
-from .single_cloth_prim import SingleClothPrim
-from .single_deformable_prim import SingleDeformablePrim
-from .single_geometry_prim import SingleGeometryPrim
-from .single_particle_system import SingleParticleSystem
-from .single_rigid_prim import SingleRigidPrim
-from .single_xform_prim import SingleXFormPrim
-from .xform_prim import XFormPrim
+from .articulation import Articulation as Articulation
+from .cloth_prim import ClothPrim as ClothPrim
+from .deformable_prim import DeformablePrim as DeformablePrim
+from .geometry_prim import GeometryPrim as GeometryPrim
+from .particle_system import ParticleSystem as ParticleSystem
+from .rigid_prim import RigidPrim as RigidPrim
+from .sdf_shape_prim import SdfShapePrim as SdfShapePrim
+from .single_articulation import SingleArticulation as SingleArticulation
+from .single_cloth_prim import SingleClothPrim as SingleClothPrim
+from .single_deformable_prim import SingleDeformablePrim as SingleDeformablePrim
+from .single_geometry_prim import SingleGeometryPrim as SingleGeometryPrim
+from .single_particle_system import SingleParticleSystem as SingleParticleSystem
+from .single_rigid_prim import SingleRigidPrim as SingleRigidPrim
+from .single_xform_prim import SingleXFormPrim as SingleXFormPrim
+from .xform_prim import XFormPrim as XFormPrim

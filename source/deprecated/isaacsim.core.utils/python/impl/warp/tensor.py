@@ -15,8 +15,9 @@
 
 """Utility functions for working with Warp tensors and arrays, including data type conversion, device management, and array operations."""
 
+from __future__ import annotations
 
-from typing import Any, Optional, Union
+from typing import Any
 
 import numpy as np
 import warp as wp
@@ -25,7 +26,7 @@ from isaacsim.core.deprecation_manager import import_module
 torch = import_module("torch")
 
 
-def get_type(dtype: str):
+def get_type(dtype: str) -> Any:
     """Convert string data type to Warp data type.
 
     Maps string representations of data types to their corresponding Warp data type constants.
@@ -54,7 +55,7 @@ def get_type(dtype: str):
         print(f"Type {dtype} not supported.")
 
 
-def convert(data: object, device: object, dtype: str = "float32", indexed: bool = False):
+def convert(data: object, device: object, dtype: str = "float32", indexed: bool = False) -> wp.array | wp.indexedarray:
     """Convert data to Warp array format with specified properties.
 
     Converts input data to a Warp array with the specified device, data type, and indexing mode.
@@ -79,7 +80,7 @@ def convert(data: object, device: object, dtype: str = "float32", indexed: bool 
         return arr
 
 
-def create_zeros_tensor(shape: object, dtype: str, device: object = None):
+def create_zeros_tensor(shape: object, dtype: str, device: object = None) -> wp.array:
     """Create a Warp array filled with zeros.
 
     Creates a new Warp array with the specified shape and data type, initialized with zero values.
@@ -95,7 +96,7 @@ def create_zeros_tensor(shape: object, dtype: str, device: object = None):
     return wp.zeros(shape=tuple(shape), device=device, dtype=get_type(dtype))
 
 
-def create_tensor_from_list(data: list, dtype: str, device: object = None):
+def create_tensor_from_list(data: list, dtype: str, device: object = None) -> wp.array:
     """Create a Warp array from a list of data.
 
     Creates a Warp array from the provided list data with the specified data type and device.
@@ -111,7 +112,7 @@ def create_tensor_from_list(data: list, dtype: str, device: object = None):
     return wp.array(data, device=device, dtype=get_type(dtype))
 
 
-def clone_tensor(data: object, device: object):
+def clone_tensor(data: object, device: object) -> wp.array:
     """Create a copy of the array on the specified device.
 
     Creates a deep copy of the input array and moves it to the target device.
@@ -132,7 +133,7 @@ def clone_tensor(data: object, device: object):
 
 
 @wp.kernel
-def _arange_k(a: wp.array(dtype=wp.int32)):
+def _arange_k(a: wp.array(dtype=wp.int32)) -> None:
     """Warp kernel that fills an array with sequential indices.
 
     Args:
@@ -142,7 +143,7 @@ def _arange_k(a: wp.array(dtype=wp.int32)):
     a[tid] = tid
 
 
-def arange(n: int, device: str = "cpu"):
+def arange(n: int, device: str = "cpu") -> wp.array:
     """Creates an array with sequential integer values from 0 to n-1.
 
     Args:
@@ -160,7 +161,7 @@ def arange(n: int, device: str = "cpu"):
 global_arange = {}
 
 
-def resolve_indices(indices: Optional[Union[list[int], wp.array]], count: int, device: str) -> wp.array:
+def resolve_indices(indices: list[int] | wp.array | None, count: int, device: str) -> wp.array:
     """Resolve indices into a Warp array.
 
     If indices is a list, converts it to a Warp array. If indices is None, generates an array
@@ -178,7 +179,7 @@ def resolve_indices(indices: Optional[Union[list[int], wp.array]], count: int, d
     if isinstance(indices, list):
         result = wp.array(indices, dtype=wp.int32, device=device)
     elif indices is None:
-        if count not in global_arange.keys():
+        if count not in global_arange:
             result = arange(count, device="cuda")  # TODO: warp kernels not working on cpu
             global_arange[count] = result
         else:
@@ -189,7 +190,7 @@ def resolve_indices(indices: Optional[Union[list[int], wp.array]], count: int, d
     return result
 
 
-def move_data(data: object, device: object):
+def move_data(data: object, device: object) -> wp.array | wp.indexedarray:
     """Move array data to the specified device.
 
     Transfers array data to the target device, handling both regular and indexed arrays.
@@ -204,7 +205,6 @@ def move_data(data: object, device: object):
     if isinstance(data, wp.array):
         return data.to(device)
     elif isinstance(data, wp.indexedarray):
-        indices = data.indices
         if str(device) != str(data.device):
             return wp.indexedarray(data.contiguous().to(device), indices=[None])
         else:
@@ -234,7 +234,7 @@ def tensor_cat(data: list, device: str | None = None, dim: int = -1) -> wp.array
     return wp.from_torch(torch_cat)
 
 
-def expand_dims(data: object, axis: int):
+def expand_dims(data: object, axis: int) -> wp.array:
     """Add a new dimension to the array at the specified axis.
 
     Expands the dimensions of the input array by inserting a new axis at the specified position.
@@ -253,7 +253,7 @@ def expand_dims(data: object, axis: int):
     return wp.from_torch(data_torch, dtype=dtype)
 
 
-def to_list(data: Union[wp.array, wp.indexedarray, "torch.Tensor", Any]) -> list:
+def to_list(data: wp.array | wp.indexedarray | "torch.Tensor" | Any) -> list:
     """Convert data to a Python list.
 
     Handles conversion from Warp arrays, indexed arrays, and PyTorch tensors to Python lists.
@@ -288,12 +288,12 @@ def to_numpy(data: Any) -> np.ndarray | Any:
     """
     try:
         return data.numpy()
-    except:
+    except Exception:
         return data
 
 
 @wp.kernel
-def _assign11(src: Any, dst: wp.array(dtype=Any), indices: wp.array(dtype=int)):
+def _assign11(src: Any, dst: wp.array(dtype=Any), indices: wp.array(dtype=int)) -> None:
     """Warp kernel that assigns 1D source values to destination array at specified indices.
 
     Args:
@@ -311,7 +311,7 @@ wp.overload(_assign11, {"src": wp.indexedarray(dtype=float), "dst": wp.array(dty
 
 
 @wp.kernel
-def _assign12(src: Any, dst: wp.array(dtype=Any, ndim=2), indices: wp.array(dtype=int)):
+def _assign12(src: Any, dst: wp.array(dtype=Any, ndim=2), indices: wp.array(dtype=int)) -> None:
     """Warp kernel that assigns 2D source values to destination array at specified row indices.
 
     Args:
@@ -329,7 +329,7 @@ wp.overload(_assign12, {"src": wp.indexedarray(dtype=float, ndim=2), "dst": wp.a
 
 
 @wp.kernel
-def _assign13(src: Any, dst: wp.array(dtype=Any, ndim=3), indices: wp.array(dtype=int)):
+def _assign13(src: Any, dst: wp.array(dtype=Any, ndim=3), indices: wp.array(dtype=int)) -> None:
     """Warp kernel that assigns 3D source values to destination array at specified first-dimension indices.
 
     Args:
@@ -349,7 +349,7 @@ wp.overload(_assign13, {"src": wp.indexedarray(dtype=float, ndim=3), "dst": wp.a
 @wp.kernel
 def _assign22(
     src: Any, dst: wp.array(dtype=float, ndim=2), indices1: wp.array(dtype=int), indices2: wp.array(dtype=int)
-):
+) -> None:
     """Warp kernel that assigns 2D source values to destination array using two index arrays.
 
     Args:
@@ -371,7 +371,7 @@ wp.overload(_assign22, {"src": wp.indexedarray(dtype=float, ndim=2)})
 @wp.kernel
 def _assign23(
     src: Any, dst: wp.array(dtype=float, ndim=3), indices1: wp.array(dtype=int), indices2: wp.array(dtype=int)
-):
+) -> None:
     """Warp kernel that assigns 3D source values to destination array using two index arrays.
 
     Args:
@@ -397,7 +397,7 @@ def _assign33(
     indices1: wp.array(dtype=int),
     indices2: wp.array(dtype=int),
     indices3: wp.array(dtype=int),
-):
+) -> None:
     """Warp kernel that assigns 3D source values to destination array using three index arrays.
 
     Args:
@@ -418,7 +418,7 @@ wp.overload(_assign33, {"src": wp.array(dtype=float, ndim=3)})
 wp.overload(_assign33, {"src": wp.indexedarray(dtype=float, ndim=3)})
 
 
-def assign(src: object, dst: object, indices: object):
+def assign(src: object, dst: object, indices: object) -> wp.array:
     """Assign values from source array to destination array at specified indices.
 
     Assigns values from the source array to the destination array using the provided indices.
@@ -478,7 +478,7 @@ def assign(src: object, dst: object, indices: object):
 
 
 @wp.kernel
-def _ones(a: wp.array(dtype=wp.int32)):
+def _ones(a: wp.array(dtype=wp.int32)) -> None:
     """Warp kernel that fills an int32 array with ones.
 
     Args:
@@ -505,7 +505,7 @@ def ones(n: int, device: str = "cpu", dtype: wp.float32 = wp.float32) -> wp.arra
 
 
 @wp.kernel
-def clamp(data: wp.array(dtype=wp.float32, ndim=2), low: float, high: float):
+def clamp(data: wp.array(dtype=wp.float32, ndim=2), low: float, high: float) -> None:
     """Clamp array values to specified range.
 
     Clamps each element in the 2D array to be within the specified lower and upper bounds.
@@ -525,7 +525,7 @@ def _finite_diff2(
     a: wp.array(dtype=wp.float32, ndim=2),
     b: wp.array(dtype=wp.float32, ndim=2),
     dt: float,
-):
+) -> None:
     """Warp kernel that computes finite difference between two 2D arrays.
 
     Args:
@@ -538,7 +538,7 @@ def _finite_diff2(
     result[i, j] = (a[i, j] - b[i, j]) / dt
 
 
-def finite_diff2(a: object, b: object, dt: float):
+def finite_diff2(a: object, b: object, dt: float) -> wp.array:
     """Compute finite difference between two arrays.
 
     Calculates the finite difference (a - b) / dt for each element pair in the input arrays.

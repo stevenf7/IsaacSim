@@ -85,8 +85,8 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         visibility: bool = False,
         variant: str | None = None,
         force_camera_prim: bool = False,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         self._parent = parent
         self._config = config
         self._usd_path = usd_path
@@ -289,7 +289,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         ) or self._create_camera_prim()
         return self._prim
 
-    def undo(self):
+    def undo(self) -> None:
         """Undo the sensor creation command by deleting the created prim."""
         if self._prim_path:
             delete_prim(self._prim_path)
@@ -317,7 +317,7 @@ class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
     _sensor_plugin_name: str = "omni.sensors.nv.lidar.lidar_core.plugin"
     """Name of the Lidar sensor plugin "omni.sensors.nv.lidar.lidar_core.plugin"."""
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if self._config and self._config.startswith("OS") and len(self._config) > 3:
             carb.log_warn(
@@ -444,7 +444,7 @@ class IsaacSensorCreateRtxIDS(IsaacSensorCreateRtxSensor):
     _sensor_plugin_name: str = "omni.sensors.nv.ids.ids.plugin"
     """Name of the sensor plugin."""
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if self._config is None:
             self._config = "idsoccupancy"

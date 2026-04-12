@@ -42,7 +42,7 @@ class EsSensorReading:
         value: The measured effort value from the sensor.
     """
 
-    def __init__(self, is_valid: bool = False, time: float = 0, value: float = 0):
+    def __init__(self, is_valid: bool = False, time: float = 0, value: float = 0) -> None:
         self.is_valid = is_valid
         self.time = time
         self.value = value
@@ -71,7 +71,7 @@ class EffortSensor(SingleArticulation):
         sensor_period: float = -1,
         use_latest_data: bool = False,
         enabled: bool = True,
-    ):
+    ) -> None:
         self.current_time = 0
         self.sensor_time = 0
         self.sensor_period = sensor_period
@@ -92,7 +92,7 @@ class EffortSensor(SingleArticulation):
         self.initialize_callbacks()
         return
 
-    def initialize_callbacks(self):
+    def initialize_callbacks(self) -> None:
         """Initialize physics and timeline event callbacks for the effort sensor.
 
         Sets up callbacks for physics step events, stage opening events, and timeline play/stop events
@@ -304,11 +304,11 @@ class EffortSensor(SingleArticulation):
         self.dof_name = dof_name
         try:
             self.dof = self.get_dof_index(self.dof_name)
-        except:
+        except Exception:
             carb.log_warn("unable to find joint corresponding to the dof name, disabling sensor")
             self.dof = None
 
-    def change_buffer_size(self, new_buffer_size: int):
+    def change_buffer_size(self, new_buffer_size: int) -> None:
         """Resize the sensor data buffers to a new size.
 
         Adjusts both the main sensor reading buffer and interpolation buffer to the specified size.

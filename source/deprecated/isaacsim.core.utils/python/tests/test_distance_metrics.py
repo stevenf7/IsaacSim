@@ -23,7 +23,12 @@ import numpy as np
 import omni.kit.test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from isaacsim.core.utils.distance_metrics import *
+from isaacsim.core.utils.distance_metrics import (
+    rotational_distance_angle,
+    rotational_distance_identity_matrix_deviation,
+    rotational_distance_single_axis,
+    weighted_translational_distance,
+)
 from pxr import Gf
 from scipy.spatial.transform import Rotation as R
 

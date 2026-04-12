@@ -17,7 +17,6 @@
 
 
 import os
-from typing import List
 
 import omni.ui as ui
 from isaacsim.gui.components.element_wrappers import (
@@ -39,7 +38,7 @@ from isaacsim.gui.components.ui_utils import get_style
 class UIBuilder:
     """Build and manage the UI for the UI component library."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Frames are sub-windows that can contain multiple UI elements
         self.frames = []
 
@@ -50,22 +49,20 @@ class UIBuilder:
     #           The Functions Below Are Called Automatically By extension.py
     ###################################################################################
 
-    def on_menu_callback(self):
+    def on_menu_callback(self) -> None:
         """Callback for when the UI is opened from the toolbar.
 
         This is called directly after build_ui().
         """
-        pass
 
-    def on_timeline_event(self, event):
+    def on_timeline_event(self, event: object) -> None:
         """Callback for Timeline events (Play, Pause, Stop).
 
         Args:
             event (omni.timeline.TimelineEventType): Event Type
         """
-        pass
 
-    def on_physics_step(self, step):
+    def on_physics_step(self, step: object) -> None:
         """Callback for Physics Step.
 
         Physics steps only occur when the timeline is playing.
@@ -73,19 +70,16 @@ class UIBuilder:
         Args:
             step (float): Size of physics step
         """
-        pass
 
-    def on_stage_event(self, event):
+    def on_stage_event(self, event: object) -> None:
         """Callback for Stage Events.
 
         Args:
             event (omni.usd.StageEventType): Event Type
         """
-        pass
 
-    def cleanup(self):
-        """
-        Called when the stage is closed or the extension is hot reloaded.
+    def cleanup(self) -> None:
+        """Called when the stage is closed or the extension is hot reloaded.
 
         Perform any necessary cleanup such as removing active callback functions
         Buttons imported from isaacsim.gui.components.element_wrappers implement a cleanup function that should be called.
@@ -95,9 +89,8 @@ class UIBuilder:
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()
 
-    def build_ui(self):
-        """
-        Build a custom UI tool to run your extension.
+    def build_ui(self) -> None:
+        """Build a custom UI tool to run your extension.
 
         This function will be called any time the UI window is closed and reopened.
         """
@@ -116,7 +109,7 @@ class UIBuilder:
         # Create a UI frame with different plotting tools
         self._create_plotting_frame()
 
-    def _create_status_report_frame(self):
+    def _create_status_report_frame(self) -> None:
         self._status_report_frame = CollapsableFrame("Status Report", collapsed=False)
         with self._status_report_frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
@@ -127,7 +120,7 @@ class UIBuilder:
                     include_copy_button=True,
                 )
 
-    def _create_simple_editable_fields_frame(self):
+    def _create_simple_editable_fields_frame(self) -> None:
         self._simple_fields_frame = CollapsableFrame("Simple Editable Fields", collapsed=False)
 
         with self._simple_fields_frame:
@@ -154,7 +147,7 @@ class UIBuilder:
                 )
                 self.wrapped_ui_elements.append(float_field)
 
-                def is_usd_or_python_path(file_path: str):
+                def is_usd_or_python_path(file_path: str) -> bool:
                     # Filter file paths shown in the file picker to only be USD or Python files
                     _, ext = os.path.splitext(file_path.lower())
                     return ext == ".usd" or ext == ".py"
@@ -171,7 +164,7 @@ class UIBuilder:
                 )
                 self.wrapped_ui_elements.append(string_field)
 
-    def _create_buttons_frame(self):
+    def _create_buttons_frame(self) -> None:
         buttons_frame = CollapsableFrame("Buttons Frame", collapsed=False)
 
         with buttons_frame:
@@ -203,13 +196,13 @@ class UIBuilder:
                 )
                 self.wrapped_ui_elements.append(check_box)
 
-    def _create_selection_widgets_frame(self):
+    def _create_selection_widgets_frame(self) -> None:
         self._selection_widgets_frame = CollapsableFrame("Selection Widgets", collapsed=False)
 
         with self._selection_widgets_frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
 
-                def dropdown_populate_fn():
+                def dropdown_populate_fn() -> list:
                     return ["Option A", "Option B", "Option C"]
 
                 dropdown = DropDown(
@@ -230,7 +223,7 @@ class UIBuilder:
                 )
                 self.wrapped_ui_elements.append(color_picker)
 
-    def _create_plotting_frame(self):
+    def _create_plotting_frame(self) -> None:
         self._plotting_frame = CollapsableFrame("Plotting Tools", collapsed=False)
 
         with self._plotting_frame:
@@ -264,39 +257,39 @@ class UIBuilder:
     # Functions Below This Point Are Callback Functions Attached to UI Element Wrappers
     ######################################################################################
 
-    def _on_int_field_value_changed_fn(self, new_value: int):
+    def _on_int_field_value_changed_fn(self, new_value: int) -> None:
         status = f"Value was changed in int field to {new_value}"
         self._status_report_field.set_text(status)
 
-    def _on_float_field_value_changed_fn(self, new_value: float):
+    def _on_float_field_value_changed_fn(self, new_value: float) -> None:
         status = f"Value was changed in float field to {new_value}"
         self._status_report_field.set_text(status)
 
-    def _on_string_field_value_changed_fn(self, new_value: str):
+    def _on_string_field_value_changed_fn(self, new_value: str) -> None:
         status = f"Value was changed in string field to {new_value}"
         self._status_report_field.set_text(status)
 
-    def _on_button_clicked_fn(self):
+    def _on_button_clicked_fn(self) -> None:
         status = "The Button was Clicked!"
         self._status_report_field.set_text(status)
 
-    def _on_state_btn_a_click_fn(self):
+    def _on_state_btn_a_click_fn(self) -> None:
         status = "State Button was Clicked in State A!"
         self._status_report_field.set_text(status)
 
-    def _on_state_btn_b_click_fn(self):
+    def _on_state_btn_b_click_fn(self) -> None:
         status = "State Button was Clicked in State B!"
         self._status_report_field.set_text(status)
 
-    def _on_checkbox_click_fn(self, value: bool):
+    def _on_checkbox_click_fn(self, value: bool) -> None:
         status = f"CheckBox was set to {value}!"
         self._status_report_field.set_text(status)
 
-    def _on_dropdown_item_selection(self, item: str):
+    def _on_dropdown_item_selection(self, item: str) -> None:
         status = f"{item} was selected from DropDown"
         self._status_report_field.set_text(status)
 
-    def _on_color_picked(self, color: List[float]):
-        formatted_color = [float("%0.2f" % i) for i in color]
+    def _on_color_picked(self, color: list[float]) -> None:
+        formatted_color = [float(f"{i:0.2f}") for i in color]
         status = f"RGBA Color {formatted_color} was picked in the ColorPicker"
         self._status_report_field.set_text(status)

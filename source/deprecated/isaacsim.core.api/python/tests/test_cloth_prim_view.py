@@ -95,9 +95,7 @@ class TestClothPrim(CoreTestCase):
                 fluid_rest_offset=restOffset,
                 particle_contact_offset=contactOffset,
             )
-            cloth = SingleClothPrim(
-                prim_path=cloth_path, particle_system=particle_system, particle_material=particle_material
-            )
+            SingleClothPrim(prim_path=cloth_path, particle_system=particle_system, particle_material=particle_material)
 
         # create a view to deal with all the cloths
         self.cloth_view = ClothPrim(prim_paths_expr="/World/Env*/cloth", name="clothView1")

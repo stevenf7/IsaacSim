@@ -58,11 +58,11 @@ class PathHelper:
         points: Array of 2D or 3D points defining the path, with shape (N, 2) or (N, 3).
     """
 
-    def __init__(self, points: np.ndarray):
+    def __init__(self, points: np.ndarray) -> None:
         self.points = points
         self._init_point_distances()
 
-    def _init_point_distances(self):
+    def _init_point_distances(self) -> None:
         """Initializes the cumulative distances from the start of the path to each point."""
         self._point_distances = np.zeros(len(self.points))
         length = 0.0

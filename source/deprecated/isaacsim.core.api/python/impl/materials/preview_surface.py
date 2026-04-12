@@ -15,8 +15,7 @@
 
 """High level wrapper for creating/encapsulating USD PreviewSurface material prims for basic rendering."""
 
-
-from typing import Optional
+from __future__ import annotations
 
 import carb
 import isaacsim.core.utils.stage as stage_utils
@@ -35,20 +34,21 @@ class PreviewSurface(VisualMaterial):
         color: Diffuse color RGB.
         roughness: Surface roughness (0-1).
         metallic: Metallic value (0-1).
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "preview_surface",
-        shader: Optional[UsdShade.Shader] = None,
-        color: Optional[np.ndarray] = None,
-        roughness: Optional[float] = None,
-        metallic: Optional[float] = None,
+        shader: UsdShade.Shader | None = None,
+        color: np.ndarray | None = None,
+        roughness: float | None = None,
+        metallic: float | None = None,
     ) -> None:
         stage = stage_utils.get_current_stage()
         if stage.GetPrimAtPath(prim_path).IsValid():
-            carb.log_info("Material Prim already defined at path: {}".format(prim_path))
+            carb.log_info(f"Material Prim already defined at path: {prim_path}")
             material = UsdShade.Material(stage.GetPrimAtPath(prim_path))
         else:
             material = UsdShade.Material.Define(stage, prim_path)
@@ -85,6 +85,7 @@ class PreviewSurface(VisualMaterial):
 
         Args:
             color: RGB color array.
+
         """
         if self.shaders_list[0].GetInput("diffuseColor").Get() is None:
             self.shaders_list[0].CreateInput("diffuseColor", Sdf.ValueTypeNames.Float3).Set(Gf.Vec3f(*color.tolist()))
@@ -97,6 +98,7 @@ class PreviewSurface(VisualMaterial):
 
         Returns:
             RGB color array or None if not set.
+
         """
         if self.shaders_list[0].GetInput("diffuseColor").Get() is None:
             carb.log_warn("A color attribute is not set yet")
@@ -109,6 +111,7 @@ class PreviewSurface(VisualMaterial):
 
         Args:
             roughness: Roughness value (0-1).
+
         """
         if self.shaders_list[0].GetInput("roughness").Get() is None:
             self.shaders_list[0].CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(roughness)
@@ -121,6 +124,7 @@ class PreviewSurface(VisualMaterial):
 
         Returns:
             Roughness value or None if not set.
+
         """
         if self.shaders_list[0].GetInput("roughness").Get() is None:
             carb.log_warn("A roughness attribute is not set yet")
@@ -133,6 +137,7 @@ class PreviewSurface(VisualMaterial):
 
         Args:
             metallic: Metallic value (0-1).
+
         """
         if self.shaders_list[0].GetInput("metallic").Get() is None:
             self.shaders_list[0].CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(metallic)
@@ -145,6 +150,7 @@ class PreviewSurface(VisualMaterial):
 
         Returns:
             Metallic value or None if not set.
+
         """
         if self.shaders_list[0].GetInput("metallic").Get() is None:
             carb.log_warn("A metallic attribute is not set yet")

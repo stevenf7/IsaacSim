@@ -15,6 +15,7 @@
 
 """Provides a complete tutorial example demonstrating RRT path planning for a Franka Panda robot with collision avoidance."""
 
+from __future__ import annotations
 
 import os
 
@@ -49,7 +50,7 @@ class FrankaRrtExample:
     Path replanning occurs every 60 simulation frames when the target has moved beyond a threshold distance.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._rrt = None
         self._path_planner_visualizer = None
         self._plan = []
@@ -60,7 +61,7 @@ class FrankaRrtExample:
 
         self._frame_counter = 0
 
-    def load_example_assets(self):
+    def load_example_assets(self) -> tuple:
         """Loads and configures the Franka Panda robot, target frame, and obstacle into the USD stage.
 
         Adds a Franka Panda robot at "/panda", a target frame at "/World/target", and a wall obstacle
@@ -89,7 +90,7 @@ class FrankaRrtExample:
         # Return assets that were added to the stage so that they can be registered with the core.World
         return self._articulation, self._target
 
-    def setup(self):
+    def setup(self) -> None:
         """Initializes the RRT path planner and visualization components.
 
         Configures the RRT planner with Franka robot configuration files, adds the obstacle to the
@@ -125,7 +126,7 @@ class FrankaRrtExample:
 
         self.reset()
 
-    def update(self, step: float):
+    def update(self, step: float) -> None:
         """Updates the robot motion planning and execution based on target movement.
 
         Checks if the target has moved beyond thresholds (0.01 for translation, 0.01 radians for rotation).
@@ -157,7 +158,7 @@ class FrankaRrtExample:
 
         self._frame_counter += 1
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the planning state to initial conditions.
 
         Clears the target position and rotation tracking, resets the frame counter to zero,

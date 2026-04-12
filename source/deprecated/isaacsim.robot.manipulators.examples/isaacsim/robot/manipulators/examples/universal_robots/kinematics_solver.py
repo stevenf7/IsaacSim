@@ -15,8 +15,9 @@
 
 """Kinematics solver configuration for Universal Robots arms."""
 
+from __future__ import annotations
+
 import os
-from typing import Optional
 
 from isaacsim.core.prims import SingleArticulation
 from isaacsim.core.utils.extensions import get_extension_path_from_name
@@ -37,9 +38,9 @@ class KinematicsSolver(ArticulationKinematicsSolver):
     def __init__(
         self,
         robot_articulation: SingleArticulation,
-        end_effector_frame_name: Optional[str] = None,
-        attach_gripper: Optional[bool] = False,
-    ):
+        end_effector_frame_name: str | None = None,
+        attach_gripper: bool | None = False,
+    ) -> None:
 
         mg_extension_path = get_extension_path_from_name("isaacsim.robot_motion.motion_generation")
 

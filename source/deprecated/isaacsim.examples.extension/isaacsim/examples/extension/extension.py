@@ -18,7 +18,7 @@
 
 import asyncio
 import gc
-from typing import Callable
+from collections.abc import Callable
 
 import omni
 import omni.kit.actions.core
@@ -52,7 +52,7 @@ class Extension(omni.ext.IExt):
     file structure, imports, and basic functionality patterns commonly used in Isaac Sim extensions.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize extension and UI elements.
 
         Args:
@@ -92,7 +92,7 @@ class Extension(omni.ext.IExt):
 
         self._template_generator = TemplateGenerator()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up extension resources and UI components."""
         self._models = {}
         action_registry = omni.kit.actions.core.get_action_registry()
@@ -105,7 +105,7 @@ class Extension(omni.ext.IExt):
     def _is_visible(self) -> bool:
         return self._window.visible if self._window else False
 
-    def _on_window(self, visible: bool):
+    def _on_window(self, visible: bool) -> None:
         """Handle window visibility changes.
 
         Args:
@@ -115,11 +115,11 @@ class Extension(omni.ext.IExt):
         if self._window.visible:
             self._build_ui()
 
-    def _menu_callback(self):
+    def _menu_callback(self) -> None:
         """Toggle the extension window visibility when menu item is clicked."""
         self._window.visible = not self._window.visible
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         """Build the main user interface for the extension template generator."""
         # if not self._window:
         with self._window.frame:
@@ -143,10 +143,10 @@ class Extension(omni.ext.IExt):
 
                 self._build_status_panel()
 
-        async def dock_window():
+        async def dock_window() -> None:
             await omni.kit.app.get_app().next_update_async()
 
-            def dock(space, name, location, pos=0.5):
+            def dock(space: object, name: str, location: object, pos: float = 0.5) -> object:
                 window = omni.ui.Workspace.get_window(name)
                 if window and space:
                     window.dock_in(space, location, pos)
@@ -158,7 +158,7 @@ class Extension(omni.ext.IExt):
 
         self._task = asyncio.ensure_future(dock_window())
 
-    def _build_info_ui(self):
+    def _build_info_ui(self) -> None:
         """Build the information section of the UI with title, documentation link, and overview."""
         title = EXTENSION_NAME
         doc_link = "https://docs.isaacsim.omniverse.nvidia.com/latest/utilities/extension_template_generator.html"
@@ -170,13 +170,13 @@ class Extension(omni.ext.IExt):
 
         setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
-    def _build_status_panel(self):
+    def _build_status_panel(self) -> None:
         """Build the status panel UI component for displaying generation status messages."""
         self._status_frame = CollapsableFrame("Status Frame", collapsed=True, visible=False)
         with self._status_frame:
             self._status_block = TextBlock("Status", "", num_lines=3, include_copy_button=False)
 
-    def _build_template_ui(self, template_name: str, generate_fun: Callable):
+    def _build_template_ui(self, template_name: str, generate_fun: Callable) -> None:
         """Build the UI for a specific extension template with input fields and generation controls.
 
         Args:
@@ -201,7 +201,7 @@ class Extension(omni.ext.IExt):
         with frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
 
-                def control_generate_btn(model=None):
+                def control_generate_btn(model: object = None) -> None:
                     path = self._models[path_field].get_value_as_string()
                     title = self._models[title_field].get_value_as_string()
 
@@ -235,7 +235,7 @@ class Extension(omni.ext.IExt):
                     label="Extension Description", default_val="", tooltip="Short description of extension"
                 )
 
-                def on_generate_extension(model=None, val=None):
+                def on_generate_extension(model: object = None, val: object = None) -> None:
                     path = self._models[path_field].get_value_as_string()
                     title = self._models[title_field].get_value_as_string()
                     description = self._models[description_field].get_value_as_string()
@@ -251,7 +251,7 @@ class Extension(omni.ext.IExt):
                 )
                 self._models[generate_btn].enabled = False
 
-    def write_status(self, status: str, collapsed: bool = False, visible: bool = True):
+    def write_status(self, status: str, collapsed: bool = False, visible: bool = True) -> None:
         """Update the status panel with a message and control its visibility.
 
         Args:

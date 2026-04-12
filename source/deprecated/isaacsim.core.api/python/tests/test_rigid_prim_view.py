@@ -1291,7 +1291,7 @@ class TestRigidPrimView(CoreTestCase):
         """Transforms test."""
         await self._my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
-        num_indices = 2 if self._test_cfg["indexed"] else 3
+        2 if self._test_cfg["indexed"] else 3
 
         new_positions = np.array([[25.0, -20.0, 10.0], [15.0, 10.0, 0.0], [-45.0, -40.0, 0.0]])
         new_orientations = np.array([[1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]])

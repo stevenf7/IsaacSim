@@ -17,7 +17,6 @@
 
 import math
 import random
-from typing import Tuple
 
 # python
 import numpy as np
@@ -96,7 +95,7 @@ def get_random_world_pose_in_view(
     coord_prim: Usd.Prim,
     min_rotation_range: np.ndarray,
     max_rotation_range: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Get a pose defined in the world frame that's in view of the camera.
 
     Args:

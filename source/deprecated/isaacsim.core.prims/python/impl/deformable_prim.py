@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING
 
 import carb
 import carb.eventdispatcher
@@ -74,22 +74,22 @@ class DeformablePrim(XFormPrim):
     def __init__(
         self,
         prim_paths_expr: str,
-        deformable_materials: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        deformable_materials: np.ndarray | torch.Tensor | None = None,
         name: str = "deformable_prim_view",
         reset_xform_properties: bool = True,
-        positions: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        translations: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        visibilities: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        vertex_velocity_dampings: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        sleep_dampings: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        sleep_thresholds: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        settling_thresholds: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        self_collisions: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        self_collision_filter_distances: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        solver_position_iteration_counts: Optional[Union[np.ndarray, torch.Tensor]] = None,
-    ):
+        positions: np.ndarray | torch.Tensor | None = None,
+        translations: np.ndarray | torch.Tensor | None = None,
+        orientations: np.ndarray | torch.Tensor | None = None,
+        scales: np.ndarray | torch.Tensor | None = None,
+        visibilities: np.ndarray | torch.Tensor | None = None,
+        vertex_velocity_dampings: np.ndarray | torch.Tensor | None = None,
+        sleep_dampings: np.ndarray | torch.Tensor | None = None,
+        sleep_thresholds: np.ndarray | torch.Tensor | None = None,
+        settling_thresholds: np.ndarray | torch.Tensor | None = None,
+        self_collisions: np.ndarray | torch.Tensor | None = None,
+        self_collision_filter_distances: np.ndarray | torch.Tensor | None = None,
+        solver_position_iteration_counts: np.ndarray | torch.Tensor | None = None,
+    ) -> None:
 
         self._physics_view = None
         self._device = None
@@ -210,7 +210,7 @@ class DeformablePrim(XFormPrim):
         if physics_sim_view is None:
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
             physics_sim_view.set_subspace_roots("/")
-        carb.log_info("initializing view for {}".format(self._name))
+        carb.log_info(f"initializing view for {self._name}")
         if not carb.settings.get_settings().get_as_bool("/physics/suppressReadback"):
             carb.log_error(
                 "Using Deformable body requires the gpu pipeline or (a World initialized with a cuda device)"
@@ -222,7 +222,7 @@ class DeformablePrim(XFormPrim):
         self._max_collision_mesh_vertices_per_body = self._physics_view.max_vertices_per_body
         self._max_simulation_mesh_elements_per_body = self._physics_view.max_sim_elements_per_body
         self._max_simulation_mesh_vertices_per_body = self._physics_view.max_sim_vertices_per_body
-        carb.log_info("Deformable Prim View Device: {}".format(self._device))
+        carb.log_info(f"Deformable Prim View Device: {self._device}")
         return
 
     def _invalidate_physics_handle_callback(self, event: object) -> None:
@@ -234,7 +234,7 @@ class DeformablePrim(XFormPrim):
         self._physics_view = None
         return
 
-    def _apply_deformable_body_api(self, index: int):
+    def _apply_deformable_body_api(self, index: int) -> None:
         """Applies the PhysxDeformableBodyAPI to the prim at the specified index.
 
         Args:
@@ -247,7 +247,7 @@ class DeformablePrim(XFormPrim):
                 api = PhysxSchema.PhysxDeformableBodyAPI.Apply(self._prims[index])
             self._deformable_body_apis[index] = api
 
-    def _apply_deformable_api(self, index: int):
+    def _apply_deformable_api(self, index: int) -> None:
         """Applies the PhysX deformable API to the prim at the specified index.
 
         Args:
@@ -261,7 +261,7 @@ class DeformablePrim(XFormPrim):
                 api = PhysxSchema.PhysxDeformableAPI.Apply(self._deformable_body_apis[index])
             self._deformable_apis[index] = api
 
-    def _apply_material_binding_api(self, index: int):
+    def _apply_material_binding_api(self, index: int) -> None:
         """Applies the USD material binding API to the prim at the specified index.
 
         Args:
@@ -275,8 +275,8 @@ class DeformablePrim(XFormPrim):
 
     def apply_deformable_materials(
         self,
-        deformable_materials: Union[DeformableMaterial, List[DeformableMaterial]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        deformable_materials: DeformableMaterial | list[DeformableMaterial],
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Used to apply deformable material to prims in the view.
 
@@ -308,8 +308,8 @@ class DeformablePrim(XFormPrim):
             read_idx += 1
 
     def get_applied_deformable_materials(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> List[DeformableMaterial]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None
+    ) -> list[DeformableMaterial]:
         """Gets the applied deformable material to prims in the view.
 
         Args:
@@ -342,8 +342,8 @@ class DeformablePrim(XFormPrim):
 
     def set_simulation_mesh_nodal_positions(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        positions: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the nodal positions of the simulation mesh for the deformable bodies indicated by the indices.
 
@@ -376,8 +376,8 @@ class DeformablePrim(XFormPrim):
 
     def set_simulation_mesh_nodal_velocities(
         self,
-        velocities: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        velocities: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the vertex velocities for the deformable bodies indicated by the indices.
 
@@ -409,8 +409,8 @@ class DeformablePrim(XFormPrim):
 
     def set_simulation_mesh_kinematic_targets(
         self,
-        positions: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        positions: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the kinematic targets of the simulation mesh for the deformable bodies indicated by the indices.
 
@@ -433,8 +433,8 @@ class DeformablePrim(XFormPrim):
 
     def set_simulation_mesh_indices(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the simulation mesh element indices of the deformable bodies indicated by the indices.
 
@@ -457,8 +457,8 @@ class DeformablePrim(XFormPrim):
 
     def set_collision_mesh_indices(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the collision mesh element indices of the deformable bodies indicated by the indices.
 
@@ -481,8 +481,8 @@ class DeformablePrim(XFormPrim):
 
     def set_collision_mesh_rest_points(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the collision mesh vertices rest positions of the deformable bodies indicated by the indices.
 

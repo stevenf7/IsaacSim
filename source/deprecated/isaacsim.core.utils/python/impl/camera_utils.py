@@ -47,7 +47,7 @@ class SpringDamperFollower:
         current: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
         target: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
         vel: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
-    ):
+    ) -> None:
         self.m = mass
         self.k = stiffness
         self.c = damping
@@ -55,7 +55,7 @@ class SpringDamperFollower:
         self.target = target
         self.v = vel
 
-    def update(self, step: float):
+    def update(self, step: float) -> None:
         """Updates the spring-damper system position and velocity for one simulation step.
 
         Args:
@@ -95,7 +95,7 @@ class DynamicCamera:
         focal_length: float = 24,
         f_stop: float = 5,
         focus_distance: float = 0,
-    ):
+    ) -> None:
         self._stage = stage
         self.target_follower = SpringDamperFollower(mass=5, stiffness=5, damping=10)
         self.position_follower = SpringDamperFollower(mass=20, stiffness=5, damping=20)
@@ -107,7 +107,7 @@ class DynamicCamera:
         self.proxy = self._stage.DefinePrim(self._base_path + "/" + camera_name + "_proxy", "Xform")
         xform = UsdGeom.Xformable(self.proxy)
         xform.ClearXformOpOrder()
-        xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
+        xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
         self._timeline = omni.timeline.get_timeline_interface()
 
         self.prim = self._stage.DefinePrim(base_path + "/" + camera_name + "_proxy/" + camera_name, "Camera")
@@ -116,7 +116,7 @@ class DynamicCamera:
         self.prim.GetAttribute("focusDistance").Set(float(focus_distance))
         self.focus = False
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the camera to its target positions immediately.
 
         Sets both position and look target followers to their current target values,
@@ -126,7 +126,7 @@ class DynamicCamera:
         self.target_follower.current = self.target_follower.target
         self.update(1.0 / 60.0)
 
-    def update(self, step: float, timecode: Usd.TimeCode = Usd.TimeCode.Default()):
+    def update(self, step: float, timecode: Usd.TimeCode = Usd.TimeCode.Default()) -> None:
         """Updates the camera position, orientation, and focus based on spring-damper physics.
 
         Args:
@@ -154,7 +154,7 @@ class DynamicCamera:
         # print("focal", self.focus_follower.current)
         self.prim.GetAttribute("focusDistance").Set(float(self.focus_follower.current), timecode)
 
-    def set_look_target(self, pos: Gf.Vec3d):
+    def set_look_target(self, pos: Gf.Vec3d) -> None:
         """Sets the target position for the camera to look at.
 
         Args:
@@ -162,7 +162,7 @@ class DynamicCamera:
         """
         self.target_follower.target = pos
 
-    def set_pos_target(self, pos: Gf.Vec3d):
+    def set_pos_target(self, pos: Gf.Vec3d) -> None:
         """Sets the target position for the camera location.
 
         Args:
@@ -170,7 +170,7 @@ class DynamicCamera:
         """
         self.position_follower.target = pos
 
-    def set_autofocus_target(self, focus: bool):
+    def set_autofocus_target(self, focus: bool) -> None:
         """Enables or disables automatic focus based on distance to look target.
 
         Args:
@@ -178,7 +178,7 @@ class DynamicCamera:
         """
         self.focus = focus
 
-    def set_pos_settings(self, mass: float, stiffness: float, damping: float):
+    def set_pos_settings(self, mass: float, stiffness: float, damping: float) -> None:
         """Configures the spring-damper parameters for camera position movement.
 
         Args:
@@ -190,7 +190,7 @@ class DynamicCamera:
         self.position_follower.k = stiffness
         self.position_follower.c = damping
 
-    def set_target_settings(self, mass: float, stiffness: float, damping: float):
+    def set_target_settings(self, mass: float, stiffness: float, damping: float) -> None:
         """Configures the spring-damper parameters for camera look target movement.
 
         Args:

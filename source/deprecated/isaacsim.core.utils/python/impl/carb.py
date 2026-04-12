@@ -23,7 +23,7 @@ from typing import Any
 import carb
 
 
-def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value: Any):
+def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value: Any) -> None:
     """Convenience to set the carb settings.
 
     Args:

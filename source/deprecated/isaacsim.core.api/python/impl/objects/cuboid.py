@@ -15,8 +15,9 @@
 
 """High-level wrappers for creating and managing visual, fixed, and dynamic cuboid objects with collision and physics properties."""
 
+from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 import numpy as np
 from isaacsim.core.api.materials.physics_material import PhysicsMaterial
@@ -62,25 +63,26 @@ class VisualCuboid(SingleGeometryPrim):
         >>> prim = VisualCuboid(prim_path="/World/Xform/Cube", color=np.array([1.0, 0.0, 0.0]))
         >>> prim
         <isaacsim.core.api.objects.cuboid.VisualCuboid object at 0x7f12e756fa00>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "visual_cube",
-        position: Optional[Sequence[float]] = None,
-        translation: Optional[Sequence[float]] = None,
-        orientation: Optional[Sequence[float]] = None,
-        scale: Optional[Sequence[float]] = None,
-        visible: Optional[bool] = None,
-        color: Optional[np.ndarray] = None,
-        size: Optional[float] = None,
-        visual_material: Optional[VisualMaterial] = None,
+        position: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
+        orientation: Sequence[float] | None = None,
+        scale: Sequence[float] | None = None,
+        visible: bool | None = None,
+        color: np.ndarray | None = None,
+        size: float | None = None,
+        visual_material: VisualMaterial | None = None,
     ) -> None:
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Cube):
-                raise Exception("The prim at path {} cannot be parsed as a Cube object".format(prim_path))
+                raise Exception(f"The prim at path {prim_path} cannot be parsed as a Cube object")
             cubeGeom = UsdGeom.Cube(prim)
         else:
             cubeGeom = UsdGeom.Cube.Define(get_current_stage(), prim_path)
@@ -131,6 +133,7 @@ class VisualCuboid(SingleGeometryPrim):
         .. code-block:: python
 
             >>> prim.set_size(2.0)
+
         """
         self.geom.CreateSizeAttr(size)
         return
@@ -147,6 +150,7 @@ class VisualCuboid(SingleGeometryPrim):
 
             >>> prim.get_size()
             1.0
+
         """
         return self.geom.GetSizeAttr().Get()
 
@@ -188,21 +192,22 @@ class FixedCuboid(VisualCuboid):
         >>> prim = FixedCuboid(prim_path="/World/Xform/Cube", color=np.array([1.0, 0.0, 0.0]))
         >>> prim
         <isaacsim.core.api.objects.cuboid.FixedCuboid object at 0x7f7b4d91da80>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "fixed_cube",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
-        visible: Optional[bool] = None,
-        color: Optional[np.ndarray] = None,
-        size: Optional[float] = None,
-        visual_material: Optional[VisualMaterial] = None,
-        physics_material: Optional[PhysicsMaterial] = None,
+        position: np.ndarray | None = None,
+        translation: np.ndarray | None = None,
+        orientation: np.ndarray | None = None,
+        scale: np.ndarray | None = None,
+        visible: bool | None = None,
+        color: np.ndarray | None = None,
+        size: float | None = None,
+        visual_material: VisualMaterial | None = None,
+        physics_material: PhysicsMaterial | None = None,
     ) -> None:
         set_offsets = False
         if not is_prim_path_valid(prim_path):
@@ -288,25 +293,26 @@ class DynamicCuboid(SingleRigidPrim, FixedCuboid):
         >>> prim = DynamicCuboid(prim_path="/World/Xform/Cube", color=np.array([1.0, 0.0, 0.0]), mass=1.0)
         >>> prim
         <isaacsim.core.api.objects.cuboid.DynamicCuboid object at 0x7ff14c04d990>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "dynamic_cube",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
-        visible: Optional[bool] = None,
-        color: Optional[np.ndarray] = None,
-        size: Optional[float] = None,
-        visual_material: Optional[VisualMaterial] = None,
-        physics_material: Optional[PhysicsMaterial] = None,
-        mass: Optional[float] = None,
-        density: Optional[float] = None,
-        linear_velocity: Optional[Sequence[float]] = None,
-        angular_velocity: Optional[Sequence[float]] = None,
+        position: np.ndarray | None = None,
+        translation: np.ndarray | None = None,
+        orientation: np.ndarray | None = None,
+        scale: np.ndarray | None = None,
+        visible: bool | None = None,
+        color: np.ndarray | None = None,
+        size: float | None = None,
+        visual_material: VisualMaterial | None = None,
+        physics_material: PhysicsMaterial | None = None,
+        mass: float | None = None,
+        density: float | None = None,
+        linear_velocity: Sequence[float] | None = None,
+        angular_velocity: Sequence[float] | None = None,
     ) -> None:
         if not is_prim_path_valid(prim_path):
             if mass is None:

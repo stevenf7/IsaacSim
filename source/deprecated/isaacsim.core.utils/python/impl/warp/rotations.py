@@ -16,7 +16,6 @@
 """Warp-based utilities for rotation operations and quaternion conversions."""
 
 
-import typing
 from typing import Any
 
 import numpy as np
@@ -28,7 +27,7 @@ from scipy.spatial.transform import Rotation
 torch = import_module("torch")
 
 
-def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion], device: object = None) -> wp.array:
+def gf_quat_to_tensor(orientation: Gf.Quatd | Gf.Quatf | Gf.Quaternion, device: object = None) -> wp.array:
     """Converts a pxr Quaternion type to a torch array (scalar first).
 
     Args:
@@ -105,7 +104,7 @@ def deg2rad(degree_value: wp.array, device: object = None) -> wp.array:
 
 
 @wp.kernel
-def _xyzw2wxyz1(q: Any):
+def _xyzw2wxyz1(q: Any) -> None:
     """Warp kernel to convert quaternion from XYZW to WXYZ format for 1D arrays.
 
     Reorders quaternion components from (x, y, z, w) to (w, x, y, z) format in-place.
@@ -128,7 +127,7 @@ wp.overload(_xyzw2wxyz1, {"q": wp.indexedarray(dtype=float)})
 
 
 @wp.kernel
-def _xyzw2wxyz2(q: Any):
+def _xyzw2wxyz2(q: Any) -> None:
     """Warp kernel to convert quaternion from XYZW to WXYZ format for 2D arrays.
 
     Reorders quaternion components from (x, y, z, w) to (w, x, y, z) format in-place for each quaternion
@@ -153,7 +152,7 @@ wp.overload(_xyzw2wxyz2, {"q": wp.indexedarray(dtype=float, ndim=2)})
 
 
 @wp.kernel
-def _xyzw2wxyz3(q: Any):
+def _xyzw2wxyz3(q: Any) -> None:
     """Warp kernel to convert quaternion from XYZW to WXYZ format for 3D arrays.
 
     Reorders quaternion components from (x, y, z, w) to (w, x, y, z) format in-place for each quaternion
@@ -178,7 +177,7 @@ wp.overload(_xyzw2wxyz3, {"q": wp.indexedarray(dtype=float, ndim=3)})
 
 
 @wp.kernel
-def _wxyz2xyzw1(q: Any):
+def _wxyz2xyzw1(q: Any) -> None:
     """Warp kernel to convert quaternion from WXYZ to XYZW format for 1D arrays.
 
     Reorders quaternion components from (w, x, y, z) to (x, y, z, w) format in-place.
@@ -201,7 +200,7 @@ wp.overload(_wxyz2xyzw1, {"q": wp.indexedarray(dtype=float)})
 
 
 @wp.kernel
-def _wxyz2xyzw2(q: Any):
+def _wxyz2xyzw2(q: Any) -> None:
     """Warp kernel to convert quaternion from WXYZ to XYZW format for 2D arrays.
 
     Reorders quaternion components from (w, x, y, z) to (x, y, z, w) format in-place for each quaternion
@@ -226,7 +225,7 @@ wp.overload(_wxyz2xyzw2, {"q": wp.indexedarray(dtype=float, ndim=2)})
 
 
 @wp.kernel
-def _wxyz2xyzw3(q: Any):
+def _wxyz2xyzw3(q: Any) -> None:
     """Warp kernel to convert quaternion from WXYZ to XYZW format for 3D arrays.
 
     Reorders quaternion components from (w, x, y, z) to (x, y, z, w) format in-place for each quaternion

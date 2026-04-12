@@ -38,12 +38,10 @@ class TestSingleGeometryPrim(CoreTestCase):
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def tearDown(self):
         """Tear down test environment."""
         await super().tearDown()
-        pass
 
     async def test_collision_approximation(self):
         """Test collision approximation."""

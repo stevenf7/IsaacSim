@@ -84,7 +84,7 @@ class MergeMeshesCommand(omni.kit.commands.Command):
 
         self.mesh_merger.output_mesh = "/Merged/" + str(self._stage.GetPrimAtPath(source[0]).GetName())
 
-    def do(self):
+    def do(self) -> str:
         """Execute the mesh merge operation.
 
         Returns:
@@ -95,7 +95,7 @@ class MergeMeshesCommand(omni.kit.commands.Command):
 
         return self.mesh_merger.output_mesh
 
-    def undo(self):
+    def undo(self) -> None:
         """Undo the mesh merge operation.
 
         Reactivates source prims if they were deactivated, removes the merged mesh,

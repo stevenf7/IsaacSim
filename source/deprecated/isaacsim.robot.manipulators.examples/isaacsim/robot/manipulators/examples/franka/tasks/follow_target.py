@@ -15,7 +15,7 @@
 
 """Follow-target task definition for the Franka robot."""
 
-from typing import Optional
+from __future__ import annotations
 
 import isaacsim.core.api.tasks as tasks
 import numpy as np
@@ -41,14 +41,14 @@ class FollowTarget(tasks.FollowTarget):
     def __init__(
         self,
         name: str = "franka_follow_target",
-        target_prim_path: Optional[str] = None,
-        target_name: Optional[str] = None,
-        target_position: Optional[np.ndarray] = None,
-        target_orientation: Optional[np.ndarray] = None,
-        offset: Optional[np.ndarray] = None,
-        franka_prim_path: Optional[str] = None,
-        franka_robot_name: Optional[str] = None,
-    ):
+        target_prim_path: str | None = None,
+        target_name: str | None = None,
+        target_position: np.ndarray | None = None,
+        target_orientation: np.ndarray | None = None,
+        offset: np.ndarray | None = None,
+        franka_prim_path: str | None = None,
+        franka_robot_name: str | None = None,
+    ) -> None:
         tasks.FollowTarget.__init__(
             self,
             name=name,

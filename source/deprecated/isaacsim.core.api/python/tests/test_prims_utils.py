@@ -39,13 +39,11 @@ class TestPrims(CoreTestCase):
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     # After running each test
     async def tearDown(self):
         """Tear down test environment."""
         await super().tearDown()
-        pass
 
     async def test_get_all_matching_child_prims(self):
         """Test get all matching child prims."""
@@ -177,4 +175,3 @@ class TestPrims(CoreTestCase):
         self.assertTrue(len(find_matching_prim_paths("/World/cube_.*")) == 3)
         self.assertTrue(len(find_matching_prim_paths("/World/Franka_.*")) == 3)
         self.assertTrue(len(find_matching_prim_paths("/World/Franka_.*", "articulation")) == 2)
-        pass

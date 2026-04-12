@@ -54,31 +54,32 @@ class SceneRegistry(object):
         >>> scene_registry = SceneRegistry()
         >>> scene_registry
         <isaacsim.core.api.scenes.scene_registry.SceneRegistry object at 0x...>
+
     """
 
     def __init__(self) -> None:
-        self._rigid_objects = dict()
-        self._geometry_objects = dict()
-        self._articulated_systems = dict()
-        self._robots = dict()
-        self._xforms = dict()
-        self._sensors = dict()
-        self._xform_prim_views = dict()
-        self._deformable_prims = dict()
-        self._deformable_prim_views = dict()
-        self._deformable_materials = dict()
-        self._deformable_material_views = dict()
-        self._cloth_prims = dict()
-        self._cloth_prim_views = dict()
-        self._particle_systems = dict()
-        self._particle_system_views = dict()
-        self._particle_materials = dict()
-        self._particle_material_views = dict()
-        self._geometry_prim_views = dict()
-        self._rigid_prim_views = dict()
-        self._rigid_contact_views = dict()
-        self._articulated_views = dict()
-        self._robot_views = dict()
+        self._rigid_objects = {}
+        self._geometry_objects = {}
+        self._articulated_systems = {}
+        self._robots = {}
+        self._xforms = {}
+        self._sensors = {}
+        self._xform_prim_views = {}
+        self._deformable_prims = {}
+        self._deformable_prim_views = {}
+        self._deformable_materials = {}
+        self._deformable_material_views = {}
+        self._cloth_prims = {}
+        self._cloth_prim_views = {}
+        self._particle_systems = {}
+        self._particle_system_views = {}
+        self._particle_materials = {}
+        self._particle_material_views = {}
+        self._geometry_prim_views = {}
+        self._rigid_prim_views = {}
+        self._rigid_contact_views = {}
+        self._articulated_views = {}
+        self._robot_views = {}
 
         self._all_object_dicts = [
             self._rigid_objects,
@@ -112,6 +113,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary containing the registered articulated systems.
+
         """
         return self._articulated_systems
 
@@ -121,6 +123,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary containing the registered rigid objects.
+
         """
         return self._rigid_objects
 
@@ -130,6 +133,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary containing the registered rigid prim views.
+
         """
         return self._rigid_prim_views
 
@@ -139,6 +143,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary containing the registered rigid contact views.
+
         """
         return self._rigid_contact_views
 
@@ -148,6 +153,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary containing the registered geometry prim views.
+
         """
         return self._geometry_prim_views
 
@@ -157,6 +163,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary containing the registered articulated views.
+
         """
         return self._articulated_views
 
@@ -166,6 +173,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary containing the registered robot views.
+
         """
         return self._robot_views
 
@@ -175,6 +183,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary containing the registered robots.
+
         """
         return self._robots
 
@@ -184,6 +193,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary containing the registered xforms.
+
         """
         return self._xforms
 
@@ -193,6 +203,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary containing the registered sensors.
+
         """
         return self._sensors
 
@@ -202,6 +213,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary of registered ``XFormPrim`` objects.
+
         """
         return self._xform_prim_views
 
@@ -211,6 +223,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary of registered ``SingleDeformablePrim`` objects.
+
         """
         return self._deformable_prims
 
@@ -220,6 +233,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary of registered ``DeformablePrim`` objects.
+
         """
         return self._deformable_prim_views
 
@@ -229,6 +243,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary of registered ``DeformableMaterial`` objects.
+
         """
         return self._deformable_materials
 
@@ -238,6 +253,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary of registered ``DeformableMaterialView`` objects.
+
         """
         return self._deformable_material_views
 
@@ -247,6 +263,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary of registered ``SingleClothPrim`` objects.
+
         """
         return self._cloth_prims
 
@@ -256,6 +273,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary of registered ``ClothPrim`` objects.
+
         """
         return self._cloth_prim_views
 
@@ -265,6 +283,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary of registered ``SingleParticleSystem`` objects.
+
         """
         return self._particle_systems
 
@@ -274,6 +293,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary of registered ``ParticleSystem`` objects.
+
         """
         return self._particle_system_views
 
@@ -283,6 +303,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary of registered ``ParticleMaterial`` objects.
+
         """
         return self._particle_materials
 
@@ -292,6 +313,7 @@ class SceneRegistry(object):
 
         Returns:
             Dictionary mapping names to registered particle material view objects.
+
         """
         return self._particle_material_views
 
@@ -302,6 +324,7 @@ class SceneRegistry(object):
         Args:
             name: Object name.
             rigid_object: Object.
+
         """
         self._rigid_objects[name] = rigid_object
         return
@@ -312,6 +335,7 @@ class SceneRegistry(object):
         Args:
             name: Object name.
             rigid_prim_view: Object.
+
         """
         self._rigid_prim_views[name] = rigid_prim_view
         return
@@ -322,6 +346,7 @@ class SceneRegistry(object):
         Args:
             name: Object name.
             rigid_contact_view: Object.
+
         """
         self._rigid_contact_views[name] = rigid_contact_view
         return
@@ -332,6 +357,7 @@ class SceneRegistry(object):
         Args:
             name: Object name.
             articulated_system: Object.
+
         """
         self._articulated_systems[name] = articulated_system
         return
@@ -342,6 +368,7 @@ class SceneRegistry(object):
         Args:
             name: Object name.
             articulated_view: Object.
+
         """
         self._articulated_views[name] = articulated_view
         return
@@ -352,6 +379,7 @@ class SceneRegistry(object):
         Args:
             name: Object name.
             geometry_object: Object.
+
         """
         self._geometry_objects[name] = geometry_object
         return
@@ -362,6 +390,7 @@ class SceneRegistry(object):
         Args:
             name: Object name.
             geometry_prim_view: Object.
+
         """
         self._geometry_prim_views[name] = geometry_prim_view
         return
@@ -372,6 +401,7 @@ class SceneRegistry(object):
         Args:
             name: Object name.
             robot: Object.
+
         """
         self._robots[name] = robot
         return
@@ -382,6 +412,7 @@ class SceneRegistry(object):
         Args:
             name: Object name.
             robot_view: Object.
+
         """
         self._robot_views[name] = robot_view
         return
@@ -392,6 +423,7 @@ class SceneRegistry(object):
         Args:
             name: Object name
             xform_prim_view: Object
+
         """
         self._xform_prim_views[name] = xform_prim_view
         return
@@ -402,6 +434,7 @@ class SceneRegistry(object):
         Args:
             name: Object name
             deformable: Object
+
         """
         self._deformable_prims[name] = deformable
         return
@@ -412,6 +445,7 @@ class SceneRegistry(object):
         Args:
             name: Object name
             deformable_prim_view: Object
+
         """
         self._deformable_prim_views[name] = deformable_prim_view
         return
@@ -422,6 +456,7 @@ class SceneRegistry(object):
         Args:
             name: Object name
             deformable_material: Object
+
         """
         self._deformable_materials[name] = deformable_material
         return
@@ -432,6 +467,7 @@ class SceneRegistry(object):
         Args:
             name: Object name
             deformable_material_view: Object
+
         """
         self._deformable_material_views[name] = deformable_material_view
         return
@@ -442,6 +478,7 @@ class SceneRegistry(object):
         Args:
             name: Object name
             cloth: Object
+
         """
         self._cloth_prims[name] = cloth
         return
@@ -452,6 +489,7 @@ class SceneRegistry(object):
         Args:
             name: Object name
             cloth_prim_view: Object
+
         """
         self._cloth_prim_views[name] = cloth_prim_view
         return
@@ -462,6 +500,7 @@ class SceneRegistry(object):
         Args:
             name: Object name
             particle_system: Object
+
         """
         self._particle_systems[name] = particle_system
         return
@@ -472,6 +511,7 @@ class SceneRegistry(object):
         Args:
             name: Object name
             particle_system_view: Object
+
         """
         self._particle_system_views[name] = particle_system_view
         return
@@ -482,6 +522,7 @@ class SceneRegistry(object):
         Args:
             name: Object name
             particle_material: Object
+
         """
         self._particle_materials[name] = particle_material
         return
@@ -492,6 +533,7 @@ class SceneRegistry(object):
         Args:
             name: Object name
             particle_material_view: Object
+
         """
         self._particle_material_views[name] = particle_material_view
         return
@@ -502,6 +544,7 @@ class SceneRegistry(object):
         Args:
             name: Object name
             xform: Object
+
         """
         self._xforms[name] = xform
         return
@@ -512,6 +555,7 @@ class SceneRegistry(object):
         Args:
             name: Object name
             sensor: Object
+
         """
         self._sensors[name] = sensor
 
@@ -533,11 +577,9 @@ class SceneRegistry(object):
             >>> # given a registered ground plane named 'default_ground_plane'
             >>> scene_registry.name_exists("default_ground_plane")
             True
+
         """
-        for object_dict in self._all_object_dicts:
-            if name in object_dict:
-                return True
-        return False
+        return any(name in object_dict for object_dict in self._all_object_dicts)
 
     def remove_object(self, name: str) -> None:
         """Remove and object from the registry.
@@ -559,12 +601,13 @@ class SceneRegistry(object):
 
             >>> # given a registered ground plane named 'default_ground_plane'
             >>> scene_registry.remove_object("default_ground_plane")
+
         """
         for object_dict in self._all_object_dicts:
             if name in object_dict:
                 del object_dict[name]
                 return
-        raise Exception("Cannot remove object {} from the scene since it doesn't exist".format(name))
+        raise Exception(f"Cannot remove object {name} from the scene since it doesn't exist")
 
     def get_object(self, name: str) -> SingleXFormPrim:
         """Get a registered object by its name if exists otherwise None.
@@ -582,6 +625,7 @@ class SceneRegistry(object):
             >>> # given a registered ground plane named 'default_ground_plane'
             >>> scene_registry.get_object("default_ground_plane")
             <isaacsim.core.api.objects.ground_plane.GroundPlane object at 0x...>
+
         """
         for object_dict in self._all_object_dicts:
             if name in object_dict:

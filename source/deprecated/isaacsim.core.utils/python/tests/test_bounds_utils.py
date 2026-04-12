@@ -48,7 +48,6 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         """Test recompute extents."""
         stage = get_current_stage()
         cubeGeom = UsdGeom.Cube.Define(stage, "/cube_shape")
-        cubePrim = stage.GetPrimAtPath("/cube_shape")
         size = 123
         offset = (100, 200, 300)
         cubeGeom.AddTranslateOp().Set(offset)

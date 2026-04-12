@@ -35,7 +35,7 @@ class RMPFlowController(mg.MotionPolicyController):
         robot_articulation: SingleArticulation,
         physics_dt: float = 1.0 / 60.0,
         attach_gripper: bool = False,
-    ):
+    ) -> None:
 
         if attach_gripper:
             self.rmp_flow_config = mg.interface_config_loader.load_supported_motion_policy_config(
@@ -57,7 +57,7 @@ class RMPFlowController(mg.MotionPolicyController):
         )
         return
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the RMPflow controller to its default state.
 
         Resets the motion policy controller and restores the robot base pose to the default position and orientation.

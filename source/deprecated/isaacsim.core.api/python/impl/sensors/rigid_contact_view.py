@@ -15,8 +15,7 @@
 
 """Provides high level functions to deal with rigid prims for tracking their contact interactions through filters."""
 
-
-from typing import List, Optional, Tuple, Union
+from __future__ import annotations
 
 import carb
 import numpy as np
@@ -96,12 +95,13 @@ class RigidContactView(object):
         ... )
         >>> prims
         <isaacsim.core.api.sensors.rigid_contact_view.RigidContactView object at 0x7f8d4eb1abf0>
+
     """
 
     def __init__(
         self,
-        prim_paths_expr: Union[str, List[str]],
-        filter_paths_expr: Union[List[str], List[List[str]]],
+        prim_paths_expr: str | list[str],
+        filter_paths_expr: list[str] | list[list[str]],
         name: str = "rigid_contact_view",
         prepare_contact_sensors: bool = True,
         disable_stablization: bool = True,
@@ -162,6 +162,7 @@ class RigidContactView(object):
 
             >>> prims.num_shapes
             5
+
         """
         return self._num_shapes
 
@@ -178,6 +179,7 @@ class RigidContactView(object):
 
             >>> prims.num_filters
             1
+
         """
         return self._num_filters
 
@@ -186,6 +188,7 @@ class RigidContactView(object):
 
         Args:
             prim_at_path: Prim at the specified path to prepare for contact reporting.
+
         """
         if prim_at_path.HasAPI(PhysxSchema.PhysxContactReportAPI):
             cr_api = PhysxSchema.PhysxContactReportAPI(prim_at_path)
@@ -210,6 +213,7 @@ class RigidContactView(object):
 
             >>> prims.is_physics_handle_valid()
             True
+
         """
         return self._physics_view is not None
 
@@ -234,11 +238,12 @@ class RigidContactView(object):
         .. code-block:: python
 
             >>> prims.initialize()
+
         """
         if physics_sim_view is None:
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
             physics_sim_view.set_subspace_roots("/")
-        carb.log_info("initializing view for {}".format(self._name))
+        carb.log_info(f"initializing view for {self._name}")
         self._physics_sim_view = physics_sim_view
         self._physics_view = physics_sim_view.create_rigid_contact_view(
             [regular_expression.replace(".*", "*") for regular_expression in self._regex_prim_paths],
@@ -248,14 +253,14 @@ class RigidContactView(object):
             ],
             max_contact_data_count=self.max_contact_count,
         )
-        carb.log_info("Rigid Contact View Device: {}".format(self._device))
+        carb.log_info(f"Rigid Contact View Device: {self._device}")
         self._num_shapes = self._physics_view.sensor_count
         self._num_filters = self._physics_view.filter_count
         return
 
     def get_net_contact_forces(
-        self, indices: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None, clone: bool = True, dt: float = 1.0
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | torch.Tensor | wp.array | None = None, clone: bool = True, dt: float = 1.0
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the overall net contact forces on the prims in the view with respect to the world's frame.
 
         Args:
@@ -285,6 +290,7 @@ class RigidContactView(object):
             [[ 1.8731881e-03  5.4876995e-03  1.6408131e+02]
              [-2.1011427e-02  3.5647806e-02  1.6371542e+02]
              [ 9.3709816e-05 -9.2963902e-03  1.6296776e+02]]
+
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self._num_shapes, self._device)
@@ -298,10 +304,10 @@ class RigidContactView(object):
 
     def get_contact_force_matrix(
         self,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Get the contact forces between the prims in the view and the filter prims.
 
         E.g., a matrix of dimension ``(num_shapes, num_filters, 3)`` where ``num_filters`` is
@@ -328,6 +334,7 @@ class RigidContactView(object):
              [[ 0.0000000e+00  0.0000000e+00  0.0000000e+00]]
              [[-3.3276828e-03 -2.3870371e-02  3.2733777e+02]]
              [[ 0.0000000e+00  0.0000000e+00  0.0000000e+00]]]
+
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self._num_shapes, self._device)
@@ -341,16 +348,16 @@ class RigidContactView(object):
 
     def get_contact_force_data(
         self,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> Tuple[
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+    ) -> tuple[
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
     ]:
         """Get more detailed contact information between the prims in the view and the filter prims.
 
@@ -438,6 +445,7 @@ class RigidContactView(object):
              [4]
              [4]
              [8]]
+
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self._num_shapes, self._device)
@@ -473,14 +481,14 @@ class RigidContactView(object):
 
     def get_friction_data(
         self,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> Tuple[
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+    ) -> tuple[
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
     ]:
         """Gets friction data between the prims in the view and the filter prims. Specifically, this method provides frictional contact forces,.
 
@@ -502,6 +510,7 @@ class RigidContactView(object):
             with shape (max_contact_count, 3), points with shape (max_contact_count, 3),
             as well as two tensors with shape (M, self.num_filters) to indicate the starting index and the number of
             contact data points per pair in the aforementioned buffers.
+
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self._num_shapes, self._device)

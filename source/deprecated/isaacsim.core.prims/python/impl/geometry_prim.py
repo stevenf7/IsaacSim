@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING
 
 import carb
 import numpy as np
@@ -126,19 +126,21 @@ class GeometryPrim(XFormPrim):
         self,
         prim_paths_expr: str,
         name: str = "geometry_prim_view",
-        positions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        translations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        orientations: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        scales: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
-        visibilities: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        positions: np.ndarray | torch.Tensor | wp.array | None = None,
+        translations: np.ndarray | torch.Tensor | wp.array | None = None,
+        orientations: np.ndarray | torch.Tensor | wp.array | None = None,
+        scales: np.ndarray | torch.Tensor | wp.array | None = None,
+        visibilities: np.ndarray | torch.Tensor | wp.array | None = None,
         reset_xform_properties: bool = True,
-        collisions: Optional[Union[np.ndarray, torch.Tensor, wp.array]] = None,
+        collisions: np.ndarray | torch.Tensor | wp.array | None = None,
         track_contact_forces: bool = False,
         prepare_contact_sensors: bool = False,
         disable_stablization: bool = True,
-        contact_filter_prim_paths_expr: Optional[List[str]] = [],
+        contact_filter_prim_paths_expr: list[str] | None = None,
         max_contact_count: int = 0,
-    ):
+    ) -> None:
+        if contact_filter_prim_paths_expr is None:
+            contact_filter_prim_paths_expr = []
         XFormPrim.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
@@ -593,7 +595,7 @@ class GeometryPrim(XFormPrim):
         return radii
 
     def set_collision_approximations(
-        self, approximation_types: list[str], indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
+        self, approximation_types: list[str], indices: np.ndarray | list | torch.Tensor | wp.array | None = None
     ) -> None:
         """Set collision approximation types for prims in the view.
 
@@ -660,7 +662,7 @@ class GeometryPrim(XFormPrim):
         return
 
     def get_collision_approximations(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
     ) -> list[str]:
         """Get collision approximation types for prims in the view.
 
@@ -730,7 +732,7 @@ class GeometryPrim(XFormPrim):
             write_idx += 1
         return approximation_types
 
-    def enable_collision(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> None:
+    def enable_collision(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> None:
         """Enables collision on prims in the view.
 
         Args:
@@ -756,7 +758,7 @@ class GeometryPrim(XFormPrim):
             self._collision_apis[i].GetCollisionEnabledAttr().Set(True)
         return
 
-    def disable_collision(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> None:
+    def disable_collision(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> None:
         """Disables collision on prims in the view.
 
         Args:
@@ -786,8 +788,8 @@ class GeometryPrim(XFormPrim):
         return
 
     def is_collision_enabled(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """Queries if collision is enabled on prims in the view.
 
         Args:
@@ -827,7 +829,7 @@ class GeometryPrim(XFormPrim):
         collisions = self._backend_utils.convert(collisions, dtype="bool", device=self._device, indexed=True)
         return collisions
 
-    def apply_collision_apis(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> None:
+    def apply_collision_apis(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> None:
         """Apply the collision API to prims in the view and update internal variables.
 
         Args:
@@ -863,9 +865,9 @@ class GeometryPrim(XFormPrim):
 
     def apply_physics_materials(
         self,
-        physics_materials: Union[PhysicsMaterial, list[PhysicsMaterial]],
-        weaker_than_descendants: Optional[Union[bool, list[bool]]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        physics_materials: PhysicsMaterial | list[PhysicsMaterial],
+        weaker_than_descendants: bool | list[bool] | None = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
     ) -> None:
         """Used to apply physics material to prims in the view and optionally its descendants.
 
@@ -965,7 +967,7 @@ class GeometryPrim(XFormPrim):
         return
 
     def get_applied_physics_materials(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None
+        self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
     ) -> list[PhysicsMaterial]:
         """Get the applied physics material to prims in the view.
 
@@ -1023,10 +1025,10 @@ class GeometryPrim(XFormPrim):
 
     def get_net_contact_forces(
         self,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """If contact forces of the prims in the view are tracked, this method returns the net contact forces on prims.
 
         i.e., a matrix of dimension (self.count, 3).
@@ -1051,10 +1053,10 @@ class GeometryPrim(XFormPrim):
 
     def get_contact_force_matrix(
         self,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> Union[np.ndarray, torch.Tensor, wp.indexedarray]:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
         """If the object is initialized with filter_paths_expr list, this method returns the contact forces between the prims.
 
         in the view and the filter prims. i.e., a matrix of dimension (self.count, self._contact_view.num_filters, 3)
@@ -1080,16 +1082,16 @@ class GeometryPrim(XFormPrim):
 
     def get_contact_force_data(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> Tuple[
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+    ) -> tuple[
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
     ]:
         """Get more detailed contact information between the prims in the view and the filter prims. Specifically, this method provides individual.
 
@@ -1122,14 +1124,14 @@ class GeometryPrim(XFormPrim):
 
     def get_friction_data(
         self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor, wp.array]] = None,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> Tuple[
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
-        Union[np.ndarray, torch.Tensor, wp.indexedarray],
+    ) -> tuple[
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
+        np.ndarray | torch.Tensor | wp.indexedarray,
     ]:
         """Gets friction data between the prims in the view and the filter prims. Specifically, this method provides frictional contact forces,.
 

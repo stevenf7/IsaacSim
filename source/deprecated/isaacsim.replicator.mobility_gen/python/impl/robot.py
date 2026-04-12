@@ -17,7 +17,7 @@
 
 
 import math
-from typing import Tuple, Type
+from typing import NoReturn
 
 import isaacsim.core.utils.numpy.rotations as rot_utils
 
@@ -87,16 +87,16 @@ class MobilityGenRobot(Module):
     occupancy_map_collision_radius: float
     """The robot footprint radius to use for collision based episode termination."""
 
-    front_camera_type: Type[Module]
+    front_camera_type: type[Module]
     """The static class representing the front camera.  It should define a build() and attach() method. """
 
     front_camera_base_path: str
     """The relative USD path to spawn the front camera."""
 
-    front_camera_rotation: Tuple[float, float, float]
+    front_camera_rotation: tuple[float, float, float]
     """The relative XYZ rotation used when spawning the front camera. """
 
-    front_camera_translation: Tuple[float, float, float]
+    front_camera_translation: tuple[float, float, float]
     """The relative XYZ translation used when spawning the front camera. """
 
     keyboard_linear_velocity_gain: float
@@ -115,10 +115,10 @@ class MobilityGenRobot(Module):
     """The gain used to map gamepad axis movement to the robot's angular velocity.  A larger
     gain results in faster movement."""
 
-    random_action_linear_velocity_range: Tuple[float, float]
+    random_action_linear_velocity_range: tuple[float, float]
     """The robot linear velocity limits for the random acceleration scenario."""
 
-    random_action_angular_velocity_range: Tuple[float, float]
+    random_action_angular_velocity_range: tuple[float, float]
     """The robot angular velocity limits for the random acceleration scenario."""
 
     random_action_linear_acceleration_std: float
@@ -149,7 +149,9 @@ class MobilityGenRobot(Module):
     """The offset distance used to generate the 'target point' that the robot will follow in the path following scenario.
     A larger offset results in smoother motion, but too large may cause the robot to cut corners during turns."""
 
-    def __init__(self, prim_path: str, robot: _Robot, articulation_view: _ArticulationView, front_camera: Module):
+    def __init__(
+        self, prim_path: str, robot: _Robot, articulation_view: _ArticulationView, front_camera: Module
+    ) -> None:
         self.prim_path = prim_path
         self.robot = robot
         self.articulation_view = articulation_view
@@ -164,7 +166,7 @@ class MobilityGenRobot(Module):
         self.front_camera = front_camera
 
     @classmethod
-    def build_front_camera(cls, prim_path: str):
+    def build_front_camera(cls, prim_path: str) -> object:
         """Builds and configures the front camera for the robot.
 
         Creates a camera at the specified prim path with the configured rotation and translation offsets.
@@ -229,7 +231,7 @@ class MobilityGenRobot(Module):
         """
         raise NotImplementedError
 
-    def write_action(self, step_size: float):
+    def write_action(self, step_size: float) -> NoReturn:
         """Writes the robot's action to the simulation.
 
         This is an abstract method that must be implemented by robot subclasses to define
@@ -243,7 +245,7 @@ class MobilityGenRobot(Module):
         """
         raise NotImplementedError
 
-    def update_state(self):
+    def update_state(self) -> None:
         """Updates the robot's state buffers with current simulation data.
 
         Retrieves and stores the robot's current world pose, joint positions, joint velocities,
@@ -258,7 +260,7 @@ class MobilityGenRobot(Module):
         self.angular_velocity.set_value(self.robot.get_angular_velocity())
         super().update_state()
 
-    def write_replay_data(self):
+    def write_replay_data(self) -> None:
         """Writes buffered state data to the robot for replay purposes.
 
         Applies the stored position, orientation, and joint positions from the buffers
@@ -268,7 +270,7 @@ class MobilityGenRobot(Module):
         self.articulation_view.set_joint_positions(self.joint_positions.get_value())
         super().write_replay_data()
 
-    def set_pose_2d(self, pose: Pose2d):
+    def set_pose_2d(self, pose: Pose2d) -> None:
         """Sets the robot's 2D pose in the world.
 
         Initializes the articulation, stops all motion, and positions the robot at the specified

@@ -15,9 +15,11 @@
 
 """Provides a UI-based extension for robot motion generation tutorials using RRT algorithms in Isaac Sim."""
 
+from __future__ import annotations
 
 import asyncio
 import gc
+from typing import Any
 
 import carb.eventdispatcher
 import omni
@@ -69,7 +71,7 @@ class Extension(omni.ext.IExt):
     experience within the Isaac Sim interface.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize extension and UI elements.
 
         Args:
@@ -106,7 +108,7 @@ class Extension(omni.ext.IExt):
         self._physics_subscription = None
         self._timeline = omni.timeline.get_timeline_interface()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up extension resources and UI elements."""
         self._models = {}
         remove_menu_items(self._menu_items, MENU_PARENT_NAME)
@@ -158,16 +160,16 @@ class Extension(omni.ext.IExt):
             self._timeline_event_sub_stop = None
             self.ui_builder.cleanup()
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         """Build the extension UI and dock the window."""
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
                 self._build_extension_ui()
 
-        async def dock_window():
+        async def dock_window() -> None:
             await omni.kit.app.get_app().next_update_async()
 
-            def dock(space, name, location, pos=0.5):
+            def dock(space: Any, name: Any, location: Any, pos: Any = 0.5) -> Any:
                 window = omni.ui.Workspace.get_window(name)
                 if window and space:
                     window.dock_in(space, location, pos)
@@ -183,7 +185,7 @@ class Extension(omni.ext.IExt):
     # Functions below this point call user functions
     #################################################################
 
-    def _menu_callback(self):
+    def _menu_callback(self) -> None:
         """Toggle window visibility and notify the UI builder."""
         self._window.visible = not self._window.visible
         self.ui_builder.on_menu_callback()
@@ -236,7 +238,7 @@ class Extension(omni.ext.IExt):
         self._physics_subscription = None
         self.ui_builder.cleanup()
 
-    def _build_extension_ui(self):
+    def _build_extension_ui(self) -> None:
         """Builds the extension UI by calling the user-defined UI builder.
 
         This method serves as a bridge between the extension's UI framework and the user's custom UI implementation in the UIBuilder class.

@@ -59,13 +59,13 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         "instance_id_segmentation_fast": {"name": "instance_id_segmentation_fast", "channels": 1, "dtype": wp.uint32},
     }
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         await create_new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
@@ -74,14 +74,14 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_annotator_spec_keys(self):
+    async def test_annotator_spec_keys(self) -> None:
         """Verify that EXPECTED_ANNOTATOR_SPEC matches the actual ANNOTATOR_SPEC keys."""
         self.assertEqual(
             sorted(ANNOTATOR_SPEC.keys()),
             sorted(self.EXPECTED_ANNOTATOR_SPEC.keys()),
         )
 
-    async def _create_test_environment(self):
+    async def _create_test_environment(self) -> None:
         """Create the test environment with ground plane, cubes, and cameras."""
         await create_new_stage_async()
 
@@ -117,22 +117,24 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
             rep.functional.create.camera(position=pos, look_at=(pos[0], pos[1], 0), parent="/World")
         await omni.kit.app.get_app().next_update_async()
 
-    async def _start_data_capture(self, num_warm_up_frames: int = 0):
+    async def _start_data_capture(self, num_warm_up_frames: int = 0) -> None:
         """Start the timeline and optionally wait for valid data to be available.
 
         Args:
             num_warm_up_frames: Number of warm-up frames to render before capturing data.
+
         """
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
         for _ in range(num_warm_up_frames):
             await omni.kit.app.get_app().next_update_async()
 
-    async def _setup_default_camera_view(self):
+    async def _setup_default_camera_view(self) -> "CameraView":
         """Set up the default square resolution camera view used by most tests.
 
         Returns:
             The configured CameraView instance.
+
         """
         await self._create_test_environment()
         # Warmup frames
@@ -142,12 +144,12 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
             prim_paths_expr="/World/Camera*",
             name="camera_prim_view",
             camera_resolution=self.CAMERA_VIEW_RESOLUTION,
-            output_annotators=sorted(list(self.EXPECTED_ANNOTATOR_SPEC.keys())),
+            output_annotators=sorted(self.EXPECTED_ANNOTATOR_SPEC.keys()),
         )
         await self._start_data_capture(num_warm_up_frames=5)
         return camera_view
 
-    async def test_tiled_rgb_data(self):
+    async def test_tiled_rgb_data(self) -> None:
         """Verify tiled RGB data consistency between CPU/NumPy and CUDA/Torch outputs."""
         camera_view = await self._setup_default_camera_view()
         # cpu / numpy
@@ -176,7 +178,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         D = (rgb_tiled_torch_out.cpu().numpy()).astype(np.uint8)
         self.assertTrue(np.all([np.allclose(A, B, atol=1), np.allclose(A, C, atol=1), np.allclose(A, D, atol=1)]))
 
-    async def test_tiled_depth_data(self):
+    async def test_tiled_depth_data(self) -> None:
         """Verify tiled depth data consistency between CPU/NumPy and CUDA/Torch outputs."""
         camera_view = await self._setup_default_camera_view()
         # cpu / numpy
@@ -205,7 +207,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         D = (depth_tiled_torch_out.cpu().numpy() * 255).astype(np.uint8)
         self.assertTrue(np.all([np.allclose(A, B, atol=1), np.allclose(A, C, atol=1), np.allclose(A, D, atol=1)]))
 
-    async def test_tiled_rgb_image(self):
+    async def test_tiled_rgb_image(self) -> None:
         """Compare tiled RGB image output against golden reference."""
         camera_view = await self._setup_default_camera_view()
         golden_dir = os.path.join(self.GOLDEN_DIR, "tiled_rgb")
@@ -227,7 +229,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         )
         self.assertTrue(result["all_passed"], f"Image comparison failed. Output dir: {out_dir}")
 
-    async def test_tiled_depth_image(self):
+    async def test_tiled_depth_image(self) -> None:
         """Compare tiled depth image output against golden reference."""
         camera_view = await self._setup_default_camera_view()
         golden_dir = os.path.join(self.GOLDEN_DIR, "tiled_depth")
@@ -248,7 +250,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         )
         self.assertTrue(result["all_passed"], f"Image comparison failed. Output dir: {out_dir}")
 
-    async def test_batched_rgb_data(self):
+    async def test_batched_rgb_data(self) -> None:
         """Verify batched RGB data shape, dtype, and pre-allocated output consistency."""
         camera_view = await self._setup_default_camera_view()
         rgb_batched_shape = (len(camera_view.prims), *self.CAMERA_VIEW_RESOLUTION, 3)
@@ -264,7 +266,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         rgb_batched = rgb_batched.to(cuda_device)
         self.assertTrue(torch.allclose(rgb_batched.to(torch.float32), rgb_batched_out.to(torch.float32), atol=1e-5))
 
-    async def test_batched_depth_data(self):
+    async def test_batched_depth_data(self) -> None:
         """Verify batched depth data shape, dtype, and pre-allocated output consistency."""
         camera_view = await self._setup_default_camera_view()
         depth_batched_shape = (len(camera_view.prims), *self.CAMERA_VIEW_RESOLUTION, 1)
@@ -280,7 +282,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         self.assertEqual(depth_batched.shape, depth_batched_out.shape)
         self.assertTrue(torch.allclose(depth_batched, depth_batched_out, atol=1e-5))
 
-    async def test_batched_rgb_images(self):
+    async def test_batched_rgb_images(self) -> None:
         """Compare batched RGB images from each camera against golden references."""
         camera_view = await self._setup_default_camera_view()
         golden_dir = os.path.join(self.GOLDEN_DIR, "batched_rgb")
@@ -304,7 +306,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         )
         self.assertTrue(result["all_passed"], f"Image comparison failed. Output dir: {out_dir}")
 
-    async def test_batched_depth_images(self):
+    async def test_batched_depth_images(self) -> None:
         """Compare batched depth images from each camera against golden references."""
         camera_view = await self._setup_default_camera_view()
         golden_dir = os.path.join(self.GOLDEN_DIR, "batched_depth")
@@ -327,10 +329,10 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         )
         self.assertTrue(result["all_passed"], f"Image comparison failed. Output dir: {out_dir}")
 
-    async def test_data(self):
+    async def test_data(self) -> None:
         """Verify batched data shape, dtype, and output buffer for all annotator types."""
         camera_view = await self._setup_default_camera_view()
-        for annotator_type in sorted(list(self.EXPECTED_ANNOTATOR_SPEC.keys())):
+        for annotator_type in sorted(self.EXPECTED_ANNOTATOR_SPEC.keys()):
             print(f"annotator type: {annotator_type}")
             spec = self.EXPECTED_ANNOTATOR_SPEC[annotator_type]
             data, info = camera_view.get_data(annotator_type)
@@ -351,10 +353,10 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
                 f"{annotator_type} data/out mean: {np.mean(data - out)}, std: {np.std(data - out)}",
             )
 
-    async def test_tiled_data(self):
+    async def test_tiled_data(self) -> None:
         """Verify tiled data shape, dtype, and output buffer for all annotator types."""
         camera_view = await self._setup_default_camera_view()
-        for annotator_type in sorted(list(self.EXPECTED_ANNOTATOR_SPEC.keys())):
+        for annotator_type in sorted(self.EXPECTED_ANNOTATOR_SPEC.keys()):
             print(f"annotator type: {annotator_type}")
             spec = self.EXPECTED_ANNOTATOR_SPEC[annotator_type]
             data, info = camera_view.get_data(annotator_type, tiled=True)
@@ -375,7 +377,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
                 f"{annotator_type} data/out mean: {np.mean(data - out)}, std: {np.std(data - out)}",
             )
 
-    async def test_properties(self):
+    async def test_properties(self) -> None:
         """Verify camera count and test setting/getting camera properties."""
         camera_view = await self._setup_default_camera_view()
         num_cameras = len(camera_view.prims)
@@ -393,7 +395,7 @@ class TestCameraViewSensor(omni.kit.test.AsyncTestCase):
         camera_view.set_projection_types(["fisheyeOrthographic"] * num_cameras)
         self.assertTrue(camera_view.get_projection_types() == ["fisheyeOrthographic"] * num_cameras)
 
-    async def test_non_square_resolution(self):
+    async def test_non_square_resolution(self) -> None:
         """Test that non-square resolutions are handled correctly (width != height)."""
         await self._create_test_environment()
         non_square_resolution = (320, 240)  # width=320, height=240

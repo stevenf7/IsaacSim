@@ -15,6 +15,7 @@
 
 """Demonstrates trajectory generation capabilities for the UR10 robot using Lula motion planning in Isaac Sim."""
 
+from __future__ import annotations
 
 import os
 
@@ -67,7 +68,7 @@ class UR10TrajectoryGenerationExample:
     extension, demonstrating practical usage patterns for robot motion planning in Isaac Sim.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._c_space_trajectory_generator = None
         self._taskspace_trajectory_generator = None
         self._kinematics_solver = None
@@ -77,7 +78,7 @@ class UR10TrajectoryGenerationExample:
 
         self._articulation = None
 
-    def load_example_assets(self):
+    def load_example_assets(self) -> list:
         """Loads the UR10 robot asset into the stage and initializes the articulation.
 
         Returns:
@@ -95,7 +96,7 @@ class UR10TrajectoryGenerationExample:
         # Return assets that were added to the stage so that they can be registered with the core.World
         return [self._articulation]
 
-    def setup(self):
+    def setup(self) -> None:
         """Initializes trajectory generators and kinematics solver for the UR10 robot.
 
         Sets up the C-space trajectory generator, task-space trajectory generator, and kinematics solver using
@@ -123,7 +124,7 @@ class UR10TrajectoryGenerationExample:
 
         self._end_effector_name = "ee_link"
 
-    def setup_cspace_trajectory(self):
+    def setup_cspace_trajectory(self) -> None:
         """Sets up a configuration space trajectory with predefined waypoints.
 
         Creates both time-optimal and timestamped C-space trajectories and visualizes the waypoints in task space
@@ -201,7 +202,7 @@ class UR10TrajectoryGenerationExample:
             )
             self._action_sequence.extend(articulation_trajectory_timestamped.get_action_sequence())
 
-    def setup_taskspace_trajectory(self):
+    def setup_taskspace_trajectory(self) -> None:
         """Sets up a task space trajectory with position and orientation targets.
 
         Creates a trajectory that moves the end-effector through a rectangular path in task space and visualizes
@@ -235,7 +236,7 @@ class UR10TrajectoryGenerationExample:
             # Get a sequence of ArticulationActions that are intended to be passed to the robot at 1/60 second intervals
             self._action_sequence = articulation_trajectory.get_action_sequence()
 
-    def setup_advanced_trajectory(self):
+    def setup_advanced_trajectory(self) -> None:
         """Sets up an advanced composite trajectory combining C-space and task-space movements.
 
         Demonstrates various trajectory types including linear interpolation, pure translation/rotation,
@@ -360,7 +361,7 @@ class UR10TrajectoryGenerationExample:
         self._action_sequence_index += 1
         self._action_sequence_index %= len(self._action_sequence) + 10  # Wait 10 frames before repeating trajectories
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the trajectory execution state and cleans up visualization frames.
 
         Clears the action sequence, resets the action index, and removes any frame markers from the stage.

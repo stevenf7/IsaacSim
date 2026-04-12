@@ -39,12 +39,10 @@ class TestXformPrimPose(CoreTestCase):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         SimulationManager.set_backend("numpy")
-        pass
 
     async def tearDown(self):
         """Tear down test environment."""
         await super().tearDown()
-        pass
 
     async def test_position_orientation_scale(self):
         """Test position orientation scale."""

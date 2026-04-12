@@ -15,8 +15,9 @@
 
 """High-level API for creating and controlling robots as articulations in Isaac Sim."""
 
+from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from isaacsim.core.api.controllers.articulation_controller import ArticulationController
 from isaacsim.core.prims import SingleArticulation
@@ -62,19 +63,20 @@ class Robot(SingleArticulation):
         >>> prim = Robot(prim_path=prim_path, name="franka_panda")
         >>> print(prim)
         <isaacsim.core.api.robots.robot.Robot object at 0x7fdd4875a1d0>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "robot",
-        position: Optional[Sequence[float]] = None,
-        translation: Optional[Sequence[float]] = None,
-        orientation: Optional[Sequence[float]] = None,
-        scale: Optional[Sequence[float]] = None,
+        position: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
+        orientation: Sequence[float] | None = None,
+        scale: Sequence[float] | None = None,
         visible: bool = True,
-        articulation_controller: Optional[ArticulationController] = None,
-    ):
+        articulation_controller: ArticulationController | None = None,
+    ) -> None:
         SingleArticulation.__init__(
             self,
             prim_path=prim_path,
@@ -86,10 +88,10 @@ class Robot(SingleArticulation):
             visible=visible,
             articulation_controller=articulation_controller,
         )
-        self._sensors = list()
+        self._sensors = []
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Reset the robot to its default state.
 
         .. note::
@@ -103,5 +105,6 @@ class Robot(SingleArticulation):
         .. code-block:: python
 
             >>> prim.post_reset()
+
         """
         SingleArticulation.post_reset(self)

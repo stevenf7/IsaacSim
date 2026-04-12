@@ -44,12 +44,10 @@ class TestParticleMaterialView(CoreTestCase):
         await self.my_world.initialize_simulation_context_async()
         await update_stage_async()
         self._test_cfg = dict()
-        pass
 
     async def tearDown(self):
         """Tear down test environment."""
         await super().tearDown()
-        pass
 
     async def test_particle_material_view(self):
         """Test particle material view."""
@@ -58,7 +56,6 @@ class TestParticleMaterialView(CoreTestCase):
         self.stage = get_current_stage()
         await update_stage_async()
         await self._runner()
-        pass
 
     async def _runner(self):
         self.num_envs = 10

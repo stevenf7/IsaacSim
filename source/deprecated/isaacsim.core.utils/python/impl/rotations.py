@@ -18,7 +18,6 @@
 """Deprecated rotation utility functions."""
 
 import math
-import typing
 
 import numpy as np
 
@@ -263,7 +262,7 @@ def lookat_to_quatf(camera: Gf.Vec3f, target: Gf.Vec3f, up: Gf.Vec3f) -> Gf.Quat
     return q
 
 
-def gf_quat_to_np_array(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion]) -> np.ndarray:
+def gf_quat_to_np_array(orientation: Gf.Quatd | Gf.Quatf | Gf.Quaternion) -> np.ndarray:
     """Converts a pxr Quaternion type to a numpy array following [w, x, y, z] convention.
 
     Args:

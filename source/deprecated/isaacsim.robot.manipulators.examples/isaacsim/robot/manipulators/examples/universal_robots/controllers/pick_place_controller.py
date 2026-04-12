@@ -15,7 +15,7 @@
 
 """Pick-and-place controller for Universal Robots arms."""
 
-from typing import List, Optional
+from __future__ import annotations
 
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
 import numpy as np
@@ -41,8 +41,8 @@ class PickPlaceController(manipulators_controllers.PickPlaceController):
         name: str,
         gripper: SurfaceGripper,
         robot_articulation: SingleArticulation,
-        events_dt: Optional[List[float]] = None,
-    ):
+        events_dt: list[float] | None = None,
+    ) -> None:
         if events_dt is None:
             events_dt = [0.01, 0.0035, 0.01, 1.0, 0.008, 0.005, 0.005, 1, 0.01, 0.08]
         manipulators_controllers.PickPlaceController.__init__(
@@ -61,8 +61,8 @@ class PickPlaceController(manipulators_controllers.PickPlaceController):
         picking_position: np.ndarray,
         placing_position: np.ndarray,
         current_joint_positions: np.ndarray,
-        end_effector_offset: Optional[np.ndarray] = None,
-        end_effector_orientation: Optional[np.ndarray] = None,
+        end_effector_offset: np.ndarray | None = None,
+        end_effector_orientation: np.ndarray | None = None,
     ) -> ArticulationAction:
         """Execute one step of the pick and place controller.
 

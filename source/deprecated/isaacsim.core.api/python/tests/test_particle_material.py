@@ -41,12 +41,10 @@ class TestParticleMaterial(CoreTestCase, TestProperties):
         self.my_world = World(backend="torch")  # , device="cuda")
         await self.my_world.initialize_simulation_context_async()
         self._test_cfg = dict()
-        pass
 
     async def tearDown(self):
         """Tear down test environment."""
         await super().tearDown()
-        pass
 
     async def test_cloth_prim(self):
         """Test cloth prim."""

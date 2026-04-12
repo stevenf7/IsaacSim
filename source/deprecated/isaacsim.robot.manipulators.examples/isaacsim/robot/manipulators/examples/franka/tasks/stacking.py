@@ -15,7 +15,7 @@
 
 """Stacking task definition for the Franka robot."""
 
-from typing import Optional
+from __future__ import annotations
 
 import numpy as np
 from isaacsim.core.api.tasks import Stacking as BaseStacking
@@ -38,10 +38,10 @@ class Stacking(BaseStacking):
     def __init__(
         self,
         name: str = "franka_stacking",
-        target_position: Optional[np.ndarray] = None,
-        cube_size: Optional[np.ndarray] = None,
-        offset: Optional[np.ndarray] = None,
-    ):
+        target_position: np.ndarray | None = None,
+        cube_size: np.ndarray | None = None,
+        offset: np.ndarray | None = None,
+    ) -> None:
         if target_position is None:
             target_position = np.array([0.5, 0.5, 0]) / get_stage_units()
         BaseStacking.__init__(

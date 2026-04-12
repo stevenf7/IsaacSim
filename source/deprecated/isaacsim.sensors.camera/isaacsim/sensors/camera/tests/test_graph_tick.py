@@ -26,16 +26,16 @@ from pxr import Gf, Sdf, UsdGeom
 class TestGraphSDGPipelineConflict(omni.kit.test.AsyncTestCase):
     """Test cases for GraphSDGPipelineConflict."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         self._timeline = omni.timeline.get_timeline_interface()
         await omni.usd.get_context().new_stage_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         self._timeline.stop()
 
-    async def _create_and_initialize_camera(self, stage):
+    async def _create_and_initialize_camera(self, stage: object) -> "Camera":
         cam_path = "/World/Cam"
         camera_prim = stage.DefinePrim(cam_path, "Camera")
         xform = UsdGeom.XformCommonAPI(camera_prim)
@@ -48,14 +48,14 @@ class TestGraphSDGPipelineConflict(omni.kit.test.AsyncTestCase):
         camera.initialize()  # Attach annotator to camera
         return camera
 
-    async def test_sdg_pipeline_conflict(self):
+    async def test_sdg_pipeline_conflict(self) -> None:
         """Test sdg pipeline conflict."""
         stage = omni.usd.get_context().get_stage()
 
         # Define test cube
         stage.DefinePrim("/Cube", "Cube")
 
-        def make_graph(graph_path, cube_path):
+        def make_graph(graph_path: str, cube_path: str) -> object:
             """Execute make_graph."""
             return og.Controller.edit(
                 {"graph_path": graph_path, "evaluator_name": "execution"},
@@ -93,7 +93,7 @@ class TestGraphSDGPipelineConflict(omni.kit.test.AsyncTestCase):
         cube_val = stage.GetAttributeAtPath("/Cube.size").Get()
         self.assertEqual(cube_val, 7.0, f"Expected Cube.size = 7.0, got {cube_val}")
         # Create and initialize camera
-        camera = await self._create_and_initialize_camera(stage)
+        await self._create_and_initialize_camera(stage)
         # For each app update we expect the cube size to increase by 5
         for i in range(3):
             await omni.kit.app.get_app().next_update_async()

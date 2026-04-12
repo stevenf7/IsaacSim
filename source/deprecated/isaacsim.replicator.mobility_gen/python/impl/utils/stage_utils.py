@@ -16,8 +16,6 @@
 """Utilities for USD stage operations in the mobility generation module."""
 
 
-from typing import Tuple  # type: ignore
-
 from pxr import Usd, UsdGeom
 
 
@@ -27,7 +25,7 @@ def stage_add_camera(
     focal_length: float = 35,
     horizontal_aperature: float = 20.955,
     vertical_aperature: float = 20.955,
-    clipping_range: Tuple[float, float] = (0.1, 100000),
+    clipping_range: tuple[float, float] = (0.1, 100000),
 ) -> UsdGeom.Camera:
     """Adds a camera to a USD stage.
 

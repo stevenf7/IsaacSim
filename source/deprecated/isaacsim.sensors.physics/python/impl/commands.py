@@ -50,14 +50,14 @@ class IsaacSensorCreatePrim(omni.kit.commands.Command):
         translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
         orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
         schema_type: type = IsaacSensorSchema.IsaacBaseSensor,
-    ):
+    ) -> None:
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
                 setattr(self, f"_{name}", value)
         self._prim_path = None
 
-    def do(self):
+    def do(self) -> object:
         """Creates an Isaac sensor prim on the USD stage.
 
         Generates the next available path, defines the sensor with the specified schema type, enables the sensor,
@@ -75,7 +75,7 @@ class IsaacSensorCreatePrim(omni.kit.commands.Command):
 
         return self._prim
 
-    def undo(self):
+    def undo(self) -> object:
         """Undoes the sensor prim creation by deleting the created prim.
 
         Returns:
@@ -113,14 +113,14 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
         radius: float = -1,
         sensor_period: float = -1,
         translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
-    ):
+    ) -> None:
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
                 setattr(self, f"_{name}", value)
         self._prim = None
 
-    def do(self):
+    def do(self) -> object:
         """Creates a contact sensor prim with the specified parameters.
 
         Creates an Isaac contact sensor prim at the specified path under the parent prim, applies contact sensor
@@ -158,7 +158,7 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
             carb.log_error("Could not create contact sensor prim")
             return None
 
-    def undo(self):
+    def undo(self) -> None:
         """Undoes the contact sensor creation operation.
 
         Currently a no-op placeholder for the undo functionality.
@@ -194,14 +194,14 @@ class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
         linear_acceleration_filter_size: int = 1,
         angular_velocity_filter_size: int = 1,
         orientation_filter_size: int = 1,
-    ):
+    ) -> None:
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
                 setattr(self, f"_{name}", value)
         self._prim = None
 
-    def do(self):
+    def do(self) -> object:
         """Creates an IMU sensor prim with the specified configuration.
 
         Executes the IMU sensor creation command with the parameters provided during initialization,
@@ -230,7 +230,7 @@ class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
             carb.log_error("Could not create Imu sensor prim")
             return None
 
-    def undo(self):
+    def undo(self) -> None:
         """Undoes the IMU sensor creation operation.
 
         This method is required for command pattern implementation but currently performs no action.

@@ -15,6 +15,7 @@
 
 """Tutorial example module demonstrating RMPflow motion generation with a Franka Panda robot for collision-aware end-effector target tracking."""
 
+from __future__ import annotations
 
 import numpy as np
 from isaacsim.core.api.objects.cuboid import FixedCuboid
@@ -53,7 +54,7 @@ class FrankaRmpFlowExample:
     motion commands.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._rmpflow = None
         self._articulation_rmpflow = None
 
@@ -62,7 +63,7 @@ class FrankaRmpFlowExample:
 
         self._dbg_mode = False
 
-    def load_example_assets(self):
+    def load_example_assets(self) -> tuple:
         """Loads the Franka robot, target frame, and obstacle assets into the stage.
 
         Adds a Franka Panda robot at "/panda", a target frame at "/World/target", and a blue cube obstacle.
@@ -90,7 +91,7 @@ class FrankaRmpFlowExample:
         # Return assets that were added to the stage so that they can be registered with the core.World
         return self._articulation, self._target, self._obstacle
 
-    def setup(self):
+    def setup(self) -> None:
         """Initializes the RMPflow motion generation system and connects it to the Franka robot.
 
         Loads the RMPflow configuration for the Franka robot, creates the RmpFlow object, adds the obstacle,
@@ -118,7 +119,7 @@ class FrankaRmpFlowExample:
 
         self._target.set_world_pose(np.array([0.5, 0, 0.7]), euler_angles_to_quats([0, np.pi, 0]))
 
-    def update(self, step: float):
+    def update(self, step: float) -> None:
         """Updates the RMPflow system and applies motion to the robot for the current frame.
 
         Sets the end effector target based on the target object's position, updates the world state
@@ -143,7 +144,7 @@ class FrankaRmpFlowExample:
         action = self._articulation_rmpflow.get_next_articulation_action(step)
         self._articulation.apply_action(action)
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the example to its initial state.
 
         In debug mode, resets the RMPflow internal state and re-visualizes collision spheres.

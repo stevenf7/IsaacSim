@@ -92,7 +92,6 @@ class TestStage(omni.kit.test.AsyncTestCase):
         if not TestStage.is_current_stage_in_memory():
             return
 
-        stage = get_current_stage()
         stage_id = get_current_stage_id()
 
         omni.usd.get_context().attach_stage_with_callback(stage_id)

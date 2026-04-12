@@ -15,8 +15,7 @@
 
 """Provides a view class for managing particle material prims and their physics properties in bulk operations."""
 
-
-from typing import Optional, Union
+from __future__ import annotations
 
 # omniverse
 import carb
@@ -60,34 +59,33 @@ class ParticleMaterialView:
             to approximate lighter-than-air inflatables, shape is (N, ).
         lifts: The lift coefficient tensor for cloth and inflatable particle objects, shape is (N, ).
         drags: The drag coefficient tensor for cloth and inflatable particle objects, shape is (N, ).
+
     """
 
     def __init__(
         self,
         prim_paths_expr: str,
         name: str = "particle_material_view",
-        frictions: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        particle_friction_scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        dampings: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        viscosities: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        vorticity_confinements: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        surface_tensions: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        cohesions: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        adhesions: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        particle_adhesion_scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        adhesion_offset_scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        gravity_scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        lifts: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        drags: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        frictions: np.ndarray | torch.Tensor | None = None,
+        particle_friction_scales: np.ndarray | torch.Tensor | None = None,
+        dampings: np.ndarray | torch.Tensor | None = None,
+        viscosities: np.ndarray | torch.Tensor | None = None,
+        vorticity_confinements: np.ndarray | torch.Tensor | None = None,
+        surface_tensions: np.ndarray | torch.Tensor | None = None,
+        cohesions: np.ndarray | torch.Tensor | None = None,
+        adhesions: np.ndarray | torch.Tensor | None = None,
+        particle_adhesion_scales: np.ndarray | torch.Tensor | None = None,
+        adhesion_offset_scales: np.ndarray | torch.Tensor | None = None,
+        gravity_scales: np.ndarray | torch.Tensor | None = None,
+        lifts: np.ndarray | torch.Tensor | None = None,
+        drags: np.ndarray | torch.Tensor | None = None,
     ) -> None:
         self._name = name
         self._physics_view = None
         self._prim_paths = find_matching_prim_paths(prim_paths_expr)
         if len(self._prim_paths) == 0:
             raise Exception(
-                "Prim path expression {} is invalid, a prim matching the expression needs to created before wrapping it as view".format(
-                    prim_paths_expr
-                )
+                f"Prim path expression {prim_paths_expr} is invalid, a prim matching the expression needs to created before wrapping it as view"
             )
         self._count = len(self._prim_paths)
         self._prims = []
@@ -146,6 +144,7 @@ class ParticleMaterialView:
 
         Returns:
             Number of particle material prims in the view.
+
         """
         return self._count
 
@@ -155,6 +154,7 @@ class ParticleMaterialView:
 
         Returns:
             Name given to the view when instantiating it.
+
         """
         return self._name
 
@@ -163,6 +163,7 @@ class ParticleMaterialView:
 
         Args:
             index: Index of the prim to apply the material API to.
+
         """
         if self._material_apis[index] is None:
             if self._prims[index].HasAPI(PhysxSchema.PhysxPBDMaterialAPI):
@@ -176,10 +177,11 @@ class ParticleMaterialView:
 
         Returns:
             True if the physics handle of the view is valid (i.e physics is initialized for the view). Otherwise False.
+
         """
         return self._physics_view is not None
 
-    def is_valid(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> bool:
+    def is_valid(self, indices: np.ndarray | list | torch.Tensor | None = None) -> bool:
         """Checks if all prim paths specified in the view correspond to valid prims in the stage.
 
         Args:
@@ -189,6 +191,7 @@ class ParticleMaterialView:
 
         Returns:
             True if all prim paths specified in the view correspond to a valid prim in stage. False otherwise.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = True
@@ -205,23 +208,24 @@ class ParticleMaterialView:
 
         Args:
             physics_sim_view: current physics simulation view.
+
         """
         if physics_sim_view is None:
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
             physics_sim_view.set_subspace_roots("/")
-        carb.log_info("initializing view for {}".format(self._name))
+        carb.log_info(f"initializing view for {self._name}")
         self._physics_sim_view = physics_sim_view
         self._physics_view = self._physics_sim_view.create_particle_material_view(
             self._regex_prim_paths.replace(".*", "*")
         )
         self._count = self._physics_view.count
-        carb.log_info("Particle material View Device: {}".format(self._device))
+        carb.log_info(f"Particle material View Device: {self._device}")
         return
 
     def set_frictions(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the friction for the material prims indicated by the indices.
 
@@ -230,6 +234,7 @@ class ParticleMaterialView:
             indices: indices to specify which material prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
                 Defaults to None (i.e: all prims in the view).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -250,8 +255,8 @@ class ParticleMaterialView:
                 idx_count += 1
 
     def get_frictions(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the friction of materials indicated by the indices.
 
         Args:
@@ -262,6 +267,7 @@ class ParticleMaterialView:
 
         Returns:
             Friction tensor with shape (M, ).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -285,8 +291,8 @@ class ParticleMaterialView:
 
     def set_dampings(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the dampings for the material prims indicated by the indices.
 
@@ -295,6 +301,7 @@ class ParticleMaterialView:
             indices: indices to specify which material prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
                 Defaults to None (i.e: all prims in the view).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -315,8 +322,8 @@ class ParticleMaterialView:
                 idx_count += 1
 
     def get_dampings(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the dampings of materials indicated by the indices.
 
         Args:
@@ -326,6 +333,7 @@ class ParticleMaterialView:
 
         Returns:
             Dampings tensor with shape (M, ).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -349,8 +357,8 @@ class ParticleMaterialView:
 
     def set_gravity_scales(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the gravity scale for the material prims indicated by the indices.
 
@@ -358,6 +366,7 @@ class ParticleMaterialView:
             values: material gravity scale tensor with the shape (M, ).
             indices: indices to specify which material prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -377,8 +386,8 @@ class ParticleMaterialView:
                 idx_count += 1
 
     def get_gravity_scales(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the gravity scale of materials indicated by the indices.
 
         Args:
@@ -388,6 +397,7 @@ class ParticleMaterialView:
 
         Returns:
             Gravity scale tensor with shape (M, ).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -411,8 +421,8 @@ class ParticleMaterialView:
 
     def set_lifts(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the lifts for the material prims indicated by the indices.
 
@@ -420,6 +430,7 @@ class ParticleMaterialView:
             values: material lift tensor with the shape (M, ).
             indices: indices to specify which material prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -439,8 +450,8 @@ class ParticleMaterialView:
                 idx_count += 1
 
     def get_lifts(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the lifts of materials indicated by the indices.
 
         Args:
@@ -450,6 +461,7 @@ class ParticleMaterialView:
 
         Returns:
             Lift tensor with shape (M, ).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -473,8 +485,8 @@ class ParticleMaterialView:
 
     def set_drags(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the drags for the material prims indicated by the indices.
 
@@ -482,6 +494,7 @@ class ParticleMaterialView:
             values: material drag tensor with the shape (M, ).
             indices: indices to specify which material prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -501,8 +514,8 @@ class ParticleMaterialView:
                 idx_count += 1
 
     def get_drags(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the drags of materials indicated by the indices.
 
         Args:
@@ -512,6 +525,7 @@ class ParticleMaterialView:
 
         Returns:
             Drag tensor with shape (M, ).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -535,8 +549,8 @@ class ParticleMaterialView:
 
     def set_viscosities(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the particle viscosity for the material prims indicated by the indices.
 
@@ -544,6 +558,7 @@ class ParticleMaterialView:
             values: material particle viscosity scale tensor with the shape (M, ).
             indices: indices to specify which material prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -556,8 +571,8 @@ class ParticleMaterialView:
             idx_count += 1
 
     def get_viscosities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the viscosity of materials indicated by the indices.
 
         Args:
@@ -567,6 +582,7 @@ class ParticleMaterialView:
 
         Returns:
             Viscosity tensor with shape (M, ).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -582,8 +598,8 @@ class ParticleMaterialView:
 
     def set_cohesions(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the particle cohesion for the material prims indicated by the indices.
 
@@ -591,6 +607,7 @@ class ParticleMaterialView:
             values: material particle cohesion scale tensor with the shape (M, ).
             indices: indices to specify which material prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -603,8 +620,8 @@ class ParticleMaterialView:
             idx_count += 1
 
     def get_cohesions(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the cohesion of materials indicated by the indices.
 
         Args:
@@ -615,6 +632,7 @@ class ParticleMaterialView:
 
         Returns:
             cohesion tensor with shape (M, )
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -630,8 +648,8 @@ class ParticleMaterialView:
 
     def set_adhesions(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the particle adhesion for the material prims indicated by the indices.
 
@@ -640,6 +658,7 @@ class ParticleMaterialView:
             indices: indices to specify which material prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
                 Defaults to None (i.e: all prims in the view).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -652,8 +671,8 @@ class ParticleMaterialView:
             idx_count += 1
 
     def get_adhesions(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the adhesion of materials indicated by the indices.
 
         Args:
@@ -664,6 +683,7 @@ class ParticleMaterialView:
 
         Returns:
             adhesion tensor with shape (M, )
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -679,8 +699,8 @@ class ParticleMaterialView:
 
     def set_particle_adhesion_scales(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the particle adhesion for the material prims indicated by the indices.
 
@@ -689,6 +709,7 @@ class ParticleMaterialView:
             indices: indices to specify which material prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
                 Defaults to None (i.e: all prims in the view).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -701,8 +722,8 @@ class ParticleMaterialView:
             idx_count += 1
 
     def get_particle_adhesion_scales(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the adhesion scale of materials indicated by the indices.
 
         Args:
@@ -713,6 +734,7 @@ class ParticleMaterialView:
 
         Returns:
             adhesion scale tensor with shape (M, )
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -728,8 +750,8 @@ class ParticleMaterialView:
 
     def set_adhesion_offset_scales(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the adhesion offset scale for the material prims indicated by the indices.
 
@@ -738,6 +760,7 @@ class ParticleMaterialView:
             indices: indices to specify which material prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
                 Defaults to None (i.e: all prims in the view).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -750,8 +773,8 @@ class ParticleMaterialView:
             idx_count += 1
 
     def get_adhesion_offset_scales(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the adhesion offset scale of materials indicated by the indices.
 
         Args:
@@ -762,6 +785,7 @@ class ParticleMaterialView:
 
         Returns:
             adhesion offset scale tensor with shape (M, )
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -777,8 +801,8 @@ class ParticleMaterialView:
 
     def set_surface_tensions(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the particle surface tension for the material prims indicated by the indices.
 
@@ -787,6 +811,7 @@ class ParticleMaterialView:
             indices: indices to specify which material prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
                 Defaults to None (i.e: all prims in the view).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -799,8 +824,8 @@ class ParticleMaterialView:
             idx_count += 1
 
     def get_surface_tensions(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the surface tension of materials indicated by the indices.
 
         Args:
@@ -811,6 +836,7 @@ class ParticleMaterialView:
 
         Returns:
             surface tension tensor with shape (M, )
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -826,8 +852,8 @@ class ParticleMaterialView:
 
     def set_vorticity_confinements(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the vorticity confinement for the material prims indicated by the indices.
 
@@ -836,6 +862,7 @@ class ParticleMaterialView:
             indices: indices to specify which material prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
                 Defaults to None (i.e: all prims in the view).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -848,8 +875,8 @@ class ParticleMaterialView:
             idx_count += 1
 
     def get_vorticity_confinements(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the vorticity confinement of materials indicated by the indices.
 
         Args:
@@ -859,6 +886,7 @@ class ParticleMaterialView:
 
         Returns:
             vorticity confinement tensor with shape (M, )
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -874,8 +902,8 @@ class ParticleMaterialView:
 
     def set_particle_friction_scales(
         self,
-        values: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        values: np.ndarray | torch.Tensor | None,
+        indices: np.ndarray | list | torch.Tensor | None = None,
     ) -> None:
         """Sets the particle friction scale for the material prims indicated by the indices.
 
@@ -883,6 +911,7 @@ class ParticleMaterialView:
             values: material particle friction scale tensor with the shape (M, ).
             indices: indices to specify which material prims to manipulate. Shape (M,).
                 Where M <= size of the encapsulated prims in the view.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
         idx_count = 0
@@ -895,8 +924,8 @@ class ParticleMaterialView:
             idx_count += 1
 
     def get_particle_friction_scales(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
-    ) -> Union[np.ndarray, torch.Tensor]:
+        self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
+    ) -> np.ndarray | torch.Tensor:
         """Gets the particle friction scale of materials indicated by the indices.
 
         Args:
@@ -906,6 +935,7 @@ class ParticleMaterialView:
 
         Returns:
             particle friction scale tensor with shape (M, )
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)

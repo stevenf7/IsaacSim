@@ -109,7 +109,7 @@ class GridPoseSampler(PoseSampler):
 
     grid_size_meters: float
 
-    def __init__(self, grid_size_meters: float):
+    def __init__(self, grid_size_meters: float) -> None:
         self.grid_size_meters = grid_size_meters
 
     def sample_px(self, occupancy_map: OccupancyMap) -> Pose2d:

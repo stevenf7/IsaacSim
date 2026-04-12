@@ -27,7 +27,7 @@ from pxr import Gf, Usd, UsdGeom
 from scipy.spatial.transform import Rotation
 
 
-def clear_xform_ops(prim: Usd.Prim):
+def clear_xform_ops(prim: Usd.Prim) -> None:
     """Remove all xform ops from input prim.
 
     Args:
@@ -44,7 +44,7 @@ def clear_xform_ops(prim: Usd.Prim):
 
 def reset_and_set_xform_ops(
     prim: Usd.Prim, translation: Gf.Vec3d, orientation: Gf.Quatd, scale: Gf.Vec3d = Gf.Vec3d([1.0, 1.0, 1.0])
-):
+) -> None:
     """Reset xform ops to isaac sim defaults, and set their values.
 
     Args:
@@ -68,13 +68,12 @@ def reset_and_set_xform_ops(
     xformable.SetXformOpOrder([xform_op_tranlsate, xform_op_rot, xform_op_scale])
 
 
-def reset_xform_ops(prim: Usd.Prim):
+def reset_xform_ops(prim: Usd.Prim) -> None:
     """Reset xform ops for a prim to isaac sim defaults.
 
     Args:
         prim: Prim to reset xform ops on
     """
-    properties = prim.GetPropertyNames()
     xformable = UsdGeom.Xformable(prim)
     # get current position and orientation
     T_p_w = xformable.ComputeParentToWorldTransform(Usd.TimeCode.Default())
@@ -87,7 +86,7 @@ def reset_xform_ops(prim: Usd.Prim):
     reset_and_set_xform_ops(current_translation, current_orientation)
 
 
-def _get_world_pose_transform_w_scale(prim_path: str, fabric: bool = False):
+def _get_world_pose_transform_w_scale(prim_path: str, fabric: bool = False) -> usdrt.Gf.Matrix4d:
     """Get the world transformation matrix including scale for a prim.
 
     Args:
@@ -101,7 +100,7 @@ def _get_world_pose_transform_w_scale(prim_path: str, fabric: bool = False):
     if not is_prim_path_valid(prim_path, fabric=False):
         raise Exception("Prim path is not valid")
 
-    def _get_from_usd_prim(prim_path):
+    def _get_from_usd_prim(prim_path: str) -> usdrt.Gf.Matrix4d:
         usd_prim = get_prim_at_path(prim_path=prim_path, fabric=False)
         local_transform = usdrt.Gf.Matrix4d(UsdGeom.Xformable(usd_prim).GetLocalTransformation(Usd.TimeCode.Default()))
         parent_prim = get_prim_parent(get_prim_at_path(prim_path=prim_path, fabric=False))
@@ -149,7 +148,7 @@ def _get_world_pose_transform_w_scale(prim_path: str, fabric: bool = False):
         return _get_from_usd_prim(prim_path)
 
 
-def get_local_pose(prim_path: str):
+def get_local_pose(prim_path: str) -> tuple:
     """Get the local pose of a prim relative to its parent.
 
     Args:
@@ -199,7 +198,7 @@ def get_local_pose(prim_path: str):
         )
 
 
-def get_world_pose(prim_path: str, fabric: bool = False):
+def get_world_pose(prim_path: str, fabric: bool = False) -> tuple:
     """Get the world pose of a prim.
 
     Args:

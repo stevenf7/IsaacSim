@@ -15,9 +15,9 @@
 
 """Provides a wrapper class for USD prims that offers a unified interface for managing collections of prims in Isaac Sim."""
 
+from __future__ import annotations
 
 import re
-from typing import List, Optional, Union
 
 import numpy as np
 import omni.kit.app
@@ -73,9 +73,7 @@ class Prim(object):
         self._is_valid = True
         if len(self._prim_paths) == 0:
             raise Exception(
-                "Prim path expression {} is invalid, a prim matching the expression needs to created before wrapping it as view".format(
-                    prim_paths_expr
-                )
+                f"Prim path expression {prim_paths_expr} is invalid, a prim matching the expression needs to created before wrapping it as view"
             )
         self._name = name
         self._count = len(self._prim_paths)
@@ -95,11 +93,11 @@ class Prim(object):
         )
         return
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Clean up the Prim instance by destroying it."""
         self.destroy()
 
-    def destroy(self):
+    def destroy(self) -> None:
         """Clean up and invalidate the prim view by deregistering callbacks and clearing internal state."""
         for callback_id in self._callbacks:
             SimulationManager.deregister_callback(callback_id)
@@ -110,7 +108,7 @@ class Prim(object):
         self._is_valid = False
 
     @property
-    def prim_paths(self) -> List[str]:
+    def prim_paths(self) -> list[str]:
         """List of prim paths in the stage encapsulated in this view.
 
         Returns:
@@ -151,7 +149,7 @@ class Prim(object):
         return self._count
 
     @property
-    def prims(self) -> List[Usd.Prim]:
+    def prims(self) -> list[Usd.Prim]:
         """List of USD Prim objects encapsulated in this view.
 
         Returns:
@@ -196,7 +194,7 @@ class Prim(object):
         self._on_post_reset(None)
         return
 
-    def is_valid(self, indices: Optional[Union[np.ndarray, list, torch.Tensor, wp.array]] = None) -> bool:
+    def is_valid(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> bool:
         """Check that all prims have a valid USD Prim.
 
         Args:

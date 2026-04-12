@@ -41,12 +41,10 @@ class TestSingleRigidPrimPose(CoreTestCase):
         await create_new_stage_async()
         self._my_world = World(device="cpu")
         await self._my_world.initialize_simulation_context_async()
-        pass
 
     async def tearDown(self):
         """Tear down test environment."""
         await super().tearDown()
-        pass
 
     async def test_position_orientation_scale(self):
         """Test position orientation scale."""

@@ -16,8 +16,7 @@
 
 """High level wrapper for creating/configuring position-based-dynamics (PBD) particle materials for simulating fluids, cloth and inflatables."""
 
-
-from typing import Optional
+from __future__ import annotations
 
 import carb
 
@@ -57,25 +56,26 @@ class ParticleMaterial:
             lighter-than-air inflatables.
         lift: The lift coefficient for cloth and inflatable particle objects.
         drag: The drag coefficient for cloth and inflatable particle objects.
+
     """
 
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "particle_material",
-        friction: Optional[float] = None,
-        particle_friction_scale: Optional[float] = None,
-        damping: Optional[float] = None,
-        viscosity: Optional[float] = None,
-        vorticity_confinement: Optional[float] = None,
-        surface_tension: Optional[float] = None,
-        cohesion: Optional[float] = None,
-        adhesion: Optional[float] = None,
-        particle_adhesion_scale: Optional[float] = None,
-        adhesion_offset_scale: Optional[float] = None,
-        gravity_scale: Optional[float] = None,
-        lift: Optional[float] = None,
-        drag: Optional[float] = None,
+        name: str | None = "particle_material",
+        friction: float | None = None,
+        particle_friction_scale: float | None = None,
+        damping: float | None = None,
+        viscosity: float | None = None,
+        vorticity_confinement: float | None = None,
+        surface_tension: float | None = None,
+        cohesion: float | None = None,
+        adhesion: float | None = None,
+        particle_adhesion_scale: float | None = None,
+        adhesion_offset_scale: float | None = None,
+        gravity_scale: float | None = None,
+        lift: float | None = None,
+        drag: float | None = None,
     ) -> None:
         stage = stage_utils.get_current_stage()
         self._name = name
@@ -166,6 +166,7 @@ class ParticleMaterial:
 
         Returns:
             The stage path to the material.
+
         """
         return self._prim_path
 
@@ -175,6 +176,7 @@ class ParticleMaterial:
 
         Returns:
             The USD prim present.
+
         """
         return self._prim
 
@@ -184,15 +186,17 @@ class ParticleMaterial:
 
         Returns:
             The USD Material object.
+
         """
         return self._material
 
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> str | None:
         """Name given to the prim when instantiating it.
 
         Returns:
             Name given to the prim when instantiating it. Otherwise None.
+
         """
         return self._name
 
@@ -201,6 +205,7 @@ class ParticleMaterial:
 
         Args:
             physics_sim_view: Physics simulation view to use for initialization.
+
         """
         self._particle_material_view.initialize(physics_sim_view=physics_sim_view)
         return
@@ -210,6 +215,7 @@ class ParticleMaterial:
 
         Returns:
             True is the current prim path corresponds to a valid prim in stage. False otherwise.
+
         """
         return self._particle_material_view.is_valid()
 
@@ -231,6 +237,7 @@ class ParticleMaterial:
         Args:
             value: The friction coefficient.
                 Range: [0, inf), Units: dimensionless
+
         """
         if value < 0:
             carb.log_error("The valid range of friction coefficient is [0. inf).")
@@ -246,6 +253,7 @@ class ParticleMaterial:
         Args:
             value: The particle friction scale.
                 Range: [0, inf), Units: dimensionless
+
         """
         if value < 0:
             carb.log_error("The valid range of particle friction scale is [0. inf).")
@@ -259,6 +267,7 @@ class ParticleMaterial:
         Args:
             value: The damping coefficient.
                 Range: [0, inf), Units: dimensionless
+
         """
         if value < 0:
             carb.log_error("The valid range of damping coefficient is [0. inf).")
@@ -270,6 +279,7 @@ class ParticleMaterial:
         Args:
             value: The viscosity.
                 Range: [0, inf), Units: dimensionless
+
         """
         if value < 0:
             carb.log_error("The valid range of viscosity is [0. inf).")
@@ -286,6 +296,7 @@ class ParticleMaterial:
         Args:
             value: The vorticity confinement.
                 Range: [0, inf), Units: dimensionless
+
         """
         if value < 0:
             carb.log_error("The valid range of vorticity confinement is [0. inf).")
@@ -299,6 +310,7 @@ class ParticleMaterial:
         Args:
             value: The surface tension.
                 Range: [0, inf), Units: 1 / (distance * distance * distance)
+
         """
         if value < 0:
             carb.log_error("The valid range of damping coefficient is [0. inf).")
@@ -312,6 +324,7 @@ class ParticleMaterial:
         Args:
             value: The cohesion.
                 Range: [0, inf), Units: dimensionless
+
         """
         if value < 0:
             carb.log_error("The valid range of adhesion is [0. inf).")
@@ -329,6 +342,7 @@ class ParticleMaterial:
         Args:
             value: The adhesion.
                 Range: [0, inf), Units: dimensionless
+
         """
         if value < 0:
             carb.log_error("The valid range of adhesion is [0. inf).")
@@ -344,6 +358,7 @@ class ParticleMaterial:
         Args:
             value: The adhesion scale.
                 Range: [0, inf), Units: dimensionless
+
         """
         if value < 0:
             carb.log_error("The valid range of particle adhesion scale is [0. inf).")
@@ -362,6 +377,7 @@ class ParticleMaterial:
         Args:
             value: The adhesion offset scale.
                 Range: [0, inf), Units: dimensionless
+
         """
         if value < 0:
             carb.log_error("The valid range of adhesion offset scale is [0. inf).")
@@ -378,6 +394,7 @@ class ParticleMaterial:
         Args:
             value: The gravity scale.
                 Range: (-inf , inf), Units: dimensionless
+
         """
         self._particle_material_view.set_gravity_scales(
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
@@ -391,6 +408,7 @@ class ParticleMaterial:
         Args:
             value: The lift coefficient.
                 Range: [0, inf), Units: dimensionless
+
         """
         if value < 0:
             carb.log_error("The valid range of lift coefficient is [0. inf).")
@@ -404,6 +422,7 @@ class ParticleMaterial:
         Args:
             value: The drag coefficient.
                 Range: [0, inf), Units: dimensionless
+
         """
         if value < 0:
             carb.log_error("The valid range of drag coefficient is [0. inf).")
@@ -418,6 +437,7 @@ class ParticleMaterial:
 
         Returns:
             The friction coefficient.
+
         """
         return self._particle_material_view.get_frictions()[0]
 
@@ -426,6 +446,7 @@ class ParticleMaterial:
 
         Returns:
             The particle friction scale.
+
         """
         return self._particle_material_view.get_particle_friction_scales()[0]
 
@@ -434,6 +455,7 @@ class ParticleMaterial:
 
         Returns:
             The global velocity damping coefficient.
+
         """
         return self._particle_material_view.get_dampings()[0]
 
@@ -442,6 +464,7 @@ class ParticleMaterial:
 
         Returns:
             The viscosity.
+
         """
         return self._particle_material_view.get_viscosities()[0]
 
@@ -450,6 +473,7 @@ class ParticleMaterial:
 
         Returns:
             The vorticity confinement for fluid particles.
+
         """
         return self._particle_material_view.get_vorticity_confinements()[0]
 
@@ -458,6 +482,7 @@ class ParticleMaterial:
 
         Returns:
             The surface tension for fluid particles.
+
         """
         return self._particle_material_view.get_surface_tensions()[0]
 
@@ -466,6 +491,7 @@ class ParticleMaterial:
 
         Returns:
             The cohesion for interaction between fluid particles.
+
         """
         return self._particle_material_view.get_cohesions()[0]
 
@@ -474,6 +500,7 @@ class ParticleMaterial:
 
         Returns:
             The adhesion for interaction between particles (solid or fluid), and rigids or deformables.
+
         """
         return self._particle_material_view.get_adhesions()[0]
 
@@ -482,6 +509,7 @@ class ParticleMaterial:
 
         Returns:
             The particle adhesion scale.
+
         """
         return self._particle_material_view.get_particle_adhesion_scales()[0]
 
@@ -490,6 +518,7 @@ class ParticleMaterial:
 
         Returns:
             The adhesion offset scale.
+
         """
         return self._particle_material_view.get_adhesion_offset_scales()[0]
 
@@ -498,6 +527,7 @@ class ParticleMaterial:
 
         Returns:
             The gravitational acceleration scaling factor.
+
         """
         return self._particle_material_view.get_gravity_scales()[0]
 
@@ -506,6 +536,7 @@ class ParticleMaterial:
 
         Returns:
             The lift coefficient, basic aerodynamic lift model coefficient.
+
         """
         return self._particle_material_view.get_lifts()[0]
 
@@ -514,5 +545,6 @@ class ParticleMaterial:
 
         Returns:
             The drag coefficient, basic aerodynamic drag model coefficient.
+
         """
         return self._particle_material_view.get_drags()[0]

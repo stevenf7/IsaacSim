@@ -17,7 +17,7 @@
 
 
 import asyncio
-from typing import Callable
+from collections.abc import Callable
 
 import carb
 import omni.ui as ui
@@ -65,7 +65,7 @@ class LoadButton(UIWidgetWrapper):
         tooltip: str = "",
         setup_scene_fn: Callable = None,
         setup_post_load_fn: Callable = None,
-    ):
+    ) -> None:
         self.setup_scene_fn = setup_scene_fn
         self.setup_post_load_fn = setup_post_load_fn
 
@@ -84,7 +84,7 @@ class LoadButton(UIWidgetWrapper):
         """Get the UI Button element."""
         return self._button
 
-    def set_setup_scene_fn(self, setup_scene_fn: Callable):
+    def set_setup_scene_fn(self, setup_scene_fn: Callable) -> None:
         """Set the setup_scene_fn that will be called when the LoadButton is clicked.
 
         The setup_scene_fn() is called with the guarantee that a World has been created.  In this function,
@@ -103,7 +103,7 @@ class LoadButton(UIWidgetWrapper):
         """
         self.setup_scene_fn = setup_scene_fn
 
-    def set_setup_scene_fn(self, setup_scene_fn: Callable):
+    def set_setup_scene_fn(self, setup_scene_fn: Callable) -> None:
         """Set the setup_scene_fn that will be called when the LoadButton is clicked.
 
         The setup_scene_fn() is called with the guarantee that a World has been created.  In this function,
@@ -121,7 +121,7 @@ class LoadButton(UIWidgetWrapper):
         """
         self.setup_scene_fn = setup_scene_fn
 
-    def set_setup_post_load_fn(self, setup_post_load_fn: Callable):
+    def set_setup_post_load_fn(self, setup_post_load_fn: Callable) -> None:
         """Set the setup_post_load_fn that will be called when the LoadButton is clicked.
 
         Args:
@@ -133,7 +133,7 @@ class LoadButton(UIWidgetWrapper):
         """
         self.setup_post_load_fn = setup_post_load_fn
 
-    def set_world_settings(self, **kwargs: object):
+    def set_world_settings(self, **kwargs: object) -> None:
         """Pressing a Load Button will create a new instance of the isaacsim.core.api.World.
 
         The default settings will be used unless the user specifies new settings at runtime before the Load Button is clicked.
@@ -161,11 +161,11 @@ class LoadButton(UIWidgetWrapper):
         """
         self._world_settings = kwargs
 
-    def _on_clicked_fn_wrapper(self):
+    def _on_clicked_fn_wrapper(self) -> None:
         """This function is called when the Load Button is Clicked."""
         # From an extension workflow, the stage and world need to be interacted with asynchronously
 
-        async def _on_click_async():
+        async def _on_click_async() -> None:
             # Remove any previous World instance
             prev_world = World.instance()
             if prev_world is not None:
@@ -194,7 +194,7 @@ class LoadButton(UIWidgetWrapper):
 
         asyncio.ensure_future(_on_click_async())
 
-    def _create_ui_widget(self, label: str, text: str, tooltip: str):
+    def _create_ui_widget(self, label: str, text: str, tooltip: str) -> object:
         containing_frame = Frame().frame
         with containing_frame:
             with ui.HStack():
@@ -236,7 +236,7 @@ class ResetButton(UIWidgetWrapper):
 
     def __init__(
         self, label: str, text: str, tooltip: str = "", pre_reset_fn: Callable = None, post_reset_fn: Callable = None
-    ):
+    ) -> None:
         self._pre_reset_fn = pre_reset_fn
         self._post_reset_fn = post_reset_fn
 
@@ -261,7 +261,7 @@ class ResetButton(UIWidgetWrapper):
         """
         return self._button
 
-    def set_pre_reset_fn(self, pre_reset_fn: Callable):
+    def set_pre_reset_fn(self, pre_reset_fn: Callable) -> None:
         """Set the pre_reset_fn for when the ResetButton is clicked.
 
         Args:
@@ -270,7 +270,7 @@ class ResetButton(UIWidgetWrapper):
         """
         self._pre_reset_fn = pre_reset_fn
 
-    def set_post_reset_fn(self, post_reset_fn: Callable):
+    def set_post_reset_fn(self, post_reset_fn: Callable) -> None:
         """Set the post_reset_fn for when the ResetButton is clicked.
 
         Args:
@@ -281,11 +281,11 @@ class ResetButton(UIWidgetWrapper):
         """
         self._post_reset_fn = post_reset_fn
 
-    def _on_clicked_fn_wrapper(self):
+    def _on_clicked_fn_wrapper(self) -> None:
         """This function is called when the Reset Button is Clicked."""
         # From an extension workflow, the stage and world need to be interacted with asynchronously
 
-        async def _on_click_async():
+        async def _on_click_async() -> None:
             # Call user function pre_reset
             if self._pre_reset_fn is not None:
                 self._pre_reset_fn()
@@ -305,7 +305,7 @@ class ResetButton(UIWidgetWrapper):
 
         asyncio.ensure_future(_on_click_async())
 
-    def _create_ui_widget(self, label: str, text: str, tooltip: str):
+    def _create_ui_widget(self, label: str, text: str, tooltip: str) -> object:
         """Creates the UI widget frame containing the label and button.
 
         Args:

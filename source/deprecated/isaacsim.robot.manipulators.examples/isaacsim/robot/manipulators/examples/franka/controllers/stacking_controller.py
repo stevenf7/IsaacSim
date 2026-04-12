@@ -15,7 +15,6 @@
 
 """Stacking controller for the Franka robot."""
 
-from typing import List
 
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
 from isaacsim.core.prims import SingleArticulation
@@ -39,9 +38,9 @@ class StackingController(manipulators_controllers.StackingController):
         name: str,
         gripper: ParallelGripper,
         robot_articulation: SingleArticulation,
-        picking_order_cube_names: List[str],
+        picking_order_cube_names: list[str],
         robot_observation_name: str,
-    ):
+    ) -> None:
         manipulators_controllers.StackingController.__init__(
             self,
             name=name,

@@ -15,8 +15,9 @@
 
 """High level wrappers for creating and manipulating sphere primitives with different physics behaviors in Isaac Sim."""
 
+from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 import numpy as np
 from isaacsim.core.api.materials.physics_material import PhysicsMaterial
@@ -64,25 +65,26 @@ class VisualSphere(SingleGeometryPrim):
         >>> prim = VisualSphere(prim_path="/World/Xform/Sphere", color=np.array([1.0, 0.0, 0.0]))
         >>> prim
         <isaacsim.core.api.objects.sphere.VisualSphere object at 0x7f4e3eb3ea70>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "visual_sphere",
-        position: Optional[Sequence[float]] = None,
-        translation: Optional[Sequence[float]] = None,
-        orientation: Optional[Sequence[float]] = None,
-        scale: Optional[Sequence[float]] = None,
-        visible: Optional[bool] = True,
-        color: Optional[np.ndarray] = None,
-        radius: Optional[float] = None,
-        visual_material: Optional[VisualMaterial] = None,
+        position: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
+        orientation: Sequence[float] | None = None,
+        scale: Sequence[float] | None = None,
+        visible: bool | None = True,
+        color: np.ndarray | None = None,
+        radius: float | None = None,
+        visual_material: VisualMaterial | None = None,
     ) -> None:
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Sphere):
-                raise Exception("The prim at path {} cannot be parsed as a Sphere object".format(prim_path))
+                raise Exception(f"The prim at path {prim_path} cannot be parsed as a Sphere object")
             sphereGeom = UsdGeom.Sphere(prim)
         else:
             sphereGeom = UsdGeom.Sphere.Define(get_current_stage(), prim_path)
@@ -127,6 +129,7 @@ class VisualSphere(SingleGeometryPrim):
         .. code-block:: python
 
             >>> prim.set_radius(2.0)
+
         """
         self.geom.GetRadiusAttr().Set(radius)
         return
@@ -143,6 +146,7 @@ class VisualSphere(SingleGeometryPrim):
 
             >>> prim.get_radius()
             1.0
+
         """
         return self.geom.GetRadiusAttr().Get()
 
@@ -184,21 +188,22 @@ class FixedSphere(VisualSphere):
         >>> prim = FixedSphere(prim_path="/World/Xform/Sphere", color=np.array([1.0, 0.0, 0.0]))
         >>> prim
         <isaacsim.core.api.objects.sphere.FixedSphere object at 0x7f4e433f2140>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "fixed_sphere",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
-        visible: Optional[bool] = None,
-        color: Optional[np.ndarray] = None,
-        radius: Optional[np.ndarray] = None,
-        visual_material: Optional[VisualMaterial] = None,
-        physics_material: Optional[PhysicsMaterial] = None,
+        position: np.ndarray | None = None,
+        translation: np.ndarray | None = None,
+        orientation: np.ndarray | None = None,
+        scale: np.ndarray | None = None,
+        visible: bool | None = None,
+        color: np.ndarray | None = None,
+        radius: np.ndarray | None = None,
+        visual_material: VisualMaterial | None = None,
+        physics_material: PhysicsMaterial | None = None,
     ) -> None:
         if not is_prim_path_valid(prim_path):
             # set default values if no physics material given
@@ -276,25 +281,26 @@ class DynamicSphere(SingleRigidPrim, FixedSphere):
         >>> prim = DynamicSphere(prim_path="/World/Xform/Sphere", color=np.array([1.0, 0.0, 0.0]), mass=1.0)
         >>> prim
         <isaacsim.core.api.objects.sphere.DynamicSphere object at 0x7f4deaf8f010>
+
     """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "dynamic_sphere",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
-        visible: Optional[bool] = None,
-        color: Optional[np.ndarray] = None,
-        radius: Optional[np.ndarray] = None,
-        visual_material: Optional[VisualMaterial] = None,
-        physics_material: Optional[PhysicsMaterial] = None,
-        mass: Optional[float] = None,
-        density: Optional[float] = None,
-        linear_velocity: Optional[Sequence[float]] = None,
-        angular_velocity: Optional[Sequence[float]] = None,
+        position: np.ndarray | None = None,
+        translation: np.ndarray | None = None,
+        orientation: np.ndarray | None = None,
+        scale: np.ndarray | None = None,
+        visible: bool | None = None,
+        color: np.ndarray | None = None,
+        radius: np.ndarray | None = None,
+        visual_material: VisualMaterial | None = None,
+        physics_material: PhysicsMaterial | None = None,
+        mass: float | None = None,
+        density: float | None = None,
+        linear_velocity: Sequence[float] | None = None,
+        angular_velocity: Sequence[float] | None = None,
     ) -> None:
         if not is_prim_path_valid(prim_path):
             if mass is None:

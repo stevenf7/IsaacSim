@@ -16,8 +16,6 @@
 """Camera interface module for the mobility generation system that provides various rendering outputs."""
 
 
-from typing import Tuple
-
 import omni.replicator.core as rep
 from isaacsim.core.utils.prims import get_prim_at_path
 
@@ -52,7 +50,7 @@ class MobilityGenCamera(Module):
         resolution: Image resolution as (width, height) tuple for all rendering outputs.
     """
 
-    def __init__(self, prim_path: str, resolution: Tuple[int, int]):
+    def __init__(self, prim_path: str, resolution: tuple[int, int]) -> None:
 
         self._prim_path = prim_path
         self._resolution = resolution
@@ -74,7 +72,7 @@ class MobilityGenCamera(Module):
         self.position = Buffer()
         self.orientation = Buffer()
 
-    def enable_rendering(self):
+    def enable_rendering(self) -> None:
         """Creates a render product for the camera to enable rendering capabilities."""
         self._render_product = rep.create.render_product(self._prim_path, self._resolution, force_new=False)
 
@@ -114,7 +112,7 @@ class MobilityGenCamera(Module):
         if self._segmentation_annotator is not None:
             return
         self._segmentation_annotator = rep.AnnotatorRegistry.get_annotator(
-            "semantic_segmentation", init_params=dict(colorize=False)
+            "semantic_segmentation", init_params={"colorize": False}
         )
         self._segmentation_annotator.attach(self._render_product)
 
@@ -125,7 +123,7 @@ class MobilityGenCamera(Module):
         if self._instance_id_segmentation_annotator is not None:
             return
         self._instance_id_segmentation_annotator = rep.AnnotatorRegistry.get_annotator(
-            "instance_id_segmentation", init_params=dict(colorize=False)
+            "instance_id_segmentation", init_params={"colorize": False}
         )
         self._instance_id_segmentation_annotator.attach(self._render_product)
 
@@ -147,7 +145,7 @@ class MobilityGenCamera(Module):
         self._normals_annotator = rep.AnnotatorRegistry.get_annotator("normals")
         self._normals_annotator.attach(self._render_product)
 
-    def update_state(self):
+    def update_state(self) -> None:
         """Updates the camera state by retrieving data from active annotators and camera transform."""
         if self._rgb_annotator is not None:
             self.rgb_image.set_value(self._rgb_annotator.get_data()[:, :, :3])

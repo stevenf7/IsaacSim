@@ -27,13 +27,13 @@ from isaacsim.sensors.camera import Camera
 class TestCameraSensor(omni.kit.test.AsyncTestCase):
     """Test cases for CameraSensor."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
@@ -41,7 +41,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_camera_sensor_no_warmup(self):
+    async def test_camera_sensor_no_warmup(self) -> None:
         """Test camera sensor no warmup."""
         # Test constants
         RESOLUTION = (720, 480)
