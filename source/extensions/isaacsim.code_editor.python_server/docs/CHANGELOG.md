@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.2] - 2026-04-06
+### Fixed
+- RecursionError and MemoryError in user code no longer hang the server. Exception handlers in the executor are now resilient to secondary failures (e.g. `traceback.format_exc()` raising after RecursionError).
+- Server always sends a structured error response even when an internal exception escapes the executor.
+
+### Changed
+- Disable SystemExit/BaseException tests in CI
+- Memory-error hardening test uses an allocation that exceeds the virtual address space so MemoryError is raised immediately instead of triggering Linux overcommit thrashing.
+
 ## [1.2.1] - 2026-04-01
 ### Fixed
 - **Critical:** Async user code (e.g. `create_new_stage_async`, `update_app_async`) no longer causes `RuntimeError: Cannot enter into task` on Python 3.12+. Replaced `create_task(_await_and_reply)` with manual coroutine stepping via `_drive_coroutine()` so user code never runs inside an asyncio Task.
