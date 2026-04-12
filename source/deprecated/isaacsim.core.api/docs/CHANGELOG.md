@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.1.5] - 2026-04-06
+### Fixed
+- Fix incorrect default stage units in `World.__init__` and `SimulationContext.__init__` docstrings
+
 ## [5.1.4] - 2026-03-26
 ### Changed
 - Updated Python bindings import paths for consistency

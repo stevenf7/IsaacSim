@@ -34,8 +34,8 @@ class DifferentialController(BaseController):
 
     Args:
         name: Name identifier for the controller.
-        wheel_radius: Radius of left and right wheels in cms.
-        wheel_base: Distance between left and right wheels in cms.
+        wheel_radius: Radius of left and right wheels in meters (m).
+        wheel_base: Distance between left and right wheels in meters (m).
         max_linear_speed: Limits the maximum linear speed that will be produced by the controller.
         max_angular_speed: Limits the maximum angular speed that will be produced by the controller.
         max_wheel_speed: Limits the maximum wheel speed that will be produced by the controller.

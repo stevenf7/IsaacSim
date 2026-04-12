@@ -1,4 +1,8 @@
 # Changelog
+## [5.2.1] - 2026-04-06
+### Fixed
+- Fix incorrect unit label in `DifferentialController` docstring: "cms" changed to "meters"
+
 ## [5.2.0] - 2026-03-27
 ### Changed
 - Deprecated extension in favor of isaacsim.robot.experimental.wheeled_robots and isaacsim.robot.wheeled_robots.nodes

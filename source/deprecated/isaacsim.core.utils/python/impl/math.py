@@ -43,7 +43,7 @@ def cross(a: Union[np.ndarray, list], b: Union[np.ndarray, list]) -> list:
     Returns:
         Cross product between input vectors.
     """
-    return [a[1] * b[2] - a[2] * b[1], a[0] * b[2] - a[2] * b[0], a[0] * b[1] - a[1] * b[0]]
+    return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
 
 
 def normalize(v: np.ndarray) -> np.ndarray:

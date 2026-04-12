@@ -66,7 +66,7 @@ class World(SimulationContext):
         sim_params: simulation parameters.
         set_defaults: set to True to use the defaults settings
             [physics_dt = 1.0/ 60.0,
-            stage units in meters = 0.01 (i.e in cms),
+            stage units in meters = 1.0 (i.e in meters),
             rendering_dt = 1.0 / 60.0,
             gravity = -9.81 m / s
             ccd_enabled,
