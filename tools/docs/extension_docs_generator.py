@@ -427,7 +427,7 @@ def generate_extension_settings(ext_path, ext_name, ext_config, error_as_warn):
             # extension-settings table
             content += [
                 "Extension Settings",
-                "------------------\n",
+                "^^^^^^^^^^^^^^^^^^\n",
                 "The table list the extension-specific settings.\n",
                 ".. list-table::",
                 "    :header-rows: 1\n",
@@ -515,7 +515,7 @@ The extension-specific settings can be either specified (set) or retrieved (get)
             # app-settings table
             content += [
                 "Other Settings",
-                "--------------\n",
+                "^^^^^^^^^^^^^^\n",
                 "The extension changes some settings of the application or other extensions, which are listed in the table below.\n",
                 ".. list-table::",
                 "    :header-rows: 1\n",

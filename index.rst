@@ -42,6 +42,7 @@ Extensions
    :caption: Extensions (Asset)
 
    isaacsim.asset.exporter.urdf <source/extensions/isaacsim.asset.exporter.urdf/docs/index>
+   isaacsim.asset.exporter.urdf.ui <source/extensions/isaacsim.asset.exporter.urdf.ui/docs/index>
    isaacsim.asset.gen.conveyor <source/extensions/isaacsim.asset.gen.conveyor/docs/index>
    isaacsim.asset.gen.conveyor.ui <source/extensions/isaacsim.asset.gen.conveyor.ui/docs/index>
    isaacsim.asset.gen.omap <source/extensions/isaacsim.asset.gen.omap/docs/index>
@@ -108,6 +109,7 @@ Extensions
    isaacsim.examples.browser <source/extensions/isaacsim.examples.browser/docs/index>
    isaacsim.examples.extension <source/deprecated/isaacsim.examples.extension/docs/index>
    isaacsim.examples.interactive <source/extensions/isaacsim.examples.interactive/docs/index>
+   isaacsim.examples.ipc <source/extensions/isaacsim.examples.ipc/docs/index>
    isaacsim.examples.ui <source/extensions/isaacsim.examples.ui/docs/index>
 
 .. toctree::
@@ -119,6 +121,14 @@ Extensions
    isaacsim.gui.menu <source/extensions/isaacsim.gui.menu/docs/index>
    isaacsim.gui.property <source/extensions/isaacsim.gui.property/docs/index>
    isaacsim.gui.sensors.icon <source/extensions/isaacsim.gui.sensors.icon/docs/index>
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Extensions (HSB)
+
+   isaacsim.hsb.bridge <source/extensions/isaacsim.hsb.bridge/docs/index>
+   isaacsim.hsb.core <source/extensions/isaacsim.hsb.core/docs/index>
+   isaacsim.hsb.nodes <source/extensions/isaacsim.hsb.nodes/docs/index>
 
 .. toctree::
    :maxdepth: 1
@@ -149,6 +159,8 @@ Extensions
    isaacsim.robot_motion.lula_test_widget <source/extensions/isaacsim.robot_motion.lula_test_widget/docs/index>
    isaacsim.robot_motion.motion_generation <source/extensions/isaacsim.robot_motion.motion_generation/docs/index>
    isaacsim.robot_motion.motion_generation.examples <source/deprecated/isaacsim.robot_motion.motion_generation.examples/docs/index>
+   isaacsim.robot_motion.pink <source/extensions/isaacsim.robot_motion.pink/docs/index>
+   isaacsim.robot_motion.pink.examples <source/extensions/isaacsim.robot_motion.pink.examples/docs/index>
    isaacsim.robot_motion.schema <source/extensions/isaacsim.robot_motion.schema/docs/index>
    isaacsim.robot_setup.assembler <source/extensions/isaacsim.robot_setup.assembler/docs/index>
    isaacsim.robot_setup.gain_tuner <source/extensions/isaacsim.robot_setup.gain_tuner/docs/index>
@@ -161,9 +173,10 @@ Extensions
    :maxdepth: 1
    :caption: Extensions (Robot)
 
+   isaacsim.robot.experimental.manipulators.examples <source/extensions/isaacsim.robot.experimental.manipulators.examples/docs/index>
    isaacsim.robot.experimental.wheeled_robots <source/extensions/isaacsim.robot.experimental.wheeled_robots/docs/index>
    isaacsim.robot.manipulators <source/extensions/isaacsim.robot.manipulators/docs/index>
-   isaacsim.robot.manipulators.examples <source/extensions/isaacsim.robot.manipulators.examples/docs/index>
+   isaacsim.robot.manipulators.examples <source/deprecated/isaacsim.robot.manipulators.examples/docs/index>
    isaacsim.robot.manipulators.ui <source/extensions/isaacsim.robot.manipulators.ui/docs/index>
    isaacsim.robot.policy.examples <source/extensions/isaacsim.robot.policy.examples/docs/index>
    isaacsim.robot.poser <source/extensions/isaacsim.robot.poser/docs/index>

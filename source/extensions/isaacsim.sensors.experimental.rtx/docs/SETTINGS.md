@@ -4,6 +4,8 @@
 
 # Settings
 
+## Settings Provided by the Extension
+
 ### app.sensors.nv.lidar.outputBufferOnGPU
 - **Default Value**: false
 - **Description**: Renderer keeps Lidar return buffer on GPU for post-processing.

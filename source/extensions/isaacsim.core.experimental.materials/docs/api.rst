@@ -42,10 +42,10 @@ The following table summarizes the available materials.
 .. https://docs.omniverse.nvidia.com/materials-and-rendering/latest/materials_templates.html
 
 Materials
-^^^^^^^^^
+---------
 
 Non-Visual Materials
-""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: isaacsim.core.experimental.materials.NonVisualMaterial
     :members:
@@ -54,7 +54,7 @@ Non-Visual Materials
     :show-inheritance:
 
 Physics Materials
-"""""""""""""""""
+^^^^^^^^^^^^^^^^^
 
 .. autoclass:: isaacsim.core.experimental.materials.PhysicsMaterial
     :members:
@@ -81,7 +81,7 @@ Physics Materials
     :show-inheritance:
 
 Visual Materials
-""""""""""""""""
+^^^^^^^^^^^^^^^^
 
 .. autoclass:: isaacsim.core.experimental.materials.OmniGlassMaterial
     :members:

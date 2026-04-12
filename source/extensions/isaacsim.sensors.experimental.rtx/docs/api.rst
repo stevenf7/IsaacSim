@@ -36,14 +36,12 @@ The following table summarizes the available classes.
     parse_stable_id_map_data
 
 .. rubric:: lidar configuration
-.. autosummary::
-    :nosignatures:
 
-    SUPPORTED_LIDAR_CONFIGS
-    SUPPORTED_LIDAR_VARIANT_SET_NAME
+- :data:`SUPPORTED_LIDAR_CONFIGS`
+- :data:`SUPPORTED_LIDAR_VARIANT_SET_NAME`
 
 Authoring
-"""""""""
+---------
 
 .. autoclass:: isaacsim.sensors.experimental.rtx.Lidar
     :members:
@@ -64,7 +62,7 @@ Authoring
     :show-inheritance:
 
 Sensors
-"""""""
+-------
 
 .. autoclass:: isaacsim.sensors.experimental.rtx.LidarSensor
     :members:
@@ -82,14 +80,14 @@ Sensors
     :show-inheritance:
 
 Utils
-"""""
+-----
 
 .. autofunction:: isaacsim.sensors.experimental.rtx.parse_generic_model_output_data
 
 .. autofunction:: isaacsim.sensors.experimental.rtx.parse_stable_id_map_data
 
 Lidar configuration registry
-""""""""""""""""""""""""""""
+----------------------------
 
 .. py:data:: SUPPORTED_LIDAR_CONFIGS
 
