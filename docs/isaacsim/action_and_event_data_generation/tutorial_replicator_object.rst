@@ -75,7 +75,7 @@ Run from the UI
 #. Click on the folder icon or the Visual Studio Code icon on the right side of the opened extension panel as shown above. The root folder of the extension opens.
 
 #. Under ``PATH_TO_CORE_EXTENSION/isaacsim/replicator/object/core/configs`` there are many description files in YAML format.
-   It's recommended that you start with ``demo_kaleidoscope.yaml``. 
+   It's recommended that you start with ``demo_kaleidoscope.yaml``. For :ref:`empty space detection<empty_space_detection>`, use ``demo_empty_space.yaml`` and refer to the linked catalog page. 
 
 #. Go to ``global.yaml`` and update ``output_path`` to any local folder where you can store the simulation output.
 
@@ -239,7 +239,7 @@ Concepts
 
    Each time a symbol is resolved, the dependent symbols of it are also recursively resolved. If an unresolved harmonized mutable attribute is met, the parser enters ``AWAITING_HARMONIZATION`` status, and then the :ref:`harmonizers<harmonizer>` harmonizes (collect information from the ``pitch`` attribute and randomize), and propagate output back to harmonized mutable attributes. After all harmonized mutable attributes are resolved, the parser will be out of ``AWAITING_HARMONIZATION`` status.
 
-   After this, the resolved values are used to update the USD scene. If gravity is turned on, physics is resolved so that objects move away from each other when they overlap or drop onto a surface (for more details, see :ref:`physics simulation explained <Physics simulation explained>`). And :ref:`graphics content<Output switches>` is captured. Eventually, the state of the scene in this frame is recorded and saved, such that later on, it can be restored or inspected.
+   After this, the resolved values are used to update the USD scene. If gravity is turned on, physics is resolved so that objects move away from each other when they overlap or drop onto a surface (for more details, refer to :ref:`physics simulation explained <Physics simulation explained>`). And :ref:`graphics content<Output switches>` is captured. Eventually, the state of the scene in this frame is recorded and saved, such that later on, it can be restored or inspected.
 
    More details can be found in :ref:`harmonization example<harmonization_example>`.
 
@@ -442,6 +442,7 @@ Within a mutable, aside from these options, you can also specify a :ref:`mutable
     ./ext_replicator-object/mutable_attribute.rst
     ./ext_replicator-object/transformation.rst
     ./ext_replicator-object/harmonizer.rst
+    ./ext_replicator-object/empty_space_detection.rst
     ./ext_replicator-object/macro.rst
     ./ext_replicator-object/distribution_visualizer.rst
     ./ext_replicator-object/randomization_dependency.rst
