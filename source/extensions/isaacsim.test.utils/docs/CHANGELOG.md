@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.14.2] - 2026-04-13
+### Added
+- Add `omni.kit.viewport.window` as a dependency
+
 ## [0.14.1] - 2026-04-08
 ### Added
 - Add `_apply_novaluetype_numeric_patch` coverage workaround giving `numpy._globals._NoValueType` `__int__`, `__float__`, and `__index__` methods so `int()`/`float()` calls inside osqp/scipy do not crash under coverage
