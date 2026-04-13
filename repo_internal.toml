@@ -145,11 +145,11 @@ python_paths = [
   "${root}/_build/${platform}/${config}/extscache/omni.kit.numpy.common*",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.commands*",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.core_archive/pip_prebundle",
-  "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.pip.cloud/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.pip.compute/pip_prebundle",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle/Pillow/pillow*",
+  "${root}/_build/${platform}/${config}/extsDeprecated/omni.isaac.ml_archive/pip_prebundle",
 ]
 
 sphinx_conf_py_extra = """
