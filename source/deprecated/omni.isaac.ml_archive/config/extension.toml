@@ -4,12 +4,12 @@ order = -1000
 reloadable = false
 
 [package]
-version = "3.2.0"
+version = "3.2.1"
 category = "Internal"
 title = "Isaac Sim ML Pip Archive"
 description = "Pip packages needed by isaac sim extensions"
 authors = ["hmazhar@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.ml_archive"
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/omni.isaac.ml_archive"
 keywords = ["isaac", "pip"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/Overview.md"
@@ -18,6 +18,9 @@ icon = "data/icon.png"
 writeTarget.kit = true
 writeTarget.platform = true # pip prebundle makes this extension os specific
 writeTarget.python = true
+
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 6.0.0. No replacement is provided."
 
 [dependencies]
 "omni.isaac.core_archive" = {} # pull in the main isaac sim pip archive

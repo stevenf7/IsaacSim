@@ -31,7 +31,7 @@ def _restore_repointed_prebundle(isaac_sim_path: str) -> None:
     If a ``.bak`` backup exists we restore the original directory; otherwise we
     just remove the bad symlink so the prebundled copies remain authoritative.
     """
-    ml_prebundle = Path(isaac_sim_path) / "exts" / "omni.isaac.ml_archive" / "pip_prebundle"
+    ml_prebundle = Path(isaac_sim_path) / "extsDeprecated" / "omni.isaac.ml_archive" / "pip_prebundle"
     if not ml_prebundle.is_dir():
         return
     nvidia_path = ml_prebundle / "nvidia"
