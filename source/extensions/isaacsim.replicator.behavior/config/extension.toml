@@ -1,5 +1,5 @@
 [package]
-version = "1.4.0"
+version = "1.4.1"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Behavior Scripts"
 description = "The extension provides various randomization and event scripts for Synthetic Data Generation (SDG) workflows. The scripts can be attached to prims providing modular, persitent, and shareable behaviors. The scripts use exposed variables as custom USD properties which can be modified throught the UI or programmatically."
@@ -35,6 +35,7 @@ dependencies = [
     "isaacsim.core.experimental.utils",
     "isaacsim.test.utils",
     "omni.kit.test",
+    "omni.kit.viewport.window",
     "omni.replicator.core",
 ]
 
