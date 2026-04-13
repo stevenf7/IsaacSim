@@ -1,5 +1,5 @@
 [package]
-version = "2.3.0"
+version = "2.3.1"
 category = "Simulation"
 title = "Wheeled Robots UI"
 description = "This extension provides the UI elements for the wheeled_robots extension"
@@ -26,9 +26,6 @@ name = "isaacsim.robot.wheeled_robots.ui"
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -41,7 +38,6 @@ stdoutFailPatterns.exclude = [
 dependencies = [
     "isaacsim.core.experimental.objects",
     "isaacsim.test.utils",
-    "omni.isaac.ml_archive",
 ]
 args = [
     "--enable",

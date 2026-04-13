@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.1] - 2026-04-13
+### Removed
+- Remove the `omni.isaac.ml_archive` dependency
+
 ## [0.1.0] - 2026-03-25
 ### Added
 - Initial release: OmniGraph nodes for wheeled robot controllers

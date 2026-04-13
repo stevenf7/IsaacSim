@@ -1,5 +1,5 @@
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Simulation"
 title = "Wheeled Robots Nodes"
 description = "OmniGraph nodes for wheeled robot controllers including differential, holonomic, and Ackermann steering"
@@ -40,9 +40,6 @@ exclude = ["*/bin", "*/__pycache__/*", "*/.git/*"]
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -55,7 +52,6 @@ timeout = 900
 dependencies = [
     "isaacsim.core.experimental.objects",
     "isaacsim.test.utils",
-    "omni.isaac.ml_archive",
 ]
 args = [
     "--enable",

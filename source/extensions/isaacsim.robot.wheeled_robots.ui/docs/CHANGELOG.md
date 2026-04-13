@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.3.1] - 2026-04-13
+### Removed
+- Remove the `omni.isaac.ml_archive` dependency
+
 ## [2.3.0] - 2026-03-25
 ### Changed
 - Migrated to experimental APIs (app_utils, prim_utils, stage_utils) replacing deprecated isaacsim.core.utils
