@@ -17,4 +17,8 @@
 
 from .impl.config import MJCFImporterConfig
 from .impl.converter import MJCFImporter
-from .impl.extension import *
+
+try:
+    from .impl.extension import *
+except ImportError:
+    pass

@@ -18,7 +18,6 @@
 import gc
 
 import omni.ext
-import omni.kit.app
 
 
 class Extension(omni.ext.IExt):
@@ -35,7 +34,6 @@ class Extension(omni.ext.IExt):
             ext_id: Extension identifier provided by the extension manager.
         """
         self._ext_id = ext_id
-        self._extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
 
     def on_shutdown(self) -> None:
         """Clean up resources when the extension is unloaded."""

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.0] - 2026-04-14
+### Changed
+- Defer `isaacsim.asset.transformer` import to `run_asset_transformer_profile()` function body to remove module-level cross-extension dependency
+
 ## [1.3.0] - 2026-04-09
 ### Changed
 - Update `run_asset_transformer_profile` to use renamed `input_stage` parameter

@@ -23,7 +23,6 @@ import logging
 import os
 import shutil
 
-import omni
 from isaacsim.asset.importer.utils.impl import (
     importer_utils,
     merge_mesh_utils,
@@ -172,13 +171,9 @@ class URDFImporter:
         self.stage = None
         gc.collect()
 
-        # TODO: known kit dependency to find the asset structure profile path
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.transformer.rules")
-        extension_path = ext_manager.get_extension_path(ext_id)
-        asset_structure_profile_json_path = os.path.normpath(
-            os.path.abspath(os.path.join(f"{extension_path}", "data", "isaacsim_structure.json"))
-        )
+        from isaacsim.asset.transformer.rules import DEFAULT_PROFILE_PATH
+
+        asset_structure_profile_json_path = DEFAULT_PROFILE_PATH
 
         if self.config.debug_mode:
             log_path = os.path.normpath(

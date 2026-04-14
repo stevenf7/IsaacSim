@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.5.0] - 2026-04-14
+### Changed
+- Replace Kit extension manager lookup for default profile path with `isaacsim.asset.transformer.rules.DEFAULT_PROFILE_PATH`
+- Remove unused `self._extension_path` from extension entrypoint
+- Gate `extension.py` import in `__init__.py` so the package can be imported outside Kit
+
 ## [3.4.0] - 2026-04-08
 ### Changed
 - Improve Python API documentation (`config/python_api.md` and/or module docstrings).

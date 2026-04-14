@@ -45,6 +45,34 @@ from .structure.variants import VariantRoutingRule
 
 logger = logging.getLogger(__name__)
 
+_ALL_RULES = [
+    FlattenRule,
+    GeometriesRoutingRule,
+    MaterialsRoutingRule,
+    PhysicsJointPoseFixRule,
+    MakeListsNonExplicitRule,
+    RemoveSchemaRule,
+    PrimRoutingRule,
+    SchemaRoutingRule,
+    PropertyRoutingRule,
+    VariantRoutingRule,
+    RobotSchemaRule,
+    InterfaceConnectionRule,
+]
+
+
+def register_all_rules() -> None:
+    """Register all built-in rule implementations with the global :class:`RuleRegistry`.
+
+    This is called automatically by the Kit extension on startup. Standalone
+    callers (outside Kit) should invoke this once before running the asset
+    transformer pipeline.
+    """
+    registry = RuleRegistry()
+    for rule_cls in _ALL_RULES:
+        registry.register(rule_cls)
+    logger.info("[isaacsim.asset.transformer.rules] Rules registered")
+
 
 class Extension(_ExtBase):
     """Extension that registers transformation rules."""
@@ -58,20 +86,7 @@ class Extension(_ExtBase):
         """
         self._ext_id = ext_id
         logger.info(f"[isaacsim.asset.transformer.rules] Startup: {ext_id}")
-        registry = RuleRegistry()
-        registry.register(FlattenRule)
-        registry.register(GeometriesRoutingRule)
-        registry.register(MaterialsRoutingRule)
-        registry.register(PhysicsJointPoseFixRule)
-        registry.register(MakeListsNonExplicitRule)
-        registry.register(RemoveSchemaRule)
-        registry.register(PrimRoutingRule)
-        registry.register(SchemaRoutingRule)
-        registry.register(PropertyRoutingRule)
-        registry.register(VariantRoutingRule)
-        registry.register(RobotSchemaRule)
-        registry.register(InterfaceConnectionRule)
-        logger.info("[isaacsim.asset.transformer.rules] Rules registered")
+        register_all_rules()
 
     def on_shutdown(self) -> None:
         """Log shutdown for the rules extension."""

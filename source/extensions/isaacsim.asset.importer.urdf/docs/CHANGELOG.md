@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.6.0] - 2026-04-14
+### Changed
+- Replace Kit extension manager lookup for default profile path with `isaacsim.asset.transformer.rules.DEFAULT_PROFILE_PATH`
+- Remove unused `import omni` and `self._extension_path` from extension entrypoint
+- Gate `extension.py` import in `__init__.py` so the package can be imported outside Kit
+
 ## [3.5.0] - 2026-04-09
 ### Added
 - Round-trip geometry reconstruction: capsule and cone primitives exported as URDF-compatible geometry are restored to their original USD types on import using `isaac:source_geometry` breadcrumb comments
