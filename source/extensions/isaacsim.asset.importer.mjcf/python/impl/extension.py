@@ -42,7 +42,6 @@ class Extension(omni.ext.IExt):
             True
         """
         self._ext_id = ext_id
-        self._extension_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
 
     def on_shutdown(self) -> None:
         """Release resources on extension shutdown.

@@ -14,4 +14,8 @@
 # limitations under the License.
 
 from .impl.converter import URDFImporter, URDFImporterConfig
-from .impl.extension import *
+
+try:
+    from .impl.extension import *
+except ImportError:
+    pass

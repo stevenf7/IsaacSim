@@ -21,7 +21,6 @@ import json
 import logging
 import os
 
-from isaacsim.asset.transformer import AssetTransformerManager, RuleProfile
 from pxr import PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
 _logger = logging.getLogger(__name__)
@@ -214,6 +213,8 @@ def run_asset_transformer_profile(
         ...     profile_json_path="/tmp/profile.json",
         ... )  # doctest: +SKIP
     """
+    from isaacsim.asset.transformer import AssetTransformerManager, RuleProfile
+
     with open(profile_json_path, encoding="utf-8") as handle:
         profile = RuleProfile.from_json(handle.read())
 

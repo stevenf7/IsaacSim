@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.0] - 2026-04-14
+### Added
+- `DEFAULT_PROFILE_PATH` module-level constant exposing the path to the bundled `isaacsim_structure.json` profile
+- `register_all_rules()` standalone function for registering all built-in rules without Kit's extension lifecycle
+
 ## [1.4.0] - 2026-04-09
 ### Added
 - Test verifying multiple sibling meshes under a parent Xform are preserved as separate instanceable references
