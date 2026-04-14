@@ -40,7 +40,7 @@ class WriterRequest:
         activate: Whether to activate (attach) or deactivate (detach) the writer.
     """
 
-    def __init__(self, writer: rep.Writer, render_product_path: str | list[str], activate: bool = True):
+    def __init__(self, writer: rep.Writer, render_product_path: str | list[str], activate: bool = True) -> None:
         self.writer = writer
         self.render_product_path = render_product_path
         self.activate = activate
@@ -64,13 +64,13 @@ class BaseWriterNode(BaseResetNode):
         initialize: Whether to initialize the node immediately.
     """
 
-    def __init__(self, initialize: bool = False):
+    def __init__(self, initialize: bool = False) -> None:
         self._writers = []
         self._requests = []
         self._event_stream = None
         super().__init__(initialize=False)
 
-    def custom_reset(self):
+    def custom_reset(self) -> None:
         """Resets the writer node by deactivating all writers and clearing the internal writer list."""
         for w in self._writers:
             self._append_request(WriterRequest(w, None, False))
@@ -86,9 +86,7 @@ class BaseWriterNode(BaseResetNode):
         self._writers.append(copy.deepcopy(writer))
 
     def attach_writers(self, render_product_path: str | list[str]) -> None:
-        """Creates writer request for all stored writers using provided render product,.
-
-            and activates them.
+        """Create writer requests for all stored writers using the provided render product and activate them.
 
         Args:
             render_product_path: The render product path to attach writers to.
@@ -97,7 +95,7 @@ class BaseWriterNode(BaseResetNode):
             self._append_request(WriterRequest(w, render_product_path, True))
 
     def attach_writer(self, writer: rep.Writer, render_product_path: str | list[str]) -> None:
-        """Creates writer request for deepcopy of provided writer to provided render_product_path, and activates it.
+        """Create writer request for deepcopy of provided writer to provided render_product_path, and activates it.
 
         Args:
             writer: The writer to attach.
@@ -109,7 +107,7 @@ class BaseWriterNode(BaseResetNode):
         # Ensure previously appended writer is referenced for the WriterRequest
         self._append_request(WriterRequest(self._writers[-1], render_product_path, True))
 
-    def _append_request(self, request: WriterRequest):
+    def _append_request(self, request: WriterRequest) -> None:
         """Appends a writer request to the internal queue and sets up event processing if needed.
 
         Args:
@@ -124,7 +122,7 @@ class BaseWriterNode(BaseResetNode):
             )
 
     def _process_activation_requests(self, event: carb.eventdispatcher.Event) -> None:
-        """Processes all pending writer activation requests by attaching or detaching writers.
+        """Process all pending writer activation requests by attaching or detaching writers.
 
         Args:
             event: The event that triggered the processing.

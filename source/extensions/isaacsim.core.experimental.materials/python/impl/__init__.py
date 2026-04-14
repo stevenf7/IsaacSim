@@ -13,9 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides implementations for physics and visual material classes in Isaac Sim."""
+"""Provide implementations for physics and visual material classes in Isaac Sim."""
 
 
-from .non_visual_material import NonVisualMaterial
-from .physics_materials import PhysicsMaterial, RigidBodyMaterial, SurfaceDeformableMaterial, VolumeDeformableMaterial
-from .visual_materials import OmniGlassMaterial, OmniPbrMaterial, PreviewSurfaceMaterial, VisualMaterial
+from .non_visual_material import NonVisualMaterial as NonVisualMaterial
+from .physics_materials import PhysicsMaterial as PhysicsMaterial
+from .physics_materials import RigidBodyMaterial as RigidBodyMaterial
+from .physics_materials import SurfaceDeformableMaterial as SurfaceDeformableMaterial
+from .physics_materials import VolumeDeformableMaterial as VolumeDeformableMaterial
+from .visual_materials import OmniGlassMaterial as OmniGlassMaterial
+from .visual_materials import OmniPbrMaterial as OmniPbrMaterial
+from .visual_materials import PreviewSurfaceMaterial as PreviewSurfaceMaterial
+from .visual_materials import VisualMaterial as VisualMaterial

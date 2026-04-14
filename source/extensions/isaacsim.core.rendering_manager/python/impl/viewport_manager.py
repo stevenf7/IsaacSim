@@ -512,7 +512,7 @@ class ViewportManager:
         return window
 
     @classmethod
-    def get_viewport_windows(cls, *, include: list[str] = [".*"], exclude: list[str] = []) -> list:
+    def get_viewport_windows(cls, *, include: list[str] | None = None, exclude: list[str] | None = None) -> list:
         """Get viewport windows.
 
         Args:
@@ -541,6 +541,11 @@ class ViewportManager:
             >>> windows[0].viewport_api.resolution
             (1280, 720)
         """
+        if include is None:
+            include = [".*"]
+        if exclude is None:
+            exclude = []
+
         windows = []
         for window in omni.kit.viewport.window.get_viewport_window_instances():
             if window:
@@ -553,7 +558,9 @@ class ViewportManager:
         return windows
 
     @classmethod
-    def destroy_viewport_windows(cls, *, include: list[str] = [".*"], exclude: list[str] = []) -> list[str]:
+    def destroy_viewport_windows(
+        cls, *, include: list[str] | None = None, exclude: list[str] | None = None
+    ) -> list[str]:
         """Destroy viewport windows.
 
         Args:
@@ -576,6 +583,11 @@ class ViewportManager:
             >>> ViewportManager.destroy_viewport_windows(exclude=["Viewport"])
             ['Viewport 1', 'Custom Viewport']
         """
+        if include is None:
+            include = [".*"]
+        if exclude is None:
+            exclude = []
+
         destroyed_windows = []
         for window in cls.get_viewport_windows(include=include, exclude=exclude):
             destroyed_windows.append(window.title)
@@ -665,14 +677,16 @@ class ViewportManager:
             >>> ViewportManager.set_camera_view(camera, target=[1.0, 2.0, 3.0])  # doctest: +NO_CHECK
         """
 
-        def _adjust_for_collinearity(xformable, position, epsilon=1e-5):
+        def _adjust_for_collinearity(
+            xformable: UsdGeom.Xformable, position: Gf.Vec3d, epsilon: float = 1e-5
+        ) -> Gf.Vec3d:
             world_transform = xformable.ComputeLocalToWorldTransform(time_code)
             world_transform.Orthonormalize()
             up_direction = Gf.Vec3d(0, 0, 1) if stage_utils.get_stage_up_axis() == "Z" else Gf.Vec3d(0, 1, 0)
             result = (world_transform.ExtractTranslation() - position).GetCross(up_direction).GetLength()
             return position + Gf.Vec3d(epsilon, 0, 0) if result < epsilon else position
 
-        def _set_eye(xformable, position):
+        def _set_eye(xformable: UsdGeom.Xformable, position: Gf.Vec3d) -> None:
             parent_inverse_transform = xformable.ComputeParentToWorldTransform(time_code).GetInverse()
             local_transform = xformable.ComputeLocalToWorldTransform(time_code) * parent_inverse_transform
             new_local_transform = Gf.Matrix4d(local_transform).SetTranslateOnly(
@@ -686,7 +700,7 @@ class ViewportManager:
                 time_code=time_code,
             ).do()
 
-        def _set_target(xformable, position):
+        def _set_target(xformable: UsdGeom.Xformable, position: Gf.Vec3d) -> None:
             parent_inverse_transform = xformable.ComputeParentToWorldTransform(time_code).GetInverse()
             local_transform = xformable.ComputeLocalToWorldTransform(time_code) * parent_inverse_transform
             position_in_parent = parent_inverse_transform.Transform(local_transform.Transform(Gf.Vec3d(0, 0, 0)))

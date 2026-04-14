@@ -19,7 +19,7 @@
 from __future__ import annotations
 
 import weakref
-from typing import Literal
+from typing import Any, Literal
 
 import carb
 import carb.eventdispatcher
@@ -243,7 +243,7 @@ class DeformablePrim(XformPrim):
         reset_xform_op_properties: bool = False,
         # DeformablePrim
         deformable_type: Literal["surface", "volume"] | None = None,
-    ):
+    ) -> None:
         # get prims
         stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = self.resolve_paths(paths)
@@ -290,7 +290,7 @@ class DeformablePrim(XformPrim):
         )
 
         # setup subscriptions
-        def safe_timeline_stop_callback(event, obj=weakref.proxy(self)):
+        def safe_timeline_stop_callback(event: Any, obj: Any = weakref.proxy(self)) -> None:
             try:
                 obj._on_timeline_stop(event)
             except ReferenceError:
@@ -307,7 +307,7 @@ class DeformablePrim(XformPrim):
             SimulationManager._physics_sim_interface.flush_changes()
             self._on_physics_ready(None)
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Clean up resources when the object is destroyed."""
         super().__del__()
         self._subscription_to_timeline_stop_event = None
@@ -572,7 +572,7 @@ class DeformablePrim(XformPrim):
         positions: list | np.ndarray | wp.array | None = None,
         *,
         indices: int | list | np.ndarray | wp.array | None = None,
-    ):
+    ) -> None:
         """Set the nodal (mesh points) positions of the simulation mesh of the prims.
 
         Backends: :guilabel:`tensor`. |br|
@@ -651,7 +651,7 @@ class DeformablePrim(XformPrim):
         velocities: list | np.ndarray | wp.array | None = None,
         *,
         indices: int | list | np.ndarray | wp.array | None = None,
-    ):
+    ) -> None:
         """Set the nodal (mesh points) velocities of the simulation mesh of the prims.
 
         Backends: :guilabel:`tensor`. |br|
@@ -741,7 +741,7 @@ class DeformablePrim(XformPrim):
         enabled: bool | list | np.ndarray | wp.array | None = None,
         *,
         indices: int | list | np.ndarray | wp.array | None = None,
-    ):
+    ) -> None:
         """Set the nodal (mesh points) kinematic position targets of the simulation mesh of the prims.
 
         Backends: :guilabel:`tensor`. |br|
@@ -792,7 +792,7 @@ class DeformablePrim(XformPrim):
         *,
         weaker_than_descendants: bool | list | np.ndarray | wp.array | None = None,
         indices: int | list | np.ndarray | wp.array | None = None,
-    ):
+    ) -> None:
         """Apply physics materials to the prims, and optionally, to their descendants.
 
         Backends: :guilabel:`usd`.
@@ -1156,7 +1156,7 @@ class DeformablePrim(XformPrim):
             return fallback_backend
         return backend
 
-    def _query_deformable_properties(self):
+    def _query_deformable_properties(self) -> None:
         """Query deformable properties."""
         stage = stage_utils.get_current_stage(backend="usd")
 
@@ -1525,7 +1525,7 @@ def _wk_compute_deformable_rotation(
     rest_pose_inverse_matrices: wp.array2d(dtype=wp.mat33),
     simulation_rotations: wp.array3d(dtype=wp.float32),
     precompute: bool,
-):
+) -> None:
     """Warp kernel to compute rotations for deformable tetrahedron elements.
 
     Extracts rotation components from deformation gradients for each tetrahedron element.
@@ -1570,7 +1570,7 @@ def _wk_compute_deformable_gradient(
     rest_pose_inverse_matrices: wp.array2d(dtype=wp.mat33),
     simulation_rotations: wp.array3d(dtype=wp.float32),
     simulation_gradients: wp.array2d(dtype=wp.mat33),
-):
+) -> None:
     """Warp kernel to compute deformation gradients for all tetrahedron elements.
 
     Processes each tetrahedron element across all deformable bodies to compute their
@@ -1602,7 +1602,7 @@ def _wk_compute_deformable_stress(
     youngs_modulus: wp.array2d(dtype=wp.float32),
     poissons_ratio: wp.array2d(dtype=wp.float32),
     simulation_stresses: wp.array2d(dtype=wp.mat33),
-):
+) -> None:
     """Warp kernel to compute stress tensors for deformable tetrahedron elements.
 
     Calculates Cauchy stress tensors using linear elasticity theory based on deformation

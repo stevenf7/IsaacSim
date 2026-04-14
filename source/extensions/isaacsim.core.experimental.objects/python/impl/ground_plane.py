@@ -147,7 +147,7 @@ class GroundPlane(XformPrim):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
-    ):
+    ) -> None:
         planes = []
         meshes = []
         stage = stage_utils.get_current_stage(backend="usd")
@@ -196,7 +196,7 @@ class GroundPlane(XformPrim):
 
     @property
     def planes(self) -> Plane:
-        """Plane instance that encapsulated the USD Plane prims that compose the ground planes.
+        """Plane instance that encapsulates the USD Plane prims that compose the ground planes.
 
         Returns:
             Plane instance.
@@ -212,7 +212,7 @@ class GroundPlane(XformPrim):
 
     @property
     def meshes(self) -> Mesh:
-        """Mesh instance that encapsulated the USD Mesh prims that compose the ground planes.
+        """Mesh instance that encapsulates the USD Mesh prims that compose the ground planes.
 
         Returns:
             Mesh instance.

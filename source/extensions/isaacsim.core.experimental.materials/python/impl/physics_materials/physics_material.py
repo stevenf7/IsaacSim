@@ -34,7 +34,7 @@ class PhysicsMaterial(Prim, ABC):
         resolve_paths: Whether to resolve the given paths (true) or use them as is (false).
     """
 
-    def __init__(self, paths: str | list[str], *, resolve_paths: bool = True):
+    def __init__(self, paths: str | list[str], *, resolve_paths: bool = True) -> None:
         super().__init__(paths, resolve_paths=resolve_paths)
         if not hasattr(self, "_materials"):
             self._materials = []

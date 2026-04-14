@@ -208,11 +208,11 @@ class TestStage(omni.kit.test.AsyncTestCase):
                 self.assertIsInstance(prim, usdrt.Usd.Prim, f"Prim ({prim.GetPath()}) is not a USDRT prim")
         # exceptions
         # - non-absolute path
-        self.assertRaises(ValueError, stage_utils.define_prim, f"World")
+        self.assertRaises(ValueError, stage_utils.define_prim, "World")
         # - non-valid path
-        self.assertRaises(ValueError, stage_utils.define_prim, f"/World/")
+        self.assertRaises(ValueError, stage_utils.define_prim, "/World/")
         # - prim already exists with a different type
-        self.assertRaises(RuntimeError, stage_utils.define_prim, f"/Sphere", type_name="Cube")
+        self.assertRaises(RuntimeError, stage_utils.define_prim, "/Sphere", type_name="Cube")
 
     async def test_delete_prim(self):
         """Test delete prim."""

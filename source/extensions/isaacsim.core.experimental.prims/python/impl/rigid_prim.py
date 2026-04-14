@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import weakref
+from typing import Any
 
 import carb
 import carb.eventdispatcher
@@ -115,7 +116,7 @@ class RigidPrim(XformPrim):
         densities: float | list | np.ndarray | wp.array | None = None,
         contact_filter_paths: str | list[str] | None = None,
         max_contact_count: int = 0,
-    ):
+    ) -> None:
         # define properties
         # - default state properties
         self._default_linear_velocities = None
@@ -154,7 +155,7 @@ class RigidPrim(XformPrim):
             self.set_densities(densities)
 
         # setup subscriptions
-        def safe_timeline_stop_callback(event, obj=weakref.proxy(self)):
+        def safe_timeline_stop_callback(event: Any, obj: Any = weakref.proxy(self)) -> None:
             try:
                 obj._on_timeline_stop(event)
             except ReferenceError:
@@ -171,7 +172,7 @@ class RigidPrim(XformPrim):
             SimulationManager._physics_sim_interface.flush_changes()
             self._on_physics_ready(None)
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Clean up rigid body physics views and subscriptions."""
         super().__del__()
         self._subscription_to_timeline_stop_event = None
@@ -1991,15 +1992,15 @@ class RigidPrim(XformPrim):
             cpp_buf = wrap_cpp_buffer(view, field_name, shape=shape)
             fn = getter_fn
 
-            def make_cb(f=fn, b=cpp_buf):
-                def cb():
+            def make_cb(f: Any = fn, b: Any = cpp_buf) -> Any:
+                def cb() -> None:
                     wp.copy(b, f())
 
                 return cb
 
             view.register_field_callback(field_name, make_cb())
 
-    def initialize_cpp_data_view(self):
+    def initialize_cpp_data_view(self) -> None:
         """Initialize the optional C++ read-only data view.
 
         This method is opt-in and can be called by users that need C++ consumers
@@ -2007,7 +2008,7 @@ class RigidPrim(XformPrim):
         """
         self._setup_cpp_data_view()
 
-    def _teardown_cpp_data_view(self):
+    def _teardown_cpp_data_view(self) -> None:
         """Clean up C++ data view."""
         if self._cpp_data_view_id is not None:
             from .extension import get_prim_data_reader

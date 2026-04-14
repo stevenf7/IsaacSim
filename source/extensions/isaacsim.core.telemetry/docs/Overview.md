@@ -1,6 +1,4 @@
-# Isaac Sim Telemetry Framework
-
-## Overview
+# Overview
 
 `isaacsim.core.telemetry` provides a centralized telemetry framework for Isaac Sim extensions, built on top of Carbonite's `omni.structuredlog` Python bindings. It offers:
 

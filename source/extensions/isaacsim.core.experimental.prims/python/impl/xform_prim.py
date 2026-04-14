@@ -85,7 +85,7 @@ class XformPrim(Prim):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = False,
-    ):
+    ) -> None:
         # define properties
         # - default state properties
         self._default_positions = None
@@ -109,11 +109,9 @@ class XformPrim(Prim):
                 positions is None or translations is None
             ), "Both 'positions' and 'translations' are specified. Specify only one of them"
             if self._non_root_articulation_link:
-                raise carb.log_warn(
-                    (
-                        "The prim is a non-root link in an articulation. "
-                        "Specified values (positions, translations, orientations and/or scales) will not be set"
-                    )
+                carb.log_warn(
+                    "The prim is a non-root link in an articulation. "
+                    "Specified values (positions, translations, orientations and/or scales) will not be set"
                 )
             else:
                 if positions is not None or orientations is not None:

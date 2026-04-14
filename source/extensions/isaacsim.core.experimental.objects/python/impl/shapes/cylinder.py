@@ -163,7 +163,7 @@ class Cylinder(Shape):
 
     @staticmethod
     def are_of_type(paths: str | Usd.Prim | list[str | Usd.Prim]) -> wp.array:
-        """Check if the prims at the given paths are valid for creating Shape instances of this type.
+        """Check if the prims at the given paths are valid for creating Cylinder instances of this type.
 
         Backends: :guilabel:`usd`.
 
@@ -175,7 +175,7 @@ class Cylinder(Shape):
             paths: Prim paths (or prims) to check for.
 
         Returns:
-            Boolean flags indicating if the prims are valid for creating Shape instances.
+            Boolean flags indicating if the prims are valid for creating Cylinder instances.
 
         Example:
 

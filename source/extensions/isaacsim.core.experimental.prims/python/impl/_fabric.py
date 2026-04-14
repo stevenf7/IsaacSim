@@ -60,7 +60,9 @@ def update_fabric_selection(*, stage: usdrt.Usd.Stage, data: dict, device: wp.De
 
 
 @wp.kernel(enable_backward=False)
-def _wk_selection_mapping(fabricarray: wp.fabricarray(dtype=wp.uint32), mapping: wp.array(ndim=1, dtype=wp.uint32)):
+def _wk_selection_mapping(
+    fabricarray: wp.fabricarray(dtype=wp.uint32), mapping: wp.array(ndim=1, dtype=wp.uint32)
+) -> None:
     """Map fabric array indices to create a mapping array.
 
     Args:
@@ -78,7 +80,7 @@ def wk_write_to_fabric_float(
     indices: wp.array(ndim=1, dtype=wp.int32),
     mapping: wp.array(ndim=1, dtype=wp.uint32),
     broadcast: bool,
-):
+) -> None:
     """Write float values from a Warp array to a fabric array.
 
     Args:
@@ -97,7 +99,7 @@ def wk_write_to_fabric_float(
 
 
 @wp.func
-def _decompose(m: wp.mat44f):  # -> tuple[wp.vec3f, wp.quatf, wp.vec3f]
+def _decompose(m: wp.mat44f) -> tuple[wp.vec3f, wp.quatf, wp.vec3f]:
     """Decompose a 4x4 transformation matrix into position, orientation, and scale.
 
     Args:
@@ -144,7 +146,7 @@ def wk_decompose_fabric_transformation_matrix_to_warp_arrays(
     array_scales: wp.array(ndim=2, dtype=wp.float32),
     indices: wp.array(ndim=1, dtype=wp.int32),
     mapping: wp.array(ndim=1, dtype=wp.uint32),
-):
+) -> None:
     """Decompose fabric transformation matrices into separate position, orientation, and scale arrays.
 
     Args:
@@ -188,7 +190,7 @@ def wk_compose_fabric_transformation_matrix_from_warp_arrays(
     broadcast_scales: bool,
     indices: wp.array(ndim=1, dtype=wp.int32),
     mapping: wp.array(ndim=1, dtype=wp.uint32),
-):
+) -> None:
     """Compose fabric transformation matrices from separate position, orientation, and scale arrays.
 
     Args:

@@ -92,7 +92,7 @@ class RectLight(Light):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
-    ):
+    ) -> None:
         self._lights = []
         stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = Light.resolve_paths(paths)

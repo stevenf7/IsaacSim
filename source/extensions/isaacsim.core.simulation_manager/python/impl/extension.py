@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides core simulation management functionality for Isaac Sim including physics scenes, event handling, and simulation state control."""
+"""Provide core simulation management functionality for Isaac Sim including physics scenes, event handling, and simulation state control."""
 
+from __future__ import annotations
+
+from typing import Any
 
 __all__ = [
     "Extension",
@@ -40,7 +43,7 @@ from .simulation_manager import SimulationManager
 _simulation_manager_interface = None
 
 
-def acquire_simulation_manager_interface():
+def acquire_simulation_manager_interface() -> Any:
     """Acquires the simulation manager interface from the isaacsim.core.simulation_manager extension.
 
     Returns:
@@ -60,7 +63,7 @@ class Extension(omni.ext.IExt):
     components including physics scenes, simulation events, and GPU-accelerated physics configurations.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension is started.
 
         Acquires the pybind simulation manager interface and initializes the SimulationManager.
@@ -74,7 +77,7 @@ class Extension(omni.ext.IExt):
         SimulationManager._simulation_manager_interface = _simulation_manager_interface
         SimulationManager._startup()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension is shut down.
 
         Shuts down the SimulationManager and releases the pybind simulation manager interface.

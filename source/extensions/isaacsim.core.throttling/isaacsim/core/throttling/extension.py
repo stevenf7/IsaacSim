@@ -101,7 +101,7 @@ class Extension(omni.ext.IExt):
         if _settings.get(MANUAL_TOGGLE_SETTING):
             self._set_loop_manual_mode(False)
 
-    def _set_loop_manual_mode(self, manual_mode: bool):
+    def _set_loop_manual_mode(self, manual_mode: bool) -> None:
         """Configure the loop runner's manual mode.
 
         Args:
@@ -155,7 +155,7 @@ class Extension(omni.ext.IExt):
             observer_name="IsaacSimThrottling._on_frame_update",
         )
 
-    def _on_play(self, event: carb.eventdispatcher.Event):
+    def _on_play(self, event: carb.eventdispatcher.Event) -> None:
         """Timeline play event callback - disable eco mode and gizmos during runtime.
 
         Args:
@@ -172,7 +172,7 @@ class Extension(omni.ext.IExt):
         if _settings.get(MANUAL_TOGGLE_SETTING):
             self._set_loop_manual_mode(True)
 
-    def _on_stop(self, event: carb.eventdispatcher.Event):
+    def _on_stop(self, event: carb.eventdispatcher.Event) -> None:
         """Timeline stop event callback - enable eco mode and gizmos when stopped.
 
         Args:
@@ -189,7 +189,7 @@ class Extension(omni.ext.IExt):
         if _settings.get(MANUAL_TOGGLE_SETTING):
             self._set_loop_manual_mode(False)
 
-    def _on_pause(self, event: carb.eventdispatcher.Event):
+    def _on_pause(self, event: carb.eventdispatcher.Event) -> None:
         """Timeline pause event callback - enable eco mode and gizmos when paused.
 
         Args:
@@ -206,7 +206,7 @@ class Extension(omni.ext.IExt):
         if _settings.get(MANUAL_TOGGLE_SETTING):
             self._set_loop_manual_mode(False)
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up the extension's resources.
 
         Unsubscribes from timeline events and frame update callbacks, and resets frame counting state.

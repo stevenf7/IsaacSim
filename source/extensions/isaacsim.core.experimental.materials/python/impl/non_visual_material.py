@@ -49,7 +49,7 @@ def _parse_specification(path: str) -> dict[str, int]:
         Dictionary of non-visual material specifications.
     """
     spec = {}
-    with open(path, "r", encoding="utf-8") as file:
+    with open(path, encoding="utf-8") as file:
         reader = csv.reader(file)
         next(reader)  # skip header
         for row in reader:

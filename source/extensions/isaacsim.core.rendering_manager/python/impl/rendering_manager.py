@@ -46,7 +46,7 @@ class RenderingManager:
 
     _app = omni.kit.app.get_app()
     """The Omniverse Kit application instance used for rendering operations."""
-    _callbacks = dict()
+    _callbacks = {}
     """Dictionary storing registered callback functions mapped by their unique identifiers."""
     _callback_registry = 0
     """Counter for generating unique identifiers for callback registrations."""
@@ -114,7 +114,7 @@ class RenderingManager:
             >>> RenderingManager.set_dt(1 / 120.0)  # 120 Hz
         """
 
-        def _set_rate_limit_frequency(frequency):
+        def _set_rate_limit_frequency(frequency: float) -> None:
             cls._carb_settings.set_bool(_SETTING_RATE_LIMIT_ENABLED, True)
             cls._carb_settings.set_float(_SETTING_RATE_LIMIT_FREQUENCY, frequency)
             cls._timeline.set_target_framerate(frequency)
@@ -154,7 +154,7 @@ class RenderingManager:
             0.0166666...
         """
 
-        def _get_rate_limit_dt():
+        def _get_rate_limit_dt() -> float:
             frequency = cls._carb_settings.get_as_float(_SETTING_RATE_LIMIT_FREQUENCY)
             return 1.0 / frequency if frequency else 0.0
 

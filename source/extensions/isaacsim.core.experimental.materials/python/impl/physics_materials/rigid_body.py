@@ -75,7 +75,7 @@ class RigidBodyMaterial(PhysicsMaterial):
         dynamic_frictions: float | list | np.ndarray | wp.array | None = None,
         restitutions: float | list | np.ndarray | wp.array | None = None,
         densities: float | list | np.ndarray | wp.array | None = None,
-    ):
+    ) -> None:
         # get or create prims
         self._materials = []
         stage = stage_utils.get_current_stage(backend="usd")

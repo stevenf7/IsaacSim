@@ -50,7 +50,7 @@ class Extension(omni.ext.IExt):
     """
 
     def on_startup(self, ext_id: str) -> None:
-        """Initializes the deprecation manager extension.
+        """Initialize the deprecation manager extension.
 
         Loads deprecation settings, updates deprecated settings, and subscribes to stage events for OmniGraph node updates.
 
@@ -82,8 +82,8 @@ class Extension(omni.ext.IExt):
         # delete stage event subscription
         self._stage_event_subscription = None
 
-    def _update_deprecated_settings(self):
-        """Updates deprecated settings with their new equivalents.
+    def _update_deprecated_settings(self) -> None:
+        """Update deprecated settings with their new equivalents.
 
         Iterates through configured deprecated settings, transfers values to new settings, and logs deprecation warnings.
         """
@@ -102,7 +102,7 @@ class Extension(omni.ext.IExt):
                 carb.log_warn(deprecation_message)
 
     def _on_stage_event(self, event: Any) -> None:
-        """Handles stage opening events to update deprecated OmniGraph nodes.
+        """Handle stage opening events to update deprecated OmniGraph nodes.
 
         Traverses the stage to find deprecated OmniGraph node types, updates them to new types, tracks referenced assets, and displays deprecation warnings with notifications.
 

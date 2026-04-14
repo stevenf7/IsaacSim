@@ -115,7 +115,7 @@ class Mesh(XformPrim):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
-    ):
+    ) -> None:
         self._geoms = []
         stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = XformPrim.resolve_paths(paths)
@@ -180,10 +180,10 @@ class Mesh(XformPrim):
 
     @property
     def geoms(self) -> list[UsdGeom.Mesh]:
-        """USD Mesh encapsulated by the wrapper.
+        """USD Mesh prims encapsulated by the wrapper.
 
         Returns:
-            List of USD Mesh.
+            List of USD Mesh prims.
 
         Example:
 

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides a high-level class for creating and manipulating USD Capsule primitives in Isaac Sim."""
+"""Provide a high-level class for creating and manipulating USD Capsule primitives in Isaac Sim."""
 
 
 from __future__ import annotations
@@ -100,7 +100,7 @@ class Capsule(Shape):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
-    ):
+    ) -> None:
         self._geoms = []
         stage = stage_utils.get_current_stage(backend="usd")
         existent_paths, nonexistent_paths = Shape.resolve_paths(paths)
@@ -163,7 +163,7 @@ class Capsule(Shape):
 
     @staticmethod
     def are_of_type(paths: str | Usd.Prim | list[str | Usd.Prim]) -> wp.array:
-        """Check if the prims at the given paths are valid for creating Shape instances of this type.
+        """Check if the prims at the given paths are valid for creating Capsule instances of this type.
 
         Backends: :guilabel:`usd`.
 
@@ -175,7 +175,7 @@ class Capsule(Shape):
             paths: Prim paths (or prims) to check for.
 
         Returns:
-            Boolean flags indicating if the prims are valid for creating Shape instances.
+            Boolean flags indicating if the prims are valid for creating Capsule instances.
 
         Example:
 

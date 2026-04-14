@@ -84,7 +84,7 @@ class PhysxScene(PhysicsScene):
         >>> physx_scene = PhysxScene("/World/physicsScene")
     """
 
-    def __init__(self, prim: str | Usd.Prim):
+    def __init__(self, prim: str | Usd.Prim) -> None:
         super().__init__(prim)
         prim_utils.ensure_api(self._prim, PhysxSchema.PhysxSceneAPI)
 
