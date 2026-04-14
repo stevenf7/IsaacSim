@@ -33,9 +33,9 @@ class BaseController(ABC):
 
     @abstractmethod
     def forward(self, *args: object, **kwargs: object) -> ArticulationAction:
-        """A controller should take inputs and returns an ArticulationAction to be then passed to the.
+        """Compute forward action for the given inputs.
 
-        ArticulationController.
+        Controllers should take inputs and return an ArticulationAction to be passed to the ArticulationController.
 
         Args:
             *args: Variable length argument list.

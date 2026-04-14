@@ -47,11 +47,11 @@ torch = import_module("torch")
 
 
 class Articulation(XFormPrim):
-    """High level wrapper to deal with prims (one or many) that have the Root Articulation API applied.
+    """Provide high-level wrapper for prims that have the Root Articulation API applied.
 
-    and their attributes/properties.
+    Handle attributes and properties of single or multiple articulated prims.
 
-    This class wraps all matching articulations found at the regex provided at the ``prim_paths_expr`` argument
+    Wrap all matching articulations found at the regex provided at the ``prim_paths_expr`` argument
 
     .. note::
 
@@ -524,15 +524,13 @@ class Articulation(XFormPrim):
 
         Args:
             values: friction coefficients for articulation joints in the view. shape (M, K).
-            indices: indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-            joint_indices: joint indices to specify which joints
-                                                                                 to manipulate. Shape (K,).
-                                                                                 Where K <= num of dofs.
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            joint_indices: joint indices to specify which joints to manipulate. Shape (K,).
+                Where K <= num of dofs.
             joint_names: joint names to specify which joints to manipulate
-                                              (can't be sppecified together with joint_indices). Shape (K,).
-                                              Where K <= num of dofs.
+                (can't be sppecified together with joint_indices). Shape (K,).
+                Where K <= num of dofs.
 
         Example:
 
@@ -1255,20 +1253,17 @@ class Articulation(XFormPrim):
         joint_names: list[str] | None = None,
         clone: bool = True,
     ) -> np.ndarray | torch.Tensor | wp.indexedarray:
-        """Returns the efforts computed/measured by the physics solver of the joint forces in the DOF motion direction.
+        """Return the efforts computed/measured by the physics solver of the joint forces in the DOF motion direction.
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            joint_indices: joint indices to specify which joints
-                                                                                 to query. Shape (K,).
-                                                                                 Where K <= num of dofs.
-                                                                                 Defaults to None (i.e: all dofs).
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
+            joint_indices: joint indices to specify which joints to query. Shape (K,).
+                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             joint_names: joint names to specify which joints to manipulate
-                                              (can't be sppecified together with joint_indices). Shape (K,).
-                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                (can't be sppecified together with joint_indices). Shape (K,).
+                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone: True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -1344,16 +1339,14 @@ class Articulation(XFormPrim):
             the ``joint_indices`` parameter. For the ``joint_names`` parameter, the conversion is done internally.
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
             joint_indices: link indices to specify which link's incoming joints to query. Shape (K,).
-                                                                                    Where K <= num of links/bodies.
-                                                                                    Defaults to None (i.e: all dofs).
+                Where K <= num of links/bodies. Defaults to None (i.e: all dofs).
             joint_names: joint names to specify which joints to manipulate
-                                              (can't be sppecified together with joint_indices). Shape (K,).
-                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                (can't be sppecified together with joint_indices). Shape (K,).
+                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone: True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -1442,17 +1435,14 @@ class Articulation(XFormPrim):
         """Get the joint positions of articulations in the view.
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            joint_indices: joint indices to specify which joints
-                                                                                 to query. Shape (K,).
-                                                                                 Where K <= num of dofs.
-                                                                                 Defaults to None (i.e: all dofs).
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
+            joint_indices: joint indices to specify which joints to query. Shape (K,).
+                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             joint_names: joint names to specify which joints to manipulate
-                                              (can't be sppecified together with joint_indices). Shape (K,).
-                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                (can't be sppecified together with joint_indices). Shape (K,).
+                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone: True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -1514,17 +1504,14 @@ class Articulation(XFormPrim):
         """Get the joint velocities of articulations in the view.
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            joint_indices: joint indices to specify which joints
-                                                                                 to query. Shape (K,).
-                                                                                 Where K <= num of dofs.
-                                                                                 Defaults to None (i.e: all dofs).
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
+            joint_indices: joint indices to specify which joints to query. Shape (K,).
+                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             joint_names: joint names to specify which joints to manipulate
-                                              (can't be sppecified together with joint_indices). Shape (K,).
-                                              Where K <= num of dofs. Defaults to None (i.e: all dofs).
+                (can't be sppecified together with joint_indices). Shape (K,).
+                Where K <= num of dofs. Defaults to None (i.e: all dofs).
             clone: True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
@@ -1592,10 +1579,9 @@ class Articulation(XFormPrim):
 
         Args:
             control_actions: actions to be applied for next physics step.
-            indices: indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
 
         .. hint::
 
@@ -1754,14 +1740,13 @@ class Articulation(XFormPrim):
 
         Args:
             positions: positions in the world frame of the prim. shape is (M, 3).
-                                                                             Defaults to None, which means left unchanged.
+                Defaults to None, which means left unchanged.
             orientations: quaternion orientations in the world frame of the prims.
-                                                                                quaternion is scalar-first (w, x, y, z). shape is (M, 4).
-                                                                                Defaults to None, which means left unchanged.
-            indices: indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+                quaternion is scalar-first (w, x, y, z). shape is (M, 4).
+                Defaults to None, which means left unchanged.
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
             usd: True to query from usd. Otherwise False to query from Fabric data. Defaults to True.
 
         .. hint::
@@ -1813,10 +1798,9 @@ class Articulation(XFormPrim):
         """Get the poses of the prims in the view with respect to the world's frame.
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
             clone: True to return a clone of the internal buffer. Otherwise False. Defaults to True.
             usd: True to query from usd. Otherwise False to query from Fabric data. Defaults to True.
 
@@ -1877,10 +1861,9 @@ class Articulation(XFormPrim):
         """Get prim poses in the view with respect to the local frame (the prim's parent frame).
 
         Args:
-            indices: indices to specify which prims
-                                                                                    to query. Shape (M,).
-                                                                                    Where M <= size of the encapsulated prims in the view.
-                                                                                    Defaults to None (i.e: all prims in the view)
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view)
 
         Returns:
             Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor], Tuple[wp.indexedarray, wp.indexedarray]]:
@@ -1954,18 +1937,15 @@ class Articulation(XFormPrim):
             This method will change (teleport) the prim poses immediately to the indicated value
 
         Args:
-            translations:
-                                                          translations in the local frame of the prims
-                                                          (with respect to its parent prim). shape is (M, 3).
-                                                          Defaults to None, which means left unchanged.
-            orientations:
-                                                          quaternion orientations in the local frame of the prims.
-                                                          quaternion is scalar-first (w, x, y, z). shape is (M, 4).
-                                                          Defaults to None, which means left unchanged.
-            indices: indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            translations: translations in the local frame of the prims
+                (with respect to its parent prim). shape is (M, 3).
+                Defaults to None, which means left unchanged.
+            orientations: quaternion orientations in the local frame of the prims.
+                quaternion is scalar-first (w, x, y, z). shape is (M, 4).
+                Defaults to None, which means left unchanged.
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
 
         .. hint::
 
@@ -2032,9 +2012,8 @@ class Articulation(XFormPrim):
 
         Args:
             velocities: linear and angular velocities respectively to set the rigid prims to. shape is (M, 6).
-            indices: indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
 
         .. hint::
 
@@ -2076,9 +2055,8 @@ class Articulation(XFormPrim):
         """Get the linear and angular velocities of prims in the view.
 
         Args:
-            indices: indices to specify which prims
-                                                                                    to query. Shape (M,).
-                                                                                    Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
             clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
@@ -2133,9 +2111,8 @@ class Articulation(XFormPrim):
 
         Args:
             velocities: linear velocities to set the rigid prims to. shape is (M, 3).
-            indices: indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
 
         .. hint::
 
@@ -2184,9 +2161,8 @@ class Articulation(XFormPrim):
         """Get the linear velocities of prims in the view.
 
         Args:
-            indices: indices to specify which prims
-                                                                                    to query. Shape (M,).
-                                                                                    Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
             clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
@@ -2239,9 +2215,8 @@ class Articulation(XFormPrim):
 
         Args:
             velocities: angular velocities to set the rigid prims to. shape is (M, 3).
-            indices: indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
 
         .. hint::
 
@@ -2290,9 +2265,8 @@ class Articulation(XFormPrim):
         """Get the angular velocities of prims in the view.
 
         Args:
-            indices: indices to specify which prims
-                                                                                    to query. Shape (M,).
-                                                                                    Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
             clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
@@ -2343,11 +2317,11 @@ class Articulation(XFormPrim):
 
         Args:
             positions: default joint positions.
-                                                                             shape is (N, num of dofs).
+                shape is (N, num of dofs).
             velocities: default joint velocities.
-                                                                             shape is (N, num of dofs).
+                shape is (N, num of dofs).
             efforts: default joint efforts.
-                                                                             shape is (N, num of dofs).
+                shape is (N, num of dofs).
 
         Example:
 
@@ -2466,15 +2440,13 @@ class Articulation(XFormPrim):
         """Get effort modes for articulations in the view.
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-            joint_indices: joint indices to specify which joints
-                                                                                 to query. Shape (K,).
-                                                                                 Where K <= num of dofs.
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+            joint_indices: joint indices to specify which joints to query. Shape (K,).
+                Where K <= num of dofs.
             joint_names: joint names to specify which joints to manipulate
-                                              (can't be sppecified together with joint_indices). Shape (K,).
-                                              Where K <= num of dofs.
+                (can't be sppecified together with joint_indices). Shape (K,).
+                Where K <= num of dofs.
 
         Returns:
             Returns a List of size (M, K) indicating the effort modes ("acceleration" or "force")
@@ -4700,10 +4672,9 @@ class Articulation(XFormPrim):
         Search for *Fixed Tendon* in |physx_docs| for more details
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
             clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
@@ -4758,10 +4729,9 @@ class Articulation(XFormPrim):
             limits: fixed tendon limits for articulations in the view. shape (M, K, 2).
             rest_lengths: fixed tendon rest lengths for articulations in the view. shape (M, K).
             offsets: fixed tendon offsets for articulations in the view. shape (M, K).
-            indices: indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
+                Defaults to None (i.e: all prims in the view).
 
         Example:
 
@@ -4826,7 +4796,7 @@ class Articulation(XFormPrim):
             carb.log_warn("Physics Simulation View is not created yet in order to use set_fixed_tendon_properties")
 
     def pause_motion(self) -> None:
-        """Pauses the motion of all articulations wrapped under the Articulation."""
+        """Pause the motion of all articulations wrapped under the Articulation."""
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
             return
@@ -4854,7 +4824,7 @@ class Articulation(XFormPrim):
             return
 
     def resume_motion(self) -> None:
-        """Resumes the motion of all articulations wrapped under the Articulation using the position and velocity dof targets.
+        """Resume the motion of all articulations wrapped under the Articulation using the position and velocity dof targets.
 
         cached when pause_motion was called.
         """
@@ -4896,7 +4866,7 @@ class Articulation(XFormPrim):
         return
 
     def _on_physics_ready(self, event: object) -> None:
-        """Handles physics ready event to initialize physics simulation view.
+        """Handle physics ready event to initialize physics simulation view.
 
         Args:
             event: The physics ready event.
@@ -4956,7 +4926,7 @@ class Articulation(XFormPrim):
                 )
 
     def _on_prim_deletion(self, prim_path: str) -> None:
-        """Handles prim deletion event to clean up physics view.
+        """Handle prim deletion event to clean up physics view.
 
         Args:
             prim_path: Path of the deleted prim.
@@ -4967,7 +4937,7 @@ class Articulation(XFormPrim):
         return
 
     def _on_post_reset(self, event: object) -> None:
-        """Handles post-reset event to restore default joint states and gains.
+        """Handle post-reset event to restore default joint states and gains.
 
         Args:
             event: The post-reset event.

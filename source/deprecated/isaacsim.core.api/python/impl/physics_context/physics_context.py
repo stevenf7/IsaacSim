@@ -30,12 +30,11 @@ from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 
 class PhysicsContext(object):
-    """Provides high level functions to deal with a physics scene and its settings. This will create a.
+    """Provide high-level functions for managing physics scene and simulation settings.
 
-    a PhysicsScene prim at the specified prim path in case there is no PhysicsScene present in the current
-    stage.
-    If there is a PhysicsScene present, it will discard the prim_path specified and sets the
-    default settings on the current PhysicsScene found.
+    Create a PhysicsScene prim at the specified prim path when no PhysicsScene is present in the current stage.
+    If a PhysicsScene already exists, use the existing scene and apply default settings regardless of the
+    specified prim_path.
 
     Args:
         physics_dt: Specifies the physics_dt of the simulation.
@@ -282,7 +281,7 @@ class PhysicsContext(object):
         return None
 
     def _create_new_physics_scene(self, prim_path: str) -> UsdPhysics.Scene:
-        """Creates a new PhysicsScene prim at the specified path.
+        """Create a new PhysicsScene prim at the specified path.
 
         Args:
             prim_path: The absolute prim path where the PhysicsScene will be created.
@@ -298,7 +297,7 @@ class PhysicsContext(object):
         return scene
 
     def set_physics_dt(self, dt: float = 1.0 / 60.0, substeps: int = 1) -> None:
-        """Sets the physics dt on the PhysicsScene.
+        """Set the physics dt on the PhysicsScene.
 
         Args:
             dt: Physics dt.
@@ -346,7 +345,7 @@ class PhysicsContext(object):
         return SimulationManager.get_physics_dt()
 
     def enable_fabric(self, enable: bool) -> None:
-        """Enables or disables fabric for physics simulation.
+        """Enable or disable fabric for physics simulation.
 
         Args:
             enable: Whether to enable fabric.
@@ -355,7 +354,7 @@ class PhysicsContext(object):
         SimulationManager.enable_fabric(enable=enable)
 
     def enable_ccd(self, flag: bool) -> None:
-        """Enables a second broad phase after integration that makes it possible to prevent objects from tunneling.
+        """Enable a second broad phase after integration that makes it possible to prevent objects from tunneling.
 
                through each other. If GPU is enabled, CCD is not supported and the request will be ignored. If CCD is enabled and then the GPU pipeline is requested, CCD will be disabled automatically.
 
@@ -369,7 +368,7 @@ class PhysicsContext(object):
         SimulationManager.enable_ccd(flag=flag)
 
     def is_ccd_enabled(self) -> bool:
-        """Checks if ccd is enabled.
+        """Check if ccd is enabled.
 
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
@@ -381,7 +380,7 @@ class PhysicsContext(object):
         return SimulationManager.is_ccd_enabled()
 
     def enable_stablization(self, flag: bool) -> None:
-        """Enables additional stabilization pass in the solver.
+        """Enable additional stabilization pass in the solver.
 
         Args:
             flag: Enables or disables stabilization on the PhysicsScene
@@ -399,7 +398,7 @@ class PhysicsContext(object):
         return
 
     def is_stablization_enabled(self) -> bool:
-        """Checks if stabilization is enabled.
+        """Check if stabilization is enabled.
 
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
@@ -413,7 +412,7 @@ class PhysicsContext(object):
         return self._physx_scene_api.GetEnableStabilizationAttr().Get()
 
     def enable_gpu_dynamics(self, flag: bool) -> None:
-        """Enables gpu dynamics pipeline, required for deformables for instance.
+        """Enable gpu dynamics pipeline, required for deformables for instance.
 
         Args:
             flag: Enables or disables gpu dynamics on the PhysicsScene
@@ -425,7 +424,7 @@ class PhysicsContext(object):
         SimulationManager.enable_gpu_dynamics(flag=flag)
 
     def is_gpu_dynamics_enabled(self) -> bool:
-        """Checks if Gpu Dynamics is enabled.
+        """Check if Gpu Dynamics is enabled.
 
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
@@ -480,7 +479,7 @@ class PhysicsContext(object):
         return
 
     def get_solver_type(self) -> str:
-        """Gets current solver type.
+        """Get current solver type.
 
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
@@ -494,7 +493,7 @@ class PhysicsContext(object):
         return self._physx_scene_api.GetSolverTypeAttr().Get()
 
     def set_gravity(self, value: float) -> None:
-        """Sets the gravity direction and magnitude.
+        """Set the gravity direction and magnitude.
 
         Args:
             value: gravity value to be used in simulation.
@@ -526,7 +525,7 @@ class PhysicsContext(object):
         return
 
     def get_gravity(self) -> tuple[list, float]:
-        """Gets current gravity.
+        """Get current gravity.
 
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
@@ -548,7 +547,7 @@ class PhysicsContext(object):
         update_velocities_to_usd: bool | None = None,
         output_velocities_local_space: bool | None = None,
     ) -> None:
-        """Sets how physx syncs with the usd when transformations are updated.
+        """Set how physx syncs with the usd when transformations are updated.
 
         Args:
             update_to_usd: Updates to USD the transformations.
@@ -565,7 +564,7 @@ class PhysicsContext(object):
         return
 
     def get_physx_update_transformations_settings(self) -> tuple[bool, bool, bool, bool]:
-        """Gets how physx syncs with the usd when transformations are updated.
+        """Get how physx syncs with the usd when transformations are updated.
 
         Returns:
             [update_to_usd, update_velocities_to_usd, output_velocities_local_space]
@@ -725,7 +724,7 @@ class PhysicsContext(object):
         return self._physx_scene_api.GetFrictionCorrelationDistanceAttr().Get()
 
     def set_enable_scene_query_support(self, enable_scene_query_support: bool) -> None:
-        """Sets the Enable Scene Query Support attribute in Physx Scene.
+        """Set the Enable Scene Query Support attribute in Physx Scene.
 
         Args:
             enable_scene_query_support: Whether to enable scene query support
@@ -1109,7 +1108,7 @@ class PhysicsContext(object):
         return self._physx_scene_api.GetGpuCollisionStackSizeAttr().Get()
 
     def set_solve_articulation_contact_last(self, solve_articulation_contact_last: bool) -> None:
-        """Sets the ``solveArticulationContactLast`` state in PhysX scene.
+        """Set the ``solveArticulationContactLast`` state in PhysX scene.
 
         When enabled, the solver orders the articulation contact constraints and the articulation joint maximum
         velocity constraints to be solved after all the other constraints.

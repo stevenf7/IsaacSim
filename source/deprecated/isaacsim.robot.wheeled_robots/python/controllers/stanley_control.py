@@ -70,7 +70,6 @@ class State(object):
     """
 
     def __init__(self, wheel_base, x=0.0, y=0.0, yaw=0.0, v=0.0, Ks=np.radians(5.0)):
-        """Instantiate the object."""
         super(State, self).__init__()
         self.wheel_base = wheel_base
         self.x = x

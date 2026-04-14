@@ -56,7 +56,7 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
         self._context = omni.usd.get_context()
 
     def do(self) -> bool:
-        """Spawns a new prim in the stage with the specified USD reference and transform.
+        """Spawn a new prim in the stage with the specified USD reference and transform.
 
         Defines an Xform prim at the given path, adds the USD file as a reference, and applies the specified
         transformation using dynamic control for proper physics handling.
@@ -77,7 +77,7 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
         return True
 
     def undo(self) -> None:
-        """Undoes the prim spawn operation.
+        """Undo the prim spawn operation.
 
         Currently not implemented - the spawned prim remains in the stage.
         """
@@ -114,7 +114,7 @@ class IsaacSimTeleportPrim(omni.kit.commands.Command):
         self._context = omni.usd.get_context()
 
     def do(self) -> bool:
-        """Executes the teleport operation by setting the prim's transform.
+        """Execute the teleport operation by setting the prim's transform.
 
         Returns:
             True when the teleport operation completes successfully.
@@ -124,7 +124,7 @@ class IsaacSimTeleportPrim(omni.kit.commands.Command):
         return True
 
     def undo(self) -> None:
-        """Undoes the teleport operation.
+        """Undo the teleport operation.
 
         Note:
             This method currently has no implementation and does not restore the prim's previous transform.
@@ -158,7 +158,7 @@ class IsaacSimScalePrim(omni.kit.commands.Command):
         self._context = omni.usd.get_context()
 
     def do(self) -> bool:
-        """Executes the prim scaling operation by applying the specified scale values.
+        """Execute the prim scaling operation by applying the specified scale values.
 
         Returns:
             True if the scaling operation was successful.
@@ -168,7 +168,7 @@ class IsaacSimScalePrim(omni.kit.commands.Command):
         return True
 
     def undo(self) -> None:
-        """Reverts the prim scaling operation."""
+        """Revert the prim scaling operation."""
 
 
 class IsaacSimDestroyPrim(omni.kit.commands.Command):
@@ -193,7 +193,7 @@ class IsaacSimDestroyPrim(omni.kit.commands.Command):
                 setattr(self, f"_{name}", value)
 
     def do(self) -> bool:
-        """Deletes the prim from the stage.
+        """Delete the prim from the stage.
 
         Returns:
             True if the deletion command was executed.

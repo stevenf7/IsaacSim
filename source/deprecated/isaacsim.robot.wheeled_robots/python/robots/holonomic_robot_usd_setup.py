@@ -26,7 +26,7 @@ from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
 # TODO: Why isn't this a "HolonomicRobot" that inherits robot?
 class HolonomicRobotUsdSetup:
-    """Sets up the attributes on the prims of a holonomic robot. Specifically adds the `isaacmecanumwheel:radius` and `isaacmecanumwheel:angle` attributes to the wheel joints of the robot prim.
+    """Set up the attributes on the prims of a holonomic robot. Specifically adds the `isaacmecanumwheel:radius` and `isaacmecanumwheel:angle` attributes to the wheel joints of the robot prim.
 
     Args:
         robot_prim_path: Path of the robot articulation.
@@ -39,7 +39,7 @@ class HolonomicRobotUsdSetup:
         self.from_usd(self._robot_prim_path, self._com_prim_path)
 
     def from_usd(self, robot_prim_path, com_prim_path):
-        """If the USD contains all the necessary information, automatically extract them and compile.
+        """Extract and compile necessary information from USD when available.
 
         Args:
             robot_prim_path: Path of the robot articulation.

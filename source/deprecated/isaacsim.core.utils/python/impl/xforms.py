@@ -83,7 +83,7 @@ def reset_xform_ops(prim: Usd.Prim) -> None:
     current_translation = T_l_p.GetTranslation()
     current_orientation = T_l_p.GetRotation().GetQuat()
 
-    reset_and_set_xform_ops(current_translation, current_orientation)
+    reset_and_set_xform_ops(prim, current_translation, current_orientation)
 
 
 def _get_world_pose_transform_w_scale(prim_path: str, fabric: bool = False) -> usdrt.Gf.Matrix4d:

@@ -4,9 +4,23 @@
 This extension is deprecated in favor of `isaacsim.replicator.experimental.domain_randomization`.
 ```
 
-To enable this extension, go to the Extension Manager menu and enable isaacsim.replicator.domain_randomization extension
+The isaacsim.replicator.domain_randomization extension provided domain randomization capabilities specifically designed for Reinforcement Learning (RL) applications. It enabled randomization of simulation parameters with PhysX directly, bypassing USD updates for improved performance during RL training.
 
-## Reinforcement Learning Domain Randomization
+## Key Components
+
+### Trigger Module
+
+The {mod}`trigger <isaacsim.replicator.domain_randomization.trigger>` module provides the entry point for domain randomization through {func}`on_rl_frame <isaacsim.replicator.domain_randomization.trigger.on_rl_frame>`, which creates action graph contexts for multi-environment RL scenarios.
+
+### Gate Module
+
+The {mod}`gate <isaacsim.replicator.domain_randomization.gate>` module controls when randomization occurs through timing gates: {func}`on_interval <isaacsim.replicator.domain_randomization.gate.on_interval>` for periodic randomization and {func}`on_env_reset <isaacsim.replicator.domain_randomization.gate.on_env_reset>` for reset-triggered randomization.
+
+### Physics View Module
+
+The {mod}`physics_view <isaacsim.replicator.domain_randomization.physics_view>` module handles view registration and randomization execution. Key functions include {func}`register_simulation_context <isaacsim.replicator.domain_randomization.physics_view.register_simulation_context>`, {func}`register_rigid_prim_view <isaacsim.replicator.domain_randomization.physics_view.register_rigid_prim_view>`, {func}`register_articulation_view <isaacsim.replicator.domain_randomization.physics_view.register_articulation_view>`, {func}`randomize_simulation_context <isaacsim.replicator.domain_randomization.physics_view.randomize_simulation_context>`, {func}`randomize_rigid_prim_view <isaacsim.replicator.domain_randomization.physics_view.randomize_rigid_prim_view>`, {func}`randomize_articulation_view <isaacsim.replicator.domain_randomization.physics_view.randomize_articulation_view>`, and {func}`step_randomization <isaacsim.replicator.domain_randomization.physics_view.step_randomization>`.
+
+## Functionality
 
 The following methods provide randomization functionalities of various parameters 
 pertaining to `isaacsim.core.prims.RigidPrim`, `isaacsim.core.prims.Articulation`,

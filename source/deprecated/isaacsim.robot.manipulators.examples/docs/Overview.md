@@ -1,6 +1,6 @@
 # Overview
 
-```{warning}
+```{deprecated} 6.0.0
 This extension is deprecated. Use `isaacsim.robot.experimental.manipulators.examples` instead.
 ```
 

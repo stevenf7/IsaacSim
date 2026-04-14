@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides high level functions for dealing with rigid body prims and their physics properties."""
+"""Provide high level functions for dealing with rigid body prims and their physics properties."""
 
 from __future__ import annotations
 
@@ -37,11 +37,11 @@ torch = import_module("torch")
 
 
 class RigidPrim(XFormPrim):
-    """Provides high level functions to deal with prims (one or many) that have Rigid Body API applied to them.
+    """Provide high-level functions for prims that have Rigid Body API applied to them.
 
-    as well as their attributes/properties.
+    Handle attributes and properties of single or multiple rigid body prims.
 
-    This class wraps all matching rigid prims found at the regex provided at the ``prim_paths_expr`` argument
+    Wrap all matching rigid prims found at the regex provided at the ``prim_paths_expr`` argument
 
     .. note::
 
@@ -670,9 +670,8 @@ class RigidPrim(XFormPrim):
 
         Args:
             velocities: angular velocities to set the rigid prims to. shape is (M, 3).
-            indices: indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
 
         .. hint::
 
@@ -731,9 +730,8 @@ class RigidPrim(XFormPrim):
         """Get the angular velocities of prims in the view.
 
         Args:
-            indices: indices to specify which prims
-                                                                                    to query. Shape (M,).
-                                                                                    Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
             clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
@@ -801,9 +799,8 @@ class RigidPrim(XFormPrim):
 
         Args:
             velocities: linear and angular velocities respectively to set the rigid prims to. shape is (M, 6).
-            indices: indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
 
         .. hint::
 
@@ -846,9 +843,8 @@ class RigidPrim(XFormPrim):
         """Get the linear and angular velocities of prims in the view.
 
         Args:
-            indices: indices to specify which prims
-                                                                                    to query. Shape (M,).
-                                                                                    Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
             clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
@@ -893,13 +889,12 @@ class RigidPrim(XFormPrim):
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         is_global: bool = True,
     ) -> None:
-        """Applies forces to prims in the view.
+        """Apply forces to prims in the view.
 
         Args:
             forces: forces to be applied to the prims.
-            indices: indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
             is_global: True if forces are in the global frame. Otherwise False.
 
         Example:
@@ -935,7 +930,7 @@ class RigidPrim(XFormPrim):
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         is_global: bool = True,
     ) -> None:
-        """Applies forces and torques to prims in the view. The forces and/or torques can be in local or global coordinates.
+        """Apply forces and torques to prims in the view. The forces and/or torques can be in local or global coordinates.
 
         The forces can applied at a location given by positions variable.
 
@@ -943,12 +938,11 @@ class RigidPrim(XFormPrim):
             forces: forces to be applied to the prims. If not specified, no force will be applied.
             torques: torques to be applied to the prims. If not specified, no torque will be applied.
             positions: position of the forces with respect to the body frame.
-                                                                    If not specified, the forces are applied at the origin of the body frame.
-            indices: indices to specify which prims
-                                                                                to manipulate. Shape (M,).
-                                                                                Where M <= size of the encapsulated prims in the view.
+                If not specified, the forces are applied at the origin of the body frame.
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
             is_global: True if forces, torques, and positions are in the global frame.
-                                        False if forces, torques, and positions are in the local frame.
+                False if forces, torques, and positions are in the local frame.
 
         Example:
 
@@ -1011,9 +1005,8 @@ class RigidPrim(XFormPrim):
         """Get rigid body masses of prims in the view.
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
             clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
@@ -1062,9 +1055,8 @@ class RigidPrim(XFormPrim):
         """Get rigid body inverse masses of prims in the view.
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
             clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
@@ -1106,9 +1098,8 @@ class RigidPrim(XFormPrim):
         """Get rigid body center of mass (COM) of bodies in the view.
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
             clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:
@@ -1173,9 +1164,8 @@ class RigidPrim(XFormPrim):
         """Get rigid body inertias of prims in the view.
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
             clone: True to return a clone of the internal buffer. Otherwise False.
 
         Returns:

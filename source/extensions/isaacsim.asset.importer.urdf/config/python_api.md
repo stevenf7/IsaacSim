@@ -21,9 +21,3 @@
 - class Extension(omni.ext.IExt)
   - def on_startup(self, ext_id: str)
   - def on_shutdown(self)
-
-## Other
-
-- gc: builtin module
-- omni.ext: unknown module
-- omni.kit.app: unknown module

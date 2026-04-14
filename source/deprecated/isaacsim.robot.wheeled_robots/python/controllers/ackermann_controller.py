@@ -90,7 +90,7 @@ class AckermannController(BaseController):
             command: [desired steering angle (rad), steering_angle_velocity (rad/s), desired velocity of robot (m/s), acceleration (m/s^2), delta time (s)]
 
         Returns:
-            joint_velocities = [front left wheel, front right wheel, back left wheel, back right wheel]; joint_positions = [left wheel angle, right wheel angle]
+            Articulation action containing joint velocities for front left, front right, back left, back right wheels and joint positions for left and right wheel angles.
         """
         if isinstance(command, list):
             command = np.array(command)

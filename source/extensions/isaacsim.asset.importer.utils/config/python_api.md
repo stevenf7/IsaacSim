@@ -1,9 +1,5 @@
 # Public API for module isaacsim.asset.importer.utils:
 
-## Other
-
-
-
 # Public API for module isaacsim.asset.importer.utils.impl.importer_utils:
 
 ## Classes
@@ -43,19 +39,6 @@
 - MESH_APPROXIMATION_MAP: Dict
 - PHYSICS_AXIS_MAP: Dict
 
-## Other
-
-- annotations: unknown
-- json: builtin module
-- logging: builtin module
-- os: builtin module
-- PhysxSchema: unknown
-- Sdf: unknown
-- Usd: unknown module
-- UsdGeom: unknown
-- UsdPhysics: unknown
-
-
 # Public API for module isaacsim.asset.importer.utils.impl.merge_mesh_utils:
 
 ## Functions
@@ -65,18 +48,6 @@
 - def merge_meshes_operation(stage: Usd.Stage) -> int
 - def merge_mesh(stage: Usd.Stage, meshes: list[str])
 
-## Other
-
-- annotations: unknown
-- json: builtin module
-- logging: builtin module
-- Usd: unknown module
-- UsdGeom: unknown
-- UsdPhysics: unknown
-
-
-
-
 # Public API for module isaacsim.asset.importer.utils.impl.stage_utils:
 
 ## Functions
@@ -84,10 +55,3 @@
 - def save_stage(stage: Usd.Stage, usd_path: str) -> bool
 - def open_stage(usd_path: str) -> Usd.Stage
 - def get_stage_id(stage: Usd.Stage) -> int
-
-## Other
-
-- Usd: unknown module
-- UsdUtils: unknown
-
-

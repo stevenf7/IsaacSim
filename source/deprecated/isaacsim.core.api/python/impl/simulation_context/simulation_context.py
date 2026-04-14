@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides a comprehensive simulation context for managing physics simulation, rendering, and time-related events in Isaac Sim."""
+"""Provide a comprehensive simulation context for managing physics simulation, rendering, and time-related events in Isaac Sim."""
 
 
 from __future__ import annotations
@@ -49,14 +49,12 @@ from pxr import Usd
 
 
 class SimulationContext:
-    """This class provide functions that take care of many time-related events such as.
+    """Provide functions for managing time-related events and simulation control.
 
-    perform a physics or a render step for instance. Adding/ removing callback functions that
-    gets triggered with certain events such as a physics step, timeline event
-    (pause or play..etc), stage open/ close..etc.
+    Handle physics and render stepping, callback function management for physics steps,
+    timeline events (pause or play), stage operations (open/close), and other simulation events.
 
-    It also includes an instance of PhysicsContext which takes care of many physics related
-    settings such as setting physics dt, solver type..etc.
+    Include a PhysicsContext instance for physics-related settings such as physics dt and solver type.
 
     Args:
         physics_dt: dt between physics steps.

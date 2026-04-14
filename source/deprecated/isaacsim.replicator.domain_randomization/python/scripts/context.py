@@ -47,7 +47,7 @@ class ReplicatorIsaacContext:
         self._tendon_attribute_stack = [None]
 
     def trigger_randomization(self, reset_inds):
-        """Triggers randomization for specified environment indices.
+        """Trigger randomization for specified environment indices.
 
         Args:
             reset_inds: Indices of environments to reset and randomize.
@@ -67,7 +67,7 @@ class ReplicatorIsaacContext:
         return self._reset_inds
 
     def get_tendon_exec_context(self):
-        """Gets the current tendon execution context.
+        """Get the current tendon execution context.
 
         Returns:
             The current tendon node from the attribute stack.
@@ -75,7 +75,7 @@ class ReplicatorIsaacContext:
         return self._tendon_attribute_stack[-1]
 
     def add_tendon_exec_context(self, node):
-        """Adds a tendon execution context to the attribute stack.
+        """Add a tendon execution context to the attribute stack.
 
         Args:
             node: The tendon node to add to the execution context stack.

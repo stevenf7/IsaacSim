@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides high-level wrapper functionality for working with USD Xform prims and their transformation properties."""
+"""Provide high-level wrapper functionality for working with USD Xform prims and their transformation properties."""
 
 from __future__ import annotations
 
@@ -43,11 +43,11 @@ torch = import_module("torch")
 
 
 class XFormPrim(Prim):
-    """Provides high level functions to deal with a Xform prim view (one or many) and its descendants.
+    """Provide high-level functions for working with Xform prim views and their descendants.
 
-    as well as its attributes/properties.
+    Handle attributes and properties of single or multiple Xform prims.
 
-    This class wraps all matching Xforms found at the regex provided at the ``prim_paths_expr`` argument
+    Wrap all matching Xforms found at the regex provided at the ``prim_paths_expr`` argument
 
     .. note::
 
@@ -219,7 +219,7 @@ class XFormPrim(Prim):
     def get_visibilities(
         self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None
     ) -> np.ndarray | torch.Tensor | wp.indexedarray:
-        """Returns the current visibilities of the prims in stage.
+        """Return the current visibilities of the prims in stage.
 
         Args:
             indices: indices to specify which prims
@@ -799,14 +799,13 @@ class XFormPrim(Prim):
         """Get prim poses in the view with respect to the local frame (the prim's parent frame).
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
 
         Returns:
             first index is translations in the local frame of the prims. shape is (M, 3).
-                                            second index is quaternion orientations in the local frame of the prims.
-                                            quaternion is scalar-first (w, x, y, z). shape is (M, 4).
+            second index is quaternion orientations in the local frame of the prims.
+            quaternion is scalar-first (w, x, y, z). shape is (M, 4).
 
         Example:
 
@@ -868,15 +867,12 @@ class XFormPrim(Prim):
             This method will change (teleport) the prim poses immediately to the indicated value
 
         Args:
-            translations:
-                                                          translations in the local frame of the prims
-                                                          (with respect to its parent prim). shape is (M, 3).
-            orientations:
-                                                          quaternion orientations in the local frame of the prims.
-                                                          quaternion is scalar-first (w, x, y, z). shape is (M, 4).
-            indices: indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            translations: translations in the local frame of the prims
+                (with respect to its parent prim). shape is (M, 3).
+            orientations: quaternion orientations in the local frame of the prims.
+                quaternion is scalar-first (w, x, y, z). shape is (M, 4).
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
 
         .. hint::
 
@@ -941,9 +937,8 @@ class XFormPrim(Prim):
         """Get prim scales in the view with respect to the world's frame.
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
 
         Returns:
             scales applied to the prim's dimensions in the world frame. shape is (M, 3).
@@ -993,10 +988,9 @@ class XFormPrim(Prim):
 
         Args:
             scales: scales to be applied to the prim's dimensions in the view.
-                                                                shape is (M, 3).
-            indices: indices to specify which prims
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+                shape is (M, 3).
+            indices: indices to specify which prims to manipulate. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
 
         Example:
 
@@ -1034,9 +1028,8 @@ class XFormPrim(Prim):
         """Get prim scales in the view with respect to the local frame (the parent's frame).
 
         Args:
-            indices: indices to specify which prims
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
+            indices: indices to specify which prims to query. Shape (M,).
+                Where M <= size of the encapsulated prims in the view.
 
         Returns:
             scales applied to the prim's dimensions in the local frame. shape is (M, 3).
@@ -1222,7 +1215,7 @@ class XFormPrim(Prim):
                 )
 
     def _on_post_reset(self, event: object) -> None:
-        """Handles post-reset event by restoring prims to their default states.
+        """Handle post-reset event by restoring prims to their default states.
 
         Sets world poses to the default positions and orientations for non-articulation link prims.
 
@@ -1233,7 +1226,7 @@ class XFormPrim(Prim):
             self.set_world_poses(self._default_state.positions, self._default_state.orientations)
 
     def _set_xform_properties(self) -> None:
-        """Sets the standard transformation properties for all prims in the view.
+        """Set the standard transformation properties for all prims in the view.
 
         Ensures each prim has the correct set of xform properties (translate, orient, and scale) in the proper order.
         Removes any existing non-standard transformation operations and preserves current world poses.
