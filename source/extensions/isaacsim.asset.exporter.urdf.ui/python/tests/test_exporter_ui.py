@@ -187,7 +187,7 @@ class TestExporterUI(MenuUITestCase):
             self.skipTest("Assets root not available")
             return
 
-        robot_usd = os.path.join(assets_root, "Isaac/Robots/UniversalRobots/ur10e/ur10e.usd")
+        robot_usd = f"{assets_root}/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd"
         await stage_utils.open_stage_async(robot_usd)
         stage = stage_utils.get_current_stage()
         if stage is None:
