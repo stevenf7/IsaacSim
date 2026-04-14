@@ -142,6 +142,8 @@ Extensions
    isaacsim.replicator.examples <source/extensions/isaacsim.replicator.examples/docs/index>
    isaacsim.replicator.grasping <source/extensions/isaacsim.replicator.grasping/docs/index>
    isaacsim.replicator.grasping.ui <source/extensions/isaacsim.replicator.grasping.ui/docs/index>
+   isaacsim.replicator.teleop <source/extensions/isaacsim.replicator.teleop/docs/index>
+   isaacsim.replicator.teleop.ui <source/extensions/isaacsim.replicator.teleop.ui/docs/index>
    isaacsim.replicator.mobility_gen <source/deprecated/isaacsim.replicator.mobility_gen/docs/index>
    isaacsim.replicator.mobility_gen.examples <source/extensions/isaacsim.replicator.mobility_gen.examples/docs/index>
    isaacsim.replicator.mobility_gen.ui <source/extensions/isaacsim.replicator.mobility_gen.ui/docs/index>

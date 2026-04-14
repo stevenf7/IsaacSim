@@ -23,3 +23,4 @@ Synthetic Data Generation (SDG) is a collection of tools and workflows for gener
     ../action_and_event_data_generation/index
     ./tutorial_replicator_grasping_sdg
     ./tutorial_replicator_mobility_gen
+    ./tutorial_replicator_teleop_sdg

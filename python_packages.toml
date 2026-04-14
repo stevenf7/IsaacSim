@@ -478,6 +478,8 @@ inventory.includes.all = [
     "exts/isaacsim.replicator.examples",
     "exts/isaacsim.replicator.grasping",
     "exts/isaacsim.replicator.grasping.ui",
+    "exts/isaacsim.replicator.teleop",
+    "exts/isaacsim.replicator.teleop.ui",
     "exts/isaacsim.replicator.mobility_gen",
     "exts/isaacsim.replicator.mobility_gen.examples",
     "exts/isaacsim.replicator.mobility_gen.ui",
