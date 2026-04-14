@@ -365,18 +365,6 @@ class SimulationApp:
         # Notify toolkit is running
         self._app.print_and_log("Simulation App Startup Complete")
 
-        try:
-            from isaacsim.core.telemetry import emit_feature_used
-
-            emit_feature_used(
-                extension_id="isaacsim.simulation_app",
-                feature_name="app_startup",
-                feature_type="api_call",
-                duration_ms=self._app.get_time_since_start_ms(),
-            )
-        except Exception:
-            pass
-
         # Record startup time as time at which app is ready for use
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         if ext_manager.is_extension_enabled("isaacsim.benchmark.services"):

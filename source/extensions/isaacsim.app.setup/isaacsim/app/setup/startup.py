@@ -119,15 +119,6 @@ async def await_viewport(
 
     app.print_and_log(f"{app_title} App is loaded.")
 
-    from isaacsim.core.telemetry import emit_feature_used
-
-    emit_feature_used(
-        extension_id="isaacsim.app.setup",
-        feature_name="app_startup",
-        feature_type="api_call",
-        duration_ms=app.get_time_since_start_ms(),
-    )
-
     record_startup_benchmark(ext_manager)
     await update_callback()
 

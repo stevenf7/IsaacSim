@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.12.0] - 2026-04-13
+### Removed
+- Removed `isaacsim.core.telemetry` dependency and direct telemetry calls from app startup
+
 ## [1.11.1] - 2026-04-01
 ### Removed
 - Remove the `omni.isaac.ml_archive` dependency

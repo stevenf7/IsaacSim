@@ -19,6 +19,10 @@ from .extension import (
     emit_extension_activated,
     emit_feature_used,
     get_telemetry_manager,
+    telemetry,
+    telemetry_error,
+    telemetry_extension,
+    telemetry_usage,
 )
 
 __all__ = [
@@ -27,4 +31,8 @@ __all__ = [
     "emit_extension_activated",
     "emit_feature_used",
     "get_telemetry_manager",
+    "telemetry",
+    "telemetry_error",
+    "telemetry_extension",
+    "telemetry_usage",
 ]

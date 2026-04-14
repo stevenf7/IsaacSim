@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.18.0] - 2026-04-13
+### Removed
+- Removed direct telemetry calls from SimulationApp startup
+
 ## [2.17.2] - 2026-04-11
 ### Fixed
 - Replaced `shutdown_and_release_framework()` with `app.shutdown()` in close() to avoid a GIL deadlock where the main thread held the GIL while `carb.tasking` worker threads waited for it during plugin teardown (NVBug 5948099)

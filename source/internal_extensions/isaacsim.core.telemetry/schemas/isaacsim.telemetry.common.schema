@@ -1,0 +1,116 @@
+{
+    "name": "isaacsim.telemetry.common",
+    "version": "1.0",
+    "namespace": "com.nvidia.isaacsim.telemetry.common",
+    "flags": ["fSchemaFlagAnonymizeEvents"],
+    "description": "Common telemetry events shared across all Isaac Sim extensions.",
+
+    "events": {
+        "extensionActivated": {
+            "privacy": {
+                "category": "usage",
+                "description": "Tracks which Isaac Sim extensions are actively used in a session"
+            },
+            "description": "Emitted when an Isaac Sim extension is enabled or disabled.",
+            "properties": {
+                "extensionId": {
+                    "type": "string",
+                    "description": "Extension identifier (e.g. isaacsim.sensors.experimental.rtx)",
+                    "examples": [
+                        "isaacsim.sensors.experimental.rtx",
+                        "isaacsim.asset.importer.urdf"
+                    ]
+                },
+                "extensionVersion": {
+                    "type": "string",
+                    "description": "Semantic version of the extension (e.g. 1.2.0)",
+                    "examples": [
+                        "1.2.0",
+                        "4.5.1"
+                    ]
+                },
+                "action": {
+                    "type": "string",
+                    "enum": ["enabled", "disabled"],
+                    "description": "Lifecycle action: enabled or disabled"
+                }
+            }
+        },
+        "featureUsed": {
+            "privacy": {
+                "category": "usage",
+                "description": "Tracks feature adoption within Isaac Sim extensions"
+            },
+            "description": "Emitted when a user invokes a command, menu item, or significant API call.",
+            "properties": {
+                "extensionId": {
+                    "type": "string",
+                    "description": "Extension that owns the feature",
+                    "examples": [
+                        "isaacsim.sensors.experimental.rtx",
+                        "isaacsim.asset.importer.urdf"
+                    ]
+                },
+                "featureName": {
+                    "type": "string",
+                    "description": "Feature identifier (e.g. import_urdf, create_lidar_sensor)",
+                    "examples": [
+                        "import_urdf",
+                        "create_lidar_sensor"
+                    ]
+                },
+                "featureType": {
+                    "type": "string",
+                    "enum": ["command", "menu_item", "api_call"],
+                    "description": "Category of usage: command, menu_item, or api_call"
+                },
+                "durationMs": {
+                    "type": "int64",
+                    "description": "Wall-clock duration of the operation in milliseconds, 0 if not measured"
+                }
+            }
+        },
+        "errorOccurred": {
+            "privacy": {
+                "category": "performance",
+                "description": "Tracks errors for reliability analysis"
+            },
+            "description": "Emitted when an error occurs in an Isaac Sim extension.",
+            "properties": {
+                "extensionId": {
+                    "type": "string",
+                    "description": "Extension where the error occurred",
+                    "examples": [
+                        "isaacsim.sensors.experimental.rtx",
+                        "isaacsim.asset.importer.urdf"
+                    ]
+                },
+                "errorCategory": {
+                    "type": "string",
+                    "enum": ["import_failure", "validation_error", "runtime_error", "configuration_error", "dependency_error", "timeout"],
+                    "description": "Broad error classification for dashboard-level analysis"
+                },
+                "errorType": {
+                    "type": "string",
+                    "description": "Extension-specific error code for detailed drill-down.  Must be a short identifier, not a human-readable message.",
+                    "examples": [
+                        "urdf_joint_parse",
+                        "missing_scan_rate_param"
+                    ]
+                },
+                "operation": {
+                    "type": "string",
+                    "description": "The feature or operation that was active when the error occurred.  Should match featureName values used in featureUsed events.",
+                    "examples": [
+                        "import_urdf",
+                        "create_lidar_sensor"
+                    ]
+                },
+                "recoverable": {
+                    "type": "bool",
+                    "description": "True if the operation was able to continue or degrade gracefully, false if it aborted."
+                }
+            }
+        }
+    }
+}
