@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides commands for creating Isaac physics sensors in USD stages."""
+"""Provide commands for creating Isaac physics sensors in USD stages."""
 
 __all__ = ["IsaacSensorCreatePrim", "IsaacSensorCreateContactSensor", "IsaacSensorCreateImuSensor"]
 
@@ -58,7 +58,7 @@ class IsaacSensorCreatePrim(omni.kit.commands.Command):
         self._prim_path = None
 
     def do(self) -> object:
-        """Creates an Isaac sensor prim on the USD stage.
+        """Create an Isaac sensor prim on the USD stage.
 
         Generates the next available path, defines the sensor with the specified schema type, enables the sensor,
         and sets the transformation operations.
@@ -86,7 +86,7 @@ class IsaacSensorCreatePrim(omni.kit.commands.Command):
 
 
 class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
-    """Creates an Isaac Contact Sensor prim in the USD stage.
+    """Create an Isaac Contact Sensor prim in the USD stage.
 
     This command creates a contact sensor that detects physical contact between objects in a simulation.
     The sensor monitors contact forces and reports when they fall within specified threshold ranges.
@@ -121,7 +121,7 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
         self._prim = None
 
     def do(self) -> object:
-        """Creates a contact sensor prim with the specified parameters.
+        """Create a contact sensor prim with the specified parameters.
 
         Creates an Isaac contact sensor prim at the specified path under the parent prim, applies contact sensor
         schema attributes, and ensures the parent prim has contact report API applied.
@@ -202,7 +202,7 @@ class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
         self._prim = None
 
     def do(self) -> object:
-        """Creates an IMU sensor prim with the specified configuration.
+        """Create an IMU sensor prim with the specified configuration.
 
         Executes the IMU sensor creation command with the parameters provided during initialization,
         including sensor period and filter settings for linear acceleration, angular velocity, and orientation.

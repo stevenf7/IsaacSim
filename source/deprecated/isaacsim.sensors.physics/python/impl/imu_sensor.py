@@ -148,7 +148,7 @@ class IMUSensor(BaseSensor):
         BaseSensor.initialize(self, physics_sim_view=physics_sim_view)
 
     def get_current_frame(self, read_gravity: bool = True) -> dict:
-        """Gets the current sensor reading frame containing IMU data.
+        """Get the current sensor reading frame containing IMU data.
 
         Args:
             read_gravity: Whether to include gravity in the linear acceleration reading.

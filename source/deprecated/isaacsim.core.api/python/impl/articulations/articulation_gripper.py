@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides gripper control functionality for articulation-based grippers with open and closed state management."""
+"""Provide gripper control functionality for articulation-based grippers with open and closed state management."""
 
 from __future__ import annotations
 
@@ -89,7 +89,7 @@ class ArticulationGripper(object):
 
         """
         self._articulation = SingleArticulation(root_prim_path)
-        for index in len(self._articulation.dof_names):
+        for index in range(len(self._articulation.dof_names)):
             dof_name = self._articulation.dof_names[index]
             for j in range(len(self._grippers_dof_names)):
                 if self._grippers_dof_names[j] == dof_name:

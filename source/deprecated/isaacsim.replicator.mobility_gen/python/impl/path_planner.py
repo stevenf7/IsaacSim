@@ -57,7 +57,7 @@ class GeneratePathsOutput:
         return np.array(path)
 
     def get_valid_end_points(self) -> tuple:
-        """Gets coordinates of all valid end points that can be reached from the start.
+        """Get coordinates of all valid end points that can be reached from the start.
 
         Returns:
             Tuple of (i_indices, j_indices) arrays containing coordinates of visited points.
@@ -75,7 +75,7 @@ class GeneratePathsOutput:
         return (int(i[index]), int(j[index]))
 
     def sample_random_path(self) -> np.ndarray:
-        """Generates a random path by sampling a random end point and unrolling the path to it.
+        """Generate a random path by sampling a random end point and unrolling the path to it.
 
         Returns:
             Array of path coordinates from start to a randomly selected end point.

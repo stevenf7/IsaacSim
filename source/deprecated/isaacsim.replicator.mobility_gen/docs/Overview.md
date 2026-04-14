@@ -1,6 +1,10 @@
 # Overview
 
-isaacsim.replicator.mobility_gen is a specialized extension for generating mobility training data for robotics applications. It provides a complete framework for simulating robot navigation scenarios, capturing multi-modal sensor data, and recording comprehensive datasets that include RGB images, depth maps, segmentation masks, occupancy maps, and robot state information.
+```{deprecated} 6.0.0
+Extension deprecated since Isaac Sim 6.0.0 in favor of the experimental extension: isaacsim.replicator.experimental.mobility_gen
+```
+
+The isaacsim.replicator.mobility_gen extension was a specialized extension for generating mobility training data for robotics applications. It provided a complete framework for simulating robot navigation scenarios, capturing multi-modal sensor data, and recording comprehensive datasets that include RGB images, depth maps, segmentation masks, occupancy maps, and robot state information.
 
 ## Functionality
 

@@ -1,5 +1,9 @@
 # Overview
 
+```{deprecated} 6.0.0
+This extension is deprecated. Use `isaacsim.robot_motion.experimental.motion_generation` and `isaacsim.robot_motion.cumotion` instead.
+```
+
 The isaacsim.robot_motion.motion_generation.examples extension provides interactive UI-based examples for robot motion generation concepts within Isaac Sim. This extension demonstrates various motion planning algorithms and trajectory generation techniques through hands-on examples with Franka and UR10 robots.
 
 Each example registers a menu entry under **Motion Generation Examples** (RMPflow, Kinematics, RRT, Trajectory Generation).

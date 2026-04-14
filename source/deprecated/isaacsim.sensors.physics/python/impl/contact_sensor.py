@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides contact sensor functionality for detecting and measuring physical contact forces in simulations."""
+"""Provide contact sensor functionality for detecting and measuring physical contact forces in simulations."""
 
 from __future__ import annotations
 
@@ -246,7 +246,7 @@ class ContactSensor(BaseSensor):
         return self._isaac_sensor_prim.GetSensorPeriodAttr().Get()
 
     def set_dt(self, value: float) -> None:
-        """Sets the sensor period (time step) for the contact sensor.
+        """Set the sensor period (time step) for the contact sensor.
 
         Args:
             value: The sensor period in seconds.
@@ -263,7 +263,7 @@ class ContactSensor(BaseSensor):
         return self.prim.GetAttribute("radius").Get()
 
     def set_radius(self, value: float) -> None:
-        """Sets the radius of the contact sensor detection area.
+        """Set the radius of the contact sensor detection area.
 
         Args:
             value: The radius value to set.
@@ -287,7 +287,7 @@ class ContactSensor(BaseSensor):
             return None
 
     def set_min_threshold(self, value: float) -> None:
-        """Sets the minimum force threshold for contact detection.
+        """Set the minimum force threshold for contact detection.
 
         Args:
             value: The minimum threshold value.
@@ -311,7 +311,7 @@ class ContactSensor(BaseSensor):
             return None
 
     def set_max_threshold(self, value: float) -> None:
-        """Sets the maximum force threshold for contact detection.
+        """Set the maximum force threshold for contact detection.
 
         Args:
             value: The maximum threshold value.

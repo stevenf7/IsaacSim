@@ -167,7 +167,7 @@ class WheeledRobot(Robot):
         return
 
     def apply_wheel_actions(self, actions: ArticulationAction):
-        """Applying action to the wheels to move the robot.
+        """Apply action to the wheels to move the robot.
 
         Args:
             actions: Action containing positions, velocities, or efforts for wheel joints.

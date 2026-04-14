@@ -50,7 +50,7 @@ class MobilityGenScenario(Module):
 
     @classmethod
     def from_robot_occupancy_map(cls, robot: MobilityGenRobot, occupancy_map: OccupancyMap) -> "MobilityGenScenario":
-        """Creates a MobilityGenScenario instance from a robot and occupancy map.
+        """Create a MobilityGenScenario instance from a robot and occupancy map.
 
         Args:
             robot: The mobility generation robot.
@@ -62,7 +62,7 @@ class MobilityGenScenario(Module):
         return cls(robot, occupancy_map)
 
     def reset(self) -> NoReturn:
-        """Resets the scenario to its initial state."""
+        """Reset the scenario to its initial state."""
         raise NotImplementedError
 
     def step(self, step_size: float) -> bool:
@@ -77,7 +77,7 @@ class MobilityGenScenario(Module):
         raise NotImplementedError
 
     def get_visualization_image(self) -> Image:
-        """Gets the visualization image of the occupancy map.
+        """Get the visualization image of the occupancy map.
 
         Returns:
             The ROS image representation of the occupancy map.

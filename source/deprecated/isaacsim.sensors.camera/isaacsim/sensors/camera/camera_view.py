@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides high level functions for managing batched camera data and sensor operations in Isaac Sim."""
+"""Provide high level functions for managing batched camera data and sensor operations in Isaac Sim."""
 
 from __future__ import annotations
 
@@ -107,7 +107,7 @@ wp.overload(
 
 
 class CameraView(XFormPrim):
-    """Provides high level functions to deal tiled/batched data from cameras.
+    """Provide high level functions to deal tiled/batched data from cameras.
 
     .. list-table::
         :header-rows: 1

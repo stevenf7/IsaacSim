@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides domain randomization functionality for physics simulation views in Isaac Sim."""
+"""Provide domain randomization functionality for physics simulation views in Isaac Sim."""
 
 
 import copy
@@ -51,7 +51,7 @@ _articulation_views_reset_values = dict()
 def register_simulation_context(
     simulation_context: Union[isaacsim.core.api.SimulationContext, isaacsim.core.api.World],
 ):
-    """Registers a simulation context for domain randomization.
+    """Register a simulation context for domain randomization.
 
     Stores the simulation context and captures its initial property values for use in randomization.
     The context must be registered before it can be randomized.
@@ -68,7 +68,7 @@ def register_simulation_context(
 
 
 def register_rigid_prim_view(rigid_prim_view: RigidPrim):
-    """Registers a rigid prim view for domain randomization.
+    """Register a rigid prim view for domain randomization.
 
     Stores the rigid prim view and captures its initial property values for use in randomization.
     The view must be registered before it can be randomized.
@@ -114,7 +114,7 @@ def register_rigid_prim_view(rigid_prim_view: RigidPrim):
 
 
 def register_articulation_view(articulation_view: Articulation):
-    """Registers an articulation view for domain randomization.
+    """Register an articulation view for domain randomization.
 
     Stores the articulation view and captures its initial property values for use in randomization.
     The view must be registered before it can be randomized.
@@ -203,10 +203,10 @@ def register_articulation_view(articulation_view: Articulation):
 
 
 def step_randomization(reset_inds: Optional[Union[list, np.ndarray, torch.Tensor]] = list()):
-    """Triggers the randomization step for the specified environment indices.
+    """Trigger the randomization step for the specified environment indices.
 
     Args:
-        reset_inds: The indices corresonding to the prims to be reset in the views.
+        reset_inds: The indices corresponding to the prims to be reset in the views.
     """
     if torch.is_tensor(reset_inds):
         trigger_randomization(reset_inds.cpu().numpy())
@@ -216,7 +216,7 @@ def step_randomization(reset_inds: Optional[Union[list, np.ndarray, torch.Tensor
 
 @ReplicatorWrapper
 def _write_physics_view_node(view, attribute, values, operation, node_type, num_buckets=None) -> ReplicatorItem:
-    """Creates and configures a physics view node for domain randomization.
+    """Create and configures a physics view node for domain randomization.
 
     Creates a node of the specified type and connects it to the replicator graph to randomize
     a specific attribute of a physics view with the provided values and operation.

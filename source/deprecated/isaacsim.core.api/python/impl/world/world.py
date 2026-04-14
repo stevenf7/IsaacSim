@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides a comprehensive physics simulation world environment with scene management, task orchestration, and data logging capabilities."""
+"""Provide a comprehensive physics simulation world environment with scene management, task orchestration, and data logging capabilities."""
 
 from __future__ import annotations
 
@@ -34,22 +34,16 @@ from pxr import Usd
 
 
 class World(SimulationContext):
-    """This class inherits from SimulationContext which provides the following.
+    """Provide a comprehensive physics simulation world environment with scene management and task orchestration.
 
-    SimulationContext provide functions that take care of many time-related events such as
-    perform a physics or a render step for instance. Adding/ removing callback functions that
-    gets triggered with certain events such as a physics step, timeline event
-    (pause or play..etc), stage open/ close..etc.
+    Extends SimulationContext with additional functionality for managing tasks and scenes.
+    SimulationContext handles time-related events such as physics and render steps, callback
+    function management for physics steps and timeline events, and stage operations.
 
-    It also includes an instance of PhysicsContext which takes care of many physics related
-    settings such as setting physics dt, solver type..etc.
+    Includes a PhysicsContext instance for physics-related settings such as physics dt and solver type.
 
-    In addition to what is provided from SimulationContext, this class allows the user to add a
-    task to the world and it contains a scene object.
-
-    To control the default reset state of different objects easily, the object could be added to
-    a Scene. Besides this, the object is bound to a short keyword that facilitates objects retrievals,
-    like in a dict.
+    Enable easy control of default reset states by adding objects to the Scene. Objects are bound
+    to keywords that facilitate retrieval like a dictionary.
 
     Checkout the required tutorials at https://docs.isaacsim.omniverse.nvidia.com/latest/index.html
 
@@ -152,7 +146,7 @@ class World(SimulationContext):
 
     @property
     def scene(self) -> Scene:
-        """Scene instance.
+        """Return the scene instance.
 
         Example:
 

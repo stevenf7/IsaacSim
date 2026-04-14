@@ -33,17 +33,25 @@ Geometry utilities support mesh analysis, bounding box calculations, and vertex 
 
 ### Commands System
 The extension registers several commands for common operations:
-- **IsaacSimSpawnPrim**: Creates new prims with USD references and applies transformations using physics-aware positioning
-- **IsaacSimTeleportPrim**: Relocates existing prims with proper physics handling for articulated objects
-- **IsaacSimScalePrim**: Applies scaling transformations to prims
-- **IsaacSimDestroyPrim**: Removes prims from the stage with optimized performance for batch operations
+
+{class}`IsaacSimSpawnPrim <isaacsim.core.utils.IsaacSimSpawnPrim>` creates new prims with USD references and applies transformations using physics-aware positioning.
+
+{class}`IsaacSimTeleportPrim <isaacsim.core.utils.IsaacSimTeleportPrim>` relocates existing prims with proper physics handling for articulated objects.
+
+{class}`IsaacSimScalePrim <isaacsim.core.utils.IsaacSimScalePrim>` applies scaling transformations to prims.
+
+{class}`IsaacSimDestroyPrim <isaacsim.core.utils.IsaacSimDestroyPrim>` removes prims from the stage with optimized performance for batch operations.
 
 ### Data Structures
 Several specialized data classes facilitate state management:
-- **DataFrame**: Encapsulates simulation data at specific time steps with time indexing
-- **XFormPrimState** and **XFormPrimViewState**: Manage transformation states for single and multiple prims
-- **DynamicState** and **DynamicsViewState**: Handle dynamic rigid body states including velocities
-- **ArticulationAction** and **ArticulationActions**: Define joint control commands for robotic systems
+
+{class}`DataFrame <isaacsim.core.utils.DataFrame>` encapsulates simulation data at specific time steps with time indexing.
+
+{class}`XFormPrimState <isaacsim.core.utils.XFormPrimState>` and {class}`XFormPrimViewState <isaacsim.core.utils.XFormPrimViewState>` manage transformation states for single and multiple prims.
+
+{class}`DynamicState <isaacsim.core.utils.DynamicState>` and {class}`DynamicsViewState <isaacsim.core.utils.DynamicsViewState>` handle dynamic rigid body states including velocities.
+
+{class}`ArticulationAction <isaacsim.core.utils.ArticulationAction>` and {class}`ArticulationActions <isaacsim.core.utils.ArticulationActions>` define joint control commands for robotic systems.
 
 ### Semantic Labeling System
 Semantic utilities provide comprehensive labeling support using UsdSemantics.LabelsAPI for scene understanding and automated annotation. The system supports label validation, missing label detection, and automatic migration from deprecated semantic APIs.

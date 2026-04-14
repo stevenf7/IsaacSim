@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides data logging functionality for collecting, storing, and replaying simulation data."""
+"""Provide data logging functionality for collecting, storing, and replaying simulation data."""
 
 
 import json
@@ -25,7 +25,11 @@ from isaacsim.core.utils.types import DataFrame
 
 
 class DataLogger:
-    """This class takes care of collecting data as well as reading already saved data in order to replay it for instance."""
+    """Provide data collection, storage, and replay functionality for simulation data.
+
+    Collect simulation data at runtime and save to disk for later replay or analysis.
+    Support pausing and resuming data collection during simulation.
+    """
 
     def __init__(self) -> None:
         self._pause = True
@@ -33,7 +37,7 @@ class DataLogger:
         self._data_frame_logging_func = None
 
     def add_data(self, data: dict, current_time_step: float, current_time: float) -> None:
-        """Adds data to the log.
+        """Add data to the log.
 
         Args:
             data: Dictionary representing the data to be logged at this time index.
@@ -45,7 +49,7 @@ class DataLogger:
         return
 
     def get_num_of_data_frames(self) -> int:
-        """Gets the number of data frames in the logger.
+        """Get the number of data frames in the logger.
 
         Returns:
             The number of data frames collected in the data logger.
@@ -54,17 +58,17 @@ class DataLogger:
         return len(self._data_frames)
 
     def pause(self) -> None:
-        """Pauses data collection."""
+        """Pause data collection."""
         self._pause = True
         return
 
     def start(self) -> None:
-        """Resumes or starts data collection."""
+        """Resume or starts data collection."""
         self._pause = False
         return
 
     def is_started(self) -> bool:
-        """Checks if data collection is currently active.
+        """Check if data collection is currently active.
 
         Returns:
             True if data collection is started or resumed, False otherwise.
@@ -91,7 +95,7 @@ class DataLogger:
         return self._data_frames[data_frame_index]
 
     def add_data_frame_logging_func(self, func: Callable[[list[BaseTask], Scene], dict]) -> None:
-        """Adds a data collection function to be called at every step when the logger is started.
+        """Add a data collection function to be called at every step when the logger is started.
 
         Args:
             func: Function to be called at every step when the logger is started.
@@ -107,7 +111,7 @@ class DataLogger:
         return
 
     def save(self, log_path: str) -> None:
-        """Saves the current data in the logger to a json file.
+        """Save the current data in the logger to a json file.
 
         Args:
             log_path: Path of the json file to be used to save the data.
@@ -120,7 +124,7 @@ class DataLogger:
         return
 
     def load(self, log_path: str) -> None:
-        """Loads data from a json file to read back a previous saved data or to resume recording data from another time step.
+        """Load data from a json file to read back a previous saved data or to resume recording data from another time step.
 
         Args:
             log_path: Path of the json file to be used to load the data.

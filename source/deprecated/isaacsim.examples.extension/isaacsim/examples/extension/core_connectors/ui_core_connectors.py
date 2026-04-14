@@ -88,8 +88,8 @@ class LoadButton(UIWidgetWrapper):
         """Set the setup_scene_fn that will be called when the LoadButton is clicked.
 
         The setup_scene_fn() is called with the guarantee that a World has been created.  In this function,
-        the user is meant to add the asssets they want to the USD stage.  These assets then must also be added to
-        the World. World is a singleton class.  And example setup_scene_fn implementation would include:
+        the user is meant to add the assets they want to the USD stage.  These assets then must also be added to
+        the World. World is a singleton class.  An example setup_scene_fn implementation would include:
 
         world = World.instance() # Get the unique instance of the World
         world.scene.add(usd_object) # Add the user-loaded usd object to the scene
@@ -103,30 +103,12 @@ class LoadButton(UIWidgetWrapper):
         """
         self.setup_scene_fn = setup_scene_fn
 
-    def set_setup_scene_fn(self, setup_scene_fn: Callable) -> None:
-        """Set the setup_scene_fn that will be called when the LoadButton is clicked.
-
-        The setup_scene_fn() is called with the guarantee that a World has been created.  In this function,
-        the user is meant to add the asssets they want to the USD stage.  These assets then must also be added to
-        the World. World is a singleton class.  An example setup_scene_fn implementation would include:
-
-        world = World.instance() # Get the unique instance of the World
-        world.scene.add(usd_object) # Add the user-loaded usd object to the scene
-
-        Args:
-            setup_scene_fn: A function that will be called when the LoadButton is clicked.
-                The user should use this function to add their assets to the USD stage and to add their assets
-                to the World. This function should take 0 arguments.  The return value will not be used.
-                Defaults to None.
-        """
-        self.setup_scene_fn = setup_scene_fn
-
     def set_setup_post_load_fn(self, setup_post_load_fn: Callable) -> None:
         """Set the setup_post_load_fn that will be called when the LoadButton is clicked.
 
         Args:
             setup_post_load_fn: A function that will be called when the LoadButton is clicked.
-                The function is called with the gurantees that the World has been created, the
+                The function is called with the guarantees that the World has been created, the
                 setup_scene_fn() has already been called, all objects that the user added to the World have been properly
                 initialized, and the timeline will be paused at timestep 0.  This function should take 0 arguments.
                 The return value will not be used.  Defaults to None.
@@ -306,7 +288,7 @@ class ResetButton(UIWidgetWrapper):
         asyncio.ensure_future(_on_click_async())
 
     def _create_ui_widget(self, label: str, text: str, tooltip: str) -> object:
-        """Creates the UI widget frame containing the label and button.
+        """Create the UI widget frame containing the label and button.
 
         Args:
             label: Short descriptive text to the left of the ResetButton.

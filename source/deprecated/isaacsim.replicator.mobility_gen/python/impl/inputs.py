@@ -52,7 +52,7 @@ class KeyboardButton:
         return self._value
 
     def _event_callback(self, event: carb.input.KeyboardEvent, *args: object, **kwargs: object) -> None:
-        """Handles keyboard events to update the button state.
+        """Handle keyboard events to update the button state.
 
         Args:
             event: The keyboard event containing input information and event type.
@@ -109,7 +109,7 @@ class KeyboardDriver(object):
         self.buttons = [KeyboardButton(key) for key in key_input_types]
 
     def _event_callback(self, event: carb.input.KeyboardEvent, *args: object, **kwargs: object) -> None:
-        """Handles keyboard events and forwards them to all keyboard buttons.
+        """Handle keyboard events and forward them to all keyboard buttons.
 
         Args:
             event: The keyboard event containing input information.
@@ -120,7 +120,7 @@ class KeyboardDriver(object):
             button._event_callback(event, *args, **kwargs)
 
     def _connect(self) -> None:
-        """Subscribes to keyboard events from the application window's keyboard."""
+        """Subscribe to keyboard events from the application window's keyboard."""
         self._event_handle = self._input.subscribe_to_keyboard_events(self._keyboard, self._event_callback)
 
     def _disconnect(self) -> None:
@@ -130,7 +130,7 @@ class KeyboardDriver(object):
 
     @staticmethod
     def connect() -> "KeyboardDriver":
-        """Creates and connects the keyboard driver singleton instance.
+        """Create and connect the keyboard driver singleton instance.
 
         Returns:
             The connected KeyboardDriver instance.
@@ -148,7 +148,7 @@ class KeyboardDriver(object):
 
     @staticmethod
     def instance() -> "KeyboardDriver":
-        """Gets or creates the singleton KeyboardDriver instance.
+        """Get or create the singleton KeyboardDriver instance.
 
         Returns:
             The KeyboardDriver singleton instance.
@@ -158,7 +158,7 @@ class KeyboardDriver(object):
         return KeyboardDriver._instance
 
     def get_button_values(self) -> np.ndarray:
-        """Gets the current state of all keyboard buttons.
+        """Get the current state of all keyboard buttons.
 
         Returns:
             Array of boolean values representing the pressed state of each button.
@@ -211,7 +211,7 @@ class GamepadAxis:
             return -self._neg_val if self._neg_val > self.deadzone else 0.0
 
     def _event_callback(self, event: carb.input.GamepadEvent, *args: object, **kwargs: object) -> None:
-        """Handles gamepad input events to update axis values.
+        """Handle gamepad input events to update axis values.
 
         Args:
             event: The gamepad input event containing axis value data.
@@ -290,7 +290,7 @@ class GamepadDriver(object):
         ]
 
     def _event_callback(self, event: carb.input.GamepadEvent, *args: object, **kwargs: object) -> None:
-        """Handles gamepad events and updates axis values.
+        """Handle gamepad events and update axis values.
 
         Args:
             event: The gamepad event containing input and value data.
@@ -302,7 +302,7 @@ class GamepadDriver(object):
         # carb.log_warn(f"{self.axes[0].value}, {self.axes[1].value}, {self.axes[2].value}, {self.axes[3].value}")
 
     def _connect(self) -> None:
-        """Subscribes to gamepad events to start receiving input data."""
+        """Subscribe to gamepad events to start receiving input data."""
         self._event_handle = self._input.subscribe_to_gamepad_events(self._gamepad, self._event_callback)
 
     def _disconnect(self) -> None:
@@ -312,7 +312,7 @@ class GamepadDriver(object):
 
     @staticmethod
     def connect() -> "GamepadDriver":
-        """Creates and connects a gamepad driver instance.
+        """Create and connect a gamepad driver instance.
 
         Returns:
             The connected GamepadDriver instance.
@@ -330,7 +330,7 @@ class GamepadDriver(object):
 
     @staticmethod
     def instance() -> "GamepadDriver":
-        """Gets the singleton GamepadDriver instance, creating it if needed.
+        """Get the singleton GamepadDriver instance, creating it if needed.
 
         Returns:
             The GamepadDriver singleton instance.
@@ -386,7 +386,7 @@ class Keyboard(Module):
         self.buttons = Buffer()
 
     def update_state(self) -> None:
-        """Updates the current state of keyboard button values.
+        """Update the current state of keyboard button values.
 
         Retrieves the latest button states from the keyboard driver and stores them in the internal buffer.
 
@@ -428,7 +428,7 @@ class Gamepad(Module):
         self.axes = Buffer()
 
     def update_state(self) -> None:
-        """Updates the gamepad state by refreshing button and axis values from the gamepad driver.
+        """Update the gamepad state by refreshing button and axis values from the gamepad driver.
 
         Returns:
             The result of the parent class update_state method.
