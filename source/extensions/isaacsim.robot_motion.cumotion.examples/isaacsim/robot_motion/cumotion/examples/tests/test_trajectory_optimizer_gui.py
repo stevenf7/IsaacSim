@@ -48,13 +48,33 @@ class TestTrajectoryOptimizerGui(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(self.ui_builder._to_cspace_btn)
 
     async def _load_until_sliders(self) -> None:
+        """Trigger load and wait until joint sliders are built.
+
+        Only waits for ``_joint_slider_models`` to be populated (requires
+        ``_cumotion_robot`` only, not the full USD load).  Tests that need
+        ``_articulation`` (e.g. task-space tests) must call
+        :meth:`_load_until_articulation_ready` instead.
+        """
         self.ui_builder._load_btn.trigger_click()
         ok = await wait_until(
-            lambda: len(self.ui_builder._joint_slider_models) > 0
-            and self.ui_builder._scenario._articulation is not None,
+            lambda: len(self.ui_builder._joint_slider_models) > 0,
             timeout_sec=120.0,
         )
-        self.assertTrue(ok, "Timed out waiting for load and joint sliders")
+        self.assertTrue(ok, "Timed out waiting for joint sliders")
+
+    async def _load_until_articulation_ready(self) -> None:
+        """Trigger load and wait until both sliders and articulation are ready.
+
+        Waits for the full USD scene load (sets ``_articulation``), needed
+        when the test exercises code paths that call
+        ``_articulation.get_world_poses()`` or similar.
+        """
+        await self._load_until_sliders()
+        ok = await wait_until(
+            lambda: self.ui_builder._scenario._articulation is not None,
+            timeout_sec=120.0,
+        )
+        self.assertTrue(ok, "Timed out waiting for articulation to be ready")
 
     async def test_cspace_button_passes_slider_joint_values(self):
         """Test that slider values are correctly passed to C-space planning."""
@@ -89,7 +109,7 @@ class TestTrajectoryOptimizerGui(omni.kit.test.AsyncTestCase):
 
     async def test_task_space_button_passes_cube_position_and_orientation(self):
         """World-frame pose from the target cube is a 3-vector and unit quaternion before base-frame conversion."""
-        await self._load_until_sliders()
+        await self._load_until_articulation_ready()
 
         captured: dict[str, object] = {}
         _orig_convert = traj_opt_scenario.isaac_sim_to_cumotion_pose

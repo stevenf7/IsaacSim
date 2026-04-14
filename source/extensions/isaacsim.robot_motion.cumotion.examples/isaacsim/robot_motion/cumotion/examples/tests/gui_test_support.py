@@ -29,7 +29,7 @@ async def wait_until(
     predicate: Callable[[], bool],
     *,
     timeout_sec: float = 90.0,
-    poll_sec: float = 0.25,
+    poll_sec: float = 0.05,
 ) -> bool:
     """Poll until ``predicate()`` is true or ``timeout_sec`` elapses.
 
@@ -40,14 +40,34 @@ async def wait_until(
 
     Returns:
         True if predicate returned True before timeout, False otherwise.
+
+    Notes:
+        ``next_update_async()`` resolves only when the Kit app completes a
+        frame.  If the app's update loop is blocked (e.g. by a hanging GPU /
+        physics step), ``next_update_async()`` never returns, the deadline
+        check is never reached, and the test hangs forever.
+
+        To keep the timeout enforceable we wrap each ``next_update_async()``
+        call with ``asyncio.wait_for``.  If a single frame takes longer than
+        the remaining budget, we abort and return False.  This only helps when
+        the block is at the asyncio level; a true OS-level block of the Kit
+        update thread will still stall everything.
     """
     deadline = time.monotonic() + timeout_sec
-    while time.monotonic() < deadline:
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return False
         if predicate():
             return True
-        await omni.kit.app.get_app().next_update_async()
+        try:
+            await asyncio.wait_for(
+                omni.kit.app.get_app().next_update_async(),
+                timeout=remaining,
+            )
+        except asyncio.TimeoutError:
+            return False
         await asyncio.sleep(poll_sec)
-    return False
 
 
 def assert_xyz_and_unit_quaternion_wxyz(position: object, orientation: object) -> None:

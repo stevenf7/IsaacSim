@@ -151,8 +151,11 @@ class UIBuilder:
         self._scenario = FrankaGraphPlannerExample()
 
     async def _load_example_assets(self) -> None:
-        """Load robot, target, and obstacle assets to the stage."""
-        self._scenario._robot_prim_path = "/panda"
+        """Load robot, target, and obstacle USD assets to the stage.
+
+        Requires ``_robot_prim_path`` and ``_cumotion_robot`` to already be set on the
+        scenario (done by the caller before invoking this coroutine).
+        """
         path_to_robot_usd = await get_assets_root_path_async() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
 
         add_reference_to_stage(path_to_robot_usd, self._scenario._robot_prim_path)
@@ -174,9 +177,7 @@ class UIBuilder:
         # Create cube geometry
         cube = Cube(obstacle_path, sizes=obstacle_size, positions=[obstacle_position])
 
-        # Plan to a C-space target
         # Use default configuration as starting point (ensures valid configuration)
-        self._scenario._cumotion_robot = load_cumotion_supported_robot("franka")
         self._scenario._controlled_dof_indices = (
             self._scenario._articulation.get_dof_indices(self._scenario._cumotion_robot.controlled_joint_names)
             .numpy()
@@ -203,7 +204,15 @@ class UIBuilder:
         stage_utils.set_stage_up_axis("Z")
         stage_utils.set_stage_units(meters_per_unit=1.0)
 
-        # Setup scene (load assets)
+        # Load robot config first (fast: local files, no network).  Sliders only need
+        # _cumotion_robot, so _setup_scenario() can run before the slow USD/network I/O
+        # below, letting the test's wait_until predicate resolve early.
+        self._scenario._robot_prim_path = "/panda"
+        self._scenario._cumotion_robot = load_cumotion_supported_robot("franka")
+        self._setup_scenario()
+
+        # Setup scene (load robot USD, targets, obstacles — slow: network I/O).
+        # Sets _articulation and other scene state needed for actual planning.
         await self._load_example_assets()
 
         # Set camera view
@@ -216,20 +225,13 @@ class UIBuilder:
             UsdPhysics.Scene.Define(stage, physics_scene_path)
         await omni.kit.app.get_app().next_update_async()
 
-        # Initialize physics if needed
+        # Initialize physics if needed (allocates tensors without running any steps).
+        # Deliberately omit timeline.play() here: running physics frames on load can
+        # block the Kit update thread (e.g. CUDA initialisation issues) which prevents
+        # next_update_async() from ever resolving, hanging the test tearDown.  The
+        # timeline starts naturally when the user clicks "Run Scenario".
         if SimulationManager.get_physics_sim_view() is None:
             SimulationManager.initialize_physics()
-
-        # Play timeline to initialize physics tensors
-        self._timeline.play()
-        # Wait for multiple updates to ensure physics runs and tensors are initialized
-        for _ in range(5):
-            await omni.kit.app.get_app().next_update_async()
-        self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-
-        # Setup scenario (post-load callback)
-        self._setup_scenario()
 
     def _setup_scenario(self) -> None:
         """Set up the scenario after assets are loaded."""
