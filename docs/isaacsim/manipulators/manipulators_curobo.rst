@@ -5,7 +5,8 @@ cuRobo and cuMotion
 ===================
 
 .. note::
-   There are known issues with using NvBlox examples within cuRobo. This tutorial will be updated when cuRobo is updated to resolve these issues.
+   The cuRobo and cuMotion tutorials here are no longer maintained. The :ref:`cuMotion integration <isaac_sim_cumotion>`
+   contains much of the same functionality.
 
 .. note::
    This cuRobo tutorial is not supported on aarch64 platforms.
