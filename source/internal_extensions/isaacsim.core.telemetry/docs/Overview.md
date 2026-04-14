@@ -15,21 +15,65 @@ Add `"isaacsim.core.telemetry" = {}` to your extension's `[dependencies]` in `ex
 from isaacsim.core.telemetry import emit_extension_activated, emit_feature_used, emit_error
 
 # Track extension lifecycle
-emit_extension_activated("isaacsim.my.extension", "1.0.0", "enabled")
+emit_extension_activated(extension_id="isaacsim.my.extension", extension_version="1.0.0", action="enabled")
 
 # Track feature usage
-emit_feature_used("isaacsim.my.extension", "create_sensor", "command", duration_ms=150.3)
+emit_feature_used(
+    extension_id="isaacsim.my.extension",
+    feature_name="create_sensor",
+    feature_type="command",
+    duration_ms=150,
+)
 
 # Track errors
 emit_error(
-    "isaacsim.my.extension",
-    "validation_error",
-    "Invalid sensor configuration",
-    '{"sensor_type": "lidar", "param": "frequency"}',
+    extension_id="isaacsim.my.extension",
+    error_category="validation_error",
+    error_type="invalid_sensor_config",
+    operation="create_sensor",
 )
 ```
 
 No schema registration or setup is required for these common events.
+
+### Decorator-based instrumentation
+
+For functions where you want automatic timing and error tracking, use the decorator API:
+
+```python
+from isaacsim.core.telemetry import telemetry, telemetry_usage, telemetry_error
+
+# Full instrumentation: featureUsed on success, errorOccurred on exception
+@telemetry(extension_id="isaacsim.sensors.experimental.rtx", feature_name="create_lidar_sensor")
+def create_lidar_sensor(prim_path, config):
+    ...
+
+# Usage tracking only (no error events)
+@telemetry_usage(extension_id="isaacsim.sensors.experimental.rtx", feature_name="query_sensor")
+def query_sensor(sensor_id):
+    ...
+
+# Error tracking only (no usage events)
+@telemetry_error(extension_id="isaacsim.app.setup", feature_name="app_startup")
+def initialize():
+    ...
+```
+
+### Extension lifecycle instrumentation
+
+Apply `@telemetry_extension` to an `IExt` subclass to automatically emit `extensionActivated` events on startup and shutdown. The extension name and version are parsed from the `ext_id` that Kit passes to `on_startup`:
+
+```python
+from isaacsim.core.telemetry import telemetry_extension
+
+@telemetry_extension
+class MyExtension(omni.ext.IExt):
+    def on_startup(self, ext_id):
+        ...
+
+    def on_shutdown(self):
+        ...
+```
 
 ## Common Event Reference
 
@@ -39,7 +83,7 @@ Emitted when an Isaac Sim extension is enabled or disabled.
 
 | Property           | Type   | Description                                       |
 | ------------------ | ------ | ------------------------------------------------- |
-| `extensionId`      | string | Extension identifier (e.g. `isaacsim.sensors.rtx`) |
+| `extensionId`      | string | Extension identifier (e.g. `isaacsim.sensors.experimental.rtx`) |
 | `extensionVersion` | string | Semantic version (e.g. `1.2.0`)                    |
 | `action`           | string | `"enabled"` or `"disabled"`                        |
 
@@ -52,18 +96,19 @@ Emitted when a user invokes a command, menu item, or significant API call.
 | `extensionId` | string | Extension that owns the feature                             |
 | `featureName` | string | Short identifier (e.g. `import_urdf`, `create_lidar_sensor`) |
 | `featureType` | string | `"command"`, `"menu_item"`, or `"api_call"`                  |
-| `durationMs`  | number | Wall-clock duration in milliseconds, `0.0` if not measured   |
+| `durationMs`  | integer | Wall-clock duration in milliseconds, `0` if not measured   |
 
 ### errorOccurred
 
-Emitted on recoverable errors.
+Emitted when an error occurs in an Isaac Sim extension.
 
-| Property       | Type   | Description                                              |
-| -------------- | ------ | -------------------------------------------------------- |
-| `extensionId`  | string | Extension where the error occurred                        |
-| `errorType`    | string | Classification (e.g. `import_failure`, `validation_error`) |
-| `errorMessage` | string | Human-readable error description                          |
-| `context`      | string | Optional JSON-encoded extra detail for diagnostics        |
+| Property        | Type    | Description                                                                    |
+| --------------- | ------- | ------------------------------------------------------------------------------ |
+| `extensionId`   | string  | Extension where the error occurred                                              |
+| `errorCategory` | string  | Broad classification (enum: `import_failure`, `validation_error`, `runtime_error`, `configuration_error`, `dependency_error`, `timeout`) |
+| `errorType`     | string  | Extension-specific error code (e.g. `urdf_joint_parse`, `missing_scan_rate_param`) |
+| `operation`     | string  | Feature/operation active when the error occurred (matches `featureName` in `featureUsed`) |
+| `recoverable`   | boolean | `true` if the operation could continue, `false` if it aborted                    |
 
 ## Feature Type Guidance
 
@@ -75,10 +120,10 @@ Use the `featureType` parameter to classify how the user triggered the feature:
 
 ## Error Telemetry Patterns
 
-Structure `errorType` as a short classification and use `context` for machine-parseable detail:
+All error fields are structured identifiers — no free-form text is accepted, which
+eliminates PII risk by design.
 
 ```python
-import json
 from isaacsim.core.telemetry import emit_error
 
 try:
@@ -86,21 +131,33 @@ try:
 except URDFParseError as exc:
     emit_error(
         extension_id="isaacsim.asset.importer.urdf",
-        error_type="import_failure",
-        error_message=str(exc),
-        context=json.dumps({"file": file_path, "stage": "joint_parsing"}),
+        error_category="import_failure",
+        error_type="urdf_joint_parse",
+        operation="import_urdf",
+        recoverable=False,
     )
 ```
 
-Recommended `errorType` values:
+### `errorCategory` values
 
-| errorType            | When to use                                                  |
+| errorCategory        | When to use                                                  |
 | -------------------- | ------------------------------------------------------------ |
 | `import_failure`     | Asset or file import/parse failures                          |
 | `validation_error`   | Invalid configuration, parameters, or schema violations      |
 | `runtime_error`      | Unexpected failures during normal operation                  |
-| `dependency_missing` | Required extension or plugin not available                   |
+| `configuration_error`| Missing or invalid settings/configuration                    |
+| `dependency_error`   | Required extension, plugin, or library not available          |
 | `timeout`            | Operations that exceeded expected duration                   |
+
+### `errorType` guidelines
+
+Use a short, descriptive code that identifies the specific failure within the extension.
+It should be meaningful for drill-down analysis but never contain PII:
+
+- `urdf_joint_parse` — URDF joint element could not be parsed
+- `missing_scan_rate_param` — required sensor parameter was absent
+- `physics_step_nan` — physics simulation produced NaN values
+- `prim_not_found` — expected USD prim was missing from the stage
 
 ## Custom Schemas
 
@@ -148,20 +205,20 @@ MY_SCHEMA = {
 class UrdfImporterExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
         manager = get_telemetry_manager()
-        manager.register_schema("isaacsim.urdf.diagnostics", MY_SCHEMA)
+        manager.register_schema(schema_name="isaacsim.urdf.diagnostics", schema=MY_SCHEMA)
 
     def on_shutdown(self):
         manager = get_telemetry_manager()
-        manager.unregister_schema("isaacsim.urdf.diagnostics")
+        manager.unregister_schema(schema_name="isaacsim.urdf.diagnostics")
 ```
 
 Send custom events via the raw API:
 
 ```python
 get_telemetry_manager().send_event(
-    "isaacsim.urdf.diagnostics",
-    "importResult",
-    {"filePath": "/path/to/robot.urdf", "success": True, "jointCount": 12},
+    schema_name="isaacsim.urdf.diagnostics",
+    event_name="importResult",
+    data={"filePath": "/path/to/robot.urdf", "success": True, "jointCount": 12},
 )
 ```
 
@@ -251,7 +308,7 @@ For containers, use environment variables instead: `OMNI_TELEMETRY_PRIVACY_USAGE
 ### Anonymization
 
 - All common events use the `fSchemaFlagAnonymizeEvents` flag, which strips personally identifiable information before transmission.
-- File paths in `context` fields should be relative or anonymized. Error messages must not contain user data.
+- Error events use only structured identifiers (enums and codes) — no free-form text fields — eliminating PII risk by design.
 - `omni.kit.telemetry` (a dependency of this extension) manages the structured log transmitter lifecycle.
 
 ## Complete Integration Example
@@ -280,25 +337,35 @@ class MyExtension(omni.ext.IExt):
         version = ext_id.split("-")[1] if "-" in ext_id else "0.0.0"
 
         # Track activation
-        emit_extension_activated(ext_name, version, "enabled")
+        emit_extension_activated(extension_id=ext_name, extension_version=version, action="enabled")
 
         # Register domain-specific schema
-        get_telemetry_manager().register_schema("my.custom.schema", CUSTOM_SCHEMA)
+        get_telemetry_manager().register_schema(schema_name="my.custom.schema", schema=CUSTOM_SCHEMA)
 
     def on_shutdown(self):
-        get_telemetry_manager().unregister_schema("my.custom.schema")
+        get_telemetry_manager().unregister_schema(schema_name="my.custom.schema")
 
     def do_work(self):
         start = time.perf_counter()
         try:
             result = self._perform_operation()
             duration_ms = (time.perf_counter() - start) * 1000.0
-            emit_feature_used("isaacsim.my.extension", "do_work", "command", duration_ms=duration_ms)
+            emit_feature_used(
+                extension_id="isaacsim.my.extension",
+                feature_name="do_work",
+                feature_type="command",
+                duration_ms=duration_ms,
+            )
 
             # Send domain-specific event
             get_telemetry_manager().send_event(
-                "my.custom.schema", "operationResult", {"success": True}
+                schema_name="my.custom.schema", event_name="operationResult", data={"success": True}
             )
-        except Exception as exc:
-            emit_error("isaacsim.my.extension", "runtime_error", str(exc))
+        except Exception:
+            emit_error(
+                extension_id="isaacsim.my.extension",
+                error_category="runtime_error",
+                error_type="operation_failed",
+                operation="do_work",
+            )
 ```

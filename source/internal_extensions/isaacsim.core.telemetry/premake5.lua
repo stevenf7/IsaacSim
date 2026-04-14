@@ -19,5 +19,20 @@ project_ext(ext)
 repo_build.prebuild_link {
     { "docs", ext.target_dir .. "/docs" },
     { "data", ext.target_dir .. "/data" },
+    { "schemas", ext.target_dir .. "/schemas" },
+    { "include", ext.target_dir .. "/include" },
     { "isaacsim", ext.target_dir .. "/isaacsim" },
 }
+
+-- Structured log schema code generation: produces the baked .json and a C++ .gen.h
+-- from the .schema source file.
+dofile('_build/target-deps/carb_sdk_plugins/tools/omni.structuredlog/omni.structuredlog.lua')
+setup_omni_structuredlog('../../../_build/target-deps/carb_sdk_plugins/')
+
+project_with_location("isaacsim.core.telemetry.schema")
+    omni_structuredlog_schema {
+        schema     = "schemas/isaacsim.telemetry.common.schema",
+        cpp_output = "include/isaacsim/core/telemetry/IsaacsimTelemetryCommon.gen.h",
+        bake_to    = "schemas/isaacsim.telemetry.common.1.0.json",
+        namespace  = "isaacsim::core::telemetry",
+    }
