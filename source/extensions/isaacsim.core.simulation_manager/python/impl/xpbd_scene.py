@@ -36,7 +36,7 @@ class NewtonXpbdScene(PhysicsScene):
         ValueError: If the input prim exists and is not a USD Physics Scene prim.
     """
 
-    def __init__(self, prim: str | Usd.Prim):
+    def __init__(self, prim: str | Usd.Prim) -> None:
         super().__init__(prim)
         if not self._prim.HasAPI("NewtonXpbdSceneAPI"):
             self._prim.ApplyAPI("NewtonXpbdSceneAPI")

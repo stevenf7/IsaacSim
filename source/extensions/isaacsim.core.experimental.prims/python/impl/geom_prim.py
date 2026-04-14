@@ -82,7 +82,7 @@ class GeomPrim(XformPrim):
         reset_xform_op_properties: bool = False,
         # GeomPrim
         apply_collision_apis: bool = False,
-    ):
+    ) -> None:
         # define properties
         self._geoms = []
         # initialize base class

@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import weakref
+from typing import Any
 
 import carb
 import carb.eventdispatcher
@@ -103,7 +104,7 @@ class Articulation(XformPrim):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = False,
-    ):
+    ) -> None:
         paths = Articulation.fetch_articulation_root_api_prim_paths(paths)
         # define properties
         # - default state properties
@@ -153,7 +154,7 @@ class Articulation(XformPrim):
         )
 
         # setup subscriptions
-        def safe_timeline_stop_callback(event, obj=weakref.proxy(self)):
+        def safe_timeline_stop_callback(event: Any, obj: Any = weakref.proxy(self)) -> None:
             try:
                 obj._on_timeline_stop(event)
             except ReferenceError:
@@ -170,7 +171,7 @@ class Articulation(XformPrim):
             SimulationManager._physics_sim_interface.flush_changes()
             self._on_physics_ready(None)
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Clean up instance by deregistering callbacks and resetting internal state."""
         super().__del__()
         self._subscription_to_timeline_stop_event = None
@@ -4807,8 +4808,8 @@ class Articulation(XformPrim):
             cpp_buf = wrap_cpp_buffer(view, field_name, shape=shape)
             fn = getter_fn
 
-            def make_cb(f=fn, b=cpp_buf):
-                def cb():
+            def make_cb(f: Any = fn, b: Any = cpp_buf) -> Any:
+                def cb() -> None:
                     wp.copy(b, f())
 
                 return cb
@@ -4832,7 +4833,7 @@ class Articulation(XformPrim):
                 if names and len(types) == len(names):
                     reader.set_articulation_dof_metadata(self._cpp_data_view_id, names, types)
 
-    def initialize_cpp_data_view(self):
+    def initialize_cpp_data_view(self) -> None:
         """Initialize the optional C++ read-only data view.
 
         This method is opt-in and can be called by users that need C++ consumers
@@ -4840,7 +4841,7 @@ class Articulation(XformPrim):
         """
         self._setup_cpp_data_view()
 
-    def _teardown_cpp_data_view(self):
+    def _teardown_cpp_data_view(self) -> None:
         """Clean up C++ data view."""
         if self._cpp_data_view_id is not None:
             from .extension import get_prim_data_reader

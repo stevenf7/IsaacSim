@@ -29,9 +29,7 @@ from pxr import Usd, UsdGeom
 
 
 class Camera(XformPrim):
-    """High level class for creating/wrapping USD Camera (that describes optical properties of a camera.
-
-    via a common set of attributes) prims.
+    """Create or wrap USD Camera prims with optical properties defined by common attributes.
 
     .. note::
 
@@ -122,7 +120,7 @@ class Camera(XformPrim):
             paths: Prim paths (or prims) to check for.
 
         Returns:
-            Boolean flags indicating if the prims are valid for creating Shape instances.
+            Boolean flags indicating if the prims are valid for creating Camera instances.
 
         Example:
 

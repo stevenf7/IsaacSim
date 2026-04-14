@@ -15,9 +15,9 @@
 
 """Cloner module."""
 
-__all__ = ["Cloner"]
+from __future__ import annotations
 
-from typing import List, Union
+__all__ = ["Cloner"]
 
 import carb
 import carb.settings
@@ -70,14 +70,14 @@ class Cloner:
         >>> cloner = Cloner(stage=stage)
     """
 
-    def __init__(self, stage: Usd.Stage = None):
+    def __init__(self, stage: Usd.Stage = None) -> None:
         self._base_env_path = None
         self._root_path = None
         self._stage = stage
         if stage is None:
             self._stage = omni.usd.get_context().get_stage()
 
-    def define_base_env(self, base_env_path: str):
+    def define_base_env(self, base_env_path: str) -> None:
         """Create a USD Scope at base_env_path.
 
         This is designed to be the parent that holds all clones.
@@ -129,7 +129,7 @@ class Cloner:
         root_path: str,
         enable_env_ids: bool = False,
         clone_in_fabric: bool = False,
-    ):
+    ) -> None:
         """Replicate physics properties directly in omni.physics.
 
         This avoids performance bottlenecks when parsing physics by using the
@@ -186,16 +186,16 @@ class Cloner:
                 attr = prim.CreateAttribute("physxScene:envIdInBoundsBitCount", Sdf.ValueTypeNames.Int)
                 attr.Set(4)
 
-        def replicationAttachFn(stageId):
+        def replicationAttachFn(stageId: int) -> list[str]:  # noqa: N802
             exclude_paths = [clone_root]
             return exclude_paths
 
-        def replicationAttachEndFn(stageId):
+        def replicationAttachEndFn(stageId: int) -> None:  # noqa: N802
             get_physx_replicator_interface().replicate(
                 stageId, source_prim_path, num_replications, enable_env_ids, clone_in_fabric
             )
 
-        def hierarchyRenameFn(replicatePath, index):
+        def hierarchyRenameFn(replicatePath: str, index: int) -> str:  # noqa: N802
             if replicate_first:
                 stringPath = clone_base_path + str(index)
             else:
@@ -206,7 +206,7 @@ class Cloner:
             stageId, replicationAttachFn, replicationAttachEndFn, hierarchyRenameFn
         )
 
-    def disable_change_listener(self):
+    def disable_change_listener(self) -> None:
         """Disable USD notice handlers to improve cloning performance.
 
         This method temporarily disables various USD notice handlers including
@@ -236,7 +236,7 @@ class Cloner:
             self._physx_ui_notice_enabled = get_physxui_interface().is_usd_notice_handler_enabled()
             if self._physx_ui_notice_enabled:
                 get_physxui_interface().block_usd_notice_handler(True)
-        except:
+        except Exception:
             pass
 
         # second disable Fabric USD notice handler
@@ -248,7 +248,7 @@ class Cloner:
         # third disable SimulationManager notice handler
         SimulationManager.enable_usd_notice_handler(False)
 
-    def enable_change_listener(self):
+    def enable_change_listener(self) -> None:
         """Re-enable USD notice handlers after cloning operations.
 
         This method restores the USD notice handlers that were disabled by
@@ -272,7 +272,7 @@ class Cloner:
 
             if self._physx_ui_notice_enabled:
                 get_physxui_interface().block_usd_notice_handler(False)
-        except:
+        except Exception:
             pass
 
         if self._fabric_usd_notice_enabled:
@@ -284,9 +284,9 @@ class Cloner:
     def clone(
         self,
         source_prim_path: str,
-        prim_paths: List[str],
-        positions: Union[np.ndarray, "torch.Tensor"] = None,
-        orientations: Union[np.ndarray, "torch.Tensor"] = None,
+        prim_paths: list[str],
+        positions: np.ndarray | "torch.Tensor" = None,
+        orientations: np.ndarray | "torch.Tensor" = None,
         replicate_physics: bool = False,
         base_env_path: str = None,
         root_path: str = None,
@@ -294,7 +294,7 @@ class Cloner:
         unregister_physics_replication: bool = False,
         enable_env_ids: bool = False,
         clone_in_fabric: bool = False,
-    ):
+    ) -> None:
         """Clone a source prim at user-specified destination paths.
 
         Clones will be placed at user-specified positions and orientations.
@@ -361,7 +361,7 @@ class Cloner:
             # - convert from torch (without explicit importing it)
             try:
                 positions = positions.detach().cpu().numpy()
-            except:
+            except Exception:
                 pass
             # - convert from other types
             if not isinstance(positions, np.ndarray):
@@ -375,7 +375,7 @@ class Cloner:
             # - convert from torch (without explicit importing it)
             try:
                 orientations = orientations.detach().cpu().numpy()
-            except:
+            except Exception:
                 pass
             # - convert from other types
             if not isinstance(orientations, np.ndarray):
@@ -583,8 +583,12 @@ class Cloner:
         self.enable_change_listener()
 
     def filter_collisions(
-        self, physicsscene_path: str, collision_root_path: str, prim_paths: List[str], global_paths: List[str] = []
-    ):
+        self,
+        physicsscene_path: str,
+        collision_root_path: str,
+        prim_paths: list[str],
+        global_paths: list[str] | None = None,
+    ) -> None:
         """Filter collisions between clones.
 
         Clones will not collide with each other, but can collide with objects
@@ -618,6 +622,9 @@ class Cloner:
             ...     global_paths=["/World/ground_plane"],
             ... )
         """
+        if global_paths is None:
+            global_paths = []
+
         physx_scene = PhysxSchema.PhysxSceneAPI(self._stage.GetPrimAtPath(physicsscene_path))
 
         # We invert the collision group filters for more efficient collision filtering across environments

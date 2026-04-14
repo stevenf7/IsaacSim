@@ -39,7 +39,7 @@ class PhysicsScene:
         ValueError: If the input prim exists and is not a USD Physics Scene prim.
     """
 
-    def __init__(self, prim: str | Usd.Prim):
+    def __init__(self, prim: str | Usd.Prim) -> None:
         physics_scene = _simulation_manager.PhysicsScene(prim_utils.get_prim_path(prim))
         self._path = physics_scene.path
         self._prim = prim_utils.get_prim_at_path(prim)

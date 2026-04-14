@@ -29,7 +29,7 @@ class BaseResetNode:
         initialize: Whether the node should be initialized on creation.
     """
 
-    def __init__(self, initialize: bool = False):
+    def __init__(self, initialize: bool = False) -> None:
         self.initialized = initialize
 
         timeline = omni.timeline.get_timeline_interface()
@@ -40,7 +40,7 @@ class BaseResetNode:
             observer_name="isaacsim.core.nodes.BaseResetNode.on_stop_play",
         )
 
-    def on_stop_play(self, event: carb.eventdispatcher.Event):
+    def on_stop_play(self, event: carb.eventdispatcher.Event) -> None:
         """Timeline stop event callback - reset node state.
 
         Args:
@@ -50,13 +50,13 @@ class BaseResetNode:
         self.initialized = False
 
     # Defined by subclass
-    def custom_reset(self):
+    def custom_reset(self) -> None:
         """Custom reset logic to be implemented by subclasses.
 
         This method is called when the timeline stops to perform node-specific reset operations.
         """
 
-    def reset(self):
+    def reset(self) -> None:
         """Cleans up the node by clearing event subscriptions and initialization state."""
         self.timeline_event_sub = None
         self.initialized = None

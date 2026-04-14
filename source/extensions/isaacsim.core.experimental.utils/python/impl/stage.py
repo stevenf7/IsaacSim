@@ -19,7 +19,8 @@ from __future__ import annotations
 
 import contextlib
 import threading
-from typing import Generator, Literal
+from collections.abc import Generator
+from typing import Literal
 
 import carb
 import omni.kit.stage_templates
@@ -193,7 +194,7 @@ def generate_stage_representation(mode: Literal["list", "tree"] = "tree") -> str
         ├─ PrimC (Camera)
     """
 
-    def _generate_tree(prim, indent=0):
+    def _generate_tree(prim: Usd.Prim, indent: int = 0) -> None:
         prefix = "│  " * (indent - 1) + "├─ " if indent > 0 else ""
         lines.append(f"{prefix}{prim.GetPath().name} ({prim.GetTypeName()})")
         for child in prim.GetChildren():
@@ -273,7 +274,7 @@ def create_new_stage(*, template: str | None = None) -> Usd.Stage:
     # create stage from template
     else:
         templates = [name for item in omni.kit.stage_templates.get_stage_template_list() for name in item]
-        if not template in templates:
+        if template not in templates:
             raise ValueError(f"Template '{template}' not found. Available templates: {templates}")
         omni.kit.stage_templates.new_stage(template=template)
     return omni.usd.get_context().get_stage()
@@ -303,7 +304,7 @@ async def create_new_stage_async(*, template: str | None = None) -> Usd.Stage:
     # create stage from template
     else:
         templates = [name for item in omni.kit.stage_templates.get_stage_template_list() for name in item]
-        if not template in templates:
+        if template not in templates:
             raise ValueError(f"Template '{template}' not found. Available templates: {templates}")
         await omni.kit.stage_templates.new_stage_async(template=template)
     await omni.kit.app.get_app().next_update_async()
@@ -421,7 +422,7 @@ def close_stage() -> bool:
 
 
 def add_reference_to_stage(
-    usd_path: str, path: str, *, prim_type: str = "Xform", variants: list[tuple[str, str]] = []
+    usd_path: str, path: str, *, prim_type: str = "Xform", variants: list[tuple[str, str]] | None = None
 ) -> Usd.Prim:
     """Add a USD file reference to the stage at the specified prim path.
 
@@ -481,12 +482,10 @@ def add_reference_to_stage(
 
             omni.kit.commands.execute("AddReference", stage=stage, prim_path=path, reference=reference)
             reference_added = True
-        except Exception as e:
+        except Exception:
             carb.log_warn(
-                (
-                    f"The USD file ({usd_path}) has divergent units. "
-                    "Enable the omni.usd.metrics.assembler.ui extension or convert the file into right units."
-                )
+                f"The USD file ({usd_path}) has divergent units. "
+                "Enable the omni.usd.metrics.assembler.ui extension or convert the file into right units."
             )
     # add reference (if not already added during divergent units check)
     if not reference_added:
@@ -494,6 +493,8 @@ def add_reference_to_stage(
         if not result:
             raise Exception(f"Unable to add reference to the USD file ({usd_path}).")
     # set variants
+    if variants is None:
+        variants = []
     prim_utils.set_prim_variants(prim, variants=variants)
     return prim
 
@@ -563,7 +564,7 @@ def get_stage_units() -> tuple[float, float]:
     return UsdGeom.GetStageMetersPerUnit(stage), UsdPhysics.GetStageKilogramsPerUnit(stage)
 
 
-def set_stage_units(*, meters_per_unit: float | None = None, kilograms_per_unit: float | None = None):
+def set_stage_units(*, meters_per_unit: float | None = None, kilograms_per_unit: float | None = None) -> None:
     """Set the stage meters per unit and kilograms per unit.
 
     Backends: :guilabel:`usd`.
@@ -644,7 +645,7 @@ def get_stage_up_axis() -> Literal["Y", "Z"]:
     return UsdGeom.GetStageUpAxis(get_current_stage(backend="usd"))
 
 
-def set_stage_up_axis(up_axis: Literal["Y", "Z"]):
+def set_stage_up_axis(up_axis: Literal["Y", "Z"]) -> None:
     """Set the stage up axis.
 
     Backends: :guilabel:`usd`.
@@ -698,7 +699,7 @@ def set_stage_time_code(
     start_time_code: float | None = None,
     end_time_code: float | None = None,
     time_codes_per_second: float | None = None,
-):
+) -> None:
     """Set the stage time code (start, end, and time codes per second).
 
     Backends: :guilabel:`usd`.

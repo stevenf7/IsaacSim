@@ -24,7 +24,7 @@ from pxr import Usd, UsdSemantics
 from . import stage as stage_utils
 
 
-def add_labels(prim: str | Usd.Prim, *, labels: str | list[str], taxonomy: str = "class"):
+def add_labels(prim: str | Usd.Prim, *, labels: str | list[str], taxonomy: str = "class") -> None:
     """Add semantic labels, given a taxonomy (instance name), to a prim.
 
     Backends: :guilabel:`usd`.
@@ -91,7 +91,7 @@ def get_labels(prim: str | Usd.Prim, *, include_descendants: bool = False) -> di
         {'class': ['label_a', 'label_b'], 'custom': ['label_c']}
     """
 
-    def _get_labels(target_prim: Usd.Prim):
+    def _get_labels(target_prim: Usd.Prim) -> None:
         for schema in target_prim.GetAppliedSchemas():
             if schema.startswith("SemanticsLabelsAPI:"):
                 taxonomy = schema.split(":", 1)[-1]
@@ -112,7 +112,7 @@ def get_labels(prim: str | Usd.Prim, *, include_descendants: bool = False) -> di
 
 def remove_labels(
     prim: str | Usd.Prim, *, labels: str | list[str], taxonomy: str | None = None, include_descendants: bool = False
-):
+) -> None:
     """Remove semantic labels from a prim.
 
     Backends: :guilabel:`usd`.
@@ -146,7 +146,7 @@ def remove_labels(
         {'class': ['label_b'], 'custom': ['label_c']}
     """
 
-    def _remove_labels(target_prim: Usd.Prim):
+    def _remove_labels(target_prim: Usd.Prim) -> None:
         for schema in target_prim.GetAppliedSchemas():
             if schema.startswith("SemanticsLabelsAPI:"):
                 current_taxonomy = schema.split(":", 1)[-1]
@@ -164,7 +164,9 @@ def remove_labels(
         _remove_labels(prim)
 
 
-def remove_all_labels(prim: str | Usd.Prim, *, remove_taxonomies: bool = False, include_descendants: bool = False):
+def remove_all_labels(
+    prim: str | Usd.Prim, *, remove_taxonomies: bool = False, include_descendants: bool = False
+) -> None:
     """Remove all semantic labels from a prim.
 
     Backends: :guilabel:`usd`.
@@ -201,7 +203,7 @@ def remove_all_labels(prim: str | Usd.Prim, *, remove_taxonomies: bool = False, 
         {}
     """
 
-    def _remove_all_labels(target_prim: Usd.Prim):
+    def _remove_all_labels(target_prim: Usd.Prim) -> None:
         for schema in target_prim.GetAppliedSchemas():
             if schema.startswith("SemanticsLabelsAPI:"):
                 current_taxonomy = schema.split(":", 1)[-1]

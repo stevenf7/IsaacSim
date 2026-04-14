@@ -35,10 +35,10 @@ class Shape(XformPrim, ABC):
 
     .. note::
 
-        This class creates or wraps (one of both) USD Cube prims according to the following rules:
+        This class creates or wraps (one of both) USD geometry shape prims according to the following rules:
 
-        * If the prim paths exist, a wrapper is placed over the USD Cube prims.
-        * If the prim paths do not exist, USD Cube prims are created at each path and a wrapper is placed over them.
+        * If the prim paths exist, a wrapper is placed over the USD geometry shape prims.
+        * If the prim paths do not exist, USD geometry shape prims are created at each path and a wrapper is placed over them.
 
     Args:
         paths: Single path or list of paths to existing or non-existing (one of both) USD prims.
@@ -78,7 +78,7 @@ class Shape(XformPrim, ABC):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
-    ):
+    ) -> None:
         super().__init__(
             paths,
             resolve_paths=resolve_paths,

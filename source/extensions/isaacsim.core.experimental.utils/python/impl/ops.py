@@ -391,7 +391,7 @@ Custom Warp kernels.
 
 
 @wp.kernel(enable_backward=False)
-def _wk_cast_1d(src: wp.array(ndim=1), dst: wp.array(ndim=1)):
+def _wk_cast_1d(src: wp.array(ndim=1), dst: wp.array(ndim=1)) -> None:
     """Warp kernel for casting 1D arrays to a different data type.
 
     Args:
@@ -403,7 +403,7 @@ def _wk_cast_1d(src: wp.array(ndim=1), dst: wp.array(ndim=1)):
 
 
 @wp.kernel(enable_backward=False)
-def _wk_cast_2d(src: wp.array(ndim=2), dst: wp.array(ndim=2)):
+def _wk_cast_2d(src: wp.array(ndim=2), dst: wp.array(ndim=2)) -> None:
     """Warp kernel for casting 2D arrays to a different data type.
 
     Args:
@@ -415,7 +415,7 @@ def _wk_cast_2d(src: wp.array(ndim=2), dst: wp.array(ndim=2)):
 
 
 @wp.kernel(enable_backward=False)
-def _wk_cast_3d(src: wp.array(ndim=3), dst: wp.array(ndim=3)):
+def _wk_cast_3d(src: wp.array(ndim=3), dst: wp.array(ndim=3)) -> None:
     """Warp kernel for casting 3D arrays to a different data type.
 
     Args:
@@ -427,19 +427,19 @@ def _wk_cast_3d(src: wp.array(ndim=3), dst: wp.array(ndim=3)):
 
 
 @wp.kernel(enable_backward=False)
-def _wk_cast_4d(src: wp.array(ndim=4), dst: wp.array(ndim=4)):
+def _wk_cast_4d(src: wp.array(ndim=4), dst: wp.array(ndim=4)) -> None:
     """Warp kernel for casting 4D arrays to a different data type.
 
     Args:
         src: Source 4D Warp array to cast.
         dst: Destination 4D Warp array with target data type.
     """
-    i, j, k, l = wp.tid()
-    dst[i, j, k, l] = dst.dtype(src[i, j, k, l])
+    i, j, k, w = wp.tid()
+    dst[i, j, k, w] = dst.dtype(src[i, j, k, w])
 
 
 @wp.kernel(enable_backward=False)
-def _wk_broadcast_1d(src: wp.array(ndim=1), dst: wp.array(ndim=1), axis_0: bool):
+def _wk_broadcast_1d(src: wp.array(ndim=1), dst: wp.array(ndim=1), axis_0: bool) -> None:
     """Warp kernel for broadcasting 1D arrays.
 
     Args:
@@ -455,7 +455,7 @@ def _wk_broadcast_1d(src: wp.array(ndim=1), dst: wp.array(ndim=1), axis_0: bool)
 
 
 @wp.kernel(enable_backward=False)
-def _wk_broadcast_2d(src: wp.array(ndim=2), dst: wp.array(ndim=2), axis_0: bool, axis_1: bool):
+def _wk_broadcast_2d(src: wp.array(ndim=2), dst: wp.array(ndim=2), axis_0: bool, axis_1: bool) -> None:
     """Warp kernel for broadcasting 2D arrays.
 
     Args:
@@ -474,7 +474,7 @@ def _wk_broadcast_2d(src: wp.array(ndim=2), dst: wp.array(ndim=2), axis_0: bool,
 
 
 @wp.kernel(enable_backward=False)
-def _wk_broadcast_3d(src: wp.array(ndim=3), dst: wp.array(ndim=3), axis_0: bool, axis_1: bool, axis_2: bool):
+def _wk_broadcast_3d(src: wp.array(ndim=3), dst: wp.array(ndim=3), axis_0: bool, axis_1: bool, axis_2: bool) -> None:
     """Warp kernel for broadcasting 3D arrays.
 
     Args:
@@ -498,7 +498,7 @@ def _wk_broadcast_3d(src: wp.array(ndim=3), dst: wp.array(ndim=3), axis_0: bool,
 @wp.kernel(enable_backward=False)
 def _wk_broadcast_4d(
     src: wp.array(ndim=4), dst: wp.array(ndim=4), axis_0: bool, axis_1: bool, axis_2: bool, axis_3: bool
-):
+) -> None:
     """Warp kernel for broadcasting 4D arrays.
 
     Args:
@@ -509,8 +509,8 @@ def _wk_broadcast_4d(
         axis_2: Whether to broadcast along axis 2.
         axis_3: Whether to broadcast along axis 3.
     """
-    i, j, k, l = wp.tid()
-    index_0, index_1, index_2, index_3 = i, j, k, l
+    i, j, k, w = wp.tid()
+    index_0, index_1, index_2, index_3 = i, j, k, w
     if axis_0:
         index_0 = 0
     if axis_1:
@@ -519,7 +519,7 @@ def _wk_broadcast_4d(
         index_2 = 0
     if axis_3:
         index_3 = 0
-    dst[i, j, k, l] = src[index_0, index_1, index_2, index_3]
+    dst[i, j, k, w] = src[index_0, index_1, index_2, index_3]
 
 
 _WK_CAST = [

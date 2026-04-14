@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import re
 from abc import ABC
+from typing import Any
 
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -52,6 +53,7 @@ class Prim(ABC):
 
     Raises:
         ValueError: If no prims are found matching the specified path(s).
+        AssertionError: If specified paths correspond to non-existing prims.
 
     Example:
 
@@ -66,7 +68,7 @@ class Prim(ABC):
         >>> prims = Prim("/World/prim_.*")  # doctest: +NO_CHECK
     """
 
-    def __init__(self, paths: str | list[str], *, resolve_paths: bool = True):
+    def __init__(self, paths: str | list[str], *, resolve_paths: bool = True) -> None:
         self._is_valid = True
         self._device = wp.get_device(SimulationManager.get_physics_sim_device())
         # get prim paths
@@ -174,7 +176,7 @@ class Prim(ABC):
     """
 
     @staticmethod
-    def ensure_api(prims: list[Usd.Prim], api: type, *args, **kwargs) -> list[type["UsdAPISchemaBase"]]:
+    def ensure_api(prims: list[Usd.Prim], api: type, *args: Any, **kwargs: Any) -> list[type["UsdAPISchemaBase"]]:
         """Ensure that all prims have the specified API schema applied.
 
         Backends: :guilabel:`usd`.

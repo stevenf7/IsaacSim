@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import warp as wp
 
@@ -611,12 +613,12 @@ def look_at_quaternion(
 
 
 def look_at_matrix(
-    eye: "list | np.ndarray | Gf.Vec3d",
-    target: "list | np.ndarray | Gf.Vec3d",
-    up: "list | np.ndarray | Gf.Vec3d | None" = None,
+    eye: "list | np.ndarray | Any",
+    target: "list | np.ndarray | Any",
+    up: "list | np.ndarray | Any | None" = None,
     *,
     epsilon: float = 1e-5,
-) -> "Gf.Matrix4d":
+) -> Any:
     """Compute the camera transform matrix (position + orientation) for a look-at.
 
     Returns the ``Gf.Matrix4d`` that places a camera at *eye* oriented so its
@@ -658,7 +660,7 @@ def look_at_matrix(
     """
     from pxr import Gf
 
-    def _to_vec3d(v, fallback: list) -> Gf.Vec3d:
+    def _to_vec3d(v: Any, fallback: list) -> Gf.Vec3d:
         if v is None:
             return Gf.Vec3d(*fallback)
         if isinstance(v, Gf.Vec3d):
@@ -686,7 +688,7 @@ Custom Warp kernels for transform operations.
 
 
 @wp.kernel(enable_backward=False)
-def _wk_rotation_matrix_to_quaternion(rotation_matrix: wp.array(ndim=3), output: wp.array(ndim=2)):
+def _wk_rotation_matrix_to_quaternion(rotation_matrix: wp.array(ndim=3), output: wp.array(ndim=2)) -> None:
     """Convert rotation matrix to quaternion using Warp kernel.
 
     Args:
@@ -750,7 +752,7 @@ def _wk_euler_angles_to_rotation_matrix(
     output: wp.array(ndim=3),
     degrees: bool,
     extrinsic: bool,
-):
+) -> None:
     """Convert Euler angles to rotation matrix using Warp kernel.
 
     Input order is always [X, Y, Z] = [roll, pitch, yaw] for both conventions.
@@ -771,7 +773,6 @@ def _wk_euler_angles_to_rotation_matrix(
 
     # Create type-safe constants from the input array (NOT output array which may contain NaN)
     zero = angle1 - angle1  # Type-safe zero derived from input
-    one = zero + euler_angles.dtype(1.0)  # Type-safe one using input dtype
 
     # Convert to radians if needed
     if degrees:
@@ -821,7 +822,7 @@ def _wk_euler_angles_to_rotation_matrix(
 
 
 @wp.kernel(enable_backward=False)
-def _wk_quaternion_multiplication(a: wp.array(ndim=2), b: wp.array(ndim=2), output: wp.array(ndim=2)):
+def _wk_quaternion_multiplication(a: wp.array(ndim=2), b: wp.array(ndim=2), output: wp.array(ndim=2)) -> None:
     """Multiply two quaternions using Hamilton product.
 
     Args:
@@ -858,7 +859,7 @@ def _wk_quaternion_multiplication(a: wp.array(ndim=2), b: wp.array(ndim=2), outp
 
 
 @wp.kernel(enable_backward=False)
-def _wk_quaternion_conjugate(q: wp.array(ndim=2), output: wp.array(ndim=2)):
+def _wk_quaternion_conjugate(q: wp.array(ndim=2), output: wp.array(ndim=2)) -> None:
     """Compute quaternion conjugate by negating the vector part.
 
     Args:
@@ -875,7 +876,7 @@ def _wk_quaternion_conjugate(q: wp.array(ndim=2), output: wp.array(ndim=2)):
 
 
 @wp.kernel(enable_backward=False)
-def _wk_quaternion_to_rotation_matrix(quaternion: wp.array(ndim=2), output: wp.array(ndim=3)):
+def _wk_quaternion_to_rotation_matrix(quaternion: wp.array(ndim=2), output: wp.array(ndim=3)) -> None:
     """Convert quaternion to rotation matrix using standard formula.
 
     Args:
@@ -922,7 +923,7 @@ def _wk_quaternion_to_euler_angles(
     output: wp.array(ndim=2),
     degrees: bool,
     extrinsic: bool,
-):
+) -> None:
     """Convert quaternion to Euler angles using Warp kernel.
 
     For extrinsic convention, output order is [X, Y, Z] = [roll, pitch, yaw].
@@ -1039,7 +1040,7 @@ def _wk_look_at_quaternion(
     target: wp.array(ndim=2),
     up: wp.array(ndim=2),
     output: wp.array(ndim=2),
-):
+) -> None:
     """Compute look-at orientation quaternion.
 
     The resulting rotation orients the negative-Z axis toward the target

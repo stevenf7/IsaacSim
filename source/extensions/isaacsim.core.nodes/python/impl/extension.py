@@ -53,7 +53,7 @@ class Extension(omni.ext.IExt):
     - Passthrough nodes for image pointer data
     """
 
-    def on_startup(self):
+    def on_startup(self) -> None:
         """Called when the extension is enabled to initialize the interface and register nodes."""
         self.__interface = acquire_interface()
         self.registered_templates = []
@@ -63,7 +63,7 @@ class Extension(omni.ext.IExt):
         except Exception as e:
             carb.log_error(f"Could not register node templates {e}")
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension is disabled to release the interface and unregister nodes."""
         release_interface(self.__interface)
         self.__interface = None
@@ -72,8 +72,8 @@ class Extension(omni.ext.IExt):
         except Exception as e:
             carb.log_warn(f"Could not unregister node templates {e}")
 
-    def register_nodes(self):
-        """Registers Isaac Sim annotator node templates and simulation gates for synthetic data generation.
+    def register_nodes(self) -> None:
+        """Register Isaac Sim annotator node templates and simulation gates for synthetic data generation.
 
         Registers annotators for camera info, time reading, world pose, image conversion, and point cloud
         generation. Also creates simulation gates for various render variables and annotator types.
@@ -241,7 +241,7 @@ class Extension(omni.ext.IExt):
         )
         self.registered_annotators.append(annotator_name)
 
-    def unregister_nodes(self):
+    def unregister_nodes(self) -> None:
         """Unregisters all previously registered node templates and annotators from the synthetic data system."""
         for template in self.registered_templates:
             sensors.get_synthetic_data().unregister_node_template(template)

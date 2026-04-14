@@ -22,13 +22,13 @@ from isaacsim.core.version import get_version, parse_version
 class TestIsaacVersion(omni.kit.test.AsyncTestCase):
     """Test isaac version."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
 
-    async def test_version(self):
+    async def test_version(self) -> None:
         """Test version."""
         parsed_version = parse_version("2000.0.0-beta.0+branch.0.hash.local")
         self.assertTrue(parsed_version.core == "2000.0.0")

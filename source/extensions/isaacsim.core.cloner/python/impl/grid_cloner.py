@@ -15,9 +15,10 @@
 
 """Grid cloner module."""
 
+from __future__ import annotations
+
 __all__ = ["GridCloner"]
 
-from typing import List
 
 import numpy as np
 from isaacsim.core.cloner import Cloner
@@ -62,7 +63,7 @@ class GridCloner(Cloner):
         >>> cloner = GridCloner(spacing=1.5, num_per_row=3)
     """
 
-    def __init__(self, spacing: float, num_per_row: int = -1, stage: Usd.Stage = None):
+    def __init__(self, spacing: float, num_per_row: int = -1, stage: Usd.Stage = None) -> None:
         self._spacing = spacing
         self._num_per_row = num_per_row
 
@@ -76,7 +77,7 @@ class GridCloner(Cloner):
         num_clones: int,
         position_offsets: np.ndarray = None,
         orientation_offsets: np.ndarray = None,
-    ):
+    ) -> tuple[list, list]:
         """Compute the positions and orientations of clones in a grid.
 
         Args:
@@ -115,7 +116,7 @@ class GridCloner(Cloner):
             # - convert from torch (without explicit importing it)
             try:
                 position_offsets = position_offsets.detach().cpu().numpy()
-            except:
+            except Exception:
                 pass
             # - convert from other types
             if not isinstance(position_offsets, np.ndarray):
@@ -127,7 +128,7 @@ class GridCloner(Cloner):
             # - convert from torch (without explicit importing it)
             try:
                 orientation_offsets = orientation_offsets.detach().cpu().numpy()
-            except:
+            except Exception:
                 pass
             # - convert from other types
             if not isinstance(orientation_offsets, np.ndarray):
@@ -186,7 +187,7 @@ class GridCloner(Cloner):
     def clone(
         self,
         source_prim_path: str,
-        prim_paths: List[str],
+        prim_paths: list[str],
         position_offsets: np.ndarray = None,
         orientation_offsets: np.ndarray = None,
         replicate_physics: bool = False,
@@ -195,7 +196,7 @@ class GridCloner(Cloner):
         copy_from_source: bool = False,
         enable_env_ids: bool = False,
         clone_in_fabric: bool = False,
-    ):
+    ) -> list:
         """Create clones in a grid pattern with automatically computed positions.
 
         Args:

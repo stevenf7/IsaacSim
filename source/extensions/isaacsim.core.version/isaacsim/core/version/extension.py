@@ -18,7 +18,6 @@
 
 
 import os
-import typing
 
 import carb.settings
 import carb.tokens
@@ -39,7 +38,7 @@ class Version:
     get broken down into their constituent parts and stored in the respective attributes of this class.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.core = ""
         self.prerelease = ""
         self.major = ""
@@ -72,11 +71,11 @@ def parse_version(full_version: str) -> Version:
     return parsed_version
 
 
-def get_version() -> typing.Tuple[str, str, str, str, str, str, str, str]:
+def get_version() -> tuple[str, str, str, str, str, str, str, str]:
     """Retrieve version from the App VERSION file.
 
     Returns:
-        [Core version, Pre-release tag and build number, Major version, Minor version, Patch version, Pre-release tag, Build number, Build tag]
+        Tuple containing core version, pre-release tag and build number, major version, minor version, patch version, pre-release tag, build number, and build tag.
     """
     app_folder = carb.settings.get_settings().get_as_string("/app/folder")
     if not app_folder:

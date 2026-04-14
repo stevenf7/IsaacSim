@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides visual material implementations including PBR, glass, and preview surface materials for scene rendering."""
+"""Provide visual material implementations including PBR, glass, and preview surface materials for scene rendering."""
 
 
-from .omni_glass import OmniGlassMaterial
-from .omni_pbr import OmniPbrMaterial
-from .preview_surface import PreviewSurfaceMaterial
-from .visual_material import VisualMaterial
+from .omni_glass import OmniGlassMaterial as OmniGlassMaterial
+from .omni_pbr import OmniPbrMaterial as OmniPbrMaterial
+from .preview_surface import PreviewSurfaceMaterial as PreviewSurfaceMaterial
+from .visual_material import VisualMaterial as VisualMaterial

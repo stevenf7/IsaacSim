@@ -368,7 +368,7 @@ class OmniPbrMaterial(VisualMaterial):
         >>> prims = OmniPbrMaterial(paths)  # doctest: +NO_CHECK
     """
 
-    def __init__(self, paths: str | list[str]):
+    def __init__(self, paths: str | list[str]) -> None:
         # get or create prims
         self._shaders = []
         self._materials = []

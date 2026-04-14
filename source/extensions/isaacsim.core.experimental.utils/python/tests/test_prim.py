@@ -89,7 +89,7 @@ class TestPrim(omni.kit.test.AsyncTestCase):
 
     async def test_find_matching_prim_paths(self):
         """Test find matching prim paths."""
-        stage_utils.define_prim(f"/World/A")
+        stage_utils.define_prim("/World/A")
         for i in range(2):
             stage_utils.define_prim(f"/World/A{i}")
             stage_utils.define_prim(f"/World/A{i}/B")

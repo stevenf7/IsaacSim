@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides base class for creating and wrapping USD Light prims."""
+"""Provide base class for creating and wrapping USD Light prims."""
 
 
 from __future__ import annotations
@@ -72,7 +72,7 @@ class Light(XformPrim, ABC):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
-    ):
+    ) -> None:
         super().__init__(
             paths,
             resolve_paths=resolve_paths,
@@ -91,10 +91,10 @@ class Light(XformPrim, ABC):
 
     @property
     def lights(self) -> list[UsdLux.Light]:
-        """USD Light encapsulated by the wrapper.
+        """USD Light prims encapsulated by the wrapper.
 
         Returns:
-            List of USD Light.
+            List of USD Light prims.
 
         Example:
 

@@ -107,7 +107,7 @@ class TestOps(omni.kit.test.AsyncTestCase):
                 try:
                     index = int(f"{device}:0".split(":")[1])
                     target_device = wp.get_device(f"cuda:{index}")
-                except Exception as e:
+                except Exception:
                     target_device = wp.get_device()
             if not target_device:
                 target_device = wp.get_device(device)

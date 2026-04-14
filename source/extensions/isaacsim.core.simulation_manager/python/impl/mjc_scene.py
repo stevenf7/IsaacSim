@@ -49,7 +49,7 @@ class NewtonMjcScene(PhysicsScene):
         0.002
     """
 
-    def __init__(self, prim: str | Usd.Prim):
+    def __init__(self, prim: str | Usd.Prim) -> None:
         super().__init__(prim)
         if not self._prim.HasAPI("MjcSceneAPI"):
             self._prim.ApplyAPI("MjcSceneAPI")

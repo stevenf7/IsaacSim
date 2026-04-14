@@ -24,7 +24,7 @@ import omni.kit.test
 class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
     """Test isaac throttling."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_start_time(0)
@@ -35,14 +35,14 @@ class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
         self._settings.set("/app/asyncRendering", False)
         self._settings.set("/app/asyncRenderingLowLatency", False)
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         # Reset state after each test
         self._settings.set("/app/asyncRendering", False)
         self._settings.set("/app/asyncRenderingLowLatency", False)
 
     # async rendering always off
-    async def test_on_stop_play_toggles_off(self):
+    async def test_on_stop_play_toggles_off(self) -> None:
         """Test on stop play toggles off."""
         self._settings.set("/rtx/ecoMode/enabled", True)
         self._settings.set("/app/asyncRendering", False)
@@ -72,7 +72,7 @@ class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._settings.get("/exts/omni.kit.hydra_texture/gizmos/enabled"), True)
         self.assertFalse(self._settings.get("/app/asyncRendering"))
 
-    async def test_on_stop_play_callback(self):
+    async def test_on_stop_play_callback(self) -> None:
         """Test on stop play callback."""
         self._settings.set("/rtx/ecoMode/enabled", True)
         self._settings.set("/app/asyncRendering", False)
@@ -98,7 +98,7 @@ class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._settings.get("/rtx/ecoMode/enabled"), True)
         self.assertEqual(self._settings.get("/exts/omni.kit.hydra_texture/gizmos/enabled"), True)
 
-    async def test_async_rendering_10_frame_delay(self):
+    async def test_async_rendering_10_frame_delay(self) -> None:
         """Test that async rendering is re-enabled after 10 frames when timeline stops."""
         # Enable async toggle
         self._settings.set("/exts/isaacsim.core.throttling/enable_async", True)

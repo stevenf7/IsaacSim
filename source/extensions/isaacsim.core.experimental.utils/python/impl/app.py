@@ -17,13 +17,13 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 import omni.kit.app
 import omni.timeline
 
 
-def update_app(*, steps: int = 1, callback: Callable[[int, int], bool | None] | None = None):
+def update_app(*, steps: int = 1, callback: Callable[[int, int], bool | None] | None = None) -> None:
     """Perform one or more update steps of the application.
 
     Args:
@@ -62,7 +62,7 @@ def update_app(*, steps: int = 1, callback: Callable[[int, int], bool | None] | 
                 break
 
 
-async def update_app_async(*, steps: int = 1, callback: Callable[[int, int], bool | None] | None = None):
+async def update_app_async(*, steps: int = 1, callback: Callable[[int, int], bool | None] | None = None) -> None:
     """Perform one or more update steps of the application.
 
     This function is the asynchronous version of :py:func:`update_app`.
@@ -94,7 +94,7 @@ async def update_app_async(*, steps: int = 1, callback: Callable[[int, int], boo
                 break
 
 
-def play(*, commit: bool | None = True):
+def play(*, commit: bool | None = True) -> None:
     """Play the application timeline.
 
     .. note::
@@ -125,7 +125,7 @@ def play(*, commit: bool | None = True):
         omni.timeline.get_timeline_interface().commit()
 
 
-def pause(*, commit: bool | None = True):
+def pause(*, commit: bool | None = True) -> None:
     """Pause the application timeline.
 
     .. note::
@@ -156,7 +156,7 @@ def pause(*, commit: bool | None = True):
         omni.timeline.get_timeline_interface().commit()
 
 
-def stop(*, commit: bool | None = True):
+def stop(*, commit: bool | None = True) -> None:
     """Stop the application timeline.
 
     .. note::
