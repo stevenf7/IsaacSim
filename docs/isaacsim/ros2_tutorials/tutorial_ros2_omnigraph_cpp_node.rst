@@ -65,7 +65,7 @@ To use the custom ROS 2 |omnigraph_short| nodes, you must build your own extensi
 
 #. Clone and build the Isaac Sim repository from GitHub by following the instructions described in the `Quick Start <https://github.com/isaac-sim/IsaacSim?tab=readme-ov-file#quick-start>`_ section.
   
-    Ensure that ``./_build/linux-x86_64/release/isaac-sim.sh`` works as expected.
+    Ensure that the ``isaac-sim.sh`` script, located in the ``_build/linux-*/release`` folder, works as expected.
 
 #. Create a new *Isaac Sim OmniGraph Node Extension* template using the ``./repo.sh template new`` command.
 
@@ -159,7 +159,21 @@ To use the custom ROS 2 |omnigraph_short| nodes, you must build your own extensi
 
 #. Run ``./build.sh`` to build your new extension with ROS 2 |omnigraph_short| nodes.
 
-    After the build is complete, the built extension will be under the ``_build/linux-x86_64/release/exts`` folder.
+    The built extension will be located in the ``_build/linux-*/release/exts`` folder.
+
+    .. note::
+
+        The following error messages produced during the *Python stubs generation* post-build step can be safely ignored.
+        They occur because ROS 2 is not sourced in the terminal where the build is being performed; as a result, the dynamic library cannot be loaded when generating the Python stub files (type hints and function/class signatures).
+
+        .. code-block:: none
+
+            running kit for python stubs generation...
+            ...
+            [Error] [carb] [Plugin: libcustom.cpp.ros2_node.plugin.so] Could not load the dynamic library from ...exts/custom.cpp.ros2_node/bin/libcustom.cpp.ros2_node.plugin.so.
+            Error: librcutils.so: cannot open shared object file: No such file or directory...
+            [Warning] [carb] Potential plugin preload failed: ...exts/custom.cpp.ros2_node/bin/libcustom.cpp.ros2_node.plugin.so
+            [Error] [omni.ext.plugin] [ext: custom.cpp.ros2_node-0.1.0] failed to load native plugin: ...exts/custom.cpp.ros2_node/bin/libcustom.cpp.ros2_node.plugin.so
 
 Adding the Extension to |isaac-sim_short|
 ==========================================
@@ -186,7 +200,7 @@ To add the extension and corresponding nodes into |isaac-sim_short|:
 
         #. Go to **Window > Extensions**, look for the hamburger menu (1) to the right side of the search bar (just above **Third Party** tab). Click **Settings** (2).
 
-        #. Click the ``+`` icon under **Extension Search Paths** and add the path to your built extension in the previous section (your built extensions are under ``_build/linux-x86_64/release/exts``).
+        #. Click the ``+`` icon under **Extension Search Paths** and add the path to your built extension in the previous section (your built extensions are under ``_build/linux-*/release/exts``).
 
         #. Verify that your extensions are under the **Third Party** tab (3). Then, enable the extension by toggling the switch.
 
