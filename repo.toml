@@ -240,11 +240,8 @@ post_build.commands = [
     "${root}/_build/target-deps/cuda/lib64/stubs/libcuda.so.1"
   ],
   [
-    "env",
-    "LD_LIBRARY_PATH=${root}/_build/target-deps/cuda/lib64/stubs",
-    "${root}/repo${shell_ext}",
-    "stubgen",
-    "-c",
+    "${root}/tools/isaac_build/run_stubgen.sh",
+    "${root}",
     "${config}",
   ],
 ]
@@ -276,11 +273,8 @@ post_build.commands = [
     "${root}/_build/target-deps/cuda/lib64/stubs/libcuda.so.1"
   ],
   [
-    "env",
-    "LD_LIBRARY_PATH=${root}/_build/target-deps/cuda/lib64/stubs",
-    "${root}/repo${shell_ext}",
-    "stubgen",
-    "-c",
+    "${root}/tools/isaac_build/run_stubgen.sh",
+    "${root}",
     "${config}",
   ],
 ]

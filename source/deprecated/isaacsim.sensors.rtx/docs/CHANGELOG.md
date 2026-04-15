@@ -1,4 +1,9 @@
 # Changelog
+
+## [15.16.1] - 2026-04-13
+### Fixed
+- Incorporate bug fixes from update to kit-kernel.
+
 ## [15.16.0] - 2026-04-07
 ### Added
 - Add optional multitick support.  When enabled, switch to nodes that consume GenericModelOutput assuming it contains a full scan, eliminating lidar accumulation post-processing.
