@@ -89,7 +89,6 @@ Extensions
    isaacsim.core.prims <source/deprecated/isaacsim.core.prims/docs/index>
    isaacsim.core.rendering_manager <source/extensions/isaacsim.core.rendering_manager/docs/index>
    isaacsim.core.simulation_manager <source/extensions/isaacsim.core.simulation_manager/docs/index>
-   isaacsim.core.telemetry <source/internal_extensions/isaacsim.core.telemetry/docs/index>
    isaacsim.core.throttling <source/extensions/isaacsim.core.throttling/docs/index>
    isaacsim.core.utils <source/deprecated/isaacsim.core.utils/docs/index>
    isaacsim.core.version <source/extensions/isaacsim.core.version/docs/index>

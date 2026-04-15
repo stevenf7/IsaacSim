@@ -1,17 +1,12 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: LicenseRef-NvidiaProprietary
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
+// property and proprietary rights in and to this material, related
+// documentation and any modifications thereto. Any use, reproduction,
+// disclosure or distribution of this material and related documentation
+// without an express license agreement from NVIDIA CORPORATION or
+// its affiliates is strictly prohibited.
 
 // DO NOT MODIFY THIS FILE. This is a generated file.
 // This file was generated from: isaacsim.telemetry.common.schema
@@ -80,22 +75,28 @@ namespace telemetry
  *
  *  @param[in] extensionId_ Parameter from schema at path '/extensionId'.
  *             Extension where the error occurred
+ *  @param[in] errorCategory_ Parameter from schema at path '/errorCategory'.
+ *             Broad error classification for dashboard-level analysis
  *  @param[in] errorType_ Parameter from schema at path '/errorType'.
- *             Error classification (e.g. import_failure, validation_error,
- *             runtime_error)
- *  @param[in] errorMessage_ Parameter from schema at path '/errorMessage'.
- *             Human-readable error summary without user-identifying information.
- *             Must not include file paths, hostnames, usernames, or other PII.
+ *             Extension-specific error code for detailed drill-down.  Must be a
+ *             short identifier, not a human-readable message.
+ *  @param[in] operation_ Parameter from schema at path '/operation'.
+ *             The feature or operation that was active when the error occurred.
+ *             Should match featureName values used in featureUsed events.
+ *  @param[in] recoverable_ Parameter from schema at path '/recoverable'.
+ *             True if the operation was able to continue or degrade gracefully,
+ *             false if it aborted.
  *  @returns no return value.
  *
- *  @remarks Emitted when a recoverable error occurs in an Isaac Sim extension.
+ *  @remarks Emitted when an error occurs in an Isaac Sim extension.
  *
  *  @sa @ref Schema_isaacsim_telemetry_common_1_0::errorOccurred_sendEvent().
  *  @sa @ref Schema_isaacsim_telemetry_common_1_0::errorOccurred_isEnabled().
  */
-#define OMNI_ISAACSIM_TELEMETRY_COMMON_1_0_ERROROCCURRED(extensionId_, errorType_, errorMessage_)                      \
+#define OMNI_ISAACSIM_TELEMETRY_COMMON_1_0_ERROROCCURRED(                                                              \
+    extensionId_, errorCategory_, errorType_, operation_, recoverable_)                                                \
     OMNI_STRUCTURED_LOG(isaacsim::core::telemetry::Schema_isaacsim_telemetry_common_1_0::errorOccurred, extensionId_,  \
-                        errorType_, errorMessage_)
+                        errorCategory_, errorType_, operation_, recoverable_)
 
 class Schema_isaacsim_telemetry_common_1_0
 {
@@ -122,6 +123,29 @@ public:
 
         /** for value "api_call" */
         eApi_call,
+
+    };
+
+    /** enumeration for parameter errorCategory */
+    enum class Enum_errorOccurred_errorCategory : uint16_t
+    {
+        /** for value "import_failure" */
+        eImport_failure,
+
+        /** for value "validation_error" */
+        eValidation_error,
+
+        /** for value "runtime_error" */
+        eRuntime_error,
+
+        /** for value "configuration_error" */
+        eConfiguration_error,
+
+        /** for value "dependency_error" */
+        eDependency_error,
+
+        /** for value "timeout" */
+        eTimeout,
 
     };
 
@@ -275,22 +299,29 @@ public:
      *             responsibility to ensure a valid object is passed in.
      *  @param[in] extensionId Parameter from schema at path '/extensionId'.
      *             Extension where the error occurred
+     *  @param[in] errorCategory Parameter from schema at path '/errorCategory'.
+     *             Broad error classification for dashboard-level analysis
      *  @param[in] errorType Parameter from schema at path '/errorType'.
-     *             Error classification (e.g. import_failure, validation_error,
-     *             runtime_error)
-     *  @param[in] errorMessage Parameter from schema at path '/errorMessage'.
-     *             Human-readable error summary without user-identifying information.
-     *             Must not include file paths, hostnames, usernames, or other PII.
+     *             Extension-specific error code for detailed drill-down.  Must be a
+     *             short identifier, not a human-readable message.
+     *  @param[in] operation Parameter from schema at path '/operation'.
+     *             The feature or operation that was active when the error occurred.
+     *             Should match featureName values used in featureUsed events.
+     *  @param[in] recoverable Parameter from schema at path '/recoverable'.
+     *             True if the operation was able to continue or degrade gracefully,
+     *             false if it aborted.
      *  @returns no return value.
      *
-     *  @remarks Emitted when a recoverable error occurs in an Isaac Sim extension.
+     *  @remarks Emitted when an error occurs in an Isaac Sim extension.
      */
     static void errorOccurred_sendEvent(omni::structuredlog::IStructuredLog* strucLog,
                                         const omni::structuredlog::StringView& extensionId,
+                                        Enum_errorOccurred_errorCategory errorCategory,
                                         const omni::structuredlog::StringView& errorType,
-                                        const omni::structuredlog::StringView& errorMessage) noexcept
+                                        const omni::structuredlog::StringView& operation,
+                                        bool recoverable) noexcept
     {
-        _errorOccurred_sendEvent(strucLog, extensionId, errorType, errorMessage);
+        _errorOccurred_sendEvent(strucLog, extensionId, errorCategory, errorType, operation, recoverable);
     }
 
 private:
@@ -537,8 +568,10 @@ private:
     /** body for the errorOccurred_sendEvent() function. */
     static void _errorOccurred_sendEvent(omni::structuredlog::IStructuredLog* strucLog,
                                          const omni::structuredlog::StringView& extensionId,
+                                         Enum_errorOccurred_errorCategory errorCategory,
                                          const omni::structuredlog::StringView& errorType,
-                                         const omni::structuredlog::StringView& errorMessage) noexcept
+                                         const omni::structuredlog::StringView& operation,
+                                         bool recoverable) noexcept
     {
         omni::structuredlog::AllocHandle handle = {};
 
@@ -556,6 +589,9 @@ private:
             // property extensionId
             calc.track(extensionId);
 
+            // property uint16_t(errorCategory)
+            calc.track(uint16_t(errorCategory));
+
             if (kValidateLength && errorType.length() + 1 > UINT16_MAX)
             {
                 OMNI_LOG_ERROR(OMNI_LOG_DEFAULT_CHANNEL,
@@ -567,16 +603,19 @@ private:
             // property errorType
             calc.track(errorType);
 
-            if (kValidateLength && errorMessage.length() + 1 > UINT16_MAX)
+            if (kValidateLength && operation.length() + 1 > UINT16_MAX)
             {
                 OMNI_LOG_ERROR(OMNI_LOG_DEFAULT_CHANNEL,
-                               "length of parameter 'errorMessage' exceeds max value 65535 - "
+                               "length of parameter 'operation' exceeds max value 65535 - "
                                "it will be truncated (size was %zu)",
-                               errorMessage.length() + 1);
+                               operation.length() + 1);
             }
 
-            // property errorMessage
-            calc.track(errorMessage);
+            // property operation
+            calc.track(operation);
+
+            // property recoverable
+            calc.track(recoverable);
         }
 
         // write out the event into the buffer
@@ -595,11 +634,17 @@ private:
             // property extensionId
             writer.copy(extensionId);
 
+            // property uint16_t(errorCategory)
+            writer.copy(uint16_t(errorCategory));
+
             // property errorType
             writer.copy(errorType);
 
-            // property errorMessage
-            writer.copy(errorMessage);
+            // property operation
+            writer.copy(operation);
+
+            // property recoverable
+            writer.copy(recoverable);
         }
 
         strucLog->commitEvent(handle);
@@ -870,19 +915,32 @@ private:
         // calculate the buffer size for the tree
         omni::structuredlog::JsonTreeSizeCalculator calc;
         calc.trackRoot();
-        calc.trackObject(3); // object has 3 properties
+        calc.trackObject(5); // object has 5 properties
         {
             // property extensionId
             calc.trackName("extensionId");
             calc.track(static_cast<const char*>(nullptr));
 
+            // property errorCategory
+            calc.trackName("errorCategory");
+            {
+                // Enum_errorOccurred_errorCategory maps onto this array
+                static const char* const a__[] = { "import_failure",      "validation_error", "runtime_error",
+                                                   "configuration_error", "dependency_error", "timeout" };
+                calc.track(a__, uint16_t(CARB_COUNTOF(a__)));
+            }
+
             // property errorType
             calc.trackName("errorType");
             calc.track(static_cast<const char*>(nullptr));
 
-            // property errorMessage
-            calc.trackName("errorMessage");
+            // property operation
+            calc.trackName("operation");
             calc.track(static_cast<const char*>(nullptr));
+
+            // property recoverable
+            calc.trackName("recoverable");
+            calc.track(bool(false));
         }
         return calc.getSize();
     }
@@ -911,7 +969,7 @@ private:
         *base = {};
 
         // build the tree
-        result = builder.createObject(base, 3); // object has 3 properties
+        result = builder.createObject(base, 5); // object has 5 properties
         if (!result)
         {
             OMNI_LOG_ERROR(OMNI_LOG_DEFAULT_CHANNEL, "failed to create an object node (bad size calculation?)");
@@ -932,22 +990,35 @@ private:
                 return nullptr;
             }
 
-            // property errorType
-            result = builder.setName(&base->data.objVal[1], "errorType");
+            // property errorCategory
+            result = builder.setName(&base->data.objVal[1], "errorCategory");
             if (!result)
             {
                 OMNI_LOG_ERROR(OMNI_LOG_DEFAULT_CHANNEL, "failed to set the object name (bad size calculation?)");
                 return nullptr;
             }
-            result = builder.setNode(&base->data.objVal[1], static_cast<const char*>(nullptr));
+            {
+                // Enum_errorOccurred_errorCategory maps onto this array
+                static const char* const a__[] = { "import_failure",      "validation_error", "runtime_error",
+                                                   "configuration_error", "dependency_error", "timeout" };
+                result = builder.setNode(&base->data.objVal[1], a__, uint16_t(CARB_COUNTOF(a__)));
+                if (!result)
+                {
+                    OMNI_LOG_ERROR(
+                        OMNI_LOG_DEFAULT_CHANNEL, "failed to set an array of length 6 (bad size calculation?)");
+                    return nullptr;
+                }
+            }
+            result = omni::structuredlog::JsonBuilder::setFlags(
+                &base->data.objVal[1], omni::structuredlog::JsonNode::fFlagEnum);
             if (!result)
             {
-                OMNI_LOG_ERROR(OMNI_LOG_DEFAULT_CHANNEL, "failed to set type 'const char*' (shouldn't be possible)");
+                OMNI_LOG_ERROR(OMNI_LOG_DEFAULT_CHANNEL, "failed to set flag 'omni::structuredlog::JsonNode::fFlagEnum'");
                 return nullptr;
             }
 
-            // property errorMessage
-            result = builder.setName(&base->data.objVal[2], "errorMessage");
+            // property errorType
+            result = builder.setName(&base->data.objVal[2], "errorType");
             if (!result)
             {
                 OMNI_LOG_ERROR(OMNI_LOG_DEFAULT_CHANNEL, "failed to set the object name (bad size calculation?)");
@@ -957,6 +1028,34 @@ private:
             if (!result)
             {
                 OMNI_LOG_ERROR(OMNI_LOG_DEFAULT_CHANNEL, "failed to set type 'const char*' (shouldn't be possible)");
+                return nullptr;
+            }
+
+            // property operation
+            result = builder.setName(&base->data.objVal[3], "operation");
+            if (!result)
+            {
+                OMNI_LOG_ERROR(OMNI_LOG_DEFAULT_CHANNEL, "failed to set the object name (bad size calculation?)");
+                return nullptr;
+            }
+            result = builder.setNode(&base->data.objVal[3], static_cast<const char*>(nullptr));
+            if (!result)
+            {
+                OMNI_LOG_ERROR(OMNI_LOG_DEFAULT_CHANNEL, "failed to set type 'const char*' (shouldn't be possible)");
+                return nullptr;
+            }
+
+            // property recoverable
+            result = builder.setName(&base->data.objVal[4], "recoverable");
+            if (!result)
+            {
+                OMNI_LOG_ERROR(OMNI_LOG_DEFAULT_CHANNEL, "failed to set the object name (bad size calculation?)");
+                return nullptr;
+            }
+            result = builder.setNode(&base->data.objVal[4], bool(false));
+            if (!result)
+            {
+                OMNI_LOG_ERROR(OMNI_LOG_DEFAULT_CHANNEL, "failed to set type 'bool' (shouldn't be possible)");
                 return nullptr;
             }
         }
