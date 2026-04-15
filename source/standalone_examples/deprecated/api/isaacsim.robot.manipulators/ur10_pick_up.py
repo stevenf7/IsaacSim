@@ -27,6 +27,7 @@ import numpy as np
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.robot.manipulators import SingleManipulator
 from isaacsim.robot.manipulators.examples.universal_robots.controllers.pick_place_controller import PickPlaceController
 from isaacsim.robot.manipulators.grippers import SurfaceGripper
@@ -34,20 +35,26 @@ from isaacsim.storage.native import get_assets_root_path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+parser.add_argument("--usd-path", type=str, default=None, help="Path to the USD file to load")
 args, unknown = parser.parse_known_args()
 
-
-assets_root_path = get_assets_root_path()
-if assets_root_path is None:
-    carb.log_error("Could not find Isaac Sim assets folder")
-    simulation_app.close()
-    sys.exit()
+if args.usd_path is None:
+    assets_root_path = get_assets_root_path()
+    if assets_root_path is None:
+        carb.log_error("Could not find Isaac Sim assets folder")
+        simulation_app.close()
+        sys.exit()
+    asset_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
+else:
+    asset_path = args.usd_path
+carb.log_info(f"Loading robot from {asset_path}")
 
 my_world = World(stage_units_in_meters=1.0)
 my_world.scene.add_default_ground_plane()
-asset_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
 robot = add_reference_to_stage(usd_path=asset_path, prim_path="/World/UR10")
-robot.GetVariantSet("Gripper").SetVariantSelection("Short_Suction")
+if args.usd_path is None:
+    # Only set the gripper variant if we're using the default Isaac Sim USD file
+    robot.GetVariantSet("Gripper").SetVariantSelection("Short_Suction")
 gripper = SurfaceGripper(
     end_effector_prim_path="/World/UR10/ee_link", surface_gripper_path="/World/UR10/ee_link/SurfaceGripper"
 )
@@ -70,9 +77,19 @@ cube = my_world.scene.add(
 my_world.scene.add_default_ground_plane()
 ur10.gripper.set_default_state(opened=True)
 my_world.reset()
+# Eye from viewport translate (1 d.p.); target matches other manipulator examples (e.g. trajectory_example.py).
+set_camera_view(eye=[3.0, 1.5, 1.0], target=[0.0, 0.0, 0.25], camera_prim_path="/OmniverseKit_Persp")
 
 my_controller = PickPlaceController(name="pick_place_controller", gripper=ur10.gripper, robot_articulation=ur10)
 articulation_controller = ur10.get_articulation_controller()
+
+import omni.timeline
+
+timeline = omni.timeline.get_timeline_interface()
+print("Set up recording, then press Play…")
+my_world.pause()
+while simulation_app.is_running() and not timeline.is_playing():
+    my_world.step(render=True)
 
 reset_needed = False
 task_completed = False
