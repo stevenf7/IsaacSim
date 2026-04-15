@@ -16,7 +16,10 @@
 """Utility functions for 3D-to-2D point projection and camera coordinate transformations in replicator writers."""
 
 
+import isaacsim.core.experimental.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.xform as xform_utils
 import numpy as np
+from pxr import Gf, Usd, UsdGeom
 
 
 def project_point_to_screen(camera_point, camera_params):
@@ -260,3 +263,81 @@ def get_image_space_points(points, view_proj_matrix):
     image_space_points = tf_points[..., :3]
 
     return image_space_points
+
+
+def get_transform_with_normalized_rotation(transform: np.ndarray) -> np.ndarray:
+    """Get the transform after normalizing rotation component.
+
+    Args:
+        transform: transformation matrix with shape (4, 4).
+
+    Returns:
+        transformation matrix with normalized rotation with shape (4, 4).
+    """
+    transform_without_scale = np.copy(transform.astype(float))
+    rotation_matrix = transform[:3, :3]
+    column_magnitudes = np.linalg.norm(rotation_matrix, axis=0)
+    normalized_rotation = rotation_matrix / column_magnitudes
+    transform_without_scale[:3, :3] = normalized_rotation
+    return transform_without_scale
+
+
+def tf_matrix_from_pose(translation: list[float], orientation: list[float]) -> np.ndarray:
+    """Compute input pose to transformation matrix.
+
+    Args:
+        translation: The translation vector.
+        orientation: The orientation quaternion.
+
+    Returns:
+        A 4x4 matrix.
+    """
+    translation = np.asarray(translation)
+    orientation = np.asarray(orientation)
+    mat = Gf.Transform()
+    mat.SetRotation(Gf.Rotation(Gf.Quatd(*orientation.tolist())))
+    mat.SetTranslation(Gf.Vec3d(*translation.tolist()))
+    return np.transpose(mat.GetMatrix())
+
+
+def pose_from_tf_matrix(transformation: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Gets pose corresponding to input transformation matrix.
+
+    Args:
+        transformation: Column-major transformation matrix. shape is (4, 4).
+
+    Returns:
+        first index is translation corresponding to transformation. shape is (3, ).
+        second index is quaternion orientation corresponding to transformation.
+        quaternion is scalar-first (w, x, y, z). shape is (4, ).
+    """
+    mat = Gf.Transform()
+    mat.SetMatrix(Gf.Matrix4d(np.transpose(transformation)))
+    calculated_translation = np.array(mat.GetTranslation())
+    orientation = mat.GetRotation().GetQuat()
+    calculated_orientation = np.zeros(4)
+    calculated_orientation[1:] = orientation.GetImaginary()
+    calculated_orientation[0] = orientation.GetReal()
+    return calculated_translation, calculated_orientation
+
+
+def get_mesh_vertices_relative_to(mesh_prim: UsdGeom.Mesh, coord_prim: Usd.Prim) -> np.ndarray:
+    """Get vertices of the mesh prim in the coordinate system of the given prim.
+
+    Args:
+        mesh_prim: Mesh prim to get the vertice points.
+        coord_prim: Prim used as relative coordinate.
+
+    Returns:
+        Vertices of the mesh in the coordinate system of the given prim. Shape is (N, 3).
+    """
+    # Vertices of the mesh in the mesh's coordinate system
+    vertices_vec3f = UsdGeom.Mesh(mesh_prim).GetPointsAttr().Get()
+    vertices = np.array(vertices_vec3f)
+    vertices_tf_row_major = np.pad(vertices, ((0, 0), (0, 1)), constant_values=1.0)
+    # Transformation matrix from the coordinate system of the mesh to the coordinate system of the prim
+    relative_tf_column_major = xform_utils.get_relative_transform(mesh_prim, coord_prim)
+    relative_tf_row_major = np.transpose(relative_tf_column_major)
+    # Transform points so they are in the coordinate system of the top-level ancestral xform prim
+    points_in_relative_coord = vertices_tf_row_major @ relative_tf_row_major
+    return points_in_relative_coord[:, :-1] * stage_utils.get_stage_units()[0]

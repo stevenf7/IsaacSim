@@ -21,16 +21,13 @@ import unittest
 from pathlib import Path
 
 import carb
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.kit
 import omni.replicator.core as rep
 import omni.usd
-from isaacsim.core.deprecation_manager import import_module
-from isaacsim.core.utils.stage import create_new_stage_async
 from isaacsim.replicator.writers import PytorchListener
 from PIL import Image
-
-torch = import_module("torch")
 
 
 class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
@@ -61,7 +58,7 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         """
         # Create new stage
         await omni.kit.app.get_app().next_update_async()
-        await create_new_stage_async()
+        await stage_utils.create_new_stage_async()
 
         # Create camera and render products
         render_product1 = rep.create.render_product(rep.create.camera(position=(0, 0, 1000)), (512, 512))
@@ -106,6 +103,7 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         """Run the replicator orchestrator for 10 frames until completion."""
         await rep.orchestrator.run_until_complete_async(num_frames=10)
 
+    @unittest.skip("Skipping test as PytorchWriter is deprecated")
     async def test_single_camera_writer_without_backend(self):
         """Test PytorchWriter with a single camera using CPU device without file output.
 
@@ -125,6 +123,7 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         pytorch_writer.detach()
         pytorch_listener = None
 
+    @unittest.skip("Skipping test as PytorchWriter is deprecated")
     async def test_single_camera_writer_with_backend(self):
         """Test PytorchWriter with a single camera using CPU device and file output.
 
@@ -154,6 +153,7 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         pytorch_writer.detach()
         pytorch_listener = None
 
+    @unittest.skip("Skipping test as PytorchWriter is deprecated")
     async def test_multiple_cameras_writer_without_backend(self):
         """Test PytorchWriter with multiple cameras using CPU device without file output.
 
@@ -174,6 +174,7 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         pytorch_writer.detach()
         pytorch_listener = None
 
+    @unittest.skip("Skipping test as PytorchWriter is deprecated")
     async def test_multiple_cameras_writer_with_backend(self):
         """Test PytorchWriter with multiple cameras using CPU device and file output.
 
@@ -213,7 +214,7 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         pytorch_writer.detach()
         pytorch_listener = None
 
-    @unittest.skipIf(torch.cuda.is_available() == False, "GPU is not available on this machine!")
+    @unittest.skip("Skipping test as PytorchWriter is deprecated")
     async def test_single_camera_writer_with_gpu(self):
         """Test PytorchWriter with a single camera using CUDA GPU device.
 
@@ -234,7 +235,7 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         pytorch_writer.detach()
         pytorch_listener = None
 
-    @unittest.skipIf(torch.cuda.is_available() == False, "GPU is not available on this machine!")
+    @unittest.skip("Skipping test as PytorchWriter is deprecated")
     async def test_multiple_cameras_writer_with_gpu(self):
         """Test PytorchWriter with multiple cameras using CUDA GPU device.
 

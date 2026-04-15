@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.0] - 2026-04-13
+### Changed
+- Migrate extension implementation to core experimental API
+- Mark the `PytorchListener` and `PytorchWriter` implementations as deprecated
+
 ## [1.4.1] - 2026-04-11
 ### Changed
 - Add omni.kit.viewport.window to test dependencies

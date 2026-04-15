@@ -15,12 +15,7 @@
 
 """Provides a PyTorch-compatible listener for tracking and retrieving data from Replicator writers."""
 
-
-from typing import Optional
-
-from isaacsim.core.deprecation_manager import import_module
-
-torch = import_module("torch")
+from __future__ import annotations
 
 
 class PytorchListener:
@@ -28,6 +23,10 @@ class PytorchListener:
 
     itialization of a PytorchWriter at which point it is pinged by the writer after any data is
     passed to the writer.
+
+    .. deprecated:: 1.5.0
+
+        This class is deprecated and will be removed in a future version. No replacement is provided.
     """
 
     def __init__(self):
@@ -42,7 +41,7 @@ class PytorchListener:
 
         self.data.update(data)
 
-    def get_rgb_data(self) -> Optional[torch.Tensor]:
+    def get_rgb_data(self) -> "torch.Tensor | None":
         """Returns RGB data as a batched tensor from the current data stored.
 
         Returns:
