@@ -105,17 +105,9 @@ def main(args: argparse.Namespace) -> None:
     if os.getenv("RUN_NIGHTLY_TESTS", "") != "true":
         test_command += ["-m", "isaacsim_ci"]
 
-    test_exit_code = 0
-    try:
-        result = omni.repo.ci.launch(test_command)
-        # omni.repo.ci.launch may return the process exit code directly
-        if isinstance(result, int) and result != 0:
-            test_exit_code = result
-    except SystemExit as e:
-        test_exit_code = e.code if isinstance(e.code, int) else 1
-    except Exception as e:
-        print(f"Error running tests: {e}", file=sys.stderr)
-        test_exit_code = 1
+    # warning_only=True makes launch() return the exit code instead of
+    # calling sys.exit() on failure, so we can run cleanup before exiting.
+    test_exit_code = omni.repo.ci.launch(test_command, warning_only=True)
 
     # pytest may crash (INTERNALERROR) before writing the combined report, e.g.
     # when a timeout test case contains null bytes that lxml rejects as non-XML.
