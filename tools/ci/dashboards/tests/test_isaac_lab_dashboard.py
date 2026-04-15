@@ -17,10 +17,10 @@ import xml.etree.ElementTree as ET
 
 import pytest
 
-# Add tools/ci to path so we can import without installing
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+# Add tools/ci to path so we can import the dashboards package
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from isaac_lab_dashboard import (
+from dashboards.parsing import (
     get_testcase_status,
     merge_summaries,
     parse_junit_xml,
@@ -304,7 +304,7 @@ class TestMergeSummaries:
 import importlib.util
 _spec = importlib.util.spec_from_file_location(
     "test_isaac_lab",
-    os.path.join(os.path.dirname(__file__), "..", "test_isaac_lab.py"),
+    os.path.join(os.path.dirname(__file__), "..", "..", "test_isaac_lab.py"),
 )
 _mod = importlib.util.module_from_spec(_spec)
 # Stub out the missing omni imports so the module can be loaded in isolation

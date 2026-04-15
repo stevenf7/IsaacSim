@@ -70,7 +70,7 @@ stages:
   - check-externals
   - github-staging
   - verify-github-staging
-  - slack-notifications
+  - report-results
   - pages
 
 # ==============================================================================================================
@@ -200,57 +200,6 @@ variables:
     RUN_DEPLOY:
         value: "true"
         description: "Set to true to run deploy stage."
-
-# ==============================================================================================================
-# Slack notifications
-.post_job_status_to_slack:
-  after_script:
-    - ./tools/packman/python.sh -m pip install -r tools/ci/slack/requirements.txt --quiet
-    - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --job-report
-
-post_to_slack:
-  dependencies: []
-  variables:
-    SLACK_CHANNEL: "#isaac-sim-ci"
-  stage: slack-notifications
-  extends:
-    - .ipp_lnx_x86_64_cpu_small
-  script:
-    # Installing some packages to get kaleido happy
-    - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libnss3 libatk-bridge2.0-0 libcups2 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2 libasound2
-    - ./tools/packman/python.sh -m pip install -r tools/ci/slack/requirements.txt --quiet
-    - ./tools/packman/python.sh tools/ci/slack/post_to_slack.py --pipeline-report --channel $SLACK_CHANNEL
-  rules:
-    # Using rules to set the channel.
-    # Nightlies from Kit against a kit-integration branch get #isaac-sim-kit-integration-ci
-    # We shouldn't get them but nightlies from kit that do not hit a kit-integration branch get #isaac-sim-ci
-    # MRs from Kit (with checkbox selected) and Isaac (with checkbox selected) get #isaac-sim-ci-mr
-    # Nightlies from Isaac, and post-merge from Isaac get #isaac-sim-ci
-    - if: $CI_COMMIT_REF_NAME =~ /^kit-integration\// && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "merge_request"
-      when: always
-      variables:
-        SLACK_CHANNEL: "#isaac-sim-ci-mr"
-    - if: $CI_COMMIT_REF_NAME == "develop-kit-tot" && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "nightly"
-      when: always
-    - if: $UPSTREAM_PIPELINE_SOURCE == "post_merge"
-      when: always
-    - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Post pipeline reports to slack/"
-      when: always
-      variables:
-        SLACK_CHANNEL: "#isaac-sim-ci-mr"
-    - if: $CI_COMMIT_REF_NAME =~ /^kit-integration\// && $CI_PIPELINE_SOURCE != "push" && $UPSTREAM_PIPELINE_SOURCE == "nightly"
-      when: always
-      variables:
-        SLACK_CHANNEL: "#isaac-sim-kit-integration-ci"
-    - !reference [.rules-nightly-tests-always, rules]
-  artifacts:
-    paths:
-      - pipeline_test_chart_heatmap.html
-      - pipeline_test_chart_heatmap.png
-      - regressions.txt
-    expire_in: 1 week
-
-
 
 # ==============================================================================================================
 # overrides for compliance/osec job
@@ -392,7 +341,7 @@ osec:sonarqube:
 .rules-run-omniperf-mr:
     rules:
       - if: $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] Run omniperf benchmark/"
-        when: on_success
+
 # ==============================================================================================================
 # Rule for running publisher on push on develop and release branches
 .rules-version-changed:
@@ -1101,86 +1050,6 @@ test-linux-x86_64-c++-coverage:
         when: never
 
 # ==============================================================================================================
-# Shared GitLab cache for IsaacLab dashboard: historical GitLab/GitHub data under _dashboard_cache/.
-# get-isaaclab-historical-data runs fetch-gitlab/fetch-github subcommands (no tests); generate-isaac-lab-dashboard runs the ci subcommand (needs JUnit).
-.isaaclab-dashboard-cache:
-    variables:
-        ISAAC_LAB_BRANCH: "develop"
-        # Newline-separated list of omni_isaac_sim branches whose historical GitLab
-        # pipelines are fetched and displayed in the Isaac Sim CI dropdown.
-        ISAAC_LAB_CI_REPORT_BRANCHES: |
-            develop
-            develop-kit-tot
-            kit-integration/master
-            kit-integration/feature/110.1
-    cache:
-        key: "isaaclab-dashboard-${ISAAC_LAB_BRANCH}"
-        paths:
-            - _dashboard_cache/
-        policy: pull-push
-
-# ==============================================================================================================
-# Shared rules for IsaacLab test/agent jobs.
-.isaac-lab-test-rules:
-  rules:
-    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_TESTS != "true"
-      when: never
-    - if: $CI_PIPELINE_SOURCE == "pipeline"
-      when: on_success
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: on_success
-    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_PROTECTED == "true"
-      when: on_success
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: on_success
-    - when: never
-
-# ==============================================================================================================
-# Manual: requests install + API token checks + optional historical fetch (same cache as generate job).
-get-isaaclab-historical-data:
-    extends:
-      - .isaaclab-dashboard-cache
-      - .ipp_lnx_x86_64_cpu_small
-      - .isaac-lab-test-rules
-    allow_failure: true
-    artifacts:
-        expire_in: 1 week
-        when: always
-        paths:
-          - _dashboard_cache/
-    script:
-      - ./tools/packman/python.sh -m pip install --quiet requests
-      - echo "=== GitLab / GitHub API (GITLAB_AUTH_TOKEN, GITHUB_NVIDIA_DEV_TOKEN) ==="
-      - ./tools/packman/python.sh tools/ci/verify_dashboard_api_tokens.py
-      # Historical GitLab + GitHub data (no JUnit — same cache key as generate-isaac-lab-dashboard).
-      - |
-        set +e
-        ERR_COUNT=0
-        echo "=== Historical GitLab fetch (optional) ==="
-        while IFS= read -r REPORT_BRANCH; do
-          [ -z "$REPORT_BRANCH" ] && continue
-          echo "--- Fetching branch: $REPORT_BRANCH ---"
-          ./tools/packman/python.sh tools/ci/isaac_lab_dashboard.py \
-            fetch-gitlab \
-            --isaac-sim-branch "$REPORT_BRANCH" \
-            --isaac-lab-branch "${ISAAC_LAB_BRANCH:-develop}" \
-            --data-dir _dashboard_cache
-          if [ $? -ne 0 ]; then
-            echo "${RED}Error: historical GitLab fetch failed for branch $REPORT_BRANCH.${RESET}" >&2
-            ERR_COUNT=$((ERR_COUNT + 1))
-          fi
-        done <<< "${ISAAC_LAB_CI_REPORT_BRANCHES:-develop}"
-        echo "=== Historical GitHub fetch ==="
-        ./tools/packman/python.sh tools/ci/isaac_lab_dashboard.py fetch-github --data-dir _dashboard_cache
-        if [ $? -ne 0 ]; then
-          echo "${RED}Error: historical GitHub fetch (isaac_lab_dashboard.py fetch-github) failed.${RESET}" >&2
-          ERR_COUNT=$((ERR_COUNT + 1))
-        fi
-        if [ "$ERR_COUNT" -gt 0 ]; then
-          echo "${RED}Historical fetch finished with ${ERR_COUNT} error(s).${RESET}" >&2
-        fi
-
-# ==============================================================================================================
 # external-tests
 test-linux-x86_64-external-ar:
     extends:
@@ -1330,126 +1199,6 @@ build-docs-only-mr:
       url: https://omniverse.gitlab-master-pages.nvidia.com/-/isaac/omni_isaac_sim/-/jobs/$CI_JOB_ID/artifacts/_build/docs/isaac-sim/latest/index.html
       auto_stop_in: 2 weeks
 
-generate-isaac-lab-dashboard:
-    stage: external-test
-    allow_failure: true
-    extends:
-      - .isaaclab-dashboard-cache
-      - .ipp_lnx_x86_64_cpu_small
-      - .isaac-lab-test-rules
-    needs:
-      - job: get-isaaclab-historical-data
-        artifacts: true
-        optional: true
-      - job: test-linux-x86_64-isaaclab-integration
-        artifacts: true
-        optional: true
-      - job: test-linux-x86_64-isaaclab-integration-nightly
-        artifacts: true
-        optional: true
-    script:
-      - export TZ="America/Los_Angeles"
-      - ./tools/packman/python.sh -m pip install --quiet requests
-      # Historical data arrives via artifact from get-isaaclab-historical-data; this job only merges the current JUnit.
-      # Folded block (>): one shell command with spaces between tokens — avoids CRLF breaking '\' line continuation.
-      - >
-        ./tools/packman/python.sh tools/ci/isaac_lab_dashboard.py
-        ci
-        --junit-xml _isaaclab/tests/full_report.xml
-        --isaac-lab-branch "${ISAAC_LAB_BRANCH:-develop}"
-        --data-dir _dashboard_cache
-    artifacts:
-        expire_in: 2 weeks
-        when: always
-        paths:
-          - _dashboard_cache/output/
-
-# ==============================================================================================================
-# Analyzes IsaacLab test failures using an AI agent and suggests code fixes.
-# Runs in the same stage as generate-isaac-lab-dashboard, after the test jobs complete.
-# NOTE: This job is currently disabled as it is an experimental feature that has lower priorities for now.
-#       It has been left in place for future reference and potential re-enabling.
-.agent-analyze-isaaclab-failures:
-  stage: external-test
-  image:
-    name: urm.nvidia.com/ct-omniverse-docker/ci-opencode-runner:latest
-    pull_policy: always
-  extends:
-    - .ipp_lnx_x86_64_cpu_small
-    - .isaac-lab-test-rules
-  variables:
-    NVIDIA_API_KEY: $INFERENCE_API_KAY
-    AGENT_MODEL: "nvidia-hub/azure/anthropic/claude-sonnet-4-6"
-    AGENT_RESULT_DIR: "${CI_PROJECT_DIR}/agent-results"
-    AGENT_ALLOWED_TOOLS: "Read,Glob,Grep,Bash(python3 *)"
-    AGENT_PROMPT: |
-      You are analyzing CI test failures for Isaac Sim / IsaacLab.
-
-      The JUnit XML test results are at `_isaaclab/tests/full_report.xml`.
-      The Isaac Sim source code is under `source/`.
-      The IsaacLab source code is under `_isaaclab-src/`.
-      The Kit source code, if present, is under `_kit-src/` (only available on
-      kit-integration/* branches — check whether it exists before using it).
-
-      Step 1 — Parse the results.
-      Use python3 to parse the XML and count totals: passed, failed, errored, skipped.
-      If there are no failures or errors, write a brief summary to
-      agent-results/isaaclab-analysis.md and stop.
-
-      Step 2 — For each failed or errored test (up to 10, prioritized by error type):
-        a. Extract: test name, classname, failure message, and full stack trace.
-        b. Search source/, _isaaclab-src/, and _kit-src/ (if present) for files
-           relevant to the classname or symbols in the stack trace.
-        c. Read those files and identify the most likely root cause.
-        d. Classify as one of: REGRESSION, ENVIRONMENT, FLAKY, or UPSTREAM_ISAACSIM.
-        e. For REGRESSION or UPSTREAM_ISAACSIM: propose a specific fix with the file path,
-           line number, and what to change or investigate.
-
-      Step 3 — Write agent-results/isaaclab-analysis.md with this structure:
-        ## Summary
-        Total: X passed, Y failed, Z errored, W skipped.
-
-        ## Failed Tests
-        One subsection per failure with: test name, classification, root cause explanation,
-        and suggested fix if applicable.
-
-        ## Prioritized Fixes
-        Ranked list of actionable code changes (most impactful first).
-
-        ## Verdict
-        One of: ALL_PASSED | REGRESSIONS_FOUND | ENVIRONMENT_ISSUES | NEEDS_INVESTIGATION
-  needs:
-    - job: test-linux-x86_64-isaaclab-integration
-      artifacts: true
-      optional: true
-    - job: test-linux-x86_64-isaaclab-integration-nightly
-      artifacts: true
-      optional: true
-  script:
-    - |
-      if [ ! -f "_isaaclab/tests/full_report.xml" ]; then
-        echo "No test results found at _isaaclab/tests/full_report.xml -- skipping analysis."
-        exit 0
-      fi
-    - git clone "https://${GITHUB_NVIDIA_DEV_TOKEN}@github.com/isaac-sim/IsaacLab.git"
-        --depth=1 --branch "${ISAAC_LAB_BRANCH:-develop}" _isaaclab-src
-    - |
-      if [[ "${CI_COMMIT_REF_NAME}" == kit-integration/* ]]; then
-        KIT_BRANCH="${CI_COMMIT_REF_NAME#kit-integration/}"
-        echo "Cloning Kit branch ${KIT_BRANCH} for analysis..."
-        git clone "https://oauth2:${GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/kit.git" \
-          --depth=1 --branch "${KIT_BRANCH}" _kit-src
-      fi
-    - /opt/opencode-runner/entrypoint.sh
-  artifacts:
-    when: always
-    expire_in: 2 weeks
-    paths:
-      - agent-results/
-  allow_failure: true
-  timeout: 2 hours
-
-
 # ==============================================================================================================
 # Publishes docs and the IsaacLab dashboard to GitLab Pages.
 pages:
@@ -1460,14 +1209,22 @@ pages:
     script:
       - mkdir -p .public
       - cp -r _build/docs/isaac-sim/latest/* .public/ || true
-      - mv pipeline_test_chart_heatmap.html .public/heatmap.html || true
-      - mv pipeline_test_chart_heatmap.png .public/heatmap.png || true
+      # Heatmap artifacts from both Slack jobs share the same filename; the last
+      # one downloaded wins. Copy whichever is present to a generic location.
+      - cp pipeline_test_chart_heatmap.html .public/heatmap.html 2>/dev/null || true
+      - cp pipeline_test_chart_heatmap.png .public/heatmap.png 2>/dev/null || true
       - |
         ILAB_BRANCH="${ISAAC_LAB_BRANCH:-develop}"
-        if [ -d _dashboard_cache/output ]; then
+        if [ -d _isaaclab_cache/output ]; then
           mkdir -p ".public/isaac-lab/${ILAB_BRANCH}/data"
-          cp _dashboard_cache/output/isaac_lab_test_dashboard.html ".public/isaac-lab/${ILAB_BRANCH}/"
-          cp -r _dashboard_cache/output/data/. ".public/isaac-lab/${ILAB_BRANCH}/data/"
+          cp _isaaclab_cache/output/dashboard.html ".public/isaac-lab/${ILAB_BRANCH}/"
+          cp -r _isaaclab_cache/output/data/. ".public/isaac-lab/${ILAB_BRANCH}/data/"
+        fi
+      - |
+        if [ -d _isaacsim_cache/output ]; then
+          mkdir -p .public/isaac-sim/data
+          cp _isaacsim_cache/output/dashboard.html .public/isaac-sim/index.html
+          cp -r _isaacsim_cache/output/data/. .public/isaac-sim/data/
         fi
       - mv .public public
     artifacts:
@@ -1483,10 +1240,16 @@ pages:
       - job: build-docs
         artifacts: true
         optional: true
-      - job: post_to_slack
+      - job: post-to-isaac-sim-slack
+        artifacts: true
+        optional: true
+      - job: post-to-isaac-lab-slack
         artifacts: true
         optional: true
       - job: generate-isaac-lab-dashboard
+        artifacts: true
+        optional: true
+      - job: generate-isaac-sim-dashboard
         artifacts: true
         optional: true
 
@@ -2390,40 +2153,6 @@ scan-packages-internal-urls:
         - _build/packages/internal_url_report.csv
 
 
-# ==============================================================================================================
-.test-linux-x86_64-isaaclab-integration-base:
-  stage: test
-  needs:
-    - job: build-linux-x86_64-release
-      artifacts: true
-  extends:
-    - .ipp_lnx_x86_64_gpu
-    - .kit-runner-test-linux-x86_64-1x-gpu
-  script:
-    - ./repo.sh ci test_isaaclab
-  artifacts:
-    expire_in: 2 weeks
-    when: always
-    paths:
-      - _isaaclab/tests/*
-    reports:
-      junit:
-        - '_isaaclab/tests/full_report.xml'
-
-test-linux-x86_64-isaaclab-integration:
-  extends:
-    - .test-common
-    - .test-linux-x86_64-isaaclab-integration-base
-    - .isaac-lab-test-rules
-  variables:
-    ISAACSIM_CI_SHORT: "true"
-
-test-linux-x86_64-isaaclab-integration-nightly:
-  timeout: 12 hours
-  extends:
-    - .test-nightly
-    - .test-linux-x86_64-isaaclab-integration-base
-
 check-app-version-locks:
   stage: test
   extends:
@@ -2510,3 +2239,429 @@ generate-public-extension-mr:
     allow_failure: true
   - !reference [.rules-version-changed-manual, rules]
   - !reference [.rules-push-manual, rules]
+
+
+# ==============================================================================================================
+#
+# ── IsaacLab CI Jobs ───────────────────────────────────────────────────────────────────────────────────────────
+#
+# All IsaacLab-related jobs are collected here for clear separation from Isaac Sim CI above.
+# Ordering reflects the pipeline DAG: shared templates → test runs → dashboard & notifications.
+#
+# ==============================================================================================================
+
+# ==============================================================================================================
+# Shared GitLab cache for IsaacLab dashboard: historical GitLab/GitHub data under _isaaclab_cache/.
+# get-isaac-lab-historical-data runs fetch-gitlab/fetch-github subcommands (no tests); generate-isaac-lab-dashboard runs the ci subcommand (needs JUnit).
+.isaac-lab-dashboard-cache:
+    variables:
+        ISAAC_LAB_BRANCH: "develop"
+        # Newline-separated list of omni_isaac_sim branches whose historical GitLab
+        # pipelines are fetched and displayed in the Isaac Sim CI dropdown.
+        ISAAC_LAB_CI_REPORT_BRANCHES: |
+            develop
+            develop-kit-tot
+            kit-integration/master
+            kit-integration/feature/110.1
+    cache:
+        key: "isaac-lab-dashboard-${ISAAC_LAB_BRANCH}"
+        paths:
+            - _isaaclab_cache/
+        policy: pull-push
+
+# ==============================================================================================================
+# Shared rules for IsaacLab test/agent jobs.
+.isaac-test-rules:
+  rules:
+    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_TESTS != "true"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "pipeline"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_PROTECTED == "true"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - when: never
+
+# Same conditions as .isaac-test-rules but always runs (even when upstream jobs fail).
+# Used for dashboard generation and Slack notification jobs that must surface failures.
+.isaac-test-rules-always:
+  rules:
+    - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_TESTS != "true"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "pipeline"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_PROTECTED == "true"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+    - when: never
+
+# ==============================================================================================================
+# Fetch historical IsaacLab test data from GitLab CI + GitHub mirror.
+# Runs automatically on every qualifying pipeline to keep the cache fresh.
+get-isaac-lab-historical-data:
+    stage: test
+    dependencies: []
+    extends:
+      - .isaac-lab-dashboard-cache
+      - .ipp_lnx_x86_64_cpu_small
+      - .isaac-test-rules
+    allow_failure: true
+    artifacts:
+        expire_in: 1 week
+        when: always
+        paths:
+          - _isaaclab_cache/
+    script:
+      - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
+      - echo "=== GitLab / GitHub API (GITLAB_AUTH_TOKEN, GITHUB_NVIDIA_DEV_TOKEN) ==="
+      - ./tools/packman/python.sh tools/ci/dashboards/verify_api_tokens.py
+      # Historical GitLab + GitHub data (no JUnit — same cache key as generate-isaac-lab-dashboard).
+      - |
+        set +e
+        ERR_COUNT=0
+        echo "=== Historical GitLab fetch (optional) ==="
+        while IFS= read -r REPORT_BRANCH; do
+          [ -z "$REPORT_BRANCH" ] && continue
+          echo "--- Fetching branch: $REPORT_BRANCH ---"
+          ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py \
+            fetch-gitlab \
+            --config tools/ci/dashboards/config_isaac_lab.yml \
+            --isaac-sim-branch "$REPORT_BRANCH" \
+            --isaac-lab-branch "${ISAAC_LAB_BRANCH:-develop}" \
+            --data-dir _isaaclab_cache
+          if [ $? -ne 0 ]; then
+            echo "${RED}Error: historical GitLab fetch failed for branch $REPORT_BRANCH.${RESET}" >&2
+            ERR_COUNT=$((ERR_COUNT + 1))
+          fi
+        done <<< "${ISAAC_LAB_CI_REPORT_BRANCHES:-develop}"
+        echo "=== Historical GitHub fetch ==="
+        ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py fetch-github --config tools/ci/dashboards/config_isaac_lab.yml --data-dir _isaaclab_cache
+        if [ $? -ne 0 ]; then
+          echo "${RED}Error: historical GitHub fetch (ci_dashboard.py fetch-github) failed.${RESET}" >&2
+          ERR_COUNT=$((ERR_COUNT + 1))
+        fi
+        if [ "$ERR_COUNT" -gt 0 ]; then
+          echo "${RED}Historical fetch finished with ${ERR_COUNT} error(s).${RESET}" >&2
+        fi
+
+# ==============================================================================================================
+.test-linux-x86_64-isaac-lab-integration-base:
+  stage: test
+  needs:
+    - job: build-linux-x86_64-release
+      artifacts: true
+  extends:
+    - .ipp_lnx_x86_64_gpu
+    - .kit-runner-test-linux-x86_64-1x-gpu
+  script:
+    - ./repo.sh ci test_isaaclab
+  artifacts:
+    expire_in: 2 weeks
+    when: always
+    paths:
+      - _isaaclab/tests/*
+    reports:
+      junit:
+        - '_isaaclab/tests/full_report.xml'
+
+test-linux-x86_64-isaac-lab-integration:
+  extends:
+    - .test-common
+    - .test-linux-x86_64-isaac-lab-integration-base
+    - .isaac-test-rules
+  allow_failure: true
+  variables:
+    ISAACSIM_CI_SHORT: "true"
+
+test-linux-x86_64-isaac-lab-integration-nightly:
+  timeout: 12 hours
+  extends:
+    - .test-nightly
+    - .test-linux-x86_64-isaac-lab-integration-base
+
+# ==============================================================================================================
+# Dashboard generation, Slack notification, and AI failure analysis.
+generate-isaac-lab-dashboard:
+    stage: report-results
+    allow_failure: true
+    extends:
+      - .isaac-lab-dashboard-cache
+      - .ipp_lnx_x86_64_cpu_small
+      - .isaac-test-rules-always
+    dependencies:
+      - get-isaac-lab-historical-data
+    script:
+      - export TZ="America/Los_Angeles"
+      - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
+      # Fetch the current pipeline's results (bypasses scope=finished since the pipeline is still running).
+      - >
+        ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py
+        fetch-gitlab
+        --config tools/ci/dashboards/config_isaac_lab.yml
+        --isaac-sim-branch "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-${CI_COMMIT_REF_NAME:-develop}}"
+        --isaac-lab-branch "${ISAAC_LAB_BRANCH:-develop}"
+        --extra-pipeline-id "${CI_PIPELINE_ID}"
+        --max-runs 1
+        --data-dir _isaaclab_cache
+      - >
+        ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py
+        generate
+        --config tools/ci/dashboards/config_isaac_lab.yml
+        --data-dir _isaaclab_cache
+        --output-dir _isaaclab_cache/output
+    artifacts:
+        expire_in: 2 weeks
+        when: always
+        paths:
+          - _isaaclab_cache/output/
+
+# ==============================================================================================================
+# Posts IsaacLab test results to Slack. Runs after generate-isaac-lab-dashboard so that dashboard
+# artifacts are available. Always runs (even when tests fail) to surface failures.
+post-to-isaac-lab-slack:
+  stage: report-results
+  extends:
+    - .ipp_lnx_x86_64_cpu_small
+    - .isaac-test-rules-always
+  needs:
+    - job: generate-isaac-lab-dashboard
+      artifacts: true
+      optional: true
+  script:
+    # Installing some packages to get kaleido happy
+    - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libnss3 libatk-bridge2.0-0 libcups2 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2 libasound2
+    - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
+    - ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py slack --config tools/ci/dashboards/config_isaac_lab.yml
+  artifacts:
+    paths:
+      - pipeline_test_chart_heatmap.html
+      - pipeline_test_chart_heatmap.png
+      - regressions.txt
+    expire_in: 1 week
+
+# ==============================================================================================================
+# Analyzes IsaacLab test failures using an AI agent and suggests code fixes.
+# Runs in the same stage as generate-isaac-lab-dashboard, after the test jobs complete.
+# NOTE: This job is currently disabled as it is an experimental feature that has lower priorities for now.
+#       It has been left in place for future reference and potential re-enabling.
+.agent-analyze-isaac-lab-failures:
+  stage: report-results
+  image:
+    name: urm.nvidia.com/ct-omniverse-docker/ci-opencode-runner:latest
+    pull_policy: always
+  extends:
+    - .ipp_lnx_x86_64_cpu_small
+    - .isaac-test-rules
+  variables:
+    NVIDIA_API_KEY: $INFERENCE_API_KEY
+    AGENT_MODEL: "nvidia-hub/azure/anthropic/claude-sonnet-4-6"
+    AGENT_RESULT_DIR: "${CI_PROJECT_DIR}/agent-results"
+    AGENT_ALLOWED_TOOLS: "Read,Glob,Grep,Bash(python3 *)"
+    AGENT_PROMPT: |
+      You are analyzing CI test failures for Isaac Sim / IsaacLab.
+
+      The JUnit XML test results are at `_isaaclab/tests/full_report.xml`.
+      The Isaac Sim source code is under `source/`.
+      The IsaacLab source code is under `_isaaclab-src/`.
+      The Kit source code, if present, is under `_kit-src/` (only available on
+      kit-integration/* branches — check whether it exists before using it).
+
+      Step 1 — Parse the results.
+      Use python3 to parse the XML and count totals: passed, failed, errored, skipped.
+      If there are no failures or errors, write a brief summary to
+      agent-results/isaaclab-analysis.md and stop.
+
+      Step 2 — For each failed or errored test (up to 10, prioritized by error type):
+        a. Extract: test name, classname, failure message, and full stack trace.
+        b. Search source/, _isaaclab-src/, and _kit-src/ (if present) for files
+            relevant to the classname or symbols in the stack trace.
+        c. Read those files and identify the most likely root cause.
+        d. Classify as one of: REGRESSION, ENVIRONMENT, FLAKY, or UPSTREAM_ISAACSIM.
+        e. For REGRESSION or UPSTREAM_ISAACSIM: propose a specific fix with the file path,
+            line number, and what to change or investigate.
+
+      Step 3 — Write agent-results/isaaclab-analysis.md with this structure:
+        ## Summary
+        Total: X passed, Y failed, Z errored, W skipped.
+
+        ## Failed Tests
+        One subsection per failure with: test name, classification, root cause explanation,
+        and suggested fix if applicable.
+
+        ## Prioritized Fixes
+        Ranked list of actionable code changes (most impactful first).
+
+        ## Verdict
+        One of: ALL_PASSED | REGRESSIONS_FOUND | ENVIRONMENT_ISSUES | NEEDS_INVESTIGATION
+  needs:
+    - job: test-linux-x86_64-isaac-lab-integration
+      artifacts: true
+      optional: true
+    - job: test-linux-x86_64-isaac-lab-integration-nightly
+      artifacts: true
+      optional: true
+  script:
+    - |
+      if [ ! -f "_isaaclab/tests/full_report.xml" ]; then
+        echo "No test results found at _isaaclab/tests/full_report.xml -- skipping analysis."
+        exit 0
+      fi
+    - git clone "https://${GITHUB_NVIDIA_DEV_TOKEN}@github.com/isaac-sim/IsaacLab.git"
+        --depth=1 --branch "${ISAAC_LAB_BRANCH:-develop}" _isaaclab-src
+    - |
+      if [[ "${CI_COMMIT_REF_NAME}" == kit-integration/* ]]; then
+        KIT_BRANCH="${CI_COMMIT_REF_NAME#kit-integration/}"
+        echo "Cloning Kit branch ${KIT_BRANCH} for analysis..."
+        git clone "https://oauth2:${GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/kit.git" \
+          --depth=1 --branch "${KIT_BRANCH}" _kit-src
+      fi
+    - /opt/opencode-runner/entrypoint.sh
+  artifacts:
+    when: always
+    expire_in: 2 weeks
+    paths:
+      - agent-results/
+  allow_failure: true
+  timeout: 2 hours
+
+# ==============================================================================================================
+# ── IsaacSim Dashboard Jobs ───────────────────────────────────────────────────────────────────────────────────
+#
+# These jobs generate an interactive test dashboard for IsaacSim using the same pipeline as the IsaacLab
+# dashboard.  Test data is fetched from the omni_isaac_sim GitLab CI pipeline (all non-excluded test jobs,
+# stored as collapsible sections grouped by job name) and optionally from the isaac-sim/IsaacSim GitHub mirror.
+#
+# To populate the cache, run get-isaacsim-historical-data manually from the CI pipeline UI.
+# ==============================================================================================================
+
+# Shared GitLab cache for the IsaacSim dashboard.  Stored separately from the IsaacLab cache to
+# avoid key collisions; same cache.policy so the generate job can pull what the fetch job pushed.
+.isaac-sim-dashboard-cache:
+    variables:
+        ISAACSIM_BRANCH: "develop"
+        # Newline-separated list of omni_isaac_sim branches whose historical GitLab
+        # pipelines are fetched and displayed in the IsaacSim CI dropdown.
+        ISAACSIM_CI_REPORT_BRANCHES: |
+            develop
+            develop-kit-tot
+            kit-integration/master
+    cache:
+        key: "isaac-sim-dashboard-${ISAACSIM_BRANCH}"
+        paths:
+            - _isaacsim_cache/
+        policy: pull-push
+
+# ==============================================================================================================
+# Fetch historical IsaacSim test data from GitLab CI + GitHub mirror.
+# Runs automatically on every qualifying pipeline to keep the cache fresh.
+get-isaac-sim-historical-data:
+    stage: test
+    dependencies: []
+    extends:
+      - .isaac-sim-dashboard-cache
+      - .ipp_lnx_x86_64_cpu_small
+      - .isaac-test-rules
+    allow_failure: true
+    artifacts:
+        expire_in: 1 week
+        when: always
+        paths:
+          - _isaacsim_cache/
+    script:
+      - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
+      - echo "=== GitLab / GitHub API (GITLAB_AUTH_TOKEN, GITHUB_NVIDIA_DEV_TOKEN) ==="
+      - ./tools/packman/python.sh tools/ci/dashboards/verify_api_tokens.py
+      - |
+        set +e
+        ERR_COUNT=0
+        echo "=== IsaacSim historical GitLab fetch ==="
+        while IFS= read -r REPORT_BRANCH; do
+          [ -z "$REPORT_BRANCH" ] && continue
+          echo "--- Fetching branch: $REPORT_BRANCH ---"
+          ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py \
+            fetch-gitlab \
+            --config tools/ci/dashboards/config_isaac_sim.yml \
+            --isaac-sim-branch "$REPORT_BRANCH" \
+            --data-dir _isaacsim_cache
+          if [ $? -ne 0 ]; then
+            echo "${RED}Error: IsaacSim GitLab fetch failed for branch $REPORT_BRANCH.${RESET}" >&2
+            ERR_COUNT=$((ERR_COUNT + 1))
+          fi
+        done <<< "${ISAACSIM_CI_REPORT_BRANCHES:-develop}"
+        echo "=== IsaacSim GitHub fetch ==="
+        ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py \
+          fetch-github \
+          --config tools/ci/dashboards/config_isaac_sim.yml \
+          --data-dir _isaacsim_cache
+        if [ $? -ne 0 ]; then
+          echo "${RED}Error: IsaacSim GitHub fetch failed.${RESET}" >&2
+          ERR_COUNT=$((ERR_COUNT + 1))
+        fi
+        if [ "$ERR_COUNT" -gt 0 ]; then
+          echo "${RED}Historical fetch finished with ${ERR_COUNT} error(s).${RESET}" >&2
+        fi
+
+# ==============================================================================================================
+# Generates the IsaacSim dashboard HTML from the cached historical data.
+generate-isaac-sim-dashboard:
+    stage: report-results
+    extends:
+      - .isaac-sim-dashboard-cache
+      - .ipp_lnx_x86_64_cpu_small
+      - .isaac-test-rules-always
+    allow_failure: true
+    dependencies:
+      - get-isaac-sim-historical-data
+    script:
+      - export TZ="America/Los_Angeles"
+      - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
+      # Fetch the current pipeline's results (bypasses scope=finished since the pipeline is still running).
+      - >
+        ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py
+        fetch-gitlab
+        --config tools/ci/dashboards/config_isaac_sim.yml
+        --isaac-sim-branch "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-${CI_COMMIT_REF_NAME:-develop}}"
+        --extra-pipeline-id "${CI_PIPELINE_ID}"
+        --max-runs 1
+        --data-dir _isaacsim_cache
+      - >
+        ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py
+        generate
+        --config tools/ci/dashboards/config_isaac_sim.yml
+        --data-dir _isaacsim_cache
+        --output-dir _isaacsim_cache/output
+    artifacts:
+        when: always
+        expire_in: 2 weeks
+        paths:
+          - _isaacsim_cache/output/
+
+# ==============================================================================================================
+# Slack notifications
+.post_job_status_to_slack:
+  after_script:
+    - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
+    - ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py slack --config tools/ci/dashboards/config_isaac_sim.yml --job-report
+
+post-to-isaac-sim-slack:
+  stage: report-results
+  extends:
+    - .ipp_lnx_x86_64_cpu_small
+    - .isaac-test-rules-always
+  needs:
+    - job: generate-isaac-sim-dashboard
+      artifacts: true
+      optional: true
+  script:
+    # Installing some packages to get kaleido happy
+    - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libnss3 libatk-bridge2.0-0 libcups2 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2 libasound2
+    - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
+    - ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py slack --config tools/ci/dashboards/config_isaac_sim.yml
+  artifacts:
+    paths:
+      - pipeline_test_chart_heatmap.html
+      - pipeline_test_chart_heatmap.png
+      - regressions.txt
+    expire_in: 1 week

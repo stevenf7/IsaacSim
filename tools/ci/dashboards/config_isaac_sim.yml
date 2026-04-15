@@ -1,0 +1,136 @@
+# CI Dashboard configuration for IsaacSim test results.
+# Used by tools/ci/ci_dashboard.py (all subcommands).
+#
+# To adapt this for a different repo, copy this file and update the fields
+# below. Only dashboard_title, gitlab_project, ingestion.sources,
+# branches.tracked, slack.channels, and slack.routing are required.
+
+dashboard_title: "IsaacSim Test Dashboard"
+gitlab_url: "https://gitlab-master.nvidia.com"
+gitlab_project: "omniverse/isaac/omni_isaac_sim"
+
+# Cache subdirectory prefix used by fetch-gitlab and generate subcommands.
+# Branch dirs are stored as {namespace_prefix}_{branch_name}/ in the cache.
+namespace_prefix: isaacsim
+
+# ── Ingestion ────────────────────────────────────────────────────────────────
+ingestion:
+  # "sections" mode: all non-excluded finished test jobs per pipeline become
+  # separate collapsible sections in the dashboard.  This differs from
+  # "single_job" (IsaacLab default) which fetches one designated job only.
+  fetch_mode: sections
+
+  # Only jobs whose names contain at least one of these substrings are fetched
+  # as sections.  Keeps build/docs/scan/packaging jobs out of the dashboard.
+  include_job_patterns:
+    - "test-"
+
+  # Job name substrings that exclude a job from being fetched as a section
+  # (applied after include_job_patterns).
+  exclude_job_patterns:
+    - "isaac-lab"
+    - "isaaclab"
+    - "bump-version"
+
+  # Pipelines containing any of these job names are skipped entirely.
+  skip_pipelines_with_jobs: ["bump-version"]
+
+  github:
+    enabled: true
+    repo: "isaac-sim/IsaacSim"
+    # Workflows to fetch from the GitHub mirror..
+    workflows:
+      - { name: build,  path: ".github/workflows/build-and-test.yml" }
+    max_runs: 50
+
+# ── Branches ─────────────────────────────────────────────────────────────────
+branches:
+  tracked:
+    - develop
+    - develop-kit-tot
+    - kit-integration/master
+  default_label_branch: develop
+
+# ── Baseline comparison ───────────────────────────────────────────────────────
+baseline:
+  branch: develop
+  skip_sources: [schedule]
+  skip_commit_message_pattern: "Bumped version"
+
+# ── Slack ─────────────────────────────────────────────────────────────────────
+slack:
+  # Environment variable holding the Slack bot token.
+  token_env_var: "DS_CI_SLACK_TOKEN"
+
+  channels:
+    "#isaac-sim-ci":                 "C0A87GR0BR8"
+    "#isaac-sim-ci-dev-null":        "C0A8WKMPTEV"
+    "#isaac-sim-ci-mr":              "C0A9C7N8L9E"
+    "#isaac-sim-kit-integration-ci": "C0AEFVCTLSE"
+
+  # Channel routing: first matching rule wins; all conditions in a rule are ANDed.
+  # Supported condition keys:
+  #   ref_pattern         — Python regex matched against CI_COMMIT_REF_NAME
+  #   variable            — "ENV_VAR=value" checked against os.environ
+  #   pipeline_source     — matched against CI_PIPELINE_SOURCE
+  #   mr_description_checkbox — Slack checkbox label to look for in MR description
+  #   default             — always matches (use as last rule)
+  routing:
+    - condition:
+        ref_pattern: "^kit-integration/"
+        variable: "UPSTREAM_PIPELINE_SOURCE=merge_request"
+      channel: "#isaac-sim-ci-mr"
+    - condition:
+        ref_pattern: "^develop-kit-tot$"
+        variable: "UPSTREAM_PIPELINE_SOURCE=nightly"
+      channel: "#isaac-sim-ci"
+    - condition:
+        variable: "UPSTREAM_PIPELINE_SOURCE=post_merge"
+      channel: "#isaac-sim-ci"
+    - condition:
+        mr_description_checkbox: "Post pipeline reports to slack"
+      channel: "#isaac-sim-ci-mr"
+    - condition:
+        ref_pattern: "^kit-integration/"
+        variable: "UPSTREAM_PIPELINE_SOURCE=nightly"
+      channel: "#isaac-sim-kit-integration-ci"
+    - condition:
+        pipeline_source: schedule
+      channel: "#isaac-sim-ci"
+    - default: "#isaac-sim-ci"
+
+  heatmap:
+    enabled: true
+    always_generate: true
+    # Number of recent pipelines to include in the heatmap.
+    limit: 100
+    # Job name substrings to exclude from the heatmap (e.g. IsaacLab jobs that
+    # are already shown in the IsaacLab dashboard).
+    # Includes legacy "isaaclab" (no hyphen) for historical pipelines.
+    # NOTE: This is the inverse of config_isaac_lab.yml's include_job_patterns.
+    # Both pattern lists must be updated together when job names change.
+    exclude_job_patterns: [isaac-lab, isaaclab]
+    # Pipeline types for which a heatmap is posted.
+    # Pipeline types that receive a heatmap. ISAAC_MR and KIT_MR show the
+    # target branch history so reviewers can see whether the branch was already
+    # unstable before the MR.
+    post_for: [KIT_NIGHTLY, KIT_POST_MERGE, ISAAC_POST_MERGE, ISAAC_MR, KIT_MR]
+    # GitLab project ID for the upstream Kit project (used to look up Kit MR pipelines).
+    upstream_project_id: 6510
+
+  reporting:
+    # Show ALL failing tests (not just regressions vs baseline). Each test is
+    # tagged as "new" (regression) or "pre-existing" (also failing in baseline).
+    show_all_failures: true
+    # Max individual test entries listed in the Slack message. 0 = unlimited.
+    # Tests beyond the cap are noted with "… and N more — see attached report".
+    max_failures_listed: 30
+
+# ── Pages / dashboard publishing ─────────────────────────────────────────────
+pages:
+  enabled: true
+  # ci subcommand publishes for these CI_PIPELINE_SOURCE values.
+  publish_for_sources: [push, schedule, pipeline]
+  # MR pipelines never publish — this is enforced by .gitlab-ci.yml rules,
+  # not by the script itself.
+  never_for_mr: true
