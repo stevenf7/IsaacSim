@@ -23,30 +23,10 @@ from pxr import Usd, UsdGeom
 
 
 class TestMergeMeshUtils(omni.kit.test.AsyncTestCase):
-    """Test helpers in :mod:`isaacsim.asset.importer.utils.impl.merge_mesh_utils`.
-
-    Example:
-
-    .. code-block:: python
-
-        >>> import omni.kit.test
-        >>> class Example(omni.kit.test.AsyncTestCase):
-        ...     pass
-        ...
-    """
+    """Test helpers in :mod:`isaacsim.asset.importer.utils.impl.merge_mesh_utils`."""
 
     async def test_merge_mesh_reduces_mesh_count(self) -> None:
-        """Merge multiple meshes when Scene Optimizer is available.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> from pxr import Usd, UsdGeom
-            >>> stage = Usd.Stage.CreateInMemory()
-            >>> UsdGeom.Mesh.Define(stage, "/World/A")
-            UsdGeom.Mesh(Usd.Prim(</World/A>))
-        """
+        """Merge multiple meshes when Scene Optimizer is available."""
         try:
             import omni.kit.commands  # noqa: F401
             import omni.scene.optimizer.core  # noqa: F401

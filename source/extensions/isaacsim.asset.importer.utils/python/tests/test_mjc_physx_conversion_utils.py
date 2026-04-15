@@ -17,7 +17,8 @@
 
 import omni.kit.test
 from isaacsim.asset.importer.utils.impl import mjc_to_physx_conversion_utils, urdf_to_mjc_physx_conversion_utils
-from pxr import PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
+from isaacsim.asset.importer.utils.impl.physx_types import PhysxAttr, PhysxSchema
+from pxr import Sdf, Usd, UsdGeom, UsdPhysics
 
 
 class TestMjcPhysxConversionUtils(omni.kit.test.AsyncTestCase):
@@ -46,12 +47,13 @@ class TestMjcPhysxConversionUtils(omni.kit.test.AsyncTestCase):
         self.assertTrue(drive_api.GetTargetPositionAttr().IsValid())
         self.assertAlmostEqual(drive_api.GetTargetPositionAttr().Get(), 10.0, delta=1e-2)
 
-        physx_joint_api = PhysxSchema.PhysxJointAPI(joint)
-        self.assertTrue(physx_joint_api.GetMaxJointVelocityAttr().IsValid())
-        self.assertAlmostEqual(physx_joint_api.GetMaxJointVelocityAttr().Get(), 6.0 * 180 / 3.1415926, delta=1e-2)
+        max_vel_attr = joint.GetAttribute(PhysxAttr.JOINT_MAX_VELOCITY.name)
+        self.assertTrue(max_vel_attr.IsValid())
+        self.assertAlmostEqual(max_vel_attr.Get(), 6.0 * 180 / 3.1415926, delta=1e-2)
 
-        self.assertTrue(physx_joint_api.GetJointFrictionAttr().IsValid())
-        self.assertAlmostEqual(physx_joint_api.GetJointFrictionAttr().Get(), 0.2, delta=1e-2)
+        friction_attr = joint.GetAttribute(PhysxAttr.JOINT_FRICTION.name)
+        self.assertTrue(friction_attr.IsValid())
+        self.assertAlmostEqual(friction_attr.Get(), 0.2, delta=1e-2)
 
     async def test_convert_physx_to_mjc_authors_mjc_attrs(self) -> None:
         """Author MJCF attributes from PhysX joint data."""
@@ -62,9 +64,9 @@ class TestMjcPhysxConversionUtils(omni.kit.test.AsyncTestCase):
         drive_api = UsdPhysics.DriveAPI.Apply(joint, "angular")
         drive_api.CreateTargetPositionAttr().Set(1.25)
 
-        physx_joint_api = PhysxSchema.PhysxJointAPI.Apply(joint)
-        physx_joint_api.CreateJointFrictionAttr().Set(0.4)
-        physx_joint_api.CreateArmatureAttr().Set(0.02)
+        joint.ApplyAPI(PhysxSchema.JOINT_API)
+        joint.CreateAttribute(PhysxAttr.JOINT_FRICTION.name, PhysxAttr.JOINT_FRICTION.type).Set(0.4)
+        joint.CreateAttribute(PhysxAttr.JOINT_ARMATURE.name, PhysxAttr.JOINT_ARMATURE.type).Set(0.02)
 
         urdf_to_mjc_physx_conversion_utils.convert_physx_to_mjc(joint)
 
@@ -90,8 +92,8 @@ class TestMjcPhysxConversionUtils(omni.kit.test.AsyncTestCase):
         drive_api.CreateDampingAttr().Set(1.5)
         drive_api.CreateTargetPositionAttr().Set(0.5)
 
-        physx_joint_api = PhysxSchema.PhysxJointAPI.Apply(joint)
-        physx_joint_api.CreateJointFrictionAttr().Set(0.2)
+        joint.ApplyAPI(PhysxSchema.JOINT_API)
+        joint.CreateAttribute(PhysxAttr.JOINT_FRICTION.name, PhysxAttr.JOINT_FRICTION.type).Set(0.2)
 
         urdf_to_mjc_physx_conversion_utils.convert_joints_attributes(stage)
 
@@ -146,9 +148,9 @@ class TestMjcPhysxConversionUtils(omni.kit.test.AsyncTestCase):
         self.assertTrue(drive_api.GetTargetPositionAttr().IsValid())
         self.assertAlmostEqual(drive_api.GetTargetPositionAttr().Get(), 0.75, delta=1e-2)
 
-        physx_joint_api = PhysxSchema.PhysxJointAPI(joint)
-        self.assertTrue(physx_joint_api.GetJointFrictionAttr().IsValid())
-        self.assertAlmostEqual(physx_joint_api.GetJointFrictionAttr().Get(), 0.3, delta=1e-2)
+        friction_attr = joint.GetAttribute(PhysxAttr.JOINT_FRICTION.name)
+        self.assertTrue(friction_attr.IsValid())
+        self.assertAlmostEqual(friction_attr.Get(), 0.3, delta=1e-2)
 
     async def test_create_mjc_actuator_from_physics_copies_drive_limits(self) -> None:
         """Create MJCF actuator attributes from PhysX drive limits."""

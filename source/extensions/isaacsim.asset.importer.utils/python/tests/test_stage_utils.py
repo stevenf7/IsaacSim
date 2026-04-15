@@ -24,45 +24,15 @@ from isaacsim.asset.importer.utils.impl import stage_utils
 
 
 class TestStageUtils(omni.kit.test.AsyncTestCase):
-    """Test helpers in :mod:`isaacsim.asset.importer.utils.impl.stage_utils`.
-
-    Example:
-
-    .. code-block:: python
-
-        >>> import omni.kit.test
-        >>> class Example(omni.kit.test.AsyncTestCase):
-        ...     pass
-        ...
-    """
+    """Test helpers in :mod:`isaacsim.asset.importer.utils.impl.stage_utils`."""
 
     async def setUp(self) -> None:
-        """Create a new stage before each test.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> import omni.usd
-            >>> omni.usd.get_context()
-            <...>
-        """
+        """Create a new stage before each test."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
     async def test_stage_utils(self) -> None:
-        """Save the current stage to disk and open it again.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> import tempfile
-            >>> import isaacsim.asset.importer.utils.stage_utils as stage_utils
-            >>> tmp_dir = tempfile.gettempdir()
-            >>> stage = omni.usd.get_context().get_stage()
-            >>> stage_utils.save_stage(stage, f"{tmp_dir}/test_stage_utils.usd")  # doctest: +SKIP
-        """
+        """Save the current stage to disk and open it again."""
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp_dir:
             usd_path = os.path.join(tmp_dir, "test_stage_utils.usd")
             stage = omni.usd.get_context().get_stage()

@@ -15,12 +15,15 @@
 
 """Utilities for converting MJCF actuator/joint data to PhysX schemas."""
 
+from __future__ import annotations
+
 import logging
 import math
 
-from pxr import PhysxSchema, Usd, UsdPhysics
+from pxr import Usd, UsdPhysics
 
 from .importer_utils import create_physx_mimic_joint
+from .physx_types import PhysxAttr, PhysxSchema
 
 _logger = logging.getLogger(__name__)
 
@@ -40,7 +43,7 @@ def convert_mjc_to_physx(stage: Usd.Stage) -> None:
 
 
 def convert_mjc_actuator_to_physics(mjc_actuator: Usd.Prim, stage: Usd.Stage) -> None:
-    """Convert a MJCF actuator to a PhysX actuator.
+    """Convert an MJCF actuator to a PhysX actuator.
 
     Args:
         mjc_actuator: MJCF actuator prim.
@@ -166,7 +169,7 @@ def convert_mjc_actuator_to_physics(mjc_actuator: Usd.Prim, stage: Usd.Stage) ->
 
 
 def convert_mjc_joint_to_physx(joint: Usd.Prim, stage: Usd.Stage) -> None:
-    """Convert a MJCF joint to a PhysX joint.
+    """Convert an MJCF joint to a PhysX joint.
 
     Args:
         joint: MJCF joint prim.
@@ -177,21 +180,16 @@ def convert_mjc_joint_to_physx(joint: Usd.Prim, stage: Usd.Stage) -> None:
         joint.GetAttribute("mjc:frictionloss").Get() if joint.GetAttribute("mjc:frictionloss").IsValid() else None
     )
     if joint_friction:
-        if joint.HasAPI(PhysxSchema.PhysxJointAPI):
-            physx_joint_api = PhysxSchema.PhysxJointAPI(joint)
-        else:
-            physx_joint_api = PhysxSchema.PhysxJointAPI.Apply(joint)
-
-        physx_joint_api.CreateJointFrictionAttr().Set(joint_friction)
+        if not joint.HasAPI(PhysxSchema.JOINT_API):
+            joint.ApplyAPI(PhysxSchema.JOINT_API)
+        joint.CreateAttribute(PhysxAttr.JOINT_FRICTION.name, PhysxAttr.JOINT_FRICTION.type).Set(joint_friction)
 
     # Set armature
     joint_armature = joint.GetAttribute("mjc:armature").Get() if joint.GetAttribute("mjc:armature").IsValid() else None
     if joint_armature:
-        if joint.HasAPI(PhysxSchema.PhysxJointAPI):
-            physx_joint_api = PhysxSchema.PhysxJointAPI(joint)
-        else:
-            physx_joint_api = PhysxSchema.PhysxJointAPI.Apply(joint)
-        physx_joint_api.CreateArmatureAttr().Set(joint_armature)
+        if not joint.HasAPI(PhysxSchema.JOINT_API):
+            joint.ApplyAPI(PhysxSchema.JOINT_API)
+        joint.CreateAttribute(PhysxAttr.JOINT_ARMATURE.name, PhysxAttr.JOINT_ARMATURE.type).Set(joint_armature)
 
     # Set target_position
     joint_target_position = joint.GetAttribute("mjc:ref").Get() if joint.GetAttribute("mjc:ref").IsValid() else None
