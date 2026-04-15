@@ -138,7 +138,7 @@ python_paths = [
   "${root}/_build/${platform}/${config}/extsbuild/*",
   "${root}/_build/${platform}/${config}/extsDeprecated/*",
   "${root}/_build/${platform}/${config}/exts/isaacsim.asset.importer.urdf/pip_prebundle",
-  "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.lula/pip_prebundle",
+  "${root}/_build/${platform}/${config}/extsDeprecated/isaacsim.robot_motion.lula/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.cumotion/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.pink/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot.schema/plugins",

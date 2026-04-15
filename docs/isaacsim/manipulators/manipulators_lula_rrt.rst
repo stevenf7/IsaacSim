@@ -79,7 +79,7 @@ You can reference the ``docstring`` to the function ``RRT.set_param()`` in our |
 
 .. |link_ext| raw:: html
 
-   <a href="../py/source/extensions/isaacsim.robot_motion.motion_generation/docs/index.html" target="_blank">API Documentation</a>
+   <a href="../py/source/deprecated/isaacsim.robot_motion.motion_generation/docs/index.html" target="_blank">API Documentation</a>
 
 RRT Example
 ^^^^^^^^^^^^

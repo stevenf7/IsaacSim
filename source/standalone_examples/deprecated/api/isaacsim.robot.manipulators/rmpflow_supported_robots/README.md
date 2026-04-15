@@ -28,9 +28,9 @@ With the default arguments, the above script will run using the Cobotta Pro 900 
         'end_effector_frame_name': 'gripper_center',
         'ignore_robot_state_updates': False,
         'maximum_substep_size': 0.00334,
-        'rmpflow_config_path': '/path/to/omni_isaac_sim/_build/linux-x86_64/release/exts/isaacsim.robot_motion.motion_generation/motion_policy_configs/./Denso/cobotta_pro_900/rmpflow/cobotta_rmpflow_common.yaml',
-        'robot_description_path': '/path/to/omni_isaac_sim/_build/linux-x86_64/release/exts/isaacsim.robot_motion.motion_generation/motion_policy_configs/./Denso/cobotta_pro_900/rmpflow/robot_descriptor.yaml',
-        'urdf_path': '/path/to/omni_isaac_sim/_build/linux-x86_64/release/exts/isaacsim.robot_motion.motion_generation/motion_policy_configs/./Denso/cobotta_pro_900/rmpflow/../cobotta_pro_900_gripper_frame.urdf'
+        'rmpflow_config_path': '/path/to/omni_isaac_sim/_build/linux-x86_64/release/extsDeprecated/isaacsim.robot_motion.motion_generation/motion_policy_configs/./Denso/cobotta_pro_900/rmpflow/cobotta_rmpflow_common.yaml',
+        'robot_description_path': '/path/to/omni_isaac_sim/_build/linux-x86_64/release/extsDeprecated/isaacsim.robot_motion.motion_generation/motion_policy_configs/./Denso/cobotta_pro_900/rmpflow/robot_descriptor.yaml',
+        'urdf_path': '/path/to/omni_isaac_sim/_build/linux-x86_64/release/extsDeprecated/isaacsim.robot_motion.motion_generation/motion_policy_configs/./Denso/cobotta_pro_900/rmpflow/../cobotta_pro_900_gripper_frame.urdf'
     }
 
 The names of supported robots are suitable for the `--robot-name` argument, and each must correctly correspond to the robot USD path.  In a future release, configuration data for supported robots will be centralized such that only a single argument will be required.  The specific method of accessing supported robot RMPflow configs provided here will then be deprecated.

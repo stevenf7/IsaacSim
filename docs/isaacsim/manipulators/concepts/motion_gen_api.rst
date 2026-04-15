@@ -22,4 +22,4 @@ See the |isaac-sim_short| Motion Generation Extension |link_ext| for usage infor
 
 .. |link_ext| raw:: html
 
-   <a href="../../py/source/extensions/isaacsim.robot_motion.motion_generation/docs/index.html" target="_blank">API Documentation</a>
+   <a href="../../py/source/deprecated/isaacsim.robot_motion.motion_generation/docs/index.html" target="_blank">API Documentation</a>

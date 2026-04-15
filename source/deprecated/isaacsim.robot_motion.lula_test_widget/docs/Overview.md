@@ -2,7 +2,7 @@
 
 The isaacsim.robot_motion.lula_test_widget extension provides a testing interface for robot motion planning using Lula kinematics solvers and RmpFlow motion generation algorithms. This extension creates a dockable UI window that enables users to select articulated robots from the scene, load robot configuration files, and test various motion planning scenarios including inverse kinematics, trajectory generation, and RmpFlow-based motion control.
 
-```{image} ../../../../source/extensions/isaacsim.robot_motion.lula_test_widget/data/preview.png
+```{image} ../../../../source/deprecated/isaacsim.robot_motion.lula_test_widget/data/preview.png
 ---
 align: center
 ---

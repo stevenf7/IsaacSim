@@ -543,9 +543,9 @@ inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/isaacsim.robot_motion.lula",
-    "exts/isaacsim.robot_motion.lula_test_widget",
-    "exts/isaacsim.robot_motion.motion_generation",
+    "extsDeprecated/isaacsim.robot_motion.lula",
+    "extsDeprecated/isaacsim.robot_motion.lula_test_widget",
+    "extsDeprecated/isaacsim.robot_motion.motion_generation",
     "extsDeprecated/isaacsim.robot_motion.motion_generation.examples",
     "exts/isaacsim.robot_motion.experimental.motion_generation",
     "exts/isaacsim.robot_motion.cumotion",
