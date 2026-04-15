@@ -1,5 +1,5 @@
 [package]
-version = "1.4.1"
+version = "1.5.0"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Writers"
 description = "The extension provides various custom Replicator based writers for Synthetic Data Generation (SDG) workflows. The writers are registered with Replicator at extension startup."
@@ -15,7 +15,7 @@ writeTarget.kit = true
 writeTarget.platform = true # Build separate extensions for Windows and Linux so appropriate libraries are bundled
 
 [dependencies]
-"isaacsim.core.api" = {}
+"isaacsim.core.experimental.utils" = {}
 "omni.graph" = {}
 "omni.graph.core" = {}
 "omni.replicator.core" = {}
@@ -30,9 +30,6 @@ exclude = ["Ogn*Database.py"]
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -41,7 +38,6 @@ args = [
 dependencies = [
     "isaacsim.test.utils",
     "omni.kit.viewport.window",
-    "omni.isaac.ml_archive"
 ]
 
 "filter:platform"."windows-x86_64".pythonTests.exclude = [
@@ -100,7 +96,6 @@ name = "test_multiple_cameras_writer"
 dependencies = [
     "isaacsim.test.utils",
     "omni.kit.viewport.window",
-    "omni.isaac.ml_archive",
 ]
 
 "filter:platform"."windows-x86_64".pythonTests.include = [
@@ -163,7 +158,6 @@ name = "test_single_camera_writer"
 dependencies = [
     "isaacsim.test.utils",
     "omni.kit.viewport.window",
-    "omni.isaac.ml_archive",
 ]
 
 "filter:platform"."windows-x86_64".pythonTests.include = [

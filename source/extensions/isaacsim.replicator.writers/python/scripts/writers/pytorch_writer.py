@@ -15,6 +15,7 @@
 
 """Defines a Replicator writer that converts RGB data to PyTorch tensor batches and sends them to a listener."""
 
+from __future__ import annotations
 
 import carb
 import warp as wp
@@ -22,8 +23,6 @@ from isaacsim.core.deprecation_manager import import_module
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer
 
 from . import PytorchListener
-
-torch = import_module("torch")
 
 __version__ = "0.0.1"
 
@@ -33,6 +32,10 @@ class PytorchWriter(Writer):
 
             and formats them as tensor batches. The writer takes a PytorchListener which is able
             to retrieve pytorch tensors for the user directly after each writer call.
+
+    .. deprecated:: 1.5.0
+
+        This class is deprecated and will be removed in a future version. No replacement is provided.
 
     Args:
         listener: A PytorchListener that is sent pytorch batch tensors at each write() call.
@@ -109,7 +112,7 @@ class PytorchWriter(Writer):
                 self._backend.write_image(file_path, img_data)
 
     @carb.profiler.profile
-    def _convert_to_pytorch(self, data: dict, rp_info: dict) -> torch.Tensor:
+    def _convert_to_pytorch(self, data: dict, rp_info: dict) -> "torch.Tensor":
         """Converts annotator data to a PyTorch tensor batch.
 
         Args:
@@ -142,5 +145,6 @@ class PytorchWriter(Writer):
         device = "cuda:0" if self.device == "cuda" else self.device
         data_tensors = [t.to(device) for t in data_tensors]
 
+        torch = import_module("torch")
         data_tensor = torch.cat(data_tensors, dim=0)
         return data_tensor

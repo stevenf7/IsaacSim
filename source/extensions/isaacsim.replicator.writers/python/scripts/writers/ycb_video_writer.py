@@ -22,7 +22,7 @@ from typing import Dict, List
 
 import carb
 import numpy as np
-from isaacsim.core.utils.mesh import get_mesh_vertices_relative_to
+from isaacsim.replicator.writers.scripts.utils import get_mesh_vertices_relative_to
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
 from omni.syntheticdata import SyntheticData
 from PIL import Image
