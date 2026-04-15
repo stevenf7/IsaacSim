@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.9.4] - 2026-04-15
+### Changed
+- Add new isaacsim.cortex.examples test time dependency 
+
 ## [1.9.3] - 2026-03-19
 ### Changed
 - Amr navigation example test: added None to the default environment list which will use a simple ground plane environment
