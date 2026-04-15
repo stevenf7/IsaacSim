@@ -157,9 +157,9 @@ Extensions
    isaacsim.robot_motion.cumotion <source/extensions/isaacsim.robot_motion.cumotion/docs/index>
    isaacsim.robot_motion.cumotion.examples <source/extensions/isaacsim.robot_motion.cumotion.examples/docs/index>
    isaacsim.robot_motion.experimental.motion_generation <source/extensions/isaacsim.robot_motion.experimental.motion_generation/docs/index>
-   isaacsim.robot_motion.lula <source/extensions/isaacsim.robot_motion.lula/docs/index>
-   isaacsim.robot_motion.lula_test_widget <source/extensions/isaacsim.robot_motion.lula_test_widget/docs/index>
-   isaacsim.robot_motion.motion_generation <source/extensions/isaacsim.robot_motion.motion_generation/docs/index>
+   isaacsim.robot_motion.lula <source/deprecated/isaacsim.robot_motion.lula/docs/index>
+   isaacsim.robot_motion.lula_test_widget <source/deprecated/isaacsim.robot_motion.lula_test_widget/docs/index>
+   isaacsim.robot_motion.motion_generation <source/deprecated/isaacsim.robot_motion.motion_generation/docs/index>
    isaacsim.robot_motion.motion_generation.examples <source/deprecated/isaacsim.robot_motion.motion_generation.examples/docs/index>
    isaacsim.robot_motion.pink <source/extensions/isaacsim.robot_motion.pink/docs/index>
    isaacsim.robot_motion.pink.examples <source/extensions/isaacsim.robot_motion.pink.examples/docs/index>

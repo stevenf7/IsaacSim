@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.1] - 2026-04-14
+### Changed
+- Moved extension from `source/extensions` to `source/deprecated`.
+
 ## [1.2.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings

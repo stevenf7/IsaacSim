@@ -1,4 +1,8 @@
 # Changelog
+## [8.2.4] - 2026-04-14
+### Changed
+- Moved extension from `source/extensions` to `source/deprecated`.
+
 ## [8.2.3] - 2026-03-05
 ### Changed
 - Modifies Fanuc CRX-10iA/L nucleus server path + urdf joint names to match new usd assets.
