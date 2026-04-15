@@ -13,6 +13,12 @@
 Decider networks
 ==============================
 
+.. warning::
+    [DEPRECATED]: The Cortex framework has been deprecated as of Isaac Sim 6.0.0 and will be removed in a future release.
+    For behavior programming, migrate to open-source libraries such as
+    `py_trees <https://py-trees.readthedocs.io/en/devel/>`_ for behavior trees or
+    `transitions <https://github.com/pytransitions/transitions>`_ for finite state machines.
+    Isaac Sim 7.0 will include examples using these libraries.
 
 
 This tutorial steps through the basics of decider networks and demonstrates the concepts with some

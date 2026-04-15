@@ -19,10 +19,10 @@
 import numpy as np
 import omni
 from isaacsim.core.api.objects import DynamicCuboid
+from isaacsim.cortex.examples.cortex.cortex_base import CortexBase
 from isaacsim.cortex.framework.cortex_utils import load_behavior_module
 from isaacsim.cortex.framework.dfb import DfDiagnosticsMonitor
 from isaacsim.cortex.framework.robot import add_franka_to_stage
-from isaacsim.examples.interactive.cortex.cortex_base import CortexBase
 
 
 class CubeSpec:

@@ -1,24 +1,30 @@
 [package]
-version = "2.0.15"
+version = "0.1.0"
 category = "Simulation"
-title = "Isaac Cortex Sample Behaviors"
-description = "Library of Sample Behaviors for Isaac Cortex used in our core examples. It contains a pick and place state machine used on a UR10 for bin stacking, and six examples used on a Franka robot, namely a simple decider network and a state machine, block stacking, and Peck game, state machine and decider network behaviors."
-authors = ["hmazhar@nvidia.com", "rgasoto@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.cortex.behaviors"
-keywords = ["isaac", "samples", "manipulation"]
+title = "Isaac Cortex Examples"
+description = "Example environments and behavior scripts for the Isaac Cortex decision framework, including Franka block stacking and UR10 bin stacking scenarios."
+authors = ["hmazhar@nvidia.com", "aayoung@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/isaacsim.cortex.examples"
+keywords = ["isaac", "samples", "cortex", "manipulation"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
 
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 6.0.0. Will be replaced in 7.0 with simple examples and open source equivalents."
+
 [dependencies]
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.cortex.behaviors" = {}
 "isaacsim.cortex.framework" = {}
+"isaacsim.examples.interactive" = {}
+"isaacsim.gui.components" = {}
 
 [[python.module]]
-name = "isaacsim.cortex.behaviors"
+name = "isaacsim.cortex.examples"
 
 [[test]]
 name = "startup"

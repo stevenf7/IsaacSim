@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.15] - 2026-04-13
+### Deprecated
+- Extension deprecated. Will be replaced in 7.0 with simple examples and open source equivalents.
+
 ## [1.0.14] - 2026-04-06
 ### Changed
 - Remove unused isaacsim.robot.manipulators.examples dependency

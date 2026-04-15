@@ -31,10 +31,6 @@ align: center
 
 **{class}`RoboFactory <isaacsim.examples.interactive.robo_factory.RoboFactory>`** showcases multiple robots performing stacking operations in a coordinated manner, illustrating multi-robot task coordination and workspace sharing.
 
-### Behavior Framework Examples
-
-**FrankaCortex** integrates the Cortex behavior framework with Franka robots, providing examples of block stacking, state machines, decider networks, and interactive games using behavior-driven programming paradigms.
-
 ### Educational and Template Examples
 
 **{class}`HelloWorld <isaacsim.examples.interactive.hello_world.HelloWorld>`** serves as the foundational template demonstrating basic Isaac Sim sample structure and scene setup patterns.
@@ -49,8 +45,6 @@ Each example follows a consistent architecture pattern with scene setup, interac
 
 Most manipulation examples include obstacle management systems allowing users to dynamically add and remove barriers during simulation. Path planning examples demonstrate collision avoidance algorithms, while multi-robot examples showcase coordination strategies and workspace management.
 
-The behavior-based examples leverage the Cortex framework for decision-making, providing real-time diagnostic information and decision stack visualization for understanding robot behavior execution.
-
 ## Integration
 
-The extension integrates with several Isaac Sim frameworks including the examples browser system for easy access, the Cortex behavior framework for advanced robot programming, and various robot manipulation libraries for control algorithms. Examples register themselves with the browser system and provide consistent UI patterns through shared base classes.
+The extension integrates with several Isaac Sim frameworks including the examples browser system for easy access and various robot manipulation libraries for control algorithms. Examples register themselves with the browser system and provide consistent UI patterns through shared base classes.

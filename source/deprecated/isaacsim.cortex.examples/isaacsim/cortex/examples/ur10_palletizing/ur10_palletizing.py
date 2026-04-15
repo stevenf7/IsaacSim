@@ -27,10 +27,10 @@ from isaacsim.core.api.tasks.base_task import BaseTask
 from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.stage import add_reference_to_stage
 from isaacsim.cortex.behaviors.ur10 import bin_stacking_behavior as behavior
+from isaacsim.cortex.examples.cortex.cortex_base import CortexBase
 from isaacsim.cortex.framework.cortex_rigid_prim import CortexRigidPrim
 from isaacsim.cortex.framework.cortex_utils import get_assets_root_path
 from isaacsim.cortex.framework.robot import CortexUr10
-from isaacsim.examples.interactive.cortex.cortex_base import CortexBase
 
 
 class Ur10Assets:

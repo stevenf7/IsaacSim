@@ -415,8 +415,9 @@ inventory.includes.all = [
     # license
     "LICENSE.txt",
     # extensions
-    "exts/isaacsim.cortex.behaviors",
-    "exts/isaacsim.cortex.framework",
+    "extsDeprecated/isaacsim.cortex.behaviors",
+    "extsDeprecated/isaacsim.cortex.framework",
+    "extsDeprecated/isaacsim.cortex.examples",
 ]
 
 [isaacsim-example]

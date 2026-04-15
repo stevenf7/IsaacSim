@@ -393,7 +393,7 @@ class PalletizingSDGDemo:
 async def run_example_async(num_captures, bin_flip_frames, pallet_frames):
     import random
 
-    from isaacsim.examples.interactive.ur10_palletizing.ur10_palletizing import (
+    from isaacsim.cortex.examples.ur10_palletizing.ur10_palletizing import (
         BinStacking,
     )
 
