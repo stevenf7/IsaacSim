@@ -38,6 +38,8 @@ class Stacking:
         offset: Additional offset to apply to positions.
         events_dt: Step counts for each phase.
         robot_name: Name/identifier for this robot (for logging purposes).
+        usd_path: Optional path to a custom UR10 USD file (passed through to
+            :class:`UR10`).  When ``None`` the packaged asset is used.
     """
 
     def __init__(
@@ -49,9 +51,11 @@ class Stacking:
         offset: np.ndarray | None = None,
         events_dt: list[int] | None = None,
         robot_name: str = "",
+        usd_path: str | None = None,
     ) -> None:
         self.robot_path = robot_path
         self.robot = None
+        self._usd_path = usd_path
         self.cubes = []
         self.cube_paths = []
         self.robot_name = robot_name
@@ -103,7 +107,7 @@ class Stacking:
                 distant_light.set_intensities(300)
 
         # Create UR10 robot with gripper
-        self.robot = UR10(robot_path=self.robot_path, create_robot=True, attach_gripper=True)
+        self.robot = UR10(robot_path=self.robot_path, create_robot=True, attach_gripper=True, usd_path=self._usd_path)
 
         # Ensure xform ops exist on the articulation (required before set_world_poses on some USD assets)
         self.robot.reset_xform_op_properties()

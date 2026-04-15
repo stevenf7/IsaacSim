@@ -37,6 +37,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--test", action="store_true", help="Run in test mode (exit after task completes)")
 parser.add_argument("--device", type=str, choices=["cpu", "cuda"], default="cpu", help="Simulation device")
 parser.add_argument(
+    "--usd-path", type=str, default=None, help="Path to a custom UR10 USD file (uses packaged asset when omitted)"
+)
+parser.add_argument(
     "--ik-method",
     type=str,
     choices=["singular-value-decomposition", "pseudoinverse", "transpose", "damped-least-squares"],
@@ -70,7 +73,7 @@ SimulationManager.set_physics_sim_device(args.device)
 simulation_app.update()
 
 # - Create and initialize the stacking task (robot, ground, lights, and cubes)
-stacking = Stacking()
+stacking = Stacking(usd_path=args.usd_path)
 stacking.setup_scene()
 
 # 3. --------------------------------------------------------------------

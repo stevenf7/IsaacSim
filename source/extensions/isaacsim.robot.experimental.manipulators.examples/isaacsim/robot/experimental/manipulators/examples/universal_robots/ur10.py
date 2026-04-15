@@ -38,6 +38,10 @@ class UR10(Articulation):
         create_robot: Whether to create a new robot from USD assets.
         end_effector_link: The end effector rigid body link. If None, creates from robot_path.
         attach_gripper: Whether to attach a gripper to the robot.
+        usd_path: Optional path to a custom UR10 USD file. When provided the
+            ``Short_Suction`` gripper variant is **not** applied automatically
+            (the custom file is assumed to include its own gripper setup).
+            When ``None`` (default), the packaged UR10 asset is used.
 
     Raises:
         ValueError: If create_robot is False but no robot exists at robot_path.
@@ -49,12 +53,16 @@ class UR10(Articulation):
         create_robot: bool = True,
         end_effector_link: RigidPrim | None = None,
         attach_gripper: bool = True,
+        usd_path: str | None = None,
     ) -> None:
         if create_robot:
-            # Load UR10 robot from USD asset with gripper variant if requested
-            variants = [("Gripper", "Short_Suction")] if attach_gripper else []
+            if usd_path is None:
+                usd_path = get_assets_root_path() + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
+                variants = [("Gripper", "Short_Suction")] if attach_gripper else []
+            else:
+                variants = []
             robot_prim = stage_utils.add_reference_to_stage(
-                usd_path=get_assets_root_path() + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd",
+                usd_path=usd_path,
                 path=robot_path,
                 variants=variants,
             )
