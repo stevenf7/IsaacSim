@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.1] - 2026-04-14
+### Fixed
+- Fixed bug in JointHasCorrectTransformAndState where antipodal quaternions were not matching correctly
+- Fixed physics layer naming rules to accept transformer output naming convention
+- Fixed false positives in drive joint and collision mesh purpose rules
+
 ## [1.3.0] - 2026-04-08
 ### Changed
 - Improve Python API documentation (`config/python_api.md` and/or module docstrings).

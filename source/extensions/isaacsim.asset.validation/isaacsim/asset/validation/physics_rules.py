@@ -322,7 +322,7 @@ class InvisibleCollisionMeshHasPurposeGuide(av_core.BaseRuleChecker):
             case UsdGeom.Tokens.inherited:
                 return
             case UsdGeom.Tokens.invisible:
-                prim_purpose = prim_imageable.GetPurposeAttr().Get()
+                prim_purpose = prim_imageable.ComputePurpose()
                 if prim_purpose != UsdGeom.Tokens.guide:
                     self._AddWarning(
                         message=f"Invisible collision mesh {prim.GetPath()} purpose: [{prim_purpose}], not [guide]",

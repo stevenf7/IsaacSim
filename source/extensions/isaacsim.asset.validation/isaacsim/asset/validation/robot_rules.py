@@ -13,16 +13,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 """Robot asset validation rules for ensuring proper structure, naming, and physics layer organization."""
 
+import re
 
 import omni.asset_validator.core as av_core
 import omni.client
 from omni.asset_validator.core import AuthoringLayers, registerRule
-from pxr import Usd
+from pxr import Usd, UsdPhysics
 from usd.schema.isaac import robot_schema
 
 from .util import is_relationship_prepended, make_relationship_prepended
+
+# Compiled once at module level for efficiency.
+_PHYSICS_LAYER_RE = re.compile(r"_?physics\.usda?$")
+
+
+def _is_physics_layer(identifier: str) -> bool:
+    """Check whether a layer identifier refers to a physics layer.
+
+    Accepts both the legacy ``_physics.usd`` suffix and the transformer's
+    ``physics.usda`` naming convention.
+
+    Args:
+        identifier: The layer identifier string to check.
+
+    Returns:
+        True if the identifier matches a known physics layer naming pattern.
+    """
+    return _PHYSICS_LAYER_RE.search(identifier) is not None
 
 
 @registerRule("IsaacSim.RobotRules")
@@ -371,14 +392,19 @@ class VerifyRobotPhysicsAttributesSourceLayer(av_core.BaseRuleChecker):
     """Validates that physics attributes are authored in the physics layer.
 
     This rule checks that physics attributes in robot assets are authored in
-    the physics layer (_physics.usd), following the recommended layer structure.
+    a physics layer (matching ``_physics.usd`` or ``physics.usda``), following
+    the recommended layer structure.
+
+    ``physics:collisionEnabled`` on prims with ``PhysicsCollisionAPI`` is exempted
+    because the transformer deliberately keeps ``CollisionAPI`` in ``base.usda``.
     """
 
     def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
         """Check if physics attributes are authored in the physics layer.
 
-        Examines every physics attribute in the stage to ensure they are authored in the
-        physics layer (_physics.usd), following the recommended layer structure for robot assets.
+        Examines every physics attribute in the stage to ensure they are authored in
+        a physics layer (matching ``_physics.usd`` or ``physics.usda``), following
+        the recommended layer structure for robot assets.
 
         Args:
             stage: The USD stage to validate.
@@ -388,9 +414,11 @@ class VerifyRobotPhysicsAttributesSourceLayer(av_core.BaseRuleChecker):
             for attr in prim.GetAttributes():
                 property_stack = attr.GetPropertyStack()
                 for stack_item in property_stack:
-                    if attr.GetName().startswith("physics:") and not stack_item.layer.identifier.endswith(
-                        "_physics.usd"
-                    ):
+                    if attr.GetName().startswith("physics:") and not _is_physics_layer(stack_item.layer.identifier):
+                        # Exempt physics:collisionEnabled on prims with PhysicsCollisionAPI —
+                        # the transformer deliberately keeps CollisionAPI in base.usda.
+                        if attr.GetName() == "physics:collisionEnabled" and prim.HasAPI(UsdPhysics.CollisionAPI):
+                            continue
                         self._AddWarning(
                             message=f"Physics Attribute {attr.GetName()} in robot asset <{stage.GetRootLayer().realPath}> has authored value NOT in the physics layer",
                             at=attr,
@@ -402,14 +430,16 @@ class VerifyRobotPhysicsSchemaSourceLayer(av_core.BaseRuleChecker):
     """Validates that physics schemas are applied in the physics layer.
 
     This rule checks that physics schemas in robot assets are applied in
-    the physics layer (_physics.usd), following the recommended layer structure.
+    a physics layer (matching ``_physics.usd`` or ``physics.usda``), following
+    the recommended layer structure.
     """
 
     def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
         """Validates that physics schemas are applied in the physics layer.
 
         Examines every prim in the stage to ensure physics schemas (PhysX and Physics APIs) are authored
-        in the physics layer (_physics.usd) following the recommended layer structure for robot assets.
+        in a physics layer (matching ``_physics.usd`` or ``physics.usda``) following the recommended
+        layer structure for robot assets.
 
         Args:
             stage: The USD stage to validate for physics schema layer compliance.
@@ -428,7 +458,7 @@ class VerifyRobotPhysicsSchemaSourceLayer(av_core.BaseRuleChecker):
                     for applied_api in api_schemas.GetAppliedItems():
                         if (
                             applied_api.startswith("Physx") or applied_api.startswith("Physics")
-                        ) and not layer.identifier.endswith("_physics.usd"):
+                        ) and not _is_physics_layer(layer.identifier):
                             self._AddWarning(
                                 message=f"Physics Schema [{applied_api}] on {prim.GetPath()} in robot asset <{stage.GetRootLayer().realPath}> has applied schema NOT in the physics layer",
                                 at=prim,
