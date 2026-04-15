@@ -34,6 +34,7 @@ pyproject.optional-dependencies.all = [
         "isaacsim-ros2==${version}",
         "isaacsim-sensor==${version}",
         "isaacsim-storage==${version}",
+        "isaacsim-streaming==${version}",
         "isaacsim-template==${version}",
         "isaacsim-test==${version}",
         "isaacsim-utils==${version}",
@@ -653,6 +654,23 @@ inventory.includes.all = [
     # extensions
     "exts/isaacsim.core.version",
     "exts/isaacsim.storage.native",
+    # others
+    "VERSION",
+]
+
+[isaacsim-streaming]
+# pyproject.toml
+pyproject.description = "Isaac Sim components for sensor streaming"
+pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "streaming"]
+pyproject.dependencies.all = [
+    "isaacsim-core==${version}",
+]
+# inventory (relative to the build config)
+inventory.includes.all = [
+    # license
+    "LICENSE.txt",
+    # extensions
+    "exts/isaacsim.streaming.rtsp",
     # others
     "VERSION",
 ]
