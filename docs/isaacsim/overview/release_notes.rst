@@ -556,6 +556,28 @@ Please refer to the individual extension changelogs for more detailed informatio
 
       - Fix quaternion order issue in torch transformation utils
 
+- **isaacsim.cortex.framework**
+
+    - Deprecated
+
+      - Extension deprecated. Will be replaced in 7.0 with simple examples and open source equivalents.
+
+    - Changed
+
+      - Moved RMPflowCortex policy configs (Franka and UR10) from isaacsim.robot_motion.motion_generation into data/motion_policy_configs for safekeeping.
+
+- **isaacsim.cortex.behaviors**
+
+    - Deprecated
+
+      - Extension deprecated. Will be replaced in 7.0 with simple examples and open source equivalents.
+
+- **isaacsim.cortex.examples**
+
+    - Deprecated
+
+      - Extension deprecated. Will be replaced in 7.0 with simple examples and open source equivalents.
+
 - **isaacsim.examples.base**
 
     - Changed
@@ -751,6 +773,12 @@ Please refer to the individual extension changelogs for more detailed informatio
       - Updated path_planner_visualizer.py docstring to clarify it only does interpolation.
 
 - **isaacsim.robot_motion.motion_generation.examples**
+    - Removed
+
+      - Removed RMPflowCortex policy configs for Franka and UR10 (moved to deprecated isaacsim.cortex.framework extension).
+
+
+- **isaacsim.robot_motion.motion_generation.tutorials**
 
     - Changed
 

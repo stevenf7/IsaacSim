@@ -1,5 +1,9 @@
 # Overview
 
+```{deprecated} 6.0.0
+This extension has been deprecated and will be replaced by open source equivalents and simple examples.
+```
+
 The Cortex tutorials give a comprehensive overview of the framework and the concepts behind it.
 That's the best introduction. Here we just briefly describe some highlights and specifics of the
 extension.

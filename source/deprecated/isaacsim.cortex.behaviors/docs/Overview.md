@@ -1,5 +1,9 @@
 # Overview
 
+```{deprecated} 6.0.0
+This extension has been deprecated and will be replaced by open source equivalents and simple examples.
+```
+
 The isaacsim.cortex.behaviors extension provides a library of sample behaviors for the Isaac Cortex decision framework. These behaviors demonstrate reactive task execution on simulated robots, including block stacking, pick-and-place, and game-playing scenarios using decider networks and state machines.
 
 ## Included Behaviors

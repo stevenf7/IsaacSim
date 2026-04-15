@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.16] - 2026-04-13
+### Deprecated
+- Extension deprecated. Will be replaced in 7.0 with simple examples and open source equivalents.
+
 ## [2.0.15] - 2025-10-27
 ### Changed
 - Make omni.isaac.ml_archive an explicit test dependency

@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# from isaacsim.examples.interactive.ur10_palletizing.ur10_palletizing import BinStacking
-
 """Extension providing interactive examples for integrating the Cortex framework with Franka robotic arm behaviors in Isaac Sim."""
 
 
@@ -24,10 +22,10 @@ import os
 import omni
 import omni.ext
 import omni.ui as ui
+from isaacsim.cortex.examples.franka_cortex.franka_cortex import FrankaCortex
 from isaacsim.cortex.framework.cortex_world import CortexWorld
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.examples.interactive.base_sample import BaseSampleUITemplate
-from isaacsim.examples.interactive.franka_cortex.franka_cortex import FrankaCortex
 from isaacsim.gui.components.ui_utils import btn_builder, dropdown_builder, get_style
 
 

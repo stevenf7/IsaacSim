@@ -12,6 +12,12 @@
 Building Cortex Based Extensions
 ==================================
 
+.. warning::
+    [DEPRECATED]: The Cortex framework has been deprecated as of Isaac Sim 6.0.0 and will be removed in a future release.
+    For behavior programming, migrate to open-source libraries such as
+    `py_trees <https://py-trees.readthedocs.io/en/devel/>`_ for behavior trees or
+    `transitions <https://github.com/pytransitions/transitions>`_ for finite state machines.
+    Isaac Sim 7.0 will include examples using these libraries.
 
 
 This tutorial covers the use of Cortex in a custom extension running directly on Isaac Sim App instead of the Python SimulationApp. For this we use the same behaviors from :ref:`isaac_sim_app_tutorial_cortex_4_franka_block_stacking` and :ref:`isaac_sim_app_tutorial_cortex_5_ur10_bin_stacking`. To use Cortex, similar to :ref:`isaac_sim_app_tutorial_core_hello_robot`, but we create a modified version of the Base Sample that replaces the Core World with a Cortex World:

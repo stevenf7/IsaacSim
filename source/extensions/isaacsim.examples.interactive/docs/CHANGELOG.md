@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.15.7] - 2026-04-14
+### Changed
+- Deprecated cortex examples. Moved to source/deprecated/isaacsim.cortex.examples
+- Removed dependencies on cortex from extension.toml
+- Removed public API docs on cortex
+
 ## [4.15.6] - 2026-04-10
 ### Added
 - docstring deprecation + runtime warnings; use `isaacsim.examples.base` instead.

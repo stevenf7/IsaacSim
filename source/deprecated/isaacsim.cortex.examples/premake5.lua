@@ -1,4 +1,4 @@
--- SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+-- SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 -- SPDX-License-Identifier: Apache-2.0
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,8 @@
 -- limitations under the License.
 
 local ext = get_current_extension_info()
+ext.target_dir = deprecated_exts_path .. "/" .. ext.id
+
 project_ext(ext)
 
 repo_build.prebuild_link {
@@ -21,3 +23,4 @@ repo_build.prebuild_link {
     { "data", ext.target_dir .. "/data" },
     { "isaacsim", ext.target_dir .. "/isaacsim" },
 }
+
