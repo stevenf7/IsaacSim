@@ -35,3 +35,5 @@ Third-Party SimReady USD Assets
      - Tutorial for converting a 3D scan to a simulation environment in |isaac-sim|.
    * - `MolmoSpaces <https://github.com/allenai/molmospaces/tree/main/molmo_spaces_isaac>`_
      - A large-scale dataset with articulated 3D objects and diverse indoor scenes.
+   * - `Extwin <https://synthesis.extwin.com>`_
+     - A collection of assets for synthetic data generation.
