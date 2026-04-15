@@ -943,7 +943,7 @@ kit_extra_args = [
   "--/app/stubgen/enabled=1",
 ]
 stubgen_exclude = [
-  "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle/torch",
+  "${root}/_build/${platform}/${config}/extsDeprecated/omni.isaac.ml_archive/pip_prebundle/torch",
   "${root}/_build/${platform}/${config}/extscache",
 ]
 ext_folders = [
