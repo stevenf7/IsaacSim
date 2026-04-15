@@ -16,6 +16,11 @@ User request: $ARGUMENTS
 
 ---
 
+## General Guidelines
+- When an argument is the default in a configuration, such as `when: on_success` in a job's rules, leave it out.
+- In scripts, always quote variables to protect from embedded spaces.
+- When patterns are repeated across multiple jobs pull them out into shareable components.
+
 ## Pipeline Architecture
 
 ### Stages (in order)

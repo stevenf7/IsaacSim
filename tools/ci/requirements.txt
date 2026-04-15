@@ -1,0 +1,7 @@
+requests>=2.33.0
+pyyaml>=6.0
+python-gitlab>=8.0.0
+slack_sdk>=3.26.0
+plotly>=6.5.2
+kaleido>=1.2.0
+tqdm>=4.0.0

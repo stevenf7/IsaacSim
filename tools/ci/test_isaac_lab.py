@@ -107,9 +107,15 @@ def main(args: argparse.Namespace) -> None:
 
     test_exit_code = 0
     try:
-        omni.repo.ci.launch(test_command)
+        result = omni.repo.ci.launch(test_command)
+        # omni.repo.ci.launch may return the process exit code directly
+        if isinstance(result, int) and result != 0:
+            test_exit_code = result
     except SystemExit as e:
         test_exit_code = e.code if isinstance(e.code, int) else 1
+    except Exception as e:
+        print(f"Error running tests: {e}", file=sys.stderr)
+        test_exit_code = 1
 
     # pytest may crash (INTERNALERROR) before writing the combined report, e.g.
     # when a timeout test case contains null bytes that lxml rejects as non-XML.
