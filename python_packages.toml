@@ -88,8 +88,8 @@ pyproject.dependencies.all = [
     "qrcode==7.4.2",
     "Jinja2==3.1.5",
     "aiohappyeyeballs==2.6.1",
-    "aiobotocore==2.26.0",
-    "boto3==1.41.5",
+    "aiobotocore==2.25.1",
+    "boto3==1.40.61",
     "propcache==0.2.1",
     "urllib3==2.6.3",
     # 3.
@@ -295,8 +295,8 @@ pyproject.dependencies.all = [
     "pynvvideocodec==2.1.0",
     # archives (omni.pip.cloud)
     "aioboto3==15.5.0",
-    "boto3==1.41.5",
-    "botocore==1.41.5",
+    "boto3==1.40.61",
+    "botocore==1.40.61",
     "awscrt==0.23.8",
     "s3transfer==0.14.0",
     "azure-storage-blob==12.17.0",

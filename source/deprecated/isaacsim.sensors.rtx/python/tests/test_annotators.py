@@ -722,9 +722,6 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
     async def test_radar_timestamp_alignment(self):
         """Test that RTX Radar GMO timestamps align with timeline and pause/resume behavior."""
 
-        self.fail(
-            "This test crashes fatally, blocking downstream tests. See: https://nvbugspro.nvidia.com/bug/5999562."
-        )
         await self._test_timestamp_alignment("radar")
 
 
@@ -1397,9 +1394,6 @@ class TestIsaacCreateRTXRadarPointCloud(omni.kit.test.AsyncTestCase):
         and zero radial velocity measurements for stationary objects.
         """
 
-        self.fail(
-            "This test crashes fatally, blocking downstream tests. See: https://nvbugspro.nvidia.com/bug/5999562."
-        )
         kwargs = {
             "path": "radar",
             "parent": None,

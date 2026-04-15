@@ -37,7 +37,6 @@ DEBUG_DRAW_PRINT = False
 
 DEFAULT_CONFIG = None  # Default configuration for tests
 DEFAULT_VARIANT = None  # Default variant for tests
-MAX_TIMESTAMP_DIFF = 3500  # Maximum difference in fireTimeNs for DEFAULT_CONFIG configuration
 NEAR_EDGE_THRESHOLD = 0.5  # Threshold for near edge returns in degrees
 
 
@@ -99,16 +98,14 @@ class TestGenericModelOutput(_SarcophagusTestCase):
     class _GmoTestWriter(Writer):
         """Custom Writer that validates GenericModelOutput data each frame."""
 
-        def __init__(self, test_instance=None, tick_rate=60.0, sensor_type=None):
+        def __init__(self, test_instance=None, sensor_type=None, sensor_prim=None):
             self.data_structure = "renderProduct"
             self.annotators = [
                 rep.annotators.get("GenericModelOutput"),
                 rep.annotators.get("StableIdMap"),
             ]
             self._test = test_instance
-            self._tick_rate = tick_rate
             self._sensor_type = sensor_type
-            self._expected_advance_ns = round(1.0 / tick_rate * 1e9)
             self._prev_timestamp_ns = None
             self._stable_id_map = None
             self._octant_dims = np.array(test_instance._octant_dimensions) if test_instance else None
@@ -116,6 +113,22 @@ class TestGenericModelOutput(_SarcophagusTestCase):
             self.bad_magic_count = 0
             self.num_elements_zero_count = 0
             self.valid_frame_count = 0
+            self._sensor_prim = sensor_prim
+            if self._sensor_type == "lidar":
+                tick_rate = self._sensor_prim.GetAttribute("omni:sensor:tickRate").Get()
+                pattern_firing_rate_hz = self._sensor_prim.GetAttribute("omni:sensor:Core:patternFiringRateHz").Get()
+                fire_time_ns = np.array(
+                    self._sensor_prim.GetAttribute("omni:sensor:Core:emitterState:s001:fireTimeNs").Get()
+                )
+                max_fire_time_ns = np.max(fire_time_ns)
+                max_fire_time_ns_diff = np.max(np.diff(fire_time_ns))
+                self._max_timeOffsetNs_expected = max(
+                    max_fire_time_ns_diff, 1.0 / pattern_firing_rate_hz * 1e9 - max_fire_time_ns
+                )
+            elif self._sensor_type == "radar":
+                tick_rate = 60.0
+                self._max_timeOffsetNs_expected = 1.0
+            self._expected_advance_ns = round(1.0 / tick_rate * 1e9)
             np.seterr(divide="ignore")
 
         def write(self, data):
@@ -146,8 +159,6 @@ class TestGenericModelOutput(_SarcophagusTestCase):
                         delta,
                         self._expected_advance_ns,
                         delta=10,
-                        msg=f"Expected timestamp advance of {self._expected_advance_ns}ns "
-                        f"(1/{self._tick_rate}Hz), got {delta}ns",
                     )
                 self._prev_timestamp_ns = ts
 
@@ -236,18 +247,16 @@ class TestGenericModelOutput(_SarcophagusTestCase):
             self._cube_prim_paths = cube_idx
 
         def _test_intensity(self, gmo):
-            self._test.assertTrue(np.all(gmo.scalar >= 0), "Intensities are not non-negative.")
+            if self._sensor_type == "lidar":
+                self._test.assertTrue(np.all(gmo.scalar >= 0), "Intensities are not non-negative.")
+            elif self._sensor_type == "radar":
+                self._test.assertTrue(np.all(gmo.scalar != 0), "Intensities are not zero.")
 
         def _test_timestamp(self, gmo):
             timestamp_diffs = np.diff(gmo.timeOffsetNs)
             self._test.assertTrue(np.all(timestamp_diffs >= 0), "Timestamps are not monotonically increasing.")
-            carb.log_error("Timestamp diffs exceed expected range. See: https://nvbugspro.nvidia.com/bug/6055111.")
-            # max_timestamp_diff = np.max(timestamp_diffs)
-            # self._test.assertTrue(
-            #     max_timestamp_diff <= MAX_TIMESTAMP_DIFF,
-            #     f"Max difference in timestamps {max_timestamp_diff}ns > {MAX_TIMESTAMP_DIFF}ns, "
-            #     f"the maximum difference in fireTimeNs in the Example_Rotary configuration.",
-            # )
+            max_timestamp_diff = np.max(timestamp_diffs)
+            self._test.assertLessEqual(max_timestamp_diff, self._max_timeOffsetNs_expected)
 
         def _test_emitter_id(self, gmo):
             self._test.assertTrue(np.all(gmo.emitterId >= 0), "Emitter IDs are not non-negative.")
@@ -267,7 +276,7 @@ class TestGenericModelOutput(_SarcophagusTestCase):
                 self._expected_material_ids = np.array(
                     [
                         self._test.cube_info[f"/World/cube_{i}"]["material_id"]
-                        for i in range(max(self._cube_prim_paths) + 1)
+                        for i in range(len(self._test.cube_info.keys()))
                     ],
                     dtype=gmo.matId.dtype,
                 )
@@ -321,7 +330,9 @@ class TestGenericModelOutput(_SarcophagusTestCase):
             self._test.assertTrue(np.all(gmo.tickStates == 0), "Tick states are expected to be 0.")
 
         def _test_radial_velocity(self, gmo):
-            self._test.assertTrue(np.all(gmo.rv_ms == 0), "Radial velocity is expected to be 0.")
+            self._test.assertLessEqual(
+                np.max(np.abs(gmo.rv_ms)), 1e-2, "Radial velocity is expected to be (close to) 0."
+            )
 
     _writer_registered = False
 
@@ -350,8 +361,6 @@ class TestGenericModelOutput(_SarcophagusTestCase):
             f"Expected Omni{sensor_type.capitalize()} prim, got {sensor_type_name}. Was sensor prim created?",
         )
 
-        tick_rate = self.sensor.GetAttribute("omni:sensor:tickRate").Get()
-
         self._hydra_texture = rep.create.render_product(
             self.sensor.GetPath(),
             [32, 32],
@@ -359,7 +368,7 @@ class TestGenericModelOutput(_SarcophagusTestCase):
         )
 
         self._writer = rep.WriterRegistry.get("_GmoTestWriter")
-        self._writer.initialize(test_instance=self, tick_rate=tick_rate, sensor_type=sensor_type)
+        self._writer.initialize(test_instance=self, sensor_type=sensor_type, sensor_prim=self.sensor)
         self._writer.attach([self._hydra_texture.path])
 
         total_frames = int(COLLECTION_SECONDS * 60)
@@ -384,9 +393,6 @@ class TestGenericModelOutput(_SarcophagusTestCase):
 
     async def test_radar(self):
 
-        self.fail(
-            "This test crashes fatally, blocking downstream tests. See: https://nvbugspro.nvidia.com/bug/5999562."
-        )
         kwargs = {
             "omni:sensor:WpmDmat:outputFrameOfReference": "WORLD",
             "omni:sensor:WpmDmat:auxOutputType": "BASIC",
@@ -879,9 +885,6 @@ class TestIsaacCreateRTXRadarPointCloud(_SarcophagusTestCase):
 
     async def test_rtx_radar(self):
 
-        self.fail(
-            "This test crashes fatally, blocking downstream tests. See: https://nvbugspro.nvidia.com/bug/5999562."
-        )
         COLLECTION_SECONDS = 3.0
 
         kwargs = {

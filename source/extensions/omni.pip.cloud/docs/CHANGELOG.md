@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.2] - 2026-04-14
+### Changed
+- Downgrade boto3 to 1.40.61
+- Downgrade botocore to 1.40.61
+
 ## [1.5.1] - 2026-03-06
 ### Changed
 - Update cryptography to 46.0.5
