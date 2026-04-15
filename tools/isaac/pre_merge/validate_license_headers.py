@@ -25,6 +25,7 @@ This utility is the pre-merge home for license validation and supports:
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import re
 import sys
@@ -36,7 +37,7 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
-from repo_helpers import REPO_ROOT  # noqa: E402
+from repo_helpers import REPO_ROOT, load_toml  # noqa: E402
 
 FILE_EXTENSIONS: dict[str, str] = {
     ".py": "#",
@@ -77,6 +78,55 @@ EXCLUDED_DIRS = {
 }
 
 EXCLUDED_FILES = {"setup.py", "conftest.py"}
+
+# ---------------------------------------------------------------------------
+# GitHub-staging excludes loaded from repo_internal.toml
+# ---------------------------------------------------------------------------
+
+_GITHUB_EXCLUDES: list[str] | None = None
+_RESOLVED_REPO_ROOT: str = str(REPO_ROOT.resolve())
+
+
+def _load_github_excludes() -> list[str]:
+    """Load exclude patterns from ``[repo_stage_for_github]`` in *repo_internal.toml*."""
+    toml_path = REPO_ROOT / "repo_internal.toml"
+    if not toml_path.exists():
+        return []
+    try:
+        data = load_toml(toml_path)
+        excludes = data.get("repo_stage_for_github", {}).get("exclude", [])
+        if isinstance(excludes, list):
+            return [str(e) for e in excludes]
+    except Exception:
+        pass
+    return _parse_excludes_fallback(toml_path)
+
+
+def _parse_excludes_fallback(toml_path: Path) -> list[str]:
+    """Regex fallback for extracting the exclude array when no TOML library is available."""
+    content = toml_path.read_text(encoding="utf-8")
+    m = re.search(r"\[repo_stage_for_github\].*?exclude\s*=\s*\[(.*?)\]", content, re.DOTALL)
+    if not m:
+        return []
+    return re.findall(r'"([^"]*)"', m.group(1))
+
+
+def _get_github_excludes() -> list[str]:
+    global _GITHUB_EXCLUDES
+    if _GITHUB_EXCLUDES is None:
+        _GITHUB_EXCLUDES = _load_github_excludes()
+    return _GITHUB_EXCLUDES
+
+
+def _matches_github_exclude(rel_path_str: str) -> bool:
+    """Return ``True`` if *rel_path_str* (repo-relative, forward-slash) matches any staging exclude."""
+    for pattern in _get_github_excludes():
+        if rel_path_str == pattern or rel_path_str.startswith(pattern + "/"):
+            return True
+        if fnmatch.fnmatch(rel_path_str, pattern):
+            return True
+    return False
+
 
 COPYRIGHT_RE = re.compile(
     r"SPDX-FileCopyrightText:\s*Copyright \(c\)\s*(\d{4}(?:-\d{4})?) NVIDIA CORPORATION & AFFILIATES\. All rights reserved\."
@@ -160,16 +210,27 @@ def _compute_year_range(existing_year: str | None) -> str:
 def should_skip_path(path: Path) -> bool:
     """Return whether a path should be excluded from license checks.
 
+    Checks basename rules, hard-coded directory exclusions, **and** paths
+    listed in the ``[repo_stage_for_github].exclude`` section of
+    ``repo_internal.toml`` (internal-only content not staged for GitHub).
+
     Args:
         path: File path to evaluate.
 
     Returns:
-        ``True`` if the file is excluded by directory or filename rules.
+        ``True`` if the file is excluded by directory, filename, or
+        github-staging rules.
     """
     if any(part in EXCLUDED_DIRS for part in path.parts):
         return True
     if path.name in EXCLUDED_FILES:
         return True
+    try:
+        rel = str(path.resolve().relative_to(_RESOLVED_REPO_ROOT))
+        if _matches_github_exclude(rel):
+            return True
+    except ValueError:
+        pass
     return False
 
 
