@@ -49,6 +49,9 @@ branches:
     - develop
     - develop-kit-tot
     - kit-integration/master
+    - kit-integration/production/110.1
+    - kit-integration/feature/110.1
+    - kit-integration/major/111
   default_label_branch: develop
 
 # ── Baseline comparison ───────────────────────────────────────────────────────
