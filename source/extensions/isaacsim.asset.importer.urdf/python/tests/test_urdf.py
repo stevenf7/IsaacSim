@@ -30,7 +30,8 @@ import numpy as np
 import omni.kit.test
 import pxr
 from isaacsim.asset.importer.urdf import URDFImporter, URDFImporterConfig
-from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, UsdGeom, UsdPhysics, UsdShade
+from isaacsim.asset.importer.utils.impl.physx_types import PhysxAttr, PhysxMimicAttr, PhysxMimicRel, PhysxSchema
+from pxr import Gf, PhysicsSchemaTools, Sdf, UsdGeom, UsdPhysics, UsdShade
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -407,7 +408,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
 
         elbowPrim = self._stage.GetPrimAtPath("/test_advanced/Physics/elbow_joint")
         self.assertNotEqual(elbowPrim.GetPath(), Sdf.Path.emptyPath)
-        self.assertAlmostEqual(elbowPrim.GetAttribute("physxJoint:jointFriction").Get(), 0.1)
+        self.assertAlmostEqual(elbowPrim.GetAttribute(PhysxAttr.JOINT_FRICTION.name).Get(), 0.1)
         self.assertAlmostEqual(elbowPrim.GetAttribute("drive:angular:physics:damping").Get(), 0.1)
 
         # check position of a link
@@ -490,32 +491,30 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         # Verify source joint exists and has no mimic API
         source_joint = stage.GetPrimAtPath("/test_mimic/Physics/source_joint")
         self.assertNotEqual(source_joint.GetPath(), Sdf.Path.emptyPath)
-        self.assertFalse(source_joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
+        self.assertFalse(source_joint.HasAPI(PhysxSchema.MIMIC_JOINT_API))
 
         # Verify a_mimic_joint (lexicographically BEFORE source_joint) has mimic API configured
         # This tests that mimic joints are configured after all joints are created
         a_mimic_joint = stage.GetPrimAtPath("/test_mimic/Physics/a_mimic_joint")
         self.assertNotEqual(a_mimic_joint.GetPath(), Sdf.Path.emptyPath)
-        self.assertTrue(a_mimic_joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
+        self.assertTrue(a_mimic_joint.HasAPI(PhysxSchema.MIMIC_JOINT_API))
 
-        a_mimic_api = PhysxSchema.PhysxMimicJointAPI(a_mimic_joint, UsdPhysics.Tokens.rotZ)
-        self.assertAlmostEqual(a_mimic_api.GetGearingAttr().Get(), 1.5)
-        self.assertAlmostEqual(a_mimic_api.GetOffsetAttr().Get(), 0.1)
+        self.assertAlmostEqual(a_mimic_joint.GetAttribute(PhysxMimicAttr.GEARING.format("rotZ")).Get(), 1.5)
+        self.assertAlmostEqual(a_mimic_joint.GetAttribute(PhysxMimicAttr.OFFSET.format("rotZ")).Get(), 0.1)
         # Verify reference joint relationship points to source_joint
-        ref_joint_targets = a_mimic_api.GetReferenceJointRel().GetTargets()
+        ref_joint_targets = a_mimic_joint.GetRelationship(PhysxMimicRel.REFERENCE_JOINT.format("rotZ")).GetTargets()
         self.assertEqual(len(ref_joint_targets), 1)
         self.assertEqual(ref_joint_targets[0], source_joint.GetPath())
 
         # Verify z_mimic_joint (lexicographically AFTER source_joint) has mimic API configured
         z_mimic_joint = stage.GetPrimAtPath("/test_mimic/Physics/z_mimic_joint")
         self.assertNotEqual(z_mimic_joint.GetPath(), Sdf.Path.emptyPath)
-        self.assertTrue(z_mimic_joint.HasAPI(PhysxSchema.PhysxMimicJointAPI))
+        self.assertTrue(z_mimic_joint.HasAPI(PhysxSchema.MIMIC_JOINT_API))
 
-        z_mimic_api = PhysxSchema.PhysxMimicJointAPI(z_mimic_joint, UsdPhysics.Tokens.rotZ)
-        self.assertAlmostEqual(z_mimic_api.GetGearingAttr().Get(), -1.0)
-        self.assertAlmostEqual(z_mimic_api.GetOffsetAttr().Get(), 0.0)
+        self.assertAlmostEqual(z_mimic_joint.GetAttribute(PhysxMimicAttr.GEARING.format("rotZ")).Get(), -1.0)
+        self.assertAlmostEqual(z_mimic_joint.GetAttribute(PhysxMimicAttr.OFFSET.format("rotZ")).Get(), 0.0)
         # Verify reference joint relationship points to source_joint
-        ref_joint_targets = z_mimic_api.GetReferenceJointRel().GetTargets()
+        ref_joint_targets = z_mimic_joint.GetRelationship(PhysxMimicRel.REFERENCE_JOINT.format("rotZ")).GetTargets()
         self.assertEqual(len(ref_joint_targets), 1)
         self.assertEqual(ref_joint_targets[0], source_joint.GetPath())
         self._success = True

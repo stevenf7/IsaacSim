@@ -27,7 +27,8 @@ import logging
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 
-from pxr import PhysxSchema, Sdf, Usd, UsdPhysics
+from isaacsim.asset.importer.utils.impl.physx_types import PhysxAttr, PhysxSchema
+from pxr import Sdf, Usd, UsdPhysics
 
 _logger = logging.getLogger(__name__)
 
@@ -229,10 +230,9 @@ def _reconstruct_one(stage: Usd.Stage, bc: SourceDriveInfo) -> bool:
         updated = True
 
     if bc.armature is not None:
-        if not joint_prim.HasAPI(PhysxSchema.PhysxJointAPI):
-            PhysxSchema.PhysxJointAPI.Apply(joint_prim)
-        physx = PhysxSchema.PhysxJointAPI(joint_prim)
-        physx.CreateArmatureAttr().Set(float(bc.armature))
+        if not joint_prim.HasAPI(PhysxSchema.JOINT_API):
+            joint_prim.ApplyAPI(PhysxSchema.JOINT_API)
+        joint_prim.CreateAttribute(PhysxAttr.JOINT_ARMATURE.name, PhysxAttr.JOINT_ARMATURE.type).Set(float(bc.armature))
         updated = True
 
     if updated:

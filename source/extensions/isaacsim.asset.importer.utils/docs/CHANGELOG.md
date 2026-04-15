@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.0] - 2026-04-14
+### Changed
+- Replace `pxr.PhysxSchema` typed-API usage with direct `prim.ApplyAPI()` / `prim.CreateAttribute()` calls across all importer utility modules
+- Add utils for physx types
+
 ## [1.4.0] - 2026-04-14
 ### Changed
 - Defer `isaacsim.asset.transformer` import to `run_asset_transformer_profile()` function body to remove module-level cross-extension dependency

@@ -135,6 +135,7 @@ output
 !schema.usda
 !RobotSchema.usda
 generatedSchema.usda
+!source/extensions/isaacsim.asset.importer.utils/python/impl/schemas/generatedSchema.usda
 !RobotMotionSchema.usda
 
 # ignore crash logs from streaming client sessions

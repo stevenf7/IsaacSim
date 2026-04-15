@@ -18,48 +18,20 @@
 import omni.kit.test
 import omni.usd
 from isaacsim.asset.importer.utils.impl import importer_utils
-from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
+from isaacsim.asset.importer.utils.impl.physx_types import PhysxAttr, PhysxSchema
+from pxr import Usd, UsdGeom, UsdPhysics
 
 
 class TestImporterUtils(omni.kit.test.AsyncTestCase):
-    """Test helpers in :mod:`isaacsim.asset.importer.utils.impl.importer_utils`.
-
-    Example:
-
-    .. code-block:: python
-
-        >>> import omni.kit.test
-        >>> class Example(omni.kit.test.AsyncTestCase):
-        ...     pass
-        ...
-    """
+    """Test helpers in :mod:`isaacsim.asset.importer.utils.impl.importer_utils`."""
 
     async def setUp(self) -> None:
-        """Prepare a new USD stage for each test.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> import omni.usd
-            >>> omni.usd.get_context()
-            <...>
-        """
+        """Prepare a new USD stage for each test."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
     async def test_delete_scope_reparents_children(self) -> None:
-        """Reparent scope children to the parent prim before deleting the scope.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> from pxr import Usd, UsdGeom
-            >>> stage = Usd.Stage.CreateInMemory()
-            >>> UsdGeom.Xform.Define(stage, "/World")
-            UsdGeom.Xform(Usd.Prim(</World>))
-        """
+        """Reparent scope children to the parent prim before deleting the scope."""
         stage = Usd.Stage.CreateInMemory()
         UsdGeom.Xform.Define(stage, "/World")
         UsdGeom.Scope.Define(stage, "/World/Scope")
@@ -71,17 +43,7 @@ class TestImporterUtils(omni.kit.test.AsyncTestCase):
         self.assertTrue(stage.GetPrimAtPath("/World/Child").IsValid())
 
     async def test_add_joint_schemas(self) -> None:
-        """Apply joint-related schemas to prismatic and revolute joints.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> from pxr import Usd, UsdPhysics
-            >>> stage = Usd.Stage.CreateInMemory()
-            >>> UsdPhysics.RevoluteJoint.Define(stage, "/World/Joint")
-            UsdPhysics.RevoluteJoint(Usd.Prim(</World/Joint>))
-        """
+        """Apply joint-related schemas to prismatic and revolute joints."""
         stage = Usd.Stage.CreateInMemory()
         UsdGeom.Xform.Define(stage, "/World")
         revolute = UsdPhysics.RevoluteJoint.Define(stage, "/World/Revolute").GetPrim()
@@ -89,26 +51,16 @@ class TestImporterUtils(omni.kit.test.AsyncTestCase):
 
         importer_utils.add_joint_schemas(stage)
 
-        self.assertTrue(revolute.HasAPI(PhysxSchema.PhysxJointAPI))
+        self.assertTrue(revolute.HasAPI(PhysxSchema.JOINT_API))
         self.assertTrue(revolute.HasAPI(UsdPhysics.DriveAPI, "angular"))
-        self.assertTrue(revolute.HasAPI(PhysxSchema.JointStateAPI, "angular"))
+        self.assertTrue(revolute.HasAPI(PhysxSchema.JOINT_STATE_API, "angular"))
 
-        self.assertTrue(prismatic.HasAPI(PhysxSchema.PhysxJointAPI))
+        self.assertTrue(prismatic.HasAPI(PhysxSchema.JOINT_API))
         self.assertTrue(prismatic.HasAPI(UsdPhysics.DriveAPI, "linear"))
-        self.assertTrue(prismatic.HasAPI(PhysxSchema.JointStateAPI, "linear"))
+        self.assertTrue(prismatic.HasAPI(PhysxSchema.JOINT_STATE_API, "linear"))
 
     async def test_add_rigid_body_schemas(self) -> None:
-        """Apply MassAPI to rigid bodies discovered via USDRT.
-
-        Example:
-
-        .. code-block:: python
-
-            >>> from pxr import Usd, UsdPhysics
-            >>> stage = Usd.Stage.CreateInMemory()
-            >>> UsdPhysics.RigidBodyAPI.Apply(stage.DefinePrim("/World/Body"))
-            UsdPhysics.RigidBodyAPI(Usd.Prim(</World/Body>))
-        """
+        """Apply MassAPI to rigid bodies discovered via USDRT."""
         stage = Usd.Stage.CreateInMemory()
         UsdGeom.Xform.Define(stage, "/World")
         body_prim = stage.DefinePrim("/World/Body", "Xform")
@@ -128,12 +80,12 @@ class TestImporterUtils(omni.kit.test.AsyncTestCase):
 
         self.assertEqual(updated, 1)
         self.assertTrue(default_prim.HasAPI("PhysicsArticulationRootAPI"))
-        self.assertTrue(default_prim.HasAPI(PhysxSchema.PhysxArticulationAPI))
+        self.assertTrue(default_prim.HasAPI(PhysxSchema.ARTICULATION_API))
         self.assertTrue(default_prim.HasAPI("NewtonArticulationRootAPI"))
 
-        physx_api = PhysxSchema.PhysxArticulationAPI(default_prim)
-        self.assertTrue(physx_api.GetEnabledSelfCollisionsAttr().IsValid())
-        self.assertTrue(physx_api.GetEnabledSelfCollisionsAttr().Get())
+        physx_attr = default_prim.GetAttribute(PhysxAttr.ARTICULATION_SELF_COLLISION.name)
+        self.assertTrue(physx_attr.IsValid())
+        self.assertTrue(physx_attr.Get())
 
         newton_attr = default_prim.GetAttribute("newton:selfCollisionEnabled")
         self.assertTrue(newton_attr.IsValid())

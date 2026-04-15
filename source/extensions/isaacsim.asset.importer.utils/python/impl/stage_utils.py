@@ -18,6 +18,12 @@
 
 from pxr import Usd, UsdUtils
 
+__all__ = [
+    "save_stage",
+    "open_stage",
+    "get_stage_id",
+]
+
 
 def save_stage(stage: Usd.Stage, usd_path: str) -> bool:
     """Save a stage to a USD file.

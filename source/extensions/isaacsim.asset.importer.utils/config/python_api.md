@@ -4,23 +4,30 @@
 
 ## Classes
 
-- class AssetTransformerManager
-  - def __init__(self, registry: RuleRegistry | None = None)
-  - [property] def registry(self) -> RuleRegistry
-  - def run(self, input_stage_path: str, profile: RuleProfile, package_root: str | None = None) -> ExecutionReport
+- class PhysxAttr(Enum)
+  - JOINT_ARMATURE: Tuple
+  - JOINT_FRICTION: Tuple
+  - JOINT_MAX_VELOCITY: Tuple
+  - ARTICULATION_SELF_COLLISION: Tuple
+  - [property] def name(self) -> str
+  - [property] def type(self) -> Sdf.ValueTypeName
 
-- class RuleProfile
-  - profile_name: str
-  - version: str | None
-  - rules: list[RuleSpec]
-  - interface_asset_name: str | None
-  - output_package_root: str | None
-  - flatten_source: bool
-  - base_name: str | None
-  - def to_dict(self) -> dict[str, Any]
-  - def to_json(self) -> str
-  - static def from_dict(data: dict[str, Any]) -> RuleProfile
-  - static def from_json(json_str: str) -> RuleProfile
+- class PhysxMimicAttr(Enum)
+  - GEARING: Tuple
+  - OFFSET: Tuple
+  - REFERENCE_JOINT_AXIS: Tuple
+  - [property] def type(self) -> Sdf.ValueTypeName
+  - def format(self, axis: str) -> str
+
+- class PhysxMimicRel(Enum)
+  - REFERENCE_JOINT: str
+  - def format(self, axis: str) -> str
+
+- class PhysxSchema(str, Enum)
+  - JOINT_API: str
+  - ARTICULATION_API: str
+  - MIMIC_JOINT_API: str
+  - JOINT_STATE_API: str
 
 ## Functions
 
@@ -39,6 +46,7 @@
 - MESH_APPROXIMATION_MAP: Dict
 - PHYSICS_AXIS_MAP: Dict
 
+
 # Public API for module isaacsim.asset.importer.utils.impl.merge_mesh_utils:
 
 ## Functions
@@ -47,6 +55,7 @@
 - def generate_mesh_uv_normals_operation(stage: Usd.Stage)
 - def merge_meshes_operation(stage: Usd.Stage) -> int
 - def merge_mesh(stage: Usd.Stage, meshes: list[str])
+
 
 # Public API for module isaacsim.asset.importer.utils.impl.stage_utils:
 

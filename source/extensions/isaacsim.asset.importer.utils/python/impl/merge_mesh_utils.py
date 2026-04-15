@@ -24,6 +24,13 @@ from pxr import Usd, UsdGeom, UsdPhysics
 
 from . import importer_utils, stage_utils
 
+__all__ = [
+    "clean_mesh_operation",
+    "generate_mesh_uv_normals_operation",
+    "merge_meshes_operation",
+    "merge_mesh",
+]
+
 _logger = logging.getLogger(__name__)
 
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.7.0] - 2026-04-14
+### Changed
+- Replace `pxr.PhysxSchema` typed-API usage with direct `prim.ApplyAPI()` / `prim.CreateAttribute()` calls in drive reconstruction module
+
 ## [3.6.0] - 2026-04-14
 ### Changed
 - Replace Kit extension manager lookup for default profile path with `isaacsim.asset.transformer.rules.DEFAULT_PROFILE_PATH`
