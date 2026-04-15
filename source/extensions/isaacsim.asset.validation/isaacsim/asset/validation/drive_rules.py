@@ -15,6 +15,7 @@
 
 """Validates physics joint drive configurations and properties for Isaac Sim assets."""
 
+from __future__ import annotations
 
 import omni.asset_validator.core as av_core
 from omni.asset_validator.core import registerRule
@@ -35,19 +36,18 @@ def get_joint_drives_and_joint_states(
     driveAPIs = []
     joint_states = []
     if joint.IsA(UsdPhysics.RevoluteJoint):
-        driveAPIs.append(UsdPhysics.DriveAPI(joint, "angular"))
-        joint_states.append(PhysxSchema.JointStateAPI(joint, "angular"))
+        if joint.HasAPI(UsdPhysics.DriveAPI, "angular"):
+            driveAPIs.append(UsdPhysics.DriveAPI(joint, "angular"))
+            joint_states.append(PhysxSchema.JointStateAPI(joint, "angular"))
     elif joint.IsA(UsdPhysics.PrismaticJoint):
-        driveAPIs.append(UsdPhysics.DriveAPI(joint, "linear"))
-        joint_states.append(PhysxSchema.JointStateAPI(joint, "linear"))
+        if joint.HasAPI(UsdPhysics.DriveAPI, "linear"):
+            driveAPIs.append(UsdPhysics.DriveAPI(joint, "linear"))
+            joint_states.append(PhysxSchema.JointStateAPI(joint, "linear"))
     else:
-        axis = [f"{prefix}{i}" for prefix in ["rot", "trans"] for i in ["X", "Y", "Z"]]
-        for axis in axis:
-            driveAPI = UsdPhysics.DriveAPI(joint, axis)
-            joint_state = PhysxSchema.JointStateAPI(joint, axis)
-            if driveAPI:
-                driveAPIs.append(driveAPI)
-                joint_states.append(joint_state)
+        for axis in (f"{prefix}{i}" for prefix in ("rot", "trans") for i in ("X", "Y", "Z")):
+            if joint.HasAPI(UsdPhysics.DriveAPI, axis):
+                driveAPIs.append(UsdPhysics.DriveAPI(joint, axis))
+                joint_states.append(PhysxSchema.JointStateAPI(joint, axis))
     return driveAPIs, joint_states
 
 
@@ -78,7 +78,7 @@ class PhysicsJointHasDriveOrMimicAPI(av_core.BaseRuleChecker):
             for drive in drives:
                 stiffness = drive.GetStiffnessAttr().Get()
                 damping = drive.GetDampingAttr().Get()
-                if (stiffness and stiffness.Get() != 0.0) or (damping and damping.Get() != 0.0):
+                if (stiffness is not None and stiffness != 0.0) or (damping is not None and damping != 0.0):
                     self._AddError(message=f"Joint {prim.GetPath()} has both drive and mimic API", at=prim)
 
 
@@ -136,7 +136,7 @@ class PhysicsDriveAndJointState(av_core.BaseRuleChecker):
             for drive, joint_state in zip(drives, joint_states):
                 stiffness = drive.GetStiffnessAttr().Get()
                 damping = drive.GetDampingAttr().Get()
-                if (stiffness and stiffness.Get() != 0.0) or (damping and damping.Get() != 0.0):
+                if (stiffness is not None and stiffness != 0.0) or (damping is not None and damping != 0.0):
                     stop = False
                     break
         if stop:
@@ -213,24 +213,22 @@ class DriveJointValueReasonable(av_core.BaseRuleChecker):
         is_mimic = prim.HasAPI(PhysxSchema.PhysxMimicJointAPI)
         for drive in drives:
             stiffness = drive.GetStiffnessAttr().Get()
-            if not stiffness and not is_mimic:
+            if stiffness is None and not is_mimic:
                 self._AddError(
                     message=f"Drive stiffness is not set on <{drive.GetPath()}>", at=drive.GetStiffnessAttr()
                 )
                 continue
             elif is_mimic:
                 damping = drive.GetDampingAttr().Get()
-                if damping:
-                    if damping.Get() != 0.0:
-                        self._AddError(
-                            message=f"joint is mimic but has damping set <{drive.GetPath()}>", at=drive.GetDampingAttr()
-                        )
-                if stiffness:
-                    if stiffness.Get() != 0.0:
-                        self._AddError(
-                            message=f"joint is mimic but has stiffness set <{drive.GetPath()}>",
-                            at=drive.GetStiffnessAttr(),
-                        )
+                if damping is not None and damping != 0.0:
+                    self._AddError(
+                        message=f"joint is mimic but has damping set <{drive.GetPath()}>", at=drive.GetDampingAttr()
+                    )
+                if stiffness is not None and stiffness != 0.0:
+                    self._AddError(
+                        message=f"joint is mimic but has stiffness set <{drive.GetPath()}>",
+                        at=drive.GetStiffnessAttr(),
+                    )
             elif stiffness < self.DRIVE_STIFFNESS_MIN or stiffness > self.DRIVE_STIFFNESS_MAX:
                 self._AddError(
                     message=f"Drive stiffness is out of range <{drive.GetPath()}>: {stiffness}",

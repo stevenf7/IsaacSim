@@ -36,6 +36,26 @@ def get_world_translation(prim: Usd.Prim) -> Gf.Vec3d:
     return Gf.Vec3d(world_xform.ExtractTranslation())
 
 
+def _rotations_match_orientation(qa: Gf.Quatd, qb: Gf.Quatd, tol: float) -> bool:
+    """Return True if two quaternions represent the same orientation (double-cover safe).
+
+    q and -q are treated as the same rotation. Uses abs(dot) >= 1.0 - tol,
+    matching physics_joint_pose_fix._pose_equal.
+    """
+    qa_n = qa.GetNormalized()
+    qb_n = qb.GetNormalized()
+    dot = qa_n.GetReal() * qb_n.GetReal() + Gf.Dot(qa_n.GetImaginary(), qb_n.GetImaginary())
+    return abs(dot) >= 1.0 - tol
+
+
+def _rotation_error_magnitude(qa: Gf.Quatd, qb: Gf.Quatd) -> float:
+    """Return 1.0 - abs(dot) for two quaternions; 0 when same or antipodal, up to 2 when opposite."""
+    qa_n = qa.GetNormalized()
+    qb_n = qb.GetNormalized()
+    dot = qa_n.GetReal() * qb_n.GetReal() + Gf.Dot(qa_n.GetImaginary(), qb_n.GetImaginary())
+    return 1.0 - abs(dot)
+
+
 @registerRule("IsaacSim.PhysicsRules")
 class JointHasCorrectTransformAndState(av_core.BaseRuleChecker):
     """Validates that joint transforms and states are consistent with the connected bodies.
@@ -139,23 +159,29 @@ class JointHasCorrectTransformAndState(av_core.BaseRuleChecker):
                     at=prim,
                 )
 
-        # Check if the orientation is as expected
+        # Check if the orientation is as expected (double-cover safe: q and -q same rotation)
+        _ROT_TOL = 1e-3
         expected_state_rot_0 = joint_state_pos_0.GetRotation()
         expected_rot_0 = expected_tm_0.GetRotation()
         expected_rot_1 = expected_tm_1.GetRotation()
-        expected_state_rot0_as_vec4d = gf_quat_to_vec4d(expected_state_rot_0.GetQuat())
-        expected_rot0_as_vec4d = gf_quat_to_vec4d(expected_rot_0.GetQuat().GetNormalized())
-        expected_rot1_as_vec4d = gf_quat_to_vec4d(expected_rot_1.GetQuat().GetNormalized())
+        q_state = expected_state_rot_0.GetQuat().GetNormalized()
+        q0 = expected_rot_0.GetQuat().GetNormalized()
+        q1 = expected_rot_1.GetQuat().GetNormalized()
 
-        if not Gf.IsClose(expected_state_rot0_as_vec4d, expected_rot1_as_vec4d, 1e-3):
-            if not Gf.IsClose(expected_rot0_as_vec4d, expected_rot1_as_vec4d, 1e-3):
+        base_rot_match = _rotations_match_orientation(q0, q1, _ROT_TOL)
+        state_rot_match = _rotations_match_orientation(q_state, q1, _ROT_TOL)
+
+        if not state_rot_match:
+            if not base_rot_match:
+                mag = _rotation_error_magnitude(q0, q1)
                 self._AddError(
-                    message=f"Joint {prim.GetPath()} Rotation not well defined ({(expected_state_rot0_as_vec4d - expected_rot1_as_vec4d).GetLength()}), From body 0: {expected_rot_0}, From body 1: {expected_rot_1}",
+                    message=f"Joint {prim.GetPath()} Rotation not well defined ({mag}), From body 0: {expected_rot_0}, From body 1: {expected_rot_1}",
                     at=prim,
                 )
             else:
+                mag = _rotation_error_magnitude(q_state, q1)
                 self._AddError(
-                    message=f"Joint {prim.GetPath()} state not matching robot pose ({(expected_rot0_as_vec4d - expected_rot1_as_vec4d).GetLength()}). From body 0: {expected_state_rot_0}, from body 1: {expected_rot_1}",
+                    message=f"Joint {prim.GetPath()} state not matching robot pose ({mag}). From body 0: {expected_state_rot_0}, from body 1: {expected_rot_1}",
                     at=prim,
                 )
 
