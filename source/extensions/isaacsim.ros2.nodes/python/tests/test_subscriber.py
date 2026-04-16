@@ -45,6 +45,7 @@ class TestRos2Subscriber(ROS2TestCase):
         import builtin_interfaces.msg
         import geometry_msgs.msg
         import rclpy
+        import shape_msgs.msg
         import std_msgs.msg
         import tf2_msgs.msg
 
@@ -129,6 +130,13 @@ class TestRos2Subscriber(ROS2TestCase):
             ("std_msgs.msg.UInt8", std_msgs.msg.UInt8(data=2**8 - 1)),
             ("std_msgs.msg.UInt8MultiArray", std_msgs.msg.UInt8MultiArray(layout=_layout, data=[0, 2**8 - 1])),
         ]
+        # - shape_msgs
+        messages += [
+            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[10, 20, 30])),
+            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[10])),
+            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[10, 20, 30, 40, 50])),
+            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[])),
+        ]
         # - tf2_msgs
         _transforms = [
             geometry_msgs.msg.TransformStamped(
@@ -186,7 +194,15 @@ class TestRos2Subscriber(ROS2TestCase):
             ros2_publisher.publish(message_value)
 
             # Wait for node output to update (instead of fixed sleeps).
-            if message_type.startswith("tf2_msgs"):
+            if message_type == "shape_msgs.msg.MeshTriangle":
+
+                def condition():
+                    vertex_indices = og.Controller.attribute("outputs:vertex_indices", subscriber_node).get()
+                    vertex_indices = [*vertex_indices + [0] * 3][:3]  # default is 0 if not set
+                    return vertex_indices is not None and np.array_equal(vertex_indices, message_value.vertex_indices)
+
+                condition_met = await self.simulate_until_condition(condition, max_frames=600, per_frame_callback=spin)
+            elif message_type.startswith("tf2_msgs"):
 
                 def condition():
                     transforms = og.Controller.attribute("outputs:transforms", subscriber_node).get()
@@ -223,8 +239,12 @@ class TestRos2Subscriber(ROS2TestCase):
             self.assertTrue(condition_met, f"Timed out waiting for subscriber output for {message_type}")
 
             # check node output
+            # - shape_msgs
+            if message_type == "shape_msgs.msg.MeshTriangle":
+                vertex_indices = og.Controller.attribute("outputs:vertex_indices", subscriber_node).get()
+                np.testing.assert_array_equal(vertex_indices, message_value.vertex_indices)
             # - tf2_msgs
-            if message_type.startswith("tf2_msgs"):
+            elif message_type.startswith("tf2_msgs"):
                 transforms = og.Controller.attribute("outputs:transforms", subscriber_node).get()
                 self.assertEqual(len(message_value.transforms), len(transforms))
 

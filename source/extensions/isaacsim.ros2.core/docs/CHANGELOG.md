@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.2] - 2026-04-15
+### Fixed
+- Fixed handling for fixed-size array types in `ROS2DynamicMessage.cpp` when the input array length differs from the expected size
+
 ## [1.7.1] - 2026-04-03
 ### Fixed
 - Added explicit import of `_ros2_core` bindings module for stubgen discoverability

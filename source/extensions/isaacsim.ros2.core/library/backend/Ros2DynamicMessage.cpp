@@ -516,7 +516,7 @@ void Ros2DynamicMessageImpl::setArrayEmbeddedMessage(const rosidl_typesupport_in
     // fixed size array
     else
     {
-        for (size_t i = 0; i < member->array_size_; ++i)
+        for (size_t i = 0; i < member->array_size_ && i < array.size(); ++i)
         {
             setMessageValues(embeddedMembers, &data[i * embeddedMembers->size_of_], array.at(i));
         }
@@ -650,7 +650,8 @@ void Ros2DynamicMessageImpl::_setArray(const rosidl_typesupport_introspection_c_
     {
         for (size_t i = 0; i < member->array_size_; ++i)
         {
-            *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) = value.at(i).get<RosType>();
+            *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) =
+                i < value.size() ? value.at(i).get<RosType>() : RosType{};
         }
     }
 }
@@ -680,7 +681,8 @@ void Ros2DynamicMessageImpl::_setArray(const rosidl_typesupport_introspection_c_
         {
             for (size_t i = 0; i < member->array_size_; ++i)
             {
-                *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) = static_cast<RosType>(ognArray->at(i));
+                *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) =
+                    static_cast<RosType>(i < ognArray->size() ? ognArray->at(i) : OgnType{});
             }
         }
         return;
@@ -702,7 +704,7 @@ void Ros2DynamicMessageImpl::_setArray(const rosidl_typesupport_introspection_c_
     {
         for (size_t i = 0; i < member->array_size_; ++i)
         {
-            *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) = rosArray->at(i);
+            *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) = i < rosArray->size() ? rosArray->at(i) : RosType{};
         }
     }
 }
@@ -727,7 +729,7 @@ void Ros2DynamicMessageImpl::_setArray(const rosidl_typesupport_introspection_c_
     {
         for (size_t i = 0; i < member->array_size_; ++i)
         {
-            *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) = array.at(i);
+            *reinterpret_cast<RosType*>(&data[i * sizeof(RosType)]) = i < array.size() ? array.at(i) : RosType{};
         }
     }
 }
