@@ -119,7 +119,7 @@ public:
         const GraphContextObj& context = db.abi_context();
         auto& state = db.perInstanceState<OgnIsaacComputeTransformTree>();
 
-        if (state.m_firstFrame)
+        if (!state.ensureCurrentView(db, context))
         {
             if (!state.m_simManager || !state.m_simManager->isSimulating())
             {
@@ -163,6 +163,27 @@ public:
     }
 
 private:
+    bool ensureCurrentView(OgnIsaacComputeTransformTreeDatabase& db, const GraphContextObj& context)
+    {
+        if (!m_simManager || !m_simManager->isSimulating())
+        {
+            return false;
+        }
+
+        if (m_firstFrame)
+        {
+            return initialize(db, context);
+        }
+
+        if (m_reader && m_reader->getGeneration() != m_readerGeneration)
+        {
+            reset();
+            return initialize(db, context);
+        }
+
+        return m_xformView != nullptr;
+    }
+
     bool initialize(OgnIsaacComputeTransformTreeDatabase& db, const GraphContextObj& context)
     {
         long stageId = context.iContext->getStageId(context);
@@ -213,6 +234,7 @@ private:
             db.logError("Failed to acquire shared IPrimDataReader interface");
             return false;
         }
+        m_readerGeneration = m_reader->getGeneration();
         return true;
     }
 
@@ -566,6 +588,7 @@ private:
         }
         m_xformView = nullptr;
         m_reader = nullptr;
+        m_readerGeneration = 0;
         m_viewId.clear();
     }
 
@@ -574,6 +597,7 @@ private:
     IPrimDataReader* m_reader = nullptr;
     IXformDataView* m_xformView = nullptr;
     isaacsim::core::simulation_manager::ISimulationManager* m_simManager = nullptr;
+    uint64_t m_readerGeneration = 0;
 
     // View state
     std::string m_viewId;
