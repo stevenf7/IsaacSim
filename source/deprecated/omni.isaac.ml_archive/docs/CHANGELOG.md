@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.3.0] - 2026-04-13
+### Changed
+- Update to pytorch 2.11.0+cu128, torchaudio 2.11.0+cu128, torchvision 0.26.0+cu128 and update dependencies
+
 ## [3.2.1] - 2026-04-13
 ### Deprecated
 - Extension deprecated

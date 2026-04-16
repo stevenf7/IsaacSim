@@ -14,22 +14,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Script to update PyTorch dependencies in pip_ml.toml
+# Script to update PyTorch dependencies in pip_ml.toml and python_packages.toml
 
 # Check for required arguments
 if [ "$#" -lt 2 ]; then
     echo "Usage: $0 <python_version> <pytorch_install_command>"
-    echo "Example: $0 3.11 \"pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128\""
+    echo "Example: $0 3.12 \"pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128\""
     exit 1
 fi
 
 PYTHON_VERSION=$1
 PYTORCH_INSTALL_CMD=$2
-TOML_FILE="deps/pip_ml.toml"
+PIP_ML_TOML="deps/pip_ml.toml"
+PYTHON_PACKAGES_TOML="python_packages.toml"
 
-# Check if TOML file exists
-if [ ! -f "$TOML_FILE" ]; then
-    echo "Error: $TOML_FILE not found."
+# Check if TOML files exist
+if [ ! -f "$PIP_ML_TOML" ]; then
+    echo "Error: $PIP_ML_TOML not found."
+    exit 1
+fi
+if [ ! -f "$PYTHON_PACKAGES_TOML" ]; then
+    echo "Error: $PYTHON_PACKAGES_TOML not found."
     exit 1
 fi
 
@@ -78,9 +83,22 @@ eval "$PYTORCH_INSTALL_CMD"
 echo "Getting installed package versions..."
 pip freeze > "$TEMP_DIR/requirements.txt"
 
-# Run the Python script to update the TOML file
-echo "Updating $TOML_FILE..."
-python tools/isaac/update_toml.py "$TEMP_DIR/requirements.txt" "$TOML_FILE"
+# Extract the index URL from the install command (supports both --index-url and --extra-index-url)
+INDEX_URL=$(echo "$PYTORCH_INSTALL_CMD" | grep -oP '(?:--index-url|--extra-index-url)\s+\K\S+' | head -1)
+
+# Run the Python script to update the TOML files
+echo "Updating $PIP_ML_TOML..."
+python tools/isaac/update_toml.py "$TEMP_DIR/requirements.txt" "$PIP_ML_TOML"
+
+echo "Updating $PYTHON_PACKAGES_TOML..."
+python tools/isaac/update_toml.py "$TEMP_DIR/requirements.txt" "$PYTHON_PACKAGES_TOML"
+
+if [ -n "$INDEX_URL" ]; then
+    echo "Updating extra_args index URL to: $INDEX_URL"
+    sed -i 's|extra_args = \["--extra-index-url", "[^"]*"\]|extra_args = ["--extra-index-url", "'"$INDEX_URL"'"]|g' "$PIP_ML_TOML"
+else
+    echo "Warning: No --index-url or --extra-index-url found in install command, skipping extra_args update."
+fi
 
 # Deactivate the virtual environment
 deactivate
@@ -89,4 +107,4 @@ deactivate
 echo "Cleaning up..."
 rm -rf "$TEMP_DIR"
 
-echo "Done! Updated PyTorch dependencies in $TOML_FILE" 
+echo "Done! Updated PyTorch dependencies in $PIP_ML_TOML and $PYTHON_PACKAGES_TOML"

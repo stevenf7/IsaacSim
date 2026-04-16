@@ -34,6 +34,6 @@ if [ -n "$TBB_LIB" ]; then
     export LD_PRELOAD="$TBB_LIB"
 fi
 
-export LD_LIBRARY_PATH="$ROOT/_build/target-deps/cuda/lib64/stubs:$ROOT/_build/target-deps/usd/$CONFIG/lib"
+export LD_LIBRARY_PATH="$ROOT/_build/target-deps/cuda/lib64:$ROOT/_build/target-deps/cuda/lib64/stubs:$ROOT/_build/target-deps/usd/$CONFIG/lib"
 
 exec "$ROOT/repo.sh" stubgen -c "$CONFIG"
