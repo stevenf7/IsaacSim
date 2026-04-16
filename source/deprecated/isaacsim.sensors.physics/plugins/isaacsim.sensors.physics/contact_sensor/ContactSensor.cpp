@@ -266,13 +266,12 @@ void ContactSensor::onComponentChange()
     float radius = 0.0f;
     pxr::GfVec2f thresholdAttr = pxr::GfVec2f(0.01f, 100000.0f);
 
+    using namespace isaacsim::robot::schema::sensors;
     // contact sensor onComponentChange
-    const pxr::IsaacSensorIsaacContactSensor& typedPrim = pxr::IsaacSensorIsaacContactSensor(m_prim);
-
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetThresholdAttr(), thresholdAttr);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetRadiusAttr(), radius);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetColorAttr(), m_color);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetSensorPeriodAttr(), sensorPeriod);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kThresholdAttr), thresholdAttr);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kRadiusAttr), radius);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kColorAttr), m_color);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kSensorPeriodAttr), sensorPeriod);
 
     setContactReportApi();
     const float* thresholds = thresholdAttr.GetArray();

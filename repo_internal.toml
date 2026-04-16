@@ -141,7 +141,7 @@ python_paths = [
   "${root}/_build/${platform}/${config}/extsDeprecated/isaacsim.robot_motion.lula/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.cumotion/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/isaacsim.robot_motion.pink/pip_prebundle",
-  "${root}/_build/${platform}/${config}/exts/isaacsim.robot.schema/plugins",
+  "${root}/_build/${platform}/${config}/exts/isaacsim.robot.schema/usd/plugins",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.numpy.common*",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.commands*",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.core_archive/pip_prebundle",

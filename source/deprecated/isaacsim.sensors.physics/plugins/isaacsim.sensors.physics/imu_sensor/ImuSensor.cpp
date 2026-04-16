@@ -339,14 +339,15 @@ void ImuSensor::onComponentChange()
 
     // get orientation quad sensor period, and translate
 
-    const pxr::IsaacSensorIsaacImuSensor& typedPrim = pxr::IsaacSensorIsaacImuSensor(m_prim);
+    using namespace isaacsim::robot::schema::sensors;
 
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetSensorPeriodAttr(), this->m_props.sensorPeriod);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kSensorPeriodAttr), this->m_props.sensorPeriod);
     isaacsim::core::includes::safeGetAttribute(
-        typedPrim.GetLinearAccelerationFilterWidthAttr(), this->m_linearAccelerationFilterSize);
+        m_prim.GetAttribute(kLinearAccelerationFilterWidthAttr), this->m_linearAccelerationFilterSize);
     isaacsim::core::includes::safeGetAttribute(
-        typedPrim.GetAngularVelocityFilterWidthAttr(), this->m_angularVelocityFilterSize);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetOrientationFilterWidthAttr(), this->m_orientationFilterSize);
+        m_prim.GetAttribute(kAngularVelocityFilterWidthAttr), this->m_angularVelocityFilterSize);
+    isaacsim::core::includes::safeGetAttribute(
+        m_prim.GetAttribute(kOrientationFilterWidthAttr), this->m_orientationFilterSize);
 
     // reject 0 or negative rolling avg size
     m_linearAccelerationFilterSize = std::max(m_linearAccelerationFilterSize, 1);
@@ -365,11 +366,11 @@ void ImuSensor::onComponentChange()
         m_sensorReadings.resize(m_rawBufferSize, IsReading());
     }
     pxr::GfQuatd sensorQuat(0.0);
-    m_prim.GetPrim().GetAttribute(pxr::TfToken("xformOp:orient")).Get(&sensorQuat);
+    m_prim.GetAttribute(pxr::TfToken("xformOp:orient")).Get(&sensorQuat);
     sensorQuat.Normalize();
 
     pxr::GfVec3d position(0.0);
-    m_prim.GetPrim().GetAttribute(pxr::TfToken("xformOp:translate")).Get(&position);
+    m_prim.GetAttribute(pxr::TfToken("xformOp:translate")).Get(&position);
 
 
     omni::math::linalg::quatd rotate(

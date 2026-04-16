@@ -9,7 +9,6 @@ graph TD
     %% Inheritance relationships
     Generic --> RangeSensor
     Lidar --> RangeSensor
-    UltrasonicArray --> RangeSensor
 ```
 
 </div>
@@ -21,14 +20,6 @@ graph TD
 The `**omni.isaac.RangeSensorSchema**` module provides schemas for distance-measuring sensors. The base {class}`RangeSensor <omni.isaac.RangeSensorSchema.RangeSensor>` class defines common attributes for range detection, visualization controls, and detection thresholds.
 
 **{class}`Lidar <omni.isaac.RangeSensorSchema.Lidar>`** extends the range sensor with sophisticated scanning capabilities including field-of-view configuration, rotation rates, and semantic data collection. It supports both continuous scanning and single-shot operation modes.
-
-**{class}`UltrasonicArray <omni.isaac.RangeSensorSchema.UltrasonicArray>`** implements multi-emitter ultrasonic sensing with advanced acoustic modeling. It manages collections of emitters through relationships, supports material-based reflection calculations using BRDF models, and implements Beer-Lambert attenuation for realistic acoustic behavior.
-
-**{class}`UltrasonicEmitter <omni.isaac.RangeSensorSchema.UltrasonicEmitter>`** represents individual transducer elements within ultrasonic arrays, managing per-ray intensity and adjacency relationships for multi-path reflection calculations.
-
-**{class}`UltrasonicFiringGroup <omni.isaac.RangeSensorSchema.UltrasonicFiringGroup>`** defines coordinated firing patterns for ultrasonic arrays, specifying which emitters fire and which receivers collect data during each measurement cycle.
-
-**{class}`UltrasonicMaterialAPI <omni.isaac.RangeSensorSchema.UltrasonicMaterialAPI>`** provides acoustic material properties for ultrasonic simulation, including reflectance, roughness, and metallic characteristics that affect acoustic reflection behavior.
 
 **{class}`Generic <omni.isaac.RangeSensorSchema.Generic>`** offers a simplified range sensor implementation with basic sampling rate and streaming controls for custom sensor implementations.
 

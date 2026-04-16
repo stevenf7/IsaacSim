@@ -61,10 +61,8 @@ void GenericSensor::onComponentChange()
 
     RangeSensorComponent::onComponentChange();
 
-    const pxr::RangeSensorGeneric& typedPrim = pxr::RangeSensorGeneric(m_prim);
-
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetSamplingRateAttr(), m_samplingRate);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetStreamingAttr(), m_streaming);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kSamplingRateAttr), m_samplingRate);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kStreamingAttr), m_streaming);
 
     m_minRange = pxr::GfClamp(m_minRange, 0, 1e9f);
     m_maxRange = pxr::GfClamp(m_maxRange, m_minRange, 1e9f);

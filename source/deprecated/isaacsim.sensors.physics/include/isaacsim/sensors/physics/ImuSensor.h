@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include <isaacSensorSchema/isaacImuSensor.h>
+#include <isaacsim/robot/schema/sensor_tokens.h>
 #include <isaacsim/sensors/physics/IPhysicsSensor.h>
 #include <isaacsim/sensors/physics/IsaacSensorComponent.h>
 #include <omni/physx/IPhysx.h>

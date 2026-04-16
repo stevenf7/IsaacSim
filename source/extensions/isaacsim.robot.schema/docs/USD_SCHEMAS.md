@@ -47,57 +47,6 @@
   Set to true to get semantic information of sensor hit locations
 
 
-### UltrasonicArray
-
-#### numBins
-  Number of bins that emitters in this array outputs
-
-#### useBRDF
-  Use angle of emitter/receiver relative to normal to compute intensity response
-
-#### useUSSMaterialsForBRDF
-  Use Ultrasonic materials for BRDF calculation
-
-#### useDistAttenuation
-  Use simplified Beer-Lambert model, negative exponential attenuation
-
-#### attenuationAlpha
-  Single attenuation parameter for simplified Beer-Lambert model
-
-#### horizontalFov
-  Horizontal Field of View in degrees
-
-#### verticalFov
-  Vertical Field of View in degrees
-
-#### horizontalResolution
-  Degrees in between rays for horizontal axis
-
-#### verticalResolution
-  Degrees in between rays for vertical axis
-
-
-### UltrasonicEmitter
-
-#### perRayIntensity
-  The base value that is attenuated based on distance from sensor and angle of reflection
-
-#### yawOffset
-  Offset along yaw axis to account for sensor having a different forward direction
-
-#### adjacencyList
-  List of emitter ids for adjacent emitters, used to compute indirects when receiving. Zero indexed and must match the order in the array
-
-
-### UltrasonicFiringGroup
-
-#### emitterModes
-  List of (emitter id, firing mode) pairs for each sensor in this group to emit from. emitter id is zero indexed and must match the order in the array
-
-#### receiverModes
-  List of (receiver id, firing mode) pairs to record envelopes for. Receiver id is zero indexed and must match the order in the array
-
-
 ### Generic
 
 #### samplingRate
@@ -105,22 +54,6 @@
 
 #### streaming
   Streaming lidar point data. Default to true
-
-
-### UltrasonicMaterialAPI
-Defines Ultrasonic (USS) material properties.
-
-#### uss:perceptualRoughness
-  Perceptual Roughness. Unitless.
-
-#### uss:reflectance
-  Reflectance. Unitless.
-
-#### uss:metallic
-  Metallic. Unitless.
-
-#### uss:base_color
-  Base Color. Unitless.
 
 
 ## isaacSensorSchema

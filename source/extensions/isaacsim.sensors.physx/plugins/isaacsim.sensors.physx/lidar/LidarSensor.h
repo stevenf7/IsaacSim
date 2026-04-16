@@ -19,9 +19,9 @@
 
 #include <extensions/PxSceneQueryExt.h>
 #include <isaacsim/core/includes/Color.h>
+#include <isaacsim/robot/schema/sensor_tokens.h>
 #include <isaacsim/sensors/physx/IPhysxSensorInterface.h>
 #include <pxr/base/gf/vec3f.h>
-#include <rangeSensorSchema/lidar.h>
 
 #include <vector>
 

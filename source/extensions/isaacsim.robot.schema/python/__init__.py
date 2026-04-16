@@ -75,9 +75,8 @@ def _register_plugins(ext_path: str) -> None:
     """
     _register_plugin_path(os.path.join(ext_path, "usd", "schema", "isaac", "robot_schema"))
 
-    plugin_path = os.path.join(ext_path, "plugins", "plugins")
-    _register_plugin_path(os.path.join(plugin_path, "isaacSensorSchema", "resources"))
-    _register_plugin_path(os.path.join(plugin_path, "rangeSensorSchema", "resources"))
+    _register_plugin_path(os.path.join(ext_path, "usd", "schema", "isaac", "sensor_schema"))
+    _register_plugin_path(os.path.join(ext_path, "usd", "schema", "isaac", "range_sensor_schema"))
 
 
 # carb.tokens.get_tokens_interface().resolve("${isaacsim.robot.schema}") can not be resolved by sphinx

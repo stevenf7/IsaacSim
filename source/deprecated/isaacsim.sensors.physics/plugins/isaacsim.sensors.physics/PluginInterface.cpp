@@ -216,8 +216,7 @@ void onPlay()
     omni::fabric::StageReaderWriterId stageInProgress = iStageReaderWriter->get(stageId);
     usdrt::UsdStageRefPtr usdrtStage = usdrt::UsdStage::Attach(stageId, stageInProgress);
 
-    const std::vector<usdrt::SdfPath> imuSensorPaths =
-        usdrtStage->GetPrimsWithTypeName(usdrt::TfToken("IsaacSensorIsaacImuSensor"));
+    const std::vector<usdrt::SdfPath> imuSensorPaths = usdrtStage->GetPrimsWithTypeName(usdrt::TfToken("IsaacImuSensor"));
 
     // First create the sensors and find the sensor parents to create physics views
     for (const usdrt::SdfPath& usdrtPath : imuSensorPaths)
@@ -247,7 +246,7 @@ void onPlay()
 
     {
         const std::vector<usdrt::SdfPath> contactSensorPaths =
-            usdrtStage->GetPrimsWithTypeName(usdrt::TfToken("IsaacSensorIsaacContactSensor"));
+            usdrtStage->GetPrimsWithTypeName(usdrt::TfToken("IsaacContactSensor"));
 
         // First create the sensors and find the sensor parents to create physics views
         for (const usdrt::SdfPath& usdrtPath : contactSensorPaths)

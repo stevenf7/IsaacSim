@@ -134,6 +134,8 @@ output
 
 !schema.usda
 !RobotSchema.usda
+!SensorSchema.usda
+!RangeSensorSchema.usda
 generatedSchema.usda
 !source/extensions/isaacsim.asset.importer.utils/python/impl/schemas/generatedSchema.usda
 !RobotMotionSchema.usda

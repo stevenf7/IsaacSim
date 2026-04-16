@@ -49,7 +49,7 @@ includedirs {
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
     extsbuild_dir .. "/omni.syntheticdata/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
-    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/include",
+    "%{root}/source/extensions/isaacsim.robot.schema/include",
     "%{root}/_build/target-deps/generic_model_output/%{platform}/%{config}/include",
     "%{root}/source/extensions/isaacsim.ros2.nodes/include",
     "%{root}/_build/target-deps/generic_model_output/%{platform}/%{cfg.buildcfg}/include",
@@ -66,9 +66,8 @@ libdirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
-    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/lib",
 }
-links { "isaacSensorSchema", "physxSchema", "omni.usd" }
+links { "physxSchema", "omni.usd" }
 
 extra_usd_libs = { "usdGeom", "usdPhysics", "ts" }
 

@@ -22,11 +22,11 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Log.h>
 
-#include <isaacSensorSchema/isaacContactSensor.h>
 #include <isaacsim/core/experimental/prims/IPrimDataReader.h>
 #include <isaacsim/core/experimental/prims/IPrimDataReaderManager.h>
 #include <isaacsim/core/includes/UsdUtilities.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
+#include <isaacsim/robot/schema/sensor_tokens.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/physics/simulation/IPhysicsSimulation.h>
 #include <omni/physics/simulation/IPhysicsStageUpdate.h>
@@ -184,15 +184,15 @@ public:
 
     void refreshConfig(pxr::UsdStageRefPtr stage)
     {
+        using namespace isaacsim::robot::schema::sensors;
+
         pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(sensorPrimPath));
         if (!prim.IsValid())
         {
             return;
         }
 
-        pxr::IsaacSensorIsaacContactSensor typedPrim(prim);
-
-        pxr::UsdAttribute enabledAttr = typedPrim.GetEnabledAttr();
+        pxr::UsdAttribute enabledAttr = prim.GetAttribute(kEnabledAttr);
         if (enabledAttr.IsValid())
         {
             bool val = true;
@@ -205,13 +205,13 @@ public:
         }
 
         pxr::GfVec2f thresholdAttr(0.0f, 100000.0f);
-        isaacsim::core::includes::safeGetAttribute(typedPrim.GetThresholdAttr(), thresholdAttr);
+        isaacsim::core::includes::safeGetAttribute(prim.GetAttribute(kThresholdAttr), thresholdAttr);
         const float* t = thresholdAttr.GetArray();
         minThreshold = t[0];
         maxThreshold = t[1];
 
         float r = -1.0f;
-        isaacsim::core::includes::safeGetAttribute(typedPrim.GetRadiusAttr(), r);
+        isaacsim::core::includes::safeGetAttribute(prim.GetAttribute(kRadiusAttr), r);
         radius = r;
     }
 };

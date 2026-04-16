@@ -117,14 +117,14 @@ class TestRobotSchemaUtils(omni.kit.test.AsyncTestCase):
         robot_utils._warned_missing_schema_links.discard("/World/Robot")
         robot_utils._warned_missing_schema_joints.discard("/World/Robot")
 
-        with mock.patch("usd.schema.isaac.robot_schema.utils.carb.log_warn") as log_warn:
+        with mock.patch("usd.schema.isaac.robot_schema.utils.logger") as mock_logger:
             links = robot_utils.GetAllRobotLinks(self._stage, robot_prim)
             joints = robot_utils.GetAllRobotJoints(self._stage, robot_prim)
 
             self.assertEqual({str(prim.GetPath()) for prim in links}, {"/World/Robot", "/World/Robot/Link1"})
             self.assertEqual({str(prim.GetPath()) for prim in joints}, {"/World/Robot/joint1"})
 
-            warnings = [call.args[0] for call in log_warn.call_args_list]
+            warnings = [call.args[0] for call in mock_logger.warning.call_args_list]
             self.assertTrue(any("links missing from schema relationship" in msg for msg in warnings))
             self.assertTrue(any("joints missing from schema relationship" in msg for msg in warnings))
 

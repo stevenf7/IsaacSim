@@ -18,7 +18,7 @@
 #include "isaacsim/sensors/physics/ContactManager.h"
 #include "isaacsim/sensors/physics/IsaacSensorComponent.h"
 
-#include <isaacSensorSchema/isaacContactSensor.h>
+#include <isaacsim/robot/schema/sensor_tokens.h>
 #include <isaacsim/sensors/physics/IPhysicsSensor.h>
 #include <pxr/base/gf/vec4d.h>
 #include <usdrt/gf/matrix.h>

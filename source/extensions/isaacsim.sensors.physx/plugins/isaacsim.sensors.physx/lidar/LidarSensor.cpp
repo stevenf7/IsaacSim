@@ -57,16 +57,14 @@ void LidarSensor::onComponentChange()
 
     RangeSensorComponent::onComponentChange();
 
-    const pxr::RangeSensorLidar& typedPrim = pxr::RangeSensorLidar(m_prim);
-
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetHorizontalFovAttr(), m_horizontalFov);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetVerticalFovAttr(), m_verticalFov);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetHorizontalResolutionAttr(), m_horizontalResolution);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetVerticalResolutionAttr(), m_verticalResolution);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetRotationRateAttr(), m_rotationRate);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetHighLodAttr(), m_highLod);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetYawOffsetAttr(), m_yawOffset);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetEnableSemanticsAttr(), m_enableSemantics);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kHorizontalFovAttr), m_horizontalFov);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kVerticalFovAttr), m_verticalFov);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kHorizontalResolutionAttr), m_horizontalResolution);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kVerticalResolutionAttr), m_verticalResolution);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kRotationRateAttr), m_rotationRate);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kHighLodAttr), m_highLod);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kYawOffsetAttr), m_yawOffset);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kEnableSemanticsAttr), m_enableSemantics);
 
     // we have to have atleast one beam so the FOV can never be smaller than resolution
     m_horizontalResolution = pxr::GfClamp(m_horizontalResolution, 0.005f, 1024);

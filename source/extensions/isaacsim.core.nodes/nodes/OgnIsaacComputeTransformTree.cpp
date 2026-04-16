@@ -23,10 +23,10 @@
 #include <isaacsim/core/experimental/prims/IPrimDataReaderManager.h>
 #include <isaacsim/core/includes/BaseResetNode.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
+#include <isaacsim/robot/schema/sensor_tokens.h>
 #include <omni/fabric/FabricUSD.h>
 #include <pxr/base/gf/vec3d.h>
 #include <pxr/base/gf/vec4d.h>
-#include <pxr/base/tf/type.h>
 #include <pxr/usd/usdGeom/camera.h>
 #include <pxr/usd/usdPhysics/articulationRootAPI.h>
 
@@ -341,9 +341,8 @@ private:
                     pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPathStr));
                     if (prim && prim.IsA<pxr::UsdGeomCamera>())
                     {
-                        static const pxr::TfType kRtxLidarType =
-                            pxr::TfType::FindByName("IsaacSensorIsaacRtxLidarSensorAPI");
-                        if (!kRtxLidarType || !prim.HasAPI(kRtxLidarType))
+                        using namespace isaacsim::robot::schema::sensors;
+                        if (!prim.HasAPI(kIsaacRtxLidarSensorAPI))
                         {
                             m_cameraViewIndices.insert(viewIdx);
                         }

@@ -21,7 +21,7 @@
 #include "UsdUtilities.h"
 
 #include <foundation/PxTransform.h>
-#include <isaacSensorSchema/isaacRtxLidarSensorAPI.h>
+#include <isaacsim/robot/schema/sensor_tokens.h>
 #include <omni/physics/tensors/IArticulationMetatype.h>
 #include <omni/physics/tensors/IArticulationView.h>
 #include <omni/physics/tensors/IRigidBodyView.h>
@@ -35,6 +35,7 @@
 
 using namespace omni::physics::tensors;
 using namespace isaacsim::core::includes::conversions;
+using namespace isaacsim::robot::schema::sensors;
 
 namespace isaacsim
 {
@@ -316,7 +317,7 @@ public:
                 ::physx::PxTransform body1Pose = getXformPose(primPath);
 
 
-                if (prim.IsA<pxr::UsdGeomCamera>() && !prim.HasAPI<pxr::IsaacSensorIsaacRtxLidarSensorAPI>())
+                if (prim.IsA<pxr::UsdGeomCamera>() && !prim.HasAPI(kIsaacRtxLidarSensorAPI))
                 {
                     // Regular camera (not RTXLidar), Rotate 180 degrees about x-axis
                     // pxr::GfMatrix4d(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
