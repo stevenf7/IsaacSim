@@ -15,8 +15,9 @@
 
 """Provides a kinematic solver interface for computing robot forward and inverse kinematics."""
 
+from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 
@@ -32,10 +33,10 @@ class KinematicsSolver(WorldInterface):
     all implementations to implement the WorldInterface.  See KinematicsSolver.supports_collision_avoidance()
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def set_robot_base_pose(self, robot_positions: np.array, robot_orientation: np.array):
+    def set_robot_base_pose(self, robot_positions: np.array, robot_orientation: np.array) -> None:
         """Update position of the robot base. This will be used to compute kinematics relative to the USD stage origin.
 
         Args:
@@ -44,7 +45,7 @@ class KinematicsSolver(WorldInterface):
             robot_orientation: (4 x 1) quaternion describing the orientation of the robot base relative to the USD stage global frame
         """
 
-    def get_joint_names(self) -> List[str]:
+    def get_joint_names(self) -> list[str]:
         """Return a list containing the names of all joints in the given kinematic structure. The order of this list.
 
         determines the order in which the joint positions are expected in compute_forward_kinematics(joint_positions,...) and
@@ -55,7 +56,7 @@ class KinematicsSolver(WorldInterface):
         """
         return []
 
-    def get_all_frame_names(self) -> List[str]:
+    def get_all_frame_names(self) -> list[str]:
         """Return a list of all the frame names in the given kinematic structure.
 
         Returns:
@@ -65,7 +66,7 @@ class KinematicsSolver(WorldInterface):
 
     def compute_forward_kinematics(
         self, frame_name: str, joint_positions: np.array, position_only: Optional[bool] = False
-    ) -> Tuple[np.array, np.array]:
+    ) -> tuple[np.array, np.array]:
         """Compute the position of a given frame in the robot relative to the USD stage global frame.
 
         Args:
@@ -88,7 +89,7 @@ class KinematicsSolver(WorldInterface):
         warm_start: Optional[np.array] = None,
         position_tolerance: Optional[float] = None,
         orientation_tolerance: Optional[float] = None,
-    ) -> Tuple[np.array, bool]:
+    ) -> tuple[np.array, bool]:
         """Compute joint positions such that the specified robot frame will reach the desired translations and rotations.
 
         Args:

@@ -15,6 +15,7 @@
 
 """Test suite for validating kinematics solvers in the isaacsim.robot_motion.motion_generation extension."""
 
+from __future__ import annotations
 
 import asyncio
 import json
@@ -67,7 +68,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
     """
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment before each test.
 
         Initializes physics settings, timeline interface, extension manager, and loads policy configurations.
@@ -87,7 +88,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
             self._policy_map = json.load(policy_map)
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up test environment after each test.
 
         Stops timeline, waits for asset loading to complete, clears motion generation instance, and clears world instance.
@@ -101,7 +102,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         World.clear_instance()
 
-    async def _create_light(self):
+    async def _create_light(self) -> None:
         """Create a sphere light in the scene.
 
         Adds a sphere light with radius 2 and intensity 100000 at position [6.5, 0, 12].
@@ -111,7 +112,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         sphereLight.CreateIntensityAttr(100000)
         SingleXFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
 
-    async def _prepare_stage(self, robot: object):
+    async def _prepare_stage(self, robot: object) -> None:
         """Prepare the stage for testing with the given robot.
 
         Stops timeline, initializes world and simulation context, creates lighting, starts timeline,
@@ -141,7 +142,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
 
         await update_stage_async()
 
-    async def test_lula_fk_ur10(self):
+    async def test_lula_fk_ur10(self) -> None:
         """Test forward kinematics for UR10 robot.
 
         Loads UR10 robot, performs forward kinematics test with specific joint targets,
@@ -162,7 +163,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.all(trans_dist < 0.001))
         self.assertTrue(np.all(rot_dist < 0.005))
 
-    async def test_lula_fk_franka(self):
+    async def test_lula_fk_franka(self) -> None:
         """Test forward kinematics for Franka robot.
 
         Loads Franka Panda robot, performs forward kinematics test with specific base pose and orientation,
@@ -194,7 +195,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         joint_target: object = None,
         base_pose: object = np.zeros(3),
         base_orient: object = np.array([1, 0, 0, 0]),
-    ):
+    ) -> tuple:
         """Test forward kinematics by comparing Lula solver results with USD frame poses.
 
         Loads robot from USD file, initializes kinematics solver, moves robot to target position,
@@ -224,7 +225,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config(robot_name)
         self._kinematics = LulaKinematicsSolver(**kinematics_config)
 
-        if robot_root_path == None:
+        if robot_root_path is None:
             robot_root_path = robot_prim_path
 
         self._robot = Robot(robot_root_path)
@@ -261,7 +262,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
 
         return np.array(trans_dists), np.array(rot_dist)
 
-    async def test_lula_ik_ur10(self):
+    async def test_lula_ik_ur10(self) -> None:
         """Test inverse kinematics for UR10 robot.
 
         Loads UR10 robot and performs inverse kinematics tests with position-only and
@@ -299,7 +300,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
             base_orient=np.array([0.1, 0, 0.3, 0.7]),
         )
 
-    async def test_lula_ik_franka(self):
+    async def test_lula_ik_franka(self) -> None:
         """Test inverse kinematics for Franka robot.
 
         Loads Franka Panda robot and performs inverse kinematics tests on different end-effector frames
@@ -350,7 +351,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         orientation_tolerance: float,
         base_pose: object = np.zeros(3),
         base_orient: object = np.array([0, 0, 0, 1]),
-    ):
+    ) -> None:
         """Test inverse kinematics by solving for target pose and verifying solution accuracy.
 
         Loads robot, initializes kinematics solver, computes inverse kinematics solution for target pose,
@@ -422,7 +423,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         else:
             carb.log_warn("Frame " + frame + " does not exist on USD robot")
 
-    async def test_lula_ik_properties(self):
+    async def test_lula_ik_properties(self) -> None:
         """Test property assignment and retrieval for LulaKinematicsSolver inverse kinematics configuration.
 
         Verifies that BFGS and CCD algorithm parameters, sampling settings, and tolerance values
@@ -445,7 +446,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         self.assertTrue(lk.bfgs_cspace_limit_penalty_region == 0.1)
 
         lk.bfgs_gradient_norm_termination = False
-        self.assertTrue(lk.bfgs_gradient_norm_termination == False)
+        self.assertFalse(lk.bfgs_gradient_norm_termination)
 
         lk.bfgs_gradient_norm_termination_coarse_scale_factor = 2.0
         self.assertTrue(lk.bfgs_gradient_norm_termination_coarse_scale_factor == 2.0)
@@ -492,7 +493,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         lk.sampling_seed = 16
         self.assertTrue(lk.sampling_seed == 16)
 
-    async def test_getters_and_setters(self):
+    async def test_getters_and_setters(self) -> None:
         """Test getter and setter methods of LulaKinematicsSolver.
 
         Verifies that tolerance and cspace seed values can be set and retrieved correctly.

@@ -15,8 +15,9 @@
 
 """Provides a wrapper class for computing robot kinematics that integrates with simulated robot articulations."""
 
+from __future__ import annotations
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import carb
 import numpy as np
@@ -42,14 +43,14 @@ class ArticulationKinematicsSolver:
 
     def __init__(
         self, robot_articulation: SingleArticulation, kinematics_solver: KinematicsSolver, end_effector_frame_name: str
-    ):
+    ) -> None:
         self._robot_articulation = robot_articulation
         self._kinematics_solver = kinematics_solver
         self.set_end_effector_frame(end_effector_frame_name)
         self._joints_view = ArticulationSubset(robot_articulation, kinematics_solver.get_joint_names())
         return
 
-    def compute_end_effector_pose(self, position_only: bool = False) -> Tuple[np.array, np.array]:
+    def compute_end_effector_pose(self, position_only: bool = False) -> tuple[np.array, np.array]:
         """Compute the pose of the robot end effector using the simulated robot's current joint positions.
 
         Args:
@@ -77,7 +78,7 @@ class ArticulationKinematicsSolver:
         target_orientation: Optional[np.array] = None,
         position_tolerance: Optional[float] = None,
         orientation_tolerance: Optional[float] = None,
-    ) -> Tuple[ArticulationAction, bool]:
+    ) -> tuple[ArticulationAction, bool]:
         """Compute inverse kinematics for the end effector frame using the current robot position as a warm start.  The result is returned.
 
         in an articulation action that can be directly applied to the robot.
@@ -107,7 +108,7 @@ class ArticulationKinematicsSolver:
 
         return self._joints_view.make_articulation_action(ik_result, None), succ
 
-    def set_end_effector_frame(self, end_effector_frame_name: str):
+    def set_end_effector_frame(self, end_effector_frame_name: str) -> None:
         """Set the name for the end effector frame. If the frame is not recognized by the internal KinematicsSolver.
 
         instance, an error will be thrown.

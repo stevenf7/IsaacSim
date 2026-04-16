@@ -15,8 +15,7 @@
 
 """Provides utilities for converting trajectory objects into discrete articulation actions for robot control."""
 
-
-from typing import List
+from __future__ import annotations
 
 import carb
 import numpy as np
@@ -36,7 +35,7 @@ class ArticulationTrajectory:
         physics_dt: Duration of a physics step in Isaac Sim (typically 1/60 s).
     """
 
-    def __init__(self, robot_articulation: SingleArticulation, trajectory: Trajectory, physics_dt: float):
+    def __init__(self, robot_articulation: SingleArticulation, trajectory: Trajectory, physics_dt: float) -> None:
         self._articulation = robot_articulation
         self._trajectory = trajectory
         self._physics_dt = physics_dt
@@ -64,7 +63,7 @@ class ArticulationTrajectory:
 
         return self._active_joints_view.make_articulation_action(position_target, velocity_target)
 
-    def get_action_sequence(self, timestep: float = None) -> List[ArticulationAction]:
+    def get_action_sequence(self, timestep: float = None) -> list[ArticulationAction]:
         """Get a sequence of ArticulationActions which sample the entire Trajectory according to the provided timestep.
 
         Args:

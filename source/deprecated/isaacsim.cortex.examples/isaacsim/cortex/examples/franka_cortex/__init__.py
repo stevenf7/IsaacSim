@@ -18,4 +18,4 @@
 
 from isaacsim.cortex.examples.franka_cortex.franka_cortex_extension import FrankaCortexExtension
 
-__all__ = []
+__all__ = ["FrankaCortexExtension"]

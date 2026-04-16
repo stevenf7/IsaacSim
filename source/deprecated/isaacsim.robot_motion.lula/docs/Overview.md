@@ -1,7 +1,8 @@
-.. note::
-   The Isaac Sim bindings for Lula are available in :ref:`isaacsim.robot_motion.motion_generation.lula <isaacsim.robot_motion.motion_generation.lula>`. For new development, consider using the newer :ref:`isaacsim.robot_motion.cumotion <isaacsim.robot_motion.cumotion>` extension, which is a superset of what used to exist in Lula and is built on the new experimental motion generation API.
-
 # Overview
+
+```{deprecated} 6.0.0
+This extension is deprecated in favor of `isaacsim.robot_motion.experimental.motion_generation` and `isaacsim.robot_motion.cumotion`.
+```
 
 The isaacsim.robot_motion.lula extension provides a comprehensive Python interface to the Lula library for robotic motion planning and control. This extension enables forward and inverse kinematics, sampling-based global planning, and smooth reactive motion generation through RMPflow and geometric fabrics for robotic manipulators.
 

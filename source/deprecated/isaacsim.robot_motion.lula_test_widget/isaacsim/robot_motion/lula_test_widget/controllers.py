@@ -15,6 +15,7 @@
 
 """Controllers for Lula-based robot motion control including inverse kinematics, trajectory execution, and path planning."""
 
+from __future__ import annotations
 
 from typing import Optional
 
@@ -44,7 +45,7 @@ class LulaController(BaseController):
     motion planning with obstacle avoidance.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def forward(
@@ -78,7 +79,7 @@ class KinematicsController(LulaController):
         art_kinematics: The articulation kinematics solver used for inverse kinematics computations.
     """
 
-    def __init__(self, name: str, art_kinematics: ArticulationKinematicsSolver):
+    def __init__(self, name: str, art_kinematics: ArticulationKinematicsSolver) -> None:
         BaseController.__init__(self, name)
         self._art_kinematics = art_kinematics
 
@@ -125,7 +126,7 @@ class TrajectoryController(LulaController):
         art_trajectory: The ArticulationTrajectory containing the pre-computed motion plan to execute.
     """
 
-    def __init__(self, name: str, art_trajectory: ArticulationTrajectory):
+    def __init__(self, name: str, art_trajectory: ArticulationTrajectory) -> None:
         BaseController.__init__(self, name)
         self._art_trajectory = art_trajectory
         self._actions = self._art_trajectory.get_action_sequence(1 / 60)
@@ -158,7 +159,7 @@ class TrajectoryController(LulaController):
             desired_joint_positions = first_action.joint_positions
             current_joint_positions = robot_articulation.get_joint_positions()
 
-            is_none_mask = desired_joint_positions == None
+            is_none_mask = desired_joint_positions is None
             desired_joint_positions[is_none_mask] = current_joint_positions[active_joint_indices][is_none_mask]
 
         elif self._action_index >= len(self._actions):
@@ -203,7 +204,7 @@ class PathPlannerController(LulaController):
         path_planner_visualizer: PathPlannerVisualizer,
         cspace_interpolation_max_dist: float = 0.5,
         frames_per_waypoint: int = 30,
-    ):
+    ) -> None:
         BaseController.__init__(self, name)
 
         self._path_planner_visualizer = path_planner_visualizer
@@ -218,7 +219,7 @@ class PathPlannerController(LulaController):
 
     def make_new_plan(
         self, target_end_effector_position: np.ndarray, target_end_effector_orientation: Optional[np.ndarray] = None
-    ):
+    ) -> None:
         """Generates a new motion plan to the specified end effector target.
 
         Args:
@@ -262,7 +263,7 @@ class PathPlannerController(LulaController):
             self._frame_counter += 1
             return self._plan.pop(0)
 
-    def add_obstacle(self, obstacle: objects, static: bool = False):
+    def add_obstacle(self, obstacle: objects, static: bool = False) -> None:
         """Adds an obstacle to the path planner for collision avoidance.
 
         Args:
@@ -271,7 +272,7 @@ class PathPlannerController(LulaController):
         """
         self._path_planner.add_obstacle(obstacle, static)
 
-    def remove_obstacle(self, obstacle: objects):
+    def remove_obstacle(self, obstacle: objects) -> None:
         """Removes an obstacle from the path planner.
 
         Args:
@@ -279,7 +280,7 @@ class PathPlannerController(LulaController):
         """
         self._path_planner.remove_obstacle(obstacle)
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the path planner controller state and clears the current plan."""
         # PathPlannerController will make one plan per reset
         self._path_planner.reset()

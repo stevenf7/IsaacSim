@@ -15,8 +15,9 @@
 
 """Interface for translating USD world to a generic world-aware algorithm such as a MotionPolicy."""
 
+from __future__ import annotations
 
-from typing import List, Optional, Union
+from typing import Optional
 
 import carb
 import isaacsim.core.api.objects
@@ -26,10 +27,10 @@ from isaacsim.core.api.objects import capsule, cone, cuboid, cylinder, ground_pl
 class WorldInterface:
     """Interface for translating USD world to a generic world-aware algorithm such as a MotionPolicy."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def update_world(self, updated_obstacles: Optional[List] = None):
+    def update_world(self, updated_obstacles: Optional[list] = None) -> None:
         """Applies all necessary updates to the internal world representation.
 
         Args:
@@ -50,23 +51,19 @@ class WorldInterface:
         Returns:
             Returns True if the obstacle type is valid and the appropriate add function has been implemented
         """
-        if (
-            isinstance(obstacle, cuboid.DynamicCuboid)
-            or isinstance(obstacle, cuboid.VisualCuboid)
-            or isinstance(obstacle, cuboid.FixedCuboid)
-        ):
+        if isinstance(obstacle, (cuboid.DynamicCuboid, cuboid.VisualCuboid, cuboid.FixedCuboid)):
             return self.add_cuboid(obstacle, static=static)
 
-        elif isinstance(obstacle, cylinder.DynamicCylinder) or isinstance(obstacle, cylinder.VisualCylinder):
+        elif isinstance(obstacle, (cylinder.DynamicCylinder, cylinder.VisualCylinder)):
             return self.add_cylinder(obstacle, static=static)
 
-        elif isinstance(obstacle, sphere.DynamicSphere) or isinstance(obstacle, sphere.VisualSphere):
+        elif isinstance(obstacle, (sphere.DynamicSphere, sphere.VisualSphere)):
             return self.add_sphere(obstacle, static=static)
 
-        elif isinstance(obstacle, capsule.DynamicCapsule) or isinstance(obstacle, capsule.VisualCapsule):
+        elif isinstance(obstacle, (capsule.DynamicCapsule, capsule.VisualCapsule)):
             return self.add_capsule(obstacle, static=static)
 
-        elif isinstance(obstacle, cone.DynamicCone) or isinstance(obstacle, cone.VisualCone):
+        elif isinstance(obstacle, (cone.DynamicCone, cone.VisualCone)):
             return self.add_cone(obstacle, static=static)
 
         elif isinstance(obstacle, ground_plane.GroundPlane):
@@ -81,7 +78,7 @@ class WorldInterface:
             return False
 
     def add_cuboid(
-        self, cuboid: Union[cuboid.DynamicCuboid, cuboid.FixedCuboid, cuboid.VisualCuboid], static: bool = False
+        self, cuboid: cuboid.DynamicCuboid | cuboid.FixedCuboid | cuboid.VisualCuboid, static: bool = False
     ) -> bool:
         """Add a block obstacle.
 
@@ -96,7 +93,7 @@ class WorldInterface:
         carb.log_warn("Function add_cuboid() has not been implemented for this WorldInterface")
         return False
 
-    def add_sphere(self, sphere: Union[sphere.DynamicSphere, sphere.VisualSphere], static: bool = False) -> bool:
+    def add_sphere(self, sphere: sphere.DynamicSphere | sphere.VisualSphere, static: bool = False) -> bool:
         """Add a sphere obstacle.
 
         Args:
@@ -110,7 +107,7 @@ class WorldInterface:
         carb.log_warn("Function add_sphere() has not been implemented for this WorldInterface")
         return False
 
-    def add_capsule(self, capsule: Union[capsule.DynamicCapsule, capsule.VisualCapsule], static: bool = False) -> bool:
+    def add_capsule(self, capsule: capsule.DynamicCapsule | capsule.VisualCapsule, static: bool = False) -> bool:
         """Add a capsule obstacle.
 
         Args:
@@ -124,9 +121,7 @@ class WorldInterface:
         carb.log_warn("Function add_capsule() has not been implemented for this WorldInterface")
         return False
 
-    def add_cylinder(
-        self, cylinder: Union[cylinder.DynamicCylinder, cylinder.VisualCylinder], static: bool = False
-    ) -> bool:
+    def add_cylinder(self, cylinder: cylinder.DynamicCylinder | cylinder.VisualCylinder, static: bool = False) -> bool:
         """Add a cylinder obstacle.
 
         Args:
@@ -140,7 +135,7 @@ class WorldInterface:
         carb.log_warn("Function add_cylinder() has not been implemented for this WorldInterface")
         return False
 
-    def add_cone(self, cone: Union[cone.DynamicCone, cone.VisualCone], static: bool = False) -> bool:
+    def add_cone(self, cone: cone.DynamicCone | cone.VisualCone, static: bool = False) -> bool:
         """Add a cone obstacle.
 
         Args:
@@ -204,5 +199,5 @@ class WorldInterface:
         carb.log_warn("Function remove_obstacle() has not been implemented for this WorldInterface")
         return False
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset all state inside the WorldInterface to its initial values."""

@@ -24,8 +24,11 @@ Conventions:
   rotation. Note: "2" is shorthand for "to".
 """
 
+from __future__ import annotations
+
 import copy
-from typing import Optional, Sequence, Tuple
+from collections.abc import Sequence
+from typing import Optional
 
 import numpy as np
 from isaacsim.core.utils.math import normalized
@@ -111,7 +114,7 @@ def transforms_are_close(
     # comparable.
     thresh_met = npe <= p_thresh and nRe / 3 <= R_thresh
     if verbose:
-        print("npe: {} vs p_thresh: {}; nRe: {} vs R_thresh: {}".format(npe, p_thresh, nRe, R_thresh))
+        print(f"npe: {npe} vs p_thresh: {p_thresh}; nRe: {nRe} vs R_thresh: {R_thresh}")
     return thresh_met
 
 
@@ -134,10 +137,10 @@ class Quaternion:
         vals: The underlying quaternion data in the order [w,x,y,z]
     """
 
-    def __init__(self, vals: Sequence[float]):
+    def __init__(self, vals: Sequence[float]) -> None:
         self.vals = vals
 
-    def __mul__(self, other: "Quaternion"):
+    def __mul__(self, other: Quaternion) -> Quaternion:
         """An implementation of quaternion right multiplication.
 
         If this quaternion is q and the other quaternion is q_other, computes and returns
@@ -205,7 +208,7 @@ def to_homogeneous_vec(v: np.ndarray) -> np.ndarray:
     return hv
 
 
-def apply_T(T: np.ndarray, v: np.ndarray) -> np.ndarray:
+def apply_T(T: np.ndarray, v: np.ndarray) -> np.ndarray:  # noqa: N802
     """Applies the 4x4 homogeneous transform matrix T to the provided 3D vector v. Returns the.
 
     transformed 3D vector.
@@ -220,7 +223,7 @@ def apply_T(T: np.ndarray, v: np.ndarray) -> np.ndarray:
     return T.dot(to_homogeneous_vec(v))[:3]
 
 
-def T2pq(T: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def T2pq(T: np.ndarray) -> tuple[np.ndarray, np.ndarray]:  # noqa: N802
     """Converts a 4x4 homogeneous matrix to a position-quaternion representation.
 
     Args:
@@ -233,7 +236,7 @@ def T2pq(T: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     return p, matrix_to_quat(R)
 
 
-def pq2T(p: np.ndarray, q: np.ndarray) -> np.ndarray:
+def pq2T(p: np.ndarray, q: np.ndarray) -> np.ndarray:  # noqa: N802
     """Converts a pose given as (<position>,<quaternion>) to a 4x4 homogeneous transform matrix.
 
     Args:
@@ -246,7 +249,7 @@ def pq2T(p: np.ndarray, q: np.ndarray) -> np.ndarray:
     return pack_Rp(quat_to_rot_matrix(q), p)
 
 
-def R2T(R: np.ndarray) -> np.ndarray:
+def R2T(R: np.ndarray) -> np.ndarray:  # noqa: N802
     """Expands a rotation matrix to be a 4x4 homogeneous matrix by padding it with a zero position.
 
     vector.
@@ -262,7 +265,9 @@ def R2T(R: np.ndarray) -> np.ndarray:
     return T
 
 
-def proj_orth(v1: np.ndarray, v2: np.ndarray, normalize_res: Optional[bool] = False, eps: Optional[float] = 1e-5):
+def proj_orth(
+    v1: np.ndarray, v2: np.ndarray, normalize_res: Optional[bool] = False, eps: Optional[float] = 1e-5
+) -> np.ndarray:
     """Projects v1 orthogonal to v2. If v2 is zero (within eps), v1 is returned unchanged. If.
 
     normalize_res is true, normalizes the result before returning.
@@ -289,7 +294,7 @@ def proj_orth(v1: np.ndarray, v2: np.ndarray, normalize_res: Optional[bool] = Fa
         return v1
 
 
-def unpack_T(T: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def unpack_T(T: np.ndarray) -> tuple[np.ndarray, np.ndarray]:  # noqa: N802
     """Unpack the rotation matrix and translation separately from a 4x4 homogeneous transform.
 
     matrix.
@@ -303,7 +308,7 @@ def unpack_T(T: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     return T[:3, :3], T[:3, 3]
 
 
-def unpack_R(R: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def unpack_R(R: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:  # noqa: N802
     """Unpack the individual axes (columns) of the rotation matrix.
 
     Args:
@@ -315,7 +320,7 @@ def unpack_R(R: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return R[:3, 0], R[:3, 1], R[:3, 2]
 
 
-def pack_R(ax: np.ndarray, ay: np.ndarray, az: np.ndarray, as_homogeneous: bool = False):
+def pack_R(ax: np.ndarray, ay: np.ndarray, az: np.ndarray, as_homogeneous: bool = False) -> np.ndarray:  # noqa: N802
     """Pack a rotation matrix with the supplied axis columns.
 
     Args:
@@ -337,7 +342,7 @@ def pack_R(ax: np.ndarray, ay: np.ndarray, az: np.ndarray, as_homogeneous: bool 
     return R
 
 
-def pack_Rp(R: np.ndarray, p: np.ndarray) -> np.ndarray:
+def pack_Rp(R: np.ndarray, p: np.ndarray) -> np.ndarray:  # noqa: N802
     """Packs the provided rotation matrix (R) and position (p) into a 4x4 homogeneous transform.
 
     matrix.
@@ -355,7 +360,7 @@ def pack_Rp(R: np.ndarray, p: np.ndarray) -> np.ndarray:
     return T
 
 
-def invert_T(T: np.ndarray) -> np.ndarray:
+def invert_T(T: np.ndarray) -> np.ndarray:  # noqa: N802
     """Inverts the provided transform matrix using the explicit formula leveraging the.
 
     orthogonality of R and the sparsity of the transform.
@@ -412,7 +417,7 @@ class ExpAvg(object):
             is seeded with the first value.
     """
 
-    def __init__(self, gamma: float, prior_avg: Optional[float] = None):
+    def __init__(self, gamma: float, prior_avg: Optional[float] = None) -> None:
         self.gamma = gamma
         self.prior_avg = prior_avg
         self.reset()
@@ -444,7 +449,7 @@ class ExpAvg(object):
         self.val_avg = self.gamma * self.val_avg + (1.0 - self.gamma) * val
 
 
-def proj_R(R: np.ndarray) -> np.ndarray:
+def proj_R(R: np.ndarray) -> np.ndarray:  # noqa: N802
     """Projects a rotational matrix to make it a valid rotation.
 
     The projection is performed by first converting the rotation matrix components into a
@@ -462,7 +467,7 @@ def proj_R(R: np.ndarray) -> np.ndarray:
     return R
 
 
-def proj_T(T: np.ndarray) -> np.ndarray:
+def proj_T(T: np.ndarray) -> np.ndarray:  # noqa: N802
     """Projects the rotational matrix portion of the provide homogeneous transform matrix to make.
 
     it a valid rotation.
@@ -507,11 +512,11 @@ def make_rotation_matrix(az_dominant: np.ndarray, ax_suggestion: np.ndarray) -> 
     return pack_R(ax, ay, az)
 
 
-def to_meters(p_stage: np.ndarray):
-    """Converts the position p_stage from stage units to meters. By default, a stage uses meters,.
+def to_meters(p_stage: np.ndarray) -> np.ndarray:
+    """Convert the position p_stage from stage units to meters.
 
-    so this method does nothing. But if the world is constructed with different units, this method
-    will convert those units to meters.
+    By default, a stage uses meters, so this method does nothing. But if the world is constructed
+    with different units, this method will convert those units to meters.
 
     Args:
         p_stage: The position vector in stage units.
@@ -522,7 +527,7 @@ def to_meters(p_stage: np.ndarray):
     return p_stage * get_stage_units()
 
 
-def T_to_meters(T_stage: np.ndarray):
+def T_to_meters(T_stage: np.ndarray) -> np.ndarray:  # noqa: N802
     """Convert the homogeneous transform to meters. This method simply makes a copy of T_stage and.
 
     converts the translation components to meters using a call to to_meters().
@@ -538,8 +543,8 @@ def T_to_meters(T_stage: np.ndarray):
     return T_meters
 
 
-def to_stage_units(p_meters: np.ndarray):
-    """Converts the position p_meters from meters to stage units.
+def to_stage_units(p_meters: np.ndarray) -> np.ndarray:
+    """Convert the position p_meters from meters to stage units.
 
     Args:
         p_meters: A position vector in meters.

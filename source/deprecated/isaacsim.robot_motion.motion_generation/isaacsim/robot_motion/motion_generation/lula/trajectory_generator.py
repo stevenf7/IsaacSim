@@ -15,8 +15,7 @@
 
 """Trajectory generation for Lula kinematics in Isaac Sim robot motion planning."""
 
-
-from typing import List, Tuple, Union
+from __future__ import annotations
 
 import carb
 import lula
@@ -35,7 +34,7 @@ class LulaTrajectory(Trajectory):
         active_joints: List of joint names that are controllable by the trajectory
     """
 
-    def __init__(self, trajectory: object, active_joints: list):
+    def __init__(self, trajectory: object, active_joints: list) -> None:
         self.trajectory = trajectory
         self.active_joints = active_joints
 
@@ -46,7 +45,6 @@ class LulaTrajectory(Trajectory):
         Returns:
             The start time value.
         """
-        __doc__ = Trajectory.start_time.__doc__
         return self.trajectory.domain().lower
 
     @property
@@ -56,19 +54,17 @@ class LulaTrajectory(Trajectory):
         Returns:
             The end time value.
         """
-        __doc__ = Trajectory.end_time.__doc__
         return self.trajectory.domain().upper
 
-    def get_active_joints(self) -> List[str]:
+    def get_active_joints(self) -> list[str]:
         """Retrieves the list of active joints for the trajectory.
 
         Returns:
             The list of active joint names.
         """
-        __doc__ = Trajectory.get_active_joints.__doc__
         return self.active_joints
 
-    def get_joint_targets(self, time: float) -> Tuple[np.array, np.array]:
+    def get_joint_targets(self, time: float) -> tuple[np.array, np.array]:
         """Computes joint positions and velocities at a specified time.
 
         Args:
@@ -77,7 +73,6 @@ class LulaTrajectory(Trajectory):
         Returns:
             A tuple containing (joint positions, joint velocities) evaluated at the specified time.
         """
-        __doc__ = Trajectory.get_joint_targets.__doc__
         if time > self.end_time or time < self.start_time:
             carb.log_error("Could not compute joint targets because the provided time is out of bounds")
         return self.trajectory.eval(time, 0), self.trajectory.eval(time, 1)
@@ -93,7 +88,7 @@ class LulaCSpaceTrajectoryGenerator:
         urdf_path: Path to robot urdf.
     """
 
-    def __init__(self, robot_description_path: str, urdf_path: str):
+    def __init__(self, robot_description_path: str, urdf_path: str) -> None:
 
         self._robot_description = lula.load_robot(robot_description_path, urdf_path)
         self._lula_kinematics = self._robot_description.kinematics()
@@ -190,7 +185,7 @@ class LulaCSpaceTrajectoryGenerator:
 
         return LulaTrajectory(trajectory, self.get_active_joints())
 
-    def get_active_joints(self) -> List[str]:
+    def get_active_joints(self) -> list[str]:
         """List of joints by name that are considered to be controllable by the TrajectoryGenerator.
 
         All inputs and outputs of the LulaTrajectoryGenerator correspond to the joints specified by get_active_joints().
@@ -232,7 +227,7 @@ class LulaCSpaceTrajectoryGenerator:
         """
         return self._kinematics_solver.get_cspace_jerk_limits()
 
-    def set_c_space_position_limits(self, lower_position_limits: np.array, upper_position_limits: np.array):
+    def set_c_space_position_limits(self, lower_position_limits: np.array, upper_position_limits: np.array) -> None:
         """Set the lower and upper position limits of the active joints to be used when generating a trajectory.
 
         Args:
@@ -258,7 +253,7 @@ class LulaCSpaceTrajectoryGenerator:
             c_space_position_lower_limits, c_space_position_upper_limits
         )
 
-    def set_c_space_velocity_limits(self, velocity_limits: np.array):
+    def set_c_space_velocity_limits(self, velocity_limits: np.array) -> None:
         """Set the velocity limits of the active joints to be used when generating a trajectory.
 
         Args:
@@ -274,7 +269,7 @@ class LulaCSpaceTrajectoryGenerator:
         c_space_velocity_limits = velocity_limits.astype(np.float64)
         self._c_space_trajectory_generator.set_velocity_limits(c_space_velocity_limits)
 
-    def set_c_space_acceleration_limits(self, acceleration_limits: np.array):
+    def set_c_space_acceleration_limits(self, acceleration_limits: np.array) -> None:
         """Set the acceleration limits of the active joints to be used when generating a trajectory.
 
         Args:
@@ -289,7 +284,7 @@ class LulaCSpaceTrajectoryGenerator:
         c_space_acceleration_limits = acceleration_limits.astype(np.float64)
         self._c_space_trajectory_generator.set_acceleration_limits(c_space_acceleration_limits)
 
-    def set_c_space_jerk_limits(self, jerk_limits: np.array):
+    def set_c_space_jerk_limits(self, jerk_limits: np.array) -> None:
         """Set the jerk limits of the active joints to be used when generating a trajectory.
 
         Args:
@@ -305,7 +300,7 @@ class LulaCSpaceTrajectoryGenerator:
         c_space_jerk_limits = jerk_limits.astype(np.float64)
         self._c_space_trajectory_generator.set_jerk_limits(c_space_jerk_limits)
 
-    def set_solver_param(self, param_name: str, param_val: Union[int, float, str]):
+    def set_solver_param(self, param_name: str, param_val: int | float | str) -> None:
         r"""Set solver parameters for the cspace trajectory generator.
 
         A complete list of parameters is provided in this docstring.
@@ -449,7 +444,7 @@ class LulaTaskSpaceTrajectoryGenerator:
 
     set_c_space_trajectory_generator_solver_param = LulaCSpaceTrajectoryGenerator.set_solver_param
 
-    def __init__(self, robot_description_path: str, urdf_path: str):
+    def __init__(self, robot_description_path: str, urdf_path: str) -> None:
         self._robot_description = lula.load_robot(robot_description_path, urdf_path)
         self._lula_kinematics = self._robot_description.kinematics()
         self._kinematics_solver = LulaKinematicsSolver(robot_description_path, urdf_path, self._robot_description)
@@ -460,7 +455,7 @@ class LulaTaskSpaceTrajectoryGenerator:
         self._c_space_trajectory_generator = lula.create_c_space_trajectory_generator(self._lula_kinematics)
         self._path_conversion_config = lula.TaskSpacePathConversionConfig()
 
-    def get_all_frame_names(self) -> List[str]:
+    def get_all_frame_names(self) -> list[str]:
         """List of all frames in the robot URDF that may be used to follow a trajectory.
 
         Returns:
@@ -498,7 +493,7 @@ class LulaTaskSpaceTrajectoryGenerator:
         return self.compute_task_space_trajectory_from_path_spec(path_spec, frame_name)
 
     def compute_task_space_trajectory_from_path_spec(
-        self, path_spec: Union[lula.CompositePathSpec, lula.TaskSpacePathSpec], frame_name: str
+        self, path_spec: lula.CompositePathSpec | lula.TaskSpacePathSpec, frame_name: str
     ) -> LulaTrajectory:
         """Return a LulaTrajectory that follows the path specified by the provided TaskSpacePathSpec.
 

@@ -20,6 +20,8 @@ behaviors useful in concrete cases, sometimes tailored to specific robots. Pragm
 think of this library as being cortex dependent while df.py is cortex independent.
 """
 
+from __future__ import annotations
+
 import copy
 import time
 from abc import ABC, abstractmethod
@@ -47,7 +49,7 @@ class DfRobotApiContext(DfLogicalState):
         robot: The robot providing API access to the decider network.
     """
 
-    def __init__(self, robot: CortexRobot):
+    def __init__(self, robot: CortexRobot) -> None:
         super().__init__()
         self.robot = robot
 
@@ -100,7 +102,7 @@ class DfDiagnosticsMonitor(ABC):
         print_dt: The amount of times in seconds between prints.
     """
 
-    def __init__(self, print_dt: Optional[float] = 1.0):
+    def __init__(self, print_dt: Optional[float] = 1.0) -> None:
         self.print_dt = print_dt
 
         self.current_time = None
@@ -164,11 +166,11 @@ class DfGoTarget(DfAction):
             cycle (default).
     """
 
-    def __init__(self, set_target_only_on_entry: Optional[bool] = False):
+    def __init__(self, set_target_only_on_entry: Optional[bool] = False) -> None:
         super().__init__()
         self.set_target_only_on_entry = set_target_only_on_entry
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation including the set_target_only_on_entry flag."""
         return f"{super().__str__()}({self.set_target_only_on_entry})"
 
@@ -222,7 +224,7 @@ class DfApproachTarget(DfDecider):
         direction_length: Optional[float] = 0.1,
         std_dev: Optional[float] = 0.05,
         approach_params_rel: Optional[ApproachParams] = None,
-    ):
+    ) -> None:
         super().__init__()
 
         self.approach_along_axis = approach_along_axis
@@ -232,7 +234,7 @@ class DfApproachTarget(DfDecider):
 
         self.add_child("go_target", DfGoTarget())
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation including approach axis and direction length."""
         return f"{super().__str__()}({self.approach_along_axis},{self.direction_length})"
 
@@ -303,13 +305,13 @@ class DfApproachTargetLinearly(DfDecider):
             the cycle time gives the equivalent speed.
     """
 
-    def __init__(self, step_length: float):
+    def __init__(self, step_length: float) -> None:
         super().__init__()
 
         self.step_length = step_length
         self.add_child("go_target", DfGoTarget())
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation including the step length."""
         return f"{super().__str__()}({self.step_length})"
 
@@ -366,13 +368,13 @@ class DfLift(DfDecider):
             the z-axis (lifting up).
     """
 
-    def __init__(self, height: float, axis: Optional[int] = 2):
+    def __init__(self, height: float, axis: Optional[int] = 2) -> None:
         super().__init__()
         self.height = height
         self.axis = axis
         self.add_child("go_target", DfGoTarget())
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation including the lift height and axis."""
         return f"{super().__str__()}({self.height}, {self.axis})"
 
@@ -405,12 +407,12 @@ class DfMoveEndEffectorRel(DfDecider):
         p_local: The target point in coordinates relative to the end-effector on entry.
     """
 
-    def __init__(self, p_local: np.ndarray):
+    def __init__(self, p_local: np.ndarray) -> None:
         super().__init__()
         self.p_local = p_local
         self.add_child("go_target", DfGoTarget())
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation including the local offset."""
         return f"{super().__str__()}({self.p_local})"
 
@@ -454,10 +456,10 @@ class DfCloseGripper(DfAction):
     node, that overrides any default width value set on entry.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-    def enter(self):
+    def enter(self) -> None:
         """Close the gripper on entry."""
         self.context.robot.gripper.close()
 
@@ -473,7 +475,7 @@ class DfMoveGripper(DfAction):
             the parameter through its decision params.
     """
 
-    def __init__(self, width: Optional[float] = None):
+    def __init__(self, width: Optional[float] = None) -> None:
         super().__init__()
         self.width = width
 
@@ -525,7 +527,7 @@ class GoHomeState(DfState):
         return self
 
 
-def make_go_home():
+def make_go_home() -> DfStateMachineDecider:
     """Make a decider node wrapping the GoHomeState.
 
     Returns:

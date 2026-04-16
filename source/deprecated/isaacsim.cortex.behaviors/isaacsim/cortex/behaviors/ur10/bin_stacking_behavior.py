@@ -15,7 +15,10 @@
 
 """UR10 bin stacking behavior using cortex decision framework."""
 
+from __future__ import annotations
+
 import time
+from typing import Any
 
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
@@ -46,7 +49,7 @@ class BinState:
         bin_obj: The bin's simulation object.
     """
 
-    def __init__(self, bin_obj):
+    def __init__(self, bin_obj: Any) -> None:
         self.bin_obj = bin_obj
         self.bin_base = SingleXFormPrim(self.bin_obj.prim_path + "/Collision/Cube_03")
         self.grasp_T = None
@@ -62,11 +65,11 @@ class FlipStationObstacleMonitor(ObstacleMonitor):
         context: The bin stacking context.
     """
 
-    def __init__(self, context):
+    def __init__(self, context: Any) -> None:
         super().__init__([context.world.scene.get_object("flip_station_sphere")])
         self.context = context
 
-    def is_obstacle_required(self):
+    def is_obstacle_required(self) -> bool:
         """Check whether the flip station obstacle is needed based on grasp alignment."""
         eff_T = self.context.robot.arm.get_fk_T()
         eff_R, eff_p = math_util.unpack_T(eff_T)
@@ -87,7 +90,7 @@ class NavigationObstacleMonitor(ObstacleMonitor):
         context: The bin stacking context.
     """
 
-    def __init__(self, context):
+    def __init__(self, context: Any) -> None:
         obstacles = [
             context.world.scene.get_object("navigation_dome_obs"),
             context.world.scene.get_object("navigation_barrier_obs"),
@@ -96,7 +99,7 @@ class NavigationObstacleMonitor(ObstacleMonitor):
         super().__init__(obstacles)
         self.context = context
 
-    def is_obstacle_required(self):
+    def is_obstacle_required(self) -> bool:
         """Check whether navigation obstacles are needed based on target and effector sides."""
         target_p, _ = self.context.robot.arm.target_prim.get_world_pose()
 
@@ -125,7 +128,15 @@ class BinStackingDiagnostic:
         needs_flip: Whether the bin needs to be flipped.
     """
 
-    def __init__(self, bin_name=None, bin_base=None, grasp=None, grasp_reached=None, attached=None, needs_flip=None):
+    def __init__(
+        self,
+        bin_name: str | None = None,
+        bin_base: Any | None = None,
+        grasp: np.ndarray | None = None,
+        grasp_reached: bool | None = None,
+        attached: bool | None = None,
+        needs_flip: bool | None = None,
+    ) -> None:
         self.bin_name = bin_name
         self.bin_base = bin_base
         self.grasp = grasp
@@ -142,11 +153,11 @@ class BinStackingDiagnosticsMonitor(DfDiagnosticsMonitor):
         diagnostic_fn: Optional callback for receiving diagnostic objects.
     """
 
-    def __init__(self, print_dt=1.0, diagnostic_fn=None):
+    def __init__(self, print_dt: float = 1.0, diagnostic_fn: Any = None) -> None:
         super().__init__(print_dt=print_dt)
         self.diagnostic_fn = diagnostic_fn
 
-    def print_diagnostics(self, context):
+    def print_diagnostics(self, context: Any) -> None:
         """Collect and report diagnostic information about the active bin."""
         if context.has_active_bin:
             diagnostic = BinStackingDiagnostic(
@@ -176,7 +187,7 @@ class BinStackingDiagnosticsMonitor(DfDiagnosticsMonitor):
         # print("------------------------------------")
 
 
-def get_bin_under(p, stacked_bins):
+def get_bin_under(p: np.ndarray, stacked_bins: list) -> Any | None:
     """Find the stacked bin directly under a given position."""
     x, y, z = p
     xy = np.array([x, y])
@@ -221,7 +232,7 @@ class BinStackingContext(ObstacleMonitorContext):
         monitor_fn: Optional callback for receiving diagnostic information.
     """
 
-    def __init__(self, robot, monitor_fn=None):
+    def __init__(self, robot: Any, monitor_fn: Any = None) -> None:
         super().__init__(robot.arm)
         self.robot = robot
         self.world = CortexWorld.instance()
@@ -266,7 +277,7 @@ class BinStackingContext(ObstacleMonitorContext):
             ]
         )
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the context state including bins and stack."""
         super().reset()
 
@@ -275,28 +286,28 @@ class BinStackingContext(ObstacleMonitorContext):
         self.stacked_bins.clear()
 
     @property
-    def stack_complete(self):
+    def stack_complete(self) -> bool:
         """Check whether all bins have been stacked."""
         return len(self.stacked_bins) == len(self.stack_coordinates)
 
     @property
-    def elapse_time(self):
+    def elapse_time(self) -> float:
         """Return the elapsed time since the behavior started."""
         return time.time() - self.start_time
 
     @property
-    def has_active_bin(self):
+    def has_active_bin(self) -> bool:
         """Check whether there is an active bin being processed."""
         return self.active_bin is not None
 
-    def monitor_bins(self):
+    def monitor_bins(self) -> None:
         """Detect new bins and select the active bin from the conveyor region."""
         if self.active_bin is None:
             self.conveyor_bin = None
             min_y = None
 
             # Check whether there's a new bin in the world.
-            bin_obj = self.world.scene.get_object("bin_{}".format(len(self.bins)))
+            bin_obj = self.world.scene.get_object(f"bin_{len(self.bins)}")
             if bin_obj is not None:
                 self.bins.append(BinState(bin_obj))
 
@@ -306,19 +317,19 @@ class BinStackingContext(ObstacleMonitorContext):
 
                 # Check whether it's on the conveyor in the active region.
                 x, y, z = p
-                if 0.0 < y and y < 0.7 and -0.4 < x and x < 0.4:
+                if y > 0.0 and y < 0.7 and x > -0.4 and x < 0.4:
                     if self.active_bin is None or y < min_y:
                         self.active_bin = bin_state
                         min_y = y
 
-    def monitor_active_bin(self):
+    def monitor_active_bin(self) -> None:
         """Clear the active bin if it has fallen below the scene."""
         if self.active_bin is not None:
             p, _ = self.active_bin.bin_obj.get_world_pose()
             if p[2] < -1.0:
                 self.active_bin = None
 
-    def monitor_active_bin_grasp_T(self):
+    def monitor_active_bin_grasp_T(self) -> None:  # noqa: N802
         """Compute the grasp transform for the active bin based on its orientation."""
         if self.active_bin is not None:
             bin_T = math_util.pq2T(*self.active_bin.bin_base.get_world_pose())
@@ -355,7 +366,7 @@ class BinStackingContext(ObstacleMonitorContext):
             target_T = math_util.pack_Rp(math_util.pack_R(target_ax, target_ay, target_az), target_p)
             self.active_bin.grasp_T = target_T
 
-    def monitor_active_bin_grasp_reached(self):
+    def monitor_active_bin_grasp_reached(self) -> None:
         """Update whether the grasp has been reached and whether the bin is attached."""
         if self.has_active_bin:
             fk_T = self.robot.arm.get_fk_T()
@@ -368,7 +379,7 @@ class BinStackingContext(ObstacleMonitorContext):
                 and self.robot.suction_gripper.is_closed()
             )
 
-    def mark_active_bin_as_complete(self):
+    def mark_active_bin_as_complete(self) -> None:
         """Mark the active bin as stacked and clear it."""
         self.stacked_bins.append(self.active_bin)
         self.active_bin = None
@@ -382,16 +393,16 @@ class Move(DfState):
         R_thresh: Rotation threshold for convergence.
     """
 
-    def __init__(self, p_thresh, R_thresh):
+    def __init__(self, p_thresh: float, R_thresh: float) -> None:
         self.p_thresh = p_thresh
         self.R_thresh = R_thresh
         self.command = None
 
-    def update_command(self, command):
+    def update_command(self, command: Any) -> None:
         """Set the motion command to execute."""
         self.command = command
 
-    def step(self):
+    def step(self) -> Any:
         """Send the command and check for convergence."""
         self.context.robot.arm.send(self.command)
 
@@ -406,33 +417,34 @@ class Move(DfState):
 class MoveWithNavObs(Move):
     """Move state that activates navigation obstacle monitoring during movement."""
 
-    def enter(self):
+    def enter(self) -> None:
         """Activate navigation obstacle auto-toggle on entry."""
         super().enter()
         self.context.navigation_obs_monitor.activate_autotoggle()
 
-    def exit(self):
+    def exit(self) -> None:
         """Deactivate navigation obstacle auto-toggle on exit."""
         super().exit()
         self.context.navigation_obs_monitor.deactivate_autotoggle()
 
 
 class ReachToPick(MoveWithNavObs):
-    """Reach to pick the bin. The bin can be anywhere, including on the flip station. On entry, we.
+    """Reach to pick the bin.
 
-    activate the flip station obstacle monitor in case we're picking from the flip station. That
-    obstacle monitor will prevent collision will the flip station en route.
+    The bin can be anywhere, including on the flip station. On entry, we activate the flip station
+    obstacle monitor in case we're picking from the flip station. That obstacle monitor will prevent
+    collision with the flip station en route.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(p_thresh=0.005, R_thresh=2.0)
 
-    def enter(self):
+    def enter(self) -> None:
         """Activate the flip station obstacle monitor on entry."""
         super().enter()
         self.context.flip_station_obs_monitor.activate_autotoggle()
 
-    def step(self):
+    def step(self) -> Any:
         """Compute and send the pick approach command each cycle."""
         R, p = math_util.unpack_T(self.context.active_bin.grasp_T)
         ax, ay, az = math_util.unpack_R(R)
@@ -462,7 +474,7 @@ class ReachToPick(MoveWithNavObs):
 
         return super().step()
 
-    def exit(self):
+    def exit(self) -> None:
         """Deactivate the flip station obstacle monitor on exit."""
         super().exit()
         self.context.flip_station_obs_monitor.deactivate_autotoggle()
@@ -471,10 +483,10 @@ class ReachToPick(MoveWithNavObs):
 class ReachToPlace(MoveWithNavObs):
     """Move state that reaches to the stacking placement location."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(p_thresh=0.005, R_thresh=2.0)
 
-    def enter(self):
+    def enter(self) -> None:
         """Compute the target placement position and orientation on entry."""
         super().enter()
 
@@ -486,7 +498,7 @@ class ReachToPlace(MoveWithNavObs):
         target_ay = np.cross(target_az, target_ax)
         self.target_R = math_util.pack_R(target_ax, target_ay, target_az)
 
-    def step(self):
+    def step(self) -> Any:
         """Adjust placement for alignment with the bin below, then send the command."""
         if self.bin_under is not None:
             bin_under_p, _ = self.bin_under.bin_obj.get_world_pose()
@@ -523,10 +535,10 @@ class ReachToPlace(MoveWithNavObs):
 class CloseSuctionGripperWithRetries(DfState):
     """State that closes the suction gripper, retrying until successful."""
 
-    def enter(self):
+    def enter(self) -> None:
         """Enter the close gripper with retries state."""
 
-    def step(self):
+    def step(self) -> Any:
         """Attempt to close the gripper each cycle until successful."""
         gripper = self.context.robot.suction_gripper
         gripper.close()
@@ -538,12 +550,12 @@ class CloseSuctionGripperWithRetries(DfState):
 class CloseSuctionGripper(DfState):
     """State that closes the suction gripper and waits for confirmation."""
 
-    def enter(self):
+    def enter(self) -> None:
         """Close the suction gripper."""
         print("<close gripper>")
         self.context.robot.suction_gripper.close()
 
-    def step(self):
+    def step(self) -> Any:
         """Wait until the gripper is confirmed closed."""
         if self.context.robot.suction_gripper.is_closed():
             return None
@@ -554,12 +566,12 @@ class CloseSuctionGripper(DfState):
 class OpenSuctionGripper(DfState):
     """State that opens the suction gripper."""
 
-    def enter(self):
+    def enter(self) -> None:
         """Open the suction gripper."""
         print("<open gripper>")
         self.context.robot.suction_gripper.open()
 
-    def step(self):
+    def step(self) -> None:
         """Exit immediately after opening."""
         return
 
@@ -567,11 +579,11 @@ class OpenSuctionGripper(DfState):
 class DoNothing(DfState):
     """State that clears arm commands and does nothing."""
 
-    def enter(self):
+    def enter(self) -> None:
         """Clear arm commands."""
         self.context.robot.arm.clear()
 
-    def step(self):
+    def step(self) -> Any:
         """Print the target pose and stay in this state."""
         print(self.context.robot.arm.target_prim.get_world_pose())
         return self
@@ -580,10 +592,10 @@ class DoNothing(DfState):
 class LiftAndTurn(Move):
     """Move state that lifts the end-effector and turns toward a home-like pose."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(p_thresh=0.005, R_thresh=0.1)
 
-    def step(self):
+    def step(self) -> Any:
         """Compute a lifted target pose based on home config and send the command."""
         home_config = self.context.robot.default_config
         home_T = self.context.robot.arm.get_fk_T(config=home_config)
@@ -599,7 +611,7 @@ class LiftAndTurn(Move):
 class PickBin(DfStateMachineDecider):
     """State machine that picks a bin from the conveyor."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             DfStateSequence(
                 [
@@ -617,7 +629,7 @@ class PickBin(DfStateMachineDecider):
 class FlipBin(DfStateMachineDecider):
     """State machine that flips a bin at the flip station."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             DfStateSequence(
                 [
@@ -635,7 +647,7 @@ class FlipBin(DfStateMachineDecider):
 class PlaceBin(DfStateMachineDecider):
     """State machine that places a bin on the stack."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             DfStateSequence(
                 [
@@ -654,7 +666,7 @@ class PlaceBin(DfStateMachineDecider):
 class MoveToFlipStation(DfState):
     """State that moves the end-effector to the flip station pose."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.target_pose = PosePq(
             np.array([0.7916634, 0.73902607, -0.02897218]), np.array([0.52239186, 0.6296602, -0.5042411, 0.27636158])
         )
@@ -672,14 +684,14 @@ class MoveToFlipStation(DfState):
             ]
         )
 
-    def enter(self):
+    def enter(self) -> None:
         """Send the motion command to move to the flip station."""
         motion_command = MotionCommand(
             target_pose=self.target_pose, approach_params=self.approach_params, posture_config=self.posture_config
         )
         self.context.robot.arm.send(motion_command)
 
-    def step(self):
+    def step(self) -> Any:
         """Wait until the end-effector reaches the flip station pose."""
         fk_T = self.context.robot.arm.get_fk_T()
         if math_util.transforms_are_close(self.target_pose.to_T(), fk_T, p_thresh=0.005, R_thresh=2.0, verbose=False):
@@ -690,7 +702,7 @@ class MoveToFlipStation(DfState):
 class ReleaseFlipStationBin(DfState):
     """State that releases the bin at the flip station and backs away."""
 
-    def enter(self):
+    def enter(self) -> None:
         """Compute a retraction pose and send the motion command."""
         self.entry_time = time.time()
 
@@ -723,7 +735,7 @@ class ReleaseFlipStationBin(DfState):
         )
         self.context.robot.arm.send(motion_command)
 
-    def step(self):
+    def step(self) -> Any:
         """Wait until the end-effector is close enough to the retraction target."""
         # Exit (return None) when the end-effector is within 15cm of the target position.
         fk_p = self.context.robot.arm.get_fk_p()
@@ -736,7 +748,7 @@ class ReleaseFlipStationBin(DfState):
 class Dispatch(DfDecider):
     """Top-level decider that dispatches between picking, flipping, placing, and going home."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.add_child("flip_bin", FlipBin())
@@ -745,7 +757,7 @@ class Dispatch(DfDecider):
         self.add_child("go_home", make_go_home())
         self.add_child("do_nothing", DfStateMachineDecider(DoNothing()))
 
-    def decide(self):
+    def decide(self) -> Any:
         """Decide the next action based on stack completion and bin state."""
         if self.context.stack_complete:
             return DfDecision("go_home")
@@ -761,6 +773,6 @@ class Dispatch(DfDecider):
             return DfDecision("go_home")
 
 
-def make_decider_network(robot, monitor_fn):
+def make_decider_network(robot: Any, monitor_fn: Any) -> Any:
     """Create the bin stacking decider network for the given robot."""
     return DfNetwork(Dispatch(), context=BinStackingContext(robot, monitor_fn))

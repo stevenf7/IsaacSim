@@ -71,7 +71,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
     """
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment before each test.
 
         Initializes physics parameters, loads policy configurations, creates the stage with a Franka robot,
@@ -146,7 +146,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self.TEST_FOR_DETERMINISM = False  # Right now RRT paths are not deterministic across different machines.  Later this will be fixed, and determinism will be tested
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up test environment after each test.
 
         Stops the timeline, waits for assets to finish loading, and clears the World instance.
@@ -160,7 +160,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         World.clear_instance()
 
-    async def _create_light(self):
+    async def _create_light(self) -> None:
         """Create a sphere light in the scene for illumination.
 
         Adds a UsdLux.SphereLight with intensity 100000 and radius 2 at position [6.5, 0, 12].
@@ -170,7 +170,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         sphereLight.CreateIntensityAttr(100000)
         SingleXFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
 
-    async def _prepare_stage(self, robot: object):
+    async def _prepare_stage(self, robot: object) -> None:
         """Prepare the simulation stage for testing.
 
         Stops the timeline, initializes the simulation context, creates lighting, starts the timeline,
@@ -199,7 +199,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._robot.post_reset()
         await update_stage_async()
 
-    async def reset_robot(self, robot: object):
+    async def reset_robot(self, robot: object) -> None:
         """To make motion_generation outputs more deterministic, this method may be used to.
 
         teleport the robot to specified position targets, setting velocity to 0.
@@ -213,7 +213,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         await self._prepare_stage(robot)
         await update_stage_async()
 
-    async def test_rrt_set_params(self):
+    async def test_rrt_set_params(self) -> None:
         """Test setting various RRT planner parameters.
 
         Validates that the RRT planner accepts all valid parameter types including seed, step size,
@@ -252,7 +252,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         self._planner.reset()
 
-    async def test_rrt_franka(self):
+    async def test_rrt_franka(self) -> None:
         """Test RRT path planning for Franka robot with end-effector target.
 
         Sets up obstacles in the environment, configures an end-effector target position and orientation,
@@ -282,7 +282,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         )
         ground_plane = GroundPlane("/ground")
 
-        target_prim = VisualCuboid(
+        VisualCuboid(
             "/target", size=1.0, scale=np.full((3,), 0.05), position=target_translation, color=np.array([1, 0, 0])
         )
 
@@ -351,7 +351,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self.assertTrue(len(actions) > 0, f"{len(actions)}")
         await self.follow_plan(actions, 0.01)
 
-    async def test_rrt_franka_moving_base(self):
+    async def test_rrt_franka_moving_base(self) -> None:
         """Test RRT path planning for Franka robot with a moved base pose.
 
         Moves the robot base to a new position and orientation, sets up obstacles,
@@ -370,7 +370,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
             "/obstacles/barrier", size=1.0, scale=np.array([0.01, 0.5, 1]), position=np.array([1.2, -0.3, 0.5])
         )
 
-        target_prim = VisualCuboid(
+        VisualCuboid(
             "/target", size=1.0, scale=np.full((3,), 0.05), position=target_translation, color=np.array([1, 0, 0])
         )
 
@@ -433,7 +433,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self.assertTrue(len(actions) > 0, f"{len(actions)}")
         await self.follow_plan(actions, 0.01)
 
-    async def test_rrt_franka_cspace_target(self):
+    async def test_rrt_franka_cspace_target(self) -> None:
         """Test RRT path planning for Franka robot with configuration space target.
 
         Sets up obstacles and computes a collision-free path to a target joint configuration
@@ -472,9 +472,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         )
         ground_plane = GroundPlane("/ground", z_position=-0.0305)
 
-        target_prim = VisualCuboid(
-            "/target", size=1.0, scale=np.full((3,), 0.05), position=target_pose, color=np.array([1, 0, 0])
-        )
+        VisualCuboid("/target", size=1.0, scale=np.full((3,), 0.05), position=target_pose, color=np.array([1, 0, 0]))
 
         self._planner.add_obstacle(left_barrier)
         self._planner.add_obstacle(right_barrier)
@@ -525,7 +523,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
     async def _test_traj_gen_with_rrt(
         self, rrt_plan: object, interpolation_max_dist: float, path_dist_thresh: float = 0.01
-    ):
+    ) -> None:
         """Test trajectory generation from RRT path.
 
         Interpolates the RRT path, generates a trajectory using the c-space trajectory planner,
@@ -560,7 +558,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(np.all(min_path_dists < path_dist_thresh))
 
-    async def follow_plan(self, plan: object, interpolation_max_dist: float, path_dist_thresh: float = 0.02):
+    async def follow_plan(self, plan: object, interpolation_max_dist: float, path_dist_thresh: float = 0.02) -> None:
         """Executes a planned path by generating trajectory and applying actions to the robot.
 
         Interpolates the RRT path, generates a trajectory, and applies the resulting actions to the robot.
@@ -625,7 +623,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
             "Generated Trajectory was too far from ideal RRT trajectory to be used",
         )
 
-    async def assertAlmostEqual(self, a: object, b: object, dbg_msg: str = ""):
+    async def assertAlmostEqual(self, a: object, b: object, dbg_msg: str = "") -> None:  # noqa: N802
         """Asserts that two arrays are almost equal element-wise within tolerance.
 
         Compares numpy arrays element by element, ignoring None values, and asserts that the absolute
@@ -642,4 +640,4 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         # overriding method because it doesn't support iterables
         a = np.array(a)
         b = np.array(b)
-        self.assertFalse(np.any(abs((a[a != np.array(None)] - b[b != np.array(None)])) > 1e-3), dbg_msg)
+        self.assertFalse(np.any(abs(a[a != np.array(None)] - b[b != np.array(None)]) > 1e-3), dbg_msg)

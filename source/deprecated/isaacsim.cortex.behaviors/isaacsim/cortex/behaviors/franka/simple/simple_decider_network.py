@@ -15,6 +15,10 @@
 
 """Simple decider network that prints left, right, or middle based on end-effector position."""
 
+from __future__ import annotations
+
+from typing import Any
+
 from isaacsim.cortex.framework.df import DfAction, DfDecider, DfDecision, DfNetwork
 from isaacsim.cortex.framework.dfb import DfRobotApiContext
 
@@ -26,29 +30,29 @@ class Context(DfRobotApiContext):
         robot: The robot API instance.
     """
 
-    def __init__(self, robot):
+    def __init__(self, robot: Any) -> None:
         super().__init__(robot)
 
         self.reset()
         self.add_monitors([Context.monitor_y, Context.monitor_is_left, Context.monitor_is_middle])
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the monitored state variables."""
         self.y = None
         self.is_left = None
         self.is_middle = None
 
-    def monitor_y(self):
+    def monitor_y(self) -> None:
         """Update the y-position of the end-effector."""
         self.y = self.robot.arm.get_fk_p()[1]
 
-    def monitor_is_left(self):
+    def monitor_is_left(self) -> None:
         """Update whether the end-effector is on the left side."""
         self.is_left = self.y < 0
 
-    def monitor_is_middle(self):
+    def monitor_is_middle(self) -> None:
         """Update whether the end-effector is in the middle region."""
-        self.is_middle = -0.15 < self.y and self.y < 0.15
+        self.is_middle = self.y > -0.15 and self.y < 0.15
 
 
 class PrintAction(DfAction):
@@ -58,15 +62,15 @@ class PrintAction(DfAction):
         msg: The message to print.
     """
 
-    def __init__(self, msg=None):
+    def __init__(self, msg: str | None = None) -> None:
         super().__init__()
         self.msg = msg
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return the message as a string representation."""
         return self.msg
 
-    def enter(self):
+    def enter(self) -> None:
         """Print the message or parameters on entry."""
         if self.params is not None:
             self.msg = self.params
@@ -78,13 +82,13 @@ class PrintAction(DfAction):
 class Dispatch(DfDecider):
     """Top-level decider that dispatches print actions based on end-effector position."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.add_child("print_left", PrintAction("<left>"))
         self.add_child("print_right", PrintAction("<right>"))
         self.add_child("print", PrintAction(""))
 
-    def decide(self):
+    def decide(self) -> Any:
         """Decide which print action to run based on lateral position."""
         if self.context.is_middle:
             return DfDecision("print", "<middle>")  # Send parameters down to generic print.
@@ -95,6 +99,6 @@ class Dispatch(DfDecider):
             return DfDecision("print_right")
 
 
-def make_decider_network(robot):
+def make_decider_network(robot: Any) -> Any:
     """Create the simple decider network for the given robot."""
     return DfNetwork(Dispatch(), context=Context(robot))

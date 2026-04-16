@@ -81,11 +81,11 @@ class LogicalStateMonitor:
         df_logical_state: The logical state object owning the underlying monitors.
     """
 
-    def __init__(self, name: str, df_logical_state: DfLogicalState):
+    def __init__(self, name: str, df_logical_state: DfLogicalState) -> None:
         self.name = name
         self.df_logical_state = df_logical_state
 
-    def pre_step(self):
+    def pre_step(self) -> None:
         """Process the logical state monitors of the underlying df_logical_state.
 
         The Cortex pipeline is processed before (pre_) stepping physics. Logical state monitors are
@@ -94,8 +94,8 @@ class LogicalStateMonitor:
         for monitor in self.df_logical_state.monitors:
             monitor(self.df_logical_state)
 
-    def post_reset(self):
-        """Resets the underlying df_logical_state.
+    def post_reset(self) -> None:
+        """Reset the underlying df_logical_state.
 
         The Cortex pipeline is reset after (post_) resetting physics. Logical state monitors are
         reset first, before behaviors and commanders.
@@ -113,11 +113,11 @@ class Behavior:
         df_behavior: The behavior being added implementing the DfBehavior interface.
     """
 
-    def __init__(self, name: str, df_behavior: DfBehavior):
+    def __init__(self, name: str, df_behavior: DfBehavior) -> None:
         self.df_behavior = df_behavior
         self.name = name
 
-    def pre_step(self):
+    def pre_step(self) -> None:
         """Step the underlying df_behavior.
 
         The Cortex pipeline is processed before (pre_) stepping physics. Behaviors are stepped after
@@ -125,7 +125,7 @@ class Behavior:
         """
         self.df_behavior.step()
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Reset the underlying df_behavior.
 
         The Cortex pipeline is reset after (post_) resetting physics. The behaviors are reset after
@@ -141,7 +141,7 @@ class CommandableArticulation(ABC, SingleArticulation):
     """
 
     @abstractmethod
-    def step_commanders(self):
+    def step_commanders(self) -> None:
         """Deriving classes should override this method to define how commanders are stepped each.
 
         cycle. This method is called once per cycle.
@@ -149,11 +149,11 @@ class CommandableArticulation(ABC, SingleArticulation):
         raise NotImplementedError()
 
     @abstractmethod
-    def reset_commanders(self):
-        """Reset each of the commanders associated with thsi articulation."""
+    def reset_commanders(self) -> None:
+        """Reset each of the commanders associated with this articulation."""
         raise NotImplementedError()
 
-    def pre_step(self):
+    def pre_step(self) -> None:
         """Step the commanders governing this commandable articulation.
 
         The Cortex pipeline is processed before (pre_) stepping physics. Commanders are stepped
@@ -161,7 +161,7 @@ class CommandableArticulation(ABC, SingleArticulation):
         """
         self.step_commanders()
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Reset the underlying articulation and its commanders.
 
         The Cortex pipeline is reset after (post_) resetting physics. Commanders are reset after
@@ -188,7 +188,7 @@ class CortexWorld(World):
         **kwargs: Keyword arguments passed to the underlying core API World.
     """
 
-    def __init__(self, *args: object, **kwargs: object):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
         self._logical_state_monitors = OrderedDict()
         self._behaviors = OrderedDict()
@@ -320,8 +320,8 @@ class CortexWorld(World):
         render: bool = True,
         loop_fast: bool = False,
         play_on_entry: bool = False,
-        is_done_cb: bool = None,
-    ):
+        is_done_cb: bool | None = None,
+    ) -> None:
         """Run the Cortex loop runner.
 
         This method will block until Omniverse is exited. It steps everything in the world,

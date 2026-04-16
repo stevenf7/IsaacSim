@@ -15,8 +15,7 @@
 
 """Interface for implementing collision-aware motion policies that dynamically move robots to targets."""
 
-
-from typing import List, Tuple
+from __future__ import annotations
 
 import numpy as np
 from isaacsim.robot_motion.motion_generation.world_interface import WorldInterface
@@ -28,10 +27,10 @@ class MotionPolicy(WorldInterface):
     from the WorldInterface class. A MotionPolicy can be passed to an ArticulationMotionPolicy to streamline moving the simulated robot.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def set_robot_base_pose(self, robot_translation: np.array, robot_orientation: np.array):
+    def set_robot_base_pose(self, robot_translation: np.array, robot_orientation: np.array) -> None:
         """Update position of the robot base.
 
         Args:
@@ -47,7 +46,7 @@ class MotionPolicy(WorldInterface):
         watched_joint_positions: np.array,
         watched_joint_velocities: np.array,
         frame_duration: float,
-    ) -> Tuple[np.array, np.array]:
+    ) -> tuple[np.array, np.array]:
         """Compute position and velocity targets for the next frame given the current robot state.
 
             Position and velocity targets are used in Isaac Sim to generate forces using the PD equation
@@ -65,7 +64,7 @@ class MotionPolicy(WorldInterface):
         """
         return active_joint_positions, np.zeros_like(active_joint_velocities)
 
-    def get_active_joints(self) -> List[str]:
+    def get_active_joints(self) -> list[str]:
         """Names of active joints directly controlled by this MotionPolicy.
 
             Some articulated robot joints may be ignored by some policies. E.g., the gripper of the Franka arm is not used
@@ -78,7 +77,7 @@ class MotionPolicy(WorldInterface):
         """
         return []
 
-    def get_watched_joints(self) -> List[str]:
+    def get_watched_joints(self) -> list[str]:
         """Names of watched joints whose position/velocity matters to the MotionPolicy, but are not directly controlled.
 
             e.g. A MotionPolicy may control a robot arm on a mobile robot. The joint states in the rest of the robot directly affect the position of the arm, but they are not actively controlled by this MotionPolicy.
@@ -89,7 +88,7 @@ class MotionPolicy(WorldInterface):
         """
         return []
 
-    def set_cspace_target(self, active_joint_targets: np.array):
+    def set_cspace_target(self, active_joint_targets: np.array) -> None:
         """Set configuration space target for the robot.
 
         Args:
@@ -97,7 +96,7 @@ class MotionPolicy(WorldInterface):
                 joints.
         """
 
-    def set_end_effector_target(self, target_translation: object = None, target_orientation: object = None):
+    def set_end_effector_target(self, target_translation: object = None, target_orientation: object = None) -> None:
         """Set end effector target.
 
         Args:

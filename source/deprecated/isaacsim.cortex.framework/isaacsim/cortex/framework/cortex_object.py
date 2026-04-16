@@ -15,8 +15,11 @@
 
 """Cortex object wrappers for measured pose tracking and synchronization."""
 
+from __future__ import annotations
+
 import time
-from typing import Optional, Sequence, Tuple
+from collections.abc import Sequence
+from typing import Optional
 
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
@@ -36,7 +39,7 @@ class CortexMeasuredPose(object):
         timeout: How long we trust this measurement (time to live).
     """
 
-    def __init__(self, stamp: float, pose_pq: Tuple[np.ndarray, np.ndarray], timeout: float):
+    def __init__(self, stamp: float, pose_pq: tuple[np.ndarray, np.ndarray], timeout: float) -> None:
         self.stamp = stamp
         self.pq = pose_pq
         self.timeout = timeout
@@ -70,7 +73,7 @@ class CortexObject(object):
             of seconds of a previous sync. Defaults to None, which means no throttling.
     """
 
-    def __init__(self, obj: SingleXFormPrim, sync_throttle_dt: float = None):
+    def __init__(self, obj: SingleXFormPrim, sync_throttle_dt: float | None = None) -> None:
         self.obj = obj
         self.time_at_last_sync = None
         self.sync_throttle_dt = sync_throttle_dt
@@ -98,7 +101,7 @@ class CortexObject(object):
         """
         self.obj.set_world_pose(position, orientation)
 
-    def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_world_pose(self) -> tuple[np.ndarray, np.ndarray]:
         """Get the object's world pose.
 
         Returns:
@@ -115,7 +118,7 @@ class CortexObject(object):
         position, orientation = self.get_world_pose()
         return math_util.pq2T(position, orientation)
 
-    def get_T(self):
+    def get_T(self) -> np.ndarray:  # noqa: N802
         """Convenience accessor for get_transform() using T naming convention.
 
         Returns:
@@ -142,7 +145,7 @@ class CortexObject(object):
         """
         return self.measured_pose is not None and self.measured_pose.is_valid(time.time())
 
-    def get_measured_pq(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_measured_pq(self) -> tuple[np.ndarray, np.ndarray]:
         """Returns the measured pose as a (p,q) tuple in meters.
 
         This method doesn't check whether the measured pose is available. Use has_measured_pose() to
@@ -153,7 +156,7 @@ class CortexObject(object):
         """
         return self.measured_pose.pq
 
-    def get_measured_T(self) -> np.array:
+    def get_measured_T(self) -> np.ndarray:  # noqa: N802
         """Returns the measured pose as a 4x4 homogeneous matrix in units of meters.
 
         This method doesn't check whether the measured pose is available. Use has_measured_pose() to
@@ -226,4 +229,4 @@ class CortexObject(object):
         if verbose:
             p_gf = p_attr.Get()
             q_gf = q_attr.Get()
-            print("[{}] p: {}, p_gf: {} -- q: {}, q_gf: {}".format(self.name, p, p_gf, q, q_gf))
+            print(f"[{self.name}] p: {p}, p_gf: {p_gf} -- q: {q}, q_gf: {q_gf}")

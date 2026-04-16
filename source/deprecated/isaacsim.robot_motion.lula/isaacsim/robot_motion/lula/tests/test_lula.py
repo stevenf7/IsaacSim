@@ -26,14 +26,14 @@ class TestLula(omni.kit.test.AsyncTestCase):
     """Test basic Lula kinematics library functionality."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up after each test."""
 
-    async def test_lula(self):
+    async def test_lula(self) -> None:
         """Test that Lula can be imported and a world can be created."""
         import lula
 

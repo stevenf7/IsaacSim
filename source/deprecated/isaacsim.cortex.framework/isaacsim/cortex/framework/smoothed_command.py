@@ -21,6 +21,8 @@ first. This allows motion policies whose evolution is smooth w.r.t. state to be 
 discontinuities in commands.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import Optional
 
@@ -110,7 +112,7 @@ class SmoothedCommand:
         interpolation_alpha: Optional[float] = 0.95,
         use_distance_based_smoothing_regulation: Optional[float] = True,
         min_alpha: Optional[float] = 0.5,
-    ):
+    ) -> None:
         self.x = None
         self.R = None
         self.q = None

@@ -15,13 +15,14 @@
 
 """Utility functions for pose transformations and conversions between coordinate frames in Lula motion generation."""
 
+from __future__ import annotations
 
 import lula
 from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices
 
 
-def get_prim_pose_in_meters(prim: SingleXFormPrim, meters_per_unit: float):
+def get_prim_pose_in_meters(prim: SingleXFormPrim, meters_per_unit: float) -> tuple:
     """Get prim pose converted to meters.
 
     Args:
@@ -37,7 +38,9 @@ def get_prim_pose_in_meters(prim: SingleXFormPrim, meters_per_unit: float):
     return pos, rot
 
 
-def get_prim_pose_in_meters_rel_robot_base(prim: object, meters_per_unit: float, robot_pos: object, robot_rot: object):
+def get_prim_pose_in_meters_rel_robot_base(
+    prim: object, meters_per_unit: float, robot_pos: object, robot_rot: object
+) -> tuple:
     """Get prim pose in meters relative to robot base coordinate frame.
 
     Args:
@@ -54,7 +57,7 @@ def get_prim_pose_in_meters_rel_robot_base(prim: object, meters_per_unit: float,
     return get_pose_rel_robot_base(trans, rot, robot_pos, robot_rot)
 
 
-def get_pose_rel_robot_base(trans: object, rot: object, robot_pos: object, robot_rot: object):
+def get_pose_rel_robot_base(trans: object, rot: object, robot_pos: object, robot_rot: object) -> tuple:
     """Get pose relative to robot base coordinate frame.
 
     Args:

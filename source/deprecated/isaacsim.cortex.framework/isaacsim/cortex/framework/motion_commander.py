@@ -29,8 +29,10 @@ commander makes the information a core part of the command so users don't have t
 way points.
 """
 
+from __future__ import annotations
+
 import copy
-from typing import Optional, Tuple, Union
+from typing import Optional
 
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
@@ -46,7 +48,7 @@ from isaacsim.robot_motion.motion_generation.motion_policy_interface import Moti
 # CortexObject wrapped variant. All of these objects derive from SingleGeometryPrim, although the
 # specifics of the supportant variants are policy specific. See the specific motion policy's
 # obstacle support in isaacsim.robot_motion.motion_generation for details of which objects are supported.
-CortexObstacleType = Union[CortexObject, SingleGeometryPrim]
+CortexObstacleType = CortexObject | SingleGeometryPrim
 
 
 class ApproachParams(object):
@@ -75,13 +77,13 @@ class ApproachParams(object):
             direction.
     """
 
-    def __init__(self, direction: np.ndarray, std_dev: float):
+    def __init__(self, direction: np.ndarray, std_dev: float) -> None:
         self.direction = direction
         self.std_dev = std_dev
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation of the approach parameters."""
-        return "{direction: %s, std_dev %s}" % (str(self.approach), str(self.std_dev))
+        return f"{{direction: {self.approach!s}, std_dev {self.std_dev!s}}}"
 
 
 class PosePq:
@@ -92,11 +94,11 @@ class PosePq:
         q: The pose orientation as a quaternion.
     """
 
-    def __init__(self, p: np.ndarray, q: np.ndarray):
+    def __init__(self, p: np.ndarray, q: np.ndarray) -> None:
         self.p = p
         self.q = q
 
-    def as_tuple(self) -> Tuple[np.ndarray, np.ndarray]:
+    def as_tuple(self) -> tuple[np.ndarray, np.ndarray]:
         """Returns the pose as a (p,q) tuple.
 
         Returns:
@@ -104,7 +106,7 @@ class PosePq:
         """
         return self.p, self.q
 
-    def to_T(self) -> np.ndarray:
+    def to_T(self) -> np.ndarray:  # noqa: N802
         """Returns the pose as a homogeneous transform matrix T.
 
         Returns:
@@ -146,7 +148,7 @@ class MotionCommand:
         target_position: Optional[np.ndarray] = None,
         approach_params: Optional[np.ndarray] = None,
         posture_config: Optional[np.ndarray] = None,
-    ):
+    ) -> None:
         if target_pose is not None:
             if target_position is not None:
                 raise TypeError("Cannot specify both a full pose and a position only command.")
@@ -215,7 +217,7 @@ class MotionCommandAdapter(TargetAdapter):
         command: The motion command being adapted.
     """
 
-    def __init__(self, command: MotionCommand):
+    def __init__(self, command: MotionCommand) -> None:
         self.command = command
 
     def get_position(self) -> np.ndarray:
@@ -270,7 +272,7 @@ class MotionCommander(Commander):
 
     def __init__(
         self, amp: ArticulationMotionPolicy, target_prim: SingleXFormPrim, use_smoothed_commands: Optional[bool] = True
-    ):
+    ) -> None:
         super().__init__(amp._active_joints_view)
 
         self.robot = amp.get_robot_articulation()
@@ -342,7 +344,7 @@ class MotionCommander(Commander):
         self.target_prim = CortexObject(target_prim)  # Target prim will be in units of meters.
         self._reset_target_print_to_eff = True
 
-    def get_end_effector_pose(self, config: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
+    def get_end_effector_pose(self, config: Optional[np.ndarray] = None) -> tuple[np.ndarray, np.ndarray]:
         """Returns the end-effector pose as a pair (p, R), where p is the position and R is the.
 
         rotation matrix.
@@ -374,7 +376,7 @@ class MotionCommander(Commander):
         p = math_util.to_meters(p)
         return p, R
 
-    def get_fk_T(self, config: Optional[np.ndarray] = None) -> np.ndarray:
+    def get_fk_T(self, config: Optional[np.ndarray] = None) -> np.ndarray:  # noqa: N802
         """Returns the end-effector transform as a 4x4 homogeneous matrix T.
 
         Calls get_end_effector_pose() internally; see that method's docstring for details.
@@ -388,7 +390,7 @@ class MotionCommander(Commander):
         p, R = self.get_end_effector_pose(config)
         return math_util.pack_Rp(R, p)
 
-    def get_fk_pq(self, config: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
+    def get_fk_pq(self, config: Optional[np.ndarray] = None) -> tuple[np.ndarray, np.ndarray]:
         """Returns the end-effector transform as a (<position>,<quaternion>) pair.
 
         Calls get_end_effector_pose(config) internally; see that method's docstring for details.
@@ -418,7 +420,7 @@ class MotionCommander(Commander):
         p, _ = self.get_end_effector_pose(config)
         return p
 
-    def get_fk_R(self, config: Optional[np.ndarray] = None) -> np.ndarray:
+    def get_fk_R(self, config: Optional[np.ndarray] = None) -> np.ndarray:  # noqa: N802
         """Returns the rotational portion of the end-effector pose as a rotation matrix.
 
         Calls get_end_effector_pose(config) internally; see that method's docstring for details.
@@ -501,7 +503,7 @@ class MotionCommander(Commander):
 
         success = self.motion_policy.add_obstacle(obs_add)
         if not success:
-            print("<failed to add obs: {}>".format(obs.name))
+            print(f"<failed to add obs: {obs.name}>")
             return
 
         self.obstacles[obs.name] = obs

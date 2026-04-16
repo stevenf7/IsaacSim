@@ -42,7 +42,7 @@ def load_behavior_module(behavior_filepath: str, module_name: str = "behavior") 
     module = SourceFileLoader(module_name, behavior_filepath).load_module()
 
     if not hasattr(module, "make_decider_network"):
-        raise RuntimeError("Module at path {} does not have a make_decider_network() method.".format(behavior_filepath))
+        raise RuntimeError(f"Module at path {behavior_filepath} does not have a make_decider_network() method.")
 
     return module
 
