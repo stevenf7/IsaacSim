@@ -431,6 +431,7 @@ def _check_dependencies(
 
     missing_dependencies = False
     defined_dependencies = defaultdict(list)
+    extra_index_urls = defaultdict(set)
     defined_platforms = ["all", *platforms]
     for item in defined_platforms:
         defined_dependencies[item].extend([])
@@ -511,6 +512,11 @@ def _check_dependencies(
                     continue
                 # get depedencies according to target platforms
                 target_platforms = _get_platforms_from_target(dependency.get("platforms", []), platforms, path)
+                dep_extra_args = dependency.get("extra_args", [])
+                for i, arg in enumerate(dep_extra_args):
+                    if arg == "--extra-index-url" and i + 1 < len(dep_extra_args):
+                        for target_platform in target_platforms:
+                            extra_index_urls[target_platform].add(dep_extra_args[i + 1])
                 for target_platform in target_platforms:
                     for package in dependency.get("packages", []):
                         if not _should_exclude_dependency(package):
@@ -548,6 +554,9 @@ def _check_dependencies(
     if export_requirements:
         for platform in platforms:
             with open(f"python-package-requirements-{platform}.txt", "w") as file:
+                urls = sorted(extra_index_urls.get("all", set()) | extra_index_urls.get(platform, set()))
+                for url in urls:
+                    file.write(f"--extra-index-url {url}\n")
                 file.write("# common dependencies\n")
                 file.write("\n".join(defined_dependencies["all"]))
                 file.write("\n# platform-specific dependencies\n")

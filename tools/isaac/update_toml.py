@@ -42,76 +42,94 @@ def parse_requirements(requirements_file):
     return package_versions, cuda_version_map
 
 
+def strip_local_version(version):
+    """Strip the local version segment (everything after '+') from a version string."""
+    return version.split("+")[0]
+
+
+def format_version(new_version, old_version):
+    """Format new_version to match the style of old_version.
+
+    If old_version has no local segment (no '+'), strip local segment from new_version.
+    """
+    if "+" not in old_version and "+" in new_version:
+        return strip_local_version(new_version)
+    return new_version
+
+
 def update_toml_file(toml_file, package_versions, cuda_version_map):
     """Update the versions in the TOML file while preserving structure and comments."""
     with open(toml_file, "r") as f:
         lines = f.readlines()
 
-    # Keep track of updated packages
     updated_packages = defaultdict(list)
-    in_dependency_section = False
-    in_packages_block = False
+    in_array_block = False
     modified_lines = []
-    debug_packages = []  # For debugging
+    debug_packages = []
 
     for line in lines:
-        # Check if we're entering a new dependency section
-        if "[[dependency]]" in line:
-            in_dependency_section = True
-            in_packages_block = False
+        stripped = line.strip()
+
+        # Detect start of a TOML array block (e.g. "packages = [" or "pyproject.dependencies.linux-x86_64 = [")
+        if not in_array_block and "= [" in line and not stripped.startswith("#"):
+            in_array_block = True
             modified_lines.append(line)
+            # Check if the array is single-line (opens and closes on same line)
+            if stripped.endswith("]"):
+                in_array_block = False
             continue
 
-        # Check if we're in a packages block inside a dependency section
-        if in_dependency_section and "packages = [" in line:
-            in_packages_block = True
-            modified_lines.append(line)
-            continue
-
-        # Check if we're at the end of a packages block
-        if in_packages_block and "]" in line and not line.strip().startswith("#"):
-            in_packages_block = False
-            modified_lines.append(line)
-            continue
-
-        # Process lines in a packages block
-        if in_packages_block:
-            # Skip comment lines or empty lines
-            if line.strip().startswith("#") or not line.strip():
+        # Detect end of array block
+        if in_array_block and "]" in line and not stripped.startswith("#"):
+            bracket_content = stripped.lstrip()
+            if bracket_content.startswith("]"):
+                in_array_block = False
                 modified_lines.append(line)
                 continue
 
-            # Add line to debug output for troubleshooting
-            debug_packages.append(line.strip())
+        if in_array_block:
+            if stripped.startswith("#") or not stripped:
+                modified_lines.append(line)
+                continue
 
-            # Check if this line contains a package definition
+            debug_packages.append(stripped)
+
             match = re.search(r'"([^=<>]+)(?:==|>=|<=|>|<)([^=<>]+)"', line)
 
             if match:
                 pkg_name, old_version = match.groups()
                 pkg_name = pkg_name.strip().lower()
+                base_pkg_name = strip_local_version(pkg_name) if "+" in pkg_name else pkg_name
 
-                # Check for direct version match
                 found_match = False
+
+                # Direct version match (exact package name in pip freeze)
                 if pkg_name in package_versions:
-                    new_version = package_versions[pkg_name]
+                    new_version = format_version(package_versions[pkg_name], old_version)
                     updated_line = update_package_line(line, pkg_name, old_version, new_version)
                     modified_lines.append(updated_line)
                     updated_packages[pkg_name].append((old_version, new_version))
                     found_match = True
 
-                # Special handling for NVIDIA packages with different CUDA versions
+                # Match by base name without local version (e.g. "torch" matches "torch==2.11.0+cu130")
+                elif base_pkg_name != pkg_name and base_pkg_name in package_versions:
+                    new_version = format_version(package_versions[base_pkg_name], old_version)
+                    updated_line = update_package_line(line, pkg_name, old_version, new_version)
+                    modified_lines.append(updated_line)
+                    updated_packages[base_pkg_name].append((old_version, new_version))
+                    found_match = True
+
+                # NVIDIA packages with different CUDA versions (e.g. -cu12 -> -cu13)
                 elif pkg_name.startswith("nvidia-") and "-cu" in pkg_name:
                     base_pkg, old_cuda_ver = pkg_name.rsplit("-cu", 1)
                     old_cuda_ver = "cu" + old_cuda_ver
 
-                    # Check if we have the base package with a different CUDA version
                     if base_pkg in cuda_version_map:
                         new_cuda_ver = cuda_version_map[base_pkg]
                         new_pkg_name = f"{base_pkg}-{new_cuda_ver}"
 
                         if new_pkg_name in package_versions:
-                            new_version = package_versions[new_pkg_name]
+                            new_version = format_version(package_versions[new_pkg_name], old_version)
                             updated_line = update_package_line(line, pkg_name, old_version, new_version, new_pkg_name)
                             modified_lines.append(updated_line)
                             updated_packages[new_pkg_name].append(
@@ -126,16 +144,9 @@ def update_toml_file(toml_file, package_versions, cuda_version_map):
         else:
             modified_lines.append(line)
 
-            # Reset dependency section flag if we're at a blank line after a dependency section
-            if in_dependency_section and not line.strip() and not in_packages_block:
-                # This is a heuristic - a blank line might indicate end of a section
-                in_dependency_section = False
-
-    # Write the modified content back to the file
     with open(toml_file, "w") as f:
         f.writelines(modified_lines)
 
-    # Print a summary of the changes
     print("\nPackage version updates:")
     if updated_packages:
         for pkg, versions in updated_packages.items():
@@ -144,7 +155,6 @@ def update_toml_file(toml_file, package_versions, cuda_version_map):
     else:
         print("  No packages were updated.")
 
-    # Debug output
     print("\nDebug: Packages in TOML file:")
     for pkg in debug_packages:
         print(f"  {pkg}")
