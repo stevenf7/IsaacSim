@@ -1,5 +1,15 @@
 # Changelog
 
+## [6.0.0] - 2026-04-15
+### Changed
+- Migrated `rangeSensorSchema` and `isaacSensorSchema` from pre-built C++ typed schema libraries (`omni-isaacsim-schema` packman package) to codeless USD schemas
+- Removed `omni-isaacsim-schema` packman dependency and associated native library entries
+- All C++ consumers now use generic `prim.GetAttribute(token)` and `prim.GetTypeName()` instead of typed schema classes
+- Added `sensor_tokens.h` header providing token constants for all sensor schema attributes and type names
+- Added Python compatibility wrappers (`omni.isaac.RangeSensorSchema`, `omni.isaac.IsaacSensorSchema`) so existing Python consumers work without changes
+- Removed ultrasonic sensor schemas (UltrasonicArray, UltrasonicEmitter, UltrasonicFiringGroup, UltrasonicMaterialAPI) — no code references existed
+- Added schema validation tests for both sensor schema and range sensor schema plugin registration
+
 ## [5.1.3] - 2026-04-02
 ### Changed
 - Replace `carb.log_*` with Python `logging` module

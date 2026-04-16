@@ -18,7 +18,7 @@
 #include "isaacsim/core/includes/Component.h"
 #include "isaacsim/core/includes/UsdUtilities.h"
 
-#include <isaacSensorSchema/isaacBaseSensor.h>
+#include <isaacsim/robot/schema/sensor_tokens.h>
 
 #include <string>
 #include <vector>
@@ -114,8 +114,9 @@ public:
      */
     virtual void onComponentChange()
     {
+        using namespace isaacsim::robot::schema::sensors;
         // base sensor on component change
-        isaacsim::core::includes::safeGetAttribute(this->m_prim.GetEnabledAttr(), this->m_enabled);
+        isaacsim::core::includes::safeGetAttribute(this->m_prim.GetAttribute(kEnabledAttr), this->m_enabled);
     }
 
     /**
@@ -176,7 +177,7 @@ protected:
  * @details Defines a commonly used specialization of IsaacSensorComponentBase using
  *          the IsaacBaseSensor prim type for basic sensor functionality.
  */
-using IsaacBaseSensorComponent = IsaacSensorComponentBase<pxr::IsaacSensorIsaacBaseSensor>;
+using IsaacBaseSensorComponent = IsaacSensorComponentBase<pxr::UsdPrim>;
 
 }
 }

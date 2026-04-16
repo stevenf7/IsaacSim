@@ -18,7 +18,6 @@
 #include <carb/Framework.h>
 #include <carb/logging/Log.h>
 
-#include <isaacSensorSchema/isaacContactSensor.h>
 #include <isaacsim/core/includes/PrimManager.h>
 #include <isaacsim/sensors/physics/ContactManager.h>
 #include <isaacsim/sensors/physics/ContactSensor.h>
@@ -123,11 +122,12 @@ public:
      */
     void onComponentAdd(const pxr::UsdPrim& prim)
     {
+        using namespace isaacsim::robot::schema::sensors;
         std::unique_ptr<IsaacBaseSensorComponent> component;
-        if (prim.IsA<pxr::IsaacSensorIsaacContactSensor>())
+        if (prim.GetTypeName() == kIsaacContactSensorType)
         {
             component = std::make_unique<ContactSensor>(m_physXInterface, m_contactManager.get());
-            component->initialize(pxr::IsaacSensorIsaacBaseSensor(prim), m_stage);
+            component->initialize(prim, m_stage);
 
             ContactSensor* contactSensor = dynamic_cast<ContactSensor*>(component.get());
             bool validParentFound = contactSensor->findValidParent();
@@ -138,10 +138,10 @@ public:
                 return;
             }
         }
-        else if (prim.IsA<pxr::IsaacSensorIsaacImuSensor>())
+        else if (prim.GetTypeName() == kIsaacImuSensorType)
         {
             component = std::make_unique<ImuSensor>();
-            component->initialize(pxr::IsaacSensorIsaacBaseSensor(prim), m_stage);
+            component->initialize(prim, m_stage);
 
             ImuSensor* imuSensor = dynamic_cast<ImuSensor*>(component.get());
             bool validParentFound = imuSensor->findValidParent();
@@ -168,7 +168,7 @@ public:
      */
     virtual std::vector<std::string> getComponentIsAVector() const
     {
-        return { "IsaacSensorIsaacContactSensor", "IsaacSensorIsaacImuSensor" };
+        return { "IsaacContactSensor", "IsaacImuSensor" };
     }
 
     /**

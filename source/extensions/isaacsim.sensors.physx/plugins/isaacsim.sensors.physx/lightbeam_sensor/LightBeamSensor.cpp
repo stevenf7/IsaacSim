@@ -73,14 +73,12 @@ void LightBeamSensor::onComponentChange()
 {
     RangeSensorComponent::onComponentChange();
 
-    const pxr::IsaacSensorIsaacLightBeamSensor& typedPrim = pxr::IsaacSensorIsaacLightBeamSensor(m_prim);
-
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetCurtainLengthAttr(), m_curtainLength);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetNumRaysAttr(), m_numRays);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetCurtainAxisAttr(), m_curtainAxis);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetForwardAxisAttr(), m_forwardAxis);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetMinRangeAttr(), m_minRange);
-    isaacsim::core::includes::safeGetAttribute(typedPrim.GetMaxRangeAttr(), m_maxRange);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kCurtainLengthAttr), m_curtainLength);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kNumRaysAttr), m_numRays);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kCurtainAxisAttr), m_curtainAxis);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kForwardAxisAttr), m_forwardAxis);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kMinRangeAttr), m_minRange);
+    isaacsim::core::includes::safeGetAttribute(m_prim.GetAttribute(kMaxRangeAttr), m_maxRange);
 
     m_metersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->m_stage));
     m_minRange = pxr::GfClamp(m_minRange, 0, 1e9f);

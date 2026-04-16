@@ -20,12 +20,13 @@
 #include "isaacsim/core/includes/UsdUtilities.h"
 
 #include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/robot/schema/sensor_tokens.h>
 #include <isaacsim/sensors/physx/IPhysxSensorInterface.h>
 #include <omni/fabric/FabricUSD.h>
-#include <rangeSensorSchema/lidar.h>
-#include <rangeSensorSchema/rangeSensor.h>
 
 #include <OgnIsaacReadLidarBeamsDatabase.h>
+
+using namespace isaacsim::robot::schema::sensors;
 
 namespace isaacsim
 {
@@ -85,14 +86,13 @@ public:
 
             // Verify we have a valid lidar prim
             pxr::UsdPrim targetPrim = stage->GetPrimAtPath(pxr::SdfPath(primPath));
-            if (!targetPrim.IsA<pxr::RangeSensorLidar>())
+            if (targetPrim.GetTypeName() != kLidarType)
             {
                 db.logError("Prim is not a Lidar Prim");
                 return false;
             }
 
-            state.m_lidarPrim = pxr::RangeSensorLidar(targetPrim);
-            state.m_rangeSensorPrim = pxr::RangeSensorRangeSensor(targetPrim);
+            state.m_sensorPrim = targetPrim;
 
             if (!state.m_lidarSensorInterface->isLidarSensor(primPath))
             {
@@ -146,13 +146,15 @@ public:
         auto& verticalFov = db.outputs.verticalFov();
         auto& verticalResolution = db.outputs.verticalResolution();
 
-        isaacsim::core::includes::safeGetAttribute(m_lidarPrim.GetHorizontalFovAttr(), horizontalFov);
-        isaacsim::core::includes::safeGetAttribute(m_lidarPrim.GetHorizontalResolutionAttr(), horizontalResolution);
-        isaacsim::core::includes::safeGetAttribute(m_rangeSensorPrim.GetMinRangeAttr(), depthRange[0]);
-        isaacsim::core::includes::safeGetAttribute(m_rangeSensorPrim.GetMaxRangeAttr(), depthRange[1]);
-        isaacsim::core::includes::safeGetAttribute(m_lidarPrim.GetRotationRateAttr(), rotationRate);
-        isaacsim::core::includes::safeGetAttribute(m_lidarPrim.GetVerticalFovAttr(), verticalFov);
-        isaacsim::core::includes::safeGetAttribute(m_lidarPrim.GetVerticalResolutionAttr(), verticalResolution);
+        isaacsim::core::includes::safeGetAttribute(m_sensorPrim.GetAttribute(kHorizontalFovAttr), horizontalFov);
+        isaacsim::core::includes::safeGetAttribute(
+            m_sensorPrim.GetAttribute(kHorizontalResolutionAttr), horizontalResolution);
+        isaacsim::core::includes::safeGetAttribute(m_sensorPrim.GetAttribute(kMinRangeAttr), depthRange[0]);
+        isaacsim::core::includes::safeGetAttribute(m_sensorPrim.GetAttribute(kMaxRangeAttr), depthRange[1]);
+        isaacsim::core::includes::safeGetAttribute(m_sensorPrim.GetAttribute(kRotationRateAttr), rotationRate);
+        isaacsim::core::includes::safeGetAttribute(m_sensorPrim.GetAttribute(kVerticalFovAttr), verticalFov);
+        isaacsim::core::includes::safeGetAttribute(
+            m_sensorPrim.GetAttribute(kVerticalResolutionAttr), verticalResolution);
 
         size_t numBeamsTotal = numRows * numCols;
 
@@ -311,8 +313,7 @@ public:
 
 private:
     isaacsim::sensors::physx::LidarSensorInterface* m_lidarSensorInterface = nullptr;
-    pxr::RangeSensorLidar m_lidarPrim;
-    pxr::RangeSensorRangeSensor m_rangeSensorPrim;
+    pxr::UsdPrim m_sensorPrim;
 
     const char* m_lidarPrimPath = nullptr;
 

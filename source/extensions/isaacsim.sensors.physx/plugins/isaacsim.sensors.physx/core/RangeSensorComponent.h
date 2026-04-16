@@ -20,6 +20,7 @@
 
 #include <carb/tasking/ITasking.h>
 
+#include <isaacsim/robot/schema/sensor_tokens.h>
 #include <isaacsim/sensors/physx/IPhysxSensorInterface.h>
 #include <isaacsim/util/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/fabric/FabricUSD.h>
@@ -29,7 +30,6 @@
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/timeline/ITimeline.h>
 #include <pxr/usd/usdPhysics/scene.h>
-#include <rangeSensorSchema/rangeSensor.h>
 
 #include <PxActor.h>
 #if defined(_WIN32)
@@ -46,6 +46,8 @@ namespace sensors
 {
 namespace physx
 {
+
+using namespace isaacsim::robot::schema::sensors;
 
 /**
  * @class RangeSensorComponentBase
@@ -98,7 +100,6 @@ public:
     virtual void initialize(const PrimType& prim, pxr::UsdStageWeakPtr stage)
     {
         isaacsim::core::includes::ComponentBase<PrimType>::initialize(prim, stage);
-        this->m_rangeSensorPrim = pxr::RangeSensorRangeSensor(this->m_prim);
     }
 
     /**
@@ -179,11 +180,11 @@ public:
      */
     virtual void onComponentChange()
     {
-        isaacsim::core::includes::safeGetAttribute(this->m_rangeSensorPrim.GetEnabledAttr(), this->m_enabled);
-        isaacsim::core::includes::safeGetAttribute(this->m_rangeSensorPrim.GetMinRangeAttr(), m_minRange);
-        isaacsim::core::includes::safeGetAttribute(this->m_rangeSensorPrim.GetMaxRangeAttr(), m_maxRange);
-        isaacsim::core::includes::safeGetAttribute(this->m_rangeSensorPrim.GetDrawPointsAttr(), m_drawPoints);
-        isaacsim::core::includes::safeGetAttribute(this->m_rangeSensorPrim.GetDrawLinesAttr(), m_drawLines);
+        isaacsim::core::includes::safeGetAttribute(this->m_prim.GetAttribute(kEnabledAttr), this->m_enabled);
+        isaacsim::core::includes::safeGetAttribute(this->m_prim.GetAttribute(kMinRangeAttr), m_minRange);
+        isaacsim::core::includes::safeGetAttribute(this->m_prim.GetAttribute(kMaxRangeAttr), m_maxRange);
+        isaacsim::core::includes::safeGetAttribute(this->m_prim.GetAttribute(kDrawPointsAttr), m_drawPoints);
+        isaacsim::core::includes::safeGetAttribute(this->m_prim.GetAttribute(kDrawLinesAttr), m_drawLines);
 
         m_parentPrim = this->m_stage->GetPrimAtPath(this->m_prim.GetPath()).GetParent();
         m_metersPerUnit = static_cast<float>(UsdGeomGetStageMetersPerUnit(this->m_stage));
@@ -278,9 +279,6 @@ protected:
     /** @brief Helper for drawing debug points */
     std::shared_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> m_pointDrawing;
 
-    /** @brief Reference to the range sensor USD prim */
-    pxr::RangeSensorRangeSensor m_rangeSensorPrim;
-
     /** @brief Time code for the parent prim's current state */
     pxr::UsdTimeCode m_parentPrimTimeCode;
     /** @brief Flag indicating if the parent prim has time-sampled transforms */
@@ -292,9 +290,9 @@ protected:
 
 /**
  * @typedef RangeSensorComponent
- * @brief Convenience typedef for a range sensor component using the RangeSensorRangeSensor prim type
+ * @brief Convenience typedef for a range sensor component using the UsdPrim type
  */
-using RangeSensorComponent = RangeSensorComponentBase<pxr::RangeSensorRangeSensor>;
+using RangeSensorComponent = RangeSensorComponentBase<pxr::UsdPrim>;
 
 }
 }

@@ -27,11 +27,11 @@ add_ogn_dependencies(ogn)
 include_physx()
 includedirs {
     "%{root}/source/extensions/isaacsim.core.includes/include",
+    "%{root}/source/extensions/isaacsim.robot.schema/include",
     "%{root}/_build/target-deps/gsl/include",
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
     "%{root}/_build/target-deps/omni_physics/%{config}/include",
-    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/include",
     extsbuild_dir .. "/omni.syntheticdata/include",
     extsbuild_dir .. "/usdrt.scenegraph/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
@@ -42,15 +42,12 @@ includedirs {
 }
 libdirs {
     "%{root}/_build/target-deps/usd/%{cfg.buildcfg}/lib",
-    "%{root}/_build/target-deps/omni-isaacsim-schema/%{platform}/%{config}/lib",
     "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
     extsbuild_dir .. "/omni.usd.core/bin",
     isaac_sim_extra_extsbuild_dir .. "/isaacsim.util.debug_draw/bin",
 }
 
 links {
-    "isaacSensorSchema",
-    "rangeSensorSchema",
     "omni.usd",
     "isaacsim.util.debug_draw.primitive_drawing",
 }

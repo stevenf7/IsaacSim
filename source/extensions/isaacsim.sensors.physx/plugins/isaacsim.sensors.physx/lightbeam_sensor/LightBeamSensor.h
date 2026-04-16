@@ -18,7 +18,7 @@
 #include "../core/RangeSensorComponent.h"
 
 #include <extensions/PxSceneQueryExt.h>
-#include <isaacSensorSchema/isaacLightBeamSensor.h>
+#include <isaacsim/robot/schema/sensor_tokens.h>
 #include <isaacsim/sensors/physx/IPhysxSensorInterface.h>
 #include <omni/physx/IPhysx.h>
 #include <pxr/usd/usd/inherits.h>

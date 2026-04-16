@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.4] - 2026-04-15
+### Changed
+- Fix test failure after moving to codeless USD schemas
+
 ## [2.3.3] - 2026-04-09
 ### Removed
 - Remove the `omni.isaac.ml_archive` dependency

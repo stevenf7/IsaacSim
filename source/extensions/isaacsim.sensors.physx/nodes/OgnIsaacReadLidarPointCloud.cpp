@@ -20,12 +20,13 @@
 #include "isaacsim/core/includes/UsdUtilities.h"
 
 #include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/robot/schema/sensor_tokens.h>
 #include <isaacsim/sensors/physx/IPhysxSensorInterface.h>
 #include <omni/fabric/FabricUSD.h>
-#include <rangeSensorSchema/lidar.h>
-#include <rangeSensorSchema/rangeSensor.h>
 
 #include <OgnIsaacReadLidarPointCloudDatabase.h>
+
+using namespace isaacsim::robot::schema::sensors;
 
 namespace isaacsim
 {
@@ -86,13 +87,13 @@ public:
 
             // Verify we have a valid lidar prim
             pxr::UsdPrim targetPrim = stage->GetPrimAtPath(pxr::SdfPath(primPath));
-            if (!targetPrim.IsA<pxr::RangeSensorLidar>())
+            if (targetPrim.GetTypeName() != kLidarType)
             {
                 db.logError("Prim is not a Lidar Prim");
                 return false;
             }
 
-            state.m_rangeSensorPrim = pxr::RangeSensorRangeSensor(targetPrim);
+            state.m_sensorPrim = targetPrim;
 
             if (!state.m_lidarSensorInterface->isLidarSensor(primPath))
             {
@@ -114,7 +115,7 @@ public:
     {
         float maxRange = 100;
 
-        isaacsim::core::includes::safeGetAttribute(m_rangeSensorPrim.GetMaxRangeAttr(), maxRange);
+        isaacsim::core::includes::safeGetAttribute(m_sensorPrim.GetAttribute(kMaxRangeAttr), maxRange);
 
         carb::Float3* lidarData = m_lidarSensorInterface->getPointCloud(m_lidarPrimPath);
         // float* theta = m_lidarSensorInterface->getAzimuthData(m_lidarPrimPath);
@@ -235,8 +236,7 @@ public:
 
 private:
     isaacsim::sensors::physx::LidarSensorInterface* m_lidarSensorInterface = nullptr;
-    // pxr::RangeSensorLidar m_lidarPrim;
-    pxr::RangeSensorRangeSensor m_rangeSensorPrim;
+    pxr::UsdPrim m_sensorPrim;
 
     const char* m_lidarPrimPath = nullptr;
 

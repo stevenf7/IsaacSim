@@ -22,11 +22,11 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/settings/ISettings.h>
 
-#include <isaacSensorSchema/isaacImuSensor.h>
 #include <isaacsim/core/experimental/prims/IPrimDataReader.h>
 #include <isaacsim/core/experimental/prims/IPrimDataReaderManager.h>
 #include <isaacsim/core/includes/UsdUtilities.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
+#include <isaacsim/robot/schema/sensor_tokens.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/physics/simulation/IPhysicsSimulation.h>
 #include <omni/physics/simulation/IPhysicsStageUpdate.h>
@@ -215,14 +215,15 @@ public:
 
     void refreshEnabled(pxr::UsdStageRefPtr stage)
     {
+        using namespace isaacsim::robot::schema::sensors;
+
         pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(sensorPrimPath));
         if (!prim.IsValid())
         {
             return;
         }
 
-        pxr::IsaacSensorIsaacImuSensor typedPrim(prim);
-        pxr::UsdAttribute enabledAttr = typedPrim.GetEnabledAttr();
+        pxr::UsdAttribute enabledAttr = prim.GetAttribute(kEnabledAttr);
         if (enabledAttr.IsValid())
         {
             bool val = true;
@@ -235,14 +236,15 @@ public:
 
     void refreshConfig(pxr::UsdStageRefPtr stage, pxr::SdfPath& cachedScenePath)
     {
+        using namespace isaacsim::robot::schema::sensors;
+
         pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(sensorPrimPath));
         if (!prim.IsValid())
         {
             return;
         }
 
-        pxr::IsaacSensorIsaacImuSensor typedPrim(prim);
-        pxr::UsdAttribute enabledAttr = typedPrim.GetEnabledAttr();
+        pxr::UsdAttribute enabledAttr = prim.GetAttribute(kEnabledAttr);
         if (enabledAttr.IsValid())
         {
             bool val = true;
@@ -255,9 +257,9 @@ public:
         }
 
         int linearFilter = 1, angularFilter = 1, orientationFilter = 1;
-        isaacsim::core::includes::safeGetAttribute(typedPrim.GetLinearAccelerationFilterWidthAttr(), linearFilter);
-        isaacsim::core::includes::safeGetAttribute(typedPrim.GetAngularVelocityFilterWidthAttr(), angularFilter);
-        isaacsim::core::includes::safeGetAttribute(typedPrim.GetOrientationFilterWidthAttr(), orientationFilter);
+        isaacsim::core::includes::safeGetAttribute(prim.GetAttribute(kLinearAccelerationFilterWidthAttr), linearFilter);
+        isaacsim::core::includes::safeGetAttribute(prim.GetAttribute(kAngularVelocityFilterWidthAttr), angularFilter);
+        isaacsim::core::includes::safeGetAttribute(prim.GetAttribute(kOrientationFilterWidthAttr), orientationFilter);
 
         linearAccelerationFilterSize = std::max(linearFilter, 1);
         angularVelocityFilterSize = std::max(angularFilter, 1);

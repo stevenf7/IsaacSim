@@ -28,7 +28,7 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
-#include <isaacSensorSchema/isaacBaseSensor.h>
+#include <isaacsim/robot/schema/sensor_tokens.h>
 #include <isaacsim/util/debug_draw/PrimitiveDrawingHelper.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/usd/UsdContext.h>
@@ -205,24 +205,24 @@ public:
     {
         std::unique_ptr<RangeSensorComponent> component;
 
-        if (prim.IsA<pxr::RangeSensorLidar>())
+        if (prim.GetTypeName() == kLidarType)
         {
             component = std::make_unique<LidarSensor>(m_physxPtr);
         }
-        else if (prim.IsA<pxr::RangeSensorGeneric>())
+        else if (prim.GetTypeName() == kGenericType)
         {
             component = std::make_unique<GenericSensor>(m_physxPtr);
         }
-        else if (prim.IsA<pxr::IsaacSensorIsaacLightBeamSensor>())
+        else if (prim.GetTypeName() == kIsaacLightBeamSensorType)
         {
             component = std::make_unique<LightBeamSensor>(m_physxPtr);
         }
 
         if (component)
         {
-            component->initialize(pxr::RangeSensorRangeSensor(prim), m_stage);
+            component->initialize(prim, m_stage);
             CARB_LOG_INFO("Create: Range Sensor %s with type: %s", prim.GetPath().GetString().c_str(),
-                          component->getPrim().GetPrim().GetTypeName().GetString().c_str());
+                          component->getPrim().GetTypeName().GetString().c_str());
             m_components[prim.GetPath().GetString()] = std::move(component);
         }
     }
@@ -233,7 +233,7 @@ public:
      */
     virtual std::vector<std::string> getComponentIsAVector() const
     {
-        return { "RangeSensorLidar", "RangeSensorGeneric", "IsaacSensorIsaacLightBeamSensor" };
+        return { kLidarType.GetString(), kGenericType.GetString(), kIsaacLightBeamSensorType.GetString() };
     }
 
     /**

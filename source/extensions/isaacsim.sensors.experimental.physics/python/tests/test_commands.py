@@ -252,7 +252,7 @@ class TestSensorCommands(omni.kit.test.AsyncTestCase):
 
         # Verify prim type
         usd_prim = prim.GetPrim()
-        self.assertTrue(usd_prim.IsA(IsaacSensorSchema.IsaacImuSensor))
+        self.assertEqual(usd_prim.GetTypeName(), "IsaacImuSensor")
 
     async def test_imu_sensor_enabled_attribute(self):
         """Test that IMU sensor has enabled attribute set to True."""
