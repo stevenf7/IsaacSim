@@ -1,10 +1,15 @@
+# Changelog
+
+## [1.15.2] - 2026-04-15
+### Changed
+- Updated tests to check fixed sized array edge-cases for publisher and subscriber.
+
 ## [1.15.1] - 2026-04-08
 - Added `test_bbox.py` with ROS 2 bounding box publisher tests. Includes tight vs loose (i.e., occlusions included vs excluded), and "golden" csv files with ground truth bbox.
 
 ### Changed
 - Moved bounding-box tests out of `test_camera.py` into `test_bbox.py`
 
-# Changelog
 ## [1.15.0] - 2026-04-07
 ### Added
 - Add optional multitick support. When enabled, LaserScan and PointCloud2 messages built from GenericModelOutput annotator directly, and all sensor inputs (including RTX Lidar) are assumed to be full frames.

@@ -47,6 +47,7 @@ class TestRos2Publisher(ROS2TestCase):
         import builtin_interfaces.msg
         import geometry_msgs.msg
         import rclpy
+        import shape_msgs.msg
         import std_msgs.msg
         import tf2_msgs.msg
 
@@ -124,6 +125,13 @@ class TestRos2Publisher(ROS2TestCase):
             ("std_msgs.msg.UInt8", std_msgs.msg.UInt8(data=2**8 - 1)),
             ("std_msgs.msg.UInt8MultiArray", std_msgs.msg.UInt8MultiArray(layout=_layout, data=[0, 2**8 - 1])),
         ]
+        # - shape_msgs
+        messages += [
+            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[10, 20, 30])),
+            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[10])),
+            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[10, 20, 30, 40, 50])),
+            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[])),
+        ]
         # - tf2_msgs
         _transforms = [
             geometry_msgs.msg.TransformStamped(
@@ -167,8 +175,11 @@ class TestRos2Publisher(ROS2TestCase):
             og.Controller.attribute("inputs:messageName", ogn_node).set(message_name)
 
             # set values to be published
+            # - shape_msgs
+            if message_type == "shape_msgs.msg.MeshTriangle":
+                og.Controller.attribute("inputs:vertex_indices", ogn_node).set(list(message_value.vertex_indices))
             # - tf2_msgs
-            if message_type.startswith("tf2_msgs"):
+            elif message_type.startswith("tf2_msgs"):
                 og.Controller.attribute("inputs:transforms", ogn_node).set(
                     [
                         f'{{"header": {{"frame_id": "{t.header.frame_id}", "stamp": {{"sec": {t.header.stamp.sec}, "nanosec": {t.header.stamp.nanosec}}}}}, '
@@ -212,8 +223,12 @@ class TestRos2Publisher(ROS2TestCase):
             self.assertTrue(condition_met, f"Timed out waiting for message: {message_type}")
 
             # check node implementation
+            # - shape_msgs
+            if message_type == "shape_msgs.msg.MeshTriangle":
+                vertex_indices = [*message_value.vertex_indices + [0] * 3][:3]  # default is 0 if not set
+                np.testing.assert_array_equal(self._ros_message.vertex_indices, vertex_indices)
             # - tf2_msgs
-            if message_type.startswith("tf2_msgs"):
+            elif message_type.startswith("tf2_msgs"):
                 transforms = self._ros_message.transforms
 
                 self.assertEqual(len(message_value.transforms), len(transforms))
