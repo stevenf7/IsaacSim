@@ -94,8 +94,11 @@ class BinStackingContext(ObstacleMonitorContext):
         self.stacked_bins.clear()
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
+from typing import Optional
 
 from isaacsim.cortex.framework.df import DfLogicalState
 from isaacsim.cortex.framework.motion_commander import CortexObstacleType, MotionCommander
@@ -121,7 +124,9 @@ class ObstacleMonitor(ABC):
             set_motion_commander().
     """
 
-    def __init__(self, obstacles: Sequence[CortexObstacleType], motion_commander: Optional[MotionCommander] = None):
+    def __init__(
+        self, obstacles: Sequence[CortexObstacleType], motion_commander: Optional[MotionCommander] = None
+    ) -> None:
         self.obstacles = obstacles
         self.motion_commander = motion_commander
         self.is_obstacles_enabled = True
@@ -217,7 +222,7 @@ class ObstacleMonitorContext(DfLogicalState):
         motion_commander: The motion commander used to enable and disable obstacles.
     """
 
-    def __init__(self, motion_commander: MotionCommander):
+    def __init__(self, motion_commander: MotionCommander) -> None:
         super().__init__()
         self.motion_commander = motion_commander
         self.obstacle_monitors = []

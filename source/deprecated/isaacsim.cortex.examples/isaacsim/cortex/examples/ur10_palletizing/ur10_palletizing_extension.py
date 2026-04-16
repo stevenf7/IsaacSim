@@ -156,18 +156,18 @@ class BinStackingUI(BaseSampleUITemplate):
         if diagnostic.bin_name:
             self.selected_bin.set_value(str(diagnostic.bin_name))
             self.bin_base.set_value(str(diagnostic.bin_base.prim_path))
-            self.grasp_reached.set_value((diagnostic.grasp_reached))
-            self.is_attached.set_value((diagnostic.attached))
-            self.needs_flip.set_value((diagnostic.needs_flip))
+            self.grasp_reached.set_value(diagnostic.grasp_reached)
+            self.is_attached.set_value(diagnostic.attached)
+            self.needs_flip.set_value(diagnostic.needs_flip)
         else:
-            self.selected_bin.set_value(str("No Bin Selected"))
+            self.selected_bin.set_value("No Bin Selected")
             self.bin_base.set_value("")
             self.grasp_reached.set_value(False)
             self.is_attached.set_value(False)
             self.needs_flip.set_value(False)
 
-    def get_world(self):
-        """The Cortex World instance.
+    def get_world(self) -> CortexWorld:
+        """Get the Cortex World instance.
 
         Returns:
             The current CortexWorld singleton instance.

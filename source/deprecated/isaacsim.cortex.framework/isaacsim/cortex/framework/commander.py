@@ -20,8 +20,11 @@ methods used by the cortex framework behind the scenes for processing, resetting
 commanders.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from isaacsim.core.api.articulations import ArticulationSubset
 from isaacsim.core.utils.types import ArticulationAction
@@ -60,7 +63,7 @@ class Commander(ABC):
         articulation_subset: The subset of joints being controlled by this commander.
     """
 
-    def __init__(self, articulation_subset: ArticulationSubset):
+    def __init__(self, articulation_subset: ArticulationSubset) -> None:
         self.articulation_subset = articulation_subset
         self.latest_command = None
 

@@ -15,7 +15,9 @@
 
 """Cortex rigid prim wrapper providing access to RigidBodyAPI physics properties."""
 
-from typing import Sequence
+from __future__ import annotations
+
+from collections.abc import Sequence
 
 import numpy as np
 from isaacsim.core.prims import SingleXFormPrim
@@ -30,7 +32,7 @@ class CortexRigidPrim(SingleXFormPrim):
         **kwargs: Keyword arguments passed to SingleXFormPrim.
     """
 
-    def __init__(self, *args: object, **kwargs: object):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
         if not self.prim.HasAPI(UsdPhysics.RigidBodyAPI):
             raise RuntimeError("Prim does not have the UsdPhysics.RigidBodyAPI schema.")

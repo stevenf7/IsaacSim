@@ -15,6 +15,7 @@
 
 """Test scenarios for Lula motion planning and control algorithms."""
 
+from __future__ import annotations
 
 import numpy as np
 from isaacsim.core.api.objects.cone import VisualCone
@@ -60,7 +61,7 @@ class LulaTestScenarios:
     - Collision sphere visualization for RmpFlow debugging
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._target = None
         self._obstacles = []
 
@@ -101,7 +102,7 @@ class LulaTestScenarios:
         orientation = rot_matrices_to_quats(orientation)
         self._ee_frame_prim = self._create_frame_prim(position, orientation, "/Lula/end_effector")
 
-    def stop_visualize_ee_frame(self):
+    def stop_visualize_ee_frame(self) -> None:
         """Stops visualizing the end effector frame and cleans up associated resources."""
         if self._ee_frame_prim is not None:
             delete_prim(self._ee_frame_prim.prim_path)
@@ -125,7 +126,7 @@ class LulaTestScenarios:
             self.rmpflow.set_ignore_state_updates(False)
             self.rmpflow.stop_visualizing_collision_spheres()
 
-    def initialize_ik_solver(self, robot_description_path: str, urdf_path: str):
+    def initialize_ik_solver(self, robot_description_path: str, urdf_path: str) -> None:
         """Initializes the Lula inverse kinematics solver.
 
         Args:
@@ -134,7 +135,7 @@ class LulaTestScenarios:
         """
         self.lula_ik = LulaKinematicsSolver(robot_description_path, urdf_path)
 
-    def get_ik_frames(self):
+    def get_ik_frames(self) -> list:
         """Gets all available frame names from the inverse kinematics solver.
 
         Returns:
@@ -202,7 +203,7 @@ class LulaTestScenarios:
         art_traj = ArticulationTrajectory(articulation, trajectory, 1 / 60)
         self._controller = TrajectoryController("Trajectory Controller", art_traj)
 
-    def delete_waypoint(self):
+    def delete_waypoint(self) -> None:
         """Deletes the last waypoint from the custom trajectory scenario.
 
         Only removes waypoints if there are more than 2 remaining to maintain a valid trajectory.
@@ -212,7 +213,7 @@ class LulaTestScenarios:
             delete_prim(waypoint.prim_path)
             self._trajectory_targets = self._trajectory_targets[:-1]
 
-    def add_waypoint(self):
+    def add_waypoint(self) -> None:
         """Adds a new waypoint to the custom trajectory scenario.
 
         The new waypoint is positioned at the average location of existing waypoints.
@@ -227,7 +228,7 @@ class LulaTestScenarios:
             )
             self._trajectory_targets.append(waypoint)
 
-    def on_rmpflow_follow_target_obstacles(self, articulation: object, **rmp_config: object):
+    def on_rmpflow_follow_target_obstacles(self, articulation: object, **rmp_config: object) -> None:
         """Sets up RmpFlow scenario for target following with obstacle avoidance.
 
         Creates a motion policy controller using RmpFlow for the articulation to follow a target
@@ -254,7 +255,7 @@ class LulaTestScenarios:
         for obstacle in self._obstacles:
             self.rmpflow.add_obstacle(obstacle)
 
-    def on_rmpflow_follow_sinusoidal_target(self, articulation: object, **rmp_config: object):
+    def on_rmpflow_follow_sinusoidal_target(self, articulation: object, **rmp_config: object) -> None:
         """Sets up RmpFlow scenario for following a sinusoidal target trajectory.
 
         Creates a motion policy controller using RmpFlow for the articulation to follow a target
@@ -276,7 +277,7 @@ class LulaTestScenarios:
 
         self._create_target()
 
-    def get_rmpflow(self):
+    def get_rmpflow(self) -> RmpFlow | None:
         """The RmpFlow motion policy instance.
 
         Returns:
@@ -284,7 +285,7 @@ class LulaTestScenarios:
         """
         return self.rmpflow
 
-    def _create_target(self, position: object = None, orientation: object = None):
+    def _create_target(self, position: object = None, orientation: object = None) -> None:
         """Creates a red target cube for motion control scenarios.
 
         Args:
@@ -299,7 +300,7 @@ class LulaTestScenarios:
             "/World/Target", size=0.05, position=position, orientation=orientation, color=np.array([1.0, 0, 0])
         )
 
-    def _create_frame_prim(self, position: object, orientation: object, parent_prim_path: str):
+    def _create_frame_prim(self, position: object, orientation: object, parent_prim_path: str) -> SingleXFormPrim:
         """Creates a coordinate frame visualization with colored axes.
 
         The frame consists of X (red), Y (green), and Z (blue) axes represented by
@@ -373,7 +374,7 @@ class LulaTestScenarios:
 
         return frame_xform
 
-    def _create_wall(self, position: object = None, orientation: object = None):
+    def _create_wall(self, position: object = None, orientation: object = None) -> None:
         """Creates a blue wall obstacle and adds it to the obstacles list.
 
         Args:
@@ -397,7 +398,7 @@ class LulaTestScenarios:
         )
         self._obstacles.append(cube)
 
-    def set_use_orientation(self, use_orientation: bool):
+    def set_use_orientation(self, use_orientation: bool) -> None:
         """Sets whether orientation constraints are used in motion control.
 
         Args:
@@ -405,7 +406,7 @@ class LulaTestScenarios:
         """
         self.use_orientation = use_orientation
 
-    def full_reset(self):
+    def full_reset(self) -> None:
         """Performs a complete reset of all scenario data and Lula components.
 
         Clears the current scenario and resets the Lula IK solver, end effector visualization,
@@ -421,7 +422,7 @@ class LulaTestScenarios:
         self._ee_frame_prim = None
         self.art_ik = None
 
-    def scenario_reset(self):
+    def scenario_reset(self) -> None:
         """Resets the current scenario by clearing targets, obstacles, and trajectories.
 
         Deletes all scenario-specific prims from the stage and resets internal state,
@@ -446,7 +447,7 @@ class LulaTestScenarios:
         self.timestep = 0
         self.scenario_name = ""
 
-    def update_scenario(self, **scenario_params: object):
+    def update_scenario(self, **scenario_params: object) -> None:
         """Updates the current scenario based on its type and provided parameters.
 
         For "Sinusoidal Target" scenarios, moves the target in a sinusoidal pattern
@@ -478,7 +479,7 @@ class LulaTestScenarios:
             self._target.set_world_pose(target_position, target_orientation)
         self.timestep += 1
 
-    def get_next_action(self, **scenario_params: object):
+    def get_next_action(self, **scenario_params: object) -> ArticulationAction:
         """Computes the next articulation action for the current scenario.
 
         Updates the end effector visualization if active, advances the scenario state, and generates the

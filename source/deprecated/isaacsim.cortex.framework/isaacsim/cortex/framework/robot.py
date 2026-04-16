@@ -57,9 +57,12 @@ See Also:
 - standalone_examples/api/isaacsim.cortex.framework for complete examples.
 """
 
+from __future__ import annotations
+
 from abc import abstractmethod
 from collections import OrderedDict
-from typing import Dict, Optional, Sequence
+from collections.abc import Sequence
+from typing import Optional
 
 import isaacsim.robot_motion.motion_generation.interface_config_loader as icl
 import numpy as np
@@ -104,7 +107,7 @@ class CortexGripper(Commander):
         closed_width: The width the gripper is closed to on close().
     """
 
-    def __init__(self, articulation_subset: ArticulationSubset, opened_width: float, closed_width: float):
+    def __init__(self, articulation_subset: ArticulationSubset, opened_width: float, closed_width: float) -> None:
         super().__init__(articulation_subset)
 
         self.opened_width = opened_width
@@ -126,7 +129,7 @@ class CortexGripper(Commander):
                 treated as a move-to servo command.
         """
 
-        def __init__(self, width: float, speed: Optional[float] = None, force: Optional[float] = None):
+        def __init__(self, width: float, speed: Optional[float] = None, force: Optional[float] = None) -> None:
             self.width = width
             self.speed = speed
             self.force = force
@@ -291,7 +294,7 @@ class FrankaGripper(CortexGripper):
             by this parallel graipper.
     """
 
-    def __init__(self, articulation: SingleArticulation):
+    def __init__(self, articulation: SingleArticulation) -> None:
         super().__init__(
             articulation_subset=ArticulationSubset(articulation, ["panda_finger_joint1", "panda_finger_joint2"]),
             opened_width=0.08,
@@ -366,7 +369,7 @@ class CortexRobot(CommandableArticulation):
         prim_path: str,
         position: Optional[Sequence[float]] = None,
         orientation: Optional[Sequence[float]] = None,
-    ):
+    ) -> None:
         if position is None:
             position = np.zeros(3)
         super().__init__(name=name, prim_path=prim_path, translation=position, orientation=orientation)
@@ -426,7 +429,7 @@ class CortexRobot(CommandableArticulation):
         for _, commander in self.commanders.items():
             commander.post_reset()
 
-    def _reset_commanders_if_needed(self):
+    def _reset_commanders_if_needed(self) -> None:
         """Reset all commanders only if flagged."""
         if self.commanders_reset_needed:
             self.reset_commanders()
@@ -449,7 +452,7 @@ class DirectSubsetCommander(Commander):
             qd: Desired joint velocities.
         """
 
-        def __init__(self, q: Optional[np.ndarray], qd: Optional[np.ndarray] = None):
+        def __init__(self, q: Optional[np.ndarray], qd: Optional[np.ndarray] = None) -> None:
             self.q = q
             self.qd = qd
 
@@ -498,7 +501,7 @@ class MotionCommandedRobot(CortexRobot):
             active_commander: Optional[bool] = True,
             smoothed_rmpflow: Optional[bool] = True,
             smoothed_commands: Optional[bool] = True,
-        ):
+        ) -> None:
             self.active_commander = active_commander
             self.smoothed_rmpflow = smoothed_rmpflow
             self.smoothed_commands = smoothed_commands
@@ -511,7 +514,7 @@ class MotionCommandedRobot(CortexRobot):
         position: Optional[Sequence[float]] = None,
         orientation: Optional[Sequence[float]] = None,
         settings: Optional[Settings] = Settings(),
-    ):
+    ) -> None:
         super().__init__(name=name, prim_path=prim_path, position=position, orientation=orientation)
         self.settings = settings
 
@@ -561,7 +564,7 @@ class MotionCommandedRobot(CortexRobot):
         return q
 
     @property
-    def registered_obstacles(self) -> Dict[str, CortexObstacleType]:
+    def registered_obstacles(self) -> dict[str, CortexObstacleType]:
         """Convenience accessor for the dictionary of obstacles added to the motion commander.
 
         This is the collection of obstacles the robot will avoid. The dict is a mapping from
@@ -608,7 +611,7 @@ class CortexFranka(MotionCommandedRobot):
         position: Optional[Sequence[float]] = None,
         orientation: Optional[Sequence[float]] = None,
         use_motion_commander: bool = True,
-    ):
+    ) -> None:
         motion_policy_config = icl.load_supported_motion_policy_config("Franka", "RMPflowCortex")
         super().__init__(
             name=name,
@@ -640,8 +643,8 @@ class CortexFranka(MotionCommandedRobot):
         kds = np.array([300000.0, 300000.0, 300000.0, 300000.0, 90000.0, 90000.0, 90000.0, 1000.0, 1000.0])
         if verbose:
             print("setting franka gains:")
-            print("- kps: {}".format(kps))
-            print("- kds: {}".format(kds))
+            print(f"- kps: {kps}")
+            print(f"- kds: {kds}")
         self.get_articulation_controller().set_gains(kps, kds)
 
 
@@ -652,7 +655,7 @@ def add_franka_to_stage(
     position: Optional[Sequence[float]] = None,
     orientation: Optional[Sequence[float]] = None,
     use_motion_commander: bool = True,
-):
+) -> CortexFranka:
     """Adds a Franka to the stage at the specified prim_path, then wrap it as a CortexFranka object.
 
     Args:
@@ -699,7 +702,7 @@ class CortexUr10(MotionCommandedRobot):
         prim_path: str,
         position: Optional[Sequence[float]] = None,
         orientation: Optional[Sequence[float]] = None,
-    ):
+    ) -> None:
         motion_policy_config = icl.load_supported_motion_policy_config("UR10", "RMPflowCortex")
         super().__init__(
             name=name,
@@ -744,7 +747,7 @@ def add_ur10_to_stage(
     usd_path: Optional[str] = None,
     position: Optional[Sequence[float]] = None,
     orientation: Optional[Sequence[float]] = None,
-):
+) -> CortexUr10:
     """Adds a UR10 to the stage at the specified prim_path, then wrap it as a CortexUr10 object.
 
     Args:

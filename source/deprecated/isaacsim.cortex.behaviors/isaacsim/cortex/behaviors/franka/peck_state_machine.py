@@ -26,6 +26,10 @@ peck_decider_network.py, where the system constantly monitors the target and tri
 choose a new one if the target becomes blocked.
 """
 
+from __future__ import annotations
+
+from typing import Any
+
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
 from isaacsim.cortex.framework.df import DfNetwork, DfState, DfStateMachineDecider, DfStateSequence, DfTimedDeciderState
@@ -33,7 +37,7 @@ from isaacsim.cortex.framework.dfb import DfBasicContext, DfCloseGripper, DfLift
 from isaacsim.cortex.framework.motion_commander import ApproachParams, PosePq
 
 
-def sample_target_p():
+def sample_target_p() -> np.ndarray:
     """Sample a random target position on the ground plane."""
     min_x = 0.3
     max_x = 0.7
@@ -48,7 +52,7 @@ def sample_target_p():
     return pt
 
 
-def make_target_rotation(target_p):
+def make_target_rotation(target_p: np.ndarray) -> np.ndarray:
     """Compute a downward-facing rotation quaternion oriented toward the target."""
     return math_util.matrix_to_quat(
         math_util.make_rotation_matrix(az_dominant=np.array([0.0, 0.0, -1.0]), ax_suggestion=-target_p)
@@ -58,7 +62,7 @@ def make_target_rotation(target_p):
 class PeckState(DfState):
     """State that samples a target, sends the end-effector to peck, and waits for arrival."""
 
-    def is_near_obs(self, p):
+    def is_near_obs(self, p: np.ndarray) -> bool:
         """Check whether a point is within proximity of any registered obstacle."""
         for _, obs in self.context.robot.registered_obstacles.items():
             obs_p, _ = obs.get_world_pose()
@@ -66,14 +70,14 @@ class PeckState(DfState):
                 return True
         return False
 
-    def sample_target_p_away_from_obs(self):
+    def sample_target_p_away_from_obs(self) -> np.ndarray:
         """Sample a random target position that is not near any obstacle."""
         target_p = sample_target_p()
         while self.is_near_obs(target_p):
             target_p = sample_target_p()
         return target_p
 
-    def enter(self):
+    def enter(self) -> None:
         """Sample a target and send the end-effector toward it."""
         # On entry, sample a target.
         target_p = self.sample_target_p_away_from_obs()
@@ -82,7 +86,7 @@ class PeckState(DfState):
         approach_params = ApproachParams(direction=np.array([0.0, 0.0, -0.1]), std_dev=0.04)
         self.context.robot.arm.send_end_effector(self.target, approach_params=approach_params)
 
-    def step(self):
+    def step(self) -> Any:
         """Continue until the end-effector reaches the target."""
         target_dist = np.linalg.norm(self.context.robot.arm.get_fk_p() - self.target.p)
         if target_dist < 0.01:
@@ -90,7 +94,7 @@ class PeckState(DfState):
         return self  # Keep going
 
 
-def make_decider_network(robot):
+def make_decider_network(robot: Any) -> Any:
     """Create the peck state machine decider network for the given robot."""
     # Build a state machine decider from a sequencial state machine. The sequence will be
     #

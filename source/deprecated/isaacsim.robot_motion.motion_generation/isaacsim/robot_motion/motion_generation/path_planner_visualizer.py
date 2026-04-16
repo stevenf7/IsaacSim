@@ -18,8 +18,7 @@
 This class provides path interpolation functionality, which is useful for visualization and trajectory generation.
 """
 
-
-from typing import List
+from __future__ import annotations
 
 import carb
 import numpy as np
@@ -42,7 +41,7 @@ class PathPlannerVisualizer:
             represented by the robot Articulation.
     """
 
-    def __init__(self, robot_articulation: SingleArticulation, path_planner: PathPlanner):
+    def __init__(self, robot_articulation: SingleArticulation, path_planner: PathPlanner) -> None:
         self._robot_articulation = robot_articulation
 
         self._planner = path_planner
@@ -52,7 +51,7 @@ class PathPlannerVisualizer:
         self._active_joints_view = ArticulationSubset(robot_articulation, path_planner.get_active_joints())
         self._watched_joints_view = ArticulationSubset(robot_articulation, path_planner.get_watched_joints())
 
-    def compute_plan_as_articulation_actions(self, max_cspace_dist: float = 0.05) -> List[ArticulationAction]:
+    def compute_plan_as_articulation_actions(self, max_cspace_dist: float = 0.05) -> list[ArticulationAction]:
         """Compute plan using a PathPlanner and linearly interpolate the result to enforce that the maximum.
 
         distance (l2 norm) between any two points is max_cspace_dist.

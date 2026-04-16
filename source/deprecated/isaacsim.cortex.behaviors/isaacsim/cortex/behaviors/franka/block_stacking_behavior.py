@@ -15,8 +15,11 @@
 
 """Franka block stacking behavior using cortex decision framework."""
 
+from __future__ import annotations
+
 import time
 from collections import OrderedDict
+from typing import Any
 
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
@@ -31,7 +34,7 @@ from isaacsim.cortex.framework.dfb import (
 )
 
 
-def make_grasp_T(t, ay):
+def make_grasp_T(t: np.ndarray, ay: np.ndarray) -> np.ndarray:  # noqa: N802
     """Construct a 4x4 grasp transform from a translation and approach-y axis."""
     az = math_util.normalized(-t)
     ax = np.cross(ay, az)
@@ -45,7 +48,7 @@ def make_grasp_T(t, ay):
     return T
 
 
-def make_block_grasp_Ts(block_pick_height):
+def make_block_grasp_Ts(block_pick_height: float) -> list:  # noqa: N802
     """Generate all candidate grasp transforms for a block at the given pick height."""
     R = np.eye(3)
 
@@ -61,16 +64,16 @@ def make_block_grasp_Ts(block_pick_height):
     return Ts
 
 
-def get_world_block_grasp_Ts(
-    obj_T,
-    obj_grasp_Ts,
-    axis_x_filter=None,
-    axis_x_filter_thresh=0.1,
-    axis_y_filter=None,
-    axis_y_filter_thresh=0.1,
-    axis_z_filter=None,
-    axis_z_filter_thresh=0.1,
-):
+def get_world_block_grasp_Ts(  # noqa: N802
+    obj_T: np.ndarray,
+    obj_grasp_Ts: list,
+    axis_x_filter: np.ndarray | None = None,
+    axis_x_filter_thresh: float = 0.1,
+    axis_y_filter: np.ndarray | None = None,
+    axis_y_filter_thresh: float = 0.1,
+    axis_z_filter: np.ndarray | None = None,
+    axis_z_filter_thresh: float = 0.1,
+) -> list:
     """Transform object-local grasp transforms to world frame, filtering by axis alignment."""
     world_grasp_Ts = []
     for gT in obj_grasp_Ts:
@@ -95,11 +98,9 @@ def get_world_block_grasp_Ts(
 def get_best_obj_grasp(
     obj_T: np.ndarray, obj_grasp_Ts: list, eff_T: np.ndarray, other_obj_Ts: list
 ) -> np.ndarray | None:
-    """Uses a manually defined score-based classifier for choosing which grasp to use on a given.
+    """Use a score-based classifier to choose which grasp to use on a given block.
 
-    block.
-
-    It chooses a grasp that's simultaneoulsy natural for the arm and avoids any nearby blocks.
+    Choose a grasp that is simultaneously natural for the arm and avoids any nearby blocks.
 
     Args:
         obj_T: The block object being grasped.
@@ -149,7 +150,9 @@ def get_best_obj_grasp(
     return T
 
 
-def calc_grasp_for_block_T(context, block_T, desired_ax):
+def calc_grasp_for_block_T(
+    context: Any, block_T: np.ndarray, desired_ax: np.ndarray
+) -> np.ndarray | None:  # noqa: N802
     """Calculate the best grasp transform for a block given a desired x-axis direction."""
     ct = context
     candidate_Ts = get_world_block_grasp_Ts(block_T, ct.active_block.grasp_Ts, axis_z_filter=np.array([0.0, 0.0, -1.0]))
@@ -162,7 +165,7 @@ def calc_grasp_for_block_T(context, block_T, desired_ax):
     return grasp_T
 
 
-def calc_grasp_for_top_of_tower(context):
+def calc_grasp_for_top_of_tower(context: Any) -> np.ndarray | None:
     """Calculate the best grasp for placing a block on top of the tower."""
     # TODO: use calc_grasp_for_block_T for this calculation
     ct = context
@@ -197,7 +200,7 @@ class BuildTowerContext(DfRobotApiContext):
             grasp_Ts: List of candidate grasp transforms for the block.
         """
 
-        def __init__(self, i, obj, grasp_Ts):
+        def __init__(self, i: int, obj: Any, grasp_Ts: list) -> None:
             self.i = i
             self.obj = obj
             self.is_aligned = None
@@ -206,32 +209,32 @@ class BuildTowerContext(DfRobotApiContext):
             self.collision_avoidance_enabled = True
 
         @property
-        def has_chosen_grasp(self):
+        def has_chosen_grasp(self) -> bool:
             """Check whether a grasp has been chosen for this block."""
             return self.chosen_grasp is not None
 
         @property
-        def name(self):
+        def name(self) -> str:
             """Return the name of the block object."""
             return self.obj.name
 
-        def get_world_grasp_Ts(
+        def get_world_grasp_Ts(  # noqa: N802
             self,
-            axis_x_filter=None,
-            axis_x_filter_thresh=0.1,
-            axis_y_filter=None,
-            axis_y_filter_thresh=0.1,
-            axis_z_filter=None,
-            axis_z_filter_thresh=0.1,
-        ):
+            axis_x_filter: np.ndarray | None = None,
+            axis_x_filter_thresh: float = 0.1,
+            axis_y_filter: np.ndarray | None = None,
+            axis_y_filter_thresh: float = 0.1,
+            axis_z_filter: np.ndarray | None = None,
+            axis_z_filter_thresh: float = 0.1,
+        ) -> list:
             """Get grasp transforms in world coordinates with optional axis filtering."""
             return get_world_block_grasp_Ts(self.obj.get_transform(), self.grasp_Ts)
 
-        def get_best_grasp(self, eff_T, other_obj_Ts):
+        def get_best_grasp(self, eff_T: np.ndarray, other_obj_Ts: list) -> np.ndarray | None:
             """Select the best grasp considering end-effector pose and nearby objects."""
             return get_best_obj_grasp(self.obj.get_transform(), self.grasp_Ts, eff_T, other_obj_Ts)
 
-        def set_aligned(self):
+        def set_aligned(self) -> None:
             """Mark this block as aligned in the tower."""
             self.is_aligned = True
 
@@ -244,30 +247,30 @@ class BuildTowerContext(DfRobotApiContext):
             context: The parent build-tower context.
         """
 
-        def __init__(self, tower_position, block_height, context):
+        def __init__(self, tower_position: np.ndarray, block_height: float, context: Any) -> None:
             self.context = context
             order_preference = ["Blue", "Yellow", "Green", "Red"]
-            self.desired_stack = [("%sCube" % c) for c in order_preference]
+            self.desired_stack = [f"{c}Cube" for c in order_preference]
             self.tower_position = tower_position
             self.block_height = block_height
             self.stack = []
             self.prev_stack = None
 
         @property
-        def height(self):
+        def height(self) -> int:
             """Return the number of blocks in the tower."""
             return len(self.stack)
 
         @property
-        def top_block(self):
+        def top_block(self) -> Any | None:
             """Return the topmost block in the tower, or None if empty."""
             if self.height == 0:
                 return None
             return self.stack[-1]
 
         @property
-        def current_stack_in_correct_order(self):
-            """Returns true if the current tower is in the correct order. False otherwise."""
+        def current_stack_in_correct_order(self) -> bool:
+            """Return True if the current tower is in the correct order, False otherwise."""
             for pref_name, curr_block in zip(self.desired_stack, self.stack):
                 if curr_block.name != pref_name:
                     return False
@@ -275,7 +278,7 @@ class BuildTowerContext(DfRobotApiContext):
             return True
 
         @property
-        def is_complete(self):
+        def is_complete(self) -> bool:
             """Check whether the tower is fully built in the correct order."""
             # TODO: This doesn't account for desired vs actual ordering currently.
             if self.height != len(self.desired_stack):
@@ -283,15 +286,15 @@ class BuildTowerContext(DfRobotApiContext):
 
             return self.current_stack_in_correct_order
 
-        def stash_stack(self):
+        def stash_stack(self) -> None:
             """Save the current stack and reset it."""
             self.prev_stack = self.stack
             self.stack = []
 
-        def find_new_and_removed(self):
+        def find_new_and_removed(self) -> tuple | list:
             """Find blocks that were added to or removed from the stack since last stash."""
             if self.prev_stack is None:
-                return [b for b in self.stack]
+                return list(self.stack)
 
             i = 0
             while i < len(self.stack) and i < len(self.prev_stack):
@@ -304,18 +307,18 @@ class BuildTowerContext(DfRobotApiContext):
             removed_blocks = self.prev_stack[i:]
             return new_blocks, removed_blocks
 
-        def set_top_block_to_aligned(self):
+        def set_top_block_to_aligned(self) -> None:
             """Mark the top block of the tower as aligned."""
             if len(self.stack) > 0:
                 self.stack[-1].is_aligned = True
 
         @property
-        def next_block(self):
-            """Returns the first name in the desired stack that's not in the current stack. This.
+        def next_block(self) -> Any | None:
+            """Return the first name in the desired stack that is not in the current stack.
 
-            models order preference, but not the strict requirement that the block stack be exactly
-            in that order. Use current_stack_in_correct_order to additionally check that the current
-            stack is in the correct order.
+            This models order preference, but not the strict requirement that the block stack
+            be exactly in that order. Use current_stack_in_correct_order to additionally check
+            that the current stack is in the correct order.
             """
             stack_names = [b.name for b in self.stack]
             for name in self.desired_stack:
@@ -323,7 +326,7 @@ class BuildTowerContext(DfRobotApiContext):
                     return self.context.blocks[name]
 
         @property
-        def next_block_placement_T(self):
+        def next_block_placement_T(self) -> np.ndarray:  # noqa: N802
             """Compute the transform for the next block placement on top of the tower."""
             h = self.height
             fractional_margin = 0.025
@@ -333,7 +336,7 @@ class BuildTowerContext(DfRobotApiContext):
             T = math_util.pack_Rp(R, p)
             return T
 
-    def __init__(self, robot, tower_position):
+    def __init__(self, robot: Any, tower_position: np.ndarray) -> None:
         super().__init__(robot)
         self.robot = robot
 
@@ -354,12 +357,12 @@ class BuildTowerContext(DfRobotApiContext):
             ]
         )
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the context state including blocks, tower, and diagnostics."""
         self.blocks = OrderedDict()
         print("loading blocks")
         for i, (name, cortex_obj) in enumerate(self.robot.registered_obstacles.items()):
-            print("{}) {}".format(i, name))
+            print(f"{i}) {name}")
 
             # This behavior might be run either with CortexObjects (e.g. when synchronizing with a
             # sim/real world via ROS) or standard core API objects. If it's the latter, add the
@@ -381,15 +384,15 @@ class BuildTowerContext(DfRobotApiContext):
         self.start_time = None
 
     @property
-    def has_active_block(self):
+    def has_active_block(self) -> bool:
         """Check whether there is an active block selected."""
         return self.active_block is not None
 
-    def activate_block(self, name):
+    def activate_block(self, name: str) -> None:
         """Set the named block as the active block."""
         self.active_block = self.blocks[name]
 
-    def reset_active_block(self):
+    def reset_active_block(self) -> None:
         """Clear the active block and its chosen grasp."""
         if self.active_block is None:
             return
@@ -398,17 +401,16 @@ class BuildTowerContext(DfRobotApiContext):
         self.active_block = None
 
     @property
-    def block_names(self):
+    def block_names(self) -> list:
         """Return a list of all block names."""
-        block_names = [name for name in self.blocks.keys()]
-        return block_names
+        return list(self.blocks.keys())
 
     @property
-    def num_blocks(self):
+    def num_blocks(self) -> int:
         """Return the total number of blocks."""
         return len(self.blocks)
 
-    def mark_block_in_gripper(self):
+    def mark_block_in_gripper(self) -> None:
         """Record the closest block to the end-effector as the one in the gripper."""
         eff_p = self.robot.arm.get_fk_p()
         blocks_with_dists = []
@@ -419,27 +421,27 @@ class BuildTowerContext(DfRobotApiContext):
         closest_block, _ = min(blocks_with_dists, key=lambda v: v[1])
         self.in_gripper = closest_block
 
-    def clear_gripper(self):
+    def clear_gripper(self) -> None:
         """Clear the record of a block being in the gripper."""
         self.in_gripper = None
 
     @property
-    def is_gripper_clear(self):
+    def is_gripper_clear(self) -> bool:
         """Check whether the gripper is empty."""
         return self.in_gripper is None
 
     @property
-    def gripper_has_block(self):
+    def gripper_has_block(self) -> bool:
         """Check whether the gripper is holding a block."""
         return not self.is_gripper_clear
 
     @property
-    def has_placement_target_eff_T(self):
+    def has_placement_target_eff_T(self) -> bool:  # noqa: N802
         """Check whether a placement target end-effector transform is set."""
         return self.placement_target_eff_T is not None
 
     @property
-    def next_block_name(self):
+    def next_block_name(self) -> str | None:
         """Return the name of the next block to place based on the desired order."""
         remaining_block_names = [b.name for b in self.find_not_in_tower()]
         if len(remaining_block_names) == 0:
@@ -449,38 +451,28 @@ class BuildTowerContext(DfRobotApiContext):
                 break
         return name
 
-    def find_not_in_tower(self):
+    def find_not_in_tower(self) -> list:
         """Return a list of blocks that are not currently in the tower."""
-        blocks = [block for (name, block) in self.blocks.items()]
+        blocks = list(self.blocks.values())
         for b in self.block_tower.stack:
             blocks[b.i] = None
 
         return [b for b in blocks if b is not None]
 
-    def print_tower_status(self):
+    def print_tower_status(self) -> str:
         """Format and return a string describing the current tower status."""
         in_tower = self.block_tower.stack
         out = "\nin tower:\n"
         for i, b in enumerate(in_tower):
-            out += "%d) %s, aligned: %s, suppressed: %s\n" % (
-                i,
-                b.name,
-                str(b.is_aligned),
-                str(not b.collision_avoidance_enabled),
-            )
+            out += f"{i}) {b.name}, aligned: {b.is_aligned!s}, suppressed: {not b.collision_avoidance_enabled!s}\n"
 
         not_in_tower = self.find_not_in_tower()
         out += "\nnot in tower:\n"
         for i, b in enumerate(not_in_tower):
-            out += "%d) %s, aligned: %s, suppressed: %s\n" % (
-                i,
-                b.name,
-                str(b.is_aligned),
-                str(not b.collision_avoidance_enabled),
-            )
+            out += f"{i}) {b.name}, aligned: {b.is_aligned!s}, suppressed: {not b.collision_avoidance_enabled!s}\n"
         return out + "\n"
 
-    def monitor_perception(self):
+    def monitor_perception(self) -> None:
         """Synchronize block belief poses with measured poses when drift is detected."""
         for _, block in self.blocks.items():
             obj = block.obj
@@ -501,7 +493,7 @@ class BuildTowerContext(DfRobotApiContext):
                 sync_performed = True
                 obj.sync_to_measured_pose()
 
-    def monitor_block_tower(self):
+    def monitor_block_tower(self) -> None:
         """Monitor the current state of the block tower.
 
         The block tower is determined as the collection of blocks at the tower location and their
@@ -538,7 +530,7 @@ class BuildTowerContext(DfRobotApiContext):
         for block in removed_blocks:
             block.is_aligned = None
 
-    def monitor_gripper_has_block(self):
+    def monitor_gripper_has_block(self) -> None:
         """Clear the gripper if the block in it has drifted too far from the end-effector."""
         if self.gripper_has_block:
             block = self.in_gripper
@@ -548,7 +540,7 @@ class BuildTowerContext(DfRobotApiContext):
                 self.diagnostics_message = "Block lost. Clearing gripper."
                 self.clear_gripper()
 
-    def monitor_suppression_requirements(self):
+    def monitor_suppression_requirements(self) -> None:
         """Enable or disable collision avoidance for blocks near the target."""
         arm = self.robot.arm
         eff_T = arm.get_fk_T()
@@ -602,7 +594,7 @@ class BuildTowerContext(DfRobotApiContext):
                     arm.enable_obstacle(block.obj)
                     block.collision_avoidance_enabled = True
 
-    def monitor_diagnostics(self):
+    def monitor_diagnostics(self) -> None:
         """Periodically update the diagnostics message with tower and block status."""
         now = time.time()
         if self.start_time is None:
@@ -611,7 +603,7 @@ class BuildTowerContext(DfRobotApiContext):
 
         if now >= self.next_print_time:
             # print("\n==========================================")
-            out = ("time since start: %f sec" % (now - self.start_time)) + "\n"
+            out = f"time since start: {now - self.start_time:f} sec\n"
             out += self.print_tower_status() + "\n"
             self.next_print_time += self.print_dt
 
@@ -629,12 +621,12 @@ class OpenGripperRd(DfRldsNode):
         dist_thresh_for_open: Distance threshold within which to open the gripper.
     """
 
-    def __init__(self, dist_thresh_for_open):
+    def __init__(self, dist_thresh_for_open: float) -> None:
         super().__init__()
         self.dist_thresh_for_open = dist_thresh_for_open
         self.add_child("open_gripper", DfOpenGripper())
 
-    def is_runnable(self):
+    def is_runnable(self) -> bool | None:
         """Check whether the gripper should be opened based on proximity to the grasp."""
         ct = self.context
         if self.context.is_gripper_clear and not self.context.robot.gripper.is_open():
@@ -646,7 +638,7 @@ class OpenGripperRd(DfRldsNode):
                 dist_to_target = np.linalg.norm(p1 - p2)
                 return dist_to_target < self.dist_thresh_for_open
 
-    def decide(self):
+    def decide(self) -> Any:
         """Decide to open the gripper."""
         return DfDecision("open_gripper")
 
@@ -654,20 +646,20 @@ class OpenGripperRd(DfRldsNode):
 class ReachToBlockRd(DfRldsNode):
     """RLDS node that dispatches to a linked child when the gripper is clear."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.child_name = None
 
-    def link_to(self, name, decider):
+    def link_to(self, name: str, decider: Any) -> None:
         """Link a named child decider to this node."""
         self.child_name = name
         self.add_child(name, decider)
 
-    def is_runnable(self):
+    def is_runnable(self) -> bool:
         """Check whether the gripper is clear."""
         return self.context.is_gripper_clear
 
-    def decide(self):
+    def decide(self) -> Any:
         """Decide to dispatch to the linked child."""
         return DfDecision(self.child_name)
 
@@ -675,15 +667,15 @@ class ReachToBlockRd(DfRldsNode):
 class GoHome(DfDecider):
     """Decider that sends the robot to its home position with the gripper closed."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.add_child("go_home", make_go_home())
 
-    def enter(self):
+    def enter(self) -> None:
         """Close the gripper on entry."""
         self.context.robot.gripper.close()
 
-    def decide(self):
+    def decide(self) -> Any:
         """Decide to go home."""
         return DfDecision("go_home")
 
@@ -691,18 +683,18 @@ class GoHome(DfDecider):
 class ChooseNextBlockForTowerBuildUp(DfDecider):
     """Choose the next block for building up the tower and compute its grasp."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # If conditions aren't good, we'll just go home.
         self.add_child("go_home", GoHome())
         self.child_name = None
 
-    def link_to(self, name, decider):
+    def link_to(self, name: str, decider: Any) -> None:
         """Link a named child decider to this node."""
         self.child_name = name
         self.add_child(name, decider)
 
-    def decide(self):
+    def decide(self) -> Any:
         """Select the next block and compute the best grasp, or go home if conditions are bad."""
         ct = self.context
         ct.active_block = ct.blocks[ct.next_block_name]
@@ -710,16 +702,16 @@ class ChooseNextBlockForTowerBuildUp(DfDecider):
         # Check exceptions
         block_p, _ = ct.active_block.obj.get_world_pose()
         if np.linalg.norm(block_p) < 0.25:
-            print("block too close to robot base: {}".format(ct.active_block.name))
+            print(f"block too close to robot base: {ct.active_block.name}")
             return DfDecision("go_home")
         elif np.linalg.norm(block_p) > 0.81:
-            print("block too far away: {}".format(ct.active_block.name))
+            print(f"block too far away: {ct.active_block.name}")
             return DfDecision("go_home")
         elif (
             self.context.block_tower.height >= 2
             and np.linalg.norm(block_p - self.context.block_tower.tower_position) < 0.15
         ):
-            print("block too close to tower: {}".format(ct.active_block.name))
+            print(f"block too close to tower: {ct.active_block.name}")
             return DfDecision("go_home")
 
         other_obj_Ts = [
@@ -728,7 +720,7 @@ class ChooseNextBlockForTowerBuildUp(DfDecider):
         ct.active_block.chosen_grasp = ct.active_block.get_best_grasp(ct.robot.arm.get_fk_T(), other_obj_Ts)
         return DfDecision(self.child_name, ct.active_block.chosen_grasp)
 
-    def exit(self):
+    def exit(self) -> None:
         """Clear the chosen grasp on exit."""
         self.context.active_block.chosen_grasp = None
 
@@ -736,16 +728,16 @@ class ChooseNextBlockForTowerBuildUp(DfDecider):
 class ChooseNextBlockForTowerTeardown(DfDecider):
     """Choose the top tower block for teardown and compute its grasp."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.child_name = None
 
-    def link_to(self, name, decider):
+    def link_to(self, name: str, decider: Any) -> None:
         """Link a named child decider to this node."""
         self.child_name = name
         self.add_child(name, decider)
 
-    def decide(self):
+    def decide(self) -> Any:
         """Select the top block of the tower and compute its grasp."""
         ct = self.context
         ct.active_block = ct.block_tower.top_block
@@ -753,7 +745,7 @@ class ChooseNextBlockForTowerTeardown(DfDecider):
         ct.active_block.chosen_grasp = calc_grasp_for_block_T(ct, active_block_T, np.array([0.0, -1.0, 0.0]))
         return DfDecision(self.child_name, ct.active_block.chosen_grasp)
 
-    def exit(self):
+    def exit(self) -> None:
         """Clear the chosen grasp on exit."""
         self.context.active_block.chosen_grasp = None
 
@@ -761,17 +753,17 @@ class ChooseNextBlockForTowerTeardown(DfDecider):
 class ChooseNextBlock(DfDecider):
     """Choose the next block, delegating to build-up or teardown as appropriate."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.add_child("choose_next_block_for_tower", ChooseNextBlockForTowerBuildUp())
         self.add_child("choose_tower_block", ChooseNextBlockForTowerTeardown())
 
-    def link_to(self, name, decider):
+    def link_to(self, name: str, decider: Any) -> None:
         """Link a named child decider to all sub-children."""
         for _, child in self.children.items():
             child.link_to(name, decider)
 
-    def decide(self):
+    def decide(self) -> Any:
         """Decide whether to build up or tear down the tower."""
         if self.context.block_tower.current_stack_in_correct_order:
             return DfDecision("choose_next_block_for_tower")
@@ -792,12 +784,14 @@ class LiftState(DfState):
         cautious_command_delta_z: Optional smaller delta offset used when close to another block.
     """
 
-    def __init__(self, command_delta_z: float, success_delta_z: float, cautious_command_delta_z: float | None = None):
+    def __init__(
+        self, command_delta_z: float, success_delta_z: float, cautious_command_delta_z: float | None = None
+    ) -> None:
         self.command_delta_z = command_delta_z
         self.cautious_command_delta_z = cautious_command_delta_z
         self.success_delta_z = success_delta_z
 
-    def enter(self):
+    def enter(self) -> None:
         """Set posture config to current joint positions and record the success height."""
         # On entry, set the posture config to the current config so the movement is minimal.
         posture_config = self.context.robot.arm.articulation_subset.get_joints_state().positions.astype(float)
@@ -805,7 +799,7 @@ class LiftState(DfState):
 
         self.success_z = self.context.robot.arm.get_fk_p()[2] + self.success_delta_z
 
-    def closest_non_grasped_block_dist(self, eff_p):
+    def closest_non_grasped_block_dist(self, eff_p: np.ndarray) -> float:
         """Return the distance to the closest block that is not currently grasped."""
         blocks_with_dists = []
         for name, block in self.context.blocks.items():
@@ -818,7 +812,7 @@ class LiftState(DfState):
         closest_block, closest_dist = min(blocks_with_dists, key=lambda v: v[1])
         return closest_dist
 
-    def step(self):
+    def step(self) -> Any:
         """Lift the end-effector upward until the success height is reached."""
         pose = self.context.robot.arm.get_fk_pq()
         if pose.p[2] >= self.success_z:
@@ -833,7 +827,7 @@ class LiftState(DfState):
         self.context.robot.arm.send_end_effector(target_pose=pose)
         return self
 
-    def exit(self):
+    def exit(self) -> None:
         """Reset the posture config back to the default value."""
         # On exit, reset the posture config back to the default value.
         self.context.robot.arm.set_posture_config_to_default()
@@ -842,7 +836,7 @@ class LiftState(DfState):
 class PickBlockRd(DfStateMachineDecider, DfRldsNode):
     """RLDS node that picks a block when the end-effector is at the chosen grasp."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # This behavior uses the locking feature of the decision framework to run a state machine
         # sequence as an atomic unit.
         super().__init__(
@@ -858,7 +852,7 @@ class PickBlockRd(DfStateMachineDecider, DfRldsNode):
         )
         self.is_locked = False
 
-    def is_runnable(self):
+    def is_runnable(self) -> bool:
         """Check whether the end-effector is close enough to the grasp to begin picking."""
         ct = self.context
         if ct.has_active_block and ct.active_block.has_chosen_grasp:
@@ -871,7 +865,7 @@ class PickBlockRd(DfStateMachineDecider, DfRldsNode):
         return False
 
 
-def make_pick_rlds():
+def make_pick_rlds() -> Any:
     """Construct the RLDS decider for the block picking behavior."""
     rlds = DfRldsDecider()
 
@@ -897,7 +891,7 @@ class TablePointValidator:
         context: The build-tower context.
     """
 
-    def __init__(self, context):
+    def __init__(self, context: Any) -> None:
         ct = context
 
         block_pts = [b.obj.get_world_pose()[0] for _, b in ct.blocks.items() if b != context.in_gripper]
@@ -908,7 +902,7 @@ class TablePointValidator:
         self.center_p = np.array([0.3, 0.0])
         self.std_devs = np.array([0.2, 0.3])
 
-    def validate_point(self, p):
+    def validate_point(self, p: np.ndarray) -> bool:
         """Check whether a 2D point is a valid placement location on the table."""
         for p_avoid, d_thresh in self.avoid_pts_with_dist_threshs:
             d = np.linalg.norm(p_avoid - p)
@@ -924,7 +918,7 @@ class TablePointValidator:
                 return False
         return True
 
-    def sample_random_position_2d(self):
+    def sample_random_position_2d(self) -> np.ndarray:
         """Sample a random valid 2D position on the table."""
         while True:
             p = self.std_devs * (np.random.randn(2) + self.center_p)
@@ -935,17 +929,17 @@ class TablePointValidator:
 class ReachToPlaceOnTower(DfDecider):
     """Decider that reaches to place a block on top of the tower."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.add_child("approach_grasp", DfApproachGrasp())
 
-    def decide(self):
+    def decide(self) -> Any:
         """Compute the tower-top grasp and dispatch to approach."""
         ct = self.context
         ct.placement_target_eff_T = calc_grasp_for_top_of_tower(ct)
         return DfDecision("approach_grasp", ct.placement_target_eff_T)
 
-    def exit(self):
+    def exit(self) -> None:
         """Clear the placement target on exit."""
         self.context.placement_target_eff_T = None
 
@@ -953,11 +947,11 @@ class ReachToPlaceOnTower(DfDecider):
 class ReachToPlaceOnTable(DfDecider):
     """Decider that reaches to place a block at a random valid position on the table."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.add_child("approach_grasp", DfApproachGrasp())
 
-    def choose_random_T_on_table(self):
+    def choose_random_T_on_table(self) -> np.ndarray | None:  # noqa: N802
         """Sample a random valid table position and compute the corresponding grasp."""
         ct = self.context
 
@@ -972,11 +966,11 @@ class ReachToPlaceOnTable(DfDecider):
 
         return calc_grasp_for_block_T(ct, T, -T[:3, 3])
 
-    def enter(self):
+    def enter(self) -> None:
         """Choose a random table placement on entry."""
         self.context.placement_target_eff_T = self.choose_random_T_on_table()
 
-    def decide(self):
+    def decide(self) -> Any:
         """Re-sample if the current placement is invalid, then dispatch to approach."""
         ct = self.context
 
@@ -986,7 +980,7 @@ class ReachToPlaceOnTable(DfDecider):
 
         return DfDecision("approach_grasp", ct.placement_target_eff_T)
 
-    def exit(self):
+    def exit(self) -> None:
         """Clear the placement target on exit."""
         self.context.placement_target_eff_T = None
 
@@ -994,20 +988,20 @@ class ReachToPlaceOnTable(DfDecider):
 class ReachToPlacementRd(DfRldsNode):
     """RLDS node that decides whether to place on the tower or on the table."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.add_child("reach_to_place_on_tower", ReachToPlaceOnTower())
         self.add_child("reach_to_place_table", ReachToPlaceOnTable())
 
-    def is_runnable(self):
+    def is_runnable(self) -> bool:
         """Check whether the gripper is holding a block."""
         return self.context.gripper_has_block
 
-    def enter(self):
+    def enter(self) -> None:
         """Clear the placement target on entry."""
         self.context.placement_target_eff_T = None
 
-    def decide(self):
+    def decide(self) -> Any:
         """Decide to place on the tower if the block is correct, otherwise on the table."""
         ct = self.context
 
@@ -1017,7 +1011,7 @@ class ReachToPlacementRd(DfRldsNode):
             return DfDecision("reach_to_place_table")
 
 
-def set_top_block_aligned(ct):
+def set_top_block_aligned(ct: Any) -> None:
     """Mark the top block of the tower as aligned."""
     top_block = ct.block_tower.top_block
     if top_block is not None:
@@ -1027,7 +1021,7 @@ def set_top_block_aligned(ct):
 class PlaceBlockRd(DfStateMachineDecider, DfRldsNode):
     """RLDS node that places the held block when the end-effector is at the placement target."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # This behavior uses the locking feature of the decision framework to run a state machine
         # sequence as an atomic unit.
         super().__init__(
@@ -1045,7 +1039,7 @@ class PlaceBlockRd(DfStateMachineDecider, DfRldsNode):
         )
         self.is_locked = False
 
-    def is_runnable(self):
+    def is_runnable(self) -> bool:
         """Check whether the end-effector is close enough to the placement target."""
         ct = self.context
         if ct.gripper_has_block and ct.has_placement_target_eff_T:
@@ -1061,13 +1055,13 @@ class PlaceBlockRd(DfStateMachineDecider, DfRldsNode):
 
         return False
 
-    def exit(self):
+    def exit(self) -> None:
         """Reset the active block and clear the placement target on exit."""
         self.context.reset_active_block()
         self.context.placement_target_eff_T = None
 
 
-def make_place_rlds():
+def make_place_rlds() -> Any:
     """Construct the RLDS decider for the block placement behavior."""
     rlds = DfRldsDecider()
     rlds.append_rlds_node("reach_to_placement", ReachToPlacementRd())
@@ -1078,13 +1072,13 @@ def make_place_rlds():
 class BlockPickAndPlaceDispatch(DfDecider):
     """Top-level decider that dispatches between picking, placing, and going home."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.add_child("pick", make_pick_rlds())
         self.add_child("place", make_place_rlds())
         self.add_child("go_home", GoHome())
 
-    def decide(self):
+    def decide(self) -> Any:
         """Decide to pick, place, or go home based on tower and gripper state."""
         ct = self.context
         if ct.block_tower.is_complete:
@@ -1096,7 +1090,7 @@ class BlockPickAndPlaceDispatch(DfDecider):
             return DfDecision("place")
 
 
-def make_decider_network(robot):
+def make_decider_network(robot: Any) -> Any:
     """Create the block stacking decider network for the given robot."""
     return DfNetwork(
         BlockPickAndPlaceDispatch(), context=BuildTowerContext(robot, tower_position=np.array([0.25, 0.3, 0.0]))

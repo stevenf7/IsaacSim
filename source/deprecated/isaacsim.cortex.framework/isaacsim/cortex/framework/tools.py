@@ -15,6 +15,8 @@
 
 """Utility tools for rate control, cycle timing, and diagnostics."""
 
+from __future__ import annotations
+
 import sys
 import time
 from collections import OrderedDict
@@ -49,7 +51,7 @@ class SteadyRate:
         rate_hz: The rate in hz to run at.
     """
 
-    def __init__(self, rate_hz: float):
+    def __init__(self, rate_hz: float) -> None:
         self.rate_hz = rate_hz
         self.dt = 1.0 / rate_hz
         self.last_sleep_end = time.time()
@@ -73,7 +75,7 @@ class CycleTimer:
         print_dt: The desired time delta between prints.
     """
 
-    def __init__(self, print_dt: Optional[float] = 1.0):
+    def __init__(self, print_dt: Optional[float] = 1.0) -> None:
         self.print_dt = print_dt
 
         self.start_time = None
@@ -149,7 +151,7 @@ class Profiler(object):
         alpha: Optional[float] = 0.9999,
         skip_cycles: Optional[int] = 10,
         print_rate_hz: Optional[float] = 1.0,
-    ):
+    ) -> None:
         self.name = name
         self.alpha = alpha
         self.cycle_num = 0
@@ -286,7 +288,7 @@ class Profiler(object):
             print("<profile suppressed during skip period>")
             return
 
-        print("======= <%s> =======" % self.name)
+        print(f"======= <{self.name}> =======")
         cycle = self.get_avg_cycle()
         print("avg cycle time:", cycle)
 
@@ -300,6 +302,6 @@ class Profiler(object):
         for i, tag in enumerate(self.capture_tags):
             if self.has_avg(tag):
                 avg = self.get_avg(tag)
-                print(" - %d) %s: %f, frac: %f%%" % (i + 1, tag, avg, 100.0 * avg / cycle))
+                print(f" - {i + 1}) {tag}: {avg:f}, frac: {100.0 * avg / cycle:f}%")
 
         self.last_print_time = curr_time

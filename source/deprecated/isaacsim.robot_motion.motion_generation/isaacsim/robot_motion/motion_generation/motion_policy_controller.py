@@ -15,6 +15,7 @@
 
 """A controller that uses motion policies to generate robot articulation actions for reaching target end effector poses."""
 
+from __future__ import annotations
 
 from typing import Optional
 
@@ -35,7 +36,7 @@ class MotionPolicyController(BaseController):
             directly applied to the robot.
     """
 
-    def __init__(self, name: str, articulation_motion_policy: ArticulationMotionPolicy):
+    def __init__(self, name: str, articulation_motion_policy: ArticulationMotionPolicy) -> None:
         BaseController.__init__(self, name)
 
         self._articulation_motion_policy = articulation_motion_policy
@@ -64,7 +65,7 @@ class MotionPolicyController(BaseController):
 
         return action
 
-    def add_obstacle(self, obstacle: isaacsim.core.api.objects, static: bool = False):
+    def add_obstacle(self, obstacle: isaacsim.core.api.objects, static: bool = False) -> None:
         """Add an object from isaacsim.core.api.objects as an obstacle to the motion_policy.
 
         Args:
@@ -77,7 +78,7 @@ class MotionPolicyController(BaseController):
         self._motion_policy.add_obstacle(obstacle, static=static)
         return
 
-    def remove_obstacle(self, obstacle: isaacsim.core.api.objects):
+    def remove_obstacle(self, obstacle: isaacsim.core.api.objects) -> None:
         """Remove and added obstacle from the motion_policy.
 
         Args:
@@ -89,12 +90,8 @@ class MotionPolicyController(BaseController):
         self._motion_policy.remove_obstacle(obstacle)
         return
 
-    def reset(self):
-        """Reset the motion policy state.
-
-        Returns:
-            None.
-        """
+    def reset(self) -> None:
+        """Reset the motion policy state."""
         self._motion_policy.reset()
         return
 

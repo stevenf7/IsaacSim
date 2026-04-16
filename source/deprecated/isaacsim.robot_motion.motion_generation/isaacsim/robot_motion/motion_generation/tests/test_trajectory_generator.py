@@ -15,6 +15,7 @@
 
 """Test module for validating robot motion trajectory generation functionality across multiple robot models."""
 
+from __future__ import annotations
 
 import asyncio
 import json
@@ -77,7 +78,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
     """
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up the test environment before running each test.
 
         Initializes physics settings, timeline interface, extension manager, policy configuration,
@@ -99,7 +100,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         await create_new_stage_async()
         await update_stage_async()
 
-    async def _create_light(self):
+    async def _create_light(self) -> None:
         """Create a sphere light in the USD stage.
 
         Adds a sphere light at position [6.5, 0, 12] with radius 2 and intensity 100000
@@ -110,7 +111,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         sphereLight.CreateIntensityAttr(100000)
         SingleXFormPrim(str(sphereLight.GetPath().pathString)).set_world_pose([6.5, 0, 12])
 
-    async def _prepare_stage(self, robot: object):
+    async def _prepare_stage(self, robot: object) -> None:
         """Prepare the USD stage for trajectory testing.
 
         Initializes the simulation context, creates lighting, configures the robot with
@@ -146,7 +147,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         await update_stage_async()
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up the test environment after running each test.
 
         Stops the timeline, waits for assets to finish loading, clears the motion generator,
@@ -161,7 +162,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         World.clear_instance()
 
-    async def test_lula_c_space_traj_gen_franka(self):
+    async def test_lula_c_space_traj_gen_franka(self) -> None:
         """Test Lula C-space trajectory generation with the Franka robot.
 
         Tests multiple trajectory scenarios including different waypoints, timestamps,
@@ -213,7 +214,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             distance_thresh=0.02,
         )
 
-    async def test_lula_c_space_traj_gen_cobotta(self):
+    async def test_lula_c_space_traj_gen_cobotta(self) -> None:
         """Test Lula C-space trajectory generation with the Cobotta Pro 900 robot.
 
         Tests trajectory generation with and without specified timestamps to verify
@@ -250,7 +251,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         timestamps: object = None,
         interp_type: str = "cubic_spline",
         distance_thresh: float = 0.01,
-    ):
+    ) -> None:
         """Test Lula C-space trajectory generation for a specified robot configuration.
 
         Loads the robot, computes inverse kinematics for task space targets, generates
@@ -340,7 +341,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             f"Did not hit every task_space target: Distance to targets = {target_dists}",
         )
 
-    async def test_set_c_space_trajectory_solver_config_settings(self):
+    async def test_set_c_space_trajectory_solver_config_settings(self) -> None:
         """Test setting C-space trajectory solver configuration parameters.
 
         Verifies that various solver parameters including position limits, velocity limits,
@@ -373,7 +374,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         self._trajectory_generator.set_solver_param("time_split_method", "chord_length")
         self._trajectory_generator.set_solver_param("time_split_method", "centripetal")
 
-    async def test_lula_task_space_traj_gen_franka(self):
+    async def test_lula_task_space_traj_gen_franka(self) -> None:
         """Test Lula task space trajectory generation with the Franka robot.
 
         Tests trajectory generation from multiple position and orientation targets
@@ -393,45 +394,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets
         )
 
-    async def test_lula_task_space_traj_gen_ur10(self):
-        """Test Lula task space trajectory generation with the UR10 robot.
-
-        Tests both composite path specifications and circular paths with rotations
-        to verify advanced task space trajectory generation capabilities on the UR10 robot.
-        """
-        usd_path = await get_assets_root_path_async()
-        usd_path += "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
-        robot_name = "UR10"
-        robot_prim_path = "/ur10"
-
-        ee_frame = "ee_link"
-
-        # Test that composite path specs work:
-        task_space_spec, pos_targets, orient_targets = await self._build_rect_path()
-        c_space_spec = lula.create_c_space_path_spec(np.array([0, 0, 0, 0, 0, 0]))
-        c_space_spec.add_c_space_waypoint(np.array([0, 0.5, -2.0, -1.28, 5.13, -4.71]))
-
-        initial_c_space_robot_pose = np.array([0, 0, 0, 0, 0, 0])
-        composite_path_spec = lula.create_composite_path_spec(initial_c_space_robot_pose)
-
-        transition_mode = lula.CompositePathSpec.TransitionMode.FREE
-        composite_path_spec.add_task_space_path_spec(task_space_spec, transition_mode)
-
-        transition_mode = lula.CompositePathSpec.TransitionMode.FREE
-        composite_path_spec.add_c_space_path_spec(c_space_spec, transition_mode)
-
-        await self._test_lula_task_space_trajectory_generator(
-            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, composite_path_spec
-        )
-        # end composite spec test
-
-        task_space_spec, pos_targets, orient_targets = await self._build_circle_path_with_rotations()
-
-        await self._test_lula_task_space_trajectory_generator(
-            usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, task_space_spec
-        )
-
-    async def test_lula_task_space_traj_gen_cobotta_900(self):
+    async def test_lula_task_space_traj_gen_cobotta_900(self) -> None:
         """Tests Lula task space trajectory generation for the Cobotta Pro 900 robot.
 
         Generates and validates rectangular and circular trajectory paths with rotations.
@@ -454,7 +417,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
         )
 
-    async def test_lula_task_space_traj_gen_cobotta_1300(self):
+    async def test_lula_task_space_traj_gen_cobotta_1300(self) -> None:
         """Tests Lula task space trajectory generation for the Cobotta Pro 1300 robot.
 
         Generates and validates a rectangular trajectory path.
@@ -471,7 +434,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
         )
 
-    async def test_lula_task_space_traj_gen_crx10ial(self):
+    async def test_lula_task_space_traj_gen_crx10ial(self) -> None:
         """Tests Lula task space trajectory generation for the Fanuc CRX10IAL robot.
 
         Generates and validates rectangular and circular trajectory paths with rotations.
@@ -494,7 +457,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
         )
 
-    async def test_lula_task_space_traj_gen_fr3(self):
+    async def test_lula_task_space_traj_gen_fr3(self) -> None:
         """Tests Lula task space trajectory generation for the Franka FR3 robot.
 
         Generates and validates rectangular and circular trajectory paths with rotations.
@@ -517,7 +480,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
         )
 
-    async def test_lula_task_space_traj_gen_tm12(self):
+    async def test_lula_task_space_traj_gen_tm12(self) -> None:
         """Tests Lula task space trajectory generation for the Techman TM12 robot.
 
         Generates and validates a rectangular trajectory path with an offset position.
@@ -534,7 +497,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             usd_path, robot_name, robot_prim_path, ee_frame, pos_targets, orient_targets, path
         )
 
-    async def test_lula_task_space_traj_gen_ur10(self):
+    async def test_lula_task_space_traj_gen_ur10(self) -> None:
         """Test Lula task space trajectory generation with the UR10 robot.
 
         Tests both composite path specifications and circular paths with rotations
@@ -554,7 +517,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
     async def _build_rect_path(
         self, rot_vec: np.ndarray = np.array([np.pi, 0, 0]), offset: np.ndarray = np.array([0, 0, 0])
-    ):
+    ) -> tuple:
         """Builds a rectangular trajectory path in task space.
 
         Creates a lula task space path specification for a rectangular trajectory with specified orientation and position offset.
@@ -588,7 +551,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
         return path, position_targets, orientation_targets
 
-    async def _build_circle_path_with_rotations(self, offset: np.ndarray = np.array([0, 0, 0])):
+    async def _build_circle_path_with_rotations(self, offset: np.ndarray = np.array([0, 0, 0])) -> tuple:
         """Builds a circular trajectory path with rotations in task space.
 
         Creates a lula task space path specification with two three-point arcs forming a circular path and includes a final rotation.
@@ -628,7 +591,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
         orientation_targets: np.ndarray,
         built_path: object = None,
         distance_thresh: float = 0.01,
-    ):
+    ) -> None:
         """Tests the Lula task space trajectory generator for a specified robot configuration.
 
         Loads a robot, generates a task space trajectory either from target points or a pre-built path specification, and
@@ -699,7 +662,7 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             f"Did not hit every task_space target: Distance to targets = {target_dists}",
         )
 
-    async def test_set_task_space_trajectory_solver_config_settings(self):
+    async def test_set_task_space_trajectory_solver_config_settings(self) -> None:
         """Tests setting various solver configuration parameters for the Lula task space trajectory generator.
 
         Validates that all solver parameters can be set without errors, including C-space limits, solver parameters, and

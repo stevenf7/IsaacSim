@@ -398,8 +398,13 @@ def compute_heading_and_up(torso_rotation, inv_start_rot, to_target, vec0, vec1,
 
 @torch.jit.script
 def compute_rot(
-    torso_quat, velocity, ang_velocity, targets, torso_positions, extrinsic: bool = True
-):  # noqa: ANN001, ANN201
+    torso_quat: torch.Tensor,
+    velocity: torch.Tensor,
+    ang_velocity: torch.Tensor,
+    targets: torch.Tensor,
+    torso_positions: torch.Tensor,
+    extrinsic: bool = True,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     """Compute local velocities and angles to target from torso rotation."""
     vel_loc = quat_rotate_inverse(torso_quat, velocity)
     angvel_loc = quat_rotate_inverse(torso_quat, ang_velocity)

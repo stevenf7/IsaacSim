@@ -15,8 +15,7 @@
 
 """Provides RRT path planning capabilities for robot motion generation using the Lula motion planning library."""
 
-
-from typing import List, Union
+from __future__ import annotations
 
 import lula
 import numpy as np
@@ -39,7 +38,9 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         end_effector_frame_name: Name of the robot end effector frame (must be present in the robot urdf).
     """
 
-    def __init__(self, robot_description_path: str, urdf_path: str, rrt_config_path: str, end_effector_frame_name: str):
+    def __init__(
+        self, robot_description_path: str, urdf_path: str, rrt_config_path: str, end_effector_frame_name: str
+    ) -> None:
 
         robot_description = lula.load_robot(robot_description_path, urdf_path)
         self.end_effector_frame_name = end_effector_frame_name
@@ -71,8 +72,6 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         Returns:
             Computed path as array of joint configurations, or None if no path found.
         """
-        __doc__ = PathPlanner.compute_path.__doc__
-
         active_joint_positions = active_joint_positions.astype(np.float64)
         if self._taskspace_target_position is None and self._cspace_target is not None:
             self._generate_plan_to_cspace_target(active_joint_positions)
@@ -90,8 +89,6 @@ class RRT(LulaInterfaceHelper, PathPlanner):
             robot_position: Position of the robot base.
             robot_orientation: Orientation of the robot base.
         """
-        __doc__ = LulaInterfaceHelper.set_robot_base_pose.__doc__
-
         return LulaInterfaceHelper.set_robot_base_pose(self, robot_position, robot_orientation)
 
     def set_cspace_target(self, active_joint_targets: np.array) -> None:
@@ -100,8 +97,6 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         Args:
             active_joint_targets: Target joint positions for active joints.
         """
-        __doc__ = PathPlanner.set_cspace_target.__doc__
-
         self._cspace_target = active_joint_targets
         self._taskspace_target_position = None
         self._taskspace_target_rotation = None
@@ -113,8 +108,6 @@ class RRT(LulaInterfaceHelper, PathPlanner):
             target_translation: Target translation for the end effector.
             target_orientation: Target orientation for the end effector.
         """
-        __doc__ = PathPlanner.set_end_effector_target.__doc__
-
         if target_translation is not None:
             self._taskspace_target_position = (target_translation * self._meters_per_unit).astype(np.float64)
         else:
@@ -126,17 +119,15 @@ class RRT(LulaInterfaceHelper, PathPlanner):
             self._taskspace_target_rotation = None
         self._cspace_target = None
 
-    def get_active_joints(self) -> List:
+    def get_active_joints(self) -> list:
         """Active joints of the robot.
 
         Returns:
             List of active joint names.
         """
-        __doc__ = PathPlanner.get_active_joints.__doc__
-
         return LulaInterfaceHelper.get_active_joints(self)
 
-    def get_watched_joints(self) -> List:
+    def get_watched_joints(self) -> list:
         """Watched joints of the robot.
 
         Returns:
@@ -154,12 +145,11 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         Returns:
             True if the obstacle was added successfully.
         """
-        __doc__ = PathPlanner.add_obstacle.__doc__
         return PathPlanner.add_obstacle(self, obstacle, static)
 
     def add_cuboid(
         self,
-        cuboid: Union[objects.cuboid.DynamicCuboid, objects.cuboid.FixedCuboid, objects.cuboid.VisualCuboid],
+        cuboid: objects.cuboid.DynamicCuboid | objects.cuboid.FixedCuboid | objects.cuboid.VisualCuboid,
         static: bool = False,
     ) -> bool:
         """Add a cuboid obstacle to the planning world.
@@ -174,7 +164,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         return LulaInterfaceHelper.add_cuboid(self, cuboid, static)
 
     def add_sphere(
-        self, sphere: Union[objects.sphere.DynamicSphere, objects.sphere.VisualSphere], static: bool = False
+        self, sphere: objects.sphere.DynamicSphere | objects.sphere.VisualSphere, static: bool = False
     ) -> bool:
         """Add a sphere obstacle to the planning world.
 
@@ -188,7 +178,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         return LulaInterfaceHelper.add_sphere(self, sphere, static)
 
     def add_capsule(
-        self, capsule: Union[objects.capsule.DynamicCapsule, objects.capsule.VisualCapsule], static: bool = False
+        self, capsule: objects.capsule.DynamicCapsule | objects.capsule.VisualCapsule, static: bool = False
     ) -> bool:
         """Add a capsule obstacle to the planning world.
 
@@ -245,7 +235,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         """
         return LulaInterfaceHelper.remove_obstacle(self, obstacle)
 
-    def update_world(self, updated_obstacles: List = None):
+    def update_world(self, updated_obstacles: list = None) -> None:
         """Updates the RRT world view with changes to obstacles and refreshes collision detection.
 
         Args:
@@ -254,7 +244,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         LulaInterfaceHelper.update_world(self, updated_obstacles)
         self._rrt.update_world_view()
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the RRT planner by recreating the motion planner instance and restoring default parameters."""
         LulaInterfaceHelper.reset(self)
 
@@ -265,7 +255,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         self._rrt.set_param("task_space_frame_name", self.end_effector_frame_name)
         self._seed = 123456
 
-    def set_max_iterations(self, max_iter: int):
+    def set_max_iterations(self, max_iter: int) -> None:
         """Set the maximum number of iterations of RRT before a failure is returned.
 
         Args:
@@ -274,7 +264,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         """
         self._rrt.set_param("max_iterations", max_iter)
 
-    def set_random_seed(self, random_seed: int):
+    def set_random_seed(self, random_seed: int) -> None:
         """Set the random seed that RRT uses to generate a solution.
 
         Args:
@@ -282,7 +272,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         """
         self._seed = random_seed
 
-    def set_param(self, param_name: str, value: Union[np.array, float, int, str]) -> bool:
+    def set_param(self, param_name: str, value: np.array | float | int | str) -> bool:
         """Set a parameter for the RRT algorithm.
 
         `seed` (int):
@@ -491,7 +481,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
 
         return self._rrt.set_param(param_name, value)
 
-    def _generate_plan_to_cspace_target(self, joint_positions: object):
+    def _generate_plan_to_cspace_target(self, joint_positions: object) -> None:
         """Generates a motion plan from the current joint positions to a configuration space target.
 
         Args:
@@ -509,7 +499,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         else:
             self._plan = None
 
-    def _generate_plan_to_taskspace_target(self, joint_positions: object):
+    def _generate_plan_to_taskspace_target(self, joint_positions: object) -> None:
         """Generates a motion plan to reach a task space target.
 
         Uses the RRT algorithm to find a path from the current joint positions to the target end effector

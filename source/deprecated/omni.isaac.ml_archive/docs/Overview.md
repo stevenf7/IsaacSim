@@ -1,5 +1,9 @@
 # Overview
 
+```{deprecated} 6.0.0
+This extension is deprecated. No replacement is provided.
+```
+
 The **omni.isaac.ml_archive** extension provides machine learning pip packages required by Isaac Sim extensions. This extension bundles essential ML libraries and dependencies into the Isaac Sim environment, making them available to other extensions that require machine learning functionality.
 
 ## Functionality

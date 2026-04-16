@@ -15,8 +15,9 @@
 
 """A world interface implementation that uses Lula for collision detection and obstacle management in robot motion planning."""
 
+from __future__ import annotations
 
-from typing import List, Optional, Union
+from typing import Optional
 
 import carb
 import lula
@@ -50,22 +51,22 @@ class LulaWorld(WorldInterface):
     - Efficient tracking of obstacle state changes
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._world = lula.create_world()
-        self._dynamic_obstacles = dict()
-        self._static_obstacles = dict()
+        self._dynamic_obstacles = {}
+        self._static_obstacles = {}
         self._meters_per_unit = get_stage_units()
 
         # maintain a map of core.objects.ground_plane to ground-like cuboids that lula made to support the ground plane add function
-        self._ground_plane_map = dict()
+        self._ground_plane_map = {}
 
     def update_world(
         self,
-        updated_obstacles: Optional[List] = None,
+        updated_obstacles: Optional[list] = None,
         robot_pos: Optional[np.array] = np.zeros(3),
         robot_rot: Optional[np.array] = np.eye(3),
         robot_base_moved: bool = False,
-    ):
+    ) -> None:
         """Update the internal world state of Lula.
 
         This function automatically tracks the positions of obstacles that have been added with add_obstacle().
@@ -103,7 +104,7 @@ class LulaWorld(WorldInterface):
 
     def add_cuboid(
         self,
-        cuboid: Union[objects.cuboid.DynamicCuboid, objects.cuboid.FixedCuboid, objects.cuboid.VisualCuboid],
+        cuboid: objects.cuboid.DynamicCuboid | objects.cuboid.FixedCuboid | objects.cuboid.VisualCuboid,
         static: Optional[bool] = False,
         robot_pos: Optional[np.array] = np.zeros(3),
         robot_rot: Optional[np.array] = np.eye(3),
@@ -148,7 +149,7 @@ class LulaWorld(WorldInterface):
 
     def add_sphere(
         self,
-        sphere: Union[objects.sphere.DynamicSphere, objects.sphere.VisualSphere],
+        sphere: objects.sphere.DynamicSphere | objects.sphere.VisualSphere,
         static: bool = False,
         robot_pos: Optional[np.array] = np.zeros(3),
         robot_rot: Optional[np.array] = np.eye(3),
@@ -190,7 +191,7 @@ class LulaWorld(WorldInterface):
 
     def add_capsule(
         self,
-        capsule: Union[objects.capsule.DynamicCapsule, objects.capsule.VisualCapsule],
+        capsule: objects.capsule.DynamicCapsule | objects.capsule.VisualCapsule,
         static: bool = False,
         robot_pos: Optional[np.array] = np.zeros(3),
         robot_rot: Optional[np.array] = np.eye(3),
@@ -348,12 +349,12 @@ class LulaWorld(WorldInterface):
         self._world.remove_obstacle(obstacle_handle)
         return True
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the world to its initial state."""
         self._world = lula.create_world()
-        self._dynamic_obstacles = dict()
-        self._static_obstacles = dict()
+        self._dynamic_obstacles = {}
+        self._static_obstacles = {}
 
         for lula_ground_plane_cuboid in self._ground_plane_map.values():
             delete_prim(lula_ground_plane_cuboid.prim_path)
-        self._ground_plane_map = dict()
+        self._ground_plane_map = {}

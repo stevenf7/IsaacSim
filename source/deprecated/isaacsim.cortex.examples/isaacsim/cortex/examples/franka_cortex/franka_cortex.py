@@ -115,7 +115,7 @@ class FrankaCortex(CortexBase):
         for i, (x, spec) in enumerate(zip(np.linspace(0.3, 0.7, len(obs_specs)), obs_specs)):
             obj = world.scene.add(
                 DynamicCuboid(
-                    prim_path="/World/Obs/{}".format(spec.name),
+                    prim_path=f"/World/Obs/{spec.name}",
                     name=spec.name,
                     size=width,
                     color=spec.color,

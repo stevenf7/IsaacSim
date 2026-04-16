@@ -15,11 +15,13 @@
 
 """Extension for testing robot motion planning using Lula kinematics solvers and RmpFlow motion generation."""
 
+from __future__ import annotations
 
 import asyncio
 import gc
 import os
 import weakref
+from typing import Any
 
 import carb
 import carb.eventdispatcher
@@ -130,7 +132,7 @@ class Extension(omni.ext.IExt):
     - Debugging mode for motion planning analysis
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize extension and UI elements.
 
         Args:
@@ -188,7 +190,7 @@ class Extension(omni.ext.IExt):
         # Visualize End Effector
         self._visualize_end_effector = True
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up resources when the extension is unloaded."""
         self._test_scenarios.full_reset()
         self.articulation = None
@@ -202,7 +204,7 @@ class Extension(omni.ext.IExt):
             self._window = None
         gc.collect()
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: bool) -> None:
         if self._window.visible:
             # Subscribe to Stage and Timeline Events
             self._usd_context = omni.usd.get_context()
@@ -244,13 +246,13 @@ class Extension(omni.ext.IExt):
             self._stage_event_sub_sim_play = None
             self._stage_event_sub_sim_stop = None
 
-    def _menu_callback(self):
+    def _menu_callback(self) -> None:
         self._window.visible = not self._window.visible
         # Update the Selection Box if the Timeline is already playing
         if self._timeline.is_playing():
             self._refresh_selection_combobox()
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         # if not self._window:
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
@@ -265,10 +267,10 @@ class Extension(omni.ext.IExt):
 
                 self._build_rmpflow_ui()
 
-        async def dock_window():
+        async def dock_window() -> None:
             await omni.kit.app.get_app().next_update_async()
 
-            def dock(space, name, location, pos=0.5):
+            def dock(space: Any, name: str, location: Any, pos: float = 0.5) -> Any:
                 window = omni.ui.Workspace.get_window(name)
                 if window and space:
                     window.dock_in(space, location, pos)
@@ -320,7 +322,7 @@ class Extension(omni.ext.IExt):
             self.articulation = None
             # carb.log_warn("Resetting Articulation Inspector")
 
-    def _on_combobox_selection(self, model=None, val=None):
+    def _on_combobox_selection(self, model: Any = None, val: Any = None) -> None:
         # index = model.get_item_value_model().as_int
         index = self._models["ar_selection_model"].get_item_value_model().as_int
         if index >= 0 and index < len(self.articulation_list):
@@ -329,7 +331,7 @@ class Extension(omni.ext.IExt):
             self._selected_prim_path = item
             self._on_selection(item)
 
-    def _refresh_selection_combobox(self):
+    def _refresh_selection_combobox(self) -> None:
         self.articulation_list = self.get_all_articulations()
         if self._prev_art_prim_path is not None and self._prev_art_prim_path not in self.articulation_list:
             self._reset_ui()
@@ -344,7 +346,7 @@ class Extension(omni.ext.IExt):
                     ui.SimpleIntModel(self._selected_index)
                 )
 
-    def _clear_selection_combobox(self):
+    def _clear_selection_combobox(self) -> None:
         self._selected_index = None
         self._selected_prim_path = None
         self.articulation_list = []
@@ -352,7 +354,7 @@ class Extension(omni.ext.IExt):
         self._models["ar_selection_combobox"].model = self._models["ar_selection_model"]
         self._models["ar_selection_combobox"].model.add_item_changed_fn(self._on_combobox_selection)
 
-    def get_all_articulations(self):
+    def get_all_articulations(self) -> list:
         """Get all the articulation objects from the Stage.
 
         Returns:
@@ -372,7 +374,7 @@ class Extension(omni.ext.IExt):
 
         return articulations
 
-    def get_articulation_values(self, articulation: object):
+    def get_articulation_values(self, articulation: object) -> None:
         """Get and store the latest dof_properties from the articulation.
 
            Update the Properties UI.
@@ -388,7 +390,7 @@ class Extension(omni.ext.IExt):
 
             self._joint_positions = articulation.get_joint_positions()
 
-    def _refresh_ee_frame_combobox(self):
+    def _refresh_ee_frame_combobox(self) -> None:
         if self._robot_description_file is not None and self._robot_urdf_file is not None:
             self._test_scenarios.initialize_ik_solver(self._robot_description_file, self._robot_urdf_file)
             ee_frames = self._test_scenarios.get_ik_frames()
@@ -407,14 +409,14 @@ class Extension(omni.ext.IExt):
 
         self._ee_frame_options = ee_frames
 
-    def _reset_scenario(self, model=None, value=None):
+    def _reset_scenario(self, model: Any = None, value: Any = None) -> None:
         self._enable_lula_dropdowns()
         self._set_enable_trajectory_panel(False)
 
         if self.articulation is not None:
             self.articulation.post_reset()
 
-    def _refresh_ui(self, articulation: object):
+    def _refresh_ui(self, articulation: object) -> None:
         """Updates the GUI with a new Articulation's properties.
 
         Args:
@@ -426,7 +428,7 @@ class Extension(omni.ext.IExt):
         if is_yaml_file(self._models["input_robot_description_file"].get_value_as_string()):
             self._enable_load_button()
 
-    def _reset_ui(self):
+    def _reset_ui(self) -> None:
         """Reset / Hide UI Elements."""
         self._clear_selection_combobox()
         self._disable_lula_dropdowns()
@@ -438,7 +440,7 @@ class Extension(omni.ext.IExt):
     # Callbacks
     ##################################
 
-    def _on_stage_selection_changed(self, event: object):
+    def _on_stage_selection_changed(self, event: object) -> None:
         """Callback for Stage Selection Changed Event.
 
         Args:
@@ -447,7 +449,7 @@ class Extension(omni.ext.IExt):
         # On every stage event check if any articulations have been added/removed from the Stage
         self._refresh_selection_combobox()
 
-    def _on_stage_opened(self, event: object):
+    def _on_stage_opened(self, event: object) -> None:
         """Callback for Stage Opened Event.
 
         Args:
@@ -458,7 +460,7 @@ class Extension(omni.ext.IExt):
         # stage was opened, cleanup
         self._physics_subscription = None
 
-    def _on_stage_closed(self, event: object):
+    def _on_stage_closed(self, event: object) -> None:
         """Callback for Stage Closed Event.
 
         Args:
@@ -469,7 +471,7 @@ class Extension(omni.ext.IExt):
         # stage was closed, cleanup
         self._physics_subscription = None
 
-    def _on_timeline_play(self, event: object):
+    def _on_timeline_play(self, event: object) -> None:
         """Callback for Timeline Played Event.
 
         Args:
@@ -480,7 +482,7 @@ class Extension(omni.ext.IExt):
         selected_articulation = self.articulation_list[index]
         self._on_selection(selected_articulation)
 
-    def _on_timeline_stop(self, event: object):
+    def _on_timeline_stop(self, event: object) -> None:
         """Callback for Timeline Stopped Event.
 
         Args:
@@ -507,7 +509,7 @@ class Extension(omni.ext.IExt):
 
         return
 
-    def _get_next_action(self):
+    def _get_next_action(self) -> Any:
         """Calculates the next control action for the selected articulation.
 
         Returns:
@@ -528,7 +530,7 @@ class Extension(omni.ext.IExt):
     # UI Builders
     ##################################
 
-    def _build_info_ui(self):
+    def _build_info_ui(self) -> None:
         """Builds the information panel UI section with title, documentation link, and overview text."""
         title = EXTENSION_NAME
         doc_link = (
@@ -541,7 +543,7 @@ class Extension(omni.ext.IExt):
 
         setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
-    def _build_selection_ui(self):
+    def _build_selection_ui(self) -> None:
         """Builds the selection panel UI with articulation dropdown, file pickers for robot description and URDF,.
 
         and end effector frame selection controls.
@@ -575,7 +577,7 @@ class Extension(omni.ext.IExt):
 
                 # Select Robot Description YAML file
 
-                def check_file_type(model=None):
+                def check_file_type(model: Any = None) -> None:
                     path = model.get_value_as_string()
                     if is_yaml_file(path):
                         self._selected_robot_description_file = model.get_value_as_string()
@@ -598,7 +600,7 @@ class Extension(omni.ext.IExt):
 
                 # Select Robot URDF file
 
-                def check_urdf_file_type(model=None):
+                def check_urdf_file_type(model: Any = None) -> None:
                     path = model.get_value_as_string()
                     if is_urdf_file(path):
                         self._selected_robot_urdf_file = model.get_value_as_string()
@@ -620,7 +622,7 @@ class Extension(omni.ext.IExt):
                 self._models["input_robot_urdf_file"].add_value_changed_fn(check_urdf_file_type)
 
                 # Load the currently selected config files
-                def on_load_config(model=None, val=None):
+                def on_load_config(model: Any = None, val: Any = None) -> None:
                     self._robot_description_file = self._selected_robot_description_file
                     self._robot_urdf_file = self._selected_robot_urdf_file
                     self._refresh_ee_frame_combobox()
@@ -651,7 +653,7 @@ class Extension(omni.ext.IExt):
                 self._models[name].add_item_changed_fn(self._reset_scenario)
 
                 # Button for ignoring IK targets
-                def on_clicked_fn(use_orientation):
+                def on_clicked_fn(use_orientation: bool) -> None:
                     self._test_scenarios.set_use_orientation(use_orientation)
 
                 with ui.HStack(width=0):
@@ -661,7 +663,7 @@ class Extension(omni.ext.IExt):
                     SimpleCheckBox(1, on_clicked_fn, model=cb)
 
                 # Button for visualizing end effector
-                def on_vis_ee_clicked_fn(visualize_ee):
+                def on_vis_ee_clicked_fn(visualize_ee: bool) -> None:
                     self._visalize_end_effector = visualize_ee
                     if visualize_ee:
                         self._test_scenarios.visualize_ee_frame(self.articulation, self._get_selected_ee_frame())
@@ -674,7 +676,7 @@ class Extension(omni.ext.IExt):
                     cb = ui.SimpleBoolModel(default_value=1)
                     SimpleCheckBox(1, on_vis_ee_clicked_fn, model=cb)
 
-    def _build_kinematics_ui(self):
+    def _build_kinematics_ui(self) -> None:
         """Builds the Lula Kinematics Solver UI panel with inverse kinematics target following controls."""
         frame = ui.CollapsableFrame(
             title="Lula Kinematics Solver",
@@ -692,7 +694,7 @@ class Extension(omni.ext.IExt):
         with frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
 
-                def ik_follow_target(model=None):
+                def ik_follow_target(model: Any = None) -> None:
                     ee_frame = self._get_selected_ee_frame()
                     self.articulation.post_reset()
                     self._test_scenarios.on_ik_follow_target(self.articulation, ee_frame)
@@ -704,7 +706,7 @@ class Extension(omni.ext.IExt):
                     on_clicked_fn=ik_follow_target,
                 )
 
-    def _build_trajectory_generation_ui(self):
+    def _build_trajectory_generation_ui(self) -> None:
         """Builds the Lula Trajectory Generator UI panel with custom trajectory creation and waypoint.
 
         management controls.
@@ -725,7 +727,7 @@ class Extension(omni.ext.IExt):
         with frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
 
-                def on_custom_trajectory(model=None, val=None):
+                def on_custom_trajectory(model: Any = None, val: Any = None) -> None:
                     self.articulation.post_reset()
                     self._test_scenarios.on_custom_trajectory(self._robot_description_file, self._robot_urdf_file)
                     self._set_enable_trajectory_panel(True)
@@ -750,13 +752,13 @@ class Extension(omni.ext.IExt):
 
                 self._models["trajectory_panel"] = frame
 
-                def follow_trajectory(model=None, val=None):
+                def follow_trajectory(model: Any = None, val: Any = None) -> None:
                     self._test_scenarios.create_trajectory_controller(self.articulation, self._get_selected_ee_frame())
 
-                def on_add_waypoint(model=None, val=None):
+                def on_add_waypoint(model: Any = None, val: Any = None) -> None:
                     self._test_scenarios.add_waypoint()
 
-                def on_delete_waypoint(model=None, val=None):
+                def on_delete_waypoint(model: Any = None, val: Any = None) -> None:
                     self._test_scenarios.delete_waypoint()
 
                 with frame:
@@ -782,7 +784,7 @@ class Extension(omni.ext.IExt):
                             on_clicked_fn=on_delete_waypoint,
                         )
 
-    def _build_rmpflow_ui(self):
+    def _build_rmpflow_ui(self) -> None:
         """Builds the RmpFlow UI panel with configuration file selection, target following controls,.
 
         and sinusoidal trajectory parameters.
@@ -803,7 +805,7 @@ class Extension(omni.ext.IExt):
         with frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
 
-                def check_file_type(model=None):
+                def check_file_type(model: Any = None) -> None:
                     path = model.get_value_as_string()
                     if is_yaml_file(path):
                         self._rmpflow_config_yaml = model.get_value_as_string()
@@ -825,7 +827,7 @@ class Extension(omni.ext.IExt):
                 self._models["input_rmp_config_file"] = str_builder(**kwargs)
                 self._models["input_rmp_config_file"].add_value_changed_fn(check_file_type)
 
-                def toggle_rmpflow_debug_mode(model=None):
+                def toggle_rmpflow_debug_mode(model: Any = None) -> None:
                     self._test_scenarios.toggle_rmpflow_debug_mode()
 
                 self._models["rmpflow_debug_mode"] = state_btn_builder(
@@ -840,7 +842,7 @@ class Extension(omni.ext.IExt):
                 #                    Follow Target
                 ######################################################
 
-                def rmpflow_follow_target(model=None):
+                def rmpflow_follow_target(model: Any = None) -> None:
                     ee_frame = self._get_selected_ee_frame()
                     rmpflow_config_dict = {
                         "end_effector_frame_name": ee_frame,
@@ -865,7 +867,7 @@ class Extension(omni.ext.IExt):
                 #                Sinusoidal Target
                 #######################################################
 
-                def rmpflow_follow_sinusoidal_target(model=None):
+                def rmpflow_follow_sinusoidal_target(model: Any = None) -> None:
                     ee_frame = self._get_selected_ee_frame()
                     rmpflow_config_dict = {
                         "end_effector_frame_name": ee_frame,
@@ -926,7 +928,7 @@ class Extension(omni.ext.IExt):
                             label="Sinusoid Height", default_val=0.5, tooltip="Average height of target [m]"
                         )
 
-    def _disable_lula_dropdowns(self):
+    def _disable_lula_dropdowns(self) -> None:
         """Disables and collapses the Lula kinematics, trajectory, and RmpFlow UI panels."""
         frame_names = ["kinematics_frame", "trajectory_frame", "rmpflow_frame", "trajectory_panel"]
         for n in frame_names:
@@ -934,7 +936,7 @@ class Extension(omni.ext.IExt):
             frame.enabled = False
             frame.collapsed = True
 
-    def _enable_load_button(self):
+    def _enable_load_button(self) -> None:
         """Enables the config file load button when valid robot description file is selected."""
         self._models["load_config_btn"].enabled = True
 
@@ -957,7 +959,7 @@ class Extension(omni.ext.IExt):
         if self._visualize_end_effector:
             self._test_scenarios.visualize_ee_frame(self.articulation, self._get_selected_ee_frame())
 
-    def _set_enable_trajectory_panel(self, enable: bool):
+    def _set_enable_trajectory_panel(self, enable: bool) -> None:
         """Enables or disables the trajectory panel frame.
 
         Args:
@@ -967,7 +969,7 @@ class Extension(omni.ext.IExt):
         frame.enabled = enable
         frame.collapsed = not enable
 
-    def _set_enable_rmpflow_buttons(self, enable: bool):
+    def _set_enable_rmpflow_buttons(self, enable: bool) -> None:
         """Enables or disables the RmpFlow buttons.
 
         Args:

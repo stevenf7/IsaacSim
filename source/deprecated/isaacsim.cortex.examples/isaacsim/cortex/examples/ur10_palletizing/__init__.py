@@ -18,4 +18,4 @@
 
 from isaacsim.cortex.examples.ur10_palletizing.ur10_palletizing_extension import BinStackingExtension
 
-__all__ = []
+__all__ = ["BinStackingExtension"]

@@ -15,9 +15,9 @@
 
 """Real-time reactive motion policy that smoothly guides robots to task space targets while avoiding dynamic obstacles."""
 
+from __future__ import annotations
 
 import time
-from typing import List, Tuple, Union
 
 import carb
 import lula
@@ -68,7 +68,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         end_effector_frame_name: str,
         maximum_substep_size: float,
         ignore_robot_state_updates: bool = False,
-    ):
+    ) -> None:
 
         self.maximum_substep_size = maximum_substep_size
         if maximum_substep_size <= 0:
@@ -102,7 +102,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         self._collision_spheres = []
         self._ee_visual = None
 
-    def set_ignore_state_updates(self, ignore_robot_state_updates: bool):
+    def set_ignore_state_updates(self, ignore_robot_state_updates: bool) -> None:
         """An RmpFlow specific method; set an internal flag in RmpFlow: ignore_robot_state_updates.
 
         Args:
@@ -116,7 +116,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         """
         self.ignore_robot_state_updates = ignore_robot_state_updates
 
-    def set_cspace_target(self, active_joint_targets: object):
+    def set_cspace_target(self, active_joint_targets: object) -> None:
         """Set a cspace target for RmpFlow.  RmpFlow always has a cspace target, and setting a new cspace target does not override a position target.
 
         RmpFlow uses the cspace target to help resolve null space behavior when a position target can be acheived in a variety of ways.
@@ -127,7 +127,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         """
         self._policy.set_cspace_attractor(active_joint_targets.astype(np.float64))
 
-    def update_world(self, updated_obstacles: List = None):
+    def update_world(self, updated_obstacles: list = None) -> None:
         """Updates the world view with obstacles and refreshes RmpFlow's policy with the updated world state.
 
         Args:
@@ -143,7 +143,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         watched_joint_positions: np.array,
         watched_joint_velocities: np.array,
         frame_duration: float,
-    ) -> Tuple[np.array, np.array]:
+    ) -> tuple[np.array, np.array]:
         """Compute robot joint targets for the next frame based on the current robot position.
 
         RmpFlow will ignore active joint positions and velocities if it has been set to ignore_robot_state_updates
@@ -167,7 +167,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         self._update_robot_joint_states(active_joint_positions, active_joint_velocities, frame_duration)
         return self._robot_joint_positions, self._robot_joint_velocities
 
-    def visualize_collision_spheres(self):
+    def visualize_collision_spheres(self) -> None:
         """An RmpFlow specific debugging method.  This function creates visible sphere prims that match the locations and radii.
 
         of the collision spheres that RmpFlow uses to prevent robot collisions.  Once created, RmpFlow will update the sphere locations
@@ -184,7 +184,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
                 for sphere in self._collision_spheres:
                     sphere.set_visibility(True)
 
-    def visualize_end_effector_position(self):
+    def visualize_end_effector_position(self) -> None:
         """An RmpFlow specific debugging method.  This function creates a visible cube whose translation and orientation match where RmpFlow.
 
         believes the robot end effector to be.  Once created, RmpFlow will update the position of the cube whenever its internal robot state changes.
@@ -194,7 +194,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         else:
             self._ee_visual.set_visibility(True)
 
-    def stop_visualizing_collision_spheres(self):
+    def stop_visualizing_collision_spheres(self) -> None:
         """An RmpFlow specific debugging method.  This function removes the collision sphere prims created by either RmpFlow.visualize_collision_spheres() or.
 
         RmpFlow.get_collision_spheres_as_prims().  Rather than making the prims invisible, they are deleted from the stage to increase performance.
@@ -202,14 +202,14 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         self.delete_collision_sphere_prims()
         self._collision_spheres = []
 
-    def stop_visualizing_end_effector(self):
+    def stop_visualizing_end_effector(self) -> None:
         """An RmpFlow specific debugging method.  This function removes the end effector prim that can be created by visualize_end_effector_position() or.
 
         get_end_effector_position_as_prim().
         """
         self.delete_end_effector_prim()
 
-    def get_collision_spheres_as_prims(self) -> List:
+    def get_collision_spheres_as_prims(self) -> list:
         """An RmpFlow specific debugging method.  This function is similar to RmpFlow.visualize_collision_spheres().  If the collision spheres have already been added to the stage as prims,.
 
         they will be returned.  If the collision spheres have not been added to the stage as prims, they will be created and returned.  If created in this function, the spheres will be invisible
@@ -240,21 +240,21 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         self._create_ee_visual(False)
         return self._ee_visual
 
-    def delete_collision_sphere_prims(self):
+    def delete_collision_sphere_prims(self) -> None:
         """An RmpFlow specific debugging method.  This function deletes any prims that have been created by RmpFlow to visualize its internal collision spheres."""
         for sphere in self._collision_spheres:
             delete_prim(sphere.prim_path)
 
         self._collision_spheres = []
 
-    def delete_end_effector_prim(self):
+    def delete_end_effector_prim(self) -> None:
         """An RmpFlow specific debugging method.  If RmpFlow is maintaining a prim for its believed end effector position, this function will delete the prim."""
         if self._ee_visual is not None:
             delete_prim(self._ee_visual.prim_path)
 
         self._ee_visual = None
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset RmpFlow to its initial state."""
         LulaInterfaceHelper.reset(self)
 
@@ -286,7 +286,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         active_joint_velocities: np.array,
         watched_joint_positions: np.array,
         watched_joint_velocities: np.array,
-    ):
+    ) -> None:
         """An RmpFlow specific method; this function overwrites the robot state regardless of the ignore_robot_state_updates flag.
 
         RmpFlow does not currently support watching joints that it is not actively controlling.
@@ -308,7 +308,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         self._update_visuals()
         return
 
-    def get_internal_robot_joint_states(self) -> Tuple[np.array, np.array, np.array, np.array]:
+    def get_internal_robot_joint_states(self) -> tuple[np.array, np.array, np.array, np.array]:
         """An RmpFlow specific method; this function returns the internal robot state that is believed by RmpFlow.
 
         Returns:
@@ -334,7 +334,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         """
         return self._robot_description.default_c_space_configuration()
 
-    def get_active_joints(self) -> List[str]:
+    def get_active_joints(self) -> list[str]:
         """Returns a list of joint names that RmpFlow is controlling.
 
         Some articulated robot joints may be ignored by some policies. E.g., the gripper of the Franka arm is not used
@@ -348,7 +348,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         """
         return LulaInterfaceHelper.get_active_joints(self)
 
-    def get_watched_joints(self) -> List[str]:
+    def get_watched_joints(self) -> list[str]:
         """Currently, RmpFlow is not capable of watching joint states that are not being directly controlled (active joints).
 
         If RmpFlow is controlling a robot arm at the end of an externally controlled body, set_robot_base_pose() can be used to make RmpFlow aware of the robot position
@@ -360,7 +360,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         """
         return []
 
-    def get_end_effector_pose(self, active_joint_positions: np.array) -> Tuple[np.array, np.array]:
+    def get_end_effector_pose(self, active_joint_positions: np.array) -> tuple[np.array, np.array]:
         """Get the end effector pose for the given joint positions.
 
         Args:
@@ -384,15 +384,13 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         return solver
 
-    def set_end_effector_target(self, target_position: object = None, target_orientation: object = None):
+    def set_end_effector_target(self, target_position: object = None, target_orientation: object = None) -> None:
         """Sets the end effector target position and orientation for RMPflow motion planning.
 
         Args:
             target_position: Target position for the end effector in world coordinates.
             target_orientation: Target orientation for the end effector as a quaternion.
         """
-        __doc__ = MotionPolicy.set_end_effector_target.__doc__
-
         if target_orientation is not None:
             target_rotation = quats_to_rot_matrices(target_orientation)
         else:
@@ -407,7 +405,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         self._set_end_effector_target()
 
-    def set_robot_base_pose(self, robot_position: np.array, robot_orientation: np.array):
+    def set_robot_base_pose(self, robot_position: np.array, robot_orientation: np.array) -> None:
         """Sets the robot base pose in world coordinates.
 
         Args:
@@ -427,12 +425,11 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         Returns:
             True if the obstacle was successfully added.
         """
-        __doc__ = MotionPolicy.add_obstacle.__doc__
         return MotionPolicy.add_obstacle(self, obstacle, static)
 
     def add_cuboid(
         self,
-        cuboid: Union[objects.cuboid.DynamicCuboid, objects.cuboid.FixedCuboid, objects.cuboid.VisualCuboid],
+        cuboid: objects.cuboid.DynamicCuboid | objects.cuboid.FixedCuboid | objects.cuboid.VisualCuboid,
         static: bool = False,
     ) -> bool:
         """Adds a cuboid obstacle to the RMPflow world for collision avoidance.
@@ -447,7 +444,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         return LulaInterfaceHelper.add_cuboid(self, cuboid, static)
 
     def add_sphere(
-        self, sphere: Union[objects.sphere.DynamicSphere, objects.sphere.VisualSphere], static: bool = False
+        self, sphere: objects.sphere.DynamicSphere | objects.sphere.VisualSphere, static: bool = False
     ) -> bool:
         """Adds a sphere obstacle to the RMPflow world for collision avoidance.
 
@@ -461,7 +458,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         return LulaInterfaceHelper.add_sphere(self, sphere, static)
 
     def add_capsule(
-        self, capsule: Union[objects.capsule.DynamicCapsule, objects.capsule.VisualCapsule], static: bool = False
+        self, capsule: objects.capsule.DynamicCapsule | objects.capsule.VisualCapsule, static: bool = False
     ) -> bool:
         """Adds a capsule obstacle to the RMPflow world for collision avoidance.
 
@@ -518,7 +515,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         """
         return LulaInterfaceHelper.remove_obstacle(self, obstacle)
 
-    def _set_end_effector_target(self):
+    def _set_end_effector_target(self) -> None:
         """Sets the end effector target position and orientation in the RMPflow policy.
 
         Transforms the stored end effector targets to the robot base frame and configures the internal
@@ -547,7 +544,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         else:
             self._policy.clear_end_effector_orientation_attractor()
 
-    def _create_ee_visual(self, is_visible: bool):
+    def _create_ee_visual(self, is_visible: bool) -> None:
         """Creates a visual cuboid prim to represent the end effector position.
 
         The cuboid is positioned at the current end effector pose and can be used for debugging
@@ -567,7 +564,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         self._ee_visual.set_world_pose(position=ee_pos, orientation=rot_matrices_to_quats(rot_mat))
         self._ee_visual.set_visibility(is_visible)
 
-    def _create_collision_sphere_prims(self, is_visible: bool):
+    def _create_collision_sphere_prims(self, is_visible: bool) -> None:
         """Creates visual sphere prims to represent RMPflow's collision spheres.
 
         The spheres match the locations and radii of the internal collision spheres used by RMPflow
@@ -594,7 +591,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
                 sphere.set_world_pose(position=sphere_translation / self._meters_per_unit)
                 sphere.set_visibility(is_visible)
 
-    def _update_collision_sphere_prims(self):
+    def _update_collision_sphere_prims(self) -> None:
         """Updates the positions of existing collision sphere prims.
 
         Moves the visual sphere prims to match the current positions of RMPflow's internal
@@ -615,7 +612,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
             sphere_translation = self._robot_rot @ sphere_pose + self._robot_pos
             col_sphere.set_world_pose(position=sphere_translation / self._meters_per_unit)
 
-    def _update_end_effector_prim(self):
+    def _update_end_effector_prim(self) -> None:
         """Updates the position and orientation of the end effector visual prim.
 
         Moves the visual cuboid to match the current end effector pose based on the robot's
@@ -630,7 +627,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         ee_pos, rot_mat = self.get_end_effector_pose(self._robot_joint_positions)
         self._ee_visual.set_world_pose(ee_pos, rot_matrices_to_quats(rot_mat))
 
-    def _update_visuals(self):
+    def _update_visuals(self) -> None:
         """Updates all visual debugging prims.
 
         Updates both the collision sphere positions and end effector prim to match the current
@@ -640,7 +637,9 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
             self._update_collision_sphere_prims()
             self._update_end_effector_prim()
 
-    def _update_robot_joint_states(self, joint_positions: np.array, joint_velocities: np.array, frame_duration: float):
+    def _update_robot_joint_states(
+        self, joint_positions: np.array, joint_velocities: np.array, frame_duration: float
+    ) -> None:
         """Updates the internal robot joint states through integration.
 
         Performs Euler integration to advance the robot state, using either the provided joint
@@ -667,7 +666,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
     def _euler_integration(
         self, joint_positions: np.array, joint_velocities: np.array, frame_duration: float
-    ) -> Tuple[np.array, np.array]:
+    ) -> tuple[np.array, np.array]:
         """Performs Euler integration to advance robot joint states.
 
         Integrates the robot dynamics using multiple substeps to maintain stability. The number
@@ -731,7 +730,7 @@ class RmpFlowSmoothed(RmpFlow):
         **kwargs: Additional keyword arguments passed to the parent RmpFlow class.
     """
 
-    def __init__(self, *args: object, **kwargs: object):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
 
         self.desired_speed_scalar = 1.0
@@ -749,7 +748,7 @@ class RmpFlowSmoothed(RmpFlow):
         self.speed_scalar_alpha_blend = 0.985  # Used for real world experiments.
         self.verbose = False
 
-    def _eval_speed_scaled_accel(self, joint_positions: object, joint_velocities: object):
+    def _eval_speed_scaled_accel(self, joint_positions: object, joint_velocities: object) -> object:
         """Evaluate speed-scaled acceleration for the robot joints.
 
         Args:
@@ -764,7 +763,7 @@ class RmpFlowSmoothed(RmpFlow):
 
         return qdd_eval
 
-    def _euler_integration(self, joint_positions: object, joint_velocities: object, frame_duration: float):
+    def _euler_integration(self, joint_positions: object, joint_velocities: object, frame_duration: float) -> tuple:
         """Perform Euler integration with jerk monitoring and speed scaling.
 
         This method extends the base Euler integration with jerk reduction and truncation mechanisms
@@ -817,7 +816,7 @@ class RmpFlowSmoothed(RmpFlow):
                     if jerk > self.big_jerk_limit:
                         self.speed_scalar = self.min_speed_scalar
                         if self.verbose:
-                            print("<jerk reduction> new speed scalar = %f" % self.speed_scalar)
+                            print(f"<jerk reduction> new speed scalar = {self.speed_scalar:f}")
                         jerk_reduction_performed = True
 
                     is_first = False
@@ -830,7 +829,6 @@ class RmpFlowSmoothed(RmpFlow):
                 if jerk > self.max_medium_jerk:
                     if self.verbose:
                         print("<jerk truncation>")
-                    jerk_truncation_performed = True
                     v = normalized(qdd_eval - self.qdd)
                     qdd_eval = self.qdd + self.max_medium_jerk * v
 

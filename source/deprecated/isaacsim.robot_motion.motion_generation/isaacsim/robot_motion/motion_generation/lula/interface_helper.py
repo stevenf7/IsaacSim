@@ -15,8 +15,9 @@
 
 """Provides helper utilities for interfacing with Lula robot motion generation algorithms."""
 
+from __future__ import annotations
 
-from typing import List, Optional, Tuple, Union
+from typing import Optional
 
 import lula
 import numpy as np
@@ -35,7 +36,7 @@ class LulaInterfaceHelper(LulaWorld):
         robot_description: The Lula robot description containing kinematic information.
     """
 
-    def __init__(self, robot_description: lula.RobotDescription):
+    def __init__(self, robot_description: lula.RobotDescription) -> None:
         LulaWorld.__init__(self)
 
         self._robot_description = robot_description
@@ -46,7 +47,7 @@ class LulaInterfaceHelper(LulaWorld):
 
         self._meters_per_unit = get_stage_units()
 
-    def set_robot_base_pose(self, robot_position: np.array, robot_orientation: np.array):
+    def set_robot_base_pose(self, robot_position: np.array, robot_orientation: np.array) -> None:
         """Update position of the robot base. Until this function is called, Lula will assume the base pose.
 
         to be at the origin with identity rotation.
@@ -78,7 +79,7 @@ class LulaInterfaceHelper(LulaWorld):
             self._robot_description.c_space_coord_name(i) for i in range(self._robot_description.num_c_space_coords())
         ]
 
-    def get_watched_joints(self) -> List:
+    def get_watched_joints(self) -> list:
         """Lula does not currently support watching joint states that are not controllable.
 
         Returns:
@@ -86,7 +87,7 @@ class LulaInterfaceHelper(LulaWorld):
         """
         return []
 
-    def get_end_effector_pose(self, active_joint_positions: np.array, frame_name: str) -> Tuple[np.array, np.array]:
+    def get_end_effector_pose(self, active_joint_positions: np.array, frame_name: str) -> tuple[np.array, np.array]:
         """Return pose of robot end effector given current joint positions.
 
         The end effector position will be transformed into world coordinates based
@@ -112,7 +113,7 @@ class LulaInterfaceHelper(LulaWorld):
         rotation = self._robot_rot @ pose.rotation.matrix()
         return translation / self._meters_per_unit, rotation
 
-    def update_world(self, updated_obstacles: Optional[List] = None):
+    def update_world(self, updated_obstacles: Optional[list] = None) -> None:
         """Update the world state with current robot base position and any obstacle changes.
 
         Args:
@@ -123,9 +124,9 @@ class LulaInterfaceHelper(LulaWorld):
 
     def add_cuboid(
         self,
-        cuboid: Union[objects.cuboid.DynamicCuboid, objects.cuboid.FixedCuboid, objects.cuboid.VisualCuboid],
+        cuboid: objects.cuboid.DynamicCuboid | objects.cuboid.FixedCuboid | objects.cuboid.VisualCuboid,
         static: Optional[bool] = False,
-    ):
+    ) -> bool:
         """Add a cuboid obstacle to the Lula world.
 
         Args:
@@ -138,8 +139,8 @@ class LulaInterfaceHelper(LulaWorld):
         return LulaWorld.add_cuboid(self, cuboid, static, self._robot_pos, self._robot_rot)
 
     def add_sphere(
-        self, sphere: Union[objects.sphere.DynamicSphere, objects.sphere.VisualSphere], static: bool = False
-    ):
+        self, sphere: objects.sphere.DynamicSphere | objects.sphere.VisualSphere, static: bool = False
+    ) -> bool:
         """Add a sphere obstacle to the Lula world.
 
         Args:
@@ -152,8 +153,8 @@ class LulaInterfaceHelper(LulaWorld):
         return LulaWorld.add_sphere(self, sphere, static, self._robot_pos, self._robot_rot)
 
     def add_capsule(
-        self, capsule: Union[objects.capsule.DynamicCapsule, objects.capsule.VisualCapsule], static: bool = False
-    ):
+        self, capsule: objects.capsule.DynamicCapsule | objects.capsule.VisualCapsule, static: bool = False
+    ) -> bool:
         """Add a capsule obstacle to the Lula world.
 
         Args:
@@ -165,14 +166,14 @@ class LulaInterfaceHelper(LulaWorld):
         """
         return LulaWorld.add_capsule(self, capsule, static, self._robot_pos, self._robot_rot)
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the Lula world and robot base pose to initial state."""
         LulaWorld.reset(self)
 
         self._robot_base_moved = False
         self._robot_pos, self._robot_rot = np.zeros(3), np.eye(3)
 
-    def _get_prim_pose_rel_robot_base(self, prim: object):
+    def _get_prim_pose_rel_robot_base(self, prim: object) -> tuple:
         """Get the pose of a prim relative to the robot base position.
 
         Args:
@@ -186,7 +187,7 @@ class LulaInterfaceHelper(LulaWorld):
             prim, self._meters_per_unit, self._robot_pos, self._robot_rot
         )
 
-    def _get_pose_rel_robot_base(self, trans: object, rot: object):
+    def _get_pose_rel_robot_base(self, trans: object, rot: object) -> tuple:
         """Transforms a pose from world coordinates to robot base relative coordinates.
 
         Args:

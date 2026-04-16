@@ -15,6 +15,10 @@
 
 """Peck behavior implemented as a decider network with context monitors."""
 
+from __future__ import annotations
+
+from typing import Any
+
 import isaacsim.cortex.framework.math_util as math_util
 import numpy as np
 from isaacsim.cortex.framework.df import (
@@ -32,7 +36,7 @@ from isaacsim.cortex.framework.dfb import DfLift, DfRobotApiContext
 from isaacsim.cortex.framework.motion_commander import ApproachParams, PosePq
 
 
-def sample_target_p():
+def sample_target_p() -> np.ndarray:
     """Sample a random target position on the ground plane."""
     min_x = 0.3
     max_x = 0.7
@@ -47,7 +51,7 @@ def sample_target_p():
     return pt
 
 
-def make_target_rotation(target_p):
+def make_target_rotation(target_p: np.ndarray) -> np.ndarray:
     """Compute a downward-facing rotation quaternion oriented toward the target."""
     return math_util.matrix_to_quat(
         math_util.make_rotation_matrix(az_dominant=np.array([0.0, 0.0, -1.0]), ax_suggestion=-target_p)
@@ -61,27 +65,27 @@ class PeckContext(DfRobotApiContext):
         robot: The robot API instance.
     """
 
-    def __init__(self, robot):
+    def __init__(self, robot: Any) -> None:
         super().__init__(robot)
         self.robot = robot
         self.reset()
         self.add_monitors([PeckContext.monitor_active_target_p])
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the context state."""
         self.is_done = True
         self.active_target_p = None
 
-    def monitor_active_target_p(self):
+    def monitor_active_target_p(self) -> None:
         """Mark the task as done if the active target is near an obstacle."""
         if self.active_target_p is not None and self.is_near_obs(self.active_target_p):
             self.is_done = True
 
-    def set_is_done(self):
+    def set_is_done(self) -> None:
         """Mark the current peck task as done."""
         self.is_done = True
 
-    def is_near_obs(self, p):
+    def is_near_obs(self, p: np.ndarray) -> bool:
         """Check whether a point is within proximity of any registered obstacle."""
         for _, obs in self.robot.registered_obstacles.items():
             obs_p, _ = obs.get_world_pose()
@@ -89,14 +93,14 @@ class PeckContext(DfRobotApiContext):
                 return True
         return False
 
-    def sample_target_p_away_from_obs(self):
+    def sample_target_p_away_from_obs(self) -> np.ndarray:
         """Sample a random target position that is not near any obstacle."""
         target_p = sample_target_p()
         while self.is_near_obs(target_p):
             target_p = sample_target_p()
         return target_p
 
-    def choose_next_target(self):
+    def choose_next_target(self) -> None:
         """Choose the next peck target away from obstacles."""
         self.active_target_p = self.sample_target_p_away_from_obs()
 
@@ -104,7 +108,7 @@ class PeckContext(DfRobotApiContext):
 class PeckState(DfState):
     """State that sends the end-effector to peck at the active target."""
 
-    def enter(self):
+    def enter(self) -> None:
         """Compute the peck target pose and send the end-effector command."""
         target_p = self.context.active_target_p
         target_q = make_target_rotation(target_p)
@@ -112,7 +116,7 @@ class PeckState(DfState):
         approach_params = ApproachParams(direction=np.array([0.0, 0.0, -0.1]), std_dev=0.04)
         self.context.robot.arm.send_end_effector(self.target, approach_params=approach_params)
 
-    def step(self):
+    def step(self) -> Any:
         """Continue until the end-effector reaches the target."""
         # Send the command each cycle so exponential smoothing will converge.
         target_dist = np.linalg.norm(self.context.robot.arm.get_fk_p() - self.target.p)
@@ -124,7 +128,7 @@ class PeckState(DfState):
 class ChooseTarget(DfAction):
     """Action that chooses the next peck target."""
 
-    def step(self):
+    def step(self) -> None:
         """Mark the task as not done and choose the next target."""
         self.context.is_done = False
         self.context.choose_next_target()
@@ -133,7 +137,7 @@ class ChooseTarget(DfAction):
 class CloseGripper(DfAction):
     """Action that closes the gripper."""
 
-    def enter(self):
+    def enter(self) -> None:
         """Close the gripper."""
         self.context.robot.gripper.close()
 
@@ -151,7 +155,7 @@ class Dispatch(DfDecider):
     decider to choose a new target.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.add_child("choose_target", ChooseTarget())
@@ -169,7 +173,7 @@ class Dispatch(DfDecider):
             ),
         )
 
-    def decide(self):
+    def decide(self) -> Any:
         """Decide to choose a target if done, otherwise continue pecking."""
         if self.context.is_done:
             return DfDecision("choose_target")
@@ -177,6 +181,6 @@ class Dispatch(DfDecider):
             return DfDecision("peck")
 
 
-def make_decider_network(robot):
+def make_decider_network(robot: Any) -> Any:
     """Create the peck decider network for the given robot."""
     return DfNetwork(Dispatch(), context=PeckContext(robot))

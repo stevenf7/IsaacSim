@@ -43,7 +43,7 @@ class Extension(omni.ext.IExt):
     of robot motion planning operations.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension is starting up.
 
         Sets up the Lula logging configuration with warning level and prefix.
@@ -54,5 +54,5 @@ class Extension(omni.ext.IExt):
         set_log_level(LogLevel.WARNING)
         set_default_logger_prefix("[Lula] ")
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension is shutting down."""

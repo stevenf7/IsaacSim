@@ -86,9 +86,12 @@ The DfRldsDecider is an important DfDecider type implementing the Robust Logical
 model of reactive decision making.
 """
 
+from __future__ import annotations
+
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Callable, List, Optional, Sequence
+from collections.abc import Callable, Sequence
+from typing import Any, Optional
 
 """ A logical state monitor is a function which takes this DfLogicalState object as input and
 processes it to compute some logical state. The computed logical state should be set in the
@@ -105,7 +108,7 @@ class DfLogicalState:
     monitors.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.monitors = []
 
     def add_monitor(self, monitor: LogicalStateMonitorType) -> None:
@@ -130,7 +133,7 @@ class DfLogicalState:
         self.monitors.extend(monitors)
 
     @abstractmethod
-    def reset(self):
+    def reset(self) -> None:
         """This method is left unimplemented (no default version) in the base class because it's.
 
         important that deriving classes don't forget implement it to reset the logical state when
@@ -151,7 +154,7 @@ class DfDecision:
             whatever object the child is expecting. See the child node documentation for specifics.
     """
 
-    def __init__(self, name: str, params: Any = None):
+    def __init__(self, name: str, params: Any = None) -> None:
         self.name = name
         self.params = params
 
@@ -222,14 +225,14 @@ class DfDecider(DfBindable):
     and D as we reach them.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.name = "root"
         self.context = None
         self.params = None
         self.children = {}
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return the name of this decider node."""
         return self.name
 
@@ -310,8 +313,8 @@ class DfAction(DfDecider):
 
 
 def df_descend(
-    root: DfDecider, root_params: Any, context: DfLogicalState, prev_stack: List[DfDecider]
-) -> List[DfDecider]:
+    root: DfDecider, root_params: Any, context: DfLogicalState, prev_stack: list[DfDecider]
+) -> list[DfDecider]:
     """Descend the decider network from the root to a leaf. Uses the prev_stack to check when or if.
 
     branches occure. Returns the current stack representing the path from the root to the leaf.
@@ -475,13 +478,13 @@ class DfStateSequence(DfState):
             terminates. Defaults to False.
     """
 
-    def __init__(self, sequence: Sequence[DfState], loop: Optional[bool] = False):
+    def __init__(self, sequence: Sequence[DfState], loop: Optional[bool] = False) -> None:
         super().__init__()
         self.sequence = sequence
         self.loop = loop
         self.state = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation of the sequence and its current state."""
         return f"{type(self).__name__}[{self.state}]"
 
@@ -550,7 +553,7 @@ class DfStateSequence(DfState):
         else:
             return None
 
-    def exit(self):
+    def exit(self) -> None:
         """Exit the sequence by exiting the currently active state."""
         if self.state is not None:
             self.state.exit()
@@ -571,12 +574,12 @@ class DfHierarchicalState(DfState):
         init_state: The starting state of the internal state machine.
     """
 
-    def __init__(self, init_state: DfState):
+    def __init__(self, init_state: DfState) -> None:
         super().__init__()
         self.init_state = init_state
         self.active_state = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation of this hierarchical state."""
         return f"{type(self).__name__}[{self.active_state}]"
 
@@ -641,11 +644,11 @@ class DfHsmAction(DfAction):
         hsm: The state object stepped internally.
     """
 
-    def __init__(self, hsm: DfState):
-        super(DfHsmAction, self).__init__()
+    def __init__(self, hsm: DfState) -> None:
+        super().__init__()
         self.hsm = hsm
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation by delegating to the internal HSM."""
         return self.hsm.__str__()
 
@@ -666,7 +669,7 @@ class DfRate(ABC):
     """Abstract interface required by rate objects."""
 
     @abstractmethod
-    def sleep(self):
+    def sleep(self) -> None:
         """Sleep for the appropriate duration between steps."""
         raise NotImplementedError()
 
@@ -674,7 +677,7 @@ class DfRate(ABC):
 class DfFastestRate(DfRate):
     """A rate class that simply loops as fast as possible."""
 
-    def sleep(self):
+    def sleep(self) -> None:
         """Return immediately without sleeping."""
 
 
@@ -717,7 +720,7 @@ class DfDeciderState(DfState):
             internally.
     """
 
-    def __init__(self, decider: DfDecider):
+    def __init__(self, decider: DfDecider) -> None:
         self.decider = decider
         self.stack = []
 
@@ -782,7 +785,7 @@ class DfTimedDeciderState(DfDeciderState):
         activity_duration: How long to step the decider network in seconds.
     """
 
-    def __init__(self, decider: DfDecider, activity_duration: float):
+    def __init__(self, decider: DfDecider, activity_duration: float) -> None:
         super().__init__(decider)
         self.activity_duration = activity_duration
 
@@ -823,11 +826,11 @@ class DfWaitState(DfState):
         wait_time: The number of seconds to wait.
     """
 
-    def __init__(self, wait_time: float):
+    def __init__(self, wait_time: float) -> None:
         super().__init__()
         self.wait_time = wait_time
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string showing the wait time."""
         return f"Wait({self.wait_time})"
 
@@ -864,36 +867,36 @@ class DfStateMachineDecider(DfDecider):
         state: The initial state of the internal state machine that will be run/
     """
 
-    def __init__(self, state: DfState):
+    def __init__(self, state: DfState) -> None:
         super().__init__()
         self.init_state = state
         self.state = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string showing the decider name and current state."""
         return f"{self.name}[{self.state}]"
 
-    def enter(self):
+    def enter(self) -> None:
         """On entry, the state machine is reset back to the initial state."""
         self.state = self.init_state
         if self.state is not None:
             self._bind_state()
             self.state.enter()
 
-    def decide(self):
+    def decide(self) -> DfDecision | None:
         """On decide, the internal state machine is processed.
 
         Returns:
             None, as this decider processes an internal state machine rather than choosing children.
         """
-        if self.state == None:
-            return
+        if self.state is None:
+            return None
 
         self._bind_state()
         self.state = self.state.process_step()
-        return
+        return None
 
-    def exit(self):
+    def exit(self) -> None:
         """On exit, the internal state machine is exited."""
         if self.state is not None:
             self._bind_state()
@@ -921,11 +924,11 @@ class DfSetLockState(DfState):
         decider: The decider node to be locked or unlocked.
     """
 
-    def __init__(self, set_locked_to: bool, decider: DfDecider):
+    def __init__(self, set_locked_to: bool, decider: DfDecider) -> None:
         self.set_locked_to = set_locked_to
         self.decider = decider
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string showing the lock state and decider name."""
         return f"SetLockState(set_locked_to:{self.set_locked_to}, {self.decider.name})"
 
@@ -948,15 +951,15 @@ class DfWriteContextState(DfState):
             context object). This is the method called on the context object on entry.
     """
 
-    def __init__(self, write_method: Callable[[DfLogicalState], None]):
+    def __init__(self, write_method: Callable[[DfLogicalState], None]) -> None:
         self.write_method = write_method
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string showing the write method name."""
         return f"WriteContextState({self.write_method.__name__})"
 
-    def enter(self):
-        """Calls the provided write method on entry."""
+    def enter(self) -> None:
+        """Call the provided write method on entry."""
         self.write_method(self.context)
 
 
@@ -967,16 +970,13 @@ class DfBehavior(ABC):
     """
 
     @abstractmethod
-    def step(self):
-        """Stepping the behavior runs it. It'll step generally at the rate of physics, which is.
-
-        often 60hz.
-        """
+    def step(self) -> None:
+        """Step the behavior. Steps generally at the rate of physics, which is often 60hz."""
         raise NotImplementedError()
 
     @abstractmethod
-    def reset(self):
-        """Resetting a behavior should revert it back to its initial state."""
+    def reset(self) -> None:
+        """Reset a behavior back to its initial state."""
         raise NotImplementedError()
 
 
@@ -1024,7 +1024,7 @@ class DfNetwork(DfBehavior):
         params: Optional[Any] = None,
         monitors: Optional[Sequence[LogicalStateMonitorType]] = None,
         context: Optional[DfLogicalState] = None,
-    ):
+    ) -> None:
         super().__init__()
         self._decider = root
         self._params = params
@@ -1035,7 +1035,7 @@ class DfNetwork(DfBehavior):
 
         self.reset()
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string showing the network type and decider state."""
         return f"{type(self).__name__}[{self._decider_state}]"
 
@@ -1134,17 +1134,17 @@ class DfRldsNode(DfDecider):
     are queried, so those methods have access to the decider node's context and current params.
     """
 
-    def is_runnable(self):
+    def is_runnable(self) -> bool | None:
         """Override this method to implement the IsRunnable condition of the RLDS node."""
 
-    def is_enterable(self):
-        """Is enterable can be overriden to specify a slightly different enterable condition than.
+    def is_enterable(self) -> bool | None:
+        """Specify a slightly different enterable condition than the runnable condition.
 
-        the runnable condition. For instance, it's common to choose the enterable condition to be
-        more stringent than the runnable condition so the system is robustly satisfying the runnable
-        condition before the enterable condition is triggered.
+        It's common to choose the enterable condition to be more stringent than the runnable
+        condition so the system is robustly satisfying the runnable condition before the enterable
+        condition is triggered.
 
-        The enterable condition defaults to being equivalent to the enterable condition.
+        The enterable condition defaults to being equivalent to the runnable condition.
 
         Returns:
             True if the node is enterable, False otherwise.
@@ -1190,11 +1190,11 @@ class DfRldsDecider(DfDecider):
     of the DfRldsDecider.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.sequence = []
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return the class name of this RLDS decider."""
         return type(self).__name__
 
@@ -1206,11 +1206,11 @@ class DfRldsDecider(DfDecider):
             rlds_node: The child decider node representing an RLDS node.
         """
 
-        def __init__(self, name: str, rlds_node: DfRldsNode):
+        def __init__(self, name: str, rlds_node: DfRldsNode) -> None:
             self.name = name
             self.rlds_node = rlds_node
 
-        def __str__(self):
+        def __str__(self) -> str:
             """Return the name of this RLDS node."""
             return self.name
 

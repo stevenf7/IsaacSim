@@ -15,10 +15,10 @@
 
 """Provides utilities for loading robot motion generation configuration files and discovering supported robot-policy combinations."""
 
+from __future__ import annotations
 
 import json
 import os
-from typing import List
 
 import carb
 from isaacsim.core.utils.extensions import get_extension_path_from_name
@@ -40,14 +40,14 @@ def get_supported_robot_policy_pairs() -> dict:
     with open(os.path.join(policy_config_dir, "policy_map.json")) as policy_map:
         policy_map = json.load(policy_map)
 
-    supported_policy_names_by_robot = dict()
+    supported_policy_names_by_robot = {}
     for k, v in policy_map.items():
         supported_policy_names_by_robot[k] = list(v.keys())
 
     return supported_policy_names_by_robot
 
 
-def get_supported_robots_with_lula_kinematics() -> List[str]:
+def get_supported_robots_with_lula_kinematics() -> list[str]:
     """Robot names that have supported lula kinematics configurations.
 
     Returns:
@@ -74,7 +74,7 @@ def get_supported_robot_path_planner_pairs() -> dict:
     with open(os.path.join(policy_config_dir, "path_planner_map.json")) as planner_map:
         planner_map = json.load(planner_map)
 
-    supported_planner_names_by_robot = dict()
+    supported_planner_names_by_robot = {}
     for k, v in planner_map.items():
         supported_planner_names_by_robot[k] = list(v.keys())
 
@@ -117,7 +117,7 @@ def load_supported_lula_kinematics_solver_config(robot_name: str, policy_config_
     config_path = os.path.join(policy_config_dir, policy_map[robot_name][policy_name])
     rmp_config = _process_policy_config(config_path)
 
-    kinematics_config = dict()
+    kinematics_config = {}
     kinematics_config["robot_description_path"] = rmp_config["robot_description_path"]
     kinematics_config["urdf_path"] = rmp_config["urdf_path"]
     return kinematics_config

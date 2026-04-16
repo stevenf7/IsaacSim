@@ -15,8 +15,7 @@
 
 """Interface for implementing path planning algorithms that generate collision-free paths from starting configurations to target poses in configuration or task space."""
 
-
-from typing import List
+from __future__ import annotations
 
 import numpy as np
 from isaacsim.robot_motion.motion_generation.world_interface import WorldInterface
@@ -28,10 +27,10 @@ class PathPlanner(WorldInterface):
     when linearly interpolated, produce a collision-free path from a starting c-space pose to a c-space or task-space target pose.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def set_robot_base_pose(self, robot_translation: np.array, robot_orientation: np.array):
+    def set_robot_base_pose(self, robot_translation: np.array, robot_orientation: np.array) -> None:
         """Set the position of the robot base. Computed paths will assume that the robot base remains stationary.
 
         Args:
@@ -55,7 +54,7 @@ class PathPlanner(WorldInterface):
         """
         return active_joint_positions
 
-    def get_active_joints(self) -> List[str]:
+    def get_active_joints(self) -> list[str]:
         """Active joints are directly controlled by this PathPlanner.
 
             Some articulated robot joints may be ignored by some policies. E.g., the gripper of the Franka arm is not used
@@ -68,7 +67,7 @@ class PathPlanner(WorldInterface):
         """
         return []
 
-    def get_watched_joints(self) -> List[str]:
+    def get_watched_joints(self) -> list[str]:
         """Watched joints are joints whose position matters to the PathPlanner, but are not directly controlled.
 
             e.g. A robot may have a watched joint in the middle of its kinematic chain. Watched joints will be assumed
@@ -80,7 +79,7 @@ class PathPlanner(WorldInterface):
         """
         return []
 
-    def set_cspace_target(self, active_joint_targets: np.array):
+    def set_cspace_target(self, active_joint_targets: np.array) -> None:
         """Set configuration space target for the robot.
 
         Args:
@@ -88,7 +87,7 @@ class PathPlanner(WorldInterface):
                 joints
         """
 
-    def set_end_effector_target(self, target_translation: object, target_orientation: object = None):
+    def set_end_effector_target(self, target_translation: object, target_orientation: object = None) -> None:
         """Set end effector target.
 
         Args:

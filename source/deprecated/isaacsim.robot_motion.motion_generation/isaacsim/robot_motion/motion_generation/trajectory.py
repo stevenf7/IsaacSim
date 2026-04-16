@@ -15,8 +15,7 @@
 
 """Provides an interface class for defining continuous-time trajectories for robots in Isaac Sim."""
 
-
-from typing import List, Tuple
+from __future__ import annotations
 
 import numpy as np
 
@@ -28,7 +27,7 @@ class Trajectory:
     to an ArticulationActions.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     @property
@@ -47,7 +46,7 @@ class Trajectory:
             End time of the trajectory.
         """
 
-    def get_active_joints(self) -> List[str]:
+    def get_active_joints(self) -> list[str]:
         """Active joints are directly controlled by this Trajectory.
 
         A Trajectory may be specified for only a subset of the joints in a robot Articulation. For example, it may include the DOFs in a robot
@@ -59,7 +58,7 @@ class Trajectory:
         """
         return []
 
-    def get_joint_targets(self, time: float) -> Tuple[np.array, np.array]:
+    def get_joint_targets(self, time: float) -> tuple[np.array, np.array]:
         """Return joint targets for the robot at the given time. The Trajectory interface assumes trajectories to.
 
         be represented continuously between a start time and end time. In instance of this class that internally generates discrete time

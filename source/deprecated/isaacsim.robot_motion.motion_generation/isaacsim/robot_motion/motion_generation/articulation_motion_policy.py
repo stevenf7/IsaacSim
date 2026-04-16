@@ -15,6 +15,7 @@
 
 """Provides wrapper class for running motion policies on simulated robots."""
 
+from __future__ import annotations
 
 import carb
 from isaacsim.core.api.articulations import ArticulationSubset
@@ -41,7 +42,7 @@ class ArticulationMotionPolicy:
 
     def __init__(
         self, robot_articulation: SingleArticulation, motion_policy: MotionPolicy, default_physics_dt: float = 1 / 60.0
-    ):
+    ) -> None:
 
         self.physics_dt = default_physics_dt
         self._robot_articulation = robot_articulation
@@ -55,7 +56,7 @@ class ArticulationMotionPolicy:
 
         self._default_physics_dt = default_physics_dt
 
-    def move(self, physics_dt: float = None):
+    def move(self, physics_dt: float = None) -> None:
         """Use underlying MotionPolicy to compute and apply joint targets to the robot over the next frame.
 
         Args:
@@ -148,7 +149,7 @@ class ArticulationMotionPolicy:
         """
         return self._default_physics_dt
 
-    def set_default_physics_dt(self, physics_dt: float):
+    def set_default_physics_dt(self, physics_dt: float) -> None:
         """Set the default value of the physics dt that is used to compute actions when none is provided.
 
         Args:
