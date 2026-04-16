@@ -31,6 +31,7 @@
 
 #include <OgnIsaacComputeOdometryDatabase.h>
 #include <atomic>
+#include <cstdint>
 #include <string>
 
 namespace isaacsim
@@ -68,84 +69,119 @@ public:
     {
         const GraphContextObj& context = db.abi_context();
         auto& state = db.perInstanceState<OgnIsaacComputeOdometry>();
-        if (state.m_firstFrame && state.m_simulationManagerFramework->isSimulating())
+        if (!state.ensureCurrentView(db, context))
         {
-            long stageId = context.iContext->getStageId(context);
-            auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
-            if (!stage)
-            {
-                db.logError("Could not find USD stage with ID %ld", stageId);
-                return false;
-            }
-
-            const auto& prim = db.inputs.chassisPrim();
-            if (prim.empty())
-            {
-                db.logError("No chassis (target) prim specified");
-                return false;
-            }
-
-            auto primSdfPath = omni::fabric::toSdfPath(prim[0]);
-            auto usdPrim = stage->GetPrimAtPath(primSdfPath);
-            if (!usdPrim)
-            {
-                db.logError(
-                    "The prim %s is not valid. Please specify at least one valid chassis prim", primSdfPath.GetText());
-                return false;
-            }
-
-            if (!state.m_readerManager)
-            {
-                db.logError("Failed to acquire IPrimDataReaderManager interface");
-                return false;
-            }
-
-            if (!state.m_readerManager->ensureInitialized(stageId, -1))
-            {
-                db.logError("Failed to initialize shared prim data reader session");
-                return false;
-            }
-            state.m_reader = state.m_readerManager->getReader();
-            if (!state.m_reader)
-            {
-                db.logError("Failed to acquire shared IPrimDataReader interface");
-                return false;
-            }
-
-            state.m_viewId = "odometry_" + std::to_string(s_viewCounter.fetch_add(1));
-            const char* pathStr = primSdfPath.GetText();
-
-            if (usdPrim.HasAPI<pxr::UsdPhysicsArticulationRootAPI>())
-            {
-                state.m_articulationView =
-                    state.m_reader->createArticulationView(state.m_viewId.c_str(), &pathStr, 1, "physx");
-                if (!state.m_articulationView)
-                {
-                    db.logError("Failed to create articulation view for '%s'", pathStr);
-                    return false;
-                }
-            }
-            else
-            {
-                state.m_rigidBodyView = state.m_reader->createRigidBodyView(state.m_viewId.c_str(), &pathStr, 1, "physx");
-                if (!state.m_rigidBodyView)
-                {
-                    db.logError("The prim at path '%s' is not a valid rigid body or articulation root", pathStr);
-                    return false;
-                }
-            }
-
-            state.readTransformAndVelocity();
-            state.m_startingPos = state.m_position;
-            state.m_startingQuat = state.m_orientation;
-            state.m_unitScale = UsdGeomGetStageMetersPerUnit(stage);
-            state.m_lastTime = state.m_simulationManagerFramework->getSimulationTime();
-            state.m_firstFrame = false;
+            return false;
         }
 
         state.computeOdometry(db);
 
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
+        return true;
+    }
+
+private:
+    bool ensureCurrentView(OgnIsaacComputeOdometryDatabase& db, const GraphContextObj& context)
+    {
+        if (!m_simulationManagerFramework || !m_simulationManagerFramework->isSimulating())
+        {
+            return false;
+        }
+
+        if (!m_firstFrame && m_reader && m_reader->getGeneration() == m_readerGeneration)
+        {
+            return true;
+        }
+
+        const bool preserveReferencePose = !m_firstFrame;
+
+        long stageId = context.iContext->getStageId(context);
+        auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+        if (!stage)
+        {
+            db.logError("Could not find USD stage with ID %ld", stageId);
+            return false;
+        }
+
+        const auto& prim = db.inputs.chassisPrim();
+        if (prim.empty())
+        {
+            db.logError("No chassis (target) prim specified");
+            return false;
+        }
+
+        auto primSdfPath = omni::fabric::toSdfPath(prim[0]);
+        auto usdPrim = stage->GetPrimAtPath(primSdfPath);
+        if (!usdPrim)
+        {
+            db.logError(
+                "The prim %s is not valid. Please specify at least one valid chassis prim", primSdfPath.GetText());
+            return false;
+        }
+
+        if (!m_readerManager)
+        {
+            m_readerManager = carb::getCachedInterface<IPrimDataReaderManager>();
+        }
+        if (!m_readerManager)
+        {
+            db.logError("Failed to acquire IPrimDataReaderManager interface");
+            return false;
+        }
+
+        if (!m_readerManager->ensureInitialized(stageId, -1))
+        {
+            db.logError("Failed to initialize shared prim data reader session");
+            return false;
+        }
+
+        cleanupView();
+
+        m_reader = m_readerManager->getReader();
+        if (!m_reader)
+        {
+            db.logError("Failed to acquire shared IPrimDataReader interface");
+            return false;
+        }
+        m_readerGeneration = m_reader->getGeneration();
+
+        m_viewId = "odometry_" + std::to_string(s_viewCounter.fetch_add(1));
+        const char* pathStr = primSdfPath.GetText();
+
+        if (usdPrim.HasAPI<pxr::UsdPhysicsArticulationRootAPI>())
+        {
+            m_articulationView = m_reader->createArticulationView(m_viewId.c_str(), &pathStr, 1, "physx");
+            if (!m_articulationView)
+            {
+                db.logError("Failed to create articulation view for '%s'", pathStr);
+                return false;
+            }
+        }
+        else
+        {
+            m_rigidBodyView = m_reader->createRigidBodyView(m_viewId.c_str(), &pathStr, 1, "physx");
+            if (!m_rigidBodyView)
+            {
+                db.logError("The prim at path '%s' is not a valid rigid body or articulation root", pathStr);
+                return false;
+            }
+        }
+
+        readTransformAndVelocity();
+        if (!preserveReferencePose)
+        {
+            m_startingPos = m_position;
+            m_startingQuat = m_orientation;
+        }
+        m_unitScale = UsdGeomGetStageMetersPerUnit(stage);
+
+        pxr::GfRotation rotation(m_orientation);
+        pxr::GfVec3d bodyLocalLinVel = rotation.GetInverse().TransformDir(m_globalLinearVel);
+        m_prevLinearVelocity = bodyLocalLinVel;
+        m_prevGlobalLinearVelocity = m_globalLinearVel;
+        m_prevAngularVelocity = m_bodyAngularVel;
+        m_lastTime = m_simulationManagerFramework->getSimulationTime();
+        m_firstFrame = false;
         return true;
     }
 
@@ -253,6 +289,8 @@ private:
         }
         m_articulationView = nullptr;
         m_rigidBodyView = nullptr;
+        m_reader = nullptr;
+        m_readerGeneration = 0;
         m_viewId.clear();
     }
 
@@ -261,6 +299,7 @@ private:
     IArticulationDataView* m_articulationView = nullptr;
     IRigidBodyDataView* m_rigidBodyView = nullptr;
     std::string m_viewId;
+    uint64_t m_readerGeneration = 0;
 
     isaacsim::core::simulation_manager::ISimulationManager* m_simulationManagerFramework = nullptr;
     bool m_firstFrame = true;

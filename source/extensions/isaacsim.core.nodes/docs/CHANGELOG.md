@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.7.2] - 2026-04-15
+### Changed
+- Modified the `OgnIsaacComputeOdometry` and `OgnIsaacComputeTransformTree` nodes to validate that their current prim
+  views are correct before executing.
+
 ## [5.7.1] - 2026-03-25
 ### Fixed
 - IsaacComputeTransformTree now applies a 180-degree x-axis rotation for UsdGeomCamera prims to convert from USD camera convention to ROS optical frame convention
