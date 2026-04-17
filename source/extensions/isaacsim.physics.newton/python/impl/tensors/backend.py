@@ -110,7 +110,6 @@ class ArticulationSet:
         max_dofs: int,
     ):
         self.newton_stage = newton_stage
-        self.model = newton_stage.model
         self.articulation_indices = articulation_indices
         self.root_body_indices = root_body_indices
         self.dof_position_indices = dof_position_indices
@@ -126,6 +125,10 @@ class ArticulationSet:
         self.q_ik = self.model.joint_q
         self.qd_ik = self.model.joint_qd
         self.q_forces = wp.zeros(self.dof_axis_indices.shape[0], dtype=wp.float32)
+
+    @property
+    def model(self):
+        return self.newton_stage.model
 
     @property
     def shared_metatype(self) -> ArticulationMetaType:
@@ -266,7 +269,6 @@ class RigidBodySet:
         body_names: list[str],
     ):
         self.newton_stage = newton_stage
-        self.model = newton_stage.model
         self.body_indices = body_indices
         self.body_paths = body_paths
         self.prim_paths = body_paths
@@ -281,6 +283,10 @@ class RigidBodySet:
             body_idx = body_indices_list[i]
             shape_ids = self.model.body_shapes[body_idx]
             self.max_shapes = max(self.max_shapes, len(shape_ids))
+
+    @property
+    def model(self):
+        return self.newton_stage.model
 
 
 class RigidContactSet:
@@ -317,7 +323,6 @@ class RigidContactSet:
         max_contact_data_count: int = 0,
     ):
         self.newton_stage = newton_stage
-        self.model = newton_stage.model
         self.sensor_indices = sensor_indices
         self.sensor_paths = sensor_paths
         self.sensor_names = sensor_names
@@ -331,6 +336,10 @@ class RigidContactSet:
         self.world_body_idx = world_body_idx
         self.max_contact_data_count = max_contact_data_count
 
+    @property
+    def model(self):
+        return self.newton_stage.model
+
 
 class NewtonSimView:
     """Simulation view backend for Newton physics.
@@ -341,7 +350,6 @@ class NewtonSimView:
 
     def __init__(self, newton_stage: NewtonStage):
         self.newton_stage = newton_stage
-        self.model = newton_stage.model
         self.is_valid_flag = True
         self.device = newton_stage.device
         if hasattr(self.device, "is_cpu") and self.device.is_cpu:
@@ -354,6 +362,10 @@ class NewtonSimView:
             self.device_ordinal = int(str(self.device).split(":")[-1])
         else:
             self.device_ordinal = -1
+
+    @property
+    def model(self):
+        return self.newton_stage.model
 
     def get_gravity(self, gravity: list[float]) -> bool:
         """Get the simulation gravity vector.
