@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.2] - 2026-04-15
+### Fixed
+- Fix stale model references in all tensor view classes (`NewtonSimView`, `ArticulationSet`, `RigidBodySet`, `RigidContactSet`, and their frontend wrappers)
+- Fix `shape_gap` default for static colliders from 0.1m to 0.0
+- Add `cleanup_stale_newton_index` to `FabricManager` to remove leftover `newton:index` from prims no longer tracked as dynamic bodies
+- Add bounds checking in `set_fabric_transforms` kernel to skip out-of-range body indices
+
 ## [0.7.1] - 2026-04-10
 ### Removed
 - Remove the `isaacsim.core.utils` and `omni.isaac.ml_archive` dependencies

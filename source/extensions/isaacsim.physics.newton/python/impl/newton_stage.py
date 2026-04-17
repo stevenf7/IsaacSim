@@ -432,6 +432,9 @@ class NewtonStage:
         self.qd_ik = self.model.joint_qd
         self.joint_torques = wp.zeros(self.model.joint_dof_count, dtype=wp.float32)
 
+        valid_body_paths = set(self.model.body_label)
+        self.fabric_manager.cleanup_stale_newton_index(valid_body_paths, self.device)
+
         for i, path in enumerate(self.model.body_label):
             prim = usdrt_stage.GetPrimAtPath(usdrt.Sdf.Path(path))
             if not prim:
@@ -486,11 +489,7 @@ class NewtonStage:
         solver_type = self.cfg.solver_cfg.solver_type
 
         if solver_type != "mujoco":
-            contacts = self.model.collide(
-                self.state_0,
-                rigid_contact_margin=getattr(self.cfg, "contact_margin", 0.1),
-                soft_contact_margin=getattr(self.cfg, "soft_contact_margin", 0.1),
-            )
+            contacts = self.model.collide(self.state_0)
         else:
             contacts = None
 
