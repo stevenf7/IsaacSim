@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from ._backend import get_teleop_backend, set_teleop_backend, teleop_backend_ctx
 from .controllers import (
     BUILTIN_GRASP_CONFIG_SCHEME,
     EndEffectorValidationResult,

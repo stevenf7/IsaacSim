@@ -27,11 +27,14 @@ The isaacsim.replicator.teleop extension provides the runtime for VR-driven tele
 
 ### {class}`LocomotionController <isaacsim.replicator.teleop.controllers.LocomotionController>`
 
-**Kinematic base movement driven by VR thumbstick input.** Left thumbstick translates, right thumbstick rotates (yaw). Configurable speed multipliers and optional Tracking Space carry.
+**Kinematic movement driven by VR thumbstick input.** Left thumbstick translates in the world ground plane (using the prim's heading projected onto XY), right thumbstick rotates (yaw), and the right primary/secondary buttons move vertically along world Z. Movement axes are always orthogonal regardless of the target prim's local frame orientation. Configurable speed multipliers. Two workflows are supported depending on the target prim:
+
+- **Robot base locomotion** — the target prim is a robot base link. Thumbstick input moves the robot, and the attached arm/grippers follow. Toggling *Carry Tracking Space* (left primary button) also moves the VR origin so the user can navigate between work areas while remaining anchored to the robot.
+- **VR origin locomotion** — the target prim is the built-in tracking-space origin marker (`/Teleop/Markers/TrackingOrigin`). Because the prim being moved *is* the VR origin, carry is implicit: every movement directly shifts the VR workspace. This is the primary workflow for {class}`FloatingRigidBodyController <isaacsim.replicator.teleop.FloatingRigidBodyController>` setups where grippers have no physical base — moving the VR origin repositions the grippers in the scene.
 
 ### {class}`MarkersManager <isaacsim.replicator.teleop.MarkersManager>`
 
-**Visual frame markers** created on a session sublayer under `/Teleop/Markers` (origin, left, right, head). Visualize real-time VR controller poses in the viewport.
+**Visual frame markers** created in an anonymous session sublayer under `/Teleop/Markers/`. Left, right, and head markers are children of the origin marker (`TrackingOrigin`), mirroring the VR play-space model. Moving the origin — via locomotion or {func}`move_tracking_space_to <isaacsim.replicator.teleop.MarkersManager.move_tracking_space_to>` — automatically repositions all child markers through USD transform inheritance. The origin marker also serves as the default tracking space for VR pose offsetting.
 
 ### {class}`XrAnchorManager <isaacsim.replicator.teleop.XrAnchorManager>`
 

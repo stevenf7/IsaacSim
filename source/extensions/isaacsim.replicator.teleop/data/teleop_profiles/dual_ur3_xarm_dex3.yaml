@@ -26,9 +26,9 @@ session:
   anchor_fixed_height: true
 floating:
   left:
-    enabled: true
+    enabled: false
     settings:
-      prim_path: /World/teleop_xarm_dex3/gripper_origin_xform/xarm_gripper_root_xform/xarm_gripper_rigid_root
+      prim_path: ''
       pos_kp: 20.0
       pos_kd: 0.5
       orient_kp: 20.0
@@ -37,9 +37,9 @@ floating:
       target_rot_y_deg: 0
       target_rot_z_deg: 90
   right:
-    enabled: true
+    enabled: false
     settings:
-      prim_path: /World/teleop_xarm_dex3/gripper_origin_xform/dex3_1_r_root_xform/dex3_1_r_rigid_root
+      prim_path: ''
       pos_kp: 20.0
       pos_kd: 0.5
       orient_kp: 20.0
@@ -49,41 +49,49 @@ floating:
       target_rot_z_deg: 90
 ik:
   left:
-    enabled: false
+    enabled: true
     settings:
-      robot_path: ''
-      solver: position-based
-      method: singular-value-decomposition
+      robot_path: /World/teleop_dual_ur3_xarm_dex3/dual_arm/left_arm_ur3e_xarm/ur3e
+      ee_link: wrist_3_link
+      solver: pink
       gain: 5.0
       vr_target_filter: 0.0
       max_joint_step: 0.0
-      ee_rot_x_deg: 0
+      pink_qp_solver: osqp
+      pink_task_gain: 0.5
+      pink_posture_cost: 0.001
+      pink_lm_damping: 1.0
+      ee_rot_x_deg: 180
       ee_rot_y_deg: 0
-      ee_rot_z_deg: 0
+      ee_rot_z_deg: -90
   right:
-    enabled: false
+    enabled: true
     settings:
-      robot_path: ''
-      solver: position-based
-      method: singular-value-decomposition
+      robot_path: /World/teleop_dual_ur3_xarm_dex3/dual_arm/right_arm_ur3e_dex3/ur3e
+      ee_link: wrist_3_link
+      solver: pink
       gain: 5.0
       vr_target_filter: 0.0
       max_joint_step: 0.0
-      ee_rot_x_deg: 0
+      pink_qp_solver: daqp
+      pink_task_gain: 0.5
+      pink_posture_cost: 0.001
+      pink_lm_damping: 1.0
+      ee_rot_x_deg: 180
       ee_rot_y_deg: 0
-      ee_rot_z_deg: 0
+      ee_rot_z_deg: -180
 grasp:
   left:
     enabled: true
-    prim_path: /World/teleop_xarm_dex3/gripper_origin_xform/xarm_gripper_root_xform/xarm_gripper
+    prim_path: /World/teleop_dual_ur3_xarm_dex3/dual_arm/left_arm_ur3e_xarm/xarm_gripper
     config_path: builtin://xarm_grasp
   right:
     enabled: true
-    prim_path: /World/teleop_xarm_dex3/gripper_origin_xform/dex3_1_r_root_xform/dex3_1_r
+    prim_path: /World/teleop_dual_ur3_xarm_dex3/dual_arm/right_arm_ur3e_dex3/dex3_1_r
     config_path: builtin://dex3_grasp
 locomotion:
   enabled: true
   settings:
-    prim_path: /Teleop/Markers/TrackingOrigin
+    prim_path: /World/teleop_dual_ur3_xarm_dex3
     linear_speed: 0.2
     angular_speed: 0.2

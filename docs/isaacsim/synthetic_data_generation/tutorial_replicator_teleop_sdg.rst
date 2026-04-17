@@ -208,6 +208,9 @@ on-screen sliders, enabling full testing of every controller without VR
 hardware. See :ref:`debug mode testing <isaac_sim_app_tutorial_replicator_teleop_sdg_debug>`
 for step-by-step procedures.
 
+*   **Write Backend** --- overrides the global ``XformPrim`` backend used for
+    all teleop writes. Options: **USD** (plain attribute writes), **USD-RT**
+    (Fabric hierarchy), **Fabric** (fastest path, requires FSD).
 *   **Debug Tracking** checkbox --- enables synthetic pose input. Mutually
     exclusive with a live VR connection: disconnect first or disable debug
     tracking before connecting.
@@ -446,11 +449,23 @@ based on the current trigger value.
 6. Locomotion
 ^^^^^^^^^^^^^
 
-The **Locomotion** controller moves a kinematic base prim using VR thumbstick
-and face-button input.
+The **Locomotion** controller moves a prim kinematically using VR thumbstick
+and face-button input. Horizontal movement is projected onto the world ground
+plane using the prim's heading, so axes remain correct regardless of the
+target prim's local frame orientation. Two workflows are supported:
 
-*   **Prim Path** --- the base prim to move (e.g. the robot root xform or a
-    mobile-base link). Click **Apply** to validate.
+*   **Robot base** --- set the prim path to a robot base link. Thumbstick
+    input moves the robot, and attached arms and grippers follow. Toggle
+    *Carry Tracking Space* (left primary button) to co-move the VR origin
+    with the robot.
+*   **VR origin** --- set the prim path to the built-in tracking-space origin
+    marker (``/Teleop/Markers/TrackingOrigin``). Carry is implicit because the
+    locomotion prim *is* the VR origin. Use this for floating grippers that
+    have no physical base.
+
+Controls:
+
+*   **Prim Path** --- the prim to move. Click **Apply** to validate.
 *   **Slide Speed** --- speed multiplier for thumbstick translation (forward,
     backward, lateral) and face-button vertical motion.
 *   **Turn Speed** --- speed multiplier for right-thumbstick yaw rotation.
@@ -459,14 +474,16 @@ and face-button input.
 
 During Play the controller reads the following VR inputs:
 
-*   **Left thumbstick** --- forward/backward (Y) and left/right (X) slide.
+*   **Left thumbstick** --- forward/backward (Y) and left/right (X) slide in
+    the world ground plane.
 *   **Right thumbstick** --- left/right yaw turn.
 *   **Right face buttons** --- ``A`` (primary) moves down, ``B`` (secondary)
-    moves up (Meta-style controller layout).
+    moves up along world Z (Meta-style controller layout).
 *   **Left primary face button** (``X`` on Meta-style controllers) --- toggles
     **Carry Tracking Space** mode. When active, locomotion also moves the
     Session panel's Tracking Space prim with the base, including turn rotation
-    around the base pivot. The current toggle state is printed to the console.
+    around the base pivot. When the locomotion prim *is* the tracking-space
+    origin, carry is implicit and the toggle has no additional effect.
 
 
 .. _isaac_sim_app_tutorial_replicator_teleop_profiles:
@@ -483,11 +500,19 @@ Built-in profiles ship with the extension under
 You can point the **Dir** field in the **Profiles** panel to a custom
 folder to manage your own profiles alongside the built-in ones.
 
-Profile example
-^^^^^^^^^^^^^^^
+Built-in profiles
+^^^^^^^^^^^^^^^^^^
 
-The ``floating_xarm_dex3.yaml`` profile configures a dual floating-gripper
-setup with locomotion. Below is the file with annotations for each section.
+The extension ships two built-in profiles that demonstrate both locomotion
+workflows.
+
+Floating grippers (VR origin locomotion)
+#########################################
+
+``floating_xarm_dex3.yaml`` configures a dual floating-gripper setup. The
+Floating controller drives each gripper as a free rigid body, and Locomotion
+targets the VR origin marker so that thumbstick input repositions the entire
+VR workspace.
 
 **Session** --- global settings that apply before any controller is configured:
 
@@ -519,9 +544,9 @@ offsets. Both sides are enabled, each pointing at a different gripper root prim:
          pos_kd: 0.5
          orient_kp: 20.0
          orient_kd: 0.2
-         target_rot_x_deg: 0
-         target_rot_y_deg: 90     # 90-degree Y offset aligns the VR grip
-         target_rot_z_deg: 0
+         target_rot_x_deg: 180
+         target_rot_y_deg: 0
+         target_rot_z_deg: 90
      right:
        enabled: true
        settings:
@@ -530,9 +555,9 @@ offsets. Both sides are enabled, each pointing at a different gripper root prim:
          pos_kd: 0.5
          orient_kp: 20.0
          orient_kd: 0.2
-         target_rot_x_deg: 0
+         target_rot_x_deg: -90
          target_rot_y_deg: 0
-         target_rot_z_deg: 0
+         target_rot_z_deg: 90
 
 **IK** --- neither side is enabled in this profile because the grippers are
 floating rigid bodies rather than articulations. The section is still present
@@ -555,7 +580,7 @@ extension:
        config_path: builtin://dex3_grasp
 
 **Locomotion** --- drives the built-in tracking-space origin so that thumbstick
-input moves the entire teleop workspace:
+input moves the entire teleop workspace (VR origin workflow):
 
 .. code-block:: yaml
 
@@ -565,6 +590,72 @@ input moves the entire teleop workspace:
        prim_path: /Teleop/Markers/TrackingOrigin
        linear_speed: 0.2
        angular_speed: 0.2
+
+
+Dual-arm IK (robot-base locomotion)
+#####################################
+
+``dual_ur3_xarm_dex3.yaml`` configures a dual UR3e arm setup where each arm
+is driven by the PINK IK solver. Locomotion targets the robot's root prim so
+that thumbstick input moves the entire robot base.
+
+**IK** --- both sides are enabled with the PINK solver. Each side points at a
+different UR3e arm within the dual-arm assembly. The ``ee_rot_*`` offsets align
+each end effector's local frame with the VR controller pointing direction:
+
+.. code-block:: yaml
+
+   ik:
+     left:
+       enabled: true
+       settings:
+         robot_path: /World/teleop_dual_ur3_xarm_dex3/dual_arm/left_arm_ur3e_xarm/ur3e
+         ee_link: wrist_3_link
+         solver: pink
+         gain: 5.0
+         pink_qp_solver: osqp
+         pink_task_gain: 0.5
+         pink_posture_cost: 0.001
+         pink_lm_damping: 1.0
+         ee_rot_x_deg: 180
+         ee_rot_y_deg: 0
+         ee_rot_z_deg: -90
+     right:
+       enabled: true
+       settings:
+         robot_path: /World/teleop_dual_ur3_xarm_dex3/dual_arm/right_arm_ur3e_dex3/ur3e
+         ee_link: wrist_3_link
+         solver: pink
+         gain: 5.0
+         pink_qp_solver: daqp
+         pink_task_gain: 0.5
+         pink_posture_cost: 0.001
+         pink_lm_damping: 1.0
+         ee_rot_x_deg: 180
+         ee_rot_y_deg: 0
+         ee_rot_z_deg: -180
+
+**Floating** --- disabled in this profile because the arms are articulations
+controlled by IK.
+
+**Grasp** --- same gripper mapping as the floating profile, with each side
+pointing at the corresponding gripper articulation.
+
+**Locomotion** --- drives the robot root prim so that thumbstick input moves
+the dual-arm assembly as a whole (robot-base workflow). Carry Tracking Space
+can be toggled to co-move the VR origin with the robot:
+
+.. code-block:: yaml
+
+   locomotion:
+     enabled: true
+     settings:
+       prim_path: /World/teleop_dual_ur3_xarm_dex3
+       linear_speed: 0.2
+       angular_speed: 0.2
+
+Loading a profile
+##################
 
 When loaded, the profile applies every section in order: session globals first,
 then each controller panel. If the referenced prims exist on the current stage,
@@ -683,26 +774,40 @@ detailed descriptions of each control.
 #. Click **Clear** (while stopped). Verify grasp resources are torn down and
    paths are preserved.
 
-7. Locomotion
-##############
+7. Locomotion (robot base)
+##########################
 
-#. Ensure the stage has a kinematic base prim (e.g. the robot's root xform).
+#. Ensure the stage has a robot with a kinematic base prim (e.g. the robot's
+   root xform).
 #. Expand **Locomotion**. Enter the base prim path and click **Apply**.
 #. Click **Enable**, then **Play**.
-#. Push the **left thumbstick** forward/back/left/right. Verify the base
-   translates.
-#. Push the **right thumbstick** left/right. Verify the base rotates (yaw).
-#. Press the right face button **B** (secondary). Verify the base moves up.
-   Press **A** (primary). Verify the base moves down.
+#. Push the **left thumbstick** forward/back/left/right. Verify the robot
+   translates horizontally in the world ground plane.
+#. Push the **right thumbstick** left/right. Verify the robot rotates (yaw).
+#. Press the right face button **B** (secondary). Verify the robot moves up.
+   Press **A** (primary). Verify the robot moves down.
 #. Adjust **Slide Speed** and **Turn Speed** sliders. Verify movement speed
    changes.
 #. Press the left face button **X** (primary) to toggle **Carry Tracking
-   Space**. Move the base via thumbstick; verify the Tracking Space prim
-   follows. Toggle off; verify only the base moves.
+   Space**. Move the robot via thumbstick; verify the Tracking Space prim
+   follows. Toggle off; verify only the robot moves.
 #. Click **Clear** (while stopped). Verify the configured state is destroyed
    and the prim path is preserved.
 
-8. Stage close and reopen
+8. Locomotion (VR origin)
+##########################
+
+#. Expand **Locomotion**. Enter ``/Teleop/Markers/TrackingOrigin`` as the prim
+   path and click **Apply**. Verify the console prints that carry is implicit.
+#. Click **Enable**, then **Play**.
+#. Push the **left thumbstick**. Verify the origin marker and all child markers
+   (Left, Right, Head) move together in the ground plane. Controllers driven by
+   the markers (Floating, IK) should follow.
+#. Push the **right thumbstick**. Verify the origin rotates (yaw).
+#. Press **X** (left primary). Verify the console reports carry is implicit and
+   the toggle has no additional effect.
+
+9. Stage close and reopen
 ##########################
 
 #. While controllers are active and the timeline is playing, close the current
@@ -710,8 +815,8 @@ detailed descriptions of each control.
 #. Verify all panels reset to idle state without errors in the console.
 #. Open a new stage and reconfigure a controller. Verify it activates cleanly.
 
-9. Disconnect
-##############
+10. Disconnect
+###############
 
 #. Click **Disconnect** in the **Session** panel.
 #. Verify status turns red (**Disconnected**), markers are removed, and all
@@ -834,27 +939,39 @@ The markers form a parent--child hierarchy under
 #. Slide back to 0. Verify the gripper opens fully.
 
 
-5. Locomotion (debug)
-######################
+5. Locomotion --- robot base (debug)
+######################################
 
-#. Ensure the stage has a kinematic base prim (e.g. the robot's root xform).
+#. Ensure the stage has a robot with a kinematic base prim.
 #. Expand **Locomotion**. Enter the base prim path and click **Apply**.
 #. Click **Enable**, then **Play**.
 #. In the **Session > Debug** sub-section, move the **Slide X** and **Slide Y**
-   sliders. Verify the base translates along the corresponding axes.
-#. Move the **Turn** slider left and right. Verify the base rotates in yaw.
+   sliders. Verify the robot translates horizontally in the world ground plane.
+#. Move the **Turn** slider left and right. Verify the robot rotates in yaw.
 #. Adjust **Slide Speed** and **Turn Speed** sliders in the **Locomotion**
    panel. Verify movement speed changes.
-#. Hold the **Up** button. Verify the base moves upward. Hold **Down**; verify
+#. Hold the **Up** button. Verify the robot moves upward. Hold **Down**; verify
    it moves downward.
 #. Hold the **Carry Origin** button while moving **Slide X** or **Slide Y**.
    Verify the origin marker (and its children) translates together with the
-   base prim.
-#. Release **Carry Origin**. Continue sliding; verify only the base moves and
+   robot.
+#. Release **Carry Origin**. Continue sliding; verify only the robot moves and
    the origin stays in place.
 
+6. Locomotion --- VR origin (debug)
+#####################################
 
-6. Custom origin (debug)
+#. Expand **Locomotion**. Enter ``/Teleop/Markers/TrackingOrigin`` as the prim
+   path and click **Apply**. Verify the console prints that carry is implicit.
+#. Click **Enable**, then **Play**.
+#. Move the **Slide X** and **Slide Y** sliders. Verify the origin marker and
+   all child markers move together. Controllers driven by the markers (Floating,
+   IK) should follow.
+#. Move the **Turn** slider. Verify the origin rotates.
+#. Click **Carry Origin**. Verify the console reports carry is implicit.
+
+
+7. Custom origin (debug)
 ##########################
 
 #. In the **Tracking Space / Custom Origin** sub-section, enter a valid scene
@@ -872,7 +989,7 @@ The markers form a parent--child hierarchy under
    space reverts to the built-in origin marker.
 
 
-7. Cleanup and re-activation
+8. Cleanup and re-activation
 ##############################
 
 #. While controllers are active and the timeline is playing, uncheck

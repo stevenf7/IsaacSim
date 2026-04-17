@@ -47,6 +47,7 @@ from functools import lru_cache
 import numpy as np
 from isaacsim.core.experimental.prims import Articulation, RigidPrim
 
+from .._xform_utils import WorldPosePrimCache, read_world_pose_arrays
 from ._utils import ema_blend
 from .pink_urdf_export import _export_urdf
 
@@ -331,6 +332,7 @@ class PinkIKController:
         self._filtered_position: np.ndarray | None = None
         self._filtered_orientation: np.ndarray | None = None
         self._root_link_path: str | None = None
+        self._root_link_world_pose_cache = WorldPosePrimCache()
 
         sim_dof_names = list(robot.dof_names)
         sim_arm_names = sim_dof_names[:num_arm_dofs]
@@ -342,6 +344,7 @@ class PinkIKController:
         )
         self._temp_dir = os.path.dirname(urdf_path)
         self._root_link_path = root_link_path
+        self._root_link_world_pose_cache.set_prim_path(root_link_path)
 
         # ---- 2. Match joint names (Isaac Sim DOF names vs exported URDF) ----
         urdf_joint_names = _read_urdf_joint_names(urdf_path, movable_only=True)
@@ -649,18 +652,14 @@ class PinkIKController:
 
     def _get_root_link_world_pose_from_usd(self) -> tuple[np.ndarray, np.ndarray]:
         """Fallback root-link pose read from authored USD transforms."""
-        import omni.usd
+        if not self._root_link_path:
+            raise RuntimeError("Root link path is unavailable")
 
-        stage = omni.usd.get_context().get_stage()
-        if not stage:
-            raise RuntimeError("No USD stage available")
-        root_prim = stage.GetPrimAtPath(self._root_link_path)
-        if not root_prim or not root_prim.IsValid():
-            raise RuntimeError(f"Root link prim '{self._root_link_path}' is invalid")
-
-        root_mat = omni.usd.get_world_transform_matrix(root_prim)
-        root_mat = np.array(root_mat, dtype=np.float64)
-        return root_mat[:3, 3], root_mat[:3, :3]
+        pos_arr, quat_arr = read_world_pose_arrays(self._root_link_world_pose_cache)
+        root_pos = np.asarray(pos_arr.reshape(-1, 3)[0], dtype=np.float64)
+        w, x, y, z = quat_arr.reshape(-1, 4)[0]
+        root_rot = self._pin.Quaternion(float(w), float(x), float(y), float(z)).toRotationMatrix()
+        return root_pos, root_rot
 
     def _world_goal_to_root_frame_se3(
         self,
