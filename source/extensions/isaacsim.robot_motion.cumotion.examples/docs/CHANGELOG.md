@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.2] - 2026-04-16
+### Fixed
+- Fixed test failure caused by a leaked `_load_scene_async` task: `UIBuilder` now tracks and cancels in-flight async loads on cleanup and re-load, preventing expired-prim errors when a new stage is created between tests.
+
 ## [0.3.1] - 2026-04-14
 ### Fixed
 - `graph_planner` and `trajectory_optimizer` example tests no longer hang: removed `timeline.play()` / frame-wait / `timeline.stop()` from `_load_scene_async`, which could block the Kit update thread (e.g. on CUDA initialisation failures) and prevent `next_update_async()` from ever resolving.

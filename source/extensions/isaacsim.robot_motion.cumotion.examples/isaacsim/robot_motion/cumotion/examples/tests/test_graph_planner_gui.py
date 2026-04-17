@@ -39,6 +39,10 @@ class TestGraphPlannerGui(omni.kit.test.AsyncTestCase):
     async def tearDown(self):
         """Clean up the UI builder after each test."""
         self.ui_builder.cleanup()
+        # Two frames: first lets the cancelled _load_task propagate its
+        # CancelledError through any pending awaits; second ensures the
+        # event-loop settles before the next test creates a new stage.
+        await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
     async def test_widgets_built(self):

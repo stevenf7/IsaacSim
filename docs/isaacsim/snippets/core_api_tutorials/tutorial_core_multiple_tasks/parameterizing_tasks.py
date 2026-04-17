@@ -4,7 +4,7 @@ from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
 from isaacsim.core.experimental.prims import Articulation, GeomPrim, RigidPrim, XformPrim
 from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
 from isaacsim.examples.base.base_sample_experimental import BaseSample
-from isaacsim.robot.manipulators.examples.franka import FrankaExperimental
+from isaacsim.robot.experimental.manipulators.examples.franka import Franka
 from isaacsim.storage.native import get_assets_root_path
 
 
@@ -50,7 +50,7 @@ class RobotScenario:
 
         # Add Franka
         franka_pos = self.offset + np.array([0.8, -0.3, 0.0])
-        self.franka = FrankaExperimental(robot_path=f"{base_path}/Franka", create_robot=True)
+        self.franka = Franka(robot_path=f"{base_path}/Franka", create_robot=True)
         franka_xform = XformPrim(f"{base_path}/Franka")
         franka_xform.reset_xform_op_properties()
         franka_xform.set_world_poses(positions=franka_pos.tolist())

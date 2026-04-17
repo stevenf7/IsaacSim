@@ -28,7 +28,7 @@ result, prim = omni.kit.commands.execute(
     yaw_offset=0.0,
     enable_semantics=True,
 )
-UsdGeom.XformCommonAPI(prim).SetTranslate((2.0, 0.0, 0.0))
+UsdGeom.XformCommonAPI(stage.GetPrimAtPath("/World" + lidarPath)).SetTranslate((2.0, 0.0, 0.0))
 
 # Create a cube, sphere, add collision and different semantic labels
 primType = ["Cube", "Sphere"]

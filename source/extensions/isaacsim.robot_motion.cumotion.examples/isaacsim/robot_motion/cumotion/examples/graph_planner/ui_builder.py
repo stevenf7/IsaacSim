@@ -59,6 +59,7 @@ class UIBuilder:
         self.wrapped_ui_elements = []
         self._timeline = omni.timeline.get_timeline_interface()
         self._joint_slider_models = []
+        self._load_task: asyncio.Task | None = None
         self._on_init()
 
     def on_menu_callback(self) -> None:
@@ -93,6 +94,8 @@ class UIBuilder:
 
     def cleanup(self) -> None:
         """Cleanup the UI."""
+        if self._load_task is not None and not self._load_task.done():
+            self._load_task.cancel()
         for ui_elem in self.wrapped_ui_elements:
             ui_elem.cleanup()
 
@@ -193,7 +196,9 @@ class UIBuilder:
 
     def _on_load_btn(self) -> None:
         """Handle Load button click - loads scene and initializes scenario."""
-        asyncio.ensure_future(self._load_scene_async())
+        if self._load_task is not None and not self._load_task.done():
+            self._load_task.cancel()
+        self._load_task = asyncio.ensure_future(self._load_scene_async())
 
     async def _load_scene_async(self) -> None:
         """Async function to load the scene without using World."""

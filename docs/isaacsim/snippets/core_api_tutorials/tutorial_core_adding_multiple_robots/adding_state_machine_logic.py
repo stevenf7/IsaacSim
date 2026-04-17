@@ -5,7 +5,7 @@ from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import Articulation, GeomPrim, RigidPrim, XformPrim
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.examples.base.base_sample_experimental import BaseSample
-from isaacsim.robot.manipulators.examples.franka import FrankaExperimental
+from isaacsim.robot.experimental.manipulators.examples.franka import Franka
 from isaacsim.storage.native import get_assets_root_path
 
 
@@ -44,8 +44,8 @@ class HelloWorld(BaseSample):
         RigidPrim(paths=cube_shape.paths)
         cube_shape.apply_visual_materials(visual_material)
 
-        # Add Franka using FrankaExperimental for IK and gripper control
-        self._franka = FrankaExperimental(robot_path="/World/Franka", create_robot=True)
+        # Add Franka using Franka for IK and gripper control
+        self._franka = Franka(robot_path="/World/Franka", create_robot=True)
         franka_xform = XformPrim("/World/Franka")
         franka_xform.set_world_poses(positions=[[0.8, -0.3, 0.0]])
 
