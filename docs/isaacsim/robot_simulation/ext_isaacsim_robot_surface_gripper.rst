@@ -152,7 +152,7 @@ Activate the ``Robotics Examples`` content browser from **Windows** > **Examples
 .. _isaac_surface_gripper_robotics_example:
 
 Surface Gripper Example (gantry)
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This example shows a surface gripper mounted to a gantry, and contains cubes that can be grasped by the gripper. This surface gripper is added by code, and also connected through the surface gripper |omnigraph| node.
 
@@ -175,7 +175,7 @@ Walkthrough
 This walkthrough demonstrates how to attach a simple suction-style end effector to a UR10 robot arm, and how to use the Surface Gripper extension to control the gripper. The pick-and-stack sequence is driven by differential inverse kinematics.
 
 Learning Objectives
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 In this example, you:
 

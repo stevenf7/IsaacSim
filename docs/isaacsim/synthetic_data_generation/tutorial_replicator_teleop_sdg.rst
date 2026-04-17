@@ -673,7 +673,7 @@ Teleop window. Refer to the
 detailed descriptions of each control.
 
 1. Extension loading
-#####################
+^^^^^^^^^^^^^^^^^^^^
 
 #. Launch |isaac-sim_short|.
 #. Open **Tools** > **Replicator** > **Teleop**.
@@ -681,7 +681,7 @@ detailed descriptions of each control.
 #. Verify six collapsible sections: **Profiles**, **Session**, **Floating Controller**, **IK Controller**, **Grasp Controller**, **Locomotion**.
 
 2. Session --- connect and frame markers
-#########################################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Open a stage with a robot.
 #. Expand **Session** and click **Connect**. Verify:
@@ -697,7 +697,7 @@ detailed descriptions of each control.
 #. In the **Frame Markers** sub-section, adjust the **Scale** drag field. Verify marker axis length changes in the viewport.
 
 3. Session --- tracking space and XR anchor
-############################################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. In **Tracking Space / Custom Origin**, change the **Coordinate Frame**
    dropdown to **Raw (no conversion)** and back to **Isaac Sim (Z-up)**.
@@ -715,7 +715,7 @@ detailed descriptions of each control.
    headset camera height stays locked.
 
 4. Floating rigid body controller
-###################################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Ensure the stage has a free rigid body prim (e.g. an end effector not attached to an articulation).
 #. Expand **Floating Controller**. In the **Left** or **Right** sub-panel, enter the prim path and click **Apply**.
@@ -730,7 +730,7 @@ detailed descriptions of each control.
    prim path is preserved.
 
 5. IK controller
-##################
+^^^^^^^^^^^^^^^^^
 
 #. Open a stage with an articulated robot arm (e.g. UR3e).
 #. Expand **IK Controller**. In the **Left** or **Right** sub-panel, enter the
@@ -760,7 +760,7 @@ detailed descriptions of each control.
    the prim path is preserved.
 
 6. Grasp controller
-#####################
+^^^^^^^^^^^^^^^^^^^^
 
 #. Ensure the stage has a gripper with drive joints.
 #. Expand **Grasp Controller**. In the **Left** or **Right** sub-panel, enter
@@ -850,7 +850,7 @@ The markers form a parent--child hierarchy under
 
 
 1. Enable debug tracking
-#########################
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Launch |isaac-sim_short| and open a stage with a robot.
 #. Open **Tools** > **Replicator** > **Teleop**.
@@ -873,7 +873,7 @@ The markers form a parent--child hierarchy under
 
 
 2. Floating controller (debug)
-###############################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Ensure the stage has a free rigid body prim (not attached to an
    articulation).
@@ -893,7 +893,7 @@ The markers form a parent--child hierarchy under
 
 
 3. IK controller (debug)
-##########################
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Open a stage with an articulated robot arm (e.g. UR3e).
 #. Expand **IK Controller**. In the **Left** or **Right** sub-panel, enter the
@@ -925,7 +925,7 @@ The markers form a parent--child hierarchy under
 
 
 4. Grasp controller (debug)
-#############################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Ensure the stage has a gripper with drive joints.
 #. Expand **Grasp Controller**. In the **Left** or **Right** sub-panel, enter

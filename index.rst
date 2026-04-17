@@ -97,8 +97,9 @@ Extensions
    :maxdepth: 1
    :caption: Extensions (Cortex)
 
-   isaacsim.cortex.behaviors <source/extensions/isaacsim.cortex.behaviors/docs/index>
-   isaacsim.cortex.framework <source/extensions/isaacsim.cortex.framework/docs/index>
+   isaacsim.cortex.behaviors <source/deprecated/isaacsim.cortex.behaviors/docs/index>
+   isaacsim.cortex.examples <source/deprecated/isaacsim.cortex.examples/docs/index>
+   isaacsim.cortex.framework <source/deprecated/isaacsim.cortex.framework/docs/index>
 
 .. toctree::
    :maxdepth: 1
@@ -230,6 +231,12 @@ Extensions
 
 .. toctree::
    :maxdepth: 1
+   :caption: Extensions (Streaming)
+
+   isaacsim.streaming.rtsp <source/extensions/isaacsim.streaming.rtsp/docs/index>
+
+.. toctree::
+   :maxdepth: 1
    :caption: Extensions (Storage)
 
    isaacsim.storage.native <source/extensions/isaacsim.storage.native/docs/index>
@@ -270,6 +277,7 @@ Extensions
    omni.cuopt.examples <source/internal_extensions/omni.cuopt.examples/docs/index>
    omni.cuopt.service <source/internal_extensions/omni.cuopt.service/docs/index>
    omni.cuopt.visualization <source/internal_extensions/omni.cuopt.visualization/docs/index>
+   isaacsim.core.telemetry <source/internal_extensions/isaacsim.core.telemetry/docs/index>
    omni.kit.loop-isaac <source/extensions/omni.kit.loop-isaac/docs/index>
    omni.usd.schema.mujoco <source/extensions/omni.usd.schema.mujoco/docs/index>
    omni.usd.schema.newton <source/extensions/omni.usd.schema.newton/docs/index>
@@ -291,4 +299,5 @@ Extensions
    :maxdepth: 1
    :caption: Generic Model Output
 
-   docs/api/source/generic_model_output/generic_model_output
+   docs/source/generic_model_output/generic_model_output
+   docs/source/generic_model_output/python_package
